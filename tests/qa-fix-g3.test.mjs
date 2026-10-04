@@ -339,7 +339,7 @@ test('QA-G3-B4：実ブラウザ：Chapter間ファームの「🥋 修行」の
   const ck = await clock(pg);
   for (const gap of [0, 50]) {
     await ck.freeze();
-    await press(pg, await center(pg, `#app .p15b[onclick="hall('s')"]`));
+    await press(pg, await center(pg, `#app .bcb[onclick="hall('s')"]`));
     await pg.waitForSelector('#app .p12tc:not([disabled])');
     if (gap) await pg.waitForTimeout(gap);
     const card = await center(pg, '#app .p12tc:not([disabled])');
@@ -408,10 +408,12 @@ test('QA-G3-B7：実ブラウザ：育成放棄の最終確認を「やめない
   const M = load(); const p = await L.open({ save: j(atFarm(M)) }); const pg = p.page;
   await start(p, '#app .p9farm');
   await pg.evaluate(() => document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('#p8m .p8danger:not(#p8abgo)')) window.__t0 = performance.now(); }, true));
-  await pg.click('#app button[onclick="p8AbandonAsk()"]'); await pg.click('#p8m .p8danger'); await pg.waitForSelector('#p8abgo');
+  // 2026-10-04 PHASE H2：育成放棄はベースキャンプのメニューの中
+  const ask = async () => { await pg.click('.bcrb[onclick="bcMenu()"]'); await pg.waitForSelector('#p9ov .fmab'); await pg.waitForTimeout(400); await pg.click('#p9ov .fmab'); };
+  await ask(); await pg.click('#p8m .p8danger'); await pg.waitForSelector('#p8abgo');
   await pg.waitForTimeout(500);
   await pg.click('#p8m .go'); await pg.waitForSelector('#p8m', { state: 'detached' });
-  await pg.click('#app button[onclick="p8AbandonAsk()"]'); await pg.click('#p8m .p8danger'); await pg.waitForSelector('#p8abgo');
+  await ask(); await pg.click('#p8m .p8danger'); await pg.waitForSelector('#p8abgo');
   const ms = await pg.evaluate(() => new Promise((ok) => { const b = document.getElementById('p8abgo'); if (!b.disabled) return ok(performance.now() - window.__t0); const o = new MutationObserver(() => { if (!b.disabled) { o.disconnect(); ok(performance.now() - window.__t0); } }); o.observe(b, { attributes: true }); }));
   assert.ok(ms >= 2900, `開き直してから ${Math.round(ms)}ms で押せるようになった（3秒待つ）`);
   await pg.click('#p8abgo'); await pg.waitForSelector('#app .map');
@@ -451,7 +453,7 @@ test('QA-G3-B9：実ブラウザ：新規開始→市場で購入→牧場→出
   await pg.click('#p10ov .p10ok');
   await pg.waitForSelector('#app .map');
   let S = await H.getS(pg); assert.equal(S.m.sp, 0); assert.equal(S.g, 0, 'はじめての1体（補填つき）は従来どおり');
-  await pg.click('.hz[onclick="farm()"]'); await pg.waitForSelector('#app .ftiles');
+  await pg.click('.hz[onclick="farm()"]'); await pg.waitForSelector('#app .rn2 .rnact');
   await pg.click('#app button.back'); await pg.waitForSelector('#app .map');
   await pg.click('.hz[onclick="hall()"]'); await pg.click('#app button[onclick="prepScr()"]');
   const dep = '#app button[onclick="p7Depart(this)"]';

@@ -142,7 +142,7 @@ T('EN-B3：場面ごとの表情：カレンの購入成功＝04・研究所の�
   assert.ok(t.some((x) => x.name === 'ベルナ' && /shop\/expr\/full\/02_smile\.webp$|shop\/expr\/(?:closeup|full)\/02_smile\.webp$/.test(x.src)), `アイテム屋：初回＝02 ${JSON.stringify(t)}`);
   await pg.evaluate(() => shopScr('', true)); await pg.waitForSelector('.shopsay');
   const sh = await pg.evaluate(() => [document.querySelector('.shopnpc').getAttribute('src'), document.querySelector('.shopsay').textContent]);
-  assert.match(sh[0], /shop\/expr\/full\/04_recommend\.webp$/); assert.match(sh[1], /アイテム屋はい、これで大丈夫。気をつけて行ってらっしゃい。/);
+  assert.match(sh[0], /shop\/expr\/full\/04_recommend\.webp$/); assert.match(sh[1], /ベルナはい、これで大丈夫。気をつけて行ってらっしゃい。/);
   // 特訓：Chapter 1 を終えた状態 → 初回（ゲンシン 01）→ 開始（02）
   await pg.evaluate(() => { const m = S.m; MMP8.depart(S, m, () => 0.37); const g = MMCH.graphFor(m); Object.assign(m.raise, { node: g.goal, goal: true, pend: null }); MMP8.declineTournament(S, m); m.raise.evSeen = ['ret1', 'rumor']; S.npcFlags.first.farm = 1; S.trainTix = 2; save(); hall('s'); });
   t = await collectTalk(pg); assert.ok(t.some((x) => x.name === 'ゲンシン' && /genshin\/expr\/(?:closeup|full)\/01_guide\.webp$/.test(x.src)), `ゲンシン：初回＝01 ${JSON.stringify(t)}`);

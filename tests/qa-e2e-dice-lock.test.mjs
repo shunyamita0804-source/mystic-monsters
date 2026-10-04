@@ -107,8 +107,8 @@ T('DL-B3：SE 監査：街の施設の札・下のバー・ファームのコマ
   await arm();
   await tap('.tpin[onclick="townArena()"]'); assert.deepEqual(await got(), ['UI_ERROR'], '闘技場（未開放）＝UI_ERROR だけ');
   await pg.evaluate(() => townMsgClose(document.querySelector('.tlow'))); await pg.waitForTimeout(200); await got();
-  await tap('.tpin[onclick="townGuild()"]'); assert.deepEqual(await got(), ['UI_ERROR'], '聖獣士管理局（未開放）＝UI_ERROR だけ');
-  await pg.evaluate(() => townMsgClose(document.querySelector('.tlow'))); await pg.waitForTimeout(200); await got();
+  await tap('.tpin[onclick="townGuild()"]'); await pg.waitForSelector('.bu .bucard'); assert.deepEqual(await got(), ['UI_SELECT'], '聖獣士管理局（2026-10-04 PHASE H4：開いた）＝UI_SELECT を1回');
+  await tap('.bu .burb[onclick="lobby()"]'); await pg.waitForSelector('.tpin[onclick="market()"]'); assert.deepEqual(await got(), ['UI_CANCEL'], '街へ戻る＝UI_CANCEL を1回');
   await tap('.tpin[onclick="market()"]'); await pg.waitForSelector('.p10mk'); assert.deepEqual(await got(), ['UI_SELECT'], '市場へ＝UI_SELECT を1回');
   await tap('.p10mk .p10back'); await pg.waitForSelector('.tpin[onclick="farm()"]'); assert.deepEqual(await got(), ['UI_CANCEL'], '街へ戻る＝UI_CANCEL を1回');
   await tap('.tbar button[onclick="hall()"]'); await pg.waitForSelector('.fm .fmgo'); assert.deepEqual(await got(), ['UI_SELECT'], 'ファームへ＝UI_SELECT を1回');
@@ -118,7 +118,7 @@ T('DL-B3：SE 監査：街の施設の札・下のバー・ファームのコマ
   await tap('.ds .dback'); await pg.waitForSelector('.fm .fmgo'); assert.deepEqual(await got(), ['UI_CANCEL']);
   await tap('.fm .fmb[data-cmd="town"]'); await pg.waitForSelector('.tpin[onclick="farm()"]'); assert.deepEqual(await got(), ['UI_CANCEL'], '街へ戻る（ファーム）＝UI_CANCEL');
   await tap('.tpin[onclick="farm()"]'); await pg.waitForSelector('.rn'); assert.deepEqual(await got(), ['UI_SELECT'], '牧場へ＝1回');
-  await tap('.rn .ftile[onclick*="\'b\'"]'); assert.deepEqual(await got(), ['UI_TAB'], '牧場のタブ＝UI_TAB だけ');
+  await tap('.rn2 .rnc'); const sel = await got(); assert.ok(sel.length <= 1 && !sel.includes('UI_TAB'), `牧場の一覧の選択（2026-10-04 PHASE H3：タブは無い）は二重に鳴らない：${sel}`);
   await tap('.rn button.back'); await pg.waitForSelector('.tpin[onclick="museum()"]'); assert.deepEqual(await got(), ['UI_CANCEL']);
   await tap('.tpin[onclick="museum()"]'); await pg.waitForSelector('.lab'); assert.deepEqual(await got(), ['UI_SELECT'], '研究所へ＝1回');
   assert.deepEqual(p.errors, []);

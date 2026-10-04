@@ -115,7 +115,7 @@ test('TW-B2：各コマンドの遷移と「街にもどる」：市場・牧場
   await pg.click('.hz[onclick="market()"]'); await pg.waitForSelector('#p10car');
   await pg.click('.p10back'); await pg.waitForSelector('.tbar .tcmd');
   // 牧場 → 戻る
-  await pg.click('.hz[onclick="farm()"]'); await pg.waitForSelector('#app .ftiles'); await toTown(pg);
+  await pg.click('.hz[onclick="farm()"]'); await pg.waitForSelector('#app .rn2 .rnact'); await toTown(pg);
   // 研究所 → 詳細 → 研究所 → 街
   await pg.click('.hz[onclick="museum()"]'); await pg.waitForSelector('.lab .labnpc');
   assert.match(await H.text(pg), /モンスター研究所/);
@@ -123,9 +123,9 @@ test('TW-B2：各コマンドの遷移と「街にもどる」：市場・牧場
   await pg.click('.lbgrid .lbc:nth-child(1)'); await pg.waitForSelector('.lbd .lbsts');
   assert.match(await H.text(pg), /◀ 図鑑/);
   await pg.click('.lbd .dback'); await pg.waitForSelector('.lbk .lbgrid'); await pg.click('.lbk .dtop .dback'); await pg.waitForSelector('.lab .labnpc'); await toTown(pg);
-  // 聖獣士管理局：準備中の案内だけ（中は作らない）
-  const b0 = await H.storedSave(pg); await pg.click('.hz[onclick="townGuild()"]');
-  assert.equal(await pg.evaluate(() => document.querySelector('#msg').textContent), '聖獣士管理局は、まだ利用できません。'); assert.deepEqual(await H.storedSave(pg), b0);
+  // 聖獣士管理局（2026-10-04 PHASE H4）：聖獣士証と功績の画面へ（見るだけ＝セーブは変わらない）→ 街へ
+  const b0 = await H.storedSave(pg); await pg.click('.hz[onclick="townGuild()"]'); await pg.waitForSelector('.bu .bucard');
+  assert.deepEqual(await H.storedSave(pg), b0); await pg.click('.bu .burb[onclick="lobby()"]'); await pg.waitForSelector('.map.town');
   // 闘技場：未開放の案内だけ（街のまま・セーブは変わらない）
   const before = await H.storedSave(pg);
   await pg.click('.hz[onclick="townArena()"]');
@@ -213,7 +213,7 @@ test('TW-B5：施設から街へ戻った直後（登場アニメの間）も、
   // 戻った直後にすぐ牧場を押す → 牧場（研究所など別の施設にならない）
   await pg.evaluate(() => museum()); await pg.waitForSelector('.lab');
   await pg.evaluate(() => lobby()); await pg.mouse.click(...(await pg.evaluate(() => { const b = document.querySelector('.hz[onclick="farm()"]').getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2]; })));
-  await pg.waitForSelector('#app .ftiles');
+  await pg.waitForSelector('#app .rn2 .rnact');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 

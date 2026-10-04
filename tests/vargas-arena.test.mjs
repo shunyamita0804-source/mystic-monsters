@@ -88,10 +88,10 @@ test('VAR-B1：街：闘技場（ロック中）を押すと、案内文はシ�
     await pg.waitForFunction(() => { const i = document.querySelector('.vgsay img'); return i && i.complete && i.naturalWidth > 0; });
     const r = await read(pg);
     assert.equal(r.v.length, 1, '一言は1つだけ（増えない）');
-    assert.deepEqual([r.v[0].name, r.v[0].ok], ['ヴァルガス', true]); assert.match(r.v[0].src, /^assets\/npc\/vargas\/expr\/closeup\/0[1-4]_(normal|grin|stern|acknowledge)\.webp$/, '2026-10-04（追加アセット）：半身の立ち絵（正式の表情差分）');
+    assert.deepEqual([r.v[0].name, r.v[0].ok], ['ヴァルガス', true]); assert.match(r.v[0].src, /^assets\/npc\/vargas\/expr\/(?:closeup|full)\/0[1-4]_(normal|grin|stern|acknowledge)\.webp$/, '2026-10-04（追加アセット）：半身の立ち絵（正式の表情差分）');   /* 2026-10-04 PHASE H5：会話・施設の立ち絵は規格 stand（expr/full を CSS で 3/4身に切る） */
     assert.ok(T.includes(r.v[0].text), r.v[0].text);
     assert.equal(r.msg, '闘技場は、まだ利用できません。'); assert.equal(r.msgFace, false, '案内文はシステム表示（顔・名前なし）');
-    assert.equal(r.town, true, '街のまま'); assert.deepEqual(r.lock, ['townArena()', 'townGuild()'], 'ロック表示のまま（闘技場・聖獣士管理局）');
+    assert.equal(r.town, true, '街のまま'); assert.deepEqual(r.lock, ['townArena()'], 'ロック表示のまま（闘技場。2026-10-04 PHASE H4：聖獣士管理局は開いた）');
     if (k < 2) { await pg.click('#app>.tlow .vgsay .tx'); await pg.waitForFunction(() => !document.querySelector('#app>.tlow.on')); }   // 案内はタップで閉じる（下の札を押せるように）
   }
   assert.deepEqual(await H.storedSave(pg), before, 'セーブは変わらない');

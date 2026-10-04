@@ -165,7 +165,7 @@ test('DAN-B2：育成開始：フィナの確認と選択肢。「まだやめ�
     await pg.waitForTimeout(120); await pg.click('.mmtalk');
   }
   assert.deepEqual(seen.map((x) => x.slice(0, 3)), [['フィナ', 'left', 'ダン、この子と一緒に行ってくるね！'], ['ダン', 'right', 'ああ。準備はできてるな。気をつけて行ってこい。']]);
-  assert.match(seen[1][3], /assets\/npc\/dan\/expr\/closeup\/02_cheer\.webp$/, '2026-10-04：出発の後押し＝02');
+  assert.match(seen[1][3], /assets\/npc\/dan\/expr\/(?:closeup|full)\/02_cheer\.webp$/, '2026-10-04：出発の後押し＝02');   /* 2026-10-04 PHASE H5：会話・施設の立ち絵は規格 stand（expr/full を CSS で 3/4身に切る） */
   await pg.waitForSelector('#brollbtn');
   assert.equal(await pg.evaluate(() => S.m.raise.state), 'board', '掛け合いのあと出発');
   assert.equal(await pg.evaluate(() => document.querySelectorAll('.mmtalk, .mmtalk-fig, .mmtalk-choice').length), 0, '会話のDOMは残らない');

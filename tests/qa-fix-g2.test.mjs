@@ -447,7 +447,7 @@ test('QA-G2-B4：実ブラウザ：育成放棄で合体の選択を解除／連
   const before = await H.storedSave(p.page);
   assert.equal(before.m, null); assert.equal(before.box.length, 2);
   await p.page.evaluate(() => dep());
-  assert.match(await H.text(p.page), /いま連れているモンスターはいません。/);
+  assert.equal(await p.page.evaluate(() => document.querySelector('.rn2 .rncur')), null, '連れている子はいない（2026-10-04 PHASE H3：牧場20体の一覧）');
   assert.deepEqual(await H.storedSave(p.page), before, '保存内容は変わらない'); assert.equal((await H.getS(p.page)).box.length, 2);
   // 親がそろわない fuse()
   const g0 = (await H.getS(p.page)).g;
@@ -476,7 +476,7 @@ test('QA-G2-B5：実ブラウザ：新規開始→市場で購入→牧場→出
   let S = await H.getS(p.page);
   assert.equal(S.m.sp, 0); assert.equal(S.m.name, 'ソラモ'); assert.equal(S.g, 0);
   await p.page.click('.hz[onclick="farm()"]');
-  await p.page.waitForSelector('#app .ftiles');
+  await p.page.waitForSelector('#app .rn2 .rnact');
   await p.page.click('#app button.back');
   await p.page.waitForSelector('#app .map');
   await p.page.click('.hz[onclick="hall()"]');

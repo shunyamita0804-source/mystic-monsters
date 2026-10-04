@@ -114,7 +114,7 @@ test('KR-B1：入店：初回はカレンのアップ画像で説明2行（smile
   await toMarket(p);
   await pg.waitForSelector('.mmtalk'); await pg.waitForTimeout(260);
   let s = await talkState(pg);
-  assert.equal(s.name, 'カレン'); assert.match(s.img, /karen\/expr\/closeup\/02_welcome\.webp$/);   // 2026-10-04（追加アセット）：smile → 02 歓迎・笑顔 assert.equal(s.n, 1);
+  assert.equal(s.name, 'カレン'); assert.match(s.img, /karen\/expr\/(?:closeup|full)\/02_welcome\.webp$/);   // 2026-10-04（追加アセット）：smile → 02 歓迎・笑顔 assert.equal(s.n, 1);   /* 2026-10-04 PHASE H5：会話・施設の立ち絵は規格 stand（expr/full を CSS で 3/4身に切る） */
   assert.ok(s.text.length < 'いらっしゃい。気になる子を見ていってね。'.length && !s.next, '1文字ずつ表示中は▼なし');
   await pg.click('.mmtalk'); s = await talkState(pg);
   assert.deepEqual([s.text, s.next], ['いらっしゃい。気になる子を見ていってね。', true], '途中タップで全文・▼');
@@ -128,7 +128,7 @@ test('KR-B1：入店：初回はカレンのアップ画像で説明2行（smile
   await pg.click('.p10back'); await pg.waitForSelector('.map.town'); await pg.click('.hz[onclick="market()"]'); await pg.waitForSelector('#p10car');
   // 2回目：説明はくり返さず、アップ画像で1行だけ
   await pg.waitForSelector('.mmtalk'); await pg.waitForTimeout(260); await pg.click('.mmtalk');
-  let s2 = await talkState(pg); const AG2 = await pg.evaluate(() => (window.MMNPCE ? MMNPCE.REVISIT.market.lines.map((l) => l.text) : [])); assert.ok(AGAIN.includes(s2.text) || AG2.includes(s2.text), `再訪は1行のあいさつ（2026-10-04：進行状態に合う一言＝まだ連れていないときの一言）：${s2.text}`); assert.match(s2.img, /karen\/expr\/closeup\/0[1-3]_(guide|welcome|think)\.webp$/); assert.equal(s2.next, true);
+  let s2 = await talkState(pg); const AG2 = await pg.evaluate(() => (window.MMNPCE ? MMNPCE.REVISIT.market.lines.map((l) => l.text) : [])); assert.ok(AGAIN.includes(s2.text) || AG2.includes(s2.text), `再訪は1行のあいさつ（2026-10-04：進行状態に合う一言＝まだ連れていないときの一言）：${s2.text}`); assert.match(s2.img, /karen\/expr\/(?:closeup|full)\/0[1-3]_(guide|welcome|think)\.webp$/); assert.equal(s2.next, true);   /* 2026-10-04 PHASE H5：会話・施設の立ち絵は規格 stand（expr/full を CSS で 3/4身に切る） */
   await pg.waitForTimeout(120); await pg.click('.mmtalk'); await pg.waitForTimeout(60);
   assert.equal(await talkState(pg), null, '1行で終わる'); await pg.waitForFunction(() => !document.querySelector('.mmtalk'), null, { timeout: 3000 });   // 退場のフェードのあと
   assert.equal(await pg.evaluate(() => document.querySelector('.p10mk').classList.contains('talk')), false, '終わると通常の閲覧へ');

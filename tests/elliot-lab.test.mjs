@@ -93,7 +93,7 @@ test('ELI-B1：研究所：図鑑一覧と詳細（ソラモ・ガウル）に�
   await pg.click('.hz[onclick="museum()"]', { force: true }); await pg.waitForSelector('.lab .labnpc');
   // 2026-10-03 品質向上：入口＝正式背景・エリオットの半身（正式 closeup）と会話窓・下に機能のカード
   const hero = await pg.evaluate(() => { const i = document.querySelector('.lab .labnpc img'); return { src: i.getAttribute('src'), name: document.querySelector('.lab .labnpc .tx b').textContent, text: document.querySelector('.lab .labnpc .tx').textContent.replace(/^エリオット/, ''), cards: [...document.querySelectorAll('.lab .labc b')].map((b) => b.textContent) }; });
-  assert.deepEqual([hero.name, hero.cards], ['エリオット', ['図鑑', '合体', '配合表']]); assert.match(hero.src, /^assets\/npc\/elliot\/expr\/closeup\/0[1-4]_(normal|smile|analyze|discover)\.webp$/, '2026-10-04（追加アセット）：一言の表情の正式差分'); assert.ok(T.lab.includes(hero.text), hero.text);
+  assert.deepEqual([hero.name, hero.cards], ['エリオット', ['図鑑', '合体', '配合表']]); assert.match(hero.src, /^assets\/npc\/elliot\/expr\/(?:closeup|full)\/0[1-4]_(normal|smile|analyze|discover)\.webp$/, '2026-10-04（追加アセット）：一言の表情の正式差分'); assert.ok(T.lab.includes(hero.text), hero.text);   /* 2026-10-04 PHASE H5：会話・施設の立ち絵は規格 stand（expr/full を CSS で 3/4身に切る） */
   await pg.click('.labc[onclick="museum(\'book\')"]'); await pg.waitForSelector('.lbgrid'); await waitImgs(pg);
   let s = await say(pg);
   assert.equal(s.length, 0, '2026-10-04：図鑑の一覧にエリオットの吹き出しは無い（入口で話す）');

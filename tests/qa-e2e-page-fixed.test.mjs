@@ -38,7 +38,7 @@ async function setup(p) {
     S.m = mkd(0, 'ソラ', 'none'); S.box = [mkd(1, 'ハヤテ', 'done'), mkd(0, 'モコ', 'done'), mkd(1, 'ピィ', 'none')]; S.g = 1250; save(); });
 }
 const SCREENS = [
-  ['街', 'lobby()', '.tbg'], ['市場', 'market()', '.p10mk'], ['牧場（預ける）', "farm('','a')", '.fscene'], ['牧場（様子を見る）', "rnView=null;farm('','e')", '.fscene'], ['牧場（売る）', "farm('','d')", '.fscene'],
+  ['街', 'lobby()', '.tbg'], ['市場', 'market()', '.p10mk'], ['牧場（預ける）', "farm('','a')", '.rnbg'], ['牧場（様子を見る）', "rnView=null;farm('','e')", '.rnbg'], ['牧場（売る）', "farm('','d')", '.rnbg'],
   ['ファーム', "hall('t')", '.fm'], ['ステータス', "hall('st')", '.dbg'], ['技管理', "hall('w')", '.dbg'], ['特訓メニュー', "hall('s')", '.dbg'], ['出発準備', 'prepScr()', '.pp'], ['アイテム', 'shopScr()', '.dbg'],
   ['プロフィール', 'profileScr()', '#app>.ds'], ['お知らせ', 'newsScr()', '#app>.ds'], ['設定', 'confScr()', '#app>.ds'], ['セーブ', 'savescr()', 'main'], ['研究所', 'museum()', '.labbg'], ['図鑑', "museum('book')", '.lab'], ['図鑑の詳細', 'musd(0)', '.lab'], ['配合表', "museum('table')", '.lab'],   // 2026-10-03：研究所の入口（正式背景・1画面）と図鑑の一覧
 ];
@@ -75,7 +75,7 @@ for (const [key, size] of Object.entries(H.SIZES)) {
 test('PF-B2（390×844）：一覧は、その部分だけスクロールできる（ステータス・技管理の .dbody、牧場の売る一覧、図鑑の詳細）。見出し・戻るボタンは動かない', { skip: SKIP }, async () => {
   const p = await L.open(); const pg = p.page;
   await setup(p);
-  for (const [name, js, list, fixed] of [['ステータス', "hall('st')", '.dbody', '.dtop'], ['技管理', "hall('w')", '.dbody', '.dtitle'], ['牧場（売る）', "farm('','d')", '.rn .wpanel', '.rncmd'], ['研究所の合体（一覧）', "S.box=[1,2,3,4,5,6,7].map(i=>{const x=mk(i%2);x.name='M'+i;MMP7.ensureProg(x);return x});museum('fuse')", '.lab .labbody', '.lab .dtop']]) {
+  for (const [name, js, list, fixed] of [['ステータス', "hall('st')", '.dbody', '.dtop'], ['技管理', "hall('w')", '.dbody', '.dtitle'], ['牧場（20体の一覧）', "for(let i=0;i<16;i++){const x=mk(i%2);x.name='R'+i;MMP7.ensureProg(x);S.box.push(x)};farm('','b')", '.rn2 .rngrid', '.rnact'], ['研究所の合体（一覧）', "S.box=[1,2,3,4,5,6,7].map(i=>{const x=mk(i%2);x.name='M'+i;MMP7.ensureProg(x);return x});museum('fuse')", '.lab .labbody', '.lab .dtop']]) {
     await pg.evaluate((js) => (0, eval)(js), js); await pg.waitForTimeout(300); await settle(pg);
     const f0 = fixed && await pg.evaluate((s) => document.querySelector(s).getBoundingClientRect().top, fixed);
     const box = await pg.evaluate((s) => { const e = document.querySelector(s), r = e.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + Math.min(r.height - 20, 60), can: e.scrollHeight > e.clientHeight }; }, list);
@@ -95,7 +95,7 @@ test('PF-B3（375×667・タッチ）：スワイプ（指で上へ払う）で�
   // 指の操作（タッチの開始 → 少しずつ動かす → 離す）。dy>0 は指を上へ払う（下の内容を見る）。この環境では合成スクロール（synthesizeScrollGesture の touch）は動かないため、タッチそのものを送る
   const touch = (type, x, y) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x, y }] });
   const swipe = async (x, y, dy) => { const n = Math.max(1, Math.round(Math.abs(dy) / 10)), y1 = Math.max(5, Math.min(660, y - dy)); await touch('touchStart', x, y); for (let i = 1; i <= n; i++) await touch('touchMove', x, y + (y1 - y) * i / n); await touch('touchEnd'); };
-  for (const [name, js, bg] of [['街', 'lobby()', '.tbg'], ['市場', 'market()', '.p10mk'], ['ファーム', "hall('t')", '.fm'], ['牧場（売る）', "farm('','d')", '.fscene']]) {
+  for (const [name, js, bg] of [['街', 'lobby()', '.tbg'], ['市場', 'market()', '.p10mk'], ['ファーム', "hall('t')", '.fm'], ['牧場（売る）', "farm('','d')", '.rnbg']]) {
     await pg.evaluate((js) => (0, eval)(js), js); await pg.waitForTimeout(300); await settle(pg);
     const bg0 = await pg.evaluate((s) => document.querySelector(s).getBoundingClientRect().top, bg);
     await swipe(187, 560, 400); await pg.waitForTimeout(300);
@@ -103,13 +103,16 @@ test('PF-B3（375×667・タッチ）：スワイプ（指で上へ払う）で�
     assert.equal(await pg.evaluate((s) => document.querySelector(s).getBoundingClientRect().top, bg), bg0, `${name}：背景は動かない`);
     await swipe(187, 100, -500); await pg.waitForTimeout(200);
   }
-  // 牧場の売る一覧：一覧の上でスワイプすると一覧だけが動く → いちばん下の「売る」を押すと確認に進む（売却の処理は従来どおり）
-  const w = await pg.evaluate(() => { const r = document.querySelector('.rn .wpanel').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
+  // 牧場の一覧（2026-10-04 PHASE H3：20体）：一覧の上でスワイプすると一覧だけが動く → いちばん下の子を選んで「売る」を押すと確認に進む（売却の処理は従来どおり）
+  await pg.evaluate(() => { for (let i = 0; i < 16; i++) { const x = mk(i % 2); x.name = 'R' + i; MMP7.ensureProg(x); S.box.push(x); } save(); farm('', 'b'); }); await pg.waitForTimeout(300);
+  const w = await pg.evaluate(() => { const r = document.querySelector('.rn2 .rngrid').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
   await swipe(w.x, w.y + 60, 300); await pg.waitForTimeout(400);
-  assert.ok(await pg.evaluate(() => document.querySelector('.rn .wpanel').scrollTop > 0), '一覧だけがスクロールした');
-  const last = await pg.evaluate(() => { const b = [...document.querySelectorAll('.rn .wpanel button')].at(-1), r = b.getBoundingClientRect(), hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+  assert.ok(await pg.evaluate(() => document.querySelector('.rn2 .rngrid').scrollTop > 0), '一覧だけがスクロールした');
+  { const c = await pg.evaluate(() => { const b = [...document.querySelectorAll('.rn2 .rngrid .rnc')].at(-1); b.scrollIntoView({ block: 'nearest' }); const r = b.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
+    await pg.touchscreen.tap(c.x, c.y); await pg.waitForTimeout(400); }
+  const last = await pg.evaluate(() => { const b = document.querySelector('.rna.rnsell'), r = b.getBoundingClientRect(), hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
     return { in: r.top >= 0 && r.bottom <= innerHeight, hit: !!hit && (hit === b || b.contains(hit)), x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
-  assert.ok(last.in && last.hit, `いちばん下の「売る」が見えていて押せる（${JSON.stringify(last)}）`);
+  assert.ok(last.in && last.hit, `一覧の下の「売る」が見えていて押せる（${JSON.stringify(last)}）`);
   const g0 = (await H.getS(pg)).g;
   await pg.touchscreen.tap(last.x, last.y); await pg.waitForTimeout(400);
   assert.ok(await pg.evaluate(() => /売却/.test(document.querySelector('.rn .wpanel').textContent)), '売却の確認へ進んだ');
