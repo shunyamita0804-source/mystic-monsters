@@ -537,7 +537,7 @@ test('DICE-06：サイコロの回転は最後に 360° の倍数（正式の角
     assert.equal(Math.abs(deg % 360), 0, `${dir}×${spin}：${deg}`); assert.equal(last.offset, 1);
     const before = fr[fr.length - 2]; assert.ok(Math.abs(1 - before.offset - 0.19) < 1e-9, '収束の区間');
   }
-  const c = D.configure(); assert.ok(c.settleMs >= 150 && c.settleMs <= 200); assert.ok(c.ms >= 1400 && c.ms <= 2000 && c.airMs + c.impactMs + c.bounceMs + c.rollMs === c.ms, '出現〜完全停止 1.4〜2.0秒（2026-10-03：投げる・着地・跳ねる・転がる）'); assert.ok(c.resultMs >= 450 && c.resultMs <= 650, '停止面 0.45〜0.65秒（2026-10-02：出目を認識する間）');
+  const c = D.configure(); assert.ok(c.settleMs >= 150 && c.settleMs <= 200); assert.ok(c.ms >= 1400 && c.ms <= 2000 && c.airMs + c.impactMs + c.bounceMs + c.rollMs === c.ms, '出現〜完全停止 1.4〜2.0秒（2026-10-03：投げる・着地・跳ねる・転がる）'); assert.ok(c.resultMs >= 650 && c.resultMs <= 800, '停止面 0.65〜0.8秒（2026-10-04 G5：止まってから消えるまで約1秒＝止まった絵を落ち着いて見せる）');
 });
 
 test('BF-01：バトル画面の表示だけの補正（js/battle/fit.js）：fight()・.bt 系 CSS に触れず、寸法から「切れない最大の大きさ」を計算する', () => {
@@ -749,6 +749,10 @@ test('DICE-07：2026-10-03（実機で「止まったあとも面が変わる」
   for (const p of ["setPhase('roll')", "setPhase('land')", "setPhase('bounce')", "setPhase('settle')", "setPhase('lock')"]) assert.ok(ph.includes(p), p);
   assert.ok(ph.indexOf("setPhase('lock')") > ph.indexOf('await Promise.race'), 'LOCK は動きが終わってから');
   assert.doesNotMatch(ph, /setTimeout\(\(\) => \{ if \(ov\.isConnected\) fn\(\); \}/, '面の切り替えに setTimeout の予約を使わない');
-  assert.match(ph, /const c = a1\.currentTime;/); assert.match(ph, /face = \(src\) => \{ if \(!faceLock\) img\.src = src; \}/, '出目の面に固定したあとは面を変えない');
-  assert.match(D, /if \(rs && ov\.dataset\.phase === 'lock'\) \{[\s\S]*?img\.classList\.add\('chdz-stop', 'on', 'locked'\)/, 'LOCK 済みなら止まった絵をそのまま出目の面に（新しい画像・弾みなし）');
+  assert.match(ph, /const c = a1\.currentTime;/); assert.match(ph, /fin = lock - 280/, '2026-10-04 G5：出目の面は止まる約0.28秒前（滑っている間）に見せる＝止まったあとは絵も class も変えない'); assert.match(ph, /ev\(fin, \(\) => \{ FS\.final\(\);/);
+  // 2026-10-04 G5：面は最初に全部置いてデコードし、表示（visibility）だけで切り替える（src は変えない）。出目の面を見せたあとは F.roll が何もしない
+  assert.match(D, /roll\(v\) \{ if \(faceLock\) return;/); assert.match(D, /final\(\) \{ if \(faceLock\) return; faceLock = true;/);
+  assert.doesNotMatch(D.replace(/\/\/[^\n]*/g, ''), /\bimg\.src = /, 'サイコロの面の src は差し替えない'); assert.doesNotMatch(D, /const stop = document\.createElement\('img'\)/, '止まってから新しい画像を重ねない（クロスフェードなし）');
+  assert.match(D, /await Promise\.race\(\[Promise\.all\(\[img, \.\.\.rf\]\.filter\(Boolean\)\.map\(\(e\) => \(e\.decode/, '面の絵のデコードを待ってから投げる'); assert.match(D, /await ensureReady\(value\);/);
+  assert.match(D, /fids\.forEach\(clearTimeout\); F\.final\(\);/, '従来の見せ方：止まった時点で残りの面の切り替えを消す');
 });

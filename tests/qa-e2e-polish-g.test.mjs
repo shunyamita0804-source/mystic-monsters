@@ -176,3 +176,39 @@ for (const size of SIZES) {
   });
 }
 
+/** サイコロ：見た目の上で止まった瞬間（位置が3フレーム続けて同じ）から、消え始めるまでの記録 */
+const watchStill = (pg) => pg.evaluate(() => {
+  window.__st = { samples: [], stopAt: null, gone: false, prev: null, same: 0 };
+  const snap = () => { const ov = document.querySelector('.chdz'); if (!ov) return null; const mv = ov.querySelector('.chdz-mv'), img = ov.querySelector('.chdz-img'), cs = (e) => (e ? getComputedStyle(e) : null);
+    return { mv: cs(mv).transform, src: img && img.getAttribute('src'), cur: img && img.currentSrc, cls: img && img.className, rot: img && cs(img).transform, op: img && cs(img).opacity, kids: mv.children.length,
+      glow: [...ov.querySelectorAll('.chdz-glow')].map((g) => cs(g).opacity).join(','), out: ov.classList.contains('out') }; };
+  const tick = () => {
+    const s = snap(), W = window.__st;
+    if (!s) { if (W.stopAt != null) { W.gone = true; return; } requestAnimationFrame(tick); return; }
+    const vis = getComputedStyle(document.querySelector('.chdz')).visibility !== 'hidden';
+    if (W.stopAt == null && vis) { if (W.prev && W.prev.mv !== s.mv) W.moved = true; W.same = W.prev && W.prev.mv === s.mv ? W.same + 1 : 0; W.prev = s; if (W.moved && W.same >= 3) W.stopAt = performance.now(); }   // 投げて動いたあと、位置が3フレーム続けて同じ＝止まった
+    if (W.stopAt != null) W.samples.push({ t: performance.now() - W.stopAt, ...s });
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+});
+for (const v of [1, 2, 3]) {
+  T(`G-L（出目 ${v}・初回＝画像の読み込みが遅い）：見た目の上で止まってから消えるまで、絵・表示中の画像・class・傾き・光・子要素が変わらない（出目の面＝${v}）`, async () => {
+    const p = await openPage(); const pg = p.page;
+    await p.ctx.route(/assets\/fields\/ch1a\/dice\//, async (r) => { await new Promise((ok) => setTimeout(ok, 350)); await r.continue(); });   // iPhone の初回に近い：サイコロの絵が遅れて届く
+    await toChapter(pg); await fieldIdle(pg);
+    await watchStill(pg);
+    await pg.evaluate((v) => { window.__mr = Math.random; Math.random = () => ({ 1: 0.1, 2: 0.5, 3: 0.9 }[v]); }, v);
+    await pg.click('#brollbtn');
+    await pg.evaluate(() => { Math.random = window.__mr; });
+    await pg.waitForFunction(() => window.__st.gone, null, { timeout: 20000 });
+    const W = await pg.evaluate(() => window.__st);
+    const steady = W.samples.filter((s) => !s.out);
+    assert.ok(steady.length >= 10, `止まってから消え始めるまでのフレーム（${steady.length}）`);
+    const f = steady[0];
+    for (const s of steady) for (const k of ['mv', 'src', 'cur', 'cls', 'rot', 'op', 'kids', 'glow']) assert.equal(String(s[k]), String(f[k]), `止まって ${Math.round(s.t)}ms 後に ${k} が変わった（${f[k]} → ${s[k]}）`);
+    assert.equal(f.src, `./assets/fields/ch1a/dice/dice_stop_${v}.webp`, '止まった絵＝出目の面');
+    assert.ok(steady[steady.length - 1].t >= 900, `止まった姿を約1秒見せる（変わらないまま）（${Math.round(steady[steady.length - 1].t)}ms）`);
+    assert.deepEqual(p.errors, []);
+  });
+}
