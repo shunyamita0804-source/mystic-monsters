@@ -749,7 +749,7 @@ test('DICE-07：サイコロの停止（2026-10-04 PHASE H で作り直し。iPh
   // 書き直しの理由：旧方式（setTimeout／rAF で class・src を変える）は、iOS の Safari で動き（合成スレッド）が止まったあとに、遅れたメインスレッドの面の切り替えが描かれた
   assert.match(wa, /const S = total - 300, fin = S - 160, r0 = air \+ imp \+ bnc \* 0\.55, D = S \+ 300 \+ C\.resultMs \+ 900;/, 'S＝停止・fin＝出目の面（まだ滑っている間）・D＝消えるまで');
   assert.match(wa, /blink\(el\.img, \[\[fin, Infinity\]\], D\)/, '出目の面は fin から消えるまで');
-  assert.match(wa, /\{ transform: P\(lx \+ dir \* 44, ly, 1\), offset: oS \},[^\n]*\n\s*\{ transform: P\(lx \+ dir \* 44, ly, 1\), offset: 1 \},/, '位置は S 以降同じ');
+  assert.match(wa, /const fx = Math\.round\(lx \+ dir \* 44\), fy = Math\.round\(ly\);/, '2026-10-05：最終停止の位置は整数の画素'); assert.match(wa, /\{ transform: P\(fx, fy, 1\), offset: oS \},[^\n]*\n\s*\{ transform: P\(fx, fy, 1\), offset: 1 \},/, '位置は S 以降同じ'); assert.match(wa, /END = SNAP;/, '2026-10-05：最後の区間は漸近しない曲線（止まる瞬間がはっきり）'); assert.match(D, /function freezeFinal\(ov, value\) \{[^\n]*a\.pause\(\)/, '2026-10-05：最終停止の状態＝以後は補間しない');
   assert.match(wa, /\{ transform: 'rotate\(0deg\)', offset: oS \}, \{ transform: 'rotate\(0deg\)', offset: 1 \},/, '傾きは S で 0° のまま');
   assert.doesNotMatch(wa, /\.src\s*=|classList\.(add|remove|toggle)|\.finish\(\)/, '見た目の切り替えに src・class を使わない・アニメーションを途中で終わらせない');
   assert.match(D, /return el\.animate\(k\.map\(\(x\) => \(\{ \.\.\.x, easing: 'step-end' \}\)\), \{ duration: D, fill: 'forwards' \}\);/, '面は opacity の階段（補間しない）');

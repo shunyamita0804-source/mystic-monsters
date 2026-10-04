@@ -103,8 +103,8 @@ test('QA-G6-3：修行ボード：サイコロを振った後の再表示（ゴ�
 test('QA-G6-4：街（lobby）を開いたら、ほかの画面と同じく一番上から表示する', () => {
   // 守ること：以前は購入・合体の後などに街が途中までスクロールした位置で開き、見出しが画面の外だった
   const src = between('function lobby(msg,open){', '\n// ---- Phase 11：プレイヤー名');
-  assert.match(src, /<\/div><\/div><\/div>`;try\{window\.scrollTo\(0,0\)\}catch\(e\)\{\} \/\/ 街は1画面で固定[^\n]*\n\}$/, '画面を描いた後に一番上へ（2026-09-30：街は1画面で固定。セーブ・ロードは下のバー）');
-  assert.match(src, /^function lobby\(msg,open\)\{if\(p8Blocked\(\)\)return;if\(S\.playerNamePending\)return p11NameScr\(msg\);/, '育成中・名前登録前の扱いは従来どおり');
+  assert.match(src, /<\/div><\/div><\/div>`;try\{window\.scrollTo\(0,0\)\}catch\(e\)\{\}(if\(opOn\(\)\)opTownTalk\(\);)? \/\/ 街は1画面で固定[^\n]*\n\}\n/, '画面を描いた後に一番上へ（2026-09-30：街は1画面で固定。セーブ・ロードは下のバー）');
+  assert.match(src, /^function lobby\(msg,open\)\{if\(p8Blocked\(\)\)return;if\(S\.playerNamePending&&!opOn\(\)\)return p11NameScr\(msg\);/, '育成中・名前登録前の扱いは従来どおり');
 });
 
 // ---------------------------------------------------------

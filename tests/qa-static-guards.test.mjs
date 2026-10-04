@@ -85,7 +85,8 @@ const SCRIPTS = [
   'js/battle/fit.js',   // 2026-09-30：バトル画面の表示だけの補正（fight()・.bt 系 CSS は変えない）
   'js/battle/fx.js',    // 2026-10-03：バトル共通演出の正式素材（fight()・.bt 系 CSS は変えない。外から見て重ねる）
   'js/fx/sequence.js',  // 2026-10-03：連続コマの演出の再生器（野生聖獣の遭遇の正式8コマ。今はどこからも呼ばない＝将来つなぐ準備）
-  'js/prologue/prologue.js',  // 2026-10-03：プロローグ A〜E（MMPRO。新しいゲームの最初に1回）
+  'js/prologue/prologue.js',  // 2026-10-03：プロローグ（MMPRO。新しいゲームの最初に1回。2026-10-05 から正式の4枚）
+  'js/opening/worldmap.js',   // 2026-10-05：世界地図（MMMAP。序盤の出身地の会話・聖獣士管理局の「世界地図」）
 ];
 // 旧名称（大文字小文字・区切りの違いも含む）。正式名称「ミスティックモンスターズ／MYSTIC MONSTERS」は含まない
 const OLD_NAME = /モンスターマスター|monster[\s_-]?master|monster[\s_-]?dice|ミスティックモンスター(?!ズ)|mystic[\s_-]?monster(?!s)/gi;
@@ -226,7 +227,7 @@ test('QA-S1：index.html の <script src> は19ファイルをこの順番で読
   for (const f of SCRIPTS) assert.ok(existsSync(path.join(ROOT, f)), f);
   assert.doesNotMatch(NODATA, /<script\b[^>]*type="module"/, 'ES module として読み込まない');
   // 本体のインラインスクリプトは、18本すべての後に置かれている（MMP 系を使うため）
-  const lastSrc = CODE.lastIndexOf('<script src="./js/prologue/prologue.js"></script>');
+  const lastSrc = CODE.lastIndexOf('<script src="./js/opening/worldmap.js"></script>');
   const inline = [...CODE.matchAll(/<script>/g)].map((m) => m.index);
   assert.ok(inline.length >= 1 && inline.every((i) => i > lastSrc));
 });
@@ -506,11 +507,12 @@ test('QA-C14：フィナの登場は指定の3か所だけ（名前登録の直�
   const calls = callSites(CODE, 'finaTalk').map((c) => `${c.fn}:${c.arg}`).sort();
   assert.deepEqual(calls, ['finaIntro:"intro"', 'p7Depart:first?"raiseFirst":"raiseAgain",{start:DAN_TALK.handoff}', 'p8DoneScr:"done"']);
   assert.deepEqual(callSites(CODE, 'finaIntro').map((c) => c.fn), ['p11NameGo'], 'あいさつは名前登録の確定からだけ');
-  assert.deepEqual(callSites(CODE, 'MMNPC\\.talk').map((c) => c.fn).sort(), ['farmReturn', 'finaTalk', 'karenSay', 'npcFirst'], '共通会話を開くのは finaTalk・市場のカレン（karenSay）・施設の初回訪問（npcFirst）・Chapter の帰還（farmReturn）だけ（2026-10-04）');
+  assert.deepEqual([...new Set(callSites(CODE, 'MMNPC\\.talk').map((c) => c.fn))].sort(), ['farmReturn', 'finaTalk', 'karenSay', 'npcFirst', 'opAfterReg', 'opBureau', 'opConfirm', 'opTownTalk'], '共通会話を開くのは finaTalk・市場のカレン（karenSay）・施設の初回訪問（npcFirst）・Chapter の帰還（farmReturn）だけ（2026-10-04）');
   assert.deepEqual(callSites(CODE, 'karenTalk').map((c) => c.fn).sort(), ['adopt', 'karenIntro'], 'カレンの会話ウィンドウは市場の入店と購入成功だけ（切り替え・ボタンは案内欄の一言）');
   const ft = cut(CODE, 'const FINA_TALK={', '};');
   assert.deepEqual(Object.keys(new Function(`return ${ft.slice('const FINA_TALK='.length)}}`)()), ['intro', 'raiseFirst', 'raiseAgain', 'done']);
-  const finaAt = [...CODE.matchAll(/npc:\s*"fina"/g)].map((m) => m.index), s0 = CODE.indexOf('const FINA_TALK={');
+  const o0 = CODE.indexOf('const OPEN_TALK={'), oe = CODE.indexOf('function opPrologue(', o0);   // 2026-10-05：正式の序盤導線のフィナ（OPEN_TALK）は別に数える
+  const finaAt = [...CODE.matchAll(/npc:\s*"fina"/g)].map((m) => m.index).filter((i) => !(i > o0 && i < oe)), s0 = CODE.indexOf('const FINA_TALK={');
   const d0 = CODE.indexOf('const DAN_TALK={'), dh = cut(CODE, 'const DAN_TALK={', '\n farm:');
   assert.ok(finaAt.length === 5 && finaAt.filter((i) => i > s0 && i < s0 + ft.length).length === 4 && finaAt.filter((i) => i > d0 && i < d0 + dh.length).length === 1,
     'フィナのセリフは FINA_TALK と、フィナ ↔ ダンの掛け合い（DAN_TALK.handoff）の中だけ');

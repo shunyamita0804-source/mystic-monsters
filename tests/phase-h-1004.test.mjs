@@ -22,7 +22,7 @@ function loadMon() { const w = {}; new Function('window', rd('js/phase10/monster
 
 test('PH-01：ベースキャンプ＝正式背景マスター（768×1360・UI なし）・名札「ベースキャンプ」・所持金・メニュー・音／ダン＋育成中の個体＋一言／次の Chapter＋「冒険」／下の1列5つ。「ファーム」「育成を始める」「育成準備中」は出さない', () => {
   assert.deepEqual(webpSize('assets/basecamp/basecamp_main.webp'), [768, 1360]); assert.match(rd('assets/basecamp/README.md'), /157cf00222fafea99943d00016daacb28320534a59b7801b34fa61d6b81e6e2f/);
-  const f = fnOf('fmScr');
+  const f = fnOf('fmScr') + fnOf('bcCmds');   // 2026-10-05：下の1列の並びは bcCmds（ステータス画面の下と共通）
   for (const w of ['<b>ベースキャンプ</b>', 'class="bcgold"', 'onclick="bcMenu()"', 'onclick="sndToggle();', 'class="fmdan bcnpc" data-npc="dan"', '${msv(m)}', '<span class="kdtx"><b>ダン</b>${bcomm()}</span>', '<div class="bcch">${chip}</div>', 't:"冒険"', '<nav class="bcbar fmcmd"']) assert.ok(f.includes(w), w);
   assert.deepEqual([...f.matchAll(/\["([^"]+)","(\w+)","([^"]+)",/g)].map((m) => m[3]), ['特訓', 'アイテム', 'ステータス', '技管理', '中断', '街へ戻る'], '下の1列5つ（育成中は街へ戻れない＝5つ目は中断）');
   assert.doesNotMatch(f, /ファーム|育成を始める|育成準備中|rankLabel/);
@@ -51,10 +51,10 @@ test('PH-03：聖獣士管理局＝正式背景マスター（864×1536）。聖
   const rows = fnOf('bureauRows');
   for (const w of ['p11Esc(S.playerName||MMP11P.DEFAULT_NAME)', 'RN[br]', 'MMP8.raiseDoneCount(S)', 'S.fuseCnt|0', 'bureauFound()', 'S.wins|0']) assert.ok(rows.includes(w), w);
   assert.doesNotMatch(rows + fnOf('bureauScr'), /\b(128|342|96)\b|アルト・ランクー/, '参考画像の見本の値・名前は使わない');
-  const b = fnOf('bureauScr'); assert.match(b, /<nav class="bunav"><button class="bub[^>]*onclick="bureauScr\(\)">聖獣士証<\/button><button class="bub[^>]*onclick="bureauScr\('ach'\)">功績一覧<\/button><\/nav>/);
+  const b = fnOf('bureauScr'); assert.match(b, /<nav class="bunav"><button class="bub[^>]*onclick="bureauScr\(\)">聖獣士証<\/button><button class="bub[^>]*onclick="bureauScr\('ach'\)">功績一覧<\/button>\$\{S\.playerNamePending\?"":`<button class="bub bumap" onclick="bureauMap\(\)"[^`]*`\}<\/nav>/);
   assert.doesNotMatch(b, /聖獣士登録|聖獣士証を発行/, '登録済みの画面に「聖獣士登録」「聖獣士証を発行」は使わない');
   assert.doesNotMatch(HTML.slice(HTML.indexOf('const BUREAU_ACH='), HTML.indexOf('function bureauRows(')), /S\.g\s*[+-]=|unlock|reward:/, '功績に報酬・解放は付けない');
-  assert.match(HTML, /function townGuild\(\)\{bureauScr\(\)\}/); assert.match(HTML, /\["聖獣士管理局","聖獣士証・功績","","townGuild\(\)","ok",0,\[500,594\]\]/, '街の既存の札から入る');
+  assert.match(HTML, /function townGuild\(\)\{if\(S\.playerNamePending&&opOn\(\)\)return opBureau\(\);bureauScr\(\)\}/); assert.match(HTML, /\["聖獣士管理局","聖獣士証・功績","","townGuild\(\)","ok",0,\[500,594\]\]/, '街の既存の札から入る');
   assert.match(fnOf('p11NameScr'), /const bg=BUREAU_BG;/); assert.match(fnOf('p11NameScr'), /<b class="p11t">聖獣士登録<\/b>/, '登録の画面は従来どおり（入力・決定・保存）');
   assert.match(fnOf('fuse'), /S\.fuseCnt=\(S\.fuseCnt\|0\)\+1;/, '合体回数（任意項目。セーブの形式は変えない）');
 });
@@ -74,7 +74,7 @@ test('PH-04：NPC の立ち絵の規格：主要 NPC は全身（expr/full）を
 });
 
 test('PH-05：セルジュ・リュウは正式の透過素材待ち：白背景・市松模様の JPEG はリポジトリに置かず、表示もしない（差し込み口だけ）', () => {
-  const M = loadNpc(); assert.equal(M.get('serge'), null); assert.equal(M.get('ryu'), null);
+  const M = loadNpc(); assert.equal(M.get('ryu'), null); assert.equal(M.get('serge').name, 'セルジュ', '2026-10-05：セルジュは名前・役割だけ登録（序盤の正式登録で話す）'); assert.equal(M.imageOf('serge'), null, '立ち絵は無い（正式の透過素材待ち）'); assert.deepEqual(M.get('serge').views, {});
   assert.match(HTML, /const SERGE=\{id:"serge",name:"セルジュ"/); assert.match(fnOf('bureauNpc'), /MMNPC\.get\(SERGE\.id\)/);
   const walk = (d) => readdirSync(path.join(ROOT, d)).flatMap((n) => { const p = path.join(d, n); return statSync(path.join(ROOT, p)).isDirectory() ? walk(p) : [p]; });
   const files = walk('assets').filter((p) => /serge|セルジュ|ryu|09_ryu|04_serge|ranch_20_ui|bureau_ui|base_camp_ui|standing/i.test(p));

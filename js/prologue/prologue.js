@@ -1,56 +1,46 @@
 // =========================================================
-// プロローグ A〜E（2026-10-03 品質向上。window.MMPRO）：新しいゲームの最初に1回（名前登録＝聖獣士登録の前）。
-//  背景を大きく → ナレーションを1文ずつ（長い文は2行を1セット）完成した状態で、左から右へ短く入れて画面の中央よりやや上で静止 → 読ませる → フェードで消して次の文
-//  （2026-10-04 PHASE H：下から上へ流す・積み上げる見せ方はやめた＝正式仕様）→ 読み終わる少し前から次の背景へクロスフェード → E のあと本編のミストリアへ。本文は変えていない。
-//  文字は画像に焼き込まない（HTML の別の層）。タップ：表示中の文章をすぐ全部出す → もう一度で次へ（0.45秒未満の連打は無視＝誤タップで何枚も飛ばない）。
-//  「スキップ」は2度押し。背景の画像が5枚そろうまでは出さない（ready()。2026-10-03 に A・B の正式画像を受け取り、5枚そろった）。
-//  役割（2026-10-03 ユーザー確認）：A＝世界と聖獣・約百年前の第一次大災厄と英雄・聖獣士の制度／B＝五年前の第二次魔物災害に、三人のレジェンドとそれぞれの聖獣が共に立ち向かう
-//   （三人＋三体はすべて味方。いまも存命）／C＝五年後の現在・平和と繁栄・ミストリアの全盛／D＝各地から聖獣士がミストリアへ・主人公もその一人／E＝ミストリアに到着
+// プロローグ（window.MMPRO）：新しいゲームの最初に1回（2026-10-05 正式：4枚・本文はユーザー指定のとおり）。
+//  1＝人と聖獣の共生／2＝約百年前、異質な力を宿す聖獣の出現と聖獣士の始まり／3＝十年前、三人のレジェンドが脅威を退けた／4＝十年後のミストリアへ、聖獣士を夢見る若者が来る。
+//  三人のレジェンド（レオナ＋グリフェル・アストラッド＋ゼルヴァーン・バルド＋ドラグノル）はいまも語り継がれる存在（死亡・消滅・引退などの設定は足さない）。
+//  見せ方（2026-10-05 正式）：段落（空行で区切る）ごとに、画面の中央よりやや上で1文字ずつ「スッ」と現れる（文字ごとに opacity 0→1・下から 3px・ぼかし 1.5px→0。
+//   開始間隔 48ms・各文字 160ms＝前の文字が出きる前に次が始まる。段落全体の一括フェードはしない）→ 読む間 → 段落がフェードで消える → 次の段落。
+//  タップ：文字が出ている途中＝その段落をすぐ全部出す／全部出ていれば次へ（0.45秒未満の連打は無視）。「スキップ」は2度押し。文字は画像に焼き込まない（HTML の別の層）
 // =========================================================
 (function (root) {
   'use strict';
   const fz = Object.freeze, P = './assets/prologue/';
   const SLIDES = fz([
-    fz({ id: 'A', bg: P + 'prologue_a.webp', pages: fz([
-      fz(['この世界には、', '人と共に生きる不思議な生命――', '『聖獣』がいる。', '', '人々は彼らと暮らし、', '時にその力を借りながら、', '長い歴史を歩んできた。']),
-      fz(['今から、およそ百年前――。', '', '大陸全土を覆う、', 'かつてない災厄が起きた。', '', 'その脅威に立ち向かったのは、', '一人の英雄と、一体の聖獣。', '長い戦いの末、', '災厄は退けられた。']),
-      fz(['この出来事を境に、', '聖獣と共に戦う者たちの制度は整えられ、', 'やがて『聖獣士』という道が', '広く知られるようになった。', '', 'その仕組みは、いまの', '聖獣士管理局へと受け継がれている。']),
+    fz({ id: '1', bg: P + 'prologue_01_coexistence.webp', pages: fz([
+      fz(['遥か昔から、人と聖獣は共に生きてきた。', '力を貸し、心を通わせ、時に支え合いながら、', '同じ大地を歩む存在として――。']),
     ]) }),
-    fz({ id: 'B', bg: P + 'prologue_b.webp', pages: fz([
-      fz(['それから時は流れ――', '五年前。', '', '再び、', '大きな魔物災害が人々を襲った。']),
-      fz(['その危機に立ち向かったのは、', 'ミストリアを拠点とする', '三人の聖獣士と、', 'それぞれの聖獣たちだった。', '', '三人と三体は力を合わせ、', '災厄を退けた。']),
-      fz(['彼らは今も、', '『レジェンド』として', '多くの聖獣士たちの', '憧れであり続けている。']),
+    fz({ id: '2', bg: P + 'prologue_02_anomaly.webp', pages: fz([
+      fz(['だが、およそ百年前。', 'これまで知られていなかった、異質な力を宿す聖獣が現れ、', '世界はかつてない脅威にさらされた。', '', 'その出来事をきっかけに、人々は各地で聖獣士を育て、', '聖獣を鍛え、来るべき危機に備えるようになった。']),
     ]) }),
-    fz({ id: 'C', bg: P + 'prologue_c.webp', pages: fz([
-      fz(['三人のレジェンドの活躍から、五年。', '', '災害は収まり、', '世界は再び平和と繁栄を取り戻した。', '', 'なかでもミストリアは、', '聖獣士たちが集う街として', 'かつてない賑わいを見せていた。']),
+    fz({ id: '3', bg: P + 'prologue_03_three_legends.webp', pages: fz([
+      fz(['そして十年前――。', '再び世界を揺るがす大きな脅威が現れた。', '', 'その脅威に立ち向かったのは、', 'ミストリアの三人の聖獣士と、その聖獣たち。', '激しい戦いの末、彼らは脅威を退け、世界を救った。', '', 'その名は今も、伝説として語り継がれている。']),
     ]) }),
-    fz({ id: 'D', bg: P + 'prologue_d.webp', pages: fz([
-      fz(['各地から、', '新たな出会いと強さを求めて', '多くの聖獣士がこの街を目指す。', '', 'そして――', '', 'あなたもまた、', 'その一人だった。']),
-    ]) }),
-    fz({ id: 'E', bg: P + 'prologue_e.webp', pages: fz([
-      fz(['アステリア地方――', '大都市、ミストリア。', '', 'ここには、', '聖獣を育てるための施設と、', '腕を競うための舞台が集まっている。']),
-      fz(['正式な聖獣士として', '新たな一歩を踏み出すため、', '', 'あなたは今、', 'この街へやってきた。', '', 'あなたと聖獣たちの物語は――', 'ここから始まる。']),
+    fz({ id: '4', bg: P + 'prologue_04_arrival_mistoria.webp', pages: fz([
+      fz(['それから十年。', '戦いの傷を乗り越えたミストリアは、', '今や世界有数の聖獣士が集う街として、新たな時代を迎えていた。', '', 'そして今日――。', 'その街に憧れ、一人前の聖獣士になることを夢見る一人の若者が、', 'ミストリアを訪れる。']),
     ]) }),
   ]);
-  /** 時間（ms）：1行が入ってくる間隔（文字数で少し伸ばす）・読み終わってからの余韻・背景のクロスフェード・最後の余韻とフェードアウト
-   *  enter＝1行が画面の下から決まった位置まで上がる時間、shift＝前の行が1行ぶん上へ送られる時間、pageOut＝ページの終わりに文章が上へ抜けて消える時間 */
-  const T = fz({ lineBase: 640, perChar: 40, emptyLine: 300, hold: 1900, cross: 1200, startHold: 700, endHold: 1600, fadeOut: 900, tapGuard: 450,
-    inMs: 760, inX: 34, outMs: 560, unitHold: 1100, gap: 140 });   // 2026-10-04 PHASE H：inMs＝左から右へ入る時間・inX＝入る距離（px）・outMs＝フェードで消える時間・unitHold＝読む時間の上乗せ・gap＝次の文までの間
-  /** 文章の位置（画面の高さに対する割合）：1文（または2行の1セット）の中心が落ち着く位置＝画面の中央よりやや上（2026-10-04 PHASE H） */
+  /** 三人のレジェンド（世界設定の記録。プロローグの本文には名前を出さない。将来、闘技場の裏要素で使えるように残す） */
+  const LEGENDS = fz([fz({ name: 'レオナ', beast: 'グリフェル' }), fz({ name: 'アストラッド', beast: 'ゼルヴァーン' }), fz({ name: 'バルド', beast: 'ドラグノル' })]);
+  /** 時間（ms）：chGap＝文字の開始間隔・chFade＝1文字が現れる時間・chRise＝下からの距離（px）・chBlur＝ぼかし（px）・readBase／perChar＝全部出たあとの読む時間・outMs＝段落が消える時間・gap＝次の段落までの間 */
+  const T = fz({ chGap: 48, chFade: 160, chRise: 3, chBlur: 1.5, readBase: 1300, perChar: 42, outMs: 560, gap: 160, cross: 1200, startHold: 700, endHold: 1400, fadeOut: 900, tapGuard: 450 });
+  /** 文章の位置（画面の高さに対する割合）：段落の中心＝画面の中央よりやや上 */
   const POS = fz({ y: 0.42 });
-  /** ページを表示の単位に分ける：空行と文の終わり（。）で区切った1文。3行以上の長い文だけ2行ずつのセットにする（本文は変えない・行の順も同じ） */
-  function units(lines) {
-    const out = []; let cur = [];
-    const flush = () => { for (let i = 0; i < cur.length; i += 2) out.push(cur.slice(i, i + 2)); cur = []; };
-    for (const t of lines) { if (!t) { flush(); continue; } cur.push(t); if (/。」?$/.test(t)) flush(); }
-    flush(); return out;
-  }
+  /** ページを表示の単位（段落＝空行で区切る）に分ける。本文・行の順は変えない */
+  function units(lines) { const out = []; let cur = []; for (const t of lines) { if (!t) { if (cur.length) out.push(cur); cur = []; continue; } cur.push(t); } if (cur.length) out.push(cur); return out; }
+  const charsOf = (u) => u.reduce((a, t) => a + Array.from(t).length, 0);
+  /** 段落の文字が全部出るまでの時間 */
+  const revealMs = (u) => Math.max(0, charsOf(u) - 1) * T.chGap + T.chFade;
+  /** 全部出たあとの読む時間 */
+  const readMs = (u) => T.readBase + charsOf(u) * T.perChar;
   const calm = () => !!(root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   let readyMemo = null, busy = false;
-  function lineDelay(t) { return t ? T.lineBase + t.length * T.perChar : T.emptyLine; }
   /** 1ページの読む時間の目安（自動で進む時刻） */
-  function pageMs(lines) { return lines.reduce((a, t) => a + lineDelay(t), 0) + T.hold; }
+  function pageMs(lines) { return units(lines).reduce((a, u) => a + revealMs(u) + readMs(u) + T.outMs + T.gap, 0); }
   /** 背景の画像がそろっているか（読み込めるかを確かめる。1回だけ） */
   function ready() {
     if (readyMemo) return readyMemo;
@@ -92,24 +82,20 @@
     };
     const esc = (t) => t.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
     /**
-     * 1ページ（2026-10-04 PHASE H 正式）：1文ずつ（長い文は2行を1セット）完成した状態で出す。左から右へ短く入って画面の中央よりやや上で静止 → 読ませる →
-     *  フェードで消える → 次の文（同時に2つは出さない・下から上へ流さない・積み上げない・1文字ずつのタイプ表示はしない）。
-     *  タップ：入っている途中ならすぐ静止の位置へ → 静止しているなら次の文へ
+     * 1ページ（2026-10-05 正式）：段落ごとに、文字単位で現れる（各文字が独立したアニメーション。前の文字が出きる前に次が始まる）→ 読む間 → フェードで消える → 次の段落。
+     *  タップ：文字が出ている途中＝その段落をすぐ全部出す（.full）→ 全部出ていれば次の段落へ
      */
     const showPage = async (lines) => {
       nar.classList.remove('out');
-      const us = units(lines);
-      for (let ui = 0; ui < us.length && !quit; ui++) {
-        const u = us[ui];
-        nar.innerHTML = `<div class="mmpro-u" style="top:${(POS.y * 100).toFixed(1)}%">${u.map((t) => `<p>${esc(t)}</p>`).join('')}</div>`;
-        const el = nar.firstElementChild, c = calm();
-        const a = el.animate ? el.animate([{ opacity: 0, transform: `translate3d(${c ? 0 : -T.inX}px,-50%,0)` }, { opacity: 1, transform: 'translate3d(0,-50%,0)' }],
-          { duration: c ? 200 : T.inMs, easing: 'cubic-bezier(.22,.61,.24,1)', fill: 'forwards' }) : null;
-        if (!a) { el.style.opacity = '1'; el.style.transform = 'translate3d(0,-50%,0)'; }
-        let r = await sleep(c ? 200 : T.inMs);
-        if (r === 'tap' && a) { try { a.finish(); } catch (e) {} }
+      for (const u of units(lines)) {
         if (quit) return;
-        r = r === 'tap' ? 'tap' : await sleep(u.reduce((x, t) => x + lineDelay(t), 0) + T.unitHold);
+        let k = 0; const c = calm();
+        nar.innerHTML = `<div class="mmpro-u${c ? ' full' : ''}" style="top:${(POS.y * 100).toFixed(1)}%;--chf:${T.chFade}ms;--chr:${T.chRise}px;--chb:${T.chBlur}px">${u.map((t) => `<p>${Array.from(t).map((ch) => `<span class="mpc" style="--d:${(k++) * T.chGap}ms">${ch === ' ' ? '&nbsp;' : esc(ch)}</span>`).join('')}</p>`).join('')}</div>`;
+        const el = nar.firstElementChild;
+        let r = c ? 'time' : await sleep(revealMs(u));
+        if (quit) return;
+        el.classList.add('full');   // 全部出た（タップで途中から全部出したときも同じ）
+        r = await sleep(readMs(u));
         if (quit) return;
         const o = el.animate ? el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: T.outMs, easing: 'ease-out', fill: 'forwards' }) : null;
         await wait(o ? T.outMs : 0); if (!o) el.style.opacity = '0';
@@ -136,5 +122,5 @@
     } finally { ov.remove(); busy = false; }
     return done;
   }
-  root.MMPRO = fz({ SLIDES, T, POS, units, play, ready, readyOrTimeout, pageMs, isBusy: () => busy });
+  root.MMPRO = fz({ SLIDES, LEGENDS, T, POS, units, revealMs, readMs, play, ready, readyOrTimeout, pageMs, isBusy: () => busy });
 })(typeof window !== 'undefined' ? window : globalThis);

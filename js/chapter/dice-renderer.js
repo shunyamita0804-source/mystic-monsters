@@ -54,6 +54,11 @@
    * 回転の時間割（0〜1）：速く回る → 減速 → 着地でほぼ止まる → 跳ねと転がりで少し進む → 最後に正式の角度へ収束。
    *  final は 360 の倍数（見た目は 0°）。settle は最後の収束にかける割合
    */
+  /** 2026-10-05（iPhone で「止まったのに、まだわずかに動いて見える」の再修正）：最後の区間は漸近しない曲線（終わりの速さが 0 にならない＝止まる瞬間がはっきりある）。
+   *  ease-out・ease は終わりに向かって限りなくゆっくりになり、最後の約0.1秒に 0.5° 未満の回転・1px 未満の移動が続いて「止まってから少し動く」に見えた */
+  const SNAP = 'cubic-bezier(.3,.55,.6,.9)';
+  /** 最終停止の状態（finalStopState）：止まった姿のまま、以後のアニメーションを一時停止（値は止まった姿と同じ＝見た目は変わらない。以後は補間しない）。消えるまでこのまま */
+  function freezeFinal(ov, value) { if (!ov || ov.dataset.final) return; for (const a of ov.__anims || []) { try { a.pause(); } catch (e) {} } ov.dataset.final = String(value); }
   function spinFrames(dir, spin, settle, startDeg = 0) {
     // startDeg：今の角度から続ける（STOP の瞬間の角度）。収束の区間（settle）は最後の 26% まで（手前の keyframe 0.72 より後ろ）
     const b = startDeg, fin = Math.round((b + spin + 140) / 360) * 360, s = Math.max(0.74, 1 - settle);
@@ -62,7 +67,7 @@
       { transform: `rotate(${dir * (b + spin * 0.62)}deg)`, offset: 0.34, easing: 'cubic-bezier(.3,0,.6,1)' },
       { transform: `rotate(${dir * (b + spin)}deg)`, offset: 0.6, easing: 'ease-out' },
       { transform: `rotate(${dir * (b + spin + 70)}deg)`, offset: 0.72, easing: 'ease-out' },
-      { transform: `rotate(${dir * (fin - 34)}deg)`, offset: s, easing: 'cubic-bezier(.25,.1,.25,1)' },
+      { transform: `rotate(${dir * (fin - 34)}deg)`, offset: s, easing: SNAP },
       { transform: `rotate(${dir * fin}deg)`, offset: 1 },
     ];
   }
@@ -179,7 +184,8 @@
         await Promise.race([a1.finished.catch(() => {}), wait(T + 200)]);
         fids.forEach(clearTimeout); F.final();   // 2026-10-04 G5：止まったあとに遅れて面を変えない（タイマーが遅れても、ここで出目の面＝以後は変えない）
       } else { phase = 'auto'; ov.dataset.phase = 'auto'; mv.style.transform = `translate(-50%,-50%) translate(${lx.toFixed(1)}px,${ly.toFixed(1)}px)`; if (wa && img) img.style.opacity = '1'; F.final(); if (wa) ov.style.visibility = ''; await wait(T); }   // 視差を減らす設定：最初から出目の面（止まってから差し替えない）
-      if (!ov.dataset.stopped) { ov.dataset.stopped = '1'; feel('dice.stop'); }   // 旧い見せ方・視差を減らす設定：ここで止まった
+      if (!ov.dataset.stopped) { ov.dataset.stopped = '1'; feel('dice.stop'); }
+      freezeFinal(ov, value);   // 旧い見せ方・視差を減らす設定：ここで止まった
       // 2026-10-04：LOCK 済み（物理的な見せ方）なら data-phase は 'lock' のまま（見た目は何も変えない。MMCHD.phase() だけ 'result'）。従来の見せ方は 'result'
       const wasLocked = ov.dataset.phase === 'lock';
       tSpin = tick(); phase = 'result'; if (!wasLocked) ov.dataset.phase = 'result'; feel('dice.result');
@@ -322,7 +328,8 @@
     if (el.glow) A.push(el.glow.animate([{ opacity: 0, transform: 'translate(-50%,-50%) scale(.7)', offset: 0 }, { opacity: 0, transform: 'translate(-50%,-50%) scale(.7)', offset: r0 / D },
       { opacity: 0.9, transform: 'translate(-50%,-50%) scale(1)', offset: (r0 + 120) / D }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.25)', offset: (S - 140) / D }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.25)', offset: 1 }], { duration: D, fill: 'forwards' }));
     const P = (x, y, s = 1) => `translate(-50%,-50%) translate(${x.toFixed(1)}px,${y.toFixed(1)}px) scale(${s})`, q = (t) => t / D;
-    const o1 = q(air), o2 = q(air + imp), o3 = q(air + imp + bnc * 0.5), o4 = q(air + imp + bnc), oS = q(S), END = 'cubic-bezier(.3,.5,.55,1)';
+    const o1 = q(air), o2 = q(air + imp), o3 = q(air + imp + bnc * 0.5), o4 = q(air + imp + bnc), oS = q(S), END = SNAP;
+    const fx = Math.round(lx + dir * 44), fy = Math.round(ly);   // 最終停止の位置は整数の画素（止まった姿の描き直しで 1px 未満ずれて見えない）
     const a1 = mv.animate([
       { transform: P(0, 0, 0.85), offset: 0, easing: 'cubic-bezier(.15,.7,.35,1)' },
       { transform: P(lx * 0.4, ly - 96, 1.16), offset: o1 * 0.45, easing: 'cubic-bezier(.55,0,.85,.5)' },
@@ -330,8 +337,8 @@
       { transform: P(lx + dir * 3, ly + 2, 1.04), offset: o2, easing: 'cubic-bezier(.2,.7,.4,1)' },
       { transform: P(lx + dir * 10, ly - 20, 1), offset: o3, easing: 'cubic-bezier(.6,0,.9,.6)' },
       { transform: P(lx + dir * 16, ly, 1), offset: o4, easing: END },
-      { transform: P(lx + dir * 44, ly, 1), offset: oS },   // 停止
-      { transform: P(lx + dir * 44, ly, 1), offset: 1 },    // 消えるまで同じ
+      { transform: P(fx, fy, 1), offset: oS },   // 停止（finalStopState）
+      { transform: P(fx, fy, 1), offset: 1 },    // 消えるまで同じ
     ], { duration: D, easing: 'linear', fill: 'forwards' });
     A.push(a1, rot.animate([
       { transform: `rotate(${dir * 28}deg)`, offset: 0 }, { transform: `rotate(${dir * 28}deg)`, offset: o3 },
@@ -348,7 +355,7 @@
     feel('dice.throw');
     await untilTime(a1, S, [[air, () => { setPhase('land'); feel('dice.land'); }], [air + imp, () => setPhase('bounce')], [r0, () => setPhase('settle')], [fin, () => { FS.final(); }]]);
     FS.final(); setPhase('lock');
-    await frame(); ov.dataset.stopped = '1'; feel('dice.stop');   // 止まった姿が描かれたフレームで「完全停止」（音の差し込み口。見た目は何も変えない）
+    await frame(); ov.dataset.stopped = '1'; freezeFinal(ov, value); feel('dice.stop');   // 止まった姿が描かれたフレームで「完全停止」（音の差し込み口。見た目は何も変えない）
     await wait(Math.max(0, total - S));
   }
   /** 従来の見せ方（投げる10コマが無いとき）の WAAPI 版：回りながら面が変わる → 出目の面 → 着地・跳ねて停止（T）。T 以降は消えるまで同じ値 */
@@ -363,8 +370,8 @@
       { transform: `translate(-50%,-50%) translate(${(lx * 0.45).toFixed(1)}px,${(ly - 70).toFixed(1)}px) scale(1.18)`, offset: 0.34, easing: 'cubic-bezier(.4,0,.8,.6)' },
       { transform: `translate(-50%,-50%) translate(${lx.toFixed(1)}px,${ly.toFixed(1)}px) scale(1)`, offset: 0.6, easing: 'cubic-bezier(0,0,.5,1)' },
       { transform: `translate(-50%,-50%) translate(${(lx + dir * 6).toFixed(1)}px,${(ly - 22).toFixed(1)}px) scale(1)`, offset: 0.72, easing: 'cubic-bezier(.5,0,1,1)' },
-      { transform: `translate(-50%,-50%) translate(${(lx + dir * 12).toFixed(1)}px,${ly.toFixed(1)}px) scale(1)`, offset: 0.82, easing: 'ease-out' },
-      { transform: `translate(-50%,-50%) translate(${(lx + dir * 22).toFixed(1)}px,${ly.toFixed(1)}px) scale(1)`, offset: 1 },
+      { transform: `translate(-50%,-50%) translate(${(lx + dir * 12).toFixed(1)}px,${ly.toFixed(1)}px) scale(1)`, offset: 0.82, easing: SNAP },
+      { transform: `translate(-50%,-50%) translate(${Math.round(lx + dir * 22)}px,${Math.round(ly)}px) scale(1)`, offset: 1 },
     ];
     const shk = [
       { transform: 'translate(-50%,-50%) scale(.3)', opacity: 0, offset: 0 }, { transform: 'translate(-50%,-50%) scale(.5)', opacity: 0.2, offset: 0.34 },

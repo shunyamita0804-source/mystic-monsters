@@ -42,7 +42,7 @@ test('TW-2：施設は街の背景の上の札（押せる。下のバーと二�
   assert.equal(f(null)[5][4], 'dis', 'モンスターがいないときファームは押せない（従来どおり）');
   assert.equal(f(null)[6][4], 'ok'); assert.equal(f(null)[7][4], 'ok'); assert.equal(f({})[7][5], 'セーブ<br>ロード', 'セーブ・ロードは2行');
   const lobby = HTML.slice(HTML.indexOf('function lobby('), HTML.indexOf('\n}', HTML.indexOf('function lobby(')));
-  assert.match(lobby, /\$\{townPins\(m\)\.map\(c=>`<button class="hz tpin /, '施設は背景の上の札（ボタン）');
+  assert.match(lobby, /\$\{townPins\(m\)\.map\(c=>\{const g=opGuide\(c,m\),lk=g=="lk";return `<button class="hz tpin /, '施設は背景の上の札（ボタン）');
   assert.match(lobby, /<\/div><nav class="tcmds tbar" aria-label="街のコマンド">\$\{townBar\(m\)\.map/, 'バーは街の枠の外（画面下に固定）');
   assert.doesNotMatch(lobby, /tlbl|TOWN_LABELS/, '押せない建物ラベルと施設コマンドの二重表示はやめた');
   assert.match(HTML, /\.tbar\{position:fixed;[^}]*bottom:0;[^}]*grid-template-columns:repeat\(40,minmax\(0,1fr\)\);grid-template-rows:var\(--tbr2\);/, '1段：40列');
@@ -50,7 +50,7 @@ test('TW-2：施設は街の背景の上の札（押せる。下のバーと二�
   assert.match(lobby, /\$\{i==0\?" tsub tfarm":i==1\?" tsub tprof":" tsub tsave svb"\}/);
   assert.doesNotMatch(lobby, /townTop|tttl|tpinfo/, '街の上部の「街」の札・プレイヤー情報は置かない');
   assert.doesNotMatch(HTML.match(/\n\.tbar\{[^}]*\}/)[0], /transform/, 'バーの位置に transform を使わない'); assert.doesNotMatch(lobby, /mupin|博物館/, '旧マップのタップ領域・博物館ピンは使わない');
-  assert.match(HTML, /function townGuild\(\)\{bureauScr\(\)\}/, '2026-10-04 PHASE H4：聖獣士管理局の中（正式背景・聖獣士証・功績）へ');
+  assert.match(HTML, /function townGuild\(\)\{if\(S\.playerNamePending&&opOn\(\)\)return opBureau\(\);bureauScr\(\)\}/, '2026-10-04 PHASE H4：聖獣士管理局の中（正式背景・聖獣士証・功績）へ');
   assert.doesNotMatch(HTML, /function townShop\(|SHOP_FROM=/, '2026-10-04：街の独立したアイテム屋は無い（ファームの屋台 shopScr だけ）');
 });
 

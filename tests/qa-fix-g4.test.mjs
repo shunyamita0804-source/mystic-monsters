@@ -83,8 +83,10 @@ test('QA-G4-2：モンスター名を画面に出すところ（fight()・バト
   let code = '';
   for (let i = 0; i < HTML.length; ) { const n = HTML.indexOf('\n', i), e = n < 0 ? HTML.length : n + 1; if (!skip.some(([a, b]) => i >= a && i < b) && e - i < 50000) code += HTML.slice(i, e); i = e; }   // 画像データの長い行は除く
   const ALLOW = [
+    /p11Esc\(m\.name\)!==s\.name/g,   // ステータス画面の比較（表示するのは種族名 s.name）。p11Esc の許可より先に
     /p11Esc\((?:[A-Za-z_$][\w$]*\.)+name\)/g,                     // 文字として表示（m.name・x.name・S.m.name・d.m.name など）
     /\$\{s\.name\}/g, /MMP10M\.byKey\(c\.key\)\.name/g, /\(MMP10M\.byId\(x\.sp\)\|\|\{\}\)\.name/g,   // 種族の正式データ（MMP10M）
+    /\$\{sk\.name\}/g,   // 固有スキルの定義（UNIQUE_SKILL）・ステータス画面の比較（表示は種族名）
     /\$\{T\.name\}/g, /d\?d\.name:it\.id/g, /\$\{d\.name\}<small>/g,   // 修行場・アイテムの定義
     /if\(x\.name=="ハヤテ"\)x\.name="ガウル"/g,                       // 旧セーブの名前の移行（表示ではない）
     /x\.name=v;save\(\);farm\(`\$\{on\}の名前を/g,   // 2026-10-04 PHASE H3：牧場の名前変更（保存する名前はそのまま。表示は p11Esc 済みの on）

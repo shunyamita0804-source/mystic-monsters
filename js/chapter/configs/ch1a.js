@@ -212,6 +212,9 @@
     //  once（既定）＝この個体のこの Chapter で1回。priority＝同時に満たしたときの順（高いほうを1つだけ）。presentation：'bubble'（既定・フィナの小さな吹き出し）／'talk'（小さな会話窓） ----
     story: [
       // ---- 2026-10-04（第二段階）：初回チュートリアル＝フィナとの会話（scope 'save'＝このセーブで1回だけ。見た記録は S.npcFlags.story）。文面は【暫定】 ----
+      // 2026-10-05：初めての冒険の最初に1回だけ（このセーブで1回）。30ターンの説明（コードの規則のとおり：rules.turnLimit 30・サイコロ1回＝1ターン・休むも1ターン・ゴールで公式大会・
+      //  ターン切れは大会なしで Chapter が終わる（失敗ではない・能力はそのまま次へ）＝engine の onTimeUp 'end'）。出発の一言（ch1_start）も先頭に含める。文面は【暫定】
+      { id: 'tut_turns', trigger: 'start', scope: 'save', priority: 70, presentation: 'talk', lines: [{ expression: 'happy', text: 'いよいよ出発だね！ この旅は30ターン。サイコロを1回振るか、「休む」を1回使うと、1ターン進むよ。' }, { expression: 'normal', text: '30ターンのうちに大会会場に着けば、公式大会に挑戦できるんだ。' }, { expression: 'smile', text: '間に合わなくても失敗じゃないよ。育った能力は、そのまま次へ持っていけるからね。' }] },
       { id: 'tut_stat', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { kind: 'chstat' }, lines: [{ expression: 'guide', text: '能力マスだよ。止まると、この子の得意に合わせて能力が伸びるんだ。' }, { expression: 'smile', text: '伸び方は子ごとに違うから、ステータスで確かめてみてね。' }] },
       { id: 'tut_event', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { hasEvent: true }, lines: [{ expression: 'guide', text: 'イベントマスは、止まるたびに違う出来事が起きるよ。' }, { expression: 'happy', text: '何が起きるかは、その時のお楽しみ！' }] },
       { id: 'tut_rest', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { recovery: true }, lines: [{ expression: 'guide', text: '休憩マスだね。疲れが減ったよ。' }, { expression: 'normal', text: '疲れが100になるとサイコロが振れなくなるから、操作欄の「休む」も使ってね。' }] },

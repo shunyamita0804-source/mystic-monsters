@@ -320,7 +320,8 @@ test('T4-1：ファームは正式デザインの1画面（育成開始前・Cha
 test('T4-2：ベースキャンプ（旧ファーム。2026-10-04 PHASE H2）のコマンド：下の1列5つ（特訓・アイテム・ステータス・技管理・街へ戻る／育成中は中断）と、独立した「冒険」ボタン1つ。「ボード」コマンドは無い。遷移先は従来の関数', () => {
   const f = between('function fmScr(msg){', '\n// ---- Phase 8：育成中の画面遷移');
   // 書き直しの理由：PHASE H2 でファームを正式デザイン（03_base_camp_ui_reference）のベースキャンプへ。4コマンド（背景の目印の上）と「育成を始める」は廃止＝下の1列5つ＋「冒険」
-  assert.match(f, /const cmd=\[\["hall\('s'\)","train","特訓",`<em class="bctix"[^`]*\$\{S\.trainTix\}[^`]*`\],\["shopScr\(\)","item","アイテム",""\],\["hall\('st'\)","status","ステータス",""\],\["hall\('w'\)","moves","技管理",""\],\n  st=="farm"\?\["p8Suspend\(\)","pause","中断",""\]:\["lobby\(\)","town","街へ戻る",""\]\];/, '下の5つ。育成中（Chapter間）は街へ戻れない（正式仕様）＝5つ目は中断');
+  assert.match(f, /const cmd=bcCmds\(st\);/, '2026-10-05：並びは bcCmds（ステータス画面の下と共通）');
+  assert.match(between('function bcCmds(st){', '\nfunction fmScr(msg){'), /return \[\["hall\('s'\)","train","特訓",`<em class="bctix"[^`]*\$\{S\.trainTix\}[^`]*`\],\["shopScr\(\)","item","アイテム",""\],\["hall\('st'\)","status","ステータス",""\],\["hall\('w'\)","moves","技管理",""\],\n  st=="farm"\?\["p8Suspend\(\)","pause","中断",""\]:\["lobby\(\)","town","街へ戻る",""\]\]\}/, '下の5つ。育成中（Chapter間）は街へ戻れない（正式仕様）＝5つ目は中断');
   assert.match(f, /<nav class="bcbar fmcmd" aria-label="コマンド">/); assert.match(f, /<div class="bcgo fmgate"><div class="bcch">\$\{chip\}<\/div><button class="fmgo\$\{go\.c\}" onclick="\$\{go\.on\}">/);
   assert.doesNotMatch(f, /"ボード"|ボード閲覧|育成を始める|育成準備中|ファーム/, 'ボードのコマンド・「育成を始める」・「育成準備中」・ファームの名前は出さない');
   assert.match(f, /:\{t:"冒険",on:"prepScr\(\)",c:st=="farm"\?" p9c-go":""\};/, '冒険＝従来の出発準備 prepScr（出発の確認＝フィナの選択肢はそこから）');
@@ -419,7 +420,7 @@ test('T5-4：新しい画面（ボード・大会・VS・結果・ファーム�
   assert.doesNotMatch(src.replace(/\/\/.*$/gm, ''), /街にもどる|lobby\(|market\(|museum\(|savescr\(/);
   // ファーム（fmScr）の街への導線は、育成開始前（街へ戻る）と育成完了（街へ戻る）と個体がいないときだけ。Chapter間は中断・育成放棄
   const fm = between('function fmScr(msg){', '\n// ---- Phase 8：育成中の画面遷移').replace(/\/\/.*$/gm, '');
-  assert.equal((fm.match(/lobby\(/g) || []).length, 3); assert.doesNotMatch(fm, /market\(|museum\(|savescr\(/);
+  assert.equal((fm.match(/lobby\(/g) || []).length, 2); assert.equal((between('function bcCmds(st){', '\nfunction fmScr(msg){').match(/lobby\(/g) || []).length, 1, '2026-10-05：下の「街へ戻る」は bcCmds（育成開始前・育成完了だけ）'); assert.doesNotMatch(fm, /market\(|museum\(|savescr\(/);
   assert.match(fnLine('function p8BoardMenu('), /p8Suspend\(\)/); assert.match(fnLine('function p8BoardMenu('), /p8AbandonAsk\(\)/);
   assert.match(between('function p9TourHead(m,t){', '\nfunction p9Standings('), /onclick="p9Menu\(\)"/, '大会中もメニュー（中断・育成放棄）へ行ける');
 });

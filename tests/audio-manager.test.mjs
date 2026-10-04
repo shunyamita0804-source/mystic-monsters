@@ -298,7 +298,7 @@ test('AUDIO-18：最初のタップ（AudioContext の resume を頼んだ直後
 test('AUDIO-19：index.html：開始のタップは TITLE_START の1音だけ（ファイルが鳴らなければ合成のファンファーレ）。名前登録まで TITLE の曲。VS（対戦相手の発表）・能力比較は TOURNAMENT_MATCHUP、実戦の曲は「FIGHT!」の開始音のあと。ゴールは TOURNAMENT_ENTRY', () => {
   assert.match(HTML, /unlock\(\);clearInterval\(AU\.tm\);AU\.tm=null;AU\.sc=null;if\(!MMAUDIO\.se\("TITLE_START",\{wait:900\}\)\)fanfare\(\);/, '2026-10-04：正式の開始音。最初のタップでデコード中でも合成音へ落とさず、出来しだい鳴らす');
   assert.match(HTML, /class="p15start" data-nsfx="1"/, '開始ボタンは UI_CONFIRM を鳴らさない');
-  assert.match(HTML, /function p11NameScr\(msg\)\{bgm\("title"\);/);
+  assert.match(HTML, /function p11NameScr\(msg\)\{bgm\(opOn\(\)\?"town":"title"\);/, '2026-10-05：正式の序盤導線では登録は街のあと（管理局）＝街の曲。従来の名前登録の画面（自動テストの既定）は開始画面の曲のまま');
   assert.match(HTML, /bgm\("matchup"\);try\{MMFEEL\.emit\("battle\.matchup"\)\}catch\(e\)\{\}p9Immersive\(true\);/, 'VS は BGM を止めて発表の音');
   assert.match(HTML, /data-nsfx="1" onclick="p9VsGo\(this\)"/, '対戦開始のボタンの決定音と開始の音を重ねない（2026-10-03：VS 画面は fight() の導入だけ）');
   assert.match(HTML, /function p9PreBattle\(kind,rank,go\)\{const m=S\.m;bgm\("matchup"\);/, '能力比較は発表と同じ場面（音を重ねない）');

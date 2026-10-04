@@ -87,6 +87,7 @@ export async function launch() {
     if (!opt.intro) await ctx.addInitScript(() => { window.MM_QA_NO_INTRO = true; });   // Chapter開始の俯瞰図の演出は intro:true のテストだけ
     if (!opt.arrival) await ctx.addInitScript(() => { window.MM_QA_NO_ARRIVAL = true; });
     if (!opt.prologue) await ctx.addInitScript(() => { window.MM_QA_NO_PROLOGUE = true; });   // 新しいゲームの最初のプロローグ（MMPRO）は prologue:true のテストだけ
+    if (!opt.opening) await ctx.addInitScript(() => { window.MM_QA_NO_OPENING = true; });   // 2026-10-05：正式の序盤導線（フィナ → 管理局 → セルジュの登録 → 世界地図）は opening:true のテストだけ（既定は従来の名前登録の画面）
     if (!opt.navDelay) await ctx.addInitScript(() => { window.MM_QA_NAV_INSTANT = true; });   // 画面を移るボタンの「押下を見せてから移る」待ち（MMFEEL）は navDelay:true のテストだけ（既存のテストはクリック直後に次の画面を見る）
     if (!opt.story) await ctx.addInitScript(() => { window.MM_QA_NO_STORY = true; });   // Chapter のイベント（フィナの節目の一言。config.story）は story:true のテストだけ   // 大会会場への到着のフィナの会話は arrival:true のテストだけ（背景の切り替えと受付は常に出る）
     // legacyStep：旧 rules.passNormal（通常マスの通過専用）を、このテストのページでだけ切っていた名残。2026-10-02 の60マス再設計から Chapter 1 の通常マスは止まれるので、付けても何も変わらない

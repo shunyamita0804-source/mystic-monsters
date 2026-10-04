@@ -76,7 +76,7 @@ test('N2-3：名前が無い旧v6セーブは読み込み時に「アルト」�
 });
 
 test('N2-4：画面：新規ゲームは街の前に名前入力（初期値アルト・8文字まで）。市場右上は実際のプレイヤー名（安全に表示）', () => {
-  assert.match(line('function lobby(msg,open){'), /^function lobby\(msg,open\)\{if\(p8Blocked\(\)\)return;if\(S\.playerNamePending\)return p11NameScr\(msg\);/);
+  assert.match(line('function lobby(msg,open){'), /^function lobby\(msg,open\)\{if\(p8Blocked\(\)\)return;if\(S\.playerNamePending&&!opOn\(\)\)return p11NameScr\(msg\);/);
   const scr = between('function p11NameScr(msg){', '\nfunction p11NameGo(');
   assert.match(scr, /id="p11nm"/); assert.match(scr, /value="\$\{p11Esc\(S\.playerName\|\|d\)\}"/); assert.match(scr, /空欄のままなら「\$\{d\}」ではじまります/); assert.match(scr, /!event\.isComposing/, '日本語変換中のEnterでは確定しない');
   assert.match(line('function p11NameGo(){'), /MMP11P\.confirmName\(S,e\?e\.value:""\);save\(\);lobby\(/);
@@ -90,8 +90,10 @@ test('N2-4：画面：新規ゲームは街の前に名前入力（初期値ア�
 // Step 3：ステータス画面（正式情報・素早さ）
 // ---------------------------------------------------------
 test('N3-1：ステータス画面は正式モンスターマスターから種族名・英字名・種類を表示（別ファイルに重複定義しない）', () => {
-  const st = between('if(id=="st"){', '\n else if(id=="b")');
-  assert.match(st, /sp0=MMP10M\.byId\(m\.sp\)/); assert.match(st, /\$\{p11SpLine\(m\)\}/); assert.match(st, /<span class="dtg">\$\{sp0\.kind\}<\/span>/);
+  // 2026-10-05：正式ステータス画面 stScr（デザイン参考を HTML で再構成）。種族名・英字名（未確定なら出さない）・種類は MMP10M から
+  const st = between('function stScr(m,msg){', '\nfunction skd(k)');
+  assert.match(st, /const s=MMP10M\.byId\(m\.sp\)/); assert.match(st, /\$\{s&&s\.en\?`<small class="sten">\$\{s\.en\}<\/small>`:""\}/); assert.match(st, /\$\{s\.kind\}<\/span>/);
+  assert.doesNotMatch(st, /Lv|経験値|EXP|ランク/, 'Lv・経験値・個体ランクは出さない');
   assert.match(line('function p11SpLine(m){'), /MMP10M\.byId\(m\.sp\)/); assert.match(line('function p11SpLine(m){'), /s\.en\?/, '英字名が未確定（ジオル）なら出さない');
   assert.doesNotMatch(st, /寿命|疲労|ストレス|年齢/, '旧仕様の項目は表示しない');
   for (const k of ['ライフ', 'ちから', 'かしこさ', '命中', '回避', '丈夫さ']) assert.ok(rd('js/phase10/monsters.js').includes(k));
@@ -110,7 +112,7 @@ test('N3-2：素早さは個体の値（1〜10）を10段階の目盛りで表�
     assert.match(html, /数値が大きいほど速い（10が最速）/);
   }
   assert.match(fn({ sp: 1, speed: 9 }), /<b>9<small>/, '個体に保存された素早さを表示');
-  assert.match(between('if(id=="st"){', '\n else if(id=="b")'), /\$\{p11Speed\(m\)\}/);
+  assert.match(between('function stScr(m,msg){', '\nfunction skd(k)'), /\$\{p11Speed\(m\)\}/);
 });
 
 // ---------------------------------------------------------
@@ -152,7 +154,7 @@ test('F2-1：街の「ブリーダー」欄はプレイヤー名を表示（新�
   assert.doesNotMatch(bp, /p115pn|playerName|ランク|S\.g\b/, '下の欄に名前・ランク・所持金を重ねて出さない');
   assert.doesNotMatch(top + bp, /🧑‍🌾 ブリーダー/);
   const refs = HTML.split('\n').filter((l) => /S\.playerName(?!Pending)/.test(l));
-  assert.equal(refs.length, 4, 'プレイヤー名の参照は4か所だけ（別の名前を持たない）。2026-10-04 PHASE H4：聖獣士証（bureauRows）'); assert.equal(refs.filter((l) => l.startsWith('function bureauRows(){')).length, 1, '聖獣士証');
+  assert.equal(refs.length, 5, 'プレイヤー名の参照は5か所だけ（別の名前を持たない）。2026-10-04 PHASE H4：聖獣士証（bureauRows）・2026-10-05：登録のあとフィナが名前を呼ぶ（opAfterReg）'); assert.equal(refs.filter((l) => l.startsWith('async function opAfterReg(){')).length, 1, '序盤導線'); assert.equal(refs.filter((l) => l.startsWith('function bureauRows(){')).length, 1, '聖獣士証');
   assert.equal(refs.filter((l) => l.includes('id="p11nm"') || l.includes('for="p11nm"')).length, 1, '名前入力'); assert.equal(refs.filter((l) => l.startsWith('function p10Who(){')).length, 1, '市場'); assert.equal(refs.filter((l) => l.startsWith('function profileScr(')).length, 1, 'プロフィール（プレイヤー情報）');
 });
 

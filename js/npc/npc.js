@@ -198,11 +198,13 @@
       fig.appendChild(img); win.append(nm, tx, ch, nx); stage.append(fig, win); ov.appendChild(stage); document.body.appendChild(ov);
       const onKey = (e) => { if (e.key === 'Enter' || e.key === ' ') { if (e.target && e.target.closest && e.target.closest('.mmtalk-choices')) return;   // 選択肢のボタン上ではボタンの操作に任せる
         e.preventDefault(); c.tap(); } };
+      let lineIdx = -1;
       let keyT = null;   // keydown を受け付け始めるタイマー（会話を開いたキー操作そのものは会話に届けない）
       const c = createTalk(lines, {
         openGuardMs: OPEN_GUARD_MS,   // ダブルタップの2打目（会話を開いたタップの続き）などで、1行目の文字送りを飛ばさない
         onUpdate(s) {
           if (s.ended) return;
+          if (s.idx !== lineIdx) { lineIdx = s.idx; if (typeof opts.onLine === 'function') { try { opts.onLine(s.idx, s); } catch (e) {} } }   // 2026-10-05：行が変わったとき（世界地図のカメラを会話に合わせて動かす等）
           ov.dataset.npc = s.npc || ''; stage.dataset.side = s.side || 'left'; const stand = !s.frames && s.img ? standOf(s.npc, s.view || 'closeup', s.expr) : null; fig.className = 'mmtalk-fig ' + (s.view || 'closeup') + (stand ? ' stand' : ''); fig.hidden = !(s.img || s.frames);   // アニメーションだけのNPCでも立ち絵を隠さない
           const key = s.frames ? `${s.idx}:${s.anim}` : '';
           if (key !== ANIM.key) { stopAnim(); if (s.frames) { ANIM.key = key; ANIM.name = s.anim; ANIM.pre = s.frames.map((f) => { const p = new Image(); p.src = f; return p; });   // 先読みした絵を持っておく（2026-10-03：読み込み途中のコマへは切り替えない＝途中で画面を移っても読み込みを打ち切らない）
@@ -304,6 +306,9 @@
     genshin: { normal: 'guide', smile: 'approve', serious: 'strict', praise: 'approve' },
     shop: { happy: 'recommend', troubled: 'worry', guide: 'normal' },
   });
+  // セルジュ（聖獣士管理局・正式登録の担当。2026-10-05）：名前・役割だけを登録する（正式の透過素材はまだ無い＝立ち絵は出さない。白背景の参考画像は使わない）。
+  //  透過素材が届いたら views に closeup／stand を足すだけで、会話と管理局の画面に立つ
+  register('serge', { name: 'セルジュ', role: '聖獣士管理局の職員（正式登録・登録名の確認・聖獣士証・功績の案内）', board: false, defaultView: 'closeup', defaultExpr: 'normal', views: {} });
   const NPC_NAME = { karen: ['カレン', '市場担当'], dan: ['ダン', 'ベースキャンプ担当'], nick: ['ニック', '牧場の管理者'], elliot: ['エリオット', '研究所の研究者'], vargas: ['ヴァルガス', '闘技場の管理者'], cedric: ['セドリック', '公式ランク大会の進行役'], genshin: ['ゲンシン', '特訓の指導役'], shop: ['ベルナ', 'アイテムの補給所（ベースキャンプ）'] };
   for (const [id, keys] of Object.entries(EXPR)) {
     const dir = `assets/npc/${id}/expr/`, file = (v) => Object.fromEntries(keys.map((k, i) => [k, `${dir}${v}/${String(i + 1).padStart(2, '0')}_${k}.webp`]));

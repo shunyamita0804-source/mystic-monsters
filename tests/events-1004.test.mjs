@@ -81,7 +81,7 @@ test('EV-03：2択の出来事：止まった時点では何も起こさず・�
 
 test('EV-04：チュートリアル（config.story の scope "save"）：止まったマスの種類ごとに1回（能力・イベント・休憩・宝箱・野生・ライバル・分かれ道・ゴール）。見た記録は S.npcFlags.story（セーブ単位）で、個体や Chapter が変わっても二度出ない。記録が渡されないときは出さない', () => {
   const E = onCh1(21), { CH, m } = E, cfg = CH.getConfig(1), tut = cfg.story.filter((e) => e.scope === 'save');
-  assert.deepEqual(tut.map((e) => e.id).sort(), ['tut_branch', 'tut_event', 'tut_goal', 'tut_rest', 'tut_rival', 'tut_stat', 'tut_treasure', 'tut_wild']);
+  assert.deepEqual(tut.map((e) => e.id).sort(), ['tut_branch', 'tut_event', 'tut_goal', 'tut_rest', 'tut_rival', 'tut_stat', 'tut_treasure', 'tut_turns', 'tut_wild']);
   for (const e of tut) { assert.equal(e.presentation, 'talk'); assert.ok(e.lines.length >= 2 && e.lines.length <= 3, e.id); assert.ok(e.priority >= 50, e.id); }
   const flags = {};
   const at = (trigger, ctx) => CH.storyEvents(m, trigger, { ...ctx, flags })[0];
@@ -97,7 +97,7 @@ test('EV-04：チュートリアル（config.story の scope "save"）：止ま�
   assert.equal(at('land', { fx: { kind: 'none' } }), undefined, '通常マスでは何も出ない');
   assert.notEqual((CH.storyEvents(m, 'land', { fx: { kind: 'chstat' } })[0] || {}).id, 'tut_stat', '記録（flags）が無い呼び方ではチュートリアルを出さない');
   // 旧い story（個体の Chapter ごと）はそのまま
-  const E2 = onCh1(22); E2.m.raise.node = 'p1_1'; assert.equal(E2.CH.storyEvents(E2.m, 'start', { flags: {} })[0].id, 'ch1_start'); E2.CH.markStory(E2.m, 'ch1_start', {}); assert.deepEqual(E2.m.raise.field.storySeen, ['ch1_start']);
+  const E2 = onCh1(22); E2.m.raise.node = 'p1_1'; assert.equal(E2.CH.storyEvents(E2.m, 'start', { flags: {} })[0].id, 'tut_turns', '2026-10-05：初めての冒険は30ターンの説明（出発の一言を含む）'); assert.equal(E2.CH.storyEvents(E2.m, 'start', { flags: { story: ['tut_turns'] } })[0].id, 'ch1_start', '説明を見たあとは従来の出発の一言'); E2.CH.markStory(E2.m, 'ch1_start', {}); assert.deepEqual(E2.m.raise.field.storySeen, ['ch1_start']);
 });
 
 test('EV-05：施設の NPC イベント（MMNPCE）：初回訪問は5施設（市場・牧場・研究所・闘技場・ファーム）でフィナ ↔ NPC。カレンは「〜わよ」「〜だわ」を使わない。再訪は進行状態に合う一言が優先、ふつうの一言は確率、直前と同じ文は避ける', () => {

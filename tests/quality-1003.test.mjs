@@ -15,27 +15,31 @@ const HTML = rd('index.html');
 const fnOf = (name) => { const i = HTML.indexOf(`function ${name}(`); return HTML.slice(i, HTML.indexOf('\nfunction ', i + 10)); };
 function loadPro() { const w = { matchMedia: () => ({ matches: false }) }; new Function('window', rd('js/prologue/prologue.js'))(w); return w.MMPRO; }
 
-test('QU-01：プロローグは A〜E の5枚（F は無い）。文字は画像に焼き込まず HTML の層。役割（A＝世界と百年前・B＝五年前の三人のレジェンドと聖獣の共闘・C＝現在・D＝ミストリアへ・E＝到着）。新しいゲームの名前登録の前に1回。背景5枚（A〜E）がそろっている', () => {
+test('QU-01：プロローグ（2026-10-05 正式：4枚・本文はユーザー指定のとおり）。文字は画像に焼き込まず HTML の層・1文字ずつ。新しいゲームの最初に1回', () => {
   const P = loadPro(), txt = (id) => P.SLIDES.find((s) => s.id === id).pages.flat().join('');
-  assert.deepEqual(P.SLIDES.map((s) => s.id), ['A', 'B', 'C', 'D', 'E']);
-  assert.match(txt('A'), /『聖獣』がいる。/); assert.match(txt('A'), /およそ百年前/); assert.match(txt('A'), /一人の英雄と、一体の聖獣。/); assert.match(txt('A'), /『聖獣士』という道/);
-  assert.match(txt('B'), /五年前。/); assert.match(txt('B'), /三人の聖獣士と、それぞれの聖獣たち/); assert.match(txt('B'), /三人と三体は力を合わせ/); assert.match(txt('B'), /今も、『レジェンド』として/);
-  assert.match(txt('C'), /三人のレジェンドの活躍から、五年。/); assert.match(txt('C'), /平和と繁栄を取り戻した/); assert.match(txt('C'), /ミストリアは/);
-  assert.match(txt('D'), /あなたもまた、その一人だった。/);
-  assert.match(txt('E'), /アステリア地方――大都市、ミストリア。/); assert.match(txt('E'), /ここから始まる。$/);
-  assert.doesNotMatch(P.SLIDES.map((s) => s.pages.flat().join('')).join(''), /ブリーダー/);
-  for (const s of P.SLIDES) { const f = `assets/prologue/prologue_${s.id.toLowerCase()}.webp`; assert.equal(s.bg, './' + f); assert.ok(existsSync(path.join(ROOT, f)), f); }   // 2026-10-03：A・B の正式画像を受け取り、5枚そろった
-  assert.ok(P.T.tapGuard >= 400, '誤タップで何枚も飛ばない'); for (const s of P.SLIDES) for (const pg of s.pages) assert.ok(P.pageMs(pg) >= 4000 && P.pageMs(pg) <= 14000, `${s.id}：1ページ ${P.pageMs(pg)}ms（速すぎず長すぎず）`);
-  const nm = fnOf('p11NameScr'); assert.match(nm, /if\(!finaFlags\(\)\.prologue&&window\.MMPRO&&!window\.MM_QA_NO_PROLOGUE&&!P11_PRO\.has\(S\)\)/); assert.match(nm, /MMPRO\.readyOrTimeout\(6000\)\.then\(\(\)=>MMPRO\.play\(\{cover:cv\}\)\)\.then\(ok=>\{cv\.remove\(\);if\(ok\)\{finaFlags\(\)\.prologue=1;save\(\)\}\}\)/, '2026-10-04 G1：背景を待つ（最大6秒・飛ばさない）。「見た」の記録は最後まで見た／スキップを確定したときだけ');
+  assert.deepEqual(P.SLIDES.map((s) => s.id), ['1', '2', '3', '4']);
+  assert.equal(txt('1'), '遥か昔から、人と聖獣は共に生きてきた。力を貸し、心を通わせ、時に支え合いながら、同じ大地を歩む存在として――。');
+  assert.equal(txt('2'), 'だが、およそ百年前。これまで知られていなかった、異質な力を宿す聖獣が現れ、世界はかつてない脅威にさらされた。その出来事をきっかけに、人々は各地で聖獣士を育て、聖獣を鍛え、来るべき危機に備えるようになった。');
+  assert.equal(txt('3'), 'そして十年前――。再び世界を揺るがす大きな脅威が現れた。その脅威に立ち向かったのは、ミストリアの三人の聖獣士と、その聖獣たち。激しい戦いの末、彼らは脅威を退け、世界を救った。その名は今も、伝説として語り継がれている。');
+  assert.equal(txt('4'), 'それから十年。戦いの傷を乗り越えたミストリアは、今や世界有数の聖獣士が集う街として、新たな時代を迎えていた。そして今日――。その街に憧れ、一人前の聖獣士になることを夢見る一人の若者が、ミストリアを訪れる。');
+  assert.deepEqual(P.LEGENDS.map((l) => `${l.name}＋${l.beast}`), ['レオナ＋グリフェル', 'アストラッド＋ゼルヴァーン', 'バルド＋ドラグノル']);
+  assert.doesNotMatch(P.SLIDES.map((s) => s.pages.flat().join('')).join(''), /ブリーダー|死|消滅|引退/);
+  const files = ['prologue_01_coexistence', 'prologue_02_anomaly', 'prologue_03_three_legends', 'prologue_04_arrival_mistoria'];
+  P.SLIDES.forEach((s, i) => { const f = `assets/prologue/${files[i]}.webp`; assert.equal(s.bg, './' + f); assert.ok(existsSync(path.join(ROOT, f)), f); });
+  assert.ok(P.T.chGap >= 40 && P.T.chGap <= 55, '文字の開始間隔 40〜55ms'); assert.ok(P.T.chFade >= 120 && P.T.chFade <= 180, '各文字 120〜180ms'); assert.ok(P.T.chFade > P.T.chGap, '前の文字が出きる前に次が始まる');
+  assert.ok(P.T.tapGuard >= 400, '誤タップで何枚も飛ばない'); assert.equal(P.POS.y, 0.42, '中央よりやや上');
+  const pro = rd('js/prologue/prologue.js'); assert.match(pro, /<span class="mpc" style="--d:\$\{\(k\+\+\) \* T\.chGap\}ms">/, '文字ごとに開始をずらす'); assert.match(pro, /el\.classList\.add\('full'\)/, 'タップで全部出す');
+  assert.match(HTML, /\.mmpro-u \.mpc\{display:inline-block;opacity:0;transform:translate3d\(0,var\(--chr,3px\),0\);filter:blur\(var\(--chb,1\.5px\)\);animation:mmproCh var\(--chf,160ms\)/);
+  assert.match(fnOf('opPrologue'), /MMPRO\.readyOrTimeout\(6000\)\.then\(\(\)=>MMPRO\.play\(\{cover:cv\}\)\)\.then\(ok=>\{cv\.remove\(\);if\(ok\)\{finaFlags\(\)\.prologue=1;save\(\)\}\}\)/, '見た記録は最後まで見た・スキップを確定したときだけ');
   assert.match(rd('tests/e2e/harness.mjs'), /MM_QA_NO_PROLOGUE = true/);
 });
 
 test('QU-02：街は正式ミストリア。施設は背景の上の押せる札（市場・牧場・研究所・闘技場・聖獣士管理局）で下のバーと二重に出さない。聖獣士管理局は中を作らない（素材・仕様なし）。アイテム屋は街に無く、ファームの屋台から（2026-10-04 正式）', () => {
   assert.ok(existsSync(path.join(ROOT, 'assets/town/mistria_main.webp')));
-  assert.match(HTML, /function townGuild\(\)\{bureauScr\(\)\}/, '2026-10-04 PHASE H4：聖獣士管理局の中（正式背景・聖獣士証・功績）ができた＝札から入る');
+  assert.match(HTML, /function townGuild\(\)\{if\(S\.playerNamePending&&opOn\(\)\)return opBureau\(\);bureauScr\(\)\}/, '2026-10-04 PHASE H4：聖獣士管理局の中（正式背景・聖獣士証・功績）ができた＝札から入る');
   assert.doesNotMatch(HTML, /function townShop\(|SHOP_FROM=/, '街の独立したアイテム屋は無い');
   assert.doesNotMatch(rd('js/feel/game-feel.js'), /townShop/);
-  assert.match(fnOf('fmScr'), /\["shopScr\(\)","item","アイテム",""\]/, 'アイテムはベースキャンプの中（ベルナの補給所）から。2026-10-04 PHASE H2：下の1列のコマンド');
+  assert.match(fnOf('bcCmds'), /\["shopScr\(\)","item","アイテム",""\]/, 'アイテムはベースキャンプの中（ベルナの補給所）から。2026-10-04 PHASE H2：下の1列のコマンド');
 });
 
 test('QU-03：立ち絵つきの一言（.nst）＝正式の半身（closeup）を大きく＋ネイビーの会話窓。街のフィナ（guide）・ヴァルガス（stern）・牧場のニック（smile）・研究所のエリオット（guide）。重要な会話（major）は同じ表情の全身（2026-10-03 の正式素材）', () => {
