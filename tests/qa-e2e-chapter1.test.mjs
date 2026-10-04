@@ -350,7 +350,7 @@ test('CH1-B15：1タップ：START を押すまでサイコロは画面に無い
   const tm = await pg.evaluate(() => ({ spin: window.__faceAt - window.__t0, face: window.__goneAt - window.__faceAt, moveAfterGone: window.__moveAt - window.__goneAt, last: MMCHD.lastTiming(), dice: document.querySelectorAll('.chdz,.chdf').length, text: document.querySelector('#brollbtn').textContent.trim(), on: !document.querySelector('#brollbtn').disabled, busy: bBusy }));
   assert.ok(tm.spin >= 1300 && tm.spin <= 2800, `出現〜完全停止 ${tm.spin.toFixed(0)}ms（設計 約1.66秒。2026-10-03。負荷で伸びることがある）`);
   const ev = (await pg.evaluate(() => MMFEEL.log())).filter((e) => /^dice\./.test(e)).slice(-4); assert.deepEqual(ev, ['dice.throw', 'dice.land', 'dice.stop', 'dice.result'], '完全に止まって（dice.stop）から出目（dice.result）');
-  assert.ok(tm.face >= 300 && tm.face <= 1100, `停止面を見せる時間 ${tm.face.toFixed(0)}ms（設計 0.42秒＋消える0.16秒）`);
+  assert.ok(tm.face >= 900 && tm.face <= 1500, `止まってから消えるまで ${tm.face.toFixed(0)}ms（2026-10-04 G5：止まった姿を約1秒＝固定 0.3秒＋出目 0.72秒＋消える 0.16秒）`);
   assert.ok(tm.moveAfterGone >= -50, `サイコロが消えてから歩き出す（${tm.moveAfterGone.toFixed(0)}ms）`);
   assert.ok(tm.last && tm.last.value === 2 && tm.last.manual === false && tm.last.spinMs >= 1400 && tm.last.spinMs <= 2600 && tm.last.faceMs >= 600 && tm.last.faceMs <= 1100, `実測 ${JSON.stringify(tm.last)}`);
   assert.deepEqual([tm.dice, tm.text, tm.on, tm.busy], [0, 'START', true, false], '移動が終わるとサイコロは消え、START が押せる');

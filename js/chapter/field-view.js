@@ -646,18 +646,18 @@
    *  位置は CSS の個別の translate だけを動かす（道の上の位置 transform・向き・前傾には触れない）。視差を減らす設定では、短いフェードだけ
    */
   const MON_ENTER = { gap: 300, ms: 820 };
-  async function monEnter() {
+  async function monEnter(quick) {   // quick＝開始の演出を飛ばした（間なし・短く）
     const fw = $('#chfw'), w = $('#bmonw'); if (!fw) return;
     if (!w || !w.animate || V.calm || !(root.CSS && CSS.supports && CSS.supports('translate', '0 1px'))) { fw.classList.remove('chf-monwait'); return; }
-    await wait(MON_ENTER.gap); if (!$('#bmonw') || !onField()) { fw.classList.remove('chf-monwait'); return; }
+    await wait(quick ? 0 : MON_ENTER.gap); if (!$('#bmonw') || !onField()) { fw.classList.remove('chf-monwait'); return; }
     const r = w.getBoundingClientRect(), sc = (w.offsetHeight ? r.height / w.offsetHeight : 1) || 1;
     const dy = Math.max(120, ((root.innerHeight || 800) - r.top + 12) / sc);   // 画面の下の外（カメラの拡大を考えた距離）
     w.style.translate = `0 ${dy.toFixed(0)}px`; fw.classList.remove('chf-monwait'); w.dataset.enter = '1';
     anim('walk', { speed: 1 });
-    const a = w.animate([{ translate: `0 ${dy.toFixed(0)}px` }, { translate: '0 0' }], { duration: MON_ENTER.ms, easing: 'cubic-bezier(.22,.62,.3,1)', fill: 'forwards' });
+    const a = w.animate([{ translate: `0 ${dy.toFixed(0)}px` }, { translate: '0 0' }], { duration: quick ? 420 : MON_ENTER.ms, easing: 'cubic-bezier(.22,.62,.3,1)', fill: 'forwards' });
     try { await a.finished; } catch (e) {}
     w.style.translate = ''; try { a.cancel(); } catch (e) {} delete w.dataset.enter;
-    anim('land'); await wait(170); anim('rest');
+    anim('land'); await wait(quick ? 60 : 170); anim('rest');
   }
   async function chfIntro(m, key) {
     if (busyGet() || V.intro) return;   // 二重に始めない
@@ -674,7 +674,7 @@
       //  2026-10-04 G3：育成中のモンスターはその場に急に出さない＝背景・マス・UI が出て少し間をおいてから、画面の下から歩いて開始地点へ入る（全種族共通）。入り終わるまで START は押せない
       const w2 = $('#chfw'); if (w2) { w2.classList.add('chf-uiin', 'chf-monwait'); w2.classList.remove('chf-intro'); setTimeout(() => w2.classList.remove('chf-uiin'), 420); }
       if (res && res.skipped) await wait(350);   // 飛ばしたタップが下の START に届かないよう少し待ってから操作できる
-      try { await monEnter(); } catch (e) { const w3 = $('#chfw'); if (w3) w3.classList.remove('chf-monwait'); }
+      try { await monEnter(!!(res && res.skipped)); } catch (e) { const w3 = $('#chfw'); if (w3) w3.classList.remove('chf-monwait'); }
       V.intro = false; busySet(false);
     }
     if (onField() && chfActive(m) && P8().boardPhase(m) === 'roll') { refreshDeck(m); if (!cued) feel('chapter.start'); setTimeout(() => { if (onField() && !busyGet()) storyAt(m, 'start'); }, 350); }
