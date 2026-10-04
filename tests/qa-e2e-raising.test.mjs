@@ -186,7 +186,7 @@ T('QA-RB1：市場で購入 → ファーム → 出発準備：1回目の押下
   // 街 → ファーム（未育成の間は街へ戻るボタンがある）
   await pg.click('.hz[onclick="hall()"]');
   await pg.waitForSelector('button[onclick="prepScr()"]');
-  { const tx = await H.text(pg); assert.ok(/冒険/.test(tx) && /Chapter 1\s*はじまりの草原/.test(tx) && !/育成準備中|育成を始める/.test(tx), '2026-10-04 PHASE H2：ベースキャンプ＝次の Chapter と「冒険」（「育成準備中」「育成を始める」は使わない）'); }
+  { const tx = await H.text(pg); assert.ok(/出発する/.test(tx) && /Chapter 1\s*はじまりの草原/.test(tx) && !/育成準備中|育成を始める/.test(tx), '2026-10-04 PHASE H2：ベースキャンプ＝次の Chapter と「冒険」（「育成準備中」「育成を始める」は使わない）'); }
   assert.ok(await lobbyButtons(pg) >= 1, '未育成の間はファームから街へ戻れる');
   await pg.click('button[onclick="prepScr()"]');
   const dep = 'button[onclick="p7Depart(this)"]';
@@ -460,7 +460,7 @@ T('QA-RB8：Chapter 1 のゴール（大会会場。残りの移動は消える�
   assert.deepEqual([r.state, r.ch, r.node, r.turnsUsed, r.goal, r.field], ['farm', 2, null, 0, false, null], 'Chapter を閉じたら Chapter 1 の配置は消す');
   assert.deepEqual(r.log.at(-1), { ch: 1, reachedGoal: true, turnsUsed: 21, turnLimit: 30, declined: true, tour: null });
   const farmText = await H.text(pg);
-  assert.match(farmText, /冒険/, '2026-10-04 PHASE H2：ベースキャンプの「冒険」（旧「Chapter 1 終了」の情報欄は廃止）');
+  assert.match(farmText, /出発する/, '2026-10-04 PHASE H2：ベースキャンプの「冒険」（旧「Chapter 1 終了」の情報欄は廃止）');
   assert.match(await pg.evaluate(() => document.querySelector('.ksys').textContent), /CHAPTER 1「はじまりの草原」が終わった。/, 'Chapterの結果は通知（名前・顔なし）');
   assert.match(farmText, /Chapter 2\s*潮風の海岸/);
   assert.equal(await lobbyButtons(pg), 0, 'Chapter間ファームに街へ戻る導線は無い');
@@ -507,7 +507,7 @@ T('QA-RB9：修行は Chapter 1 を終えるまで（未育成の間は）始め
   noErrors(p);
   // Chapter間ファーム（Chapter 1 は終えた）でチケット0枚 → すべて押せない（丈夫さは C 以上のクリアで解放）
   p = await boot(seed({ state: 'farm', ch: 2, node: null, turnLimit: null, log: [{ ch: 1, reachedGoal: true, turnsUsed: 14, turnLimit: 20, declined: true, tour: null }] }, { trainTix: 0 }), '.p9farm.p15f'); pg = p.page;
-  assert.match(await pg.evaluate(() => document.querySelector('.bctix').innerText.replace(/\s+/g, ' ')), /チケット 0/);   // 2026-10-04 PHASE H2
+  assert.equal(await pg.$('.bctix'), null);   /* 2026-10-06：特訓の上のチケットの札は出さない */   // 2026-10-04 PHASE H2
   await pg.evaluate(() => hall('s'));
   await pg.waitForSelector('button.p12tc');
   cards = await pg.evaluate(() => [...document.querySelectorAll('button.p12tc')].map((b) => [b.disabled, b.innerText.replace(/\s+/g, ' ')]));

@@ -28,10 +28,10 @@ for (const size of SIZES) {
     await pg.evaluate(() => { const m = mk(1); m.name = 'ガウ'; MMP7.ensureProg(m); S.m = m; S.trainTix = 2; save(); hall(); });
     await pg.waitForSelector('.fm.bc .bcbar'); await pg.waitForTimeout(500);
     const a = await pg.evaluate(() => ({ plq: document.querySelector('.bcplq').textContent.trim(), gold: document.querySelector('.bcgold').textContent.replace(/\s+/g, ''), ch: document.querySelector('.bcch').textContent.replace(/\s+/g, ' ').trim(),
-      go: document.querySelector('.bcgo .fmgo').textContent.trim(), cmd: [...document.querySelectorAll('.bcbar .bcb')].map((b) => b.querySelector('span').textContent), tix: document.querySelector('.bctix').textContent,
+      go: document.querySelector('.bcgo .fmgo b').textContent.trim(), sub: (document.querySelector('.bcgo .fmgo .bcsub') || {}).textContent, cmd: [...document.querySelectorAll('.bcbar .bcb')].map((b) => b.querySelector('span').textContent), tix: document.querySelector('.bctix'),
       name: document.querySelector('.bcname').textContent, sw: document.documentElement.scrollWidth, text: document.querySelector('#app').innerText }));
-    assert.equal(a.plq, 'ベースキャンプ'); assert.equal(a.gold, `${await pg.evaluate(() => S.g)}G`); assert.match(a.ch, /Chapter 1\s*はじまりの草原/); assert.equal(a.go, '冒険');
-    assert.deepEqual(a.cmd, ['特訓', 'アイテム', 'ステータス', '技管理', '街へ戻る']); assert.equal(a.tix, 'チケット 2'); assert.match(a.name, /ガウ/);
+    assert.equal(a.plq, 'ベースキャンプ'); assert.equal(a.gold, `${await pg.evaluate(() => S.g)}G`); assert.match(a.ch, /Chapter 1\s*はじまりの草原/); assert.equal(a.go, '出発する'); assert.match(a.sub || '', /CHAPTER 1/);
+    assert.deepEqual(a.cmd, ['特訓', 'アイテム', 'ステータス', '技管理', '街へ戻る']); assert.equal(a.tix, null, '特訓チケットの札は出さない（2026-10-06）'); assert.match(a.name, /ガウ/);
     assert.doesNotMatch(a.text, /ファーム|育成を始める|育成準備中/); assert.equal(a.sw, size[0], '横にはみ出さない');
     assert.ok((await inView(pg, '.bcbar .bcb, .bcgo .fmgo, .bchd .bcrb, .bcplq, .fmmon, .bcname')).every(Boolean), '主な部品はすべて画面の中');
     assert.ok(await pg.evaluate(() => { const d = document.querySelector('.fmdan').getBoundingClientRect(), b = document.querySelector('.bcbar').getBoundingClientRect(); return d.top >= 0 && d.right > innerWidth * 0.3 && d.top < b.top; }), 'ダンの頭は画面の中（左端は少し切れてよい＝デザインどおり）');

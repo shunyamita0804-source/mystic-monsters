@@ -36,7 +36,7 @@ test('GR-B1（390×844）：能力マス：アイコン（正式マスUI）が�
   assert.equal(G[0].cnt, '+0'); assert.equal(G[G.length - 1].cnt, '+5'); assert.ok(new Set(G.map((x) => x.cnt)).size >= 3, 'カウントアップ');
   const pc = (v) => Math.round(Math.min(999, v) / 999 * 1000) / 10;
   assert.equal(G[0].w, `${pc(li0)}%`, 'ゲージは上がる前の値から'); assert.equal(G[G.length - 1].w, `${pc(li1)}%`, '上がった後の値へ（999 を最大）'); assert.ok(G.some((x) => x.grown), '粒子');
-  assert.equal(G[0].c, '#f2c94c', 'ライフ＝黄');
+  assert.equal(G[0].c, '#f2c14e', 'ライフ＝黄');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 

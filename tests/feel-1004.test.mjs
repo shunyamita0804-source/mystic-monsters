@@ -25,7 +25,7 @@ test('FE2-01：成長演出＝アイコン（正式マスUIの画像）→「ち
 test('FE2-02：6能力の正式色（ライフ黄・ちから赤・かしこさ緑・命中桃・回避水色・丈夫さ青）は index.html の STAT_COLOR と field-view の既定が同じ。ゲージ・数値・粒子は var(--c)。絵に filter はかけない', () => {
   const c = HTML.match(/const STAT_COLOR=\{([^}]*)\}/)[1], d = FV.match(/const STAT_COLOR_DEF = \{([^}]*)\}/)[1];
   const norm = (s) => s.replace(/\s|['"]/g, '').split(',').sort().join(',');
-  assert.equal(norm(c), norm(d)); assert.match(c, /li:"#f2c94c"/); assert.match(c, /po:"#e5533c"/); assert.match(c, /in:"#4fbf6a"/); assert.match(c, /hi:"#f08cb4"/); assert.match(c, /ev:"#5cc8e8"/); assert.match(c, /de:"#4a74e0"/);
+  assert.equal(norm(c), norm(d)); assert.match(c, /li:"#f2c14e"/); assert.match(c, /po:"#d9534f"/); assert.match(c, /in:"#5cb85c"/); assert.match(c, /hi:"#f06292"/); assert.match(c, /ev:"#7fd4e8"/); assert.match(c, /de:"#4c7bd9"/);
   assert.match(HTML, /\.chf-gauge i\{[^}]*background:var\(--c\)/); assert.match(HTML, /\.chf-grow-t \.cnt\{color:var\(--c\)\}/); assert.match(HTML, /\.chf-sparks i\{[^}]*background:var\(--c\)/);
   const css = HTML.slice(HTML.indexOf('PHASE E：能力UPの成長演出'), HTML.indexOf('@media (prefers-reduced-motion:reduce){.chf-grow-ic'));
   assert.doesNotMatch(css, /filter:/, '正式画像の色を変えない');

@@ -149,7 +149,7 @@ function abandonEnv() {
   const T = vtimers(); let modal = null, btn = null;
   const open = () => { const d = { remove() { if (modal === d) { modal = null; btn = null; } }, querySelector: () => ({ set innerHTML(h) { btn = { disabled: /id="p8abgo" disabled/.test(h), textContent: '' }; } }) }; modal = d; };
   const $ = (s) => (s === '#p8m' ? modal : s === '#p8abgo' ? btn : null);
-  const src = [lineOf('function p11Esc(t){'), lineOf('let p8AbT='), between('function p8AbandonAsk2(uid){', '\nfunction p8AbandonGo('), lineOf('function p8ModalClose(')].join('\n');
+  const src = [lineOf('function p11Esc(t){'), lineOf('let p8AbT='), lineOf('function dangerInner(o){'), between('function p8AbandonAsk2(uid){', '\nfunction p8AbandonGo('), lineOf('function p8ModalClose(')].join('\n');
   const api = new Function('S', '$', 'setInterval', 'clearInterval', `${src}\nreturn {ask2:p8AbandonAsk2,close:p8ModalClose};`)({ m: { uid: 'u1', name: 'ソラ' } }, $, T.setInterval, T.clearInterval);
   return { T, api, open, btn: () => btn };
 }
@@ -157,11 +157,11 @@ test('QA-G3-5：育成放棄の最終確認：閉じて開き直しても（放�
   // 守ること：以前は閉じた確認のカウントダウンが止まらず、開き直した新しいボタンまで数え進めて、2秒あまりで押せるようになっていた
   const a = abandonEnv();
   a.open(); a.api.ask2('u1'); a.T.to(2999); assert.equal(a.btn().disabled, true); a.T.to(3000); assert.equal(a.btn().disabled, false, '通常は3秒で押せる（従来どおり）');
-  assert.equal(a.btn().textContent, '放棄する'); assert.equal(a.T.count(), 0, '数え終わったら止まる');
+  assert.equal(a.btn().textContent, '育成をやめる');   /* 2026-10-06：正式の危険操作モーダルの文言 */ assert.equal(a.T.count(), 0, '数え終わったら止まる');
   const b = abandonEnv();
   b.open(); b.api.ask2('u1'); b.T.to(500); b.api.close(); assert.equal(b.T.count(), 0, '閉じたらカウントダウンを止める');
   b.T.to(600); b.open(); b.api.ask2('u1');   // やめない → もう一度「育成放棄」→「放棄に進む」
-  b.T.to(3599); assert.equal(b.btn().disabled, true, '開き直してから3秒たつまでは押せない'); assert.equal(b.btn().textContent, '放棄する（1）');
+  b.T.to(3599); assert.equal(b.btn().disabled, true, '開き直してから3秒たつまでは押せない'); assert.equal(b.btn().textContent, '育成をやめる（1）');
   b.T.to(3600); assert.equal(b.btn().disabled, false);
   const c = abandonEnv();
   c.open(); c.api.ask2('u1'); c.T.to(500); c.api.ask2('u1'); assert.equal(c.T.count(), 1, '同じ確認を出し直しても数えるのは1つだけ');

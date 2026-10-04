@@ -221,7 +221,7 @@
           const k = s.choices ? s.idx + ':' + s.choices.map((x) => x.id).join(',') : '';   // 選択肢は全文表示のあとだけ（▼の代わり）
           if (k !== chKey) { chKey = k; ch.textContent = ''; ch.hidden = !s.choices;
             if (s.choices) for (const x of s.choices) { const bt = h('button', 'mmtalk-choice'); bt.type = 'button'; bt.textContent = x.label; bt.dataset.choice = x.id;
-              bt.addEventListener('click', (e) => { e.stopPropagation(); c.choose(x.id); }); ch.appendChild(bt); } }
+              bt.addEventListener('click', (e) => { e.stopPropagation(); bt.classList.add('on'); c.choose(x.id); });   /* 2026-10-06：押した選択肢を金の枠で光らせる（.on） */ ch.appendChild(bt); } }
         },
         onEnd(choice) { stopAnim(); clearTimeout(keyT); document.removeEventListener('keydown', onKey); if (scene) { const d = docEl(); if (d) d.removeAttribute('data-mmscene'); } if (ov.animate && ov.classList && !ov.__instant) { ov.classList.add('mmtalk-out'); const a = ov.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, easing: 'ease-in', fill: 'forwards' }); const done = () => { ov.remove(); evOff(); resolve(choice == null ? null : choice); }; a.finished.then(done, done); } else { ov.remove(); evOff(); resolve(choice == null ? null : choice); } if (CUR && CUR.c === c) CUR = null; },   // 退場：短くフェード（急に消さない）。Promise はフェードが終わって DOM を消してから解決する（次の画面が会話の上に出ない・会話の要素が残らない）。220ms 後に DOM から外す
         branches: pres === 'major' && opts.branches ? Object.fromEntries(Object.entries(opts.branches).map(([k, v]) => [k, preferFullbody(v)])) : opts.branches,
@@ -313,7 +313,10 @@
   });
   // セルジュ（聖獣士管理局・正式登録の担当。2026-10-05）：名前・役割だけを登録する（正式の透過素材はまだ無い＝立ち絵は出さない。白背景の参考画像は使わない）。
   //  透過素材が届いたら views に closeup／stand を足すだけで、会話と管理局の画面に立つ
-  register('serge', { name: 'セルジュ', role: '聖獣士管理局の職員（正式登録・登録名の確認・聖獣士証・功績の案内）', board: false, defaultView: 'closeup', defaultExpr: 'normal', views: {} });
+  //  2026-10-06：正式の立ち絵（assets/npc/serge/full_normal.webp＝ZIP claude_next_fix_assets_v2 の serge_reference の白背景を透過）。表情は normal だけ
+  const SERGE = 'assets/npc/serge/full_normal.webp', SV = { normal: SERGE };
+  register('serge', { name: 'セルジュ', role: '聖獣士管理局の職員（正式登録・登録名の確認・聖獣士証・功績の案内）', board: false, defaultView: 'closeup', defaultExpr: 'normal',
+    views: { closeup: { ...SV }, fullbody: { ...SV }, stand: { ...SV } } });
   const NPC_NAME = { karen: ['カレン', '市場担当'], dan: ['ダン', 'ベースキャンプ担当'], nick: ['ニック', '牧場の管理者'], elliot: ['エリオット', '研究所の研究者'], vargas: ['ヴァルガス', '闘技場の管理者'], cedric: ['セドリック', '公式ランク大会の進行役'], genshin: ['ゲンシン', '特訓の指導役'], shop: ['ベルナ', 'アイテムの補給所（ベースキャンプ）'] };
   for (const [id, keys] of Object.entries(EXPR)) {
     const dir = `assets/npc/${id}/expr/`, file = (v) => Object.fromEntries(keys.map((k, i) => [k, `${dir}${v}/${String(i + 1).padStart(2, '0')}_${k}.webp`]));
@@ -328,7 +331,7 @@
   /** 立ち絵の規格（PHASE H5）：fr＝全身（expr/full。頭の上〜足＝画像の高さ）のうち上から見せる割合。フィナの半身（closeup/normal：顔の高さ≒器の 27%・頭の上≒1%）と
    *  顔の大きさがそろうよう、絵ごとの顔の大きさから決めた値（目で測った値。体格の差は残す）。nk＝器の幅 ÷ 高さ（＝画像の幅 ÷ 高さ ÷ fr）＝CSS の --nk と同じ値 */
   const STAND = Object.freeze({ karen: { fr: 0.84, nk: 0.579 }, dan: { fr: 0.84, nk: 0.77 }, nick: { fr: 0.94, nk: 0.709 }, elliot: { fr: 0.84, nk: 0.786 }, vargas: { fr: 0.69, nk: 0.987 },
-    cedric: { fr: 0.74, nk: 0.9 }, genshin: { fr: 0.84, nk: 0.777 }, shop: { fr: 0.79, nk: 0.842 } });
+    cedric: { fr: 0.74, nk: 0.9 }, genshin: { fr: 0.84, nk: 0.777 }, shop: { fr: 0.79, nk: 0.842 }, serge: { fr: 0.68, nk: 0.867 } });
   const warmed = new Set();
   function warm(id, views = ['stand', 'face']) {
     const n = get(id); if (!n || typeof Image === 'undefined') return;

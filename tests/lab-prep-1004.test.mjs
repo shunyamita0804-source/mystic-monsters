@@ -34,7 +34,7 @@ test('LP-02：図鑑：2列のカード（No.・名前・正式画像 p10Img）�
   assert.match(md, /Math\.round\(Math\.min\(999,base\[j\]\)\/999\*100\)/, 'ゲージは 999 を 100% とした絶対スケール');
   assert.match(md, /MMP10M\.growthOf\(m0,k\)/); assert.match(md, /SK\[k\]\[4\]\} \$\{SK\[k\]\[0\]\}/, '初期の技は既存の技表から');
   const sc = line('const STAT_COLOR=');
-  assert.deepEqual(new Function(`${sc}\nreturn STAT_COLOR;`)(), { li: '#f2c94c', po: '#e5533c', in: '#4fbf6a', hi: '#f08cb4', ev: '#5cc8e8', de: '#4a74e0' }, '正式色：ライフ黄・ちから赤・かしこさ緑・命中桃・回避水色・丈夫さ青');
+  assert.deepEqual(new Function(`${sc}\nreturn STAT_COLOR;`)(), { li: '#f2c14e', po: '#d9534f', in: '#5cb85c', hi: '#f06292', ev: '#7fd4e8', de: '#4c7bd9' }, '正式色：ライフ黄・ちから赤・かしこさ緑・命中桃・回避水色・丈夫さ青');
   assert.match(HTML, /\.lbgrid\{display:grid;grid-template-columns:1fr 1fr;/);
   assert.doesNotMatch(HTML.slice(HTML.indexOf('.lbc{'), HTML.indexOf('/* ===== 出発準備')), /filter:[^;}]*hue-rotate/, '正式画像の色を変えない');
 });

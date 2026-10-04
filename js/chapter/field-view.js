@@ -900,7 +900,7 @@
     d.style.left = `${fr.left + fr.width / 2 - hr.left}px`; d.style.top = `${fr.bottom - hr.top + 2}px`; ui.appendChild(d); setTimeout(() => d.remove(), 1000);
   }
   // ---- 2026-10-04 第二段階 PHASE E：能力UPの成長演出（光 → 能力のアイコン → 「ちから +5」→ ゲージ（999 を最大とした絶対の目盛り・正式色）→ 粒子）。0.6〜1.2秒・タップで短縮 ----
-  const STAT_COLOR_DEF = { li: '#f2c94c', po: '#e5533c', in: '#4fbf6a', hi: '#f08cb4', ev: '#5cc8e8', de: '#4a74e0' };   // 正式色（index.html の STAT_COLOR と同じ。あればそちら）
+  const STAT_COLOR_DEF = { li: '#f2c14e', po: '#d9534f', in: '#5cb85c', hi: '#f06292', ev: '#7fd4e8', de: '#4c7bd9' };   // 正式色（index.html の STAT_COLOR と同じ。あればそちら）
   const statColor = (k) => ((root.STAT_COLOR || {})[k]) || STAT_COLOR_DEF[k] || '#ffe08a';
   const STAT_TILE = { li: 'stat_life', po: 'stat_power', in: 'stat_intelligence', hi: 'stat_accuracy', ev: 'stat_evasion', de: 'stat_toughness' };
   const gaugePct = (v) => Math.round(Math.min(999, Math.max(0, v | 0)) / 999 * 1000) / 10;

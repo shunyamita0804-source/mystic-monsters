@@ -2200,6 +2200,83 @@ button.p10karen img{display:block;width:100%;height:auto;margin-top:2px;transfor
 .mmtalk-next[hidden]{display:none}
 .mmtalk-choices{display:flex;flex-direction:column;gap:8px;margin:10px 0 0}
 .mmtalk-choices[hidden]{display:none}
+/* 2026-10-06 正式イベント会話UI（デザイン参考 04_event_ui）：2択は横並び・高さとタップ領域を広く。3択以上は縦並び（.mmtalk-choices の子の数で決まる＝データを変えずに広げられる）。
+   押下＝少し沈む＋金の枠の発光（決定の SE は UI_CONFIRM＝正式素材待ちで無音）。送りマーク ▼ はごく弱い上下の動き */
+.mmtalk-choices:has(>.mmtalk-choice:nth-child(2):last-child){flex-direction:row;gap:12px}
+.mmtalk-choices:has(>.mmtalk-choice:nth-child(2):last-child)>.mmtalk-choice{flex:1 1 0;min-width:0}
+.mmtalk-big .mmtalk-choice{min-height:54px;padding:12px 16px;border:1.5px solid #caa152;border-radius:10px;background:linear-gradient(#20376b,#0f1d40 60%,#0b1634);box-shadow:inset 0 1px 0 rgba(255,236,190,.22),0 0 0 2px rgba(7,12,30,.9),0 4px 10px rgba(0,0,0,.35);font-size:16px;letter-spacing:.06em;transition:transform .08s ease,box-shadow .12s ease,border-color .12s ease}
+.mmtalk-big .mmtalk-choice:active,.mmtalk-big .mmtalk-choice.on{transform:translateY(2px) scale(.985);border-color:#f2d58c;box-shadow:inset 0 1px 0 rgba(255,236,190,.3),0 0 0 2px rgba(7,12,30,.9),0 0 14px rgba(242,213,140,.55)}
+@keyframes mmNextBob{0%,100%{transform:translateY(0);opacity:.95}50%{transform:translateY(3px);opacity:.6}}
+.mmtalk-next:not([hidden]){animation:mmNextBob 1.4s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.mmtalk-next:not([hidden]){animation:none}}
+/* ===== 施設共通の下部コマンド（2026-10-06 正式デザイン 01_common_ui：研究所 3・牧場 4・ベースキャンプ 5）。濃紺＋金の額・大きなアイコンを上に・名前を下に・十分な高さ・safe-area。
+   押下＝少し沈む＋金の光（.mm-press の scale と合わせる）。画面ごとの機能・遷移は変えない（見た目だけ） ===== */
+#app .lab .labnav,#app .rn2 .rnact{gap:8px}
+#app .lab .labnav .labc,#app .rn2 .rna,#app .fm.bc .bcbar button.bcb{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;height:auto;min-height:78px;margin:0;padding:10px 2px 8px;border:1.5px solid #d9b45f;border-radius:11px;background:radial-gradient(ellipse at 50% 0%,rgba(120,150,220,.22),rgba(120,150,220,0) 62%),linear-gradient(#1f356c,#0e1b40 62%,#0a1532);box-shadow:inset 0 0 0 2px rgba(7,13,32,.85),inset 0 0 0 2.6px rgba(226,190,110,.38),0 0 0 1px rgba(5,10,26,.8),0 5px 12px rgba(0,0,0,.42);color:#fbf1d6;font:700 15px/1.15 var(--mm-font-head);letter-spacing:.06em;white-space:nowrap;transition:transform .08s ease,box-shadow .12s ease}
+#app .lab .labnav .labc::before,#app .rn2 .rna::before,#app .fm.bc .bcbar button.bcb::before{content:"";position:absolute;left:50%;top:-4px;width:7px;height:7px;transform:translateX(-50%) rotate(45deg);background:#e6c470;box-shadow:0 0 4px rgba(230,196,112,.7);pointer-events:none}
+#app .lab .labnav .labc svg,#app .rn2 .rna svg,#app .fm.bc .bcbar button.bcb svg{width:30px;height:30px;flex:none}
+#app .lab .labnav .labc b,#app .rn2 .rna span,#app .fm.bc .bcbar button.bcb span{font-size:15px;font-weight:700;color:#fbf1d6;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+#app .lab .labnav .labc:active,#app .rn2 .rna:active:not(:disabled),#app .fm.bc .bcbar button.bcb:active{transform:translateY(2px) scale(.97);box-shadow:inset 0 0 0 2px rgba(7,13,32,.85),inset 0 0 0 2.6px rgba(242,213,140,.75),0 0 14px rgba(242,213,140,.5)}
+#app .rn2 .rna.rnsell{background:radial-gradient(ellipse at 50% 0%,rgba(255,170,150,.18),rgba(255,170,150,0) 62%),linear-gradient(#5d2a26,#3a1714 62%,#2a100e)}
+#app .rn2 .rna:disabled{opacity:.45}
+#app .fm.bc{--bcbar:96px}
+#app .fm.bc .bcbar{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px));background:linear-gradient(rgba(8,15,34,0),rgba(8,15,34,.82) 30%,rgba(6,12,28,.95))}
+#app .fm.bc .bcbar button.bcb+button.bcb{border-left:1.5px solid #d9b45f}
+#app .fm.bc .bcbar button.bcb{min-height:0;height:100%;padding:8px 0 6px;font-size:13px}
+#app .fm.bc .bcbar button.bcb span{font-size:13px;letter-spacing:.02em}
+#app .fm.bc .bcbar button.bcb svg{width:28px;height:28px}
+@media (max-height:700px){#app .fm.bc{--bcbar:84px}#app .lab .labnav .labc,#app .rn2 .rna{min-height:64px;padding:7px 2px 6px}#app .lab .labnav .labc svg,#app .rn2 .rna svg{width:26px;height:26px}}
+/* ベースキャンプの主ボタン「出発する」（2026-10-06 正式デザイン 02_basecamp）：赤＋金・下のコマンドより格上の大きさ・下のコマンドとの間に余白・押すと縮んで金の光 */
+#app .fm.bc .bcgo{bottom:calc(var(--bcbar) + 16px + env(safe-area-inset-bottom,0px))}
+#app .fm.bc .fmgo.bcdep{height:auto;min-height:74px;padding:9px 16px 10px;gap:1px;border-radius:18px;border:2px solid #f0cf7c;background:radial-gradient(ellipse at 50% 0%,rgba(255,214,180,.3),rgba(255,214,180,0) 58%),linear-gradient(#b8262c,#86141c 55%,#5c0b12);box-shadow:inset 0 0 0 2px rgba(60,6,10,.85),inset 0 0 0 3.5px rgba(246,214,140,.55),0 0 0 2px rgba(40,14,8,.7),0 6px 16px rgba(0,0,0,.5),0 0 18px rgba(240,200,110,.22);transition:transform .08s ease,box-shadow .14s ease}
+#app .fm.bc .fmgo.bcdep b{font-size:27px;letter-spacing:.18em;color:#fff3cf;text-shadow:0 2px 0 #4a0a10,0 0 10px rgba(255,214,140,.45)}
+#app .fm.bc .fmgo.bcdep .bcsub{font-size:11.5px;letter-spacing:.08em;color:#f6dc9a;text-shadow:0 1px 1px #3a0608}
+#app .fm.bc .fmgo.bcdep:active{transform:scale(.965);box-shadow:inset 0 0 0 2px rgba(60,6,10,.85),inset 0 0 0 3.5px rgba(255,226,150,.9),0 0 0 2px rgba(40,14,8,.7),0 0 26px rgba(255,214,120,.65)}
+@media (max-height:700px){#app .fm.bc .fmgo.bcdep{min-height:62px;padding:6px 14px 7px}#app .fm.bc .fmgo.bcdep b{font-size:23px}}
+/* 共通の危険操作モーダル（2026-10-06 正式デザイン）：濃紺＋金の額・上に赤い宝石の紋章・見出し（金）・本文（アイボリー・対象の名前は金）・安全側（濃紺＋金）・危険側（深い赤＋金）。背景は暗く、後ろは押せない */
+.p8m:has(>.mmdg){background:rgba(4,8,22,.7)}
+.p8mc.mmdg{position:relative;max-width:360px;padding:40px 22px 22px;border-radius:14px;border:2px solid #d8b465;background:radial-gradient(ellipse at 50% 0%,rgba(90,120,200,.18),rgba(90,120,200,0) 55%),linear-gradient(#142450,#0b1638 60%,#08112c);box-shadow:inset 0 0 0 3px rgba(6,11,30,.9),inset 0 0 0 4px rgba(226,190,110,.45),0 0 0 1px rgba(5,10,26,.9),0 14px 34px rgba(0,0,0,.6);color:#f4ead2;text-align:center;line-height:1.75}
+.mmdg-crest{position:absolute;left:50%;top:-24px;width:46px;height:46px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle at 50% 40%,#ff7a6e,#c41f2a 45%,#6e0b13 75%);border:2.5px solid #e9c873;box-shadow:0 0 0 3px #0b1638,0 0 14px rgba(255,90,80,.45)}
+.mmdg-crest::after{content:"";position:absolute;inset:11px;transform:rotate(45deg);background:linear-gradient(135deg,#ffd9d2,#e8423f 55%,#8a0f18);border:1.5px solid #f6dc9a;border-radius:3px}
+.mmdg-t{display:block;margin:0 0 12px;padding-bottom:10px;font-family:var(--mm-font-head);font-size:24px;letter-spacing:.24em;color:#f1d48a;text-shadow:0 2px 0 #050b20;border-bottom:1px solid rgba(226,190,110,.45)}
+.p8mc.mmdg p{margin:6px 0;font-size:15.5px;color:#f4ead2}
+.mmdg-nm{color:#f3cf72}
+.mmdg-note small{font-size:12px;color:#c9c0a8}
+.mmdg-btns{flex-direction:column;gap:12px;margin-top:18px}
+.mmdg-btns button{min-height:54px;border-radius:12px;font:800 17px/1.2 var(--mm-font-head);letter-spacing:.12em}
+.mmdg-btns .mmdg-safe{border:2px solid #dcb866;background:linear-gradient(#24407a,#12224c 60%,#0c1838);color:#f8eccb;box-shadow:inset 0 0 0 2px rgba(6,11,30,.8),0 4px 10px rgba(0,0,0,.4)}
+.mmdg-btns .mmdg-danger{border:2px solid #dcb866;background:linear-gradient(#9a2128,#6b1018 60%,#4c0a10);color:#ffe9cf;box-shadow:inset 0 0 0 2px rgba(40,4,8,.8),0 4px 10px rgba(0,0,0,.4)}
+.mmdg-btns .mmdg-danger:disabled{opacity:.6}
+.mmdg-btns button:active:not(:disabled){transform:translateY(2px) scale(.98)}
+/* 市場の購入詳細（2026-10-06 正式デザイン 03_market）：濃紺＋上品な金・アイボリーの文字。能力の棒は正式色・999 を最大にした長さ（100＝約10%）。素早さは別の欄（10マス）。購入するは金の大きなボタン */
+#app .p10mk .p10info{background:radial-gradient(ellipse at 50% 0%,rgba(90,120,200,.16),rgba(90,120,200,0) 55%),linear-gradient(rgba(17,30,66,.97),rgba(9,17,42,.98));border:2px solid #d8b465;box-shadow:inset 0 0 0 3px rgba(6,11,30,.9),inset 0 0 0 3.8px rgba(226,190,110,.4),0 10px 26px rgba(0,0,0,.5);color:#f4ead2}
+#app .p10mk .p10nm b{font-family:var(--mm-font-head);font-size:1.55rem;color:#fbf1d6;letter-spacing:.1em}
+#app .p10mk .p10tag{padding:2px 12px;border-radius:999px;border:1.5px solid #d8b465;background:rgba(9,17,42,.6);color:#f4ead2;font-size:.82rem;font-weight:700}
+#app .p10mk .p10st{margin-left:auto}
+#app .p10mk .p10sk{display:flex;gap:10px;align-items:flex-start;margin:9px 0 8px;padding:9px 11px;border-radius:12px;border:1.5px solid rgba(216,180,101,.7);background:rgba(6,12,32,.55)}
+#app .p10mk .p10skic{flex:none;width:34px;height:34px;display:grid;place-items:center;border:1.5px solid #d8b465;transform:rotate(45deg);border-radius:6px;background:linear-gradient(#1d3266,#0c1838);margin:5px 4px 0}
+#app .p10mk .p10skic svg{width:18px;height:18px;transform:rotate(-45deg);fill:#f2cf7a}
+#app .p10mk .p10sk small{display:block;font-size:.72rem;color:#d8b465;letter-spacing:.12em}
+#app .p10mk .p10sk b{display:block;font-family:var(--mm-font-head);font-size:1.05rem;color:#f6d78f;letter-spacing:.06em}
+#app .p10mk .p10sk p{margin:3px 0 0;font-size:.78rem;line-height:1.5;color:#e9e0c8}
+#app .p10mk .p10stats{padding:6px 10px 8px;border-radius:12px;background:rgba(6,12,32,.55);border:1.5px solid rgba(216,180,101,.55)}
+#app .p10mk .p10sh{text-align:center;font-family:var(--mm-font-head);color:#f1d48a;letter-spacing:.2em;font-size:.86rem;margin:0 0 3px}
+#app .p10mk .p10bar{grid-template-columns:20px 4.4em 1fr 2.6em;gap:7px;height:22px;font-size:.8rem;color:#f4ead2}
+#app .p10mk .p10ic{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;border:1px solid rgba(216,180,101,.75);background:rgba(9,17,42,.8);overflow:visible}
+#app .p10mk .p10ic svg{width:13px;height:13px;fill:none;stroke:#f2cf7a;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#app .p10mk .p10g{height:9px;border-radius:5px;background:rgba(0,0,0,.45);border:1px solid rgba(216,180,101,.35);overflow:hidden}
+#app .p10mk .p10g em{display:block;height:100%;border-radius:5px;background:var(--c);box-shadow:0 0 6px var(--c)}
+#app .p10mk .p10bar b{color:#fbf1d6}
+#app .p10mk .p10bar.spd{margin-top:5px;padding-top:6px;height:auto;border-top:1px solid rgba(216,180,101,.35)}
+#app .p10mk .p10pips{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;height:10px;border:0;background:none}
+#app .p10mk .p10pips u{display:block;border-radius:2px;background:rgba(0,0,0,.45);border:1px solid rgba(127,212,232,.35)}
+#app .p10mk .p10pips u.on{background:linear-gradient(#bff0fb,#7fd4e8);border-color:#bff0fb;box-shadow:0 0 4px rgba(127,212,232,.6)}
+#app .p10mk .p10price{display:flex;align-items:center;justify-content:center;gap:6px;margin:8px 0 0;color:#f4ead2;font-size:1rem}
+#app .p10mk .p10price b{font-family:var(--mm-font-head);font-size:1.12rem;letter-spacing:.06em}
+#app .p10mk .p10buy{margin-top:6px;min-height:56px;border-radius:14px;border:2px solid #f6dc9a;background:linear-gradient(#ffe7a3,#e9b94f 55%,#c99232);color:#3a2306;font-family:var(--mm-font-head);font-size:1.2rem;letter-spacing:.12em;box-shadow:inset 0 0 0 2px rgba(255,248,220,.5),0 0 0 2px rgba(70,44,8,.6),0 6px 14px rgba(0,0,0,.45)}
+#app .p10mk .p10buy:active:not(:disabled){transform:translateY(2px) scale(.985)}
+#app .p10mk .p10note{color:#e3d8bd}
+@media (min-height:760px){#app .p10mk #p10car{transition:translate .22s ease-out}#app .p10mk.det #p10car{translate:0 -25dvh}} /* 詳細を開いたら、モンスターをシートの上へ（画面の高さが足りるとき） */
 .mmtalk-choice{display:block;width:100%;min-height:44px;padding:9px 14px;border-radius:8px;border:1px solid rgba(240,232,212,.7);background:linear-gradient(#1b2e5a,#0e1a38);color:#f3ecd9;font-family:"Noto Sans JP",var(--mm-font-body,sans-serif);font-size:15px;font-weight:700;letter-spacing:.04em;cursor:pointer;box-shadow:inset 0 0 0 3px rgba(14,26,56,.9),inset 0 0 0 4px rgba(240,232,212,.16),0 2px 0 #060d20;-webkit-tap-highlight-color:transparent}
 .mmtalk-choice:active{transform:translateY(1px);box-shadow:none}
 .mmtalk-choice:focus-visible{outline:2px solid #efe6cf;outline-offset:2px}
@@ -2778,7 +2855,7 @@ main>h1{flex:none}
 .vgsay.nst>img.nstf{width:auto;border:0;border-radius:0;background:none}
 /* 2026-10-04 PHASE H5：NPC の立ち絵の規格（フィナの半身が基準：顔の大きさ・頭の上の位置・3/4身・下は会話窓で隠す）。主要 NPC は全身（expr/full）を
    aspect-ratio（--nk＝MMNPC.STAND の nk）＋ object-fit:cover・上寄せで、上から決まった割合（fr）だけ見せる（画像は加工しない）。表情を変えても器の大きさは同じ＝跳ねない */
-:is(.mmtalk,.nstf,.fmdan,.bcnpc)[data-npc=karen]{--nk:.579}:is(.mmtalk,.nstf,.fmdan,.bcnpc)[data-npc=dan]{--nk:.77}:is(.mmtalk,.nstf,.fmdan,.bcnpc)[data-npc=nick]{--nk:.709}:is(.mmtalk,.nstf,.fmdan,.bcnpc)[data-npc=elliot]{--nk:.786}
+:is(.mmtalk,.nstf,.fmdan,.bcnpc)[data-npc=serge]{--nk:.867}:is(.mmtalk,.nstf,.fmdan,.bcnpc)[data-npc=karen]{--nk:.579}:is(.mmtalk,.nstf,.fmdan,.bcnpc)[data-npc=dan]{--nk:.77}:is(.mmtalk,.nstf,.fmdan,.bcnpc)[data-npc=nick]{--nk:.709}:is(.mmtalk,.nstf,.fmdan,.bcnpc)[data-npc=elliot]{--nk:.786}
 :is(.mmtalk,.nstf,.fmdan,.bcnpc)[data-npc=vargas]{--nk:.987}:is(.mmtalk,.nstf,.fmdan,.bcnpc)[data-npc=cedric]{--nk:.9}:is(.mmtalk,.nstf,.fmdan,.bcnpc)[data-npc=genshin]{--nk:.777}:is(.mmtalk,.nstf,.fmdan,.bcnpc)[data-npc=shop]{--nk:.842}
 .mmtalk-fig.stand img{width:auto;max-width:none;aspect-ratio:var(--nk,.754);object-fit:cover;object-position:50% 0}
 /* 2026-10-04：ヴァルガス・セドリックは全身の横幅が広い（--nk .987／.9）＝390px の画面で右の肩が切れていた。この2人だけ、立ち絵の箱の幅を画面に収まる幅までにする（高さ・頭の上の位置はほかの NPC と同じ。object-fit:cover で横幅いっぱいに少し小さく映り、下へ少し長く見える）。左端は 8px 外へ。画像は加工しない・ほかの NPC は変えない */
@@ -3388,9 +3465,12 @@ function p10Info(){const box=$("#p10info");if(!box)return;p10KarenHint();{const 
 const c=MMP10M.MARKET_CATALOG[P10_MK],s=MMP10M.byKey(c.key),owned=S.box.length+(S.m?1:0),chk=MMP10M.canPurchase(S,c.key,owned);
  document.querySelectorAll(".p10dot").forEach((d,i)=>d.classList.toggle("on",i==P10_MK));
  if(c.status=="waiting"){const nb=c.key=="nobiton"?MMP10M.nobitonStock(S):null;box.innerHTML=`<div class="p10nm"><b>${s.name}</b><span class="p10tag">${s.kind}</span><span class="p10st wait">${nb&&nb.met?"入荷条件達成":"入荷待ち"}</span></div><p class="p10tx">${nb&&nb.met?`育成完了${nb.need}回を達成しました！ 入荷の準備が整うまで、もう少しお待ちください。`:"ただいま入荷を待っています。入荷まで、もう少しお待ちください。"}</p>${nb?`<p class="p10note">入荷条件：育成完了 ${nb.need}回（いま ${nb.done}回）${nb.fromStart?"":"<br>※この版より前の育成完了は記録がないため、回数に含まれません"}</p>`:""}<button class="p10buy" disabled>入荷待ち</button>`;return}
- const bars=MMP10M.STAT_KEYS.map(k=>`<div class="p10bar"><span>${MMP10M.STAT_LABELS[k]}</span><i><em style="width:${Math.min(100,s.base[k]/1.5)}%"></em></i><b>${s.base[k]}</b></div>`).join("");
- box.innerHTML=`<div class="p10nm"><b>${s.name}</b><span class="p10tag">${s.kind}</span><span class="p10st">販売中</span></div><p class="p10tx">${s.tagline||""}</p>
- <div class="p10stats"><div class="p10sh">初期能力</div>${bars}<div class="p10bar spd"><span>素早さ</span><i><em style="width:${s.speed*10}%"></em></i><b>${s.speed}<small>/10</small></b></div></div>
+ // 2026-10-06 正式デザイン（03_market/market_detail_design・spec_sheet）：名前＋種類＋型・固有スキル（名前と短い効果）・初期能力6つ（正式色・棒は 値÷999＝ステータス画面と同じ目盛り）・素早さは別の欄（10マス）・価格・購入する（金）
+ const sk=UNIQUE_SKILL[s.id],bars=MMP10M.STAT_KEYS.map(k=>{const v=s.base[k];return `<div class="p10bar" data-k="${k}" style="--c:${STAT_COLOR[k]}"><i class="p10ic" aria-hidden="true"><svg viewBox="0 0 24 24">${ST_IC[k]}</svg></i><span>${MMP10M.STAT_LABELS[k]}</span><i class="p10g" role="img" aria-label="${MMP10M.STAT_LABELS[k]} ${v}（999 まで）"><em style="width:${(Math.min(999,v)/999*100).toFixed(1)}%"></em></i><b>${v}</b></div>`}).join("");
+ box.innerHTML=`<div class="p10nm"><b>${s.name}</b><span class="p10tag">${s.kind}</span>${s.tagline?`<span class="p10tag p10type">${s.tagline}</span>`:""}<span class="p10st">販売中</span></div>
+ ${sk?`<div class="p10sk"><i class="p10skic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2l2.6 6.4L21 9l-5 4.3L17.5 20 12 16.5 6.5 20 8 13.3 3 9l6.4-.6z"/></svg></i><div><small>固有スキル</small><b>${sk.name}</b>${sk.desc?`<p>${sk.desc}</p>`:""}</div></div>`:""}
+ <div class="p10stats"><div class="p10sh">初期能力</div>${bars}<div class="p10bar spd"><i class="p10ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 16c4-1 7-4 9-9 1 4 3 6 7 7-5 1-8 3-9 6-2-2-4-3-7-4z"/></svg></i><span>素早さ</span><i class="p10pips" role="img" aria-label="素早さ ${s.speed} / 10">${Array.from({length:10},(_,i)=>`<u class="${i<s.speed?"on":""}"></u>`).join("")}</i><b>${s.speed}<small> / 10</small></b></div></div>
+ <div class="p10price">${P10_COIN}<b>${c.price} G</b></div>
  <button class="p10buy" data-key="${c.key}" ${chk.ok?"":"disabled"} onclick="p10BuyAsk()">${chk.ok?`購入する　${P10_COIN}${c.price}G`:P10_WHY[chk.reason]}</button>${chk.ok&&chk.rescue?`<p class="p10note">はじめての1体は、所持金が${MMP10M.ECONOMY.marketPrice}Gに満たなくても購入できます（所持金を${MMP10M.ECONOMY.marketPrice}Gまで補填）。</p>`:""}${chk.ok&&chk.continueRescue?`<p class="p10note">育成を続けられるモンスターがいないため、所持金が${MMP10M.ECONOMY.marketPrice}Gに満たなくても購入できます（購入を確定したときだけ不足分を補填し、購入後の所持金は0Gになります）。</p>`:""}`}
 function p10BuyAsk(){if(P10_ANIM)return;const c=MMP10M.MARKET_CATALOG[P10_MK];if(!c||!p10CenterIs(c.key))return p10Info();const s=MMP10M.byKey(c.key),chk=MMP10M.canPurchase(S,c.key,S.box.length+(S.m?1:0));if(!chk.ok)return p10Info();p10Close();
  const d=document.createElement("div");d.className="p10ov";d.id="p10ov";d.onclick=e=>{if(e.target===d)p10Close()};
@@ -3406,7 +3486,7 @@ function mkgo(i){if(p8Blocked())return;if(!document.getElementById("p10ov"))retu
 /** 研究所（2026-10-03 品質向上）：入口＝正式背景（assets/lab/lab_main.webp）を大きく・エリオットの半身・下に機能のカード（図鑑／特殊復元・合体＝研究所の正式な機能だが画面は未実装＝準備中）。
  *  tab "book"＝図鑑の一覧（従来の中身。背景だけ研究所の正式背景） */
 if(window.MMP10M&&MMP10M.setFusionAccess)MMP10M.setFusionAccess(()=>true); // 2026-10-04：研究所の合体UI（museum('fuse')）＝プレイヤーが画面から合体を使える
-const STAT_COLOR={li:"#f2c94c",po:"#e5533c",in:"#4fbf6a",hi:"#f08cb4",ev:"#5cc8e8",de:"#4a74e0"}; // 6能力の正式色（ライフ黄・ちから赤・かしこさ緑・命中桃・回避水色・丈夫さ青）。図鑑・大会の比較・能力UPの演出で共通
+const STAT_COLOR={li:"#f2c14e",po:"#d9534f",in:"#5cb85c",hi:"#f06292",ev:"#7fd4e8",de:"#4c7bd9"}; /* 2026-10-06：市場詳細の正式デザイン仕様（03_market/market_detail_spec_sheet）の HEX に合わせた */ // 6能力の正式色（ライフ黄・ちから赤・かしこさ緑・命中桃・回避水色・丈夫さ青）。図鑑・大会の比較・能力UPの演出で共通
 const LAB_IC={book:'<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 7h9a3 3 0 0 1 3 3v15a2 2 0 0 0-2-2H5zM27 7h-9a3 3 0 0 0-3 3v15a2 2 0 0 1 2-2h10z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
  fuse:'<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="12" cy="13" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="20" cy="13" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="16" cy="20" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>',
  table:'<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M13 5h6M14 5v8L7 25a2 2 0 0 0 2 3h14a2 2 0 0 0 2-3l-7-12V5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 21h12" stroke="currentColor" stroke-width="1.8"/></svg>'};
@@ -4246,7 +4326,7 @@ function bcMenu(){p9MenuClose();const m=S.m,st=m?MMP7.raiseState(m):"none",d=doc
  const it=[["hall('st')","ステータス"],["hall('w')","技管理"]].concat(st=="farm"?[["p8Suspend()","中断してタイトルへ"]]:[["lobby()","街へ戻る"]]);
  d.innerHTML=`<div class="p9ovc bcmn" role="dialog" aria-modal="true"><div class="p9ovh">メニュー<button class="p9x" onclick="p9MenuClose()" aria-label="閉じる">✕</button></div><div class="bcmnl">${it.map(([on,t])=>`<button class="p15b" onclick="p9MenuClose();${on}">${t}</button>`).join("")}${st=="farm"?`<button class="fmab p8danger" onclick="p9MenuClose();p8AbandonAsk()">育成放棄</button>`:""}</div></div>`;document.body.appendChild(d)}
 /** ベースキャンプの下のコマンド（1列5つ）。ステータス画面（2026-10-05）でも同じ並び */
-function bcCmds(st){return [["hall('s')","train","特訓",`<em class="bctix" aria-label="特訓チケット ${S.trainTix}枚">チケット ${S.trainTix}</em>`],["shopScr()","item","アイテム",""],["hall('st')","status","ステータス",""],["hall('w')","moves","技管理",""],
+function bcCmds(st){return [["hall('s')","train","特訓",""],["shopScr()","item","アイテム",""],["hall('st')","status","ステータス",""],["hall('w')","moves","技管理",""],
   st=="farm"?["p8Suspend()","pause","中断",""]:["lobby()","town","街へ戻る",""]]}
 function fmScr(msg){const m=S.m;if(!m)return lobby();p9MenuClose();
  const st=MMP7.raiseState(m),r=m.raise||{},k=MMP8.nextChapterKey(m),fin=k==MMP8.FINAL,last=(r.log||[]).slice(-1)[0],sp=MMP10M.byId(m.sp),done=st=="done",can=done?{ok:true}:MMP8.canDepart(S,m);
@@ -4258,7 +4338,7 @@ function fmScr(msg){const m=S.m;if(!m)return lobby();p9MenuClose();
  const go=done?{t:"街へ戻る",on:"lobby()",c:" back"}
   :fin&&!MMP8.isPlayable(MMP8.FINAL)?{t:"育成を完了して街へ戻る",s:"最終ルートは準備中",on:"pfixFinishNoFinal(this)",c:" bcfin"}
   :can.reason=="rank_gate"?{t:"育成を完了して街へ戻る",s:`Chapter ${k} 解放条件：公式${MMP8.RANK_LETTERS[can.need]}ランク大会クリア`,on:"pfixFinishNoFinal(this)",c:" bcfin"}
-  :{t:"冒険",on:"prepScr()",c:st=="farm"?" p9c-go":""};
+  :{t:"出発する",sub:k!=null?`${k==MMP8.FINAL?"最終ルート":`CHAPTER ${k}`}${chSub(k)?`「${chSub(k)}」`:""}へ`:"",on:"prepScr()",c:" bcdep"+(st=="farm"?" p9c-go":"")}; // 2026-10-06 正式：主ボタン「出発する」（赤＋金・下に行き先）。押すと従来の出発準備（prepScr）
  const chip=done?`<small>育成完了</small><b>${last?`Chapter ${last.ch} まで`:""}</b>`:`<small>${chNm(k)}</small><b>${chSub(k)}</b>`;
  const ex=danEx(m,st,can),dan=(window.MMNPC&&MMNPC.standOf&&MMNPC.standOf("dan","closeup",ex))||npcSrc("dan",ex)||DAN_FIG;
  const cmd=bcCmds(st);
@@ -4269,7 +4349,7 @@ function fmScr(msg){const m=S.m;if(!m)return lobby();p9MenuClose();
    <div class="fmstage">${msg?`<div class="kbub kt ksys">${msg}</div>`:""}<div class="kbub kdan${msg?"":" kt"}"><span class="kav" onclick="const p=this.closest('.fmstage'),s=p.querySelector('.ksys'),b=p.querySelector('.kdan');if(s)s.remove();if(b){b.classList.remove('kt');void b.offsetWidth;b.classList.add('kt')}" aria-label="ダンのコメントを見る"><img src="${npcSrc("dan",BCOMM_EX,"face")||DAN_FACE}" alt=""></span><span class="kdtx"><b>ダン</b>${bcomm()}</span></div></div></div>
   <div class="bcmonw"><div class="fmmon mon">${msv(m)}</div><div class="bcname"><b>${p11Esc(m.name)}</b>${sp?`<small>${sp.kind}</small>`:""}</div></div>
  </div>
- <div class="bcgo fmgate"><div class="bcch">${chip}</div><button class="fmgo${go.c}" onclick="${go.on}">${go.s||warn?`<small>${warn||go.s}</small>`:""}<b>${go.t}</b></button></div>
+ <div class="bcgo fmgate"><div class="bcch">${chip}</div><button class="fmgo${go.c}" onclick="${go.on}">${go.s||warn?`<small>${warn||go.s}</small>`:""}<b>${go.t}</b>${go.sub?`<small class="bcsub">${go.sub}</small>`:""}</button></div>
  <nav class="bcbar fmcmd" aria-label="コマンド">${cmd.map(([on,ic,lb,bd])=>`<button class="fmb bcb${ic=="town"?" back":""}" data-cmd="${ic}" onclick="${on}">${bd}${fmIc(ic)}<span>${lb}</span></button>`).join("")}</nav>
 </div>`;try{window.scrollTo(0,0)}catch(e){}}
 
@@ -4284,13 +4364,17 @@ function p8LockScr(){$("#app").innerHTML=`<div class="p8lock"><b>このセーブ
 function p8Suspend(){if(bBusy||p7Busy)return;save();title()}
 // 育成放棄：誤操作を防ぐため2段階で確認し、最後のボタンは数秒待たないと押せない。確認中に対象の個体が変わったら何もしない（uidで照合）。
 let p8AbT=0; // 最終確認のカウントダウン（setInterval）。閉じる・開き直すときに止める
+/** 2026-10-06：共通の危険操作モーダル（正式デザイン 02_basecamp/raising_abandon_confirmation：濃紺＋金・上に赤い宝石の紋章・安全側＝濃紺＋金・危険側＝深い赤）。
+ *  o＝{ title, lines:[HTML], note, safe:{label,on}, danger:{label,on,id,disabled} }。育成放棄で使う（売却・最初からやり直す・セーブの上書きにも使える形）。中身の HTML は呼ぶ側で p11Esc 済み */
+function dangerInner(o){return `<i class="mmdg-crest" aria-hidden="true"></i><b class="mmdg-t">${o.title}</b>${o.lines.map(l=>`<p>${l}</p>`).join("")}${o.note?`<p class="mmdg-note"><small>${o.note}</small></p>`:""}<div class="p8mbtn mmdg-btns"><button class="go mmdg-safe" onclick="${o.safe.on}">${o.safe.label}</button><button class="p8danger mmdg-danger"${o.danger.id?` id="${o.danger.id}"`:""}${o.danger.disabled?" disabled":""} onclick="${o.danger.on}">${o.danger.label}</button></div>`}
+function dangerModalHtml(o){return `<div class="p8mc mmdg" role="dialog" aria-modal="true" aria-label="${o.title}">${dangerInner(o)}</div>`}
 function p8AbandonAsk(){const m=S.m;if(!m||bBusy||p7Busy||!MMP8.canAbandon(S).ok)return;p8ModalClose();
  const d=document.createElement("div");d.className="p8m";d.id="p8m";
- d.innerHTML=`<div class="p8mc" role="dialog" aria-modal="true"><b>⚠️ 育成放棄</b><p><b>${p11Esc(m.name)}</b>の育成をやめますか？</p><p>この個体とChapterの進行はすべて削除され、元に戻せません。放棄すると街へ戻ります。<br><small>所持金・特訓チケット・バッグ・保管庫はそのまま残ります。</small></p><div class="p8mbtn"><button class="go" onclick="p8ModalClose()">やめない</button><button class="p8danger" onclick="p8AbandonAsk2('${m.uid}')">放棄に進む</button></div></div>`;
+ d.innerHTML=dangerModalHtml({title:"育成放棄",lines:[`<b class="mmdg-nm">${p11Esc(m.name)}</b>の育成をやめますか？`,"この個体とChapterの進行はすべて削除され、元に戻せません。放棄すると街へ戻ります。"],note:"所持金・特訓チケット・バッグ・保管庫はそのまま残ります。",safe:{label:"やめない",on:"p8ModalClose()"},danger:{label:"放棄に進む",on:`p8AbandonAsk2('${m.uid}')`}});
  document.body.appendChild(d)}
 function p8AbandonAsk2(uid){const m=S.m,d=$("#p8m");if(!d||!m||m.uid!==uid)return p8ModalClose();
- d.querySelector(".p8mc").innerHTML=`<b>⚠️ 最終確認</b><p>本当に<b>${p11Esc(m.name)}</b>を放棄しますか？<br>この操作は取り消せません。</p><div class="p8mbtn"><button class="go" onclick="p8ModalClose()">やめない</button><button class="p8danger" id="p8abgo" disabled onclick="p8AbandonGo('${uid}')">放棄する（3）</button></div>`;
- clearInterval(p8AbT);let n=3;const t=p8AbT=setInterval(()=>{const b=$("#p8abgo");if(!b){clearInterval(t);return}n--;if(n>0)b.textContent=`放棄する（${n}）`;else{clearInterval(t);b.disabled=false;b.textContent="放棄する"}},1000)}
+ d.querySelector(".p8mc").innerHTML=dangerInner({title:"最終確認",lines:[`<b class="mmdg-nm">${p11Esc(m.name)}</b>の育成をやめますか？`,"この操作は取り消せません。"],safe:{label:"やめない",on:"p8ModalClose()"},danger:{label:"育成をやめる（3）",on:`p8AbandonGo('${uid}')`,id:"p8abgo",disabled:true}});
+ clearInterval(p8AbT);let n=3;const t=p8AbT=setInterval(()=>{const b=$("#p8abgo");if(!b){clearInterval(t);return}n--;if(n>0)b.textContent=`育成をやめる（${n}）`;else{clearInterval(t);b.disabled=false;b.textContent="育成をやめる"}},1000)}
 function p8AbandonGo(uid){const b=$("#p8abgo");if(!b||b.disabled)return;const r=MMP8.abandon(S,uid);p8ModalClose();if(!r.ok)return p8Resume();sel=[];save();lobby(`${p11Esc(r.name)}の育成を放棄しました。`)}
 function p8ModalClose(){clearInterval(p8AbT);const d=$("#p8m");if(d)d.remove()}
 

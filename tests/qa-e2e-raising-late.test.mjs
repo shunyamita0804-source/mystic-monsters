@@ -196,7 +196,7 @@ T('QA-RL1：Chapter 3（旧ボード）の20ターン目を使い切る → タ�
   assert.deepEqual(r.log, [LOG1, LOG2D, { ch: 3, reachedGoal: false, turnsUsed: 20, turnLimit: 20, declined: false, tour: null }]);
   assert.equal((await H.getS(pg)).g, before.g, 'ゴールできなくても所持金は変わらない');
   const txt = await H.text(pg);
-  for (const w of ['Chapter 4', 'CHAPTER 3「天空の浮島」が終わった。', '冒険'])   /* 2026-10-04 PHASE H2：ベースキャンプ＝次の Chapter の番号と名前＋「冒険」（「Chapter N 終了」の情報欄は廃止） */ assert.ok(txt.includes(w), `ファームの表示に「${w}」`);
+  for (const w of ['Chapter 4', 'CHAPTER 3「天空の浮島」が終わった。', '出発する'])   /* 2026-10-04 PHASE H2：ベースキャンプ＝次の Chapter の番号と名前＋「冒険」（「Chapter N 終了」の情報欄は廃止） */ assert.ok(txt.includes(w), `ファームの表示に「${w}」`);
   assert.equal(await lobbyButtons(pg), 0, 'Chapter間ファームに街へ戻る導線は無い');
   await assertSynced(pg);
   // 街・市場へは行けない（関数を直接呼んでもファームに留まり、セーブは変わらない）
@@ -214,7 +214,7 @@ T('QA-RL1：Chapter 3（旧ボード）の20ターン目を使い切る → タ�
   assert.equal(await pg.evaluate(() => document.querySelector('.tcap').textContent), 'つづきからはじめます');
   await startFromTitle(pg, '.p9farm.p15f');
   assert.equal(await rawSave(pg), raw0, '中断・再開で状態は変わらない');
-  { const tx = await H.text(pg); assert.ok(/Chapter 4/.test(tx) && /冒険/.test(tx), tx); }   // 2026-10-04 PHASE H2：ベースキャンプ＝次の Chapter と「冒険」
+  { const tx = await H.text(pg); assert.ok(/Chapter 4/.test(tx) && /出発する/.test(tx), tx); }   // 2026-10-04 PHASE H2：ベースキャンプ＝次の Chapter と「冒険」
   noErrors(p);
 });
 
@@ -243,11 +243,11 @@ T('QA-RL2：Chapter間ファームの「育成放棄」は2段階の確認（最
   await pg.waitForTimeout(SETTLE);
   await pg.click('#p8m button.p8danger');
   await pg.waitForSelector('#p8abgo');
-  assert.deepEqual(await pg.evaluate(() => { const b = document.querySelector('#p8abgo'); return [b.disabled, b.textContent]; }), [true, '放棄する（3）']);
+  assert.deepEqual(await pg.evaluate(() => { const b = document.querySelector('#p8abgo'); return [b.disabled, b.textContent]; }), [true, '育成をやめる（3）']);
   await pg.evaluate(() => p8AbandonGo(S.m.uid));   // 押せない間に直接呼んでも放棄しない
   assert.equal(await rawSave(pg), raw0);
   await pg.waitForFunction(() => { const b = document.querySelector('#p8abgo'); return b && !b.disabled; }, null, { timeout: 8000 });
-  assert.equal(await pg.evaluate(() => document.querySelector('#p8abgo').textContent), '放棄する');
+  assert.equal(await pg.evaluate(() => document.querySelector('#p8abgo').textContent), '育成をやめる');
   await pg.waitForTimeout(300);
   await pg.click('#p8abgo');
   await pg.waitForSelector('.map');
@@ -268,7 +268,7 @@ T('QA-RL2：Chapter間ファームの「育成放棄」は2段階の確認（最
 T('QA-RL3：修行（Chapter間ファームから）：チケット1枚で開始 → 15マスをサイコロで進み、止まった専用能力マスだけ 特訓の能力とライフが同時に +2〜3 → 途中で再読み込みしても出目・チケットはそのまま → ゴールで回数を記録 → 修行メニュー → ファーム（視差効果を減らす設定）', async () => {
   const p = await boot(farmSeed(2, [LOG1], { trainTix: 1 }, 1), '.p9farm.p15f', { calm: true }); const pg = p.page;
   const s0 = await H.getS(pg);
-  assert.match(await textOf(pg, '.bctix'), /チケット\s*1/);   // 2026-10-04 PHASE H2：特訓の上の小さな札
+  assert.equal(await pg.evaluate(() => S.trainTix), 1);   /* 2026-10-06：特訓の札は出さない（枚数はセーブの値で確認） */   // 2026-10-04 PHASE H2：特訓の上の小さな札
   await pg.waitForTimeout(SETTLE);
   await pg.click('button.fmb[onclick="hall(\'s\')"]');
   await pg.waitForSelector('button.p12tc');
@@ -341,7 +341,7 @@ T('QA-RL3：修行（Chapter間ファームから）：チケット1枚で開始
   await pg.waitForTimeout(SETTLE);
   await pg.click('.dback');
   await pg.waitForSelector('.p9farm.p15f');
-  assert.match(await textOf(pg, '.bctix'), /チケット\s*0/);   // 2026-10-04 PHASE H2
+  assert.equal(await pg.evaluate(() => S.trainTix), 0);   // 2026-10-04 PHASE H2
   noErrors(p);
 });
 
@@ -450,7 +450,7 @@ T('QA-RL5：大会の決着：全勝で優勝 → 初回優勝の賞金350G・�
   assert.deepEqual([r.state, r.ch], ['farm', 4]);
   assert.deepEqual(r.log.at(-1), { ch: 3, reachedGoal: true, turnsUsed: 12, turnLimit: 20, declined: false, tour: { rank: 2, place: 1, won: true, firstClear: true } });
   const txt = await H.text(pg);
-  assert.match(await textOf(pg, '.bctix'), /チケット\s*2/, 'ベースキャンプ（2026-10-04 PHASE H2）：特訓の上の札＝チケット2枚');
+  assert.equal(await pg.evaluate(() => S.trainTix), 2, 'チケット2枚（2026-10-06：特訓の上の札は出さない）'); assert.equal(await pg.$('.bctix'), null);
   assert.equal((await H.getS(pg)).g, s0.g + 350);
   noErrors(p);
 });

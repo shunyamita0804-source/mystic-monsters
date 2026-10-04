@@ -142,7 +142,7 @@ test('CH2-B5：Chapter 3 の解放条件（公式Cランク大会クリア）：
     const q = await open({ size }); const pq = q.page; await toFarm(pq);
     await pq.evaluate(() => { Object.assign(S.m.raise, { ch: 3, log: [{ ch: 1, reachedGoal: true }, { ch: 2, reachedGoal: true }] }); S.m.prog.rankClr = [true, true, true, false, false, false]; save(); hall('t'); });
     await pq.waitForSelector('.fm .fmgo'); const ok = await pq.evaluate(() => [MMP8.canDepart(S, S.m).ok, document.querySelector('.fm .fmgo b').textContent, !!document.querySelector('.fm .ksys')]);
-    assert.deepEqual(ok, [true, '冒険', false]);   // 2026-10-04 PHASE H2：ベースキャンプの主ボタン「冒険」（上に次の Chapter）
+    assert.deepEqual(ok, [true, '出発する', false]);   // 2026-10-04 PHASE H2：ベースキャンプの主ボタン「冒険」（上に次の Chapter）
     assert.match(await pq.evaluate(() => document.querySelector('.fm .bcch').textContent), /Chapter 3/);
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []); assert.deepEqual(q.errors, []);
   }

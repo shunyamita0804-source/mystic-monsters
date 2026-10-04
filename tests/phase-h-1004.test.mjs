@@ -23,10 +23,10 @@ function loadMon() { const w = {}; new Function('window', rd('js/phase10/monster
 test('PH-01：ベースキャンプ＝正式背景マスター（768×1360・UI なし）・名札「ベースキャンプ」・所持金・メニュー・音／ダン＋育成中の個体＋一言／次の Chapter＋「冒険」／下の1列5つ。「ファーム」「育成を始める」「育成準備中」は出さない', () => {
   assert.deepEqual(webpSize('assets/basecamp/basecamp_main.webp'), [768, 1360]); assert.match(rd('assets/basecamp/README.md'), /157cf00222fafea99943d00016daacb28320534a59b7801b34fa61d6b81e6e2f/);
   const f = fnOf('fmScr') + fnOf('bcCmds');   // 2026-10-05：下の1列の並びは bcCmds（ステータス画面の下と共通）
-  for (const w of ['<b>ベースキャンプ</b>', 'class="bcgold"', 'onclick="bcMenu()"', 'onclick="sndToggle();', 'class="fmdan bcnpc" data-npc="dan"', '${msv(m)}', '<span class="kdtx"><b>ダン</b>${bcomm()}</span>', '<div class="bcch">${chip}</div>', 't:"冒険"', '<nav class="bcbar fmcmd"']) assert.ok(f.includes(w), w);
+  for (const w of ['<b>ベースキャンプ</b>', 'class="bcgold"', 'onclick="bcMenu()"', 'onclick="sndToggle();', 'class="fmdan bcnpc" data-npc="dan"', '${msv(m)}', '<span class="kdtx"><b>ダン</b>${bcomm()}</span>', '<div class="bcch">${chip}</div>', 't:"出発する"', '<nav class="bcbar fmcmd"']) assert.ok(f.includes(w), w);
   assert.deepEqual([...f.matchAll(/\["([^"]+)","(\w+)","([^"]+)",/g)].map((m) => m[3]), ['特訓', 'アイテム', 'ステータス', '技管理', '中断', '街へ戻る'], '下の1列5つ（育成中は街へ戻れない＝5つ目は中断）');
   assert.doesNotMatch(f, /ファーム|育成を始める|育成準備中|rankLabel/);
-  assert.match(f, /<em class="bctix" aria-label="特訓チケット \$\{S\.trainTix\}枚">チケット \$\{S\.trainTix\}<\/em>/, 'チケットは特訓の上の小さな札（数は実際の値）');
+  assert.doesNotMatch(f, /bctix|チケット \$\{S\.trainTix\}/, '2026-10-06：特訓の上のチケットの札は出さない（正式に削除済み）');
   assert.match(HTML, /\["ベースキャンプ","育成","#tic-farm","hall\(\)"/, '街の下のバーも「ベースキャンプ」');
   assert.match(HTML, /\.fm\.fm2\.bc \.bcbar\{[^}]*grid-template-columns:repeat\(5,1fr\)/, '下は1列');
   assert.match(fnOf('bcMenu'), /p8AbandonAsk\(\)">育成放棄<\/button>`:""/, '育成放棄はメニューの中（2段階の確認は従来どおり）');
@@ -62,10 +62,11 @@ test('PH-03：聖獣士管理局＝正式背景マスター（864×1536）。聖
 test('PH-04：NPC の立ち絵の規格：主要 NPC は全身（expr/full）を上から決まった割合だけ見せる（顔の大きさ・頭の位置をフィナの半身にそろえる。画像は加工しない）。CSS の --nk と MMNPC.STAND が一致', () => {
   const M = loadNpc();
   for (const [id, v] of Object.entries(M.STAND)) {
-    const full = M.standOf(id, 'closeup', M.EXPR[id][0]); assert.ok(full && full.includes(`assets/npc/${id}/expr/full/`), id);
+    const ex = M.EXPR[id] || ['normal'];   // 2026-10-06：セルジュは表情差分なし（normal だけ）
+    const full = M.standOf(id, 'closeup', ex[0]); assert.ok(full && (full.includes(`assets/npc/${id}/expr/full/`) || full === `assets/npc/${id}/full_normal.webp`), id);
     const [w, h] = webpSize(full); assert.ok(Math.abs(w / h / v.fr - v.nk) < 0.01, `${id}：nk＝幅÷高さ÷fr（${(w / h / v.fr).toFixed(3)}）`);
     assert.ok(HTML.includes(`[data-npc=${id}]{--nk:${String(v.nk).replace(/^0/, '')}}`), `${id}：CSS の --nk`);
-    for (const e of M.EXPR[id]) { const s = M.standOf(id, 'closeup', e); assert.deepEqual(webpSize(s), [w, h], `${id}/${e}：表情を変えても器の大きさは同じ`); }
+    for (const e of ex) { const s = M.standOf(id, 'closeup', e); assert.deepEqual(webpSize(s), [w, h], `${id}/${e}：表情を変えても器の大きさは同じ`); }
   }
   assert.equal(M.standOf('fina', 'closeup', 'normal'), null, 'フィナは従来の半身（基準）'); assert.equal(M.standOf('dan', 'fullbody', 'normal'), null, '全身（major）の指定はそのまま');
   assert.match(HTML, /\.mmtalk-fig\.stand img\{width:auto;max-width:none;aspect-ratio:var\(--nk,\.754\);object-fit:cover;object-position:50% 0\}/);
@@ -73,12 +74,14 @@ test('PH-04：NPC の立ち絵の規格：主要 NPC は全身（expr/full）を
   assert.doesNotMatch(HTML.slice(HTML.indexOf('/* 2026-10-04 PHASE H5'), HTML.indexOf('img.nstf[data-npc]')), /filter|hue-rotate/, '色は変えない');
 });
 
-test('PH-05：セルジュ・リュウは正式の透過素材待ち：白背景・市松模様の JPEG はリポジトリに置かず、表示もしない（差し込み口だけ）', () => {
-  const M = loadNpc(); assert.equal(M.get('ryu'), null); assert.equal(M.get('serge').name, 'セルジュ', '2026-10-05：セルジュは名前・役割だけ登録（序盤の正式登録で話す）'); assert.equal(M.imageOf('serge'), null, '立ち絵は無い（正式の透過素材待ち）'); assert.deepEqual(M.get('serge').views, {});
+test('PH-05：セルジュ（2026-10-06 正式の立ち絵＝ユーザーの serge_reference の白背景を透過）。リュウは正式の透過素材待ち（置かない・表示しない）', () => {
+  const M = loadNpc(); assert.equal(M.get('ryu'), null); assert.equal(M.get('serge').name, 'セルジュ');
+  assert.equal(M.imageOf('serge').src, 'assets/npc/serge/full_normal.webp'); assert.equal(M.standOf('serge', 'closeup', 'normal'), 'assets/npc/serge/full_normal.webp');
+  assert.ok(existsSync(path.join(ROOT, 'assets/npc/serge/full_normal.webp'))); assert.match(rd('assets/npc/serge/README.md'), /serge_reference/);
   assert.match(HTML, /const SERGE=\{id:"serge",name:"セルジュ"/); assert.match(fnOf('bureauNpc'), /MMNPC\.get\(SERGE\.id\)/);
   const walk = (d) => readdirSync(path.join(ROOT, d)).flatMap((n) => { const p = path.join(d, n); return statSync(path.join(ROOT, p)).isDirectory() ? walk(p) : [p]; });
-  const files = walk('assets').filter((p) => /serge|セルジュ|ryu|09_ryu|04_serge|ranch_20_ui|bureau_ui|base_camp_ui|standing/i.test(p));
-  assert.deepEqual(files, [], '参考画像・白背景の JPEG は置かない');
+  const files = walk('assets').filter((p) => /ryu|09_ryu|04_serge|ranch_20_ui|bureau_ui|base_camp_ui|standing|serge_reference/i.test(p) || (/serge/i.test(p) && /\.(jpe?g|png)$/i.test(p)));
+  assert.deepEqual(files, [], '参考画像・白背景の JPEG・リュウは置かない');
 });
 
 test('PH-06：守ること：セーブ v6・キー mr4v6、合体は研究所（牧場に戻さない）、特殊復元は無い、街に独立したアイテム屋は無い、プロローグの PHASE G の仕組みはそのまま', () => {

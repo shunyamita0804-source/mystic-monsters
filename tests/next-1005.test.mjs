@@ -45,8 +45,9 @@ test('NX5-03：序盤の導線＝フィナの2択（どちらも管理局へ）�
   assert.match(fnOf('opTownTalk'), /branches:\{yes:OPEN_TALK\.firstYes,no:OPEN_TALK\.firstNo\}/);
   assert.match(fnOf('opGuide'), /c\[3\]=="townGuild\(\)"\?"go":"lk"/, '登録前は管理局だけ');
   assert.match(fnOf('opConfirm'), /MMP11P\.confirmName\(S,n\)/, '保存先は従来どおり');
-  const N = rd('js/npc/npc.js'); assert.match(N, /register\('serge', \{ name: 'セルジュ'[^}]*views: \{\} \}\)/);
-  assert.ok(!existsSync(path.join(ROOT, 'assets/npc/serge')), 'セルジュの白背景の参考画像は置かない');
+  const N = rd('js/npc/npc.js'); assert.match(N, /const SERGE = 'assets\/npc\/serge\/full_normal\.webp'/); assert.match(N, /register\('serge', \{ name: 'セルジュ'/);
+  assert.ok(existsSync(path.join(ROOT, 'assets/npc/serge/full_normal.webp')), '2026-10-06：セルジュ＝参考画像を透過した立ち絵');
+  assert.ok(!existsSync(path.join(ROOT, 'assets/npc/serge/serge_reference.png')), '白背景の参考画像そのものは置かない');
   const MAP = load('js/opening/worldmap.js', 'MMMAP');
   assert.deepEqual(Object.keys(MAP.SPOTS), ['world', 'ferna', 'asteria', 'liberna', 'mistoria']);
   assert.equal(MAP.SPOTS.liberna.note, '出身地'); assert.equal(MAP.SPOTS.mistoria.note, '現在地');

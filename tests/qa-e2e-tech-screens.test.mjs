@@ -321,7 +321,7 @@ describe('QA-TS：390×844 の通し（JS エラー・読み込み・壊れた�
     await pg.evaluate(() => { const m = S.m; m.raise.tour = null; m.raise.battle = null; MMP8.declineTournament(S, m); S.trainTix = 3; save(); hall('t'); });
     await waitSel(pg, '.fmgo.p9c-go');
     await check(pg, 'Chapter間ファーム', SEL.farmInterval);
-    await pg.click(`.p15b[onclick="hall('s')"]`);
+    await pg.click(`.bcb[onclick="hall('s')"]`);   // 2026-10-06：ベースキャンプの下の1列（旧 .p15b は無い）
     await waitSel(pg, `[onclick="trStart('po')"]`);
     await check(pg, '修行メニュー', SEL.trainMenu, { wait: 400 });
     await pg.waitForTimeout(150);   // 画面が出てから 0.5 秒以上たってから押す
@@ -417,7 +417,7 @@ for (const [key, label] of [['se', 'iPhone SE 相当'], ['android', 'Android 相
     await pg.evaluate(() => { MMP8.declineTournament(S, S.m); S.trainTix = 3; save(); hall('t'); });
     await waitSel(pg, '.fmgo.p9c-go');
     await check(pg, 'Chapter間ファーム', SEL.farmInterval);
-    await pg.click(`.p15b[onclick="hall('s')"]`);
+    await pg.click(`.bcb[onclick="hall('s')"]`);   // 2026-10-06：ベースキャンプの下の1列（旧 .p15b は無い）
     await waitSel(pg, `[onclick="trStart('po')"]`);
     await pg.waitForTimeout(550);
     await pg.click(`[onclick="trStart('po')"]`);

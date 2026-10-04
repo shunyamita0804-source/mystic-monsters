@@ -281,33 +281,33 @@ T('QA-BY7：入荷待ちのノビトン・市場にいないジオルは、関�
   noErrors(p);
 });
 
-T('QA-BY8：所持上限（2026-10-04 PHASE H3：牧場20＋連れている1＝21体）：20体なら買えて21体目は牧場へ。21体では「牧場がいっぱいです（牧場は20体まで）。」で押せず、直接呼んでも買えない', async () => {
-  const seven = Array.from({ length: 19 }, (_, i) => ({ sp: i % 2, name: 'B' + i }));
+T('QA-BY8：所持上限（2026-10-06：牧場8＋連れている1＝9体）：8体なら買えて9体目は牧場へ。9体では「牧場がいっぱいです（牧場は8体まで）。」で押せず、直接呼んでも買えない', async () => {
+  const seven = Array.from({ length: 7 }, (_, i) => ({ sp: i % 2, name: 'B' + i }));
   const p = await openMarket({ g: 5000, m: { sp: 0, name: 'て' }, box: seven, focus: 'gauru' }); const pg = p.page;
   let b = await buyBox(pg);
-  assert.deepEqual([b.dis, b.buyKey], [false, 'gauru'], '20体なら買える');
+  assert.deepEqual([b.dis, b.buyKey], [false, 'gauru'], '8体なら買える');
   await openSheet(pg);
   await confirmBuy(pg, 'はち');
   let s = await H.getS(pg);
-  assert.deepEqual([owned(s), s.box.length, s.box[19].name, s.g], [21, 20, 'はち', 4500]);
+  assert.deepEqual([owned(s), s.box.length, s.box[7].name, s.g], [9, 8, 'はち', 4500]);
   const uids = [s.m, ...s.box].map((x) => x.uid);
-  assert.equal(new Set(uids).size, 21, 'uid はすべて別'); assert.ok(uids.every((u) => /^m-/.test(u)));
+  assert.equal(new Set(uids).size, 9, 'uid はすべて別'); assert.ok(uids.every((u) => /^m-/.test(u)));
   for (const key of ['solamo', 'gauru']) {
     await pg.evaluate((k) => market(null, k), key); await settle(pg);
     b = await buyBox(pg);
-    assert.deepEqual([b.dis, b.txt, b.notes], [true, '牧場がいっぱいです（牧場は20体まで）。', []], key);
+    assert.deepEqual([b.dis, b.txt, b.notes], [true, '牧場がいっぱいです（牧場は8体まで）。', []], key);
   }
   const before = JSON.stringify(await H.getS(pg));
   await pg.evaluate(() => p10BuyAsk());
   assert.equal((await buyBox(pg)).ov, false);
   await pg.evaluate(() => adopt(0, 'X')); await settle(pg);
   b = await buyBox(pg);
-  assert.equal(JSON.stringify(await H.getS(pg)), before, '直接 adopt しても22体目は増えない');
-  assert.equal(b.msg, '牧場がいっぱいです（牧場は20体まで）。');
+  assert.equal(JSON.stringify(await H.getS(pg)), before, '直接 adopt しても10体目は増えない');
+  assert.equal(b.msg, '牧場がいっぱいです（牧場は8体まで）。');
   // 育成完了21体・0G：救済より所持上限の判定が先
   await setState(pg, { g: 0, m: { sp: 0, state: 'done' }, box: Array.from({ length: 20 }, () => ({ sp: 1, state: 'done' })) });
   b = await buyBox(pg);
-  assert.deepEqual([b.dis, b.txt, b.notes], [true, '牧場がいっぱいです（牧場は20体まで）。', []]);
+  assert.deepEqual([b.dis, b.txt, b.notes], [true, '牧場がいっぱいです（牧場は8体まで）。', []]);
   noErrors(p);
 });
 

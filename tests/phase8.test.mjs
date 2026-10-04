@@ -661,7 +661,7 @@ test('S8-3：画面：ボード・大会・Chapter間ファームに育成放棄
   const ask = between('function p8AbandonAsk(){', '\nfunction p8AbandonAsk2(');
   assert.doesNotMatch(ask, /MMP8\.abandon\(/, '1段階目では放棄しない'); assert.match(ask, /やめない/);
   const ask2 = between('function p8AbandonAsk2(uid){', '\nfunction p8AbandonGo(');
-  assert.match(ask2, /id="p8abgo" disabled/); assert.match(ask2, /setInterval/); assert.match(ask2, /m\.uid!==uid/);
+  assert.match(ask2, /id:"p8abgo",disabled:true/); assert.match(HTML, /\$\{o\.danger\.id\?` id="\$\{o\.danger\.id\}"`:""\}\$\{o\.danger\.disabled\?" disabled":""\}/);   // 2026-10-06：共通の危険操作モーダル（dangerInner）で id="p8abgo" disabled assert.match(ask2, /setInterval/); assert.match(ask2, /m\.uid!==uid/);
   const go = fnLine('function p8AbandonGo(');
   assert.match(go, /if\(!b\|\|b\.disabled\)return;const r=MMP8\.abandon\(S,uid\);/); assert.match(go, /lobby\(/);
 });

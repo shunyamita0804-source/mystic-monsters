@@ -235,7 +235,7 @@ test('QA-G4-B2：実ブラウザ：名前「<!--」の個体でも Chapter間（
   await pg.click('#app .bcrb[onclick="bcMenu()"]'); await pg.waitForSelector('#p9ov .fmab'); await pg.waitForTimeout(400); await pg.click('#p9ov .fmab'); await pg.waitForSelector('.p8mc');
   assert.equal((await txt(pg, '.p8mc p'))[0], `${CM}の育成をやめますか？`); assert.equal(await count(pg, '.p8mc button'), 2, '「やめない」「放棄に進む」');
   await pg.click('.p8mc button.p8danger'); await pg.waitForSelector('#p8abgo');
-  assert.equal((await txt(pg, '.p8mc p'))[0], `本当に${CM}を放棄しますか？この操作は取り消せません。`); assert.equal(await count(pg, '.p8mc button'), 2);
+  assert.deepEqual((await txt(pg, '.p8mc p')).slice(0, 2), [`${CM}の育成をやめますか？`, 'この操作は取り消せません。']);   // 2026-10-06：最終確認の正式の文 assert.equal(await count(pg, '.p8mc button'), 2);
   await pg.click('.p8mc button.go'); await pg.waitForSelector('.p8mc', { state: 'detached' });
   assert.equal((await H.getS(pg)).m.raise.state, 'farm', '放棄はしていない');
   await noInjected(p);
@@ -267,7 +267,7 @@ test('QA-G4-B4：実ブラウザ：育成完了画面・ファームの完了表
   const M = load(); const S = town(M, CM); S.m.raise.state = 'done'; S.m.raise.log = [{ ch: 1, reachedGoal: true, turnsUsed: 18 }];
   const p = await open({ save: j(S) }); const pg = p.page;
   await start(p, '#app .map');
-  await pg.evaluate(() => p8DoneScr()); await pg.waitForSelector('#app .p9done');
+  await pg.evaluate(() => p8DoneScr()); await pg.waitForSelector('#app .p9done', { state: 'attached' });   // 2026-10-06：フィナの会話の間は施設の UI を隠す（data-mmscene）
   assert.equal((await txt(pg, '#app .p9dn b.big'))[0], `🎉 ${CM}の育成が完了した！`);
   assert.equal(await count(pg, `#app button[onclick="farm('','a')"]`), 1, '「牧場へ」が残る');
   await H.finishTalk(pg);
