@@ -72,10 +72,10 @@ for (const [key, size] of Object.entries(H.SIZES)) {
   });
 }
 
-test('PF-B2（390×844）：一覧は、その部分だけスクロールできる（ステータス・技管理の .dbody、牧場の売る一覧、図鑑の詳細）。見出し・戻るボタンは動かない', { skip: SKIP }, async () => {
+test('PF-B2（390×844）：一覧は、その部分だけスクロールできる（技管理の .dbody、牧場の売る一覧、図鑑の詳細）。見出し・戻るボタンは動かない', { skip: SKIP }, async () => {
   const p = await L.open(); const pg = p.page;
   await setup(p);
-  for (const [name, js, list, fixed] of [['ステータス', "hall('st')", '.dbody', '.dtop'], ['技管理', "hall('w')", '.dbody', '.dtitle'], ['牧場（20体の一覧）', "for(let i=0;i<16;i++){const x=mk(i%2);x.name='R'+i;MMP7.ensureProg(x);S.box.push(x)};farm('','b')", '.rn2 .rngrid', '.rnact'], ['研究所の合体（一覧）', "S.box=[1,2,3,4,5,6,7].map(i=>{const x=mk(i%2);x.name='M'+i;MMP7.ensureProg(x);return x});museum('fuse')", '.lab .labbody', '.lab .dtop']]) {
+  for (const [name, js, list, fixed] of [['技管理', "hall('w')", '.dbody', '.dtitle'], ['牧場（20体の一覧）', "for(let i=0;i<16;i++){const x=mk(i%2);x.name='R'+i;MMP7.ensureProg(x);S.box.push(x)};farm('','b')", '.rn2 .rngrid', '.rnact'], ['研究所の合体（一覧）', "S.box=[1,2,3,4,5,6,7].map(i=>{const x=mk(i%2);x.name='M'+i;MMP7.ensureProg(x);return x});museum('fuse')", '.lab .labbody', '.lab .dtop']]) {
     await pg.evaluate((js) => (0, eval)(js), js); await pg.waitForTimeout(300); await settle(pg);
     const f0 = fixed && await pg.evaluate((s) => document.querySelector(s).getBoundingClientRect().top, fixed);
     const box = await pg.evaluate((s) => { const e = document.querySelector(s), r = e.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + Math.min(r.height - 20, 60), can: e.scrollHeight > e.clientHeight }; }, list);
@@ -85,6 +85,10 @@ test('PF-B2（390×844）：一覧は、その部分だけスクロールでき�
     if (fixed) assert.equal(await pg.evaluate((s) => document.querySelector(s).getBoundingClientRect().top, fixed), f0, `${name}：${fixed} は動かない`);
     assert.equal(await pg.evaluate(() => scrollY), 0, `${name}：ページは動かない`);
   }
+  // 2026-10-05：正式ステータス画面（stScr）は 390×844 で1画面に収まる（中身 .stbody だけがスクロールできる器・見出しと下のコマンドは動かない）
+  await pg.evaluate(() => hall('st')); await pg.waitForTimeout(300); await settle(pg);
+  const st = await pg.evaluate(() => { const b = document.querySelector('.sts .stbody'), n = document.querySelector('.sts .stnav').getBoundingClientRect(); return { fit: b.scrollHeight <= b.clientHeight + 1, ov: getComputedStyle(b).overflowY, navIn: n.bottom <= innerHeight + 1 }; });
+  assert.deepEqual(st, { fit: true, ov: 'auto', navIn: true }, 'ステータス：1画面に収まる・下のコマンドは画面内');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
