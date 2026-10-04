@@ -32,7 +32,7 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     await toField(pg);
     for (const v of [1, 2, 3]) {
       await place(pg, 'p1_0', { turnsUsed: 0, fatigue: 0 }); await idle(pg);
-      await pg.evaluate(() => { window.__face = null; new MutationObserver(() => { const s = document.querySelector('.chdz-stop.on'); if (s && !window.__face) window.__face = { src: s.getAttribute('src'), ring: getComputedStyle(document.querySelector('.chdz-res')).display, roll: S.m.raise.pend && S.m.raise.pend.roll }; }).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class'] }); });
+      await pg.evaluate(() => { window.__face = null; new MutationObserver(() => { const s = document.querySelector('.chdz[data-phase="lock"] .chdz-img'); if (s && !window.__face) window.__face = { src: s.getAttribute('src'), ring: getComputedStyle(document.querySelector('.chdz-res')).display, roll: S.m.raise.pend && S.m.raise.pend.roll }; }).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class'] }); });
       await rollAs(pg, v);
       await pg.waitForFunction(() => !!window.__face, null, { timeout: 15000 });
       const f = await pg.evaluate(() => window.__face);

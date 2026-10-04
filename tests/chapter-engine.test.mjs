@@ -744,15 +744,17 @@ test('CH1-38：2026-10-03 品質向上：HUD の進行ライン＝MMCH.progressO
   assert.match(FV, /<span class="chh-se">START<\/span>[\s\S]*<span class="chh-se g">GOAL<\/span>/);
 });
 
-test('DICE-07：2026-10-03（実機で「止まったあとも面が変わる」）：物理的な見せ方は ROLL → LAND → BOUNCE → SETTLE → LOCK。切り替えは動きの時刻（currentTime・rAF）で進め、LOCK のあとは差し替え・弾みをしない', () => {
-  const D = rd('js/chapter/dice-renderer.js'), ph = D.slice(D.indexOf('  async function physical('), D.indexOf('  /** STOP：'));
-  for (const p of ["setPhase('roll')", "setPhase('land')", "setPhase('bounce')", "setPhase('settle')", "setPhase('lock')"]) assert.ok(ph.includes(p), p);
-  assert.ok(ph.indexOf("setPhase('lock')") > ph.indexOf('await Promise.race'), 'LOCK は動きが終わってから');
-  assert.doesNotMatch(ph, /setTimeout\(\(\) => \{ if \(ov\.isConnected\) fn\(\); \}/, '面の切り替えに setTimeout の予約を使わない');
-  assert.match(ph, /const c = a1\.currentTime;/); assert.match(ph, /fin = lock - 280/, '2026-10-04 G5：出目の面は止まる約0.28秒前（滑っている間）に見せる＝止まったあとは絵も class も変えない'); assert.match(ph, /ev\(fin, \(\) => \{ FS\.final\(\);/);
-  // 2026-10-04 G5：面は最初に全部置いてデコードし、表示（visibility）だけで切り替える（src は変えない）。出目の面を見せたあとは F.roll が何もしない
-  assert.match(D, /roll\(v\) \{ if \(faceLock\) return;/); assert.match(D, /final\(\) \{ if \(faceLock\) return; faceLock = true;/);
-  assert.doesNotMatch(D.replace(/\/\/[^\n]*/g, ''), /\bimg\.src = /, 'サイコロの面の src は差し替えない'); assert.doesNotMatch(D, /const stop = document\.createElement\('img'\)/, '止まってから新しい画像を重ねない（クロスフェードなし）');
-  assert.match(D, /await Promise\.race\(\[Promise\.all\(\[img, \.\.\.rf\]\.filter\(Boolean\)\.map\(\(e\) => \(e\.decode/, '面の絵のデコードを待ってから投げる'); assert.match(D, /await ensureReady\(value\);/);
-  assert.match(D, /fids\.forEach\(clearTimeout\); F\.final\(\);/, '従来の見せ方：止まった時点で残りの面の切り替えを消す');
+test('DICE-07：サイコロの停止（2026-10-04 PHASE H で作り直し。iPhone で「止まったあとも面が変わる」が残っていた）：見た目の切り替え（投げる10コマ・転がる面・出目の面・光）も動きと同じ Web Animations の時間軸に載せる。停止 S 以降の keyframe は同じ値・消えるまで終わらせない・src は変えない', () => {
+  const D = rd('js/chapter/dice-renderer.js'), wa = D.slice(D.indexOf('  async function physicalWA('), D.indexOf('  /** 従来の見せ方（投げる10コマが無いとき）の WAAPI 版'));
+  // 書き直しの理由：旧方式（setTimeout／rAF で class・src を変える）は、iOS の Safari で動き（合成スレッド）が止まったあとに、遅れたメインスレッドの面の切り替えが描かれた
+  assert.match(wa, /const S = total - 300, fin = S - 160, r0 = air \+ imp \+ bnc \* 0\.55, D = S \+ 300 \+ C\.resultMs \+ 900;/, 'S＝停止・fin＝出目の面（まだ滑っている間）・D＝消えるまで');
+  assert.match(wa, /blink\(el\.img, \[\[fin, Infinity\]\], D\)/, '出目の面は fin から消えるまで');
+  assert.match(wa, /\{ transform: P\(lx \+ dir \* 44, ly, 1\), offset: oS \},[^\n]*\n\s*\{ transform: P\(lx \+ dir \* 44, ly, 1\), offset: 1 \},/, '位置は S 以降同じ');
+  assert.match(wa, /\{ transform: 'rotate\(0deg\)', offset: oS \}, \{ transform: 'rotate\(0deg\)', offset: 1 \},/, '傾きは S で 0° のまま');
+  assert.doesNotMatch(wa, /\.src\s*=|classList\.(add|remove|toggle)|\.finish\(\)/, '見た目の切り替えに src・class を使わない・アニメーションを途中で終わらせない');
+  assert.match(D, /return el\.animate\(k\.map\(\(x\) => \(\{ \.\.\.x, easing: 'step-end' \}\)\), \{ duration: D, fill: 'forwards' \}\);/, '面は opacity の階段（補間しない）');
+  assert.match(D, /final\(\) \{ if \(faceLock\) return; faceLock = true; if \(wa\) return;/, 'WAAPI の見せ方では final() は見た目を触らない');
+  assert.match(D, /await Promise\.race\(\[Promise\.all\(\[img, \.\.\.rf, \.\.\.frs, roll\]\.filter\(Boolean\)\.map\(\(e\) => \(e\.decode/, '面・投げる10コマの絵のデコードを待ってから投げる'); assert.match(D, /await ensureReady\(value\);/);
+  assert.doesNotMatch(D.replace(/\/\/[^\n]*/g, ''), /\bimg\.src = /, 'サイコロの面の src は差し替えない');
+  assert.match(D, /ov\.style\.visibility = '';   \/\/ すべてのアニメーションを作ったあと、同じタスクで見せる/);
 });

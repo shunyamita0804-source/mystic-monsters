@@ -1478,6 +1478,7 @@ button.mkc b{font-size:.9rem}button.mkc small{font-size:.66rem;color:#ffe9b0}
 .chdz-stop.pop{animation:chdzpop .34s var(--mm-ease-snap,ease-out)}@keyframes chdzpop{0%{scale:1.22}100%{scale:1}}
 .chdz-glow{position:absolute;left:50%;top:50%;width:130%;height:130%;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(255,228,150,.0) 55%,rgba(255,220,130,.55) 72%,rgba(255,214,110,0));animation:chdzglow .5s ease-out forwards} /* 2026-10-04：転がっている間（SETTLE）に出し終える（LOCK のあとは動かない） */@keyframes chdzglow{0%{opacity:0;scale:.6}40%{opacity:1}100%{opacity:0;scale:1.25}}
 .chdz.landed .chdz-sh{opacity:.6}
+.chdz-glow.wa{animation:none} /* 2026-10-04 PHASE H：光も Web Animations の時間軸で（CSS のアニメーションは使わない） */
 @media (prefers-reduced-motion:reduce){.chdz-stop.pop,.chdz-glow{animation:none}.chdz-glow{display:none}}
 .chdz-sh{position:absolute;width:80px;height:16px;margin-top:40px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.45),rgba(0,0,0,0));transform:translate(-50%,-50%)}
 .chdz-res{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:baseline;justify-content:center;width:88px;height:88px;animation:chdzres .32s cubic-bezier(.2,1.5,.4,1)}

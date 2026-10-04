@@ -98,7 +98,15 @@
     //  見せる面は表示（visibility）だけで切り替え、src は一切変えない。出目の面は止まる約0.28秒前（滑っている間）に見せ、止まったあとは何も変えない。傾きの動きは .chdz-rot（面をまとめた箱）にかける
     const fv = []; for (let v = C.min; v <= C.max; v++) if (resultSprite(v)) fv.push(v);
     const fin0 = resultSprite(value);
-    ov.innerHTML = `<div class="chdz-sh" style="left:${(land.x + jx).toFixed(1)}px;top:${land.y.toFixed(1)}px"></div><div class="chdz-mv" style="left:${from.x.toFixed(1)}px;top:${from.y.toFixed(1)}px"><div class="chdz-rot"><img class="chdz-rolling" alt="" src="${C.rollingSprite}" draggable="false"><span class="chdz-rf">${fv.map((v) => `<img data-v="${v}" alt="" src="${resultSprite(v)}" draggable="false">`).join('')}</span>${fin0 ? `<img class="chdz-img hid" alt="サイコロ 出目 ${value}" src="${fin0}" draggable="false">` : ''}</div></div><div class="chdz-res" hidden style="left:${(land.x + jx + dir * 22).toFixed(1)}px;top:${land.y.toFixed(1)}px"><span class="chdz-ring"></span><b>${value}</b><i>！</i></div>`;
+    // 2026-10-04 PHASE H（iPhone で「止まったあとも面が変わる」が残っていた）：見た目の切り替え（投げる10コマ・転がる間の面・出目の面・光）も、動き（位置・傾き・影）と同じ
+    //  Web Animations の時間軸の上のアニメーション（opacity の階段）で、投げる前に全部まとめて作る。iOS の Safari は transform・opacity のアニメーションを合成スレッドで進め、
+    //  メインスレッド（setTimeout・rAF・class・src の変更）が遅れても動きは止まらない＝旧方式では「動きは止まって見えるのに、遅れた面の切り替えがあとから描かれる」ことがあった。
+    //  いまは停止（S）以降の keyframe はすべて同じ値・アニメーションは消えるまで終わらせない（終わったときの描き直しも起きない）。停止以降は class・src・style を一切触らない
+    const wa = !!(fin0 && fv.length === C.max - C.min + 1 && typeof Element !== 'undefined' && Element.prototype.animate);
+    const thr = wa && Array.isArray(C.throwFrames) && C.throwFrames.length >= 10 ? C.throwFrames : null;
+    const O = wa ? ' style="opacity:0"' : '';
+    ov.innerHTML = `<div class="chdz-sh" style="left:${(land.x + jx).toFixed(1)}px;top:${land.y.toFixed(1)}px"></div><div class="chdz-mv" style="left:${from.x.toFixed(1)}px;top:${from.y.toFixed(1)}px">${wa ? '<i class="chdz-glow wa" style="opacity:0"></i>' : ''}${thr ? `<span class="chdz-frs">${thr.map((f, i) => `<img class="chdz-fr" data-i="${i}" alt="" src="${f}" draggable="false"${O}>`).join('')}</span>` : ''}<div class="chdz-rot"><img class="chdz-rolling${wa ? '' : ''}" alt="" src="${C.rollingSprite}" draggable="false"${O}><span class="chdz-rf">${fv.map((v) => `<img data-v="${v}" alt="" src="${resultSprite(v)}" draggable="false"${wa ? ' class="on"' + O : ''}>`).join('')}</span>${fin0 ? `<img class="chdz-img${wa ? '' : ' hid'}" alt="サイコロ 出目 ${value}" src="${fin0}" draggable="false"${O}>` : ''}</div></div><div class="chdz-res" hidden style="left:${(land.x + jx + dir * 22).toFixed(1)}px;top:${land.y.toFixed(1)}px"><span class="chdz-ring"></span><b>${value}</b><i>！</i></div>`;
+    if (wa) ov.classList.add('wa');
     ov.style.visibility = 'hidden';   // 面の絵のデコードを待つ間は見せない（START の位置に止まったサイコロを見せない）
     host.appendChild(ov);
     try {
@@ -107,11 +115,12 @@
       const F = {
         hideAll() { roll.classList.add('hid'); rf.forEach((e) => e.classList.remove('on')); },
         roll(v) { if (faceLock) return; roll.classList.add('hid'); for (const e of rf) e.classList.toggle('on', +e.dataset.v === v); },
-        final() { if (faceLock) return; faceLock = true; F.hideAll(); if (img) { img.classList.remove('hid'); img.classList.add('chdz-stop', 'on', 'locked'); } },
+        final() { if (faceLock) return; faceLock = true; if (wa) return; F.hideAll(); if (img) { img.classList.remove('hid'); img.classList.add('chdz-stop', 'on', 'locked'); } },   // WAAPI の見せ方では見た目は時間軸のアニメーションが出し終えている（ここでは何も触らない）
         shown: () => faceLock && !!img && img.naturalWidth > 0,
       };
-      await Promise.race([Promise.all([img, ...rf].filter(Boolean).map((e) => (e.decode ? e.decode().catch(() => {}) : Promise.resolve()))), wait(2500)]);   // 面の絵がデコードされるまで投げない（ふだんは先読み済みですぐ）
-      ov.style.visibility = '';
+      const frs = [...ov.querySelectorAll('.chdz-frs img')], glow = ov.querySelector('.chdz-glow.wa');
+      await Promise.race([Promise.all([img, ...rf, ...frs, roll].filter(Boolean).map((e) => (e.decode ? e.decode().catch(() => {}) : Promise.resolve()))), wait(2500)]);   // 面の絵（投げる10コマも）がデコードされるまで投げない（ふだんは先読み済みですぐ）
+      if (!wa) ov.style.visibility = '';   // WAAPI の見せ方は、アニメーションを全部作ってから同じタスクの中で見せる（作る前の1フレームを見せない）
       if (opts.manualStop) {
         // START → 宙で回り続ける（spin）→ プレイヤーの STOP（requestStop）で落ちて止まる（land）。回転は止めた瞬間の角度から正式の角度へ収束
         const ax = lx * 0.5, ay = ly - 110;   // 宙に浮く位置（着地点の上）
@@ -142,6 +151,10 @@
           await Promise.race([a2.finished.catch(() => {}), wait(T2 + 200)]);
         } else { mv.style.transform = `translate(-50%,-50%) translate(${lx.toFixed(1)}px,${ly.toFixed(1)}px)`; await wait(T2); }
         F.final();
+      } else if (!calm && wa && thr && frs.length === thr.length && frs.every((e) => e.complete && e.naturalWidth > 0)) {
+        await physicalWA(ov, mv, rot, sh, value, lx, ly, dir, F, { frs, rf, img, roll, glow });
+      } else if (!calm && wa) {
+        await legacyWA(ov, mv, rot, sh, value, lx, ly, dir, spin, settle, T, F, { rf, img, roll, glow });
       } else if (!calm && mv.animate && Array.isArray(C.throwFrames) && C.throwFrames.length >= 10 && C.throwFrames.every(isReady) && faceSet().length) {
         await physical(ov, mv, rot, sh, value, lx, ly, dir, F);
       } else if (!calm && mv.animate) {
@@ -165,7 +178,7 @@
         ], { duration: T, easing: 'linear', fill: 'forwards' });
         await Promise.race([a1.finished.catch(() => {}), wait(T + 200)]);
         fids.forEach(clearTimeout); F.final();   // 2026-10-04 G5：止まったあとに遅れて面を変えない（タイマーが遅れても、ここで出目の面＝以後は変えない）
-      } else { phase = 'auto'; ov.dataset.phase = 'auto'; mv.style.transform = `translate(-50%,-50%) translate(${lx.toFixed(1)}px,${ly.toFixed(1)}px)`; F.final(); await wait(T); }   // 視差を減らす設定：最初から出目の面（止まってから差し替えない）
+      } else { phase = 'auto'; ov.dataset.phase = 'auto'; mv.style.transform = `translate(-50%,-50%) translate(${lx.toFixed(1)}px,${ly.toFixed(1)}px)`; if (wa && img) img.style.opacity = '1'; F.final(); if (wa) ov.style.visibility = ''; await wait(T); }   // 視差を減らす設定：最初から出目の面（止まってから差し替えない）
       if (!ov.dataset.stopped) { ov.dataset.stopped = '1'; feel('dice.stop'); }   // 旧い見せ方・視差を減らす設定：ここで止まった
       // 2026-10-04：LOCK 済み（物理的な見せ方）なら data-phase は 'lock' のまま（見た目は何も変えない。MMCHD.phase() だけ 'result'）。従来の見せ方は 'result'
       const wasLocked = ov.dataset.phase === 'lock';
@@ -261,6 +274,110 @@
     await frame();   // 止まった姿が描かれたフレームで「完全停止」
     ov.dataset.stopped = '1'; feel('dice.stop');
     await wait(Math.max(0, total - lock));   // 完全停止のあと約0.3秒は何も変えない（この間も出目の面のまま。出現〜dice.result の長さは従来どおり約1.66秒）
+  }
+  // ---- 2026-10-04 PHASE H：見た目の切り替えを Web Animations の時間軸に載せる（iOS の Safari で、止まったあとに面が変わって見えた不具合の根本対策）----
+  /** el を wins（[開始ms, 終了ms]。終了 Infinity＝最後まで）の間だけ見せる opacity の階段アニメーション（長さ D）。途中の値は補間しない（step-end） */
+  function blink(el, wins, D) {
+    const c = (t) => Math.max(0, Math.min(1, t / D)), k = [{ offset: 0, opacity: 0 }];
+    for (const [a, b] of wins) { if (a <= 0) k[0].opacity = 1; else k.push({ offset: c(a), opacity: 1 }); if (b < D) k.push({ offset: c(b), opacity: 0 }); }
+    k.push({ offset: 1, opacity: k[k.length - 1].opacity });
+    return el.animate(k.map((x) => ({ ...x, easing: 'step-end' })), { duration: D, fill: 'forwards' });
+  }
+  /** 面の切り替えの時刻表 [[ms, 出目]…]（from〜to の間。間隔は減速に合わせて伸びる。出目・確率には触れない＝見た目だけ） */
+  function faceSched(from, to, value) {
+    const faces = []; for (let v = C.min; v <= C.max; v++) faces.push(v);
+    const out = []; let t = from, n = 0, prev = value;
+    while (t < to) { const p = (t - from) / Math.max(1, to - from); let v; do { v = faces[(n++ * 5 + 3) % faces.length]; } while (v === prev && faces.length > 1); out.push([t, v]); prev = v; t += 70 + 170 * p * p; }
+    return out;
+  }
+  /** 面ごとの表示区間（[[開始, 終了]…]）にまとめて、各面の <img> の階段アニメーションを作る */
+  function faceAnims(rf, sched, endAt, D) {
+    const w = new Map(rf.map((e) => [+e.dataset.v, []]));
+    sched.forEach(([t, v], i) => { const e = i + 1 < sched.length ? sched[i + 1][0] : endAt; if (w.has(v)) w.get(v).push([t, e]); });
+    return rf.map((e) => blink(e, w.get(+e.dataset.v), D));
+  }
+  /** 止まった時刻 S を時間軸で待つ（音・data-phase など見た目に関係しないことだけを進める） */
+  async function untilTime(a, ms, evs) {
+    let i = 0; const t0 = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    const now = () => { const c = a.currentTime; return typeof c === 'number' ? c : ((typeof performance !== 'undefined' ? performance.now() : Date.now()) - t0); };
+    const lim = t0 + ms + 1500;
+    while (true) { const c = now(); while (i < evs.length && evs[i][0] <= c) evs[i++][1](); if (c >= ms) break; if ((typeof performance !== 'undefined' ? performance.now() : Date.now()) > lim) break; await Promise.race([frame(), wait(50)]); }   // 裏に回って rAF が止まっても進める（見た目は時間軸が進める）
+    while (i < evs.length) evs[i++][1]();
+  }
+  /**
+   * 物理的な見せ方（WAAPI 版）：投げる（01〜07）→ 着地の衝撃（08・09）→ 小さく跳ねる（10）→ 転がりながら面が変わり減速 → 出目の面（fin）→ 停止（S）。
+   *  S で位置・傾き・影・面がそろって止まり、そのあと消えるまで keyframe は同じ値（何も変えない）。アニメーションは消えるまで終わらせない
+   */
+  async function physicalWA(ov, mv, rot, sh, value, lx, ly, dir, FS, el) {
+    const setPhase = (p) => { phase = p === 'lock' ? 'lock' : 'auto'; ov.dataset.phase = p; };
+    setPhase('roll');
+    const B = C.frameBox, box = mv.clientWidth || 88, k = box / B.dh;
+    for (const f of el.frs) f.style.cssText += `;width:${(B.w * k).toFixed(1)}px;height:${(B.h * k).toFixed(1)}px;left:${(box / 2 - B.cx * k).toFixed(1)}px;top:${(box / 2 - B.cy * k).toFixed(1)}px`;
+    const air = C.airMs, imp = C.impactMs, bnc = C.bounceMs, rol = C.rollMs, total = air + imp + bnc + rol;
+    const S = total - 300, fin = S - 160, r0 = air + imp + bnc * 0.55, D = S + 300 + C.resultMs + 900;   // S＝停止（このあと消えるまで何も変えない）・fin＝出目の面に固定（まだ滑って傾きが戻る間）
+    // 投げる10コマ（src は変えない。各コマの <img> の表示区間）
+    const fw = [0, 1, 2, 3, 4, 5, 6].map((i) => [air * i / 7, air * (i + 1) / 7]).concat([[air, air + imp * 0.5], [air + imp * 0.5, air + imp], [air + imp, r0]]);
+    const A = el.frs.map((f, i) => blink(f, [fw[i]], D));
+    A.push(...faceAnims(el.rf, faceSched(r0, fin, value), fin, D), blink(el.img, [[fin, Infinity]], D), blink(el.roll, [], D));
+    if (el.glow) A.push(el.glow.animate([{ opacity: 0, transform: 'translate(-50%,-50%) scale(.7)', offset: 0 }, { opacity: 0, transform: 'translate(-50%,-50%) scale(.7)', offset: r0 / D },
+      { opacity: 0.9, transform: 'translate(-50%,-50%) scale(1)', offset: (r0 + 120) / D }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.25)', offset: (S - 140) / D }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.25)', offset: 1 }], { duration: D, fill: 'forwards' }));
+    const P = (x, y, s = 1) => `translate(-50%,-50%) translate(${x.toFixed(1)}px,${y.toFixed(1)}px) scale(${s})`, q = (t) => t / D;
+    const o1 = q(air), o2 = q(air + imp), o3 = q(air + imp + bnc * 0.5), o4 = q(air + imp + bnc), oS = q(S), END = 'cubic-bezier(.3,.5,.55,1)';
+    const a1 = mv.animate([
+      { transform: P(0, 0, 0.85), offset: 0, easing: 'cubic-bezier(.15,.7,.35,1)' },
+      { transform: P(lx * 0.4, ly - 96, 1.16), offset: o1 * 0.45, easing: 'cubic-bezier(.55,0,.85,.5)' },
+      { transform: P(lx, ly, 1), offset: o1, easing: 'linear' },
+      { transform: P(lx + dir * 3, ly + 2, 1.04), offset: o2, easing: 'cubic-bezier(.2,.7,.4,1)' },
+      { transform: P(lx + dir * 10, ly - 20, 1), offset: o3, easing: 'cubic-bezier(.6,0,.9,.6)' },
+      { transform: P(lx + dir * 16, ly, 1), offset: o4, easing: END },
+      { transform: P(lx + dir * 44, ly, 1), offset: oS },   // 停止
+      { transform: P(lx + dir * 44, ly, 1), offset: 1 },    // 消えるまで同じ
+    ], { duration: D, easing: 'linear', fill: 'forwards' });
+    A.push(a1, rot.animate([
+      { transform: `rotate(${dir * 28}deg)`, offset: 0 }, { transform: `rotate(${dir * 28}deg)`, offset: o3 },
+      { transform: `rotate(${-dir * 12}deg)`, offset: o4 + (oS - o4) * 0.3, easing: 'ease-in-out' }, { transform: `rotate(${dir * 4}deg)`, offset: o4 + (oS - o4) * 0.65, easing: END },
+      { transform: 'rotate(0deg)', offset: oS }, { transform: 'rotate(0deg)', offset: 1 },
+    ], { duration: D, easing: 'linear', fill: 'forwards' }), sh.animate([
+      { transform: 'translate(-50%,-50%) scale(.3)', opacity: 0 }, { transform: 'translate(-50%,-50%) scale(.45)', opacity: 0.18, offset: o1 * 0.45 },
+      { transform: 'translate(-50%,-50%) scale(1.05)', opacity: 0.6, offset: o1 }, { transform: `translate(calc(-50% + ${dir * 10}px),-50%) scale(.8)`, opacity: 0.4, offset: o3 },
+      { transform: `translate(calc(-50% + ${dir * 16}px),-50%) scale(1)`, opacity: 0.55, offset: o4, easing: END }, { transform: `translate(calc(-50% + ${dir * 44}px),-50%) scale(1)`, opacity: 0.55, offset: oS },
+      { transform: `translate(calc(-50% + ${dir * 44}px),-50%) scale(1)`, opacity: 0.55, offset: 1 },
+    ], { duration: D, easing: 'linear', fill: 'forwards' }));
+    ov.__anims = A; ov.dataset.stopAt = String(Math.round(S)); ov.dataset.finAt = String(Math.round(fin));
+    ov.style.visibility = '';   // すべてのアニメーションを作ったあと、同じタスクで見せる
+    feel('dice.throw');
+    await untilTime(a1, S, [[air, () => { setPhase('land'); feel('dice.land'); }], [air + imp, () => setPhase('bounce')], [r0, () => setPhase('settle')], [fin, () => { FS.final(); }]]);
+    FS.final(); setPhase('lock');
+    await frame(); ov.dataset.stopped = '1'; feel('dice.stop');   // 止まった姿が描かれたフレームで「完全停止」（音の差し込み口。見た目は何も変えない）
+    await wait(Math.max(0, total - S));
+  }
+  /** 従来の見せ方（投げる10コマが無いとき）の WAAPI 版：回りながら面が変わる → 出目の面 → 着地・跳ねて停止（T）。T 以降は消えるまで同じ値 */
+  async function legacyWA(ov, mv, rot, sh, value, lx, ly, dir, spin, settle, T, FS, el) {
+    phase = 'auto'; ov.dataset.phase = 'auto';
+    const D = T + C.resultMs + 900, q = (t) => t / D, fin = T * 0.5;
+    const A = [...faceAnims(el.rf, faceSched(0, fin, value), fin, D), blink(el.img, [[fin, Infinity]], D), blink(el.roll, [], D)];
+    if (el.glow) A.push(blink(el.glow, [], D));
+    const sc = (kf) => kf.map((x) => ({ ...x, offset: x.offset == null ? undefined : x.offset * T / D })).concat([{ ...kf[kf.length - 1], offset: 1, easing: undefined }]).map((x) => { const y = { ...x }; if (y.easing === undefined) delete y.easing; if (y.offset === undefined) delete y.offset; return y; });
+    const mvk = [
+      { transform: 'translate(-50%,-50%) translate(0px,0px) scale(.9)', offset: 0, easing: 'cubic-bezier(.2,.6,.4,1)' },
+      { transform: `translate(-50%,-50%) translate(${(lx * 0.45).toFixed(1)}px,${(ly - 70).toFixed(1)}px) scale(1.18)`, offset: 0.34, easing: 'cubic-bezier(.4,0,.8,.6)' },
+      { transform: `translate(-50%,-50%) translate(${lx.toFixed(1)}px,${ly.toFixed(1)}px) scale(1)`, offset: 0.6, easing: 'cubic-bezier(0,0,.5,1)' },
+      { transform: `translate(-50%,-50%) translate(${(lx + dir * 6).toFixed(1)}px,${(ly - 22).toFixed(1)}px) scale(1)`, offset: 0.72, easing: 'cubic-bezier(.5,0,1,1)' },
+      { transform: `translate(-50%,-50%) translate(${(lx + dir * 12).toFixed(1)}px,${ly.toFixed(1)}px) scale(1)`, offset: 0.82, easing: 'ease-out' },
+      { transform: `translate(-50%,-50%) translate(${(lx + dir * 22).toFixed(1)}px,${ly.toFixed(1)}px) scale(1)`, offset: 1 },
+    ];
+    const shk = [
+      { transform: 'translate(-50%,-50%) scale(.3)', opacity: 0, offset: 0 }, { transform: 'translate(-50%,-50%) scale(.5)', opacity: 0.2, offset: 0.34 },
+      { transform: 'translate(-50%,-50%) scale(1)', opacity: 0.55, offset: 0.6 }, { transform: `translate(calc(-50% + ${dir * 6}px),-50%) scale(.8)`, opacity: 0.4, offset: 0.72 },
+      { transform: `translate(calc(-50% + ${dir * 22}px),-50%) scale(1)`, opacity: 0.55, offset: 1 },
+    ];
+    const a1 = mv.animate(sc(mvk), { duration: D, easing: 'linear', fill: 'forwards' });
+    A.push(a1, rot.animate(sc(spinFrames(dir, spin, settle)), { duration: D, easing: 'linear', fill: 'forwards' }), sh.animate(sc(shk), { duration: D, easing: 'linear', fill: 'forwards' }));
+    ov.__anims = A; ov.dataset.stopAt = String(Math.round(T)); ov.dataset.finAt = String(Math.round(fin));
+    ov.style.visibility = '';
+    feel('dice.throw');
+    await untilTime(a1, T, [[T * 0.6, () => feel('dice.land')], [fin, () => FS.final()]]);
+    FS.final();
   }
   /** STOP：宙で回っているサイコロを止める（出目は既に決まっている）。回っていなければ false */
   function requestStop() { if (!stopResolve) return false; const f = stopResolve; stopResolve = null; f(); return true; }
