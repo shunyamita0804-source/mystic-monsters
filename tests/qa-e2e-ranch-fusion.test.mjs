@@ -263,10 +263,11 @@ test('QA-RF-B2：牧場の表示：連れている子・牧場の子が一覧に
     await tap(pg, '.hz[onclick="hall()"]');
     await pg.waitForSelector('.fmb');
     await tap(pg, `.fmb[onclick="hall('st')"]`);
-    await pg.waitForSelector('.dhero');
+    await pg.waitForSelector('.sts .sthero');   // 2026-10-05：正式ステータス画面（棒の読み上げ名＝「ライフ 80（999 まで）」・素早さの目盛り＝「素早さ 7 / 10」）
     const t = await txt(pg, '#app');
     assert.match(t, /ガウB/); assert.match(t, /ガウル/);
-    assert.match(t, /ライフ 80 \/ 999/); assert.match(t, /ちから 110 \/ 999/); assert.match(t, /丈夫さ 60 \/ 999/); assert.match(t, /素早さ 7 \/ 10/);
+    const al = await pg.evaluate(() => [...document.querySelectorAll('.sts [role="img"][aria-label]')].map((e) => e.getAttribute('aria-label')));
+    for (const w of ['ライフ 80（999 まで）', 'ちから 110（999 まで）', '丈夫さ 60（999 まで）', '素早さ 7 / 10']) assert.ok(al.includes(w), `${w}：${JSON.stringify(al)}`);
     await invariants(p);
   } finally { await p.ctx.close(); }
 });
