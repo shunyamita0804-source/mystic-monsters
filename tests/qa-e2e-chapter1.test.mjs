@@ -86,7 +86,7 @@ test('CH1-B2：サイコロ：START の1タップで正式サイコロ（既存�
   await rollAs(pg, 3);
   await pg.waitForSelector('.chdz');
   const d = await pg.evaluate(() => ({ imgs: [...document.querySelectorAll('.chdz img')].map((i) => i.getAttribute('src')), locked: MMCHD.isLocked(), btn: [...document.querySelectorAll('.chstop')].every((b) => b.disabled), rest: document.querySelector('.chrest') && document.querySelector('.chrest').disabled }));
-  assert.ok(d.imgs.length >= 1 && d.imgs.length <= 2 && d.imgs.every((x) => /dice_(blank|stop_[1-6])\.webp$|assets\/dice\/std\/(0[1-9]|10)\.webp$/.test(x)), `正式サイコロだけ（既存の10コマ＝投げる〜着地、停止面＝転がる〜停止。2026-10-03）：${d.imgs}`); assert.equal(d.locked, true); assert.equal(d.btn, true); assert.equal(d.rest, true);
+  assert.ok(d.imgs.length >= 1 && d.imgs.length <= 12 && d.imgs.every((x) => /dice_(blank|stop_[1-6])\.webp$|assets\/dice\/std\/(0[1-9]|10)\.webp$/.test(x)), `正式サイコロだけ（既存の10コマ＝投げる〜着地、停止面＝転がる〜停止。2026-10-03。2026-10-04 G5：面ごとの <img> を最初に置く）：${d.imgs}`); assert.equal(d.locked, true); assert.equal(d.btn, true); assert.equal(d.rest, true);
   const t0 = await st(pg); await pg.evaluate(() => { chfRoll(); chfRest(); }); assert.deepEqual(await st(pg), t0, '演出中の押下は無視（ターン・疲れ・位置は変わらない）');
   await pg.waitForSelector('.chdz-stop.on'); assert.deepEqual(await pg.evaluate(() => [document.querySelector('.chdz-stop').getAttribute('src'), getComputedStyle(document.querySelector('.chdz-res')).display]), ['./assets/fields/ch1a/dice/dice_stop_3.webp', 'none'], '出目3 → 3が上の停止面（数字の輪は出さない）');
   await idle(pg);
@@ -303,7 +303,7 @@ test('CH1-B13：再読み込み後は今の地点を基準にカメラを合わ�
 });
 
 
-test('CH1-B14：バトル地点：目印は無く、着いたら草むらが揺れて「！」→ 野生のモンスターの案内。移動・演出・結果の間は STOP・アイテム・休む・分岐を受け付けない', { skip: SKIP }, async () => {
+test('CH1-B14：バトル地点：目印は無く、着いたら「！」（2026-10-04 G3：予兆の草むらは出さない）→ 野生のモンスターの案内。移動・演出・結果の間は STOP・アイテム・休む・分岐を受け付けない', { skip: SKIP }, async () => {
   const p = await L.open(); const pg = p.page;
   await start(p);
   const id = await pg.evaluate(() => { const g = MMCH.graphFor(S.m), a = S.m.raise.field.nodeAssignments; return g.order.find((x) => a[x] && a[x].t === 'battle' && g.nodes[x].idx > 0 && !g.nodes[x].branch); });
@@ -318,8 +318,7 @@ test('CH1-B14：バトル地点：目印は無く、着いたら草むらが揺�
   assert.deepEqual([t1.turns, t1.f], [t0.turns, t0.f]); assert.equal(await pg.evaluate(() => !!document.querySelector('#chitems')), false);
   await pg.waitForSelector('.chbat'); await idle(pg);
   const order = await pg.evaluate(() => window.__order);
-  assert.deepEqual(order.slice(0, 2), ['alert', 'rustle'].filter((x) => order.includes(x)).length === 2 ? order.slice(0, 2) : order.slice(0, 2));
-  assert.ok(order.indexOf('alert') >= 0 && order.indexOf('rustle') >= 0 && order.indexOf('chbat') > Math.max(order.indexOf('alert'), order.indexOf('rustle')), `草むらの揺れと「！」のあとに案内（${order.join('→')}）`);
+  assert.ok(order.indexOf('alert') >= 0 && order.indexOf('chbat') > order.indexOf('alert'), `「！」のあとに案内（${order.join('→')}）`); assert.equal(order.indexOf('rustle'), -1, '2026-10-04 G3：予兆の草むら（草の断片に見えた）は出さない');
   assert.deepEqual(await pg.evaluate(() => [document.querySelectorAll('.chf-alert,.chf-rustle').length, document.querySelector('.chbat h3').textContent, [...document.querySelectorAll('.chwing')].map((w) => w.disabled)]), [0, '野生のモンスター', [true, true, true, true]]);
   assert.deepEqual(p.errors, []);
 });
@@ -341,7 +340,7 @@ test('CH1-B15：1タップ：START を押すまでサイコロは画面に無い
   const look = () => pg.evaluate(() => [...document.querySelectorAll('.chwing')].map((w) => { const c = getComputedStyle(w); return { op: c.opacity, bg: c.backgroundColor, filter: c.filter, img: c.backgroundImage, border: c.borderWidth, shadow: c.boxShadow, deck: document.querySelector('.chdeck-bg').getAttribute('src') }; }));
   const during = await look(); assert.deepEqual(during.map((x) => [x.op, x.bg, x.filter]), [['1', 'rgba(0, 0, 0, 0)', 'none'], ['1', 'rgba(0, 0, 0, 0)', 'none'], ['1', 'rgba(0, 0, 0, 0)', 'none'], ['1', 'rgba(0, 0, 0, 0)', 'none']], 'サイコロ処理中も4コマンドは暗くならない（半透明の覆い・opacity・filter なし）');
   const wingLook0 = during; assert.match(sp.img, /deck_start\.webp$/, '操作欄は START の画像のまま（STOP の画像は使わない）'); assert.deepEqual(sp.wings, [true, true, true, true]); assert.deepEqual(sp.btn, [[true, '2']], '中央のボタンは押せない（移動中）');
-  assert.ok(sp.imgs.length >= 1 && sp.imgs.length <= 2 && sp.imgs.every((s) => /dice_(blank|stop_[1-6])\.webp$|assets\/dice\/std\/(0[1-9]|10)\.webp$/.test(s)), `正式サイコロ（既存の10コマ＋停止面）だけ：${sp.imgs}`);
+  assert.ok(sp.imgs.length >= 1 && sp.imgs.length <= 12 && sp.imgs.every((s) => /dice_(blank|stop_[1-6])\.webp$|assets\/dice\/std\/(0[1-9]|10)\.webp$/.test(s)), `正式サイコロ（既存の10コマ＋停止面）だけ：${sp.imgs}`);
   assert.deepEqual([sp.pend.roll, sp.pend.stage, sp.saved.roll], [2, 'move', 2], '出目は START の時点で確定・保存（自動停止のタイミングで変わらない）');
   const t0 = await st(pg); await pg.evaluate(() => { chfRoll(); chfRoll(); chfRest(); }); assert.deepEqual(await st(pg), t0, '演出中の START・休むの連打は無視');
   await pg.waitForFunction(() => !!window.__res, null, { timeout: 15000 });

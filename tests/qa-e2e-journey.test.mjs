@@ -322,8 +322,8 @@ test('JR-13：大会会場への到着：14 の最後のマス（ゴール）に
   await pg.waitForSelector('.mmtalk:not(.mmtalk-out)', { timeout: 15000 });
   const lines = []; for (let i = 0; i < 12 && await pg.$('.mmtalk:not(.mmtalk-out)'); i++) { await pg.waitForTimeout(450); const t = await pg.evaluate(() => { const e = document.querySelector('.mmtalk:not(.mmtalk-out)'); return e ? [e.querySelector('.mmtalk-name').textContent, e.getAttribute('aria-label') || '', e.querySelector('.mmtalk-text').textContent] : null; }); if (t && !lines.some((x) => x[2] === t[2])) lines.push(t); await pg.click('.mmtalk', { force: true }).catch(() => {}); }
   await pg.waitForSelector('#chrcv .rcv-row', { timeout: 15000 });
-  const said = [...new Set(lines.map((l) => l[2]))].filter((t) => ['やっと着いたね、ユウさん！', 'ここが公式大会の会場だよ。', 'さあ、早速受付に行こう！'].includes(t));
-  assert.deepEqual(said, ['やっと着いたね、ユウさん！', 'ここが公式大会の会場だよ。', 'さあ、早速受付に行こう！'], `フィナの3行（プレイヤー名）：${JSON.stringify(lines)}`); assert.ok(lines.every((l) => l[0] === 'フィナ'));
+  const said = [...new Set(lines.map((l) => l[2]))].filter((t) => ['やっと着いたね、ユウさん！', 'ようこそ、大会会場へ！', 'さあ、参加する大会を選ぼう。'].includes(t));
+  assert.deepEqual(said, ['やっと着いたね、ユウさん！', 'ようこそ、大会会場へ！', 'さあ、参加する大会を選ぼう。'], `フィナの3行（プレイヤー名）：${JSON.stringify(lines)}`); assert.ok(lines.every((l) => l[0] === 'フィナ'));
   assert.equal(await pg.evaluate(() => S.m.raise.field.arrivalSeen), true);
   await pg.reload(); await pg.waitForFunction(() => typeof S === 'object' && S.m); await pg.evaluate(() => board());
   await pg.waitForSelector('#chrcv .rcv-row', { timeout: 20000 }); await pg.waitForTimeout(400);

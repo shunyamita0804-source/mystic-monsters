@@ -90,6 +90,9 @@ try {
   if (pro) { await sleep(500); await page.click('.mmpro-skip'); await sleep(500); await page.click('.mmpro-skip'); }
   await page.waitForSelector('#p11nm', { timeout: 20000 });
   rec('プロローグ A（背景5枚が読める・スキップで聖獣士登録へ）', pro && proImgs, `表示:${pro} 背景:${proImgs}`);
+  const lobbyOk = await page.evaluate(() => new Promise((ok) => { const i = new Image(); i.onload = () => ok(i.naturalWidth > 0); i.onerror = () => ok(false); i.src = 'assets/tournament/lobby/lobby_main.webp'; }));   // 2026-10-04 G4：大会会場の中（ロビー）の背景
+  const reg = await page.evaluate(() => !!document.querySelector('.p11reg .p11card #p11nm') && !!document.querySelector('.p11reg .p11go') && getComputedStyle(document.querySelector('h1')).display === 'none');
+  rec('聖獣士登録の画面（登録カード・登録する・旧い見出しなし）・大会会場の中の背景が読める', lobbyOk && reg, `ロビー:${lobbyOk} 登録:${reg}`);
   await page.fill('#p11nm', 'テスト');
   await page.click('[onclick*="p11NameGo"]'); await sleep(800);
   const d1 = await drain(); await sleep(600);

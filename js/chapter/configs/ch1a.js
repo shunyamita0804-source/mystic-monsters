@@ -109,11 +109,14 @@
     tournamentDestination: 'official',
     // ---- ゴール（14 の最後のマス）に着いたあと：到着イベント専用の背景（マス・サイコロ・操作欄なし）→ フィナの短い会話 → 大会受付（ランク選択）。
     //  {name} はプレイヤー名（初期名アルト）。会話はこの個体のこの Chapter で1回（m.raise.field.arrivalSeen）。受付のあとは既存の大会（開始演出 → セドリックの進行） ----
-    arrival: { bg: FN + 'event/ch1_bg_15_event.webp', name: '公式大会会場・正門前', fadeMs: 900,
+    // 2026-10-04 G4：門の前でいきなりランクを選ばせない＝門前（短い遷移 gateMs）→ 会場の中のロビー（lobby。受付・参加者・高い天井。闘技場のステージとは別の場所）へクロスフェード
+    //  → フィナの到着の会話（正式素材の全身・大型の会話窓）→ ランク選択（ロビーの上）。会話の文面は【暫定】（ユーザーの例「ようこそ、大会会場へ！」「参加する大会を選ぼう。」）
+    arrival: { bg: FN + 'event/ch1_bg_15_event.webp', name: '公式大会会場・正門前', fadeMs: 900, gateMs: 1300,
+      lobby: { bg: './assets/tournament/lobby/lobby_main.webp', name: '公式大会会場', fadeMs: 800 },
       talk: [
         { npc: 'fina', expression: 'happy', text: 'やっと着いたね、{name}さん！' },
-        { expression: 'smile', text: 'ここが公式大会の会場だよ。' },
-        { expression: 'guide', text: 'さあ、早速受付に行こう！' },
+        { expression: 'smile', text: 'ようこそ、大会会場へ！' },
+        { expression: 'guide', text: 'さあ、参加する大会を選ぼう。' },
       ] },
     // 背景の切り替え：歩き続けたまま前の背景から次の背景へクロスフェード（ms＝溶ける時間（歩いて入る enterMs の間に終わる）、outMs／out＝前の背景の先へ歩き続ける時間・距離、back／enterMs＝次の背景の入口の手前から歩いて入る距離・時間。境目はマスではない）
     backgroundTransition: { type: 'crossfade', ms: 460, outMs: 260, out: 80, back: 90, enterMs: 540 },

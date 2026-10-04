@@ -169,10 +169,11 @@
   // ---- イベントの表示モード（2026-10-04 G2）：会話の間は html[data-mmev]。'1'＝施設・案内・ボードのイベント（下の画面の常設 NPC・吹き出し・会話欄を隠す＝同じ人物が2人に見えない）、
   //  'lite'＝短い一言（compact。隠さない）。どちらも下の画面（#app）は押せない（pointer-events。CSS は index.html）。終わったら少し間をおいて、隠した物を短いフェードで戻す（data-mmev-back）
   const EVM = { t: null };
-  function evOn(mode) { if (typeof document === 'undefined' || !document.documentElement || !document.documentElement.setAttribute) return; clearTimeout(EVM.t); const d = document.documentElement; d.removeAttribute('data-mmev-back'); d.setAttribute('data-mmev', mode); }
-  function evOff() { if (typeof document === 'undefined' || !document.documentElement || !document.documentElement.setAttribute) return; clearTimeout(EVM.t);
-    EVM.t = setTimeout(() => { if (CUR) return; const d = document.documentElement, was = d.getAttribute('data-mmev'); d.removeAttribute('data-mmev');
-      if (was === '1') { d.setAttribute('data-mmev-back', '1'); EVM.t = setTimeout(() => d.removeAttribute('data-mmev-back'), 360); } }, 90); }
+  const docEl = () => (typeof document !== 'undefined' && document.documentElement && document.documentElement.setAttribute ? document.documentElement : null);
+  //  data-mmev＝会話の間（下の画面は押せない）。data-mmhide＝常設の NPC を隠している（施設・案内・ボードのイベント）。会話が終わったら操作はすぐ戻し、隠した物だけ少し間をおいて戻す
+  function evOn(mode) { const d = docEl(); if (!d) return; clearTimeout(EVM.t); d.removeAttribute('data-mmev-back'); d.setAttribute('data-mmev', mode); if (mode === '1') d.setAttribute('data-mmhide', '1'); }
+  function evOff() { const d = docEl(); if (!d) return; clearTimeout(EVM.t); if (CUR) return; d.removeAttribute('data-mmev');
+    if (d.getAttribute('data-mmhide') === '1') EVM.t = setTimeout(() => { if (CUR) return; d.removeAttribute('data-mmhide'); d.setAttribute('data-mmev-back', '1'); EVM.t = setTimeout(() => d.removeAttribute('data-mmev-back'), 360); }, 90); }
   /** 会話に出てくる立ち絵を先に読む（表情を変えたとき、読み込み待ちで前の絵が残らない） */
   function warmLines(lines) { try { if (typeof Image === 'undefined') return; for (const l of resolveLines(lines)) if (l.img && l.img.src) { const im = new Image(); im.decoding = 'async'; im.src = l.img.src; } } catch (e) {} }
   function talk(lines, opts = {}) {

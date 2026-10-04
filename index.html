@@ -990,6 +990,14 @@ button.mkc b{font-size:.9rem}button.mkc small{font-size:.66rem;color:#ffe9b0}
 @keyframes p9blink{50%{opacity:.35}}
 .p9th .r2{display:flex;align-items:center;gap:8px;margin-top:6px}
 .p9th .r2 .p8hud{margin:0;flex:1;justify-content:flex-start}
+/* 2026-10-04 G4（大会の画面の旧 UI の監査）：上部の見出しを、新しい大会の画面（濃紺＋金）に合わせた細いバーに。旧い茶色の板・旗の飾り・試合の点（下の「現在の成績」と二重）・Chapter 名（下の帯と二重）は出さない。メニュー（☰）は右に残す */
+.p9tour .p9th{padding:calc(env(safe-area-inset-top,0px) + 8px) 56px 8px;background:linear-gradient(rgba(12,21,50,.97),rgba(8,14,34,.95));border-bottom:1px solid rgba(217,180,101,.75);box-shadow:0 1px 0 rgba(217,180,101,.25),0 6px 14px rgba(0,0,0,.4)}
+.p9tour .p9th .flags,.p9tour .p9th .pips,.p9tour .p9th .p9ttl small{display:none}
+.p9tour .p9th .p9ttl{flex-direction:row;justify-content:center;align-items:baseline;gap:10px;margin:0}
+.p9tour .p9th .p9ttl b{font-size:1.12rem;color:#f6e3ad;text-shadow:0 1px 0 #0a1330;letter-spacing:.1em}
+.p9tour .p9th .p9ttl span{margin:0;padding:1px 8px;font-size:.68rem;white-space:nowrap;color:#e8d29a;background:transparent;border:1px solid rgba(217,180,101,.6);border-radius:4px}
+.p9tour .p9th .r2{position:absolute;left:10px;top:calc(env(safe-area-inset-top,0px) + 4px);margin:0} /* メニュー（☰）は左（右上は音のボタン） */
+@media (max-width:380px){.p9tour .p9th .p9ttl b{font-size:1rem;letter-spacing:.06em}.p9tour .p9th .p9ttl{gap:6px}}
 .p9next{margin-top:4px;padding:12px;border-radius:16px;background:linear-gradient(#2a2f52,#151a34);border:2px solid #c9a24d;box-shadow:0 0 0 1px #0a1124,0 6px 16px rgba(0,0,0,.4);text-align:center}
 .p9next .lb{font-size:.82rem;color:#e8d29a}
 .p9next .vsrow{display:flex;align-items:center;justify-content:center;gap:16px;margin:8px 0 4px}
@@ -1673,6 +1681,12 @@ button.mkc b{font-size:.9rem}button.mkc small{font-size:.66rem;color:#ffe9b0}
 .chf-arrive.now .chf-arrive-bg{transition:none}
 .chf-arrive-name{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 18px);display:flex;flex-direction:column;align-items:center;gap:3px;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.7);opacity:0;transition:opacity .6s .5s}
 .chf-arrive.on .chf-arrive-name{opacity:1}
+/* 2026-10-04 G4：会場の中（ロビー）。門前の絵の上にクロスフェード（暗転しない）。名前の札も門前 → 会場の中へ */
+.chf-arrive-lobby{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 45%;opacity:0;transform:scale(1.04);transition:opacity var(--lfade,800ms) ease,transform 3s cubic-bezier(.2,.7,.3,1)}
+.chf-arrive.in .chf-arrive-lobby{opacity:1;transform:scale(1)}
+.chf-arrive.now .chf-arrive-lobby{transition:none}
+.chf-arrive-name b.in{display:none}
+.chf-arrive.in .chf-arrive-name b:not(.in){display:none}.chf-arrive.in .chf-arrive-name b.in{display:block}
 .chf-arrive-name small{font:700 11px/1 var(--mm-font-body);letter-spacing:.2em;color:#f3d98e}
 .chf-arrive-name b{font:800 21px/1.25 var(--mm-font-head);letter-spacing:.08em;padding:4px 18px;background:linear-gradient(90deg,rgba(10,18,48,0),rgba(10,18,48,.72) 18%,rgba(10,18,48,.72) 82%,rgba(10,18,48,0));border-top:1px solid rgba(232,200,106,.7);border-bottom:1px solid rgba(232,200,106,.7)}
 .chfw.arrive .chf-arrive-name{transition-delay:.5s}
@@ -2126,10 +2140,10 @@ button.p10karen img{display:block;width:100%;height:auto;margin-top:2px;transfor
 .mmtalk.mmtalk-board .mmtalk-fig.closeup{height:min(36vh,330px);height:min(36dvh,330px)}
 .mmtalk.mmtalk-board .mmtalk-text{min-height:4.2em}
 @media (max-height:700px){.mmtalk.mmtalk-big .mmtalk-win{min-height:8em;padding:28px 18px 24px}.mmtalk.mmtalk-big .mmtalk-text{font-size:16.5px;min-height:4.8em}.mmtalk.mmtalk-board .mmtalk-fig.closeup{height:min(30dvh,220px)}.mmtalk.mmtalk-board .mmtalk-text{min-height:3.6em}}
-/* イベントの表示モード（2026-10-04 G2。js/npc/npc.js の evOn／evOff）：会話の間は下の画面を押せない。施設・案内・ボードのイベント（data-mmev="1"）では、下の画面の常設 NPC・吹き出し・会話欄を隠す
+/* イベントの表示モード（2026-10-04 G2。js/npc/npc.js の evOn／evOff）：会話の間（data-mmev）は下の画面を押せない。施設・案内・ボードのイベント（data-mmhide="1"）では、下の画面の常設 NPC・吹き出し・会話欄を隠す
    （同じ人物が2人に見えない・会話のフェードで前の立ち絵と重なって見えない）。終わったら短いフェードで戻す */
 html[data-mmev] #app{pointer-events:none!important}
-html[data-mmev="1"] #app :is(.nst,.fbub,.kbub,.fmdan,.shopnpc,.gssay,.elsay,.vgsay,.p9ced,#p10kbar,.chf-fina,.chf-fina-st,.tlow){opacity:0!important;visibility:hidden!important;animation:none!important;transition:none!important}
+html[data-mmhide="1"] #app :is(.nst,.fbub,.kbub,.fmdan,.shopnpc,.gssay,.elsay,.vgsay,.p9ced,#p10kbar,.chf-fina,.chf-fina-st,.tlow){opacity:0!important;visibility:hidden!important;animation:none!important;transition:none!important}
 html[data-mmev-back] #app :is(.nst,.fbub,.kbub,.fmdan,.shopnpc,.gssay,.elsay,.vgsay,.p9ced,#p10kbar,.tlow.on){animation:mmevBack .32s ease-out both!important}
 @keyframes mmevBack{from{opacity:0}}
 .gssay .tx .gsk{display:block;margin-top:3px;opacity:.92} /* 特訓開始：汎用の一言の下に、選んだ特訓の一言（2026-10-04 G2） */
@@ -3667,7 +3681,7 @@ const p9Short=(lg,id)=>{const e=lg.entrants[id];return e.player?S.m.name:String(
 function p9TourHead(m,t){const lg=t.league,done=lg.round;
  return `<header class="p9th"><div class="flags">${"<i></i>".repeat(9)}</div><div class="p9ttl"><small>CHAPTER ${m.raise.ch}　${MMP8.chapterName(m.raise.ch)}</small><b>公式ランク${RN[t.rank]}大会</b><span>総当たりリーグ　${lg.size}体</span></div>
  <div class="pips" aria-label="試合の進み具合">${lg.rounds.map((_,i)=>`<i class="${i<done?"d":i==done&&t.status!="settled"?"c":""}"></i>`).join("")}</div>
- <div class="r2">${p8Hud()}<button class="p9mbtn" onclick="p9Menu()" aria-label="メニュー">☰</button></div></header>`}
+ <div class="r2"><button class="p9mbtn" onclick="p9Menu()" aria-label="メニュー">☰</button></div></header>`} // 2026-10-04 G4：大会の画面には特訓チケット（育成のリソース）を出さない（大会に参加する判断に要らない）
 function p9Standings(lg,st,fin){const med=["🥇","🥈","🥉"],show=fin||lg.round>0;
  const nx=!fin&&S.m&&S.m.raise&&S.m.raise.tour&&S.m.raise.tour.status=="league"?MMP8.tourNext(S.m):null,enter=P9_ENTER;P9_ENTER=false; // 次の対戦相手の行だけ柔らかく光る。大会開始の直後は参加者が右から順に入ってくる
  return `<section class="p9board2"><h3>順位表</h3><div class="p9st${enter?" p9enter":""}"><div class="p9r hd"><span>順位</span><span></span><span>参加者</span><span>勝</span><span>敗</span></div>${st.map((x,i)=>`<div class="p9r ${x.player?"me":""}${nx&&x.id===nx.opp?" nxt":""}"${enter?` style="animation-delay:${(i*90)}ms"`:""}><span class="pl">${show&&x.place<=3?med[x.place-1]:x.place}</span>${p9Pt(p9Npc(lg,x.id),"s")}<span class="nm">${x.player?`${p11Esc(S.m.name)}<em>あなた</em>`:p11Esc(x.name)}${nx&&x.id===nx.opp?`<em class="nx">次の相手</em>`:""}</span><span class="w">${x.w}</span><span class="l">${x.l}</span></div>`).join("")}</div></section>`}

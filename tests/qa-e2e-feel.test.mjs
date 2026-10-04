@@ -77,16 +77,16 @@ test('FE-3：宝箱：現れる → 揺れて開く → 報酬 →「+NG」が H
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
-test('FE-4：野生：止まった瞬間には「！」を出さない（静止の間）→ 草むらが揺れる → 「！」→ 遭遇の演出（カットインと文を同時に）→ バトルの案内', { skip: SKIP }, async () => {
+test('FE-4：野生：止まった瞬間には「！」を出さない（静止の間）→「！」→ 遭遇の演出（2026-10-04 G3：正式のモンスターと文を同時に。予兆の草むらは出さない）→ バトルの案内', { skip: SKIP }, async () => {
   const p = await open(); const pg = p.page; await toField(pg);
   await pg.evaluate(() => { S.m.raise.field.nodeAssignments.p3_2.bt = 'wild'; save(); });
   await place(pg, 'p3_1'); await idle(pg);
-  await pg.evaluate(() => { window.__w = []; const t0 = performance.now(), t = () => { window.__w.push([Math.round(performance.now() - t0), S.m.raise.pend ? S.m.raise.pend.stage : null, !!document.querySelector('.chf-rustle'), !!document.querySelector('.chf-alert'), !!document.querySelector('.chf-enc .chf-enc-art') && !!document.querySelector('.chf-enc .chf-enc-tx'), !!document.querySelector('.chbat'), (document.querySelector('.chf-enc .chf-enc-tx') || {}).textContent || '']); if (window.__w.length < 1200) requestAnimationFrame(t); }; requestAnimationFrame(t); });
+  await pg.evaluate(() => { window.__w = []; const t0 = performance.now(), t = () => { window.__w.push([Math.round(performance.now() - t0), S.m.raise.pend ? S.m.raise.pend.stage : null, !!document.querySelector('.chf-rustle'), !!document.querySelector('.chf-alert'), !!document.querySelector('.chf-enc2 .ce-mon') && !!document.querySelector('.chf-enc2 .ce-tx'), !!document.querySelector('.chbat'), (document.querySelector('.chf-enc2 .ce-tx') || {}).textContent || '']); if (window.__w.length < 1200) requestAnimationFrame(t); }; requestAnimationFrame(t); });
   await rollAs(pg, 1); await pg.waitForSelector('.chbat', { timeout: 20000 }); await pg.waitForTimeout(200);
   const W = await pg.evaluate(() => window.__w), at = (k) => (W.find((x) => x[k]) || [-1])[0];
   const stop = (W.find((x) => x[1] === 'resolve') || [-1])[0], rustle = at(2), alert = at(3), cut = at(4), sheet = at(5);
-  assert.ok(stop >= 0 && rustle - stop >= 150, `止まってから静止の間（${rustle - stop}ms）`); assert.ok(alert > rustle && cut > alert && sheet > cut, `草むら ${rustle} → ！ ${alert} → カットイン ${cut} → 案内 ${sheet}`);
-  assert.ok(stop >= 0 && rustle - stop >= 350, `止まってから静止の間（${rustle - stop}ms）`);
+  assert.equal(rustle, -1, '予兆の草むら（草の断片に見えた）は出さない'); assert.ok(cut > alert && sheet > cut, `！ ${alert} → 遭遇（モンスター＋文） ${cut} → 案内 ${sheet}`);
+  assert.ok(stop >= 0 && alert - stop >= 350, `止まってから静止の間（${alert - stop}ms）`);
   assert.ok(sheet - cut >= 1200, `遭遇の演出を読める間（${sheet - cut}ms）`); assert.ok(sheet - stop < 3400, `長すぎない（${sheet - stop}ms）`);
   assert.equal(W.find((x) => x[4])[6], '野生のモンスターが現れた！', '絵と文が同じフレームで出る');
   assert.equal((await pg.evaluate(() => MMFEEL.log())).slice(-1)[0], 'wild.alert');

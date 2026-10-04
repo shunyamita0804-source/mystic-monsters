@@ -69,7 +69,7 @@ test('CH-ENGINE-01：config からフィールド（正式背景14枚 ch1_bg_01�
   // 15 枚目は到着イベント専用（マスの背景には入れない）
   assert.equal(cfg.arrival.bg, './assets/fields/ch1a/final/event/ch1_bg_15_event.webp'); assert.ok(existsSync(path.join(ROOT, cfg.arrival.bg)));
   assert.ok(!cfg.fieldScenes.some((s) => s.bg === cfg.arrival.bg), '15 はフィールドの背景ではない');
-  assert.deepEqual(cfg.arrival.talk.map((l) => l.text), ['やっと着いたね、{name}さん！', 'ここが公式大会の会場だよ。', 'さあ、早速受付に行こう！']); assert.equal(cfg.arrival.talk[0].npc, 'fina');
+  assert.deepEqual(cfg.arrival.talk.map((l) => l.text), ['やっと着いたね、{name}さん！', 'ようこそ、大会会場へ！', 'さあ、参加する大会を選ぼう。'], '2026-10-04 G4：会場の中（ロビー）でランク選択へつなぐ短い会話'); assert.equal(cfg.arrival.lobby.bg, './assets/tournament/lobby/lobby_main.webp'); assert.ok(existsSync(path.join(ROOT, 'assets/tournament/lobby/lobby_main.webp')), 'ロビーの背景'); assert.equal(cfg.arrival.talk[0].npc, 'fina');
   const t = P8.trackOf(1); assert.equal(t.start, 'p1_0'); assert.equal(t.engine, '1:A'); assert.equal(P8.isPlayable(1), true);
   assert.equal(P8.trackOf(2).engine, '2:A', 'Chapter 2 もエンジン（ch2a.js）'); assert.equal(P8.trackOf(3).engine, undefined, 'Chapter 3〜4 は従来のマップのまま（config を登録するまで）');
 });

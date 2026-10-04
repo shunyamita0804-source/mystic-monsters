@@ -614,7 +614,7 @@ test('S7-2：HUDは複数リソースに対応（今回は🎫修行チケット
   assert.match(between('function p9BoardHud(m){', '\nfunction board(msg){'), /\$\{p8Hud\(`<span class="p9chip p9turn">/, 'HUDの2段目に残りターンと育成リソースを並べる');
   // Phase 9：大会画面のHUDは大会見出し（p9TourHead）に置く
   assert.match(between('function p8TourScr(msg){', '\nfunction p9TourResult('), /\$\{p9TourHead\(m,t\)\}/);
-  assert.match(between('function p9TourHead(m,t){', '\nfunction p9Standings('), /\$\{p8Hud\(\)\}/);
+  assert.doesNotMatch(between('function p9TourHead(m,t){', '\nfunction p9Standings('), /p8Hud\(/, '2026-10-04 G4：大会の画面には特訓チケットを出さない');
   assert.match(between('function p8FarmPanel(){', '\n// ---- Phase 8：育成中の画面遷移'), /st=="farm"\?p8Hud\(\)/);
   assert.match(HTML, /const BTYPE_LABEL=\{ticket:"特訓チケット",/); assert.match(HTML, /const BTYPE_ICON=\{ticket:"🎫",/);
 });

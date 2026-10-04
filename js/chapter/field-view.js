@@ -690,22 +690,31 @@
   }
   function receptionHtml(m) { return `<div class="chrcv" id="chrcv">${root.p9ReceptionHtml ? root.p9ReceptionHtml(m) : (root.p8GoalHtml ? root.p8GoalHtml(m) : '')}</div>`; }
   async function chfArrive(m, fromField) {
-    const A = V.cfg.arrival, f = MMCH.fieldOf(m), w = $('#chfw'), ui = $('#chf-ui'); if (!w || !ui) return;
+    const A = V.cfg.arrival, L = A.lobby || null, f = MMCH.fieldOf(m), w = $('#chfw'), ui = $('#chf-ui'); if (!w || !ui) return;
     if (busyGet() && $('#chfarr')) return;   // 演出・会話の途中で呼ばれた：続きはそのまま
     let ov = $('#chfarr');
-    if (!ov) { w.insertAdjacentHTML('beforeend', `<div class="chf-arrive" id="chfarr" style="--fade:${V.calm ? 0 : (A.fadeMs || 900)}ms"><img class="chf-arrive-bg" src="${esc(A.bg)}" alt="" draggable="false"><div class="chf-arrive-name"><small>CHAPTER ${esc(V.cfg.chapterId)}　到着</small><b>${esc(A.name || '')}</b></div></div>`); ov = $('#chfarr'); }
+    // 2026-10-04 G4：門前（A.bg）→ 会場の中のロビー（A.lobby.bg）。名前の札も門前 → 会場の中へ切り替える
+    if (!ov) { w.insertAdjacentHTML('beforeend', `<div class="chf-arrive" id="chfarr" style="--fade:${V.calm ? 0 : (A.fadeMs || 900)}ms;--lfade:${V.calm ? 0 : ((L && L.fadeMs) || 800)}ms"><img class="chf-arrive-bg" src="${esc(A.bg)}" alt="" draggable="false">${L ? `<img class="chf-arrive-lobby" src="${esc(L.bg)}" alt="" draggable="false">` : ''}<div class="chf-arrive-name"><small>CHAPTER ${esc(V.cfg.chapterId)}　到着</small><b>${esc(A.name || '')}</b>${L ? `<b class="in">${esc(L.name || '')}</b>` : ''}</div></div>`); ov = $('#chfarr'); }
     ui.innerHTML = '';   // HUD・操作欄（START・4コマンド）・マスの UI を消す
     w.classList.add('arrive');
-    if (f.arrivalSeen) { ov.classList.add('now', 'on'); ui.innerHTML = receptionHtml(m); return; }
+    if (f.arrivalSeen) { ov.classList.add('now', 'on', 'in'); ui.innerHTML = receptionHtml(m); return; }   // 再読み込み：会場の中（ロビー）のランク選択から
     busySet(true);
     if (root.bgm) root.bgm('chapter');   // 大会会場・受付の BGM（ゴールでは TOURNAMENT_ENTRY）
     try {
+      if (L && typeof Image !== 'undefined') { const im = new Image(); im.decoding = 'async'; im.src = L.bg; }   // ロビーの絵を先に読む
       if (fromField && !V.calm) await wait(500);   // ゴールに着いた姿を少し見せてから
       if (!fromField) ov.classList.add('now');
       ov.classList.add('on');
       await wait(V.calm || !fromField ? 0 : (A.fadeMs || 900) + 200);
       if (!$('#chfarr')) return;
       feel('tournament.arrive');   // 大会会場へ着いた音（TOURNAMENT_ARRIVAL）
+      if (L) {   // 門前を短く見せてから、会場の中へ入る
+        await wait(V.calm ? 0 : (A.gateMs || 1300));
+        if (!$('#chfarr')) return;
+        ov.classList.add('in');
+        await wait(V.calm ? 0 : (L.fadeMs || 800) + 150);
+        if (!$('#chfarr')) return;
+      }
       if (root.MMNPC && !root.MM_QA_NO_ARRIVAL && (A.talk || []).length) await MMNPC.talk(arrivalLines(A), { kind: 'event', presentation: 'major', big: true });
       f.arrivalSeen = true; doSave();
     } finally { busySet(false); }

@@ -212,3 +212,59 @@ for (const v of [1, 2, 3]) {
     assert.deepEqual(p.errors, []);
   });
 }
+
+for (const size of SIZES) {
+  T(`G-J・G-K（${size.join('×')}）：ゴール → 門前（短い遷移）→ 会場の中のロビー → フィナの到着の会話（正式素材・大型の窓）→ ランク選択。門の前ではランクを選ばせない。大会の画面に特訓チケットを出さない`, async () => {
+    const p = await openPage({ size, arrival: true }); const pg = p.page;
+    await H.newGame(pg, 'ユウ');
+    await pg.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); const g = MMCH.graphFor(m); Object.assign(m.raise, { node: g.goal, goal: true, pend: null }); save(); board(); });
+    // 毎フレーム：ランク選択が出たときに、ロビーにいて・会話が終わっているか
+    await pg.evaluate(() => { window.__arr = { rcvBeforeLobby: false, rcvDuringTalk: false, lobbyAt: null, talkAt: null, rcvAt: null }; const t0 = performance.now(); const tick = () => { const A = window.__arr, ov = document.querySelector('#chfarr'), rcv = document.querySelector('#chrcv .rcv-row'), talk = document.querySelector('.mmtalk');
+      if (ov && ov.classList.contains('in') && A.lobbyAt == null) A.lobbyAt = performance.now() - t0; if (talk && A.talkAt == null) A.talkAt = performance.now() - t0;
+      if (rcv) { if (A.rcvAt == null) A.rcvAt = performance.now() - t0; if (!ov || !ov.classList.contains('in')) A.rcvBeforeLobby = true; if (talk && !talk.classList.contains('mmtalk-out')) A.rcvDuringTalk = true; return; }
+      requestAnimationFrame(tick); }; requestAnimationFrame(tick); });
+    await pg.waitForSelector('#chfarr.on .chf-arrive-bg');
+    assert.match(await pg.evaluate(() => document.querySelector('#chfarr .chf-arrive-name b:not(.in)').textContent), /正門前/, 'まず門前');
+    await pg.waitForSelector('.mmtalk:not(.mmtalk-out)', { timeout: 20000 });
+    const t = await pg.evaluate(() => ({ lobby: document.querySelector('#chfarr').classList.contains('in'), bg: getComputedStyle(document.querySelector('.chf-arrive-lobby')).opacity, src: document.querySelector('.chf-arrive-lobby').getAttribute('src'), big: !!document.querySelector('.mmtalk.mmtalk-big'), fig: document.querySelector('.mmtalk-fig img').getAttribute('src'), name: document.querySelector('#chfarr .chf-arrive-name b.in').textContent }));
+    assert.equal(t.lobby, true, '会話は会場の中（ロビー）で'); assert.equal(t.src, './assets/tournament/lobby/lobby_main.webp'); assert.equal(t.big, true, '大型の会話窓');
+    assert.match(t.fig, /assets\/npc\/fina\/fullbody\//, 'フィナは正式素材（全身）'); assert.equal(t.name, '公式大会会場');
+    const said = [];
+    for (let i = 0; i < 20 && await pg.$('.mmtalk:not(.mmtalk-out)'); i++) { await pg.click('.mmtalk:not(.mmtalk-out)', { force: true }).catch(() => {}); await pg.waitForTimeout(120); const x = await pg.evaluate(() => { const s = window.MMNPC && MMNPC.state(); return s && !s.typing ? s.full || s.text : null; }); if (x && !said.includes(x)) said.push(x); }
+    await pg.waitForSelector('#chrcv .rcv-row', { timeout: 20000 });
+    const A = await pg.evaluate(() => window.__arr);
+    assert.equal(A.rcvBeforeLobby, false, '門の前でランク選択を出さない'); assert.equal(A.rcvDuringTalk, false, 'フィナの会話が終わってからランク選択');
+    assert.ok(A.lobbyAt != null && A.talkAt != null && A.rcvAt != null && A.lobbyAt < A.talkAt && A.talkAt < A.rcvAt, `門前 → ロビー → 会話 → ランク選択の順（${JSON.stringify(A)}）`);
+    assert.ok(said.some((x) => /ようこそ、大会会場へ！/.test(x)), `会話（${said}）`);
+    const noTix = () => pg.evaluate(() => !/特訓チケット|×\s*\d+\s*$/.test([...document.querySelectorAll('#app header,#app .p9th,#chrcv .rcv-ban')].map((e) => e.textContent).join(' ')) && !document.querySelector('#app .p8hud'));
+    assert.equal(await noTix(), true, 'ランク選択に特訓チケットは無い');
+    await pg.click('.rcv-row.ok[data-rank="0"]'); await pg.waitForTimeout(450); await pg.click('#p9join');
+    await pg.waitForSelector('.p9tour.tp2 .p9next .p9go', { timeout: 20000 }); await pg.waitForTimeout(300);
+    assert.equal(await noTix(), true, '大会進行に特訓チケットは無い');
+    const hd = await pg.evaluate(() => ({ flags: getComputedStyle(document.querySelector('.p9th .flags')).display, pips: getComputedStyle(document.querySelector('.p9th .pips')).display, menu: !!document.querySelector('.p9th .p9mbtn'), sw: document.documentElement.scrollWidth, W: innerWidth }));
+    assert.deepEqual([hd.flags, hd.pips, hd.menu], ['none', 'none', true], '旧い見出しの飾り（旗・試合の点）は出さない・メニューは残す'); assert.ok(hd.sw <= hd.W + 1, '横にはみ出さない');
+    await pg.reload(); await pg.waitForFunction(() => typeof window.MMP8 === 'object'); await pg.click('.p15start');
+    await pg.waitForSelector('.p9tour.tp2', { timeout: 20000 });
+    assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+  });
+}
+
+for (const size of SIZES) {
+  T(`G-M（${size.join('×')}）：ボードのイベント（フィナのチュートリアル＝大きな窓）の間は、下の START・4コマンドが反応しない（見た目だけでなくタッチも止まる）。終わったら START が押せる`, async () => {
+    const p = await openPage({ size, story: true }); const pg = p.page;
+    await toChapter(pg);
+    await pg.waitForTimeout(600); if (await pg.$('.chf-fina')) await pg.waitForFunction(() => !document.querySelector('.chf-fina'), null, { timeout: 8000 });
+    await fieldIdle(pg);
+    await pg.evaluate(() => { const r = S.m.raise; r.node = 'p1_2'; S.m.raise.field.nodeAssignments.p1_2 = { t: 'stat', k: 'li' }; r.pend = { roll: 1, left: 0, stage: 'resolve' }; finaFlags().story = []; save(); board(); });
+    await pg.waitForSelector('.mmtalk.mmtalk-board:not(.mmtalk-out)', { timeout: 20000 }); await pg.waitForTimeout(500);
+    const turns0 = await pg.evaluate(() => S.m.raise.turnsUsed);
+    const st = await pg.evaluate(() => { const b = document.querySelector('#chdock .chstopw') || document.querySelector('#brollbtn'); const r = b.getBoundingClientRect(); const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return { pe: getComputedStyle(document.querySelector('#app')).pointerEvents, hitTalk: !!(top && top.closest('.mmtalk')), x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
+    assert.equal(st.pe, 'none', '下の画面はタッチも止まる'); assert.equal(st.hitTalk, true, 'START の位置を押しても会話が受ける');
+    await pg.evaluate(() => { const b = document.querySelector('#brollbtn'); if (b) b.dispatchEvent(new MouseEvent('click', { bubbles: true })); });   // スクリプトから直接押しても（会話中の START）
+    await pg.waitForTimeout(400);
+    assert.equal(await pg.evaluate(() => S.m.raise.turnsUsed), turns0, 'サイコロは振られない');
+    await H.finishTalk(pg); await fieldIdle(pg);
+    assert.equal(await pg.evaluate(() => getComputedStyle(document.querySelector('#app')).pointerEvents), 'auto', '終わったら押せる');
+    assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+  });
+}
