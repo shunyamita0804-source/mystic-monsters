@@ -573,9 +573,10 @@ test('S6-7：【暫定】NPCの生成・NPC同士の勝敗は差し替えられ�
 });
 
 test('S6-8：画面：ゴールで挑戦できるランクだけを表示し、参加は2度押し。大会画面に順位表・次の相手・試合開始', () => {
-  const goal = fnLine('function p8GoalHtml(m)') + between('function p8GoalHtml(m)', '\nfunction p8TourStart(');
-  assert.match(goal, /MMP8\.eligibleRanks\(m,r\.ch\)/); assert.match(goal, /辞退/);
-  assert.match(fnLine('function p8TourStart('), /arm\(b,/);
+  // 2026-10-04：Chapter 1〜4 のゴールは同じランク選択（p9ReceptionHtml の共通の部品）。選んで「この大会に参加する」で確定（選んだ直後の押下は無視）
+  const goal = between('function p8GoalHtml(m)', '\nconst P9_PADLOCK') + between('function p9RankRow(', '\nfunction p9RcvPick(');
+  assert.match(goal, /return p9ReceptionHtml\(m\)/); assert.match(goal, /MMP8\.eligibleRanks\(m,m\.raise\.ch\)/); assert.match(goal, /大会に参加しない/);
+  assert.match(between('function p9RcvPick(', '\n// ---- 大会開始'), /tapAt\(j\)/); assert.match(between('function p9RcvJoin(', '\n// ---- 大会開始'), /tapSoon\(b,350\)/);
   const scr = between('function p8TourScr(msg){', '\nfunction p9TourResult(');
   assert.match(scr, /MMP8L\.standings\(lg\)/); assert.match(scr, /次の対戦相手/); assert.match(scr, /onclick="p9CompareScr\(\)">⚔️ 対戦開始<\/button>/, '2026-10-04：大会進行 →「対戦開始」→ パラメーター比較'); assert.match(between('function p9CompareScr(){', '\nfunction '), /data-nsfx="1" onclick="p9VsGo\(this\)">⚔️ 対戦開始<\/button>/, 'パラメーター比較の「対戦開始」（2度押し）→ fight()。VS・対面は fight() の導入だけ（二重にしない）');
   assert.match(fnLine('function p9VsGo('), /p9arm\(b,[^)]*\)\)return;p8TourFight\(\)/);

@@ -75,9 +75,12 @@ test('CH2-B3：会場前のゴール（大会会場の階段の手前）：出�
   assert.deepEqual(await pg.evaluate(() => [S.m.raise.node, S.m.raise.pend.left, document.querySelector('.chbat h3').textContent]), ['sa_2', 0, 'ライバル'], 'ライバルで止まり残りは消える');
   await pg.waitForTimeout(450); await pg.click('.chbat .p9btn2'); await idle(pg);
   await place(pg, 'sa_3', { fatigue: 10, turnsUsed: 22 }); await idle(pg);
-  await rollAs(pg, 3); await pg.waitForSelector('.chgoal .p9rank', { timeout: 20000 }); await idle(pg);
-  const r = await pg.evaluate(() => ({ node: S.m.raise.node, goal: S.m.raise.goal, ranks: [...document.querySelectorAll('.chgoal .p9rank')].map((b) => b.getAttribute('onclick')), locks: document.querySelectorAll('.chgoal .p9rlock').length, msg: document.querySelector('#bmsg').textContent }));
-  assert.deepEqual([r.node, r.goal, r.ranks, r.locks], ['sa_4', true, ['p8TourStart(0,this)', 'p8TourStart(1,this)'], 4], 'ゴール → 既存の大会のランク選択（E・D）'); assert.match(r.msg, /大会会場に着いた/);
+  // 2026-10-04：Chapter 2 のゴールも Chapter 1 と同じランク選択（共通の部品・会場のロビーの背景）
+  await rollAs(pg, 3); await pg.waitForSelector('#chrcv.bg .rcv-row', { timeout: 20000 }); await idle(pg);
+  const r = await pg.evaluate(() => ({ node: S.m.raise.node, goal: S.m.raise.goal, ranks: [...document.querySelectorAll('#chrcv .rcv-row.ok')].map((b) => RN[+b.dataset.rank] + ':' + b.dataset.state), locks: document.querySelectorAll('#chrcv .rcv-row.lk').length, old: document.querySelectorAll('.p9rank,.p9rlock,.chgoal').length, deck: !!document.querySelector('#brollbtn') }));
+  assert.deepEqual([r.node, r.goal, r.ranks, r.locks, r.old, r.deck], ['sa_4', true, ['D:next', 'E:clear'], 4, 0, false], 'ゴール → 共通のランク選択（E クリア済・D 挑戦目標・C 以上は未解放）。旧カード・操作欄は出さない');
+  await pg.click('#chrcv .rcv-row.ok[data-rank="1"]'); await pg.waitForTimeout(450); await pg.click('#p9join');
+  await pg.waitForFunction(() => S.m.raise.tour && S.m.raise.tour.rank === 1, null, { timeout: 15000 });
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 

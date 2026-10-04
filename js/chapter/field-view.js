@@ -617,6 +617,8 @@
     // ゴールに着いたあと：config.arrival があれば到着イベント（専用の背景・フィナの会話）→ 大会受付。マス・サイコロ・操作欄は出さない
     if (ph === 'goal' && V.cfg.arrival) { chfArrive(m, same); return true; }
     $('#chfw').classList.remove('arrive'); { const o = $('#chfarr'); if (o) o.remove(); }
+    // 2026-10-04：大会のある Chapter で到着イベントが無いとき（Chapter 2 など）も、ゴールでは Chapter 1 と同じランク選択（index.html の p9ReceptionHtml）を会場のロビーの背景の上に。HUD・操作欄は出さない
+    if (ph === 'goal' && root.p9ReceptionHtml && (P8().chapterRule(m.raise.ch) || {}).tournament) { $('#chf-ui').innerHTML = `<div class="chrcv bg" id="chrcv" style="--lobby:url(${root.P9_LOBBY_BG || ''})">${root.p9ReceptionHtml(m)}</div>`; return true; }
     $('#chf-ui').innerHTML = hudHtml(m) + sheetHtml(m, ph) + deckHtml(m, ph, msg);
     if (ph === 'branch') branchCamera(m); else if (V.focus && ph === 'roll') camFocus(null);
     if (ph === 'branch') setTimeout(() => { if (onField() && P8().boardPhase(m) === 'branch') storyAt(m, 'branch'); }, 350);   // 2026-10-04：初めての分かれ道（チュートリアル。config.story の trigger 'branch'）

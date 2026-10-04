@@ -204,9 +204,10 @@ test('T2-3：分岐：ルート種別（通常ルート・近道・寄り道）�
 });
 
 test('T2-4：ゴール：挑戦できるランクだけをカードで表示（2度押しで参加）・辞退も選べる', () => {
-  const g = between('function p8GoalHtml(m){', '\nfunction p9arm(');
-  assert.match(g, /MMP8\.eligibleRanks\(m,r\.ch\)/); assert.match(g, /MMP8L\.LEAGUE_SIZE\[k\]/); assert.match(g, /初回優勝/); assert.match(g, /クリア済み/); assert.match(g, /辞退/);
-  assert.match(fnLine('function p8TourStart('), /p9arm\(b,/);
+  // 2026-10-04：Chapter 1〜4 で同じランク選択の部品（賞金・推奨戦力は出さない）
+  const g = between('function p9RankRow(', '\nfunction p9RcvPick(');
+  assert.match(g, /MMP8\.eligibleRanks\(m,m\.raise\.ch\)/); assert.match(g, /MMP8L\.LEAGUE_SIZE\[k\]/); assert.match(g, /クリア済/); assert.match(g, /大会に参加しない/); assert.doesNotMatch(g, /PRIZE|初回優勝|推奨/);
+  assert.match(between('function p8GoalHtml(m){', '\nconst P9_PADLOCK'), /return p9ReceptionHtml\(m\)/);
 });
 
 // ---------------------------------------------------------

@@ -84,7 +84,8 @@ const setDice = (pg, vals) => pg.evaluate((v) => { window.__dice = v.slice(); },
 /** ゴールの大会カード（ランク k）を2度押しして大会を始める（抽選シードは固定） */
 async function startTour(pg, k) {
   await pg.evaluate(() => { window.__seedTour = true; });
-  await press2(pg, `button.p9rank[onclick^="p8TourStart(${k},"]`, '.p9tour');
+  // 2026-10-04：Chapter 1〜4 共通のランク選択（選ぶ →「この大会に参加する」）
+  await pg.waitForTimeout(SETTLE); await pg.click(`.rcv-row.ok[data-rank="${k}"]`); await pg.waitForTimeout(450); await pg.click('#p9join'); await pg.waitForSelector('.p9tour', { timeout: 20000 });
   assert.equal(await pg.evaluate(() => window.__seedTour), false, '固定した抽選シードで大会を作った');
 }
 /**
@@ -353,28 +354,24 @@ T('QA-RL4：Chapter 3（旧ボード）のゴール → ランク選択（クリ
   await setDice(pg, [3]);
   await pg.waitForTimeout(SETTLE);
   await pg.click('#brollbtn');
-  await pg.waitForSelector('.p9rank', { timeout: 20000 });
+  await pg.waitForSelector('.p9rcvw .rcv-row', { timeout: 20000 });
   let r = await raiseOf(pg);
   assert.deepEqual([r.node, r.goal, r.pend, r.turnsUsed], ['G', true, null, 11]);
-  assert.equal(await textOf(pg, '#bmsg'), 'ゴールに到着した！');
-  const ranks = () => pg.evaluate(() => [...document.querySelectorAll('.p9rank')].map((b) => b.innerText.replace(/\s+/g, ' ').trim()));
-  const rk = await ranks();
-  assert.equal(rk.length, 3, 'E・D・C の3つ');
-  assert.match(rk[0], /ランクE大会 6体の総当たり（5試合） クリア済み：優勝でステータスボーナスのみ/);
-  assert.match(rk[1], /ランクD大会 6体の総当たり（5試合） クリア済み：優勝でステータスボーナスのみ/);
-  assert.match(rk[2], /ランクC大会 8体の総当たり（7試合） 初回優勝：350G・特訓チケット×2・ステータスボーナス/);
+  // 2026-10-04：Chapter 3・4（旧ボード）のゴールも Chapter 1 と同じランク選択（共通の部品）。賞金・初回報酬の文は出さない
+  const ranks = () => pg.evaluate(() => [...document.querySelectorAll('.rcv-row')].map((b) => `${RN[+b.dataset.rank]}:${b.dataset.state}:${b.tagName}:${b.querySelector('small').textContent}`));
+  assert.deepEqual(await ranks(), ['S:lock:DIV:参加者 8体 / 7試合', 'A:lock:DIV:参加者 8体 / 7試合', 'B:lock:DIV:参加者 8体 / 7試合', 'C:next:BUTTON:参加者 8体 / 7試合', 'D:clear:BUTTON:参加者 6体 / 5試合', 'E:clear:BUTTON:参加者 6体 / 5試合'], 'E・D・C の3つ（C が挑戦目標）');
+  assert.equal(await pg.evaluate(() => document.querySelectorAll('.p9rank,.p9rlock,#brollbtn').length), 0, '旧カード・サイコロは出さない');
   assert.equal(await pg.evaluate(() => MMP8.canRoll(S.m)), false, 'ゴールのあとはサイコロを振れない');
   await assertSynced(pg, 'ゴール到達は保存済み（再開してもゴールの画面から）');
-  // C：1回目は確認表示だけ、2回目で参加
-  const cBtn = 'button.p9rank[onclick^="p8TourStart(2,"]';
+  // C：選ぶだけでは始まらない（フィナの見立て）→「この大会に参加する」で参加
   await pg.evaluate(() => { window.__seedTour = true; });   // 大会の抽選シードを固定
   await pg.waitForTimeout(SETTLE);
-  await pg.click(cBtn);
-  assert.equal(await textOf(pg, cBtn), 'もう一度押すとランクC大会に参加');
+  await pg.click('.rcv-row.ok[data-rank="2"]');
+  assert.match(await textOf(pg, '#p9join'), /公式ランクC大会/);
   assert.equal(await pg.evaluate(() => S.m.raise.tour), null);
   assert.equal((await storedRaise(pg)).tour, null);
   await pg.waitForTimeout(ARM_GAP);
-  await pg.click(cBtn);
+  await pg.click('#p9join');
   await pg.waitForSelector('.p9tour');
   assert.equal(await pg.evaluate(() => window.__seedTour), false, '固定した抽選シードで大会を作った');
   r = await raiseOf(pg);
@@ -418,7 +415,7 @@ T('QA-RL4：Chapter 3（旧ボード）のゴール → ランク選択（クリ
 
 let LAST_MATCH_MSG = null;   // QA-RL6 で記録した「最終戦に勝って2位」の結果の文言（QA-RL6b で確かめる）
 T('QA-RL5：大会の決着：全勝で優勝 → 初回優勝の賞金350G・修行チケット2枚・ステータスボーナスを1回だけ（結果画面で再読み込みしても増えない）→ Chapterを終えてファーム（前回の結果に優勝）', async () => {
-  const p = await boot(seed({ ch: 3, node: 'G', goal: true, turnsUsed: 12, log: [LOG1, LOG2D] }, { g: 1000, trainTix: 0 }, 1), '.p9rank'); const pg = p.page;
+  const p = await boot(seed({ ch: 3, node: 'G', goal: true, turnsUsed: 12, log: [LOG1, LOG2D] }, { g: 1000, trainTix: 0 }, 1), '.rcv-row'); const pg = p.page;
   await startTour(pg, 2);
   const s0 = await H.getS(pg);
   const msgs = [];
@@ -459,7 +456,7 @@ T('QA-RL5：大会の決着：全勝で優勝 → 初回優勝の賞金350G・�
 });
 
 T('QA-RL6：最終戦に勝っても2位で終わった大会（相手の1体が全勝）：報酬なし・ランクのクリアなし・所持金そのまま、順位表・対戦表は正しい', async () => {
-  const p = await boot(seed({ ch: 3, node: 'G', goal: true, turnsUsed: 12, log: [LOG1, LOG2D] }, { g: 1000 }, 1), '.p9rank'); const pg = p.page;
+  const p = await boot(seed({ ch: 3, node: 'G', goal: true, turnsUsed: 12, log: [LOG1, LOG2D] }, { g: 1000 }, 1), '.rcv-row'); const pg = p.page;
   // NPC同士の勝敗を固定して大会を作る（第1試合の相手＝8番が全勝する）。作ったあとは元の決め方に戻す
   await pg.evaluate(() => {
     MMP8L.setNpcMatchResolver((a, b) => a.id === 7 || (b.id !== 7 && a.id < b.id));
@@ -500,8 +497,8 @@ T('QA-RL6b：最終戦の結果の文言は、その試合の勝敗（勝ち！�
 // 育成完了
 // ---------------------------------------------------------
 T('QA-RL7：Chapter 4 で B ランクまでのまま大会を辞退 → 育成完了：フィナの会話 → 育成完了画面 → 牧場でモンスターを確認 → 街へ戻れる（育成完了1回）→ 再読み込みしても会話は出ない', async () => {
-  const p = await boot(seed({ ch: 4, node: 'G', goal: true, turnsUsed: 15, log: [LOG1, LOG2, LOG3] }, {}, 3), '.p9rank'); const pg = p.page;
-  assert.equal(await pg.evaluate(() => document.querySelectorAll('.p9rank').length), 5, 'B クリア済み → E〜A まで挑戦できる（＋1。S は封印）');
+  const p = await boot(seed({ ch: 4, node: 'G', goal: true, turnsUsed: 15, log: [LOG1, LOG2, LOG3] }, {}, 3), '.rcv-row'); const pg = p.page;
+  assert.equal(await pg.evaluate(() => document.querySelectorAll('.rcv-row.ok').length), 5, 'B クリア済み → E〜A まで挑戦できる（＋1。S は封印）'); assert.equal(await pg.evaluate(() => document.querySelector('.rcv-row[data-rank="5"]').dataset.state), 'lock');
   const s0 = await H.getS(pg);
   const armed = await press2(pg, 'button[onclick="p8TourDecline(this)"]', '.mmtalk');
   assert.equal(armed, 'もう一度押すと辞退（報酬なしでChapter終了）');
@@ -551,7 +548,7 @@ T('QA-RL7：Chapter 4 で B ランクまでのまま大会を辞退 → 育成�
 });
 
 T('QA-RL8：Chapter 4 で A ランク大会に優勝 → 最終ルート（準備中）のファーム → 「育成を完了して街へ戻る」2度押し → 育成完了（最終ルートは未実施として記録）→ フィナの会話 → 牧場（ランクA）', async () => {
-  const p = await boot(seed({ ch: 4, node: 'G', goal: true, turnsUsed: 14, log: [LOG1, LOG2, LOG3] }, { g: 100, trainTix: 0 }, 3), '.p9rank'); const pg = p.page;
+  const p = await boot(seed({ ch: 4, node: 'G', goal: true, turnsUsed: 14, log: [LOG1, LOG2, LOG3] }, { g: 100, trainTix: 0 }, 3), '.rcv-row'); const pg = p.page;
   await startTour(pg, 4);
   assert.equal(await pg.evaluate(() => S.m.raise.tour.rank), 4);
   for (let i = 0; i < 7; i++) assert.equal((await simMatch(pg, true)).ok, true);

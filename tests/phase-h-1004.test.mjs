@@ -101,6 +101,6 @@ test('PH-07：大会ランクの状態は固定表示にしない（進行で決
   assert.equal(st([1, 1, 1, 1, 1, 0], 4), 'E:clear D:clear C:clear B:clear A:clear S:next', 'A クリア後：S');
   assert.equal(st([1, 1, 1, 0, 0, 0], 1), 'E:clear D:clear C:clear B:lock A:lock S:lock', 'Chapter 1 の上限（D）より上でもクリア済は「クリア済」と出す');
   assert.match(rd('js/phase8/raising.js'), /const RANK_FLOOR = RANK_D;/); assert.match(rd('js/phase8/raising.js'), /const RANK_UNLOCK_STEP = 1;/);
-  const rc = fnOf('p9ReceptionHtml'); assert.doesNotMatch(rc, /PRIZE|推奨|FREE|ランクF|"F"/); assert.match(rc, /参加者 \$\{sz\}体 \/ \$\{sz-1\}試合/);
-  assert.match(HTML, /\.rcv-row\.st-open \.rcv-plate,\.rcv-row\.st-next \.rcv-plate\{background:linear-gradient\(#8e1a2c/, '参加可能はワインレッド＋金');
+  const rc = fnOf('p9ReceptionHtml') + fnOf('p9RankRow'); assert.doesNotMatch(rc, /PRIZE|推奨|FREE|ランクF|"F"/); assert.match(rc, /参加者 \$\{sz\}体 \/ \$\{sz-1\}試合/);
+  assert.doesNotMatch(HTML, /#8e1a2c/, '2026-10-04 正式デザイン：旧「参加可能＝ワインレッド」は使わない（青＋金）');
 });

@@ -58,8 +58,8 @@ test('CED-3：一言は CEDRIC_TALK。丁寧で公式感のある口調（です
 test('CED-4：表示場所：ゴールのランク選択・順位表（次の相手）・VS画面・結果画面。システム表示（.p9msg／.p9s／報酬／.p9prov）とは別の要素', () => {
   assert.match(lineOf('function p9Ced('), /^function p9Ced\(t,ex\)\{return `<div class="p9ced" data-ex="\$\{ex\|\|"host"\}"><img src="\$\{npcSrc\("cedric",ex\|\|"host","face"\)\|\|CEDRIC_FACE\}" alt=""><div class="tx"><b>セドリック<\/b>\$\{t\}<\/div><\/div>`\}$/, '2026-10-04：表情（司会・試合開始・緊張感・勝者発表）の小さい顔');
   // 2026-09-30：ランク選択の案内はフィナ（セドリックは大会が始まってから＝開始演出 p9TourIntro の CEDRIC_TALK.open）
-  assert.ok(between('function p8GoalHtml(', '\nconst P9_PADLOCK').includes('<h3>🏟 公式ランク大会</h3><div id="p9fsay">${p9Fina(FINA_RANK_TALK.pick)}</div><p class="p9s">'));
-  assert.doesNotMatch(between('function p8GoalHtml(', '\nconst P9_PADLOCK'), /p9Ced|CEDRIC/, 'ランク選択の画面にセドリックは出さない');
+  assert.ok(between('function p9ReceptionHtml(', '\nvar P9_LOBBY_BG').includes('<div class="rcv-say" id="p9fsay">${p9Fina(FINA_RANK_TALK.pick)}</div>'), '2026-10-04：ランク選択（Chapter 1〜4 共通）の案内はフィナ');
+  assert.doesNotMatch(between('function p8GoalHtml(', '\nconst P9_PADLOCK') + between('function p9RankRow(', '\nvar P9_LOBBY_BG'), /p9Ced|CEDRIC/, 'ランク選択の画面にセドリックは出さない');
   assert.ok(between('function p9TourIntro(', '\n// セドリック').includes('CEDRIC_TALK.open') || HTML.includes('${CEDRIC_TALK.open.replace("{R}",RN[k])}'), '大会開始の演出でセドリックの一言');
   const tour = between('function p8TourScr(msg){', '\nfunction p9TourResult(');
   assert.ok(tour.includes('${p9Ced(lg.round==0?CEDRIC_TALK.first:CEDRIC_TALK.next[lg.round%CEDRIC_TALK.next.length],t.rank>=3?"tense":"host")}<button class="p9btn p9go tp2go" onclick="p9CompareScr()">'), '2026-10-04：大会進行＝次の対戦相手のあとにセドリックの一言 →「対戦開始」（パラメーター比較へ）');
@@ -103,7 +103,7 @@ async function boot(size) {
   const p = await L.open({ size, save: goalSave() });
   await p.page.waitForSelector('.p15start');
   await p.page.evaluate(() => p8Resume());
-  await p.page.waitForSelector('.p9rank', { timeout: 20000 });
+  await p.page.waitForSelector('.rcv-row', { timeout: 20000 });
   return p;
 }
 /** 顔・名前つきのセドリックの吹き出し（画面にある分すべて） */
@@ -118,8 +118,8 @@ const simMatch = (pg, won) => pg.evaluate((won) => {
   save(); if (won) { S.g += 350; S.wins = (S.wins || 0) + 1; } MMP8.markBattleDone(S); save(); after('試合終了'); return true;
 }, won);
 async function joinD(pg) {
-  const sel = 'button.p9rank[onclick^="p8TourStart(1,"]';
-  await pg.waitForTimeout(550); await pg.click(sel); await pg.waitForTimeout(700); await pg.click(sel);
+  // 2026-10-04：Chapter 1〜4 共通のランク選択（選ぶ →「この大会に参加する」）
+  await pg.waitForTimeout(550); await pg.click('.rcv-row.ok[data-rank="1"]'); await pg.waitForTimeout(450); await pg.click('#p9join');
   await pg.waitForSelector('.p9tour');
 }
 const noOverflow = (pg) => pg.evaluate(() => ({ sw: document.documentElement.scrollWidth, W: innerWidth,
@@ -133,7 +133,7 @@ test('CED-B1：ゴールのランク選択 → 順位表 → 試合後 → VS画
   assert.deepEqual(await ceds(pg), [{ name: 'フィナ', src: 'assets/npc/fina/closeup/smile.webp', ok: true, text: 'フィナ' + (await pg.evaluate(() => FINA_RANK_TALK.pick)) }]);
   assert.equal(await pg.evaluate(() => document.querySelectorAll('.p9ced:not(.p9fina)').length), 0, 'ランク選択にセドリックは出さない');
   assert.ok(await sysClean(pg));
-  assert.equal(await pg.evaluate(() => document.querySelectorAll('.p9rank').length), 2, 'ランクの選択肢（E クリア＋1＝E・D）');
+  assert.equal(await pg.evaluate(() => document.querySelectorAll('.rcv-row.ok').length), 2, 'ランクの選択肢（E クリア＋1＝E・D）');
   // 参加 → 順位表（最初の試合の前）
   await joinD(pg); await waitImg(pg);
   assert.deepEqual((await ceds(pg)).map((c) => [c.name, c.ok, c.text]), [['セドリック', true, T.first]]);
