@@ -151,7 +151,7 @@ const SEL = {
   market: ['.p10back', '.p10arw.prev', '.p10arw.next', '.p10dot', '#p10car .p10sl.on .p10plate'],   // 購入ボタンは詳細シート（中央のモンスターをタップ）の中
   detail: ['#p10info .p10buy', '.p10detx'],
   sheet: ['#p10ov #mnm', '#p10ov .p10no', '#p10ov .p10ok'],
-  ranch: ['button.back', '.ftile', '.fsell', '.wpanel button'],
+  ranch: ['button.back', '.rnc', '.rna'],   // 2026-10-04 PHASE H3：牧場20体の一覧（子・下の4つ）
   museum: ['.dtop .dback', '.lbc'],
   save: ['button.back', '.card.slot button', 'button.ghost'],
   hall: ['button.back', '.fmb', '[onclick="prepScr()"]'],   // 2026-10-04 PHASE H2：ベースキャンプ（下の1列の「街へ戻る」は button.back・「冒険」は prepScr）   // ファーム（育成開始前）：街へ戻る・4コマンド・進行ボタン「育成を始める」
@@ -223,22 +223,23 @@ describe('QA-TS：390×844 の通し（JS エラー・読み込み・壊れた�
     assert.equal(s.m && s.m.sp, 0, 'ソラモを連れて帰った');
   });
 
-  T('QA-TS4：2体目（ガウル）→ 牧場の4つのタブ（預ける・受け取る・様子を見る・売る）', async () => {
+  T('QA-TS4：2体目（ガウル）→ 牧場（2026-10-04 PHASE H3：20体の一覧 → 選んで 見る・名前変更・売る）', async () => {
     await pg.evaluate(() => { S.g = 5000; save(); market(null, 'gauru'); });
     await settled(pg);
     await buyCenter(pg);
     await pg.click('.hz[onclick="farm()"]');
-    await waitSel(pg, '.fsell');
-    await check(pg, '牧場（預ける）', SEL.ranch);
-    await pg.click('.ftile[onclick*="\'b\'"]');
-    await waitSel(pg, '.ftile.on[onclick*="\'b\'"]');
-    await check(pg, '牧場（受け取る）', SEL.ranch);
-    await pg.click('.ftile[onclick*="\'e\'"]');   // 合体は研究所へ移すため牧場のコマンドから外した（2026-09-30）。代わりに「様子を見る」
-    await waitSel(pg, '.ftile.on[onclick*="\'e\'"]');
-    await check(pg, '牧場（様子を見る）', SEL.ranch);
-    await pg.click('.fsell');
-    await waitSel(pg, '.fsell.on');
-    await check(pg, '牧場（売る）', SEL.ranch);
+    await waitSel(pg, '.rn2 .rnact');
+    await check(pg, '牧場（一覧）', SEL.ranch);
+    await pg.click('.rngrid .rnc'); await pg.waitForTimeout(200);
+    await pg.click(".rna[onclick=\"rnView=rnSel;farm('','e')\"]");
+    await waitSel(pg, '.rnlook');
+    await check(pg, '牧場（見る）', ['button.back', '.rnlback']);
+    await pg.click('.rnlback'); await waitSel(pg, '.rn2 .rnact');
+    await pg.click(".rna[onclick=\"farm('','n')\"]"); await waitSel(pg, '#rnnm');
+    await check(pg, '牧場（名前変更）', ['button.back', '.rnren .go']);
+    await pg.click(".rnren button.t"); await waitSel(pg, '.rn2 .rnact');
+    await pg.click('.rna.rnsell'); await waitSel(pg, '.pfsell');
+    await check(pg, '牧場（売る）', ['button.back', '.pfsell ~ button.go']);
     await pg.click('button.back');
     await waitSel(pg, '.svb');
   });
@@ -399,7 +400,7 @@ for (const [key, label] of [['se', 'iPhone SE 相当'], ['android', 'Android 相
     await pg.click('#p10ov .p10ok');
     await waitSel(pg, '.hz[onclick="farm()"]');
     await pg.click('.hz[onclick="farm()"]');
-    await waitSel(pg, '.fsell');
+    await waitSel(pg, '.rn2 .rnact');
     await check(pg, '牧場', SEL.ranch);
     await pg.click('button.back');
     await waitSel(pg, '.svb');

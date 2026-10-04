@@ -453,7 +453,7 @@ T('QA-RL5：大会の決着：全勝で優勝 → 初回優勝の賞金350G・�
   assert.deepEqual([r.state, r.ch], ['farm', 4]);
   assert.deepEqual(r.log.at(-1), { ch: 3, reachedGoal: true, turnsUsed: 12, turnLimit: 20, declined: false, tour: { rank: 2, place: 1, won: true, firstClear: true } });
   const txt = await H.text(pg);
-  assert.ok(txt.includes('大会ランク') && txt.includes('特訓チケット') && /特訓チケット\s*2枚/.test(txt), '情報パネル：特訓チケット2枚');
+  assert.match(await textOf(pg, '.bctix'), /チケット\s*2/, 'ベースキャンプ（2026-10-04 PHASE H2）：特訓の上の札＝チケット2枚');
   assert.equal((await H.getS(pg)).g, s0.g + 350);
   noErrors(p);
 });
@@ -525,9 +525,10 @@ T('QA-RL7：Chapter 4 で B ランクまでのまま大会を辞退 → 育成�
   // 牧場へ → モンスターがいる → 街へ
   await pg.waitForTimeout(SETTLE);
   await pg.click('button[onclick="farm(\'\',\'a\')"]');
-  await pg.waitForSelector('button.back');
+  await pg.waitForSelector('.rn2 .rncur .rnc');   // 2026-10-04 PHASE H3：牧場20体の一覧 → 連れている子を「見る」
+  await pg.click('.rn2 .rncur .rnc'); await pg.waitForTimeout(300); await pg.click(".rna[onclick=\"rnView=rnSel;farm('','e')\"]"); await pg.waitForSelector('.rnlook');
   const ranch = await H.text(pg);
-  assert.ok(ranch.includes('ソラモ') && ranch.includes('ランクB'), '牧場にソラモ（ランクB）がいる');
+  assert.ok(ranch.includes('ソラモ') && /大会ランク\s*B/.test(ranch) && ranch.includes('育成完了'), '牧場にソラモ（ランクB・育成完了）がいる');
   await pg.waitForTimeout(SETTLE);
   await pg.click('button.back');
   await pg.waitForSelector('.map');
@@ -591,7 +592,8 @@ T('QA-RL8：Chapter 4 で A ランク大会に優勝 → 最終ルート（準�
   for (const w of ['最高クリアランク：A', '最終ルートは準備中のため、Chapter 4までの結果で育成を完了しました。', '最終CHAPTER', '準備中のため未実施（ここで育成完了）', 'ランクA大会 1位']) assert.ok(done.includes(w), `育成完了画面に「${w}」`);
   await pg.waitForTimeout(SETTLE);
   await pg.click('button[onclick="farm(\'\',\'a\')"]');
-  await pg.waitForSelector('button.back');
-  assert.ok((await H.text(pg)).includes('ランクA'));
+  await pg.waitForSelector('.rn2 .rncur .rnc');
+  await pg.click('.rn2 .rncur .rnc'); await pg.waitForTimeout(300); await pg.click(".rna[onclick=\"rnView=rnSel;farm('','e')\"]"); await pg.waitForSelector('.rnlook');
+  assert.match(await H.text(pg), /大会ランク\s*A/);
   noErrors(p);
 });

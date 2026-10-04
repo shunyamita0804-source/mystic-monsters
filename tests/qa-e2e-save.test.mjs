@@ -324,11 +324,11 @@ T('QA-SV5：有効なセーブがあると開始画面は「つづきから」�
   await pg.waitForSelector('.p10mk');
   await reloadKeepsS(pg, '.map', '市場');
   // 牧場：預ける（画面のボタン）→ 受け取るタブ
-  await pg.evaluate(() => farm('', 'a'));
-  await pg.waitForSelector('[onclick="dep()"]');
+  await pg.evaluate(() => { rnSel = S.m.uid; farm('', 'b'); });   // 2026-10-04 PHASE H3：一覧で連れている子を選ぶと「預ける」
+  await pg.waitForSelector('.rna[onclick="dep()"]');
   await pg.waitForTimeout(500);
-  await pg.click('[onclick="dep()"]');
-  await pg.waitForSelector('[onclick="wd(0)"]');
+  await pg.click('.rna[onclick="dep()"]');
+  await pg.waitForFunction(() => S.m === null && !!document.querySelector('.rngrid .rnc'));
   const s = await reloadKeepsS(pg, '.map', '牧場（預けたあと）');
   assert.equal(s.m, null); assert.equal(s.box.length, 2, '預けた結果も保存済み');
   await openSaveScreen(pg);

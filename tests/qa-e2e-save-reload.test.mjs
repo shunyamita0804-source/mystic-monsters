@@ -259,11 +259,11 @@ T('QA-SR7：育成完了画面（フィナの会話中）で再読み込み → 
 T('QA-SR8：牧場で売却（2度押し）した個体の uid はセーブのどこにも残らない。連れている個体を売ると S.m は空', async () => {
   const p = await openPage(); const pg = p.page;
   await setupTown(pg, { box: 2 });
-  await pg.evaluate(() => farm('', 'd'));
-  await pg.waitForSelector('[onclick="pfSellPick(2)"]');
+  // 2026-10-04 PHASE H3：牧場20体の一覧で選んで「売る」
+  await pg.evaluate(() => farm('', 'b'));
   const uid = await pg.evaluate(() => S.box[1].uid), g0 = await pg.evaluate(() => S.g);
-  await pg.waitForTimeout(500);
-  await pg.click('[onclick="pfSellPick(2)"]');
+  await pg.waitForSelector(`.rnc[data-uid="${uid}"]`); await pg.waitForTimeout(500);
+  await pg.click(`.rnc[data-uid="${uid}"]`); await pg.waitForTimeout(300); await pg.click('.rna.rnsell');
   await pg.waitForSelector('.pfsell ~ button.go');
   await pg.waitForTimeout(600);
   await pg.click('.pfsell ~ button.go');
@@ -278,7 +278,7 @@ T('QA-SR8：牧場で売却（2度押し）した個体の uid はセーブの�
   // 連れている個体（ソラモ）を売る → S.m は空
   const uidM = await pg.evaluate(() => S.m.uid);
   await pg.waitForTimeout(500);
-  await pg.click('[onclick="pfSellPick(0)"]');
+  await pg.click(`.rnc[data-uid="${uidM}"]`); await pg.waitForTimeout(300); await pg.click('.rna.rnsell');
   await pg.waitForSelector('.pfsell ~ button.go');
   await pg.waitForTimeout(600);
   await pg.click('.pfsell ~ button.go'); await pg.waitForTimeout(700); await pg.click('.pfsell ~ button.go');
@@ -288,7 +288,7 @@ T('QA-SR8：牧場で売却（2度押し）した個体の uid はセーブの�
   assert.ok(!JSON.stringify(s).includes(uidM) && !(await stored(pg)).includes(uidM), '売却した連れている個体の uid も残らない');
   assert.equal(s.g, g0 + 100);
   // 最後の1体は売れない（ボタンは無効）
-  assert.equal(await pg.evaluate(() => document.querySelector('[onclick="pfSellPick(0)"]').disabled), true, '最後の1体の「売る」は押せない');
+  assert.equal(await pg.evaluate(() => document.querySelector('.rna.rnsell').disabled), true, '最後の1体の「売る」は押せない（2026-10-04 PHASE H3：一覧の下の「売る」）');
   const after = await reloadKeepsS(pg, '.map', '売却後');
   assert.ok(!JSON.stringify(after).includes(uid) && !JSON.stringify(after).includes(uidM));
   noErrors(p);
