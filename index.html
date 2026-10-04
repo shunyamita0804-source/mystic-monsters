@@ -2289,6 +2289,45 @@ body:has(#app>.fm.bc) #snd{display:none}
 @media (max-width:389px){.fm.fm2.bc .bcplq b{font-size:14px;letter-spacing:.06em}.fm.bc .bcplq i{width:26px;height:26px}.fm.bc button.bcrb{width:34px;height:34px}.fm.bc .bcgold{height:32px;padding:0 9px 0 5px}.fm.bc .bcr{gap:4px}.fm.fm2.bc .bchd{padding-left:8px;padding-right:8px}}
 .bcmn .bcmnl{display:grid;gap:8px;padding:12px}.bcmn .bcmnl button{margin:0}
 @media (max-height:700px){.fm.bc{--bcbar:72px;--bcgo:108px}.fm.bc .bcfield{--bcbar:72px;--bcgo:108px}.fm.fm2.bc .bcgo button.fmgo{height:54px}.fm.fm2.bc .bcgo .fmgo b{font-size:25px}.fm.fm2.bc .bcbar button.bcb svg{width:24px;height:24px}.fm.fm2.bc .bcbar button.bcb{font-size:12px}.fm.bc .bcdan{height:min(74%,280px)}}
+/* ===== 聖獣士管理局（2026-10-04 PHASE H4。デザイン基準 02：正式背景＋濃紺と金の額の「聖獣士証」と羊皮紙の行・功績・下に2つのボタン） ===== */
+#app>.bu{position:relative;box-sizing:border-box;height:calc(100% + 32px);margin:-16px;display:flex;flex-direction:column;overflow:hidden;background:#0c1630;color:#fff}
+.bu .bubg{position:absolute;inset:0;background:var(--bu-bg) 50% 30%/cover no-repeat;pointer-events:none}
+.bu .bubg::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(8,15,34,.45),rgba(8,15,34,.2) 25%,rgba(8,15,34,.35) 70%,rgba(8,15,34,.7))}
+.bu>*{position:relative;z-index:1}.bu>.bubg{position:absolute;z-index:0}
+.bu .buhd{flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 6px}
+.bu .burb{display:grid;place-items:center;flex:none;width:42px;height:42px;min-height:0;margin:0;padding:0;border-radius:50%;background:radial-gradient(#223766,#0c1630);border:1.5px solid #e0b861;color:#f6dc98;font-size:20px;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.45)}
+.bu .burb.sp{visibility:hidden}
+.bu .buplq{padding:6px 26px 7px;border-radius:10px;background:linear-gradient(#1d3164,#0f1c42);border:1.5px solid #e0b861;box-shadow:inset 0 0 0 2px #0c1630,inset 0 0 0 3px rgba(224,184,97,.5),0 3px 10px rgba(0,0,0,.5)}
+.bu .buplq b{font-family:var(--mm-font-head);font-size:20px;font-weight:800;letter-spacing:.14em;color:#f6dc98;text-shadow:0 1px 0 #000}
+.bu .bubody{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:6px 16px 10px;display:flex;flex-direction:column;gap:12px}
+.bu .bucard,.bu .buachw{position:relative;padding:12px 12px 12px;border-radius:12px;background:linear-gradient(rgba(22,38,84,.95),rgba(12,24,58,.96));border:1.5px solid #e0b861;box-shadow:inset 0 0 0 3px #0c1630,inset 0 0 0 4px rgba(224,184,97,.45),0 6px 18px rgba(0,0,0,.5)}
+.bu .bucard{margin-top:22px;padding-top:30px}
+.bu .bucrest{position:absolute;left:50%;top:-24px;width:54px;height:54px;transform:translateX(-50%)}.bu .bucrest svg{width:100%;height:100%}
+.bu .buh{margin:0 0 8px;text-align:center}
+.bu .buh span{display:inline-block;padding:3px 26px;border-radius:6px;background:linear-gradient(#f7eed8,#e6d6b2);border:1px solid #b08a3e;color:#2a1f10;font-family:var(--mm-font-head);font-size:19px;font-weight:800;letter-spacing:.2em}
+.bu .burows{margin:0;padding:4px 12px;border-radius:8px;background:linear-gradient(#f6eedb,#ecdfc0);border:1px solid #b89a5a;color:#2a1f10}
+.bu .burows>div{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:34px;border-bottom:1px solid rgba(140,108,52,.35)}
+.bu .burows>div:last-child{border-bottom:0}
+.bu .burows dt{font-size:13px;color:#4a3a20;white-space:nowrap}.bu .burows dt::before{content:"✦";margin-right:6px;color:#b08a3e;font-size:10px}
+.bu .burows dd{margin:0;font-family:var(--mm-font-head);font-size:16px;font-weight:700;text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bu .burows dd small{margin-left:2px;font-size:11px;font-weight:500}
+.bu .burk{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:radial-gradient(#223766,#0c1630);border:2px solid #e0b861;color:#f6dc98;font-size:15px}
+.bu .buh2{margin:0 0 6px;text-align:center;font-family:var(--mm-font-head);font-size:18px;font-weight:800;letter-spacing:.2em;color:#f6dc98}
+.bu .buach{margin:0;padding:4px 10px;list-style:none;border-radius:8px;background:linear-gradient(#f6eedb,#ecdfc0);border:1px solid #b89a5a;color:#2a1f10}
+.bu .buach li{display:flex;align-items:center;gap:10px;min-height:34px;border-bottom:1px solid rgba(140,108,52,.35);font-size:13.5px;color:#8a7a5c}
+.bu .buach li:last-child{border-bottom:0}.bu .buach li.ok{color:#2a1f10;font-weight:500}
+.bu .bumd{flex:none;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#d8d0bc,#9d927a);border:1.5px solid #8a7a5c}
+.bu .buach li.ok .bumd{background:radial-gradient(circle at 40% 35%,#fff0b8,#e6bf62 55%,#a77a26);border-color:#7a5a20}
+.bu .buach li span{flex:1;min-width:0}
+.bu .buck{flex:none;width:18px;height:18px;border-radius:4px;border:1.5px solid #8a7a5c;background:#fffaf0}
+.bu .buach li.ok .buck{background:#1d2f57;border-color:#1d2f57;box-shadow:inset 0 0 0 2px #1d2f57}.bu .buach li.ok .buck::after{content:"";display:block;width:5px;height:9px;margin:1px 0 0 5px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.bu button.bumore{display:block;margin:8px auto 0;padding:3px 18px;min-height:0;border-radius:12px;background:linear-gradient(#6b4a1a,#3e2a0e);border:1px solid #e0b861;color:#f6dc98;font-size:12px}
+.bu .bunav{flex:none;display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:8px 16px calc(12px + env(safe-area-inset-bottom,0px))}
+.bu button.bub{height:54px;min-height:0;margin:0;border-radius:27px;background:linear-gradient(#1d3570,#0f1c46);border:1.5px solid #e0b861;box-shadow:inset 0 0 0 2px #0c1630,inset 0 0 0 3px rgba(224,184,97,.4),0 4px 12px rgba(0,0,0,.5);color:#fff;font-family:var(--mm-font-head);font-size:19px;font-weight:800;letter-spacing:.12em}
+.bu button.bub.on{background:linear-gradient(#2b4a92,#16296a);box-shadow:inset 0 0 0 2px #0c1630,inset 0 0 0 3px rgba(255,220,140,.75),0 0 14px rgba(120,170,255,.45)}
+.bu .bunpc{position:absolute;right:0;bottom:70px;--nsh:min(34dvh,280px);z-index:0;pointer-events:none}
+body:has(#app>.bu) #snd{display:none}
+@media (max-height:700px){.bu .burows>div,.bu .buach li{min-height:29px}.bu .buh span{font-size:17px}.bu button.bub{height:46px;font-size:17px}.bu .bucard{margin-top:18px;padding-top:26px}.bu .bucrest{width:46px;height:46px;top:-20px}}
 /* ===== 牧場20体（2026-10-04 PHASE H3。デザイン基準 01：正式背景の上に濃紺＋金の額。2列の一覧だけがスクロール・下に 見る／名前変更／受け取る（預ける）／売る） ===== */
 #app>.rn.rn2{position:relative;background:#0c1630}
 .rn2 .rnbg{position:absolute;inset:0;background-position:50% 40%;background-size:cover;pointer-events:none;z-index:0}
@@ -2932,7 +2971,7 @@ const TOWN_BG="assets/town/mistria_main.webp",TOWN_IMG={w:768,h:1360,top:26};
 // 2026-10-04：アイテム屋は街の独立した施設ではない（正式）。ファーム（育成準備の拠点）の屋台から shopScr を開く。街の札 townShop・SHOP_FROM は廃止（戻るはファームへ）
 // 街の施設コマンド［表示名, 補足, アイコン, 押したとき, 状態］。状態：ok＝行ける／dis＝今は行けない（ボタンを無効）／lock＝未開放（押すと案内だけ）
 // アイコンは金色の線画（下の TOWN_SVG の #tic-*）。画像ファイルのパス（.png／.webp／.jpg／.svg）を書けば、その画像で表示する
-const TOWN_CMDS=m=>[["市場","モンスター市場","#tic-market","market()","ok",0,[168,985]],["牧場","ぽかぽか牧場","#tic-ranch","farm()","ok",0,[604,318]],["研究所","モンスター研究所","#tic-lab","museum()","ok",0,[186,318]],["闘技場","未開放","#tic-arena","townArena()","lock",0,[466,150]],["聖獣士管理局","準備中","","townGuild()","lock",0,[500,594]],["ベースキャンプ","育成","#tic-farm","hall()",m?"ok":"dis"],["プロフィール","プレイヤーの記録","#tic-profile","profileScr()","ok"],["セーブ・ロード","セーブ・ロード","#tic-save","savescr()","ok","セーブ<br>ロード"]];
+const TOWN_CMDS=m=>[["市場","モンスター市場","#tic-market","market()","ok",0,[168,985]],["牧場","ぽかぽか牧場","#tic-ranch","farm()","ok",0,[604,318]],["研究所","モンスター研究所","#tic-lab","museum()","ok",0,[186,318]],["闘技場","未開放","#tic-arena","townArena()","lock",0,[466,150]],["聖獣士管理局","聖獣士証・功績","","townGuild()","ok",0,[500,594]],["ベースキャンプ","育成","#tic-farm","hall()",m?"ok":"dis"],["プロフィール","プレイヤーの記録","#tic-profile","profileScr()","ok"],["セーブ・ロード","セーブ・ロード","#tic-save","savescr()","ok","セーブ<br>ロード"]];
 // 2026-10-03（品質向上）：7番目［x, y］がある施設＝街の背景の上の札（押せる。地図で施設が分かる＝下のバーと二重に出さない）。無い物＝下のバー（ファーム・プロフィール・セーブ）。札の位置（市場・アイテム屋・聖獣士管理局）は絵から読んだ【要確認】
 const TPIN_LOCK='<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 7V5.2a3 3 0 0 1 6 0V7" fill="none" stroke="#e6bf62" stroke-width="1.6"/><rect x="3.5" y="7" width="9" height="6.5" rx="1.2" fill="#e6bf62"/></svg>';
 const townPins=m=>TOWN_CMDS(m).filter(c=>c[6]),townBar=m=>TOWN_CMDS(m).filter(c=>!c[6]);
@@ -2954,7 +2993,25 @@ const townCorners=()=>["tl","tr","bl","br"].map(c=>`<span class="cn ${c}"><svg v
 function townLock(t){const e=$("#msg");if(e)e.textContent=t;const w=$("#app>.tlow");if(w){w.classList.add("on");w.classList.remove("fina")}const v=$(".vgsay");if(v)v.remove();MMAUDIO.se("UI_ERROR")}
 function townArena(){townLock("闘技場は、まだ利用できません。");if(!npcFirst("arena"))vgSay()} // 2026-10-04：初回はヴァルガス ↔ フィナの会話。以降はヴァルガスの一言
 /** 聖獣士管理局（2026-10-03：街の上の存在だけ正式。中の背景・NPC・機能の素材と仕様が無い＝中は作らない） */
-function townGuild(){townLock("聖獣士管理局は、まだ利用できません。")}
+// 2026-10-04 PHASE H4：聖獣士管理局（デザイン基準 02）。背景＝正式マスター BUREAU_BG（UI・セルジュなし。訪問・聖獣士証・功績・聖獣士登録の共通背景）。
+//  登録済みの画面＝聖獣士証（プレイヤー名・大会到達ランク・育成完了数・合体回数・発見モンスター数・大会優勝記録＝すべて今のセーブから）と功績。下に「聖獣士証」「功績一覧」。
+//  功績は既存のデータの判定と表示だけ（報酬・解放は無い。TODO：報酬を付けるときは BUREAU_ACH の各行に reward を足す）。セルジュ（管理局の NPC）は正式の透過素材待ち＝MMNPC に 'serge' が登録されたときだけ立たせる
+const BUREAU_BG="assets/bureau/bureau_main.webp";
+const SERGE={id:"serge",name:"セルジュ",role:"聖獣士管理局の職員（登録・聖獣士証・功績の案内・受付）"}; // 正式の透過素材が届いたら js/npc/npc.js に register('serge', …) を足すだけで、管理局の右下に立つ
+const bureauFound=()=>SP.length; // 発見モンスター数＝図鑑の発見数（研究所の labBook と同じ数え方）
+const BUREAU_ACH=[["raise1","初めての育成完了",S=>MMP8.raiseDoneCount(S)>=1],["raise5","育成完了 5回",S=>MMP8.raiseDoneCount(S)>=5],["fuse1","初めての合体",S=>(S.fuseCnt|0)>=1],["win1","初めての大会優勝",S=>(S.wins|0)>=1]]
+ .concat(RN.map((r,i)=>[`rank${r}`,`公式${r}ランク大会優勝`,S=>(S.br??-1)>=i]));
+function bureauRows(){const br=S.br??-1;return [["プレイヤー名",`<b class="bupn">${p11Esc(S.playerName||MMP11P.DEFAULT_NAME)}</b>`],["大会到達ランク",br>=0?`<span class="burk">${RN[br]}</span>`:"ー"],["育成完了数",`${MMP8.raiseDoneCount(S)}<small>回</small>`],["合体回数",`${S.fuseCnt|0}<small>回</small>`],["発見モンスター数",`${bureauFound()}<small>種</small>`],["大会優勝記録",`${S.wins|0}<small>回</small>`]]}
+function bureauAch(all){const L=BUREAU_ACH.map(([id,t,f])=>({id,t,ok:!!f(S)})),v=all?L:L.filter(x=>x.ok).concat(L.filter(x=>!x.ok)).slice(0,5);
+ return `<ul class="buach">${v.map(x=>`<li class="${x.ok?"ok":""}" data-ach="${x.id}"><i class="bumd" aria-hidden="true"></i><span>${x.t}</span><b class="buck" aria-label="${x.ok?"達成":"未達成"}"></b></li>`).join("")}</ul>`}
+function bureauNpc(){const n=window.MMNPC&&MMNPC.get&&MMNPC.get(SERGE.id),src=n&&npcSrc(SERGE.id);return src?`<img class="bunpc nstf" ${npcStand(SERGE.id)} alt="" aria-hidden="true">`:""}
+function bureauScr(tab){if(p8Blocked())return;bgm("town");p9Immersive(true);const all=tab=="ach";
+ const crest='<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 5l22 8v17c0 15-10 25-22 30C20 55 10 45 10 30V13z" fill="#1d3570" stroke="#e6bf62" stroke-width="2.5"/><path d="M32 13l15 5.5v12c0 10-6.5 17-15 21-8.5-4-15-11-15-21v-12z" fill="none" stroke="#e6bf62" stroke-width="1.2" opacity=".7"/><path d="M24 36c3-7 6-11 8-17 2 6 5 10 8 17-3-1.5-5.5-2-8-2s-5 .5-8 2z" fill="#e6bf62"/></svg>';
+ const card=`<section class="bucard" aria-label="聖獣士証"><div class="bucrest">${crest}</div><h3 class="buh"><span>聖獣士証</span></h3><dl class="burows">${bureauRows().map(r=>`<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join("")}</dl></section>`;
+ const ach=`<section class="buachw${all?" all":""}" aria-label="功績"><h3 class="buh2">功績</h3>${bureauAch(all)}${all?"":`<button class="bumore" onclick="bureauScr('ach')">すべて見る ▾</button>`}</section>`;
+ $("#app").innerHTML=`<div class="bu" style="--bu-bg:url(${BUREAU_BG})"><div class="bubg" aria-hidden="true"></div><header class="buhd"><button class="burb" data-nav="back" onclick="lobby()" aria-label="街にもどる">←</button><div class="buplq"><b>聖獣士管理局</b></div><span class="burb sp" aria-hidden="true"></span></header>
+ <div class="bubody">${all?ach:card+ach}</div>${bureauNpc()}<nav class="bunav"><button class="bub${all?"":" on"}" onclick="bureauScr()">聖獣士証</button><button class="bub${all?" on":""}" onclick="bureauScr('ach')">功績一覧</button></nav></div>`;try{window.scrollTo(0,0)}catch(e){}}
+function townGuild(){bureauScr()} // 2026-10-04 PHASE H4：街の札「聖獣士管理局」から（既存の札の位置・押し方のまま）
 /** 街からアイテム屋へ（2026-10-03）。アイテム屋は連れているモンスターがいるとき（従来の shopScr の条件のまま）。戻るは街へ */
 /** プロフィール（暫定の器）：顔（仮の金色の人の形。正式な顔の素材は後日）・プレイヤー名・所持金・最高到達ランク・獲得トロフィー（正式データが無いので枠だけ）。
  * 行は PROFILE_ROWS に［見出し, 値のHTMLを返す関数］で足していく（大会戦績・育成記録・実績など）。セーブには何も足さない */
@@ -2985,7 +3042,7 @@ function p11NameScr(msg){bgm("title");p9Immersive(true);const d=MMP11P.DEFAULT_N
  if(!finaFlags().prologue&&window.MMPRO&&!window.MM_QA_NO_PROLOGUE&&!P11_PRO.has(S)){P11_PRO.add(S);$("#app").innerHTML="";bgm("prologue"); // プロローグは開始画面の曲を短くフェードアウトして分ける（専用曲は素材待ち＝registry の PROLOGUE）
   const cv=document.createElement("div");cv.className="p11cover";document.body.appendChild(cv);
   MMPRO.readyOrTimeout(6000).then(()=>MMPRO.play({cover:cv})).then(ok=>{cv.remove();if(ok){finaFlags().prologue=1;save()}}).catch(()=>cv.remove()).then(()=>p11NameScr(msg));return}
- const bg=(window.MMPRO&&MMPRO.SLIDES&&MMPRO.SLIDES[4]&&MMPRO.SLIDES[4].bg)||"";
+ const bg=BUREAU_BG; // 2026-10-04 PHASE H4：聖獣士登録の背景は聖獣士管理局の正式背景（旧：プロローグ E）
  $("#app").innerHTML=`<div class="p11reg" style="--p11bg:url('${bg}')"><b class="p11t">聖獣士登録</b>
  <div class="p11card"><div class="p11sheet"><label class="p11lb" for="p11nm">プレイヤー名</label>
  <p class="p11s">ミストリアへようこそ。<br>聖獣士として、あなたの名前を登録します。</p>
@@ -3182,7 +3239,7 @@ function imp(){if(p8Blocked())return;let o=null;try{o=MMP8.migrateSave(JSON.pars
 function selm(i){if(p8Blocked())return;const j=sel.indexOf(i);j>=0?sel.splice(j,1):sel.length<2&&sel.push(i);museum("fuse")}
 async function fuse(){
  const all=[S.m,...S.box].filter(Boolean),[a,b]=sel.map(i=>all[i]),rest=all.filter((x,i)=>!sel.includes(i));
- if(p8Blocked())return;if(MMP7.trainRunOf(S.m))return;if(sel.length!=2||!a||!b||a===b)return;const fsp=MMP7.resolveFusionSpecies(a,b);let c;try{c=mk(fsp.sp)}catch(e){return}if(S.g<200)return;S.g-=200;S.cnt=(S.cnt||0)+1;c.rk=Math.max(a.rk||0,b.rk||0);c.s2=b.sp!=a.sp?b.sp:(a.s2!=null&&a.s2!=a.sp?a.s2:b.s2!=null&&b.s2!=a.sp?b.s2:null);if(fsp.special)c.s2=null;c.h=((a.h||0)+(b.h||0)+(a.sp==b.sp?60:30))%360;c.name=cname(a,b);
+ if(p8Blocked())return;if(MMP7.trainRunOf(S.m))return;if(sel.length!=2||!a||!b||a===b)return;const fsp=MMP7.resolveFusionSpecies(a,b);let c;try{c=mk(fsp.sp)}catch(e){return}if(S.g<200)return;S.g-=200;S.cnt=(S.cnt||0)+1;S.fuseCnt=(S.fuseCnt|0)+1;c.rk=Math.max(a.rk||0,b.rk||0);c.s2=b.sp!=a.sp?b.sp:(a.s2!=null&&a.s2!=a.sp?a.s2:b.s2!=null&&b.s2!=a.sp?b.s2:null);if(fsp.special)c.s2=null;c.h=((a.h||0)+(b.h||0)+(a.sp==b.sp?60:30))%360;c.name=cname(a,b);
  KS.forEach(k=>c[k]=Math.min(999,Math.round((a[k]+b[k])*.6)));
  // Phase 7：通常合体は「子の初期4技＋親の追加技（初期技・必殺技を除く）からランダム1技」。候補が無ければ継承なし。
  {const inh=MMP7.pickFusionInherit(a,b,c.sk,Math.random);if(inh!=null){c.sk=[...c.sk,inh];c.prog.learnSrc[inh]="inherit"}const u=c.sk.slice(0,6);while(u.length<6)u.push(-1);c.eq=u}

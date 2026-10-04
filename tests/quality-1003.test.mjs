@@ -32,7 +32,7 @@ test('QU-01：プロローグは A〜E の5枚（F は無い）。文字は画�
 
 test('QU-02：街は正式ミストリア。施設は背景の上の押せる札（市場・牧場・研究所・闘技場・聖獣士管理局）で下のバーと二重に出さない。聖獣士管理局は中を作らない（素材・仕様なし）。アイテム屋は街に無く、ファームの屋台から（2026-10-04 正式）', () => {
   assert.ok(existsSync(path.join(ROOT, 'assets/town/mistria_main.webp')));
-  assert.match(HTML, /function townGuild\(\)\{townLock\("聖獣士管理局は、まだ利用できません。"\)\}/);
+  assert.match(HTML, /function townGuild\(\)\{bureauScr\(\)\}/, '2026-10-04 PHASE H4：聖獣士管理局の中（正式背景・聖獣士証・功績）ができた＝札から入る');
   assert.doesNotMatch(HTML, /function townShop\(|SHOP_FROM=/, '街の独立したアイテム屋は無い');
   assert.doesNotMatch(rd('js/feel/game-feel.js'), /townShop/);
   assert.match(fnOf('fmScr'), /\["shopScr\(\)","item","アイテム",""\]/, 'アイテムはベースキャンプの中（ベルナの補給所）から。2026-10-04 PHASE H2：下の1列のコマンド');

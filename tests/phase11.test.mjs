@@ -152,7 +152,7 @@ test('F2-1：街の「ブリーダー」欄はプレイヤー名を表示（新�
   assert.doesNotMatch(bp, /p115pn|playerName|ランク|S\.g\b/, '下の欄に名前・ランク・所持金を重ねて出さない');
   assert.doesNotMatch(top + bp, /🧑‍🌾 ブリーダー/);
   const refs = HTML.split('\n').filter((l) => /S\.playerName(?!Pending)/.test(l));
-  assert.equal(refs.length, 3, 'プレイヤー名の参照は3か所だけ（別の名前を持たない）');
+  assert.equal(refs.length, 4, 'プレイヤー名の参照は4か所だけ（別の名前を持たない）。2026-10-04 PHASE H4：聖獣士証（bureauRows）'); assert.equal(refs.filter((l) => l.startsWith('function bureauRows(){')).length, 1, '聖獣士証');
   assert.equal(refs.filter((l) => l.includes('id="p11nm"') || l.includes('for="p11nm"')).length, 1, '名前入力'); assert.equal(refs.filter((l) => l.startsWith('function p10Who(){')).length, 1, '市場'); assert.equal(refs.filter((l) => l.startsWith('function profileScr(')).length, 1, 'プロフィール（プレイヤー情報）');
 });
 

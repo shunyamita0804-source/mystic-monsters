@@ -37,7 +37,7 @@ test('TW-1：街の背景は TOWN_BG の1か所だけで参照し、ファイル
 test('TW-2：施設は街の背景の上の札（押せる。下のバーと二重に出さない）＝市場・牧場・研究所・闘技場・聖獣士管理局（アイテム屋は街に無い＝2026-10-04）。下のバーはファーム・プロフィール・セーブ・ロード（1段）。行き先は従来の画面', () => {
   const src = line('const TOWN_CMDS=');
   const f = new Function(`${src}\nreturn TOWN_CMDS;`)();
-  assert.deepEqual(f({}).map((c) => [c[0], c[3], c[4]]), LABELS.map((l, i) => [l, CALLS[i], [3, 4].includes(i) ? 'lock' : 'ok']));
+  assert.deepEqual(f({}).map((c) => [c[0], c[3], c[4]]), LABELS.map((l, i) => [l, CALLS[i], i === 3 ? 'lock' : 'ok']));   // 2026-10-04 PHASE H4：聖獣士管理局は開いた（闘技場だけロック）
   assert.deepEqual(f({}).map((c) => !!c[6]), LABELS.map((l, i) => i < PINS), '5つの施設は地図の上の札（7番目に背景の画素の位置）');
   assert.equal(f(null)[5][4], 'dis', 'モンスターがいないときファームは押せない（従来どおり）');
   assert.equal(f(null)[6][4], 'ok'); assert.equal(f(null)[7][4], 'ok'); assert.equal(f({})[7][5], 'セーブ<br>ロード', 'セーブ・ロードは2行');
@@ -50,7 +50,7 @@ test('TW-2：施設は街の背景の上の札（押せる。下のバーと二�
   assert.match(lobby, /\$\{i==0\?" tsub tfarm":i==1\?" tsub tprof":" tsub tsave svb"\}/);
   assert.doesNotMatch(lobby, /townTop|tttl|tpinfo/, '街の上部の「街」の札・プレイヤー情報は置かない');
   assert.doesNotMatch(HTML.match(/\n\.tbar\{[^}]*\}/)[0], /transform/, 'バーの位置に transform を使わない'); assert.doesNotMatch(lobby, /mupin|博物館/, '旧マップのタップ領域・博物館ピンは使わない');
-  assert.match(HTML, /function townGuild\(\)\{townLock\("聖獣士管理局は、まだ利用できません。"\)\}/, '聖獣士管理局は街の上の存在だけ（中は素材・仕様が無いので作らない）');
+  assert.match(HTML, /function townGuild\(\)\{bureauScr\(\)\}/, '2026-10-04 PHASE H4：聖獣士管理局の中（正式背景・聖獣士証・功績）へ');
   assert.doesNotMatch(HTML, /function townShop\(|SHOP_FROM=/, '2026-10-04：街の独立したアイテム屋は無い（ファームの屋台 shopScr だけ）');
 });
 
@@ -100,7 +100,7 @@ test('TW-B1：新規開始後の街：正式ミストリアの背景を読み込
   const p = await L.open(); const pg = p.page;
   await town(p);
   assert.deepEqual((await cmds(pg)).map((c) => [c.label, c.call, c.disabled, c.lock]),
-    [['市場', 'market()', false, false], ['牧場', 'farm()', false, false], ['研究所', 'museum()', false, false], ['闘技場', 'townArena()', false, true], ['聖獣士管理局', 'townGuild()', false, true], ['ベースキャンプ', 'hall()', true, false], ['プロフィール', 'profileScr()', false, false], ['セーブロード', 'savescr()', false, false]]);
+    [['市場', 'market()', false, false], ['牧場', 'farm()', false, false], ['研究所', 'museum()', false, false], ['闘技場', 'townArena()', false, true], ['聖獣士管理局', 'townGuild()', false, false], ['ベースキャンプ', 'hall()', true, false], ['プロフィール', 'profileScr()', false, false], ['セーブロード', 'savescr()', false, false]]);
   assert.equal(await pg.evaluate(() => document.querySelectorAll('.tttl, .tpinfo, .tplate, .tlbl').length), 0, '上部の「街」の札・プレイヤー情報・押せない建物ラベルは無い');
   const bg = await pg.evaluate(() => getComputedStyle(document.querySelector('.map.town .tbg')).backgroundImage);
   assert.match(bg, /assets\/town\/mistria_main\.webp/);

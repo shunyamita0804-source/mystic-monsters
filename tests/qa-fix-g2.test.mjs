@@ -248,8 +248,9 @@ function loadFuse(w, S, sel, src, rng = () => 0.5) {
 }
 const fuseNew = () => between('async function fuse(){', '\nfunction tog(k)');
 /** 変更前の fuse()（今のコードから差分を戻したもの） */
-const fuseOld = () => once(fuseNew(), 'if(sel.length!=2||!a||!b||a===b)return;const fsp=MMP7.resolveFusionSpecies(a,b);let c;try{c=mk(fsp.sp)}catch(e){return}if(S.g<200)return;S.g-=200;S.cnt=(S.cnt||0)+1;c.rk=',
-  'if(S.g<200)return;S.g-=200;S.cnt=(S.cnt||0)+1;const fsp=MMP7.resolveFusionSpecies(a,b);const c=mk(fsp.sp);c.rk=');
+// 2026-10-04 PHASE H4：合体回数の記録 S.fuseCnt（聖獣士証）を足した。変更前のコードにも同じ1行を入れて比べる
+const fuseOld = () => once(fuseNew(), 'if(sel.length!=2||!a||!b||a===b)return;const fsp=MMP7.resolveFusionSpecies(a,b);let c;try{c=mk(fsp.sp)}catch(e){return}if(S.g<200)return;S.g-=200;S.cnt=(S.cnt||0)+1;S.fuseCnt=(S.fuseCnt|0)+1;c.rk=',
+  'if(S.g<200)return;S.g-=200;S.cnt=(S.cnt||0)+1;S.fuseCnt=(S.fuseCnt|0)+1;const fsp=MMP7.resolveFusionSpecies(a,b);const c=mk(fsp.sp);c.rk=');
 test('QA-G2-9：fuse()：親2体がそろっていない・子の種族を作れないときは 200G・合体回数を使わない', async () => {
   // 守ること：以前は所持金・合体回数を先に減らしてから親や子の種族を確かめ、例外で合体できないのに200Gだけ減っていた
   const w = load();
