@@ -83,21 +83,34 @@ try {
   await sleep(1500);
 
   await page.click('[onclick*="startGame"]'); await sleep(600);
-  // 2026-10-03：新しいゲームの最初はプロローグ A〜E（背景5枚が読めること・スキップの2度押しで名前登録へ）
-  const pro = await page.waitForFunction(() => { const b = document.querySelector('.mmpro .mmpro-bg.on'); return b && /prologue_a\.webp/.test(b.style.backgroundImage); }, null, { timeout: 20000 }).then(() => true, () => false);
-  const proImgs = await page.evaluate(() => Promise.all(['a', 'b', 'c', 'd', 'e'].map((k) => new Promise((ok) => { const i = new Image(); i.onload = () => ok(i.naturalWidth > 0); i.onerror = () => ok(false); i.src = `assets/prologue/prologue_${k}.webp`; })))).then((a) => a.every(Boolean));
-  await page.screenshot({ path: `${OUT}/prologue_a_390.png` });
+  // 2026-10-05：新しいゲームの最初はプロローグ（正式4枚・1文字ずつ）→ 街 → フィナの声かけ（2択）→ 聖獣士管理局（光る札）→ セルジュ → 聖獣士登録
+  const pro = await page.waitForFunction(() => { const b = document.querySelector('.mmpro .mmpro-bg.on'); return b && /prologue_01_coexistence\.webp/.test(b.style.backgroundImage) && document.querySelector('.mmpro .mmpro-u .mpc'); }, null, { timeout: 20000 }).then(() => true, () => false);
+  const proImgs = await page.evaluate(() => Promise.all(['01_coexistence', '02_anomaly', '03_three_legends', '04_arrival_mistoria'].map((k) => new Promise((ok) => { const i = new Image(); i.onload = () => ok(i.naturalWidth > 0); i.onerror = () => ok(false); i.src = `assets/prologue/prologue_${k}.webp`; })))).then((a) => a.every(Boolean));
+  await sleep(1200); await page.screenshot({ path: `${OUT}/prologue_01_390.png` });
   if (pro) { await sleep(500); await page.click('.mmpro-skip'); await sleep(500); await page.click('.mmpro-skip'); }
+  rec('プロローグ（正式4枚が読める・1文字ずつ・スキップで街へ）', pro && proImgs, `表示:${pro} 背景:${proImgs}`);
+  await page.waitForSelector('.map.town', { timeout: 20000 }); await sleep(900);
+  const c1 = await drain(); if (c1 === 'choice') { await sleep(450); await page.click('.mmtalk-choice[data-choice="yes"]'); await sleep(300); }
+  const c1b = await drain(); await sleep(400);
+  const guide = await page.evaluate(() => { const g = [...document.querySelectorAll('.map.town .tpin.opgo')].map((b) => b.getAttribute('onclick')); return g.length === 1 && g[0] === 'townGuild()' && [...document.querySelectorAll('.map.town .tpin:not(.opgo)')].every((b) => b.disabled); });
+  await page.screenshot({ path: `${OUT}/opening_town_390.png` });
+  rec('序盤：フィナの2択 → 聖獣士管理局だけが光る（ほかは押せない）', c1 === 'choice' && c1b === 'none' && guide, `会話:${c1}/${c1b} 案内:${guide}`);
+  await page.click('.tpin.opgo'); await sleep(1200);
+  const serge = await page.evaluate(() => { const s = window.MMNPC && MMNPC.state(); return s ? s.name : null; });
+  await drain();
   await page.waitForSelector('#p11nm', { timeout: 20000 });
-  rec('プロローグ A（背景5枚が読める・スキップで聖獣士登録へ）', pro && proImgs, `表示:${pro} 背景:${proImgs}`);
+  rec('聖獣士管理局：セルジュが登録を受け付ける → 聖獣士登録', serge === 'セルジュ', `話者:${serge}`);
   const lobbyOk = await page.evaluate(() => new Promise((ok) => { const i = new Image(); i.onload = () => ok(i.naturalWidth > 0); i.onerror = () => ok(false); i.src = 'assets/tournament/lobby/lobby_main.webp'; }));   // 2026-10-04 G4：大会会場の中（ロビー）の背景
   const reg = await page.evaluate(() => !!document.querySelector('.p11reg .p11card #p11nm') && !!document.querySelector('.p11reg .p11go') && getComputedStyle(document.querySelector('h1')).display === 'none');
   rec('聖獣士登録の画面（登録カード・登録する・旧い見出しなし）・大会会場の中の背景が読める', lobbyOk && reg, `ロビー:${lobbyOk} 登録:${reg}`);
   await page.fill('#p11nm', 'テスト');
   await page.click('[onclick*="p11NameGo"]'); await sleep(800);
-  const d1 = await drain(); await sleep(600);
-  const town = await page.evaluate(() => !!document.querySelector('[onclick*="market()"]'));
-  rec('開始→名前→フィナ→街', d1 === 'none' && town, `会話:${d1} 街:${town}`);
+  const cf = await drain(); if (cf === 'choice') { await sleep(450); await page.click('.mmtalk-choice[data-choice="ok"]'); await sleep(1200); }
+  const cg = await drain(); if (cg === 'choice') { await sleep(1500); await page.screenshot({ path: `${OUT}/worldmap_390.png` }); await page.click('.mmtalk-choice[data-choice="a"]'); await sleep(400); }
+  let d1 = 'open'; for (let k = 0; k < 40; k++) { if (await page.evaluate(() => !!document.querySelector('.map.town') && !document.querySelector('.mmtalk') && S.npcFlags.op === 'done')) { d1 = 'none'; break; } d1 = await drain(); await sleep(700); }   // 会話と会話の間（フェード）を待ちながら送る
+  await sleep(600);
+  const town = await page.evaluate(() => !!document.querySelector('.map.town [onclick*="market()"]') && S.playerName === 'テスト' && !S.playerNamePending && S.npcFlags.op === 'done' && S.npcFlags.worldMap === 1);
+  rec('名前の確認 → 登録 → フィナが名前を呼ぶ → 出身地と世界地図 → 街', cf === 'choice' && cg === 'choice' && d1 === 'none' && town, `確認:${cf} 出身:${cg} 会話:${d1} 街:${town}`);
   await page.screenshot({ path: `${OUT}/town_390.png` });
 
   await page.evaluate(() => market()); await sleep(1000);

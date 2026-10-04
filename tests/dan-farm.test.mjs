@@ -133,8 +133,8 @@ test('DAN-B1：ファーム：ダンの吹き出し（名前ダン・顔）。�
   await pg.click('.kav'); await pg.waitForTimeout(200);
   assert.deepEqual(await pg.evaluate(() => [document.querySelectorAll('.ksys').length, document.querySelector('.kdan').classList.contains('kt')]), [0, true]);
   // メッセージ欄：文字だけ（顔なし）
-  await pg.evaluate(() => hall('st', '並び順を変更しました。')); await pg.waitForSelector('.dmsg'); await pg.waitForTimeout(200);
-  assert.deepEqual(await pg.evaluate(() => [document.querySelector('.dmsg').textContent, document.querySelectorAll('.dmsg img').length]), ['並び順を変更しました。', 0]);
+  await pg.evaluate(() => hall('st', '並び順を変更しました。')); await pg.waitForSelector('.sts .stmsg'); await pg.waitForTimeout(200);   // 2026-10-05：正式ステータス画面（stScr）のメッセージ欄
+  assert.deepEqual(await pg.evaluate(() => [document.querySelector('.sts .stmsg').textContent, document.querySelectorAll('.sts .stmsg img').length]), ['並び順を変更しました。', 0]);
   await pg.evaluate(() => prepScr('保管庫に入れました。')); await pg.waitForSelector('.dmsg'); await pg.waitForTimeout(200);
   assert.deepEqual(await pg.evaluate(() => [document.querySelector('.dmsg').textContent, document.querySelectorAll('.dmsg img').length]), ['保管庫に入れました。', 0]);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
