@@ -598,6 +598,7 @@
     const r = m.raise, ph = P8().boardPhase(m), f = MMCH.fieldOf(m);
     V.cfg = MMCH.configFor(m); V.g = MMCH.graphFor(m); V.calm = calmMode();
     evArtPreload(m);   // 2026-10-04（追加アセット）：この配置の出来事の挿絵を少しずつ先読み
+    rfxPreload();   // 能力UPの道具・結果演出
     if (!V.foeWarm && root.MMP10M && typeof Image !== 'undefined') { V.foeWarm = 1; setTimeout(() => (MMP10M.SPECIES || []).forEach((x) => { if (x.image) { const im = new Image(); im.decoding = 'async'; im.src = x.image.src; } }), 1200); }   // 2026-10-04 G3：遭遇の演出で見せる相手の正式画像（4枚）
     const node = V.g.nodes[r.node] || V.g.nodes[V.g.start], key = `${m.uid}:${f.chapterId}:${f.patternId}:${f.layoutSeed}`;
     if (root.MMCHD) { if (V.diceCfg !== (V.cfg.dice || V.cfg)) { MMCHD.configure({ ...(V.cfg.dice || {}), sides: MMCH.rulesOf(V.cfg).diceSides }); V.diceCfg = V.cfg.dice || V.cfg; } MMCHD.preload(); }   // 面の数は rules.diceSides（停止面が無い出目は数字で出す）
@@ -628,8 +629,11 @@
     if (ph === 'roll' && r.turnsUsed === 0 && !V.intro && !(f.storySeen || []).length) setTimeout(() => { if (onField() && !V.intro && !busyGet()) storyAt(m, 'start'); }, 450);   // Chapter に入った最初の一言（導入演出のあと）
     // 再開した移動・停止地点の処理は少し後で。その間に別の画面へ移ったら何もしない（次にフィールドを開いたとき1回だけ処理する）
     if (ph === 'move') setTimeout(() => { if (onField()) chfContinue(); }, 300); else if (ph === 'resolve') setTimeout(() => { if (onField()) chfResolve(); }, 300);
+    if (V.winPending) { V.winPending = false; if (ph === 'roll') winFx(); }   // 道中の野生バトルに勝って戻ったとき（大会・Chapter クリアでは出さない）
     return true;
   }
+  /** 道中の野生バトルの勝利（2026-10-04 追加アセット 03_wild_battle_victory）：フィールドに戻った直後に短く（約1秒。その間は操作しない） */
+  async function winFx() { if (busyGet()) return; busySet(true); try { await wait(V.calm ? 0 : 120); await resultFx('win', '野生モンスターに勝利！'); } finally { busySet(false); } }
   /**
    * 残りターンの警告（config.effects.turnWarning＝{ asset, at:[残りターン…] }）。短く出して消える（約1.3秒・操作は止めない）。
    *  出すターンは at に書いた残りターンだけ（空なら出さない＝正式な発火ターンは未決）。同じターンに二度は出さない
@@ -914,6 +918,26 @@
   }
   /** 休憩・回復の落ち着いた演出：画面にやわらかい青の帯を一瞬かぶせる（絵の色は変えない。約0.9秒） */
   function restVeil() { const ui = $('#chf-ui'); if (!ui || V.calm) return; const v = document.createElement('i'); v.className = 'chf-restveil'; ui.appendChild(v); setTimeout(() => v.remove(), 1000); }
+  // ---- 2026-10-04（追加アセット）：能力UPの道具6種・Chapter の短い結果演出3種（全モンスター・全 Chapter 共通の素材。画像に数値・結果は無い＝能力名・値は HTML）。
+  //  config.resultFx で上書きできる（{ tools:{ li… }, rest, event, wildWin }）。どれも短く（0.7〜1.0秒）・タップで飛ばせる・視差を減らす設定では出さない ----
+  const RFX_DEF = { tools: { li: 'assets/chapter/stat_tools/li_hurdle.webp', po: 'assets/chapter/stat_tools/po_weight.webp', in: 'assets/chapter/stat_tools/in_grimoire.webp', hi: 'assets/chapter/stat_tools/hi_target.webp', ev: 'assets/chapter/stat_tools/ev_balls.webp', de: 'assets/chapter/stat_tools/de_shield.webp' },
+    rest: 'assets/chapter/result_fx/rest.webp', event: 'assets/chapter/result_fx/event_result.webp', wildWin: 'assets/chapter/result_fx/wild_victory.webp' };
+  const RFX_MS = { tool: 760, rest: 900, event: 700, win: 1000 };
+  function rfxSrc(kind, key) { const C = (V.cfg && V.cfg.resultFx) || {}; if (kind === 'tool') return ((C.tools || {})[key]) || RFX_DEF.tools[key] || null; return C[kind] || RFX_DEF[kind] || null; }
+  /** 道具・結果の絵を先読み（フィールドを開いたとき1回。小さな WebP 9枚） */
+  function rfxPreload() { if (V.rfxWarm || typeof Image === 'undefined') return; V.rfxWarm = 1; setTimeout(() => [...Object.values(RFX_DEF.tools), RFX_DEF.rest, RFX_DEF.event, RFX_DEF.wildWin].forEach((src) => { const im = new Image(); im.decoding = 'async'; im.src = src; }), 900); }
+  /**
+   * 短い結果演出：絵（道具／焚き火／紋章）が浮かぶ → 下に実際の結果の文（例「ちから +6」「疲れ −30」）→ 消える。
+   *  kind＝tool（能力マス。key＝能力）・rest（休むマス）・event（出来事の結果）・win（道中の野生バトルの勝利）。文は呼び出し側が実際の値から作る
+   */
+  function resultFx(kind, caption, key) {
+    const ui = $('#chf-ui'), src = rfxSrc(kind === 'win' ? 'wildWin' : kind, key); if (!ui || !src || V.calm) return wait(0);
+    const d = document.createElement('div'); d.className = `chf-rfx k-${kind}`; d.setAttribute('role', 'status'); if (key) { d.dataset.key = key; d.style.setProperty('--c', statColor(key)); }
+    d.innerHTML = `<i class="rfx-glow"></i><img class="rfx-im" src="${esc(src)}" alt="" draggable="false" decoding="async">${caption ? `<b class="rfx-tx">${esc(caption)}</b>` : ''}`;
+    ui.appendChild(d);
+    return new Promise((ok) => { let done = false; const end = () => { if (done) return; done = true; d.classList.add('out'); setTimeout(() => { d.remove(); ok(); }, 180); };
+      V.skip = end; d.addEventListener('click', end); setTimeout(end, RFX_MS[kind] || 800); });
+  }
   /** 宝箱の開封の光の粒（宝箱の位置から。約0.8秒） */
   function chestSparks(obj) { const fx = $('#chffx'); if (!fx || !obj || V.calm) return; const P = objPoint(obj) || V.monPos; if (!P) return; fx.insertAdjacentHTML('beforeend', `<span class="chf-csparks" style="left:${P.x.toFixed(1)}px;top:${P.y.toFixed(1)}px;--d:${P.d || 1}"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>`); const e = fx.querySelector('.chf-csparks:last-child'); setTimeout(() => e && e.remove(), 900); }
   function fxText(fx) {
@@ -1016,6 +1040,7 @@
         await wait(V.calm ? 0 : 160); monReact('up'); feel('stat.up', { key: fx.key, amount: fx.amount });
         await wait(V.calm ? 0 : 150);   // モンスターの反応を見せてから枠
         setMsg(T.t);
+        await resultFx('tool', `${labOf(fx.key)} +${fx.amount}`, fx.key);   // 2026-10-04（追加アセット）：能力に対応する道具 → 実際に上がった能力名・値 → 既存の成長演出
         // 2026-10-04 PHASE E：成長演出（能力のアイコンが浮く → 「ちから +5」→ 正式色のゲージが伸びる（999 を最大とした目盛り）→ 粒子）。枠は正式素材 frame_stat_up のまま。0.6〜1.2秒・タップで短縮
         const gains = [{ key: fx.key, amount: fx.amount }];
         await popup(`<small>${esc(labOf(fx.key))}のマス</small>${growRows(m, gains)}`, `${T.c} grow`, Math.min(holdOf(3, 800), 300), T.frame ? effectAsset(T.frame) : null, (d) => growPlay(d, gains));
@@ -1039,6 +1064,8 @@
         await evCardClose(card); card = null;   // 挿絵を消してから能力UP・疲れの演出
         feel('event', { ev: fx.ev }); if (fx.kind === 'stat' || fx.kind === 'multi') monReact(fx.amount < 0 ? 'down' : 'up'); else if (fx.kind === 'fatigue') { monReact('rest'); restVeil(); }
         setMsg(T.t);
+        // 2026-10-04（追加アセット）：休むマス＝焚き火（疲れの回復。ライフではない）、ほかの出来事＝共通の結果の紋章。文は実際の効果（T.h の値）
+        { const eff = (T.t || '').slice(String(fx.text || '').length).trim(); if (tileKeyOf(m, id) === 'rest' && fx.kind === 'fatigue') await resultFx('rest', `疲れ −${fx.recovered}`); else if (eff) await resultFx('event', eff); }
         // 2026-10-04 PHASE E：能力が動く出来事は成長のゲージ（複数の能力は縦に並べる）。休憩は青の帯＋疲れの増減。少し疲れる出来事（stat_tired）は疲れの増減も見せる
         const eg = fx.kind === 'stat' ? [{ key: fx.key, amount: fx.amount }] : fx.kind === 'multi' ? fx.gains.map((x) => ({ key: x.key, amount: x.amount })) : [];
         const eh = eg.length ? `<small>${esc(fx.text)}</small>${growRows(m, eg)}` : T.h;
@@ -1161,7 +1188,8 @@
   root.addEventListener && root.addEventListener('resize', () => { const m = gS() && gS().m; if ($('#chf') && chfActive(m) && V.monPos && !V.moving) { V.par0 = null; camTarget(V.monPos.x, V.monPos.y, V.monPos.d, true); } });
 
   Object.assign(root, { chfActive, chfBoard, chfRoll, chfRest, chfPick, chfContinue, chfResolve, chfItems, chfItemsClose, chfItemUse, chfOpen });
-  root.MMCHV = Object.freeze({ STEP_MS, FACING, DEFAULTS: DEF, MON_ENTER,
+  root.MMCHV = Object.freeze({ STEP_MS, FACING, DEFAULTS: DEF, MON_ENTER, RESULT_FX: RFX_DEF, RESULT_FX_MS: RFX_MS, resultFxSrc: rfxSrc,
+    queueWin: () => { V.winPending = true; },
     state: () => ({ field: V.field, cam: { ...V.cam }, target: { ...V.tgt }, key: V.key, moving: V.moving, look: [...V.look], focus: V.focus ? { ...V.focus } : null, monster: V.monPos ? { ...V.monPos } : null, animator: (V.animator || DEFAULT_ANIMATOR).id }),
     lookOf, sideOffset, landmarkPos: (id) => { const n = V.g && V.g.nodes[id]; if (!n) return null; const m = gS() && gS().m, a = MMCH.fieldOf(m).nodeAssignments[id] || (['strong', 'rival'].includes(n.kind) ? { t: 'battle', bt: n.kind } : null), look = lookOf(V.cfg, a); return look ? landmarkPos(V.cfg, V.g, V.sc, id, look) : null; },
     zoomAt, registerMonsterAnimator, MON_ENTER, registerReactionRenderer, focusPoint, tileKeyOf, tileSpriteOf, tileBox, seenRoadW, tileFitKind, roadX: (x, y, d) => roadX(x, y, d != null ? d : depthAtY(y)), stepDuration: (from, to) => { const r = MMCH.routeBetween(V.g, from, to).map((p) => [p[0] * V.sc.w, p[1] * V.sc.h]); return stepDuration(r, to); } });

@@ -1668,6 +1668,21 @@ button.mkc b{font-size:.9rem}button.mkc small{font-size:.66rem;color:#ffe9b0}
 .chf-fatfly{position:absolute;z-index:41;transform:translate(-50%,0);padding:2px 7px;border-radius:999px;font:800 13px/1.2 var(--mm-font-head);white-space:nowrap;pointer-events:none;animation:chfFatFly .9s ease-out forwards}
 .chf-fatfly.up{background:rgba(120,40,40,.92);color:#ffd4c4;border:1px solid rgba(255,150,130,.7)}.chf-fatfly.dn{background:rgba(30,80,120,.92);color:#c8f0ff;border:1px solid rgba(140,210,255,.7)}
 @keyframes chfFatFly{0%{opacity:0;transform:translate(-50%,-4px)}20%{opacity:1}75%{opacity:1}100%{opacity:0;transform:translate(-50%,14px)}}
+/* 2026-10-04（追加アセット）：能力UPの道具・Chapter の短い結果演出（js/chapter/field-view.js の resultFx。絵は共通素材・文は実際の値） */
+.chf-rfx{position:absolute;left:50%;top:36%;z-index:31;width:min(62vw,250px);transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;pointer-events:auto;animation:chfRfxIn .26s cubic-bezier(.2,.8,.3,1.2) both}
+.chf-rfx .rfx-glow{position:absolute;left:50%;top:40%;width:84%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--c,#ffe08a) 55%,transparent),transparent 72%);opacity:.75;animation:chfRfxGlow .9s ease-out both}
+.chf-rfx .rfx-im{position:relative;display:block;width:100%;height:auto;max-height:min(30dvh,220px);object-fit:contain;animation:chfRfxBob .76s ease-out both}
+.chf-rfx .rfx-tx{position:relative;margin-top:-4px;padding:4px 16px;border-radius:999px;background:linear-gradient(180deg,rgba(24,40,90,.94),rgba(8,18,46,.94));border:1.5px solid #d9b465;color:#fff;font:800 19px/1.3 var(--mm-font-head);letter-spacing:.04em;white-space:nowrap;text-shadow:0 2px 0 rgba(0,0,0,.5);box-shadow:0 6px 16px rgba(0,0,0,.4)}
+.chf-rfx.k-tool .rfx-tx{border-color:var(--c,#d9b465);box-shadow:0 0 0 1px rgba(0,0,0,.4),0 0 14px color-mix(in srgb,var(--c,#d9b465) 60%,transparent)}
+.chf-rfx.k-tool{width:min(46vw,190px)}
+.chf-rfx.k-rest{--c:#9fd6ff}.chf-rfx.k-rest .rfx-tx{border-color:#9fd6ff}
+.chf-rfx.k-event{width:min(44vw,180px)}
+.chf-rfx.k-win{width:min(56vw,220px)}
+.chf-rfx.out{opacity:0;transform:translate(-50%,-58%);transition:opacity .18s,transform .18s}
+@keyframes chfRfxIn{from{opacity:0;transform:translate(-50%,-42%) scale(.86)}}
+@keyframes chfRfxBob{0%{transform:translateY(14px) scale(.9)}55%{transform:translateY(-4px) scale(1.02)}100%{transform:none}}
+@keyframes chfRfxGlow{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}40%{opacity:.85}100%{opacity:.5;transform:translate(-50%,-50%) scale(1.05)}}
+@media (prefers-reduced-motion:reduce){.chf-rfx,.chf-rfx .rfx-im,.chf-rfx .rfx-glow{animation:none}}
 .chf-restveil{position:absolute;inset:0;z-index:30;pointer-events:none;background:radial-gradient(ellipse at 50% 62%,rgba(150,215,255,.3),rgba(60,120,200,.1) 55%,transparent 76%);animation:chfRestVeil .95s ease-in-out forwards}
 @keyframes chfRestVeil{0%{opacity:0}35%{opacity:1}100%{opacity:0}}
 .chf-csparks{position:absolute;width:0;height:0;pointer-events:none;z-index:6}.chf-csparks i{position:absolute;left:0;top:0;width:calc(6px * var(--d,1));height:calc(6px * var(--d,1));border-radius:50%;background:#ffe9a8;box-shadow:0 0 8px #ffd25a;animation:chfSpark .8s ease-out forwards}
@@ -3815,7 +3830,8 @@ function p8FxText(r){const f=r.fx||{},L=k=>LAB[k];let t;
  else if(f.note=="goal")t="";
  else t="何も起きなかった。";
  return (t+(r.goal?" ゴールに到着した！":r.timeUp?" ターンを使い切った…":"")).trim()}
-function bBattleGo(){const m=S.m;if(bBusy||!m)return;const bt=m.raise&&m.raise.pend&&m.raise.pend.fx?m.raise.pend.fx.battleType:null,rk=bt=="rival"&&window.MMRIVAL?MMRIVAL.rankFor(m):MMP8.practiceRank(m);const fs=bt!="rival"&&window.MMCH&&MMCH.foeSpecies&&m.raise&&m.raise.field?MMCH.foeSpecies(m,SP.length):-1;if(!MMP8.beginBattle(S,m,{kind:"practice",rank:rk}).ok)return board();save();battleFoeOnce(fs);fight(rk)}
+// globalThis.MM_LAST_BT＝直前に始めた道中のバトルの種類（wild／rare／rival。ページの中だけ・セーブしない＝野生の勝利演出 MMCHV.queueWin の判定）
+function bBattleGo(){const m=S.m;if(bBusy||!m)return;const bt=m.raise&&m.raise.pend&&m.raise.pend.fx?m.raise.pend.fx.battleType:null,rk=bt=="rival"&&window.MMRIVAL?MMRIVAL.rankFor(m):MMP8.practiceRank(m);const fs=bt!="rival"&&window.MMCH&&MMCH.foeSpecies&&m.raise&&m.raise.field?MMCH.foeSpecies(m,SP.length):-1;if(!MMP8.beginBattle(S,m,{kind:"practice",rank:rk}).ok)return board();globalThis.MM_LAST_BT=bt;save();battleFoeOnce(fs);fight(rk)}
 /** 2026-10-04 G3：遭遇の演出で見せた野生・レアの相手の種族を、そのままバトルへ（fight() は変えない＝相手の種族は fight() の最初の乱数 R(種族数) で決まるので、その1回だけその種族の値を返す。次の乱数からは元どおり） */
 function battleFoeCount(){return SP.length} // バトルの相手になれる種族の数（fight() の R(SP.length)。番号は MMP10M の内部番号と同じ）
 function battleFoeOnce(sp){const n=SP.length;if(!(sp>=0&&sp<n))return;const orig=Math.random;let done=false;Math.random=function(){if(!done){done=true;Math.random=orig;return (sp+.5)/n}return orig()};setTimeout(()=>{if(!done){done=true;Math.random=orig}},0)} // 2026-10-03 品質向上：BATTLE 画面（p9PreBattle）→ VS の二重をやめ、fight() の導入（両者の対面＋VS）だけにする // 2026-10-04：ライバル（リュウ）の強さは今の個体の能力に近いランク（js/phase8/rival.js）
@@ -3982,7 +3998,7 @@ fight=function(i,teach){const m=S.m;if(!m||!m.raise||!m.raise.battle||m.raise.ba
 const P8_AFTER=after;
 after=function(t){const m=S.m;if(m&&m.raise&&m.raise.battle){const f=MMP8.finishBattle(S,m);save();return p8AfterBattle(f)}P8_AFTER(t)};
 // 2026-10-04：S ランク制覇＝Chapter 5 の解放フラグ S.npcFlags.chapter5（画面は未実装＝「新たな道が開かれた」の導線だけ）
-function p8AfterBattle(f){if(f.kind=="league"){if(f.settled&&f.won&&S.m&&S.m.raise&&S.m.raise.tour&&S.m.raise.tour.rank===5&&!finaFlags().chapter5){finaFlags().chapter5=1;save()}if(f.interrupted)return board("大会の試合は途中で終わった。同じ試合をもう一度行えます。");return board(`第${f.round+1}試合：${(f.matchWon??f.won)?"勝ち！":"負け…"}`+(f.settled?(f.won?" 大会全体で1位になった！":` 大会は${f.place}位で終わった。`):""))}const tail=f.goal?" ゴールに到着した！":f.timeUp?" ターンを使い切った…":"";return board((f.interrupted?"練習試合は途中で終わった。":f.won?"練習試合に勝った！（練習試合のため賞金・ランクアップ・実績はありません）":"練習試合に負けた…（練習試合のため影響はありません）")+tail)}
+function p8AfterBattle(f){if(f.kind=="league"){if(f.settled&&f.won&&S.m&&S.m.raise&&S.m.raise.tour&&S.m.raise.tour.rank===5&&!finaFlags().chapter5){finaFlags().chapter5=1;save()}if(f.interrupted)return board("大会の試合は途中で終わった。同じ試合をもう一度行えます。");return board(`第${f.round+1}試合：${(f.matchWon??f.won)?"勝ち！":"負け…"}`+(f.settled?(f.won?" 大会全体で1位になった！":` 大会は${f.place}位で終わった。`):""))}const tail=f.goal?" ゴールに到着した！":f.timeUp?" ターンを使い切った…":"";if(f.kind=="practice"&&f.won&&!f.interrupted&&globalThis.MM_LAST_BT=="wild"&&globalThis.MMCHV&&MMCHV.queueWin)MMCHV.queueWin();globalThis.MM_LAST_BT=null;return board((f.interrupted?"練習試合は途中で終わった。":f.won?"練習試合に勝った！（練習試合のため賞金・ランクアップ・実績はありません）":"練習試合に負けた…（練習試合のため影響はありません）")+tail)}
 
 /* ===== Chapterマップの登録（計算・状態変更は MMP7 / MMP8） ===== */
 // Phase 9：正式Chapter 1〜4 の育成ボードを登録する（データは js/phase9/chapters.js）。
