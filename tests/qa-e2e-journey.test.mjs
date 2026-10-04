@@ -190,7 +190,7 @@ test('JR-9：Chapter開始の演出（2026-10-02 正式）：全景を止めて�
   assert.deepEqual([a.ch, a.nm], ['Chapter 1', 'はじまりの草原']); assert.deepEqual([a.busy, a.start, a.bgUnder], [true, true, true], '演出中は操作できない。下には FIELD 1 が出来ている'); assert.match(a.cls, /chf-intro/);
   await pg.waitForFunction(() => !document.querySelector('.chintro') && !bBusy && !document.querySelector('#brollbtn').disabled, null, { timeout: 15000 });
   const t1 = await pg.evaluate(() => performance.now()), iv = await pg.evaluate(() => window.__iv), rel = (x) => x.t - iv[0].t;
-  assert.ok(t1 - t0 >= 3000 && t1 - t0 <= 5200, `出発から操作できるまで ${Math.round(t1 - t0)}ms（3〜4秒程度＋読み込み）`);
+  assert.ok(t1 - t0 >= 3000 && t1 - t0 <= 6800, `出発から操作できるまで ${Math.round(t1 - t0)}ms（3〜4秒程度＋2026-10-04 G3 のモンスターの登場 約1.3秒＋読み込み）`);
   assert.ok(iv.every((x) => +x.ui === 0 && +x.mon === 0), 'イントロ中は UI・ソラモを出さない');
   const chAt = iv.find((x) => x.ch), nmAt = iv.find((x) => x.nm), first = chAt.s, ci = iv.indexOf(chAt);   // 基準は「Chapter 1」が出た時点のカメラ（それより前は全景の画像の読み込み待ちを含む）
   assert.ok(chAt && nmAt && rel(chAt) >= 350 && rel(nmAt) > rel(chAt), `全景を止めてから「Chapter 1」→ Chapter 名（${chAt && Math.round(rel(chAt))}ms → ${nmAt && Math.round(rel(nmAt))}ms）`);
