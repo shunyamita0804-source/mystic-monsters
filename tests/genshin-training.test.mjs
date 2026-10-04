@@ -103,7 +103,7 @@ test('GEN-B1：5種類すべて（丈夫さは2回）で、特訓メニュー・
     const tix0 = await pg.evaluate(() => S.trainTix);
     await pg.evaluate((k) => trStart(k), k); await pg.waitForSelector('.p12tr .gssay.over'); await waitImg(pg);
     g = await gs(pg);
-    assert.deepEqual(g.map((x) => [x.over, x.name, x.ok, x.text]), [[true, 'ゲンシン', true, T.go]], `${k}：開始の一言（2026-10-04：ユーザー指定の台本・表情 02）`);
+    assert.deepEqual(g.map((x) => [x.over, x.name, x.ok, x.text]), [[true, 'ゲンシン', true, T.go + T.start[k]]], `${k}：開始の一言（2026-10-04：ユーザー指定の台本・表情 02。2026-10-04 G2：続けて選んだ特訓の一言）`);
     assert.match(g[0].src, /genshin\/expr\/face\/02_fired\.webp$/);
     const lab = await pg.evaluate((k) => LAB[k], k);
     assert.equal(await pg.evaluate(() => document.querySelector('#p7msg').textContent), `${lab}特訓スタート！（特訓チケットを1枚使った）サイコロを振って進もう。`, 'システムの文は従来どおり（ゲンシンの発言にしない）');
