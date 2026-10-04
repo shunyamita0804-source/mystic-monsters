@@ -164,33 +164,41 @@ async function tap(pg, sel, ms) {
   assert.equal(st.covered, false, `${sel} が他の要素（${st.by}）に隠れていない`);
   await h.click({ force: true });
 }
-/** 街 → ぽかぽか牧場（タップ）→ 指定タブ */
-async function toRanch(pg, tab) {
+// 2026-10-04 PHASE H3：牧場は最大20体の一覧（デザイン基準 01）。旧い4コマンドのタブ（預ける・受け取る・様子を見る・売る）は、一覧で子を選んで下のボタン（見る・名前変更・受け取る／預ける・売る）へ。
+//  書き直しの理由：画面の作りが変わった（処理 dep・wd・pfSellGo・売却額・上限の判定は従来どおり。上限は牧場20・所持21）
+/** 街 → ぽかぽか牧場（タップ）→ 一覧 */
+async function toRanch(pg) {
   await tap(pg, '.hz[onclick="farm()"]');
-  await pg.waitForSelector('#app .wpanel');
-  if (tab === 'd') await tap(pg, '.fsell');
-  else if (tab) await tap(pg, `.ftile[onclick="farm('','${tab}')"]`);
-  await pg.waitForFunction((t) => typeof ft === 'string' && (!t || ft === t), tab || null);
+  await pg.waitForSelector('#app .rn2 .rnact');
 }
-/** 不変条件：保存＝メモリ、8体・牧場7体まで、牧場に個体以外が無い、uid が一意、エラー・404なし */
+/** 一覧で i 番目（[連れている子, ...牧場]）の子を選ぶ。uid を返す */
+async function pick(pg, i) {
+  const u = await pg.evaluate((i) => [S.m, ...S.box].filter(Boolean)[i].uid, i);
+  await tap(pg, `.rnc[data-uid="${u}"]`);
+  await pg.waitForFunction((u) => rnSel === u && !!document.querySelector(`.rnc.on[data-uid="${u}"]`), u);
+  return u;
+}
+/** 選んだ子の売却の確認を開く */
+async function sellAsk(pg, i) { await pick(pg, i); await tap(pg, '.rna.rnsell'); await pg.waitForSelector('.pfsell'); }
+/** 不変条件：保存＝メモリ、所持21体・牧場20体まで、牧場に個体以外が無い、uid が一意、エラー・404なし */
 async function invariants(p) {
   const mem = await H.getS(p.page), sto = await H.storedSave(p.page);
   assert.deepEqual(sto, mem, '保存内容とメモリが一致');
   const all = owned(mem);
-  assert.ok(all.length <= 8, `所持 ${all.length}`); assert.ok(mem.box.length <= 7, `牧場 ${mem.box.length}`);
+  assert.ok(all.length <= 21, `所持 ${all.length}`); assert.ok(mem.box.length <= 20, `牧場 ${mem.box.length}`);
   assert.ok(mem.box.every((x) => x && typeof x === 'object' && !Array.isArray(x)));
   const u = all.map((x) => x.uid);
   assert.ok(u.every((x) => typeof x === 'string' && /^m-/.test(x))); assert.equal(new Set(u).size, u.length);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 }
-/** 売却：一覧で「売る」→ 確認の「売却する」を 600ms 以上あけて2回押す */
+/** 売却：一覧で選んで「売る」→ 確認の「売却する」を 600ms 以上あけて2回押す */
 async function sellByUi(pg, i) {
-  await tap(pg, `.wpanel button[onclick="pfSellPick(${i})"]`);
-  await pg.waitForSelector('.pfsell');
+  await sellAsk(pg, i);
   await tap(pg, '.wpanel button[onclick="pfSellGo(this)"]');
   await tap(pg, '.wpanel button[onclick="pfSellGo(this)"]', 650);
   await pg.waitForFunction(() => /売却しました/.test(document.querySelector('.fbub').innerText));
 }
+const cells = (pg) => pg.evaluate(() => [...document.querySelectorAll('.rnc')].map((c) => c.innerText.replace(/\s+/g, ' ').trim()));
 
 test('QA-RF-B1：市場で買った1体目は手持ち、2体目は牧場へ。どちらも一意の uid・未育成・正式の素早さを持つ', { skip: H.skipReason() }, async () => {
   const p = await L.open({ size: H.SIZES.base }); const pg = p.page;
@@ -208,7 +216,6 @@ test('QA-RF-B1：市場で買った1体目は手持ち、2体目は牧場へ。�
     assert.equal(s.m.name, 'ソラA'); assert.equal(s.m.sp, 0); assert.equal(s.m.speed, 5); assert.equal(s.m.raise.state, 'none');
     assert.deepEqual(s.box, []); assert.equal(s.g, 0);                          // 初回購入救済（300G→500G→0G）
     const uidA = s.m.uid;
-    // 2体目（お金を用意）：牧場へ入り、連れている個体はそのまま
     await pg.evaluate(() => { S.g = 5000; save(); market(null, 'gauru'); });
     await pg.waitForFunction(() => !P10_ANIM && $('#p10info .p10buy').dataset.key === 'gauru');
     await H.marketDetail(pg); await tap(pg, '#p10info .p10buy');
@@ -223,45 +230,39 @@ test('QA-RF-B1：市場で買った1体目は手持ち、2体目は牧場へ。�
     assert.equal(s.box[0].name, 'ガウB'); assert.equal(s.box[0].sp, 1); assert.equal(s.box[0].speed, 7); assert.equal(s.box[0].raise.state, 'none');
     assert.notEqual(s.box[0].uid, uidA);
     assert.match(await txt(pg, '#msg'), /ガウBをつれて帰った！（牧場に預けました）/);
-    // 牧場の「受け取る」タブに並ぶ
-    await toRanch(pg, 'b');
-    assert.match(await txt(pg, `.ftile[onclick="farm('','b')"]`), /受け取る\(1\)/);
-    assert.match(await txt(pg, '.wpanel'), /ガウB/);
+    // 牧場の一覧に並ぶ（1 / 20）
+    await toRanch(pg);
+    assert.equal(await txt(pg, '.rncnt'), '1 / 20');
+    assert.deepEqual(await cells(pg), ['ソラA 連れている', 'ガウB 未育成']);
     await invariants(p);
   } finally { await p.ctx.close(); }
 });
 
-test('QA-RF-B2：牧場の表示：連れている個体・牧場の個体の名前と6能力が見え、受け取った個体のステータス画面が開く', { skip: H.skipReason() }, async () => {
+test('QA-RF-B2：牧場の表示：連れている子・牧場の子が一覧に並び、「見る」で6能力。受け取った子のステータス画面が開く', { skip: H.skipReason() }, async () => {
   const p = await town(); const pg = p.page;
   try {
     await seed(pg, [{ sp: 0, name: 'ソラA' }, { sp: 1, name: 'ガウB' }, { sp: 0, name: 'ソラC' }], 1000);
     await toRanch(pg);
-    // タブ・ボタンの並び（預ける／受け取る／合体、売る）
-    assert.deepEqual(await pg.evaluate(() => [...document.querySelectorAll('.ftile')].map((b) => b.getAttribute('onclick'))), ["farm('','a')", "farm('','b')", "rnView=null;farm('','e')"]);
-    assert.equal(await pg.getAttribute('.fsell', 'onclick'), "farm('','d')");
-    assert.equal(await pg.evaluate(() => ft), 'a');
-    assert.match(await txt(pg, '.wpanel'), /ソラA.*ライフ 100.*ちから 100.*かしこさ 100.*命中 100.*回避 100.*丈夫さ 100/);
+    assert.deepEqual(await pg.evaluate(() => [...document.querySelectorAll('.rnact .rna span')].map((b) => b.textContent)), ['見る', '名前変更', '受け取る', '売る']);
     assert.match(await txt(pg, '.fhud'), /1000G/);
-    assert.equal(await pg.evaluate(() => document.querySelectorAll('.fscene .wk, .fscene .rnfeat').length), 3);   // 3体とも牧場に（2026-10-03：選んでいる子は大きく・ほかは歩く）
-    assert.match(await txt(pg, `.ftile[onclick="farm('','b')"]`), /受け取る\(2\)/);
-    // 受け取るタブ：牧場の2体の6能力
-    await tap(pg, `.ftile[onclick="farm('','b')"]`);
-    const rows = await pg.evaluate(() => [...document.querySelectorAll('.wpanel .row')].map((r) => r.innerText.replace(/\s+/g, ' ')));
-    assert.equal(rows.length, 2);
-    assert.match(rows[0], /ガウB.*ライフ80 ちから110 かしこさ110 命中90 回避90 丈夫さ60/);
-    assert.match(rows[1], /ソラC.*ライフ100 ちから100/);
-    // ガウBを受け取る → 連れている個体になり、ソラAは牧場へ
-    await tap(pg, '.wpanel button[onclick="wd(0)"]');
+    assert.deepEqual(await cells(pg), ['ソラA 連れている', 'ガウB 未育成', 'ソラC 未育成']);
+    assert.equal(await txt(pg, '.rncnt'), '2 / 20');
+    // 見る：ガウBの6能力
+    await pick(pg, 1); await tap(pg, ".rna[onclick=\"rnView=rnSel;farm('','e')\"]");
+    await pg.waitForSelector('.rnlook');
+    assert.match(await txt(pg, '.rnlook'), /ガウB.*ライフ 80.*ちから 110.*かしこさ 110.*命中 90.*回避 90.*丈夫さ 60/);
+    await tap(pg, '.rnlback'); await pg.waitForSelector('.rngrid');
+    // ガウBを受け取る → 連れている子になり、ソラAは牧場へ
+    await pick(pg, 1); await tap(pg, '.rna[onclick="wd(0)"]');
     await pg.waitForFunction(() => S.m && S.m.name === 'ガウB');
     assert.match(await txt(pg, '.fbub'), /ガウBを受け取りました。/);
-    assert.equal(await pg.evaluate(() => ft), 'a');
-    assert.match(await txt(pg, '.wpanel'), /ガウB.*ライフ 80.*ちから 110.*丈夫さ 60/);
-    // 街 → ファーム → ステータス：受け取ったガウBの能力・素早さ
+    assert.deepEqual(await cells(pg), ['ガウB 連れている', 'ソラC 未育成', 'ソラA 未育成']);
+    // 街 → ベースキャンプ → ステータス：受け取ったガウBの能力・素早さ
     await tap(pg, '.back');
     await pg.waitForSelector('#app .map');
     await tap(pg, '.hz[onclick="hall()"]');
     await pg.waitForSelector('.fmb');
-    await tap(pg, `.fmb[onclick="hall('st')"]`);   // ファームのコマンド「ステータス」
+    await tap(pg, `.fmb[onclick="hall('st')"]`);
     await pg.waitForSelector('.dhero');
     const t = await txt(pg, '#app');
     assert.match(t, /ガウB/); assert.match(t, /ガウル/);
@@ -274,33 +275,25 @@ test('QA-RF-B3：預ける・受け取る（入れ替え）：並びと uid が�
   const p = await town(); const pg = p.page;
   try {
     const [ua, ub] = await seed(pg, [{ sp: 0, name: 'ソラA' }, { sp: 1, name: 'ガウB' }], 800);
-    await toRanch(pg, 'a');
-    await tap(pg, '.wpanel .go[onclick="dep()"]');
+    await toRanch(pg);
+    await pick(pg, 0); await tap(pg, '.rna[onclick="dep()"]');
     await pg.waitForFunction(() => S.m === null);
     let s = await H.storedSave(pg);
     assert.equal(s.m, null); assert.deepEqual(s.box.map((x) => x.uid), [ub, ua]);
     assert.match(await txt(pg, '.fbub'), /預けました。/);
-    assert.equal(await pg.evaluate(() => ft), 'b');
-    assert.match(await txt(pg, `.ftile[onclick="farm('','b')"]`), /受け取る\(2\)/);
-    // 手持ちが空の「預ける」タブ
-    await tap(pg, `.ftile[onclick="farm('','a')"]`);
-    assert.match(await txt(pg, '.wpanel'), /いま連れているモンスターはいません。/);
-    assert.equal(await pg.$('.wpanel .go[onclick="dep()"]'), null);
-    // 手持ちが空のまま受け取る（牧場1体へ）
-    await tap(pg, `.ftile[onclick="farm('','b')"]`);
-    await tap(pg, '.wpanel button[onclick="wd(1)"]');
+    assert.equal(await txt(pg, '.rncnt'), '2 / 20'); assert.equal(await pg.$('.rncur'), null, '連れている子はいない');
+    // 手持ちが空のまま受け取る（ソラA）
+    await pick(pg, 1); await tap(pg, '.rna[onclick="wd(1)"]');
     await pg.waitForFunction(() => S.m && S.m.name === 'ソラA');
     s = await H.storedSave(pg);
     assert.equal(s.m.uid, ua); assert.deepEqual(s.box.map((x) => x.uid), [ub]);
     // 入れ替え：ガウBを受け取ると、連れていたソラAが牧場へ
-    await tap(pg, `.ftile[onclick="farm('','b')"]`);
-    await tap(pg, '.wpanel button[onclick="wd(0)"]');
+    await pick(pg, 1); await tap(pg, '.rna[onclick="wd(0)"]');
     await pg.waitForFunction(() => S.m && S.m.name === 'ガウB');
     s = await H.storedSave(pg);
     assert.equal(s.m.uid, ub); assert.deepEqual(s.box.map((x) => x.uid), [ua]);
-    assert.equal(s.g, 800);                                                     // 預ける・受け取るはお金がかからない
+    assert.equal(s.g, 800);
     await invariants(p);
-    // 再読込 → はじめる → 街：同じ状態
     const before = await H.getS(pg);
     await reloadToTown(pg);
     assert.deepEqual(await H.getS(pg), before);
@@ -308,14 +301,13 @@ test('QA-RF-B3：預ける・受け取る（入れ替え）：並びと uid が�
   } finally { await p.ctx.close(); }
 });
 
-test('QA-RF-B4：所持上限：牧場は7体まで（預けられない）／手持ちが空なら8体目は手持ちへ／8体で購入できない', { skip: H.skipReason() }, async () => {
+test('QA-RF-B4：所持上限（2026-10-04 PHASE H3）：牧場は20体まで（預けられない）／手持ちが空なら21体目は手持ちへ／21体で購入できない', { skip: H.skipReason() }, async () => {
   const p = await town(); const pg = p.page;
   try {
-    await seed(pg, Array.from({ length: 7 }, (_, i) => ({ sp: i % 2, name: 'M' + i })), 5000);
-    await toRanch(pg, 'a');
-    await tap(pg, '.wpanel .go[onclick="dep()"]');                          // 牧場6体 → 7体
-    await pg.waitForFunction(() => S.m === null && S.box.length === 7);
-    // 手持ちが空・牧場7体で購入 → 手持ちへ入る（牧場は7体のまま）
+    await seed(pg, Array.from({ length: 20 }, (_, i) => ({ sp: i % 2, name: 'M' + i })), 5000);
+    await toRanch(pg);
+    await pick(pg, 0); await tap(pg, '.rna[onclick="dep()"]');                    // 牧場19体 → 20体
+    await pg.waitForFunction(() => S.m === null && S.box.length === 20);
     await tap(pg, '.back');
     await pg.waitForSelector('#app .map');
     await pg.evaluate(() => market(null, 'solamo'));
@@ -326,26 +318,27 @@ test('QA-RF-B4：所持上限：牧場は7体まで（預けられない）／�
     await tap(pg, '.p10ok');
     await pg.waitForSelector('#app .map');
     let s = await H.storedSave(pg);
-    assert.equal(s.m.name, 'ハチ'); assert.equal(s.box.length, 7); assert.equal(owned(s).length, 8); assert.equal(s.g, 4500);
+    assert.equal(s.m.name, 'ハチ'); assert.equal(s.box.length, 20); assert.equal(owned(s).length, 21); assert.equal(s.g, 4500);
     assert.doesNotMatch(await txt(pg, '#msg'), /牧場に預けました/);
-    // 8体：牧場へ預けられない（何も変わらない）
+    // 21体：牧場へ預けられない（ボタンは押せない・直接呼んでも何も変わらない）
     const snap = await H.storedSave(pg);
-    await toRanch(pg, 'a');
-    await tap(pg, '.wpanel .go[onclick="dep()"]');
+    await toRanch(pg);
+    await pick(pg, 0);
+    assert.equal(await pg.evaluate(() => document.querySelector('.rna[onclick="dep()"]').disabled), true);
+    await pg.evaluate(() => dep());
     await pg.waitForFunction(() => /牧場がいっぱいです。/.test(document.querySelector('.fbub').innerText));
     assert.deepEqual(await H.storedSave(pg), snap);
     assert.deepEqual(await H.getS(pg), snap);
-    // 8体：受け取る（入れ替え）はできる。牧場は7体のまま
-    await tap(pg, `.ftile[onclick="farm('','b')"]`);
-    await tap(pg, '.wpanel button[onclick="wd(6)"]');                       // 牧場の7体目（最初に預けたM0）
+    // 21体：受け取る（入れ替え）はできる。牧場は20体のまま
+    await pick(pg, 20); await tap(pg, '.rna[onclick="wd(19)"]');                // 牧場の20体目（最初に預けたM0）
     await pg.waitForFunction(() => S.m && S.m.name === 'M0');
     s = await H.storedSave(pg);
-    assert.equal(s.box.length, 7); assert.equal(s.box[6].name, 'ハチ');
-    // 8体：市場の購入ボタンは押せない。直接の購入処理も断られる
+    assert.equal(s.box.length, 20); assert.equal(s.box[19].name, 'ハチ');
+    // 21体：市場の購入ボタンは押せない。直接の購入処理も断られる
     await pg.evaluate(() => market(null, 'gauru'));
     await pg.waitForFunction(() => !P10_ANIM && $('#p10info .p10buy').dataset.key === 'gauru');
-    await H.marketDetail(pg);                                                // 詳細を開いてから、見えている購入ボタンの文言を確かめる
-    assert.deepEqual(await pg.evaluate(() => { const b = $('#p10info .p10buy'); return [b.disabled, b.innerText.trim()]; }), [true, '手持ちと牧場で8体までです。']);
+    await H.marketDetail(pg);
+    assert.deepEqual(await pg.evaluate(() => { const b = $('#p10info .p10buy'); return [b.disabled, b.innerText.trim()]; }), [true, '牧場がいっぱいです（牧場は20体まで）。']);
     const r = await pg.evaluate(() => { const g = S.g, n = [S.m, ...S.box].length; adopt(1, 'X'); return [S.g - g, [S.m, ...S.box].length - n]; });
     assert.deepEqual(r, [0, 0]);
     assert.equal((await H.storedSave(pg)).g, 4500);
@@ -357,24 +350,17 @@ test('QA-RF-B5：未育成の売却（50G）：1回目は確認だけ、2回目�
   const p = await town(); const pg = p.page;
   try {
     const [ua, ub, uc] = await seed(pg, [{ sp: 0, name: 'ソラA' }, { sp: 1, name: 'ガウB' }, { sp: 0, name: 'ソラC' }], 1000);
-    await toRanch(pg, 'd');
-    const rows = await pg.evaluate(() => [...document.querySelectorAll('.wpanel .row')].map((r) => r.innerText.replace(/\s+/g, ' ')));
-    assert.equal(rows.length, 3);
-    assert.ok(rows.every((r) => /未育成・売却額 50G/.test(r)));
-    assert.match(rows[0], /ソラA（連れている）/);
-    assert.deepEqual(await pg.evaluate(() => [...document.querySelectorAll('.wpanel .row button')].map((b) => b.disabled)), [false, false, false]);
-    // 確認画面
-    await tap(pg, '.wpanel button[onclick="pfSellPick(2)"]');
-    await pg.waitForSelector('.pfsell');
+    await toRanch(pg);
+    assert.deepEqual(await cells(pg), ['ソラA 連れている', 'ガウB 未育成', 'ソラC 未育成']);
+    for (const i of [0, 1, 2]) { await pick(pg, i); assert.equal(await pg.evaluate(() => document.querySelector('.rna.rnsell').disabled), false); }
+    await sellAsk(pg, 2);
     assert.equal(await pg.evaluate(() => pfSellUid), uc);
     const conf = await txt(pg, '.pfsell');
     assert.match(conf, /ソラC/); assert.match(conf, /種族：ソラモ/); assert.match(conf, /売却額：50G/); assert.match(conf, /未育成のモンスター：50G/); assert.match(conf, /所持金 1000G → 1050G/);
-    // 1回目：まだ売れない
     await tap(pg, '.wpanel button[onclick="pfSellGo(this)"]');
     await pg.waitForFunction(() => /もう一度押すと売却（50G）/.test(document.querySelector('.wpanel .go').textContent));
     assert.equal((await H.getS(pg)).g, 1000); assert.equal((await H.storedSave(pg)).g, 1000);
     assert.equal(owned(await H.storedSave(pg)).length, 3);
-    // 2回目（600ms 以上あけて）：確定
     await tap(pg, '.wpanel button[onclick="pfSellGo(this)"]', 650);
     await pg.waitForFunction(() => /ソラCを50Gで売却しました。/.test(document.querySelector('.fbub').innerText));
     const s = await H.storedSave(pg);
@@ -383,15 +369,12 @@ test('QA-RF-B5：未育成の売却（50G）：1回目は確認だけ、2回目�
     assert.ok(!JSON.stringify(s).includes(uc)); assert.ok(!JSON.stringify(await H.getS(pg)).includes(uc));
     assert.deepEqual(await pg.evaluate(() => [pfSellUid, sel]), [null, []]);
     assert.equal(await pg.$('.pfsell'), null);
-    assert.equal(await pg.evaluate(() => document.querySelectorAll('.wpanel .row').length), 2);
+    assert.equal(await pg.evaluate(() => document.querySelectorAll('.rnc').length), 2);
     assert.match(await txt(pg, '.fhud'), /1050G/);
-    assert.equal(await pg.evaluate(() => document.querySelectorAll('.fscene .wk, .fscene .rnfeat').length), 2);
-    // 残った押下・直接呼び出し・同じ uid の再売却では増えない
     const again = await pg.evaluate((uc) => { pfSellGo(document.createElement('button')); pfSellGo(document.createElement('button')); return [S.g, MMP10M.sell(S, uc).reason, S.g]; }, uc);
     assert.deepEqual(again, [1050, 'not_found', 1050]);
     assert.equal((await H.storedSave(pg)).g, 1050);
     await invariants(p);
-    // 再読込しても戻らない・二重にならない
     await reloadToTown(pg);
     const s2 = await H.getS(pg);
     assert.equal(s2.g, 1050); assert.deepEqual(owned(s2).map((x) => x.uid), [ua, ub]);
@@ -403,9 +386,8 @@ test('QA-RF-B6：売却の取り消し：1回押したあと「やめる」な�
   const p = await town(); const pg = p.page;
   try {
     const [ua, ub] = await seed(pg, [{ sp: 0, name: 'ソラA' }, { sp: 1, name: 'ガウB' }], 700);
-    await toRanch(pg, 'd');
-    await tap(pg, '.wpanel button[onclick="pfSellPick(1)"]');
-    await pg.waitForSelector('.pfsell');
+    await toRanch(pg);
+    await sellAsk(pg, 1);
     await tap(pg, '.wpanel button[onclick="pfSellGo(this)"]');
     await pg.waitForFunction(() => /もう一度押すと売却/.test(document.querySelector('.wpanel .go').textContent));
     await tap(pg, '.wpanel button[onclick="pfSellPick(-1)"]');
@@ -413,61 +395,53 @@ test('QA-RF-B6：売却の取り消し：1回押したあと「やめる」な�
     assert.equal(await pg.evaluate(() => pfSellUid), null);
     let s = await H.storedSave(pg);
     assert.equal(s.g, 700); assert.deepEqual(owned(s).map((x) => x.uid), [ua, ub]);
-    // 選び直す：新しい確認の1回目はまた確認だけ
-    await tap(pg, '.wpanel button[onclick="pfSellPick(1)"]');
-    await pg.waitForSelector('.pfsell');
+    await sellAsk(pg, 1);
     assert.equal(await pg.evaluate(() => document.querySelector('.wpanel .go').textContent), '売却する（50G）');
     await tap(pg, '.wpanel button[onclick="pfSellGo(this)"]');
     await pg.waitForFunction(() => /もう一度押すと売却/.test(document.querySelector('.wpanel .go').textContent));
     s = await H.storedSave(pg);
     assert.equal(s.g, 700); assert.equal(owned(s).length, 2);
-    // 別のタブへ移ると選択は解除される
-    await tap(pg, `.ftile[onclick="farm('','b')"]`);
+    // 一覧へ戻ると選択は解除される
+    await pg.evaluate(() => farm('', 'b'));
     assert.equal(await pg.evaluate(() => pfSellUid), null);
-    await tap(pg, '.fsell');
     assert.equal(await pg.$('.pfsell'), null);
     await invariants(p);
   } finally { await p.ctx.close(); }
 });
 
-test('QA-RF-B7：育成完了の売却額：一覧・確認の内訳が式どおり（上昇の上限150G・ランク加算・記録なし）で、売ると表示の額が1回だけ入る', { skip: H.skipReason() }, async () => {
+test('QA-RF-B7：育成完了の売却額：確認の内訳が式どおり（上昇の上限150G・ランク加算・記録なし）で、売ると表示の額が1回だけ入る', { skip: H.skipReason() }, async () => {
   const p = await town(); const pg = p.page;
   try {
     await seed(pg, Array.from({ length: 6 }, (_, i) => ({ sp: i % 2, name: 'R' + i })), 1000);
     const quotes = await pg.evaluate(() => {
       const st = (v) => ({ li: v, po: v, in: v, hi: v, ev: v, de: v });
       const done = (x, a, b, clr) => { x.raise.state = 'done'; if (a) x.raise.startStats = st(a); if (b) x.raise.endStats = st(b); x.prog.rankClr = clr; };
-      done(S.box[0], 100, 150, [true, true, true, false, false, false]);      // 上昇+300→150、C 75 → 325
-      done(S.box[1], 100, 200, [true, true, true, true, true, true]);         // 100+150+150 → 400
-      done(S.box[2], 100, 101, [false, false, false, false, false, false]);   // 上昇+6 → 106
-      done(S.box[3], null, null, [true, false, false, false, false, false]);  // 記録なし＋E 25 → 125
-      done(S.box[4], 100, 100, [false, true, false, false, false, false]);    // D 50 → 150
+      done(S.box[0], 100, 150, [true, true, true, false, false, false]);
+      done(S.box[1], 100, 200, [true, true, true, true, true, true]);
+      done(S.box[2], 100, 101, [false, false, false, false, false, false]);
+      done(S.box[3], null, null, [true, false, false, false, false, false]);
+      done(S.box[4], 100, 100, [false, true, false, false, false, false]);
       save(); return [S.m, ...S.box].map((x) => MMP10M.sellQuote(x).price);
     });
     assert.deepEqual(quotes, [50, 325, 400, 106, 125, 150]);
     const raiseRec = (await H.storedSave(pg)).raiseRec;
-    await toRanch(pg, 'd');
-    const rows = await pg.evaluate(() => [...document.querySelectorAll('.wpanel .row')].map((r) => r.innerText.replace(/\s+/g, ' ')));
-    assert.match(rows[0], /未育成・売却額 50G/);
-    [325, 400, 106, 125, 150].forEach((v, i) => assert.match(rows[i + 1], new RegExp(`育成完了・売却額 ${v}G`)));
-    // 内訳の表示
-    await tap(pg, '.wpanel button[onclick="pfSellPick(2)"]');
-    await pg.waitForSelector('.pfsell');
-    let c = await txt(pg, '.pfsell');
-    assert.match(c, /売却額：400G/); assert.match(c, /基本100G＋能力上昇150G（\+600・上限150G）＋公式ランクS 150G/);
-    await tap(pg, '.wpanel button[onclick="pfSellPick(-1)"]');               // やめる → 一覧へ
-    await tap(pg, '.wpanel button[onclick="pfSellPick(4)"]');
-    await pg.waitForSelector('.pfsell');
-    c = await txt(pg, '.pfsell');
-    assert.match(c, /売却額：125G/); assert.match(c, /能力上昇0G（育成開始時の記録なし）＋公式ランクE 25G/);
+    await toRanch(pg);
+    assert.deepEqual(await cells(pg), ['R0 連れている', 'R1 育成完了', 'R2 育成完了', 'R3 育成完了', 'R4 育成完了', 'R5 育成完了']);
+    for (const [i, v] of [[1, 325], [2, 400], [3, 106], [4, 125], [5, 150]]) {
+      await sellAsk(pg, i); assert.match(await txt(pg, '.pfsell'), new RegExp(`売却額：${v}G`)); await tap(pg, '.wpanel button[onclick="pfSellPick(-1)"]'); await pg.waitForSelector('.rngrid');
+    }
+    await sellAsk(pg, 2);
+    assert.match(await txt(pg, '.pfsell'), /基本100G＋能力上昇150G（\+600・上限150G）＋公式ランクS 150G/);
     await tap(pg, '.wpanel button[onclick="pfSellPick(-1)"]');
-    // 325G の個体を売る
+    await sellAsk(pg, 4);
+    assert.match(await txt(pg, '.pfsell'), /能力上昇0G（育成開始時の記録なし）＋公式ランクE 25G/);
+    await tap(pg, '.wpanel button[onclick="pfSellPick(-1)"]');
     await sellByUi(pg, 1);
     const s = await H.storedSave(pg);
     assert.equal(s.g, 1325);
     assert.match(await txt(pg, '.fbub'), /R1を325Gで売却しました。/);
     assert.deepEqual(names(s), ['R0', 'R2', 'R3', 'R4', 'R5']);
-    assert.deepEqual(s.raiseRec, raiseRec);                                     // 売却で育成完了回数は変わらない
+    assert.deepEqual(s.raiseRec, raiseRec);
     await invariants(p);
   } finally { await p.ctx.close(); }
 });
@@ -476,9 +450,8 @@ test('QA-RF-B8：連れている個体の売却：手持ちが空になり（S.m
   const p = await town(); const pg = p.page;
   try {
     const [ua, ub] = await seed(pg, [{ sp: 1, name: 'ガウA' }, { sp: 0, name: 'ソラB' }], 0);
-    await toRanch(pg, 'd');
-    await tap(pg, '.wpanel button[onclick="pfSellPick(0)"]');
-    await pg.waitForSelector('.pfsell');
+    await toRanch(pg);
+    await sellAsk(pg, 0);
     assert.match(await txt(pg, '.pfsell'), /ガウA.*種族：ガウル（連れている）/);
     await tap(pg, '.wpanel button[onclick="pfSellGo(this)"]');
     await tap(pg, '.wpanel button[onclick="pfSellGo(this)"]', 650);
@@ -486,10 +459,9 @@ test('QA-RF-B8：連れている個体の売却：手持ちが空になり（S.m
     const s = await H.storedSave(pg);
     assert.equal(s.m, null); assert.equal(s.g, 50); assert.deepEqual(s.box.map((x) => x.uid), [ub]);
     assert.ok(!JSON.stringify(s).includes(ua));
-    // 残り1体：一覧は「最後の1体」、ボタンは押せない
-    assert.match(await txt(pg, '.wpanel'), /^最後の1体は売却できません。/);
-    assert.deepEqual(await pg.evaluate(() => [...document.querySelectorAll('.wpanel button')].map((b) => b.disabled)), [true]);
-    // 街：連れている個体がいないのでファームは押せない
+    // 残り1体：売るは押せない
+    await pick(pg, 0);
+    assert.equal(await pg.evaluate(() => document.querySelector('.rna.rnsell').disabled), true);
     await tap(pg, '.back');
     await pg.waitForSelector('#app .map');
     assert.equal(await pg.evaluate(() => document.querySelector('.hz[onclick="hall()"]').disabled), true);
@@ -498,22 +470,19 @@ test('QA-RF-B8：連れている個体の売却：手持ちが空になり（S.m
 });
 
 test('QA-RF-B9：売却・合体・入れ替えができない：最後の1体（直接呼び出しも断る）／育成中（牧場へ入れずボードへ戻る・何も変わらない）', { skip: H.skipReason() }, async () => {
-  // 最後の1体
   const p = await town(); const pg = p.page;
   try {
     await seed(pg, [{ sp: 0, name: 'ひとり' }], 300);
-    await toRanch(pg, 'd');
-    assert.match(await txt(pg, '.wpanel'), /^最後の1体は売却できません。/);
-    assert.ok(await pg.evaluate(() => [...document.querySelectorAll('.wpanel button')].every((b) => b.disabled)));
+    await toRanch(pg);
+    await pick(pg, 0);
+    assert.equal(await pg.evaluate(() => document.querySelector('.rna.rnsell').disabled), true, '最後の1体は売れない');
     const r = await pg.evaluate(() => { const g = S.g, m = S.m; pfSellUid = S.m.uid; pfSellGo(document.createElement('button')); return [S.g - g, S.m === m, pfSellUid, document.querySelector('.fbub').innerText]; });
     assert.equal(r[0], 0); assert.equal(r[1], true); assert.equal(r[2], null); assert.match(r[3], /最後の1体は売却できません。/);
-    // 合体タブ：1体では選べない
-    await pg.evaluate(() => farm('', 'c'));   // 合体は研究所へ移す（牧場のコマンドには無い）。合体の処理・選択画面は内部に残しているので直接開く
+    await pg.evaluate(() => farm('', 'c'));   // 合体は研究所（farm('','c') は研究所の合体へ送る）
     assert.match(await txt(pg, '.wpanel'), /合体には2体以上必要です。/);
     assert.equal(await pg.$('.wpanel button[onclick^="selm("]'), null);
     await invariants(p);
   } finally { await p.ctx.close(); }
-  // 育成中
   const q = await town(); const qg = q.page;
   try {
     const [ua, ub, uc] = await seed(qg, [{ sp: 0, name: 'イク' }, { sp: 1, name: 'ボク' }, { sp: 0, name: 'ジョウ' }], 900);
@@ -523,7 +492,7 @@ test('QA-RF-B9：売却・合体・入れ替えができない：最後の1体�
     assert.equal(snap.m.raise.state, 'board');
     assert.equal(await qg.evaluate((u) => MMP10M.canSell(S, u).reason, ub), 'raising');
     await qg.evaluate(async ([ub]) => {
-      farm('', 'd'); farm('', 'c'); pfSellPick(1);
+      farm('', 'd'); farm('', 'c'); pfSellPick(1); rnPick(ub); rnRename();
       pfSellUid = ub; pfSellGo(document.createElement('button'));
       sel = [1, 2]; await fuse();
       dep(); wd(0); selm(0);
@@ -531,45 +500,42 @@ test('QA-RF-B9：売却・合体・入れ替えができない：最後の1体�
     assert.deepEqual(await H.storedSave(qg), snap);
     const mem = await H.getS(qg);
     assert.equal(mem.g, 900); assert.deepEqual(owned(mem).map((x) => x.uid), [ua, ub, uc]);
-    assert.equal(await qg.$('.fsell'), null);                                   // 牧場の画面は出ていない
-    assert.ok(await qg.$('#brollbtn'));                                         // ボードのまま
+    assert.equal(await qg.$('.rn2'), null);                                     // 牧場の画面は出ていない
+    assert.ok(await qg.$('#brollbtn'));
     await qg.evaluate(() => { sel = []; pfSellUid = null; });
     await invariants(q);
   } finally { await q.ctx.close(); }
 });
 
-test('QA-RF-B17：小さい画面（375×667・360×800、タッチ端末）でも、8体の牧場で受け取る・合体・売却のボタンが隠れずに押せ、横にはみ出さない', { skip: H.skipReason() }, async () => {
+test('QA-RF-B17：小さい画面（375×667・360×800、タッチ端末）でも、20体の牧場で受け取る・合体・売却のボタンが隠れずに押せ、横にはみ出さない', { skip: H.skipReason() }, async () => {
   for (const size of [H.SIZES.se, H.SIZES.android]) {
     const p = await L.open({ save: BASE, size, touch: true }); const pg = p.page;
     try {
       await pg.evaluate(() => p8Resume());
       await pg.waitForSelector('#app .map');
-      const uids = await seed(pg, Array.from({ length: 8 }, (_, i) => ({ sp: i % 2, name: 'S' + i })), 2000);
+      const uids = await seed(pg, Array.from({ length: 21 }, (_, i) => ({ sp: i % 2, name: 'S' + i })), 2000);
       const noHScroll = async (where) => assert.ok(await pg.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${size.join('×')} ${where}：横にはみ出さない`);
       await noHScroll('街');
-      await toRanch(pg, 'a');
-      await noHScroll('預ける');
-      // 受け取る：一番下（7体目）の個体
-      await tap(pg, `.ftile[onclick="farm('','b')"]`);
-      await noHScroll('受け取る');
-      await tap(pg, '.wpanel button[onclick="wd(6)"]');
-      await pg.waitForFunction((u) => S.m && S.m.uid === u, uids[7]);
-      // 合体：一覧の下のほうの2体
-      await pg.evaluate(() => farm('', 'c'));   // 合体は研究所へ移す（牧場のコマンドには無い）。合体の処理・選択画面は内部に残しているので直接開く
-      await tap(pg, '.wpanel button[onclick="selm(7)"]');
-      await tap(pg, '.wpanel button[onclick="selm(6)"]');
+      await toRanch(pg);
+      await noHScroll('牧場');
+      // 受け取る：一番下（20体目）の個体
+      await pick(pg, 20); await tap(pg, '.rna[onclick="wd(19)"]');
+      await pg.waitForFunction((u) => S.m && S.m.uid === u, uids[20]);
+      // 合体（研究所）：一覧の下のほうの2体
+      await pg.evaluate(() => farm('', 'c'));
+      await tap(pg, '.wpanel button[onclick="selm(20)"]');
+      await tap(pg, '.wpanel button[onclick="selm(19)"]');
       await noHScroll('合体');
       await tap(pg, '.wpanel .go');
       await pg.waitForFunction(() => /新しいモンスター/.test((document.querySelector('#msg') || {}).innerText || ''), null, { timeout: 8000 });
-      assert.equal(owned(await H.storedSave(pg)).length, 7);
+      assert.equal(owned(await H.storedSave(pg)).length, 20);
       assert.equal((await H.storedSave(pg)).g, 1800);
       // 売却：一覧の一番下
-      await toRanch(pg, 'd');
-      await noHScroll('売却');
-      await sellByUi(pg, 6);
+      await toRanch(pg);
+      await sellByUi(pg, 19);
       await noHScroll('売却後');
       const s = await H.storedSave(pg);
-      assert.equal(owned(s).length, 6); assert.equal(s.g, 1850);
+      assert.equal(owned(s).length, 19); assert.equal(s.g, 1850);
       await invariants(p);
     } finally { await p.ctx.close(); }
   }

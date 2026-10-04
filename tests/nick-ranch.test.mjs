@@ -78,40 +78,36 @@ async function buyFirst(pg) {
   await pg.waitForSelector('#p10ov'); await pg.fill('#mnm', 'ソラ'); await pg.waitForTimeout(600); await pg.click('.p10ok', { force: true });
   await pg.waitForSelector('#app .map');
 }
-// 2026-10-03 品質向上：ニックは半身の立ち絵（.rnnick .nstf）＋会話窓（.tx.fnick）。通知（.fbub.sys）は名前・顔なし
-const bub = (pg) => pg.evaluate(() => { const b = document.querySelector('.fbub.sys') || document.querySelector('.rnnick .tx'), i = b && b.classList.contains('fnick') ? document.querySelector('.rnnick .nstf') : b.querySelector('img');
+// 2026-10-04 PHASE H3：牧場20体の一覧の上に、ニックの小さな顔＋一言（.rnnick .fbub.rnsay）。通知（.fbub.sys）は名前・顔なし（書き直しの理由：牧場の画面の作り直し）
+const bub = (pg) => pg.evaluate(() => { const b = document.querySelector('.rnnick .fbub'), i = b.querySelector('img');
   return { cls: b.className, name: b.querySelector('b') ? b.querySelector('b').textContent : null, img: i ? [i.getAttribute('src'), i.complete && i.naturalWidth > 0] : null, text: b.textContent }; });
 
-test('NICK-B1：牧場：ふだんはニックの吹き出し（名前・顔が読み込める・一言は NICK_TALK）。預ける／受け取るの通知は名前・顔なし。旧「ダン」は出ない', { skip: SKIP }, async () => {
+test('NICK-B1：牧場：ふだんはニックの一言（名前・顔が読み込める・一言は進行状態に合う一言）。預ける／受け取るの通知は名前・顔なし。旧「ダン」は出ない', { skip: SKIP }, async () => {
   const p = await L.open(); const pg = p.page;
   await buyFirst(pg);
-  await pg.click('.hz[onclick="farm()"]'); await pg.waitForSelector('#app .fscene .rnnick .tx'); await pg.waitForFunction(() => { const i = document.querySelector('.rnnick .nstf'); return i && i.complete && i.naturalWidth > 0; });
+  await pg.click('.hz[onclick="farm()"]'); await pg.waitForSelector('#app .rnnick .rnsay'); await pg.waitForFunction(() => { const i = document.querySelector('.rnnick img'); return i && i.complete && i.naturalWidth > 0; });
   let b = await bub(pg);
-  assert.equal(b.cls, 'tx fnick'); assert.equal(b.name, 'ニック'); assert.match(b.img[0], /^assets\/npc\/nick\/expr\/closeup\/0[124]_(normal|gentle|impressed)\.webp$/); assert.equal(b.img[1], true);   // 2026-10-04（追加アセット）：一言の表情（ふだん 01・やわらかい 02・成長を認める 04）
-  assert.ok((await pg.evaluate(() => (window.MMNPCE ? MMNPCE.REVISIT.ranch.lines.map((l) => l.text) : NICK_TALK.ranch))).some((s) => b.text.endsWith(s)), `ニックの一言：${b.text}`);   // 2026-10-04：進行状態に合う一言（MMNPCE.REVISIT.ranch）
+  assert.equal(b.cls, 'fbub rnsay'); assert.equal(b.name, 'ニック'); assert.match(b.img[0], /^assets\/npc\/nick\/expr\/face\/0[124]_(normal|gentle|impressed)\.webp$/); assert.equal(b.img[1], true);
+  assert.ok((await pg.evaluate(() => (window.MMNPCE ? MMNPCE.REVISIT.ranch.lines.map((l) => l.text) : NICK_TALK.ranch))).some((s) => b.text.endsWith(s)), `ニックの一言：${b.text}`);
   assert.doesNotMatch(await H.text(pg), /ダン/, '牧場に旧「ダン」の名前を出さない');
-  // 預ける（手持ち → 牧場）：通知は名前・顔なし
-  await pg.evaluate(() => farm('', 'a')); await pg.waitForFunction(() => ft === 'a'); await pg.waitForTimeout(200);
   await pg.evaluate(() => dep()); await pg.waitForFunction(() => document.querySelector('.fbub.sys')); b = await bub(pg);
   assert.deepEqual([b.cls, b.name, b.img], ['fbub sys', null, null]); assert.match(b.text, /預けました/);
   assert.equal((await H.getS(pg)).box.length, 1, '預ける処理は従来どおり');
-  // 受け取る：通知は名前・顔なし
-  await pg.evaluate(() => farm('', 'b')); await pg.waitForFunction(() => ft === 'b'); await pg.waitForTimeout(200);
   await pg.evaluate(() => wd(0)); await pg.waitForFunction(() => /受け取りました/.test((document.querySelector('.fbub.sys') || {}).textContent || '')); b = await bub(pg);
   assert.deepEqual([b.cls, b.name, b.img], ['fbub sys', null, null]);
   assert.equal((await H.getS(pg)).box.length, 0, '受け取る処理は従来どおり');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
-test('NICK-B2：4つの画面サイズで、牧場の吹き出し（ニックの顔つき・通知）が枠からはみ出さず、横にはみ出さない', { skip: SKIP }, async () => {
+test('NICK-B2：4つの画面サイズで、牧場のニックの一言・通知が画面からはみ出さず、横にはみ出さない', { skip: SKIP }, async () => {
   for (const size of Object.values(H.SIZES)) {
     const p = await L.open({ size }); const pg = p.page;
     await buyFirst(pg);
     for (const msg of ['', 'ソラを預けました。牧場で元気に過ごしています。']) {
-      await pg.evaluate((m) => farm(m), msg); await pg.waitForSelector(msg ? '#app .fscene .fbub' : '#app .fscene .rnnick .tx'); await pg.waitForTimeout(300);
-      const r = await pg.evaluate(() => { const s = document.querySelector('.fscene').getBoundingClientRect(), b = (document.querySelector('.fbub') || document.querySelector('.rnnick .tx')).getBoundingClientRect();
-        return { inside: b.left >= s.left - 1 && b.right <= s.right + 1 && b.top >= s.top - 1 && b.bottom <= s.bottom + 1, sw: document.documentElement.scrollWidth, W: innerWidth }; });
-      assert.ok(r.inside, `${size.join('×')}：吹き出しが牧場の枠に収まる（${msg ? '通知' : 'ニック'}）`);
+      await pg.evaluate((m) => farm(m), msg); await pg.waitForSelector(msg ? '#app .rnnick .fbub.sys' : '#app .rnnick .rnsay'); await pg.waitForTimeout(300);
+      const r = await pg.evaluate(() => { const b = document.querySelector('.rnnick .fbub').getBoundingClientRect();
+        return { inside: b.left >= -1 && b.right <= innerWidth + 1 && b.top >= -1 && b.bottom <= innerHeight + 1, sw: document.documentElement.scrollWidth, W: innerWidth }; });
+      assert.ok(r.inside, `${size.join('×')}：画面に収まる（${msg ? '通知' : 'ニック'}）`);
       assert.ok(r.sw <= r.W + 1, `${size.join('×')}：横にはみ出さない`);
     }
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
@@ -135,27 +131,24 @@ test('NICK-6：牧場（2026-10-04 PHASE H3）：選んだ子に 見る・名前
   assert.match(f, /牧場にはまだモンスターがいません。/);
 });
 
-test('NICK-B3：様子を見る：牧場の子の一覧（画像・名前・種類・大会ランク。受け取るボタンは無い）→ 詳細（6能力）→ 一覧へ。閲覧ではセーブが変わらない。0体のときは案内だけ', { skip: SKIP }, async () => {
+test('NICK-B3：見る（2026-10-04 PHASE H3）：牧場の一覧（画像・名前・育成の札）→ 選んで「見る」→ 詳細（6能力）→ 一覧へ。閲覧ではセーブが変わらない。0体のときは案内だけ', { skip: SKIP }, async () => {
   const p = await L.open(); const pg = p.page;
   await buyFirst(pg);
   await pg.evaluate(() => { const c = JSON.parse(JSON.stringify(S.m)); c.uid = c.uid + 'b'; c.name = 'ガウ'; c.sp = 1; c.po = 123; S.box.push(c); save(); });
-  await pg.click('.hz[onclick="farm()"]'); await pg.waitForSelector('#app .ftiles'); await pg.waitForTimeout(400);
-  assert.deepEqual(await pg.evaluate(() => [...document.querySelectorAll('.rncmd button')].map((b) => b.innerText.replace(/\s+/g, ''))), ['預ける', '受け取る(1)', '様子を見る', '売る']);
-  // 空の状態（手持ち1体・牧場0体にしてから）
-  await pg.evaluate(() => { window.__box = S.box; S.box = []; farm('', 'e'); });
-  assert.equal(await pg.evaluate(() => document.querySelector('.wpanel').innerText.trim()), '牧場にはまだモンスターがいません。');
-  await pg.evaluate(() => { S.box = window.__box; farm('', 'a'); });
+  await pg.click('.hz[onclick="farm()"]'); await pg.waitForSelector('#app .rn2 .rnact'); await pg.waitForTimeout(400);
+  assert.deepEqual(await pg.evaluate(() => [...document.querySelectorAll('.rnact .rna')].map((b) => b.innerText.replace(/\s+/g, ''))), ['見る', '名前変更', '受け取る', '売る']);
+  await pg.evaluate(() => { window.__box = S.box; S.box = []; farm('', 'b'); });
+  assert.equal(await pg.evaluate(() => document.querySelector('.rngrid').innerText.trim()), '牧場にはまだモンスターがいません。');
+  await pg.evaluate(() => { S.box = window.__box; farm('', 'b'); });
   const raw0 = await pg.evaluate(() => localStorage.getItem('mr4v6'));
-  await pg.click('.rncmd button.rnlook'); await pg.waitForSelector('.wpanel .rnlrow');
-  const rows = await pg.evaluate(() => [...document.querySelectorAll('.wpanel .rnlrow')].map((r) => [r.querySelector('.info b').textContent, r.querySelector('.info small').textContent, !!r.querySelector('img,svg')]));
-  assert.deepEqual(rows, [['ガウ', 'ガウル（鳥種）　大会ランク ー', true]]);
-  assert.equal(await pg.$('.wpanel button[onclick^="wd("]'), null, '受け取るボタンは出さない');
-  await pg.click('.wpanel .rnlrow'); await pg.waitForSelector('.rnlook');
+  const rows = await pg.evaluate(() => [...document.querySelectorAll('.rngrid .rnc')].map((r) => [r.querySelector('.rncn b').textContent, r.querySelector('.rntag').textContent, !!r.querySelector('img,svg')]));
+  assert.deepEqual(rows, [['ガウ', '未育成', true]]);
+  await pg.click('.rngrid .rnc'); await pg.waitForTimeout(300); await pg.click(".rna[onclick=\"rnView=rnSel;farm('','e')\"]"); await pg.waitForSelector('.rnlook');
   const d = await pg.evaluate(() => [document.querySelector('.rnlname>b').textContent, [...document.querySelectorAll('.rnlst div')].map((x) => x.innerText.replace(/\s+/g, ''))]);
   assert.deepEqual(d, ['ガウ', ['ライフ100', 'ちから123', 'かしこさ100', '命中100', '回避100', '丈夫さ100']]);
-  assert.equal(await pg.$$eval('.wpanel button', (a) => a.map((b) => b.getAttribute('onclick')).join('|')), "rnView=null;farm('','e')", '詳細のボタンは「一覧にもどる」だけ');
-  await pg.click('.rnlback'); await pg.waitForSelector('.wpanel .rnlrow');
-  assert.equal(await pg.evaluate(() => localStorage.getItem('mr4v6')), raw0, '様子を見るだけではセーブは変わらない');
+  assert.equal(await pg.$$eval('.wpanel button', (a) => a.map((b) => b.getAttribute('onclick')).join('|')), "rnView=null;farm('','b')", '詳細のボタンは「一覧にもどる」だけ');
+  await pg.click('.rnlback'); await pg.waitForSelector('.rngrid .rnc');
+  assert.equal(await pg.evaluate(() => localStorage.getItem('mr4v6')), raw0, '見るだけではセーブは変わらない');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   await p.ctx.close();
 });
