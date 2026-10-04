@@ -640,6 +640,24 @@
     ui.insertAdjacentHTML('beforeend', `<div class="chf-twarn" style="background-image:url(${esc(src)})"><b>残り ${t.left} ターン</b></div>`);
     const el = ui.querySelector('.chf-twarn:last-child'); setTimeout(() => el && el.remove(), V.calm ? 900 : 1400);
   }
+  /**
+   * モンスターの登場（2026-10-04 G3）：間（MON_ENTER.gap）→ 画面の下の外から開始地点まで歩いて入る（歩行アニメつき・減速して止まる）→ 待機の姿勢。
+   *  位置は CSS の個別の translate だけを動かす（道の上の位置 transform・向き・前傾には触れない）。視差を減らす設定では、短いフェードだけ
+   */
+  const MON_ENTER = { gap: 300, ms: 820 };
+  async function monEnter() {
+    const fw = $('#chfw'), w = $('#bmonw'); if (!fw) return;
+    if (!w || !w.animate || V.calm || !(root.CSS && CSS.supports && CSS.supports('translate', '0 1px'))) { fw.classList.remove('chf-monwait'); return; }
+    await wait(MON_ENTER.gap); if (!$('#bmonw') || !onField()) { fw.classList.remove('chf-monwait'); return; }
+    const r = w.getBoundingClientRect(), sc = (w.offsetHeight ? r.height / w.offsetHeight : 1) || 1;
+    const dy = Math.max(120, ((root.innerHeight || 800) - r.top + 12) / sc);   // 画面の下の外（カメラの拡大を考えた距離）
+    w.style.translate = `0 ${dy.toFixed(0)}px`; fw.classList.remove('chf-monwait'); w.dataset.enter = '1';
+    anim('walk', { speed: 1 });
+    const a = w.animate([{ translate: `0 ${dy.toFixed(0)}px` }, { translate: '0 0' }], { duration: MON_ENTER.ms, easing: 'cubic-bezier(.22,.62,.3,1)', fill: 'forwards' });
+    try { await a.finished; } catch (e) {}
+    w.style.translate = ''; try { a.cancel(); } catch (e) {} delete w.dataset.enter;
+    anim('land'); await wait(170); anim('rest');
+  }
   async function chfIntro(m, key) {
     if (busyGet() || V.intro) return;   // 二重に始めない
     const f = MMCH.fieldOf(m); if (!f) return;
@@ -652,8 +670,10 @@
     catch (e) {}
     finally {
       // FIELD 1 の正式な開始状態：ソラモ・マス・UI を出す（飛ばしたときも同じ。途中の状態では止まらない）
-      const w2 = $('#chfw'); if (w2) { w2.classList.add('chf-uiin'); w2.classList.remove('chf-intro'); setTimeout(() => w2.classList.remove('chf-uiin'), 420); }
+      //  2026-10-04 G3：育成中のモンスターはその場に急に出さない＝背景・マス・UI が出て少し間をおいてから、画面の下から歩いて開始地点へ入る（全種族共通）。入り終わるまで START は押せない
+      const w2 = $('#chfw'); if (w2) { w2.classList.add('chf-uiin', 'chf-monwait'); w2.classList.remove('chf-intro'); setTimeout(() => w2.classList.remove('chf-uiin'), 420); }
       if (res && res.skipped) await wait(350);   // 飛ばしたタップが下の START に届かないよう少し待ってから操作できる
+      try { await monEnter(); } catch (e) { const w3 = $('#chfw'); if (w3) w3.classList.remove('chf-monwait'); }
       V.intro = false; busySet(false);
     }
     if (onField() && chfActive(m) && P8().boardPhase(m) === 'roll') { refreshDeck(m); if (!cued) feel('chapter.start'); setTimeout(() => { if (onField() && !busyGet()) storyAt(m, 'start'); }, 350); }
@@ -685,7 +705,7 @@
       await wait(V.calm || !fromField ? 0 : (A.fadeMs || 900) + 200);
       if (!$('#chfarr')) return;
       feel('tournament.arrive');   // 大会会場へ着いた音（TOURNAMENT_ARRIVAL）
-      if (root.MMNPC && !root.MM_QA_NO_ARRIVAL && (A.talk || []).length) await MMNPC.talk(arrivalLines(A), { kind: 'event', presentation: 'major' });
+      if (root.MMNPC && !root.MM_QA_NO_ARRIVAL && (A.talk || []).length) await MMNPC.talk(arrivalLines(A), { kind: 'event', presentation: 'major', big: true });
       f.arrivalSeen = true; doSave();
     } finally { busySet(false); }
     const u2 = $('#chf-ui'); if ($('#chfarr') && u2 && chfActive(m) && P8().boardPhase(m) === 'goal') u2.innerHTML = receptionHtml(m);
@@ -1074,7 +1094,7 @@
   async function choiceTalk(fx, card) {
     const E = root.MMEVT, first = (fx.options && fx.options[0] && fx.options[0].id) || null;
     if (!E || !root.MMNPC || root.MM_QA_NO_STORY) { if (card) await wait(V.calm ? 120 : 420); return E ? E.autoChoice(fx) : first; }
-    const id = await queued(() => MMNPC.talk(E.choiceLines(fx), { kind: 'event', presentation: card ? 'compact' : 'standard' }));   // 挿絵があるときは小さな窓（挿絵を隠さない）
+    const id = await queued(() => MMNPC.talk(E.choiceLines(fx), { kind: 'event', presentation: card ? 'compact' : 'board' }));   // 挿絵があるときは小さな窓（挿絵を隠さない）。無いときはボードの大きな窓（2026-10-04 G2）
     return (fx.options || []).some((o) => o.id === id) ? id : first;
   }
   // ---- 同行者（フィナ）のリアクションの差し込み口：停止地点の結果 → MMCH.companionReaction（config.companion.reactions）→ 登録した描画（既定は何も出さない。会話UIは未決） ----
@@ -1108,7 +1128,7 @@
     MMCH.markStory(m, ev.id, flags); doSave();
     await queued(async () => {
       if (!onField()) return;
-      if (ev.presentation === 'talk' && root.MMNPC) { await MMNPC.talk((ev.lines || []).map((l) => ({ npc: l.speaker || 'fina', expression: l.expression || 'normal', text: l.text })), { kind: 'fina', presentation: 'compact' }); return; }
+      if (ev.presentation === 'talk' && root.MMNPC) { await MMNPC.talk((ev.lines || []).map((l) => ({ npc: l.speaker || 'fina', expression: l.expression || 'normal', text: l.text })), { kind: 'fina', presentation: 'board' }); return; }   // 2026-10-04 G2：チュートリアル（宝箱の説明など）はボードの大きな窓（操作欄の上・操作欄は押せない）
       for (const l of ev.lines || []) { if (!onField()) break; await finaBubble({ text: l.text, expression: l.expression || 'normal' }); }
     });
   }
@@ -1134,8 +1154,8 @@
   root.addEventListener && root.addEventListener('resize', () => { const m = gS() && gS().m; if ($('#chf') && chfActive(m) && V.monPos && !V.moving) { V.par0 = null; camTarget(V.monPos.x, V.monPos.y, V.monPos.d, true); } });
 
   Object.assign(root, { chfActive, chfBoard, chfRoll, chfRest, chfPick, chfContinue, chfResolve, chfItems, chfItemsClose, chfItemUse, chfOpen });
-  root.MMCHV = Object.freeze({ STEP_MS, FACING, DEFAULTS: DEF,
+  root.MMCHV = Object.freeze({ STEP_MS, FACING, DEFAULTS: DEF, MON_ENTER,
     state: () => ({ field: V.field, cam: { ...V.cam }, target: { ...V.tgt }, key: V.key, moving: V.moving, look: [...V.look], focus: V.focus ? { ...V.focus } : null, monster: V.monPos ? { ...V.monPos } : null, animator: (V.animator || DEFAULT_ANIMATOR).id }),
     lookOf, sideOffset, landmarkPos: (id) => { const n = V.g && V.g.nodes[id]; if (!n) return null; const m = gS() && gS().m, a = MMCH.fieldOf(m).nodeAssignments[id] || (['strong', 'rival'].includes(n.kind) ? { t: 'battle', bt: n.kind } : null), look = lookOf(V.cfg, a); return look ? landmarkPos(V.cfg, V.g, V.sc, id, look) : null; },
-    zoomAt, registerMonsterAnimator, registerReactionRenderer, focusPoint, tileKeyOf, tileSpriteOf, tileBox, seenRoadW, tileFitKind, roadX: (x, y, d) => roadX(x, y, d != null ? d : depthAtY(y)), stepDuration: (from, to) => { const r = MMCH.routeBetween(V.g, from, to).map((p) => [p[0] * V.sc.w, p[1] * V.sc.h]); return stepDuration(r, to); } });
+    zoomAt, registerMonsterAnimator, MON_ENTER, registerReactionRenderer, focusPoint, tileKeyOf, tileSpriteOf, tileBox, seenRoadW, tileFitKind, roadX: (x, y, d) => roadX(x, y, d != null ? d : depthAtY(y)), stepDuration: (from, to) => { const r = MMCH.routeBetween(V.g, from, to).map((p) => [p[0] * V.sc.w, p[1] * V.sc.h]); return stepDuration(r, to); } });
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -57,7 +57,7 @@ T('EV-B1：イベントマス（挿絵つき・澄んだ湧き水）：背景を
   assert.equal(await pg.evaluate(() => !!document.querySelector('.chf-evc')), false, '結果の前に挿絵は消える');
   assert.match(await pg.textContent('.chpop.ev'), /湧き水[\s\S]*疲れ −15/);
   await talk(pg, 'イベントマスは、止まるたびに');
-  assert.equal(await pg.evaluate(() => document.querySelector('.mmtalk').dataset.pres), 'compact', 'チュートリアルは小さな会話窓');
+  assert.equal(await pg.evaluate(() => document.querySelector('.mmtalk').dataset.pres), 'board', '2026-10-04 G2：チュートリアルはボードの大きな会話窓（操作欄の上）');
   await H.finishTalk(pg); await idle(pg);
   const s1 = await pg.evaluate(() => ({ fat: S.m.raise.fatigue, used: S.m.raise.field.consumedEvents, story: S.npcFlags.story, pend: S.m.raise.pend, hud: document.querySelector('#chfat b').textContent }));
   assert.equal(s1.fat, 15); assert.ok(s1.used.includes(id)); assert.deepEqual(s1.story, ['tut_event']); assert.equal(s1.pend, null); assert.equal(s1.hud, '15');

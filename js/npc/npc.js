@@ -166,15 +166,27 @@
       const e = ex || n.defaultExpr; return { ...l, view: n.views.fullbody && n.views.fullbody[e] ? 'fullbody' : n.defaultView };
     });
   }
+  // ---- イベントの表示モード（2026-10-04 G2）：会話の間は html[data-mmev]。'1'＝施設・案内・ボードのイベント（下の画面の常設 NPC・吹き出し・会話欄を隠す＝同じ人物が2人に見えない）、
+  //  'lite'＝短い一言（compact。隠さない）。どちらも下の画面（#app）は押せない（pointer-events。CSS は index.html）。終わったら少し間をおいて、隠した物を短いフェードで戻す（data-mmev-back）
+  const EVM = { t: null };
+  function evOn(mode) { if (typeof document === 'undefined' || !document.documentElement || !document.documentElement.setAttribute) return; clearTimeout(EVM.t); const d = document.documentElement; d.removeAttribute('data-mmev-back'); d.setAttribute('data-mmev', mode); }
+  function evOff() { if (typeof document === 'undefined' || !document.documentElement || !document.documentElement.setAttribute) return; clearTimeout(EVM.t);
+    EVM.t = setTimeout(() => { if (CUR) return; const d = document.documentElement, was = d.getAttribute('data-mmev'); d.removeAttribute('data-mmev');
+      if (was === '1') { d.setAttribute('data-mmev-back', '1'); EVM.t = setTimeout(() => d.removeAttribute('data-mmev-back'), 360); } }, 90); }
+  /** 会話に出てくる立ち絵を先に読む（表情を変えたとき、読み込み待ちで前の絵が残らない） */
+  function warmLines(lines) { try { if (typeof Image === 'undefined') return; for (const l of resolveLines(lines)) if (l.img && l.img.src) { const im = new Image(); im.decoding = 'async'; im.src = l.img.src; } } catch (e) {} }
   function talk(lines, opts = {}) {
     if (typeof document === 'undefined') return Promise.resolve();
     close();
     return new Promise((resolve) => {
       // 表示の種類（2026-10-02）：opts.presentation＝'compact'（短い一言。背景を隠さない小さな窓・小さな立ち絵・暗幕なし）／'standard'（既定）／'major'（重要な出来事。背景を少し暗くして会話に集中）。
       //  opts.kind＝話の種類（'npc'＝NPC会話・'fina'＝フィナの案内・'event'＝重要イベント）。見た目と読み上げの区別に使う（システム通知は会話ウィンドウにしない）
-      const pres = ['compact', 'major'].includes(opts.presentation) ? opts.presentation : 'standard';
+      //  2026-10-04 G2：'board'＝Chapter ボードのフィナの大きな会話窓（チュートリアル・イベント説明。下の操作欄の上に置き、操作欄は押せない）。opts.big＝施設イベントの大型の会話窓（金の額・大きな文字）
+      const pres = ['compact', 'major', 'board'].includes(opts.presentation) ? opts.presentation : 'standard';
       if (pres === 'major') lines = preferFullbody(lines);
-      const ov = h('div', `mmtalk mmtalk-${pres}`), stage = h('div', 'mmtalk-stage'), fig = h('div', 'mmtalk-fig'), img = h('img'), win = h('div', 'mmtalk-win'), nm = h('div', 'mmtalk-name'), tx = h('p', 'mmtalk-text'), nx = h('span', 'mmtalk-next'), ch = h('div', 'mmtalk-choices');
+      warmLines(lines); if (opts.branches) for (const v of Object.values(opts.branches)) warmLines(v);
+      evOn(pres === 'compact' ? 'lite' : '1');
+      const ov = h('div', `mmtalk mmtalk-${pres}${opts.big || pres === 'board' ? ' mmtalk-big' : ''}`), stage = h('div', 'mmtalk-stage'), fig = h('div', 'mmtalk-fig'), img = h('img'), win = h('div', 'mmtalk-win'), nm = h('div', 'mmtalk-name'), tx = h('p', 'mmtalk-text'), nx = h('span', 'mmtalk-next'), ch = h('div', 'mmtalk-choices');
       ov.dataset.pres = pres; if (opts.kind) ov.dataset.kind = String(opts.kind);
       ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); img.alt = ''; img.draggable = false; nx.textContent = '▼'; nx.setAttribute('aria-hidden', 'true');
       ch.hidden = true; ch.setAttribute('role', 'group'); let chKey = '';
@@ -199,7 +211,7 @@
             if (s.choices) for (const x of s.choices) { const bt = h('button', 'mmtalk-choice'); bt.type = 'button'; bt.textContent = x.label; bt.dataset.choice = x.id;
               bt.addEventListener('click', (e) => { e.stopPropagation(); c.choose(x.id); }); ch.appendChild(bt); } }
         },
-        onEnd(choice) { stopAnim(); clearTimeout(keyT); document.removeEventListener('keydown', onKey); if (ov.animate && ov.classList && !ov.__instant) { ov.classList.add('mmtalk-out'); const a = ov.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, easing: 'ease-in', fill: 'forwards' }); const done = () => { ov.remove(); resolve(choice == null ? null : choice); }; a.finished.then(done, done); } else { ov.remove(); resolve(choice == null ? null : choice); } if (CUR && CUR.c === c) CUR = null; },   // 退場：短くフェード（急に消さない）。Promise はフェードが終わって DOM を消してから解決する（次の画面が会話の上に出ない・会話の要素が残らない）。220ms 後に DOM から外す
+        onEnd(choice) { stopAnim(); clearTimeout(keyT); document.removeEventListener('keydown', onKey); if (ov.animate && ov.classList && !ov.__instant) { ov.classList.add('mmtalk-out'); const a = ov.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, easing: 'ease-in', fill: 'forwards' }); const done = () => { ov.remove(); evOff(); resolve(choice == null ? null : choice); }; a.finished.then(done, done); } else { ov.remove(); evOff(); resolve(choice == null ? null : choice); } if (CUR && CUR.c === c) CUR = null; },   // 退場：短くフェード（急に消さない）。Promise はフェードが終わって DOM を消してから解決する（次の画面が会話の上に出ない・会話の要素が残らない）。220ms 後に DOM から外す
         branches: pres === 'major' && opts.branches ? Object.fromEntries(Object.entries(opts.branches).map(([k, v]) => [k, preferFullbody(v)])) : opts.branches,
       });
       ov.addEventListener('click', (e) => { e.stopPropagation(); c.tap(); });

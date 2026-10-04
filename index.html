@@ -1343,6 +1343,7 @@ button.mkc b{font-size:.9rem}button.mkc small{font-size:.66rem;color:#ffe9b0}
 /* イントロ中は Chapter の UI・ソラモ・マスを出さない（背景と Chapter 名が主役）。終わると .chf-uiin で短くフェードして現れる */
 .chfw.chf-intro #chf-ui,.chfw.chf-intro .chf-mon,.chfw.chf-intro .chf-tile,.chfw.chf-intro .chf-obj{opacity:0!important}
 .chfw.chf-uiin #chf-ui,.chfw.chf-uiin .chf-mon,.chfw.chf-uiin .chf-tile{transition:opacity .3s ease}
+.chfw.chf-monwait .chf-mon{opacity:0!important;transition:none!important} /* 2026-10-04 G3：イントロのあと、モンスターは少し間をおいて画面の下から入る（急にその場に出ない） */
 .chintro-tap{position:absolute;left:0;right:0;bottom:calc(var(--chdeck) + 14px);margin:0;text-align:center;font:600 11px/1 var(--mm-font-body);color:rgba(255,246,216,.8);letter-spacing:.1em;text-shadow:0 1px 2px rgba(0,0,0,.7);pointer-events:none}
 .chf-fina{position:absolute;left:10px;right:10px;bottom:calc(var(--chdeck) + 10px);z-index:9;display:flex;align-items:center;gap:8px;padding:12px 12px 9px;border-radius:10px;border:1px solid rgba(240,232,212,.62);background:linear-gradient(180deg,rgba(16,27,54,.95),rgba(8,15,34,.96));color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.45);animation:chsheet .26s ease-out;pointer-events:auto;cursor:pointer}
 .chf-fina img{position:absolute;left:2px;bottom:calc(100% - 14px);flex:none;width:auto;height:min(22dvh,180px);border:0;border-radius:0;background:none;object-fit:contain;pointer-events:none;-webkit-mask-image:linear-gradient(#000 80%,transparent);mask-image:linear-gradient(#000 80%,transparent)} /* 2026-10-03 品質向上：顔の丸ではなく半身の立ち絵（正式 closeup）を吹き出しの上に */
@@ -2070,6 +2071,31 @@ button.p10karen img{display:block;width:100%;height:auto;margin-top:2px;transfor
 .mmtalk-choice:focus-visible{outline:2px solid #efe6cf;outline-offset:2px}
 @keyframes mmtalkNx{0%,100%{transform:translateY(0);opacity:1}50%{transform:translateY(3px);opacity:.6}}
 @media (prefers-reduced-motion:reduce){.mmtalk,.mmtalk-next{animation:none}}
+/* 2026-10-04 G2：イベントの大型会話窓（施設の初回イベント・街の案内・帰還・到着＝opts.big／Chapter ボードのフィナ＝presentation 'board'）。デザイン参考 B・C の構成：
+   濃紺の大きな窓・金の細い二重の額と角飾り・金の額の名前の札・大きな文字（2〜4行に余裕）・金の送りマーク。立ち絵は正式素材（参考画像の人物は使わない） */
+.mmtalk.mmtalk-big .mmtalk-stage{width:min(100% - 18px,560px)}
+.mmtalk.mmtalk-big .mmtalk-win{min-height:9.4em;padding:32px 22px 30px;border-radius:12px;border:1.5px solid #caa152;background:linear-gradient(rgba(14,24,52,.96),rgba(9,16,38,.97) 65%,rgba(7,12,30,.98));box-shadow:0 0 0 3px rgba(7,12,30,.92),0 0 0 4px rgba(202,161,82,.6),inset 0 0 0 1px rgba(240,214,150,.22),0 16px 30px rgba(0,0,0,.55)}
+.mmtalk.mmtalk-big .mmtalk-win::before,.mmtalk.mmtalk-big .mmtalk-win::after{width:26px;height:26px;border-color:#e2c27a;border-width:2px}
+.mmtalk.mmtalk-big .mmtalk-win::before{top:7px;left:7px;border-width:2px 0 0 2px;border-radius:9px 0 0 0}
+.mmtalk.mmtalk-big .mmtalk-win::after{right:7px;bottom:7px;border-width:0 2px 2px 0;border-radius:0 0 9px 0}
+.mmtalk.mmtalk-big .mmtalk-name{top:-20px;left:18px;padding:6px 26px 7px;border-radius:6px;border:1.5px solid #d8b468;background:linear-gradient(#1c3166,#0c1a3c);color:#fbefcf;font-size:16.5px;letter-spacing:.14em;box-shadow:0 0 0 2px rgba(7,12,30,.9),0 3px 8px rgba(0,0,0,.45)}
+.mmtalk.mmtalk-big .mmtalk-stage[data-side=right] .mmtalk-name{left:auto;right:18px}
+.mmtalk.mmtalk-big .mmtalk-text{min-height:5.6em;font-size:18px;line-height:1.8;letter-spacing:.03em}
+.mmtalk.mmtalk-big .mmtalk-next{right:20px;bottom:12px;color:#e8c77d;font-size:.95rem;text-shadow:0 0 6px rgba(232,199,125,.55)}
+.mmtalk.mmtalk-big .mmtalk-choice{border-color:#caa152}
+/* ボード（Chapter）：窓は下の操作欄（--chdeck）の上に置く＝操作欄は見えるが押せない（html[data-mmev]）。立ち絵は窓と一体（窓の上に半身） */
+.mmtalk.mmtalk-board{background:linear-gradient(rgba(4,10,32,0) 30%,rgba(4,10,32,.5) 80%,rgba(4,10,32,.6))}
+.mmtalk.mmtalk-board .mmtalk-stage{margin-bottom:calc(var(--chdeck,clamp(128px,19.7dvh,172px)) + env(safe-area-inset-bottom,0px) - 6px)}
+.mmtalk.mmtalk-board .mmtalk-fig.closeup{height:min(36vh,330px);height:min(36dvh,330px)}
+.mmtalk.mmtalk-board .mmtalk-text{min-height:4.2em}
+@media (max-height:700px){.mmtalk.mmtalk-big .mmtalk-win{min-height:8em;padding:28px 18px 24px}.mmtalk.mmtalk-big .mmtalk-text{font-size:16.5px;min-height:4.8em}.mmtalk.mmtalk-board .mmtalk-fig.closeup{height:min(30dvh,220px)}.mmtalk.mmtalk-board .mmtalk-text{min-height:3.6em}}
+/* イベントの表示モード（2026-10-04 G2。js/npc/npc.js の evOn／evOff）：会話の間は下の画面を押せない。施設・案内・ボードのイベント（data-mmev="1"）では、下の画面の常設 NPC・吹き出し・会話欄を隠す
+   （同じ人物が2人に見えない・会話のフェードで前の立ち絵と重なって見えない）。終わったら短いフェードで戻す */
+html[data-mmev] #app{pointer-events:none!important}
+html[data-mmev="1"] #app :is(.nst,.fbub,.kbub,.fmdan,.shopnpc,.gssay,.elsay,.vgsay,.p9ced,#p10kbar,.chf-fina,.chf-fina-st,.tlow){opacity:0!important;visibility:hidden!important;animation:none!important;transition:none!important}
+html[data-mmev-back] #app :is(.nst,.fbub,.kbub,.fmdan,.shopnpc,.gssay,.elsay,.vgsay,.p9ced,#p10kbar,.tlow.on){animation:mmevBack .32s ease-out both!important}
+@keyframes mmevBack{from{opacity:0}}
+.gssay .tx .gsk{display:block;margin-top:3px;opacity:.92} /* 特訓開始：汎用の一言の下に、選んだ特訓の一言（2026-10-04 G2） */
 /* ===== ファーム（正式デザイン 2026-09-30。fmScr）：正式背景 FARM_BG・ダン・育成中の個体・情報パネル・4コマンド・進行ボタンを1画面（100dvh）に収める。
    深い濃紺・金の二重線・Shippori Mincho（街と同じ系統）。低い画面（高さ700px以下）はキャラクターと余白を縮め、コマンドは画面外へ出さない ===== */
 .fm,.fm.p9farm{position:relative;box-sizing:border-box;margin:-16px;height:100dvh;min-height:540px;display:flex;flex-direction:column;overflow:hidden;padding:0 12px calc(10px + env(safe-area-inset-bottom,0px));background:#0c1630 var(--fm-bg) 58% 0/cover no-repeat;color:#fff;font-family:var(--mm-font-body)}
@@ -3217,7 +3243,7 @@ const GENSHIN_TALK={
  menu:["準備はいいか。","焦るな。ひとつずつだ。","今のお前たちなら、まだ伸びる。"],
  start:{po:"力だけを追うな。動きを見ろ。",in:"焦るな。よく見て、考えてから動け。",hi:"狙いを定めろ。急ぐ必要はない。",ev:"無理に急ぐ必要はない。動きを見ろ。",de:"今の力を、確かめてこい。"},
  done:["悪くない。その調子だ。","今の感覚を忘れるな。","今日はここまでだ。よくやった。"],
- go:"よし。始めるぞ。焦るな。一つずつ確実に進めろ。",   // 2026-10-04（追加アセット）：特訓開始（表情＝気合を入れる）。ユーザー指定の台本
+ go:"よし。始めるぞ。焦るな。一つずつ確実に進めろ。",   // 2026-10-04（追加アセット）：特訓開始（表情＝気合を入れる）。ユーザー指定の台本。2026-10-04 G2：続けて start[K]（選んだ特訓の一言）を2行目に添える（5種類の個性を残す）
  fin:"よくやった。今の感覚を、忘れないことだ。"};   // 特訓の成功・終了（表情＝認める・満足）
 function gsSay(t,over,ex){return `<div class="gssay${over?" over":""}" data-ex="${ex||"guide"}"><img src="${npcSrc("genshin",ex||"guide","face")||GENSHIN_FACE}" alt=""><div class="tx"><b>ゲンシン</b>${t}</div></div>`}
 const mixc=(c,t,a)=>{const p=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)),x=p(c),y=p(t);return"#"+x.map((v,i)=>Math.round(v+(y[i]-v)*a).toString(16).padStart(2,"0")).join("")};
@@ -3806,7 +3832,7 @@ function trScr(msg,done){const m=S.m,run=MMP7.trainRunOf(S.m);if(!m)return lobby
  const cells=[...Array(MMP7.TRAIN_LEN+1)].map((_,i)=>{const t=i==0?"st":MMP7.trainSquare(i),ic=t=="st"?"🚩":t=="g"?"🏁":t=="s"?P7_SQ_ICON[K]:"・";
   return `<div class="p7c p7-${t} ${i==pos?"cur":""}"><small>${i||"S"}</small><span>${ic}</span>${i==pos?`<div class="p7mon"><div class="mon">${msv(m)}</div></div>`:""}</div>`}).join("");
  const T=MMP12S.training(K); // Phase 12：各特訓場の正式背景をはっきり見せる（ぼかさない）。文字やUIは背景に描かずに重ねる
- $("#app").innerHTML=`<div class="ds p12tr" style="--dc:${T.accent};--ac:${T.accent}"><div class="p12stage" role="img" aria-label="${T.name}" style="background-image:url(${T.image.src});background-position:${T.image.focus}"><div class="dtop"><span></span><div class="dmoney">🎫 特訓チケット ${S.trainTix}</div></div>${done?gsSay(GENSHIN_TALK.fin,1,"approve"):run&&run.pos==0&&!Number.isInteger(run.roll)?gsSay(GENSHIN_TALK.go,1,"fired"):""}<div class="p12plq"><img src="${TABS[2]}" alt=""><div><b>${LAB[K]}特訓</b><small>${T.name}（${T.theme}）・15マス・ゴールで技を覚える</small></div></div></div><div class="dbody"><div class="dcard"><small class="p12lg">${P7_SQ_ICON[K]}=${LAB[K]}＋ライフ　・=何も起きない</small><div class="p7tr">${cells}</div></div><div class="bmsg" id="p7msg">${msg||"サイコロを振って進もう！"}</div>${run?`<div class="bdicewrap"><div class="bdice" id="p7dice"><img class="p12dicon" src="${MMP12D.icon("std")}" alt=""></div><button class="go bdicebtn" id="p7roll" onclick="trRoll()">サイコロを振る</button></div>`:`<button class="go" data-nav="back" onclick="hall('s')">◀ ファームへ戻る</button>`}</div></div>`;try{window.scrollTo(0,0)}catch(e){}
+ $("#app").innerHTML=`<div class="ds p12tr" style="--dc:${T.accent};--ac:${T.accent}"><div class="p12stage" role="img" aria-label="${T.name}" style="background-image:url(${T.image.src});background-position:${T.image.focus}"><div class="dtop"><span></span><div class="dmoney">🎫 特訓チケット ${S.trainTix}</div></div>${done?gsSay(GENSHIN_TALK.fin,1,"approve"):run&&run.pos==0&&!Number.isInteger(run.roll)?gsSay(GENSHIN_TALK.go+(GENSHIN_TALK.start[K]?`<span class="gsk">${GENSHIN_TALK.start[K]}</span>`:""),1,"fired"):""}<div class="p12plq"><img src="${TABS[2]}" alt=""><div><b>${LAB[K]}特訓</b><small>${T.name}（${T.theme}）・15マス・ゴールで技を覚える</small></div></div></div><div class="dbody"><div class="dcard"><small class="p12lg">${P7_SQ_ICON[K]}=${LAB[K]}＋ライフ　・=何も起きない</small><div class="p7tr">${cells}</div></div><div class="bmsg" id="p7msg">${msg||"サイコロを振って進もう！"}</div>${run?`<div class="bdicewrap"><div class="bdice" id="p7dice"><img class="p12dicon" src="${MMP12D.icon("std")}" alt=""></div><button class="go bdicebtn" id="p7roll" onclick="trRoll()">サイコロを振る</button></div>`:`<button class="go" data-nav="back" onclick="hall('s')">◀ ファームへ戻る</button>`}</div></div>`;try{window.scrollTo(0,0)}catch(e){}
  if(run&&Number.isInteger(run.roll)){const b=$("#p7msg");if(b&&!msg)b.textContent=`前回振ったサイコロの出目（${run.roll}）で進みます。`;setTimeout(trRoll,400)}} // 未処理の出目が保存されていたら、その出目で続きから
 let p7Busy=false;
 async function trRoll(){if(p7Busy||!S.m||!MMP7.trainRunOf(S.m))return;p7Busy=true;const btn=$("#p7roll"),dice=$("#p7dice");if(btn)btn.disabled=true;
@@ -3879,7 +3905,7 @@ function p10KarenHint(tip){const t=$("#p10kt"),bar=$("#p10kbar");if(!t||!bar)ret
 /** カレンのボタン（案内欄の顔）：選択中のモンスターについて、案内欄に短く一言（大きな会話は開かない。購入の判定は変えない） */
 function p10KarenTalk(){if(P10_ANIM||$("#p10ov"))return;p10KarenHint(true)}
 const FINA_TALK={
- intro:[{npc:"fina",expression:"smile",anim:"wave",text:"はじめまして。私はフィナです！"},{expression:"normal",text:"これからあなたのモンスター育成をお手伝いしますね。"},{expression:"guide",text:"まずは市場へ行って、一緒に育てるモンスターを迎えてみましょう！"}],
+ intro:[{npc:"fina",expression:"smile",text:"はじめまして。私はフィナです！"},{expression:"normal",text:"これからあなたのモンスター育成をお手伝いしますね。"},{expression:"guide",text:"まずは市場へ行って、一緒に育てるモンスターを迎えてみましょう！"}],
  raiseFirst:[{npc:"fina",expression:"serious",text:"育成を始めると、途中で街には戻れないから気をつけてね。"},{expression:"normal",text:"この子の育成を始める？",choices:[{id:"start",label:"始める"},{id:"cancel",label:"まだやめておく"}]}],
  raiseAgain:[{npc:"fina",expression:"normal",text:"この子の育成を始める？",choices:[{id:"start",label:"始める"},{id:"cancel",label:"まだやめておく"}]}],
  done:[{npc:"fina",expression:"happy",text:"お疲れさまでした！　育成完了です！"},{expression:"smile",text:"ここまで育ててきた時間が、この子の力になっていますね。"},{expression:"guide",text:"育て終わったモンスターは、牧場でいつでも確認できますよ。"}]};
@@ -3889,7 +3915,7 @@ function finaFlags(){if(!S.npcFlags||typeof S.npcFlags!="object"||Array.isArray(
 function npcFlagsFirst(){const f=finaFlags();if(!f.first||typeof f.first!="object"||Array.isArray(f.first))f.first={};return f.first}
 /** 施設の初回訪問の会話。出したら true（先に「表示済み」を保存してから出す＝再読み込みしても二度出ない）。after＝会話のあとの処理 */
 function npcFirst(fac,after){if(window.MM_QA_NO_NPC||!window.MMNPCE||!window.MMNPC)return false;const F=npcFlagsFirst();if(F[fac])return false;const lines=MMNPCE.first(fac);if(!lines)return false;F[fac]=1;if(fac=="market")finaFlags().karenIntro=1;save();
- const o={kind:"npc",presentation:"standard"},pr=fac=="market"?karenSay(lines,o):MMNPC.talk(lines,o);pr.then(()=>{if(after)after()});return true}
+ const o={kind:"npc",presentation:"standard",big:true},pr=fac=="market"?karenSay(lines,o):MMNPC.talk(lines,o);pr.then(()=>{if(after)after()});return true}
 /** 再訪の一言の材料（進行状態）。last＝その施設で直前に出した一言の id（ページの中だけの記憶。セーブには入れない＝保存とメモリの食い違いを作らない） */
 const NPC_LAST={};
 function npcCtx(fac){const m=S.m,f=finaFlags(),box=S.box.length,st=m?MMP7.raiseState(m):"none",can=m&&st=="farm"?MMP8.canDepart(S,m):{ok:false},inv=S.inv||{};
@@ -3907,9 +3933,10 @@ function karenRevisit(){if(window.MM_QA_NO_KAREN)return;if(!window.MMNPCE)return
 function farmReturn(m){if(window.MM_QA_NO_NPC||!window.MMNPCE||!window.MMNPC||!m||!m.raise)return false;const r=m.raise,last=(r.log||[]).slice(-1)[0];if(!last||!last.ch)return false;const seen=Array.isArray(r.evSeen)?r.evSeen:(r.evSeen=[]),key="ret"+last.ch;if(seen.includes(key))return false;
  const k=MMP8.nextChapterKey(m),nextName=k!=null&&k!=MMP8.FINAL&&MMP8.isPlayable(k)?MMP8.chapterName(k):null;
  const ev=MMNPCE.returnEvent(last.ch,{reachedGoal:!!last.reachedGoal,declined:!!last.declined,won:!!(last.tour&&last.tour.won),placed:last.tour?last.tour.place:null,nextName,rumor:!seen.includes("rumor")});if(!ev)return false;
- seen.push(key);if(ev.rumor)seen.push("rumor");save();MMNPC.talk(ev.lines,{kind:"event",presentation:"major"});return true}
+ seen.push(key);if(ev.rumor)seen.push("rumor");save();MMNPC.talk(ev.lines,{kind:"event",presentation:"major",big:true});return true}
 const FINA_PRES={raiseAgain:"compact",done:"major"}; // 会話の見せ方（短い確認は小さな窓・育成完了は重要イベント。ほかは通常）
-function finaTalk(key,branches){return window.MMNPC&&FINA_TALK[key]?MMNPC.talk(FINA_TALK[key],{kind:"fina",presentation:FINA_PRES[key]||"standard",...(branches?{branches}:{})}):Promise.resolve(null)} // branches：選択肢ごとの続きの行（同じ会話ウィンドウで続ける）。選んだ id で解決
+function finaTalk(key,branches){return window.MMNPC&&FINA_TALK[key]?MMNPC.talk(FINA_TALK[key],{kind:"fina",presentation:FINA_PRES[key]||"standard",big:FINA_BIG.has(key),...(branches?{branches}:{})}):Promise.resolve(null)}
+const FINA_BIG=new Set(["intro","done"]); // 2026-10-04 G2：大型の会話窓（街の案内・育成完了＝イベント） // branches：選択肢ごとの続きの行（同じ会話ウィンドウで続ける）。選んだ id で解決
 /** 名前登録の直後に1度だけ：先に「表示済み」を保存してから会話を出す（再読込しても二度出ない） */
 function finaIntro(){const f=finaFlags();if(f.finaIntro)return;f.finaIntro=1;save();finaTalk("intro")}
 function p7Depart(b){const m=S.m;if(!m)return lobby();

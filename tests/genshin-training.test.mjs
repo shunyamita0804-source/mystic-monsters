@@ -56,7 +56,7 @@ test('GEN-4：表示場所は特訓メニューと特訓ボード（開始・ゴ
   const menu = HTML.slice(HTML.indexOf('function p7TrainMenu('), HTML.indexOf('\nfunction trStart('));
   assert.ok(menu.includes(' let h=gsSay(gsl,0,S.trainTix>0&&ch1&&atFarm?"guide":"strict")+`<div class="dnote">特訓は15マスの一本道。'), '2026-10-04：メニューは指導（チケットが無い・まだ挑めないときは厳しい表情で「焦るな」）'); assert.ok(menu.includes('npcFirst("train")'), '特訓の初回（フィナ ↔ ゲンシン）');
   const tr = HTML.slice(HTML.indexOf('function trScr(msg,done){'), HTML.indexOf('\nlet p7Busy=false;'));
-  assert.ok(tr.includes('${done?gsSay(GENSHIN_TALK.fin,1,"approve"):run&&run.pos==0&&!Number.isInteger(run.roll)?gsSay(GENSHIN_TALK.go,1,"fired"):""}<div class="p12plq">'), '特訓場の背景の上（ボードの位置は動かさない）。2026-10-04：開始＝気合（「よし。始めるぞ。…」）・終了＝認める（「よくやった。…」）');
+  assert.ok(tr.includes('${done?gsSay(GENSHIN_TALK.fin,1,"approve"):run&&run.pos==0&&!Number.isInteger(run.roll)?gsSay(GENSHIN_TALK.go+(GENSHIN_TALK.start[K]?`<span class="gsk">${GENSHIN_TALK.start[K]}</span>`:""),1,"fired"):""}<div class="p12plq">'), '特訓場の背景の上（ボードの位置は動かさない）。2026-10-04：開始＝気合（「よし。始めるぞ。…」）＋ 2026-10-04 G2：選んだ特訓の一言（start[K]）・終了＝認める（「よくやった。…」）');
   assert.ok(tr.includes('<div class="bmsg" id="p7msg">${msg||"サイコロを振って進もう！"}</div>'), 'システム表示の欄はそのまま');
   assert.equal(lineOf('function trStart('), 'function trStart(k){const r=MMP7.startTraining(S,S.m,k);if(!r.ok)return hall("s","特訓を始められません。"+(P7_WHY[r.reason]||""));save();trScr(`${LAB[k]}特訓スタート！（特訓チケットを1枚使った）サイコロを振って進もう。`)}');
   const roll = HTML.slice(HTML.indexOf('async function trRoll('), HTML.indexOf('\n// ---- 出発準備'));

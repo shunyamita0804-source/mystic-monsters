@@ -110,13 +110,13 @@ test('GF-05：Game Feel：出来事の重さ（LEVEL 0〜5）ごとに間と余�
 
 test('GF-06：会話の見せ方の分類：MMNPC.talk の presentation（compact／standard／major）と kind。短い一言は小さな窓（背景を隠さない）。フィナの話は kind:fina、カレンは kind:npc、到着は重要イベント', () => {
   const NPC = rd('js/npc/npc.js');
-  assert.match(NPC, /const pres = \['compact', 'major'\]\.includes\(opts\.presentation\) \? opts\.presentation : 'standard';/);
+  assert.match(NPC, /const pres = \['compact', 'major', 'board'\]\.includes\(opts\.presentation\) \? opts\.presentation : 'standard';/);
   assert.match(NPC, /ov\.dataset\.pres = pres; if \(opts\.kind\) ov\.dataset\.kind = String\(opts\.kind\);/);
   assert.match(HTML, /\.mmtalk\.mmtalk-compact\{background:linear-gradient\(rgba\(4,10,32,0\) 60%/, 'compact は暗幕をほぼ掛けない');
   assert.match(HTML, /\.mmtalk\.mmtalk-compact \.mmtalk-fig\.closeup\{height:min\(26vh,210px\)\}/);
   assert.match(HTML, /karenSay\(\[\{npc:"karen",expression:"smile",text:KAREN_AGAIN\[[^\]]*\]\}\],\{presentation:"compact"\}\)/, '2回目以降のカレンの一言は小さな窓');
   assert.match(HTML, /const FINA_PRES=\{raiseAgain:"compact",done:"major"\};/);
-  assert.match(rd('js/chapter/field-view.js'), /if \(root\.MMNPC && !root\.MM_QA_NO_ARRIVAL && \(A\.talk \|\| \[\]\)\.length\) await MMNPC\.talk\(arrivalLines\(A\), \{ kind: 'event', presentation: 'major' \}\)/);
+  assert.match(rd('js/chapter/field-view.js'), /if \(root\.MMNPC && !root\.MM_QA_NO_ARRIVAL && \(A\.talk \|\| \[\]\)\.length\) await MMNPC\.talk\(arrivalLines\(A\), \{ kind: 'event', presentation: 'major', big: true \}\)/);
 });
 
 test('GF-07：フィナ／ダン／システム通知の役割：ダンはファームで送り出す側（Chapter に同行しない）。処理結果（「育成を放棄しました」など）は顔・名前の無いシステム通知（モンスターが話しているように見せない）', () => {

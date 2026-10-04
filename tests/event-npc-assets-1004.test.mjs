@@ -147,7 +147,7 @@ test('AS-06：表情の切り替えはデータ：旧い表情名は新しい4�
   assert.ok(NE.first('arena').some((l) => l.npc === 'vargas' && l.expression === 'grin'), 'ヴァルガス：挑戦の受付＝02 grin');
   assert.ok(/p9Ced\(CEDRIC_TALK\.vs,"kickoff"\)/.test(HTML), 'セドリック：試合開始＝02 kickoff');
   assert.ok(/rs\.won\?"victory":"host"/.test(HTML), 'セドリック：勝者発表＝04 victory');
-  assert.ok(/gsSay\(GENSHIN_TALK\.go,1,"fired"\)/.test(HTML), 'ゲンシン：特訓開始＝02'); assert.ok(/gsSay\(GENSHIN_TALK\.fin,1,"approve"\)/.test(HTML), 'ゲンシン：終わり＝04');
+  assert.ok(/gsSay\(GENSHIN_TALK\.go\+\(GENSHIN_TALK\.start\[K\]\?`<span class="gsk">\$\{GENSHIN_TALK\.start\[K\]\}<\/span>`:""\),1,"fired"\)/.test(HTML), 'ゲンシン：特訓開始＝02'); assert.ok(/gsSay\(GENSHIN_TALK\.fin,1,"approve"\)/.test(HTML), 'ゲンシン：終わり＝04');
   assert.ok(HTML.includes('go:"よし。始めるぞ。焦るな。一つずつ確実に進めろ。"'), 'ゲンシンの開始の台本'); assert.ok(HTML.includes('fin:"よくやった。今の感覚を、忘れないことだ。"'), 'ゲンシンの終わりの台本');
   assert.equal(NE.REVISIT.shop.buy.expression, 'recommend', 'アイテム屋：購入＝04'); assert.equal(src('shop', 'recommend', 'fullbody'), 'assets/npc/shop/expr/full/04_recommend.webp');
   // 旧い表情名 → 新しい4種（無い表情は基本の表情。勝手に別の絵を参照しない）

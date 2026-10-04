@@ -80,3 +80,44 @@ for (const size of SIZES) {
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   });
 }
+
+/** 画面に見えている常設 NPC（下の画面＝#app の中の立ち絵・吹き出し）の数 */
+const visibleStands = (pg) => pg.evaluate(() => [...document.querySelectorAll('#app :is(.nst,.fmdan,.shopnpc,.fbub,.kbub,.gssay,.vgsay,.elsay)')]
+  .filter((e) => { const c = getComputedStyle(e); const r = e.getBoundingClientRect(); return c.visibility !== 'hidden' && +c.opacity > 0.05 && r.width > 0 && r.height > 0; }).length);
+
+for (const size of SIZES) {
+  T(`G-D（${size.join('×')}）：街の案内の間は、通常の街のフィナ（立ち絵の案内窓）を出さない。フィナは手を振り続けない（アニメなし）。終わったら通常の案内へ戻る`, async () => {
+    const p = await openPage({ size }); const pg = p.page;
+    await pg.click('.p15start'); await pg.waitForSelector('#p11nm'); await pg.fill('#p11nm', 'テスト'); await pg.click('[onclick*="p11NameGo"]');
+    await pg.waitForSelector('.mmtalk:not(.mmtalk-out)');
+    for (let i = 0; i < 6; i++) {
+      await pg.waitForTimeout(150);
+      assert.equal(await visibleStands(pg), 0, '会話の間、下の街のフィナは見えない（フィナは1人）');
+      const s = await pg.evaluate(() => ({ anim: MMNPC.animState().running, big: !!document.querySelector('.mmtalk.mmtalk-big'), ev: document.documentElement.dataset.mmev }));
+      assert.deepEqual(s, { anim: false, big: true, ev: '1' }, '手を振るアニメのループは無い・大型の会話窓・イベントの表示モード');
+    }
+    await H.finishTalk(pg); await pg.waitForTimeout(600);
+    assert.equal(await pg.evaluate(() => document.documentElement.dataset.mmev || null), null, 'イベントの表示モードは終わる');
+    assert.equal(await visibleStands(pg), 1, '会話のあと通常の街のフィナ（案内窓）が戻る');
+    assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+  });
+
+  T(`G-E・G-F（${size.join('×')}）：施設の初回イベント（牧場・研究所）の間は常設 NPC を隠し、下の画面を押せない。終わったら常設 NPC が戻る`, async () => {
+    const save = { v: 6, y: 1000, mo: 4, wk: 1, g: 900, box: [], m: null, playerName: 'テスト', npcFlags: { finaIntro: 1, prologue: 1, karenIntro: 1 } };
+    const p = await openPage({ size, npc: true, save }); const pg = p.page;
+    await pg.evaluate(() => p8Resume()); await pg.waitForSelector('.map.town');
+    for (const [go, sel] of [['farm()', '.rnnick'], ['museum()', '.labnpc']]) {
+      await pg.evaluate((g) => eval(g), go);
+      await pg.waitForSelector('.mmtalk:not(.mmtalk-out)', { timeout: 10000 });
+      await pg.waitForTimeout(500);
+      assert.equal(await visibleStands(pg), 0, `${go}：会話の間、常設の NPC・吹き出しは見えない`);
+      const pe = await pg.evaluate(() => getComputedStyle(document.querySelector('#app')).pointerEvents);
+      assert.equal(pe, 'none', '下の画面は押せない');
+      await H.finishTalk(pg); await pg.waitForTimeout(600);
+      assert.ok(await pg.evaluate((s) => { const e = document.querySelector('#app ' + s); return !!e && getComputedStyle(e).visibility !== 'hidden' && +getComputedStyle(e).opacity > 0.9; }, sel), `${go}：会話のあと常設の NPC が戻る`);
+      assert.equal(await pg.evaluate(() => getComputedStyle(document.querySelector('#app')).pointerEvents), 'auto', '下の画面はまた押せる');
+      await pg.evaluate(() => lobby()); await pg.waitForSelector('.map.town');
+    }
+    assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+  });
+}
