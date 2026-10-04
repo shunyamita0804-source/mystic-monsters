@@ -55,7 +55,7 @@ test('VAR-4：闘技場はロック表示のまま。押すと案内文（シス
   const vg = lineOf('function vgSay(');
   assert.doesNotThrow(() => new Function(vg), 'vgSay は構文として正しい');
   assert.ok(vg.endsWith('</div>`)(npcLineX("arena",VARGAS_TALK.locked,"normal"))}</div>`);try{document.getElementById("vgsay").scrollIntoView({block:"nearest"})}catch(e){}}'), '出したら画面内へ（小さい画面で案内欄の下に隠れないように）');
-  assert.ok(vg.includes('<div class="vgsay nst" id="vgsay" onclick="townMsgClose(this)">${(l=>`<img class="nstf" src="${npcSrc("vargas",l.expression)}" alt="" decoding="async"><div class="tx"><b>ヴァルガス</b>${l.text}</div>`)(npcLineX("arena",VARGAS_TALK.locked,"normal"))}</div>'), '2026-10-03：半身の立ち絵と会話窓。2026-10-04：一言と表情（威厳・不敵な笑み・厳しい・認める）は MMNPCE の再訪');
+  assert.ok(vg.includes('<div class="vgsay nst" id="vgsay" onclick="townMsgClose(this)">${(l=>`<img class="nstf" ${npcStand("vargas",l.expression)} alt="" decoding="async"><div class="tx"><b>ヴァルガス</b>${l.text}</div>`)(npcLineX("arena",VARGAS_TALK.locked,"normal"))}</div>'), '2026-10-03：半身の立ち絵と会話窓。2026-10-04：一言と表情（威厳・不敵な笑み・厳しい・認める）は MMNPCE の再訪');
   assert.ok(vg.includes('const o=document.getElementById("vgsay");if(o)o.remove();'), '押すたびに増えない');
   assert.doesNotMatch(vg, /save\(|lobby\(|fight\(|MMP8\.|S\./, '画面遷移・セーブ・バトル・状態の変更をしない');
   assert.equal((HTML.match(/vgSay\(/g) || []).length, 2, '定義＋闘技場のボタンの1か所だけ');

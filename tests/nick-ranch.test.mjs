@@ -42,7 +42,7 @@ test('NICK-3：牧場の吹き出し：通知（msg）は名前・顔なし。�
   assert.match(lineOf('const NICK_FACE='), /^const NICK_FACE="assets\/npc\/nick\/face\.webp";/);
   const f = farmSrc();
   assert.ok(f.includes('${msg?`<div class="fbub sys">${msg}</div>`:""}'), '通知は名前・顔なし');
-  assert.ok(f.includes('<div class="rnnick nst r">${(l=>`<img class="nstf" src="${npcSrc("nick",ft=="d"?"serious":ft=="e"&&rnView&&rnFeat&&MMP7.raiseState(rnFeat)=="done"?"impressed":ft=="e"?"gentle":(l?l.expression:"normal"))}" alt="" decoding="async">${l?`<div class="tx fnick"><b>ニック</b>${l.text}</div>`:""}`)(msg?null:npcLineX("ranch",NICK_TALK.ranch,"normal"))}</div>'), '2026-10-03：ニックは半身の立ち絵＋会話窓。通知のときは立ち絵だけ。2026-10-04：表情＝売る（真剣）・様子を見る（優しい笑顔）・育成完了の子の詳細（感心）・ふだんは一言の表情');
+  assert.ok(f.includes('<div class="rnnick nst r">${(l=>`<img class="nstf" ${npcStand("nick",ft=="d"?"serious":ft=="e"&&rnView&&rnFeat&&MMP7.raiseState(rnFeat)=="done"?"impressed":ft=="e"?"gentle":(l?l.expression:"normal"))} alt="" decoding="async">${l?`<div class="tx fnick"><b>ニック</b>${l.text}</div>`:""}`)(msg?null:npcLineX("ranch",NICK_TALK.ranch,"normal"))}</div>'), '2026-10-03：ニックは半身の立ち絵＋会話窓。通知のときは立ち絵だけ。2026-10-04：表情＝売る（真剣）・様子を見る（優しい笑顔）・育成完了の子の詳細（感心）・ふだんは一言の表情');
   assert.doesNotMatch(f, /NP\.f|<b>ダン<\/b>/, '牧場に旧「ダン」を出さない');
   assert.doesNotMatch(HTML, /\.fbub::after|\.fbub\.fnick::after/, '吹き出しのしっぽ（背景の絵の人物を指す）は無い');
   assert.match(HTML, /\.fbub\{position:absolute;left:3%;top:3%;width:52%;/, '正式背景では左上の空に出す（牧舎を隠さない。旧い吹き出しを隠す位置・最小の高さは不要になった）');

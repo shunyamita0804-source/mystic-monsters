@@ -71,7 +71,7 @@ test('DP-03：アイテム屋：正式背景（ぼかさない）と正式NPC �
   assert.match(shop, /MMP7\.getShopCatalog\(\)/); assert.match(shop, /p7Buy\('\$\{id\}'\)/); assert.match(shop, /p7Sell\(\$\{i\}\)/);
   assert.match(shop, /,msg,null,shopLook\(sex\)\);/, '2026-10-04（追加アセット）：おばあちゃんの表情（全身 4表情）');
   const look = HTML.slice(HTML.indexOf('const SHOP_LOOK='), HTML.indexOf('function shopScr('));
-  assert.doesNotMatch(look, /MMNPC|name/, 'NPC の固有名は出さない'); assert.match(look, /<b>アイテム屋<\/b>/, '札は役割の名前「アイテム屋」だけ'); assert.doesNotMatch(rd('js/npc/npc.js'), /shop: \['(?!アイテム屋)[^']+', 'アイテム屋/, '名前を付けない');
+  assert.doesNotMatch(look, /MMNPC|name/, 'NPC の固有名は出さない'); assert.match(look, /<b>ベルナ<\/b>/, '2026-10-04 PHASE H：正式の名前「ベルナ」（ZIP mystic-monsters_npc_official_standing の README で確定）'); assert.match(rd('js/npc/npc.js'), /shop: \['ベルナ', /, '名前はベルナ');
   assert.match(HTML, /\.ds\.shop>\.shopbg\{[^}]*background-size:cover/);
 });
 

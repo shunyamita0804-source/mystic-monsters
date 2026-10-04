@@ -154,11 +154,11 @@ const SEL = {
   ranch: ['button.back', '.ftile', '.fsell', '.wpanel button'],
   museum: ['.dtop .dback', '.lbc'],
   save: ['button.back', '.card.slot button', 'button.ghost'],
-  hall: ['button.back', '.fmb', '[onclick="prepScr()"]'],   // ファーム（育成開始前）：街へ戻る・4コマンド・進行ボタン「育成を始める」
+  hall: ['button.back', '.fmb', '[onclick="prepScr()"]'],   // 2026-10-04 PHASE H2：ベースキャンプ（下の1列の「街へ戻る」は button.back・「冒険」は prepScr）   // ファーム（育成開始前）：街へ戻る・4コマンド・進行ボタン「育成を始める」
   prep: ['.ppback', '[onclick*="p7Depart"]'],   // 2026-10-04（PHASE C）：新しい出発準備＝「◀ 拠点」(.ppback)・「出発する」
   board: ['.p9mbtn', '#brollbtn'],
   goal: ['#chrcv .rcv-row.ok', '.rcv-join', '.rcv-dec'],   // 2026-10-02：Chapter 1 のゴールは大会会場への到着 → 大会受付（p9ReceptionHtml）
-  farmInterval: ['.fmb', '.fmgo', '.fmrd', '.fmab'],   // Chapter間ファーム：4コマンド・進行ボタン・中断・育成放棄
+  farmInterval: ['.fmb', '.fmgo', '.bcb[onclick="p8Suspend()"]', '.bcrb[onclick="bcMenu()"]'],   // 2026-10-04 PHASE H2：ベースキャンプ：下の1列・冒険・中断・メニュー（育成放棄はメニューの中）   // Chapter間ファーム：4コマンド・進行ボタン・中断・育成放棄
   trainMenu: ['.dback', '.p12tc:not([disabled])'],
   trainBoard: ['#p7roll'],
 };

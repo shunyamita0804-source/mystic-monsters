@@ -35,7 +35,7 @@ test('QU-02：街は正式ミストリア。施設は背景の上の押せる札
   assert.match(HTML, /function townGuild\(\)\{townLock\("聖獣士管理局は、まだ利用できません。"\)\}/);
   assert.doesNotMatch(HTML, /function townShop\(|SHOP_FROM=/, '街の独立したアイテム屋は無い');
   assert.doesNotMatch(rd('js/feel/game-feel.js'), /townShop/);
-  assert.match(fnOf('fmScr'), /\["shopScr\(\)","item","アイテム","item"\]/, 'アイテム屋はファームの屋台（FM_SPOT.item）から');
+  assert.match(fnOf('fmScr'), /\["shopScr\(\)","item","アイテム",""\]/, 'アイテムはベースキャンプの中（ベルナの補給所）から。2026-10-04 PHASE H2：下の1列のコマンド');
 });
 
 test('QU-03：立ち絵つきの一言（.nst）＝正式の半身（closeup）を大きく＋ネイビーの会話窓。街のフィナ（guide）・ヴァルガス（stern）・牧場のニック（smile）・研究所のエリオット（guide）。重要な会話（major）は同じ表情の全身（2026-10-03 の正式素材）', () => {

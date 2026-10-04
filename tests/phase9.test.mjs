@@ -316,31 +316,29 @@ test('T4-1：ファームは正式デザインの1画面（育成開始前・Cha
   assert.match(fnLine('function p9FarmScr('), /^function p9FarmScr\(msg\)\{return fmScr\(msg\)\}/, 'Chapter間ファームの関数名は互換のため残し、正式デザインの画面へ');
 });
 
-test('T4-2：ファームのコマンド：主要4つ（特訓・ステータス・技管理・アイテム）と最下部の進行ボタン1つ。「ボード」コマンドは無い（Chapterへの進行は進行ボタン）。遷移先は従来の関数', () => {
+test('T4-2：ベースキャンプ（旧ファーム。2026-10-04 PHASE H2）のコマンド：下の1列5つ（特訓・アイテム・ステータス・技管理・街へ戻る／育成中は中断）と、独立した「冒険」ボタン1つ。「ボード」コマンドは無い。遷移先は従来の関数', () => {
   const f = between('function fmScr(msg){', '\n// ---- Phase 8：育成中の画面遷移');
-  assert.match(f, /const cmd=\[\["hall\('s'\)","train","特訓","train"\],\["hall\('st'\)","status","ステータス","status"\],\["hall\('w'\)","moves","技管理","moves"\],\["shopScr\(\)","item","アイテム","item"\]\];/);
-  // 2026-10-03：4コマンドは背景の絵の光る目印の上（訓練場＝特訓・牛舎＝ステータス・石柱＝技管理・屋台＝アイテム）。進行ボタンは上の門
-  assert.match(HTML, /const FM_SPOT=\{train:\[17\.9,43\.6\],item:\[71\.2,38\.9\],status:\[74\.7,72\.6\],moves:\[20\.6,78\.8\]\};/); assert.match(f, /<div class="fmgate"><button class="fmgo\$\{go\.c\}" onclick="\$\{go\.on\}">/);
-  assert.doesNotMatch(f, /"ボード"|ボード閲覧/, 'ボードのコマンドは置かない');
-  // 進行ボタン（1つ）：開始前＝育成を始める／Chapter間＝Chapter Nへ進む（どちらも従来の出発準備 prepScr。出発の確認＝フィナの選択肢はそこから）／完了＝街へ戻る
-  assert.match(f, /const go=st=="none"\?\{t:"育成を始める",s:`\$\{chNm\(k\)\}「\$\{chSub\(k\)\}」へ出発`,on:"prepScr\(\)",c:""\}/);
-  assert.match(f, /:done\?\{t:"街へ戻る",s:"",on:"lobby\(\)",c:" back"\}/);
-  assert.match(f, /:fin&&!MMP8\.isPlayable\(MMP8\.FINAL\)\?\{t:"育成を完了して街へ戻る",s:"最終ルートは準備中",on:"pfixFinishNoFinal\(this\)",c:""\}/, '最終ルートが未登録：従来どおりファームから育成完了（2度押し）');
-  assert.match(f, /:\{t:fin\?"最終ルートへ進む":`\$\{chNm\(k\)\}へ進む`,[\s\S]*?on:"prepScr\(\)",c:" p9c-go"\};/);
-  // 丸ボタン：開始前＝街へ戻る／Chapter間（育成中）＝中断（街へ戻るは出さない）。育成放棄は Chapter間だけ（2段階確認＋3秒は p8AbandonAsk のまま）
-  assert.match(f, /const side=st=="none"\?`<button class="back fmrd" onclick="lobby\(\)">\$\{fmIc\("town"\)\}<span>街へ戻る<\/span><\/button>`\n  :st=="farm"\?`<button class="fmrd" onclick="p8Suspend\(\)">\$\{fmIc\("pause"\)\}<span>中断<\/span><\/button>`:"";/);
-  assert.match(f, /\$\{st=="farm"\?`<button class="fmab p8danger" onclick="p8AbandonAsk\(\)">育成放棄<\/button>`:""\}/);
+  // 書き直しの理由：PHASE H2 でファームを正式デザイン（03_base_camp_ui_reference）のベースキャンプへ。4コマンド（背景の目印の上）と「育成を始める」は廃止＝下の1列5つ＋「冒険」
+  assert.match(f, /const cmd=\[\["hall\('s'\)","train","特訓",`<em class="bctix"[^`]*\$\{S\.trainTix\}[^`]*`\],\["shopScr\(\)","item","アイテム",""\],\["hall\('st'\)","status","ステータス",""\],\["hall\('w'\)","moves","技管理",""\],\n  st=="farm"\?\["p8Suspend\(\)","pause","中断",""\]:\["lobby\(\)","town","街へ戻る",""\]\];/, '下の5つ。育成中（Chapter間）は街へ戻れない（正式仕様）＝5つ目は中断');
+  assert.match(f, /<nav class="bcbar fmcmd" aria-label="コマンド">/); assert.match(f, /<div class="bcgo fmgate"><div class="bcch">\$\{chip\}<\/div><button class="fmgo\$\{go\.c\}" onclick="\$\{go\.on\}">/);
+  assert.doesNotMatch(f, /"ボード"|ボード閲覧|育成を始める|育成準備中|ファーム/, 'ボードのコマンド・「育成を始める」・「育成準備中」・ファームの名前は出さない');
+  assert.match(f, /:\{t:"冒険",on:"prepScr\(\)",c:st=="farm"\?" p9c-go":""\};/, '冒険＝従来の出発準備 prepScr（出発の確認＝フィナの選択肢はそこから）');
+  assert.match(f, /const go=done\?\{t:"街へ戻る",on:"lobby\(\)",c:" back"\}/);
+  assert.match(f, /:fin&&!MMP8\.isPlayable\(MMP8\.FINAL\)\?\{t:"育成を完了して街へ戻る",s:"最終ルートは準備中",on:"pfixFinishNoFinal\(this\)",c:" bcfin"\}/, '最終ルートが未登録：従来どおりここから育成完了（2度押し）');
+  assert.match(f, /const chip=done\?`<small>育成完了<\/small>[^;]*:`<small>\$\{chNm\(k\)\}<\/small><b>\$\{chSub\(k\)\}<\/b>`;/, '「冒険」の上に次の Chapter の番号と名前');
+  // 上：名札・所持金・メニュー・音。育成放棄はメニューの中（2段階確認＋3秒は p8AbandonAsk のまま）
+  assert.match(f, /<b>ベースキャンプ<\/b>/); assert.match(f, /<span class="bcgold"><i aria-hidden="true"><\/i><b>\$\{S\.g\}<\/b> G<\/span><button class="bcrb" onclick="bcMenu\(\)"/); assert.match(f, /onclick="sndToggle\(\);/);
+  const menu = between('function bcMenu(){', '\nfunction fmScr(msg){');
+  assert.match(menu, /st=="farm"\?`<button class="fmab p8danger" onclick="p9MenuClose\(\);p8AbandonAsk\(\)">育成放棄<\/button>`:""/);
   assert.doesNotMatch(f, /ファームメニュー|market\(|museum\(|farm\(\)/);
 });
-
-test('T4-3：正式背景・ダン（正式アップ画像）が寄り添い、育成中の個体（正式画像）が主役。情報パネルは名前・種族／大会ランク・特訓チケット／育成状態・Chapter だけ（所持金・6能力は出さない）', () => {
+test('T4-3：ベースキャンプの中央：正式背景（UI・NPC なし）・ダン（正式素材の立ち絵）と育成中の個体（正式画像・名前と種族の小さな札）とダンの一言。大会ランク・6能力・「育成準備中」の大きな情報欄は出さない', () => {
   const f = between('function fmScr(msg){', '\n// ---- Phase 8：育成中の画面遷移');
-  assert.match(HTML, /const FARM_BG="assets\/farm\/farm_prep_main\.jpg";/); assert.ok(existsSync(path.join(ROOT, 'assets/farm/farm_prep_main.jpg')));   // 2026-10-03：冒険準備の拠点（正式参照画像）
-  assert.match(HTML, /const DAN_FIG="assets\/npc\/dan\/closeup\/smile\.webp";/); assert.ok(existsSync(path.join(ROOT, 'assets/npc/dan/closeup/smile.webp')));
-  assert.match(f, /<img class="fmdan" src="\$\{npcSrc\("dan",danEx\(m,st,can\)\)\|\|DAN_FIG\}" alt="" aria-hidden="true" data-ex="\$\{danEx\(m,st,can\)\}"><div class="fmmon mon">\$\{msv\(m\)\}<\/div>/, '育成中の個体は msv（正式画像）で表示。種族は固定しない。2026-10-04：ダンは状態に合う表情（通常・注意・成長を認める）');
-  for (const w of ['${p11Esc(m.name)}', '${sp?sp.kind:""}', '<dt>大会ランク</dt><dd>${MMP8.rankLabel(m)}</dd>', '<dt>特訓チケット</dt><dd>${S.trainTix}枚</dd>', '<span class="fmbadge">${state}</span>']) assert.ok(f.includes(w), w);
-  assert.match(f, /const state=st=="none"\?"育成準備中":done\?"育成完了":fin\?"最終ルート前":`Chapter \$\{last\?last\.ch:Math\.max\(1,k-1\)\} 終了`;/, '育成状態はセーブから判断（新しいデータは持たない）');
-  assert.doesNotMatch(f, /S\.g\b|🪙|KS\.map/, 'ファームに所持金・6能力を常時表示しない');
+  assert.match(HTML, /const BC_BG="assets\/basecamp\/basecamp_main\.webp";/); assert.ok(existsSync(path.join(ROOT, 'assets/basecamp/basecamp_main.webp')));
+  assert.match(HTML, /const FARM_BG="assets\/farm\/farm_prep_main\.jpg";/, 'ファームの各画面のぼかし背景は従来どおり');
+  assert.match(f, /const ex=danEx\(m,st,can\),dan=\(window\.MMNPC&&MMNPC\.standOf&&MMNPC\.standOf\("dan","closeup",ex\)\)\|\|npcSrc\("dan",ex\)\|\|DAN_FIG;/, 'ダンは状態に合う表情（通常・注意・成長を認める）の立ち絵（規格 stand）');
+  assert.match(f, /<img class="fmdan bcnpc" data-npc="dan" src="\$\{dan\}"/); assert.match(f, /<div class="fmmon mon">\$\{msv\(m\)\}<\/div><div class="bcname"><b>\$\{p11Esc\(m\.name\)\}<\/b>\$\{sp\?`<small>\$\{sp\.kind\}<\/small>`:""\}<\/div>/, '育成中の個体は msv（正式画像）。種族は固定しない');
+  assert.doesNotMatch(f, /大会ランク|rankLabel|KS\.map|fmbot|fminfo/, '大会ランク・6能力・旧情報欄は出さない');
   assert.match(HTML, /\.fm,\.fm\.p9farm\{[^}]*height:100dvh;[^}]*display:flex;flex-direction:column;overflow:hidden;/, '1画面（100dvh）に収める');
 });
 

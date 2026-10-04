@@ -19,7 +19,7 @@ const HTML = readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const line = (p) => HTML.split('\n').find((l) => l.startsWith(p));
 // 2026-10-03 品質向上：施設（市場・牧場・研究所・闘技場・聖獣士管理局）は街の背景の上の札（押せる）、下のバーはファーム・プロフィール・セーブ・ロード。
 //  2026-10-04：アイテム屋は街の施設ではない（正式）＝ファームの屋台から。街の札から外した
-const LABELS = ['市場', '牧場', '研究所', '闘技場', '聖獣士管理局', 'ファーム', 'プロフィール', 'セーブ・ロード'];
+const LABELS = ['市場', '牧場', '研究所', '闘技場', '聖獣士管理局', 'ベースキャンプ', 'プロフィール', 'セーブ・ロード'];
 const CALLS = ['market()', 'farm()', 'museum()', 'townArena()', 'townGuild()', 'hall()', 'profileScr()', 'savescr()'];
 const PINS = 5;
 
@@ -100,7 +100,7 @@ test('TW-B1：新規開始後の街：正式ミストリアの背景を読み込
   const p = await L.open(); const pg = p.page;
   await town(p);
   assert.deepEqual((await cmds(pg)).map((c) => [c.label, c.call, c.disabled, c.lock]),
-    [['市場', 'market()', false, false], ['牧場', 'farm()', false, false], ['研究所', 'museum()', false, false], ['闘技場', 'townArena()', false, true], ['聖獣士管理局', 'townGuild()', false, true], ['ファーム', 'hall()', true, false], ['プロフィール', 'profileScr()', false, false], ['セーブロード', 'savescr()', false, false]]);
+    [['市場', 'market()', false, false], ['牧場', 'farm()', false, false], ['研究所', 'museum()', false, false], ['闘技場', 'townArena()', false, true], ['聖獣士管理局', 'townGuild()', false, true], ['ベースキャンプ', 'hall()', true, false], ['プロフィール', 'profileScr()', false, false], ['セーブロード', 'savescr()', false, false]]);
   assert.equal(await pg.evaluate(() => document.querySelectorAll('.tttl, .tpinfo, .tplate, .tlbl').length), 0, '上部の「街」の札・プレイヤー情報・押せない建物ラベルは無い');
   const bg = await pg.evaluate(() => getComputedStyle(document.querySelector('.map.town .tbg')).backgroundImage);
   assert.match(bg, /assets\/town\/mistria_main\.webp/);

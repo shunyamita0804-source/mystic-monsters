@@ -25,7 +25,7 @@ const webp = (p) => { const b = readFileSync(path.join(ROOT, p)); const v = b.re
 
 test('DAN-1：ダンはファーム担当として、アップ画像（closeup）の6表情で登録。Chapterボードには置かない', () => {
   const M = loadNpc(), d = M.get('dan');
-  assert.deepEqual([d.name, d.role, d.board, d.defaultView, d.defaultExpr], ['ダン', 'ファーム担当', false, 'closeup', 'normal']);
+  assert.deepEqual([d.name, d.role, d.board, d.defaultView, d.defaultExpr], ['ダン', 'ベースキャンプ担当', false, 'closeup', 'normal'] /* 2026-10-04 PHASE H2：ファーム → ベースキャンプ（ユーザー向けの名前） */);
   assert.ok(EXPR.every((e) => M.expressionsOf('dan', 'closeup').includes(e)), '2026-10-04（追加アセット）：旧い表情名はすべて引き続き使える（意味の近い正式の表情差分 assets/npc/<id>/expr/ へ読み替え）'); assert.ok(M.EXPR.dan.every((e) => M.expressionsOf('dan', 'closeup').includes(e)), '正式の4表情');
   assert.equal(M.imageOf('dan', 'closeup', 'smile').src, 'assets/npc/dan/expr/closeup/02_cheer.webp', '2026-10-04（追加アセット）：旧い表情名はすべて引き続き使える（意味の近い正式の表情差分 assets/npc/<id>/expr/ へ読み替え）');
 });
@@ -44,7 +44,9 @@ test('DAN-3：ダンの顔はダンが話す一言（ファームの吹き出し
 
   assert.equal((HTML.replace(/^\s*\/\/.*$/gm, '').match(/NPI\.b/g) || []).length, 0, '画面から旧コウの顔を参照しない（コメントを除く）');
   const hall = HTML.slice(HTML.indexOf('function fmScr(msg){'), HTML.indexOf('\n// ---- Phase 8：育成中の画面遷移'));   // ファーム（正式デザイン。育成開始前・Chapter間・育成完了）
-  assert.match(hall, /\$\{msg\?`<div class="kbub kt ksys">\$\{msg\}<\/div>`:""\}<div class="kbub kdan\$\{msg\?"":" kt"\}"><b>ダン<\/b><br>\$\{bcomm\(\)\}<\/div>/, 'ファーム：通知は名前なしの別のトースト。ダンの吹き出しはダンの一言だけ');
+  // 2026-10-04 PHASE H2：ベースキャンプ（旧ファーム）では、ダンの一言は顔つきの吹き出し（顔・名前・一言）をダンの頭の上に。通知は名前・顔なしの別のトーストのまま
+  assert.match(hall, /\$\{msg\?`<div class="kbub kt ksys">\$\{msg\}<\/div>`:""\}<div class="kbub kdan\$\{msg\?"":" kt"\}">/, 'ベースキャンプ：通知は名前なしの別のトースト');
+  assert.match(hall, /<span class="kdtx"><b>ダン<\/b>\$\{bcomm\(\)\}<\/span><\/div>/, 'ダンの吹き出しはダンの一言だけ');
   assert.match(hall, /s=p\.querySelector\('\.ksys'\),b=p\.querySelector\('\.kdan'\);if\(s\)s\.remove\(\);/, '顔を押すとダンの吹き出し（通知は消す）');
   assert.match(hall, /aria-label="ダンのコメントを見る"><img src="\$\{(DAN_FACE|npcSrc\("dan",BCOMM_EX,"face"\)\|\|DAN_FACE)\}" alt="">/);
   const code = HTML.replace(/^\s*\/\/.*$/gm, '');

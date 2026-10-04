@@ -176,7 +176,10 @@
     if (d.getAttribute('data-mmhide') === '1') { d.removeAttribute('data-mmhide'); d.setAttribute('data-mmev-back', '1'); } }
   try { if (typeof document !== 'undefined' && document.addEventListener) document.addEventListener('animationend', (e) => { if (e.animationName === 'mmevBack') { const d = docEl(); if (d) d.removeAttribute('data-mmev-back'); } }, true); } catch (e) {}
   /** 会話に出てくる立ち絵を先に読む（表情を変えたとき、読み込み待ちで前の絵が残らない） */
-  function warmLines(lines) { try { if (typeof Image === 'undefined') return; for (const l of resolveLines(lines)) if (l.img && l.img.src) { const im = new Image(); im.decoding = 'async'; im.src = l.img.src; } } catch (e) {} }
+  function warmLines(lines) { try { if (typeof Image === 'undefined') return; for (const l of resolveLines(lines)) if (l.img && l.img.src) { const im = new Image(); im.decoding = 'async'; im.src = standOf(l.npc, l.img.view, l.img.expr) || l.img.src; } } catch (e) {} }
+  /** 2026-10-04 PHASE H5：会話の立ち絵の規格（フィナの半身と同じ顔の大きさ・頭の位置・3/4身）。主要 NPC の半身（closeup）の行は、同じ表情の全身（stand＝expr/full）を
+   *  CSS（.mmtalk-fig.stand・.nstf[data-npc]・--nk）で上から決まった割合だけ見せる（画像そのものは加工しない）。データ（imageOf・closeup の表情）は従来どおり */
+  function standOf(id, view, expr) { const n = id && get(id); if (!n || (view && view !== 'closeup') || !n.views.stand) return null; return n.views.stand[expr] || n.views.stand[n.defaultExpr] || null; }
   function talk(lines, opts = {}) {
     if (typeof document === 'undefined') return Promise.resolve();
     close();
@@ -200,12 +203,12 @@
         openGuardMs: OPEN_GUARD_MS,   // ダブルタップの2打目（会話を開いたタップの続き）などで、1行目の文字送りを飛ばさない
         onUpdate(s) {
           if (s.ended) return;
-          ov.dataset.npc = s.npc || ''; stage.dataset.side = s.side || 'left'; fig.className = 'mmtalk-fig ' + (s.view || 'closeup'); fig.hidden = !(s.img || s.frames);   // アニメーションだけのNPCでも立ち絵を隠さない
+          ov.dataset.npc = s.npc || ''; stage.dataset.side = s.side || 'left'; const stand = !s.frames && s.img ? standOf(s.npc, s.view || 'closeup', s.expr) : null; fig.className = 'mmtalk-fig ' + (s.view || 'closeup') + (stand ? ' stand' : ''); fig.hidden = !(s.img || s.frames);   // アニメーションだけのNPCでも立ち絵を隠さない
           const key = s.frames ? `${s.idx}:${s.anim}` : '';
           if (key !== ANIM.key) { stopAnim(); if (s.frames) { ANIM.key = key; ANIM.name = s.anim; ANIM.pre = s.frames.map((f) => { const p = new Image(); p.src = f; return p; });   // 先読みした絵を持っておく（2026-10-03：読み込み途中のコマへは切り替えない＝途中で画面を移っても読み込みを打ち切らない）
             img.src = s.frames[0]; fig.hidden = false; const fr = s.frames, loop = s.loop;
             ANIM.timer = setInterval(() => { if (ANIM.key !== key) return; if (ANIM.frame >= fr.length - 1 && !loop) { clearInterval(ANIM.timer); ANIM.timer = null; return; } const nx = (ANIM.frame + 1) % fr.length, pi = ANIM.pre && ANIM.pre[nx]; if (pi && !(pi.complete && pi.naturalWidth > 0)) return; ANIM.frame = nx; img.src = fr[ANIM.frame]; }, Math.round(1000 / s.fps)); } }
-          if (!s.frames && s.img && img.getAttribute('src') !== s.img) img.src = s.img;
+          if (!s.frames && s.img && img.getAttribute('src') !== (stand || s.img)) img.src = stand || s.img;
           img.alt = s.name ? `${s.name}（${s.expr || ''}）` : '';
           nm.textContent = s.name; nm.hidden = !s.name; tx.textContent = s.text; win.setAttribute('aria-label', (s.name ? s.name + '：' : '') + s.full); nx.hidden = s.typing || !!s.choices;
           const k = s.choices ? s.idx + ':' + s.choices.map((x) => x.id).join(',') : '';   // 選択肢は全文表示のあとだけ（▼の代わり）
@@ -301,10 +304,10 @@
     genshin: { normal: 'guide', smile: 'approve', serious: 'strict', praise: 'approve' },
     shop: { happy: 'recommend', troubled: 'worry', guide: 'normal' },
   });
-  const NPC_NAME = { karen: ['カレン', '市場担当'], dan: ['ダン', 'ファーム担当'], nick: ['ニック', '牧場の管理者'], elliot: ['エリオット', '研究所の研究者'], vargas: ['ヴァルガス', '闘技場の管理者'], cedric: ['セドリック', '公式ランク大会の進行役'], genshin: ['ゲンシン', '特訓の指導役'], shop: ['アイテム屋', 'アイテム屋（ファームの屋台）'] };
+  const NPC_NAME = { karen: ['カレン', '市場担当'], dan: ['ダン', 'ベースキャンプ担当'], nick: ['ニック', '牧場の管理者'], elliot: ['エリオット', '研究所の研究者'], vargas: ['ヴァルガス', '闘技場の管理者'], cedric: ['セドリック', '公式ランク大会の進行役'], genshin: ['ゲンシン', '特訓の指導役'], shop: ['ベルナ', 'アイテムの補給所（ベースキャンプ）'] };
   for (const [id, keys] of Object.entries(EXPR)) {
     const dir = `assets/npc/${id}/expr/`, file = (v) => Object.fromEntries(keys.map((k, i) => [k, `${dir}${v}/${String(i + 1).padStart(2, '0')}_${k}.webp`]));
-    const views = { closeup: file('closeup'), face: file('face'), fullbody: file('full') };
+    const views = { closeup: file('closeup'), face: file('face'), fullbody: file('full'), stand: file('full') };   // stand＝会話の立ち絵（全身を 3/4身に切って見せる。PHASE H5）
     for (const v of Object.values(views)) for (const [a, k] of Object.entries(EXPR_ALIAS[id] || {})) if (!v[a]) v[a] = v[k];
     const def = keys[0];
     register(id, { name: NPC_NAME[id][0], role: NPC_NAME[id][1], board: false, defaultView: 'closeup', defaultExpr: def, views });
@@ -312,11 +315,15 @@
   /** 表情の画像の URL（無ければ基本の表情）。view＝'closeup'（既定）／'face'／'fullbody' */
   const srcOf = (id, expr, view) => { const im = imageOf(id, view || 'closeup', expr); return im ? im.src : ''; };
   /** 施設へ入る直前に、その NPC の表情（既定は半身と小さい顔の 4表情ずつ）だけを先読み・デコードする（起動時に全部は読まない） */
+  /** 立ち絵の規格（PHASE H5）：fr＝全身（expr/full。頭の上〜足＝画像の高さ）のうち上から見せる割合。フィナの半身（closeup/normal：顔の高さ≒器の 27%・頭の上≒1%）と
+   *  顔の大きさがそろうよう、絵ごとの顔の大きさから決めた値（目で測った値。体格の差は残す）。nk＝器の幅 ÷ 高さ（＝画像の幅 ÷ 高さ ÷ fr）＝CSS の --nk と同じ値 */
+  const STAND = Object.freeze({ karen: { fr: 0.84, nk: 0.579 }, dan: { fr: 0.84, nk: 0.77 }, nick: { fr: 0.94, nk: 0.709 }, elliot: { fr: 0.84, nk: 0.786 }, vargas: { fr: 0.69, nk: 0.987 },
+    cedric: { fr: 0.74, nk: 0.9 }, genshin: { fr: 0.84, nk: 0.777 }, shop: { fr: 0.79, nk: 0.842 } });
   const warmed = new Set();
-  function warm(id, views = ['closeup', 'face']) {
+  function warm(id, views = ['stand', 'face']) {
     const n = get(id); if (!n || typeof Image === 'undefined') return;
     for (const v of views) for (const src of new Set(Object.values(n.views[v] || {}))) { if (warmed.has(src)) continue; warmed.add(src); const i = new Image(); i.decoding = 'async'; i.src = src; if (i.decode) i.decode().catch(() => {}); }
   }
 
-  root.MMNPC = Object.freeze({ TYPE_MS, MIN_TAP_MS, register, get, list, expressionsOf, animationsOf, imageOf, animOf, preload, splitChars, resolveLines, createTalk, talk, close, state, animState, fromLegacy, EXPR, EXPR_ALIAS, srcOf, warm });
+  root.MMNPC = Object.freeze({ TYPE_MS, MIN_TAP_MS, register, get, list, expressionsOf, animationsOf, imageOf, animOf, preload, splitChars, resolveLines, createTalk, talk, close, state, animState, fromLegacy, EXPR, EXPR_ALIAS, srcOf, warm, standOf, STAND });
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -195,7 +195,7 @@ T('QA-RL1：Chapter 3（旧ボード）の20ターン目を使い切る → タ�
   assert.deepEqual(r.log, [LOG1, LOG2D, { ch: 3, reachedGoal: false, turnsUsed: 20, turnLimit: 20, declined: false, tour: null }]);
   assert.equal((await H.getS(pg)).g, before.g, 'ゴールできなくても所持金は変わらない');
   const txt = await H.text(pg);
-  for (const w of ['Chapter 3 終了', '次のChapter', 'Chapter 4', 'CHAPTER 3「天空の浮島」が終わった。', 'Chapter 4へ進む']) assert.ok(txt.includes(w), `ファームの表示に「${w}」`);
+  for (const w of ['Chapter 4', 'CHAPTER 3「天空の浮島」が終わった。', '冒険'])   /* 2026-10-04 PHASE H2：ベースキャンプ＝次の Chapter の番号と名前＋「冒険」（「Chapter N 終了」の情報欄は廃止） */ assert.ok(txt.includes(w), `ファームの表示に「${w}」`);
   assert.equal(await lobbyButtons(pg), 0, 'Chapter間ファームに街へ戻る導線は無い');
   await assertSynced(pg);
   // 街・市場へは行けない（関数を直接呼んでもファームに留まり、セーブは変わらない）
@@ -208,7 +208,7 @@ T('QA-RL1：Chapter 3（旧ボード）の20ターン目を使い切る → タ�
   }
   // ⏸ 中断 → 開始画面 → はじめる → Chapter間ファーム
   await pg.waitForTimeout(SETTLE);
-  await pg.click('button.fmrd[onclick="p8Suspend()"]');
+  await pg.click('button.bcb[onclick="p8Suspend()"]');   // 2026-10-04 PHASE H2：ベースキャンプの下の1列の「中断」
   await pg.waitForSelector('.p15start');
   assert.equal(await pg.evaluate(() => document.querySelector('.tcap').textContent), 'つづきからはじめます');
   await startFromTitle(pg, '.p9farm.p15f');
@@ -224,10 +224,11 @@ T('QA-RL2：Chapter間ファームの「育成放棄」は2段階の確認（最
   const p = await boot(farmSeed(2, [LOG1], { g: 321, trainTix: 2 }, 1), '.p9farm.p15f'); const pg = p.page;
   const raw0 = await rawSave(pg);
   const uid = await pg.evaluate(() => S.m.uid);
-  const ask = 'button.fmab[onclick="p8AbandonAsk()"]';
+  // 2026-10-04 PHASE H2：ベースキャンプでは育成放棄はメニュー（☰）の中（2段階の確認＋3秒は従来どおり）
+  const ask = '#p9ov button.fmab[onclick="p9MenuClose();p8AbandonAsk()"]', openAsk = async () => { await pg.click('.bcrb[onclick="bcMenu()"]'); await pg.waitForSelector(ask); await pg.waitForTimeout(400); await pg.click(ask); };
   // 1段目で「やめない」
   await pg.waitForTimeout(SETTLE);
-  await pg.click(ask);
+  await openAsk();
   await pg.waitForSelector('#p8m .p8danger');
   assert.match(await textOf(pg, '#p8m'), /ソラモの育成をやめますか？/);
   await pg.waitForTimeout(SETTLE);
@@ -236,7 +237,7 @@ T('QA-RL2：Chapter間ファームの「育成放棄」は2段階の確認（最
   assert.equal(await rawSave(pg), raw0);
   // 2段目：最後のボタンは3秒間押せない
   await pg.waitForTimeout(SETTLE);
-  await pg.click(ask);
+  await openAsk();
   await pg.waitForSelector('#p8m .p8danger');
   await pg.waitForTimeout(SETTLE);
   await pg.click('#p8m button.p8danger');
@@ -563,7 +564,7 @@ T('QA-RL8：Chapter 4 で A ランク大会に優勝 → 最終ルート（準�
   assert.equal(await textOf(pg, '.ksys'), 'CHAPTER 4「灼熱の火山」が終わった。Aランク以上をクリアした！ 最終ルートは準備中のため、ここで育成を完了して街へ戻れます。');
   const fb = 'button[onclick="pfixFinishNoFinal(this)"]';
   const farmTxt = await H.text(pg);
-  assert.ok(farmTxt.includes('最終ルート前') && farmTxt.includes('最終ルートは準備中') && farmTxt.includes('育成を完了して街へ戻る'), 'ファーム：最終ルート前・進行ボタン「育成を完了して街へ戻る」');
+  assert.ok(farmTxt.includes('最終ルートは準備中') && farmTxt.includes('育成を完了して街へ戻る'), 'ファーム：最終ルート前・進行ボタン「育成を完了して街へ戻る」');
   assert.equal(await raiseOf(pg).then((x) => x.log.length), 4);
   // 再読み込みしても最終ルート準備中のファーム
   await reloadAndStart(pg, fb);

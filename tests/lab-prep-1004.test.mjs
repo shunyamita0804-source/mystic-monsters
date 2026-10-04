@@ -65,6 +65,6 @@ test('LP-05：出発準備：上＝育成中モンスター（正式画像 msv�
 });
 
 test('LP-06：ファーム・街の導線は変えていない（ファームのコマンドは特訓・ステータス・技管理・アイテム、進行ボタンは prepScr）。アイテム屋はファームの屋台から（街の札は無い）', () => {
-  assert.match(fnOf('fmScr'), /\["shopScr\(\)","item","アイテム","item"\]/); assert.match(fnOf('fmScr'), /on:"prepScr\(\)"/);
+  assert.match(fnOf('fmScr'), /\["shopScr\(\)","item","アイテム",""\]/);   /* 2026-10-04 PHASE H2：ベースキャンプの下の1列（配列の形だけ変わった） */ assert.match(fnOf('fmScr'), /on:"prepScr\(\)"/);
   assert.doesNotMatch(CODE, /function townShop\(/);
 });
