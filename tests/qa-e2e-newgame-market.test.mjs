@@ -167,7 +167,7 @@ T('QA-NG2：開始ボタン → 名前登録画面（初期値「アルト」・
   assert.equal(st.g, 300); assert.deepEqual(st.raiseRec, { done: 0, fromStart: true }, '育成完了回数は0回から記録');
   assert.equal(st.m, null); assert.deepEqual(st.box, []);
   const lines = await talkLines(pg);
-  assert.match(lines[0].img, /animations\/wave\/wave_0[1-6]\.webp$/, '1行目は手を振る（wave）'); lines[0].img = 'assets/npc/fina/closeup/smile.webp';   // 2行目からは静止画
+  assert.doesNotMatch(lines[0].img, /animations\/wave\//, '2026-10-04 G2：1行目も静止画（手を振り続けるアニメはやめた）');
   assert.deepEqual(lines.map((l) => [l.idx, l.name, l.expr, l.text, l.img, l.next]), [
     [0, 'フィナ', 'smile', 'はじめまして。私はフィナです！', 'assets/npc/fina/closeup/smile.webp', true],
     [1, 'フィナ', 'normal', 'これからあなたのモンスター育成をお手伝いしますね。', 'assets/npc/fina/closeup/normal.webp', true],
