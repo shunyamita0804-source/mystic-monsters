@@ -62,8 +62,8 @@ T('EV-B1：イベントマス（挿絵つき・澄んだ湧き水）：背景を
   assert.equal(await pg.evaluate(() => document.querySelector('.mmtalk').dataset.pres), 'board', '2026-10-04 G2：チュートリアルはボードの大きな会話窓（操作欄の上）');
   await H.finishTalk(pg); await idle(pg);
   const s1 = await pg.evaluate(() => ({ fat: S.m.raise.fatigue, used: S.m.raise.field.consumedEvents, story: S.npcFlags.story, pend: S.m.raise.pend, hud: document.querySelector('#chfat b').textContent }));
-  assert.equal(s1.fat, 15); assert.ok(s1.used.includes(id)); assert.deepEqual(s1.story, ['tut_event']); assert.equal(s1.pend, null); assert.equal(s1.hud, '15');
-  assert.deepEqual((await H.storedSave(pg)).npcFlags.story, ['tut_event'], 'セーブに残る');
+  assert.equal(s1.fat, 15); assert.ok(s1.used.includes(id)); assert.deepEqual(s1.story, ['tut_turns', 'tut_event'], '2026-10-05：出発の「30ターン」の説明（tut_turns）のあとに初めてのイベント'); assert.equal(s1.pend, null); assert.equal(s1.hud, '15');
+  assert.deepEqual((await H.storedSave(pg)).npcFlags.story, ['tut_turns', 'tut_event'], 'セーブに残る');
   // 2回目：挿絵の無い出来事（ダンの言葉）＝フィナの吹き出しと結果だけ（チュートリアル無し）
   await landOn(pg, 'remember_dan');
   await fina(pg, 'ダンが言ってた'); await clearFina(pg);
@@ -105,7 +105,7 @@ T('EV-B3：能力マスの初回チュートリアル：結果の枠のあとに
   await landOn(pg, null, 'stat');
   await pg.waitForSelector('.chpop.stat', { timeout: 15000 });
   await talk(pg, '能力マスだよ'); await H.finishTalk(pg); await idle(pg);
-  assert.deepEqual(await pg.evaluate(() => S.npcFlags.story), ['tut_stat']);
+  assert.deepEqual(await pg.evaluate(() => S.npcFlags.story), ['tut_turns', 'tut_stat']);
   await landOn(pg, null, 'stat');
   await pg.waitForSelector('.chpop.stat', { timeout: 15000 }); await pg.waitForFunction(() => !document.querySelector('.chpop'), null, { timeout: 15000 });
   await pg.waitForTimeout(1200); assert.equal(await pg.evaluate(() => !!document.querySelector('.mmtalk')), false);
