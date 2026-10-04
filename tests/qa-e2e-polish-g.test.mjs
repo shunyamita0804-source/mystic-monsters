@@ -1,7 +1,7 @@
 // =========================================================
 // QA（実ブラウザ）：2026-10-04 PHASE G（実機試遊の違和感の修正）
 //  G-A：新しいゲーム → プロローグの途中で終了（再読み込み）→ 次に開いてもプロローグが出る（「見た」の記録は最後まで見たときだけ）
-//  G-B：プロローグの文章は1文字ずつのタイプ表示をしない（各行は最初から全文・下から入って上へ流れる）
+//  G-B：プロローグの文章は1文字ずつのタイプ表示をしない（2026-10-04 PHASE H：1文を完成した状態で左から右へ短く入れて中央よりやや上で静止。下から上へ流さない）
 //  G-C：開始ボタン → プロローグの間に、旧い見出し（金枠の「ミスティックモンスターズ」）が1フレームも見えない
 //  ほかの項目（D〜M）は、同じファイルの後ろに足す
 //  Playwright / Chromium が無い環境では省略（skip）する。
@@ -35,14 +35,14 @@ for (const size of SIZES) {
   T(`G-A（${size.join('×')}）：プロローグの途中で終了 → 再読み込み → 開始ボタン → プロローグがもう一度出る（見た記録は付かない）`, async () => {
     const p = await openPage({ size, prologue: true }); const pg = p.page;
     await pg.click('.p15start');
-    await pg.waitForSelector('.mmpro .mmpro-nar p.on', { timeout: 20000 });
+    await pg.waitForSelector('.mmpro .mmpro-u', { timeout: 20000 });
     await pg.waitForTimeout(1800);
     const mid = await H.storedSave(pg);
     assert.ok(mid && mid.playerNamePending, '新しいゲームは保存済み（名前はまだ）');
     assert.ok(!(mid.npcFlags && mid.npcFlags.prologue), '途中では「見た」を保存しない');
     await pg.reload(); await pg.waitForFunction(() => typeof window.MMP8 === 'object' && typeof S === 'object');
     await pg.click('.p15start');
-    await pg.waitForSelector('.mmpro .mmpro-nar p.on', { timeout: 20000 });
+    await pg.waitForSelector('.mmpro .mmpro-u', { timeout: 20000 });
     assert.equal(await pg.evaluate(() => !!document.querySelector('#p11nm')), false, '名前登録へ飛ばない');
     // 最後まで（スキップの確定）→ 記録
     await pg.click('.mmpro-skip'); await pg.waitForTimeout(400); await pg.click('.mmpro-skip');
@@ -51,30 +51,35 @@ for (const size of SIZES) {
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   });
 
-  T(`G-B・G-C（${size.join('×')}）：タイプ表示なし（行は最初から全文・下から入って上へ）。開始 → プロローグの間に旧い見出しが出ない`, async () => {
+  T(`G-B・G-C（${size.join('×')}）：2026-10-04 PHASE H の正式仕様：タイプ表示なし・1文（長い文は2行を1セット）を完成した状態で左から右へ短く入れて中央よりやや上で静止・下から上へ流れない・重ならない。開始 → プロローグの間に旧い見出しが出ない`, async () => {
     const p = await openPage({ size, prologue: true }); const pg = p.page;
     await watchH1(pg);
     await pg.click('.p15start');
-    await pg.waitForSelector('.mmpro .mmpro-nar p', { timeout: 20000 });
-    // 各行の文字と位置を細かく記録する
+    await pg.waitForSelector('.mmpro .mmpro-u', { timeout: 20000 });
+    // 毎フレーム、出ている文（.mmpro-u）の文字・位置・不透明度を記録する（最初の約2文ぶん）
     const log = await pg.evaluate(async () => {
       const out = []; const t0 = performance.now();
-      while (performance.now() - t0 < 5200) {
-        const ps = [...document.querySelectorAll('.mmpro .mmpro-nar p')];
-        out.push(ps.map((q) => ({ t: q.textContent, y: q.getBoundingClientRect().top })));
+      while (performance.now() - t0 < 9000) {
+        const us = [...document.querySelectorAll('.mmpro .mmpro-u')];
+        out.push({ t: performance.now() - t0, n: us.length, u: us.map((u) => { const r = u.getBoundingClientRect(); return { text: u.textContent, x: r.left, y: r.top, h: r.height, op: +getComputedStyle(u).opacity }; }) });
         await new Promise((r) => requestAnimationFrame(r));
       }
       return out;
     });
-    const page0 = log.filter((f) => f.length && f[0].t === log[0][0].t);
-    const full = page0[0].map((x) => x.t);
-    for (const f of page0) f.forEach((x, i) => assert.equal(x.t, full[i], `行 ${i} は最初から全文（タイプ表示なし）`));
+    assert.ok(log.every((f) => f.n <= 1), '同時に出る文は1つだけ（重ならない・積み上げない）');
+    const groups = []; for (const f of log) { if (!f.u.length) continue; const u = f.u[0]; if (!groups.length || groups[groups.length - 1].text !== u.text) groups.push({ text: u.text, fr: [] }); groups[groups.length - 1].fr.push({ ...u, t: f.t }); }
+    assert.ok(groups.length >= 2, `2つ以上の文を見た（${groups.length}）`);
     const H0 = size[1];
-    const first = page0.map((f) => f[0].y);
-    assert.ok(first[0] >= H0 * 0.9, `1行目は画面の下の外で待つ（${Math.round(first[0])}）`);
-    const minY = Math.min(...first);
-    assert.ok(minY < H0 * 0.66 && minY > H0 * 0.2, `下から上へ流れ、中央より上まで上がる（${Math.round(minY)}）`);
-    for (let i = 1; i < first.length; i++) assert.ok(first[i] <= first[i - 1] + 0.5, '1行目は上へ動くだけ（戻らない）');
+    for (const g of groups.slice(0, -1)) {
+      const ys = g.fr.map((x) => x.y), xs = g.fr.map((x) => x.x);
+      assert.ok(Math.max(...ys) - Math.min(...ys) < 1, `「${g.text.slice(0, 10)}」は縦に動かない（下から上へ流れない）：${Math.round(Math.min(...ys))}〜${Math.round(Math.max(...ys))}`);
+      const cy = g.fr[0].y + g.fr[0].h / 2; assert.ok(cy > H0 * 0.3 && cy < H0 * 0.5, `中央よりやや上（${Math.round(cy)} / ${H0}）`);
+      for (let i = 1; i < xs.length; i++) assert.ok(xs[i] >= xs[i - 1] - 0.5, '横は左から右へ入るだけ（戻らない）');
+      assert.ok(xs[0] < xs[xs.length - 1] - 10, `左から右へ入る（${Math.round(xs[0])} → ${Math.round(xs[xs.length - 1])}）`);
+      const fin = xs[xs.length - 1], still = g.fr.filter((x) => x.t - g.fr[0].t > 900);
+      assert.ok(still.length > 10 && still.every((x) => Math.abs(x.x - fin) < 0.5), '入ったあとは静止して読ませる');
+      assert.ok(g.fr.some((x) => x.op > 0.99), '完成した文が出る');
+    }
     await pg.evaluate(() => { window.__h1w = false; });
     assert.deepEqual(await pg.evaluate(() => window.__h1), [], '旧い見出し（h1）は1フレームも見えない');
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);

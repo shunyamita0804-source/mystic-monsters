@@ -1506,6 +1506,10 @@ button.mkc b{font-size:.9rem}button.mkc small{font-size:.66rem;color:#ffe9b0}
 .mmpro-nar.out{opacity:0}
 .mmpro-nar p{position:absolute;left:0;right:0;top:0;margin:0;padding:0 26px;box-sizing:border-box;color:#f6f0de;font-family:"Shippori Mincho",var(--mm-font-head,serif);font-weight:700;font-size:17.5px;line-height:1.9;letter-spacing:.06em;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,.9),0 0 16px rgba(0,0,0,.65);will-change:transform;transform:translate3d(0,120vh,0)}
 .mmpro-nar p.sp{line-height:.95}
+/* 2026-10-04 PHASE H：1文（長い文は2行を1セット）を完成した状態で、左から右へ短く入れて画面の中央よりやや上（top 42%）で静止 → フェードで消える。下から上へ流さない・積み上げない */
+.mmpro-u{position:absolute;left:0;right:0;opacity:0;transform:translate3d(0,-50%,0);will-change:transform,opacity}
+.mmpro-u::before{content:"";position:absolute;left:6%;right:6%;top:-28%;bottom:-28%;z-index:-1;background:radial-gradient(closest-side,rgba(2,6,20,.42),rgba(2,6,20,0));pointer-events:none}
+.mmpro-nar .mmpro-u p{position:static;transform:none;will-change:auto}
 .mmpro-skip{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:12px;margin:0;padding:6px 14px;min-height:36px;border-radius:999px;background:rgba(8,15,34,.6);border:1px solid rgba(240,232,212,.5);color:#f3ecd9;font-size:12.5px;font-weight:700;letter-spacing:.06em}
 .mmpro-hint{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);text-align:center;font-size:11px;color:rgba(243,236,217,.6);letter-spacing:.1em;pointer-events:none}
 .mmpro-veil{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .9s ease}
