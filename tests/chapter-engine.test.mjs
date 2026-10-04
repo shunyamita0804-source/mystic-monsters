@@ -63,8 +63,8 @@ test('CH-ENGINE-01：config からフィールド（正式背景14枚 ch1_bg_01�
   assert.deepEqual(g.routes.map(fieldsOf), [[1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 14], [1, 2, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14]], '森／大橋のどちらかを通り、10 で合流');
   for (const n of Object.values(g.nodes)) { assert.ok(n.x >= 0 && n.x <= 1 && n.y >= 0 && n.y <= 1, `${n.id} は背景に対する割合`); assert.ok(n.d > 0 && n.d <= 1.3); }
   const kinds = {}; for (const n of Object.values(g.nodes)) if (n.kind !== 'slot' && n.kind !== 'normal') kinds[n.id] = n.kind;
-  assert.deepEqual(kinds, { p1_0: 'start', p5_2: 'branch', p10_0: 'merge', p14_0: 'rival', p14_2: 'goal' }, '骨格：スタート・分かれ道・合流・ライバル（強制停止）・ゴール。強敵（strong）は正式のマスではない');
-  assert.equal(g.nodes.p14_0.forceStop, true); assert.equal(P8.trackOf(1).nodes.p14_0.stop, true);
+  assert.deepEqual(kinds, { p1_0: 'start', p5_2: 'branch', p5_0: 'rival', p10_0: 'merge', p14_2: 'goal' }, '骨格：スタート・分かれ道・合流・ライバル（強制停止）・ゴール。強敵（strong）は正式のマスではない');
+  assert.equal(g.nodes.p5_0.forceStop, true); assert.equal(P8.trackOf(1).nodes.p5_0.stop, true);   // 2026-10-04 G3：ライバルは道中（p5_0）
   assert.deepEqual([CH.rulesOf(cfg).diceSides, CH.rulesOf(cfg).turnLimit, CH.rulesOf(cfg).onTimeUp, !!CH.rulesOf(cfg).passNormal], [3, 30, 'end', false], '1〜3・30ターン（2026-10-04 正式）・間に合わなければ大会なしで終了・通常マスは止まれる'); assert.equal(Object.keys(cfg.dice.resultSprites).length, 6, '4〜6 の停止画像は残す');
   // 15 枚目は到着イベント専用（マスの背景には入れない）
   assert.equal(cfg.arrival.bg, './assets/fields/ch1a/final/event/ch1_bg_15_event.webp'); assert.ok(existsSync(path.join(ROOT, cfg.arrival.bg)));
@@ -92,7 +92,7 @@ test('CH1-37：公式54マスの内訳（2026-10-04。旧60）（スタートを
     const f = rt.seq.slice(1).map((id) => (CH.SKELETON.includes(g.nodes[id].kind) ? g.nodes[id].kind : g.nodes[id].tile));
     for (let i = 1; i < f.length; i++) { if (f[i].startsWith('stat_')) assert.notEqual(f[i], f[i - 1], `${rt.branch}：同じ能力が続かない（${i}）`); if (f[i] === 'wild') assert.notEqual(f[i - 1], 'wild', `${rt.branch}：野生が隣り合わない`); }
     assert.ok(!f.slice(0, 10).includes('wild'), `${rt.branch}：序盤（10マス）に野生なし`); assert.ok(f.slice(0, 12).filter((x) => x === 'rest').length <= 1, '休むは序盤に固まらない');
-    assert.equal(f[f.length - 1], 'goal'); assert.equal(f[f.length - 3], 'rival', 'ライバルはゴールの2つ手前（大会会場の門前）');
+    assert.equal(f[f.length - 1], 'goal'); const ri = f.indexOf('rival'); assert.ok(ri >= f.length * 0.35 && ri <= f.length * 0.6, `2026-10-04 G3：ライバルは道中の中盤（${ri + 1}/${f.length}）。大会の直前ではない`); assert.ok(f.slice(0, ri).includes('wild') && f.slice(0, ri).includes('event') && f.slice(ri + 1, -1).some((x) => x === 'wild' || x.startsWith('stat_')), '野生・イベント → ライバル → さらに冒険 → 大会');
   }
   // 固定配置：どの seed でも種類は config のとおり（イベントの内容・宝箱の段階・野生→レアだけが変わる）
   for (let s = 1; s <= 200; s++) {
@@ -331,10 +331,11 @@ test('CH1-19〜21：30ターン目にゴール＝成功（2026-10-04 正式）�
   const end = E2.P8.endChapter(E2.S, E2.m); assert.equal(end.ok, true); assert.equal(end.entry.reachedGoal, false); assert.equal(end.entry.tour, null);
   assert.deepEqual([E2.m.raise.state, E2.m.raise.ch, E2.m.po >= 150], ['farm', 2, true], '次のChapterへ（育成失敗ではない。獲得した能力は保持）');
   const E3 = onCh1(53); E3.m.raise.node = 'p1_0'; E3.m.raise.turnsUsed = 29; E3.P8.rest(E3.S, E3.m); assert.equal(E3.P8.boardPhase(E3.m), 'timeup', '30ターン目に休んでも終わり（大会なし）');
-  // ライバル（p14_0）は強制停止：p13_0 から 3 が出ても p13_1 → p14_0 で止まり、残りの歩数は消える。次のターンで p14_1 → ゴール
-  const E4 = onCh1(54); E4.m.raise.node = 'p13_0'; E4.m.raise.fatigue = 0; const t4 = turn(E4, 3); assert.deepEqual(t4, ['p13_1', 'p14_0']); assert.equal(E4.m.raise.pend.left, 0);
+  // ライバル（2026-10-04 G3：p5_0）は強制停止：p4_3 から 3 が出ても p4_4 → p5_0 で止まり、残りの歩数は消える。次のターンで p5_1
+  const E4 = onCh1(54); E4.m.raise.node = 'p4_3'; E4.m.raise.fatigue = 0; const t4 = turn(E4, 3); assert.deepEqual(t4, ['p4_4', 'p5_0']); assert.equal(E4.m.raise.pend.left, 0);
   const r4 = E4.P8.resolveLanding(E4.S, E4.m, lcg(1)); assert.deepEqual([r4.fx.kind, r4.fx.battleType], ['battle', 'rival']); E4.P8.skipBattleSquare(E4.S, E4.m);
-  turn(E4, 3); assert.equal(E4.m.raise.node, 'p14_2'); assert.equal(E4.m.raise.pend.left, 0, 'ゴールで止まる');
+  turn(E4, 1); assert.equal(E4.m.raise.node, 'p5_1');
+  const E5 = onCh1(55); E5.m.raise.node = 'p13_1'; E5.m.raise.fatigue = 0; turn(E5, 3); assert.equal(E5.m.raise.node, 'p14_2'); assert.equal(E5.m.raise.pend.left, 0, 'ゴールで止まる（門前にはもうライバルはいない）');
 });
 
 test('CH1-22：次のChapterの開始時の疲れ＝max(0, 前Chapterの疲れ − 50)。大会・Chapterの終了では疲れは変わらない', () => {
@@ -722,11 +723,11 @@ test('CH1-36：ガウル・ノビトン・ジオルの歩行アニメ（2026-10-
   assert.equal(S.solamo.walk.frames.length, 8, 'ソラモはそのまま');
   for (let i = 7; i <= 8; i++) assert.ok(!existsSync(path.join(ROOT, `assets/monsters/gauru_walk/gauru_walk_0${i}.webp`)), 'ガウルの 7・8コマは作らない');
   // 演出：素材と割り当て
-  assert.equal(cfg.battleTypes.wild.cutin, 'fx_battle_encounter'); assert.equal(cfg.battleTypes.rare.cutin, undefined); assert.equal(cfg.battleTypes.rival.cutin, undefined, 'ライバル・レアには野生の突入演出を付けない');
+  assert.equal(cfg.battleTypes.wild.cutin, undefined, '2026-10-04 G3：野生の遭遇に赤い刃の交差のカットインは使わない（正式のモンスター＋魔法陣＋ENCOUNTER）'); assert.equal(cfg.battleTypes.rare.cutin, undefined); assert.equal(cfg.battleTypes.rival.cutin, undefined);
   assert.deepEqual(cfg.effects, { statUp: 'fx_stat_up', turnWarning: { asset: 'fx_turn_warning', at: [] } }, '残りターンの警告は発火ターン未決＝出さない');
   for (const k of ['fx_battle_encounter', 'fx_stat_up', 'fx_turn_warning']) assert.ok(existsSync(path.join(ROOT, cfg.assets[k])), k);
   const FV = rd('js/chapter/field-view.js');
-  assert.match(FV, /cut = BT\.cutin \? effectAsset\(BT\.cutin\) : null/); assert.match(FV, /if \(!ui \|\| V\.calm \|\| \(!cut && !text\)\)/);   // 2026-10-03：カットインは encounterShow（絵と文を同時に） assert.match(FV, /c: 'ok stat', frame: 'statUp'/); assert.match(FV, /if \(!W \|\| !Array\.isArray\(W\.at\) \|\| !W\.at\.length/, '発火ターンが空なら出さない');
+  assert.match(FV, /const foe = rival \? null : foeImage\(m\)/); assert.match(FV, /if \(!ui \|\| V\.calm \|\| !text\)/);   // 2026-10-03：カットインは encounterShow（絵と文を同時に） assert.match(FV, /c: 'ok stat', frame: 'statUp'/); assert.match(FV, /if \(!W \|\| !Array\.isArray\(W\.at\) \|\| !W\.at\.length/, '発火ターンが空なら出さない');
 });
 
 test('CH1-38：2026-10-03 品質向上：HUD の進行ライン＝MMCH.progressOf（ターン数ではなく道の上の位置）。START 0 → ゴール 1。分かれ道のあとは選んだ道の残りで数える。HUD は進行ライン・Turn・疲れ・所持金・特訓チケットの小さなチップ', () => {

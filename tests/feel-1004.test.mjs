@@ -43,7 +43,7 @@ test('FE2-03：疲れの見せ方：増減（+5／−30）をチップの脇に�
 test('FE2-04：マスごとの反応：能力＝成長演出、宝箱＝揺れて開く＋光の粒、イベント＝フィナの会話（lines）→ 結果、休憩＝青の帯＋疲れの回復、野生＝遭遇の演出（カットイン）、ライバル＝リュウの帯。視差効果を減らす設定では粒子・帯を出さない', () => {
   assert.match(FV, /chestSparks\(obj\);/); assert.match(FV, /function chestSparks\(obj\)/);
   assert.match(FV, /else if \(fx\.kind === 'fatigue'\) \{ monReact\('rest'\); restVeil\(\); \}/);
-  assert.match(FV, /await eventLines\(fx, card\);/); assert.match(FV, /async function encounterShow\(BT, bt\)/);
+  assert.match(FV, /await eventLines\(fx, card\);/); assert.match(FV, /async function encounterShow\(BT, bt, m\)/);
   const ch1 = rd('js/chapter/configs/ch1a.js'); assert.match(ch1, /rival: \{[^\n]*name: 'リュウ'/); assert.match(ch1, /wild: \{[^\n]*cutin/);
   assert.match(HTML, /@media \(prefers-reduced-motion:reduce\)\{\.chf-grow-ic\{transition:none;opacity:1;transform:none\}\.chf-gauge i\{transition:none\}\.chf-sparks i,\.chf-csparks i,\.chf-fatfly,\.chf-restveil\{animation:none;display:none\}\}/);
   assert.match(FV, /function restVeil\(\) \{ const ui = \$\('#chf-ui'\); if \(!ui \|\| V\.calm\) return;/);

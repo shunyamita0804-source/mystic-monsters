@@ -77,13 +77,13 @@ test('DP-03：アイテム屋：正式背景（ぼかさない）と正式NPC �
 
 test('DP-04：共通会話 UI（ネイビー・アイボリー・細い罫線・小さな金の角飾り）。ライバルは「RIVAL／ライバルが現れた」を1秒未満、レアは後光・金のリムライト・光の粒・「★ レア」。見た目だけ', () => {
   const CF = rd('js/chapter/configs/ch1a.js'), FV = rd('js/chapter/field-view.js');
-  assert.match(CF, /sting: \{ title: 'RIVAL', sub: 'ライバル・リュウが現れた', ms: 880 \}/);
+  assert.doesNotMatch(CF, /sting: \{/, '2026-10-04 G3：ライバルの遭遇は RIVAL の帯＋赤と金の魔法陣（.chf-enc2.t-rival）に作り直した（旧の一瞬の帯 sting は使わない）');
   assert.match(CF, /aura: true, badge: '★ レア'/);
-  assert.match(FV, /const S1 = BT\.sting \|\| \{\}, ms = Math\.max\(400, Math\.min\(980, S1\.ms \|\| 880\)\);/, '1秒未満');
-  assert.match(FV, /if \(BT\.sting\) return stingShow\(ui, BT, bt\);/);
+  assert.match(FV, /await wait\(rival \? 1350 : 1500\);/, 'ライバル・野生とも読める間だけ（1.5秒以下）');
+  assert.match(FV, /const label = rival \? 'RIVAL' : 'ENCOUNTER';/);
   // レアの出現率（配置のときの 10%）・ライバルの強制停止は変えない
   assert.match(CF, /rareBattleRate: 0\.1/);
-  assert.match(HTML, /\.chf-sting\{[^}]*position:absolute;inset:0;/); assert.match(HTML, /\.chf-enc-badge\{/);
+  assert.match(HTML, /\.chf-enc\.chf-enc2\{[^}]*position:absolute;inset:0;/); assert.match(HTML, /\.chf-enc2 \.ce-badge\{/);
   assert.doesNotMatch(FV, /fight\s*\(/, 'Chapter の画面から fight() を呼ばない（従来どおりバトルの案内から）');
 });
 

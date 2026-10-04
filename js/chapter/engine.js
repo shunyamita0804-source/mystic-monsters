@@ -53,6 +53,16 @@
     let a = (seed >>> 0) || 1;
     return function () { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
   }
+  /**
+   * 野生・レアのバトルの相手の種族（2026-10-04 G3）：配置の seed・止まったマス・Chapter から決まる（再読み込みしても同じ・セーブに項目を足さない）。
+   *  遭遇の演出で正式の画像を見せ、バトル（fight()＝Phase 6。相手の種族は最初の乱数 R(種族数) で決まる）にも同じ種族を渡す（index.html の bBattleGo）。n＝種族の数
+   */
+  function foeSpecies(m, n) {
+    const r = m && m.raise, f = r && r.field; if (!f || !(n > 0)) return 0;
+    let h = 2166136261 >>> 0; const k = `${f.layoutSeed}|${r.node}|${r.ch | 0}`;   // ターン数は入れない（遭遇を見せてからバトルを始めるまでにターンが進むため）
+    for (let i = 0; i < k.length; i++) { h ^= k.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+    return Math.floor(rng(h)() * n);
+  }
   const newSeed = (rnd) => (Math.floor((rnd || Math.random)() * 0x7fffffff) >>> 0) || 1;
   const pick = (arr, r) => arr[Math.floor(r() * arr.length)];
   function pickWeighted(list, r, w = (x) => x.weight || 1) { const tot = list.reduce((s, x) => s + w(x), 0); let t = r() * tot; for (const x of list) { t -= w(x); if (t < 0) return x; } return list[list.length - 1]; }
@@ -727,7 +737,7 @@
   });
   function attach(P8 = root.MMP8) { if (P8 && typeof P8.registerChapterDriver === 'function') P8.registerChapterDriver(DRIVER); }
 
-  root.MMCH = fz({ STATS, SPECIAL, TIERS, BATTLE_TYPES, NODE_TYPES, REACTION_KEYS, DEFAULT_RULES, rng, newSeed, registerConfig, getConfig, patterns, handles, selectPattern,
+  root.MMCH = fz({ STATS, SPECIAL, TIERS, BATTLE_TYPES, NODE_TYPES, REACTION_KEYS, DEFAULT_RULES, rng, newSeed, foeSpecies, registerConfig, getConfig, patterns, handles, selectPattern,
     SKELETON, tileCensus, censusErrors, buildGraph, trackOf, alongPersp, smoothCurve, measure, pointAt, routeBetween, depthOf, roadAt, clampToRoad, stepsToMerge, sceneNodes, nextFields, sceneOrder, progressOf, routeLengths,
     validateLayout, generateLayout, initRun, fieldOf, configFor, graphFor, validField, sanitize, typeAt, nodeTypeName, assignOfType, turnInfo,
     fatigue, addFatigue, rollFatigue, canRoll, recover, carryFatigue, registerFatigueItem, fatigueItemEffect, useFatigueItem,

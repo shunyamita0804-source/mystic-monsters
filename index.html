@@ -1417,6 +1417,36 @@ button.mkc b{font-size:.9rem}button.mkc small{font-size:.66rem;color:#ffe9b0}
 @keyframes chfencart{0%{opacity:0;transform:scale(.5) rotate(-10deg)}60%{opacity:1;transform:scale(1.06) rotate(0)}100%{opacity:1;transform:scale(1)}}
 @keyframes chfenctx{0%{opacity:0;transform:scale(1.35)}60%{opacity:1;transform:scale(.97)}100%{opacity:1;transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){.chf-cutin,.chf-twarn,.chf-enc::before,.chf-enc-art,.chf-enc-tx{animation-duration:.01s}}
+/* 遭遇の演出（2026-10-04 G3。デザイン参考 D＝野生／E＝ライバルの構図と色。人物・モンスターは正式素材だけ）：.chf-enc2
+   野生＝周りを少し暗く・足元に金と翠の魔法陣・正式のモンスター・ENCOUNTER の帯。赤い刃の交差（旧カットイン）は使わない／レア＝金の後光／ライバル＝赤と金・RIVAL の帯 */
+.chf-enc.chf-enc2{position:absolute;inset:0;top:0;z-index:21;display:block;transform:none;pointer-events:none;transition:opacity .22s ease}
+.chf-enc.chf-enc2::before{content:none}
+.chf-enc.chf-enc2.out{opacity:0}
+.chf-enc2 .ce-veil{position:absolute;inset:0;background:radial-gradient(ellipse 80% 62% at 50% 56%,rgba(4,10,24,0) 30%,rgba(4,10,24,.55) 78%,rgba(4,10,24,.72));animation:cefade .35s ease-out both}
+.chf-enc2.t-rival .ce-veil{background:radial-gradient(ellipse 80% 62% at 50% 58%,rgba(30,4,8,.2) 25%,rgba(24,4,10,.66) 75%,rgba(14,2,8,.8))}
+.chf-enc2 .ce-stage{position:absolute;left:50%;top:56%;width:min(80vw,330px);height:min(80vw,330px);transform:translate(-50%,-50%)}
+.chf-enc2 .ce-circle{position:absolute;left:50%;bottom:6%;width:96%;height:30%;transform:translateX(-50%);border-radius:50%;border:2px solid rgba(244,214,130,.9);box-shadow:0 0 18px 4px rgba(242,208,120,.45),inset 0 0 16px rgba(242,208,120,.5);background:radial-gradient(closest-side,rgba(255,236,170,.35),rgba(150,220,170,.12) 60%,rgba(0,0,0,0));animation:cecircle .55s cubic-bezier(.2,.8,.3,1) both}
+.chf-enc2 .ce-circle.in{width:70%;height:21%;bottom:10.5%;border-width:1px;border-style:dashed;border-color:rgba(214,240,200,.85);box-shadow:none;background:none;animation:cecircle .55s .08s cubic-bezier(.2,.8,.3,1) both}
+.chf-enc2.t-rival .ce-circle{border-color:rgba(255,120,100,.95);box-shadow:0 0 22px 6px rgba(230,40,40,.45),inset 0 0 16px rgba(255,170,120,.55);background:radial-gradient(closest-side,rgba(255,120,80,.35),rgba(160,10,20,.18) 60%,rgba(0,0,0,0))}
+.chf-enc2.t-rival .ce-circle.in{border-color:rgba(245,205,120,.9);background:none;box-shadow:none}
+.chf-enc2 .ce-mon{position:absolute;left:50%;bottom:16%;height:72%;width:auto;max-width:100%;object-fit:contain;transform:translateX(-50%);filter:drop-shadow(0 6px 10px rgba(0,0,0,.55));animation:cemon .6s .06s cubic-bezier(.2,.75,.3,1) both}
+.chf-enc2 .ce-halo{position:absolute;left:50%;top:44%;width:120%;height:120%;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(255,236,190,.55),rgba(255,214,140,.22) 45%,rgba(255,214,140,0) 72%);animation:chfhalo 1.4s ease-out both}
+.chf-enc2 .ce-mote{position:absolute;left:var(--x);bottom:16%;width:var(--s);height:var(--s);border-radius:50%;background:#fff6d6;box-shadow:0 0 6px 2px rgba(255,226,150,.8);opacity:0;animation:cemote 1.4s var(--dl) ease-out both}
+.chf-enc2.t-rival .ce-mote{background:#ffb08a;box-shadow:0 0 6px 2px rgba(255,70,50,.75)}
+.chf-enc2 .ce-band{position:absolute;left:0;right:0;top:calc(56% + min(40vw,165px) - 6px);display:flex;justify-content:center;animation:cefade .4s .12s ease-out both}
+.chf-enc2 .ce-band span,.chf-enc2 .ce-top span{display:block;min-width:62%;padding:5px 18px 6px;text-align:center;font:700 13px/1.2 "Shippori Mincho",var(--mm-font-head,serif);letter-spacing:.42em;text-indent:.42em;color:#f4e2b2;background:linear-gradient(90deg,rgba(10,18,40,0),rgba(10,18,40,.86) 18%,rgba(10,18,40,.86) 82%,rgba(10,18,40,0));border-top:1px solid rgba(232,199,125,.8);border-bottom:1px solid rgba(232,199,125,.8)}
+.chf-enc2 .ce-top{position:absolute;left:0;right:0;top:15%;display:flex;justify-content:center;animation:cefade .3s ease-out both}
+.chf-enc2.t-rival .ce-top span{font-size:15px;color:#ffe2c0;background:linear-gradient(90deg,rgba(60,6,12,0),rgba(70,8,16,.9) 18%,rgba(70,8,16,.9) 82%,rgba(60,6,12,0));border-color:rgba(240,190,110,.9);text-shadow:0 0 8px rgba(255,90,60,.6)}
+.chf-enc2 .ce-badge{position:absolute;left:50%;top:calc(56% - min(40vw,165px) + 4px);transform:translateX(-50%);padding:2px 12px 3px;border:1px solid rgba(236,206,140,.85);border-radius:3px;background:rgba(14,22,44,.86);color:#f3ecd9;font:700 12px/1.3 var(--mm-font-head);font-style:normal;letter-spacing:.12em;animation:cefade .4s .1s ease-out both}
+.chf-enc2 .ce-tx{position:absolute;left:0;right:0;top:calc(56% + min(40vw,165px) + 28px);margin:0 auto;width:max-content;max-width:94%;padding:6px 22px 7px;font:900 clamp(17px,5.2vw,23px)/1.25 var(--mm-font-head);letter-spacing:.04em;color:#fff;text-align:center;text-shadow:0 2px 0 #0b1530,0 0 8px rgba(0,0,0,.9);animation:cetx .4s .14s ease-out both}
+.chf-enc2.t-rival .ce-tx{top:calc(40% + min(32vw,135px) + 4px);text-shadow:0 2px 0 #3a0610,0 0 10px rgba(255,60,40,.55)}
+.chf-enc2.t-rival .ce-stage{top:40%;width:min(64vw,270px);height:min(64vw,270px)} /* ライバルの立つ所＝道の先（自分のモンスターの足元に重ねない。リュウの正式な立ち絵は無い＝人物は描かない） */
+@keyframes cefade{from{opacity:0}}
+@keyframes cecircle{from{opacity:0;transform:translateX(-50%) scale(.4)}}
+@keyframes cemon{from{opacity:0;transform:translateX(-50%) translateY(18px) scale(.92)}}
+@keyframes cemote{0%{opacity:0;transform:translateY(0)}25%{opacity:1}100%{opacity:0;transform:translateY(-120px)}}
+@keyframes cetx{from{opacity:0;transform:translateY(8px)}}
+@media (prefers-reduced-motion:reduce){.chf-enc2 *{animation-duration:.01s!important;animation-iteration-count:1!important}}
 .chpop.out{opacity:0;transform:translate(-50%,-60%);transition:opacity .16s,transform .16s}
 @keyframes chpop{from{opacity:0;transform:translate(-50%,-40%) scale(.9)}}
 /* サイコロ：1枚の正式画像を translate・rotate・scale で動かす（連番画像は使わない）。STOP の上から飛び、フィールドの手前に落ちて正式の角度で止まる。止まったら金色の光の輪と出目 */
@@ -3569,7 +3599,10 @@ function p8FxText(r){const f=r.fx||{},L=k=>LAB[k];let t;
  else if(f.note=="goal")t="";
  else t="何も起きなかった。";
  return (t+(r.goal?" ゴールに到着した！":r.timeUp?" ターンを使い切った…":"")).trim()}
-function bBattleGo(){const m=S.m;if(bBusy||!m)return;const bt=m.raise&&m.raise.pend&&m.raise.pend.fx?m.raise.pend.fx.battleType:null,rk=bt=="rival"&&window.MMRIVAL?MMRIVAL.rankFor(m):MMP8.practiceRank(m);if(!MMP8.beginBattle(S,m,{kind:"practice",rank:rk}).ok)return board();save();fight(rk)} // 2026-10-03 品質向上：BATTLE 画面（p9PreBattle）→ VS の二重をやめ、fight() の導入（両者の対面＋VS）だけにする // 2026-10-04：ライバル（リュウ）の強さは今の個体の能力に近いランク（js/phase8/rival.js）
+function bBattleGo(){const m=S.m;if(bBusy||!m)return;const bt=m.raise&&m.raise.pend&&m.raise.pend.fx?m.raise.pend.fx.battleType:null,rk=bt=="rival"&&window.MMRIVAL?MMRIVAL.rankFor(m):MMP8.practiceRank(m);const fs=bt!="rival"&&window.MMCH&&MMCH.foeSpecies&&m.raise&&m.raise.field?MMCH.foeSpecies(m,SP.length):-1;if(!MMP8.beginBattle(S,m,{kind:"practice",rank:rk}).ok)return board();save();battleFoeOnce(fs);fight(rk)}
+/** 2026-10-04 G3：遭遇の演出で見せた野生・レアの相手の種族を、そのままバトルへ（fight() は変えない＝相手の種族は fight() の最初の乱数 R(種族数) で決まるので、その1回だけその種族の値を返す。次の乱数からは元どおり） */
+function battleFoeCount(){return SP.length} // バトルの相手になれる種族の数（fight() の R(SP.length)。番号は MMP10M の内部番号と同じ）
+function battleFoeOnce(sp){const n=SP.length;if(!(sp>=0&&sp<n))return;const orig=Math.random;let done=false;Math.random=function(){if(!done){done=true;Math.random=orig;return (sp+.5)/n}return orig()};setTimeout(()=>{if(!done){done=true;Math.random=orig}},0)} // 2026-10-03 品質向上：BATTLE 画面（p9PreBattle）→ VS の二重をやめ、fight() の導入（両者の対面＋VS）だけにする // 2026-10-04：ライバル（リュウ）の強さは今の個体の能力に近いランク（js/phase8/rival.js）
 function bBattleSkip(){const m=S.m;if(bBusy||!m)return;const r=MMP8.skipBattleSquare(S,m);if(!r.ok)return board();save();board("練習試合はやめておいた。"+(r.goal?" ゴールに到着した！":r.timeUp?" ターンを使い切った…":""))}
 // ---- ゴール／Chapter終了 ----
 // ---- 公式ランク大会（総当たりリーグ）：ランクの選択・順位表・試合 ----

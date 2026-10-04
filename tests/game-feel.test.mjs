@@ -138,7 +138,7 @@ test('GF-08：Chapter のイベント（config.story）：データ駆動（本�
   assert.deepEqual(CH.storyEvents(m, 'start').map((e) => e.id), ['ch1_start']);
   CH.markStory(m, 'ch1_start'); assert.deepEqual(CH.storyEvents(m, 'start'), [], '1回だけ'); assert.deepEqual(m.raise.field.storySeen, ['ch1_start']);
   m.raise.node = 'p5_1'; assert.deepEqual(CH.storyEvents(m, 'land').map((e) => e.id), ['ch1_fork_near'], '分かれ道の近く');
-  m.raise.node = 'p4_4'; assert.deepEqual(CH.storyEvents(m, 'land', { visitedFields: [4] }).map((e) => e.id), [], '今いる背景と今回通った背景だけ'); assert.deepEqual(CH.storyEvents(m, 'land', { visitedFields: [4, 5] }).map((e) => e.id), ['ch1_fork_near'], '今回の移動で 05 を通った');
+  m.raise.node = 'p4_4'; assert.deepEqual(CH.storyEvents(m, 'land', { visitedFields: [4] }).map((e) => e.id), ['ch1_rival_before'], '今いる背景と今回通った背景だけ（2026-10-04 G3：ライバルが 05 の最初へ移ったので、その手前の 04 で「この先に誰かいる…」）'); assert.deepEqual(CH.storyEvents(m, 'land', { visitedFields: [4, 5] }).map((e) => e.id), ['ch1_rival_before', 'ch1_fork_near'], '今回の移動で 05 を通った（優先度の高いほうを1つ出す）');
   m.raise.node = 'p9_2'; m.raise.field.branch = 'bridge'; assert.deepEqual(CH.storyEvents(m, 'land', { species: 'gauru' }).map((e) => e.id).slice(0, 2), ['ch1_bridge_gauru', 'ch1_bridge'], '種族の一言が優先');
   assert.deepEqual(CH.storyEvents(m, 'land', { species: 'solamo' }).map((e) => e.id)[0], 'ch1_bridge');
   m.raise.node = 'p3_2'; m.raise.field.branch = null; assert.deepEqual(CH.storyEvents(m, 'land', { fx: { kind: 'battle', battleType: 'wild' } }).map((e) => e.id), ['ch1_first_wild']);
@@ -158,7 +158,7 @@ test('GF-09：Chapter の演出の流れ（field-view・サイコロ）：能力
   order(chest, ['beatOf(3)', "classList.remove('hid')", "classList.add('shake')", "feel('chest.open'", 'goldToHud(g0, g1']);
   assert.match(FV, /async function goldToHud\(from, to, srcEl\)/); assert.match(FV, /feel\('gold\.get'\); bump\(g\); await countUp\(b, from, to, 420\);/);
   const enc = FV.slice(FV.indexOf('  async function encounter(m, bt) {'), FV.indexOf('  /** 通常マス（LEVEL 1）'));
-  order(enc, ['Math.max(380, beatOf(4))', 'chf-rustle', 'chf-alert', 'await encounterShow(BT, bt)', 'async function encounterShow', 'chf-enc', "feel('wild.alert'", 'await wait(1250)']);   // 2026-10-03：静止 → 予兆 → 絵と文を同時に → 遭遇の音 → 読める間
+  order(enc, ['Math.max(380, beatOf(4))', 'chf-alert', 'await encounterShow(BT, bt, m)', 'async function encounterShow', 'chf-enc2', 'feel(cue', 'await wait(rival ? 1350 : 1500)']);   // 2026-10-04 G3：静止 →「！」（予兆の草は出さない）→ 絵と文を同時に → 遭遇の音 → 読める間
   assert.match(res, /else touchTile\(tile\);/, '通常マスは足元が軽く光るだけ');
   assert.match(res, /await storyAt\(m, 'land', \{ fx, goal: !!r\.goal \}\);/);
   assert.match(DR, /feel\('dice\.throw'\); landT = setTimeout\(\(\) => \{ ov\.classList\.add\('landed'\); feel\('dice\.land'\); \}, T \* 0\.6\);/);

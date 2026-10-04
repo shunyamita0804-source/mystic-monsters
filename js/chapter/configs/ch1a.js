@@ -3,7 +3,8 @@
 //  このファイルはデータだけ。背景を決まった順にだけ1回ずつ通り、各背景の実際の道の中央線の上にマスを置く。
 //  2026-10-02（正式背景）：assets/fields/ch1a/final/field/ch1_bg_01〜14（出どころは assets/fields/ch1a/final/README.md）。
 //  2026-10-02（60マス再設計）：共通区間 01〜05 → 05 の最後のマス＝分かれ道 → 森の道（06 大樹の森・07 深い森の小道）／大橋の道（08 水道橋の見える道・09 天空の大橋）
-//   → 10 風の丘の最初のマス＝合流 → 終盤 11〜13 → 14 大会会場の門前（ライバル → ゴール）。1回の旅で通る背景は12枚（森か大橋のどちらか）。
+//   → 10 風の丘の最初のマス＝合流 → 終盤 11〜13 → 14 大会会場の門前（ゴール）。1回の旅で通る背景は12枚（森か大橋のどちらか）。
+//   2026-10-04 G3：ライバル（リュウ・強制停止）は 05 の最初のマス p5_0（野生 → イベント → ライバル → 分かれ道 → さらに冒険 → 大会）。旧：14 の最初のマス（大会の直前）
 //   14 の最後のマス＝ゴールに着いたら、到着イベント専用の背景 final/event/ch1_bg_15_event（マス・サイコロなし）→ フィナの会話 → 大会受付（config.arrival）。
 //   旧構成の背景（field/ 10枚・road/ 15枚・journey/ 13枚）はファイルを残すが参照しない。
 //  BACKGROUNDS：背景ごとに backgroundId・route・image・表示名【暫定】・地形・道の中央線 road [y, x, 半幅]（画像を目視で読んだ値。背景に対する割合）・
@@ -33,7 +34,7 @@
       nodes: [[0.5,0.87,'rest'],[0.51,0.752,'stat_life'],[0.52,0.653,'normal'],[0.52,0.573,'wild'],[0.52,0.51,'event']] },
     { backgroundId: '05', route: 'common', image: F + 'ch1_bg_05.webp', name: '滝の見える道', terrain: 'forest',
       road: [[0.97,0.5,0.45],[0.85,0.5,0.38],[0.75,0.49,0.3],[0.68,0.5,0.24],[0.62,0.52,0.17],[0.59,0.53,0.13]],
-      nodes: [[0.5,0.87,'normal'],[0.49,0.753,'stat_intelligence'],[0.528,0.595,'branch']] },
+      nodes: [[0.5,0.87,'rival'],[0.49,0.753,'stat_intelligence'],[0.528,0.595,'branch']] },
     // ---- 森の道（分かれ道の左）：大樹の森 → 深い森の小道。能力・イベント・休む・宝が多い ----
     { backgroundId: '06', route: 'forest', image: F + 'ch1_bg_06.webp', name: '大樹の森', terrain: 'forest',
       road: [[0.97,0.5,0.45],[0.85,0.5,0.38],[0.75,0.51,0.31],[0.68,0.54,0.21],[0.63,0.57,0.12],[0.59,0.6,0.07]],
@@ -63,7 +64,7 @@
       nodes: [[0.472,0.87,'wild'],[0.477,0.69,'event']] },
     { backgroundId: '14', route: 'late', image: F + 'ch1_bg_14.webp', name: '大会会場の門前', terrain: 'highland',
       road: [[0.97,0.5,0.48],[0.85,0.5,0.47],[0.75,0.5,0.4],[0.7,0.5,0.3],[0.66,0.5,0.22],[0.63,0.5,0.15]],
-      nodes: [[0.5,0.87,'rival'],[0.5,0.769,'normal'],[0.5,0.68,'goal']] },
+      nodes: [[0.5,0.87,'normal'],[0.5,0.769,'normal'],[0.5,0.68,'goal']] },   // 2026-10-04 G3：ライバルは 05 の最初のマス（p5_0）へ移した（旧：ここ p14_0＝大会の直前）
   ];
   const TOTAL_TILES = 54;   // 公式マスの総数（スタートを含まない。森・大橋の両方を合わせた全体。tests/chapter-engine.test.mjs と layoutRules.expect で確認）
   // 2026-10-04（30ターンの正式仕様に合わせた最小限の調整）：効果の無い通常マス6つ（旧 p3_3・p5_2・p9_2・p9_5・p12_3・p13_2）を外し、森・大橋とも 46歩に。背景・サイコロ 1〜3・能力／イベント／野生／宝／休む／ライバル／ゴールの数と位置は変えていない。
@@ -87,7 +88,7 @@
   const ORDER = BACKGROUNDS.map((B) => B.backgroundId), NODES = Object.fromEntries(BACKGROUNDS.map((B) => [B.backgroundId, B.nodes.filter((q) => q[2] !== 'start').length]));
   const ROUTES = { common: ['01', '02', '03', '04', '05'], forest: ['06', '07'], bridge: ['08', '09'], late: ['10', '11', '12', '13', '14'] };
   P(PID('01')).start = true;
-  P(PID('14')).goal = true;   // ゴール＝14 の最後のマス（大会会場の門前）。ライバル（強制停止）はその2つ手前
+  P(PID('14')).goal = true;   // ゴール＝14 の最後のマス（大会会場の門前）。ライバル（強制停止）は 2026-10-04 G3 から道中の p5_0（分かれ道の2つ手前・森も大橋も通る・46歩のうち19歩目。旧：ゴールの2つ手前＝大会の直前すぎた）
   const BRANCH_AT = `${PID('05')}${N(PID('05')) - 1}`;
   // 分かれ道（05 の最後のマス）：左＝森の道、右＝大橋の道。gate＝分かれ道で道の先に立てる左右の門（正式素材 tiles/branch_gate_left・right。ZIP の 02_branching を透過化）。label・desc は【暫定】
   const BRANCHES = [{ at: BRANCH_AT, options: [
@@ -198,9 +199,9 @@
     treasurePool: { tierWeights: { normal: 70, rare: 25, special: 5 }, contents: { handler: 'gold_table', params: { table: [{ w: 4, gold: 50 }, { w: 1, gold: 150 }] } } },
     battleTypes: {
       // encounter（2026-10-03）：遭遇の演出の文（絵と同時に出る）【暫定の文面】。tone＝帯の色（wild 赤金・rare 深紅・rival 紫）。ライバルは草むらの揺れ・野生のカットインを使わない
-      wild: { label: '野生のモンスター', asset: 'battle_wild', cutin: 'fx_battle_encounter', encounter: '野生のモンスターが現れた！', tone: 'wild' },   // cutin：野生バトル突入のカットイン（2026-10-02 正式。赤と金の交差。レア・ライバルには付けない）
+      wild: { label: '野生のモンスター', asset: 'battle_wild', encounter: '野生のモンスターが現れた！', tone: 'wild' },   // 2026-10-04 G3：遭遇は正式のモンスター＋魔法陣＋ENCOUNTER（field-view の encounterShow）。赤い刃の交差のカットイン（fx_battle_encounter）は野生には強すぎるので使わない（素材は残す）   // cutin：野生バトル突入のカットイン（2026-10-02 正式。赤と金の交差。レア・ライバルには付けない）
       rare: { label: 'レアモンスター', asset: 'battle_wild', encounter: 'レアモンスターが現れた！', tone: 'rare', aura: true, badge: '★ レア' },   // aura（2026-10-03 デザイン参考 04）：同じ遭遇の作りに淡い後光・金のリムライト・光の粒・「★ レア」の札（見た目だけ。出現率・判定は変えない）   // レアモンスターマス（10%）。敵データ・報酬・遭遇演出は未登録＝【暫定】バトルの中身は野生と同じ
-      rival: { label: 'ライバルのリュウ', name: 'リュウ', asset: 'battle_rival', figure: null, encounter: 'リュウが立ちはだかった！', tone: 'rival', noRustle: true, sting: { title: 'RIVAL', sub: 'ライバル・リュウが現れた', ms: 880 },
+      rival: { label: 'ライバルのリュウ', name: 'リュウ', asset: 'battle_rival', figure: null, encounter: 'リュウが立ちはだかった！', tone: 'rival', noRustle: true,
         note: 'リュウの相棒は、今のこの子と同じくらいの強さみたい。' },   // 2026-10-04：ライバルの正式名＝リュウ（各 Chapter に登場する同一人物。相棒モンスターは未確定）。強さは js/phase8/rival.js（MMRIVAL）   // sting（2026-10-03 デザイン参考 04 の A1）：1秒未満の「RIVAL」の映画的な一瞬（ネイビー・アイボリーの細い罫線）。ライバルの会話（A2）・自動でバトルへ（A3）は未決＝ライバルの人物・会話のデータが無い
     },
     // ---- Chapter のイベント（2026-10-02。MMCH.storyEvents のデータ。本文は【暫定】）：フィナは節目だけ話す（通常マスごとには話さない）。
@@ -225,7 +226,7 @@
       { id: 'ch1_bridge_gauru', trigger: 'land', priority: 13, when: { branch: 'bridge', field: [9], species: ['gauru'] }, lines: [{ expression: 'smile', text: 'ガウル、風が気持ちいいのかな。うれしそう！' }] },
       { id: 'ch1_merge', trigger: 'land', priority: 11, when: { field: [10] }, lines: [{ expression: 'smile', text: '道がひとつに戻ったね。大会会場はもうすぐだよ。' }] },
       { id: 'ch1_castle', trigger: 'land', priority: 11, when: { field: [13] }, lines: [{ expression: 'happy', text: 'お城が見えてきた！ あそこが大会会場だよ。' }] },
-      { id: 'ch1_rival_before', trigger: 'land', priority: 20, when: { field: [14] }, lines: [{ expression: 'serious', text: '門の前に誰かいる…。もしかして、ライバル？' }] },
+      { id: 'ch1_rival_before', trigger: 'land', priority: 20, when: { field: [4] }, lines: [{ expression: 'serious', text: 'この先に誰かいる…。もしかして、ライバル？' }] },
       { id: 'ch1_special_event', trigger: 'land', priority: 25, when: { tier: 'special' }, lines: [{ expression: 'surprised', text: 'すごい…！ 今のは、めったに起きないことだよ！' }] },
       { id: 'ch1_tired', trigger: 'land', priority: 5, when: { fatigueMin: 80 }, lines: [{ expression: 'worried', text: 'だいぶ疲れてきたみたい。無理しないで、休もうね。' }] },
     ],

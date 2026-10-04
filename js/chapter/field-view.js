@@ -598,6 +598,7 @@
     const r = m.raise, ph = P8().boardPhase(m), f = MMCH.fieldOf(m);
     V.cfg = MMCH.configFor(m); V.g = MMCH.graphFor(m); V.calm = calmMode();
     evArtPreload(m);   // 2026-10-04（追加アセット）：この配置の出来事の挿絵を少しずつ先読み
+    if (!V.foeWarm && root.MMP10M && typeof Image !== 'undefined') { V.foeWarm = 1; setTimeout(() => (MMP10M.SPECIES || []).forEach((x) => { if (x.image) { const im = new Image(); im.decoding = 'async'; im.src = x.image.src; } }), 1200); }   // 2026-10-04 G3：遭遇の演出で見せる相手の正式画像（4枚）
     const node = V.g.nodes[r.node] || V.g.nodes[V.g.start], key = `${m.uid}:${f.chapterId}:${f.patternId}:${f.layoutSeed}`;
     if (root.MMCHD) { if (V.diceCfg !== (V.cfg.dice || V.cfg)) { MMCHD.configure({ ...(V.cfg.dice || {}), sides: MMCH.rulesOf(V.cfg).diceSides }); V.diceCfg = V.cfg.dice || V.cfg; } MMCHD.preload(); }   // 面の数は rules.diceSides（停止面が無い出目は数字で出す）
     const app = $('#app'), same = V.key === key && V.field === node.field && $('#chf');
@@ -928,47 +929,44 @@
   async function encounter(m, bt) {
     const fx = $('#chffx'), w = $('#bmonw'); if (!fx || !w || !V.monPos) return;
     V.moving = false; anim('idle');
-    // 2026-10-03（試遊で「UI が一瞬光るだけ」）：移動が止まる → 短い静止 → 予兆（草むら・！）→ 遭遇の演出（絵と文を同時に）→ 見せる → バトルの案内
+    // 2026-10-04 G3（実機で「遭遇の文が出た瞬間に右下へ古い草の断片が一瞬見える」）：予兆の草むら（.chf-rustle＝手前の草の帯を切り出した細い帯。画像の読み込みが遅いと
+    //  文の直前に現れ、壊れた UI の断片に見えた）は出さない。順序：止まる → 短い静止 →「！」→「！」を消す → 遭遇の演出（予兆の物は演出を出す前に必ず無い）
     const BT = (V.cfg.battleTypes || {})[bt] || {};
-    await wait(V.calm ? 0 : Math.max(380, beatOf(4)));   // 止まった直後の静止（「何かいる…」の間）
-    if (BT.noRustle) return encounterShow(BT, bt);
-    const d = V.monPos.d, side = V.facing >= 0 ? 1 : -1, x = V.monPos.x + side * 92 * d, y = V.monPos.y + 10 * d, src = asset(V.cfg, (V.cfg.nodeLook && V.cfg.nodeLook.tuft) || 'grass_front');
-    fx.insertAdjacentHTML('beforeend', `<i class="chf-rustle" style="left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;width:${(190 * d).toFixed(0)}px;height:${(72 * d).toFixed(0)}px;background-image:url(${src});background-position:${(-rnd01() * 700).toFixed(0)}px 100%"></i>`);
-    camFocus({ x, y }, 0.3, CA().zoom.focus);
-    await wait(V.calm ? 0 : 300);   // 草むらが揺れる（予兆）
-    fx.insertAdjacentHTML('beforeend', `<i class="chf-alert" style="left:${V.monPos.x.toFixed(1)}px;top:${(V.monPos.y - monH() * d * 1.02).toFixed(1)}px;--d:${d}">！</i>`);
-    await wait(V.calm ? 0 : 260);   // 「！」を見せてから
-    // 2026-10-03 夜（試遊で「遭遇の文の下に草むらの絵が残る」）：予兆（草むら・！）は遭遇の演出を出す前に必ず消す（確定の表示に予兆の絵を重ねない）
     fx.querySelectorAll('.chf-rustle,.chf-alert').forEach((e) => e.remove());
-    await encounterShow(BT, bt);
+    await wait(V.calm ? 0 : Math.max(380, beatOf(4)));   // 止まった直後の静止（「何かいる…」の間）
+    if (BT.noRustle) return encounterShow(BT, bt, m);
+    const d = V.monPos.d;
+    fx.insertAdjacentHTML('beforeend', `<i class="chf-alert" style="left:${V.monPos.x.toFixed(1)}px;top:${(V.monPos.y - monH() * d * 1.02).toFixed(1)}px;--d:${d}">！</i>`);
+    await wait(V.calm ? 0 : 420);   // 「！」を見せてから
+    fx.querySelectorAll('.chf-rustle,.chf-alert').forEach((e) => e.remove());
+    await encounterShow(BT, bt, m);
+  }
+  /** 野生・レアの相手の正式画像（MMCH.foeSpecies で決まる種族。バトルの相手と同じ） */
+  function foeImage(m) {
+    const P = root.MMP10M, n = typeof root.battleFoeCount === 'function' ? root.battleFoeCount() : 0;   // バトルの相手になれる種族の数（index.html の SP＝バトルの相手を選ぶ表）
+    if (!P || !P.byId || !(n > 0) || !MMCH.foeSpecies) return null;
+    const sp = P.byId(MMCH.foeSpecies(m, n)); return sp && sp.image ? { src: sp.image.src, name: sp.name } : null;
   }
   /**
-   * 遭遇の演出（2026-10-03）：絵（野生だけカットイン config.battleTypes.wild.cutin）と文（battleTypes[bt].encounter）を同じフレームで出す（ずらさない）。
-   *  出た瞬間に wild.alert（遭遇の音）→ 読める間だけ見せる → 消えてからバトルの案内。帯の色は tone（野生・レア・ライバルを見分ける）
+   * 遭遇の演出（2026-10-04 G3。デザイン参考 D／E の構図）：
+   *  野生＝自然・神秘的・少しの緊張：周りを少し暗く → 足元に金と翠の魔法陣 → 正式のモンスター（今回の相手。バトルの相手と同じ種族）→ ENCOUNTER の帯 → 文。赤い刃の交差（旧カットイン）は使わない
+   *  レア＝同じ作り＋淡い後光・光の粒・札、ライバル＝赤と金の差し色・RIVAL の帯・赤い魔法陣（リュウの正式な立ち絵は無い＝人物は描かない）
+   *  絵と文は同じフレームで出し、その瞬間に音（野生 wild.alert／ライバル rival.appear）。読める間だけ見せて消えてからバトルの案内
    */
-  async function encounterShow(BT, bt) {
-    const ui = $('#chf-ui'), cut = BT.cutin ? effectAsset(BT.cutin) : null, text = BT.encounter || '';
-    if (!ui || V.calm || (!cut && !text)) { feel('wild.alert', { battleType: bt }); if (text) setMsg(text); await wait(V.calm ? 300 : 600); return; }
-    if (BT.sting) return stingShow(ui, BT, bt);
-    // aura（レア）：同じ作りに 淡い後光・金のリムライト・光の粒・札（見た目だけ）
-    const aura = BT.aura ? `<i class="chf-enc-halo"></i>${Array.from({ length: 12 }, (_, i) => `<i class="chf-enc-pt" style="--x:${(8 + ((i * 37) % 84)).toFixed(0)}%;--dl:${(i * 0.07).toFixed(2)}s;--s:${(3 + (i % 3) * 2)}px"></i>`).join('')}` : '';
-    ui.insertAdjacentHTML('beforeend', `<div class="chf-enc t-${esc(BT.tone || bt)}${BT.aura ? ' aura' : ''}" role="status">${aura}${cut ? `<img class="chf-enc-art" src="${esc(cut)}" alt="" draggable="false">` : '<i class="chf-enc-art chf-enc-flare"></i>'}${BT.badge ? `<em class="chf-enc-badge">${esc(BT.badge)}</em>` : ''}<b class="chf-enc-tx">${esc(text)}</b></div>`);
-    const el = ui.querySelector('.chf-enc:last-child');
-    feel('wild.alert', { battleType: bt });   // 絵と文が出た瞬間
-    await wait(1250);   // 読める間（文＋絵）
-    if (el) { el.classList.add('out'); await wait(180); el.remove(); }
-  }
-  /**
-   * ライバルの登場（2026-10-03 デザイン参考 04 の A1「RIVAL」フラッシュ）：画面いっぱいのネイビーに「RIVAL」と「ライバルが現れた」を1秒未満だけ（config.battleTypes.rival.sting）。
-   *  見た目だけ（バトルへの進み方・判定は従来のまま。このあと従来どおりバトルの案内）
-   */
-  async function stingShow(ui, BT, bt) {
-    const S1 = BT.sting || {}, ms = Math.max(400, Math.min(980, S1.ms || 880));
-    ui.insertAdjacentHTML('beforeend', `<div class="chf-sting t-${esc(BT.tone || bt)}" role="status" style="--ms:${ms}ms"><i class="chf-sting-ring"></i><b>${esc(S1.title || '')}</b><small>${esc(S1.sub || BT.encounter || '')}</small></div>`);
-    const el = ui.querySelector('.chf-sting:last-child');
-    feel('wild.alert', { battleType: bt });
-    await wait(ms - 160);
-    if (el) { el.classList.add('out'); await wait(160); el.remove(); }
+  async function encounterShow(BT, bt, m) {
+    const ui = $('#chf-ui'), text = BT.encounter || '', rival = bt === 'rival', cue = rival ? 'rival.appear' : 'wild.alert';
+    if (!ui || V.calm || !text) { feel(cue, { battleType: bt }); if (text) setMsg(text); await wait(V.calm ? 300 : 600); return; }
+    const foe = rival ? null : foeImage(m), tone = esc(BT.tone || bt);
+    const motes = Array.from({ length: rival ? 14 : 10 }, (_, i) => `<i class="ce-mote" style="--x:${(10 + ((i * 41) % 80)).toFixed(0)}%;--dl:${(i * 0.09).toFixed(2)}s;--s:${(3 + (i % 3) * 2)}px"></i>`).join('');
+    const label = rival ? 'RIVAL' : 'ENCOUNTER';
+    ui.insertAdjacentHTML('beforeend', `<div class="chf-enc chf-enc2 t-${tone}${BT.aura ? ' aura' : ''}" role="status" aria-label="${esc(text)}">
+      <i class="ce-veil"></i>${rival ? `<div class="ce-top"><span>✦ ${label} ✦</span></div>` : ''}
+      <div class="ce-stage">${BT.aura ? '<i class="ce-halo"></i>' : ''}<i class="ce-circle"></i><i class="ce-circle in"></i>${motes}${foe ? `<img class="ce-mon" src="${esc(foe.src)}" alt="${esc(foe.name)}" draggable="false">` : ''}</div>
+      ${rival ? '' : `<div class="ce-band"><span>${label}</span></div>`}${BT.badge ? `<em class="ce-badge">${esc(BT.badge)}</em>` : ''}<b class="ce-tx">${esc(text)}</b></div>`);
+    const el = ui.querySelector('.chf-enc2:last-child');   // 旧い名前 chf-enc も持つ（待ち合わせ・監査のテストが使う。見た目は .chf-enc2 だけ）
+    feel(cue, { battleType: bt });   // 絵と文が出た瞬間
+    await wait(rival ? 1350 : 1500);   // 読める間（文＋絵）
+    if (el) { el.classList.add('out'); await wait(220); el.remove(); }
   }
   /**
    * 宝箱の開封アニメーション（2026-10-03 正式素材：config.tileUI.chests[tier].frames＝4枚）。見た目だけ（中身・報酬・セーブは resolveLanding の結果のまま）。

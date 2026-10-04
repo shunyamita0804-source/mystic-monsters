@@ -121,3 +121,58 @@ for (const size of SIZES) {
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   });
 }
+
+/** 新しいゲーム → 育成中の個体を作って Chapter 1 へ */
+async function toChapter(pg) {
+  await H.newGame(pg, 'テスト');
+  await pg.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); save(); board(); });
+  await pg.waitForSelector('#chf .chf-bg');
+}
+const fieldIdle = (pg) => pg.waitForFunction(() => !bBusy && !MMCHD.isLocked() && !document.querySelector('.chpop,.chdz,.chf-enc,.chf-fina,.mmtalk'), null, { timeout: 20000 }).then(() => pg.waitForTimeout(250));
+
+for (const size of SIZES) {
+  T(`G-G（${size.join('×')}）：Chapter 開始の演出のあと、育成中のモンスターは急に出ず、少し間をおいて画面の下から開始地点へ入る。入り終わるまで START は押せない`, async () => {
+    const p = await openPage({ size, intro: true }); const pg = p.page;
+    await toChapter(pg);
+    const tr = await pg.evaluate(async () => {
+      const out = []; const t0 = performance.now();
+      while (performance.now() - t0 < 12000) {
+        const w = document.querySelector('#bmonw'), fw = document.querySelector('#chfw'); if (!w || !fw) break;
+        const r = w.getBoundingClientRect(), op = +getComputedStyle(w).opacity;
+        out.push({ y: r.top, op, intro: fw.classList.contains('chf-intro'), wait: fw.classList.contains('chf-monwait'), busy: !!bBusy, t: performance.now() - t0 });
+        if (!fw.classList.contains('chf-intro') && !bBusy && out.length > 3 && !out[out.length - 2].busy) break;
+        await new Promise((r) => requestAnimationFrame(r));
+      }
+      return out;
+    });
+    const after = tr.filter((x) => !x.intro);
+    assert.ok(after.length > 5, '演出のあとの記録がある');
+    const shown = after.filter((x) => x.op > 0.05 && !x.wait);
+    const restY = shown[shown.length - 1].y;
+    assert.ok(shown[0].y > restY + 120, `最初に見えたときは開始地点より下（${Math.round(shown[0].y)} → ${Math.round(restY)}）`);
+    for (let i = 1; i < shown.length; i++) assert.ok(shown[i].y <= shown[i - 1].y + 1, '下から上へ入る（戻らない）');
+    assert.ok(after.some((x) => x.wait), '演出が終わってから少しの間は出さない（急に出ない）');
+    assert.ok(shown.filter((x) => x.y > restY + 2).every((x) => x.busy), '入り終わるまで START は押せない');
+    assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+  });
+
+  T(`G-H・G-I（${size.join('×')}）：野生の遭遇で草むらの断片・旧い予兆が1フレームも出ない（正式のモンスター＝バトルの相手）。ライバルは道中（p5_0）で、大会の直前ではない`, async () => {
+    const p = await openPage({ size }); const pg = p.page;
+    await toChapter(pg); await fieldIdle(pg);
+    const sk = await pg.evaluate(() => { const g = MMCH.graphFor(S.m); const k = (id) => g.nodes[id] && (g.nodes[id].kind === 'rival' ? 'rival' : g.nodes[id].tile); return { p5_0: k('p5_0'), p14_0: k('p14_0'), rivals: g.order.filter((id) => k(id) === 'rival') }; });
+    assert.deepEqual(sk.rivals, ['p5_0'], 'ライバルは p5_0 だけ'); assert.notEqual(sk.p14_0, 'rival', '大会会場の門前（p14_0）はライバルではない');
+    await pg.evaluate(() => { window.__g = { frames: 0, grass: 0 }; const tick = () => { if (document.querySelector('.chf-rustle')) __g.grass++; if (document.querySelector('.chf-enc2')) __g.frames++; if (!document.querySelector('.chbat') && __g.n++ < 4000) requestAnimationFrame(tick); }; __g.n = 0; requestAnimationFrame(tick); });
+    const id = await pg.evaluate(() => { const g = MMCH.graphFor(S.m), a = S.m.raise.field.nodeAssignments, id = g.order.find((x) => a[x] && a[x].t === 'battle' && a[x].bt === 'wild'); const r = S.m.raise; r.node = id; r.pend = { roll: 1, left: 0, stage: 'resolve' }; save(); board(); return id; });
+    await pg.waitForSelector('.chf-enc2 .ce-mon', { timeout: 15000 });
+    const enc = await pg.evaluate(() => ({ src: document.querySelector('.chf-enc2 .ce-mon').getAttribute('src'), band: document.querySelector('.chf-enc2 .ce-band').textContent, cut: !!document.querySelector('.chf-enc-art'), fs: MMCH.foeSpecies(S.m, battleFoeCount()) }));
+    assert.equal(enc.band, 'ENCOUNTER'); assert.equal(enc.cut, false, '赤い刃の交差のカットインは出さない');
+    await pg.waitForSelector('.chbat', { timeout: 15000 });
+    const g = await pg.evaluate(() => window.__g);
+    assert.ok(g.frames > 10, `遭遇の演出を見た（${g.frames}）`); assert.equal(g.grass, 0, '草むらの断片（.chf-rustle）は1フレームも出ない');
+    await pg.evaluate(() => bBattleGo()); await pg.waitForSelector('#bt #m1 img', { timeout: 15000 });
+    const bsrc = await pg.evaluate(() => document.querySelector('#bt #m1 img').getAttribute('src'));
+    assert.equal(bsrc, enc.src, `遭遇で見せた相手（${enc.src}）＝バトルの相手（${id}）`);
+    assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+  });
+}
+
