@@ -47,22 +47,22 @@ for (const size of SIZES) {
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   });
 
-  T(`H-B（${size.join('×')}）：牧場20体：一覧だけがスクロール・20体で預けられない・名前変更・売却（2度押し）・合体は無い`, async () => {
+  T(`H-B（${size.join('×')}）：牧場8体：一覧だけがスクロール・8体で預けられない・名前変更・売却（2度押し）・合体は無い`, async () => {
     const p = await openPage({ size }); const pg = p.page;
     await H.newGame(pg, 'アルト');
-    await pg.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; for (let i = 0; i < 20; i++) { const x = mk(i % 2); x.name = 'M' + i; MMP7.ensureProg(x); S.box.push(x); } save(); farm(); });
+    await pg.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; for (let i = 0; i < 8; i++) { const x = mk(i % 2); x.name = 'M' + i; MMP7.ensureProg(x); S.box.push(x); } save(); farm(); });
     await pg.waitForSelector('.rn2 .rngrid'); await pg.waitForTimeout(500); await H.finishTalk(pg).catch(() => {});
     const a = await pg.evaluate(() => { const g = document.querySelector('.rngrid'); return { cnt: document.querySelector('.rncnt').textContent.replace(/\s+/g, ''), cells: g.querySelectorAll('.rnc').length, cols: getComputedStyle(g).gridTemplateColumns.split(' ').length, scroll: g.scrollHeight > g.clientHeight,
       page: document.documentElement.scrollHeight, act: [...document.querySelectorAll('.rnact .rna span')].map((s) => s.textContent), fuse: /合体|Fuse/.test(document.querySelector('#app').innerText), sw: document.documentElement.scrollWidth }; });
-    assert.equal(a.cnt, '20/20'); assert.equal(a.cells, 20); assert.equal(a.cols, 2); assert.ok(a.scroll, '20体は一覧の中でスクロール'); assert.equal(a.page, size[1], 'ページはスクロールしない');
-    assert.deepEqual(a.act, ['見る', '名前変更', '受け取る', '売る']); assert.equal(a.fuse, false, '牧場に合体は無い'); assert.equal(a.sw, size[0]);
+    assert.equal(a.cnt, '8/8'); assert.equal(a.cells, 8); assert.equal(a.cols, 2);   /* 2026-10-06：牧場は8体（一覧はスクロールできる器のまま） */ assert.equal(a.page, size[1], 'ページはスクロールしない');
+    assert.deepEqual(a.act, ['見る', '名前変更', '預ける', '売る']);   /* 2026-10-06：最初は連れている子を選ぶ＝預ける */ assert.equal(a.fuse, false, '牧場に合体は無い'); assert.equal(a.sw, size[0]);
     const before = await pg.evaluate(() => document.querySelector('.rnact').getBoundingClientRect().top);
     await pg.evaluate(() => { document.querySelector('.rngrid').scrollTop = 9999; }); await pg.waitForTimeout(200);
     assert.equal(await pg.evaluate(() => document.querySelector('.rnact').getBoundingClientRect().top), before, '下のボタンは動かない');
     assert.ok((await inView(pg, '.rnact .rna')).every(Boolean));
-    // 連れている子を選ぶ → 預ける（20体なので押せない）
+    // 連れている子を選ぶ → 預ける（8体なので押せない）
     await pg.click('.rncur .rnc'); await pg.waitForSelector('.rna[onclick="dep()"]');
-    assert.equal(await pg.evaluate(() => document.querySelector('.rna[onclick="dep()"]').disabled), true, '20体のときは預けられない');
+    assert.equal(await pg.evaluate(() => document.querySelector('.rna[onclick="dep()"]').disabled), true, '8体のときは預けられない');
     // 名前変更
     await pg.click('.rngrid .rnc[data-uid]'); await pg.waitForTimeout(200);
     const uid = await pg.evaluate(() => rnSel);
@@ -74,11 +74,11 @@ for (const size of SIZES) {
     // 売却（2度押し）
     const g0 = await pg.evaluate(() => S.g);
     await pg.click('.rna.rnsell'); await pg.waitForSelector('.pfsell'); await pg.click('button[onclick="pfSellGo(this)"]');
-    assert.equal(await pg.evaluate(() => S.box.length), 20, '1回目は確定しない'); await pg.waitForTimeout(600); await pg.click('button[onclick="pfSellGo(this)"]');
-    await pg.waitForSelector('.rngrid'); assert.deepEqual(await pg.evaluate(() => [S.box.length, S.g]), [19, g0 + 50], '未育成は50G');
+    assert.equal(await pg.evaluate(() => S.box.length), 8, '1回目は確定しない'); await pg.waitForTimeout(600); await pg.click('button[onclick="pfSellGo(this)"]');
+    await pg.waitForSelector('.rngrid'); assert.deepEqual(await pg.evaluate(() => [S.box.length, S.g]), [7, g0 + 50], '未育成は50G');
     // 預けられるようになる
     await pg.click('.rncur .rnc'); await pg.waitForSelector('.rna[onclick="dep()"]'); assert.equal(await pg.evaluate(() => document.querySelector('.rna[onclick="dep()"]').disabled), false);
-    await pg.click('.rna[onclick="dep()"]'); await pg.waitForSelector('.rngrid'); assert.deepEqual(await pg.evaluate(() => [S.box.length, S.m]), [20, null]);
+    await pg.click('.rna[onclick="dep()"]'); await pg.waitForSelector('.rngrid'); assert.deepEqual(await pg.evaluate(() => [S.box.length, S.m]), [8, null]);
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   });
 

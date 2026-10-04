@@ -166,7 +166,7 @@ test('SL-8：画面：牧場に「モンスターを売る」→ 一覧（売却
 
 test('SL-9：既存の所持上限・合体料金・初回購入救済・継続用救済・市場価格は変えない', () => {
   const { P7, P8, M } = load();
-  assert.equal(M.OWN_LIMIT, 21); assert.equal(M.RANCH_LIMIT, 20); /* 2026-10-04 PHASE H3：牧場20体（正式） */ assert.equal(M.FUSION_COST, 200); assert.deepEqual(M.ECONOMY, { initialGold: 300, marketPrice: 500 });
+  assert.equal(M.OWN_LIMIT, 9); assert.equal(M.RANCH_LIMIT, 8); /* 2026-10-06：牧場8体（ユーザー指示） */ assert.equal(M.FUSION_COST, 200); assert.deepEqual(M.ECONOMY, { initialGold: 300, marketPrice: 500 });
   assert.match(between('async function fuse(){', '\nfunction tog('), /if\(S\.g<200\)return;S\.g-=200;/);
   assert.deepEqual(M.purchase({ g: 300 }, 'solamo', 0), { ok: true, key: 'solamo', price: 500, rescued: true, before: 300, after: 0 });
   const S = P8.newSave(); S.g = 450; S.m = doneMon(P7, P8, S, {});

@@ -2226,6 +2226,12 @@ button.p10karen img{display:block;width:100%;height:auto;margin-top:2px;transfor
 /* イベントの表示モード（2026-10-04 G2。js/npc/npc.js の evOn／evOff）：会話の間（data-mmev）は下の画面を押せない。施設・案内・ボードのイベント（data-mmhide="1"）では、下の画面の常設 NPC・吹き出し・会話欄を隠す
    （同じ人物が2人に見えない・会話のフェードで前の立ち絵と重なって見えない）。終わったら短いフェードで戻す */
 html[data-mmev] #app{pointer-events:none!important}
+/* 2026-10-06：重要イベント・初回イベント（MMNPC.talk の opts.scene）＝施設の正式背景＋大型の NPC＋会話だけ。下の画面（通常の UI・モンスター・一覧・コマンド・吹き出し）は丸ごと隠す */
+html[data-mmscene] #app,html[data-mmscene] #snd{visibility:hidden!important}
+.mmtalk.mmtalk-scene{background:#0b1636}
+.mmtalk-scene>.mmtalk-scenebg{position:absolute;inset:0;z-index:0;background:#0b1636 center/cover no-repeat;pointer-events:none}
+.mmtalk-scene>.mmtalk-scenebg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,12,30,.08) 0%,rgba(6,12,30,0) 40%,rgba(6,12,30,.45) 100%)}
+.mmtalk-scene>.mmtalk-stage{position:relative;z-index:1}
 html[data-mmhide="1"] #app :is(.nst,.fbub,.kbub,.fmdan,.shopnpc,.gssay,.elsay,.vgsay,.p9ced,#p10kbar,.chf-fina,.chf-fina-st,.tlow){opacity:0!important;visibility:hidden!important;animation:none!important;transition:none!important}
 html[data-mmev-back] #app :is(.nst,.fbub,.kbub,.fmdan,.shopnpc,.gssay,.elsay,.vgsay,.p9ced,#p10kbar,.tlow.on){animation:mmevBack .32s ease-out .09s both!important}
 @keyframes mmevBack{from{opacity:0}}
@@ -2447,7 +2453,6 @@ body:has(#app>.bu) #snd{display:none}
 .sts .sth{margin:0 0 6px;text-align:center;font:900 19px/1.3 var(--mm-font-head);letter-spacing:.12em;color:#fff3cf}
 .sts .sth::before,.sts .sth::after{content:"✦";margin:0 10px;font-size:12px;color:#e6bf62;vertical-align:2px}
 .sts .stgrid{display:grid;grid-template-columns:1fr 1.15fr;align-items:center;gap:6px}
-.sts .stspd .p11spd{display:grid;grid-template-columns:auto 1fr;align-items:center;column-gap:10px;margin-top:4px;padding:5px 4px 0;color:#f3ead2}.sts .stspd .dsh{display:flex;gap:8px;align-items:baseline;font-size:.82rem;white-space:nowrap}.sts .stspd .p11pips{margin:0}.sts .stspd .p11pips i{height:9px}.sts .stspd .p11cap{display:none}}
 .sts .stradar{width:100%;height:auto;overflow:visible}
 .sts .stradar .rg{fill:none;stroke:rgba(224,184,97,.55);stroke-width:1}.sts .stradar .rg:first-child{stroke:#e0b861;stroke-width:1.5}
 .sts .stradar .ax{stroke:rgba(224,184,97,.3);stroke-width:1}
@@ -3077,7 +3082,7 @@ let ft="a";
 const cname=({name:a},{name:b})=>Array.from(a).slice(0,2).join("")+Array.from(b).slice(-2).join(""); // 親1の名前の前2文字＋親2の名前の後ろ2文字。文字（コードポイント）単位で切る（絵文字を半分にしない）
 const slot=x=>x?`<div class="mon">${msv(x)}</div><b>${p11Esc(x.name)}</b>`:"<small>えらんでね</small>";
 function pasture(){const l=[S.m,...S.box].filter(Boolean);return `<div class="pasture"><span class="dc" style="left:6%;top:6%">☁️</span><span class="dc" style="right:10%;top:8%">☀️</span><span class="dc" style="left:3%;top:30%">🌳</span><span class="dc" style="right:3%;top:32%">🌳</span>${l.length?"":'<p class="pe">モンスターがいません</p>'}${l.map((x,i)=>`<div class="wk" style="top:${40+(i*23)%42}%;--d:${9+(i*5)%8}s;animation-delay:-${(i*3.7)%9}s"><div class="mon">${msv(x)}</div></div>`).join("")}</div>`}
-// 2026-10-04 PHASE H3：牧場（デザイン基準 01_ranch_20_ui_reference）。牧場は最大20体（MMP10M.RANCH_LIMIT。旧 7体）。2列の一覧（小さなアイコン・名前・育成完了／未育成の札）だけがスクロールし、
+// 2026-10-04 PHASE H3：牧場（デザイン基準 01_ranch_20_ui_reference）。2026-10-06：牧場は最大8体（MMP10M.RANCH_LIMIT）。2列の一覧（小さなアイコン・名前・育成完了／未育成の札）だけがスクロールし、
 //  選んだ子に 見る（様子を見る）・名前変更・受け取る（連れている子なら 預ける）・売る。合体は研究所（牧場には置かない）。売却・預ける・受け取るの処理は従来どおり（dep・wd・pfSellGo）
 let rnSel=null;
 function rnPick(uid){if(p8Blocked())return;rnSel=uid;pfSellUid=null;rnView=null;farm("","b")}
@@ -3086,13 +3091,13 @@ function rnCell(x){const t=rnTag(x);return `<button class="rnc${x.uid===rnSel?" 
 function rnRename(){if(p8Blocked())return;const x=[S.m,...S.box].find(v=>v&&v.uid===rnSel);if(!x)return farm("","b");const e=document.getElementById("rnnm");const v=(e&&e.value||"").trim().slice(0,8);if(!v)return farm("名前を入力してください。","n");const on=p11Esc(x.name);x.name=v;save();farm(`${on}の名前を${p11Esc(v)}に変えました。`,"b")}
 function farm(msg,tab){if(p8Blocked())return;p9Immersive(true);bgm("ranch");npcWarm("nick");if(!tab&&!msg)setTimeout(()=>npcFirst("ranch"),0);
  if(tab&&tab!="d")pfSellUid=null;ft=tab||(ft=="c"?"b":ft);if(ft=="c")return museum("fuse"); // 合体は研究所（labFuse）。牧場の内部画面 farm('','c') は互換のため研究所へ送る
- const m=S.m,all=[m,...S.box].filter(Boolean),L=MMP10M.RANCH_LIMIT;if(!all.some(x=>x.uid===rnSel))rnSel=(S.box[0]||m||{}).uid||null;
+ const m=S.m,all=[m,...S.box].filter(Boolean),L=MMP10M.RANCH_LIMIT;if(!all.some(x=>x.uid===rnSel))rnSel=(m||S.box[0]||{}).uid||null; // 2026-10-06：最初は連れている子（＝「預ける」）を選ぶ
  const x=all.find(v=>v.uid===rnSel)||null,bi=x?S.box.indexOf(x):-1,busy=!!MMP7.trainRunOf(m);let body="";
  if(ft=="e"&&x)body=rnLookPanel(x);
  else if(ft=="d"&&pfSellUid)body=`<div class="rnsheet">${pfSellPanel(all)}</div>`;
  else if(ft=="n"&&x)body=`<div class="rnsheet rnren"><b>名前変更</b><div class="rnrhd"><span class="rnic mon">${msv(x)}</span><small>いまの名前：${p11Esc(x.name)}</small></div><label class="p10lb">新しい名前（8文字まで）<input id="rnnm" maxlength="8" value="${p11Esc(x.name)}" autocomplete="off" enterkeyhint="done" onkeydown="if(event.key=='Enter'){event.preventDefault();rnRename()}"></label><div class="rnrow2"><button class="t" data-se="UI_CANCEL" onclick="farm('','b')">やめる</button><button class="go" onclick="rnRename()">変更する</button></div></div>`;
  else{if(ft!="b")ft="b";
-  const sq=x?MMP10M.canSell(S,x.uid):{ok:false},mv=!x?["","受け取る",true]:x===m?["dep()","預ける",busy||S.box.length>=L]:[`wd(${bi})`,"受け取る",busy];
+  const sq=x?MMP10M.canSell(S,x.uid):{ok:false},mv=!x?["","預ける",true]:x===m?["dep()","預ける",busy||S.box.length>=L]:[`wd(${bi})`,"受け取る",busy];
   body=`<section class="rnlist" aria-label="牧場のモンスター"><header class="rnlh2"><b>牧場のモンスター</b><span class="rncnt"><b>${S.box.length}</b> / ${L}</span></header>
   ${m?`<div class="rncur">${rnCell(m)}</div>`:""}<div class="rngrid">${S.box.length?S.box.map(rnCell).join(""):`<p class="rnempty">牧場にはまだモンスターがいません。</p>`}</div></section>
   <nav class="rnact" aria-label="牧場のコマンド"><button class="rna" ${x?"":"disabled"} onclick="rnView=rnSel;farm('','e')">${rnIc("look")}<span>見る</span></button><button class="rna" ${x?"":"disabled"} onclick="farm('','n')">${rnIc("ren")}<span>名前変更</span></button><button class="rna" ${mv[2]?"disabled":""} onclick="${mv[0]}">${rnIc(x===m?"dep":"wd")}<span>${mv[1]}</span></button><button class="rna rnsell" ${sq.ok?"":"disabled"} onclick="pfSellUid=rnSel;farm('','d')">${rnIc("sell")}<span>売る</span></button></nav>`}
@@ -3187,7 +3192,7 @@ function lobby(msg,open){if(p8Blocked())return;if(S.playerNamePending&&!opOn())r
  if(opOn()&&!finaFlags().prologue&&window.MMPRO&&!window.MM_QA_NO_PROLOGUE&&!P11_PRO.has(S))return opPrologue(msg); // 2026-10-05：正式の序盤導線＝プロローグ → 街（フィナ）→ 聖獣士管理局（セルジュの登録）→ 世界地図
  if(!S.playerNamePending&&finaFlags().op=="map"&&!window.MM_QA_NO_OPENING)return opAfterReg(); // 登録のあと、世界地図の会話の途中で閉じた＝続きから
  const h1=$("h1");if(h1)h1.style.display="";bgm("town");const m=S.m; // 街では見出し（h1）を CSS で隠す（main:has(>#app>.map.town)）。ほかの画面へ移れば元どおり
- townPreload();$("#app").innerHTML=`<div class="map town" style="--town-bg:url(${TOWN_BG})"><div class="tbg" aria-hidden="true"></div>${TOWN_SVG}<button class="tround tnews${opOn()?" oplk":""}" ${opOn()?"disabled":""} onclick="newsScr()" aria-label="お知らせ" title="お知らせ"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#tic-news"/></svg></button><button class="tround tconf" onclick="confScr()" aria-label="設定" title="設定"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#tic-conf"/></svg></button>${townPins(m).map(c=>{const g=opGuide(c,m),lk=g=="lk";return `<button class="hz tpin ${c[4]=="ok"?"":c[4]}${lk?" oplk":g=="go"?" opgo":""}" style="--x:${c[6][0]};--y:${c[6][1]}" ${c[4]=="dis"||lk?"disabled":""}${c[4]=="lock"?' data-nsfx="1"':""} onclick="${c[3]}" aria-label="${c[0]}${c[4]=="lock"?"（未開放）":""}" title="${c[1]}"><span>${c[4]=="lock"?TPIN_LOCK:""}${c[0]}</span><i></i>${g=="go"?'<em class="opmk" aria-hidden="true">タップ</em>':""}</button>`}).join("")}</div><nav class="tcmds tbar" aria-label="街のコマンド">${townBar(m).map((c,i)=>`<button class="hz tcmd ${c[4]=="ok"?"":c[4]}${i==0?" tsub tfarm":i==1?" tsub tprof":" tsub tsave svb"}${opOn()?" oplk":""}" ${c[4]=="dis"||opOn()?"disabled":""} onclick="${c[3]}" aria-label="${c[0]}" title="${c[1]}"><span class="ti">${townIcon(c[2])}</span><b>${c[5]||c[0]}</b></button>`).join("")}</nav>
+ townPreload();$("#app").innerHTML=`<div class="map town" style="--town-bg:url(${TOWN_BG})"><div class="tbg" aria-hidden="true"></div>${TOWN_SVG}<button class="tround tnews${opLock()?" oplk":""}" ${opLock()?"disabled":""} onclick="newsScr()" aria-label="お知らせ" title="お知らせ"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#tic-news"/></svg></button><button class="tround tconf" onclick="confScr()" aria-label="設定" title="設定"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#tic-conf"/></svg></button>${townPins(m).map(c=>{const g=opGuide(c,m),lk=g=="lk";return `<button class="hz tpin ${c[4]=="ok"?"":c[4]}${lk?" oplk":g=="go"?" opgo":""}" style="--x:${c[6][0]};--y:${c[6][1]}" ${c[4]=="dis"||lk?"disabled":""}${c[4]=="lock"?' data-nsfx="1"':""} onclick="${c[3]}" aria-label="${c[0]}${c[4]=="lock"?"（未開放）":""}" title="${c[1]}"><span>${c[4]=="lock"?TPIN_LOCK:""}${c[0]}</span><i></i>${g=="go"?'<em class="opmk" aria-hidden="true">タップ</em>':""}</button>`}).join("")}</div><nav class="tcmds tbar" aria-label="街のコマンド">${townBar(m).map((c,i)=>`<button class="hz tcmd ${c[4]=="ok"?"":c[4]}${i==0?" tsub tfarm":i==1?" tsub tprof":" tsub tsave svb"}${opLock()?" oplk":""}" ${c[4]=="dis"||opLock()?"disabled":""} onclick="${c[3]}" aria-label="${c[0]}" title="${c[1]}"><span class="ti">${townIcon(c[2])}</span><b>${c[5]||c[0]}</b></button>`).join("")}</nav>
  <div class="tlow${msg||!m?" on":""}"><div class="dlg${msg&&/class="fmsg"/.test(msg)?" fina nst r":" sys"}" onclick="townMsgClose(this)">${msg&&/class="fmsg"/.test(msg)?`<img class="nstf" src="${finaStandSrc()}" alt="" decoding="async">`:`<i class="dsys" aria-hidden="true"></i>`}<div class="dbub" id="msg">${msg&&/class="fmsg"/.test(msg)?`<span class="dnm">フィナ</span>`:""}${msg||(m?"行きたい場所をタップしよう！":"モンスターがいません。まずは市場で選ぼう。")}</div></div></div>`;try{window.scrollTo(0,0)}catch(e){}if(opOn())opTownTalk(); // 街は1画面で固定（2026-09-30）：案内文は知らせることがあるときだけ背景の上に出す。セーブ・ロードは下のバー、大会・育成完了の回数はプロフィールへ
 }
 // ---- 2026-10-05：正式の序盤導線（新しいゲームの最初に1回）----
@@ -3197,6 +3202,8 @@ function lobby(msg,open){if(p8Blocked())return;if(S.playerNamePending&&!opOn())r
 //  状態：未登録＝S.playerNamePending（従来の項目）・S.npcFlags.op（'guide'＝フィナの声かけ済み／'map'＝登録済み・地図の会話の前／'done'）・S.npcFlags.worldMap（地図の会話を見た＝出身地の印）。
 //  登録済みのセーブ（playerNamePending が無い）では起きない。自動テストの既定（MM_QA_NO_OPENING）は従来の名前登録の画面（tests/e2e/harness.mjs の open({ opening:true }) で出す）
 const opOn=()=>!window.MM_QA_NO_OPENING&&!!window.MMNPC;
+/** 街の操作の制限（登録前の導入のときだけ）。2026-10-06：以前は opOn()（導入の仕組みが使えるか＝実機ではいつも true）で下のバー・お知らせを止めていたため、登録のあとも押せなかった */
+const opLock=()=>!!S.playerNamePending&&opOn();
 /** 街の札の導入の状態：登録前＝管理局だけ go（光る・押せる）・ほかは lk（押せない）。登録後・相棒がまだいない＝市場を go（案内だけ） */
 function opGuide(c,m){if(S.playerNamePending&&opOn())return c[3]=="townGuild()"?"go":"lk";if(!m&&!S.box.length&&finaFlags().op=="done"&&c[3]=="market()")return "go";return ""}
 const OPEN_TALK={
@@ -3221,7 +3228,7 @@ let OP_TALKING=false;
 /** 街：登録前の導入。フィナの声かけ（まだなら）→ 管理局を光らせ、案内の一言（名前は呼ばない） */
 function opTownTalk(){if(!S.playerNamePending||OP_TALKING)return;const f=finaFlags(),hint=()=>{const w=$(".tlow"),b=$("#msg");if(!w||!b)return;w.classList.add("on");const d=w.querySelector(".dlg");if(d){d.className="dlg fina nst r";if(!d.querySelector(".nstf"))d.insertAdjacentHTML("afterbegin",`<img class="nstf" src="${finaStandSrc()}" alt="" decoding="async">`);const i=d.querySelector(".dsys");if(i)i.remove()}b.innerHTML=`<span class="dnm">フィナ</span>${finaMsg(OPEN_TALK.hint)}`};
  if(f.op=="guide")return hint();
- OP_TALKING=true;setTimeout(()=>{if(!$(".map.town")){OP_TALKING=false;return}MMNPC.talk(OPEN_TALK.first,{kind:"fina",presentation:"standard",big:true,branches:{yes:OPEN_TALK.firstYes,no:OPEN_TALK.firstNo}}).then(()=>{OP_TALKING=false;f.op="guide";save();hint()})},350)}
+ OP_TALKING=true;setTimeout(()=>{if(!$(".map.town")){OP_TALKING=false;return}MMNPC.talk(OPEN_TALK.first,{kind:"fina",presentation:"standard",big:true,scene:TOWN_BG,branches:{yes:OPEN_TALK.firstYes,no:OPEN_TALK.firstNo}}).then(()=>{OP_TALKING=false;f.op="guide";save();hint()})},350)}
 /** 聖獣士管理局（登録前）：セルジュが登録を受け付ける → 聖獣士登録（名前） */
 function opBureau(){bgm("town");p9Immersive(true);
  $("#app").innerHTML=`<div class="bu opbu" style="--bu-bg:url(${BUREAU_BG})"><div class="bubg" aria-hidden="true"></div><header class="buhd"><button class="burb" data-nav="back" onclick="lobby()" aria-label="街にもどる">←</button><div class="buplq"><b>聖獣士管理局</b></div><span class="burb sp" aria-hidden="true"></span></header></div>`;
@@ -3284,7 +3291,7 @@ function p11Speed(m){const v=MMP10M.isValidSpeed(m.speed)?m.speed:MMP10M.speedOf
 // プレイヤー名・顔画像の正式データは無いため「ブリーダー」＋ブリーダーランクを表示する（p10Who の中身を差し替えれば将来の名前表示に対応できる）。
 let P10_MK=0,P10_ANIM=false,P10_TGT=null,P10_SW=null;
 const P10_COIN=`<svg class="p10coin" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><defs><radialGradient id="p10cg" cx="38%" cy="32%" r="70%"><stop offset="0" stop-color="#fff3b0"/><stop offset=".6" stop-color="#e8b43a"/><stop offset="1" stop-color="#9a6410"/></radialGradient></defs><circle cx="12" cy="12" r="10.5" fill="url(#p10cg)" stroke="#6b3f08" stroke-width="1.4"/><circle cx="12" cy="12" r="6.8" fill="none" stroke="#fff3c4" stroke-opacity=".7" stroke-width="1.2"/><path d="M12 7.6l1.3 2.7 3 .4-2.2 2.1.5 3-2.6-1.4-2.6 1.4.5-3-2.2-2.1 3-.4z" fill="#fff6d6"/></svg>`;
-const P10_WHY={waiting:"このモンスターは現在入荷待ちです。",not_in_market:"このモンスターは市場にいません。",no_money:"お金が足りません。",full:"牧場がいっぱいです（牧場は20体まで）。"};
+const P10_WHY={waiting:"このモンスターは現在入荷待ちです。",not_in_market:"このモンスターは市場にいません。",no_money:"お金が足りません。",get full(){return `牧場がいっぱいです（牧場は${MMP10M.RANCH_LIMIT}体まで）。`}};
 const P10_SCENE=(()=>{const tent=(x,w,c)=>`<g transform="translate(${x} 0)"><path d="M0 470h${w}v-28l-${w/2} -34-${w/2} 34z" fill="#5a3a22"/>${[...Array(6)].map((_,i)=>`<path d="M${i*w/6} 438l${w/12} 22 ${w/12}-22z" fill="${i%2?"#f3e2c0":c}"/>`).join("")}<path d="M0 436h${w}" stroke="#7a4a24" stroke-width="3"/><rect x="6" y="470" width="${w-12}" height="86" fill="#6b4428"/><rect x="10" y="478" width="${w-20}" height="34" fill="#8a5a32"/></g>`;
  const tower=(x,y,h,r)=>`<g><rect x="${x}" y="${y}" width="${r*2}" height="${h}" fill="#ead9bd"/><path d="M${x-3} ${y}l${r+3}-${r*2.2} ${r+3} ${r*2.2}z" fill="#c6573a"/><rect x="${x+r-3}" y="${y+14}" width="6" height="10" rx="3" fill="#6b4a33"/></g>`;
  const lantern=(x)=>`<g transform="translate(${x} 0)"><path d="M0 26v70" stroke="#3a2618" stroke-width="2"/><circle cx="0" cy="132" r="44" fill="url(#p10glow)"/><path d="M-13 100h26l-3 44h-20z" fill="#ffcf6a" stroke="#4a2c14" stroke-width="3"/><path d="M-16 96h32l-4-8h-24zM-12 144h24l-3 6h-18z" fill="#4a2c14"/></g>`;
@@ -3587,7 +3594,7 @@ function dscr(id,msg){if(id=="b")return hall("t"); // Phase 8：旧「腕試し�
 // ---- 2026-10-05：正式のステータス画面（デザイン基準＝正式採用のステータス画像。画像1枚を貼らず HTML/CSS で再現）----
 //  立ち絵・名前・英字名・種類・固有スキル／能力バランス（左＝レーダーチャート・右＝実数値とバー。どちらも 999 を最大とした目盛り・正式色 STAT_COLOR）。
 //  Lv・経験値・レベルアップ・個体のランクは出さない（存在しない）。固有スキルの名前は正式（ユーザー指定）。効果の説明はソラモだけ正式のステータス画像のとおり【暫定】、ほかは未登録＝出さない（バトルへの効果は未実装）
-const UNIQUE_SKILL={0:{name:"逆境のひと踏ん張り",desc:"ライフが20%以下になると、次に与えるダメージが1度だけ1.25倍になる。"},1:{name:"紅翼の猛攻"},2:{name:"ふしぎな嗅覚"},3:{name:"大地の守り"}};
+const UNIQUE_SKILL={0:{name:"逆境のひと踏ん張り",desc:"ライフが20%以下になったとき、一度だけ次に与えるダメージが1.25倍になる。"},1:{name:"紅翼の猛攻",desc:"戦闘開始から3ターンの間、ちから・かしこさがそれぞれ5%上がる。"},2:{name:"ふしぎな嗅覚",desc:"相手が状態異常のあいだ、ちから・かしこさ・丈夫さが5%上がる。"},3:{name:"大地の守り",desc:"10%の確率で一度だけ、倒れるほどのダメージをライフ1で耐える。"}}; // 2026-10-06 正式（表示だけ。バトルの処理（Phase 6）には入れていない）
 const ST_IC={li:'<path d="M12 20s-7-4.4-7-9.4A3.9 3.9 0 0 1 12 8a3.9 3.9 0 0 1 7 2.6C19 15.6 12 20 12 20z"/>',po:'<path d="M7 11V8.5a1.5 1.5 0 0 1 3 0V11m0-2.5V7a1.5 1.5 0 0 1 3 0v4m0-2.5a1.5 1.5 0 0 1 3 0V12m0-1.5a1.5 1.5 0 0 1 3 0V15a5 5 0 0 1-5 5h-1.5A6.5 6.5 0 0 1 7 13.5V11"/>',in:'<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/>',hi:'<circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="3.5"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>',ev:'<path d="M5 19c6-1 11-6 14-14-6 1-10 4-12 8 2-1.5 4-2 6-2-3 2-6 5-8 8z"/>',de:'<path d="M12 3l7.5 3v6c0 4.6-3.2 7.8-7.5 9-4.3-1.2-7.5-4.4-7.5-9V6z"/>'};
 /** 能力バランスのレーダーチャート（上＝ライフから時計回りにちから・かしこさ・命中・回避・丈夫さ。999 を外周） */
 function stRadar(m){const P=(i,r)=>{const a=-Math.PI/2+i*Math.PI/3;return [100+Math.cos(a)*r,100+Math.sin(a)*r]},R=72,pts=KS.map((k,i)=>P(i,R*Math.min(999,Math.max(0,m[k]|0))/999));
@@ -3601,7 +3608,7 @@ function stScr(m,msg){bgm("farmmenu");p9Immersive(true);const s=MMP10M.byId(m.sp
  ${msg?`<div class="stmsg">${msg}</div>`:""}
  <div class="stbody"><section class="stcard sthero"><div class="stmon"><div class="mon">${msv(m)}</div></div><div class="stinfo"><i class="stcrest" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l8 9-8 9-8-9z"/><path d="M12 7l4.5 5L12 17l-4.5-5z"/></svg></i><b class="stnm">${p11Esc(m.name)}</b>${s&&s.en?`<small class="sten">${s.en}</small>`:""}${s?`<span class="stkind"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="7" cy="8" r="2"/><circle cx="12" cy="6" r="2"/><circle cx="17" cy="8" r="2"/><path d="M8 17c0-3 2-5 4-5s4 2 4 5c0 1.5-1.5 2-4 2s-4-.5-4-2z"/></svg>${s.kind}</span>${p11Esc(m.name)!==s.name?`<small class="stsp">${s.name}</small>`:""}`:""}
   ${sk?`<div class="stskill"><div class="stskh">固有スキル</div><div class="stskn"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2l2.6 6.4L21 9l-5 4.3L17.5 20 12 16.5 6.5 20 8 13.3 3 9l6.4-.6z"/></svg></i><b>${sk.name}</b></div>${sk.desc?`<p>${sk.desc}</p>`:""}</div>`:""}</div></section>
- <section class="stcard stab"><h3 class="sth">能力バランス</h3><div class="stgrid">${stRadar(m)}<div class="stbars">${bars}</div></div><div class="stspd">${p11Speed(m)}</div></section></div>${nav}</div>`;try{window.scrollTo(0,0)}catch(e){}}
+ <section class="stcard stab"><h3 class="sth">能力バランス</h3><div class="stgrid">${stRadar(m)}<div class="stbars">${bars}</div></div></section></div>${nav}</div>`;try{window.scrollTo(0,0)}catch(e){}}
 function skd(k){lastSk=k;hall("w")}
 function skSheet(k,m){const x=SK[k],ok=Array.isArray(m.sk)&&m.sk.includes(k),at=m.eq.indexOf(k),B=(v,mx)=>`<div class="dbar"><i style="width:${Math.min(100,v/mx*100)}%"></i></div>`;
  return `<div class="dsheet ${x[7]=="p"?"kp":"ki"}"><button class="dclose" onclick="lastSk=-1;hall('w')">✕</button><div class="dsha"><img src="${SKART[k]}" alt=""></div><div class="dshb"><div class="dshn"><span class="dcat">${x[7]=="p"?"✊ ちから":"📖 かしこさ"}</span><b>${x[0]}</b></div><p>${x[6]}</p>
@@ -4389,7 +4396,9 @@ function finaFlags(){if(!S.npcFlags||typeof S.npcFlags!="object"||Array.isArray(
 function npcFlagsFirst(){const f=finaFlags();if(!f.first||typeof f.first!="object"||Array.isArray(f.first))f.first={};return f.first}
 /** 施設の初回訪問の会話。出したら true（先に「表示済み」を保存してから出す＝再読み込みしても二度出ない）。after＝会話のあとの処理 */
 function npcFirst(fac,after){if(window.MM_QA_NO_NPC||!window.MMNPCE||!window.MMNPC)return false;const F=npcFlagsFirst();if(F[fac])return false;const lines=MMNPCE.first(fac);if(!lines)return false;F[fac]=1;if(fac=="market")finaFlags().karenIntro=1;save();
- const o={kind:"npc",presentation:"standard",big:true},pr=fac=="market"?karenSay(lines,o):MMNPC.talk(lines,o);pr.then(()=>{if(after)after()});return true}
+ const o={kind:"npc",presentation:"standard",big:true,scene:npcScene(fac)},pr=fac=="market"?karenSay(lines,o):MMNPC.talk(lines,o);pr.then(()=>{if(after)after()});return true}
+/** 2026-10-06：施設の初回イベントの背景（施設の正式背景。会話の間は下の画面を隠す＝MMNPC.talk の scene）。市場はカレンの会話の仕組み（karenSay）が操作 UI とモンスターを隠す */
+const npcScene=fac=>({ranch:RANCH_BG,lab:LAB_BG,arena:TOWN_BG,farm:BC_BG,shop:SHOP_BG,train:FARM_BG})[fac]||""; // 呼ぶときに読む（定義の順に依らない）
 /** 再訪の一言の材料（進行状態）。last＝その施設で直前に出した一言の id（ページの中だけの記憶。セーブには入れない＝保存とメモリの食い違いを作らない） */
 const NPC_LAST={};
 function npcCtx(fac){const m=S.m,f=finaFlags(),box=S.box.length,st=m?MMP7.raiseState(m):"none",can=m&&st=="farm"?MMP8.canDepart(S,m):{ok:false},inv=S.inv||{};
@@ -4409,9 +4418,10 @@ function karenRevisit(){if(window.MM_QA_NO_KAREN)return;if(!window.MMNPCE)return
 function farmReturn(m){if(window.MM_QA_NO_NPC||!window.MMNPCE||!window.MMNPC||!m||!m.raise)return false;const r=m.raise,last=(r.log||[]).slice(-1)[0];if(!last||!last.ch)return false;const seen=Array.isArray(r.evSeen)?r.evSeen:(r.evSeen=[]),key="ret"+last.ch;if(seen.includes(key))return false;
  const k=MMP8.nextChapterKey(m),nextName=k!=null&&k!=MMP8.FINAL&&MMP8.isPlayable(k)?MMP8.chapterName(k):null;
  const ev=MMNPCE.returnEvent(last.ch,{reachedGoal:!!last.reachedGoal,declined:!!last.declined,won:!!(last.tour&&last.tour.won),placed:last.tour?last.tour.place:null,nextName,rumor:!seen.includes("rumor")});if(!ev)return false;
- seen.push(key);if(ev.rumor)seen.push("rumor");save();MMNPC.talk(ev.lines,{kind:"event",presentation:"major",big:true});return true}
+ seen.push(key);if(ev.rumor)seen.push("rumor");save();MMNPC.talk(ev.lines,{kind:"event",presentation:"major",big:true,scene:BC_BG});return true}
 const FINA_PRES={raiseAgain:"compact",done:"major"}; // 会話の見せ方（短い確認は小さな窓・育成完了は重要イベント。ほかは通常）
-function finaTalk(key,branches){return window.MMNPC&&FINA_TALK[key]?MMNPC.talk(FINA_TALK[key],{kind:"fina",presentation:FINA_PRES[key]||"standard",big:FINA_BIG.has(key),...(branches?{branches}:{})}):Promise.resolve(null)}
+function finaTalk(key,branches){return window.MMNPC&&FINA_TALK[key]?MMNPC.talk(FINA_TALK[key],{kind:"fina",presentation:FINA_PRES[key]||"standard",big:FINA_BIG.has(key),scene:finaScene(key),...(branches?{branches}:{})}):Promise.resolve(null)}
+const finaScene=k=>k=="intro"?TOWN_BG:k=="done"?BC_BG:""; // 2026-10-06：大型の会話（街の案内・育成完了）は施設の背景だけを後ろに（下の画面を隠す）
 const FINA_BIG=new Set(["intro","done"]); // 2026-10-04 G2：大型の会話窓（街の案内・育成完了＝イベント） // branches：選択肢ごとの続きの行（同じ会話ウィンドウで続ける）。選んだ id で解決
 /** 名前登録の直後に1度だけ：先に「表示済み」を保存してから会話を出す（再読込しても二度出ない） */
 function finaIntro(){const f=finaFlags();if(f.finaIntro)return;f.finaIntro=1;save();finaTalk("intro")}

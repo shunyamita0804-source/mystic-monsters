@@ -60,7 +60,8 @@ test('NX5-04：正式ステータス画面＝動的（レーダー＋6能力の�
   const st = fnOf('stScr');
   assert.match(st, /\$\{stRadar\(m\)\}/); assert.match(st, /v\/999\*100/); assert.match(st, /STAT_COLOR\[k\]/);
   assert.doesNotMatch(st, /Lv|経験値|EXP|rankLabel|ランク/);
-  assert.match(HTML, /const UNIQUE_SKILL=\{0:\{name:"逆境のひと踏ん張り"[^}]*\},1:\{name:"紅翼の猛攻"\},2:\{name:"ふしぎな嗅覚"\},3:\{name:"大地の守り"\}\}/);
+  for (const [n, d] of [["逆境のひと踏ん張り", "20%以下"], ["紅翼の猛攻", "3ターン"], ["ふしぎな嗅覚", "状態異常"], ["大地の守り", "10%の確率"]]) assert.match(HTML, new RegExp(`name:"${n}",desc:"[^"]*${d}`), n);   // 2026-10-06：4種とも効果の文（表示だけ）
+  assert.doesNotMatch(st, /p11Speed|素早さ/, '2026-10-06：ステータス画面に素早さは出さない');
   assert.match(HTML, /if\(id=="st"\)return stScr\(m,msg\);/);
 });
 

@@ -121,7 +121,7 @@ test('NICK-B2：4つの画面サイズで、牧場のニックの一言・通知
 test('NICK-6：牧場（2026-10-04 PHASE H3）：選んだ子に 見る・名前変更・受け取る（連れている子は預ける）・売る。合体のコマンドは無い（研究所）。合体の処理（fuse・selm・選択画面）は研究所から呼ぶために残す', () => {
   const f = lineOf('function farm(msg,tab){') + HTML.slice(HTML.indexOf('function farm(msg,tab){'), HTML.indexOf('\nfunction dep('));
   assert.match(f, /<nav class="rnact" aria-label="牧場のコマンド"><button class="rna" \$\{x\?"":"disabled"\} onclick="rnView=rnSel;farm\('','e'\)">\$\{rnIc\("look"\)\}<span>見る<\/span><\/button><button class="rna" \$\{x\?"":"disabled"\} onclick="farm\('','n'\)">\$\{rnIc\("ren"\)\}<span>名前変更<\/span><\/button>/);
-  assert.match(f, /mv=!x\?\["","受け取る",true\]:x===m\?\["dep\(\)","預ける",busy\|\|S\.box\.length>=L\]:\[`wd\(\$\{bi\}\)`,"受け取る",busy\];/, '受け取る＝従来の wd・預ける＝従来の dep');
+  assert.match(f, /mv=!x\?\["","預ける",true\]:x===m\?\["dep\(\)","預ける",busy\|\|S\.box\.length>=L\]:\[`wd\(\$\{bi\}\)`,"受け取る",busy\];/, '受け取る＝従来の wd・預ける＝従来の dep');
   assert.match(f, /<button class="rna rnsell" \$\{sq\.ok\?"":"disabled"\} onclick="pfSellUid=rnSel;farm\('','d'\)">\$\{rnIc\("sell"\)\}<span>売る<\/span><\/button>/, '売る＝従来の売却の確認（2度押し）');
   assert.doesNotMatch(f, /"合体"|rnfuse|>合体</, '牧場に合体を置かない');
   assert.match(f, /ft=tab\|\|\(ft=="c"\?"b":ft\);if\(ft=="c"\)return museum\("fuse"\);/, '2026-10-04：合体の画面は研究所（labFuse）。牧場の内部画面 farm(\'\',\'c\') は研究所へ送る');

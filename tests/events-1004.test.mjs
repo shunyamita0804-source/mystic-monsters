@@ -152,7 +152,7 @@ test('EV-08：つなぎ（静的）：index.html は events.js・npc-events.js�
   assert.match(HTML, /if\(st=="none"\)npcFirst\("farm"\);else if\(st=="farm"\)farmReturn\(m\)/); assert.match(HTML, /npcLineX\("ranch",NICK_TALK\.ranch,"normal"\)/);
   assert.match(HTML, /function npcFirst\(fac,after\)\{if\(window\.MM_QA_NO_NPC\|\|!window\.MMNPCE\|\|!window\.MMNPC\)return false;/, '自動テストでは出さない');
   assert.match(HTML, /F\[fac\]=1;if\(fac=="market"\)finaFlags\(\)\.karenIntro=1;save\(\);/, '先に「表示済み」を保存');
-  assert.match(HTML, /seen\.push\(key\);if\(ev\.rumor\)seen\.push\("rumor"\);save\(\);MMNPC\.talk\(ev\.lines,\{kind:"event",presentation:"major",big:true\}\)/, '帰還は重要な会話（major）');
+  assert.match(HTML, /seen\.push\(key\);if\(ev\.rumor\)seen\.push\("rumor"\);save\(\);MMNPC\.talk\(ev\.lines,\{kind:"event",presentation:"major",big:true,scene:BC_BG\}\)/, '帰還は重要な会話（major）。2026-10-06：後ろはベースキャンプの背景だけ（scene）');
   const FV = rd('js/chapter/field-view.js'); assert.match(FV, /async function choiceTalk\(fx, card\)/); assert.match(FV, /async function eventLines\(fx, card\)/); assert.match(FV, /if \(fx\.kind === 'choice'\) \{/); assert.match(FV, /storyAt\(m, 'branch'\)/);
   assert.match(rd('tests/e2e/harness.mjs'), /window\.MM_QA_NO_NPC = true/);
   assert.match(rd('js/phase8/raising.js'), /if \(fx\.kind === 'choice'\) return \{ ok: true, fx, wait: true, choice: true \};/);

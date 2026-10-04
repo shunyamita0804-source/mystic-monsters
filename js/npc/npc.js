@@ -191,8 +191,13 @@
       if (pres === 'major') lines = preferFullbody(lines);
       warmLines(lines); if (opts.branches) for (const v of Object.values(opts.branches)) warmLines(v);
       evOn(pres === 'compact' ? 'lite' : '1');
-      const ov = h('div', `mmtalk mmtalk-${pres}${opts.big || pres === 'board' ? ' mmtalk-big' : ''}`), stage = h('div', 'mmtalk-stage'), fig = h('div', 'mmtalk-fig'), img = h('img'), win = h('div', 'mmtalk-win'), nm = h('div', 'mmtalk-name'), tx = h('p', 'mmtalk-text'), nx = h('span', 'mmtalk-next'), ch = h('div', 'mmtalk-choices');
+      // 2026-10-06：opts.scene（施設の正式背景の URL）＝重要イベント・初回イベントの見せ方。会話の後ろに施設の背景だけを描き、下の画面（通常の UI・モンスター・一覧・コマンド）は丸ごと隠す
+      //  （html[data-mmscene]）。会話が終わり始めたら下の画面を戻し、会話のフェードで自然に戻る。常設 NPC だけを隠す data-mmhide では、施設ごとの通常の UI が後ろに残っていた
+      const scene = pres !== 'compact' && typeof opts.scene === 'string' && opts.scene ? opts.scene : '';
+      { const d = docEl(); if (d) { if (scene) d.setAttribute('data-mmscene', '1'); else d.removeAttribute('data-mmscene'); } }
+      const ov = h('div', `mmtalk mmtalk-${pres}${opts.big || pres === 'board' ? ' mmtalk-big' : ''}${scene ? ' mmtalk-scene' : ''}`), stage = h('div', 'mmtalk-stage'), fig = h('div', 'mmtalk-fig'), img = h('img'), win = h('div', 'mmtalk-win'), nm = h('div', 'mmtalk-name'), tx = h('p', 'mmtalk-text'), nx = h('span', 'mmtalk-next'), ch = h('div', 'mmtalk-choices');
       ov.dataset.pres = pres; if (opts.kind) ov.dataset.kind = String(opts.kind);
+      if (scene) { const bg = h('div', 'mmtalk-scenebg'); bg.setAttribute('aria-hidden', 'true'); bg.style.backgroundImage = `url("${scene.replace(/"/g, '%22')}")`; ov.appendChild(bg); }
       ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); img.alt = ''; img.draggable = false; nx.textContent = '▼'; nx.setAttribute('aria-hidden', 'true');
       ch.hidden = true; ch.setAttribute('role', 'group'); let chKey = '';
       fig.appendChild(img); win.append(nm, tx, ch, nx); stage.append(fig, win); ov.appendChild(stage); document.body.appendChild(ov);
@@ -218,7 +223,7 @@
             if (s.choices) for (const x of s.choices) { const bt = h('button', 'mmtalk-choice'); bt.type = 'button'; bt.textContent = x.label; bt.dataset.choice = x.id;
               bt.addEventListener('click', (e) => { e.stopPropagation(); c.choose(x.id); }); ch.appendChild(bt); } }
         },
-        onEnd(choice) { stopAnim(); clearTimeout(keyT); document.removeEventListener('keydown', onKey); if (ov.animate && ov.classList && !ov.__instant) { ov.classList.add('mmtalk-out'); const a = ov.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, easing: 'ease-in', fill: 'forwards' }); const done = () => { ov.remove(); evOff(); resolve(choice == null ? null : choice); }; a.finished.then(done, done); } else { ov.remove(); evOff(); resolve(choice == null ? null : choice); } if (CUR && CUR.c === c) CUR = null; },   // 退場：短くフェード（急に消さない）。Promise はフェードが終わって DOM を消してから解決する（次の画面が会話の上に出ない・会話の要素が残らない）。220ms 後に DOM から外す
+        onEnd(choice) { stopAnim(); clearTimeout(keyT); document.removeEventListener('keydown', onKey); if (scene) { const d = docEl(); if (d) d.removeAttribute('data-mmscene'); } if (ov.animate && ov.classList && !ov.__instant) { ov.classList.add('mmtalk-out'); const a = ov.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, easing: 'ease-in', fill: 'forwards' }); const done = () => { ov.remove(); evOff(); resolve(choice == null ? null : choice); }; a.finished.then(done, done); } else { ov.remove(); evOff(); resolve(choice == null ? null : choice); } if (CUR && CUR.c === c) CUR = null; },   // 退場：短くフェード（急に消さない）。Promise はフェードが終わって DOM を消してから解決する（次の画面が会話の上に出ない・会話の要素が残らない）。220ms 後に DOM から外す
         branches: pres === 'major' && opts.branches ? Object.fromEntries(Object.entries(opts.branches).map(([k, v]) => [k, preferFullbody(v)])) : opts.branches,
       });
       ov.addEventListener('click', (e) => { e.stopPropagation(); c.tap(); });

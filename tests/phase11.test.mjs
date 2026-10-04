@@ -112,7 +112,7 @@ test('N3-2：素早さは個体の値（1〜10）を10段階の目盛りで表�
     assert.match(html, /数値が大きいほど速い（10が最速）/);
   }
   assert.match(fn({ sp: 1, speed: 9 }), /<b>9<small>/, '個体に保存された素早さを表示');
-  assert.match(between('function stScr(m,msg){', '\nfunction skd(k)'), /\$\{p11Speed\(m\)\}/);
+  assert.doesNotMatch(between('function stScr(m,msg){', '\nfunction skd(k)'), /p11Speed/, '2026-10-06：ステータス画面には素早さを出さない（市場の詳細には出す）');
 });
 
 // ---------------------------------------------------------

@@ -32,9 +32,9 @@ test('PH-01：ベースキャンプ＝正式背景マスター（768×1360・UI 
   assert.match(fnOf('bcMenu'), /p8AbandonAsk\(\)">育成放棄<\/button>`:""/, '育成放棄はメニューの中（2段階の確認は従来どおり）');
 });
 
-test('PH-02：牧場は最大20体（MMP10M.RANCH_LIMIT。所持上限＝20＋連れている1）。2列の一覧だけがスクロールし、見る・名前変更・受け取る（預ける）・売る。合体は置かない', () => {
-  const M = loadMon(); assert.equal(M.RANCH_LIMIT, 20); assert.equal(M.OWN_LIMIT, 21);
-  assert.equal(M.canPurchase({ g: 9999 }, 'solamo', 20).ok, true); assert.deepEqual(M.canPurchase({ g: 9999 }, 'solamo', 21), { ok: false, reason: 'full' });
+test('PH-02：牧場は最大8体（2026-10-06。MMP10M.RANCH_LIMIT。所持上限＝8＋連れている1）。2列の一覧だけがスクロールし、見る・名前変更・受け取る（預ける）・売る。合体は置かない', () => {
+  const M = loadMon(); assert.equal(M.RANCH_LIMIT, 8); assert.equal(M.OWN_LIMIT, 9);   /* 2026-10-06：牧場は8体（ユーザー指示） */
+  assert.equal(M.canPurchase({ g: 9999 }, 'solamo', 8).ok, true); assert.deepEqual(M.canPurchase({ g: 9999 }, 'solamo', 9), { ok: false, reason: 'full' });
   assert.match(fnOf('dep'), /if\(S\.box\.length>=MMP10M\.RANCH_LIMIT\)return farm\("牧場がいっぱいです。","b"\);/);
   const f = fnOf('farm');
   assert.match(f, /<header class="rnlh2"><b>牧場のモンスター<\/b><span class="rncnt"><b>\$\{S\.box\.length\}<\/b> \/ \$\{L\}<\/span><\/header>/, '数は実際の値（参考画像の 20 / 20 は見本）');

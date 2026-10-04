@@ -113,6 +113,12 @@ for (const [si, size] of SIZES.entries()) {
     const ps2 = await pins(pg);
     assert.deepEqual(ps2.filter((x) => x.go).map((x) => x.on), ['market()'], '最初の相棒＝市場を案内');
     assert.ok(ps2.every((x) => !x.dis), '登録のあとは自由に動ける');
+    // 2026-10-06（S-1）：登録のあとは下のバー（ベースキャンプ・プロフィール・セーブ／ロード）とお知らせも押せる（以前は opOn() で止めたままだった）
+    assert.deepEqual((await pg.evaluate(() => [...document.querySelectorAll('#app .tbar button, #app .tnews')].map((b) => [b.getAttribute('onclick'), b.disabled, b.classList.contains('oplk')]))).filter((x) => x[1] && x[0] !== 'hall()' || x[2]), [], '下のバー・お知らせは押せる（ベースキャンプは連れている子がいないときだけ押せない＝従来どおり）');
+    assert.equal(await pg.evaluate(() => document.querySelectorAll('#app .tbar button').length), 3, '下のバーは3つ');
+    await pg.click('#app .tbar button[onclick="profileScr()"]'); await pg.waitForFunction(() => !document.querySelector('.map.town'));
+    assert.ok(await pg.evaluate(() => /プロフィール/.test(document.querySelector('#app').innerText)), 'プロフィールへ移れる');
+    await pg.evaluate(() => lobby()); await pg.waitForSelector('.map.town');
     // 管理局の常設「世界地図」
     await pg.click('.tpin[onclick="townGuild()"]');
     await pg.waitForSelector('.bumap');
@@ -193,3 +199,42 @@ T('MO-B1：短いイベント＝最初の相棒を迎えた直後にフィナの
   assert.equal((await H.storedSave(pg)).npcFlags.moment.tour, 1);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
+
+T('PRO-B3（S-2）：プロローグの途中でアプリが裏に回ったら進まない（裏で最後まで進んで「見た」が保存されない）→ タスクキル相当（再読み込み）→ 次の起動でもプロローグから', async () => {
+  const p = await openPage({ opening: true, prologue: true }); const pg = p.page;
+  await pg.click('.p15start');
+  await pg.waitForSelector('.mmpro .mmpro-u', { timeout: 20000 });
+  // 裏に回す（document.hidden＝true・visibilitychange）。時間を早送りしても最後まで進まない
+  await pg.evaluate(() => { Object.defineProperty(document, 'hidden', { configurable: true, get: () => true }); document.dispatchEvent(new Event('visibilitychange')); });
+  const t0 = await pg.evaluate(() => document.querySelector('.mmpro .mmpro-u').textContent);
+  await pg.waitForTimeout(9000);
+  const st = await pg.evaluate(() => ({ open: !!document.querySelector('.mmpro'), saved: !!(JSON.parse(localStorage.getItem('mr4v6')).npcFlags || {}).prologue }));
+  assert.deepEqual(st, { open: true, saved: false }, '裏の間は進まず・「見た」は保存しない');
+  const t1 = await pg.evaluate(() => document.querySelector('.mmpro .mmpro-u') && document.querySelector('.mmpro .mmpro-u').textContent);
+  assert.ok(t1 === t0 || t1, '同じ場面のまま（せいぜい1段落）');
+  await pg.reload(); await pg.waitForFunction(() => typeof window.MMP8 === 'object');
+  await pg.click('.p15start');
+  await pg.waitForSelector('.mmpro .mmpro-u', { timeout: 20000 });
+  assert.equal(await pg.evaluate(() => !!document.querySelector('.map.town,#p11nm')), false, '街・登録へ飛ばない');
+  assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+});
+
+for (const size of SIZES) {
+  T(`EVS-B1（${size.join('×')}・S-3）：施設の初回イベント（牧場＝ニック）・ベースキャンプの帰還（ダン）は、施設の背景＋大型の NPC＋会話だけ。通常の一覧・モンスター・コマンドは隠れ、終わると戻る`, async () => {
+    const p = await openPage({ size, npc: true }); const pg = p.page;
+    await H.newGame(pg, 'テスト');
+    await pg.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; S.box = [mk(1)]; save(); farm(); });
+    await pg.waitForSelector('.mmtalk:not(.mmtalk-out)'); await pg.waitForTimeout(500);
+    const during = await pg.evaluate(() => ({ app: getComputedStyle(document.querySelector('#app')).visibility, grid: !!document.querySelector('#app .rngrid'), bg: !!document.querySelector('.mmtalk .mmtalk-scenebg'), bgImg: getComputedStyle(document.querySelector('.mmtalk .mmtalk-scenebg')).backgroundImage }));
+    assert.equal(during.app, 'hidden', '下の画面（一覧・コマンド・モンスター）は隠れる'); assert.ok(during.grid, '一覧そのものは消さない（戻すため）'); assert.ok(during.bg && /ranch_main/.test(during.bgImg), '会話の後ろは牧場の正式背景');
+    await H.finishTalk(pg); await pg.waitForTimeout(300);
+    assert.equal(await pg.evaluate(() => getComputedStyle(document.querySelector('#app')).visibility), 'visible', '終わったら戻る');
+    // ベースキャンプの帰還（ダン）
+    await pg.evaluate(() => { const m = S.m; Object.assign(m.raise, { state: 'farm', ch: 2, log: [{ ch: 1, reachedGoal: true, turnsUsed: 20, turnLimit: 30, declined: true }] }); save(); hall('t'); });
+    await pg.waitForSelector('.mmtalk:not(.mmtalk-out)', { timeout: 8000 }); await pg.waitForTimeout(500);
+    assert.deepEqual(await pg.evaluate(() => [getComputedStyle(document.querySelector('#app')).visibility, /basecamp_main/.test(getComputedStyle(document.querySelector('.mmtalk .mmtalk-scenebg')).backgroundImage)]), ['hidden', true]);
+    await H.finishTalk(pg); await pg.waitForTimeout(300);
+    assert.equal(await pg.evaluate(() => getComputedStyle(document.querySelector('#app')).visibility), 'visible');
+    assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+  });
+}

@@ -65,7 +65,10 @@
     const bgs = [ov.querySelector('.mmpro-bg.a'), ov.querySelector('.mmpro-bg.b')], nar = ov.querySelector('.mmpro-nar'), skip = ov.querySelector('.mmpro-skip');
     let front = 0, last = 0, wake = null, quit = false, fullNow = false;
     const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
-    const sleep = (ms) => new Promise((r) => { const t = setTimeout(() => { wake = null; r('time'); }, ms); wake = () => { clearTimeout(t); wake = null; r('tap'); }; });
+    // 2026-10-06：アプリが裏に回っている間（document.hidden）は進めない。以前は裏でもタイマーで最後まで進み「見た」が保存され、
+    //  そのままタスクキルすると次の起動でプロローグを飛ばしていた（iPhone）。表に戻ったら続きから
+    const gate = () => (typeof document !== 'undefined' && document.hidden) ? new Promise((r) => { const f = () => { if (!document.hidden) { document.removeEventListener('visibilitychange', f); r(); } }; document.addEventListener('visibilitychange', f); }) : Promise.resolve();
+    const sleep = (ms) => new Promise((r) => { const t = setTimeout(() => { wake = null; gate().then(() => r('time')); }, ms); wake = () => { clearTimeout(t); wake = null; r('tap'); }; });
     ov.addEventListener('click', (e) => {
       if (e.target === skip) return;
       const t = now(); if (t - last < T.tapGuard) return; last = t;
@@ -117,6 +120,7 @@
         }
       }
       if (!quit) await sleep(calm() ? 0 : T.endHold);
+      await gate();   // 最後まで見た＝表に出ているときに終わった場合だけ
       done = true;   // 最後まで見た（または スキップを2度押しで確定した）
       ov.classList.add('end'); await wait(calm() ? 0 : T.fadeOut);
     } finally { ov.remove(); busy = false; }

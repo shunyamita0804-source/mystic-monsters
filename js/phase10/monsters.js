@@ -117,7 +117,8 @@
 
   // ---- 市場での購入（Phase 10 Step 4） ----
   // 2026-10-04 PHASE H3：牧場は最大20体（正式。旧「手持ち＋牧場で8体・牧場7体」は正式ではない）。所持上限＝牧場20＋連れている1体（旧ルールと同じ組み立て）
-  const RANCH_LIMIT = 20, OWN_LIMIT = RANCH_LIMIT + 1;
+  // 2026-10-06：牧場は最大8体（ユーザー指示「牧場上限は8体・0/8」。2026-10-04 PHASE H3 の 20体から戻した）。所持上限＝牧場8＋連れている1
+  const RANCH_LIMIT = 8, OWN_LIMIT = RANCH_LIMIT + 1;
   const marketItem = (key) => MARKET_CATALOG.find((c) => c.key === key) || null;
   /**
    * 初回購入救済：手持ち0体・牧場0体・所持金が500G未満のときだけ、市場での購入操作の時点で所持金を500Gにする。
