@@ -136,7 +136,7 @@ test('NICK-B3：見る（2026-10-04 PHASE H3）：牧場の一覧（画像・名
   await buyFirst(pg);
   await pg.evaluate(() => { const c = JSON.parse(JSON.stringify(S.m)); c.uid = c.uid + 'b'; c.name = 'ガウ'; c.sp = 1; c.po = 123; S.box.push(c); save(); });
   await pg.click('.hz[onclick="farm()"]'); await pg.waitForSelector('#app .rn2 .rnact'); await pg.waitForTimeout(400);
-  assert.deepEqual(await pg.evaluate(() => [...document.querySelectorAll('.rnact .rna')].map((b) => b.innerText.replace(/\s+/g, ''))), ['見る', '名前変更', '受け取る', '売る']);
+  assert.deepEqual(await pg.evaluate(() => [...document.querySelectorAll('.rnact .rna')].map((b) => b.innerText.replace(/\s+/g, ''))), ['見る', '名前変更', '預ける', '売る']);
   await pg.evaluate(() => { window.__box = S.box; S.box = []; farm('', 'b'); });
   assert.equal(await pg.evaluate(() => document.querySelector('.rngrid').innerText.trim()), '牧場にはまだモンスターがいません。');
   await pg.evaluate(() => { S.box = window.__box; farm('', 'b'); });
