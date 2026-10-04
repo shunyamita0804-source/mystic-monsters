@@ -3429,7 +3429,7 @@ function labTable(){const sp=SP.map((_,i)=>i);
  const rows=sp.flatMap(a=>sp.map(b=>{const r=MMP7.resolveFusionSpecies({sp:a},{sp:b});return `<div class="lbtr"><span>${SP[a][0]}</span><i>×</i><span>${SP[b][0]}</span><em>→</em><b>${SP[r.sp]?SP[r.sp][0]:"？？？"}</b></div>`})).join("");
  const rules=["子の種族＝親1（左）の種族。合体専用の種族は未登録【暫定】","能力＝両親の合計の 60%（上限 999）","名前＝親1の前2文字＋親2の後ろ2文字","技＝子の初期技に加えて、両親の追加技から1つ継承（初期技・必殺技は除く）","大会ランク＝高いほうを引き継ぐ","費用 200G。2体は消え、未育成の個体として生まれる"];
  $("#app").innerHTML=labShell("lbt",`<button class="dback" data-nav="back" onclick="museum()">◀ 研究所</button>`,`<div class="labplq"><b>配合表</b><small>合体で生まれる種族と規則</small></div>`,`<div class="labbody">${elSay(ELLIOT_TALK.table,"analyze")}<div class="lbdc lbtb"><div class="lbth"><span>親1</span><span>親2</span><span>生まれる種族</span></div>${rows}<ul class="lbrules">${rules.map(r=>`<li>${r}</li>`).join("")}</ul></div></div>`,"table");try{window.scrollTo(0,0)}catch(e){}}
-function adopt(i,nm){if(p8Blocked())return;const r=MMP10M.purchase(S,MMP10M.keyOf(i),S.box.length+(S.m?1:0));if(!r.ok)return market(P10_WHY[r.reason]||"購入できません。",MMP10M.keyOf(i));S.cnt=(S.cnt||0)+1;const x=mk(i);if(nm)x.name=nm;if(S.m)S.box.push(x);else S.m=x;sel=[];save();const go=()=>lobby(`${p11Esc(x.name)}をつれて帰った！`+(S.m==x?"":"（牧場に預けました）")+(r.rescued?`（はじめての1体のため、所持金を${MMP10M.ECONOMY.marketPrice}Gまで補填しました）`:"")+(r.continueRescued?`（育成を続けるため、不足分${r.topUp}Gを補填して購入しました）`:""));const kt=typeof karenTalk=="function"?karenTalk("bought"):null;if(kt)kt.then(go);else go()}
+function adopt(i,nm){if(p8Blocked())return;const r=MMP10M.purchase(S,MMP10M.keyOf(i),S.box.length+(S.m?1:0));if(!r.ok)return market(P10_WHY[r.reason]||"購入できません。",MMP10M.keyOf(i));S.cnt=(S.cnt||0)+1;const x=mk(i);if(nm)x.name=nm;if(S.m)S.box.push(x);else S.m=x;sel=[];save();const first=S.cnt==1,go=()=>{lobby(`${p11Esc(x.name)}をつれて帰った！`+(S.m==x?"":"（牧場に預けました）")+(r.rescued?`（はじめての1体のため、所持金を${MMP10M.ECONOMY.marketPrice}Gまで補填しました）`:"")+(r.continueRescued?`（育成を続けるため、不足分${r.topUp}Gを補填して購入しました）`:""));if(first)setTimeout(()=>{try{if(document.querySelector(".map.town"))npcMoment("partner",x.name)}catch(e){}},450)};const kt=typeof karenTalk=="function"?karenTalk("bought"):null;if(kt)kt.then(go);else go()}
 function msave(){let ok=false;try{localStorage.setItem(MMP8.SAVE_KEY,JSON.stringify(S));ok=localStorage.getItem(MMP8.SAVE_KEY)==JSON.stringify(S)}catch(e){}msg0(ok?`セーブしました（${new Date().toLocaleTimeString("ja-JP")}）`:"このブラウザではセーブできません。セーブコードを使ってください。")}
 const nv=typeof navigator!="undefined"?navigator:{};
 const sl=n=>{try{return JSON.parse(localStorage.getItem("mr4s"+n))}catch(e){return null}};
@@ -4102,6 +4102,7 @@ const TP2_IC={crown:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18h
 //  順位表・対戦表は下に残す（スクロール）。大会の処理（MMP8L・startTournament・tourNext・settle）は変えない
 function p8TourScr(msg){const m=S.m,t=m.raise.tour,lg=t.league;bgm(t.status=="settled"?"result":"tour");p9Immersive(true);p9MenuClose();
  if(t.status=="settled")return p9TourResult(msg);
+ if(lg.round===0)setTimeout(()=>{try{if(document.querySelector(".p9tour")&&S.m===m)npcMoment("tour")}catch(e){}},900); // 2026-10-05：初めての公式大会（1回だけ）
  const st=MMP8L.standings(lg),pm=MMP8.tourNext(m),o=p9Npc(lg,pm.opp),cur=lg.round;
  const rows=lg.rounds.map((rd,i)=>{const mt=rd.find(x=>x.a===0||x.b===0),won=i<cur&&!!mt&&mt.winner===0,lost=i<cur&&!!mt&&mt.winner!=null&&mt.winner!==0,cls=i<cur?(won?"win":"lose"):i===cur?"next":"todo";
   return `<div class="tp2r ${cls}"><span class="tp2rn">第${i+1}戦</span><span class="tp2rs">${won?`${TP2_IC.crown}勝利`:lost?`${TP2_IC.x}敗北`:i===cur?`${TP2_IC.swords}次の試合`:`<i>―</i>未定`}</span></div>`}).join("");
@@ -4130,6 +4131,7 @@ function p9TourResult(msg){const m=S.m,t=m.raise.tour,lg=t.league,rs=t.result,w=
  ${w?`<section class="p9board2 p9rw"><h3>${w.firstClear?"初回優勝の報酬":"再優勝の報酬"}</h3>${w.firstClear?`<div class="it">🪙 賞金 <b>${w.prize}G</b></div><div class="it">${MMP9ART.ticketIcon(24)} 特訓チケット <b>×${w.tickets}</b></div>`:`<div class="it dim">クリア済みランクのため、賞金・特訓チケットはありません</div>`}<div class="it">⬆ ステータスボーナス <b>${w.bonus.map(b=>`${LAB[b.key]}+${b.amount}`).join("　")}</b></div>${w.bagUnlocked?`<div class="it">🎒 バッグが6枠に拡張された！</div>`:""}</section>`:""}
  ${msg?`<div class="p9msg p9tmsg">${msg}</div>`:""}${p9Standings(lg,st,true)}${p9Matrix(lg)}
  <button class="p9btn" onclick="p8EndChapter()">Chapterを終えてベースキャンプへ</button></div>`;try{window.scrollTo(0,0)}catch(e){}
+ setTimeout(()=>{try{if(document.querySelector(".p9tour")&&S.m===m)npcMoment(rs.won?"tourWon":"tourLost",null,null,"tourEnd")}catch(e){}},1100); // 2026-10-05：初めての大会の結果（優勝／優勝できなかった。どちらか1回だけ）
  if(w&&w.firstClear&&!P9_SE_SEEN.has(rs)){P9_SE_SEEN.add(rs);MMAUDIO.se("REWARD",{delay:.5});if(w.bagUnlocked)MMAUDIO.se("UNLOCK",{delay:1.2})}} // 2026-10-03：初回優勝の報酬（賞金・特訓チケット）＝REWARD、バッグの拡張＝UNLOCK（登録済みの音。結果の画面を出したとき1回）
 const P9_SE_SEEN=new WeakSet();
 function p8RewardText(w){return `<br>ステータスボーナス：${w.bonus.map(b=>`${LAB[b.key]}+${b.amount}`).join("・")}`+(w.firstClear?`<br>初回優勝：賞金 ${w.prize}G・🎫特訓チケット×${w.tickets}`+(w.bagUnlocked?"・バッグが6枠に拡張！":""):"<br>（クリア済みのランクのため、賞金・チケットはありません）")}
@@ -4314,7 +4316,7 @@ async function trRoll(){if(p7Busy||!S.m||!MMP7.trainRunOf(S.m))return;p7Busy=tru
  let y=0;try{const g=typeof gameScroller=="function"?gameScroller():null;y=g?g.scrollTop:(window.scrollY||0)}catch(e){}const keep=()=>{try{if(y&&$("#p7msg")){const g=typeof gameScroller=="function"?gameScroller():null;if(g)g.scrollTop=y;else window.scrollTo(0,y)}}catch(e){}}; // 振った後の再表示でも見ていた位置のまま（小さい画面でサイコロのボタンが毎回画面外へ戻らないように）
  if(r.goal){const f=MMP7.finishTraining(S,S.m);save();p7Busy=false;
   const t=f.learned!=null?`ゴール！「${SK[f.learned]?SK[f.learned][0]:f.learned}」を覚えた！`:f.reason=="already"?"ゴール！この特訓の技はすでに覚えていた。":"ゴール！（この種族の特訓技はまだ登録されていません）";
-  sfx(3);trScr(msg+" "+t,{kind:f.kind});return keep()}
+  sfx(3);trScr(msg+" "+t,{kind:f.kind});if(f.learned!=null&&SK[f.learned])setTimeout(()=>{try{if(document.getElementById("p7msg"))npcMoment("move",SK[f.learned][0])}catch(e){}},700);return keep()}
  p7Busy=false;trScr(msg);keep()}
 
 // ---- 出発準備（バッグ⇄保管庫・Chapter選択） ----
@@ -4378,6 +4380,9 @@ const FINA_TALK={
  raiseFirst:[{npc:"fina",expression:"serious",text:"育成を始めると、途中で街には戻れないから気をつけてね。"},{expression:"normal",text:"この子の育成を始める？",choices:[{id:"start",label:"始める"},{id:"cancel",label:"まだやめておく"}]}],
  raiseAgain:[{npc:"fina",expression:"normal",text:"この子の育成を始める？",choices:[{id:"start",label:"始める"},{id:"cancel",label:"まだやめておく"}]}],
  done:[{npc:"fina",expression:"happy",text:"お疲れさまでした！　育成完了です！"},{expression:"smile",text:"ここまで育ててきた時間が、この子の力になっていますね。"},{expression:"guide",text:"育て終わったモンスターは、牧場でいつでも確認できますよ。"}]};
+/** 短いイベント（2026-10-05。MMNPCE.moment）：最初の1回だけ・吹き出し1〜3（compact）。記録は S.npcFlags.moment[key]（任意項目）。自動テストでは出さない（MM_QA_NO_NPC）。after＝会話のあと（出さないときもすぐ呼ぶ） */
+function npcMoment(key,arg,after,rec){const fin=()=>{if(after)after()};if(window.MM_QA_NO_NPC||!window.MMNPCE||!MMNPCE.moment||!window.MMNPC){fin();return false}const f=finaFlags(),M=f.moment&&typeof f.moment=="object"?f.moment:(f.moment={}),k=rec||key;if(M[k]){fin();return false}const L=MMNPCE.moment(key,arg);if(!L){fin();return false}M[k]=1;save();MMNPC.talk(L,{kind:"fina",presentation:"compact"}).then(fin,fin);return true}
+function momentMark(k){const f=finaFlags();(f.moment&&typeof f.moment=="object"?f.moment:(f.moment={}))[k]=1}
 function finaFlags(){if(!S.npcFlags||typeof S.npcFlags!="object"||Array.isArray(S.npcFlags))S.npcFlags={};return S.npcFlags}
 // ---- 2026-10-04（第二段階）：施設の NPC イベント（js/npc/npc-events.js の MMNPCE）。初回訪問＝フィナ ↔ NPC の会話（S.npcFlags.first）、再訪＝進行状態に合う一言（直前と同じ文は避ける＝ページの中の NPC_LAST。セーブには入れない）、Chapter の帰還＝ダン＋フィナ（m.raise.evSeen）。
 //  自動テストでは会話を出さない（MM_QA_NO_NPC。tests/e2e/harness.mjs の open({ npc:true }) で出す）。セーブ v6 の形は変えない（既存の任意項目 npcFlags・raise の中） ----
@@ -4414,7 +4419,8 @@ function p7Depart(b){const m=S.m;if(!m)return lobby();
  // 育成開始（未育成→Chapter 1）：フィナがプレイヤーへ確認（選択肢「始める／まだやめておく」。初回だけ「途中で街へ戻れない」説明つき）。選択肢が確認を兼ねるので2度押しは求めない
  //  「始める」を選んだときだけ、同じ会話でフィナ→ダンの掛け合い → 会話のあと従来の出発処理（引数なしの p7Depart() ＝ 下の出発処理そのもの）。「まだやめておく」・選ばずに閉じたときは何もしない
  if(MMP7.raiseState(m)=="none"&&b&&window.MMNPC){if(b.dataset.fina)return;b.dataset.fina="1";const f=finaFlags(),first=!f.raiseIntro;if(first){f.raiseIntro=1;save()}
-  finaTalk(first?"raiseFirst":"raiseAgain",{start:DAN_TALK.handoff}).then(r=>{delete b.dataset.fina;if(r==="start"&&S.m===m&&MMP7.raiseState(m)=="none")p7Depart()});return}
+  const spk="sp"+m.sp,M=f.moment||{},spL=!window.MM_QA_NO_NPC&&window.MMNPCE&&MMNPCE.moment&&!M[spk]?MMNPCE.moment("sp",(MMP10M.byId(m.sp)||{}).name||"この種族"):null; // 2026-10-05：その種族を初めて育成する出発＝ダンの一言を添える（1回だけ）
+  const ho=DAN_TALK.handoff;finaTalk(first?"raiseFirst":"raiseAgain",{start:spL?ho.concat(spL):ho}).then(r=>{delete b.dataset.fina;if(r==="start"&&spL)momentMark(spk);if(r==="start"&&S.m===m&&MMP7.raiseState(m)=="none")p7Depart()});return}
  if(MMP7.raiseState(m)=="none"&&b&&!arm(b,"もう一度押すと育成開始（完了か放棄まで街へ戻れません）"))return;const r=MMP8.depart(S,m);if(!r.ok)return prepScr(P7_ERR[r.reason]||"出発できません。");save();board(`${p8ChLabel(r.key)}に出発！サイコロを振って進もう！`)}
 
 // ---- アイテム屋（購入品は保管庫へ。バッグは直接操作しない） ----

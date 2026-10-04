@@ -45,7 +45,7 @@ test('IN-B2：開始の音（正式素材）：最初のタップで TITLE_START
     assert.equal(r.ff, 0, '合成のファンファーレは鳴らない'); assert.deepEqual(r.log, ['TITLE_START']); assert.equal(r.st, 'ready');
     assert.ok(r.next >= 480 && r.next < 1500, `約0.5秒で次の画面（${Math.round(r.next)}ms。3秒の余韻を待たない）`);
     await pg.waitForSelector('.mmpro-u', { timeout: 10000 }); await pg.waitForTimeout(400);
-    assert.match(await pg.evaluate(() => document.querySelector('.mmpro-u').textContent), /この世界には、人と共に生きる不思議な生命/, 'プロローグは従来どおり');
+    assert.match(await pg.evaluate(() => document.querySelector('.mmpro-u').textContent), /遥か昔から/, 'プロローグは従来どおり');
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []); await p.ctx.close();
   }
 });

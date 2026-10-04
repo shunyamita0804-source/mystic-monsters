@@ -1,5 +1,5 @@
 // =========================================================
-// QA（実ブラウザ）：プロローグ A〜E（js/prologue/prologue.js。2026-10-03 に A・B の正式画像を受け取り5枚そろった）
+// QA（実ブラウザ）：プロローグ（js/prologue/prologue.js。2026-10-05 正式の4枚・本文。1文字ずつのフェード）
 //  ・新しいゲームの開始 → プロローグ（A→B→C→D→E の順に背景・ナレーション）→ 聖獣士登録（名前登録）
 //  ・2026-10-04 PHASE H：1文ずつ（長い文は2行を1セット）完成した状態・左から右へ短く入って中央よりやや上で静止・フェードで次へ。タップで次の文。文字は画面に収まる（390×844・375×667）
 //  ・スキップは2度押し。見たあとは再読み込みしても出ない
@@ -28,7 +28,7 @@ const state = (pg) => pg.evaluate(() => {
   const bg = ov.querySelector('.mmpro-bg.on'), us = [...ov.querySelectorAll('.mmpro-u')], u = us[0];
   const rs = u ? [...u.querySelectorAll('p')].map((p) => p.getBoundingClientRect()) : [];
   return {
-    bg: bg ? (/prologue_(\w)\.webp/.exec(bg.style.backgroundImage) || [])[1] : null, units: us.length,
+    bg: bg ? (/prologue_(\d\d)_\w+\.webp/.exec(bg.style.backgroundImage) || [])[1] : null, units: us.length,
     text: u ? [...u.querySelectorAll('p')].map((p) => p.textContent).join('') : '', op: u ? +getComputedStyle(u).opacity : 0,
     top: rs.length ? Math.min(...rs.map((r) => r.top)) : null, bottom: rs.length ? Math.max(...rs.map((r) => r.bottom)) : null,
     left: rs.length ? Math.min(...rs.map((r) => r.left)) : null, right: rs.length ? Math.max(...rs.map((r) => r.right)) : null,
@@ -37,14 +37,21 @@ const state = (pg) => pg.evaluate(() => {
 });
 
 for (const size of [[390, 844], [375, 667]]) {
-  T(`PRO-B1（${size.join('×')}）：新しいゲーム → プロローグ A→B→C→D→E（1文ずつ・完成した状態・中央よりやや上・画面に収まる・タップで次の文）→ 聖獣士登録。本文はすべてそのまま出る。再読み込みでは出ない`, async () => {
+  T(`PRO-B1（${size.join('×')}）：新しいゲーム → プロローグ 1→2→3→4（1文ずつ・1文字ずつ現れる・途中のタップで全文・全文のタップで次・中央よりやや上・画面に収まる）→ 聖獣士登録。本文はすべてそのまま出る。再読み込みでは出ない`, async () => {
     const p = await openPage({ size, prologue: true }); const pg = p.page;
     mkdirSync(SHOT, { recursive: true });
     await pg.click('.p15start');
     await pg.waitForSelector('.mmpro .mmpro-u', { timeout: 20000 });
     const seen = [], shot = new Set();
-    for (let i = 0; i < 60; i++) {
-      await pg.waitForFunction(() => { const u = document.querySelector('.mmpro .mmpro-u'); return !document.querySelector('.mmpro') || (u && +getComputedStyle(u).opacity > 0.99); }, null, { timeout: 15000 });
+    // 文字が出ている途中のタップ＝その文を全部出す（次へは進まない）
+    await pg.waitForTimeout(500);
+    const t0 = await pg.evaluate(() => document.querySelector('.mmpro .mmpro-u').textContent);
+    assert.equal(await pg.evaluate(() => document.querySelector('.mmpro .mmpro-u').classList.contains('full')), false, '最初は1文字ずつ出ている途中');
+    await pg.mouse.click(size[0] / 2, size[1] * 0.8);
+    await pg.waitForFunction(() => document.querySelector('.mmpro .mmpro-u.full'), null, { timeout: 3000 });
+    assert.equal(await pg.evaluate(() => document.querySelector('.mmpro .mmpro-u').textContent), t0, '途中のタップでは次へ進まない（全文を出す）');
+    for (let i = 0; i < 80; i++) {
+      await pg.waitForFunction(() => { const u = document.querySelector('.mmpro .mmpro-u'); return !document.querySelector('.mmpro') || (u && u.classList.contains('full') && +getComputedStyle(u).opacity > 0.99); }, null, { timeout: 15000 });
       const s = await state(pg); if (!s) break;
       assert.equal(s.units, 1, '同時に出る文は1つだけ（重ならない・積み上げない）');
       seen.push({ bg: s.bg, text: s.text });
@@ -57,7 +64,7 @@ for (const size of [[390, 844], [375, 667]]) {
       await pg.waitForFunction((t) => { const ov = document.querySelector('.mmpro'); if (!ov) return true; const u = ov.querySelector('.mmpro-u'); return !!u && u.textContent !== t; }, s.text, { timeout: 15000 });
     }
     const order = seen.map((x) => x.bg).filter((b, i, a) => a[i - 1] !== b);
-    assert.deepEqual(order, ['a', 'b', 'c', 'd', 'e'], '背景は A→B→C→D→E の順');
+    assert.deepEqual(order, ['01', '02', '03', '04'], '背景は 1 共存 → 2 異変 → 3 三人のレジェンド → 4 ミストリア到着の順');
     const all = await pg.evaluate(() => MMPRO.SLIDES.flatMap((sl) => sl.pages.flatMap((pg) => MMPRO.units(pg).map((u) => u.join('')))));
     assert.deepEqual(seen.map((x) => x.text), all, '本文はすべて・順番どおり・変えずに出る（1文または2行の1セットずつ）');
     assert.ok(all.every((t) => t.length > 0));

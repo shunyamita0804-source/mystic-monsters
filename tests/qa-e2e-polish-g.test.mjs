@@ -1,7 +1,7 @@
 // =========================================================
 // QA（実ブラウザ）：2026-10-04 PHASE G（実機試遊の違和感の修正）
 //  G-A：新しいゲーム → プロローグの途中で終了（再読み込み）→ 次に開いてもプロローグが出る（「見た」の記録は最後まで見たときだけ）
-//  G-B：プロローグの文章は1文字ずつのタイプ表示をしない（2026-10-04 PHASE H：1文を完成した状態で左から右へ短く入れて中央よりやや上で静止。下から上へ流さない）
+//  G-B：プロローグの文章（2026-10-05 正式）＝1文字ずつ、各文字が透明→表示（数px の移動とぼかし）で重なりながら現れる。段落ごとのフェードではない・中央よりやや上
 //  G-C：開始ボタン → プロローグの間に、旧い見出し（金枠の「ミスティックモンスターズ」）が1フレームも見えない
 //  ほかの項目（D〜M）は、同じファイルの後ろに足す
 //  Playwright / Chromium が無い環境では省略（skip）する。
@@ -51,17 +51,19 @@ for (const size of SIZES) {
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   });
 
-  T(`G-B・G-C（${size.join('×')}）：2026-10-04 PHASE H の正式仕様：タイプ表示なし・1文（長い文は2行を1セット）を完成した状態で左から右へ短く入れて中央よりやや上で静止・下から上へ流れない・重ならない。開始 → プロローグの間に旧い見出しが出ない`, async () => {
+  T(`G-B・G-C（${size.join('×')}）：2026-10-05 の正式仕様：1文字ずつ（各文字が透明→表示・数px の移動とぼかし・開始の間隔 40〜55ms・各 120〜180ms で重なる）。段落ごとのフェードではない・文の位置は動かない・中央よりやや上・重ならない。開始 → プロローグの間に旧い見出しが出ない`, async () => {
     const p = await openPage({ size, prologue: true }); const pg = p.page;
     await watchH1(pg);
     await pg.click('.p15start');
-    await pg.waitForSelector('.mmpro .mmpro-u', { timeout: 20000 });
-    // 毎フレーム、出ている文（.mmpro-u）の文字・位置・不透明度を記録する（最初の約2文ぶん）
+    await pg.waitForSelector('.mmpro .mmpro-u .mpc', { timeout: 20000 });
+    const cfg = await pg.evaluate(() => ({ ...MMPRO.T }));
+    assert.ok(cfg.chGap >= 40 && cfg.chGap <= 55, `文字の開始の間隔 ${cfg.chGap}ms`); assert.ok(cfg.chFade >= 120 && cfg.chFade <= 180, `各文字のフェード ${cfg.chFade}ms`);
+    // 毎フレーム、出ている文（.mmpro-u）の位置と、各文字の不透明度を記録する（最初の約2文ぶん）
     const log = await pg.evaluate(async () => {
       const out = []; const t0 = performance.now();
       while (performance.now() - t0 < 9000) {
         const us = [...document.querySelectorAll('.mmpro .mmpro-u')];
-        out.push({ t: performance.now() - t0, n: us.length, u: us.map((u) => { const r = u.getBoundingClientRect(); return { text: u.textContent, x: r.left, y: r.top, h: r.height, op: +getComputedStyle(u).opacity }; }) });
+        out.push({ t: performance.now() - t0, n: us.length, u: us.map((u) => { const r = u.getBoundingClientRect(); const cs = [...u.querySelectorAll('.mpc')]; return { text: u.textContent, x: r.left, y: r.top, h: r.height, op: +getComputedStyle(u).opacity, ch: cs.map((c) => +getComputedStyle(c).opacity), d: cs.slice(0, 4).map((c) => parseFloat(c.style.getPropertyValue('--d'))) }; }) });
         await new Promise((r) => requestAnimationFrame(r));
       }
       return out;
@@ -72,13 +74,13 @@ for (const size of SIZES) {
     const H0 = size[1];
     for (const g of groups.slice(0, -1)) {
       const ys = g.fr.map((x) => x.y), xs = g.fr.map((x) => x.x);
-      assert.ok(Math.max(...ys) - Math.min(...ys) < 1, `「${g.text.slice(0, 10)}」は縦に動かない（下から上へ流れない）：${Math.round(Math.min(...ys))}〜${Math.round(Math.max(...ys))}`);
+      assert.ok(Math.max(...ys) - Math.min(...ys) < 1 && Math.max(...xs) - Math.min(...xs) < 1, `「${g.text.slice(0, 10)}」の文の位置は動かない（文字だけが現れる）`);
       const cy = g.fr[0].y + g.fr[0].h / 2; assert.ok(cy > H0 * 0.3 && cy < H0 * 0.5, `中央よりやや上（${Math.round(cy)} / ${H0}）`);
-      for (let i = 1; i < xs.length; i++) assert.ok(xs[i] >= xs[i - 1] - 0.5, '横は左から右へ入るだけ（戻らない）');
-      assert.ok(xs[0] < xs[xs.length - 1] - 10, `左から右へ入る（${Math.round(xs[0])} → ${Math.round(xs[xs.length - 1])}）`);
-      const fin = xs[xs.length - 1], still = g.fr.filter((x) => x.t - g.fr[0].t > 900);
-      assert.ok(still.length > 10 && still.every((x) => Math.abs(x.x - fin) < 0.5), '入ったあとは静止して読ませる');
-      assert.ok(g.fr.some((x) => x.op > 0.99), '完成した文が出る');
+      assert.equal(g.fr[0].ch.length, Array.from(g.text).length, '1文字ずつの要素');
+      assert.deepEqual(g.fr[0].d, [0, 1, 2, 3].map((k) => k * cfg.chGap), '各文字の開始は一定の間隔でずれる');
+      assert.ok(g.fr.some((x) => x.ch[0] > 0.99 && x.ch[x.ch.length - 1] < 0.05), '最初の文字が出て最後の文字はまだ＝段落ごとのフェードではない');
+      assert.ok(g.fr.some((x) => x.ch.some((o) => o > 0.05 && o < 0.95) && x.ch.filter((o) => o > 0.05 && o < 0.95).length >= 2), '前の文字のフェードが終わる前に次の文字が始まる（重なる）');
+      assert.ok(g.fr.some((x) => x.ch.every((o) => o > 0.99)), '全文が出る');
     }
     await pg.evaluate(() => { window.__h1w = false; });
     assert.deepEqual(await pg.evaluate(() => window.__h1), [], '旧い見出し（h1）は1フレームも見えない');
@@ -259,6 +261,7 @@ for (const size of SIZES) {
     const p = await openPage({ size, story: true }); const pg = p.page;
     await toChapter(pg);
     await pg.waitForTimeout(600); if (await pg.$('.chf-fina')) await pg.waitForFunction(() => !document.querySelector('.chf-fina'), null, { timeout: 8000 });
+    for (let i = 0; i < 3 && await pg.$('.mmtalk:not(.mmtalk-out)'); i++) { await H.finishTalk(pg); await pg.waitForTimeout(400); }   // 2026-10-05：出発のときの「30ターン」の説明（このセーブで1回）
     await fieldIdle(pg);
     await pg.evaluate(() => { const r = S.m.raise; r.node = 'p1_2'; S.m.raise.field.nodeAssignments.p1_2 = { t: 'stat', k: 'li' }; r.pend = { roll: 1, left: 0, stage: 'resolve' }; finaFlags().story = []; save(); board(); });
     await pg.waitForSelector('.mmtalk.mmtalk-board:not(.mmtalk-out)', { timeout: 20000 }); await pg.waitForTimeout(500);

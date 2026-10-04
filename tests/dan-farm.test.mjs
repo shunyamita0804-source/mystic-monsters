@@ -69,7 +69,7 @@ test('DAN-5：セリフは DAN_TALK。育成開始はフィナ→ダン（左右
   assert.equal(T.chapter(3), '残り3ターンか。焦らずゴールを目指そう。');
   for (const s of all) assert.doesNotMatch(s, /ぜ！|寿命|疲労|ストレス|わよ/, s);
   assert.match(lineOf('function bcomm('), /^function bcomm\(\)\{const m=S\.m,l=window\.MMNPCE\?npcLineX\("farm",null,"normal"\):null;BCOMM_EX=l\?l\.expression:"normal";if\(l\)return l\.text;const a=\[DAN_TALK\.farm\[R\(DAN_TALK\.farm\.length\)\]\];/, '旧コウのセリフ（NP.b.t）は使わない（2026-10-04：進行状態に合う一言＝MMNPCE が先）');
-  assert.match(HTML, /finaTalk\(first\?"raiseFirst":"raiseAgain",\{start:DAN_TALK\.handoff\}\)\.then\(r=>\{delete b\.dataset\.fina;if\(r==="start"&&S\.m===m&&MMP7\.raiseState\(m\)=="none"\)p7Depart\(\)\}\)/, '「始める」のときだけ同じ会話で掛け合い → 従来の出発処理');
+  assert.match(HTML, /const ho=DAN_TALK\.handoff;finaTalk\(first\?"raiseFirst":"raiseAgain",\{start:spL\?ho\.concat\(spL\):ho\}\)\.then\(r=>\{delete b\.dataset\.fina;if\(r==="start"&&spL\)momentMark\(spk\);if\(r==="start"&&S\.m===m&&MMP7\.raiseState\(m\)=="none"\)p7Depart\(\)\}\)/, '「始める」のときだけ同じ会話で掛け合い → 従来の出発処理');
 });
 
 test('DAN-6：共通会話の選択肢：全文表示のあとに出て、本文のタップでは進まない。出てから0.35秒・直前のタップから0.4秒あけないと確定しない。選んだ続きを同じ会話で続け、選んだ id で終わる', () => {

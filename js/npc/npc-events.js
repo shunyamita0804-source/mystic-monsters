@@ -123,5 +123,19 @@
     return { lines, rumor };
   }
 
-  root.MMNPCE = fz({ FACILITIES, FIRST, REVISIT, RETURN, first, revisit, returnEvent });
+  // ---- 短いイベント（2026-10-05）：最初の1回だけ（記録は S.npcFlags.moment[key]）。吹き出し1〜3・新しい画像なし・ゲームの仕組みどおりのことだけを話す。文面は【暫定】 ----
+  //  partner＝最初の相棒を迎えた直後（街）／sp＝その種族を初めて育成する出発（ダン。育成開始の掛け合いに添える）／move＝特訓で初めて技を覚えた／tour＝初めての公式大会（大会進行の最初）／
+  //  tourWon・tourLost＝初めての大会の結果（優勝／優勝できなかった）
+  const MOMENT = fz({
+    partner: (n) => [F('happy', `${n}が、最初の相棒だね！`), F('guide', '育成を始めるときは、街の下の「ベースキャンプ」から。準備ができたら行ってみよう！')],
+    sp: (sp) => [N('dan', 'normal', `${sp}を育てるのは初めてか。伸びやすい能力は、種族ごとに違う。`), N('dan', 'normal', '研究所の図鑑で、成長の傾向を確かめておくといい。')],
+    move: (mv) => [N('genshin', 'approve', `「${mv}」か。いい技を覚えたな。`), N('genshin', 'guide', '空いている枠があれば、そこに入る。入れ替えるなら技管理だ。'), F('smile', 'バトルの前に、技の並びも確認しておこうね。')],
+    tour: () => [F('guide', '初めての公式大会だね。全員と1回ずつ戦う総当たり戦だよ。'), F('smile', '一度負けても、まだ終わりじゃない。最後に1位なら優勝！')],
+    tourWon: () => [F('happy', '初優勝だね！ 本当にすごいよ！'), F('smile', 'この調子で、もっと上のランクも目指していこう！')],
+    tourLost: () => [F('troubled', '悔しいね…。'), F('smile', 'でも、育てた能力はなくならないよ。次につなげよう！')],
+  });
+  /** 短いイベントの行（無ければ null）。arg＝名前などの差し込み（呼ぶ側で p11Esc は不要＝会話は文字として表示） */
+  function moment(key, arg) { const f = MOMENT[key]; return f ? f(arg).map((l) => ({ ...l })) : null; }
+
+  root.MMNPCE = fz({ FACILITIES, FIRST, REVISIT, RETURN, MOMENT, first, revisit, returnEvent, moment });
 })(typeof window !== 'undefined' ? window : globalThis);

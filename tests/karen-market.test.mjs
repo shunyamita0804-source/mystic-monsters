@@ -90,7 +90,7 @@ test('KR-6：市場の入口で初回あいさつ（karenIntro）。購入確認
   assert.match(HTML, /p10Go\(P10_MK,true\);p10Info\(\);try\{window\.scrollTo\(0,0\)\}catch\(e\)\{\}karenIntro\(\)\}/);
   assert.match(HTML, /function karenIntro\(\)\{const f=finaFlags\(\);if\(npcFirst\("market",.*?\)\)return;if\(f\.karenIntro\)return karenRevisit\(\);f\.karenIntro=1;save\(\);karenTalk\("intro"\)\.then\(/, '初回はフィナ ↔ カレンの会話（2026-10-04 MMNPCE）、2回目以降は karenRevisit（進行状態の一言・一定の確率）');
   assert.match(HTML, /<div class="p10sheet" role="dialog" aria-modal="true">\$\{karenLine\("ask"\)\}/);
-  assert.match(HTML, /sel=\[\];save\(\);const go=\(\)=>lobby\(/, '保存してから会話');
+  assert.match(HTML, /sel=\[\];save\(\);const first=S\.cnt==1,go=\(\)=>\{lobby\(/, '保存してから会話');
   assert.match(HTML, /const kt=typeof karenTalk=="function"\?karenTalk\("bought"\):null;if\(kt\)kt\.then\(go\);else go\(\)\}/);
   assert.match(HTML, /function p10KarenTalk\(\)\{if\(P10_ANIM\|\|\$\("#p10ov"\)\)return;/, '切り替え中・購入確認中は話しかけない');
 });

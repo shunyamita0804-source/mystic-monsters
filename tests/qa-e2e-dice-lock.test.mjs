@@ -130,8 +130,8 @@ T('DL-B3：SE 監査：街の施設の札・下のバー・ファームのコマ
   await tap('.tpin[onclick="market()"]'); await pg.waitForSelector('.p10mk'); assert.deepEqual(await got(), ['UI_SELECT'], '市場へ＝UI_SELECT を1回');
   await tap('.p10mk .p10back'); await pg.waitForSelector('.tpin[onclick="farm()"]'); assert.deepEqual(await got(), ['UI_CANCEL'], '街へ戻る＝UI_CANCEL を1回');
   await tap('.tbar button[onclick="hall()"]'); await pg.waitForSelector('.fm .fmgo'); assert.deepEqual(await got(), ['UI_SELECT'], 'ファームへ＝UI_SELECT を1回');
-  await tap('.fm .fmb[data-cmd="status"]');   /* 2026-10-04 PHASE H2：ベースキャンプの下の1列（data-cmd） */ await pg.waitForSelector('.ds'); assert.deepEqual(await got(), ['UI_SELECT'], 'ステータス＝1回');
-  await tap('.ds .dback'); await pg.waitForSelector('.fm .fmgo'); assert.deepEqual(await got(), ['UI_CANCEL'], 'ファームへ戻る＝UI_CANCEL');
+  await tap('.fm .fmb[data-cmd="status"]');   /* 2026-10-04 PHASE H2：ベースキャンプの下の1列（data-cmd） */ await pg.waitForSelector('.sts'); assert.deepEqual(await got(), ['UI_SELECT'], 'ステータス＝1回');
+  await tap('.sts .strb');   /* 2026-10-05：正式ステータス画面（stScr）の戻る */ await pg.waitForSelector('.fm .fmgo'); assert.deepEqual(await got(), ['UI_CANCEL'], 'ファームへ戻る＝UI_CANCEL');
   await tap('.fm .fmb[data-cmd="item"]'); await pg.waitForSelector('.ds.shop'); assert.deepEqual(await got(), ['UI_SELECT'], 'アイテム屋（ファームの屋台）＝1回');
   await tap('.ds .dback'); await pg.waitForSelector('.fm .fmgo'); assert.deepEqual(await got(), ['UI_CANCEL']);
   await tap('.fm .fmb[data-cmd="town"]'); await pg.waitForSelector('.tpin[onclick="farm()"]'); assert.deepEqual(await got(), ['UI_CANCEL'], '街へ戻る（ファーム）＝UI_CANCEL');

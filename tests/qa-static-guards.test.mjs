@@ -505,9 +505,9 @@ test('QA-C13：市場カルーセル：切り替えは約0.3秒（P10_MS＝300�
 
 test('QA-C14：フィナの登場は指定の3か所だけ（名前登録の直後・育成開始・育成完了）で、Chapterボードには置かない', () => {
   const calls = callSites(CODE, 'finaTalk').map((c) => `${c.fn}:${c.arg}`).sort();
-  assert.deepEqual(calls, ['finaIntro:"intro"', 'p7Depart:first?"raiseFirst":"raiseAgain",{start:DAN_TALK.handoff}', 'p8DoneScr:"done"']);
+  assert.deepEqual(calls, ['finaIntro:"intro"', 'p7Depart:first?"raiseFirst":"raiseAgain",{start:spL?ho.concat(spL', 'p8DoneScr:"done"']);
   assert.deepEqual(callSites(CODE, 'finaIntro').map((c) => c.fn), ['p11NameGo'], 'あいさつは名前登録の確定からだけ');
-  assert.deepEqual([...new Set(callSites(CODE, 'MMNPC\\.talk').map((c) => c.fn))].sort(), ['farmReturn', 'finaTalk', 'karenSay', 'npcFirst', 'opAfterReg', 'opBureau', 'opConfirm', 'opTownTalk'], '共通会話を開くのは finaTalk・市場のカレン（karenSay）・施設の初回訪問（npcFirst）・Chapter の帰還（farmReturn）だけ（2026-10-04）');
+  assert.deepEqual([...new Set(callSites(CODE, 'MMNPC\\.talk').map((c) => c.fn))].sort(), ['farmReturn', 'finaTalk', 'karenSay', 'npcFirst', 'npcMoment', 'opAfterReg', 'opBureau', 'opConfirm', 'opTownTalk'], '共通会話を開くのは finaTalk・市場のカレン（karenSay）・施設の初回訪問（npcFirst）・Chapter の帰還（farmReturn）だけ（2026-10-04）');
   assert.deepEqual(callSites(CODE, 'karenTalk').map((c) => c.fn).sort(), ['adopt', 'karenIntro'], 'カレンの会話ウィンドウは市場の入店と購入成功だけ（切り替え・ボタンは案内欄の一言）');
   const ft = cut(CODE, 'const FINA_TALK={', '};');
   assert.deepEqual(Object.keys(new Function(`return ${ft.slice('const FINA_TALK='.length)}}`)()), ['intro', 'raiseFirst', 'raiseAgain', 'done']);
