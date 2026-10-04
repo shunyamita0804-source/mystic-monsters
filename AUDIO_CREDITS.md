@@ -12,6 +12,7 @@ ZIP の README・LICENSE の原文は、受け取った ZIP の中にある（�
 | Free 25 Fantasy RPG Game Tracks Vol.3（BGM・Fx） | alkakrab（OGG の埋め込み情報 ARTIST=alkakrab・2023） | https://alkakrab.itch.io/free-25-fantasy-rpg-game-tracks | 配布ページに「Absolutely Free For Commercial use」（ユーザー確認 2026-10-03） | 可 | 必須ではない（出典はこの表に記録） | assets/audio/bgm/alkakrab_fantasy_rpg_vol3/・assets/audio/se/alkakrab_fantasy_rpg_vol3/ |
 | High Quality 16-bit RPG Music（28曲） | HydroGene | https://hydrogene.itch.io/high-quality-16-bit-music | CC0 1.0（ユーザー確認 2026-10-03。商用可・クレジット不要・加工可） | 可 | 不要 | assets/audio/bgm/hydrogene_16bit_rpg/（2026-10-03 第5弾の仮採用・8曲） |
 | Mix of SFX by Ivokard（SE） | Ivokard | ZIP の License.txt（SNS：https://www.youtube.com/@ivokard ほか） | CC0（Creative Commons Zero。「free to use in personal, educational and commercial projects」） | 可 | 不要 | assets/audio/se/ivokard/ |
+| ミスティックモンスターズ正式素材（SE） | ユーザー（プロジェクト所有者）提供 | 2026-10-04 にチャットで受け取ったファイル「Mystic Monsters Start Button SE(1).mp3」 | ゲーム専用の正式素材（ユーザー提供） | 可 | 不要 | assets/audio/se/mystic_monsters_official/ |
 
 ### 正式なクレジット表記（ゲーム内のクレジット画面・配布ページに載せる文）
 
@@ -39,7 +40,7 @@ CC0 の3つ（HydroGene・ObsydianX・Ivokard）は表記不要だが、礼儀�
 | alkakrab Vol.3「Ambient 3.ogg（Lost River）」 | FARM（旧ファーム） |
 | PGS「Event Music 4.ogg」 | 大会の受付・順位表・結果（TOURNAMENT_ENTRY・LOBBY_LOW／HIGH・RESULT） |
 | alkakrab Vol.3「Fx 1.ogg」 | MATCHUP（対戦相手の発表＝大会の対戦前の画面） |
-| Interface SFX Pack 1「confirm_style_1_004.ogg」 | TITLE_START（開始画面のタップ） |
+| Interface SFX Pack 1「confirm_style_1_004.ogg」 | 旧 TITLE_START（開始画面のタップ。第4弾で NG・2026-10-04 から正式素材 title_start.ogg） |
 | Interface SFX Pack 1「confirm_style_5_001.ogg」 | UI_CONFIRM（通常のコマンドのタップ） |
 | Ivokard「pluck_3.ogg」 | DICE_LAND（サイコロの着地） |
 | Ivokard「ping.ogg」の DICE_ROLL への割り当て | DICE_ROLL（出目＝サイコロの停止の音。ping は EVENT ではそのまま） |
@@ -86,6 +87,14 @@ PGS の曲は「暫定の試遊用」。新しく採用しない（公開リポ�
 | confirm_style_1_001.ogg | TOURNAMENT_START |
 
 外した（試遊で NG）：confirm_style_4_002（旧 UI_CONFIRM）。
+
+### SE（ミスティックモンスターズ正式素材 → assets/audio/se/mystic_monsters_official/）【2026-10-04】
+
+| 元ファイル | リポジトリのファイル | 出来事 | 長さ | 元の音量 | gain |
+|---|---|---|---:|---:|---:|
+| Mystic Monsters Start Button SE(1).mp3（MP3 192kbps・44.1kHz・ステレオ・3.03秒。sha256 `9b2a3bf46dc9ca910bea5fee0157269bc91ff1a708637b3135af85ca092348fc`） | title_start.ogg（OGG Vorbis q6 に変換しただけ・EQ や長さは無加工。音が鳴るのは約1.9秒・以降は無音＝読み込み時に切る） | TITLE_START（開始画面の「タップしてはじめる」） | 3.03 | -14.1 LUFS・ピーク -1.6 dBFS | 0.8 |
+
+- 鳴らし方：タップの瞬間（最初のタップ＝unlock と同時。デコードがまだなら終わりしだい・最大0.9秒以内に鳴らす＝合成のファンファーレには落とさない）→ ボタンが沈む → 約0.5秒で次の画面。音は画面の切り替えで止めない（余韻は自然に終わる）。MP3 は置かない（OGG だけ）。
 
 ### SE（Mix of SFX by Ivokard → assets/audio/se/ivokard/）
 

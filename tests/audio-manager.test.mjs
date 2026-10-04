@@ -27,7 +27,7 @@ function env(o = {}) {
     createMediaElementSource(el) { el.wired = (el.wired || 0) + 1; if (el.wired > 1) throw new Error('InvalidStateError: HTMLMediaElement already connected'); return new Node(); }
     createBuffer(ch, len, sr) { return new Buf(ch, len, sr); }
     createBufferSource() { const n = new Node(); n.start = () => { if (n.buffer && n.buffer.length > 1) log.plays++; n.started = true; }; n.stop = () => {}; return n; }
-    decodeAudioData(ab, ok, ng) { if (o.decodeFail) { ng(new Error('EncodingError')); return; } const b = new Buf(1, 44100 * 6, 44100); b.ch[0][100] = 0.5; b.ch[0][4000] = 0.2; ok(b); }
+    decodeAudioData(ab, ok, ng) { if (o.decodeFail) { ng(new Error('EncodingError')); return; } const b = new Buf(1, 44100 * 6, 44100); b.ch[0][100] = 0.5; b.ch[0][4000] = 0.2; if (o.decodeDelay) setTimeout(() => ok(b), o.decodeDelay); else ok(b); }
   }
   class Audio {
     constructor() { this.src = ''; this.volume = 1; this.loop = false; this.paused = true; this.ls = {}; this.plays = 0; log.audios.push(this); }
@@ -296,7 +296,7 @@ test('AUDIO-18：最初のタップ（AudioContext の resume を頼んだ直後
 });
 
 test('AUDIO-19：index.html：開始のタップは TITLE_START の1音だけ（ファイルが鳴らなければ合成のファンファーレ）。名前登録まで TITLE の曲。VS（対戦相手の発表）・能力比較は TOURNAMENT_MATCHUP、実戦の曲は「FIGHT!」の開始音のあと。ゴールは TOURNAMENT_ENTRY', () => {
-  assert.match(HTML, /unlock\(\);clearInterval\(AU\.tm\);AU\.tm=null;AU\.sc=null;if\(!MMAUDIO\.se\("TITLE_START"\)\)fanfare\(\);/);
+  assert.match(HTML, /unlock\(\);clearInterval\(AU\.tm\);AU\.tm=null;AU\.sc=null;if\(!MMAUDIO\.se\("TITLE_START",\{wait:900\}\)\)fanfare\(\);/, '2026-10-04：正式の開始音。最初のタップでデコード中でも合成音へ落とさず、出来しだい鳴らす');
   assert.match(HTML, /class="p15start" data-nsfx="1"/, '開始ボタンは UI_CONFIRM を鳴らさない');
   assert.match(HTML, /function p11NameScr\(msg\)\{bgm\("title"\);/);
   assert.match(HTML, /bgm\("matchup"\);try\{MMFEEL\.emit\("battle\.matchup"\)\}catch\(e\)\{\}p9Immersive\(true\);/, 'VS は BGM を止めて発表の音');
@@ -386,7 +386,8 @@ test('AUDIO-22：registry のループ区間・maxMs は正しい値（loopEnd �
 test('AUDIO-23：2026-10-03 第4弾の試遊で NG の音は無音（silent＝合成音にも落とさない・代わりの音を選ばない）。OK の音（CHAPTER_START・MARKET など）はそのまま。NG のファイルは置かない', () => {
   const { got } = loadRegistry();
   // BGM の TOWN・FARM・大会（受付〜結果）は第4弾で無音 → 第5弾で別の曲（HydroGene）を仮採用（AUDIO-24）。NG の曲そのものは使わない（下）
-  for (const k of ['TITLE_START', 'UI_CONFIRM', 'DICE_THROW', 'DICE_LAND', 'DICE_ROLL', 'DICE_STOP', 'TILE_STOP', 'TOURNAMENT_ARRIVAL', 'MATCHUP']) assert.deepEqual(got.se[k], { silent: true }, `SE ${k}`);
+  assert.deepEqual(got.se.TITLE_START, { src: './assets/audio/se/mystic_monsters_official/title_start.ogg', gain: 0.8 }, '2026-10-04：開始の音は正式素材（ユーザー提供）');
+  for (const k of ['UI_CONFIRM', 'DICE_THROW', 'DICE_LAND', 'DICE_ROLL', 'DICE_STOP', 'TILE_STOP', 'TOURNAMENT_ARRIVAL', 'MATCHUP']) assert.deepEqual(got.se[k], { silent: true }, `SE ${k}`);
   assert.match(srcsOf(got.se.CHAPTER_START)[0], /fx_2\.ogg$/, 'Chapter 開始の音は OK（そのまま）'); assert.match(srcsOf(got.bgm.MARKET)[0], /town_village_theme_2\.ogg$/, '市場の曲は OK（そのまま）');
   const all = JSON.stringify(got);
   for (const f of ['ambient_4_tranquil_radiance', 'ambient_3_lost_river', 'event_music_4', 'event_music_3', 'town_village_theme_1', 'dungeon_exploration', 'confirm_style_1_004', 'confirm_style_5_001', 'pluck_3', 'pluck_5', 'fx_1.ogg']) assert.ok(!all.includes(f), `NG の音 ${f} を別の場面へ使い回さない`);
@@ -427,4 +428,17 @@ test('AUDIO-25：2026-10-03 総監査：登録済みで呼ばれていなかっ�
   assert.match(HTML, /p10Place\(\);if\(!p10Step\.ch&&window\.MMAUDIO\)MMAUDIO\.se\("UI_SELECT"\);/);
   assert.match(HTML, /p10Step\.ch=1;try\{p10Step\(/);
   assert.equal((HTML.match(/class="p10arw (?:prev|next)"[^>]*data-nsfx="1"/g) || []).length, 2);
+});
+
+test('AUDIO-26：2026-10-04 正式の開始音（TITLE_START）：最初のタップ（unlock と同時にデコードが始まる）でも se(name, { wait }) はデコードを待って1回だけ鳴らす（合成音へ落とさない）。期限を過ぎたら鳴らさない。PROLOGUE・STEP・RIVAL_APPEAR は無音のまま', async () => {
+  for (const [wait, want] of [[900, 1], [5, 0]]) {
+    const { A, log } = env({ ctxState: 'suspended', decodeDelay: 40 }); const L = legacySpy(A); A.registerSe('TITLE_START', './assets/audio/se/mystic_monsters_official/title_start.ogg', { gain: 0.8 });
+    await tick(20); A.unlock();
+    assert.equal(A.se('TITLE_START', { wait }), true); assert.equal(log.plays, 0, 'まだデコード中'); assert.deepEqual(L.sfx, [], '合成音（ファンファーレ）へ落とさない');
+    await tick(80); assert.equal(log.plays, want, wait > 40 ? 'デコードが終わったら鳴る' : '期限を過ぎたら鳴らさない');
+    assert.equal(A.status().se.TITLE_START, 'ready');
+  }
+  const { got } = loadRegistry();
+  assert.ok(existsSync(path.join(ROOT, 'assets/audio/se/mystic_monsters_official/title_start.ogg')), 'OGG がある'); assert.ok(!existsSync(path.join(ROOT, 'assets/audio/se/mystic_monsters_official/title_start.mp3')), '同じ音の MP3 は置かない');
+  assert.deepEqual(got.bgm.PROLOGUE, { silent: true }); for (const k of ['STEP', 'RIVAL_APPEAR']) assert.deepEqual(got.se[k], { silent: true }, k);
 });

@@ -293,12 +293,14 @@
   function decodeSe(name) {
     const f = SEF[name], c = st.ctx; if (!f || !c || !f.data || f.buffer || f.decoding) return;
     f.decoding = true;
-    const ok = (buf) => { f.decoding = false; f.data = null; f.buffer = trimTail(buf); }, ng = (e) => { f.decoding = false; f.data = null; f.failed = true; note('se-decode', name + ' ' + (e && e.message ? e.message : e)); };
+    const ok = (buf) => { f.decoding = false; f.data = null; f.buffer = trimTail(buf); playWanted(f); }, ng = (e) => { f.decoding = false; f.data = null; f.failed = true; f.want = null; note('se-decode', name + ' ' + (e && e.message ? e.message : e)); };
     try {
       const r = c.decodeAudioData(f.data.slice ? f.data.slice(0) : f.data, ok, ng);   // callback 形式（古い Safari）。Promise も返れば両方に備える
       if (r && typeof r.then === 'function') r.then(ok, ng).catch(() => {});
     } catch (e) { ng(e); }
   }
+  /** se(name, { wait }) で予約した音：デコードが終わったら、期限内なら1回だけ鳴らす（最初のタップ＝unlock と同時にデコードが始まる音。2026-10-04 TITLE_START） */
+  function playWanted(f) { const w = f.want; f.want = null; if (!w || Date.now() > w.until || isMuted() || !st.ctx) return; try { playBuffer(f, w.opts); } catch (e) { note('se', e); } }
   /** 末尾の無音を切り落とす（Interface SFX Pack は1つ6秒の器に短い音が入っている。素材ファイルは変えない） */
   function trimTail(buf) {
     try {
@@ -337,6 +339,7 @@
       if (f && !f.failed) {
         // running、または最初の操作で resume を頼んだ直後（iPhone は resume が少し遅れる。予約した音は resume と同時に鳴る）
         if (f.buffer && st.ctx && (st.ctx.state === 'running' || (st.resuming && st.ctx.state === 'suspended' && !st.hidden))) { playBuffer(f, opts); return true; }
+        if (!f.buffer && opts.wait > 0 && st.ctx && !f.failed) { f.want = { opts: { ...opts, wait: 0 }, until: now + opts.wait }; if (!f.data) loadSe(name); else decodeSe(name); return true; }   // 最初のタップ：まだデコード中なら合成音へ落とさず、出来しだい鳴らす（wait＝待てる長さ ms）
         if (!f.buffer) { if (!f.data) loadSe(name); else decodeSe(name); }
       }
       if (legacy && typeof legacy.sfx === 'function') return legacy.sfx(name, opts) !== false;

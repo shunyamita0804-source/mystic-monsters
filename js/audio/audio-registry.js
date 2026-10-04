@@ -20,6 +20,7 @@
   const AK = BGM_DIR + 'alkakrab_fantasy_rpg_vol3/';  // alkakrab「Free 25 Fantasy RPG Game Tracks Vol.3」（商用利用可・クレジット任意。AUDIO_CREDITS.md）
   const AKSE = SE_DIR + 'alkakrab_fantasy_rpg_vol3/'; // 同じパックの Fx（短い効果音）
   const HG = BGM_DIR + 'hydrogene_16bit_rpg/';         // HydroGene「High Quality 16-bit RPG Music」（CC0。AUDIO_CREDITS.md）
+  const MMO = SE_DIR + 'mystic_monsters_official/';   // ミスティックモンスターズの正式素材（ユーザー提供・2026-10-04。AUDIO_CREDITS.md）
 
   // 書き方：{ src, gain, loopStart, loopEnd, loopXfade } ＝ファイルで鳴らす（loopEnd を書くと、曲の終わりのフェードアウトの前で loopStart へクロスフェードで戻る。秒）／{ fallback: '場面' } ＝ほかの場面の曲を使う／{ silent: true } ＝鳴らさない（合成音にも落とさない。試遊で「合わない」となった音の一時的な置き場）／行が無い ＝合成音
   //  【2026-10-03 実機試遊（iPhone）の結果】で NG になった音は silent にした（追加の音源パックで選び直す。行の横の「待ち」）
@@ -57,7 +58,7 @@
 
   const SE_REGISTRY = {
     // ---- UI（Interface SFX Pack 1）----
-    TITLE_START: { silent: true },   // 開始画面の「タップしてはじめる」：2026-10-03 第4弾の試遊で NG → 無音（代わりの音は選ばない）（合成のファンファーレにも落とさない）
+    TITLE_START: { src: MMO + 'title_start.ogg', gain: 0.8 },   // 2026-10-04 正式素材「Mystic Monsters Start Button SE」（ユーザー提供・-14.1 LUFS → gain 0.8 で約 -16）。タップの瞬間に鳴らし、約0.5秒で次の画面へ（音は止めない＝余韻は画面の切り替えのあとも自然に終わる）
     UI_CONFIRM:  { silent: true },   // ボタン全般・街のコマンド（通常のコマンドのタップ）：2026-10-03 第4弾の試遊で NG → 無音（代わりの音は選ばない）
     UI_CANCEL:   { src: UI + 'back_style_4_002.ogg', gain: 0.95 },
     UI_ERROR:    { src: UI + 'error_style_4_002.ogg', gain: 0.7 },
