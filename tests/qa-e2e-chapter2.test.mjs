@@ -121,6 +121,7 @@ test('CH2-B5：Chapter 3 の解放条件（公式Cランク大会クリア）：
     const p = await open({ size }); const pg = p.page;
     await toFarm(pg); await departUI(pg); await idle(pg);
     // 40ターン目に会場へ届かない → ターン切れ → Chapter を終えてファームへ（既存の流れ）
+    await pg.evaluate(() => { delete S.m.raise.field.nodeAssignments.s9_2; save(); });   // 2026-10-05：止まる先（s9_2）は何も起きないマスにする（配置の seed しだいで野生のバトルになり、ターン切れのシートの前にバトルの案内が出ていた）
     await place(pg, 's9_1', { fatigue: 0, turnsUsed: 39 }); await idle(pg); await rollAs(pg, 1); await idle(pg);
     await pg.waitForSelector('.chsheet button[onclick="p8EndChapter()"]', { timeout: 20000 }); await pg.waitForTimeout(300); await pg.click('.chsheet button[onclick="p8EndChapter()"]');
     await pg.waitForSelector('.fm .fmgo', { timeout: 20000 }); await pg.waitForTimeout(400);
