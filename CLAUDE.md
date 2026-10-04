@@ -133,6 +133,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - 2026-10-04（第二段階 PHASE A・B：30ターン・サイコロの LOCK・SE の監査・イベント基盤・NPC イベント・リュウ）の後：ふだんの実行は 970件（合格716・skip 254・失敗0。新しい tests/events-1004.test.mjs＝EV-01〜08）。実ブラウザに tests/qa-e2e-dice-lock.test.mjs（DL-B1〜B3）・tests/qa-e2e-events.test.mjs（EV-B1〜B5）。harness は施設の初回訪問・帰還イベントを出さない（MM_QA_NO_NPC。open({ npc:true }) で出す）。2択の出来事は MM_QA_NO_STORY のとき最初の候補を自動で選ぶ（シミュレーション tests/chapter-sim・turns・balance はランダムに選ぶ）
 - 2026-10-04 PHASE G（実機試遊の改善）の後：ふだんの実行は 1028件（合格739・skip 289・失敗0）。実ブラウザテストも含めた全件（72ファイルを1つずつ・`QA_E2E=1`）は 1038件で失敗0（2周目で失敗した QA-NG2 はテストの古い期待値＝直して単独・ファイル全体で合格）。新しい tests/qa-e2e-polish-g.test.mjs＝G-A〜M（§3 の「実機試遊の改善」）
 - 2026-10-04 PHASE H（ベースキャンプ・牧場20体・聖獣士管理局・NPC の立ち絵の規格・サイコロの停止の根本対策・プロローグの文章・大会ランクの状態）の後：ふだんの実行は 1049件（合格746・skip 303・失敗0）。実ブラウザテストも含めた全件（74ファイルを1つずつ・`QA_E2E=1`）は 1055件で失敗0。新しい tests/phase-h-1004.test.mjs（PH-01〜07）・tests/qa-e2e-phase-h.test.mjs（H-A〜E）、tests/qa-e2e-dice-lock.test.mjs に DL-B1（2サイズ×出目1〜3・画素の比較）・DL-B4（メインスレッドの停止）
+- 2026-10-04 PHASE I（追加素材の局所統合：能力UPの道具・結果演出・ランク選択の青＋金・開始の音・立ち絵の切れ）の後：ふだんの実行は 1060件（合格750・skip 310・失敗0）。実ブラウザテストも含めた全件（77ファイルを1つずつ・`QA_E2E=1`）は 1066件で失敗0。新しい tests/rank-ui-1004.test.mjs（RK-01〜03）・tests/qa-e2e-result-fx.test.mjs（RF-B1〜B3）・tests/qa-e2e-integrate-1004.test.mjs（IN-B1〜B3）、tests/audio-manager.test.mjs に AUDIO-26
 - **テスト運用（2026-10-01 正式）**：ふだんの開発は「実装 → 関連テスト → commit → push → public-check」。51ファイルの全件実ブラウザテストを push の前提にしない（大きな節目では push の後に全件を回す）。既知の不安定なテストが落ちたら、変更との関係を確かめ、明らかに不安定なものだけ1回再実行して合格なら既知として報告する（何度も再実行しない）。小さな修正では公開版の手動操作確認は不要で public-check を基本にする。
 
 ### ホーム画面アイコン
