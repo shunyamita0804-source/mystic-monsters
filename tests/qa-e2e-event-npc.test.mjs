@@ -124,27 +124,28 @@ T('EN-B3：場面ごとの表情：カレンの購入成功＝04・研究所の�
   await pg.waitForFunction(() => !P10_ANIM); await pg.waitForTimeout(400);
   await H.marketDetail(pg); await pg.click('.p10buy'); await pg.waitForSelector('#p10ov .p10ok'); await pg.waitForTimeout(500); await pg.click('#p10ov .p10ok');
   await pg.waitForSelector('.mmtalk'); let t = await collectTalk(pg);
-  assert.ok(t.some((x) => x.name === 'カレン' && /karen\/expr\/closeup\/04_sold\.webp$/.test(x.src)), `カレン：購入成立＝04 ${JSON.stringify(t)}`);
+  assert.ok(t.some((x) => x.name === 'カレン' && /karen\/expr\/(?:closeup|full)\/04_sold\.webp$/.test(x.src)), `カレン：購入成立＝04 ${JSON.stringify(t)}`);
   await pg.waitForSelector('.map.town');
   // 牧場に育成完了の子を2体置いて、研究所の合体・牧場の売却
   await pg.evaluate(() => { const a = mk(1); a.name = 'ガル'; MMP7.ensureProg(a); a.raise = { ...(a.raise || {}), state: 'done' }; const b = mk(0); b.name = 'モモ'; MMP7.ensureProg(b); b.raise = { ...(b.raise || {}), state: 'done' }; S.box = [a, b]; S.g = 1000; S.trainTix = 2; save(); museum(); });
-  t = await collectTalk(pg); assert.ok(t.some((x) => x.name === 'エリオット' && /elliot\/expr\/closeup\/0\d_/.test(x.src)), `エリオット：初回 ${JSON.stringify(t)}`);
+  t = await collectTalk(pg); assert.ok(t.some((x) => x.name === 'エリオット' && /elliot\/expr\/(?:closeup|full)\/0\d_/.test(x.src)), `エリオット：初回 ${JSON.stringify(t)}`);
   await pg.evaluate(() => museum('fuse')); await pg.waitForSelector('.elsay');
   assert.match(await pg.evaluate(() => document.querySelector('.elsay img').getAttribute('src')), /elliot\/expr\/face\/03_analyze\.webp$/, 'エリオット：合体＝03 分析');
-  await pg.evaluate(() => farm()); t = await collectTalk(pg); assert.ok(t.some((x) => x.name === 'ニック' && /nick\/expr\/closeup\/02_gentle\.webp$/.test(x.src)), `ニック：初回＝02 ${JSON.stringify(t)}`);
-  await pg.evaluate(() => farm('', 'd')); await pg.waitForSelector('.rnnick img');
-  assert.match(await pg.evaluate(() => document.querySelector('.rnnick img').getAttribute('src')), /nick\/expr\/closeup\/03_serious\.webp$/, 'ニック：売却（大事な管理）＝03');
+  await pg.evaluate(() => farm()); t = await collectTalk(pg); assert.ok(t.some((x) => x.name === 'ニック' && /nick\/expr\/(?:closeup|full)\/02_gentle\.webp$/.test(x.src)), `ニック：初回＝02 ${JSON.stringify(t)}`);
+  // 2026-10-04 PHASE H3：牧場20体の一覧。売却の確認の間は一覧の上のニックの小さな顔が 03（真剣）
+  await pg.evaluate(() => { pfSellUid = S.m.uid; farm('', 'd'); }); await pg.waitForSelector('.rnnick img');
+  assert.match(await pg.evaluate(() => document.querySelector('.rnnick img').getAttribute('src')), /nick\/expr\/face\/03_serious\.webp$/, 'ニック：売却（大事な管理）＝03');
   await pg.evaluate(() => lobby()); await pg.waitForSelector('.map.town'); await pg.evaluate(() => townArena());
-  t = await collectTalk(pg); assert.ok(t.some((x) => x.name === 'ヴァルガス' && /vargas\/expr\/closeup\/02_grin\.webp$/.test(x.src)), `ヴァルガス：挑戦の受付＝02 ${JSON.stringify(t)}`);
+  t = await collectTalk(pg); assert.ok(t.some((x) => x.name === 'ヴァルガス' && /vargas\/expr\/(?:closeup|full)\/02_grin\.webp$/.test(x.src)), `ヴァルガス：挑戦の受付＝02 ${JSON.stringify(t)}`);
   // アイテム屋：初回（02）→ 購入（04）
   await pg.evaluate(() => { lobby(); shopScr(); }); t = await collectTalk(pg);
-  assert.ok(t.some((x) => x.name === 'アイテム屋' && /shop\/expr\/full\/02_smile\.webp$|shop\/expr\/closeup\/02_smile\.webp$/.test(x.src)), `アイテム屋：初回＝02 ${JSON.stringify(t)}`);
+  assert.ok(t.some((x) => x.name === 'ベルナ' && /shop\/expr\/full\/02_smile\.webp$|shop\/expr\/(?:closeup|full)\/02_smile\.webp$/.test(x.src)), `アイテム屋：初回＝02 ${JSON.stringify(t)}`);
   await pg.evaluate(() => shopScr('', true)); await pg.waitForSelector('.shopsay');
   const sh = await pg.evaluate(() => [document.querySelector('.shopnpc').getAttribute('src'), document.querySelector('.shopsay').textContent]);
   assert.match(sh[0], /shop\/expr\/full\/04_recommend\.webp$/); assert.match(sh[1], /アイテム屋はい、これで大丈夫。気をつけて行ってらっしゃい。/);
   // 特訓：Chapter 1 を終えた状態 → 初回（ゲンシン 01）→ 開始（02）
   await pg.evaluate(() => { const m = S.m; MMP8.depart(S, m, () => 0.37); const g = MMCH.graphFor(m); Object.assign(m.raise, { node: g.goal, goal: true, pend: null }); MMP8.declineTournament(S, m); m.raise.evSeen = ['ret1', 'rumor']; S.npcFlags.first.farm = 1; S.trainTix = 2; save(); hall('s'); });
-  t = await collectTalk(pg); assert.ok(t.some((x) => x.name === 'ゲンシン' && /genshin\/expr\/closeup\/01_guide\.webp$/.test(x.src)), `ゲンシン：初回＝01 ${JSON.stringify(t)}`);
+  t = await collectTalk(pg); assert.ok(t.some((x) => x.name === 'ゲンシン' && /genshin\/expr\/(?:closeup|full)\/01_guide\.webp$/.test(x.src)), `ゲンシン：初回＝01 ${JSON.stringify(t)}`);
   await pg.evaluate(() => trStart('po')); await pg.waitForSelector('.gssay.over');
   assert.deepEqual(await pg.evaluate(() => { const g = document.querySelector('.gssay.over'); return [g.dataset.ex, /genshin\/expr\/face\/02_fired\.webp$/.test(g.querySelector('img').getAttribute('src')), g.textContent.includes('よし。始めるぞ。')]; }), ['fired', true, true], 'ゲンシン：開始＝02');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
