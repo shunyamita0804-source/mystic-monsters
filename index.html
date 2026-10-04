@@ -2670,9 +2670,8 @@ main>h1{flex:none}
 :is(.mmtalk,.nstf,.fmdan,.bcnpc)[data-npc=karen]{--nk:.579}:is(.mmtalk,.nstf,.fmdan,.bcnpc)[data-npc=dan]{--nk:.77}:is(.mmtalk,.nstf,.fmdan,.bcnpc)[data-npc=nick]{--nk:.709}:is(.mmtalk,.nstf,.fmdan,.bcnpc)[data-npc=elliot]{--nk:.786}
 :is(.mmtalk,.nstf,.fmdan,.bcnpc)[data-npc=vargas]{--nk:.987}:is(.mmtalk,.nstf,.fmdan,.bcnpc)[data-npc=cedric]{--nk:.9}:is(.mmtalk,.nstf,.fmdan,.bcnpc)[data-npc=genshin]{--nk:.777}:is(.mmtalk,.nstf,.fmdan,.bcnpc)[data-npc=shop]{--nk:.842}
 .mmtalk-fig.stand img{width:auto;max-width:none;aspect-ratio:var(--nk,.754);object-fit:cover;object-position:50% 0}
-/* 2026-10-04：ヴァルガス・セドリックは全身の横幅が広い（--nk .987／.9）＝390px の画面で右の肩が切れていた。この2人だけ、立ち絵の左端を少し外へ寄せ（-8px）、幅が画面に収まる高さまでに抑える（画像は加工しない・ほかの NPC は変えない） */
-.mmtalk:is([data-npc=vargas],[data-npc=cedric]) .mmtalk-fig.stand{display:flex;flex-direction:column;justify-content:flex-end}
-.mmtalk:is([data-npc=vargas],[data-npc=cedric]) .mmtalk-fig.stand img{flex:none;max-height:calc((min(100vw,460px) - 14px) / var(--nk,.754));margin-left:-8px}
+/* 2026-10-04：ヴァルガス・セドリックは全身の横幅が広い（--nk .987／.9）＝390px の画面で右の肩が切れていた。この2人だけ、立ち絵の箱の幅を画面に収まる幅までにする（高さ・頭の上の位置はほかの NPC と同じ。object-fit:cover で横幅いっぱいに少し小さく映り、下へ少し長く見える）。左端は 8px 外へ。画像は加工しない・ほかの NPC は変えない */
+.mmtalk:is([data-npc=vargas],[data-npc=cedric]) .mmtalk-fig.stand img{max-width:calc(min(100vw,460px) - 14px);margin-left:-8px}
 img.nstf[data-npc]{width:auto;max-width:none;aspect-ratio:var(--nk,.754);object-fit:cover;object-position:50% 0}
 #app>.tlow .dlg.sys .dbub{background:linear-gradient(rgba(16,27,54,.95),rgba(8,15,34,.96));color:#f3ecd9;border:1px solid rgba(240,232,212,.62);border-radius:10px;font-weight:500;box-shadow:inset 0 0 0 3px rgba(9,17,38,.9),inset 0 0 0 4px rgba(240,232,212,.18),0 6px 16px rgba(0,0,0,.45)}
 #app>.tlow .dlg.sys .dbub::before{display:none}
