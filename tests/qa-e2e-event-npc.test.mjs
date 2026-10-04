@@ -26,6 +26,8 @@ async function start(pg) {
   await pg.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); S.npcFlags.story = ['tut_event', 'tut_stat', 'tut_rest']; save(); board(); });
   await pg.waitForSelector('#chf .chf-bg'); await pg.waitForTimeout(700);
   await clearFina(pg);
+  for (let i = 0; i < 4; i++) { if (await pg.$('.mmtalk:not(.mmtalk-out)')) { await H.finishTalk(pg); await pg.waitForTimeout(500); } else if (await pg.$('.chf-fina')) await pg.waitForFunction(() => !document.querySelector('.chf-fina'), null, { timeout: 8000 }).catch(() => {}); else break; }   // 2026-10-05：出発のときの「30ターン」の説明（会話窓・このセーブで1回）を送る
+  await clearFina(pg);
   await pg.waitForFunction(() => !bBusy && !MMCHD.isLocked(), null, { timeout: 20000 }); await pg.waitForTimeout(250);
 }
 const landOn = (pg, ev) => pg.evaluate((ev) => {

@@ -16,7 +16,7 @@ async function open(opt = {}) { for (const q of opened) await q.ctx.close().catc
 const idle = (pg) => pg.waitForFunction(() => !bBusy && !MMCHD.isLocked() && !document.querySelector('.chpop,.chdz,.chf-fina'), null, { timeout: 30000 }).then(() => pg.waitForTimeout(200));
 async function toField(pg, sp = 0) {
   await H.newGame(pg, 'テスト');
-  await pg.evaluate((sp) => { const m = mk(0); m.sp = sp; m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); save(); board(); }, sp);
+  await pg.evaluate((sp) => { finaFlags().story = ['tut_turns']; const m = mk(0);   /* 2026-10-05：出発の「30ターン」の説明（会話窓・このセーブで1回）は見た状態＝従来の節目の一言を確かめる（説明は qa-e2e-next-1005・polish-g G-M） */ m.sp = sp; m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); save(); board(); }, sp);
   await pg.waitForSelector('#chf .chf-bg'); await idle(pg);
 }
 const place = (pg, node, extra = {}) => pg.evaluate(([node, extra]) => { const r = S.m.raise, g = MMCH.graphFor(S.m); r.node = node; r.pend = null; r.field.fieldId = g.nodes[node].field; Object.assign(r, extra); save(); board(); }, [node, extra]).then(() => pg.waitForTimeout(300));

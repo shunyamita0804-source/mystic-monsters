@@ -266,10 +266,11 @@ T('QA-RB2：育成中（Chapterフィールド）は街・市場・牧場・博�
   assert.deepEqual([s.g, s.box.length, s.m.name, s.m.raise.node, s.m.raise.turnsUsed], [777, 0, 'ソラモ', 'p1_3', 1]);
   // Chapter中に使えるファーム機能はステータス・わざだけ。戻り先はボード（街へ戻るボタンは無い）
   await pg.evaluate(() => hall('st'));
-  await pg.waitForSelector('.ds-st .dback');
-  assert.equal(await pg.evaluate(() => document.querySelector('.dback').textContent), '◀ ボードへ');
+  await pg.waitForSelector('.sts .strb');   // 2026-10-05：正式ステータス画面（Chapter 中は下のコマンドなし・戻る＝ボードへ）
+  assert.equal(await pg.evaluate(() => document.querySelector('.sts .strb').getAttribute('aria-label')), 'ボードへ');
+  assert.equal(await pg.$('.sts .stnav'), null);
   assert.equal(await lobbyButtons(pg), 0);
-  await pg.click('.dback');
+  await pg.click('.sts .strb');
   await pg.waitForSelector('#chf-ui #brollbtn');
   await pg.evaluate(() => hall('s'));   // 特訓はChapter中は開けない → フィールドのまま
   await pg.waitForSelector('#chf-ui #brollbtn');

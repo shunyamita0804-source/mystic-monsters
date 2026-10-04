@@ -72,7 +72,7 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     // 下の操作欄：正式画像（START の状態）。中央＝START（押せる領域は画像の球の上）、左右＝アイテム・休む（疲れ −30）・技設定・ステータス。フィールドは 80〜82%、操作欄は 18〜20%
     assert.ok(/START/.test(r.stop.text) && r.stop.w >= 60 && r.stop.h >= 60, JSON.stringify(r.stop)); assert.ok(r.deckImg && /deck_start\.webp$/.test(r.deckImg), `操作欄の画像 ${r.deckImg}`);
     assert.deepEqual(r.wings.map((w) => w[0]), ['chwing chwing-img chitem chw-tl', 'chwing chwing-img chrest chw-tr', 'chwing chwing-img chskill chw-bl', 'chwing chwing-img chstatus chw-br'], '4コマンド：アイテム・休む・技設定・ステータス（画像の上の押せる領域）'); assert.match(r.wings[1][1], /休む.*疲れ −30/);
-    const deckRatio = r.deckH / r.H; assert.ok(deckRatio >= 0.15 && deckRatio <= 0.2 && Math.abs(r.fieldH + r.deckH - r.H) <= 1 && r.dockTopEqFieldBottom, `操作欄 ${r.deckH}px（${(deckRatio * 100).toFixed(1)}%）・フィールド ${r.fieldH}px`);
+    const deckRatio = r.deckH / r.H; assert.ok(deckRatio >= 0.15 && deckRatio <= 0.215 &&   /* 2026-10-05：操作欄を少し高く（20.6%＋safe-area。START が下に寄りすぎない） */ Math.abs(r.fieldH + r.deckH - r.H) <= 1 && r.dockTopEqFieldBottom, `操作欄 ${r.deckH}px（${(deckRatio * 100).toFixed(1)}%）・フィールド ${r.fieldH}px`);
     assert.equal(r.dice, 0, 'START を押すまでサイコロは画面に出さない');
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   });
@@ -417,7 +417,7 @@ test('CH1-B19：上部 HUD（Chapter・Turn・疲れ・所持金・メニュー�
   const dirty = () => pg.evaluate(() => { try { document.querySelector('#app').scrollTop = 40; document.querySelector('main').scrollTop = 30; scrollTo(0, 20); } catch (e) {} });
   await hud('Chapter 開始直後');
   await dirty(); await pg.evaluate(() => board()); await hud('スクロール量を残して描き直し');
-  await pg.evaluate(() => chfOpen('st')); await pg.waitForSelector('#app .ds-st'); await pg.evaluate(() => { const d = document.querySelector('#app .ds-st .dbody'); if (d) d.scrollTop = 300; document.querySelector('#app').scrollTop = 300; });
+  await pg.evaluate(() => chfOpen('st')); await pg.waitForSelector('#app .sts'); await pg.evaluate(() => { const d = document.querySelector('#app .sts .stbody');   /* 2026-10-05：正式ステータス画面 */ if (d) d.scrollTop = 300; document.querySelector('#app').scrollTop = 300; });
   await pg.evaluate(() => board()); await pg.waitForSelector('#chf .chf-bg'); await idle(pg); await hud('ステータス画面（スクロール）から戻る');
   await pg.evaluate(() => chfOpen('w')); await pg.waitForFunction(() => !document.querySelector('#chf')); await pg.evaluate(() => { document.querySelector('#app').scrollTop = 400; }); await pg.evaluate(() => board()); await pg.waitForSelector('#chf .chf-bg'); await idle(pg); await hud('技管理（スクロール）から戻る');
   await rollAs(pg, 2); await idle(pg); await hud('サイコロのあと');

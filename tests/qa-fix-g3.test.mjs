@@ -390,7 +390,7 @@ test('QA-G3-B6：実ブラウザ：ボードを出してすぐ別の画面へ移
     assert.equal(await H.text(pg).then((t) => /能力バランス/.test(t)), true, `${label}：ステータス画面`);
     await pg.waitForTimeout(700);   // 0.35秒（フィールドは0.3秒）のタイマーが過ぎるのを待つ（何も起きないことの確認）
     let S = await H.getS(pg);
-    assert.ok(await pg.$('#app .ds-st'), `${label}：ステータス画面のまま（ボードに戻されない）`); assert.equal(await pg.$('#bmonw'), null);
+    assert.ok(await pg.$('#app .sts'), `${label}：ステータス画面のまま（ボードに戻されない）`); assert.equal(await pg.$('#bmonw'), null);
     assert.deepEqual(S, s0, `${label}：止まったマスの処理は保存されたまま（何も変わらない）`);
     await pg.evaluate(() => board());
     await pg.waitForFunction(() => S.m.raise.pend == null && !bBusy && !document.querySelector('.chpop'), null, { timeout: 15000 });

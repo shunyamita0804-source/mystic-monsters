@@ -68,7 +68,7 @@ test('JR-3：操作欄の4コマンド（アイテム・休む・技設定・ス
   await rollAs(pg, 2); await pg.waitForFunction(() => bBusy || MMCHD.isLocked());
   assert.deepEqual(await pg.evaluate(() => [...document.querySelectorAll('.chwing')].map((w) => w.disabled)), [true, true, true, true], '演出・移動中は4コマンドを押せない');
   await idle(pg);
-  await pg.evaluate(() => chfOpen('st')); await pg.waitForSelector('#app .ds-st'); assert.equal(await pg.evaluate(() => !!document.querySelector('#app .ds-st')), true, 'ステータス＝既存の画面');
+  await pg.evaluate(() => chfOpen('st')); await pg.waitForSelector('#app .sts'); assert.equal(await pg.evaluate(() => !!document.querySelector('#app .sts')), true, 'ステータス＝正式ステータス画面（2026-10-05）');
   await pg.evaluate(() => board()); await pg.waitForSelector('#chf .chf-bg'); await idle(pg);
   await pg.evaluate(() => chfOpen('w')); await pg.waitForFunction(() => !document.querySelector('#chf')); assert.equal(await pg.evaluate(() => /わざ|技/.test(document.querySelector('#app').innerText)), true, '技設定＝既存の技管理');
   assert.deepEqual(p.errors, []);
