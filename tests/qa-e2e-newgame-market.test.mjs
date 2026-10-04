@@ -149,7 +149,7 @@ T('QA-NG2：開始ボタン → 名前登録画面（初期値「アルト」・
   await startFromTitle(pg, '#p11nm');
   const nm = await pg.evaluate(() => ({ v: document.querySelector('#p11nm').value, ml: document.querySelector('#p11nm').getAttribute('maxlength'), lb: document.querySelector('.p11lb').textContent, t: document.querySelector('.p11t').textContent, talk: !!document.querySelector('.mmtalk') }));
   assert.equal(nm.v, 'アルト', '名前の初期値');
-  assert.equal(nm.lb, 'プレイヤー名（8文字まで）');
+  assert.equal(nm.lb, 'プレイヤー名', '2026-10-04 G1：名前の札（8文字までは入力欄の下の案内）');
   assert.equal(nm.t, '聖獣士登録', '2026-10-03：正式名称「聖獣士」');
   assert.equal(nm.talk, false, '名前を決める前にフィナは出ない');
   assert.ok(Number(nm.ml) >= 8, '入力欄は8文字以上入る');
@@ -292,8 +292,8 @@ T('QA-NG7：あいさつの途中で再読込しても、名前は保存済み�
 T('QA-NG8：開始ボタンを同時に2回押しても、開始処理は1回だけ（名前登録画面が1つ出る）', async () => {
   const p = await openPage({ size: H.SIZES.base }); const pg = p.page;
   await pg.waitForSelector('.p15start');
-  const n = await pg.evaluate(() => { const b = document.querySelector('.p15start'); b.click(); b.click(); return document.querySelectorAll('.tflash').length; });
-  assert.equal(n, 1, '開始の演出は1回だけ');
+  const n = await pg.evaluate(() => { const b = document.querySelector('.p15start'); b.click(); b.click(); return document.querySelectorAll('.tveil').length; });
+  assert.equal(n, 1, '開始の演出（2026-10-04 G1：押下 → 暗転の幕）は1回だけ');
   await pg.waitForSelector('#p11nm', { timeout: 20000 });
   await pg.waitForTimeout(500);   // 2回目の開始処理が遅れて走らないこと（開始処理は押してから約0.9秒後なので、もう走っていれば見える）
   const t = await pg.evaluate(() => ({ inputs: document.querySelectorAll('#p11nm').length, v: document.querySelector('#p11nm').value, talk: document.querySelectorAll('.mmtalk').length, pending: S.playerNamePending }));

@@ -26,7 +26,7 @@ test('QU-01：プロローグは A〜E の5枚（F は無い）。文字は画�
   assert.doesNotMatch(P.SLIDES.map((s) => s.pages.flat().join('')).join(''), /ブリーダー/);
   for (const s of P.SLIDES) { const f = `assets/prologue/prologue_${s.id.toLowerCase()}.webp`; assert.equal(s.bg, './' + f); assert.ok(existsSync(path.join(ROOT, f)), f); }   // 2026-10-03：A・B の正式画像を受け取り、5枚そろった
   assert.ok(P.T.tapGuard >= 400, '誤タップで何枚も飛ばない'); for (const s of P.SLIDES) for (const pg of s.pages) assert.ok(P.pageMs(pg) >= 4000 && P.pageMs(pg) <= 14000, `${s.id}：1ページ ${P.pageMs(pg)}ms（速すぎず長すぎず）`);
-  const nm = fnOf('p11NameScr'); assert.match(nm, /if\(!finaFlags\(\)\.prologue&&window\.MMPRO&&!window\.MM_QA_NO_PROLOGUE&&!P11_PRO\.has\(S\)\)/); assert.match(nm, /MMPRO\.ready\(\)\.then\(ok=>ok\?MMPRO\.play\(\)/, '背景がそろったときだけ');
+  const nm = fnOf('p11NameScr'); assert.match(nm, /if\(!finaFlags\(\)\.prologue&&window\.MMPRO&&!window\.MM_QA_NO_PROLOGUE&&!P11_PRO\.has\(S\)\)/); assert.match(nm, /MMPRO\.readyOrTimeout\(6000\)\.then\(\(\)=>MMPRO\.play\(\{cover:cv\}\)\)\.then\(ok=>\{cv\.remove\(\);if\(ok\)\{finaFlags\(\)\.prologue=1;save\(\)\}\}\)/, '2026-10-04 G1：背景を待つ（最大6秒・飛ばさない）。「見た」の記録は最後まで見た／スキップを確定したときだけ');
   assert.match(rd('tests/e2e/harness.mjs'), /MM_QA_NO_PROLOGUE = true/);
 });
 

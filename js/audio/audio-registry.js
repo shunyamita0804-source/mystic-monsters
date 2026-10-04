@@ -26,6 +26,7 @@
   const BGM_REGISTRY = {
     // ---- 開始画面・街・施設 ----
     TITLE:      { src: PGS + 'event_music_1.ogg', gain: 0.85 },        // 開始画面は最初のタップまで音を出せない（ブラウザの制約）→ 名前登録の画面まで続ける【暫定】
+    PROLOGUE:   { silent: true },   // 2026-10-04 G1：プロローグ専用の曲の差し込み口。開始画面の曲（TITLE）を短くフェードアウトして分ける。今ある曲はすべて別の場面に割り当て済みで、合う未使用の曲が無い＝素材待ち（届いたら src を書くだけ）
     TOWN:       { src: HG + '02_lively_city.ogg', gain: 0.62 },     // 2026-10-03 第5弾の仮採用：HydroGene「Lively City」65秒・明るい長調（第4弾で NG の Tranquil Radiance は使わない）
     MARKET:     { src: PGS + 'town_village_theme_2.ogg', gain: 0.9 },   // 試遊で OK（変更しない）
     RANCH:      { src: PGS + 'town_village_theme_3.ogg', gain: 0.8 },   // 77秒・温かい【暫定】
@@ -75,6 +76,7 @@
     GOLD_GET:   { src: IV + 'bell.ogg', gain: 7.0 },                  // 元が小さい（-36 LUFS）
     CHEST_OPEN: { src: UI + 'confirm_style_6_001.ogg', gain: 0.85 },
     EVENT:      { src: IV + 'ping.ogg', gain: 5.0 },
+    RIVAL_APPEAR: { silent: true },   // 2026-10-04 G3：ライバル（リュウ）の登場の音。野生（WILD_ALERT）とは分けた。短く切れ味のある登場音の素材待ち（今ある SE に合うものが無い・NG の音は使わない）
     WILD_ALERT: { src: AKSE + 'fx_3.ogg', gain: 5.0, maxMs: 2000, fadeMs: 700 },   // 第3弾試遊候補：alkakrab Fx 3（低い一撃。元は8秒の余韻 → 再生を2秒にして最後の0.7秒で下げる。ファイルは変えない）
     TOURNAMENT_ARRIVAL: { silent: true },   // 大会会場への到着：2026-10-03 第4弾の試遊で NG → 無音（代わりの音は選ばない）（ほかの Fx を使い回さない）
     // ---- 大会・バトル ----

@@ -31,8 +31,13 @@
       fz(['正式な聖獣士として', '新たな一歩を踏み出すため、', '', 'あなたは今、', 'この街へやってきた。', '', 'あなたと聖獣たちの物語は――', 'ここから始まる。']),
     ]) }),
   ]);
-  /** 時間（ms）：1行が浮かび上がる間隔（文字数で少し伸ばす）・読み終わってからの余韻・背景のクロスフェード・最後の余韻とフェードアウト */
-  const T = fz({ lineBase: 520, perChar: 42, emptyLine: 260, hold: 1700, cross: 1200, startHold: 700, endHold: 1600, fadeOut: 900, tapGuard: 450 });
+  /** 時間（ms）：1行が入ってくる間隔（文字数で少し伸ばす）・読み終わってからの余韻・背景のクロスフェード・最後の余韻とフェードアウト
+   *  enter＝1行が画面の下から決まった位置まで上がる時間、shift＝前の行が1行ぶん上へ送られる時間、pageOut＝ページの終わりに文章が上へ抜けて消える時間 */
+  const T = fz({ lineBase: 640, perChar: 40, emptyLine: 300, hold: 1900, cross: 1200, startHold: 700, endHold: 1600, fadeOut: 900, tapGuard: 450,
+    enter: 1500, shift: 1100, fast: 420, pageOut: 650 });
+  /** 文章の位置（画面の高さに対する割合）：新しい行が落ち着く位置（rest）・入ってくる前に待っている位置（from＝画面の下の外）。
+   *  前の行は上へ送られ、ページの最初の行はおよそ画面の中央より少し上まで上がる（2026-10-04 G1：1文字ずつのタイプ表示はやめた） */
+  const POS = fz({ rest: 0.66, from: 1.04 });
   const calm = () => !!(root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   let readyMemo = null, busy = false;
@@ -47,8 +52,11 @@
     readyMemo = Promise.all(SLIDES.map((s) => new Promise((ok) => { const im = new Image(); im.onload = () => ok(im.naturalWidth > 0); im.onerror = () => ok(false); im.src = s.bg; }))).then((a) => a.every(Boolean));
     return readyMemo;
   }
+  /** 背景を待つ（最大 ms。読み込みが遅い・届かない回線でもプロローグを飛ばさない＝2026-10-04 G1） */
+  function readyOrTimeout(ms = 6000) { return Promise.race([ready().then(() => true), wait(ms).then(() => true)]); }
   /**
-   * 再生する。終わったら（スキップを含む）resolve。opts.onEnd は不要（Promise で待つ）。同時に2つは再生しない
+   * 再生する。最後まで見た・スキップを確定した ときだけ true で resolve（呼び出し側はそのときだけ「見た」を保存する）。同時に2つは再生しない
+   *  opts.cover：すでに画面を覆っている要素（前の画面から黒へつないだ幕）。プロローグの幕が出たら消す
    */
   async function play(opts = {}) {
     if (busy || typeof document === 'undefined' || !document.body) return false;
@@ -56,6 +64,7 @@
     const ov = document.createElement('div'); ov.className = 'mmpro'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', 'プロローグ');
     ov.innerHTML = '<div class="mmpro-bg a"></div><div class="mmpro-bg b"></div><div class="mmpro-shade"></div><div class="mmpro-nar" aria-live="polite"></div><button class="mmpro-skip" type="button">スキップ</button><div class="mmpro-hint">タップで先へ</div><div class="mmpro-veil"></div>';
     document.body.appendChild(ov);
+    if (opts.cover && opts.cover.remove) opts.cover.remove();
     const bgs = [ov.querySelector('.mmpro-bg.a'), ov.querySelector('.mmpro-bg.b')], nar = ov.querySelector('.mmpro-nar'), skip = ov.querySelector('.mmpro-skip');
     let front = 0, last = 0, wake = null, quit = false, fullNow = false;
     const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
@@ -72,21 +81,41 @@
     });
     const showBg = async (src, first) => {
       const nx = bgs[1 - front]; nx.style.backgroundImage = `url(${src})`;
-      if (first || calm()) { nx.classList.add('on'); bgs[front].classList.remove('on'); front = 1 - front; return; }
       nx.classList.add('on'); bgs[front].classList.remove('on'); front = 1 - front;
     };
+    /** 1行の縦の位置（px）。transition はその都度（入ってくる行＝ゆっくり、送られる行＝少し速く） */
+    const place = (p, y, ms) => { p.style.transition = ms ? `transform ${ms}ms cubic-bezier(.22,.61,.24,1)` : 'none'; p.style.transform = `translate3d(0,${Math.round(y)}px,0)`; };
+    /**
+     * 1ページ：全部の行を最初から全文で描いておき（画面の下の外で待つ）、1行ずつ下からゆっくり入ってきて上へ流れる。
+     *  入ってきた行は rest の位置に落ち着き、前の行はその行の高さぶん上へ送られる。タップ＝残りの行もすぐ入れる
+     */
     const showPage = async (lines) => {
       nar.innerHTML = lines.map((t) => `<p class="${t ? '' : 'sp'}">${t ? t.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]) : '&nbsp;'}</p>`).join('');
-      nar.classList.remove('out'); const ps = [...nar.querySelectorAll('p')];
+      nar.classList.remove('out');
+      const ps = [...nar.querySelectorAll('p')], H = nar.clientHeight || root.innerHeight || 800;
+      const hs = ps.map((p) => p.offsetHeight || 30), rest = H * POS.rest, from = H * POS.from;
+      ps.forEach((p) => place(p, from, 0));
+      void nar.offsetHeight;   // 待っている位置を先に確定（下から入ってくる動きにする）
+      const layout = (k, msNew, msOld) => {   // 0〜k 行目を入れた状態：k 行目の下端が rest。上の行は積み上がる
+        let y = rest;
+        for (let i = k; i >= 0; i--) { y -= hs[i]; place(ps[i], y, i === k ? msNew : msOld); ps[i].classList.add('on'); }
+      };
       fullNow = calm();
       for (let i = 0; i < ps.length && !quit; i++) {
-        if (fullNow) { ps.slice(i).forEach((p) => p.classList.add('on')); break; }
-        ps[i].classList.add('on');
-        const r = await sleep(lineDelay(lines[i])); if (r === 'tap') { fullNow = true; ps.forEach((p) => p.classList.add('on')); break; }
+        if (fullNow) { layout(ps.length - 1, calm() ? 0 : T.fast, calm() ? 0 : T.fast); break; }
+        layout(i, T.enter, T.shift);
+        const r = await sleep(lineDelay(lines[i])); if (r === 'tap') { fullNow = true; layout(ps.length - 1, T.fast, T.fast); break; }
       }
       if (quit) return;
       await sleep(fullNow ? 60000 : T.hold);   // 全部出たら：タップで次へ（自動でも少しの余韻で次へ）
     };
+    /** ページの終わり：文章はそのまま上へ少し流れながら消える（上の端で急に切れない） */
+    const pageOut = async () => {
+      if (calm()) { nar.classList.add('out'); return; }
+      [...nar.querySelectorAll('p.on')].forEach((p) => { const m = /translate3d\(0,(-?\d+)px/.exec(p.style.transform); place(p, (m ? +m[1] : 0) - 70, T.pageOut); });
+      nar.classList.add('out'); await wait(T.pageOut);
+    };
+    let done = false;
     try {
       for (let si = 0; si < SLIDES.length && !quit; si++) {
         const sl = SLIDES[si]; await showBg(sl.bg, si === 0);
@@ -94,13 +123,14 @@
         for (let pi = 0; pi < sl.pages.length && !quit; pi++) {
           await showPage(sl.pages[pi]);
           if (quit) break;
-          nar.classList.add('out'); await wait(calm() ? 0 : 380);
+          await pageOut();
         }
       }
       if (!quit) await sleep(calm() ? 0 : T.endHold);
+      done = true;   // 最後まで見た（または スキップを2度押しで確定した）
       ov.classList.add('end'); await wait(calm() ? 0 : T.fadeOut);
     } finally { ov.remove(); busy = false; }
-    return true;
+    return done;
   }
-  root.MMPRO = fz({ SLIDES, T, play, ready, pageMs, isBusy: () => busy });
+  root.MMPRO = fz({ SLIDES, T, POS, play, ready, readyOrTimeout, pageMs, isBusy: () => busy });
 })(typeof window !== 'undefined' ? window : globalThis);
