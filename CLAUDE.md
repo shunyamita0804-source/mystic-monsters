@@ -128,6 +128,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - 2026-10-04（第二段階 PHASE D：公式大会＝大会進行・パラメーター比較・VS の色・S クリアの導線）の後：ふだんの実行は 987件（合格727・skip 260・失敗0。新しい tests/tournament-1004.test.mjs＝TN-01〜05。QU-05・S6-8・P7-38 の呼び出し元・QA-G6-6 の afterBattle・cedric-tour・phase8 を新しい流れに書き直し）。実ブラウザに tests/qa-e2e-tournament.test.mjs（TN-B1＝390×844・375×667）。qa-e2e-journey JR-8・qa-e2e-raising-late・qa-e2e-chapter1・qa-e2e-tech-screens QA-TS7 はパラメーター比較（.p9cmps .pcgo）を経由する形に
 - 2026-10-04（第二段階 PHASE C：研究所＝図鑑・合体・配合表・出発準備）の後：ふだんの実行は 980件（合格722・skip 258・失敗0。新しい tests/lab-prep-1004.test.mjs＝LP-01〜06）。実ブラウザに tests/qa-e2e-lab-prep.test.mjs（LP-B1〜B2＝390×844・375×667）。合体の実ブラウザテスト（qa-e2e-ranch-fusion-fuse）は museum('fuse') から
 - 2026-10-04（第二段階 PHASE A・B：30ターン・サイコロの LOCK・SE の監査・イベント基盤・NPC イベント・リュウ）の後：ふだんの実行は 970件（合格716・skip 254・失敗0。新しい tests/events-1004.test.mjs＝EV-01〜08）。実ブラウザに tests/qa-e2e-dice-lock.test.mjs（DL-B1〜B3）・tests/qa-e2e-events.test.mjs（EV-B1〜B5）。harness は施設の初回訪問・帰還イベントを出さない（MM_QA_NO_NPC。open({ npc:true }) で出す）。2択の出来事は MM_QA_NO_STORY のとき最初の候補を自動で選ぶ（シミュレーション tests/chapter-sim・turns・balance はランダムに選ぶ）
+- 2026-10-04 PHASE G（実機試遊の改善）の後：ふだんの実行は 1028件（合格739・skip 289・失敗0）。実ブラウザテストも含めた全件（72ファイルを1つずつ・`QA_E2E=1`）は 1038件で失敗0（2周目で失敗した QA-NG2 はテストの古い期待値＝直して単独・ファイル全体で合格）。新しい tests/qa-e2e-polish-g.test.mjs＝G-A〜M（§3 の「実機試遊の改善」）
 - **テスト運用（2026-10-01 正式）**：ふだんの開発は「実装 → 関連テスト → commit → push → public-check」。51ファイルの全件実ブラウザテストを push の前提にしない（大きな節目では push の後に全件を回す）。既知の不安定なテストが落ちたら、変更との関係を確かめ、明らかに不安定なものだけ1回再実行して合格なら既知として報告する（何度も再実行しない）。小さな修正では公開版の手動操作確認は不要で public-check を基本にする。
 
 ### ホーム画面アイコン
