@@ -60,6 +60,7 @@ test('MS-B1：初回来店：会話中は矢印・ドット・名札・カレン
   for (const s of [...UI, '#p10info .p10buy']) assert.equal(await vis(pg, s), false, `会話中は隠す：${s}`);
   assert.ok(await pg.evaluate(() => document.querySelector('.p10mk').classList.contains('talk')));
   await H.finishTalk(pg); await pg.waitForFunction(() => !document.querySelector('.p10mk').classList.contains('talk'));
+  await pg.waitForFunction(() => !document.documentElement.dataset.mmhide && !document.documentElement.dataset.mmevBack); await pg.waitForTimeout(100);   // 2026-10-04 G2：イベントのあと、隠した常設の物は短い間のあとフェードで戻る
   for (const s of UI) assert.equal(await vis(pg, s), true, `会話の後は出す：${s}`);
   assert.equal(await vis(pg, '#p10info .p10buy'), false, 'ふだんは能力・購入ボタン（詳細）を出さない');
   assert.deepEqual(p.errors, []);
