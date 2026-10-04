@@ -25,7 +25,7 @@
   const FACILITIES = fz(Object.keys(FIRST));
   function first(fac) { const L = FIRST[fac]; return L ? L.map((l) => ({ ...l })) : null; }
 
-  // ---- 再訪の一言（ctx＝進行状態：hasMon・box（牧場の数）・full（8体）・gold・raiseDone・rank（S.br：-1〜5）・fatigue・tickets・items・state（none/farm/done/board）・canDepart・gateBlocked・canFuse）
+  // ---- 再訪の一言（ctx＝進行状態：hasMon・box（牧場の数）・full（所持上限）・gold・raiseDone・rank（S.br：-1〜5）・fatigue・tickets・items・state（none/farm/done/board）・canDepart・gateBlocked・canFuse）
   //  when の無い行＝ふつうの一言（chance で出る）。when のある行＝条件を満たしたとき（必ず出る。複数あれば重みで1つ） ----
   const REVISIT = fz({
     market: { npc: 'karen', expression: 'welcome', chance: 0.6, lines: [   // 2026-10-04：表情＝再訪のあいさつは歓迎（02）・条件（満員・所持金不足）は考える（03）
@@ -33,7 +33,7 @@
       { id: 'm_new', text: '新しい子が欲しくなったの？' },
       { id: 'm_which', text: '今日はどの子を見ていく？' },
       { id: 'm_none', when: (c) => !c.hasMon, expression: 'guide', text: 'まだ一緒に旅する子がいないのね。ゆっくり選んでいって。' },
-      { id: 'm_full', when: (c) => c.full, expression: 'think', text: '手持ちと牧場で8体までなの。迎えるなら、牧場で整理してからね。' },
+      { id: 'm_full', when: (c) => c.full, expression: 'think', text: '牧場がいっぱいなの。迎えるなら、牧場で整理してからね。' },
       { id: 'm_done', when: (c) => c.raiseDone >= 1 && !c.full, text: '育て終えた子がいるのね。次の子も、きっといい出会いになるよ。' },
       { id: 'm_poor', when: (c) => c.hasMon && c.gold < 500 && !c.full, expression: 'think', text: '今の所持金だと、新しい子はまだ難しいかも。大会でがんばってね。' },
     ] },

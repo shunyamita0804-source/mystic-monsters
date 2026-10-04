@@ -52,7 +52,8 @@ test('QU-04：研究所＝正式背景（assets/lab/lab_main.webp）・エリオ
   const mu = fnOf('museum'); assert.match(mu, /if\(tab=="book"\)return labBook\(\);if\(tab=="fuse"\)return labFuse\(\);if\(tab=="table"\)return labTable\(\);/, '2026-10-04（第二段階）：研究所の主要機能＝図鑑・合体・配合表（特殊復元は主要メニューに無い）');
   assert.doesNotMatch(mu, /labLock|特殊復元/); assert.doesNotMatch(HTML, /function labLock\(/, '旧 labLock（準備中の表示）は廃止');
   assert.match(HTML, /\.ds\.shop>\.shopnpc\{top:15%;bottom:auto;height:min\(112%,1000px\)/);
-  assert.match(fnOf('farm'), /const rnFeat=\(rnView&&S\.box\.find\(v=>v\.uid===rnView\)\)\|\|S\.m\|\|S\.box\[0\]\|\|null;/);
+  // 2026-10-04 PHASE H3：牧場は20体の一覧（デザイン基準 01）＝選んでいる子は一覧の中で光らせる（旧「選んでいる子を大きく」は廃止）
+  assert.match(fnOf('farm'), /if\(!all\.some\(x=>x\.uid===rnSel\)\)rnSel=\(S\.box\[0\]\|\|m\|\|\{\}\)\.uid\|\|null;/); assert.match(HTML, /\.rn2 button\.rnc\.on\{/);
 });
 
 test('QU-05：対戦前の画面を1つに：練習試合は BATTLE 画面（p9PreBattle）を出さず fight() の導入（対面＋VS）だけ。大会は順位表の「次の相手」に小さな能力比較＋対戦開始（2度押し）→ fight()。fight()・Phase 6 は変えない', () => {

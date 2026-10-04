@@ -105,7 +105,7 @@ test('R10：研究所の合体UIが未実装の今は「合体を使えない」
   // 救済の他の条件は従来どおり
   assert.equal(M.continueRescueApplies(save(P7, P8, ['done', 'none'], 300), 'solamo', 2), false, '未育成の個体がいれば発動しない');
   assert.equal(M.continueRescueApplies(save(P7, P8, ['done', 'done'], 500), 'solamo', 2), false, '500G以上なら発動しない');
-  assert.deepEqual(M.purchase(save(P7, P8, Array(8).fill('done'), 300), 'solamo', 8), { ok: false, reason: 'full' }, '所持上限8体が先');
+  assert.deepEqual(M.purchase(save(P7, P8, Array(M.OWN_LIMIT).fill('done'), 300), 'solamo', M.OWN_LIMIT), { ok: false, reason: 'full' }, '所持上限が先（2026-10-04 PHASE H3：牧場20＋連れている1＝21体）');
   assert.equal(M.continueRescueApplies(save(P7, P8, ['done', 'done'], 300), 'nobiton', 2), false, '入荷待ちは対象外');
   // 登録の扱い：関数以外・例外を出す関数は「使えない」
   M.setFusionAccess(null); assert.equal(M.fusionAvailable(), false);
@@ -145,8 +145,8 @@ test('R6：500G以上なら救済なしで代金500Gだけを支払う。価格�
   const S = save(P7, P8, ['done'], 100);
   assert.deepEqual(M.purchase(S, 'nobiton', 1), { ok: false, reason: 'waiting' }, 'ノビトンは入荷待ちのまま（救済も起きない）');
   assert.deepEqual(M.purchase(S, 'jiol', 1), { ok: false, reason: 'not_in_market' }, 'ジオルは市場に出さない');
-  const F = save(P7, P8, Array(8).fill('done'), 100);
-  assert.deepEqual(M.purchase(F, 'solamo', 8), { ok: false, reason: 'full' }, '所持上限8体は従来どおり（救済より先に判定）');
+  const F = save(P7, P8, Array(M.OWN_LIMIT).fill('done'), 100);
+  assert.deepEqual(M.purchase(F, 'solamo', M.OWN_LIMIT), { ok: false, reason: 'full' }, '所持上限は救済より先に判定（2026-10-04 PHASE H3：牧場20＋連れている1＝21体）');
   assert.deepEqual(M.MARKET_CATALOG.map((c) => [c.key, c.status, c.price ?? null]), [['solamo', 'sale', 500], ['gauru', 'sale', 500], ['nobiton', 'waiting', null]]);
   assert.deepEqual(M.ECONOMY, { initialGold: 300, marketPrice: 500 });
 });
@@ -181,11 +181,11 @@ test('R9：低収入（大会なし）でも育成を続けられる：育成完
   // 収入0Gが続く最も厳しい場合：救済で購入→育成完了→…（合体はできない）。所持上限に届くまでは毎回進める
   let S = P8.newSave(); S.g = 300; const log = []; let adopt = adoptOf(P7, P8, M, S, log);
   adopt(0, 'A'); assert.equal(S.g, 0, '初回救済');
-  for (let n = 1; n < 8; n++) {
+  for (let n = 1; n < M.OWN_LIMIT; n++) {   // 2026-10-04 PHASE H3：所持上限 21（牧場20＋連れている1）
     S.m.raise.state = 'done'; S.box.forEach((x) => { x.raise.state = 'done'; });   // 育成完了（収入0G）
     assert.equal(M.canPurchase(S, 'solamo', owned(S)).continueRescue, true, `${n}体とも育成完了・0G → 継続用救済`);
     adopt(0, 'B'); assert.deepEqual([S.g, owned(S)], [0, n + 1]);
   }
   S.m.raise.state = 'done'; S.box.forEach((x) => { x.raise.state = 'done'; });
-  assert.deepEqual(M.canPurchase(S, 'solamo', 8), { ok: false, reason: 'full' }, '【残る制約】8体とも育成完了・200G未満だと、購入（上限）も合体（200G）もできない');
+  assert.deepEqual(M.canPurchase(S, 'solamo', M.OWN_LIMIT), { ok: false, reason: 'full' }, '【残る制約】上限まで育成完了・200G未満だと、購入（上限）も合体（200G）もできない');
 });

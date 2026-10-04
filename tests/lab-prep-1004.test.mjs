@@ -48,7 +48,7 @@ test('LP-03：配合表は既存の規則だけ（子の種族＝MMP7.resolveFus
 
 test('LP-04：合体は研究所から（selm → museum("fuse")・牧場の内部画面 farm(\'\',\'c\') は研究所へ送る）。合体の処理 fuse()・名前 cname・費用 200G は変えない。研究所の合体 UI があるので MMP10M.setFusionAccess(() => true)', () => {
   assert.match(line('function selm('), /museum\("fuse"\)\}$/);
-  assert.match(fnOf('farm'), /else return museum\("fuse"\);/); assert.doesNotMatch(fnOf('farm'), /sel\.map\(i=>all\[i\]\)|合体させる！/, '牧場に合体の画面は無い');
+  assert.match(fnOf('farm'), /if\(ft=="c"\)return museum\("fuse"\);/);   /* 2026-10-04 PHASE H3：牧場の作り直し（送り先は同じ） */ assert.doesNotMatch(fnOf('farm'), /sel\.map\(i=>all\[i\]\)|合体させる！/, '牧場に合体の画面は無い');
   const lf = fnOf('labFuse'); for (const t of ['onclick="selm(${i})"', 'onclick="fuse()"', 'cname(a,c)', '(a[k]+c[k])*.6', '<div class="fz"><div class="slot">', 'wpanel lbwp']) assert.ok(lf.includes(t), t);
   assert.match(fnOf('fuse'), /S\.g-=200;/); assert.match(fnOf('fuse'), /c\.name=cname\(a,b\);/);
   assert.match(CODE, /MMP10M\.setFusionAccess\(\(\)=>true\)/);

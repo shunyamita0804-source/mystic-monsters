@@ -201,8 +201,9 @@ test('QA-G2-6：imp（セーブコード）：最初の画面の表示で失敗�
 // ---------------------------------------------------------
 test('QA-G2-7：dep()：連れている個体がいなければ何もしない（牧場に null を入れない・保存しない）', () => {
   // 守ること：以前は S.m が無いときに null を牧場へ入れて保存し、受け取るタブが毎回「null の sp を読めない」で止まっていた
-  const depEnv = (S, log) => new Function('S', 'p8Blocked', 'MMP7', 'farm', 'save', `let sel=[1];${lineOf('function dep(')};return {dep,get sel(){return sel}};`)(
-    S, () => false, { trainRunOf: () => null }, (m, t) => log.push(['farm', m, t]), () => log.push(['save']));
+  // 2026-10-04 PHASE H3：牧場の上限は MMP10M.RANCH_LIMIT（20）、預けた子を一覧で選んだ状態にする（rnSel）
+  const depEnv = (S, log) => new Function('S', 'p8Blocked', 'MMP7', 'farm', 'save', 'MMP10M', `let sel=[1],rnSel=null;${lineOf('function dep(')};return {dep,get sel(){return sel}};`)(
+    S, () => false, { trainRunOf: () => null }, (m, t) => log.push(['farm', m, t]), () => log.push(['save']), { RANCH_LIMIT: 20 });
   const x = mon();
   for (const box of [[x], []]) {
     const S = { m: null, box: [...box] }, log = [], w = depEnv(S, log);

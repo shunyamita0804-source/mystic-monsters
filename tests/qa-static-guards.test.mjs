@@ -380,13 +380,13 @@ test('QA-C3：市場：ソラモ・ガウルは500G、ノビトンは入荷待�
   assert.deepEqual([r.ok, r.rescued, r.before, r.after, F.g], [true, true, 300, 0, 0]);
 });
 
-test('QA-C4：所持上限は手持ち＋牧場で8体（市場の購入判定）、牧場は7体まで（預ける処理）', () => {
+test('QA-C4：牧場は20体まで（2026-10-04 PHASE H3 正式。預ける処理）、所持上限は牧場20＋連れている1＝21体（市場の購入判定）', () => {
   const { P8, M } = load();
-  assert.equal(M.OWN_LIMIT, 8);
+  assert.equal(M.OWN_LIMIT, 21); assert.equal(M.RANCH_LIMIT, 20);
   const S = { ...P8.newSave(), g: 5000 };
-  assert.equal(M.canPurchase(S, 'solamo', 7).ok, true);
-  assert.deepEqual(M.canPurchase(S, 'solamo', 8), { ok: false, reason: 'full' });
-  assert.match(fnBody(CODE, 'dep'), /if\(S\.box\.length>=7\)return farm\("牧場がいっぱいです。","a"\)/);
+  assert.equal(M.canPurchase(S, 'solamo', 20).ok, true);
+  assert.deepEqual(M.canPurchase(S, 'solamo', 21), { ok: false, reason: 'full' });
+  assert.match(fnBody(CODE, 'dep'), /if\(S\.box\.length>=MMP10M\.RANCH_LIMIT\)return farm\("牧場がいっぱいです。","b"\)/);
   // 購入の確定（adopt）に渡す「所持数」は手持ち＋牧場
   assert.match(fnBody(CODE, 'adopt'), /MMP10M\.purchase\(S,MMP10M\.keyOf\(i\),S\.box\.length\+\(S\.m\?1:0\)\)/);
 });

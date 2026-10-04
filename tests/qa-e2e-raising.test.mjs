@@ -255,7 +255,7 @@ T('QA-RB2：育成中（Chapterフィールド）は街・市場・牧場・博�
     assert.equal(await rawSave(pg), raw0, `${call} でセーブは変わらない`);
   }
   // Chapter中は出発準備（バッグ）・アイテム屋も開けず、出発し直すこともできない
-  for (const [call, msg] of [['prepScr()', 'Chapter中はバッグの準備ができません。'], ['shopScr()', 'Chapter中はアイテム屋に行けません。'], ['p7Depart()', 'Chapter中はバッグの準備ができません。']]) {
+  for (const [call, msg] of [['prepScr()', 'Chapter中はバッグの準備ができません。'], ['shopScr()', 'Chapter中はアイテム補給所に行けません。'], ['p7Depart()', 'Chapter中はバッグの準備ができません。']]) {
     if (call === 'p7Depart()') await pg.waitForTimeout(SETTLE);   // 画面が変わった直後の押下を無視する作りでも、拒否の処理まで進むように
     await pg.evaluate((c) => { (0, eval)(c); }, call);
     assert.equal(await pg.evaluate(() => !!document.querySelector('#chf-ui #brollbtn')), true, `${call} のあともフィールドのまま`);
@@ -506,7 +506,7 @@ T('QA-RB9：修行は Chapter 1 を終えるまで（未育成の間は）始め
   noErrors(p);
   // Chapter間ファーム（Chapter 1 は終えた）でチケット0枚 → すべて押せない（丈夫さは C 以上のクリアで解放）
   p = await boot(seed({ state: 'farm', ch: 2, node: null, turnLimit: null, log: [{ ch: 1, reachedGoal: true, turnsUsed: 14, turnLimit: 20, declined: true, tour: null }] }, { trainTix: 0 }), '.p9farm.p15f'); pg = p.page;
-  assert.match(await pg.evaluate(() => document.querySelector('.fmmid').innerText.replace(/\s+/g, ' ')), /特訓チケット 0枚/);
+  assert.match(await pg.evaluate(() => document.querySelector('.bctix').innerText.replace(/\s+/g, ' ')), /チケット 0/);   // 2026-10-04 PHASE H2
   await pg.evaluate(() => hall('s'));
   await pg.waitForSelector('button.p12tc');
   cards = await pg.evaluate(() => [...document.querySelectorAll('button.p12tc')].map((b) => [b.disabled, b.innerText.replace(/\s+/g, ' ')]));

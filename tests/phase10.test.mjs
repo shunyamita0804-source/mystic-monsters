@@ -226,7 +226,7 @@ test('M4-2：価格500G・初回購入救済（手持ち0・牧場0・500G未満
   assert.deepEqual(M.purchase({ g: 9999 }, 'nobiton', 0), { ok: false, reason: 'waiting' }, 'ノビトンは入荷待ちで買えない（救済も起きない）');
   S = { g: 100 }; M.purchase(S, 'nobiton', 0); assert.equal(S.g, 100);
   assert.deepEqual(M.purchase({ g: 9999 }, 'jiol', 0), { ok: false, reason: 'not_in_market' }, 'ジオルは市場に存在しない');
-  assert.deepEqual(M.purchase({ g: 9999 }, 'solamo', 8), { ok: false, reason: 'full' });
+  assert.deepEqual(M.purchase({ g: 9999 }, 'solamo', M.OWN_LIMIT), { ok: false, reason: 'full' });   // 2026-10-04 PHASE H3：所持上限 21（牧場20＋連れている1）
   assert.doesNotMatch(HTML, /S\.g\s*=\s*(500\b|MMP10M\.ECONOMY)|S\.g\+=500\b/, 'ゲーム側で勝手に500Gを補填する処理はない（救済は MMP10M.purchase の中だけ）');
 });
 

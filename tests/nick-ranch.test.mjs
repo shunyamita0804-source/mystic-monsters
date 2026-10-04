@@ -41,8 +41,8 @@ test('NICK-2：素材は透過PNG（RGBA）。立ち絵6枚は高さ760px、小�
 test('NICK-3：牧場の吹き出し：通知（msg）は名前・顔なし。ふだんはニックの一言（顔・名前）。旧データ NP.f（旧「ダン」）は画面に出さない', () => {
   assert.match(lineOf('const NICK_FACE='), /^const NICK_FACE="assets\/npc\/nick\/face\.webp";/);
   const f = farmSrc();
-  assert.ok(f.includes('${msg?`<div class="fbub sys">${msg}</div>`:""}'), '通知は名前・顔なし');
-  assert.ok(f.includes('<div class="rnnick nst r">${(l=>`<img class="nstf" ${npcStand("nick",ft=="d"?"serious":ft=="e"&&rnView&&rnFeat&&MMP7.raiseState(rnFeat)=="done"?"impressed":ft=="e"?"gentle":(l?l.expression:"normal"))} alt="" decoding="async">${l?`<div class="tx fnick"><b>ニック</b>${l.text}</div>`:""}`)(msg?null:npcLineX("ranch",NICK_TALK.ranch,"normal"))}</div>'), '2026-10-03：ニックは半身の立ち絵＋会話窓。通知のときは立ち絵だけ。2026-10-04：表情＝売る（真剣）・様子を見る（優しい笑顔）・育成完了の子の詳細（感心）・ふだんは一言の表情');
+  // 2026-10-04 PHASE H3：牧場20体の一覧（デザイン基準 01）。ニックは一覧の上の小さな顔＋一言（表情＝売る（真剣）・見る（優しい笑顔）・育成完了の子の詳細（感心）・ふだんは一言の表情）。通知のときは通知だけ
+  assert.ok(f.includes('<div class="rnnick">${msg?`<div class="fbub sys">${msg}</div>`:(l=>`<div class="fbub rnsay"><img src="${npcSrc("nick",ft=="d"?"serious":ft=="e"&&x&&MMP7.raiseState(x)=="done"?"impressed":ft=="e"?"gentle":(l?l.expression:"normal"),"face")||NICK_FACE}" alt=""><span><b>ニック</b>${l?l.text:""}</span></div>`)(npcLineX("ranch",NICK_TALK.ranch,"normal"))}</div>'), 'ニックの顔・名前はニックの一言だけ');
   assert.doesNotMatch(f, /NP\.f|<b>ダン<\/b>/, '牧場に旧「ダン」を出さない');
   assert.doesNotMatch(HTML, /\.fbub::after|\.fbub\.fnick::after/, '吹き出しのしっぽ（背景の絵の人物を指す）は無い');
   assert.match(HTML, /\.fbub\{position:absolute;left:3%;top:3%;width:52%;/, '正式背景では左上の空に出す（牧舎を隠さない。旧い吹き出しを隠す位置・最小の高さは不要になった）');
@@ -122,17 +122,17 @@ test('NICK-B2：4つの画面サイズで、牧場の吹き出し（ニックの
 // ---------------------------------------------------------
 // 牧場の4コマンド（2026-09-30 正式仕様：預ける・受け取る・様子を見る・売る。合体は研究所へ移す）
 // ---------------------------------------------------------
-test('NICK-6：牧場の4コマンドは 預ける・受け取る／様子を見る・売る。合体のコマンドは無い。合体の処理（fuse・selm・選択画面）は研究所から呼ぶために残す', () => {
+test('NICK-6：牧場（2026-10-04 PHASE H3）：選んだ子に 見る・名前変更・受け取る（連れている子は預ける）・売る。合体のコマンドは無い（研究所）。合体の処理（fuse・selm・選択画面）は研究所から呼ぶために残す', () => {
   const f = lineOf('function farm(msg,tab){') + HTML.slice(HTML.indexOf('function farm(msg,tab){'), HTML.indexOf('\nfunction dep('));
-  assert.match(f, /\[\["a","dep","預ける",""\],\["b","wd",`受け取る<small>\(\$\{S\.box\.length\}\)<\/small>`,""\],\["e","look","様子を見る"," rnlook"\]\]/);
-  assert.match(f, /<button class="fsell rnsell\$\{ft=="d"\?" on":""\}" data-se="UI_TAB" onclick="farm\('','d'\)">\$\{rnIc\("sell"\)\}<span class="fl">売る<\/span><\/button>/);
-  assert.doesNotMatch(f, /"合体"|rnfuse|\["c",/, '牧場のコマンドに合体を置かない');
-  assert.match(f, /ft=tab\|\|\(ft=="c"\?"a":ft\);/, '街から入ったときに合体の選択画面を出さない');
-  assert.match(f, /else return museum\("fuse"\);/, '2026-10-04：合体の画面は研究所（labFuse）。牧場の内部画面 farm(\'\',\'c\') は研究所へ送る');
+  assert.match(f, /<nav class="rnact" aria-label="牧場のコマンド"><button class="rna" \$\{x\?"":"disabled"\} onclick="rnView=rnSel;farm\('','e'\)">\$\{rnIc\("look"\)\}<span>見る<\/span><\/button><button class="rna" \$\{x\?"":"disabled"\} onclick="farm\('','n'\)">\$\{rnIc\("ren"\)\}<span>名前変更<\/span><\/button>/);
+  assert.match(f, /mv=!x\?\["","受け取る",true\]:x===m\?\["dep\(\)","預ける",busy\|\|S\.box\.length>=L\]:\[`wd\(\$\{bi\}\)`,"受け取る",busy\];/, '受け取る＝従来の wd・預ける＝従来の dep');
+  assert.match(f, /<button class="rna rnsell" \$\{sq\.ok\?"":"disabled"\} onclick="pfSellUid=rnSel;farm\('','d'\)">\$\{rnIc\("sell"\)\}<span>売る<\/span><\/button>/, '売る＝従来の売却の確認（2度押し）');
+  assert.doesNotMatch(f, /"合体"|rnfuse|>合体</, '牧場に合体を置かない');
+  assert.match(f, /ft=tab\|\|\(ft=="c"\?"b":ft\);if\(ft=="c"\)return museum\("fuse"\);/, '2026-10-04：合体の画面は研究所（labFuse）。牧場の内部画面 farm(\'\',\'c\') は研究所へ送る');
   assert.ok(HTML.includes('async function fuse(){') && HTML.includes('function selm(i){'), '合体の処理は残す');
-  const look = HTML.slice(HTML.indexOf('function rnLookPanel(){'), HTML.indexOf('\nconst rnIc='));
-  assert.doesNotMatch(look, /save\(|wd\(|pfSell|fuse\(|selm\(|dep\(/, '様子を見るは閲覧だけ（保存・受け取る・売る・合体を呼ばない）');
-  assert.match(look, /牧場にはまだモンスターがいません。/);
+  const look = HTML.slice(HTML.indexOf('function rnLookPanel(x){'), HTML.indexOf('\nconst rnIc='));
+  assert.doesNotMatch(look, /save\(|wd\(|pfSell|fuse\(|selm\(|dep\(/, '見るは閲覧だけ（保存・受け取る・売る・合体を呼ばない）');
+  assert.match(f, /牧場にはまだモンスターがいません。/);
 });
 
 test('NICK-B3：様子を見る：牧場の子の一覧（画像・名前・種類・大会ランク。受け取るボタンは無い）→ 詳細（6能力）→ 一覧へ。閲覧ではセーブが変わらない。0体のときは案内だけ', { skip: SKIP }, async () => {

@@ -142,7 +142,7 @@ test('AS-06：表情の切り替えはデータ：旧い表情名は新しい4�
   assert.equal(src('karen', 'happy'), 'assets/npc/karen/expr/closeup/04_sold.webp', 'カレンの購入成功（KAREN_TALK の happy）＝04');
   assert.ok(/const KAREN_TALK=\{[\s\S]{0,4000}?expression:"happy"/.test(HTML), 'カレンの購入成功の行は happy');
   assert.ok(NE.RETURN[1].some((l) => l.npc === 'dan' && l.expression === 'proud'), 'ダンの帰還＝04 proud'); assert.equal(src('dan', 'proud'), 'assets/npc/dan/expr/closeup/04_proud.webp');
-  assert.ok(/npcStand\("nick",ft=="d"\?"serious"/.test(HTML), 'ニック：売却（大事な管理）＝03 serious');
+  assert.ok(/npcSrc\("nick",ft=="d"\?"serious"/.test(HTML), 'ニック：売却（大事な管理）＝03 serious（2026-10-04 PHASE H3：牧場の一覧の上の小さな顔）');
   assert.ok(/elSay\(ELLIOT_TALK\.fuse,"analyze"\)/.test(HTML), 'エリオット：合体＝03 analyze');
   assert.ok(NE.first('arena').some((l) => l.npc === 'vargas' && l.expression === 'grin'), 'ヴァルガス：挑戦の受付＝02 grin');
   assert.ok(/p9Ced\(CEDRIC_TALK\.vs,"kickoff"\)/.test(HTML), 'セドリック：試合開始＝02 kickoff');

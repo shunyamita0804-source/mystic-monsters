@@ -125,17 +125,17 @@ test('SL-5：確定後は選んだ個体だけを外して売却額を1回だけ
   assert.equal(M.sell(S, S.box[0].uid).reason, 'last');
 });
 
-test('SL-6：8体とも育成完了・200G未満（購入は上限、合体は資金不足）→ 1体売却すれば、合体または継続用救済で次の育成へ進める', () => {
+test('SL-6：上限（2026-10-04 PHASE H3：牧場20＋連れている1＝21体）まで育成完了・200G未満（購入は上限、合体は資金不足）→ 1体売却すれば、合体または継続用救済で次の育成へ進める', () => {
   for (const access of [false, true]) {   // 今（研究所の合体UIが未実装＝合体を使えない）と、合体UIができた後
     const { P7, P8, M } = load(); if (access) M.setFusionAccess(() => true);
     for (let g0 = 0; g0 < 200; g0 += 10) {
-      const S = P8.newSave(); S.g = g0; const ms = Array.from({ length: 8 }, (_, i) => doneMon(P7, P8, S, { name: 'M' + i })); S.m = ms[0]; S.box = ms.slice(1);
-      assert.deepEqual(M.canPurchase(S, 'solamo', 8), { ok: false, reason: 'full' }); assert.ok(!(owned(S) >= 2 && S.g >= M.FUSION_COST));
+      const S = P8.newSave(); S.g = g0; const ms = Array.from({ length: M.OWN_LIMIT }, (_, i) => doneMon(P7, P8, S, { name: 'M' + i })); S.m = ms[0]; S.box = ms.slice(1);
+      assert.equal(S.box.length, M.RANCH_LIMIT); assert.deepEqual(M.canPurchase(S, 'solamo', M.OWN_LIMIT), { ok: false, reason: 'full' }); assert.ok(!(owned(S) >= 2 && S.g >= M.FUSION_COST));
       const r = M.sell(S, S.box[0].uid); assert.equal(r.price, 100, '最も安い育成完了個体（記録なし・ランクなし）でも100G');
       const canMerge = M.fusionAvailable(S) && owned(S) >= 2 && S.g >= M.FUSION_COST;   // 合体は画面から行けるときだけ数える
       const buy = M.canPurchase(S, 'solamo', owned(S));
       assert.ok(canMerge !== !!buy.ok, `${access}・${g0}G→${S.g}G：合体か購入のどちらか一方で次へ進める（${canMerge ? '合体' : '継続用救済'}）`);
-      if (!canMerge) { assert.equal(buy.continueRescue, true); assert.equal(M.purchase(S, 'solamo', 7).after, 0); }
+      if (!canMerge) { assert.equal(buy.continueRescue, true); assert.equal(M.purchase(S, 'solamo', owned(S)).after, 0); }
       if (!access) assert.equal(canMerge, false, '今は合体を使えないので、売却後は必ず継続用救済');
     }
   }
@@ -152,7 +152,8 @@ test('SL-7：継続用救済と売却を繰り返しても所持金は増え続�
 test('SL-8：画面：牧場に「モンスターを売る」→ 一覧（売却額）→ 確認（名前・種族・売却額）→ 2度押しで確定。育成中は画面に進めない', () => {
   const farm = between('function farm(msg,tab){', '\nfunction dep(');
   assert.match(farm, /^function farm\(msg,tab\)\{if\(p8Blocked\(\)\)return;/, '育成中は牧場（売却画面）へ進めない');
-  assert.match(farm, /else if\(ft=="d"\)b=pfSellPanel\(all\);/); assert.match(farm, /<button class="fsell rnsell\$\{ft=="d"\?" on":""\}" data-se="UI_TAB" onclick="farm\('','d'\)">\$\{rnIc\("sell"\)\}<span class="fl">売る<\/span><\/button>/, '牧場の4コマンドの「売る」（2026-09-30 の正式UI）');
+  // 2026-10-04 PHASE H3：牧場20体の一覧で子を選んで「売る」→ 確認（pfSellPanel の確認）→ 2度押し
+  assert.match(farm, /else if\(ft=="d"&&pfSellUid\)body=`<div class="rnsheet">\$\{pfSellPanel\(all\)\}<\/div>`;/); assert.match(farm, /onclick="pfSellUid=rnSel;farm\('','d'\)">\$\{rnIc\("sell"\)\}<span>売る<\/span><\/button>/, '一覧の下の「売る」');
   const panel = lineOf('function pfSellPanel(all){') + between('function pfSellPanel(all){', '\nfunction pfSellPick(');
   assert.match(panel, /売却の確認<\/b>.*\$\{p11Esc\(x\.name\)\}<\/b><br><small>種族：\$\{sp\}/); assert.match(panel, /売却額：<b>\$\{c\.price\}G<\/b>/);
   assert.match(panel, /<button \$\{own>=2&&q\[i\]\.ok\?"":"disabled"\} onclick="pfSellPick\(\$\{i\}\)">売る<\/button>/, '最後の1体・育成中は押せない');
@@ -165,7 +166,7 @@ test('SL-8：画面：牧場に「モンスターを売る」→ 一覧（売却
 
 test('SL-9：既存の所持上限・合体料金・初回購入救済・継続用救済・市場価格は変えない', () => {
   const { P7, P8, M } = load();
-  assert.equal(M.OWN_LIMIT, 8); assert.equal(M.FUSION_COST, 200); assert.deepEqual(M.ECONOMY, { initialGold: 300, marketPrice: 500 });
+  assert.equal(M.OWN_LIMIT, 21); assert.equal(M.RANCH_LIMIT, 20); /* 2026-10-04 PHASE H3：牧場20体（正式） */ assert.equal(M.FUSION_COST, 200); assert.deepEqual(M.ECONOMY, { initialGold: 300, marketPrice: 500 });
   assert.match(between('async function fuse(){', '\nfunction tog('), /if\(S\.g<200\)return;S\.g-=200;/);
   assert.deepEqual(M.purchase({ g: 300 }, 'solamo', 0), { ok: true, key: 'solamo', price: 500, rescued: true, before: 300, after: 0 });
   const S = P8.newSave(); S.g = 450; S.m = doneMon(P7, P8, S, {});

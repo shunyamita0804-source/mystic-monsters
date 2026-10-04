@@ -213,7 +213,7 @@ T('QA-RL1：Chapter 3（旧ボード）の20ターン目を使い切る → タ�
   assert.equal(await pg.evaluate(() => document.querySelector('.tcap').textContent), 'つづきからはじめます');
   await startFromTitle(pg, '.p9farm.p15f');
   assert.equal(await rawSave(pg), raw0, '中断・再開で状態は変わらない');
-  { const tx = await H.text(pg); assert.ok(/Chapter 3 終了/.test(tx) && /Chapter 4へ進む/.test(tx), tx); }   // 2026-10-03：進行ボタンは上の門（情報パネルより前に並ぶ）
+  { const tx = await H.text(pg); assert.ok(/Chapter 4/.test(tx) && /冒険/.test(tx), tx); }   // 2026-10-04 PHASE H2：ベースキャンプ＝次の Chapter と「冒険」
   noErrors(p);
 });
 
@@ -267,7 +267,7 @@ T('QA-RL2：Chapter間ファームの「育成放棄」は2段階の確認（最
 T('QA-RL3：修行（Chapter間ファームから）：チケット1枚で開始 → 15マスをサイコロで進み、止まった専用能力マスだけ 特訓の能力とライフが同時に +2〜3 → 途中で再読み込みしても出目・チケットはそのまま → ゴールで回数を記録 → 修行メニュー → ファーム（視差効果を減らす設定）', async () => {
   const p = await boot(farmSeed(2, [LOG1], { trainTix: 1 }, 1), '.p9farm.p15f', { calm: true }); const pg = p.page;
   const s0 = await H.getS(pg);
-  assert.match(await textOf(pg, '.fmmid'), /特訓チケット\s*1枚/);
+  assert.match(await textOf(pg, '.bctix'), /チケット\s*1/);   // 2026-10-04 PHASE H2：特訓の上の小さな札
   await pg.waitForTimeout(SETTLE);
   await pg.click('button.fmb[onclick="hall(\'s\')"]');
   await pg.waitForSelector('button.p12tc');
@@ -340,7 +340,7 @@ T('QA-RL3：修行（Chapter間ファームから）：チケット1枚で開始
   await pg.waitForTimeout(SETTLE);
   await pg.click('.dback');
   await pg.waitForSelector('.p9farm.p15f');
-  assert.match(await textOf(pg, '.fmmid'), /特訓チケット\s*0枚/);
+  assert.match(await textOf(pg, '.bctix'), /チケット\s*0/);   // 2026-10-04 PHASE H2
   noErrors(p);
 });
 
@@ -438,7 +438,7 @@ T('QA-RL5：大会の決着：全勝で優勝 → 初回優勝の賞金350G・�
   assert.deepEqual(up, Object.fromEntries(reward.bonus.map((b) => [b.key, b.amount])));
   for (const b of reward.bonus) assert.ok(b.amount >= 4 && b.amount <= 7, `${b.key} +${b.amount}`);
   const res0 = await textOf(pg, '.p9tour');
-  for (const w of ['優勝！', '初回優勝の報酬', '賞金 350G', '特訓チケット ×2', 'ステータスボーナス', 'Chapterを終えてファームへ']) assert.ok(res0.includes(w), `結果画面に「${w}」`);
+  for (const w of ['優勝！', '初回優勝の報酬', '賞金 350G', '特訓チケット ×2', 'ステータスボーナス', 'Chapterを終えてベースキャンプへ']) assert.ok(res0.includes(w), `結果画面に「${w}」`);
   assert.deepEqual(await myTable(pg), { w: '7', l: '0', mx: '○○○○○○○' });
   await assertSynced(pg);
   // 結果画面で再読み込み → 同じ結果画面、報酬は増えない

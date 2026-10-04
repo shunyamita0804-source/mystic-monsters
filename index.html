@@ -2289,6 +2289,47 @@ body:has(#app>.fm.bc) #snd{display:none}
 @media (max-width:389px){.fm.fm2.bc .bcplq b{font-size:14px;letter-spacing:.06em}.fm.bc .bcplq i{width:26px;height:26px}.fm.bc button.bcrb{width:34px;height:34px}.fm.bc .bcgold{height:32px;padding:0 9px 0 5px}.fm.bc .bcr{gap:4px}.fm.fm2.bc .bchd{padding-left:8px;padding-right:8px}}
 .bcmn .bcmnl{display:grid;gap:8px;padding:12px}.bcmn .bcmnl button{margin:0}
 @media (max-height:700px){.fm.bc{--bcbar:72px;--bcgo:108px}.fm.bc .bcfield{--bcbar:72px;--bcgo:108px}.fm.fm2.bc .bcgo button.fmgo{height:54px}.fm.fm2.bc .bcgo .fmgo b{font-size:25px}.fm.fm2.bc .bcbar button.bcb svg{width:24px;height:24px}.fm.fm2.bc .bcbar button.bcb{font-size:12px}.fm.bc .bcdan{height:min(74%,280px)}}
+/* ===== 牧場20体（2026-10-04 PHASE H3。デザイン基準 01：正式背景の上に濃紺＋金の額。2列の一覧だけがスクロール・下に 見る／名前変更／受け取る（預ける）／売る） ===== */
+#app>.rn.rn2{position:relative;background:#0c1630}
+.rn2 .rnbg{position:absolute;inset:0;background-position:50% 40%;background-size:cover;pointer-events:none;z-index:0}
+.rn2 .rnbg::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(8,15,34,.35),rgba(8,15,34,.15) 30%,rgba(8,15,34,.45))}
+.rn2>*{position:relative;z-index:1}.rn2>.rnbg{position:absolute;z-index:0}
+.rn2 .rnhd{flex:none}
+.rn2 .rnnick{flex:none;min-height:0;margin:0 0 8px}
+.rn2 .rnnick .fbub{position:relative;left:auto;top:auto;width:auto;display:flex;align-items:center;gap:8px;margin:0;padding:6px 10px 6px 6px;opacity:1;font-size:12.5px;line-height:1.45;border:1px solid rgba(201,162,77,.85);border-radius:10px;background:rgba(251,243,224,.94);color:#2a2014}
+.rn2 .rnnick .fbub img{flex:none;width:38px;height:38px;border-radius:50%;border:2px solid #e0b861;background:#f3e2c0;object-fit:cover}
+.rn2 .rnnick .fbub span>b{display:block;margin:0;padding:0;border:0;background:none;box-shadow:none;color:#7a5520;font-size:11px}
+.rn2 .rnnick .fbub.sys{display:block;padding:8px 12px;background:rgba(12,31,86,.94);color:#fff;border-color:#c9a24d}
+#app>.rn.rn2>.wpanel.rnpanel{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;margin:0;padding:10px;overflow:hidden;background:linear-gradient(rgba(27,43,85,.94),rgba(13,24,52,.96))}
+#app>.rn.rn2>.wpanel.rnpanel:has(>.rnsheet){overflow-y:auto}
+.rn2 .rnlist{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
+.rn2 .rnlh2{flex:none;display:flex;align-items:baseline;justify-content:center;gap:12px;margin:0 0 8px;padding-bottom:6px;border-bottom:1px solid rgba(224,184,97,.5)}
+.rn2 .rnlh2>b{font-family:var(--mm-font-head);font-size:17px;letter-spacing:.12em;color:#f6dc98}
+.rn2 .rncnt{font-size:13px;color:#f3ecd9}.rn2 .rncnt b{font-size:15px;color:#fff}
+.rn2 .rncur{flex:none;display:grid;margin:0 0 8px}
+.rn2 .rngrid{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:min-content;gap:8px;padding:2px 2px 4px}
+.rn2 .rngrid .rnempty{grid-column:1/-1}
+.rn2 button.rnc{position:relative;display:flex;align-items:center;gap:8px;width:100%;min-width:0;height:62px;margin:0;padding:5px 8px 5px 5px;text-align:left;border-radius:10px;background:linear-gradient(#17295a,#0e1c42);border:1.5px solid rgba(224,184,97,.55);box-shadow:inset 0 0 0 2px rgba(8,15,34,.8);color:#fff}
+.rn2 button.rnc.on{border-color:#ffd77a;box-shadow:inset 0 0 0 2px rgba(8,15,34,.8),0 0 0 1px #ffd77a,0 0 12px rgba(255,215,122,.55)}
+.rn2 button.rnc.cur{background:linear-gradient(#20356a,#132453)}
+.rn2 .rnic{flex:none;width:50px;height:50px;border-radius:50%;overflow:hidden;background:radial-gradient(#2b4580,#0c1630);border:1.5px solid #c9a24d}
+.rn2 .rnic>*{width:100%;height:100%;object-fit:contain}
+.rn2 .rncn{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.rn2 .rncn b{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rn2 .rntag{align-self:flex-start;padding:0 6px;border-radius:6px;font-size:10px;line-height:16px;color:#f3ecd9!important;background:rgba(255,255,255,.12)}
+.rn2 .rntag.done{background:rgba(224,184,97,.28);color:#ffe7a6!important}.rn2 .rntag.ing{background:rgba(200,60,70,.4)}.rn2 .rntag.cur{background:rgba(90,150,230,.35)}
+.rn2 .rnck{position:absolute;right:6px;top:6px;width:16px;height:16px;border-radius:50%;border:1.5px solid #ffd77a;background:radial-gradient(#ffd77a 40%,transparent 45%)}
+.rn2 .rnact{flex:none;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+.rn2 button.rna{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:58px;min-height:0;margin:0;padding:4px 2px;border-radius:10px;background:linear-gradient(#223766,#12204a);border:1.5px solid #e0b861;color:#fff;font-size:12.5px;font-weight:700;white-space:nowrap}
+.rn2 button.rna svg{width:24px;height:24px;fill:none;stroke:#e0b861;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.rn2 button.rna svg .f{fill:rgba(224,184,97,.3)}
+.rn2 button.rna.rnsell{background:linear-gradient(#5a2a24,#341612)}
+.rn2 button.rna:disabled{opacity:.42}
+.rn2 .rnsheet .rnrhd{display:flex;align-items:center;gap:10px;margin:8px 0}
+.rn2 .rnren>b{font-family:var(--mm-font-head);font-size:16px;color:#f6dc98}
+.rn2 .rnren input{font-size:1.1rem}
+.rn2 .rnsheet .card.pfsell small{color:#5d4a2c}
+.rn2 .rnrow2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.rn2 .rnrow2 button{margin:0}
+@media (max-height:700px){.rn2 button.rnc{height:54px}.rn2 .rnic{width:42px;height:42px}.rn2 button.rna{height:50px}.rn2 .rnnick .fbub{font-size:11.5px}}
 /* ===== 牧場（正式UI 2026-09-30。farm()）：正式背景 RANCH_BG（そのまま）＋ニックの一言、下に4コマンド（2×2）。
    街・ファームと同じ濃紺・金の二重線・金色の線画アイコン。合体は淡い青紫の光と金の飾りで少しだけ特別に、売るは暗い赤茶の差し色で注意を ===== */
 .rn{margin:-16px -16px 0;padding:calc(env(safe-area-inset-top,0px) + 8px) 12px calc(14px + env(safe-area-inset-bottom,0px));min-height:100dvh;box-sizing:border-box;background:linear-gradient(#0c1630,#14234a 40%,#0c1630);color:#fff}
@@ -2841,24 +2882,37 @@ let ft="a";
 const cname=({name:a},{name:b})=>Array.from(a).slice(0,2).join("")+Array.from(b).slice(-2).join(""); // 親1の名前の前2文字＋親2の名前の後ろ2文字。文字（コードポイント）単位で切る（絵文字を半分にしない）
 const slot=x=>x?`<div class="mon">${msv(x)}</div><b>${p11Esc(x.name)}</b>`:"<small>えらんでね</small>";
 function pasture(){const l=[S.m,...S.box].filter(Boolean);return `<div class="pasture"><span class="dc" style="left:6%;top:6%">☁️</span><span class="dc" style="right:10%;top:8%">☀️</span><span class="dc" style="left:3%;top:30%">🌳</span><span class="dc" style="right:3%;top:32%">🌳</span>${l.length?"":'<p class="pe">モンスターがいません</p>'}${l.map((x,i)=>`<div class="wk" style="top:${40+(i*23)%42}%;--d:${9+(i*5)%8}s;animation-delay:-${(i*3.7)%9}s"><div class="mon">${msv(x)}</div></div>`).join("")}</div>`}
-function farm(msg,tab){if(p8Blocked())return;p9Immersive(true);bgm("ranch");npcWarm("nick");if(!tab&&!msg)setTimeout(()=>npcFirst("ranch"),0); // 牧場（正式UI 2026-09-30）：上に正式背景＋ニック、下に4コマンド（2×2）、その下に選んだ機能の中身（処理は従来どおり）
- if(tab&&tab!="d")pfSellUid=null;ft=tab||(ft=="c"?"a":ft);const m=S.m,all=[m,...S.box].filter(Boolean);let b="";
- if(ft=="a")b=m?`${mcard(m)}<button class="go" onclick="dep()">このモンスターを預ける</button>`:"<p>いま連れているモンスターはいません。</p>";
- else if(ft=="b")b=S.box.length?S.box.map((x,j)=>`<div class="row rr"><div class="mon">${msv(x)}</div><div class="info"><b>${p11Esc(x.name)}</b><br><small>${sm(x)}</small></div><button onclick="wd(${j})">受け取る</button></div>`).join("")+(m?"<p><small>受け取ると、いま連れているモンスターは自動で預けられます。</small></p>":""):"<p>預けているモンスターはいません。</p>";
- else if(ft=="d")b=pfSellPanel(all);
- else if(ft=="e")b=rnLookPanel();
- else return museum("fuse"); // 2026-10-04：合体は研究所（labFuse）。牧場の内部画面 farm('','c') は互換のため研究所へ送る
- const rnFeat=(rnView&&S.box.find(v=>v.uid===rnView))||S.m||S.box[0]||null; // 2026-10-03 品質向上：選んでいる子（様子を見るの詳細・連れている子・牧場の最初の子）を大きく
- $("#app").innerHTML=`<div class="rn"><header class="rnhd"><button class="back" data-nav="back" onclick="pfSellUid=null;lobby()">◀ 街にもどる</button><div class="rnplq"><b>牧場</b></div><div class="fhud"><span class="rncoin">G</span><b>${S.g}G</b></div></header><div class="fscene" style="background-image:url(${RANCH_BG})">${msg?`<div class="fbub sys">${msg}</div>`:""}${rnFeat?`<div class="rnfeat"><div class="mon">${msv(rnFeat)}</div><b>${p11Esc(rnFeat.name)}</b></div>`:""}<div class="rnnick nst r">${(l=>`<img class="nstf" ${npcStand("nick",ft=="d"?"serious":ft=="e"&&rnView&&rnFeat&&MMP7.raiseState(rnFeat)=="done"?"impressed":ft=="e"?"gentle":(l?l.expression:"normal"))} alt="" decoding="async">${l?`<div class="tx fnick"><b>ニック</b>${l.text}</div>`:""}`)(msg?null:npcLineX("ranch",NICK_TALK.ranch,"normal"))}</div>${[S.m,...S.box].filter(x=>x&&x!==rnFeat).map((x,i)=>`<div class="wk" style="top:${80+(i*7)%12}%;--d:${9+(i*5)%8}s;animation-delay:-${(i*3.7)%9}s"><div class="mon">${msv(x)}</div></div>`).join("")}</div><nav class="ftiles rncmd" aria-label="牧場のコマンド">${[["a","dep","預ける",""],["b","wd",`受け取る<small>(${S.box.length})</small>`,""],["e","look","様子を見る"," rnlook"]].map(x=>`<button class="ftile${x[3]}${ft==x[0]?" on":""}" data-se="UI_TAB" onclick="${x[0]=="e"?"rnView=null;":""}farm('','${x[0]}')">${rnIc(x[1])}<span class="fl">${x[2]}</span></button>`).join("")}<button class="fsell rnsell${ft=="d"?" on":""}" data-se="UI_TAB" onclick="farm('','d')">${rnIc("sell")}<span class="fl">売る</span></button></nav><div class="wpanel">${b}</div></div>`;
+// 2026-10-04 PHASE H3：牧場（デザイン基準 01_ranch_20_ui_reference）。牧場は最大20体（MMP10M.RANCH_LIMIT。旧 7体）。2列の一覧（小さなアイコン・名前・育成完了／未育成の札）だけがスクロールし、
+//  選んだ子に 見る（様子を見る）・名前変更・受け取る（連れている子なら 預ける）・売る。合体は研究所（牧場には置かない）。売却・預ける・受け取るの処理は従来どおり（dep・wd・pfSellGo）
+let rnSel=null;
+function rnPick(uid){if(p8Blocked())return;rnSel=uid;pfSellUid=null;rnView=null;farm("","b")}
+function rnTag(x){return x===S.m?(MMP7.raiseState(x)=="none"?["連れている","cur"]:["育成中","ing"]):MMP7.raiseState(x)=="done"?["育成完了","done"]:["未育成","new"]}
+function rnCell(x){const t=rnTag(x);return `<button class="rnc${x.uid===rnSel?" on":""}${x===S.m?" cur":""}" data-uid="${x.uid}" onclick="rnPick('${x.uid}')"><span class="rnic mon">${msv(x)}</span><span class="rncn"><b>${p11Esc(x.name)}</b><small class="rntag ${t[1]}">${t[0]}</small></span>${x.uid===rnSel?'<i class="rnck" aria-hidden="true"></i>':""}</button>`}
+function rnRename(){if(p8Blocked())return;const x=[S.m,...S.box].find(v=>v&&v.uid===rnSel);if(!x)return farm("","b");const e=document.getElementById("rnnm");const v=(e&&e.value||"").trim().slice(0,8);if(!v)return farm("名前を入力してください。","n");const on=p11Esc(x.name);x.name=v;save();farm(`${on}の名前を${p11Esc(v)}に変えました。`,"b")}
+function farm(msg,tab){if(p8Blocked())return;p9Immersive(true);bgm("ranch");npcWarm("nick");if(!tab&&!msg)setTimeout(()=>npcFirst("ranch"),0);
+ if(tab&&tab!="d")pfSellUid=null;ft=tab||(ft=="c"?"b":ft);if(ft=="c")return museum("fuse"); // 合体は研究所（labFuse）。牧場の内部画面 farm('','c') は互換のため研究所へ送る
+ const m=S.m,all=[m,...S.box].filter(Boolean),L=MMP10M.RANCH_LIMIT;if(!all.some(x=>x.uid===rnSel))rnSel=(S.box[0]||m||{}).uid||null;
+ const x=all.find(v=>v.uid===rnSel)||null,bi=x?S.box.indexOf(x):-1,busy=!!MMP7.trainRunOf(m);let body="";
+ if(ft=="e"&&x)body=rnLookPanel(x);
+ else if(ft=="d"&&pfSellUid)body=`<div class="rnsheet">${pfSellPanel(all)}</div>`;
+ else if(ft=="n"&&x)body=`<div class="rnsheet rnren"><b>名前変更</b><div class="rnrhd"><span class="rnic mon">${msv(x)}</span><small>いまの名前：${p11Esc(x.name)}</small></div><label class="p10lb">新しい名前（8文字まで）<input id="rnnm" maxlength="8" value="${p11Esc(x.name)}" autocomplete="off" enterkeyhint="done" onkeydown="if(event.key=='Enter'){event.preventDefault();rnRename()}"></label><div class="rnrow2"><button class="t" data-se="UI_CANCEL" onclick="farm('','b')">やめる</button><button class="go" onclick="rnRename()">変更する</button></div></div>`;
+ else{if(ft!="b")ft="b";
+  const sq=x?MMP10M.canSell(S,x.uid):{ok:false},mv=!x?["","受け取る",true]:x===m?["dep()","預ける",busy||S.box.length>=L]:[`wd(${bi})`,"受け取る",busy];
+  body=`<section class="rnlist" aria-label="牧場のモンスター"><header class="rnlh2"><b>牧場のモンスター</b><span class="rncnt"><b>${S.box.length}</b> / ${L}</span></header>
+  ${m?`<div class="rncur">${rnCell(m)}</div>`:""}<div class="rngrid">${S.box.length?S.box.map(rnCell).join(""):`<p class="rnempty">牧場にはまだモンスターがいません。</p>`}</div></section>
+  <nav class="rnact" aria-label="牧場のコマンド"><button class="rna" ${x?"":"disabled"} onclick="rnView=rnSel;farm('','e')">${rnIc("look")}<span>見る</span></button><button class="rna" ${x?"":"disabled"} onclick="farm('','n')">${rnIc("ren")}<span>名前変更</span></button><button class="rna" ${mv[2]?"disabled":""} onclick="${mv[0]}">${rnIc(x===m?"dep":"wd")}<span>${mv[1]}</span></button><button class="rna rnsell" ${sq.ok?"":"disabled"} onclick="pfSellUid=rnSel;farm('','d')">${rnIc("sell")}<span>売る</span></button></nav>`}
+ $("#app").innerHTML=`<div class="rn rn2"><header class="rnhd"><button class="back" data-nav="back" onclick="pfSellUid=null;lobby()">◀ 街にもどる</button><div class="rnplq"><b>牧場</b></div><div class="fhud"><span class="rncoin">G</span><b>${S.g}G</b></div></header><div class="rnbg" style="background-image:url(${RANCH_BG})" aria-hidden="true"></div>
+ <div class="rnnick">${msg?`<div class="fbub sys">${msg}</div>`:(l=>`<div class="fbub rnsay"><img src="${npcSrc("nick",ft=="d"?"serious":ft=="e"&&x&&MMP7.raiseState(x)=="done"?"impressed":ft=="e"?"gentle":(l?l.expression:"normal"),"face")||NICK_FACE}" alt=""><span><b>ニック</b>${l?l.text:""}</span></div>`)(npcLineX("ranch",NICK_TALK.ranch,"normal"))}</div>
+ <div class="wpanel rnpanel">${body}</div></div>`;
+ if(ft=="n")setTimeout(()=>{const e=document.getElementById("rnnm");if(e)try{e.focus();e.select()}catch(_){}},60);
 }
 /** 牧場の4コマンドのアイコン（金色の線画。街・ファームと同じ系統） */
-const RN_IC={dep:'<path d="M5 14h22v13H5z"/><path d="M5 14l3-5h16l3 5"/><path d="M16 3v9M12.5 8.5L16 12l3.5-3.5"/>',wd:'<path d="M5 14h22v13H5z"/><path d="M5 14l3-5h16l3 5"/><path d="M16 12V3M12.5 6.5L16 3l3.5 3.5"/>',fuse:'<circle cx="11.5" cy="17" r="7"/><circle cx="20.5" cy="17" r="7"/><path d="M16 4.5l1 2.4 2.4 1-2.4 1-1 2.4-1-2.4-2.4-1 2.4-1z" class="f"/>',look:'<path d="M3 17s5-8 13-8 13 8 13 8-5 8-13 8S3 17 3 17z"/><circle cx="16" cy="17" r="4.2"/><path d="M26 3.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z" class="f"/>',sell:'<path d="M11 8h10l-2 4h-6z"/><path d="M13 12c-5 3-7 7-7 10 0 4 4 6 10 6s10-2 10-6c0-3-2-7-7-10"/><path d="M16 16v8M13.5 18.5c0-1.2 1.2-2 2.5-2s2.5.6 2.5 1.8-1.2 1.7-2.5 1.9-2.5.8-2.5 2 1.2 1.8 2.5 1.8 2.5-.8 2.5-2"/>'};
+const RN_IC={ren:'<path d="M6 26l3.5-1 14-14-2.5-2.5-14 14z"/><path d="M19.5 8l2.5-2.5 4.5 4.5-2.5 2.5"/><path d="M6 29h20"/>',dep:'<path d="M5 14h22v13H5z"/><path d="M5 14l3-5h16l3 5"/><path d="M16 3v9M12.5 8.5L16 12l3.5-3.5"/>',wd:'<path d="M5 14h22v13H5z"/><path d="M5 14l3-5h16l3 5"/><path d="M16 12V3M12.5 6.5L16 3l3.5 3.5"/>',fuse:'<circle cx="11.5" cy="17" r="7"/><circle cx="20.5" cy="17" r="7"/><path d="M16 4.5l1 2.4 2.4 1-2.4 1-1 2.4-1-2.4-2.4-1 2.4-1z" class="f"/>',look:'<path d="M3 17s5-8 13-8 13 8 13 8-5 8-13 8S3 17 3 17z"/><circle cx="16" cy="17" r="4.2"/><path d="M26 3.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z" class="f"/>',sell:'<path d="M11 8h10l-2 4h-6z"/><path d="M13 12c-5 3-7 7-7 10 0 4 4 6 10 6s10-2 10-6c0-3-2-7-7-10"/><path d="M16 16v8M13.5 18.5c0-1.2 1.2-2 2.5-2s2.5.6 2.5 1.8-1.2 1.7-2.5 1.9-2.5.8-2.5 2 1.2 1.8 2.5 1.8 2.5-.8 2.5-2"/>'};
 // 様子を見る：牧場に預けている子を眺める（閲覧だけ。受け取る・売る・合体などの操作は置かない）。rnView＝詳細を開いている個体の uid（null は一覧）
 let rnView=null;
-function rnLook(j){const x=S.box[j];rnView=x?x.uid:null;farm("","e");const w=document.querySelector(".rn .wpanel");if(w&&w.scrollIntoView)try{w.scrollIntoView({block:"nearest"})}catch(e){}} // 詳細（6能力）が見える位置まで送る
-function rnLookPanel(){const x=rnView&&S.box.find(v=>v.uid===rnView),kind=v=>{const s=MMP10M.byId(v.sp);return s?`${s.name}（${s.kind}）`:""};
- if(!x){rnView=null;return S.box.length?`<p class="rnlh"><small>牧場で過ごしている子たちです。見たい子を選んでください。</small></p>`+S.box.map((v,j)=>`<button class="row rnlrow" onclick="rnLook(${j})"><div class="mon">${msv(v)}</div><div class="info"><b>${p11Esc(v.name)}</b><small>${kind(v)}　大会ランク ${MMP8.rankLabel(v)}</small></div><span class="rnchev" aria-hidden="true">›</span></button>`).join(""):`<p class="rnempty">牧場にはまだモンスターがいません。</p>`}
- return `<div class="rnlook"><button class="rnlback" data-se="UI_CANCEL" onclick="rnView=null;farm('','e')">◀ 一覧にもどる</button><div class="rnlhero"><div class="mw"><div class="mon">${msv(x)}</div></div><div class="rnlname"><b>${p11Esc(x.name)}</b><small>${kind(x)}</small><small>大会ランク <b>${MMP8.rankLabel(x)}</b></small></div></div><dl class="rnlst">${KS.map(k=>`<div><dt>${LAB[k]}</dt><dd>${x[k]}</dd></div>`).join("")}</dl></div>`}
+function rnLook(j){const x=S.box[j];rnView=x?x.uid:null;if(x)rnSel=x.uid;farm("","e")} // 互換（一覧の番号から詳細へ）
+function rnLookPanel(x){const kind=v=>{const s=MMP10M.byId(v.sp);return s?`${s.name}（${s.kind}）`:""};
+ return `<div class="rnlook rnsheet"><button class="rnlback" data-se="UI_CANCEL" onclick="rnView=null;farm('','b')">◀ 一覧にもどる</button><div class="rnlhero"><div class="mw"><div class="mon">${msv(x)}</div></div><div class="rnlname"><b>${p11Esc(x.name)}</b><small>${kind(x)}</small><small>大会ランク <b>${MMP8.rankLabel(x)}</b></small><small>${rnTag(x)[0]}</small></div></div><dl class="rnlst">${KS.map(k=>`<div><dt>${LAB[k]}</dt><dd>${x[k]}</dd></div>`).join("")}</dl></div>`}
 const rnIc=k=>`<svg viewBox="0 0 32 32" aria-hidden="true">${RN_IC[k]}</svg>`;
 // ---- 牧場：モンスター売却（未育成50G／育成完了は能力の上昇と到達ランクに応じて最大400G。育成中は不可・最後の1体は不可。確定は2度押し） ----
 let pfSellUid=null;
@@ -2870,8 +2924,8 @@ function pfSellPanel(all){const own=all.length,q=all.map(x=>MMP10M.sellQuote(x))
  return (own<2?"<p>最後の1体は売却できません。</p>":"<p><small>売却するモンスターを選んでください（未育成は50G、育成完了は能力の上昇と到達ランクに応じて最大400G）。</small></p>")+all.map((y,i)=>`<div class="row rr"><div class="mon">${msv(y)}</div><div class="info"><b>${p11Esc(y.name)}</b>${y==S.m?"（連れている）":""}<br><small>${q[i].ok?`${q[i].kind=="unraised"?"未育成":"育成完了"}・売却額 ${q[i].price}G`:"育成中"}</small></div><button ${own>=2&&q[i].ok?"":"disabled"} onclick="pfSellPick(${i})">売る</button></div>`).join("")}
 function pfSellPick(i){if(p8Blocked())return;const all=[S.m,...S.box].filter(Boolean);pfSellUid=i>=0&&all[i]?all[i].uid:null;farm("","d")}
 function pfSellGo(b){if(p8Blocked()||!pfSellUid)return;const c=MMP10M.canSell(S,pfSellUid);if(!c.ok){pfSellUid=null;return farm(PF_SELL_WHY[c.reason]||"売却できません。","d")}if(!arm(b,`もう一度押すと売却（${c.price}G）`))return;const r=MMP10M.sell(S,pfSellUid);pfSellUid=null;if(!r.ok)return farm(PF_SELL_WHY[r.reason]||"売却できません。","d");sel=[];save();farm(`${p11Esc(r.name)}を${r.price}Gで売却しました。`,"d")}
-function dep(){if(p8Blocked())return;if(!S.m)return farm("","a");if(MMP7.trainRunOf(S.m))return farm("特訓中のモンスターがいるため、いまは入れ替えできません。","a");if(S.box.length>=7)return farm("牧場がいっぱいです。","a");S.box.push(S.m);S.m=null;sel=[];save();farm("預けました。","b")}
-function wd(j){if(p8Blocked())return;if(MMP7.trainRunOf(S.m))return farm("特訓中のモンスターがいるため、いまは入れ替えできません。","b");const x=S.box.splice(j,1)[0];if(S.m)S.box.push(S.m);S.m=x;sel=[];save();farm(`${p11Esc(x.name)}を受け取りました。`,"a")}
+function dep(){if(p8Blocked())return;if(!S.m)return farm("","a");if(MMP7.trainRunOf(S.m))return farm("特訓中のモンスターがいるため、いまは入れ替えできません。","b");if(S.box.length>=MMP10M.RANCH_LIMIT)return farm("牧場がいっぱいです。","b");const u=S.m.uid;S.box.push(S.m);S.m=null;sel=[];rnSel=u;save();farm("預けました。","b")}
+function wd(j){if(p8Blocked())return;if(MMP7.trainRunOf(S.m))return farm("特訓中のモンスターがいるため、いまは入れ替えできません。","b");const x=S.box.splice(j,1)[0];if(!x)return farm("","b");if(S.m)S.box.push(S.m);S.m=x;sel=[];rnSel=x.uid;save();farm(`${p11Esc(x.name)}を受け取りました。`,"b")}
 // 街の背景画像（2026-10-03：正式ミストリア mistria_main.webp＝ZIP mm_quality_up_supplement の mistria_town_master。768×1360。旧 town_main.jpg はファイルだけ残す）。
 // 施設の札（TOWN_CMDS の7番目＝地図の上の点）はこの画像の画素で書く。TOWN_IMG.top＝闘技場の上端（低い画面でもここが切れない倍率にする）
 const TOWN_BG="assets/town/mistria_main.webp",TOWN_IMG={w:768,h:1360,top:26};
@@ -2959,7 +3013,7 @@ function p11Speed(m){const v=MMP10M.isValidSpeed(m.speed)?m.speed:MMP10M.speedOf
 // プレイヤー名・顔画像の正式データは無いため「ブリーダー」＋ブリーダーランクを表示する（p10Who の中身を差し替えれば将来の名前表示に対応できる）。
 let P10_MK=0,P10_ANIM=false,P10_TGT=null,P10_SW=null;
 const P10_COIN=`<svg class="p10coin" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><defs><radialGradient id="p10cg" cx="38%" cy="32%" r="70%"><stop offset="0" stop-color="#fff3b0"/><stop offset=".6" stop-color="#e8b43a"/><stop offset="1" stop-color="#9a6410"/></radialGradient></defs><circle cx="12" cy="12" r="10.5" fill="url(#p10cg)" stroke="#6b3f08" stroke-width="1.4"/><circle cx="12" cy="12" r="6.8" fill="none" stroke="#fff3c4" stroke-opacity=".7" stroke-width="1.2"/><path d="M12 7.6l1.3 2.7 3 .4-2.2 2.1.5 3-2.6-1.4-2.6 1.4.5-3-2.2-2.1 3-.4z" fill="#fff6d6"/></svg>`;
-const P10_WHY={waiting:"このモンスターは現在入荷待ちです。",not_in_market:"このモンスターは市場にいません。",no_money:"お金が足りません。",full:"手持ちと牧場で8体までです。"};
+const P10_WHY={waiting:"このモンスターは現在入荷待ちです。",not_in_market:"このモンスターは市場にいません。",no_money:"お金が足りません。",full:"牧場がいっぱいです（牧場は20体まで）。"};
 const P10_SCENE=(()=>{const tent=(x,w,c)=>`<g transform="translate(${x} 0)"><path d="M0 470h${w}v-28l-${w/2} -34-${w/2} 34z" fill="#5a3a22"/>${[...Array(6)].map((_,i)=>`<path d="M${i*w/6} 438l${w/12} 22 ${w/12}-22z" fill="${i%2?"#f3e2c0":c}"/>`).join("")}<path d="M0 436h${w}" stroke="#7a4a24" stroke-width="3"/><rect x="6" y="470" width="${w-12}" height="86" fill="#6b4428"/><rect x="10" y="478" width="${w-20}" height="34" fill="#8a5a32"/></g>`;
  const tower=(x,y,h,r)=>`<g><rect x="${x}" y="${y}" width="${r*2}" height="${h}" fill="#ead9bd"/><path d="M${x-3} ${y}l${r+3}-${r*2.2} ${r+3} ${r*2.2}z" fill="#c6573a"/><rect x="${x+r-3}" y="${y+14}" width="6" height="10" rx="3" fill="#6b4a33"/></g>`;
  const lantern=(x)=>`<g transform="translate(${x} 0)"><path d="M0 26v70" stroke="#3a2618" stroke-width="2"/><circle cx="0" cy="132" r="44" fill="url(#p10glow)"/><path d="M-13 100h26l-3 44h-20z" fill="#ffcf6a" stroke="#4a2c14" stroke-width="3"/><path d="M-16 96h32l-4-8h-24zM-12 144h24l-3 6h-18z" fill="#4a2c14"/></g>`;
@@ -4016,7 +4070,7 @@ function karenIntro(){const f=finaFlags();if(npcFirst("market",()=>{const b=$("#
 const KAREN_PICK={solamo:"ソラモね。バランスのいい子よ。",gauru:"ガウルね。素早さが魅力の子よ。"};
 /** 案内欄の一言と顔の表情を、中央の個体に合わせる。tip＝カレンのボタンを押したときの一言（販売中なら詳しく見る方法） */
 function p10KarenHint(tip){const t=$("#p10kt"),bar=$("#p10kbar");if(!t||!bar)return;const c=MMP10M.MARKET_CATALOG[P10_MK];if(!c)return;const s=MMP10M.byKey(c.key),chk=c.status=="waiting"?null:MMP10M.canPurchase(S,c.key,S.box.length+(S.m?1:0));
- const [ex,tx]=c.status=="waiting"?["guide",KAREN_TALK.waiting[0].text]:!chk.ok&&chk.reason=="no_money"?["troubled","今の所持金では、まだ迎えられないみたい。"]:!chk.ok&&chk.reason=="full"?["troubled","手持ちと牧場で8体までなの。"]:tip?["smile","気になったら、この子をタップして詳しく見てみてね。"]:["smile",KAREN_PICK[c.key]||`${s.name}ね。`];
+ const [ex,tx]=c.status=="waiting"?["guide",KAREN_TALK.waiting[0].text]:!chk.ok&&chk.reason=="no_money"?["troubled","今の所持金では、まだ迎えられないみたい。"]:!chk.ok&&chk.reason=="full"?["troubled","牧場がいっぱいなの。牧場で整理してからね。"]:tip?["smile","気になったら、この子をタップして詳しく見てみてね。"]:["smile",KAREN_PICK[c.key]||`${s.name}ね。`];
  t.textContent=tx;const im=bar.querySelector("img"),src=npcSrc("karen",ex)||`assets/npc/karen/closeup/${ex}.webp`;if(im&&im.getAttribute("src")!==src)im.src=src;bar.classList.remove("kpop");void bar.offsetWidth;bar.classList.add("kpop")}
 /** カレンのボタン（案内欄の顔）：選択中のモンスターについて、案内欄に短く一言（大きな会話は開かない。購入の判定は変えない） */
 function p10KarenTalk(){if(P10_ANIM||$("#p10ov"))return;p10KarenHint(true)}

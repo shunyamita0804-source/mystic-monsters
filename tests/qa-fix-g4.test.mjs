@@ -87,6 +87,7 @@ test('QA-G4-2：モンスター名を画面に出すところ（fight()・バト
     /\$\{s\.name\}/g, /MMP10M\.byKey\(c\.key\)\.name/g, /\(MMP10M\.byId\(x\.sp\)\|\|\{\}\)\.name/g,   // 種族の正式データ（MMP10M）
     /\$\{T\.name\}/g, /d\?d\.name:it\.id/g, /\$\{d\.name\}<small>/g,   // 修行場・アイテムの定義
     /if\(x\.name=="ハヤテ"\)x\.name="ガウル"/g,                       // 旧セーブの名前の移行（表示ではない）
+    /x\.name=v;save\(\);farm\(`\$\{on\}の名前を/g,   // 2026-10-04 PHASE H3：牧場の名前変更（保存する名前はそのまま。表示は p11Esc 済みの on）
     /if\(nm\)x\.name=nm;/g, /c\.name=cname\(a,b\);/g, /a\.name\.slice\(0,2\)\+b\.name\.slice\(-2\)/g,   // 名前を付ける（保存する名前はそのまま）
     /name:v\.name,/g, /e\.player\?S\.m\.name:String\(e\.name\)/g,    // 大会の表示データ（表示するところで p11Esc）
   ];
@@ -268,8 +269,8 @@ test('QA-G4-B4：実ブラウザ：育成完了画面・ファームの完了表
   assert.equal(await count(pg, `#app button[onclick="farm('','a')"]`), 1, '「牧場へ」が残る');
   await H.finishTalk(pg);
   await pg.evaluate(() => hall('t')); await pg.waitForSelector('#app .fm-done');
-  assert.deepEqual(await txt(pg, '#app .fmnm b'), [CM], 'ファーム（育成完了）の名前は文字のまま');
-  assert.deepEqual(await txt(pg, '#app .fmbadge'), ['育成完了']);
+  assert.deepEqual(await txt(pg, '#app .bcname b'), [CM], 'ベースキャンプ（育成完了。2026-10-04 PHASE H2）の名前は文字のまま');
+  assert.deepEqual(await txt(pg, '#app .bcch small'), ['育成完了']);
   await noInjected(p);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
