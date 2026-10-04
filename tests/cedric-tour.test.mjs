@@ -26,9 +26,9 @@ const between = (a, b) => HTML.slice(HTML.indexOf(a), HTML.indexOf(b, HTML.index
 
 test('CED-1：セドリックは公式ランク大会の進行役として、アップ画像（closeup）の6表情で登録。Chapterボードには置かない', () => {
   const M = loadNpc(), c = M.get('cedric');
-  assert.deepEqual([c.name, c.role, c.board, c.defaultView, c.defaultExpr], ['セドリック', '公式ランク大会の進行役', false, 'closeup', 'normal']);
-  assert.deepEqual([...M.expressionsOf('cedric', 'closeup')], EXPR);
-  assert.equal(M.imageOf('cedric', 'closeup', 'guide').src, 'assets/npc/cedric/closeup/guide.webp');
+  assert.deepEqual([c.name, c.role, c.board, c.defaultView, c.defaultExpr], ['セドリック', '公式ランク大会の進行役', false, 'closeup', 'host']);
+  assert.ok(EXPR.every((e) => M.expressionsOf('cedric', 'closeup').includes(e)), '2026-10-04（追加アセット）：旧い表情名はすべて引き続き使える（意味の近い正式の表情差分 assets/npc/<id>/expr/ へ読み替え）'); assert.ok(M.EXPR.cedric.every((e) => M.expressionsOf('cedric', 'closeup').includes(e)), '正式の4表情');
+  assert.equal(M.imageOf('cedric', 'closeup', 'guide').src, 'assets/npc/cedric/expr/closeup/01_host.webp', '2026-10-04（追加アセット）：旧い表情名はすべて引き続き使える（意味の近い正式の表情差分 assets/npc/<id>/expr/ へ読み替え）');
   assert.deepEqual(['dan', 'nick', 'karen', 'fina'].map((k) => M.get(k).name), ['ダン', 'ニック', 'カレン', 'フィナ'], 'ほかのNPCはそのまま');
 });
 
@@ -56,17 +56,17 @@ test('CED-3：一言は CEDRIC_TALK。丁寧で公式感のある口調（です
 });
 
 test('CED-4：表示場所：ゴールのランク選択・順位表（次の相手）・VS画面・結果画面。システム表示（.p9msg／.p9s／報酬／.p9prov）とは別の要素', () => {
-  assert.match(lineOf('function p9Ced('), /^function p9Ced\(t\)\{return `<div class="p9ced"><img src="\$\{CEDRIC_FACE\}" alt=""><div class="tx"><b>セドリック<\/b>\$\{t\}<\/div><\/div>`\}$/);
+  assert.match(lineOf('function p9Ced('), /^function p9Ced\(t,ex\)\{return `<div class="p9ced" data-ex="\$\{ex\|\|"host"\}"><img src="\$\{npcSrc\("cedric",ex\|\|"host","face"\)\|\|CEDRIC_FACE\}" alt=""><div class="tx"><b>セドリック<\/b>\$\{t\}<\/div><\/div>`\}$/, '2026-10-04：表情（司会・試合開始・緊張感・勝者発表）の小さい顔');
   // 2026-09-30：ランク選択の案内はフィナ（セドリックは大会が始まってから＝開始演出 p9TourIntro の CEDRIC_TALK.open）
   assert.ok(between('function p8GoalHtml(', '\nconst P9_PADLOCK').includes('<h3>🏟 公式ランク大会</h3><div id="p9fsay">${p9Fina(FINA_RANK_TALK.pick)}</div><p class="p9s">'));
   assert.doesNotMatch(between('function p8GoalHtml(', '\nconst P9_PADLOCK'), /p9Ced|CEDRIC/, 'ランク選択の画面にセドリックは出さない');
   assert.ok(between('function p9TourIntro(', '\n// セドリック').includes('CEDRIC_TALK.open') || HTML.includes('${CEDRIC_TALK.open.replace("{R}",RN[k])}'), '大会開始の演出でセドリックの一言');
   const tour = between('function p8TourScr(msg){', '\nfunction p9TourResult(');
-  assert.ok(tour.includes('${p9Ced(lg.round==0?CEDRIC_TALK.first:CEDRIC_TALK.next[lg.round%CEDRIC_TALK.next.length])}<button class="p9btn p9go tp2go" onclick="p9CompareScr()">'), '2026-10-04：大会進行＝次の対戦相手のあとにセドリックの一言 →「対戦開始」（パラメーター比較へ）');
+  assert.ok(tour.includes('${p9Ced(lg.round==0?CEDRIC_TALK.first:CEDRIC_TALK.next[lg.round%CEDRIC_TALK.next.length],t.rank>=3?"tense":"host")}<button class="p9btn p9go tp2go" onclick="p9CompareScr()">'), '2026-10-04：大会進行＝次の対戦相手のあとにセドリックの一言 →「対戦開始」（パラメーター比較へ）');
   assert.ok(tour.includes('${msg?`<div class="p9msg p9tmsg">${msg}</div>`:""}'), '試合結果などの通知は顔・名前なしのまま');
-  assert.ok(between('function p9VsScr(){', '\nfunction p9VsGo(').includes('${p9Ced(CEDRIC_TALK.vs)}<div class="p9vs-fr">'));
-  assert.ok(between('function p9TourResult(msg){', '\nfunction p8RewardText(').includes('${p9Ced(rs.won?CEDRIC_TALK.won:CEDRIC_TALK.lost)}'));
-  assert.equal((HTML.match(/p9Ced\(/g) || []).length, 4, '定義＋3か所（順位表・VS・結果）だけ。ランク選択はフィナ');
+  assert.ok(between('function p9VsScr(){', '\nfunction p9VsGo(').includes('${p9Ced(CEDRIC_TALK.vs,"kickoff")}<div class="p9vs-fr">'));
+  assert.ok(between('function p9TourResult(msg){', '\nfunction p8RewardText(').includes('${p9Ced(rs.won?CEDRIC_TALK.won:CEDRIC_TALK.lost,rs.won?"victory":"host")}'));
+  assert.equal((HTML.match(/p9Ced\(/g) || []).length, 5, '定義＋4か所（順位表・VS・パラメーター比較（2026-10-04：試合開始の表情）・結果）だけ。ランク選択はフィナ');
   // 大会の処理（参加・試合開始・辞退・終了）は変えていない
   assert.match(lineOf('function p8TourStart('), /^function p8TourStart\(k,b\)\{if\(bBusy\)return;if\(!p9arm\(b,`もう一度押すとランク\$\{RN\[k\]\}大会に参加`\)\)\{finaRankSay\(k\);return\}const r=MMP8\.startTournament\(S,S\.m,k\);if\(!r\.ok\)return board\(\);save\(\);p9TourIntro\(k\)\.then\(\(\)=>\{P9_ENTER=true;board\(\)\}\)\}$/, '1回目の押下はフィナの見立て、2回目で参加 → 開始演出 → 順位表');
   assert.match(lineOf('function p8TourFight('), /beginBattle\(S,m,\{kind:"league",rank:t\.rank\}\)/);

@@ -1,6 +1,6 @@
 // =========================================================
 // QA（実ブラウザ）：第二段階（2026-10-04）のイベント基盤
-//  EV-B1：イベントマス＝フィナの会話（吹き出し）→ 結果 → 初回だけチュートリアル（会話窓）。2回目はチュートリアル無し
+//  EV-B1：イベントマス＝挿絵（2026-10-04 追加アセット）→ フィナの会話 → 結果 → 初回だけチュートリアル（会話窓）。2回目はチュートリアル無し
 //  EV-B2：2択の出来事＝会話の最後に選択肢 → 選ぶまで結果は決まらない（再読み込みでも同じ選択肢）→ 選んだ効果
 //  EV-B3：能力マスの初回チュートリアルは1回だけ
 //  EV-B4：施設の初回訪問（市場・牧場・研究所・闘技場・ファーム）はフィナ ↔ NPC の会話、再訪では出ない
@@ -40,51 +40,60 @@ const landOn = (pg, ev, type = 'event') => pg.evaluate(([ev, type]) => {
 const fina = (pg, re) => pg.waitForFunction((src) => { const f = document.querySelector('.chf-fina span'); return !!f && new RegExp(src).test(f.textContent); }, re, { timeout: 15000 });
 const talk = (pg, re) => pg.waitForFunction((src) => { const t = document.querySelector('.mmtalk:not(.mmtalk-out)'); return !!t && new RegExp(src).test(t.textContent); }, re, { timeout: 15000 });
 
-T('EV-B1：イベントマス：フィナの会話（2行・タップで進む）→ 結果（疲れ −5 が HUD へ）→ 初めてのイベントのチュートリアル（会話窓）。2回目のイベントではチュートリアルは出ない。記録は S.npcFlags.story', async () => {
+/** 会話を送って選択肢まで進める（選択肢は最後の行の全文表示のあと） */
+async function toChoice(pg) { for (let i = 0; i < 20 && !(await pg.$('.mmtalk-choice')); i++) { await pg.click('.mmtalk:not(.mmtalk-out)', { force: true }).catch(() => {}); await pg.waitForTimeout(120); } await pg.waitForSelector('.mmtalk-choice', { timeout: 15000 }); }
+
+T('EV-B1：イベントマス（挿絵つき・澄んだ湧き水）：背景を暗く → 挿絵とイベント名 → フィナの会話（小さな会話窓・タップで進む）→ 挿絵が消える → 結果（疲れ −15 が HUD へ）→ 初めてのイベントのチュートリアル（会話窓）。2回目のイベント（挿絵なし）ではチュートリアルは出ない。記録は S.npcFlags.story', async () => {
   const p = await openPage({ story: true }); const pg = p.page;
   await start(pg);
   await pg.evaluate(() => { S.m.raise.fatigue = 30; save(); });
-  const id = await landOn(pg, 'tailwind');
-  await fina(pg, 'わ、追い風'); await pg.waitForTimeout(380); await pg.click('.chf-fina');
-  await fina(pg, '少し足が軽く'); await pg.waitForTimeout(380); await pg.click('.chf-fina');
+  const id = await landOn(pg, 'spring_water');
+  await pg.waitForSelector('.chf-evc.on[data-ev="spring_water"]', { timeout: 15000 });
+  assert.match(await pg.textContent('.chf-evc figcaption'), /澄んだ湧き水/);
+  await talk(pg, 'すごく澄んでる');
+  assert.equal(await pg.evaluate(() => document.querySelector('.mmtalk').dataset.pres), 'compact', '挿絵を隠さない小さな窓');
+  await H.finishTalk(pg);
   await pg.waitForSelector('.chpop.ev', { timeout: 15000 });
-  assert.match(await pg.textContent('.chpop.ev'), /追い風[\s\S]*疲れ −5/);
+  assert.equal(await pg.evaluate(() => !!document.querySelector('.chf-evc')), false, '結果の前に挿絵は消える');
+  assert.match(await pg.textContent('.chpop.ev'), /湧き水[\s\S]*疲れ −15/);
   await talk(pg, 'イベントマスは、止まるたびに');
   assert.equal(await pg.evaluate(() => document.querySelector('.mmtalk').dataset.pres), 'compact', 'チュートリアルは小さな会話窓');
   await H.finishTalk(pg); await idle(pg);
   const s1 = await pg.evaluate(() => ({ fat: S.m.raise.fatigue, used: S.m.raise.field.consumedEvents, story: S.npcFlags.story, pend: S.m.raise.pend, hud: document.querySelector('#chfat b').textContent }));
-  assert.equal(s1.fat, 25); assert.ok(s1.used.includes(id)); assert.deepEqual(s1.story, ['tut_event']); assert.equal(s1.pend, null); assert.equal(s1.hud, '25');
+  assert.equal(s1.fat, 15); assert.ok(s1.used.includes(id)); assert.deepEqual(s1.story, ['tut_event']); assert.equal(s1.pend, null); assert.equal(s1.hud, '15');
   assert.deepEqual((await H.storedSave(pg)).npcFlags.story, ['tut_event'], 'セーブに残る');
-  // 2回目：会話と結果だけ（チュートリアル無し）
-  await landOn(pg, 'spring_water');
-  await fina(pg, '湧き水'); await clearFina(pg);
+  // 2回目：挿絵の無い出来事（ダンの言葉）＝フィナの吹き出しと結果だけ（チュートリアル無し）
+  await landOn(pg, 'remember_dan');
+  await fina(pg, 'ダンが言ってた'); await clearFina(pg);
   await pg.waitForSelector('.chpop.ev', { timeout: 15000 }); await pg.waitForFunction(() => !document.querySelector('.chpop'), null, { timeout: 15000 });
   await pg.waitForTimeout(1200);
-  assert.equal(await pg.evaluate(() => !!document.querySelector('.mmtalk')), false, '2回目はチュートリアルを出さない');
-  await idle(pg); assert.equal(await pg.evaluate(() => S.m.raise.fatigue), 10);
+  assert.equal(await pg.evaluate(() => !!document.querySelector('.mmtalk,.chf-evc')), false, '2回目はチュートリアルを出さない・挿絵の無い出来事にカードは出ない');
+  await idle(pg);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
-T('EV-B2：2択の出来事（古い訓練跡）：会話の最後に選択肢 → 選ぶまで結果は決まらず・使った印も付かない（再読み込みで同じ選択肢がもう一度）→「今日は休む」で疲れ −8 → フィナの一言 → 結果', async () => {
+T('EV-B2：2択の出来事（古い訓練跡）：挿絵 → 会話の最後に選択肢 → 選ぶまで結果は決まらず・使った印も付かない（再読み込みで同じ挿絵と選択肢がもう一度）→「動きを確かめる」で命中 +5 → 結果', async () => {
   const p = await openPage({ story: true }); const pg = p.page;
   await start(pg);
   await pg.evaluate(() => { S.m.raise.fatigue = 40; save(); });
+  const hi0 = await pg.evaluate(() => S.m.hi);
   const id = await landOn(pg, 'old_grounds');
-  await talk(pg, '誰かが鍛えていた跡'); await pg.waitForSelector('.mmtalk-choice', { timeout: 15000 });
+  await pg.waitForSelector('.chf-evc.on[data-ev="old_grounds"]', { timeout: 15000 });
+  await talk(pg, '昔の訓練場みたい'); await toChoice(pg);
   const c = await pg.evaluate(() => [...document.querySelectorAll('.mmtalk-choice')].map((b) => [b.dataset.choice, b.textContent]));
-  assert.deepEqual(c.map((x) => x[0]), ['train', 'rest']); assert.match(c[0][1], /少し鍛える/); assert.match(c[1][1], /今日は休む/);
+  assert.deepEqual(c.map((x) => x[0]), ['train', 'check']); assert.match(c[0][1], /少し鍛える/); assert.match(c[1][1], /動きを確かめる/);
   const sv = await H.storedSave(pg);
   assert.equal(sv.m.raise.pend.stage, 'resolve'); assert.equal(sv.m.raise.pend.fx.kind, 'choice'); assert.ok(!sv.m.raise.field.consumedEvents.includes(id)); assert.equal(sv.m.raise.fatigue, 40);
-  // 選ぶ前に再読み込み → 同じ選択肢
+  // 選ぶ前に再読み込み → 同じ挿絵・選択肢
   await pg.reload(); await pg.waitForFunction(() => typeof window.MMP8 === 'object'); await pg.click('.p15start');
-  await pg.waitForSelector('.mmtalk-choice', { timeout: 20000 });
-  assert.equal(await pg.evaluate(() => S.m.raise.fatigue), 40, 'まだ何も起きていない');
-  await H.chooseTalk(pg, 'rest');
-  await fina(pg, '今日は休もう'); await clearFina(pg);
-  await pg.waitForSelector('.chpop.ev', { timeout: 15000 }); assert.match(await pg.textContent('.chpop.ev'), /訓練跡のそばで休んだ[\s\S]*疲れ −8/);
+  await pg.waitForSelector('.chf-evc.on[data-ev="old_grounds"]', { timeout: 20000 });
+  await talk(pg, '昔の訓練場みたい'); await toChoice(pg);
+  assert.deepEqual(await pg.evaluate(() => [S.m.raise.fatigue, S.m.hi]), [40, hi0], 'まだ何も起きていない');
+  await H.chooseTalk(pg, 'check');
+  await pg.waitForSelector('.chpop.ev', { timeout: 15000 }); assert.match(await pg.textContent('.chpop.ev'), /動きを確かめた[\s\S]*命中/);
   await talk(pg, 'イベントマスは'); await H.finishTalk(pg); await idle(pg);
-  const s1 = await pg.evaluate(() => ({ fat: S.m.raise.fatigue, used: S.m.raise.field.consumedEvents.includes(S.m.raise.node), pend: S.m.raise.pend, phase: MMP8.boardPhase(S.m), start: !!document.querySelector('#brollbtn') }));
-  assert.deepEqual(s1, { fat: 32, used: true, pend: null, phase: 'roll', start: true });
+  const s1 = await pg.evaluate(() => ({ fat: S.m.raise.fatigue, hi: S.m.hi, used: S.m.raise.field.consumedEvents.includes(S.m.raise.node), pend: S.m.raise.pend, phase: MMP8.boardPhase(S.m), start: !!document.querySelector('#brollbtn'), card: !!document.querySelector('.chf-evc') }));
+  assert.deepEqual(s1, { fat: 40, hi: hi0 + 5, used: true, pend: null, phase: 'roll', start: true, card: false });
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 

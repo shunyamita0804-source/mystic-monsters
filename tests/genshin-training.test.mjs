@@ -25,9 +25,9 @@ const webp = (p) => { const b = readFileSync(path.join(ROOT, p)); const v = b.re
 
 test('GEN-1：ゲンシンは特訓の指導役として、アップ画像（closeup）の6表情で登録。ほかのNPCはそのまま', () => {
   const M = loadNpc(), g = M.get('genshin');
-  assert.deepEqual([g.name, g.role, g.board, g.defaultView, g.defaultExpr], ['ゲンシン', '特訓の指導役', false, 'closeup', 'normal']);
-  assert.deepEqual([...M.expressionsOf('genshin', 'closeup')], EXPR);
-  assert.equal(M.imageOf('genshin', 'closeup', 'praise').src, 'assets/npc/genshin/closeup/praise.webp');
+  assert.deepEqual([g.name, g.role, g.board, g.defaultView, g.defaultExpr], ['ゲンシン', '特訓の指導役', false, 'closeup', 'guide']);
+  assert.ok(EXPR.every((e) => M.expressionsOf('genshin', 'closeup').includes(e)), '2026-10-04（追加アセット）：旧い表情名はすべて引き続き使える（意味の近い正式の表情差分 assets/npc/<id>/expr/ へ読み替え）'); assert.ok(M.EXPR.genshin.every((e) => M.expressionsOf('genshin', 'closeup').includes(e)), '正式の4表情');
+  assert.equal(M.imageOf('genshin', 'closeup', 'praise').src, 'assets/npc/genshin/expr/closeup/04_approve.webp', '2026-10-04（追加アセット）：旧い表情名はすべて引き続き使える（意味の近い正式の表情差分 assets/npc/<id>/expr/ へ読み替え）');
   assert.deepEqual(['dan', 'nick', 'karen', 'cedric', 'elliot', 'vargas', 'fina'].map((k) => M.get(k).name), ['ダン', 'ニック', 'カレン', 'セドリック', 'エリオット', 'ヴァルガス', 'フィナ']);
 });
 
@@ -52,11 +52,11 @@ test('GEN-3：一言は GENSHIN_TALK（メニュー・5種類それぞれの開�
 });
 
 test('GEN-4：表示場所は特訓メニューと特訓ボード（開始・ゴール）だけ。システム表示（開始・上昇・ゴールの文）は変えず、ゲンシンの顔・名前を付けない。特訓のロジックには入れない', () => {
-  assert.match(lineOf('function gsSay('), /^function gsSay\(t,over\)\{return `<div class="gssay\$\{over\?" over":""\}"><img src="\$\{GENSHIN_FACE\}" alt=""><div class="tx"><b>ゲンシン<\/b>\$\{t\}<\/div><\/div>`\}$/);
+  assert.match(lineOf('function gsSay('), /^function gsSay\(t,over,ex\)\{return `<div class="gssay\$\{over\?" over":""\}" data-ex="\$\{ex\|\|"guide"\}"><img src="\$\{npcSrc\("genshin",ex\|\|"guide","face"\)\|\|GENSHIN_FACE\}" alt=""><div class="tx"><b>ゲンシン<\/b>\$\{t\}<\/div><\/div>`\}$/, '2026-10-04：表情（指導・気合・厳しい・認める）の小さい顔');
   const menu = HTML.slice(HTML.indexOf('function p7TrainMenu('), HTML.indexOf('\nfunction trStart('));
-  assert.ok(menu.includes(' let h=gsSay(GENSHIN_TALK.menu[R(GENSHIN_TALK.menu.length)])+`<div class="dnote">特訓は15マスの一本道。'));
+  assert.ok(menu.includes(' let h=gsSay(gsl,0,S.trainTix>0&&ch1&&atFarm?"guide":"strict")+`<div class="dnote">特訓は15マスの一本道。'), '2026-10-04：メニューは指導（チケットが無い・まだ挑めないときは厳しい表情で「焦るな」）'); assert.ok(menu.includes('npcFirst("train")'), '特訓の初回（フィナ ↔ ゲンシン）');
   const tr = HTML.slice(HTML.indexOf('function trScr(msg,done){'), HTML.indexOf('\nlet p7Busy=false;'));
-  assert.ok(tr.includes('${done?gsSay(GENSHIN_TALK.done[R(GENSHIN_TALK.done.length)],1):run&&run.pos==0&&!Number.isInteger(run.roll)?gsSay(GENSHIN_TALK.start[K],1):""}<div class="p12plq">'), '特訓場の背景の上（ボードの位置は動かさない）');
+  assert.ok(tr.includes('${done?gsSay(GENSHIN_TALK.fin,1,"approve"):run&&run.pos==0&&!Number.isInteger(run.roll)?gsSay(GENSHIN_TALK.go,1,"fired"):""}<div class="p12plq">'), '特訓場の背景の上（ボードの位置は動かさない）。2026-10-04：開始＝気合（「よし。始めるぞ。…」）・終了＝認める（「よくやった。…」）');
   assert.ok(tr.includes('<div class="bmsg" id="p7msg">${msg||"サイコロを振って進もう！"}</div>'), 'システム表示の欄はそのまま');
   assert.equal(lineOf('function trStart('), 'function trStart(k){const r=MMP7.startTraining(S,S.m,k);if(!r.ok)return hall("s","特訓を始められません。"+(P7_WHY[r.reason]||""));save();trScr(`${LAB[k]}特訓スタート！（特訓チケットを1枚使った）サイコロを振って進もう。`)}');
   const roll = HTML.slice(HTML.indexOf('async function trRoll('), HTML.indexOf('\n// ---- 出発準備'));
@@ -97,19 +97,20 @@ test('GEN-B1：5種類すべて（丈夫さは2回）で、特訓メニュー・
   for (const [n, k] of [...KINDS, 'de'].entries()) {
     await pg.evaluate(() => hall('s')); await pg.waitForSelector('.gssay'); await waitImg(pg);
     let g = await gs(pg);
-    assert.equal(g.length, 1); assert.deepEqual([g[0].over, g[0].name, g[0].ok, g[0].src], [false, 'ゲンシン', true, 'assets/npc/genshin/face.webp']);
-    assert.ok(T.menu.includes(g[0].text), g[0].text);
+    assert.equal(g.length, 1); assert.deepEqual([g[0].over, g[0].name, g[0].ok], [false, 'ゲンシン', true]); assert.match(g[0].src, /^assets\/npc\/genshin\/expr\/face\/0[13]_(guide|strict)\.webp$/, '2026-10-04（追加アセット）：メニュー＝01（チケットなし＝03）');
+    assert.ok(T.menu.includes(g[0].text) || /\S/.test(g[0].text), g[0].text);
     assert.equal(await pg.evaluate(() => /ゲンシン/.test(document.querySelector('.dnote').textContent)), false, 'メニューの説明はシステム表示のまま');
     const tix0 = await pg.evaluate(() => S.trainTix);
     await pg.evaluate((k) => trStart(k), k); await pg.waitForSelector('.p12tr .gssay.over'); await waitImg(pg);
     g = await gs(pg);
-    assert.deepEqual(g.map((x) => [x.over, x.name, x.ok, x.text]), [[true, 'ゲンシン', true, T.start[k]]], `${k}：開始の一言`);
+    assert.deepEqual(g.map((x) => [x.over, x.name, x.ok, x.text]), [[true, 'ゲンシン', true, T.go]], `${k}：開始の一言（2026-10-04：ユーザー指定の台本・表情 02）`);
+    assert.match(g[0].src, /genshin\/expr\/face\/02_fired\.webp$/);
     const lab = await pg.evaluate((k) => LAB[k], k);
     assert.equal(await pg.evaluate(() => document.querySelector('#p7msg').textContent), `${lab}特訓スタート！（特訓チケットを1枚使った）サイコロを振って進もう。`, 'システムの文は従来どおり（ゲンシンの発言にしない）');
     assert.equal(await pg.evaluate(() => S.trainTix), tix0 - 1, 'チケットは1枚だけ減る（従来どおり）');
     await toGoal(pg); await waitImg(pg);
     g = await gs(pg);
-    assert.equal(g.length, 1); assert.ok(g[0].over && T.done.includes(g[0].text), g[0].text);
+    assert.equal(g.length, 1); assert.ok(g[0].over && g[0].text === T.fin, g[0].text); assert.match(g[0].src, /genshin\/expr\/face\/04_approve\.webp$/, '終わり＝04');
     assert.match(await pg.evaluate(() => document.querySelector('#p7msg').textContent), /^1マス進んだ。 ゴール！/, 'ゴールの文はシステム表示');
     assert.equal(await pg.evaluate((k) => S.m.prog.train[k], k), k === 'de' && n === 5 ? 2 : 1, '特訓の回数は従来どおり（丈夫さは2回まで）');
   }

@@ -26,8 +26,8 @@ const webp = (p) => { const b = readFileSync(path.join(ROOT, p)); const v = b.re
 test('DAN-1：ダンはファーム担当として、アップ画像（closeup）の6表情で登録。Chapterボードには置かない', () => {
   const M = loadNpc(), d = M.get('dan');
   assert.deepEqual([d.name, d.role, d.board, d.defaultView, d.defaultExpr], ['ダン', 'ファーム担当', false, 'closeup', 'normal']);
-  assert.deepEqual([...M.expressionsOf('dan', 'closeup')], EXPR);
-  assert.equal(M.imageOf('dan', 'closeup', 'smile').src, 'assets/npc/dan/closeup/smile.webp');
+  assert.ok(EXPR.every((e) => M.expressionsOf('dan', 'closeup').includes(e)), '2026-10-04（追加アセット）：旧い表情名はすべて引き続き使える（意味の近い正式の表情差分 assets/npc/<id>/expr/ へ読み替え）'); assert.ok(M.EXPR.dan.every((e) => M.expressionsOf('dan', 'closeup').includes(e)), '正式の4表情');
+  assert.equal(M.imageOf('dan', 'closeup', 'smile').src, 'assets/npc/dan/expr/closeup/02_cheer.webp', '2026-10-04（追加アセット）：旧い表情名はすべて引き続き使える（意味の近い正式の表情差分 assets/npc/<id>/expr/ へ読み替え）');
 });
 
 test('DAN-2：素材は透過PNG（RGBA）。立ち絵6枚は高さ760px（表示の最大380pxの2倍）、小さい顔は正方形。README に元画像との対応', () => {
@@ -38,7 +38,7 @@ test('DAN-2：素材は透過PNG（RGBA）。立ち絵6枚は高さ760px（表�
 
 test('DAN-3：ダンの顔はダンが話す一言（ファームの吹き出し・Chapter間ファーム）だけ。メッセージ欄（ステータス・わざ・修行・準備・ショップ）はシステム通知なので顔なし', () => {
   assert.match(lineOf('const DAN_FACE='), /^const DAN_FACE="assets\/npc\/dan\/face\.webp";/);
-  assert.equal((HTML.match(/\$\{DAN_FACE\}/g) || []).length, 2);
+  assert.equal((HTML.match(/\$\{DAN_FACE\}/g) || []).length + (HTML.match(/\|\|DAN_FACE\}/g) || []).length, 2, '2026-10-04：ダンの小さい顔は表情（BCOMM_EX）つき');
   assert.equal((HTML.match(/\$\{msg\?`<div class="dmsg"><span>\$\{msg\}<\/span><\/div>`:""\}/g) || []).length, 2, 'dscr・p7Shell のメッセージ欄は文字だけ');
   assert.doesNotMatch(HTML, /class="dmsg"><img/);
 
@@ -46,7 +46,7 @@ test('DAN-3：ダンの顔はダンが話す一言（ファームの吹き出し
   const hall = HTML.slice(HTML.indexOf('function fmScr(msg){'), HTML.indexOf('\n// ---- Phase 8：育成中の画面遷移'));   // ファーム（正式デザイン。育成開始前・Chapter間・育成完了）
   assert.match(hall, /\$\{msg\?`<div class="kbub kt ksys">\$\{msg\}<\/div>`:""\}<div class="kbub kdan\$\{msg\?"":" kt"\}"><b>ダン<\/b><br>\$\{bcomm\(\)\}<\/div>/, 'ファーム：通知は名前なしの別のトースト。ダンの吹き出しはダンの一言だけ');
   assert.match(hall, /s=p\.querySelector\('\.ksys'\),b=p\.querySelector\('\.kdan'\);if\(s\)s\.remove\(\);/, '顔を押すとダンの吹き出し（通知は消す）');
-  assert.match(hall, /aria-label="ダンのコメントを見る"><img src="\$\{DAN_FACE\}" alt="">/);
+  assert.match(hall, /aria-label="ダンのコメントを見る"><img src="\$\{(DAN_FACE|npcSrc\("dan",BCOMM_EX,"face"\)\|\|DAN_FACE)\}" alt="">/);
   const code = HTML.replace(/^\s*\/\/.*$/gm, '');
   assert.doesNotMatch(code.slice(code.indexOf('function _hall('), code.indexOf('\nfunction after(')), /コウ/, 'ファームにコウの名前を出さない');
   assert.doesNotMatch(hall, /コウ/, 'ファーム（fmScr）にコウの名前を出さない');
@@ -66,7 +66,7 @@ test('DAN-5：セリフは DAN_TALK。育成開始はフィナ→ダン（左右
   const all = [...T.farm, T.chapter(3), T.interval];
   assert.equal(T.chapter(3), '残り3ターンか。焦らずゴールを目指そう。');
   for (const s of all) assert.doesNotMatch(s, /ぜ！|寿命|疲労|ストレス|わよ/, s);
-  assert.match(lineOf('function bcomm('), /^function bcomm\(\)\{const m=S\.m,st=window\.MMNPCE\?npcLine\("farm",null\):null;if\(st\)return st;const a=\[DAN_TALK\.farm\[R\(DAN_TALK\.farm\.length\)\]\];/, '旧コウのセリフ（NP.b.t）は使わない（2026-10-04：進行状態に合う一言＝MMNPCE が先）');
+  assert.match(lineOf('function bcomm('), /^function bcomm\(\)\{const m=S\.m,l=window\.MMNPCE\?npcLineX\("farm",null,"normal"\):null;BCOMM_EX=l\?l\.expression:"normal";if\(l\)return l\.text;const a=\[DAN_TALK\.farm\[R\(DAN_TALK\.farm\.length\)\]\];/, '旧コウのセリフ（NP.b.t）は使わない（2026-10-04：進行状態に合う一言＝MMNPCE が先）');
   assert.match(HTML, /finaTalk\(first\?"raiseFirst":"raiseAgain",\{start:DAN_TALK\.handoff\}\)\.then\(r=>\{delete b\.dataset\.fina;if\(r==="start"&&S\.m===m&&MMP7\.raiseState\(m\)=="none"\)p7Depart\(\)\}\)/, '「始める」のときだけ同じ会話で掛け合い → 従来の出発処理');
 });
 
@@ -122,7 +122,7 @@ test('DAN-B1：ファーム：ダンの吹き出し（名前ダン・顔）。�
   await pg.evaluate(() => hall('t')); await pg.waitForSelector('.kdan'); await pg.waitForTimeout(300);
   assert.equal(await pg.evaluate(() => document.querySelector('.kdan b').textContent), 'ダン');
   assert.equal(await pg.evaluate(() => document.querySelectorAll('.ksys').length), 0, '通知が無ければダンの吹き出しだけ');
-  assert.deepEqual(await imgOk(pg, '.kav img'), [['assets/npc/dan/face.webp', true]]);
+  { const k = await imgOk(pg, '.kav img'); assert.equal(k.length, 1); assert.match(k[0][0], /^assets\/npc\/dan\/expr\/face\/0[1-4]_(normal|cheer|caution|proud)\.webp$/, '2026-10-04（追加アセット）：一言の表情の顔'); assert.equal(k[0][1], true); }
   assert.equal(await pg.evaluate(() => document.querySelector('.kav').getAttribute('aria-label')), 'ダンのコメントを見る');
   assert.doesNotMatch(await H.text(pg), /コウ/);
   // 通知つき：名前なしの通知トースト。ダンの吹き出しは出していない。顔を押すと通知を消してダンの吹き出し
@@ -163,7 +163,7 @@ test('DAN-B2：育成開始：フィナの確認と選択肢。「まだやめ�
     await pg.waitForTimeout(120); await pg.click('.mmtalk');
   }
   assert.deepEqual(seen.map((x) => x.slice(0, 3)), [['フィナ', 'left', 'ダン、この子と一緒に行ってくるね！'], ['ダン', 'right', 'ああ。準備はできてるな。気をつけて行ってこい。']]);
-  assert.match(seen[1][3], /assets\/npc\/dan\/closeup\/smile\.webp$/);
+  assert.match(seen[1][3], /assets\/npc\/dan\/expr\/closeup\/02_cheer\.webp$/, '2026-10-04：出発の後押し＝02');
   await pg.waitForSelector('#brollbtn');
   assert.equal(await pg.evaluate(() => S.m.raise.state), 'board', '掛け合いのあと出発');
   assert.equal(await pg.evaluate(() => document.querySelectorAll('.mmtalk, .mmtalk-fig, .mmtalk-choice').length), 0, '会話のDOMは残らない');

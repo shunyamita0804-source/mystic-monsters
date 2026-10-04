@@ -260,5 +260,49 @@
   register('genshin', { name: 'ゲンシン', role: '特訓の指導役', board: false, defaultView: 'closeup', defaultExpr: 'normal',
     views: { closeup: Object.fromEntries(GE.map((e) => [e, `${GENSHIN}${e}.webp`])) } });
 
-  root.MMNPC = Object.freeze({ TYPE_MS, MIN_TAP_MS, register, get, list, expressionsOf, animationsOf, imageOf, animOf, preload, splitChars, resolveLines, createTalk, talk, close, state, animState, fromLegacy });
+  // ---------------------------------------------------------
+  // 2026-10-04（第二段階・追加アセット）：主要 NPC 8人 × 4表情の正式素材（assets/npc/<id>/expr/。README.md）。
+  //  会話の行の expression（データ側）で表情を切り替える。closeup＝半身（573×760＝今までの半身と同じ器）・face＝小さい顔（吹き出し）・fullbody＝全身（重要な会話 major・アイテム屋の店）。
+  //  古い表情名（normal・smile…）は、意味の近い新しい表情へ読み替える（古いファイルは残す。同じ会話の中で新旧の絵が混ざらない＝レイアウトが跳ねない）。
+  //  アイテム屋のおばあちゃん（id 'shop'）は名前が未確定＝名前の札は「アイテム屋」（役割の名前。固有名は付けない）
+  // ---------------------------------------------------------
+  const EXPR = Object.freeze({
+    karen: ['guide', 'welcome', 'think', 'sold'],        // 01 通常・案内／02 歓迎・笑顔／03 考える・少し真剣／04 嬉しい・購入成立
+    dan: ['normal', 'cheer', 'caution', 'proud'],         // 01 通常／02 励ます・笑顔／03 真剣・注意／04 成長を認める・満足
+    nick: ['normal', 'gentle', 'serious', 'impressed'],   // 01 通常／02 優しい笑顔／03 真剣／04 成長を見て感心
+    elliot: ['normal', 'smile', 'analyze', 'discover'],   // 01 通常／02 小さな笑顔／03 思考・分析／04 発見・控えめな驚き
+    vargas: ['normal', 'grin', 'stern', 'acknowledge'],   // 01 通常・威厳／02 不敵な笑み／03 厳しい・真剣／04 良い戦いを認める
+    cedric: ['host', 'kickoff', 'tense', 'victory'],      // 01 通常・司会／02 試合開始・盛り上げ／03 緊張感・真剣／04 勝者発表・華やかな笑顔
+    genshin: ['guide', 'fired', 'strict', 'approve'],     // 01 通常・指導／02 気合を入れる／03 厳しい・真剣／04 認める・満足
+    shop: ['normal', 'smile', 'worry', 'recommend'],      // 01 通常／02 優しい笑顔／03 心配／04 満足・おすすめ
+  });
+  /** 古い表情名 → 新しい表情（意味の近いもの） */
+  const EXPR_ALIAS = Object.freeze({
+    karen: { normal: 'guide', smile: 'welcome', troubled: 'think', happy: 'sold', serious: 'think' },
+    dan: { smile: 'cheer', guide: 'normal', serious: 'caution', troubled: 'caution', happy: 'proud' },
+    nick: { smile: 'gentle', guide: 'gentle', troubled: 'serious', happy: 'impressed' },
+    elliot: { guide: 'smile', thinking: 'analyze', curious: 'discover', serious: 'analyze' },
+    vargas: { guide: 'normal', approval: 'acknowledge', surprised: 'normal', respect: 'acknowledge' },
+    cedric: { normal: 'host', smile: 'host', guide: 'host', happy: 'victory', surprised: 'kickoff', serious: 'tense' },
+    genshin: { normal: 'guide', smile: 'approve', serious: 'strict', praise: 'approve' },
+    shop: { happy: 'recommend', troubled: 'worry', guide: 'normal' },
+  });
+  const NPC_NAME = { karen: ['カレン', '市場担当'], dan: ['ダン', 'ファーム担当'], nick: ['ニック', '牧場の管理者'], elliot: ['エリオット', '研究所の研究者'], vargas: ['ヴァルガス', '闘技場の管理者'], cedric: ['セドリック', '公式ランク大会の進行役'], genshin: ['ゲンシン', '特訓の指導役'], shop: ['アイテム屋', 'アイテム屋（ファームの屋台）'] };
+  for (const [id, keys] of Object.entries(EXPR)) {
+    const dir = `assets/npc/${id}/expr/`, file = (v) => Object.fromEntries(keys.map((k, i) => [k, `${dir}${v}/${String(i + 1).padStart(2, '0')}_${k}.webp`]));
+    const views = { closeup: file('closeup'), face: file('face'), fullbody: file('full') };
+    for (const v of Object.values(views)) for (const [a, k] of Object.entries(EXPR_ALIAS[id] || {})) if (!v[a]) v[a] = v[k];
+    const def = keys[0];
+    register(id, { name: NPC_NAME[id][0], role: NPC_NAME[id][1], board: false, defaultView: 'closeup', defaultExpr: def, views });
+  }
+  /** 表情の画像の URL（無ければ基本の表情）。view＝'closeup'（既定）／'face'／'fullbody' */
+  const srcOf = (id, expr, view) => { const im = imageOf(id, view || 'closeup', expr); return im ? im.src : ''; };
+  /** 施設へ入る直前に、その NPC の表情（既定は半身と小さい顔の 4表情ずつ）だけを先読み・デコードする（起動時に全部は読まない） */
+  const warmed = new Set();
+  function warm(id, views = ['closeup', 'face']) {
+    const n = get(id); if (!n || typeof Image === 'undefined') return;
+    for (const v of views) for (const src of new Set(Object.values(n.views[v] || {}))) { if (warmed.has(src)) continue; warmed.add(src); const i = new Image(); i.decoding = 'async'; i.src = src; if (i.decode) i.decode().catch(() => {}); }
+  }
+
+  root.MMNPC = Object.freeze({ TYPE_MS, MIN_TAP_MS, register, get, list, expressionsOf, animationsOf, imageOf, animOf, preload, splitChars, resolveLines, createTalk, talk, close, state, animState, fromLegacy, EXPR, EXPR_ALIAS, srcOf, warm });
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -337,7 +337,7 @@ test('T4-3：正式背景・ダン（正式アップ画像）が寄り添い、�
   const f = between('function fmScr(msg){', '\n// ---- Phase 8：育成中の画面遷移');
   assert.match(HTML, /const FARM_BG="assets\/farm\/farm_prep_main\.jpg";/); assert.ok(existsSync(path.join(ROOT, 'assets/farm/farm_prep_main.jpg')));   // 2026-10-03：冒険準備の拠点（正式参照画像）
   assert.match(HTML, /const DAN_FIG="assets\/npc\/dan\/closeup\/smile\.webp";/); assert.ok(existsSync(path.join(ROOT, 'assets/npc/dan/closeup/smile.webp')));
-  assert.match(f, /<img class="fmdan" src="\$\{DAN_FIG\}" alt="" aria-hidden="true"><div class="fmmon mon">\$\{msv\(m\)\}<\/div>/, '育成中の個体は msv（正式画像）で表示。種族は固定しない');
+  assert.match(f, /<img class="fmdan" src="\$\{npcSrc\("dan",danEx\(m,st,can\)\)\|\|DAN_FIG\}" alt="" aria-hidden="true" data-ex="\$\{danEx\(m,st,can\)\}"><div class="fmmon mon">\$\{msv\(m\)\}<\/div>/, '育成中の個体は msv（正式画像）で表示。種族は固定しない。2026-10-04：ダンは状態に合う表情（通常・注意・成長を認める）');
   for (const w of ['${p11Esc(m.name)}', '${sp?sp.kind:""}', '<dt>大会ランク</dt><dd>${MMP8.rankLabel(m)}</dd>', '<dt>特訓チケット</dt><dd>${S.trainTix}枚</dd>', '<span class="fmbadge">${state}</span>']) assert.ok(f.includes(w), w);
   assert.match(f, /const state=st=="none"\?"育成準備中":done\?"育成完了":fin\?"最終ルート前":`Chapter \$\{last\?last\.ch:Math\.max\(1,k-1\)\} 終了`;/, '育成状態はセーブから判断（新しいデータは持たない）');
   assert.doesNotMatch(f, /S\.g\b|🪙|KS\.map/, 'ファームに所持金・6能力を常時表示しない');

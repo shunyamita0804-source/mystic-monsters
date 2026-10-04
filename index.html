@@ -1568,6 +1568,25 @@ button.mkc b{font-size:.9rem}button.mkc small{font-size:.66rem;color:#ffe9b0}
 @keyframes chfmring{0%{opacity:0;scale:.5}30%{opacity:1}100%{opacity:0;scale:1.35}}
 .chf-obj.shake img{animation:chfshake .32s ease-in-out}@keyframes chfshake{20%{rotate:-6deg}45%{rotate:5deg}70%{rotate:-3deg}100%{rotate:0deg}}
 .chf-gfly{position:absolute;z-index:40;transform:translate(-50%,-50%);padding:3px 10px;border-radius:999px;background:linear-gradient(#fff3c4,#e9bf55);color:#5a3a06;font:800 15px/1.2 var(--mm-font-head);box-shadow:0 2px 8px rgba(0,0,0,.35),0 0 12px rgba(255,214,110,.6);pointer-events:none;white-space:nowrap}
+/* ===== 2026-10-04 第二段階・追加アセット：アイテム屋のおばあちゃんの一言（.shopsay。名前は付けない＝札は「アイテム屋」）・パラメーター比較のセドリック（.pcced） ===== */
+.ds.shop .shopsay{position:relative;display:block;margin:0 0 8px;padding:16px 14px 10px;border-radius:8px;background:linear-gradient(rgba(14,24,56,.94),rgba(8,15,34,.96));border:1px solid rgba(240,232,212,.65);box-shadow:inset 0 0 0 3px rgba(8,15,34,.9),inset 0 0 0 3.6px rgba(217,180,101,.55);color:#f3ecd9;font-size:13.5px;line-height:1.55}
+.ds.shop .shopsay b{position:absolute;top:-11px;left:12px;padding:2px 12px;border-radius:4px;background:linear-gradient(#14245a,#0a1638);border:1px solid rgba(240,232,212,.7);font:700 12px/1.4 var(--mm-font-head);letter-spacing:.1em;color:#f3ecd9}
+.p9cmps .pcced{margin-top:auto}.p9cmps .pcced .p9ced{margin:0}.p9cmps .pcced+.pcacts{margin-top:8px}
+/* ===== 2026-10-04 第二段階・追加アセット：Chapter のイベント挿絵カード（.chf-evc。field-view の evCardOpen）。背景を少し暗く → 横長の挿絵（3:2・切らない）→ イベント名の札。
+   会話は共通会話の小さな窓（compact）で下に出す（挿絵を隠さない）。ネイビー＋アイボリーの細い罫線＋小さな金（会話窓と同じ作り）。WEB のダイアログ風の白い箱にしない ===== */
+.chf-evc{position:absolute;inset:0;z-index:20;pointer-events:auto}
+.chf-evc-dim{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 38%,rgba(4,10,28,.42),rgba(4,10,28,.7));opacity:0;transition:opacity .22s ease-out}
+.chf-evc.on .chf-evc-dim{opacity:1}
+.chf-evc-card{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + clamp(76px,11.5dvh,104px));width:min(100% - 22px,460px);margin:0;padding:4px;box-sizing:border-box;border-radius:10px;background:linear-gradient(#0d1a40,#060d24);border:1px solid rgba(240,232,212,.72);box-shadow:inset 0 0 0 3px rgba(8,15,34,.95),inset 0 0 0 3.6px rgba(217,180,101,.7),0 12px 30px rgba(0,0,0,.55);opacity:0;transform:translate(-50%,10px) scale(.94);transition:opacity .3s ease-out,transform .38s cubic-bezier(.2,.85,.3,1)}
+.chf-evc.on .chf-evc-card{opacity:1;transform:translate(-50%,0) scale(1)}
+.chf-evc.out .chf-evc-card{opacity:0;transform:translate(-50%,-6px) scale(.985);transition:opacity .24s ease-in,transform .24s ease-in}
+.chf-evc.out .chf-evc-dim{opacity:0;transition-duration:.24s}
+.chf-evc-card img{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:cover;border-radius:7px;background:#0b1430}
+.chf-evc-card figcaption{position:absolute;left:50%;bottom:-15px;transform:translateX(-50%);max-width:calc(100% - 40px);padding:5px 22px 6px;border-radius:4px;background:linear-gradient(#14245a,#0a1638);border:1px solid rgba(240,232,212,.75);box-shadow:inset 0 0 0 2px rgba(8,15,34,.9),0 4px 10px rgba(0,0,0,.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chf-evc-card figcaption b{font:700 16px/1.25 var(--mm-font-head);letter-spacing:.12em;color:#f3ecd9}
+.chf-evc-card figcaption::before,.chf-evc-card figcaption::after{content:"";position:absolute;top:50%;width:5px;height:5px;margin-top:-2.5px;background:#d9b465;transform:rotate(45deg)}
+.chf-evc-card figcaption::before{left:8px}.chf-evc-card figcaption::after{right:8px}
+@media (prefers-reduced-motion:reduce){.chf-evc-card,.chf-evc.on .chf-evc-card,.chf-evc.out .chf-evc-card{transform:translate(-50%,0);transition:opacity .2s}}
 /* ===== 2026-10-04 第二段階 PHASE E：能力UPの成長演出（アイコン → 数値 → 正式色のゲージ（999 まで）→ 粒子）・疲れの増減・休憩の帯・宝箱の光 ===== */
 .chpop.grow{text-align:center}.chpop.framed.grow small{margin-bottom:1px}
 .chf-grow{position:relative;display:grid;grid-template-columns:34px 1fr;gap:3px 8px;align-items:center;width:100%;max-width:240px;margin:3px auto 0;text-align:left}
@@ -2652,7 +2671,7 @@ let ft="a";
 const cname=({name:a},{name:b})=>Array.from(a).slice(0,2).join("")+Array.from(b).slice(-2).join(""); // 親1の名前の前2文字＋親2の名前の後ろ2文字。文字（コードポイント）単位で切る（絵文字を半分にしない）
 const slot=x=>x?`<div class="mon">${msv(x)}</div><b>${p11Esc(x.name)}</b>`:"<small>えらんでね</small>";
 function pasture(){const l=[S.m,...S.box].filter(Boolean);return `<div class="pasture"><span class="dc" style="left:6%;top:6%">☁️</span><span class="dc" style="right:10%;top:8%">☀️</span><span class="dc" style="left:3%;top:30%">🌳</span><span class="dc" style="right:3%;top:32%">🌳</span>${l.length?"":'<p class="pe">モンスターがいません</p>'}${l.map((x,i)=>`<div class="wk" style="top:${40+(i*23)%42}%;--d:${9+(i*5)%8}s;animation-delay:-${(i*3.7)%9}s"><div class="mon">${msv(x)}</div></div>`).join("")}</div>`}
-function farm(msg,tab){if(p8Blocked())return;p9Immersive(true);bgm("ranch");if(!tab&&!msg)setTimeout(()=>npcFirst("ranch"),0); // 牧場（正式UI 2026-09-30）：上に正式背景＋ニック、下に4コマンド（2×2）、その下に選んだ機能の中身（処理は従来どおり）
+function farm(msg,tab){if(p8Blocked())return;p9Immersive(true);bgm("ranch");npcWarm("nick");if(!tab&&!msg)setTimeout(()=>npcFirst("ranch"),0); // 牧場（正式UI 2026-09-30）：上に正式背景＋ニック、下に4コマンド（2×2）、その下に選んだ機能の中身（処理は従来どおり）
  if(tab&&tab!="d")pfSellUid=null;ft=tab||(ft=="c"?"a":ft);const m=S.m,all=[m,...S.box].filter(Boolean);let b="";
  if(ft=="a")b=m?`${mcard(m)}<button class="go" onclick="dep()">このモンスターを預ける</button>`:"<p>いま連れているモンスターはいません。</p>";
  else if(ft=="b")b=S.box.length?S.box.map((x,j)=>`<div class="row rr"><div class="mon">${msv(x)}</div><div class="info"><b>${p11Esc(x.name)}</b><br><small>${sm(x)}</small></div><button onclick="wd(${j})">受け取る</button></div>`).join("")+(m?"<p><small>受け取ると、いま連れているモンスターは自動で預けられます。</small></p>":""):"<p>預けているモンスターはいません。</p>";
@@ -2660,7 +2679,7 @@ function farm(msg,tab){if(p8Blocked())return;p9Immersive(true);bgm("ranch");if(!
  else if(ft=="e")b=rnLookPanel();
  else return museum("fuse"); // 2026-10-04：合体は研究所（labFuse）。牧場の内部画面 farm('','c') は互換のため研究所へ送る
  const rnFeat=(rnView&&S.box.find(v=>v.uid===rnView))||S.m||S.box[0]||null; // 2026-10-03 品質向上：選んでいる子（様子を見るの詳細・連れている子・牧場の最初の子）を大きく
- $("#app").innerHTML=`<div class="rn"><header class="rnhd"><button class="back" data-nav="back" onclick="pfSellUid=null;lobby()">◀ 街にもどる</button><div class="rnplq"><b>牧場</b></div><div class="fhud"><span class="rncoin">G</span><b>${S.g}G</b></div></header><div class="fscene" style="background-image:url(${RANCH_BG})">${msg?`<div class="fbub sys">${msg}</div>`:""}${rnFeat?`<div class="rnfeat"><div class="mon">${msv(rnFeat)}</div><b>${p11Esc(rnFeat.name)}</b></div>`:""}<div class="rnnick nst r"><img class="nstf" src="${NICK_STAND}" alt="" decoding="async">${msg?"":`<div class="tx fnick"><b>ニック</b>${npcLine("ranch",NICK_TALK.ranch)}</div>`}</div>${[S.m,...S.box].filter(x=>x&&x!==rnFeat).map((x,i)=>`<div class="wk" style="top:${80+(i*7)%12}%;--d:${9+(i*5)%8}s;animation-delay:-${(i*3.7)%9}s"><div class="mon">${msv(x)}</div></div>`).join("")}</div><nav class="ftiles rncmd" aria-label="牧場のコマンド">${[["a","dep","預ける",""],["b","wd",`受け取る<small>(${S.box.length})</small>`,""],["e","look","様子を見る"," rnlook"]].map(x=>`<button class="ftile${x[3]}${ft==x[0]?" on":""}" data-se="UI_TAB" onclick="${x[0]=="e"?"rnView=null;":""}farm('','${x[0]}')">${rnIc(x[1])}<span class="fl">${x[2]}</span></button>`).join("")}<button class="fsell rnsell${ft=="d"?" on":""}" data-se="UI_TAB" onclick="farm('','d')">${rnIc("sell")}<span class="fl">売る</span></button></nav><div class="wpanel">${b}</div></div>`;
+ $("#app").innerHTML=`<div class="rn"><header class="rnhd"><button class="back" data-nav="back" onclick="pfSellUid=null;lobby()">◀ 街にもどる</button><div class="rnplq"><b>牧場</b></div><div class="fhud"><span class="rncoin">G</span><b>${S.g}G</b></div></header><div class="fscene" style="background-image:url(${RANCH_BG})">${msg?`<div class="fbub sys">${msg}</div>`:""}${rnFeat?`<div class="rnfeat"><div class="mon">${msv(rnFeat)}</div><b>${p11Esc(rnFeat.name)}</b></div>`:""}<div class="rnnick nst r">${(l=>`<img class="nstf" src="${npcSrc("nick",ft=="d"?"serious":ft=="e"&&rnView&&rnFeat&&MMP7.raiseState(rnFeat)=="done"?"impressed":ft=="e"?"gentle":(l?l.expression:"normal"))}" alt="" decoding="async">${l?`<div class="tx fnick"><b>ニック</b>${l.text}</div>`:""}`)(msg?null:npcLineX("ranch",NICK_TALK.ranch,"normal"))}</div>${[S.m,...S.box].filter(x=>x&&x!==rnFeat).map((x,i)=>`<div class="wk" style="top:${80+(i*7)%12}%;--d:${9+(i*5)%8}s;animation-delay:-${(i*3.7)%9}s"><div class="mon">${msv(x)}</div></div>`).join("")}</div><nav class="ftiles rncmd" aria-label="牧場のコマンド">${[["a","dep","預ける",""],["b","wd",`受け取る<small>(${S.box.length})</small>`,""],["e","look","様子を見る"," rnlook"]].map(x=>`<button class="ftile${x[3]}${ft==x[0]?" on":""}" data-se="UI_TAB" onclick="${x[0]=="e"?"rnView=null;":""}farm('','${x[0]}')">${rnIc(x[1])}<span class="fl">${x[2]}</span></button>`).join("")}<button class="fsell rnsell${ft=="d"?" on":""}" data-se="UI_TAB" onclick="farm('','d')">${rnIc("sell")}<span class="fl">売る</span></button></nav><div class="wpanel">${b}</div></div>`;
 }
 /** 牧場の4コマンドのアイコン（金色の線画。街・ファームと同じ系統） */
 const RN_IC={dep:'<path d="M5 14h22v13H5z"/><path d="M5 14l3-5h16l3 5"/><path d="M16 3v9M12.5 8.5L16 12l3.5-3.5"/>',wd:'<path d="M5 14h22v13H5z"/><path d="M5 14l3-5h16l3 5"/><path d="M16 12V3M12.5 6.5L16 3l3.5 3.5"/>',fuse:'<circle cx="11.5" cy="17" r="7"/><circle cx="20.5" cy="17" r="7"/><path d="M16 4.5l1 2.4 2.4 1-2.4 1-1 2.4-1-2.4-2.4-1 2.4-1z" class="f"/>',look:'<path d="M3 17s5-8 13-8 13 8 13 8-5 8-13 8S3 17 3 17z"/><circle cx="16" cy="17" r="4.2"/><path d="M26 3.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z" class="f"/>',sell:'<path d="M11 8h10l-2 4h-6z"/><path d="M13 12c-5 3-7 7-7 10 0 4 4 6 10 6s10-2 10-6c0-3-2-7-7-10"/><path d="M16 16v8M13.5 18.5c0-1.2 1.2-2 2.5-2s2.5.6 2.5 1.8-1.2 1.7-2.5 1.9-2.5.8-2.5 2 1.2 1.8 2.5 1.8 2.5-.8 2.5-2"/>'};
@@ -2748,7 +2767,7 @@ function finaMsg(t){return `<span class="fmsg" data-npc="fina">${t}</span>`}
 /** 街のフィナ（2026-10-03 品質向上）：小さな顔ではなく半身の立ち絵（正式 closeup の guide＝案内）を案内欄の右上に立たせる */
 function finaStandSrc(){const im=window.MMNPC&&MMNPC.imageOf("fina","closeup","guide");return im?im.src:""}
 /** 施設の背景・立ち絵の先読み（2026-10-03：大きな絵を足した画面へ移ったときの読み込みのちらつきを防ぐ。街を出したとき1回だけ） */
-function townPreload(){if(townPreload.done||typeof Image=="undefined")return;townPreload.done=1;setTimeout(()=>{[LAB_BG,RANCH_BG,SHOP_BG,SHOP_NPC,FARM_BG,DAN_FIG,NICK_STAND,ELLIOT_STAND,VARGAS_STAND,finaStandSrc()].filter(Boolean).forEach(src=>{const im=new Image();im.decoding="async";im.src=src})},600)}
+function townPreload(){if(townPreload.done||typeof Image=="undefined")return;townPreload.done=1;setTimeout(()=>{[LAB_BG,RANCH_BG,SHOP_BG,FARM_BG,npcSrc("shop","normal","fullbody"),npcSrc("dan","normal"),npcSrc("nick","normal"),npcSrc("elliot","normal"),npcSrc("vargas","normal"),finaStandSrc()].filter(Boolean).forEach(src=>{const im=new Image();im.decoding="async";im.src=src})},600)}
 /** 街の案内欄：タップで閉じる（下の施設の札を押せるように。システム通知も同じ） */
 function townMsgClose(d){const w=d&&d.closest(".tlow");if(w)w.classList.remove("on")}
 function finaFaceSrc(){const im=window.MMNPC&&MMNPC.imageOf("fina","closeup","smile");return im?im.src:""}
@@ -2887,9 +2906,9 @@ function labNav(cur){return `<nav class="labcmd labnav" aria-label="研究所の
 function labShell(cls,back,plq,body,cur){return `<div class="lab ${cls}"><div class="labbg" style="background-image:url(${LAB_BG})"></div><div class="dtop">${back}</div>${plq}${body}${labNav(cur)}</div>`}
 // 研究所（2026-10-04 第二段階）：入口＝エリオット＋機能のカード（図鑑・合体・配合表）。図鑑はデザイン参考 06（濃紺＋金・魔法図鑑・2列・No.・名前・未発見は近日公開）。合体は牧場から移した（処理 fuse・selm・cname はそのまま）。
 //  配合表は既存の規則（MMP7.resolveFusionSpecies＝子は親1の種族・能力60%・名前・技の継承・200G）だけを表示する（データの無い組み合わせは作らない）
-function museum(tab){if(p8Blocked())return;bgm("lab");if(!tab)setTimeout(()=>npcFirst("lab"),0); // 2026-10-04：初回訪問の会話（エリオット ↔ フィナ）
+function museum(tab){if(p8Blocked())return;bgm("lab");npcWarm("elliot");if(!tab)setTimeout(()=>npcFirst("lab"),0); // 2026-10-04：初回訪問の会話（エリオット ↔ フィナ）
  if(tab=="book")return labBook();if(tab=="fuse")return labFuse();if(tab=="table")return labTable();
- $("#app").innerHTML=labShell("",`<button class="dback" onclick="lobby()">◀ 街にもどる</button>`,`<div class="labplq"><b>モンスター研究所</b><small>図鑑・合体・配合表</small></div>`,`<div class="labnpc nst r"><img class="nstf" src="${ELLIOT_STAND}" alt="" decoding="async"><div class="tx"><b>エリオット</b>${npcLine("lab",ELLIOT_TALK.lab)}</div></div>`,"");try{window.scrollTo(0,0)}catch(e){}}
+ $("#app").innerHTML=labShell("",`<button class="dback" onclick="lobby()">◀ 街にもどる</button>`,`<div class="labplq"><b>モンスター研究所</b><small>図鑑・合体・配合表</small></div>`,`${(l=>`<div class="labnpc nst r"><img class="nstf" src="${npcSrc("elliot",l?l.expression:"normal")}" alt="" decoding="async"><div class="tx"><b>エリオット</b>${l?l.text:""}</div></div>`)(npcLineX("lab",ELLIOT_TALK.lab,"normal"))}`,"");try{window.scrollTo(0,0)}catch(e){}}
 /** 図鑑の一覧：出会える種族（SP＝市場の2種）＋ノビトン（近日公開＝解放条件は従来どおり）。カードは正式画像（p10Img） */
 function labBook(){const n=SP.length,tot=n+1;
  const cards=SP.map((x,i)=>`<button class="lbc" onclick="musd(${i})"><small class="lbno">No.${String(i+1).padStart(3,"0")}</small><b class="lbnm">${x[0]}</b><div class="lbim">${p10Img(i)}</div></button>`).join("")+`<div class="lbc lk" aria-label="No.003 ノビトン（近日公開）"><small class="lbno">No.003</small><b class="lbnm">ノビトン</b><div class="lbim"><span class="q">?</span><em>近日公開</em></div></div>`;
@@ -2902,12 +2921,12 @@ function musd(i){if(p8Blocked())return;const x=SP[i];if(!x)return museum("book")
 /** 合体（研究所。2026-10-04：牧場から移動。選択 selm・誕生 fuse・名前 cname・費用 200G は従来どおり） */
 function labFuse(){const m=S.m,all=[m,...S.box].filter(Boolean),[a,c]=sel.map(i=>all[i]);
  const body=all.length<2?`<p class="lbmsg">合体には2体以上必要です。市場でモンスターを選ぼう。</p>`:`<p class="lbmsg"><small>合体させる2体を選んでください。</small></p><div class="fz"><div class="slot">${slot(a)}</div><span>＋</span><div class="slot">${slot(c)}</div></div>`+all.map((x,i)=>`<button class="t lbpick ${sel.includes(i)?"on":""}" onclick="selm(${i})">${sel.includes(i)?["①","②"][sel.indexOf(i)]+" ":""}${p11Esc(x.name)}${x==m?"（連れている）":""}<small>${sm(x)}</small></button>`).join("")+(a&&c?`<div class="card lbprev"><b>生まれるモンスター：${p11Esc(cname(a,c))}</b><div class="st">${KS.map(k=>`<span>${LAB[k]} ${Math.min(999,Math.round((a[k]+c[k])*.6))}</span>`).join("")}</div><small>2体は消え、新しい個体（未育成）が生まれます。</small></div><button class="go" ${S.g<200?"disabled":""} onclick="fuse()">合体させる！（200G）</button>`:"");
- $("#app").innerHTML=labShell("lbf",`<button class="dback" data-nav="back" onclick="museum()">◀ 研究所</button>`,`<div class="labplq"><b>合体</b><small>2体から新しい個体を（200G）</small></div>`,`<div class="labbody"><div class="wpanel lbwp">${body}</div></div>`,"fuse");try{window.scrollTo(0,0)}catch(e){}}
+ $("#app").innerHTML=labShell("lbf",`<button class="dback" data-nav="back" onclick="museum()">◀ 研究所</button>`,`<div class="labplq"><b>合体</b><small>2体から新しい個体を（200G）</small></div>`,`<div class="labbody">${elSay(ELLIOT_TALK.fuse,"analyze")}<div class="wpanel lbwp">${body}</div></div>`,"fuse");try{window.scrollTo(0,0)}catch(e){}}
 /** 配合表：既存の規則だけ（親1 × 親2 → 子の種族は MMP7.resolveFusionSpecies。合体専用種は未登録＝【暫定】）。データの無い組み合わせは作らない */
 function labTable(){const sp=SP.map((_,i)=>i);
  const rows=sp.flatMap(a=>sp.map(b=>{const r=MMP7.resolveFusionSpecies({sp:a},{sp:b});return `<div class="lbtr"><span>${SP[a][0]}</span><i>×</i><span>${SP[b][0]}</span><em>→</em><b>${SP[r.sp]?SP[r.sp][0]:"？？？"}</b></div>`})).join("");
  const rules=["子の種族＝親1（左）の種族。合体専用の種族は未登録【暫定】","能力＝両親の合計の 60%（上限 999）","名前＝親1の前2文字＋親2の後ろ2文字","技＝子の初期技に加えて、両親の追加技から1つ継承（初期技・必殺技は除く）","大会ランク＝高いほうを引き継ぐ","費用 200G。2体は消え、未育成の個体として生まれる"];
- $("#app").innerHTML=labShell("lbt",`<button class="dback" data-nav="back" onclick="museum()">◀ 研究所</button>`,`<div class="labplq"><b>配合表</b><small>合体で生まれる種族と規則</small></div>`,`<div class="labbody"><div class="lbdc lbtb"><div class="lbth"><span>親1</span><span>親2</span><span>生まれる種族</span></div>${rows}<ul class="lbrules">${rules.map(r=>`<li>${r}</li>`).join("")}</ul></div></div>`,"table");try{window.scrollTo(0,0)}catch(e){}}
+ $("#app").innerHTML=labShell("lbt",`<button class="dback" data-nav="back" onclick="museum()">◀ 研究所</button>`,`<div class="labplq"><b>配合表</b><small>合体で生まれる種族と規則</small></div>`,`<div class="labbody">${elSay(ELLIOT_TALK.table,"analyze")}<div class="lbdc lbtb"><div class="lbth"><span>親1</span><span>親2</span><span>生まれる種族</span></div>${rows}<ul class="lbrules">${rules.map(r=>`<li>${r}</li>`).join("")}</ul></div></div>`,"table");try{window.scrollTo(0,0)}catch(e){}}
 function adopt(i,nm){if(p8Blocked())return;const r=MMP10M.purchase(S,MMP10M.keyOf(i),S.box.length+(S.m?1:0));if(!r.ok)return market(P10_WHY[r.reason]||"購入できません。",MMP10M.keyOf(i));S.cnt=(S.cnt||0)+1;const x=mk(i);if(nm)x.name=nm;if(S.m)S.box.push(x);else S.m=x;sel=[];save();const go=()=>lobby(`${p11Esc(x.name)}をつれて帰った！`+(S.m==x?"":"（牧場に預けました）")+(r.rescued?`（はじめての1体のため、所持金を${MMP10M.ECONOMY.marketPrice}Gまで補填しました）`:"")+(r.continueRescued?`（育成を続けるため、不足分${r.topUp}Gを補填して購入しました）`:""));const kt=typeof karenTalk=="function"?karenTalk("bought"):null;if(kt)kt.then(go);else go()}
 function msave(){let ok=false;try{localStorage.setItem(MMP8.SAVE_KEY,JSON.stringify(S));ok=localStorage.getItem(MMP8.SAVE_KEY)==JSON.stringify(S)}catch(e){}msg0(ok?`セーブしました（${new Date().toLocaleTimeString("ja-JP")}）`:"このブラウザではセーブできません。セーブコードを使ってください。")}
 const nv=typeof navigator!="undefined"?navigator:{};
@@ -3109,7 +3128,7 @@ const NP={m:{n:"リナ",t:["モンスターたち、今日もとっても元気�
 // 立ち絵は js/npc/npc.js の register('dan')。小さい顔（ファームの吹き出し・Chapter間ファーム・メッセージ欄）は立ち絵 normal から切り出した face.webp
 const DAN_FACE="assets/npc/dan/face.webp";
 const DAN_TALK={
- handoff:[{npc:"fina",expression:"smile",side:"left",text:"ダン、この子と一緒に行ってくるね！"},{npc:"dan",expression:"smile",side:"right",text:"ああ。準備はできてるな。気をつけて行ってこい。"}], // 2026-10-02：ダンはファームで送り出す側（Chapter には同行しない）。冒険するのはプレイヤーと育成中のモンスター（フィナは案内）
+ handoff:[{npc:"fina",expression:"smile",side:"left",text:"ダン、この子と一緒に行ってくるね！"},{npc:"dan",expression:"cheer",side:"right",text:"ああ。準備はできてるな。気をつけて行ってこい。"}], // 2026-10-02：ダンはファームで送り出す側（Chapter には同行しない）。冒険するのはプレイヤーと育成中のモンスター（フィナは案内）
  farm:["今日も落ち着いてるな。いい調子だ。","少しずつだが、顔つきが変わってきた。","無理はさせない。この子のペースで育てよう。","この子のことは、ちゃんと見ておく。"],
  chapter:n=>`残り${n}ターンか。焦らずゴールを目指そう。`,
  interval:"次に進む前に、特訓や持ち物を整えておきたいところだな。"};
@@ -3129,15 +3148,17 @@ const CEDRIC_TALK={
  vs:"両者、準備はよろしいですね！",
  won:"勝負あり！ 見事な戦いでした！",
  lost:"大会はここまでです。見事な戦いでした。"};
-function p9Ced(t){return `<div class="p9ced"><img src="${CEDRIC_FACE}" alt=""><div class="tx"><b>セドリック</b>${t}</div></div>`}
+function p9Ced(t,ex){return `<div class="p9ced" data-ex="${ex||"host"}"><img src="${npcSrc("cedric",ex||"host","face")||CEDRIC_FACE}" alt=""><div class="tx"><b>セドリック</b>${t}</div></div>`}
 // 研究所NPC：エリオット（研究所の案内・研究・解析を担当する研究者）。会話は「フィナ ↔ エリオット」が基本。研究所画面の軽い一言は会話ウィンドウにせず、顔・名前つきの吹き出しで出す
 // 立ち絵は js/npc/npc.js の register('elliot')。小さい顔は立ち絵 normal から切り出した face.webp。図鑑の見出し・「近日公開」などのシステム表示はエリオットの発言にしない
 const ELLIOT_FACE="assets/npc/elliot/face.webp";const ELLIOT_STAND="assets/npc/elliot/closeup/guide.webp",LAB_BG="assets/lab/lab_main.webp"; // 2026-10-03：研究所の正式背景と、エリオットの半身（正式 closeup）
 // 2026-10-04：旧 labLock（準備中の表示）は廃止＝研究所の主要機能は図鑑・合体・配合表（復元の機能は主要メニューに置かない）
 const ELLIOT_TALK={
  lab:["こんにちは。何を調べてみましょうか。","図鑑の記録も、少しずつ埋まってきましたね。","気になる子がいたら、記録を見てみましょう。"],
- book:["こちらの記録も確認してみましょう。","興味深い子ですね。記録を見てみましょう。"]};
-function elSay(t){return `<div class="elsay"><img src="${ELLIOT_FACE}" alt=""><div class="tx"><b>エリオット</b>${t}</div></div>`}
+ book:["こちらの記録も確認してみましょう。","興味深い子ですね。記録を見てみましょう。"],
+ fuse:"組み合わせを、よく考えてみましょう。",   // 2026-10-04（追加アセット）：合体・配合表の一言（表情＝思考・分析）【暫定の文面】
+ table:"配合の記録をまとめておきました。参考にしてみましょう。"};
+function elSay(t,ex){return `<div class="elsay"><img src="${npcSrc("elliot",ex||"smile","face")||ELLIOT_FACE}" alt=""><div class="tx"><b>エリオット</b>${t}</div></div>`}
 // 闘技場NPC：ヴァルガス（闘技場の管理者。公式ランク大会の進行役セドリックとは別人物）。会話は「フィナ ↔ ヴァルガス」が基本。軽い一言は会話ウィンドウにせず吹き出しで出す
 // 立ち絵は js/npc/npc.js の register('vargas')。小さい顔は立ち絵 normal から切り出した face.webp。闘技場は開放条件・内容・報酬が未決のため、条件を断言する言葉は使わない
 const VARGAS_FACE="assets/npc/vargas/face.webp";
@@ -3145,15 +3166,17 @@ const VARGAS_TALK={
  locked:["ここは闘技場だ。今はまだ、その時ではない。","準備が整ってから来い。","挑む覚悟ができたら、また来い。"]};
 /** ロック中の闘技場を押したとき：街の案内欄（#msg＝システム表示）はそのままに、その下へヴァルガスの一言（押すたびに1つだけ。増えない） */
 const VARGAS_STAND="assets/npc/vargas/closeup/stern.webp"; // 2026-10-03：ヴァルガスは半身の立ち絵（正式 closeup）で話す（小さな顔 VARGAS_FACE は互換のため残す）
-function vgSay(){const d=document.querySelector("#app .dlg");if(!d)return;const o=document.getElementById("vgsay");if(o)o.remove();d.insertAdjacentHTML("afterend",`<div class="vgsay nst" id="vgsay" onclick="townMsgClose(this)"><img class="nstf" src="${VARGAS_STAND}" alt="" decoding="async"><div class="tx"><b>ヴァルガス</b>${VARGAS_TALK.locked[R(VARGAS_TALK.locked.length)]}</div></div>`);try{document.getElementById("vgsay").scrollIntoView({block:"nearest"})}catch(e){}}
+function vgSay(){npcWarm("vargas");const d=document.querySelector("#app .dlg");if(!d)return;const o=document.getElementById("vgsay");if(o)o.remove();d.insertAdjacentHTML("afterend",`<div class="vgsay nst" id="vgsay" onclick="townMsgClose(this)">${(l=>`<img class="nstf" src="${npcSrc("vargas",l.expression)}" alt="" decoding="async"><div class="tx"><b>ヴァルガス</b>${l.text}</div>`)(npcLineX("arena",VARGAS_TALK.locked,"normal"))}</div>`);try{document.getElementById("vgsay").scrollIntoView({block:"nearest"})}catch(e){}}
 // 特訓NPC：ゲンシン（5種類すべての特訓を1人で担当する指導役。闘技場の管理者ヴァルガスとは別人物）。会話は「フィナ ↔ ゲンシン」が基本だが、特訓の短い励まし・評価は直接一言で出す
 // 立ち絵は js/npc/npc.js の register('genshin')。小さい顔は立ち絵 normal から切り出した face.webp。チケット・能力の上昇・技・回数・条件・ゴールの処理などのシステム表示はゲンシンの発言にしない
 const GENSHIN_FACE="assets/npc/genshin/face.webp";
 const GENSHIN_TALK={
  menu:["準備はいいか。","焦るな。ひとつずつだ。","今のお前たちなら、まだ伸びる。"],
  start:{po:"力だけを追うな。動きを見ろ。",in:"焦るな。よく見て、考えてから動け。",hi:"狙いを定めろ。急ぐ必要はない。",ev:"無理に急ぐ必要はない。動きを見ろ。",de:"今の力を、確かめてこい。"},
- done:["悪くない。その調子だ。","今の感覚を忘れるな。","今日はここまでだ。よくやった。"]};
-function gsSay(t,over){return `<div class="gssay${over?" over":""}"><img src="${GENSHIN_FACE}" alt=""><div class="tx"><b>ゲンシン</b>${t}</div></div>`}
+ done:["悪くない。その調子だ。","今の感覚を忘れるな。","今日はここまでだ。よくやった。"],
+ go:"よし。始めるぞ。焦るな。一つずつ確実に進めろ。",   // 2026-10-04（追加アセット）：特訓開始（表情＝気合を入れる）。ユーザー指定の台本
+ fin:"よくやった。今の感覚を、忘れないことだ。"};   // 特訓の成功・終了（表情＝認める・満足）
+function gsSay(t,over,ex){return `<div class="gssay${over?" over":""}" data-ex="${ex||"guide"}"><img src="${npcSrc("genshin",ex||"guide","face")||GENSHIN_FACE}" alt=""><div class="tx"><b>ゲンシン</b>${t}</div></div>`}
 const mixc=(c,t,a)=>{const p=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)),x=p(c),y=p(t);return"#"+x.map((v,i)=>Math.round(v+(y[i]-v)*a).toString(16).padStart(2,"0")).join("")};
 let pid=0;
 const PP={m:{s:"#f2c6a5",h:"#5a2f1a",c:"#b8322a"},f:{s:"#e2b28c",h:"#a8a8a8",c:"#4f8a3a"},b:{s:"#f1c7a3",h:"#2f2118",c:"#2f6fbf"}};
@@ -3168,7 +3191,7 @@ var P_NEWGAME=false; // セーブ・ロードの「最初からやり直す」�
 function title(){bgm("title");const h=$("h1");if(h)h.style.display="none";
  $("#app").innerHTML=`<div class="mmtscr"><div class="tpage mmt"><img class="mmtimg" src="${MMTITLE.src}" width="${MMTITLE.w}" height="${MMTITLE.h}" alt="ミスティックモンスターズ MYSTIC MONSTERS"><button class="p15start" data-nsfx="1" onclick="startGame(this)">タップしてはじめる</button></div><p class="tcap"><small>${P_NEWGAME?"新しいゲームをはじめます（いまのセーブは、はじめたときに消えます）":S.m||S.box.length?"つづきからはじめます":"はじめてのプレイです"}</small>${P_NEWGAME?`<button class="tcancel" data-se="UI_CANCEL" onclick="P_NEWGAME=false;p8Resume()">つづきからにもどる</button>`:""}</p></div>`}
 function togh(k){const m=S.m;while(m.eq.length<6)m.eq.push(-1);const j=m.eq.indexOf(k);let t="わざ設定を変えました。";if(j>=0){if(m.eq.filter(x=>x>=0).length>1)m.eq[j]=-1;else t="技は最低1つ必要です。"}else{const z=m.eq.indexOf(-1);if(z>=0)m.eq[z]=k;else t="6つまで。先にどれかをはずしてね。"}save();hall("w",t)}
-function bcomm(){const m=S.m,st=window.MMNPCE?npcLine("farm",null):null;if(st)return st;const a=[DAN_TALK.farm[R(DAN_TALK.farm.length)]];if(MMP7.inChapter(m)&&m.raise.turnLimit!=null)a.push(DAN_TALK.chapter(MMP8.turnsLeft(m)));else if(MMP7.raiseState(m)=="farm")a.push(DAN_TALK.interval);return a[R(a.length)]} // Phase 8：疲労・ストレス・寿命のコメントは廃止 // 2026-10-04：進行状態に合う一言があればそれ（MMNPCE.revisit）、無ければ従来
+function bcomm(){const m=S.m,l=window.MMNPCE?npcLineX("farm",null,"normal"):null;BCOMM_EX=l?l.expression:"normal";if(l)return l.text;const a=[DAN_TALK.farm[R(DAN_TALK.farm.length)]];if(MMP7.inChapter(m)&&m.raise.turnLimit!=null)a.push(DAN_TALK.chapter(MMP8.turnsLeft(m)));else if(MMP7.raiseState(m)=="farm")a.push(DAN_TALK.interval);return a[R(a.length)]} // Phase 8：疲労・ストレス・寿命のコメントは廃止 // 2026-10-04：進行状態に合う一言があればそれ（MMNPCE.revisit）、無ければ従来
 const tour=()=>S.wk==4&&S.mo%3==0;
 function adv(){MMP8.markBattleDone(S)} // Phase 8：暦・寿命（加齢）は廃止。fight()終了時の呼び出しを「戦闘が最後まで終わった印」としてだけ使う
 function cal(){const T=o=>o%3==0;return `<div class="cal"><b>${S.y}年 ${S.mo}月 第${S.wk}週</b><div class="wks">${[1,2,3,4].map(w=>`<span class="${w==S.wk?"cur":""}">${w==4&&T(S.mo)?"🏆":w}</span>`).join("")}</div><div class="mos">${[...Array(12)].map((_,i)=>`<span class="${i+1==S.mo?"cur":""}">${i+1}${T(i+1)?"🏆":""}</span>`).join("")}</div></div>`}
@@ -3516,7 +3539,7 @@ function p9RcvJoin(b){const m=S.m;if(bBusy||!m||!b||b.disabled||tapSoon(b,350))r
  b.disabled=true;const r=MMP8.startTournament(S,m,k);if(!r.ok)return board();save();p9TourIntro(k).then(()=>{P9_ENTER=true;board()})}
 // ---- 大会開始の演出（E〜S 共通）：暗転 → ランクのエンブレム「公式ランクE大会」→ セドリックの一言 → 順位表（参加者が右から順に入る）。タップで飛ばせる。視差効果を減らす設定では短く ----
 let P9_ENTER=false;
-function p9TourIntro(k){return new Promise(res=>{const calm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches),im=window.MMNPC&&MMNPC.imageOf("cedric","closeup","smile");
+function p9TourIntro(k){return new Promise(res=>{const calm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches),im=window.MMNPC&&MMNPC.imageOf("cedric","face",k>=3?"tense":"host");
  const d=document.createElement("div");d.className="p9intro";d.id="p9intro";
  d.innerHTML=`<div class="p9ibg"></div><div class="p9iem"><span class="p9iem-w"><i class="p9iem-rays"></i><svg class="p9iem-lau" viewBox="0 0 200 200" aria-hidden="true"><path d="M58 168C22 140 14 92 34 52M142 168c36-28 44-76 24-116"/><path d="M40 140l-14 2M32 118l-14-2M30 96l-13-5M34 74l-11-8M46 150l-8 12M154 150l8 12M160 140l14 2M168 118l14-2M170 96l13-5M166 74l11-8"/></svg><span class="p9iem-l">${RN[k]}</span></span><span class="p9iem-r">RANK</span><b>公式ランク${RN[k]}大会</b></div><div class="p9iced"><img src="${im?im.src:CEDRIC_FACE}" alt=""><div class="tx"><b>セドリック</b>${CEDRIC_TALK.open.replace("{R}",RN[k])}</div></div><small class="p9iskip">タップで飛ばす</small>`;
  document.body.appendChild(d);let done=false;const T=[];const fin=()=>{if(done)return;done=true;T.forEach(clearTimeout);d.classList.add("out");setTimeout(()=>{d.remove();res()},calm?0:240)};d.onclick=fin;
@@ -3555,7 +3578,7 @@ function p8TourScr(msg){const m=S.m,t=m.raise.tour,lg=t.league;bgm(t.status=="se
  <header class="tp2ban"><small>CHAPTER ${m.raise.ch}　${MMP8.chapterName(m.raise.ch)}</small><div class="tp2bn"><b>公式大会</b><span class="tp2no">第${pm.round+1}戦</span></div></header>
  <section class="tp2box tp2res"><h3>現在の成績</h3><div class="tp2rows">${rows}</div></section>
  <section class="tp2box p9next"><h3>次の対戦相手</h3><div class="lb">第${pm.round+1}試合 / 全${lg.rounds.length}試合</div><div class="tp2vs"><div class="tp2p me">${p9Pt(m,"me")}<div class="tp2nm"><small>聖獣士</small><b>${p11Esc(m.name)}</b></div></div><span class="p9vsl">VS</span><div class="tp2p op">${p9Pt(o)}<div class="tp2nm"><small>${p11Esc(o.name)}</small><b>？？？</b></div></div></div>
- ${p9Ced(lg.round==0?CEDRIC_TALK.first:CEDRIC_TALK.next[lg.round%CEDRIC_TALK.next.length])}<button class="p9btn p9go tp2go" onclick="p9CompareScr()">⚔️ 対戦開始</button></section>
+ ${p9Ced(lg.round==0?CEDRIC_TALK.first:CEDRIC_TALK.next[lg.round%CEDRIC_TALK.next.length],t.rank>=3?"tense":"host")}<button class="p9btn p9go tp2go" onclick="p9CompareScr()">⚔️ 対戦開始</button></section>
  ${msg?`<div class="p9msg p9tmsg">${msg}</div>`:""}${p9Standings(lg,st,false)}${p9Matrix(lg)}
  <p class="p9prov">【暫定】大会参加者の名前・種族は仮のデータです。実際の試合では、ランク${RN[t.rank]}相当の相手と戦います。</p></div>`;try{window.scrollTo(0,0)}catch(e){}}
 // パラメーター比較（デザイン参考 03）：両者（正式画像）と6能力のゲージ（999 を最大とした絶対の目盛り・正式色。数字・戦力・勝率・有利は出さない）→「対戦開始」（2度押し）→ fight()（導入の VS → FIGHT! → 実戦）。「順位表にもどる」で大会進行へ
@@ -3565,14 +3588,14 @@ function p9CompareScr(){const m=S.m,t=m&&m.raise&&m.raise.tour;if(!t||t.status!=
  $("#app").innerHTML=`<div class="p9cmps"><div class="pcbg" style="background-image:url(${BTB[t.rank][0]})"></div><header class="pchd"><b>公式ランク${RN[t.rank]}大会</b><small>第${pm.round+1}試合 ／ 全${lg.rounds.length}試合</small></header>
  <div class="pcduo"><div class="pcs me"><div class="pcped">${p9Pt(m,"me")}</div><b>${p11Esc(m.name)}</b></div><div class="pcs op"><div class="pcped">${p9Pt(o)}</div><b>${p11Esc(o.name)}</b></div></div>
  <div class="pcgs" aria-label="能力の比較（999 を最大とした目安）">${g}</div>
- <div class="pcacts"><button class="p9btn p9go pcgo" data-nsfx="1" onclick="p9VsGo(this)">⚔️ 対戦開始</button><button class="pcback" data-nav="back" onclick="board()">順位表にもどる</button></div></div>`;try{window.scrollTo(0,0)}catch(e){}}
+ <div class="pcced">${p9Ced(CEDRIC_TALK.vs,"kickoff")}</div><div class="pcacts"><button class="p9btn p9go pcgo" data-nsfx="1" onclick="p9VsGo(this)">⚔️ 対戦開始</button><button class="pcback" data-nav="back" onclick="board()">順位表にもどる</button></div></div>`;try{window.scrollTo(0,0)}catch(e){}}
 
 function p9TourResult(msg){const m=S.m,t=m.raise.tour,lg=t.league,rs=t.result,w=rs.reward,st=MMP8L.standings(lg);
  const cf=Array.from({length:18},(_,i)=>`<i style="left:${(i*37)%100}%;animation-delay:${(i%6)*.35}s"></i>`).join("");
  $("#app").innerHTML=`<div class="p9tour ${rs.won?"p9won":""}">${p9TourHead(m,t)}
  ${rs.won?`<div class="p9win"><div class="cf">${cf}</div>${P9_TROPHY}<b class="big">優勝！</b><div class="sub">ランク${RN[t.rank]}大会を制した！（${st[0].w}勝${st[0].l}敗）</div>${t.rank===5?`<div class="p9newroad"><b>S ランク制覇！</b><span>新たな道が開かれた…（Chapter 5 は準備中）</span></div>`:""}</div>`
   :`<div class="p9lose"><div class="plc">${rs.place}<small>位</small></div><div class="sub">大会終了。優勝（1位）できなかったため、報酬はありません。</div></div>`}
- ${p9Ced(rs.won?CEDRIC_TALK.won:CEDRIC_TALK.lost)}
+ ${p9Ced(rs.won?CEDRIC_TALK.won:CEDRIC_TALK.lost,rs.won?"victory":"host")}
  ${w?`<section class="p9board2 p9rw"><h3>${w.firstClear?"初回優勝の報酬":"再優勝の報酬"}</h3>${w.firstClear?`<div class="it">🪙 賞金 <b>${w.prize}G</b></div><div class="it">${MMP9ART.ticketIcon(24)} 特訓チケット <b>×${w.tickets}</b></div>`:`<div class="it dim">クリア済みランクのため、賞金・特訓チケットはありません</div>`}<div class="it">⬆ ステータスボーナス <b>${w.bonus.map(b=>`${LAB[b.key]}+${b.amount}`).join("　")}</b></div>${w.bagUnlocked?`<div class="it">🎒 バッグが6枠に拡張された！</div>`:""}</section>`:""}
  ${msg?`<div class="p9msg p9tmsg">${msg}</div>`:""}${p9Standings(lg,st,true)}${p9Matrix(lg)}
  <button class="p9btn" onclick="p8EndChapter()">Chapterを終えてファームへ</button></div>`;try{window.scrollTo(0,0)}catch(e){}
@@ -3603,7 +3626,7 @@ function p9PreBattleGo(){const d=$("#pbt");if(!d||tapSoon(d,350))return;const go
 function p9VsScr(){const m=S.m,t=m&&m.raise&&m.raise.tour;if(!t||t.status!="league")return board();const lg=t.league,pm=MMP8.tourNext(m),o=p9Npc(lg,pm.opp);bgm("matchup");try{MMFEEL.emit("battle.matchup")}catch(e){}p9Immersive(true);p9MenuClose();
  const bg=(typeof BTB!="undefined"&&BTB[t.rank]&&BTB[t.rank][0])||"";const rows=P9_STAT.map(([k,lb,col])=>{const a=m[k]|0,b=o[k]|0,mx=Math.max(a,b,1);return `<div class="vr"><span class="v ${a>b?"hi":""}">${a}</span><span class="p9bar l"><i style="width:${(a/mx*100).toFixed(1)}%;background:${col}"></i></span><span class="lb">${lb}</span><span class="p9bar r"><i style="width:${(b/mx*100).toFixed(1)}%;background:${col}"></i></span><span class="v ${b>a?"hi":""}">${b}</span></div>`}).join("");
  $("#app").innerHTML=`<div class="p9vs p9vs-anim${bg?" p9vs-bt":""}"${bg?` style="--vsbg:url(${bg})"`:""}><div class="p9vs-top"><small>公式ランク${RN[t.rank]}大会　CHAPTER ${m.raise.ch}</small><b>第${pm.round+1}試合 / 全${lg.rounds.length}試合</b></div>
- ${p9Ced(CEDRIC_TALK.vs)}<div class="p9vs-fr"><div class="fr me">${p9Pt(m,"l me")}<div class="np">${p11Esc(m.name)}</div></div><div class="vsx">VS</div><div class="fr">${p9Pt(o,"l")}<div class="np">${p11Esc(o.name)}</div><small class="sp">${p9Species(o)}</small></div></div>
+ ${p9Ced(CEDRIC_TALK.vs,"kickoff")}<div class="p9vs-fr"><div class="fr me">${p9Pt(m,"l me")}<div class="np">${p11Esc(m.name)}</div></div><div class="vsx">VS</div><div class="fr">${p9Pt(o,"l")}<div class="np">${p11Esc(o.name)}</div><small class="sp">${p9Species(o)}</small></div></div>
  <div class="p9vs-tb">${rows}</div>
  <p class="p9prov">【暫定】対戦相手の名前・種族は仮の表示です。能力値は、実際の試合でのランク${RN[t.rank]}相当の相手と同じ値です。</p>
  <button class="p9btn p9go" onclick="p9VsGo(this)">⚔️ 対戦開始</button><button class="p9btn2" onclick="board()">順位表にもどる</button></div>`;try{window.scrollTo(0,0)}catch(e){}}
@@ -3667,13 +3690,16 @@ function p9FarmScr(msg){return fmScr(msg)} // Chapter間ファーム：正式デ
 //  特訓 hall('s')・ステータス hall('st')・技管理 hall('w')・アイテム shopScr()・出発準備 prepScr()（出発の確認＝フィナの選択肢はここから）・中断 p8Suspend()・育成放棄 p8AbandonAsk()・街 lobby()
 //  状態はセーブから判断するだけ（新しいデータは持たない）。育成中（Chapter間）は街へ戻るボタンを出さず、中断を出す
 const FARM_BG="assets/farm/farm_prep_main.jpg"; // 2026-10-03：冒険準備の拠点としてのファーム（正式参照画像。assets/farm/README.md）。旧背景 farm_main.jpg はファイルだけ残す
-const DAN_FIG="assets/npc/dan/closeup/smile.webp"; // ファームに立つダン（正式アップ画像）。顔は吹き出しの DAN_FACE
+const DAN_FIG="assets/npc/dan/closeup/smile.webp"; // （旧）2026-10-04 から表情は danEx() の状態で選ぶ
+/** ファームのダンの表情（2026-10-04 追加アセット）：疲れが高い・解放条件に届かない＝注意（03）／Chapter から戻った・育成完了＝成長を認める（04）／ほか＝通常（01）。出発前の掛け合いは励ます（02） */
+function danEx(m,st,can){const f=m&&m.raise?(m.raise.fatigue|0):0;return f>=60||(can&&can.reason=="rank_gate")?"caution":st=="farm"||st=="done"?"proud":"normal"}
+let BCOMM_EX="normal"; // ファームに立つダン（正式アップ画像）。顔は吹き出しの DAN_FACE
 const FM_IC={train:'<path d="M3 13h3v6H3zM26 13h3v6h-3zM6 10h3v12H6zM23 10h3v12h-3zM9 16h14"/>',status:'<path d="M16 3l11 6.5v13L16 29 5 22.5v-13z"/><path d="M16 9l6 3.5v7L16 23l-6-3.5v-7z" class="f"/>',moves:'<path d="M6 5h15a3 3 0 013 3v19H9a3 3 0 01-3-3z"/><path d="M6 24a3 3 0 013-3h15"/><path d="M15 9l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z"/>',item:'<path d="M9 11h14l2 17H7z"/><path d="M12 11V8a4 4 0 018 0v3"/><path d="M11 17h10"/>',town:'<path d="M5 15L16 6l11 9"/><path d="M8 13v13h16V13"/><path d="M13 26v-7h6v7"/>',pause:'<path d="M12 9v14M20 9v14"/><circle cx="16" cy="16" r="12"/>'};
 const fmIc=k=>`<svg viewBox="0 0 32 32" aria-hidden="true">${FM_IC[k]}</svg>`;
 const FM_SPOT={train:[17.9,43.6],item:[71.2,38.9],status:[74.7,72.6],moves:[20.6,78.8]}; // 背景の絵（864×1536）の光る目印の位置（%）。コマンドはこの点の真上に立つ
 function fmScr(msg){const m=S.m;if(!m)return lobby();p9MenuClose();
  const st=MMP7.raiseState(m),r=m.raise||{},k=MMP8.nextChapterKey(m),fin=k==MMP8.FINAL,last=(r.log||[]).slice(-1)[0],sp=MMP10M.byId(m.sp),done=st=="done",can=done?{ok:true}:MMP8.canDepart(S,m);
- bgm("farm");p9Immersive(true);ht="t";setTimeout(()=>{if(S.m!==m||!document.querySelector(".fm"))return;if(st=="none")npcFirst("farm");else if(st=="farm")farmReturn(m)},0); // 2026-10-04：初回訪問（ダン ↔ フィナ）・Chapter の帰還イベント（ダン＋フィナ。Chapter ごとに1回）
+ bgm("farm");p9Immersive(true);npcWarm("dan");ht="t";setTimeout(()=>{if(S.m!==m||!document.querySelector(".fm"))return;if(st=="none")npcFirst("farm");else if(st=="farm")farmReturn(m)},0); // 2026-10-04：初回訪問（ダン ↔ フィナ）・Chapter の帰還イベント（ダン＋フィナ。Chapter ごとに1回）
  const chNm=c=>c==MMP8.FINAL?"最終ルート":`Chapter ${c}`,chSub=c=>c==MMP8.FINAL||c==null?"":MMP8.chapterName(c);
  // 育成状態（セーブから判断）：開始前＝育成準備中／Chapter間＝終わったChapter／完了＝育成完了
  const state=st=="none"?"育成準備中":done?"育成完了":fin?"最終ルート前":`Chapter ${last?last.ch:Math.max(1,k-1)} 終了`;
@@ -3690,11 +3716,11 @@ function fmScr(msg){const m=S.m;if(!m)return lobby();p9MenuClose();
   :st=="farm"?`<button class="fmrd" onclick="p8Suspend()">${fmIc("pause")}<span>中断</span></button>`:"";
  const cmd=[["hall('s')","train","特訓","train"],["hall('st')","status","ステータス","status"],["hall('w')","moves","技管理","moves"],["shopScr()","item","アイテム","item"]];
  $("#app").innerHTML=`<div class="fm fm2 fm-${st}${st=="farm"?" p9farm p15f":""}" style="--fm-bg:url(${FARM_BG})"><div class="fmblur" aria-hidden="true"></div>
- <div class="fmmap"><img class="fmdan" src="${DAN_FIG}" alt="" aria-hidden="true"><div class="fmmon mon">${msv(m)}</div>
+ <div class="fmmap"><img class="fmdan" src="${npcSrc("dan",danEx(m,st,can))||DAN_FIG}" alt="" aria-hidden="true" data-ex="${danEx(m,st,can)}"><div class="fmmon mon">${msv(m)}</div>
   <nav class="fmcmd" aria-label="コマンド">${cmd.map(([on,ic,lb,sp])=>`<button class="p15b fmb" data-spot="${sp}" style="left:${FM_SPOT[sp][0]}%;top:${FM_SPOT[sp][1]}%" onclick="${on}">${fmIc(ic)}<span>${lb}</span></button>`).join("")}</nav>
   <div class="fmgate"><button class="fmgo${go.c}" onclick="${go.on}">${go.s||warn?`<small>${warn||go.s}</small>`:""}<b>${go.t}</b></button></div></div>
  <header class="fmhd"><div class="fmplq"><b>ファーム</b></div>${st=="farm"?`<button class="fmab p8danger" onclick="p8AbandonAsk()">育成放棄</button>`:""}</header>
- <div class="fmstage">${msg?`<div class="kbub kt ksys">${msg}</div>`:""}<div class="kbub kdan${msg?"":" kt"}"><b>ダン</b><br>${bcomm()}</div><div class="kav" onclick="const p=this.parentNode,s=p.querySelector('.ksys'),b=p.querySelector('.kdan');if(s)s.remove();if(b){b.classList.remove('kt');void b.offsetWidth;b.classList.add('kt')}" aria-label="ダンのコメントを見る"><img src="${DAN_FACE}" alt=""></div></div>
+ <div class="fmstage">${msg?`<div class="kbub kt ksys">${msg}</div>`:""}<div class="kbub kdan${msg?"":" kt"}"><b>ダン</b><br>${bcomm()}</div><div class="kav" onclick="const p=this.parentNode,s=p.querySelector('.ksys'),b=p.querySelector('.kdan');if(s)s.remove();if(b){b.classList.remove('kt');void b.offsetWidth;b.classList.add('kt')}" aria-label="ダンのコメントを見る"><img src="${npcSrc("dan",BCOMM_EX,"face")||DAN_FACE}" alt=""></div></div>
  <div class="fmbot"><section class="fminfo" aria-label="育成中のモンスター"><div class="fmnm"><b>${p11Esc(m.name)}</b><span class="fmtag">${sp?sp.kind:""}</span></div>
   <dl class="fmmid"><div><dt>大会ランク</dt><dd>${MMP8.rankLabel(m)}</dd></div><div><dt>特訓チケット</dt><dd>${S.trainTix}枚</dd></div></dl>
   <div class="fmst"><span class="fmbadge">${state}</span><small>${chL}</small><b>${ch}</b>${chS?`<small class="fmchs">${chS}</small>`:""}</div></section>${side}</div>
@@ -3724,7 +3750,9 @@ function p8ModalClose(){clearInterval(p8AbT);const d=$("#p8m");if(d)d.remove()}
 // ---- 特訓 ----
 const P7_WHY={finished:"育成完了後は特訓できません",not_at_farm:"Chapter中は特訓できません",no_ticket:"特訓チケットがありません",locked:"🔒 Cランク以上の大会をクリアすると解放",before_ch1:"🔒 Chapter 1クリア後に解放",max:"クリア済み（再挑戦できません）",in_progress:"特訓中"};
 function p7TrainMenu(){const m=S.m,atFarm=MMP7.raiseState(m)=="farm",ch1=MMP7.hasEndedChapter(m,1),ms=MMP7.getMoveset(m.sp);MMP7.ensureProg(m);
- let h=gsSay(GENSHIN_TALK.menu[R(GENSHIN_TALK.menu.length)])+`<div class="dnote">特訓は15マスの一本道。ゴールで技を覚えます。<br>特訓チケット：<b>${S.trainTix}</b>枚（1回につき1枚）<br><small>ちから・かしこさ・命中・回避は各1回、丈夫さは2回まで</small>${!ch1?"<br><small>🔒 特訓はChapter 1クリア後に解放されます</small>":atFarm?"":"<br><small>※Chapter中は特訓できません。Chapterクリア後、ファームで挑戦しよう</small>"}</div>`;
+ npcWarm("genshin");setTimeout(()=>{if(document.querySelector(".gssay"))npcFirst("train")},0);   // 2026-10-04（追加アセット）：特訓の初回（フィナ ↔ ゲンシン）
+ const gsl=S.trainTix>0&&ch1&&atFarm?GENSHIN_TALK.menu[R(GENSHIN_TALK.menu.length)]:GENSHIN_TALK.menu[1];   // チケットが無い・まだ挑めない＝厳しい表情で「焦るな」
+ let h=gsSay(gsl,0,S.trainTix>0&&ch1&&atFarm?"guide":"strict")+`<div class="dnote">特訓は15マスの一本道。ゴールで技を覚えます。<br>特訓チケット：<b>${S.trainTix}</b>枚（1回につき1枚）<br><small>ちから・かしこさ・命中・回避は各1回、丈夫さは2回まで</small>${!ch1?"<br><small>🔒 特訓はChapter 1クリア後に解放されます</small>":atFarm?"":"<br><small>※Chapter中は特訓できません。Chapterクリア後、ファームで挑戦しよう</small>"}</div>`;
  return h+MMP7.TRAIN_KINDS.map(k=>{const c=MMP7.canStartTraining(S,m,k),cl=m.prog.train[k],tag=`クリア ${cl}/${MMP7.TRAIN_MAX[k]}`;
   const mv=ms?ms[k].map(id=>`<i class="${m.sk.includes(id)?"got":""}">${m.sk.includes(id)&&SK[id]?SK[id][0]:"？？？"}</i>`).join(""):`<i>技データ未登録</i>`;
   const T=MMP12S.training(k);return `<button class="dcardb djc p12tc" style="--ac:${T.accent}" ${c.ok?"":"disabled"} onclick="trStart('${k}')"><img src="${T.image.src}" alt="${T.name}" style="object-position:${T.image.focus}"><div class="rkt"><b>${LAB[k]}特訓</b><span>専用マスに止まると、${LAB[k]}とライフが少し伸びる${k=="de"?"（必殺技・最大2回）":""}</span><div class="djs">${mv}</div><small>${tag}${c.ok?"":"　"+(P7_WHY[c.reason]||"")}</small></div>${c.ok?'<div class="rkgo">挑戦 ▶</div>':(cl>=MMP7.TRAIN_MAX[k]?'<div class="rkgo done">済</div>':"")}</button>`}).join("")}
@@ -3735,7 +3763,7 @@ function trScr(msg,done){const m=S.m,run=MMP7.trainRunOf(S.m);if(!m)return lobby
  const cells=[...Array(MMP7.TRAIN_LEN+1)].map((_,i)=>{const t=i==0?"st":MMP7.trainSquare(i),ic=t=="st"?"🚩":t=="g"?"🏁":t=="s"?P7_SQ_ICON[K]:"・";
   return `<div class="p7c p7-${t} ${i==pos?"cur":""}"><small>${i||"S"}</small><span>${ic}</span>${i==pos?`<div class="p7mon"><div class="mon">${msv(m)}</div></div>`:""}</div>`}).join("");
  const T=MMP12S.training(K); // Phase 12：各特訓場の正式背景をはっきり見せる（ぼかさない）。文字やUIは背景に描かずに重ねる
- $("#app").innerHTML=`<div class="ds p12tr" style="--dc:${T.accent};--ac:${T.accent}"><div class="p12stage" role="img" aria-label="${T.name}" style="background-image:url(${T.image.src});background-position:${T.image.focus}"><div class="dtop"><span></span><div class="dmoney">🎫 特訓チケット ${S.trainTix}</div></div>${done?gsSay(GENSHIN_TALK.done[R(GENSHIN_TALK.done.length)],1):run&&run.pos==0&&!Number.isInteger(run.roll)?gsSay(GENSHIN_TALK.start[K],1):""}<div class="p12plq"><img src="${TABS[2]}" alt=""><div><b>${LAB[K]}特訓</b><small>${T.name}（${T.theme}）・15マス・ゴールで技を覚える</small></div></div></div><div class="dbody"><div class="dcard"><small class="p12lg">${P7_SQ_ICON[K]}=${LAB[K]}＋ライフ　・=何も起きない</small><div class="p7tr">${cells}</div></div><div class="bmsg" id="p7msg">${msg||"サイコロを振って進もう！"}</div>${run?`<div class="bdicewrap"><div class="bdice" id="p7dice"><img class="p12dicon" src="${MMP12D.icon("std")}" alt=""></div><button class="go bdicebtn" id="p7roll" onclick="trRoll()">サイコロを振る</button></div>`:`<button class="go" data-nav="back" onclick="hall('s')">◀ ファームへ戻る</button>`}</div></div>`;try{window.scrollTo(0,0)}catch(e){}
+ $("#app").innerHTML=`<div class="ds p12tr" style="--dc:${T.accent};--ac:${T.accent}"><div class="p12stage" role="img" aria-label="${T.name}" style="background-image:url(${T.image.src});background-position:${T.image.focus}"><div class="dtop"><span></span><div class="dmoney">🎫 特訓チケット ${S.trainTix}</div></div>${done?gsSay(GENSHIN_TALK.fin,1,"approve"):run&&run.pos==0&&!Number.isInteger(run.roll)?gsSay(GENSHIN_TALK.go,1,"fired"):""}<div class="p12plq"><img src="${TABS[2]}" alt=""><div><b>${LAB[K]}特訓</b><small>${T.name}（${T.theme}）・15マス・ゴールで技を覚える</small></div></div></div><div class="dbody"><div class="dcard"><small class="p12lg">${P7_SQ_ICON[K]}=${LAB[K]}＋ライフ　・=何も起きない</small><div class="p7tr">${cells}</div></div><div class="bmsg" id="p7msg">${msg||"サイコロを振って進もう！"}</div>${run?`<div class="bdicewrap"><div class="bdice" id="p7dice"><img class="p12dicon" src="${MMP12D.icon("std")}" alt=""></div><button class="go bdicebtn" id="p7roll" onclick="trRoll()">サイコロを振る</button></div>`:`<button class="go" data-nav="back" onclick="hall('s')">◀ ファームへ戻る</button>`}</div></div>`;try{window.scrollTo(0,0)}catch(e){}
  if(run&&Number.isInteger(run.roll)){const b=$("#p7msg");if(b&&!msg)b.textContent=`前回振ったサイコロの出目（${run.roll}）で進みます。`;setTimeout(trRoll,400)}} // 未処理の出目が保存されていたら、その出目で続きから
 let p7Busy=false;
 async function trRoll(){if(p7Busy||!S.m||!MMP7.trainRunOf(S.m))return;p7Busy=true;const btn=$("#p7roll"),dice=$("#p7dice");if(btn)btn.disabled=true;
@@ -3804,7 +3832,7 @@ const KAREN_PICK={solamo:"ソラモね。バランスのいい子よ。",gauru:"
 /** 案内欄の一言と顔の表情を、中央の個体に合わせる。tip＝カレンのボタンを押したときの一言（販売中なら詳しく見る方法） */
 function p10KarenHint(tip){const t=$("#p10kt"),bar=$("#p10kbar");if(!t||!bar)return;const c=MMP10M.MARKET_CATALOG[P10_MK];if(!c)return;const s=MMP10M.byKey(c.key),chk=c.status=="waiting"?null:MMP10M.canPurchase(S,c.key,S.box.length+(S.m?1:0));
  const [ex,tx]=c.status=="waiting"?["guide",KAREN_TALK.waiting[0].text]:!chk.ok&&chk.reason=="no_money"?["troubled","今の所持金では、まだ迎えられないみたい。"]:!chk.ok&&chk.reason=="full"?["troubled","手持ちと牧場で8体までなの。"]:tip?["smile","気になったら、この子をタップして詳しく見てみてね。"]:["smile",KAREN_PICK[c.key]||`${s.name}ね。`];
- t.textContent=tx;const im=bar.querySelector("img"),src=`assets/npc/karen/closeup/${ex}.webp`;if(im&&im.getAttribute("src")!==src)im.src=src;bar.classList.remove("kpop");void bar.offsetWidth;bar.classList.add("kpop")}
+ t.textContent=tx;const im=bar.querySelector("img"),src=npcSrc("karen",ex)||`assets/npc/karen/closeup/${ex}.webp`;if(im&&im.getAttribute("src")!==src)im.src=src;bar.classList.remove("kpop");void bar.offsetWidth;bar.classList.add("kpop")}
 /** カレンのボタン（案内欄の顔）：選択中のモンスターについて、案内欄に短く一言（大きな会話は開かない。購入の判定は変えない） */
 function p10KarenTalk(){if(P10_ANIM||$("#p10ov"))return;p10KarenHint(true)}
 const FINA_TALK={
@@ -3822,9 +3850,14 @@ function npcFirst(fac,after){if(window.MM_QA_NO_NPC||!window.MMNPCE||!window.MMN
 /** 再訪の一言の材料（進行状態）。last＝その施設で直前に出した一言の id（ページの中だけの記憶。セーブには入れない＝保存とメモリの食い違いを作らない） */
 const NPC_LAST={};
 function npcCtx(fac){const m=S.m,f=finaFlags(),box=S.box.length,st=m?MMP7.raiseState(m):"none",can=m&&st=="farm"?MMP8.canDepart(S,m):{ok:false},inv=S.inv||{};
- return {hasMon:!!m,box,full:box+(m?1:0)>=MMP10M.OWN_LIMIT,gold:S.g|0,raiseDone:MMP8.raiseDoneCount(S),rank:(S.br??-1),fatigue:m&&m.raise?(m.raise.fatigue|0):0,tickets:S.trainTix|0,items:((inv.bag||[]).length+(inv.vault||[]).length),state:st,canDepart:!!can.ok,gateBlocked:can.reason=="rank_gate",canFuse:MMP10M.fusionAvailable(S)&&(box+(m?1:0))>=2,last:NPC_LAST[fac]}}
+ return {hasMon:!!m,box,full:box+(m?1:0)>=MMP10M.OWN_LIMIT,gold:S.g|0,raiseDone:MMP8.raiseDoneCount(S),rank:(S.br??-1),fatigue:m&&m.raise?(m.raise.fatigue|0):0,tickets:S.trainTix|0,items:((inv.bag||[]).length+(inv.vault||[]).length),bag:(inv.bag||[]).length,state:st,canDepart:!!can.ok,gateBlocked:can.reason=="rank_gate",canFuse:MMP10M.fusionAvailable(S)&&(box+(m?1:0))>=2,last:NPC_LAST[fac]}}
 /** 再訪の一言（文字だけ）。MMNPCE が無い・出ないときは fallback（従来の配列からランダム）。出した id は NPC_LAST に残す（直前と同じ文を避ける） */
-function npcLine(fac,fallback){const l=window.MMNPCE?MMNPCE.revisit(fac,npcCtx(fac)):null;if(l){NPC_LAST[fac]=l.id;return l.text}return fallback&&fallback.length?fallback[R(fallback.length)]:null}
+function npcLine(fac,fallback){const l=npcLineX(fac,fallback);return l?l.text:null}
+// 2026-10-04（追加アセット）：表情つきの再訪の一言（{ text, expression }。expression は MMNPCE のデータ側。無ければ ex）。表情の画像は MMNPC（js/npc/npc.js の EXPR）
+function npcLineX(fac,fallback,ex){const l=window.MMNPCE?MMNPCE.revisit(fac,npcCtx(fac)):null;if(l){NPC_LAST[fac]=l.id;return {text:l.text,expression:l.expression||ex}}return fallback&&fallback.length?{text:fallback[R(fallback.length)],expression:ex}:null}
+/** NPC の表情の画像（view＝closeup 既定／face＝小さい顔／fullbody＝全身）。施設に入る直前に npcWarm でその NPC の表情だけ先読み */
+function npcSrc(id,ex,view){return window.MMNPC&&MMNPC.srcOf?MMNPC.srcOf(id,ex,view):""}
+function npcWarm(id,views){try{if(window.MMNPC&&MMNPC.warm)MMNPC.warm(id,views)}catch(e){}}
 /** 市場の再訪：進行状態に合う一言か、一定の確率でふつうの一言（小さな窓）。無ければ何も出さない */
 function karenRevisit(){if(window.MM_QA_NO_KAREN)return;if(!window.MMNPCE)return karenAgain();const l=MMNPCE.revisit("market",npcCtx("market"));if(!l)return;NPC_LAST.market=l.id;karenSay([{npc:"karen",expression:l.expression||"smile",text:l.text}],{presentation:"compact"})}
 /** Chapter を終えてファームへ戻ったとき1回：ダン＋フィナの帰還イベント（Chapter ごとに文面が違う。次の Chapter があれば噂を1回だけ添える） */
@@ -3847,12 +3880,19 @@ function p7Depart(b){const m=S.m;if(!m)return lobby();
 // アイテム屋の正式背景・正式NPC（2026-10-03。assets/shop/。README.md）：背景はそのまま（ぼかさない）、NPC は立ち姿だけ（名前は未確定＝名前・セリフは出さない）。商品・価格・売買の処理は変えていない
 const SHOP_BG="assets/shop/shop_bg.webp",SHOP_NPC="assets/shop/shop_npc.webp";
 const SHOP_LOOK={cls:"shop",bg:`<div class="shopbg" style="background-image:url(${SHOP_BG})"></div><img class="shopnpc" src="${SHOP_NPC}" alt="" draggable="false" decoding="async">`};
-function shopScr(msg){if(!S.m)return lobby();if(!MMP7.canAccessVault(S))return hall("t","Chapter中はアイテム屋に行けません。");bgm("farm");
+// 2026-10-04（追加アセット）：おばあちゃんの表情（全身 4表情）と一言。毎回は話さない（条件のとき・購入成立のときだけ。名前は付けない＝札は「アイテム屋」）
+function shopLook(ex){return {cls:"shop",bg:`<div class="shopbg" style="background-image:url(${SHOP_BG})"></div><img class="shopnpc" src="${npcSrc("shop",ex,"fullbody")||SHOP_NPC}" alt="" draggable="false" decoding="async" data-ex="${ex}">`}}
+function shopSay(l){return l?`<div class="shopsay"><b>アイテム屋</b><span>${l.text}</span></div>`:""}
+function shopScr(msg,bought){if(!S.m)return lobby();if(!MMP7.canAccessVault(S))return hall("t","Chapter中はアイテム屋に行けません。");bgm("farm");npcWarm("shop",["fullbody"]);
+ let sl=bought&&window.MMNPCE?{...MMNPCE.REVISIT.shop.buy}:window.MMNPCE&&!msg?MMNPCE.revisit("shop",npcCtx("shop")):null;
+ if(!bought){if(sl&&NPC_LAST.shop===sl.id)sl=null;NPC_LAST.shop=sl?sl.id:null}   // 同じ一言を続けて出さない（来るたびに話さない）
+ const sex=sl?sl.expression:"normal";
+ if(!bought&&!msg)setTimeout(()=>{if(document.querySelector(".ds.shop"))npcFirst("shop")},0);   // 初回（フィナ ↔ おばあちゃん）
  const cat=MMP7.getShopCatalog(),vt=S.inv.vault;
  const buy=cat.length?cat.map(id=>{const d=MMP7.getItemDef(id),pr=Number.isInteger(d.price);return `<button class="t" ${pr&&S.g>=d.price?"":"disabled"} onclick="p7Buy('${id}')">${d.name}<small>${pr?d.price+"G":"価格未設定"}</small></button>`}).join(""):`<div class="p7it emp"><span>商品は準備中です</span></div>`;
  const sell=vt.length?vt.map((it,i)=>{const d=MMP7.getItemDef(it.id),ok=!!d&&Number.isInteger(d.sellPrice);return `<div class="p7it"><span>${p7ItemName(it)}</span><button ${ok?"":"disabled"} onclick="p7Sell(${i})">${ok?"売る "+d.sellPrice+"G":"売れない"}</button></div>`}).join(""):`<div class="p7it emp"><span>保管庫は空です</span></div>`;
- $("#app").innerHTML=p7Shell("🛒","アイテム屋","購入・売却（買ったアイテムは保管庫へ）",`<div class="dcard"><div class="dh">購入</div>${buy}</div><div class="dcard"><div class="dh">売却 <small>保管庫のアイテム</small></div>${sell}</div>`,msg,null,SHOP_LOOK);try{window.scrollTo(0,0)}catch(e){}}
-function p7Buy(id){const r=MMP7.shopBuy(S,id);if(r.ok)save();shopScr(r.ok?"保管庫に入れました。":P7_ERR[r.reason])}
+ $("#app").innerHTML=p7Shell("🛒","アイテム屋","購入・売却（買ったアイテムは保管庫へ）",`${shopSay(sl)}<div class="dcard"><div class="dh">購入</div>${buy}</div><div class="dcard"><div class="dh">売却 <small>保管庫のアイテム</small></div>${sell}</div>`,msg,null,shopLook(sex));try{window.scrollTo(0,0)}catch(e){}}
+function p7Buy(id){const r=MMP7.shopBuy(S,id);if(r.ok)save();shopScr(r.ok?"保管庫に入れました。":P7_ERR[r.reason],r.ok)}   // 購入成立＝おばあちゃん「はい、これで大丈夫。」（表情＝満足・おすすめ）
 function p7Sell(i){const r=MMP7.shopSell(S,i);if(r.ok)save();shopScr(r.ok?"売却しました。":P7_ERR[r.reason])}
 
 </script></body></html>

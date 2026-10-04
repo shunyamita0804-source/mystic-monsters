@@ -597,6 +597,7 @@
     const m = gS() && gS().m; if (!chfActive(m)) return false;
     const r = m.raise, ph = P8().boardPhase(m), f = MMCH.fieldOf(m);
     V.cfg = MMCH.configFor(m); V.g = MMCH.graphFor(m); V.calm = calmMode();
+    evArtPreload(m);   // 2026-10-04（追加アセット）：この配置の出来事の挿絵を少しずつ先読み
     const node = V.g.nodes[r.node] || V.g.nodes[V.g.start], key = `${m.uid}:${f.chapterId}:${f.patternId}:${f.layoutSeed}`;
     if (root.MMCHD) { if (V.diceCfg !== (V.cfg.dice || V.cfg)) { MMCHD.configure({ ...(V.cfg.dice || {}), sides: MMCH.rulesOf(V.cfg).diceSides }); V.diceCfg = V.cfg.dice || V.cfg; } MMCHD.preload(); }   // 面の数は rules.diceSides（停止面が無い出目は数字で出す）
     const app = $('#app'), same = V.key === key && V.field === node.field && $('#chf');
@@ -964,7 +965,7 @@
   async function chfResolve() {
     const m = gS() && gS().m; if (!chfActive(m) || busyGet() || !onField() || !m.raise.pend || m.raise.pend.stage !== 'resolve') return;
     busySet(true);
-    let tail = '';
+    let tail = '', card = null;   // card＝出来事の挿絵（evCardOpen。途中で止まっても finally で必ず消す）
     try {
       const id = m.raise.node, g0 = (gS().g) | 0, f0 = MMCH.fatigue(m), r = P8().resolveLanding(gS(), m); doSave();
       let fx = r.fx || {};
@@ -972,7 +973,8 @@
       if (fx.kind === 'choice') {
         const t0 = $(`#chf .chf-tile[data-id="${id}"]`); if (t0) { t0.classList.remove('hit'); void t0.offsetWidth; t0.classList.add('hit'); }
         await wait(beatOf(2));
-        const pick = await choiceTalk(fx);
+        card = await evCardOpen(fx.ev);   // 2026-10-04（追加アセット）：挿絵 → イベント名 → フィナの会話（最後に選択肢）
+        const pick = await choiceTalk(fx, card);
         let r2 = P8().resolveChoice(gS(), m, pick); if (!r2.ok) r2 = P8().resolveChoice(gS(), m, (fx.options[0] || {}).id); doSave();
         if (r2.ok) { Object.assign(r, r2); fx = r2.fx || {}; }
       }
@@ -1005,7 +1007,9 @@
       } else if (fx.ev && fx.kind !== 'none') {
         // イベント（LEVEL 2〜3）：間 → マスが光る → 出来事の文 → 結果（所持金・疲れは HUD まで動かす）
         await wait(beatOf(2)); if (tile) { tile.classList.remove('hit'); void tile.offsetWidth; tile.classList.add('hit'); }
-        await eventLines(fx);   // 2026-10-04：出来事の会話（フィナの吹き出し。eventPool[].lines）→ 結果
+        if (!card) card = await evCardOpen(fx.ev);   // 2026-10-04（追加アセット）：挿絵のある出来事は、背景を暗く → 挿絵 → イベント名 → 会話
+        await eventLines(fx, card);   // 2026-10-04：出来事の会話（挿絵があれば共通会話の小さな窓、無ければフィナの吹き出し。eventPool[].lines）→ 結果
+        await evCardClose(card); card = null;   // 挿絵を消してから能力UP・疲れの演出
         feel('event', { ev: fx.ev }); if (fx.kind === 'stat' || fx.kind === 'multi') monReact(fx.amount < 0 ? 'down' : 'up'); else if (fx.kind === 'fatigue') { monReact('rest'); restVeil(); }
         setMsg(T.t);
         // 2026-10-04 PHASE E：能力が動く出来事は成長のゲージ（複数の能力は縦に並べる）。休憩は青の帯＋疲れの増減。少し疲れる出来事（stat_tired）は疲れの増減も見せる
@@ -1020,21 +1024,51 @@
       if (r.goal) tail = `${tail}　大会会場に着いた！`.trim(); else if (r.timeUp) tail = `${tail}　ターンを使い切った…`.trim();
       await showReaction(m, fx);
       await storyAt(m, 'land', { fx, goal: !!r.goal });
-    } finally { busySet(false); }
+    } finally { if (card) await evCardClose(card); busySet(false); }
     if (onField()) chfBoard(tail || undefined);
+  }
+  // ---- 2026-10-04（第二段階・追加アセット）：イベントの挿絵カード（config.eventPool[].image・title）。
+  //  背景（フィールド）を少し暗くし、横長の挿絵を画面の上寄りに大きく（全面背景にはしない・上下を切らない 3:2）→ 下にイベント名の札。
+  //  会話は共通会話の小さな窓（compact）で下に出す＝挿絵を隠さない。終わったら挿絵を消してから既存の能力UP・疲れの演出。挿絵の無い出来事は従来どおり ----
+  const evDefOf = (id) => ((V.cfg && V.cfg.eventPool) || []).find((e) => e.id === id) || null;
+  async function evCardOpen(evId) {
+    const e = evDefOf(evId), ui = $('#chf-ui'); if (!e || !e.image || !ui || !onField()) return null;
+    ui.querySelectorAll('.chf-evc,.chroll,.chf-fina,.chf-rustle,.chf-excl').forEach((x) => x.remove());   // 前の表示を残さない（出目の札・吹き出し・予兆）
+    const d = document.createElement('div'); d.className = 'chf-evc'; d.setAttribute('role', 'dialog'); d.setAttribute('aria-label', e.title || 'イベント'); d.dataset.ev = e.id;
+    d.innerHTML = `<div class="chf-evc-dim"></div><figure class="chf-evc-card"><img src="${esc(e.image)}" alt="" decoding="async"><figcaption><b>${esc(e.title || '')}</b></figcaption></figure>`;
+    ui.appendChild(d);
+    const img = d.querySelector('img');   // 読み込み（デコード）を待ってから出す＝白い一瞬を出さない（先読み evArtPreload 済みなら即座）
+    try { if (img.decode) await Promise.race([img.decode(), wait(1500)]); } catch (_) {}
+    void d.offsetWidth; d.classList.add('on');
+    await wait(V.calm ? 60 : 380);
+    return d;
+  }
+  async function evCardClose(d) { if (!d || !d.isConnected) return; d.classList.remove('on'); d.classList.add('out'); await wait(V.calm ? 40 : 260); d.remove(); }
+  /** この配置で起こりうる出来事の挿絵だけを、少しずつ先読み（一括で読み込まない。1枚ずつ間を空ける） */
+  function evArtPreload(m) {
+    const f = m && m.raise && m.raise.field; if (!f || typeof Image === 'undefined') return; const key = `${f.layoutSeed}:${f.chapterId}`; if (V.evArtKey === key) return; V.evArtKey = key;
+    const ids = [...new Set(Object.values(f.nodeAssignments || {}).map((a) => a && a.ev).filter(Boolean))];
+    const srcs = ids.map((id) => (evDefOf(id) || {}).image).filter(Boolean);
+    srcs.forEach((src, i) => setTimeout(() => { const im = new Image(); im.decoding = 'async'; im.src = src; if (im.decode) im.decode().catch(() => {}); }, 1500 + i * 700));
   }
   // ---- 2026-10-04（第二段階）：イベントの会話と選択肢（js/chapter/events.js の MMEVT。キューで順に出す＝フィナの会話・演出・遭遇が重ならない） ----
   const queued = (fn) => (root.MMEVT ? MMEVT.run(fn) : fn());
   /** 出来事の会話（eventPool[].lines＝フィナの吹き出しを順に）。自動テスト（MM_QA_NO_STORY）では出さない */
-  async function eventLines(fx) {
-    const L = Array.isArray(fx.lines) ? fx.lines : []; if (!L.length || root.MM_QA_NO_STORY || !onField()) return;
+  async function eventLines(fx, card) {
+    const L = Array.isArray(fx.lines) ? fx.lines : [];
+    if (card) {   // 挿絵がある：共通会話（フィナの半身＋小さな窓。タップで進む ▼）で読む。自動テスト（MM_QA_NO_STORY）では挿絵だけ短く見せる
+      if (!L.length || root.MM_QA_NO_STORY || !root.MMNPC || !onField()) { await wait(V.calm ? 120 : 420); return; }
+      const lines = L.map((l) => (root.MMEVT ? MMEVT.lineOf(l) : { npc: 'fina', expression: l.expression || 'normal', text: l.text }));
+      await queued(() => MMNPC.talk(lines, { kind: 'event', presentation: 'compact' })); return;
+    }
+    if (!L.length || root.MM_QA_NO_STORY || !onField()) return;
     await queued(async () => { for (const l of L) { if (!onField()) break; const x = root.MMEVT ? MMEVT.lineOf(l) : { expression: l.expression, text: l.text }; await finaBubble({ text: x.text, expression: x.expression || 'normal' }); } });
   }
   /** 選択肢のある出来事：会話（最後の行に選択肢）→ 選んだ id。自動テスト・会話UIが無いときは最初の候補（MM_QA_CHOICE で指定できる） */
-  async function choiceTalk(fx) {
+  async function choiceTalk(fx, card) {
     const E = root.MMEVT, first = (fx.options && fx.options[0] && fx.options[0].id) || null;
-    if (!E || !root.MMNPC || root.MM_QA_NO_STORY) return E ? E.autoChoice(fx) : first;
-    const id = await queued(() => MMNPC.talk(E.choiceLines(fx), { kind: 'event', presentation: 'standard' }));
+    if (!E || !root.MMNPC || root.MM_QA_NO_STORY) { if (card) await wait(V.calm ? 120 : 420); return E ? E.autoChoice(fx) : first; }
+    const id = await queued(() => MMNPC.talk(E.choiceLines(fx), { kind: 'event', presentation: card ? 'compact' : 'standard' }));   // 挿絵があるときは小さな窓（挿絵を隠さない）
     return (fx.options || []).some((o) => o.id === id) ? id : first;
   }
   // ---- 同行者（フィナ）のリアクションの差し込み口：停止地点の結果 → MMCH.companionReaction（config.companion.reactions）→ 登録した描画（既定は何も出さない。会話UIは未決） ----

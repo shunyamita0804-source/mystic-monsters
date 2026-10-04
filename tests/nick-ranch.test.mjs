@@ -26,8 +26,8 @@ const farmSrc = () => HTML.slice(HTML.indexOf('function farm(msg,tab){'), HTML.i
 test('NICK-1：ニックは牧場の管理者として、アップ画像（closeup）の6表情で登録。Chapterボードには置かない', () => {
   const M = loadNpc(), n = M.get('nick');
   assert.deepEqual([n.name, n.role, n.board, n.defaultView, n.defaultExpr], ['ニック', '牧場の管理者', false, 'closeup', 'normal']);
-  assert.deepEqual([...M.expressionsOf('nick', 'closeup')], EXPR);
-  assert.equal(M.imageOf('nick', 'closeup', 'smile').src, 'assets/npc/nick/closeup/smile.webp');
+  assert.ok(EXPR.every((e) => M.expressionsOf('nick', 'closeup').includes(e)), '2026-10-04（追加アセット）：旧い表情名はすべて引き続き使える（意味の近い正式の表情差分 assets/npc/<id>/expr/ へ読み替え）'); assert.ok(M.EXPR.nick.every((e) => M.expressionsOf('nick', 'closeup').includes(e)), '正式の4表情');
+  assert.equal(M.imageOf('nick', 'closeup', 'smile').src, 'assets/npc/nick/expr/closeup/02_gentle.webp', '2026-10-04（追加アセット）：旧い表情名はすべて引き続き使える（意味の近い正式の表情差分 assets/npc/<id>/expr/ へ読み替え）');
   assert.equal(M.get('dan').name, 'ダン', 'ファームのダンはそのまま');
 });
 
@@ -42,7 +42,7 @@ test('NICK-3：牧場の吹き出し：通知（msg）は名前・顔なし。�
   assert.match(lineOf('const NICK_FACE='), /^const NICK_FACE="assets\/npc\/nick\/face\.webp";/);
   const f = farmSrc();
   assert.ok(f.includes('${msg?`<div class="fbub sys">${msg}</div>`:""}'), '通知は名前・顔なし');
-  assert.ok(f.includes('<div class="rnnick nst r"><img class="nstf" src="${NICK_STAND}" alt="" decoding="async">${msg?"":`<div class="tx fnick"><b>ニック</b>${npcLine("ranch",NICK_TALK.ranch)}</div>`}</div>'), '2026-10-03：ニックは半身の立ち絵（正式 closeup）＋会話窓。通知のときは立ち絵だけ');
+  assert.ok(f.includes('<div class="rnnick nst r">${(l=>`<img class="nstf" src="${npcSrc("nick",ft=="d"?"serious":ft=="e"&&rnView&&rnFeat&&MMP7.raiseState(rnFeat)=="done"?"impressed":ft=="e"?"gentle":(l?l.expression:"normal"))}" alt="" decoding="async">${l?`<div class="tx fnick"><b>ニック</b>${l.text}</div>`:""}`)(msg?null:npcLineX("ranch",NICK_TALK.ranch,"normal"))}</div>'), '2026-10-03：ニックは半身の立ち絵＋会話窓。通知のときは立ち絵だけ。2026-10-04：表情＝売る（真剣）・様子を見る（優しい笑顔）・育成完了の子の詳細（感心）・ふだんは一言の表情');
   assert.doesNotMatch(f, /NP\.f|<b>ダン<\/b>/, '牧場に旧「ダン」を出さない');
   assert.doesNotMatch(HTML, /\.fbub::after|\.fbub\.fnick::after/, '吹き出しのしっぽ（背景の絵の人物を指す）は無い');
   assert.match(HTML, /\.fbub\{position:absolute;left:3%;top:3%;width:52%;/, '正式背景では左上の空に出す（牧舎を隠さない。旧い吹き出しを隠す位置・最小の高さは不要になった）');
@@ -87,7 +87,7 @@ test('NICK-B1：牧場：ふだんはニックの吹き出し（名前・顔が�
   await buyFirst(pg);
   await pg.click('.hz[onclick="farm()"]'); await pg.waitForSelector('#app .fscene .rnnick .tx'); await pg.waitForFunction(() => { const i = document.querySelector('.rnnick .nstf'); return i && i.complete && i.naturalWidth > 0; });
   let b = await bub(pg);
-  assert.equal(b.cls, 'tx fnick'); assert.equal(b.name, 'ニック'); assert.deepEqual(b.img, ['assets/npc/nick/closeup/smile.webp', true]);
+  assert.equal(b.cls, 'tx fnick'); assert.equal(b.name, 'ニック'); assert.match(b.img[0], /^assets\/npc\/nick\/expr\/closeup\/0[124]_(normal|gentle|impressed)\.webp$/); assert.equal(b.img[1], true);   // 2026-10-04（追加アセット）：一言の表情（ふだん 01・やわらかい 02・成長を認める 04）
   assert.ok((await pg.evaluate(() => (window.MMNPCE ? MMNPCE.REVISIT.ranch.lines.map((l) => l.text) : NICK_TALK.ranch))).some((s) => b.text.endsWith(s)), `ニックの一言：${b.text}`);   // 2026-10-04：進行状態に合う一言（MMNPCE.REVISIT.ranch）
   assert.doesNotMatch(await H.text(pg), /ダン/, '牧場に旧「ダン」の名前を出さない');
   // 預ける（手持ち → 牧場）：通知は名前・顔なし

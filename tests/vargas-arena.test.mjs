@@ -25,8 +25,8 @@ const webp = (p) => { const b = readFileSync(path.join(ROOT, p)); const v = b.re
 test('VAR-1：ヴァルガスは闘技場の管理者として、アップ画像（closeup）の6表情で登録。セドリック（大会の進行役）とは別', () => {
   const M = loadNpc(), v = M.get('vargas');
   assert.deepEqual([v.name, v.role, v.board, v.defaultView, v.defaultExpr], ['ヴァルガス', '闘技場の管理者', false, 'closeup', 'normal']);
-  assert.deepEqual([...M.expressionsOf('vargas', 'closeup')], EXPR);
-  assert.equal(M.imageOf('vargas', 'closeup', 'respect').src, 'assets/npc/vargas/closeup/respect.webp');
+  assert.ok(EXPR.every((e) => M.expressionsOf('vargas', 'closeup').includes(e)), '2026-10-04（追加アセット）：旧い表情名はすべて引き続き使える（意味の近い正式の表情差分 assets/npc/<id>/expr/ へ読み替え）'); assert.ok(M.EXPR.vargas.every((e) => M.expressionsOf('vargas', 'closeup').includes(e)), '正式の4表情');
+  assert.equal(M.imageOf('vargas', 'closeup', 'respect').src, 'assets/npc/vargas/expr/closeup/04_acknowledge.webp', '2026-10-04（追加アセット）：旧い表情名はすべて引き続き使える（意味の近い正式の表情差分 assets/npc/<id>/expr/ へ読み替え）');
   assert.equal(M.get('cedric').role, '公式ランク大会の進行役', 'セドリックはそのまま（別人物）');
   assert.deepEqual(['dan', 'nick', 'karen', 'elliot', 'fina'].map((k) => M.get(k).name), ['ダン', 'ニック', 'カレン', 'エリオット', 'フィナ']);
 });
@@ -54,8 +54,8 @@ test('VAR-4：闘技場はロック表示のまま。押すと案内文（シス
   assert.match(lineOf('function townArena('), /^function townArena\(\)\{townLock\("闘技場は、まだ利用できません。"\);if\(!npcFirst\("arena"\)\)vgSay\(\)\}/, '案内文（townLock＝システム表示）とヴァルガスの一言を背景の上に出す（2026-09-30：街は1画面で固定）');
   const vg = lineOf('function vgSay(');
   assert.doesNotThrow(() => new Function(vg), 'vgSay は構文として正しい');
-  assert.ok(vg.endsWith('</div></div>`);try{document.getElementById("vgsay").scrollIntoView({block:"nearest"})}catch(e){}}'), '出したら画面内へ（小さい画面で案内欄の下に隠れないように）');
-  assert.ok(vg.includes('<div class="vgsay nst" id="vgsay" onclick="townMsgClose(this)"><img class="nstf" src="${VARGAS_STAND}" alt="" decoding="async"><div class="tx"><b>ヴァルガス</b>${VARGAS_TALK.locked[R(VARGAS_TALK.locked.length)]}</div></div>'), '2026-10-03：半身の立ち絵（正式 closeup）と会話窓');
+  assert.ok(vg.endsWith('</div>`)(npcLineX("arena",VARGAS_TALK.locked,"normal"))}</div>`);try{document.getElementById("vgsay").scrollIntoView({block:"nearest"})}catch(e){}}'), '出したら画面内へ（小さい画面で案内欄の下に隠れないように）');
+  assert.ok(vg.includes('<div class="vgsay nst" id="vgsay" onclick="townMsgClose(this)">${(l=>`<img class="nstf" src="${npcSrc("vargas",l.expression)}" alt="" decoding="async"><div class="tx"><b>ヴァルガス</b>${l.text}</div>`)(npcLineX("arena",VARGAS_TALK.locked,"normal"))}</div>'), '2026-10-03：半身の立ち絵と会話窓。2026-10-04：一言と表情（威厳・不敵な笑み・厳しい・認める）は MMNPCE の再訪');
   assert.ok(vg.includes('const o=document.getElementById("vgsay");if(o)o.remove();'), '押すたびに増えない');
   assert.doesNotMatch(vg, /save\(|lobby\(|fight\(|MMP8\.|S\./, '画面遷移・セーブ・バトル・状態の変更をしない');
   assert.equal((HTML.match(/vgSay\(/g) || []).length, 2, '定義＋闘技場のボタンの1か所だけ');
@@ -88,7 +88,7 @@ test('VAR-B1：街：闘技場（ロック中）を押すと、案内文はシ�
     await pg.waitForFunction(() => { const i = document.querySelector('.vgsay img'); return i && i.complete && i.naturalWidth > 0; });
     const r = await read(pg);
     assert.equal(r.v.length, 1, '一言は1つだけ（増えない）');
-    assert.deepEqual([r.v[0].name, r.v[0].src, r.v[0].ok], ['ヴァルガス', 'assets/npc/vargas/closeup/stern.webp', true], '2026-10-03：半身の立ち絵（正式 closeup）');
+    assert.deepEqual([r.v[0].name, r.v[0].ok], ['ヴァルガス', true]); assert.match(r.v[0].src, /^assets\/npc\/vargas\/expr\/closeup\/0[1-4]_(normal|grin|stern|acknowledge)\.webp$/, '2026-10-04（追加アセット）：半身の立ち絵（正式の表情差分）');
     assert.ok(T.includes(r.v[0].text), r.v[0].text);
     assert.equal(r.msg, '闘技場は、まだ利用できません。'); assert.equal(r.msgFace, false, '案内文はシステム表示（顔・名前なし）');
     assert.equal(r.town, true, '街のまま'); assert.deepEqual(r.lock, ['townArena()', 'townGuild()'], 'ロック表示のまま（闘技場・聖獣士管理局）');

@@ -35,9 +35,9 @@ test('EV-01：Chapter 1 のイベント候補（eventPool）：形式が正し�
   for (const e of withLines) { assert.ok(e.lines.length <= 4, `${e.id}：2〜4行まで`); for (const l of e.lines) assert.ok(l.text.length <= 48, `${e.id}：短い（${l.text.length}）`); }
   for (const e of pool) { if (e.handler) assert.ok(HANDLERS.includes(e.handler), `${e.id}：${e.handler}`); for (const c of e.choices || []) assert.ok(HANDLERS.includes(c.handler || 'none'), `${e.id}/${c.id}`); }
   for (const e of withLines) { const p = e.params || {}; if (e.handler === 'gold') assert.ok(p.amount <= 50, `${e.id}：G を大量に配らない`); if (['stat_random', 'stat_tired'].includes(e.handler)) assert.ok(p.amount <= 5, `${e.id}：+5 まで`); }
-  for (const e of choice) for (const c of e.choices) assert.ok(c.label && c.lines && c.lines.length, `${e.id}/${c.id}：選んだあとの一言`);
+  for (const e of choice) for (const c of e.choices) assert.ok(c.label && c.handler && c.text, `${e.id}/${c.id}：選択肢の名前・効果・結果の文（2026-10-04 追加アセット：選んだあとの一言は任意）`);
   assert.ok(pool.some((e) => e.handler === 'none'), '会話だけの出来事（フレーバー）がある');
-  assert.ok(pool.some((e) => e.handler === 'stat_tired'), '少し疲れて能力が上がる出来事がある');
+  assert.ok(pool.some((e) => e.handler === 'stat_tired' || (e.choices || []).some((c) => c.handler === 'stat_tired')), '少し疲れて能力が上がる出来事（選択肢を含む）がある');
 });
 
 test('EV-02：同じ Chapter で同じイベントを重複して割り当てない（engine の pickDistinct）。休憩（疲れ回復）も同じ。seed が同じなら同じ配置', () => {
@@ -57,7 +57,7 @@ test('EV-03：2択の出来事：止まった時点では何も起こさず・�
   m.raise.fatigue = 40;
   const r = P8.resolveLanding(S, m, lcg(1));
   assert.equal(r.ok, true); assert.equal(r.wait, true); assert.equal(r.choice, true); assert.equal(r.fx.kind, 'choice'); assert.equal(r.fx.ev, 'old_grounds');
-  assert.deepEqual(r.fx.options.map((o) => o.id), ['train', 'rest']); assert.equal(r.fx.lines.length, 1);
+  assert.deepEqual(r.fx.options.map((o) => o.id), ['train', 'check']); assert.equal(r.fx.lines.length, 2);   // 2026-10-04（追加アセット）：少し鍛える／動きを確かめる
   assert.equal(m.raise.pend.stage, 'resolve'); assert.equal(m.raise.pend.fx.kind, 'choice'); assert.ok(!m.raise.field.consumedEvents.includes(id), '使った印はまだ付かない');
   assert.equal(CH.fatigue(m), 40, '効果はまだ');
   // セーブ → 読み込み：同じ途中状態（pend は正しい形のまま残る）
@@ -65,18 +65,18 @@ test('EV-03：2択の出来事：止まった時点では何も起こさず・�
   const r2 = P8.resolveLanding(S2, S2.m, lcg(1)); assert.equal(r2.fx.kind, 'choice', '再読み込みでも同じ選択肢');
   // 無い選択肢は拒否、選んだら効果とターン終了
   assert.deepEqual(P8.resolveChoice(S, m, 'nope'), { ok: false });
-  const c = P8.resolveChoice(S, m, 'rest', lcg(1));
-  assert.equal(c.ok, true); assert.equal(c.fx.kind, 'fatigue'); assert.equal(c.fx.choice, 'rest'); assert.equal(c.fx.recovered, 8); assert.equal(CH.fatigue(m), 32);
-  assert.equal(c.fx.lines[0].text, 'うん、今日は休もう。無理しないのも大事。'); assert.equal(m.raise.pend, null); assert.ok(m.raise.field.consumedEvents.includes(id));
-  assert.deepEqual(P8.resolveChoice(S, m, 'rest'), { ok: false }, '二度は選べない');
+  const hi0 = m.hi, c = P8.resolveChoice(S, m, 'check', lcg(1));
+  assert.equal(c.ok, true); assert.equal(c.fx.kind, 'stat'); assert.equal(c.fx.choice, 'check'); assert.equal(c.fx.key, 'hi'); assert.equal(m.hi, hi0 + 5, '動きを確かめる＝命中 +5'); assert.equal(CH.fatigue(m), 40, '疲れは変わらない');
+  assert.equal(m.raise.pend, null); assert.ok(m.raise.field.consumedEvents.includes(id));
+  assert.deepEqual(P8.resolveChoice(S, m, 'check'), { ok: false }, '二度は選べない');
   // 「少し鍛える」＝能力 +5・疲れ +6
   const E2 = onCh1(12), id2 = landOnEvent(E2, 'old_grounds'); E2.m.raise.fatigue = 10; E2.P8.resolveLanding(E2.S, E2.m, lcg(1));
   const before = j(E2.m), t = E2.P8.resolveChoice(E2.S, E2.m, 'train', lcg(3));
-  assert.equal(t.fx.kind, 'stat'); assert.equal(t.fx.amount, 5); assert.equal(E2.m[t.fx.key], before[t.fx.key] + 5); assert.equal(t.fx.fatigueAdded, 6); assert.equal(E2.CH.fatigue(E2.m), 16); assert.ok(E2.m.raise.field.consumedEvents.includes(id2));
+  assert.equal(t.fx.kind, 'stat'); assert.equal(t.fx.key, 'po', '少し鍛える＝ちから'); assert.equal(t.fx.amount, 5); assert.equal(E2.m.po, before.po + 5); assert.equal(t.fx.fatigueAdded, 5); assert.equal(E2.CH.fatigue(E2.m), 15); assert.ok(E2.m.raise.field.consumedEvents.includes(id2));
   // 選択肢の無い出来事は従来どおりその場で効果（会話の行つき）
-  const E3 = onCh1(13), id3 = landOnEvent(E3, 'tailwind'); E3.m.raise.fatigue = 20; const r3 = E3.P8.resolveLanding(E3.S, E3.m, lcg(1));
-  assert.equal(r3.fx.kind, 'fatigue'); assert.equal(r3.fx.recovered, 5); assert.equal(r3.fx.lines.length, 2); assert.equal(E3.m.raise.pend, null); assert.ok(E3.m.raise.field.consumedEvents.includes(id3));
-  const E4 = onCh1(14); landOnEvent(E4, 'distant_cry'); const r4 = E4.P8.resolveLanding(E4.S, E4.m, lcg(1)); assert.equal(r4.fx.kind, 'flavor'); assert.equal(r4.fx.lines.length, 2);
+  const E3 = onCh1(13), id3 = landOnEvent(E3, 'tailwind'); E3.m.raise.fatigue = 20; const ev0 = E3.m.ev, r3 = E3.P8.resolveLanding(E3.S, E3.m, lcg(1));
+  assert.equal(r3.fx.kind, 'stat'); assert.equal(r3.fx.key, 'ev'); assert.equal(E3.m.ev, ev0 + 5, '草原の追い風＝回避 +5'); assert.equal(r3.fx.lines.length, 2); assert.equal(E3.m.raise.pend, null); assert.ok(E3.m.raise.field.consumedEvents.includes(id3));
+  const E4 = onCh1(14); landOnEvent(E4, 'wind_cry'); const r4 = E4.P8.resolveLanding(E4.S, E4.m, lcg(1)); assert.equal(r4.fx.kind, 'flavor'); assert.equal(r4.fx.lines.length, 2);
 });
 
 test('EV-04：チュートリアル（config.story の scope "save"）：止まったマスの種類ごとに1回（能力・イベント・休憩・宝箱・野生・ライバル・分かれ道・ゴール）。見た記録は S.npcFlags.story（セーブ単位）で、個体や Chapter が変わっても二度出ない。記録が渡されないときは出さない', () => {
@@ -102,7 +102,7 @@ test('EV-04：チュートリアル（config.story の scope "save"）：止ま�
 
 test('EV-05：施設の NPC イベント（MMNPCE）：初回訪問は5施設（市場・牧場・研究所・闘技場・ファーム）でフィナ ↔ NPC。カレンは「〜わよ」「〜だわ」を使わない。再訪は進行状態に合う一言が優先、ふつうの一言は確率、直前と同じ文は避ける', () => {
   const { NE } = load();
-  assert.deepEqual(NE.FACILITIES, ['market', 'ranch', 'lab', 'arena', 'farm']);
+  assert.deepEqual(NE.FACILITIES, ['market', 'ranch', 'lab', 'arena', 'train', 'shop', 'farm'], '2026-10-04（追加アセット）：特訓（ゲンシン）・アイテム屋（おばあちゃん）の初回を追加');
   for (const f of NE.FACILITIES) { const L = NE.first(f); assert.ok(L.length >= 2 && L.length <= 4, f); assert.ok(L.some((l) => l.npc === 'fina') && L.some((l) => l.npc !== 'fina'), `${f}：フィナと NPC`); for (const l of L) assert.ok(l.expression && l.text && l.side, `${f}：行の形`); }
   assert.deepEqual(NE.first('market').map((l) => l.npc), ['fina', 'karen', 'fina', 'karen']); assert.deepEqual(NE.first('farm').map((l) => l.npc), ['dan', 'fina']);
   const karen = [...NE.first('market').filter((l) => l.npc === 'karen').map((l) => l.text), ...NE.REVISIT.market.lines.map((l) => l.text)];
@@ -149,11 +149,11 @@ test('EV-08：つなぎ（静的）：index.html は events.js・npc-events.js�
   for (const f of ['./js/chapter/events.js', './js/npc/npc-events.js', './js/phase8/rival.js']) assert.ok(HTML.includes(`<script src="${f}"></script>`), f);
   assert.match(HTML, /function karenIntro\(\)\{const f=finaFlags\(\);if\(npcFirst\("market"/); assert.match(HTML, /if\(!tab\)setTimeout\(\(\)=>npcFirst\("lab"\),0\)/);
   assert.match(HTML, /function townArena\(\)\{townLock\("闘技場は、まだ利用できません。"\);if\(!npcFirst\("arena"\)\)vgSay\(\)\}/);
-  assert.match(HTML, /if\(st=="none"\)npcFirst\("farm"\);else if\(st=="farm"\)farmReturn\(m\)/); assert.match(HTML, /npcLine\("ranch",NICK_TALK\.ranch\)/);
+  assert.match(HTML, /if\(st=="none"\)npcFirst\("farm"\);else if\(st=="farm"\)farmReturn\(m\)/); assert.match(HTML, /npcLineX\("ranch",NICK_TALK\.ranch,"normal"\)/);
   assert.match(HTML, /function npcFirst\(fac,after\)\{if\(window\.MM_QA_NO_NPC\|\|!window\.MMNPCE\|\|!window\.MMNPC\)return false;/, '自動テストでは出さない');
   assert.match(HTML, /F\[fac\]=1;if\(fac=="market"\)finaFlags\(\)\.karenIntro=1;save\(\);/, '先に「表示済み」を保存');
   assert.match(HTML, /seen\.push\(key\);if\(ev\.rumor\)seen\.push\("rumor"\);save\(\);MMNPC\.talk\(ev\.lines,\{kind:"event",presentation:"major"\}\)/, '帰還は重要な会話（major）');
-  const FV = rd('js/chapter/field-view.js'); assert.match(FV, /async function choiceTalk\(fx\)/); assert.match(FV, /async function eventLines\(fx\)/); assert.match(FV, /if \(fx\.kind === 'choice'\) \{/); assert.match(FV, /storyAt\(m, 'branch'\)/);
+  const FV = rd('js/chapter/field-view.js'); assert.match(FV, /async function choiceTalk\(fx, card\)/); assert.match(FV, /async function eventLines\(fx, card\)/); assert.match(FV, /if \(fx\.kind === 'choice'\) \{/); assert.match(FV, /storyAt\(m, 'branch'\)/);
   assert.match(rd('tests/e2e/harness.mjs'), /window\.MM_QA_NO_NPC = true/);
   assert.match(rd('js/phase8/raising.js'), /if \(fx\.kind === 'choice'\) return \{ ok: true, fx, wait: true, choice: true \};/);
   { const k = HTML.lastIndexOf('<script>'), body = HTML.slice(k + 8, HTML.indexOf('</script>', k)); assert.doesNotThrow(() => new Function(body), 'index.html の本体のインラインスクリプトは構文エラーなし（行の途中の // コメントがコードを飲み込んでいない）'); }

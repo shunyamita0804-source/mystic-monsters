@@ -1,7 +1,7 @@
 // =========================================================
 // Chapter のイベント基盤 `MMEVT`（2026-10-04 第二段階）
 //  ・イベントのデータ形式（EVENT_FIELDS）と検査（validate）：イベントは config のデータ（巨大な if を増やさない）
-//      - 停止マスのランダムイベント＝config.eventPool：{ id, tier, weight, handler, params, text, lines, choices, recovery }
+//      - 停止マスのランダムイベント＝config.eventPool：{ id, tier, weight, handler, params, text, lines, choices, recovery, title, image }（title＝イベント名・image＝挿絵。2026-10-04 追加アセット）
 //        lines＝フィナの会話（{ expression, text }…。止まったマスの吹き出しで順に出す）、choices＝2択（{ id, label, desc, handler, params, text, lines }。選んでから効果）
 //      - 節目・条件・チュートリアル＝config.story：{ id, trigger('start'|'land'|'branch'), when, lines, presentation, once, priority, scope('chapter'|'save') }
 //        scope 'save'＝このセーブで1回（S.npcFlags.story）。既定はこの個体のこの Chapter で1回（m.raise.field.storySeen）
@@ -14,7 +14,7 @@
   'use strict';
   const fz = Object.freeze;
   const isObj = (o) => !!o && typeof o === 'object' && !Array.isArray(o);
-  const EVENT_FIELDS = fz(['id', 'trigger', 'when', 'once', 'weight', 'chapter', 'route', 'lines', 'handler', 'params', 'choices', 'scope', 'priority', 'presentation', 'tier', 'text', 'recovery']);
+  const EVENT_FIELDS = fz(['id', 'trigger', 'when', 'once', 'weight', 'chapter', 'route', 'lines', 'handler', 'params', 'choices', 'scope', 'priority', 'presentation', 'tier', 'text', 'recovery', 'title', 'image']);
 
   // ---- 直列のキュー ----
   let chain = Promise.resolve(), running = 0;
