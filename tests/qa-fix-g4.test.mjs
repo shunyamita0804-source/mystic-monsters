@@ -229,8 +229,8 @@ test('QA-G4-B2：実ブラウザ：名前「<!--」の個体でも Chapter間（
     assert.equal(await count(pg, '#app button.fmgo[onclick="prepScr()"], #app button.bcb[onclick="p8Suspend()"], #app button.bcrb[onclick="bcMenu()"]'), 3, '冒険・中断・メニュー');
     assert.deepEqual(await txt(pg, '#app .bcname b'), [CM]);
   }
-  await pg.click('#app .fmcmd button[onclick="hall(\'st\')"]'); await pg.waitForSelector('#app .dnm');
-  assert.deepEqual(await txt(pg, '#app .dnm'), [CM], 'ステータスの名前');
+  await pg.click('#app .fmcmd button[onclick="hall(\'st\')"]'); await pg.waitForSelector('#app .sts .stnm');
+  assert.deepEqual(await txt(pg, '#app .sts .stnm'), [CM], 'ステータスの名前');
   await pg.evaluate(() => hall('t')); await pg.waitForSelector('#app .fmcmd');
   await pg.click('#app .bcrb[onclick="bcMenu()"]'); await pg.waitForSelector('#p9ov .fmab'); await pg.waitForTimeout(400); await pg.click('#p9ov .fmab'); await pg.waitForSelector('.p8mc');
   assert.equal((await txt(pg, '.p8mc p'))[0], `${CM}の育成をやめますか？`); assert.equal(await count(pg, '.p8mc button'), 2, '「やめない」「放棄に進む」');
