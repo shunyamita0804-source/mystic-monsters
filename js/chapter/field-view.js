@@ -1049,7 +1049,13 @@
     const f = m && m.raise && m.raise.field; if (!f || typeof Image === 'undefined') return; const key = `${f.layoutSeed}:${f.chapterId}`; if (V.evArtKey === key) return; V.evArtKey = key;
     const ids = [...new Set(Object.values(f.nodeAssignments || {}).map((a) => a && a.ev).filter(Boolean))];
     const srcs = ids.map((id) => (evDefOf(id) || {}).image).filter(Boolean);
-    srcs.forEach((src, i) => setTimeout(() => { const im = new Image(); im.decoding = 'async'; im.src = src; if (im.decode) im.decode().catch(() => {}); }, 1500 + i * 700));
+    // 1枚ずつ順に（読み終えてから次へ）。フィールドを離れた・別の配置になったら続けない（ほかの画面で読み込みを起こさない）
+    const live = () => V.evArtKey === key && onField() && chfActive(gS() && gS().m);
+    const next = (i) => {
+      if (i >= srcs.length) return; if (!live()) { if (V.evArtKey === key) V.evArtKey = null; return; }   // 戻ってきたら続きから（読み終えた分はキャッシュ）
+      const im = new Image(); im.decoding = 'async'; const go = () => setTimeout(() => next(i + 1), 700); im.onload = go; im.onerror = go; im.src = srcs[i];
+    };
+    if (srcs.length) setTimeout(() => next(0), 1500);
   }
   // ---- 2026-10-04（第二段階）：イベントの会話と選択肢（js/chapter/events.js の MMEVT。キューで順に出す＝フィナの会話・演出・遭遇が重ならない） ----
   const queued = (fn) => (root.MMEVT ? MMEVT.run(fn) : fn());
