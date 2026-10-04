@@ -520,7 +520,8 @@
   // 能力地点
   // ---------------------------------------------------------
   /** 能力地点の上昇量：成長適性（MMP10M.growthOf／growthGain。表は monsters.js の GROWTH_GAIN の1か所）。{ grade, amount } */
-  function statGain(m, k) { const P = root.MMP10M; if (!P || !P.growthGain) throw new Error('MMCH：成長適性（js/phase10/monsters.js）が読み込まれていません'); return { grade: P.growthOf(m, k), amount: P.growthGain(m, k) }; }
+  //  2026-10-06：config.rules.growthGain（{ A, B, C, D, E }）があれば、その Chapter の能力マスはこの表（マスの多い Chapter で伸びすぎない＝tests/chapter1-board-sim.mjs で比べて決めた値）。無ければ GROWTH_GAIN
+  function statGain(m, k) { const P = root.MMP10M; if (!P || !P.growthGain) throw new Error('MMCH：成長適性（js/phase10/monsters.js）が読み込まれていません'); const cfg = m && m.raise ? configFor(m) : null, T = cfg && cfg.rules && cfg.rules.growthGain, grade = P.growthOf(m, k); return { grade, amount: T && T[grade] != null ? T[grade] : P.growthGain(m, k) }; }
   const STAT_MAX = 999;
   function addStat(m, k, n) { const b = m[k] || 0; m[k] = clamp(b + n, 0, STAT_MAX); return m[k] - b; }
 

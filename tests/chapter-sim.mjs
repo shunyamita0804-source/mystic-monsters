@@ -42,7 +42,7 @@ export function runOnce(E, seed, policy = 'cautious', branchPick = null, chapter
       continue;
     }
     if (ph === 'move') { P8.step(S, m); continue; }
-    if (ph === 'branch') { const opts = m.raise.pend.opts, pickId = branchPick ? (opts.find((o) => (CH.graphFor(m).nodes[o] || {}).branch === branchPick) || opts.find((o) => o.startsWith(branchPick === 'bridge' ? 'a' : 'b')) || opts[0]) : opts[Math.floor(rnd() * opts.length)]; P8.chooseBranch(S, m, pickId); continue; }   // 道の名前（node.branch）で選ぶ（旧 Chapter の a／b の接頭辞も読む）
+    if (ph === 'branch') { const opts = m.raise.pend.opts, pickId = branchPick ? (opts.find((o) => (CH.graphFor(m).nodes[o] || {}).branch === branchPick) || opts.find((o) => o.startsWith(branchPick === 'bridge' ? 'a' : 'b')) || opts[0]) : opts[Math.floor(rnd() * opts.length)]; P8.chooseBranch(S, m, pickId); st.picks = [...(st.picks || []), (CH.graphFor(m).nodes[pickId] || {}).branch]; continue; }   // 道の名前（node.branch）で選ぶ（旧 Chapter の a／b の接頭辞も読む）
     if (ph === 'resolve') {
       let r = P8.resolveLanding(S, m, rnd), fx = r.fx || {};
       if (fx.kind === 'choice') { st.choice = (st.choice || 0) + 1; r = P8.resolveChoice(S, m, fx.options[Math.floor(rnd() * fx.options.length)].id, rnd); fx = r.fx || {}; }   // 2026-10-04：2択の出来事はランダムに選ぶ
@@ -56,7 +56,7 @@ export function runOnce(E, seed, policy = 'cautious', branchPick = null, chapter
     }
     throw new Error('unexpected phase ' + ph);
   }
-  st.turns = m.raise.turnsUsed; st.goal = !!m.raise.goal; st.branch = (m.raise.field && m.raise.field.branch) || null; st.endFatigue = CH.fatigue(m);
+  st.turns = m.raise.turnsUsed; st.goal = !!m.raise.goal; st.branch = (st.picks || []).find((b) => b === 'forest' || b === 'bridge') || (m.raise.field && m.raise.field.branch) || null;   // 2026-10-06：分岐が複数ある Chapter は森／大橋（背景が分かれる分岐）で数える st.endFatigue = CH.fatigue(m);
   return st;
 }
 export function simulate(E, n = 1000, policy = 'cautious', seed0 = 20260930, chapter = 1, branchPick = null) {

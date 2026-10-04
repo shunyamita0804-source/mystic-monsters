@@ -82,5 +82,5 @@ test('NX5-05：短いイベント（MMNPCE.moment）＝吹き出し1〜3・表�
 test('NX5-06：操作欄（safe-area・少し上へ）・30ターンの説明（コードの値と一致）', () => {
   assert.match(HTML, /#app>\.chfw\{--chcmd:128px;--chdeck:calc\(clamp\(136px,20\.6vh,180px\) \+ env\(safe-area-inset-bottom,0px\)\)\}/);
   const c = rd('js/chapter/configs/ch1a.js');
-  assert.match(c, /turnLimit: 30/); assert.match(c, /id: 'tut_turns'/); assert.match(c, /この旅は30ターン/);
+  assert.match(c, /turnLimit: root\.MMCH_CH1A_TURN_LIMIT \|\| 45/); assert.match(c, /id: 'tut_turns'/); assert.match(c, /この旅は45ターン/);   // 2026-10-06：45ターン
 });

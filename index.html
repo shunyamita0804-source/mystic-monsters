@@ -1652,6 +1652,19 @@ button.mkc b{font-size:.9rem}button.mkc small{font-size:.66rem;color:#ffe9b0}
 .chf-tile.pb.u .chf-tbase{filter:drop-shadow(0 0 1px rgba(255,230,160,.35)) drop-shadow(0 3px 4px rgba(20,14,6,.45))}
 .chf-tile.pb.u.cur .chf-tbase{filter:drop-shadow(0 0 7px rgba(255,214,110,.7)) drop-shadow(0 3px 4px rgba(20,14,6,.45))}
 .chf-tile.u.used{opacity:.68}
+/* 2026-10-06：小型の立体マス（tileUI.discs）。絵そのものが厚みのある円盤＝上面の中心をノードに合わせる（少し上へ）。絵の色は変えない（影と光だけ） */
+.chf-tile.disc{transform:translate(-50%,-42%)}
+.chf-tile.disc img{filter:drop-shadow(0 3px 3px rgba(20,14,6,.42))}
+.chf-tile.disc.cur img{filter:drop-shadow(0 0 6px rgba(255,214,110,.75)) drop-shadow(0 3px 3px rgba(20,14,6,.42))}
+.chf-tile.disc.used{opacity:.72}
+.chf-tile.disc.hit img{animation:chtilepop .45s ease-out}
+/* 2026-10-06：能力UPのアクション（js/chapter/field-view.js の trainAct）：道具（能力ごとの絵）をモンスターのそばに置く。結果の文はモンスターの頭の上 */
+.chf-tact{position:absolute;z-index:3;transform:translate(-50%,-100%);pointer-events:none}
+.chf-tact img{display:block;width:100%;height:auto;filter:drop-shadow(0 0 1.5px rgba(255,244,214,.95)) drop-shadow(0 0 6px color-mix(in srgb,var(--c,#ffe08a) 70%,transparent)) drop-shadow(0 4px 5px rgba(0,0,0,.45))}
+.chf-tact-tx{position:absolute;z-index:31;transform:translate(-50%,-100%);padding:3px 13px;border-radius:999px;background:linear-gradient(180deg,rgba(24,40,90,.94),rgba(8,18,46,.94));border:1.5px solid var(--c,#d9b465);color:#fff;font:800 17px/1.3 var(--mm-font-head);letter-spacing:.04em;white-space:nowrap;text-shadow:0 2px 0 rgba(0,0,0,.5);box-shadow:0 0 12px color-mix(in srgb,var(--c,#d9b465) 55%,transparent),0 5px 12px rgba(0,0,0,.4);pointer-events:none;animation:chfTactTx .9s cubic-bezier(.2,.8,.3,1.1) both}
+@keyframes chfTactTx{0%{opacity:0;translate:0 10px;scale:.85}22%{opacity:1;translate:0 0;scale:1.06}36%{scale:1}100%{opacity:1;translate:0 -6px}}
+.chf-tact-tx.out{opacity:0;transition:opacity .16s}
+@media (prefers-reduced-motion:reduce){.chf-tact-tx{animation:none}}
 .chf-tile.pb.hit .chf-tbase{animation:none}.chf-tile.pb.hit .chf-ticon{animation:chtilepop2 .45s ease-out}@keyframes chtilepop2{40%{transform:translate(-50%,-50%) scale(1.08)}}
 .chf-tile.pb.cur .chf-tbase{filter:drop-shadow(0 0 7px rgba(255,214,110,.6)) drop-shadow(0 2px 3px rgba(20,14,6,.35))}
 .chf-tile.ped.cur .chf-tped{border-color:rgba(255,226,150,.85);box-shadow:inset 0 0 0 1px rgba(40,28,12,.28),0 0 10px rgba(255,214,110,.45)}

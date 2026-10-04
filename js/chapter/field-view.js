@@ -184,11 +184,24 @@
     const t = clamp((n.d - 0.4) / (1.12 - 0.4), 0, 1), op = S.farOpacity != null ? S.farOpacity + (1 - S.farOpacity) * t : 1;   // 奥のマスほど控えめ（UI のアイコンに見えない）
     return { w, h: w * f, f, op, th: Math.max(0, w * f * (S.thick != null ? S.thick : 0.12)), rim: Math.max(1.2, w * (S.rim != null ? S.rim : 0.018)) };
   }
+  /**
+   * 2026-10-06：小型の立体マス（tileUI.discs＝種別名 → 画像。宝箱は段階ごとに treasure_normal・treasure_rare・treasure_special）。絵そのものが厚みのある円盤なので、台座・土台は敷かない。
+   *  大きさ＝discSize.w × 奥行き^pow（背景の画素。見えている道幅 × roadMax を上限）、縦＝幅 × aspect（絵の縦横比）× 奥ほど少し平たく（flat.far〜near）。
+   *  マスの上面の中心をノードの止まる位置に合わせる（.chf-tile.disc の translate）。書いていない種類（スタート・ゴール）は従来の表示
+   */
+  function discKeyOf(m, id, key) { if (key !== 'treasure') return key; const a = MMCH.typeAt(m, id); return a && a.tier ? `treasure_${a.tier}` : key; }
+  function discBox(T, n, sc) {
+    const Z = T.discSize || {}, L = n.look || {}, cap = sc ? seenRoadW(sc, n) * (Z.roadMax || 0.42) : 0, w0 = (Z.w || 130) * Math.pow(n.d, Z.pow != null ? Z.pow : 0.9) * (L.s || 1), w = cap > 0 ? Math.min(w0, cap) : w0;
+    const F = Z.flat || { near: 1, far: 0.8 }, t = clamp((n.d - 0.4) / (1.12 - 0.4), 0, 1), f = (Z.aspect || 0.8) * (F.far + (F.near - F.far) * t);
+    return { w, h: w * f };
+  }
   function tilesHtml(cfg, g, sc, m, ids) {
     const T = cfg.tileUI; if (!T) return '';
     const ped = !!T.pedestal, base = T.base && T.base.src ? T.base : null;   // 共通の台座（地面 → 薄い接地影 → 石の台座（厚み）→ 金属の縁 → マスの絵）。base＝正式の共通土台の画像（2026-10-03。有れば CSS の台座の代わりに敷く）
     return ids.map((id) => {
       const n = g.nodes[id], key = tileKeyOf(m, id); if (key === 'start') return '';
+      const dk = T.discs ? discKeyOf(m, id, key) : null, dsrc = dk && (T.discs[dk] || T.discs[key]);
+      if (dsrc) { const B = discBox(T, n, sc); return `<i class="chf-tile disc" data-id="${id}" data-type="${key}" style="left:${(n.mx * sc.w).toFixed(1)}px;top:${(n.my * sc.h).toFixed(1)}px;width:${B.w.toFixed(1)}px;height:${B.h.toFixed(1)}px;--d:${n.d}"><img class="chf-ticon" src="${esc(dsrc)}" alt="" draggable="false" decoding="async"></i>`; }
       const src = tileSpriteOf(cfg, key), B = tileBox(T, n, key, sc), no = g.order.indexOf(id) + 1;
       const box = `left:${(n.mx * sc.w).toFixed(1)}px;top:${(n.my * sc.h).toFixed(1)}px;width:${B.w.toFixed(1)}px;height:${B.h.toFixed(1)}px;--d:${n.d};--f:${B.f.toFixed(3)}${ped ? `;--th:${B.th.toFixed(1)}px;--rim:${B.rim.toFixed(1)}px;--op:${B.op.toFixed(2)}` : ''}`;
       const under = base ? `<img class="chf-tbase" src="${esc(base.src)}" alt="" draggable="false" decoding="async" style="--bs:${base.scale || 1.25};--bh:${base.h || 1.25};--bl:${base.lift != null ? base.lift : 0.43}">` : ped ? '<i class="chf-tsh"></i><i class="chf-tped"></i>' : '';
@@ -940,6 +953,38 @@
     return new Promise((ok) => { let done = false; const end = () => { if (done) return; done = true; d.classList.add('out'); setTimeout(() => { d.remove(); ok(); }, 180); };
       V.skip = end; d.addEventListener('click', end); setTimeout(end, RFX_MS[kind] || 800); });
   }
+  // ---- 2026-10-06：能力UPのアクション（0.8〜1.5秒）。能力ごとの道具（RFX_DEF.tools の絵）をモンスターのそばに置き、モンスターが短い動きで特訓する。
+  //  形・位置の変化だけ（絵の色は変えない・新しい絵は作らない・全種族共通）。モンスターは .chf-lean を translate／scale／rotate（個別のプロパティ＝歩きの傾きと重ならない）で動かす。
+  //  tool＝道具の置き場所（足元から、モンスターの高さに対する割合 dx・dy）と大きさ s、mon＝モンスターの動き、tk＝道具の動き。タップで飛ばせる・視差を減らす設定では出さない ----
+  const TRAIN_ACT = {
+    li: { ms: 1050, tool: { dx: 0, dy: -0.5, s: 0.78, back: 1 }, mon: [{ translate: '0 0', scale: '1 1' }, { translate: '0 2%', scale: '1.06 .9', offset: 0.18 }, { translate: '0 -46%', scale: '.96 1.06', offset: 0.45 }, { translate: '0 -8%', scale: '1 1', offset: 0.7 }, { translate: '0 1%', scale: '1.06 .92', offset: 0.82 }, { translate: '0 0', scale: '1 1' }],
+      tk: [{ opacity: 0, translate: '0 10%' }, { opacity: 1, translate: '0 0', offset: 0.14 }, { opacity: 1, offset: 0.8 }, { opacity: 0 }] },   // ハードルを跳び越える
+    po: { ms: 1150, tool: { dx: 0, dy: -0.98, s: 0.62 }, mon: [{ scale: '1 1' }, { scale: '1.08 .88', offset: 0.22 }, { scale: '.97 1.05', offset: 0.42 }, { scale: '1.08 .88', offset: 0.62 }, { scale: '.97 1.05', offset: 0.8 }, { scale: '1 1' }],
+      tk: [{ opacity: 0, translate: '0 30%' }, { opacity: 1, translate: '0 12%', offset: 0.22 }, { translate: '0 -14%', offset: 0.42 }, { translate: '0 12%', offset: 0.62 }, { opacity: 1, translate: '0 -14%', offset: 0.8 }, { opacity: 0, translate: '0 -20%' }] },   // ウェイトを持ち上げる
+    in: { ms: 1200, tool: { dx: 0.66, dy: -0.5, s: 0.6 }, mon: [{ rotate: '0deg' }, { rotate: '-6deg', offset: 0.25 }, { rotate: '5deg', offset: 0.55 }, { rotate: '-3deg', offset: 0.78 }, { rotate: '0deg' }],
+      tk: [{ opacity: 0, translate: '0 18%', rotate: '-8deg' }, { opacity: 1, translate: '0 0', rotate: '-4deg', offset: 0.2 }, { translate: '0 -8%', rotate: '4deg', offset: 0.55 }, { opacity: 1, translate: '0 -4%', rotate: '-2deg', offset: 0.82 }, { opacity: 0, translate: '0 -14%', rotate: '0deg' }] },   // 魔導書を読んで考える
+    hi: { ms: 1100, tool: { dx: 0.32, dy: -0.78, s: 0.6, back: 1 }, mon: [{ translate: '0 0', scale: '1 1' }, { translate: '0 3%', scale: '1.04 .95', offset: 0.18 }, { translate: '6% -14%', scale: '1 1', offset: 0.32 }, { translate: '0 0', offset: 0.5 }, { translate: '0 3%', scale: '1.04 .95', offset: 0.6 }, { translate: '6% -14%', scale: '1 1', offset: 0.74 }, { translate: '0 0', scale: '1 1' }],
+      tk: [{ opacity: 0, scale: '.8' }, { opacity: 1, scale: '1', rotate: '0deg', offset: 0.16 }, { rotate: '-7deg', offset: 0.36 }, { rotate: '0deg', offset: 0.5 }, { rotate: '-7deg', offset: 0.78 }, { opacity: 1, rotate: '0deg', offset: 0.88 }, { opacity: 0, scale: '1' }] },   // 的をねらって飛びかかる
+    ev: { ms: 1150, tool: { dx: -0.8, dy: -0.5, s: 0.46 }, mon: [{ translate: '0 0', rotate: '0deg' }, { translate: '-24% -4%', rotate: '-7deg', offset: 0.28 }, { translate: '0 0', rotate: '0deg', offset: 0.46 }, { translate: '24% -4%', rotate: '7deg', offset: 0.68 }, { translate: '0 0', rotate: '0deg' }],
+      tk: [{ opacity: 0, translate: '0 0' }, { opacity: 1, translate: '40% 0', offset: 0.2 }, { translate: '160% -10%', offset: 0.5 }, { opacity: 1, translate: '260% 0', offset: 0.8 }, { opacity: 0, translate: '320% 0' }] },   // 飛んでくるボールを左右にかわす
+    de: { ms: 1100, tool: { dx: 0, dy: -0.42, s: 0.78, back: 1 }, mon: [{ scale: '1 1', translate: '0 0' }, { scale: '1.07 .93', translate: '0 2%', offset: 0.25 }, { scale: '1 1', translate: '0 -3%', offset: 0.42 }, { scale: '1.07 .93', translate: '0 2%', offset: 0.62 }, { scale: '1 1', translate: '0 0' }],
+      tk: [{ opacity: 0, scale: '.85' }, { opacity: 1, scale: '1', offset: 0.18 }, { scale: '1.08', offset: 0.3 }, { scale: '1', offset: 0.45 }, { scale: '1.08', offset: 0.68 }, { opacity: 1, scale: '1', offset: 0.84 }, { opacity: 0, scale: '1' }] },   // 盾を構えて踏んばる
+  };
+  /** 能力UPのアクション：道具を置く → モンスターが特訓の動き → 頭の上に実際の結果（例「ちから +3」）→ 消える。モンスターの位置が分からないときは従来の結果演出（resultFx） */
+  function trainAct(key, caption) {
+    const A = TRAIN_ACT[key], fx = $('#chffx'), w = $('#bmonw'), lean = w && w.querySelector('.chf-lean'), src = rfxSrc('tool', key);
+    if (!A || !fx || !lean || !V.monPos || !src || !lean.animate) return resultFx('tool', caption, key);
+    if (V.calm) return wait(0);
+    const d = V.monPos.d, mh = monH() * d, T = A.tool, tw = mh * T.s, x = V.monPos.x + T.dx * mh, y = V.monPos.y + T.dy * mh;
+    const tool = document.createElement('i'); tool.className = `chf-tact k-${key}`; tool.style.cssText = `left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;width:${tw.toFixed(1)}px;--c:${statColor(key)}`;
+    tool.innerHTML = `<img src="${esc(src)}" alt="" draggable="false" decoding="async">`;
+    const road = w.parentElement; if (T.back && road) road.insertBefore(tool, w); else fx.appendChild(tool);   // back＝モンスターの先（後ろ姿なので奥＝モンスターの後ろに描く）。ほかは手前（効果の層）
+    const ui = $('#chf-ui'), tx = document.createElement('b'); tx.className = 'chf-tact-tx'; tx.style.setProperty('--c', statColor(key)); tx.textContent = caption || '';
+    if (ui && caption) { const hr = ui.getBoundingClientRect(), r = w.getBoundingClientRect(), tr = tool.getBoundingClientRect(), top = Math.min(r.top + r.height * 0.1, tr.bottom - tr.width * 0.9);   /* 道具の絵は読み込み前だと高さ0＝幅から見積もる */ tx.style.left = `${(r.left + r.width / 2 - hr.left).toFixed(0)}px`; tx.style.top = `${Math.max(hr.top + 70, top - 4 - hr.top).toFixed(0)}px`; ui.appendChild(tx); }   // 結果の文は道具・モンスターの上（重ねない）
+    const am = lean.animate(A.mon, { duration: A.ms, easing: 'ease-in-out' }), at = tool.animate(A.tk, { duration: A.ms, easing: 'ease-in-out', fill: 'forwards' });
+    return new Promise((ok) => { let done = false; const end = () => { if (done) return; done = true; try { am.cancel(); at.cancel(); } catch (e) {} tool.remove(); tx.classList.add('out'); setTimeout(() => { tx.remove(); ok(); }, 160); };
+      V.skip = end; am.finished.then(end, end); setTimeout(end, A.ms + 400); });
+  }
   /** 宝箱の開封の光の粒（宝箱の位置から。約0.8秒） */
   function chestSparks(obj) { const fx = $('#chffx'); if (!fx || !obj || V.calm) return; const P = objPoint(obj) || V.monPos; if (!P) return; fx.insertAdjacentHTML('beforeend', `<span class="chf-csparks" style="left:${P.x.toFixed(1)}px;top:${P.y.toFixed(1)}px;--d:${P.d || 1}"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>`); const e = fx.querySelector('.chf-csparks:last-child'); setTimeout(() => e && e.remove(), 900); }
   function fxText(fx) {
@@ -1042,7 +1087,7 @@
         await wait(V.calm ? 0 : 160); monReact('up'); feel('stat.up', { key: fx.key, amount: fx.amount });
         await wait(V.calm ? 0 : 150);   // モンスターの反応を見せてから枠
         setMsg(T.t);
-        await resultFx('tool', `${labOf(fx.key)} +${fx.amount}`, fx.key);   // 2026-10-04（追加アセット）：能力に対応する道具 → 実際に上がった能力名・値 → 既存の成長演出
+        await trainAct(fx.key, `${labOf(fx.key)} +${fx.amount}`);   // 2026-10-06：能力に対応する道具をそばに置き、モンスターが短い特訓の動き（0.8〜1.5秒）→ 実際に上がった能力名・値 → 既存の成長演出
         // 2026-10-04 PHASE E：成長演出（能力のアイコンが浮く → 「ちから +5」→ 正式色のゲージが伸びる（999 を最大とした目盛り）→ 粒子）。枠は正式素材 frame_stat_up のまま。0.6〜1.2秒・タップで短縮
         const gains = [{ key: fx.key, amount: fx.amount }];
         await popup(`<small>${esc(labOf(fx.key))}のマス</small>${growRows(m, gains)}`, `${T.c} grow`, Math.min(holdOf(3, 800), 300), T.frame ? effectAsset(T.frame) : null, (d) => growPlay(d, gains));
@@ -1190,9 +1235,9 @@
   root.addEventListener && root.addEventListener('resize', () => { const m = gS() && gS().m; if ($('#chf') && chfActive(m) && V.monPos && !V.moving) { V.par0 = null; camTarget(V.monPos.x, V.monPos.y, V.monPos.d, true); } });
 
   Object.assign(root, { chfActive, chfBoard, chfRoll, chfRest, chfPick, chfContinue, chfResolve, chfItems, chfItemsClose, chfItemUse, chfOpen });
-  root.MMCHV = Object.freeze({ STEP_MS, FACING, DEFAULTS: DEF, MON_ENTER, RESULT_FX: RFX_DEF, RESULT_FX_MS: RFX_MS, resultFxSrc: rfxSrc,
+  root.MMCHV = Object.freeze({ STEP_MS, FACING, DEFAULTS: DEF, MON_ENTER, RESULT_FX: RFX_DEF, RESULT_FX_MS: RFX_MS, TRAIN_ACT, resultFxSrc: rfxSrc,
     queueWin: () => { V.winPending = true; },
     state: () => ({ field: V.field, cam: { ...V.cam }, target: { ...V.tgt }, key: V.key, moving: V.moving, look: [...V.look], focus: V.focus ? { ...V.focus } : null, monster: V.monPos ? { ...V.monPos } : null, animator: (V.animator || DEFAULT_ANIMATOR).id }),
     lookOf, sideOffset, landmarkPos: (id) => { const n = V.g && V.g.nodes[id]; if (!n) return null; const m = gS() && gS().m, a = MMCH.fieldOf(m).nodeAssignments[id] || (['strong', 'rival'].includes(n.kind) ? { t: 'battle', bt: n.kind } : null), look = lookOf(V.cfg, a); return look ? landmarkPos(V.cfg, V.g, V.sc, id, look) : null; },
-    zoomAt, registerMonsterAnimator, MON_ENTER, registerReactionRenderer, focusPoint, tileKeyOf, tileSpriteOf, tileBox, seenRoadW, tileFitKind, roadX: (x, y, d) => roadX(x, y, d != null ? d : depthAtY(y)), stepDuration: (from, to) => { const r = MMCH.routeBetween(V.g, from, to).map((p) => [p[0] * V.sc.w, p[1] * V.sc.h]); return stepDuration(r, to); } });
+    zoomAt, registerMonsterAnimator, MON_ENTER, registerReactionRenderer, focusPoint, tileKeyOf, tileSpriteOf, tileBox, discBox, discKeyOf, seenRoadW, tileFitKind, roadX: (x, y, d) => roadX(x, y, d != null ? d : depthAtY(y)), stepDuration: (from, to) => { const r = MMCH.routeBetween(V.g, from, to).map((p) => [p[0] * V.sc.w, p[1] * V.sc.h]); return stepDuration(r, to); } });
 })(typeof window !== 'undefined' ? window : globalThis);
