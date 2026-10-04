@@ -528,7 +528,7 @@ T('QA-RL7：Chapter 4 で B ランクまでのまま大会を辞退 → 育成�
   await pg.waitForSelector('.rn2 .rncur .rnc');   // 2026-10-04 PHASE H3：牧場20体の一覧 → 連れている子を「見る」
   await pg.click('.rn2 .rncur .rnc'); await pg.waitForTimeout(300); await pg.click(".rna[onclick=\"rnView=rnSel;farm('','e')\"]"); await pg.waitForSelector('.rnlook');
   const ranch = await H.text(pg);
-  assert.ok(ranch.includes('ソラモ') && /大会ランク\s*B/.test(ranch) && ranch.includes('育成完了'), '牧場にソラモ（ランクB・育成完了）がいる');
+  assert.ok(ranch.includes('ソラモ') && /大会ランク\s*B/.test(ranch) && ranch.includes('育成完了'), `牧場にソラモ（ランクB・育成完了）がいる：${ranch.slice(0, 300)}`);
   await pg.waitForTimeout(SETTLE);
   await pg.click('button.back');
   await pg.waitForSelector('.map');

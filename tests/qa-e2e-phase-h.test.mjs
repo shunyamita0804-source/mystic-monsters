@@ -121,3 +121,28 @@ for (const size of SIZES) {
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   });
 }
+
+for (const size of SIZES) {
+  T(`H-E（${size.join('×')}）：大会ランク選択は進行で状態が変わる（はじめ：E・D 参加可能＝D が挑戦目標／E クリア後：E クリア済・D 挑戦目標）。未解放は押せない・参加者と試合数が見える・画面に収まる・選んで参加できる`, async () => {
+    for (const [clr, want] of [[[0, 0, 0, 0, 0, 0], 'S:lock A:lock B:lock C:lock D:next E:open'], [[1, 0, 0, 0, 0, 0], 'S:lock A:lock B:lock C:lock D:next E:clear']]) {
+      const p = await openPage({ size }); const pg = p.page;
+      await H.newGame(pg, 'ユウ');
+      await pg.evaluate((clr) => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); m.prog.rankClr = clr.map(Boolean); const g = MMCH.graphFor(m); Object.assign(m.raise, { node: g.goal, goal: true, pend: null }); m.raise.field.arrivalSeen = true; save(); board(); }, clr);
+      await pg.waitForSelector('.rcv-row', { timeout: 20000 }); await pg.waitForTimeout(600);
+      const r = await pg.evaluate(() => ({ st: [...document.querySelectorAll('.rcv-row')].map((x) => RN[+x.dataset.rank] + ':' + x.dataset.state).join(' '), info: [...document.querySelectorAll('.rcv-row')].map((x) => x.querySelector('small').textContent),
+        lab: [...document.querySelectorAll('.rcv-row .rcv-st')].map((x) => x.textContent), btns: [...document.querySelectorAll('.rcv-row')].map((x) => x.tagName), sw: document.documentElement.scrollWidth,
+        inView: [...document.querySelectorAll('.rcv-row, #p9join, .rcv-dec')].every((e) => { const b = e.getBoundingClientRect(); return b.top >= 0 && b.bottom <= innerHeight + 1 && b.left >= -1 && b.right <= innerWidth + 1; }) }));
+      assert.equal(r.st, want);
+      assert.deepEqual(r.info, ['参加者 8体 / 7試合', '参加者 8体 / 7試合', '参加者 8体 / 7試合', '参加者 8体 / 7試合', '参加者 6体 / 5試合', '参加者 6体 / 5試合']);
+      assert.deepEqual(r.lab.slice(0, 4), ['参加不可', '参加不可', '参加不可', '参加不可']); assert.equal(r.lab[4], '参加可能'); assert.equal(r.lab[5], clr[0] ? 'クリア済' : '参加可能');
+      assert.deepEqual(r.btns, ['DIV', 'DIV', 'DIV', 'DIV', 'BUTTON', 'BUTTON'], '未解放は押せない（クリア済の E は再挑戦できる）');
+      assert.ok(r.inView, '6段・参加・辞退が画面に収まる'); assert.equal(r.sw, size[0]);
+      assert.ok(await pg.evaluate(() => !!document.querySelector('.rcv-row.st-next .rcv-next')), '挑戦目標の札');
+      await pg.click('.rcv-row[data-rank="1"]'); await pg.waitForTimeout(500);
+      assert.equal(await pg.evaluate(() => document.querySelector('#p9join').disabled), false);
+      await pg.click('#p9join'); await pg.waitForFunction(() => S.m.raise.tour && S.m.raise.tour.rank === 1, null, { timeout: 15000 });
+      assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+      await p.ctx.close();
+    }
+  });
+}

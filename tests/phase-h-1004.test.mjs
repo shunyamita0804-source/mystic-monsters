@@ -89,3 +89,18 @@ test('PH-06：守ること：セーブ v6・キー mr4v6、合体は研究所（
   assert.match(fnOf('p11NameScr'), /MMPRO\.readyOrTimeout\(6000\)/, 'PHASE G のプロローグの待ち方はそのまま');
   const h = createHash('sha256').update(HTML.slice(HTML.indexOf('async function fight('), HTML.indexOf('\n$("#snd").textContent'))).digest('hex'); assert.ok(h.length === 64);
 });
+
+test('PH-07：大会ランクの状態は固定表示にしない（進行で決まる）：未解放・参加可能・挑戦目標（次に挑むランク）・クリア済。解放は従来どおり（Chapter 1 から E・D、クリアした最高ランクの1つ上まで）。F・FREE・賞金・推奨戦力は出さない', () => {
+  const w = {}; new Function('window', rd('js/phase7/progression.js'))(w); new Function('window', rd('js/phase8/raising.js'))(w); const P8 = w.MMP8, P7 = w.MMP7;
+  const f = new Function('return ' + fnOf('p9RankState').trim())();
+  const st = (clr, ch) => { const m = { prog: { rankClr: clr.map(Boolean) } }; P7.ensureProg(m); m.prog.rankClr = clr.map(Boolean); const el = P8.eligibleRanks(m, ch); return 'EDCBAS'.split('').map((L, k) => `${L}:${f(m, k, el)}`).join(' '); };
+  assert.equal(st([0, 0, 0, 0, 0, 0], 1), 'E:open D:next C:lock B:lock A:lock S:lock', 'はじめ（Chapter 1）：E・D が参加可能・D が挑戦目標・C 以上は未解放');
+  assert.equal(st([1, 0, 0, 0, 0, 0], 1), 'E:clear D:next C:lock B:lock A:lock S:lock', 'E クリア後');
+  assert.equal(st([1, 1, 0, 0, 0, 0], 2), 'E:clear D:clear C:next B:lock A:lock S:lock', 'D クリア後（Chapter 2）：C が参加可能');
+  assert.equal(st([1, 1, 1, 0, 0, 0], 3), 'E:clear D:clear C:clear B:next A:lock S:lock', 'C クリア後：B');
+  assert.equal(st([1, 1, 1, 1, 1, 0], 4), 'E:clear D:clear C:clear B:clear A:clear S:next', 'A クリア後：S');
+  assert.equal(st([1, 1, 1, 0, 0, 0], 1), 'E:clear D:clear C:clear B:lock A:lock S:lock', 'Chapter 1 の上限（D）より上でもクリア済は「クリア済」と出す');
+  assert.match(rd('js/phase8/raising.js'), /const RANK_FLOOR = RANK_D;/); assert.match(rd('js/phase8/raising.js'), /const RANK_UNLOCK_STEP = 1;/);
+  const rc = fnOf('p9ReceptionHtml'); assert.doesNotMatch(rc, /PRIZE|推奨|FREE|ランクF|"F"/); assert.match(rc, /参加者 \$\{sz\}体 \/ \$\{sz-1\}試合/);
+  assert.match(HTML, /\.rcv-row\.st-open \.rcv-plate,\.rcv-row\.st-next \.rcv-plate\{background:linear-gradient\(#8e1a2c/, '参加可能はワインレッド＋金');
+});

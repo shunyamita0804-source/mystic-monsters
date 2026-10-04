@@ -1710,6 +1710,28 @@ button.mkc b{font-size:.9rem}button.mkc small{font-size:.66rem;color:#ffe9b0}
 .rcv-plate{position:relative;flex:1;align-self:stretch;margin-left:-18px;padding:6px 12px 6px 28px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px;background:linear-gradient(#22346f,#121d48);border:2px solid #c9a24d;border-radius:10px;box-shadow:inset 0 0 0 1px rgba(255,230,160,.18),0 3px 0 #070c22;overflow:hidden}
 .rcv-st{display:inline-block;padding:3px 16px;font:800 15px/1.2 var(--mm-font-head);letter-spacing:.12em;color:#ffe9a8;border:1px solid rgba(232,200,106,.8);border-radius:999px;background:rgba(10,16,44,.55)}
 .rcv-plate small{font-size:10.5px;line-height:1.25;color:#d9cfae}
+/* 2026-10-04 PHASE H：ランクの状態ごとの見た目（デザイン参考：濃紺＋金・参加可能はワインレッド＋金・クリア済は金のチェック・未解放は鍵と鎖） */
+.rcv-laurel{position:absolute;inset:-6px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,transparent 78%,rgba(232,200,106,.0) 79%),conic-gradient(from 200deg,transparent 0 8%,rgba(232,200,106,.85) 8% 9%,transparent 9% 14%,rgba(232,200,106,.85) 14% 15%,transparent 15% 35%,rgba(232,200,106,.85) 35% 36%,transparent 36% 41%,rgba(232,200,106,.85) 41% 42%,transparent 42% 100%);-webkit-mask:radial-gradient(closest-side,transparent 86%,#000 87%);mask:radial-gradient(closest-side,transparent 86%,#000 87%)}
+.rcv-ic{display:inline-grid;place-items:center;width:18px;height:18px;margin-right:6px;vertical-align:-3px}
+.rcv-ic svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.rcv-row .rcv-plate small{font-size:10.5px}
+.rcv-row.st-open .rcv-plate,.rcv-row.st-next .rcv-plate{background:linear-gradient(#8e1a2c,#5a0c1a 60%,#430815);border-color:#e8c86a}
+.rcv-row.st-open .rcv-em,.rcv-row.st-next .rcv-em{background:radial-gradient(circle at 50% 30%,#a3192b,#4e0915 72%);border-color:#ffd77a}
+.rcv-row.st-open .rcv-st,.rcv-row.st-next .rcv-st{color:#fff2c6;border-color:#ffd77a;background:rgba(60,6,16,.55)}
+.rcv-row.st-next .rcv-plate{box-shadow:inset 0 0 0 1px rgba(255,236,170,.55),0 0 0 2px rgba(255,214,110,.6),0 0 18px rgba(255,190,90,.55)}
+.rcv-row.st-next .rcv-em{box-shadow:0 0 0 2px #0b1230,0 0 16px rgba(255,214,110,.85)}
+.rcv-next{position:absolute;z-index:2;left:clamp(46px,6.8vh,58px);top:-7px;padding:1px 10px;border-radius:999px;background:linear-gradient(#fff0b8,#e0b048);color:#5a1010;font:800 10px/1.6 var(--mm-font-body);letter-spacing:.1em;font-style:normal;box-shadow:0 2px 4px rgba(0,0,0,.5)}
+.rcv-row.st-clear .rcv-plate{background:linear-gradient(#22346f,#14204e);border-color:#c9a24d}
+.rcv-row.st-clear .rcv-em{background:radial-gradient(circle at 50% 30%,#3a5299,#17265e 72%);border-color:#e8c86a}
+.rcv-row.st-clear .rcv-st{color:#ffe08a;border-color:rgba(255,214,110,.85);background:rgba(10,16,44,.6)}
+.rcv-row.st-clear .rcv-ic{color:#ffd25a}
+.rcv-row.st-lock .rcv-st .rcv-ic{color:#e7c15a}
+.rcv-row.st-lock .rcv-plate small{position:relative;z-index:1;color:#8f8a78}
+.rcv-row.st-lock .rcv-em .rcv-gem{filter:none;opacity:.55}
+.rcv-row.ok.sel.st-open .rcv-plate,.rcv-row.ok.sel.st-next .rcv-plate{background:linear-gradient(#a8223c,#6c1022 60%,#500a19)}.rcv-row.ok.sel.st-clear .rcv-plate{background:linear-gradient(#304a94,#1b2b66)}
+.rcv-row.ok.sel .rcv-plate{border-color:#fff1b8;box-shadow:inset 0 0 0 1px rgba(255,236,170,.6),0 0 0 3px rgba(255,236,170,.8),0 0 20px rgba(255,214,110,.7)}
+.p9rank{position:relative}.p9rank .p9nx{left:8px;top:-8px}.p9rank .p9clr{position:absolute;right:8px;top:6px;display:flex;align-items:center;gap:3px;font:800 10.5px/1 var(--mm-font-body);font-style:normal;color:#ffd25a}.p9rank .p9clr svg{width:14px;height:14px;fill:none;stroke:#ffd25a;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.p9rank.st-next{box-shadow:0 0 0 2px rgba(255,214,110,.75),0 0 16px rgba(255,190,90,.5)}
 .rcv-row.ok{cursor:pointer}
 .rcv-row.ok:active .rcv-plate{transform:translateY(1px)}
 .rcv-row.ok.sel .rcv-plate{background:linear-gradient(#34509e,#1b2b66);border-color:#ffe08a;box-shadow:inset 0 0 0 1px rgba(255,236,170,.5),0 0 0 2px rgba(255,214,110,.55),0 0 18px rgba(255,200,90,.55)}
@@ -1730,7 +1752,7 @@ button.mkc b{font-size:.9rem}button.mkc small{font-size:.66rem;color:#ffe9b0}
 .rcv-join small{display:block;font:700 10.5px/1.2 var(--mm-font-body);letter-spacing:0;color:#e3ecff}
 .rcv-join:disabled{background:linear-gradient(#3b4466,#262c48);border-color:#7a7f99;box-shadow:0 0 0 2px #6f5f3a;color:#a9adc4}
 .rcv-dec{flex:none;padding:8px 10px;border-radius:10px;border:1px solid #8d7a4c;background:rgba(10,16,44,.6);color:#d9cfae;font:700 11.5px/1.25 var(--mm-font-body);max-width:34%}
-@media (max-height:720px){.rcv-ban{padding:6px 0 10px}.rcv-ban b{font-size:24px}.rcv-plate small{display:none}.rcv-row{flex-basis:56px}.rcv-join{padding:9px 8px}}
+@media (max-height:720px){.rcv-ban{padding:6px 0 10px}.rcv-ban b{font-size:24px}.rcv-row .rcv-plate small{font-size:9.5px;line-height:1.15}.rcv-st{font-size:13px;padding:2px 12px}.rcv-ic,.rcv-ic svg{width:15px;height:15px}.rcv-row{flex-basis:56px}.rcv-join{padding:9px 8px}}
 .p9st.p9enter .p9r:not(.hd){animation:p9rin .42s cubic-bezier(.2,.9,.3,1.05) both}
 @keyframes p9rin{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:none}}
 .p9st .p9r.nxt{background:linear-gradient(90deg,rgba(255,255,255,.22),rgba(255,214,102,.12));outline:1.5px solid #ffe7a8;box-shadow:0 0 0 1px rgba(255,231,168,.35),0 0 16px rgba(255,236,190,.55);animation:p9nxt 1.8s ease-in-out infinite}
@@ -2930,7 +2952,7 @@ function pasture(){const l=[S.m,...S.box].filter(Boolean);return `<div class="pa
 //  選んだ子に 見る（様子を見る）・名前変更・受け取る（連れている子なら 預ける）・売る。合体は研究所（牧場には置かない）。売却・預ける・受け取るの処理は従来どおり（dep・wd・pfSellGo）
 let rnSel=null;
 function rnPick(uid){if(p8Blocked())return;rnSel=uid;pfSellUid=null;rnView=null;farm("","b")}
-function rnTag(x){return x===S.m?(MMP7.raiseState(x)=="none"?["連れている","cur"]:["育成中","ing"]):MMP7.raiseState(x)=="done"?["育成完了","done"]:["未育成","new"]}
+function rnTag(x){const st=MMP7.raiseState(x);return st=="done"?["育成完了","done"]:x===S.m?(st=="none"?["連れている","cur"]:["育成中","ing"]):["未育成","new"]} // 育成を終えた子は連れていても「育成完了」
 function rnCell(x){const t=rnTag(x);return `<button class="rnc${x.uid===rnSel?" on":""}${x===S.m?" cur":""}" data-uid="${x.uid}" onclick="rnPick('${x.uid}')"><span class="rnic mon">${msv(x)}</span><span class="rncn"><b>${p11Esc(x.name)}</b><small class="rntag ${t[1]}">${t[0]}</small></span>${x.uid===rnSel?'<i class="rnck" aria-hidden="true"></i>':""}</button>`}
 function rnRename(){if(p8Blocked())return;const x=[S.m,...S.box].find(v=>v&&v.uid===rnSel);if(!x)return farm("","b");const e=document.getElementById("rnnm");const v=(e&&e.value||"").trim().slice(0,8);if(!v)return farm("名前を入力してください。","n");const on=p11Esc(x.name);x.name=v;save();farm(`${on}の名前を${p11Esc(v)}に変えました。`,"b")}
 function farm(msg,tab){if(p8Blocked())return;p9Immersive(true);bgm("ranch");npcWarm("nick");if(!tab&&!msg)setTimeout(()=>npcFirst("ranch"),0);
@@ -3804,7 +3826,7 @@ function p8GoalHtml(m){const r=m.raise,rule=MMP8.chapterRule(r.ch);
  if(!rule||!rule.tournament)return `<h3>🏁 ゴール</h3><button class="p9btn" onclick="p8EndChapter()">${r.ch==MMP8.FINAL?"最終Chapterを終える":"Chapterを終える"}</button>`;
  // ランク選択：挑戦できるランク（MMP8.eligibleRanks＝既存の解放条件）は押せるカード、それ以外は鎖と錠で封印（押せない。class は p9rank ではなく p9rlock）。案内はフィナ（セドリックは大会が始まってから）
  const el=MMP8.eligibleRanks(m,r.ch),rs=RN.map((L,k)=>{const sz=MMP8L.LEAGUE_SIZE[k],cl=m.prog.rankClr[k];if(!el.includes(k))return "";
-  return `<button class="p9rank" onclick="p8TourStart(${k},this)"><span class="p9em">${L}</span><span class="p9tx"><b>ランク${L}大会</b><small>${sz}体の総当たり（${sz-1}試合）</small><small>${cl?"クリア済み：優勝でステータスボーナスのみ":`初回優勝：${MMP8.PRIZE[k]}G・特訓チケット×${MMP8.FIRST_CLEAR_TICKETS[k]}・ステータスボーナス`}</small></span></button>`}).join(""),
+  const st=p9RankState(m,k,el);return `<button class="p9rank st-${st}" data-state="${st}" onclick="p8TourStart(${k},this)">${st=="next"?'<i class="rcv-next p9nx">挑戦目標</i>':st=="clear"?`<i class="p9clr">${P9_CHECK}クリア済</i>`:""}<span class="p9em">${L}</span><span class="p9tx"><b>ランク${L}大会</b><small>${sz}体の総当たり（${sz-1}試合）</small><small>${cl?"クリア済み：優勝でステータスボーナスのみ":`初回優勝：${MMP8.PRIZE[k]}G・特訓チケット×${MMP8.FIRST_CLEAR_TICKETS[k]}・ステータスボーナス`}</small></span></button>`}).join(""),
   lk=RN.map((L,k)=>el.includes(k)?"":`<div class="p9rlock" data-rank="${k}" aria-disabled="true"><span class="p9em">${L}<i class="p9pad">${P9_PADLOCK}</i></span><span class="p9tx"><b>ランク${L}</b><small>封印中</small></span><i class="p9chain"></i></div>`).join("");   // 封印されたランクは小さな札（1画面に収める）
  return `<h3>🏟 公式ランク大会</h3><div id="p9fsay">${p9Fina(FINA_RANK_TALK.pick)}</div><p class="p9s">このChapterで挑戦できるのは1回だけ。総当たりで<b>最終1位</b>になった時だけ報酬があります。</p><div class="p9ranks">${rs}</div>${lk?`<div class="p9rlocks">${lk}</div><p class="p9s p9lknote">封印されたランクには、まだ挑戦できない（挑戦上限はクリア最高ランクの1つ上）</p>`:""}<button class="p9btn2" onclick="p8TourDecline(this)">大会に参加しない（辞退）</button>`}
 const P9_PADLOCK='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>';
@@ -3822,11 +3844,18 @@ function p8TourStart(k,b){if(bBusy)return;if(!p9arm(b,`もう一度押すとラ�
 // ---- 大会受付（Chapter の config.arrival があるとき：到着イベントのあと、会場の受付でランクを選ぶ）----
 //  上にランクの高い S、下に E（参考デザインのとおり。参加できる下位ランクが「参加する」ボタンの近くに来る）。参加できるかは既存の MMP8.eligibleRanks（解放条件はそのまま）。
 //  ランクを決めるのはプレイヤー：ランクを選ぶ（フィナは見立てを短く話すだけ）→「この大会に参加する」で確定 → 既存の startTournament → 開始演出 → セドリックの進行
-const P9_RCV_GEM=["#4a8cff","#b9e23c","#3ccf72","#f2a428","#e8364a","#ffd25a"];
+const P9_RCV_GEM=["#35c46a","#3c7dff","#33c3e3","#9a5cf0","#e8364a","#ff2c48"]; // ランクの宝石の色（E 緑・D 青・C 水色・B 紫・A 赤・S 紅。デザイン参考 2026-10-04）
+/** 2026-10-04 PHASE H：大会ランクの状態（固定表示にしない＝その個体の進行で決まる）。解放の規則は従来どおり（MMP8.eligibleRanks：D までは最初から・クリアした最高ランクの1つ上まで）
+ *  lock＝未解放（参加不可）／clear＝クリア済（再挑戦はできる）／next＝いま挑戦すべきランク（参加できるうち、まだクリアしていない最も高いランク）／open＝参加可能 */
+function p9RankState(m,k,el){const ok=el.includes(k),cl=!!(m.prog&&m.prog.rankClr[k]);if(cl)return "clear";if(!ok)return "lock";const nx=el.filter(i=>!m.prog.rankClr[i]);return nx.length&&k===Math.max(...nx)?"next":"open"}
+const P9_RS_LABEL={lock:"参加不可",open:"参加可能",next:"参加可能",clear:"クリア済"};
+const P9_CHECK='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M7 12.5l3.2 3.2L17 9"/></svg>';
 function p9ReceptionHtml(m){const r=m.raise,rule=MMP8.chapterRule(r.ch);if(!rule||!rule.tournament)return p8GoalHtml(m);
- const el=MMP8.eligibleRanks(m,r.ch),row=k=>{const L=RN[k],ok=el.includes(k),sz=MMP8L.LEAGUE_SIZE[k],cl=m.prog.rankClr[k],em=`<span class="rcv-em" style="--gem:${P9_RCV_GEM[k]}"><i class="rcv-gem"></i><b>${L}</b></span>`;
-  return ok?`<button class="rcv-row ok" data-rank="${k}" onclick="p9RcvPick(${k},this)" aria-pressed="false" aria-label="ランク${L}大会（参加可能）">${em}<span class="rcv-plate"><span class="rcv-st">参加可能</span><small>${sz}体の総当たり（${sz-1}試合）　${cl?"クリア済み":`初回優勝 ${MMP8.PRIZE[k]}G`}</small></span></button>`
-   :`<div class="rcv-row lk" data-rank="${k}" aria-disabled="true" aria-label="ランク${L}大会（参加不可）">${em}<span class="rcv-plate"><span class="rcv-st">参加不可</span><i class="rcv-chain"></i><i class="rcv-pad">${P9_PADLOCK}</i></span></div>`};
+ // 2026-10-04 PHASE H：ランクの行は共通の部品（状態 lock／open／next／clear で見た目が変わる）。参加者・試合数は大会の規則（MMP8L.LEAGUE_SIZE）から
+ const el=MMP8.eligibleRanks(m,r.ch),row=k=>{const L=RN[k],st=p9RankState(m,k,el),ok=el.includes(k),sz=MMP8L.LEAGUE_SIZE[k],em=`<span class="rcv-em" style="--gem:${P9_RCV_GEM[k]}"><i class="rcv-gem"></i><i class="rcv-laurel" aria-hidden="true"></i><b>${L}</b></span>`;
+  const chip=`<span class="rcv-st"><i class="rcv-ic">${st=="lock"?P9_PADLOCK:P9_CHECK}</i>${P9_RS_LABEL[st]}</span>`,info=`<small>参加者 ${sz}体 / ${sz-1}試合</small>`;
+  return ok?`<button class="rcv-row ok st-${st}" data-rank="${k}" data-state="${st}" onclick="p9RcvPick(${k},this)" aria-pressed="false" aria-label="ランク${L}大会（${P9_RS_LABEL[st]}）">${st=="next"?'<i class="rcv-next">挑戦目標</i>':""}${em}<span class="rcv-plate">${chip}${info}</span></button>`
+   :`<div class="rcv-row lk st-${st}" data-rank="${k}" data-state="${st}" aria-disabled="true" aria-label="ランク${L}大会（${st=="clear"?"クリア済・このChapterでは参加できない":"参加不可"}）">${em}<span class="rcv-plate">${st=="lock"?'<i class="rcv-chain"></i>':""}${chip}${info}</span></div>`};   // クリア済でもこの Chapter の上限より上は押せない（鎖は付けない）
  return `<div class="rcv"><header class="rcv-ban"><small>CHAPTER ${r.ch}　大会受付</small><b>公式大会</b></header><div class="rcv-list">${[5,4,3,2,1,0].map(row).join("")}</div><p class="rcv-note">挑戦できるのは1回だけ。総当たりで最終1位になった時だけ報酬があります。</p><footer class="rcv-foot"><div class="rcv-say" id="p9fsay">${p9Fina(FINA_RANK_TALK.pick)}</div><div class="rcv-acts"><button class="rcv-join" id="p9join" onclick="p9RcvJoin(this)" disabled>この大会に参加する<small>ランクを選んでください</small></button><button class="rcv-dec" onclick="p8TourDecline(this)">大会に参加しない</button></div></footer></div>`}
 function p9RcvPick(k,b){const m=S.m;if(bBusy||!m||!b||!MMP8.eligibleRanks(m,m.raise.ch).includes(k))return;
  document.querySelectorAll(".rcv-row.ok").forEach(x=>{const on=x===b;x.classList.toggle("sel",on);x.setAttribute("aria-pressed",on?"true":"false")});
