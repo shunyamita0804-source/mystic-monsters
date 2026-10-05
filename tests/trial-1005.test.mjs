@@ -81,8 +81,8 @@ test('TR-08：リュウ（正式の全身）＋レグナス（正式の相棒）
   const w = {}; new Function('window', rd('js/phase10/monsters.js'))(w); const M = w.MMP10M, r = M.rivalMonster('regnas');
   assert.deepEqual([r.name, r.en, r.kind, r.personality, r.speed, r.style], ['レグナス', 'REGNAS', '竜種', '誇り高い・負けず嫌い', 8, '俊敏な地上竜＋回避反撃型']);
   assert.deepEqual({ ...r.base }, { li: 90, po: 115, in: 75, hi: 105, ev: 115, de: 100 });
-  assert.equal(r.uniqueSkill.name, '蒼銀の反撃'); assert.equal(r.uniqueSkill.desc, '相手の攻撃を回避すると、次に与えるダメージが一度だけ1.20倍。効果は重複しない。'); assert.equal(r.uniqueSkill.implemented, false);
-  assert.equal(r.moves, null, '正式技10個は未確定＝作らない'); assert.equal(r.playerAvailable, false);
+  assert.equal(r.uniqueSkill.name, '蒼銀の反撃'); assert.equal(r.uniqueSkill.desc, '相手の攻撃を回避すると、次に与えるダメージが一度だけ1.20倍。効果は重複しない。'); assert.equal(r.uniqueSkill.implemented, true, '2026-10-05：ライバル戦だけで発動（js/battle/rival-partner.js）');
+  assert.equal(r.moves.list.length, 10, '2026-10-05：正式技10個'); assert.equal(r.playerAvailable, false);
   assert.ok(!M.SPECIES.some((x) => x.key === 'regnas'), 'プレイヤー用の種族の表には入れない'); assert.equal(M.SPECIES.length, 4);
   assert.ok(!JSON.stringify(M.MARKET_CATALOG).includes('regnas'), '市場に出さない');
   assert.doesNotMatch(HTML.replace(/\/\/[^\n]*|\/\*[\s\S]*?\*\//g, ''), /regnas|レグナス/, '図鑑・合体・初期選択・牧場（index.html）には出さない');

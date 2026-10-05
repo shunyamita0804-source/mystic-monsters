@@ -6,7 +6,7 @@
 // =========================================================
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -55,15 +55,13 @@ test('RK-02：Chapter 1〜4 で同じ部品（Chapter 2 以降のゴールも p9
   assert.match(fnOf('p9RcvPick'), /MMP8\.eligibleRanks\(m,m\.raise\.ch\)\.includes\(k\)\)return;/); assert.match(fnOf('p9RcvJoin'), /MMP8\.eligibleRanks\(m,m\.raise\.ch\)\.includes\(k\)\)return;/);
 });
 
-test('RK-03：見た目は HTML/CSS（2026-10-05 PHASE B：参加可能＝赤＋金・未解放＝青＋鎖と錠）。未解放＝灰色がかった濃紺（黒い塗りつぶしではない）＋鎖と錠、挑戦目標＝金の光と札、クリア済＝金のチェック、選択中＝明るい金の枠と光。画像を背景に固定しない', () => {
-  const css = HTML.slice(HTML.indexOf('/* 2026-10-04 正式デザイン（大会ランク選択'), HTML.indexOf('.rcv-note{'));
-  assert.match(css, /\.rcv-plate::before\{[^}]*linear-gradient\(#a3192b,#7c0f20 50%,#5a0816\)/, '2026-10-05 PHASE B 正式（rank_selection_final）：参加可能＝赤〜ワインレッド');
-  assert.match(css, /\.rcv-plate\{[^}]*background:linear-gradient\(90deg,#a8781f,#f3d27a/, '金の縁');
-  assert.match(css, /\.rcv-row\.st-lock \.rcv-plate::before\{background:[^}]*linear-gradient\(#2c4c9e,#1b3478 55%,#10225a\)/, '2026-10-05 PHASE B：未解放＝青〜濃紺＋鎖（交差）と南京錠');
-  assert.match(css, /\.rcv-chain\.b\{transform:rotate\(8deg\)\}/); assert.match(css, /\.rcv-lock\{/); assert.match(css, /\.rcv-unveil\{/); assert.match(css, /\.rcv-row\.st-lock \.rcv-st\{[^}]*linear-gradient\(#b3202f,#7a0f1e\)/, '参加不可の札＝赤'); assert.match(css, /\.rcv-st\{[^}]*linear-gradient\(#2f9a4c,#1a6a32\)/, '参加可能の札＝緑');
-  assert.match(css, /\.rcv-chain\{/); assert.match(HTML, /const P9_PADLOCK=/);
-  assert.match(css, /\.rcv-row\.st-next \.rcv-plate\{filter:drop-shadow\(0 0 7px rgba\(255,212,110/); assert.match(css, /\.rcv-next\{/);
-  assert.match(css, /\.rcv-row\.st-clear \.rcv-ic\{color:#ffd25a\}/); assert.match(css, /\.rcv-row\.ok\.sel \.rcv-plate\{/);
-  assert.doesNotMatch(css, /url\(|background[^;}]*(#000\b|rgba\(0,0,0,\.[5-9])|dotted|dashed/, '画像・黒い塗りつぶし・点線の仮 UI を使わない');
+test('RK-03：2026-10-05 正式素材：行の見た目は正式画像（参加可能＝rank_available_X・参加不可＝rank_unavailable_X。E〜S の12枚・作り直さない）。挑戦目標＝金の光と札、クリア済＝札、選択中＝光。押せるかは HTML（button／div）', () => {
+  assert.match(HTML, /const P9_RANK_IMG=\(k,ok\)=>`\.\/assets\/tournament\/rank_ui\/rank_\$\{ok\?"available":"unavailable"\}_\$\{RN\[k\]\}\.webp`;/);
+  for (const r of ['E', 'D', 'C', 'B', 'A', 'S']) for (const t of ['available', 'unavailable']) assert.ok(existsSync(path.join(ROOT, `assets/tournament/rank_ui/rank_${t}_${r}.webp`)), `${t}_${r}`);
+  const css = HTML.slice(HTML.indexOf('/* 2026-10-05 正式素材（大会ランク選択 FINAL'), HTML.indexOf('.rcv-note{'));
+  assert.match(css, /\.rcv-row\{[^}]*aspect-ratio:1024\/242;/); assert.match(css, /\.rcv-img\{[^}]*top:-34\.71%;width:100%/);
+  assert.match(css, /\.rcv-row\.st-next \.rcv-img\{filter:drop-shadow\(0 0 7px rgba\(255,212,110/); assert.match(css, /\.rcv-next\{/); assert.match(css, /\.rcv-clr\{/); assert.match(css, /\.rcv-row\.ok\.sel \.rcv-img\{/);
+  assert.doesNotMatch(css, /hue-rotate|saturate|grayscale|sepia|invert/, '正式画像の色は変えない');
+  assert.match(fnOf('p9RankRow'), /<img class="rcv-img \$\{ok\?"av":"na"\}" src="\$\{P9_RANK_IMG\(k,ok\)\}"/);
   assert.doesNotMatch(HTML, /tournament_rank_ui_official|rank_emblems\/slices|emblem_slot/, '参考画像・エンブレム（割り当て未確定）は使わない');
 });

@@ -38,13 +38,30 @@
   });
 
   // ---- ライバル専用のモンスター（2026-10-05 正式）：リュウの相棒レグナス。プレイヤー用の SPECIES とは別の表＝市場・図鑑・合体・初期選択・特殊復元・牧場・野生の相手には出さない
-  //  （プレイヤーの入手方法は未決。正式技10個・成長適性も未確定＝null。固有スキルはデータだけ＝implemented:false。バトル（Phase 6）には入れていない）
+  //  （プレイヤーの入手方法は未決。成長適性は未確定＝null。2026-10-05：正式技10個と固有スキルを登録＝ライバル戦だけで使う（js/battle/rival-partner.js。fight() は変えない））
   const RIVAL_MONSTERS = fz([
     fz({ key: 'regnas', name: 'レグナス', en: 'REGNAS', kind: '竜種', personality: '誇り高い・負けず嫌い', owner: 'ryu',
       base: fz({ li: 90, po: 115, in: 75, hi: 105, ev: 115, de: 100 }), speed: 8, style: '俊敏な地上竜＋回避反撃型',
-      uniqueSkill: fz({ id: 'unique_regnas', name: '蒼銀の反撃', implemented: false, desc: '相手の攻撃を回避すると、次に与えるダメージが一度だけ1.20倍。効果は重複しない。',
+      uniqueSkill: fz({ id: 'unique_regnas', name: '蒼銀の反撃', implemented: true, /* 2026-10-05：ライバル戦だけ（js/battle/rival-partner.js。セーブしない） */ desc: '相手の攻撃を回避すると、次に与えるダメージが一度だけ1.20倍。効果は重複しない。',
         params: fz({ trigger: 'evade', damageMultiplier: 1.2, uses: 1, stack: false }), hiddenParams: fz([]) }),
-      moves: null, growth: null, playerAvailable: false,
+      // 正式技10個（2026-10-05 正式。竜眼ロックの「竜」は この字）。命中 100% は必中ではない（回避の計算はほかの技と同じ）。support＝自分の強化（重ねがけしない・使い直すと残りターンを更新）
+      //  習得：1〜4 初期・5 ちから特訓・6 かしこさ特訓・7 命中特訓・8 回避特訓・9／10 丈夫さ特訓（1回目は未習得の2つからランダムに1つ・2回目は残り）。プレイヤーは使えない（playerAvailable:false）
+      //  rivalLoadout＝ライバル戦で使う技（最小構成＝初期の4技。強さ・難易度は従来のまま）。バトルへの組み込みは js/battle/rival-partner.js
+      moves: fz({ list: fz([
+        fz({ no: 1, id: 'kirisaku', name: 'きりさく', type: 'power', power: 80, accuracy: 90, critical: 10 }),
+        fz({ no: 2, id: 'shippo_attack', name: 'しっぽアタック', type: 'power', power: 90, accuracy: 75, critical: 10 }),
+        fz({ no: 3, id: 'ryugan_lock', name: '竜眼ロック', type: 'support', effect: fz({ target: 'self', stat: 'hi', size: 'small', ratio: 0.1, turns: 2, stack: false }) }),
+        fz({ no: 4, id: 'zanei_step', name: '残影ステップ', type: 'support', effect: fz({ target: 'self', stat: 'ev', size: 'small', ratio: 0.1, turns: 2, stack: false }) }),
+        fz({ no: 5, id: 'dragon_crash', name: 'ドラゴンクラッシュ', type: 'power', power: 110, accuracy: 80, critical: 15 }),
+        fz({ no: 6, id: 'soukou_breath', name: '蒼光ブレス', type: 'wisdom', power: 105, accuracy: 85, critical: 10 }),
+        fz({ no: 7, id: 'snipe_fang', name: 'スナイプファング', type: 'power', power: 95, accuracy: 100, critical: 10 }),
+        fz({ no: 8, id: 'genei_claw', name: '幻影クロー', type: 'power', power: 90, accuracy: 85, critical: 35 }),
+        fz({ no: 9, id: 'soujin_ranbu', name: '蒼刃乱舞', type: 'power', power: 130, accuracy: 90, critical: 25, finisher: true }),
+        fz({ no: 10, id: 'tail_cyclone', name: 'テイルサイクロン', type: 'power', power: 125, accuracy: 95, critical: 20, finisher: true }),
+      ]),
+        learnset: fz({ initial: fz([1, 2, 3, 4]), po: fz([5]), in: fz([6]), hi: fz([7]), ev: fz([8]), de: fz([9, 10]), deRule: 'first_random_then_remaining' }),
+        rivalLoadout: fz([1, 2, 3, 4]) }),
+      growth: null, playerAvailable: false,
       image: fz({ src: './assets/monsters/regnas/regnas_official.webp', w: 663, h: 900 }) }),
   ]);
   const rivalMonster = (key) => RIVAL_MONSTERS.find((x) => x.key === key) || null;

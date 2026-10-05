@@ -132,8 +132,8 @@ test('PB-09：ライバル遭遇＝リュウの正式立ち絵（市松模様を
 });
 
 test('PB-10：大会ランク選択の正式 UI：参加可能＝赤（ワインレッド）＋金・未解放＝青〜濃紺＋交差した鎖＋南京錠・解除は青＋鎖 → 演出 → 赤。行ごとに状態から描く（全画面の画像なし）。TEST 大会は記録を変えない', () => {
-  assert.match(fnOf('p9RankRow'), /const lock=`<i class="rcv-chain a" aria-hidden="true"><\/i><i class="rcv-chain b" aria-hidden="true"><\/i>`;/);
-  assert.match(fnOf('p9RankRow'), /\$\{st=="lock"\|\|un\?'<i class="rcv-lock" aria-hidden="true"><\/i>':""\}/);
+  // 2026-10-05 正式素材：鎖と錠は正式画像（rank_unavailable_X）。解除の演出は参加不可の画像を参加可能の画像の上に重ねて消す
+  assert.match(fnOf('p9RankRow'), /\$\{un\?`<img class="rcv-img lockimg" src="\$\{P9_RANK_IMG\(k,false\)\}"/);
   // 解除の演出は「前に見た最高のランク」より上が新しく選べるようになった行だけ（初めての受付は演出しない）
   const f = fnOf('p9RankListHtml'); const flags = {}; let saved = 0;
   const run = (el, uid) => new Function('MMP8', 'finaFlags', 'save', 'p9RankRow', `${f}\nreturn p9RankListHtml;`)({ eligibleRanks: () => el }, () => flags, () => saved++, (m, k, e, un) => `${k}${un ? '!' : ''}`)({ uid, raise: { ch: 1 } });
