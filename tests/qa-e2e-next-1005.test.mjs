@@ -49,7 +49,7 @@ for (const [si, size] of SIZES.entries()) {
   T(`OP-B1（${size.join('×')}）：新しいゲームの序盤＝フィナの2択 → 管理局だけ光る → セルジュの登録 → 名前の確認 → 名前を呼ぶ → 出身地と世界地図 → 市場へ。登録前は名前を呼ばない・セーブは v6`, async () => {
     const p = await openPage({ size, opening: true }); const pg = p.page;
     await pg.click('.p15start');
-    await pg.waitForSelector('.map.town');
+    await pg.waitForSelector('.map.town', { state: 'attached' });   // フィナの声かけ（施設の背景つきの会話）の間は街の UI が隠れる
     assert.equal(await pg.$('#p11nm'), null, '登録画面へ直接行かない（街から始まる）');
     await pg.waitForSelector('.mmtalk:not(.mmtalk-out)', { timeout: 8000 });
     const first = await readTalk(pg);
