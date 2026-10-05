@@ -296,6 +296,8 @@
       x.send();
     } catch (e) { f.loading = false; f.failed = true; note('se-load', e); }
   }
+  /** 2026-10-05 PHASE B：音のファイルだけ先に取ってくる（AudioContext は作らない・デコードしない＝最初の操作の前でも安全）。開始画面に BGM が無くなったので、開始の音 TITLE_START をタップの前に読んでおき、タップではデコードだけにする */
+  function prefetchSe(name) { try { const f = SEF[name]; if (f && !f.silent && !f.data && !f.buffer && !f.loading && !f.failed) loadSe(name); } catch (e) {} }
   function decodeSe(name) {
     const f = SEF[name], c = st.ctx; if (!f || !c || !f.data || f.buffer || f.decoding) return;
     f.decoding = true;
@@ -405,6 +407,6 @@
     slots: st.slots.map((s) => ({ i: s.i, src: s.src, scene: s.scene, active: s.active, paused: !!s.el.paused, loop: s.loopRange ? [s.loopRange.start, s.loopRange.end] : null, waiting: !!s.waiting, time: Number.isFinite(s.el.currentTime) ? Math.round(s.el.currentTime * 100) / 100 : null, gain: s.gain ? s.gain.gain.value : s.el.volume })) });
   const registryOf = (kind) => (kind === 'se' ? Object.fromEntries(Object.keys(SEF).map((k) => [k, { srcs: [...SEF[k].srcs], gain: SEF[k].gain, silent: !!SEF[k].silent, maxMs: SEF[k].maxMs }])) : Object.fromEntries(Object.keys(BGM).map((k) => [k, { ...BGM[k], srcs: [...BGM[k].srcs] }])));
 
-  root.MMAUDIO = fz({ SCENES, SCENE_ALIAS, SE, FADE, registerBgm, registerSe, registerAll, clearRegistry, registryOf, attachLegacy, resolveScene, resolveBgm, scene, stopBgm, bgmTime, seekBgm, se, setVolume, setMuted, unlock, context, legacyInput, status, seLog: () => SE_LOG.slice() });
+  root.MMAUDIO = fz({ SCENES, SCENE_ALIAS, SE, FADE, registerBgm, registerSe, registerAll, clearRegistry, registryOf, prefetchSe, attachLegacy, resolveScene, resolveBgm, scene, stopBgm, bgmTime, seekBgm, se, setVolume, setMuted, unlock, context, legacyInput, status, seLog: () => SE_LOG.slice() });
   try { if (root.document) { ['pointerdown', 'touchend', 'keydown'].forEach((e) => root.document.addEventListener(e, unlock, { passive: true })); root.document.addEventListener('visibilitychange', onVisibility); } } catch (e) {}
 })(typeof window !== 'undefined' ? window : globalThis);
