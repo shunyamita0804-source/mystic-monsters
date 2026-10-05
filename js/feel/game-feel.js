@@ -26,10 +26,16 @@
   const EVENTS = fz({
     'ui.confirm': { level: 0, se: 'UI_CONFIRM' }, 'ui.select': { level: 0, se: 'UI_SELECT' }, 'ui.cancel': { level: 0, se: 'UI_CANCEL' }, 'ui.error': { level: 0, se: 'UI_ERROR', haptic: 'warning' }, 'ui.open': { level: 1, se: 'UI_OPEN' },
     'dice.throw': { level: 1, se: 'DICE_THROW', haptic: 'light' }, 'dice.land': { level: 2, se: 'DICE_LAND', haptic: 'medium' }, 'dice.stop': { level: 2, se: 'DICE_STOP' }, 'dice.result': { level: 2, se: 'DICE_ROLL' },
-    'step': { level: 0, se: 'STEP' }, 'tile.stop': { level: 1, se: 'TILE_STOP' }, 'stat.up': { level: 3, se: 'STAT_UP', haptic: 'success' }, 'gold.get': { level: 3, se: 'GOLD_GET', haptic: 'light' },
-    'chest.open': { level: 3, se: 'CHEST_OPEN', haptic: 'medium' }, 'event': { level: 2, se: 'EVENT' }, 'wild.alert': { level: 4, se: 'WILD_ALERT', haptic: 'heavy' }, 'rival.appear': { level: 4, se: 'RIVAL_APPEAR', haptic: 'heavy' },   // 2026-10-04 G3：ライバル（リュウ）の登場は野生と別の音（RIVAL_APPEAR。素材待ち＝silent）
+    'step': { level: 0, se: 'STEP' }, 'tile.stop': { level: 1, se: 'TILE_STOP' }, 'stat.up': { level: 3, se: 'TRAINING_SUCCESS', haptic: 'success' }, 'gold.get': { level: 3, se: 'GOLD_GET', haptic: 'light' },
+    'chest.open': { level: 3, se: 'CHEST_OPEN', haptic: 'medium' }, 'event': { level: 2, se: 'EVENT_TRIGGER' }, 'wild.alert': { level: 4, se: 'WILD_ALERT', haptic: 'heavy' }, 'rival.appear': { level: 4, se: 'RIVAL_APPEAR', haptic: 'heavy' },   // 2026-10-04 G3：ライバル（リュウ）の登場は野生と別の音（RIVAL_APPEAR。素材待ち＝silent）
     'battle.matchup': { level: 4, se: 'MATCHUP', haptic: 'medium' }, 'battle.start': { level: 4, se: 'BATTLE_START', haptic: 'heavy' }, 'victory': { level: 5, se: 'VICTORY', haptic: 'success' }, 'chapter.start': { level: 5, se: 'CHAPTER_START' },
     'chapter.clear': { level: 5, se: 'CHAPTER_CLEAR', haptic: 'success' }, 'tournament.arrive': { level: 5, se: 'TOURNAMENT_ARRIVAL', haptic: 'success' }, 'tournament.start': { level: 5, se: 'TOURNAMENT_START' }, 'unlock': { level: 5, se: 'UNLOCK', haptic: 'success' },
+  });
+  // 2026-10-06：正式 SE の出来事（段階ごとの宝箱・レアの遭遇・特訓の道具・購入・休む・分かれ道・登場の足音）。'event' は出来事が始まった瞬間（EVENT_TRIGGER）、'stat.up' は能力UPの表示が出た瞬間（TRAINING_SUCCESS）
+  const EVENTS2 = fz({
+    'chest.open.normal': { level: 3, se: 'TREASURE_TIER_1', haptic: 'medium' }, 'chest.open.rare': { level: 3, se: 'TREASURE_TIER_2', haptic: 'medium' }, 'chest.open.special': { level: 3, se: 'TREASURE_TIER_3', haptic: 'heavy' },
+    'rare.alert': { level: 4, se: 'RARE_ALERT', haptic: 'heavy' }, 'train.item': { level: 3, se: 'TRAINING_ITEM_SPAWN' }, 'market.buy': { level: 3, se: 'MARKET_PURCHASE', haptic: 'success' },
+    'rest.recover': { level: 2, se: 'REST_RECOVER' }, 'branch.select': { level: 1, se: 'BRANCH_SELECT' }, 'monster.enter': { level: 1, se: 'MONSTER_ENTRY' },
   });
   const LOG = [];
   let haptics = null;
@@ -38,7 +44,7 @@
   function on(fn) { if (typeof fn === 'function') listeners.push(fn); }
   /** 出来事を知らせる：SE（MMAUDIO）・ハプティクス（登録したときだけ）・購読者。失敗しても投げない */
   function emit(name, detail) {
-    const E = EVENTS[name]; if (!E) return null;
+    const E = EVENTS[name] || EVENTS2[name]; if (!E) return null;
     LOG.push({ name, t: Date.now() }); if (LOG.length > 60) LOG.shift();
     try { if (E.se && root.MMAUDIO) root.MMAUDIO.se(E.se); } catch (e) {}
     try { if (E.haptic && haptics) haptics(E.haptic, name, detail); } catch (e) {}
@@ -129,6 +135,6 @@
   }
   if (root.document && root.document.addEventListener) { setupInput(root.document); if (root.document.documentElement) setupTokens(root.document); }
 
-  root.MMFEEL = fz({ LEVEL, MOTION, EVENTS, emit, on, registerHaptics, hold, beat, wait, countUp, bump, transition, navKind, NAV_FN,
+  root.MMFEEL = fz({ LEVEL, MOTION, EVENTS: fz({ ...EVENTS, ...EVENTS2 }), emit, on, registerHaptics, hold, beat, wait, countUp, bump, transition, navKind, NAV_FN,
     log: () => LOG.map((x) => x.name), navState: () => ({ pending: !!NAV.pending, count: NAV.count, guardLeft: Math.max(0, NAV.until - Date.now()) }) });
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -1,5 +1,6 @@
 # assets/audio — 正式な音源の置き場
 
+- 正式素材（ゲーム所有・2026-10-05）は `bgm/mystic_monsters_official/`・`se/mystic_monsters_official/`。
 - `bgm/<素材パック>/…ogg`：BGM。`se/<素材パック>/…ogg`：SE。ファイル名は英小文字・数字・`_`（元の名前から空白と記号を置き換えた）。
 - どの場面・出来事で鳴るかは **js/audio/audio-registry.js**（BGM_REGISTRY／SE_REGISTRY）だけが決める。ゲームのコードにファイル名は無い。
 - 出どころ・作者・ライセンス・クレジット・元ファイル名は **AUDIO_CREDITS.md**。

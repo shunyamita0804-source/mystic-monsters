@@ -21,13 +21,14 @@
   const AKSE = SE_DIR + 'alkakrab_fantasy_rpg_vol3/'; // 同じパックの Fx（短い効果音）
   const HG = BGM_DIR + 'hydrogene_16bit_rpg/';         // HydroGene「High Quality 16-bit RPG Music」（CC0。AUDIO_CREDITS.md）
   const MMO = SE_DIR + 'mystic_monsters_official/';   // ミスティックモンスターズの正式素材（ユーザー提供・2026-10-04。AUDIO_CREDITS.md）
+  const MMB = BGM_DIR + 'mystic_monsters_official/';  // 同じく正式の BGM（2026-10-06：タイトル・プロローグ。ユーザー提供・ゲームの所有素材。AUDIO_CREDITS.md）
 
   // 書き方：{ src, gain, loopStart, loopEnd, loopXfade } ＝ファイルで鳴らす（loopEnd を書くと、曲の終わりのフェードアウトの前で loopStart へクロスフェードで戻る。秒）／{ fallback: '場面' } ＝ほかの場面の曲を使う／{ silent: true } ＝鳴らさない（合成音にも落とさない。試遊で「合わない」となった音の一時的な置き場）／行が無い ＝合成音
   //  【2026-10-03 実機試遊（iPhone）の結果】で NG になった音は silent にした（追加の音源パックで選び直す。行の横の「待ち」）
   const BGM_REGISTRY = {
     // ---- 開始画面・街・施設 ----
-    TITLE:      { src: PGS + 'event_music_1.ogg', gain: 0.85 },        // 開始画面は最初のタップまで音を出せない（ブラウザの制約）→ 名前登録の画面まで続ける【暫定】
-    PROLOGUE:   { silent: true },   // 2026-10-04 G1：プロローグ専用の曲の差し込み口。開始画面の曲（TITLE）を短くフェードアウトして分ける。今ある曲はすべて別の場面に割り当て済みで、合う未使用の曲が無い＝素材待ち（届いたら src を書くだけ）
+    TITLE:      { src: MMB + 'mystic_monsters_title_theme_official.ogg', gain: 0.56 },   // 2026-10-06 正式（38.9秒・-13.0 LUFS → gain 0.56 で約 -18）。開始画面は最初のタップまで音を出せない（ブラウザの制約）。旧：PGS Event Music 1
+    PROLOGUE:   { src: MMB + 'mystic_monsters_prologue_bgm_official.ogg', gain: 0.56, loop: false },   // 2026-10-06 正式（54.2秒・固定尺・ループしない・ほかの場面に使わない）。プロローグの時刻表（Scene 2＝7.782秒・Scene 3＝21.226秒・Scene 4＝37.342秒）に合わせた曲＝Scene 1 を出す瞬間に 0 秒から（index.html の proPlay）
     TOWN:       { src: HG + '02_lively_city.ogg', gain: 0.62 },     // 2026-10-03 第5弾の仮採用：HydroGene「Lively City」65秒・明るい長調（第4弾で NG の Tranquil Radiance は使わない）
     MARKET:     { src: PGS + 'town_village_theme_2.ogg', gain: 0.9 },   // 試遊で OK（変更しない）
     RANCH:      { src: PGS + 'town_village_theme_3.ogg', gain: 0.8 },   // 77秒・温かい【暫定】
@@ -67,19 +68,32 @@
     UI_TAB:      { src: UI + 'cursor_style_4.ogg', gain: 3.5 },        // 元が小さい（-29 LUFS）
     // ---- Chapter ----
     CHAPTER_START: { src: AKSE + 'fx_2.ogg', gain: 3.0 },              // 第3弾試遊候補：alkakrab Fx 2（2秒・低くふくらんで消える音）。元が小さい（-28 LUFS）
-    DICE_THROW: { silent: true },                                     // 待ち：jump_2 は試遊で NG（投げる音＝振る・転がる音を追加パックから）
-    DICE_LAND:  { silent: true },   // サイコロが地面に最初に触れた：2026-10-03 第4弾の試遊で NG → 無音（代わりの音は選ばない）
+    DICE_THROW: { src: MMO + '01_dice_large_full.ogg', gain: 0.95 },   // 2026-10-06 正式：投げる → 着地 → 短く転がる → 停止 を1本にした完成 SE（2.05秒）。投げ始めに1回だけ（1ロール1回）。下の LAND／ROLL／STOP は鳴らさない（同じ音を重ねない）
+    DICE_LAND:  { silent: true },   // 2026-10-06：着地の音は DICE_THROW の完成 SE に含まれる（鳴らさない）。サイコロが地面に最初に触れた：2026-10-03 第4弾の試遊で NG → 無音（代わりの音は選ばない）
     DICE_ROLL:  { silent: true },   // 出目の面を見せ始めた（停止のあと）：2026-10-03 第4弾の試遊で NG → 無音（代わりの音は選ばない）
     DICE_STOP:  { silent: true },   // サイコロが見た目の上で完全に止まったフレーム（dice-renderer の dice.stop）。停止の音を将来入れるならここ（今は無音）
-    STEP:       { silent: true },                                     // 待ち：1マスごとの足音（pluck_4）は試遊で NG。耳障りでない短い低い足音を追加パックから（止まるマスでは鳴らさない）
+    STEP:       { silent: true },                                     // 2026-10-06：1マスごとの足音は無音のまま（正式の4歩の音は Chapter 開始の登場 MONSTER_ENTRY に1回だけ）。旧：1マスごとの足音（pluck_4）は試遊で NG。耳障りでない短い低い足音を追加パックから（止まるマスでは鳴らさない）
     TILE_STOP:  { silent: true },   // 通常マスに止まった：2026-10-03 第4弾の試遊で NG → 無音（代わりの音は選ばない）（マスの光る演出は残す）
-    STAT_UP:    { src: UI + 'confirm_style_3_004.ogg', gain: 0.47 },  // 能力UP：1秒ほどの明るい決定音（旧 powerup は NG）【要試聴】
+    STAT_UP:    { src: UI + 'confirm_style_3_004.ogg', gain: 0.47 },  // 能力UP（特訓ボード・旧ボードの sfx(3)）【要試聴】。Chapter の能力マスは 2026-10-06 から TRAINING_ITEM_SPAWN → TRAINING_SUCCESS（こちらは鳴らさない）
     GOLD_GET:   { src: IV + 'bell.ogg', gain: 7.0 },                  // 元が小さい（-36 LUFS）
-    CHEST_OPEN: { src: UI + 'confirm_style_6_001.ogg', gain: 0.85 },
-    EVENT:      { src: IV + 'ping.ogg', gain: 5.0 },
-    RIVAL_APPEAR: { silent: true },   // 2026-10-04 G3：ライバル（リュウ）の登場の音。野生（WILD_ALERT）とは分けた。短く切れ味のある登場音の素材待ち（今ある SE に合うものが無い・NG の音は使わない）
-    WILD_ALERT: { src: AKSE + 'fx_3.ogg', gain: 5.0, maxMs: 2000, fadeMs: 700 },   // 第3弾試遊候補：alkakrab Fx 3（低い一撃。元は8秒の余韻 → 再生を2秒にして最後の0.7秒で下げる。ファイルは変えない）
+    CHEST_OPEN: { src: UI + 'confirm_style_6_001.ogg', gain: 0.85 },   // 段階の分からない宝箱だけ（Chapter の宝箱は 2026-10-06 から TREASURE_TIER_1〜3 のどれか1つ）
+    EVENT:      { src: IV + 'ping.ogg', gain: 5.0 },   // 旧：出来事の結果。Chapter の出来事は 2026-10-06 から EVENT_TRIGGER（出来事が起きた瞬間）
+    RIVAL_APPEAR: { src: MMO + '08_encounter_rival.ogg', gain: 1.0 },   // 2026-10-06 正式：ライバル（リュウ）／固定の強敵の遭遇
+    WILD_ALERT: { src: MMO + '06_encounter_wild.ogg', gain: 1.05 },   // 2026-10-06 正式：通常の野生の遭遇（旧：alkakrab Fx 3）
+    RARE_ALERT: { src: MMO + '07_encounter_rare.ogg', gain: 0.74 },   // 2026-10-06 正式：レアの遭遇（野生の音を使い回さない）
     TOURNAMENT_ARRIVAL: { silent: true },   // 大会会場への到着：2026-10-03 第4弾の試遊で NG → 無音（代わりの音は選ばない）（ほかの Fx を使い回さない）
+    // ---- 2026-10-06 正式 SE（ユーザー提供・ゲームの所有素材。-16 LUFS を目安に gain、ピーク -1 dBFS まで。ファイルは加工しない）----
+    MONSTER_ENTRY:       { src: MMO + '05_small_monster_entry_steps_4step.ogg', gain: 1.12 },   // Chapter 開始でモンスターが画面の下から歩いて入る（4歩・0.72秒）＝1回だけ。1マスごとには鳴らさない
+    TRAINING_ITEM_SPAWN: { src: MMO + '02_training_item_spawn.ogg', gain: 1.0 },   // 能力マス：特訓の道具がモンスターのそばに出た瞬間
+    TRAINING_SUCCESS:    { src: MMO + '04_training_success.ogg', gain: 0.63 },     // 能力マス：特訓の動きのあと、能力UPの表示が出た瞬間（STAT_UP と重ねない）
+    MARKET_PURCHASE:     { src: MMO + '03_market_purchase_confirm.ogg', gain: 1.02 },   // 市場：購入が成立した瞬間（シートを開いた・ボタンに触れた・所持金不足では鳴らさない）
+    TREASURE_TIER_1:     { src: MMO + '09_treasure_open_tier1.ogg', gain: 0.98 },   // 宝箱 normal（tier ごとに1つだけ）
+    TREASURE_TIER_2:     { src: MMO + '10_treasure_open_tier2.ogg', gain: 1.01 },   // 宝箱 rare
+    TREASURE_TIER_3:     { src: MMO + '11_treasure_open_tier3.ogg', gain: 0.88 },   // 宝箱 special
+    TREASURE_TIER_4:     { src: MMO + '12_treasure_open_tier4.ogg', gain: 0.65 },   // 正式素材として登録だけ（ゲームに第4の段階は無い＝どこからも鳴らさない。報酬・段階は作らない）
+    REST_RECOVER:        { src: MMO + '13_rest_recover.ogg', gain: 1.11 },          // 「休む」・休むマスで疲れの回復が成立した瞬間
+    EVENT_TRIGGER:       { src: MMO + '14_event_trigger.ogg', gain: 1.0 },          // 出来事のマスで出来事が始まった瞬間（休むマスの回復は REST_RECOVER）
+    BRANCH_SELECT:       { src: MMO + '15_branch_select.ogg', gain: 1.05 },         // 分かれ道で道を選んだ瞬間
     // ---- 大会・バトル ----
     MATCHUP:       { silent: true },   // 対戦相手の発表（大会の対戦前の画面）：2026-10-03 第4弾の試遊で NG → 無音（代わりの音は選ばない）。旧：alkakrab Fx 1
     BATTLE_START:  { src: IV + 'bass_thud_electric.ogg', gain: 1.5 }, // 実戦の開始（「FIGHT!」）→ 0.45秒後に戦闘の BGM【要試聴】

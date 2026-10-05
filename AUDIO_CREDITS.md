@@ -13,6 +13,7 @@ ZIP の README・LICENSE の原文は、受け取った ZIP の中にある（�
 | High Quality 16-bit RPG Music（28曲） | HydroGene | https://hydrogene.itch.io/high-quality-16-bit-music | CC0 1.0（ユーザー確認 2026-10-03。商用可・クレジット不要・加工可） | 可 | 不要 | assets/audio/bgm/hydrogene_16bit_rpg/（2026-10-03 第5弾の仮採用・8曲） |
 | Mix of SFX by Ivokard（SE） | Ivokard | ZIP の License.txt（SNS：https://www.youtube.com/@ivokard ほか） | CC0（Creative Commons Zero。「free to use in personal, educational and commercial projects」） | 可 | 不要 | assets/audio/se/ivokard/ |
 | ミスティックモンスターズ正式素材（SE） | ユーザー（プロジェクト所有者）提供 | 2026-10-04 にチャットで受け取ったファイル「Mystic Monsters Start Button SE(1).mp3」 | ゲーム専用の正式素材（ユーザー提供） | 可 | 不要 | assets/audio/se/mystic_monsters_official/ |
+| ミスティックモンスターズ正式素材（BGM 2曲・SE 15種）【2026-10-05】 | Mystic Monsters official／ユーザー（プロジェクト所有者）提供のゲーム所有素材 | ZIP mystic_monsters_next_claude_integration_bundle_2026-10-05.zip（01_title_bgm・02_prologue_bgm・03_official_se/ogg_game。WAV master は ZIP の中だけに保管＝リポジトリに置かない） | ゲーム専用の正式素材（ユーザー提供・ゲーム所有） | 可 | 不要（外部の作者へ帰属させない） | assets/audio/bgm/mystic_monsters_official/・assets/audio/se/mystic_monsters_official/ |
 
 ### 正式なクレジット表記（ゲーム内のクレジット画面・配布ページに載せる文）
 
@@ -58,7 +59,7 @@ PGS の曲は「暫定の試遊用」。新しく採用しない（公開リポ�
 
 | ZIP の元ファイル | リポジトリのファイル | 場面（registry） | 長さ | 元の音量（LUFS） | gain |
 |---|---|---|---:|---:|---:|
-| Event Music 1.ogg | event_music_1.ogg | TITLE（名前登録の画面まで） | 80秒 | -16.4 | 0.85 |
+| Event Music 1.ogg | （外した 2026-10-05）event_music_1.ogg | 旧 TITLE → 正式のタイトル曲に置き換え（パックのクレジットは残す） | 80秒 | -16.4 | 0.85 |
 | Town-Village Theme 2.ogg | town_village_theme_2.ogg | MARKET（試遊で OK） | 61秒 | -16.9 | 0.9 |
 | Town-Village Theme 3.ogg | town_village_theme_3.ogg | RANCH | 77秒 | -16.1 | 0.8 |
 | Event Music 2.ogg | event_music_2.ogg | LABORATORY | 103秒 | -14.3 | 0.65 |
@@ -96,6 +97,31 @@ PGS の曲は「暫定の試遊用」。新しく採用しない（公開リポ�
 
 - 鳴らし方：タップの瞬間（最初のタップ＝unlock と同時。デコードがまだなら終わりしだい・最大0.9秒以内に鳴らす＝合成のファンファーレには落とさない）→ ボタンが沈む → 約0.5秒で次の画面。音は画面の切り替えで止めない（余韻は自然に終わる）。MP3 は置かない（OGG だけ）。
 
+
+### BGM・SE（ミスティックモンスターズ正式素材・ゲーム所有 → assets/audio/bgm|se/mystic_monsters_official/）【2026-10-05】
+
+作者表記：Mystic Monsters official（ユーザー提供のゲーム所有素材）。外部のフリー素材の作者へ帰属させない。ファイルは ZIP の OGG を無加工でコピー（音量の差は registry の gain だけ）。
+
+| リポジトリのファイル | 種類 | 出来事・場面 | 長さ | 元の音量（LUFS） | gain | sha256 |
+|---|---|---|---:|---:|---:|---|
+| bgm/mystic_monsters_official/mystic_monsters_title_theme_official.ogg | BGM | TITLE（開始画面〜プロローグの前。ループ） | 38.919秒 | -13.0 | 0.56 | `7ad3bf877f1f817bcc2a19ac32f174a8d12da25d73137cb7a987b418c17e0f3c` |
+| bgm/mystic_monsters_official/mystic_monsters_prologue_bgm_official.ogg | BGM | PROLOGUE（プロローグ専用・loop:false・Scene 1 の開始と同時） | 54.2秒 | -13.2 | 0.56 | `67a48d4194fdf6a4a6b70cd2a95bf513ab2604adaf5b43c3bfd3c46126f5caf3` |
+| se/mystic_monsters_official/01_dice_large_full.ogg | SE | DICE_THROW（1回の出目で1回。LAND・ROLL・STOP は silent のまま） | 2.05秒 | -21.0 | 0.95 | `9fd7d1ac264fc9cbc177c48ce1b37d514e17c1ba70be3a906a104a47e617fff0` |
+| se/mystic_monsters_official/02_training_item_spawn.ogg | SE | TRAINING_ITEM_SPAWN（能力マスの道具が現れる） |  | -18.8 | 1.0 | `04cbf9a1fc4c3476500e750e947cbf13730c6c74b9ec9177d096444fb4a86281` |
+| se/mystic_monsters_official/03_market_purchase_confirm.ogg | SE | MARKET_PURCHASE（市場の購入が成立したときだけ） |  | -16.8 | 1.02 | `a4a14ddfa428e77ecf9b3087d01020680bd107340cf2586f21e94fa5b0153221` |
+| se/mystic_monsters_official/04_training_success.ogg | SE | TRAINING_SUCCESS（能力UP。STAT_UP の代わり＝二重にしない） |  | -12.0 | 0.63 | `7833ad86aa13e4d4851890fa84fd8d5f2be0990cf45f046431dfc622797dc2ce` |
+| se/mystic_monsters_official/05_small_monster_entry_steps_4step.ogg | SE | MONSTER_ENTRY（Chapter 開始でモンスターが歩いて入る1回） |  | -23.4 | 1.12 | `26c6dbc683efd574a4224de2d27731559c9ba66e02ba761851e83d18cfeb09d4` |
+| se/mystic_monsters_official/06_encounter_wild.ogg | SE | WILD_ALERT（野生の遭遇） |  | -18.0 | 1.05 | `311b2cbe09a479815f92185131889ed4a109966c0ac802386a7e5d8325445c77` |
+| se/mystic_monsters_official/07_encounter_rare.ogg | SE | RARE_ALERT（レアの遭遇） |  | -13.4 | 0.74 | `a59dfafbb743273e33da24fdeca7fc5eba8b26125bf29bc623d60c4d5653283b` |
+| se/mystic_monsters_official/08_encounter_rival.ogg | SE | RIVAL_APPEAR（ライバルの遭遇） |  | -16.0 | 1.0 | `6ad2ee5a92dde078f323e2421b47d45b0d412b110c30edd402b524d8c2552806` |
+| se/mystic_monsters_official/09_treasure_open_tier1.ogg | SE | TREASURE_TIER_1（宝箱 normal） |  | -15.8 | 0.98 | `31b0815acc0f876aac4f57c51d416f678009f85f5ff96e24ce622531dfe618e0` |
+| se/mystic_monsters_official/10_treasure_open_tier2.ogg | SE | TREASURE_TIER_2（宝箱 rare） |  | -16.3 | 1.01 | `28c162e2680fc7d730239836d6985c35d837be34472fbc9238397433910c2b8b` |
+| se/mystic_monsters_official/11_treasure_open_tier3.ogg | SE | TREASURE_TIER_3（宝箱 special） |  | -14.9 | 0.88 | `752a7e9bd457e12ce7a2072e93a6eb8606c8ac3486ab7767ac25d95373deef46` |
+| se/mystic_monsters_official/12_treasure_open_tier4.ogg | SE | TREASURE_TIER_4（登録のみ・未接続＝第4段階の宝箱は無い） |  | -12.2 | 0.65 | `f7983b6c9683b3ee1b5b2a5713dc0bd105fdc07e16cba3f9f292389e84ae0b84` |
+| se/mystic_monsters_official/13_rest_recover.ogg | SE | REST_RECOVER（休む・休むマスで疲れが回復） |  | -17.3 | 1.11 | `b301bf53e24c87430ec54d3a9f3df497db6b8122730c9fd16e14325af5859250` |
+| se/mystic_monsters_official/14_event_trigger.ogg | SE | EVENT_TRIGGER（イベントマスの出来事が始まる） |  | -16.0 | 1.0 | `2064d78d14301468da16f8cdca3727fcaead8649fd662eb188c12f05cb762d2a` |
+| se/mystic_monsters_official/15_branch_select.ogg | SE | BRANCH_SELECT（分かれ道で道を選んだ） |  | -16.4 | 1.05 | `a9f26bfb3c7e109fb8ab9a140383ea9e14b8fb194bd312abab3d6cf2d7c0ac47` |
+
 ### SE（Mix of SFX by Ivokard → assets/audio/se/ivokard/）
 
 | ファイル | 出来事 |
@@ -122,7 +148,7 @@ PGS の曲は「暫定の試遊用」。新しく採用しない（公開リポ�
 | Action 2.ogg「Battle of the Skies」 | bgm/…/action_2_battle_of_the_skies.ogg | RIVAL_BATTLE（ライバル戦） | 117秒 | -15.2 | 0.74 | 0〜110秒・0.2秒（終わりの一撃のあとの余韻は使わない） |
 | Action 1.ogg「Clash of Arcane Titans」 | bgm/…/action_1_clash_of_arcane_titans.ogg | TOURNAMENT_BATTLE_HIGH（大会 B〜S）・SPECIAL_BATTLE（fallback） | 89秒 | -14.8 | 0.71 | 0〜86.3秒・0.2秒 |
 | Fx 2.ogg | se/…/fx_2.ogg | CHAPTER_START（Chapter 開始・スタート地点へのズームのあと） | 2秒 | -27.7 | 3.0 | — |
-| Fx 3.ogg | se/…/fx_3.ogg | WILD_ALERT（野生モンスターの遭遇） | 8秒 → 再生は2秒（最後の0.7秒で下げる） | -32.3 | 5.0 | — |
+| Fx 3.ogg | （外した 2026-10-05）se/…/fx_3.ogg | 旧 WILD_ALERT → 正式 SE 06_encounter_wild に置き換え | 8秒 → 再生は2秒（最後の0.7秒で下げる） | -32.3 | 5.0 | — |
 | Fx 1.ogg | （外した）se/…/fx_1.ogg | 旧 MATCHUP（対戦相手の発表）→ 第4弾で NG・無音 | 7秒 → 再生は2.6秒（最後の0.9秒で下げる） | -31.2 | 4.5 | — |
 
 使っていない：Action 3「Stealthy Infiltration」（潜入の曲）、Action 4「Forest of Mysteries」・Action 5「Epic Quest」（Chapter 1 の候補だったが、解析で戦闘曲と同じくらい忙しい＝40ターン聞くには強すぎるため見送り）、Ambient 1・2・5〜10、Ambience 1〜5、Dark 1〜5（とても小さい・暗い環境音）。

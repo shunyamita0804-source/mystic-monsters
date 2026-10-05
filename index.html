@@ -1513,7 +1513,7 @@ button.mkc b{font-size:.9rem}button.mkc small{font-size:.66rem;color:#ffe9b0}
 .mmpro-u::before{content:"";position:absolute;left:6%;right:6%;top:-28%;bottom:-28%;z-index:-1;background:radial-gradient(closest-side,rgba(2,6,20,.42),rgba(2,6,20,0));pointer-events:none}
 .mmpro-nar .mmpro-u p{position:static;transform:none;will-change:auto}
 .mmpro-skip{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:12px;margin:0;padding:6px 14px;min-height:36px;border-radius:999px;background:rgba(8,15,34,.6);border:1px solid rgba(240,232,212,.5);color:#f3ecd9;font-size:12.5px;font-weight:700;letter-spacing:.06em}
-.mmpro-hint{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);text-align:center;font-size:11px;color:rgba(243,236,217,.6);letter-spacing:.1em;pointer-events:none}
+
 .mmpro-veil{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .9s ease}
 .mmpro.end .mmpro-veil{opacity:1}
 @media (max-height:700px){.mmpro-nar p{font-size:15.5px;line-height:1.8}}
@@ -3312,8 +3312,16 @@ const OPEN_TALK={
  mistoria:[{npc:"fina",expression:"guide",text:"ここがミストリア。"},{npc:"fina",expression:"guide",text:"聖獣士管理局のほかにも、研究所や牧場、闘技場なんかが集まってる街だよ。"},{npc:"fina",expression:"smile",text:"一人前の聖獣士を目指すなら、これから何度もお世話になると思う。"}],
  unlock:n=>[{npc:"serge",text:"世界地図は、この管理局でいつでもご覧いただけます。"},{npc:"fina",expression:"guide",text:`それじゃあ${n}さん、まずは市場で最初の相棒を迎えに行こう！`}]};
 /** プロローグ（新しいゲームの最初に1回。見た記録は S.npcFlags.prologue）→ 街 */
-function opPrologue(msg){P11_PRO.add(S);$("#app").innerHTML="";bgm("prologue");const cv=document.createElement("div");cv.className="p11cover";document.body.appendChild(cv);
- MMPRO.readyOrTimeout(6000).then(()=>MMPRO.play({cover:cv})).then(ok=>{cv.remove();if(ok){finaFlags().prologue=1;save()}}).catch(()=>cv.remove()).then(()=>lobby(msg))}
+/** 2026-10-06：プロローグ（固定尺のオープニング）と正式のプロローグ BGM を同じ時間軸で鳴らす。
+ *  開始画面の曲をフェードアウト → 背景の読み込みを待つ（その間は BGM を鳴らさない）→ Scene 1 を出す瞬間に PROLOGUE（0.000秒・フェードなし）→ 実際に鳴り始めた位置から映像の時計を始める
+ *  → 映像の時計に BGM を合わせる（MMPRO の audioTime／seek）→ 終わったら（スキップでも）PROLOGUE を残さない。曲のファイル・音量・ループ（しない）は js/audio/audio-registry.js */
+function proBgmStart(){const A=window.MMAUDIO;if(!A)return null;A.scene("PROLOGUE",{fade:"none"});const t0=Date.now();
+ return new Promise(r=>{const f=()=>{const t=A.bgmTime("PROLOGUE");if((t!=null&&t>0)||Date.now()-t0>1500||A.status().source!=="file")return r(t);setTimeout(f,10)};f()})}
+function proPlay(cv){const A=window.MMAUDIO;if(A)A.stopBgm({fade:"normal"});
+ return Promise.all([MMPRO.readyOrTimeout(6000),new Promise(r=>setTimeout(r,A?750:0))]).then(()=>MMPRO.play({cover:cv,onStart:proBgmStart,audioTime:()=>A?A.bgmTime("PROLOGUE"):null,seek:t=>A&&A.seekBgm(t,"PROLOGUE")}))
+  .then(ok=>{if(A&&A.status().scene==="PROLOGUE")A.stopBgm({fade:"normal"});return ok})}
+function opPrologue(msg){P11_PRO.add(S);$("#app").innerHTML="";const cv=document.createElement("div");cv.className="p11cover";document.body.appendChild(cv);
+ proPlay(cv).then(ok=>{cv.remove();if(ok){finaFlags().prologue=1;save()}}).catch(()=>cv.remove()).then(()=>lobby(msg))}
 let OP_TALKING=false;
 /** 街：登録前の導入。フィナの声かけ（まだなら）→ 管理局を光らせ、案内の一言（名前は呼ばない） */
 function opTownTalk(){if(!S.playerNamePending||OP_TALKING)return;const f=finaFlags(),hint=()=>{const w=$(".tlow"),b=$("#msg");if(!w||!b)return;w.classList.add("on");const d=w.querySelector(".dlg");if(d){d.className="dlg fina nst r";if(!d.querySelector(".nstf"))d.insertAdjacentHTML("afterbegin",`<img class="nstf" src="${finaStandSrc()}" alt="" decoding="async">`);const i=d.querySelector(".dsys");if(i)i.remove()}b.innerHTML=`<span class="dnm">フィナ</span>${finaMsg(OPEN_TALK.hint)}`};
@@ -3350,9 +3358,9 @@ function p11NameScr(msg){bgm(opOn()?"town":"title");p9Immersive(true);const d=MM
  // 2026-10-03：新しいゲームの最初に1回だけプロローグ A〜E（MMPRO）。見た記録は S.npcFlags.prologue（既存の任意項目の中）
  // 2026-10-04 G1：記録は「最後まで見た」か「スキップを2度押しで確定した」ときだけ（途中でアプリを閉じたら、次に開いたときもプロローグから）。
  //  背景の読み込みを待つ間も黒い幕で覆い（前の画面・見出しを見せない）、読み込みが遅い・届かないときも飛ばさない（最大6秒待って始める）
- if(!finaFlags().prologue&&window.MMPRO&&!window.MM_QA_NO_PROLOGUE&&!P11_PRO.has(S)){P11_PRO.add(S);$("#app").innerHTML="";bgm("prologue"); // プロローグは開始画面の曲を短くフェードアウトして分ける（専用曲は素材待ち＝registry の PROLOGUE）
+ if(!finaFlags().prologue&&window.MMPRO&&!window.MM_QA_NO_PROLOGUE&&!P11_PRO.has(S)){P11_PRO.add(S);$("#app").innerHTML=""; // 2026-10-06：開始画面の曲をフェードアウトし、Scene 1 と同時に正式のプロローグ BGM（proPlay）
   const cv=document.createElement("div");cv.className="p11cover";document.body.appendChild(cv);
-  MMPRO.readyOrTimeout(6000).then(()=>MMPRO.play({cover:cv})).then(ok=>{cv.remove();if(ok){finaFlags().prologue=1;save()}}).catch(()=>cv.remove()).then(()=>p11NameScr(msg));return}
+  proPlay(cv).then(ok=>{cv.remove();if(ok){finaFlags().prologue=1;save()}}).catch(()=>cv.remove()).then(()=>p11NameScr(msg));return}
  const bg=BUREAU_BG; // 2026-10-04 PHASE H4：聖獣士登録の背景は聖獣士管理局の正式背景（旧：プロローグ E）
  $("#app").innerHTML=`<div class="p11reg" style="--p11bg:url('${bg}')"><b class="p11t">聖獣士登録</b>
  <div class="p11card"><div class="p11sheet"><label class="p11lb" for="p11nm">プレイヤー名</label>
@@ -3529,7 +3537,7 @@ function labTable(){const sp=SP.map((_,i)=>i);
  const rows=sp.flatMap(a=>sp.map(b=>{const r=MMP7.resolveFusionSpecies({sp:a},{sp:b});return `<div class="lbtr"><span>${SP[a][0]}</span><i>×</i><span>${SP[b][0]}</span><em>→</em><b>${SP[r.sp]?SP[r.sp][0]:"？？？"}</b></div>`})).join("");
  const rules=["子の種族＝親1（左）の種族。合体専用の種族は未登録【暫定】","能力＝両親の合計の 60%（上限 999）","名前＝親1の前2文字＋親2の後ろ2文字","技＝子の初期技に加えて、両親の追加技から1つ継承（初期技・必殺技は除く）","大会ランク＝高いほうを引き継ぐ","費用 200G。2体は消え、未育成の個体として生まれる"];
  $("#app").innerHTML=labShell("lbt",`<button class="dback" data-nav="back" onclick="museum()">◀ 研究所</button>`,`<div class="labplq"><b>配合表</b><small>合体で生まれる種族と規則</small></div>`,`<div class="labbody">${elSay(ELLIOT_TALK.table,"analyze")}<div class="lbdc lbtb"><div class="lbth"><span>親1</span><span>親2</span><span>生まれる種族</span></div>${rows}<ul class="lbrules">${rules.map(r=>`<li>${r}</li>`).join("")}</ul></div></div>`,"table");try{window.scrollTo(0,0)}catch(e){}}
-function adopt(i,nm){if(p8Blocked())return;const r=MMP10M.purchase(S,MMP10M.keyOf(i),S.box.length+(S.m?1:0));if(!r.ok)return market(P10_WHY[r.reason]||"購入できません。",MMP10M.keyOf(i));S.cnt=(S.cnt||0)+1;const x=mk(i);if(nm)x.name=nm;if(S.m)S.box.push(x);else S.m=x;sel=[];save();const first=S.cnt==1,go=()=>{lobby(`${p11Esc(x.name)}をつれて帰った！`+(S.m==x?"":"（牧場に預けました）")+(r.rescued?`（はじめての1体のため、所持金を${MMP10M.ECONOMY.marketPrice}Gまで補填しました）`:"")+(r.continueRescued?`（育成を続けるため、不足分${r.topUp}Gを補填して購入しました）`:""));if(first)setTimeout(()=>{try{if(document.querySelector(".map.town"))npcMoment("partner",x.name)}catch(e){}},450)};const kt=typeof karenTalk=="function"?karenTalk("bought"):null;if(kt)kt.then(go);else go()}
+function adopt(i,nm){if(p8Blocked())return;const r=MMP10M.purchase(S,MMP10M.keyOf(i),S.box.length+(S.m?1:0));if(!r.ok)return market(P10_WHY[r.reason]||"購入できません。",MMP10M.keyOf(i));S.cnt=(S.cnt||0)+1;const x=mk(i);if(nm)x.name=nm;if(S.m)S.box.push(x);else S.m=x;sel=[];save();if(typeof MMFEEL=="object"&&MMFEEL)MMFEEL.emit("market.buy");/* 2026-10-06：購入が成立した瞬間（MARKET_PURCHASE） */const first=S.cnt==1,go=()=>{lobby(`${p11Esc(x.name)}をつれて帰った！`+(S.m==x?"":"（牧場に預けました）")+(r.rescued?`（はじめての1体のため、所持金を${MMP10M.ECONOMY.marketPrice}Gまで補填しました）`:"")+(r.continueRescued?`（育成を続けるため、不足分${r.topUp}Gを補填して購入しました）`:""));if(first)setTimeout(()=>{try{if(document.querySelector(".map.town"))npcMoment("partner",x.name)}catch(e){}},450)};const kt=typeof karenTalk=="function"?karenTalk("bought"):null;if(kt)kt.then(go);else go()}
 function msave(){let ok=false;try{localStorage.setItem(MMP8.SAVE_KEY,JSON.stringify(S));ok=localStorage.getItem(MMP8.SAVE_KEY)==JSON.stringify(S)}catch(e){}msg0(ok?`セーブしました（${new Date().toLocaleTimeString("ja-JP")}）`:"このブラウザではセーブできません。セーブコードを使ってください。")}
 const nv=typeof navigator!="undefined"?navigator:{};
 const sl=n=>{try{return JSON.parse(localStorage.getItem("mr4s"+n))}catch(e){return null}};

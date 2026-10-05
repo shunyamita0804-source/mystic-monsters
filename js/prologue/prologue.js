@@ -4,7 +4,9 @@
 //  三人のレジェンド（レオナ＋グリフェル・アストラッド＋ゼルヴァーン・バルド＋ドラグノル）はいまも語り継がれる存在（死亡・消滅・引退などの設定は足さない）。
 //  見せ方（2026-10-05 正式）：段落（空行で区切る）ごとに、画面の中央よりやや上で1文字ずつ「スッ」と現れる（文字ごとに opacity 0→1・下から 3px・ぼかし 1.5px→0。
 //   開始間隔 48ms・各文字 160ms＝前の文字が出きる前に次が始まる。段落全体の一括フェードはしない）→ 読む間 → 段落がフェードで消える → 次の段落。
-//  タップ：文字が出ている途中＝その段落をすぐ全部出す／全部出ていれば次へ（0.45秒未満の連打は無視）。「スキップ」は2度押し。文字は画像に焼き込まない（HTML の別の層）
+//  2026-10-06 正式（固定尺のオープニング）：画面のタップでは何も進まない（全文表示・次の段落・次の画像・「タップで先へ」の表示は廃止）。
+//   決まった時刻表（schedule）を、裏に回っている間は止まる時計で進める＝正式のプロローグ BGM（54.2秒）と同じ時間軸（Scene 2＝7.782秒・Scene 3＝21.226秒・Scene 4＝37.342秒・最後の本文の終わり＝50.786秒）。
+//   「スキップ」は2度押し。文字は画像に焼き込まない（HTML の別の層）
 // =========================================================
 (function (root) {
   'use strict';
@@ -26,7 +28,7 @@
   /** 三人のレジェンド（世界設定の記録。プロローグの本文には名前を出さない。将来、闘技場の裏要素で使えるように残す） */
   const LEGENDS = fz([fz({ name: 'レオナ', beast: 'グリフェル' }), fz({ name: 'アストラッド', beast: 'ゼルヴァーン' }), fz({ name: 'バルド', beast: 'ドラグノル' })]);
   /** 時間（ms）：chGap＝文字の開始間隔・chFade＝1文字が現れる時間・chRise＝下からの距離（px）・chBlur＝ぼかし（px）・readBase／perChar＝全部出たあとの読む時間・outMs＝段落が消える時間・gap＝次の段落までの間 */
-  const T = fz({ chGap: 48, chFade: 160, chRise: 3, chBlur: 1.5, readBase: 1300, perChar: 42, outMs: 560, gap: 160, cross: 1200, startHold: 700, endHold: 1400, fadeOut: 900, tapGuard: 450 });
+  const T = fz({ chGap: 48, chFade: 160, chRise: 3, chBlur: 1.5, readBase: 1300, perChar: 42, outMs: 560, gap: 160, cross: 1200, startHold: 700, endHold: 1400, fadeOut: 900 });
   /** 文章の位置（画面の高さに対する割合）：段落の中心＝画面の中央よりやや上 */
   const POS = fz({ y: 0.42 });
   /** ページを表示の単位（段落＝空行で区切る）に分ける。本文・行の順は変えない */
@@ -52,79 +54,82 @@
   /** 背景を待つ（最大 ms。読み込みが遅い・届かない回線でもプロローグを飛ばさない＝2026-10-04 G1） */
   function readyOrTimeout(ms = 6000) { return Promise.race([ready().then(() => true), wait(ms).then(() => true)]); }
   /**
+   * 時刻表（ms・Scene 1 の開始＝0）：背景の切り替え（bg）・段落が現れる（show）・全部出た（full）・消え始める（out）・最後の余韻のあと（end）。
+   *  正式のプロローグ BGM はこの時刻表に合わせて作られている（Scene 2＝7782・Scene 3＝21226・Scene 4＝37342・最後の本文の終わり＝50786）。時刻を変えるときは BGM と合わせること
+   */
+  function schedule() {
+    const ev = []; let t = 0;
+    SLIDES.forEach((sl, si) => {
+      ev.push({ t, k: 'bg', si }); if (si === 0) t += T.startHold;
+      for (const pg of sl.pages) for (const u of units(pg)) { ev.push({ t, k: 'show', u }); t += revealMs(u); ev.push({ t, k: 'full' }); t += readMs(u); ev.push({ t, k: 'out' }); t += T.outMs + T.gap; ev.push({ t, k: 'clear' }); }
+    });
+    ev.push({ t, k: 'lastText' }); t += T.endHold; ev.push({ t, k: 'end' });
+    return fz(ev.map(fz));
+  }
+  /** 各 Scene の開始時刻（ms） */
+  const sceneStarts = () => schedule().filter((e) => e.k === 'bg').map((e) => e.t);
+  /**
    * 再生する。最後まで見た・スキップを確定した ときだけ true で resolve（呼び出し側はそのときだけ「見た」を保存する）。同時に2つは再生しない
    *  opts.cover：すでに画面を覆っている要素（前の画面から黒へつないだ幕）。プロローグの幕が出たら消す
+   *  opts.onStart()：Scene 1 を見せる直前に呼ぶ（Promise なら待つ）＝ここで正式のプロローグ BGM を始める（背景の読み込み待ちの間に BGM を先に鳴らさない）
+   *  opts.audioTime()／opts.seek(秒)：BGM の今の位置（秒・鳴っていなければ null）と位置合わせ。映像の時計が基準で、ずれが 0.15秒を超えたら BGM を合わせる
+   *  時計：裏に回っている間（document.hidden）は止まる（BGM も Audio Manager が止める）。表に戻ると両方とも続きから＝Scene と音楽がずれない
    */
   async function play(opts = {}) {
     if (busy || typeof document === 'undefined' || !document.body) return false;
     busy = true;
     const ov = document.createElement('div'); ov.className = 'mmpro'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', 'プロローグ');
-    ov.innerHTML = '<div class="mmpro-bg a"></div><div class="mmpro-bg b"></div><div class="mmpro-shade"></div><div class="mmpro-nar" aria-live="polite"></div><button class="mmpro-skip" type="button">スキップ</button><div class="mmpro-hint">タップで先へ</div><div class="mmpro-veil"></div>';
+    ov.innerHTML = '<div class="mmpro-bg a"></div><div class="mmpro-bg b"></div><div class="mmpro-shade"></div><div class="mmpro-nar" aria-live="polite"></div><button class="mmpro-skip" type="button">スキップ</button><div class="mmpro-veil"></div>';
     document.body.appendChild(ov);
     if (opts.cover && opts.cover.remove) opts.cover.remove();
     const bgs = [ov.querySelector('.mmpro-bg.a'), ov.querySelector('.mmpro-bg.b')], nar = ov.querySelector('.mmpro-nar'), skip = ov.querySelector('.mmpro-skip');
-    let front = 0, last = 0, wake = null, quit = false, fullNow = false;
+    let front = 0, last = 0, quit = false, wake = null;
     const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
-    // 2026-10-06：アプリが裏に回っている間（document.hidden）は進めない。以前は裏でもタイマーで最後まで進み「見た」が保存され、
-    //  そのままタスクキルすると次の起動でプロローグを飛ばしていた（iPhone）。表に戻ったら続きから
-    const gate = () => (typeof document !== 'undefined' && document.hidden) ? new Promise((r) => { const f = () => { if (!document.hidden) { document.removeEventListener('visibilitychange', f); r(); } }; document.addEventListener('visibilitychange', f); }) : Promise.resolve();
-    const sleep = (ms) => new Promise((r) => { const t = setTimeout(() => { wake = null; gate().then(() => r('time')); }, ms); wake = () => { clearTimeout(t); wake = null; r('tap'); }; });
-    ov.addEventListener('click', (e) => {
-      if (e.target === skip) return;
-      const t = now(); if (t - last < T.tapGuard) return; last = t;
-      if (wake) wake();
-    });
     skip.addEventListener('click', (e) => {
       e.stopPropagation(); const t = now(); if (t - last < 300) return; last = t;
       if (skip.dataset.arm !== '1') { skip.dataset.arm = '1'; skip.textContent = 'もう一度でスキップ'; setTimeout(() => { if (skip.isConnected) { skip.dataset.arm = ''; skip.textContent = 'スキップ'; } }, 3000); return; }
       quit = true; if (wake) wake();
     });
-    const showBg = async (src, first) => {
-      const nx = bgs[1 - front]; nx.style.backgroundImage = `url(${src})`;
-      nx.classList.add('on'); bgs[front].classList.remove('on'); front = 1 - front;
+    // 時計：表に出ている間だけ進む（裏に回っている間は止まる）
+    let acc = 0, t0 = null; const hidden = () => !!document.hidden;
+    const clock = () => acc + (t0 == null ? 0 : now() - t0);
+    const onVis = () => { if (hidden()) { if (t0 != null) { acc += now() - t0; t0 = null; } } else if (t0 == null && started) { t0 = now(); syncAudio(true); } if (wake) wake(); };
+    let started = false, lastSync = 0;
+    const syncAudio = (force) => {
+      if (!opts.audioTime || !opts.seek) return; const c = clock(); if (!force && c - lastSync < 400) return; lastSync = c;
+      try { const a = opts.audioTime(); if (a != null && Number.isFinite(a) && Math.abs(a * 1000 - c) > 150) opts.seek(c / 1000); } catch (e) {}
     };
+    document.addEventListener('visibilitychange', onVis);
+    const showBg = (src) => { const nx = bgs[1 - front]; nx.style.backgroundImage = `url(${src})`; nx.classList.add('on'); bgs[front].classList.remove('on'); front = 1 - front; };
     const esc = (t) => t.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
-    /**
-     * 1ページ（2026-10-05 正式）：段落ごとに、文字単位で現れる（各文字が独立したアニメーション。前の文字が出きる前に次が始まる）→ 読む間 → フェードで消える → 次の段落。
-     *  タップ：文字が出ている途中＝その段落をすぐ全部出す（.full）→ 全部出ていれば次の段落へ
-     */
-    const showPage = async (lines) => {
-      nar.classList.remove('out');
-      for (const u of units(lines)) {
-        if (quit) return;
-        let k = 0; const c = calm();
-        nar.innerHTML = `<div class="mmpro-u${c ? ' full' : ''}" style="top:${(POS.y * 100).toFixed(1)}%;--chf:${T.chFade}ms;--chr:${T.chRise}px;--chb:${T.chBlur}px">${u.map((t) => `<p>${Array.from(t).map((ch) => `<span class="mpc" style="--d:${(k++) * T.chGap}ms">${ch === ' ' ? '&nbsp;' : esc(ch)}</span>`).join('')}</p>`).join('')}</div>`;
-        const el = nar.firstElementChild;
-        let r = c ? 'time' : await sleep(revealMs(u));
-        if (quit) return;
-        el.classList.add('full');   // 全部出た（タップで途中から全部出したときも同じ）
-        r = await sleep(readMs(u));
-        if (quit) return;
-        const o = el.animate ? el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: T.outMs, easing: 'ease-out', fill: 'forwards' }) : null;
-        await wait(o ? T.outMs : 0); if (!o) el.style.opacity = '0';
-        await wait(T.gap);
-      }
-      nar.innerHTML = '';
+    let cur = null;
+    const apply = (e) => {
+      if (e.k === 'bg') showBg(SLIDES[e.si].bg);
+      else if (e.k === 'show') { let k = 0; const c = calm(); nar.innerHTML = `<div class="mmpro-u${c ? ' full' : ''}" style="top:${(POS.y * 100).toFixed(1)}%;--chf:${T.chFade}ms;--chr:${T.chRise}px;--chb:${T.chBlur}px">${e.u.map((t) => `<p>${Array.from(t).map((ch) => `<span class="mpc" style="--d:${(k++) * T.chGap}ms">${ch === ' ' ? '&nbsp;' : esc(ch)}</span>`).join('')}</p>`).join('')}</div>`; cur = nar.firstElementChild; }
+      else if (e.k === 'full') { if (cur) cur.classList.add('full'); }
+      else if (e.k === 'out') { if (cur) { const o = cur.animate ? cur.animate([{ opacity: 1 }, { opacity: 0 }], { duration: T.outMs, easing: 'ease-out', fill: 'forwards' }) : null; if (!o) cur.style.opacity = '0'; } }
+      else if (e.k === 'clear') { nar.innerHTML = ''; cur = null; }
     };
-    /** ページの終わり：文はもう消えている（何もしない。互換のため残す） */
-    const pageOut = async () => {};
+    const EV = schedule();
     let done = false;
     try {
-      for (let si = 0; si < SLIDES.length && !quit; si++) {
-        const sl = SLIDES[si]; await showBg(sl.bg, si === 0);
-        if (si === 0) await sleep(calm() ? 0 : T.startHold);
-        for (let pi = 0; pi < sl.pages.length && !quit; pi++) {
-          await showPage(sl.pages[pi]);
-          if (quit) break;
-          await pageOut();
-        }
+      showBg(SLIDES[0].bg);
+      let a0 = null; if (opts.onStart) { try { a0 = await opts.onStart(); } catch (e) {} }   // Scene 1 の開始＝BGM の開始（ここが 0.000秒）
+      started = true; if (Number.isFinite(a0) && a0 > 0 && a0 < 0.5) acc = a0 * 1000;   // BGM が実際に鳴り始めた位置から時計を始める（数十 ms のずれも持ち込まない）
+      if (!hidden()) t0 = now();
+      let i = 1;   // EV[0]＝Scene 1 の背景（上で出した）
+      while (!quit && i < EV.length) {
+        const c = clock();
+        while (i < EV.length && EV[i].t <= c) { if (EV[i].k === 'end') { i = EV.length; break; } apply(EV[i]); i++; }
+        if (i >= EV.length) break;
+        syncAudio(false);
+        const dt = hidden() ? 1e9 : Math.max(8, Math.min(250, EV[i].t - c));
+        await new Promise((r) => { const tm = setTimeout(() => { wake = null; r(); }, dt); wake = () => { clearTimeout(tm); wake = null; r(); }; });
       }
-      if (!quit) await sleep(calm() ? 0 : T.endHold);
-      await gate();   // 最後まで見た＝表に出ているときに終わった場合だけ
-      done = true;   // 最後まで見た（または スキップを2度押しで確定した）
+      done = true;   // 最後まで見た（時計は表に出ている間だけ進む＝裏で最後まで進まない）または スキップを2度押しで確定した
       ov.classList.add('end'); await wait(calm() ? 0 : T.fadeOut);
-    } finally { ov.remove(); busy = false; }
+    } finally { document.removeEventListener('visibilitychange', onVis); ov.remove(); busy = false; }
     return done;
   }
-  root.MMPRO = fz({ SLIDES, LEGENDS, T, POS, units, revealMs, readMs, play, ready, readyOrTimeout, pageMs, isBusy: () => busy });
+  root.MMPRO = fz({ SLIDES, LEGENDS, T, POS, units, revealMs, readMs, play, ready, readyOrTimeout, pageMs, schedule, sceneStarts, isBusy: () => busy });
 })(typeof window !== 'undefined' ? window : globalThis);

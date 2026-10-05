@@ -89,7 +89,7 @@ test('PH-06：守ること：セーブ v6・キー mr4v6、合体は研究所（
   assert.equal(P8.SAVE_KEY, 'mr4v6'); assert.equal(P8.newSave().v ?? P8.newSave().version ?? 6, 6);
   assert.match(fnOf('museum'), /if\(tab=="fuse"\)return labFuse\(\);/); assert.doesNotMatch(fnOf('museum'), /特殊復元/);
   assert.doesNotMatch(HTML, /function townShop\(|SHOP_FROM=/);
-  assert.match(fnOf('p11NameScr'), /MMPRO\.readyOrTimeout\(6000\)/, 'PHASE G のプロローグの待ち方はそのまま');
+  assert.match(fnOf('p11NameScr'), /proPlay\(cv\)/); assert.match(fnOf('proPlay'), /MMPRO\.readyOrTimeout\(6000\)/, 'PHASE G のプロローグの待ち方（背景を最大6秒）はそのまま。2026-10-06：BGM は待ったあと Scene 1 と同時');
   const h = createHash('sha256').update(HTML.slice(HTML.indexOf('async function fight('), HTML.indexOf('\n$("#snd").textContent'))).digest('hex'); assert.ok(h.length === 64);
 });
 

@@ -672,7 +672,7 @@
     const r = w.getBoundingClientRect(), sc = (w.offsetHeight ? r.height / w.offsetHeight : 1) || 1;
     const dy = Math.max(120, ((root.innerHeight || 800) - r.top + 12) / sc);   // 画面の下の外（カメラの拡大を考えた距離）
     w.style.translate = `0 ${dy.toFixed(0)}px`; fw.classList.remove('chf-monwait'); w.dataset.enter = '1';
-    anim('walk', { speed: 1 });
+    anim('walk', { speed: 1 }); feel('monster.enter');   // 2026-10-06：画面の下から歩いて入る（正式の4歩の音を1回だけ。1マスごとには鳴らさない）
     const a = w.animate([{ translate: `0 ${dy.toFixed(0)}px` }, { translate: '0 0' }], { duration: quick ? 420 : MON_ENTER.ms, easing: 'cubic-bezier(.22,.62,.3,1)', fill: 'forwards' });
     try { await a.finished; } catch (e) {}
     w.style.translate = ''; try { a.cancel(); } catch (e) {} delete w.dataset.enter;
@@ -840,7 +840,7 @@
   }
   function chfPick(id) {
     const m = gS() && gS().m; if (!chfActive(m) || busyGet()) return;
-    const r = P8().chooseBranch(gS(), m, id); if (!r.ok) return chfBoard(); doSave();
+    const r = P8().chooseBranch(gS(), m, id); if (!r.ok) return chfBoard(); doSave(); feel('branch.select', { id });   // 2026-10-06：道を選んだ瞬間（BRANCH_SELECT）
     const sh = $('#chf-ui .chbr'); if (sh) sh.remove(); document.querySelectorAll('#chf .chf-brhint,#chf .chf-brgate').forEach((e) => e.remove());
     const fb = MMCH.fieldOf(m).branch || V.g.nodes[id].branch;   // 選んだ道（f.branch は最初の1歩で記録される）
     document.querySelectorAll('#chf .chf-obj').forEach((e) => { const n = V.g.nodes[e.dataset.id]; if (!n || !n.branch || !sameBranchGroup(V.cfg, n.branch, fb)) return; if (n.branch === fb) e.classList.remove('brhide'); else e.classList.add('gone'); });
@@ -855,7 +855,7 @@
     busySet(true); lockUi(true);
     let res;
     try {
-      const before = MMCH.fatigue(m); res = P8().rest(gS(), m); doSave();
+      const before = MMCH.fatigue(m); res = P8().rest(gS(), m); doSave(); if (MMCH.fatigue(m) < before) feel('rest.recover');   // 2026-10-06：疲れの回復が成立した瞬間（REST_RECOVER）
       const w = $('#bmonw'); if (w) { w.insertAdjacentHTML('beforeend', '<i class="chf-zz">Z<small>z</small></i>'); anim('rest'); w.classList.add('resting'); }
       restVeil(); refreshHud(m); fatFly(MMCH.fatigue(m) - before); setMsg(`ひと休みした。　疲れ −${before - MMCH.fatigue(m)}`);   // 2026-10-04 PHASE E：落ち着いた回復の帯＋疲れの増減
       await wait(900);
@@ -975,6 +975,7 @@
     const A = TRAIN_ACT[key], fx = $('#chffx'), w = $('#bmonw'), lean = w && w.querySelector('.chf-lean'), src = rfxSrc('tool', key);
     if (!A || !fx || !lean || !V.monPos || !src || !lean.animate) return resultFx('tool', caption, key);
     if (V.calm) return wait(0);
+    feel('train.item', { key });   // 2026-10-06：特訓の道具が出た瞬間（TRAINING_ITEM_SPAWN）
     const d = V.monPos.d, mh = monH() * d, T = A.tool, tw = mh * T.s, x = V.monPos.x + T.dx * mh, y = V.monPos.y + T.dy * mh;
     const tool = document.createElement('i'); tool.className = `chf-tact k-${key}`; tool.style.cssText = `left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;width:${tw.toFixed(1)}px;--c:${statColor(key)}`;
     tool.innerHTML = `<img src="${esc(src)}" alt="" draggable="false" decoding="async">`;
@@ -1034,7 +1035,7 @@
    *  絵と文は同じフレームで出し、その瞬間に音（野生 wild.alert／ライバル rival.appear）。読める間だけ見せて消えてからバトルの案内
    */
   async function encounterShow(BT, bt, m) {
-    const ui = $('#chf-ui'), text = BT.encounter || '', rival = bt === 'rival', cue = rival ? 'rival.appear' : 'wild.alert';
+    const ui = $('#chf-ui'), text = BT.encounter || '', rival = bt === 'rival', cue = rival ? 'rival.appear' : bt === 'rare' ? 'rare.alert' : 'wild.alert';   // 2026-10-06：野生・レア・ライバルは別の正式 SE
     if (!ui || V.calm || !text) { feel(cue, { battleType: bt }); if (text) setMsg(text); await wait(V.calm ? 300 : 600); return; }
     const foe = rival ? null : foeImage(m), tone = esc(BT.tone || bt);
     const motes = Array.from({ length: rival ? 14 : 10 }, (_, i) => `<i class="ce-mote" style="--x:${(10 + ((i * 41) % 80)).toFixed(0)}%;--dl:${(i * 0.09).toFixed(2)}s;--s:${(3 + (i % 3) * 2)}px"></i>`).join('');
@@ -1063,7 +1064,7 @@
   async function chfResolve() {
     const m = gS() && gS().m; if (!chfActive(m) || busyGet() || !onField() || !m.raise.pend || m.raise.pend.stage !== 'resolve') return;
     busySet(true);
-    let tail = '', card = null;   // card＝出来事の挿絵（evCardOpen。途中で止まっても finally で必ず消す）
+    let tail = '', card = null, evStarted = false;   // evStarted＝出来事の音（EVENT_TRIGGER）を鳴らした（2択のあとで重ねない）。card＝出来事の挿絵（evCardOpen。途中で止まっても finally で必ず消す）
     try {
       const id = m.raise.node, g0 = (gS().g) | 0, f0 = MMCH.fatigue(m), r = P8().resolveLanding(gS(), m); doSave();
       let fx = r.fx || {};
@@ -1071,6 +1072,7 @@
       if (fx.kind === 'choice') {
         const t0 = $(`#chf .chf-tile[data-id="${id}"]`); if (t0) { t0.classList.remove('hit'); void t0.offsetWidth; t0.classList.add('hit'); }
         await wait(beatOf(2));
+        feel('event', { ev: fx.ev }); evStarted = true;   // 2026-10-06：2択の出来事も、始まった瞬間に1回（EVENT_TRIGGER）
         card = await evCardOpen(fx.ev);   // 2026-10-04（追加アセット）：挿絵 → イベント名 → フィナの会話（最後に選択肢）
         const pick = await choiceTalk(fx, card);
         let r2 = P8().resolveChoice(gS(), m, pick); if (!r2.ok) r2 = P8().resolveChoice(gS(), m, (fx.options[0] || {}).id); doSave();
@@ -1084,12 +1086,13 @@
       if (fx.kind === 'chstat') {
         // 能力UP（LEVEL 3）：間 → マスが光る → モンスターが反応 → 能力UPの枠（数値は +0 から上がる）→ 余韻
         await wait(beatOf(3)); if (tile) { tile.classList.remove('hit'); void tile.offsetWidth; tile.classList.add('hit'); }
-        await wait(V.calm ? 0 : 160); monReact('up'); feel('stat.up', { key: fx.key, amount: fx.amount });
+        await wait(V.calm ? 0 : 160); monReact('up');
         await wait(V.calm ? 0 : 150);   // モンスターの反応を見せてから枠
         setMsg(T.t);
         await trainAct(fx.key, `${labOf(fx.key)} +${fx.amount}`);   // 2026-10-06：能力に対応する道具をそばに置き、モンスターが短い特訓の動き（0.8〜1.5秒）→ 実際に上がった能力名・値 → 既存の成長演出
         // 2026-10-04 PHASE E：成長演出（能力のアイコンが浮く → 「ちから +5」→ 正式色のゲージが伸びる（999 を最大とした目盛り）→ 粒子）。枠は正式素材 frame_stat_up のまま。0.6〜1.2秒・タップで短縮
         const gains = [{ key: fx.key, amount: fx.amount }];
+        feel('stat.up', { key: fx.key, amount: fx.amount });   // 2026-10-06：能力UPの表示が出る瞬間（TRAINING_SUCCESS）。道具が出た瞬間は trainAct の train.item
         await popup(`<small>${esc(labOf(fx.key))}のマス</small>${growRows(m, gains)}`, `${T.c} grow`, Math.min(holdOf(3, 800), 300), T.frame ? effectAsset(T.frame) : null, (d) => growPlay(d, gains));
         tail = T.t;
       } else if (fx.kind === 'treasure') {
@@ -1098,7 +1101,7 @@
         const P = objPoint(obj); if (P) camFocus(P, 0.45, CA().zoom.focus);
         if (obj && obj.classList.contains('hid')) { obj.classList.remove('hid'); await wait(V.calm ? 0 : 300); }
         if (obj) { obj.classList.add('shake'); await wait(V.calm ? 0 : 320); obj.classList.remove('shake'); const im = obj.querySelector('img[data-open]'); await chestFrames(im); if (im && im.dataset.open) im.src = im.dataset.open; obj.classList.add('open', 'hit'); }
-        feel('chest.open', { tier: fx.tier }); monReact('treasure'); chestSparks(obj);   // 2026-10-04 PHASE E：開封の光の粒
+        feel(['normal', 'rare', 'special'].includes(fx.tier) ? `chest.open.${fx.tier}` : 'chest.open', { tier: fx.tier }); monReact('treasure');   // 2026-10-06：段階ごとに1つだけ（TREASURE_TIER_1〜3） chestSparks(obj);   // 2026-10-04 PHASE E：開封の光の粒
         setMsg(T.t);
         await popup(T.h, T.c, holdOf(3, 900), null, async (d) => { await wait(V.calm ? 0 : 260); if (gold > 0) await goldToHud(g0, g1, d.querySelector('b') || d); });
         if (obj) { obj.classList.remove('hit'); obj.classList.add('used'); }
@@ -1106,13 +1109,15 @@
       } else if (fx.ev && fx.kind !== 'none') {
         // イベント（LEVEL 2〜3）：間 → マスが光る → 出来事の文 → 結果（所持金・疲れは HUD まで動かす）
         await wait(beatOf(2)); if (tile) { tile.classList.remove('hit'); void tile.offsetWidth; tile.classList.add('hit'); }
+        const restTile = tileKeyOf(m, id) === 'rest' && fx.kind === 'fatigue';
+        if (!restTile && !evStarted) feel('event', { ev: fx.ev });   // 2026-10-06：出来事が始まった瞬間（EVENT_TRIGGER）。休むマスの回復は結果のときに REST_RECOVER
         if (!card) card = await evCardOpen(fx.ev);   // 2026-10-04（追加アセット）：挿絵のある出来事は、背景を暗く → 挿絵 → イベント名 → 会話
         await eventLines(fx, card);   // 2026-10-04：出来事の会話（挿絵があれば共通会話の小さな窓、無ければフィナの吹き出し。eventPool[].lines）→ 結果
         await evCardClose(card); card = null;   // 挿絵を消してから能力UP・疲れの演出
-        feel('event', { ev: fx.ev }); if (fx.kind === 'stat' || fx.kind === 'multi') monReact(fx.amount < 0 ? 'down' : 'up'); else if (fx.kind === 'fatigue') { monReact('rest'); restVeil(); }
+        if (fx.kind === 'stat' || fx.kind === 'multi') monReact(fx.amount < 0 ? 'down' : 'up'); else if (fx.kind === 'fatigue') { monReact('rest'); restVeil(); }
         setMsg(T.t);
         // 2026-10-04（追加アセット）：休むマス＝焚き火（疲れの回復。ライフではない）、ほかの出来事＝共通の結果の紋章。文は実際の効果（T.h の値）
-        { const eff = (T.t || '').slice(String(fx.text || '').length).trim(); if (tileKeyOf(m, id) === 'rest' && fx.kind === 'fatigue') await resultFx('rest', `疲れ −${fx.recovered}`); else if (eff) await resultFx('event', eff); }
+        { const eff = (T.t || '').slice(String(fx.text || '').length).trim(); if (restTile) { feel('rest.recover'); await resultFx('rest', `疲れ −${fx.recovered}`); } else if (eff) await resultFx('event', eff); }
         // 2026-10-04 PHASE E：能力が動く出来事は成長のゲージ（複数の能力は縦に並べる）。休憩は青の帯＋疲れの増減。少し疲れる出来事（stat_tired）は疲れの増減も見せる
         const eg = fx.kind === 'stat' ? [{ key: fx.key, amount: fx.amount }] : fx.kind === 'multi' ? fx.gains.map((x) => ({ key: x.key, amount: x.amount })) : [];
         const eh = eg.length ? `<small>${esc(fx.text)}</small>${growRows(m, eg)}` : T.h;

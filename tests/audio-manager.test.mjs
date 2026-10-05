@@ -377,7 +377,7 @@ test('AUDIO-22：registry のループ区間・maxMs は正しい値（loopEnd �
   const R = A.registryOf('bgm');
   for (const [k, v] of Object.entries(got.bgm)) if (v.loopEnd != null) assert.ok(R[k].loopRange, `${k} のループ区間が有効`);
   for (const k of ['RIVAL_BATTLE', 'TOURNAMENT_BATTLE_HIGH']) assert.match(srcsOf(got.bgm[k])[0], /alkakrab_fantasy_rpg_vol3\//, k);   // TOWN・FARM は 2026-10-03 第4弾の試遊で NG → silent（AUDIO-23）
-  for (const k of ['CHAPTER_START', 'WILD_ALERT']) assert.match(srcsOf(got.se[k])[0], /alkakrab_fantasy_rpg_vol3\//, k);   // MATCHUP は第4弾で NG → silent
+  for (const k of ['CHAPTER_START']) assert.match(srcsOf(got.se[k])[0], /alkakrab_fantasy_rpg_vol3\//, k);   // MATCHUP は第4弾で NG → silent。WILD_ALERT は 2026-10-06 から正式 SE（AUDIO-27）
   for (const [k, v] of Object.entries(got.se)) if (v.maxMs != null) assert.ok(v.maxMs >= 300 && v.maxMs <= 4000 && (v.fadeMs == null || v.fadeMs <= v.maxMs), k);
   assert.notEqual(got.bgm.CHAPTER_1.silent, true, 'Chapter 1 は第5弾で HydroGene「Spirits Forest」を仮採用（第3弾の候補 Epic Quest・Forest of Mysteries は使わない）');
   for (const f of ['action_4', 'action_5']) assert.ok(!JSON.stringify(got.bgm).includes(f), f);
@@ -387,7 +387,7 @@ test('AUDIO-23：2026-10-03 第4弾の試遊で NG の音は無音（silent＝�
   const { got } = loadRegistry();
   // BGM の TOWN・FARM・大会（受付〜結果）は第4弾で無音 → 第5弾で別の曲（HydroGene）を仮採用（AUDIO-24）。NG の曲そのものは使わない（下）
   assert.deepEqual(got.se.TITLE_START, { src: './assets/audio/se/mystic_monsters_official/title_start.ogg', gain: 0.8 }, '2026-10-04：開始の音は正式素材（ユーザー提供）');
-  for (const k of ['UI_CONFIRM', 'DICE_THROW', 'DICE_LAND', 'DICE_ROLL', 'DICE_STOP', 'TILE_STOP', 'TOURNAMENT_ARRIVAL', 'MATCHUP']) assert.deepEqual(got.se[k], { silent: true }, `SE ${k}`);
+  for (const k of ['UI_CONFIRM', 'DICE_LAND', 'DICE_ROLL', 'DICE_STOP', 'TILE_STOP', 'TOURNAMENT_ARRIVAL', 'MATCHUP']) assert.deepEqual(got.se[k], { silent: true }, `SE ${k}`);   // DICE_THROW は 2026-10-06 から正式の完成 SE（AUDIO-27。LAND／ROLL／STOP は鳴らさないまま）
   assert.match(srcsOf(got.se.CHAPTER_START)[0], /fx_2\.ogg$/, 'Chapter 開始の音は OK（そのまま）'); assert.match(srcsOf(got.bgm.MARKET)[0], /town_village_theme_2\.ogg$/, '市場の曲は OK（そのまま）');
   const all = JSON.stringify(got);
   for (const f of ['ambient_4_tranquil_radiance', 'ambient_3_lost_river', 'event_music_4', 'event_music_3', 'town_village_theme_1', 'dungeon_exploration', 'confirm_style_1_004', 'confirm_style_5_001', 'pluck_3', 'pluck_5', 'fx_1.ogg']) assert.ok(!all.includes(f), `NG の音 ${f} を別の場面へ使い回さない`);
@@ -404,7 +404,7 @@ test('AUDIO-24：2026-10-03 第5弾の仮採用（HydroGene 16-bit・CC0）：�
   for (const [k, f] of Object.entries(want)) { const s = srcsOf(got.bgm[k])[0]; assert.match(s, HG, k); assert.ok(s.endsWith(f + '.ogg'), `${k}：${s}`); }
   for (const k of ['TOURNAMENT_LOBBY_LOW', 'TOURNAMENT_LOBBY_HIGH', 'TOURNAMENT_MATCHUP', 'RESULT']) assert.deepEqual(got.bgm[k], { fallback: 'TOURNAMENT_ENTRY' }, k);
   // 変えない：タイトル・市場・牧場・研究所・野生・ライバル・大会の実戦
-  const keep = { TITLE: 'event_music_1', MARKET: 'town_village_theme_2', RANCH: 'town_village_theme_3', LABORATORY: 'event_music_2', WILD_BATTLE: 'battle_music_1', RIVAL_BATTLE: 'action_2_battle_of_the_skies', TOURNAMENT_BATTLE_LOW: 'battle_music_2', TOURNAMENT_BATTLE_HIGH: 'action_1_clash_of_arcane_titans' };
+  const keep = { MARKET: 'town_village_theme_2', RANCH: 'town_village_theme_3', LABORATORY: 'event_music_2', WILD_BATTLE: 'battle_music_1', RIVAL_BATTLE: 'action_2_battle_of_the_skies', TOURNAMENT_BATTLE_LOW: 'battle_music_2', TOURNAMENT_BATTLE_HIGH: 'action_1_clash_of_arcane_titans' };
   for (const [k, f] of Object.entries(keep)) assert.ok(srcsOf(got.bgm[k])[0].endsWith(f + '.ogg'), k);
   assert.deepEqual([got.bgm.CHAPTER_1.loopStart, got.bgm.CHAPTER_1.loopEnd], [27.344, 81.98], 'Spirits Forest は前奏のあとのループ部へ戻る（配布の intro 27.34秒＋loop 54.64秒＝full）');
   // 受付 → 順位表 → 対戦前 → 結果：<audio> は1本のまま（鳴らし直さない）。実戦で止めて戦闘曲 → 結果で Royal Castle
@@ -440,5 +440,41 @@ test('AUDIO-26：2026-10-04 正式の開始音（TITLE_START）：最初のタ�
   }
   const { got } = loadRegistry();
   assert.ok(existsSync(path.join(ROOT, 'assets/audio/se/mystic_monsters_official/title_start.ogg')), 'OGG がある'); assert.ok(!existsSync(path.join(ROOT, 'assets/audio/se/mystic_monsters_official/title_start.mp3')), '同じ音の MP3 は置かない');
-  assert.deepEqual(got.bgm.PROLOGUE, { silent: true }); for (const k of ['STEP', 'RIVAL_APPEAR']) assert.deepEqual(got.se[k], { silent: true }, k);
+  assert.deepEqual(got.se.STEP, { silent: true }, '1マスごとの足音は無音のまま');   // PROLOGUE・RIVAL_APPEAR は 2026-10-06 から正式素材（AUDIO-27）
 });
+
+test('AUDIO-27：2026-10-06 正式音源（ユーザー提供・ゲームの所有素材）：TITLE・PROLOGUE（ループしない）の BGM と正式 SE 15種。サイコロは1ロール1回・宝箱は段階ごとに1つ・野生／レア／ライバルは別の音・旧い音を重ねない', async () => {
+  const { got } = loadRegistry(), MMB = './assets/audio/bgm/mystic_monsters_official/', MMO = './assets/audio/se/mystic_monsters_official/';
+  assert.deepEqual(got.bgm.TITLE, { src: MMB + 'mystic_monsters_title_theme_official.ogg', gain: 0.56 });
+  assert.deepEqual(got.bgm.PROLOGUE, { src: MMB + 'mystic_monsters_prologue_bgm_official.ogg', gain: 0.56, loop: false });
+  assert.deepEqual(got.se.TITLE_START, { src: MMO + 'title_start.ogg', gain: 0.8 }, '開始の音はそのまま');
+  const want = { DICE_THROW: '01_dice_large_full', TRAINING_ITEM_SPAWN: '02_training_item_spawn', MARKET_PURCHASE: '03_market_purchase_confirm', TRAINING_SUCCESS: '04_training_success', MONSTER_ENTRY: '05_small_monster_entry_steps_4step',
+    WILD_ALERT: '06_encounter_wild', RARE_ALERT: '07_encounter_rare', RIVAL_APPEAR: '08_encounter_rival', TREASURE_TIER_1: '09_treasure_open_tier1', TREASURE_TIER_2: '10_treasure_open_tier2', TREASURE_TIER_3: '11_treasure_open_tier3', TREASURE_TIER_4: '12_treasure_open_tier4',
+    REST_RECOVER: '13_rest_recover', EVENT_TRIGGER: '14_event_trigger', BRANCH_SELECT: '15_branch_select' };
+  for (const [k, f] of Object.entries(want)) { assert.equal(srcsOf(got.se[k])[0], MMO + f + '.ogg', k); assert.ok(got.se[k].gain > 0.5 && got.se[k].gain <= 1.2, `${k} の gain`); assert.ok(existsSync(path.join(ROOT, MMO, f + '.ogg')), f); }
+  for (const f of ['mystic_monsters_title_theme_official', 'mystic_monsters_prologue_bgm_official']) assert.ok(existsSync(path.join(ROOT, MMB, f + '.ogg')), f);
+  for (const k of ['DICE_LAND', 'DICE_ROLL', 'DICE_STOP', 'STEP']) assert.deepEqual(got.se[k], { silent: true }, `${k}：完成 SE と重ねない`);
+  assert.ok(!existsSync(path.join(ROOT, 'assets/audio/bgm/pgs_fantasy_rpg/event_music_1.ogg')) && !existsSync(path.join(ROOT, 'assets/audio/se/alkakrab_fantasy_rpg_vol3/fx_3.ogg')), '使わなくなった旧い音源は置かない');
+  // 出来事 → SE：1つの出来事に1つの音
+  const w = {}; new Function('window', rd('js/feel/game-feel.js'))(w); const E = w.MMFEEL.EVENTS;
+  const map = { 'dice.throw': 'DICE_THROW', 'dice.land': 'DICE_LAND', 'dice.stop': 'DICE_STOP', 'dice.result': 'DICE_ROLL', 'stat.up': 'TRAINING_SUCCESS', 'train.item': 'TRAINING_ITEM_SPAWN', 'market.buy': 'MARKET_PURCHASE', 'monster.enter': 'MONSTER_ENTRY',
+    'wild.alert': 'WILD_ALERT', 'rare.alert': 'RARE_ALERT', 'rival.appear': 'RIVAL_APPEAR', 'chest.open.normal': 'TREASURE_TIER_1', 'chest.open.rare': 'TREASURE_TIER_2', 'chest.open.special': 'TREASURE_TIER_3', 'rest.recover': 'REST_RECOVER', 'event': 'EVENT_TRIGGER', 'branch.select': 'BRANCH_SELECT' };
+  for (const [ev, se] of Object.entries(map)) assert.equal(E[ev].se, se, ev);
+  assert.ok(!Object.values(E).some((x) => x.se === 'TREASURE_TIER_4'), '宝箱4の音はどこからも鳴らさない（第4の段階は無い）');
+  const FV = rd('js/chapter/field-view.js'), DR = rd('js/chapter/dice-renderer.js'), H = rd('index.html');
+  assert.match(FV, /cue = rival \? 'rival\.appear' : bt === 'rare' \? 'rare\.alert' : 'wild\.alert'/);
+  assert.match(FV, /feel\(\['normal', 'rare', 'special'\]\.includes\(fx\.tier\) \? `chest\.open\.\$\{fx\.tier\}` : 'chest\.open'/, '宝箱は段階ごとに1つだけ');
+  assert.equal((FV.match(/feel\('stat\.up'/g) || []).length, 1); assert.ok(FV.indexOf("feel('train.item'") < FV.indexOf("feel('stat.up'"), '道具の出現 → 成功の順');
+  assert.match(FV, /feel\('stat\.up', \{ key: fx\.key, amount: fx\.amount \}\);[^\n]*\n\s+await popup\(/, '成功の音は能力UPの表示が出る瞬間');
+  assert.match(FV, /res = P8\(\)\.rest\(gS\(\), m\); doSave\(\); if \(MMCH\.fatigue\(m\) < before\) feel\('rest\.recover'\)/, '休む＝回復が成立したときだけ');
+  assert.match(FV, /doSave\(\); feel\('branch\.select', \{ id \}\)/); assert.equal((FV.match(/feel\('monster\.enter'\)/g) || []).length, 1, '4歩の音は登場の1回だけ（1マスごとではない）');
+  for (const f of [FV, DR]) assert.doesNotMatch(f.split('\n').map((l) => l.replace(/\/\/.*$/, '')).join('\n'), /\.ogg|\.wav|\.mp3/, '画面のコードに音源のファイル名を書かない');
+  // 購入：成立した（purchase が ok・保存した）あとだけ。不足・満員（!r.ok）では鳴らさない
+  const adopt = H.slice(H.indexOf('function adopt('), H.indexOf('\n', H.indexOf('function adopt(')));
+  assert.ok(adopt.indexOf('if(!r.ok)return market(') < adopt.indexOf('MMFEEL.emit("market.buy")') && adopt.indexOf('save();') < adopt.indexOf('MMFEEL.emit("market.buy")'));
+  // サイコロ：Chapter のサイコロは描き方ごとに dice.throw を1回だけ
+  const { A, log } = env(); A.registerAll({ bgm: got.bgm, se: got.se }); await tick(5);
+  A.se('DICE_THROW'); A.se('DICE_LAND'); A.se('DICE_STOP'); A.se('DICE_ROLL'); await tick(5);
+  assert.ok(log.plays <= 1, `1ロールで鳴る音は1つ（${log.plays}）`);
+});
+

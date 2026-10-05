@@ -28,7 +28,9 @@
     'UI_CONFIRM', 'UI_CANCEL', 'UI_ERROR', 'UI_OPEN', 'UI_SELECT', 'UI_TAB', 'TITLE_START',
     'DICE_THROW', 'DICE_ROLL', 'DICE_LAND', 'DICE_STOP', 'STEP', 'TILE_STOP', 'STAT_UP', 'GOLD_GET', 'CHEST_APPEAR', 'CHEST_OPEN', 'EVENT', 'WILD_ALERT',
     'MATCHUP', 'BATTLE_INTRO', 'BATTLE_START', 'BATTLE_ATTACK', 'BATTLE_HIT', 'BATTLE_CRIT', 'BATTLE_MISS', 'BATTLE_BLOCK', 'BUFF', 'DEBUFF', 'HEAL', 'ROULETTE_TICK', 'ROULETTE_STOP', 'VICTORY', 'DEFEAT',
-    'SWOOSH', 'RIVAL_APPEAR', 'CHAPTER_START', 'CHAPTER_CLEAR', 'TOURNAMENT_ARRIVAL', 'TOURNAMENT_START', 'UNLOCK', 'REWARD']);
+    'SWOOSH', 'RIVAL_APPEAR', 'CHAPTER_START', 'CHAPTER_CLEAR', 'TOURNAMENT_ARRIVAL', 'TOURNAMENT_START', 'UNLOCK', 'REWARD',
+    // 2026-10-06：正式 SE で既存の名前では区別できない出来事（js/audio/audio-registry.js）
+    'MONSTER_ENTRY', 'TRAINING_ITEM_SPAWN', 'TRAINING_SUCCESS', 'MARKET_PURCHASE', 'RARE_ALERT', 'TREASURE_TIER_1', 'TREASURE_TIER_2', 'TREASURE_TIER_3', 'TREASURE_TIER_4', 'REST_RECOVER', 'EVENT_TRIGGER', 'BRANCH_SELECT']);
   /** フェードの長さ（ms）。通常の切り替えと、遭遇などの急な切り替え */
   const FADE = fz({ normal: 700, quick: 220, none: 0 });
   const DEF_VOL = fz({ bgm: 0.8, se: 0.9 });
@@ -275,6 +277,10 @@
     } catch (e) { note('scene', e); st.source = 'none'; }
     return true;
   }
+  /** 2026-10-06：今鳴っているファイルの BGM の位置（秒）。場面 key を渡すとその場面のときだけ（止まっている・合成音・別の場面なら null）。プロローグの映像と BGM の位置合わせに使う */
+  function bgmTime(key) { const c = st.cur; if (!c || !c.active || (key && resolveScene(key) !== c.scene)) return null; try { const t = c.el.currentTime; return c.el.paused || !Number.isFinite(t) ? null : t; } catch (e) { return null; } }
+  /** 今鳴っているファイルの BGM の位置を合わせる（秒）。鳴らしていなければ何もしない */
+  function seekBgm(sec, key) { const c = st.cur; if (!c || !c.active || (key && resolveScene(key) !== c.scene) || !Number.isFinite(sec)) return false; try { c.el.currentTime = Math.max(0, sec); return true; } catch (e) { note('bgm-seek', e); return false; } }
   function stopBgm(opts = {}) { stopFiles(FADE[opts.fade || 'normal'] != null ? FADE[opts.fade || 'normal'] : FADE.normal); legacyStop(); st.scene = null; st.source = 'none'; st.pendingScene = null; }
 
   // ---- ファイル SE：XMLHttpRequest → decodeAudioData → AudioBuffer ----
@@ -388,7 +394,7 @@
     st.hidden = !!d.hidden; const c = st.ctx;
     if (st.hidden) { try { if (c && c.state === 'running') c.suspend(); } catch (e) {} for (const s of st.slots) if (s.active) { try { s.el.pause(); } catch (e) {} } return; }
     try { if (c && c.state !== 'running') { const p = c.resume(); if (p && p.catch) p.catch(() => {}); } } catch (e) {}
-    const cur = st.cur; if (cur && cur.active && cur.el.paused) { try { const p = cur.el.play(); if (p && p.catch) p.catch(() => { st.pendingScene = cur.scene; }); } catch (e) { st.pendingScene = cur.scene; } }
+    const cur = st.cur; if (cur && cur.active && cur.el.paused && !(cur.el.ended && !cur.el.loop)) {   /* 2026-10-06：最後まで鳴り終えた1回きりの曲（プロローグ）を表に戻ったときに頭から鳴らし直さない */ try { const p = cur.el.play(); if (p && p.catch) p.catch(() => { st.pendingScene = cur.scene; }); } catch (e) { st.pendingScene = cur.scene; } }
   }
   /** 今の状態（テスト・デバッグ用） */
   const status = () => ({ scene: st.scene, source: st.source, playing: !!(st.cur && st.cur.active) || st.source === 'legacy', plays: st.plays, volume: { ...st.vol }, muted: isMuted(), unlocked: st.unlocked,
@@ -399,6 +405,6 @@
     slots: st.slots.map((s) => ({ i: s.i, src: s.src, scene: s.scene, active: s.active, paused: !!s.el.paused, loop: s.loopRange ? [s.loopRange.start, s.loopRange.end] : null, waiting: !!s.waiting, time: Number.isFinite(s.el.currentTime) ? Math.round(s.el.currentTime * 100) / 100 : null, gain: s.gain ? s.gain.gain.value : s.el.volume })) });
   const registryOf = (kind) => (kind === 'se' ? Object.fromEntries(Object.keys(SEF).map((k) => [k, { srcs: [...SEF[k].srcs], gain: SEF[k].gain, silent: !!SEF[k].silent, maxMs: SEF[k].maxMs }])) : Object.fromEntries(Object.keys(BGM).map((k) => [k, { ...BGM[k], srcs: [...BGM[k].srcs] }])));
 
-  root.MMAUDIO = fz({ SCENES, SCENE_ALIAS, SE, FADE, registerBgm, registerSe, registerAll, clearRegistry, registryOf, attachLegacy, resolveScene, resolveBgm, scene, stopBgm, se, setVolume, setMuted, unlock, context, legacyInput, status, seLog: () => SE_LOG.slice() });
+  root.MMAUDIO = fz({ SCENES, SCENE_ALIAS, SE, FADE, registerBgm, registerSe, registerAll, clearRegistry, registryOf, attachLegacy, resolveScene, resolveBgm, scene, stopBgm, bgmTime, seekBgm, se, setVolume, setMuted, unlock, context, legacyInput, status, seLog: () => SE_LOG.slice() });
   try { if (root.document) { ['pointerdown', 'touchend', 'keydown'].forEach((e) => root.document.addEventListener(e, unlock, { passive: true })); root.document.addEventListener('visibilitychange', onVisibility); } } catch (e) {}
 })(typeof window !== 'undefined' ? window : globalThis);

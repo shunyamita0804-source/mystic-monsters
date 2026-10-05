@@ -100,7 +100,7 @@ test('GF-05：Game Feel：出来事の重さ（LEVEL 0〜5）ごとに間と余�
   for (const k of ['facility', 'back', 'light']) { const tot = F.MOTION.nav.ms + F.MOTION.nav.out + F.MOTION.enter[k]; assert.ok(tot >= 400 && tot <= 700, `${k}：${tot}ms`); }
   const hp = []; F.registerHaptics((k, n) => hp.push([k, n]));
   F.emit('dice.land'); F.emit('stat.up'); F.emit('ui.confirm');
-  assert.deepEqual(se, ['DICE_LAND', 'STAT_UP', 'UI_CONFIRM']); assert.deepEqual(hp, [['medium', 'dice.land'], ['success', 'stat.up']], 'ハプティクスは重要な出来事だけ（Web では登録しない限り何もしない）');
+  assert.deepEqual(se, ['DICE_LAND', 'TRAINING_SUCCESS', 'UI_CONFIRM']);   // 2026-10-06：Chapter の能力UPの表示は正式 SE（TRAINING_SUCCESS） assert.deepEqual(hp, [['medium', 'dice.land'], ['success', 'stat.up']], 'ハプティクスは重要な出来事だけ（Web では登録しない限り何もしない）');
   assert.deepEqual(F.log(), ['dice.land', 'stat.up', 'ui.confirm']); assert.equal(F.emit('nope'), null);
   const el = (oc, ds = {}) => ({ disabled: false, dataset: ds, getAttribute: (k) => (k === 'onclick' ? oc : null) });
   assert.equal(F.navKind(el('market()')), 'facility'); assert.equal(F.navKind(el('lobby()')), 'back'); assert.equal(F.navKind(el("hall('st')")), 'facility');
@@ -155,7 +155,7 @@ test('GF-09：Chapter の演出の流れ（field-view・サイコロ）：能力
   const stat = res.slice(res.indexOf("if (fx.kind === 'chstat')"), res.indexOf("} else if (fx.kind === 'treasure')"));
   order(stat, ['beatOf(3)', "tile.classList.add('hit')", "monReact('up')", "feel('stat.up'", 'growRows(m, gains)', 'holdOf(3', 'growPlay(d, gains)']);   // 2026-10-04 PHASE E：枠の中は成長の行（アイコン → 数値のカウントアップ → ゲージ → 粒子＝growPlay）
   const chest = res.slice(res.indexOf("} else if (fx.kind === 'treasure')"), res.indexOf("} else if (fx.ev && fx.kind !== 'none')"));
-  order(chest, ['beatOf(3)', "classList.remove('hid')", "classList.add('shake')", "feel('chest.open'", 'goldToHud(g0, g1']);
+  order(chest, ['beatOf(3)', "classList.remove('hid')", "classList.add('shake')", "`chest.open.${fx.tier}`", 'goldToHud(g0, g1']);
   assert.match(FV, /async function goldToHud\(from, to, srcEl\)/); assert.match(FV, /feel\('gold\.get'\); bump\(g\); await countUp\(b, from, to, 420\);/);
   const enc = FV.slice(FV.indexOf('  async function encounter(m, bt) {'), FV.indexOf('  /** 通常マス（LEVEL 1）'));
   order(enc, ['Math.max(380, beatOf(4))', 'chf-alert', 'await encounterShow(BT, bt, m)', 'async function encounterShow', 'chf-enc2', 'feel(cue', 'await wait(rival ? 1350 : 1500)']);   // 2026-10-04 G3：静止 →「！」（予兆の草は出さない）→ 絵と文を同時に → 遭遇の音 → 読める間

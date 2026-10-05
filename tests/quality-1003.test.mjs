@@ -27,10 +27,10 @@ test('QU-01：プロローグ（2026-10-05 正式：4枚・本文はユーザー
   const files = ['prologue_01_coexistence', 'prologue_02_anomaly', 'prologue_03_three_legends', 'prologue_04_arrival_mistoria'];
   P.SLIDES.forEach((s, i) => { const f = `assets/prologue/${files[i]}.webp`; assert.equal(s.bg, './' + f); assert.ok(existsSync(path.join(ROOT, f)), f); });
   assert.ok(P.T.chGap >= 40 && P.T.chGap <= 55, '文字の開始間隔 40〜55ms'); assert.ok(P.T.chFade >= 120 && P.T.chFade <= 180, '各文字 120〜180ms'); assert.ok(P.T.chFade > P.T.chGap, '前の文字が出きる前に次が始まる');
-  assert.ok(P.T.tapGuard >= 400, '誤タップで何枚も飛ばない'); assert.equal(P.POS.y, 0.42, '中央よりやや上');
-  const pro = rd('js/prologue/prologue.js'); assert.match(pro, /<span class="mpc" style="--d:\$\{\(k\+\+\) \* T\.chGap\}ms">/, '文字ごとに開始をずらす'); assert.match(pro, /el\.classList\.add\('full'\)/, 'タップで全部出す');
+  assert.equal(P.T.tapGuard, undefined, '2026-10-06：タップでは何も進まない（固定尺）'); assert.equal(P.POS.y, 0.42, '中央よりやや上');
+  const pro = rd('js/prologue/prologue.js'); assert.match(pro, /<span class="mpc" style="--d:\$\{\(k\+\+\) \* T\.chGap\}ms">/, '文字ごとに開始をずらす'); assert.match(pro, /if \(cur\) cur\.classList\.add\('full'\)/, '時刻表のとおりに全部出る（2026-10-06：タップでは全部出さない）'); assert.doesNotMatch(pro, /addEventListener\('click', \(e\) => \{\n\s+if \(e\.target === skip\)/, '画面のタップの受け口は無い'); assert.doesNotMatch(pro, /mmpro-hint/, '「タップで先へ」の表示は無い');
   assert.match(HTML, /\.mmpro-u \.mpc\{display:inline-block;opacity:0;transform:translate3d\(0,var\(--chr,3px\),0\);filter:blur\(var\(--chb,1\.5px\)\);animation:mmproCh var\(--chf,160ms\)/);
-  assert.match(fnOf('opPrologue'), /MMPRO\.readyOrTimeout\(6000\)\.then\(\(\)=>MMPRO\.play\(\{cover:cv\}\)\)\.then\(ok=>\{cv\.remove\(\);if\(ok\)\{finaFlags\(\)\.prologue=1;save\(\)\}\}\)/, '見た記録は最後まで見た・スキップを確定したときだけ');
+  assert.match(fnOf('opPrologue'), /proPlay\(cv\)\.then\(ok=>\{cv\.remove\(\);if\(ok\)\{finaFlags\(\)\.prologue=1;save\(\)\}\}\)/, '見た記録は最後まで見た・スキップを確定したときだけ');
   assert.match(rd('tests/e2e/harness.mjs'), /MM_QA_NO_PROLOGUE = true/);
 });
 
