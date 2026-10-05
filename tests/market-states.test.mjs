@@ -156,7 +156,7 @@ async function settled(pg) {
 for (const [k, size] of Object.entries(H.SIZES)) {
   test(`MS-B6（${size.join('×')}）：縦スクロールなし・横はみ出しなし。詳細を開くと購入ボタンまで画面内。上部のプレイヤー情報は折り返さない`, { skip: SKIP }, async () => {
     const p = await L.open({ size }); const pg = p.page;
-    await H.newGame(pg, 'アルトリウス'); await pg.evaluate(() => market()); await pg.waitForFunction(() => !P10_ANIM); await settled(pg);
+    await H.newGame(pg, 'アルトリウス'); await pg.evaluate(() => { S.g = 300; market(); }); await pg.waitForFunction(() => !P10_ANIM); await settled(pg);   // 2026-10-06：新しいゲームは支援で 1000G＝補填なし。補填の説明が出る一番長い状態（古いセーブの 300G）で確かめる
     const pg0 = await pg.evaluate(() => ({ sh: document.documentElement.scrollHeight, ih: innerHeight, sw: document.documentElement.scrollWidth, iw: innerWidth,
       who: [...document.querySelectorAll('.p10who small, .p10who b, .p10gold')].map((e) => { const r = e.getBoundingClientRect(), lh = parseFloat(getComputedStyle(e).lineHeight) || parseFloat(getComputedStyle(e).fontSize) * 1.4; return r.height <= lh * 1.25 + 1; }) }));
     assert.ok(pg0.sh <= pg0.ih + 1, `縦スクロールなし ${pg0.sh} > ${pg0.ih}`); assert.ok(pg0.sw <= pg0.iw + 1);

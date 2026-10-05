@@ -118,7 +118,7 @@ test('KR-B1：入店：初回はカレンのアップ画像で説明2行（smile
   assert.ok(s.text.length < 'いらっしゃい。気になる子を見ていってね。'.length && !s.next, '1文字ずつ表示中は▼なし');
   await pg.click('.mmtalk'); s = await talkState(pg);
   assert.deepEqual([s.text, s.next], ['いらっしゃい。気になる子を見ていってね。', true], '途中タップで全文・▼');
-  await pg.waitForTimeout(120); await pg.click('.mmtalk'); await pg.waitForTimeout(30);
+  await pg.waitForTimeout(350); await pg.click('.mmtalk'); await pg.waitForTimeout(30);   // 2026-10-06：全文を出したタップから0.3秒は読む間
   s = await talkState(pg); assert.match(s.img, /01_guide\.webp$/); assert.equal(s.next, false);
   assert.equal(await H.finishTalk(pg) > 0, true);
   assert.equal(await pg.evaluate(() => document.querySelectorAll('.mmtalk, .mmtalk-fig').length), 0, 'アップ画像は消える');
@@ -129,7 +129,7 @@ test('KR-B1：入店：初回はカレンのアップ画像で説明2行（smile
   // 2回目：説明はくり返さず、アップ画像で1行だけ
   await pg.waitForSelector('.mmtalk'); await pg.waitForTimeout(260); await pg.click('.mmtalk');
   let s2 = await talkState(pg); const AG2 = await pg.evaluate(() => (window.MMNPCE ? MMNPCE.REVISIT.market.lines.map((l) => l.text) : [])); assert.ok(AGAIN.includes(s2.text) || AG2.includes(s2.text), `再訪は1行のあいさつ（2026-10-04：進行状態に合う一言＝まだ連れていないときの一言）：${s2.text}`); assert.match(s2.img, /karen\/expr\/(?:closeup|full)\/0[1-3]_(guide|welcome|think)\.webp$/); assert.equal(s2.next, true);   /* 2026-10-04 PHASE H5：会話・施設の立ち絵は規格 stand（expr/full を CSS で 3/4身に切る） */
-  await pg.waitForTimeout(120); await pg.click('.mmtalk'); await pg.waitForTimeout(60);
+  await pg.waitForTimeout(350); await pg.click('.mmtalk'); await pg.waitForTimeout(60);
   assert.equal(await talkState(pg), null, '1行で終わる'); await pg.waitForFunction(() => !document.querySelector('.mmtalk'), null, { timeout: 3000 });   // 退場のフェードのあと
   assert.equal(await pg.evaluate(() => document.querySelector('.p10mk').classList.contains('talk')), false, '終わると通常の閲覧へ');
   await pg.reload(); await pg.waitForFunction(() => typeof S === 'object'); await pg.evaluate(() => market()); await pg.waitForSelector('.mmtalk'); await pg.waitForTimeout(260); await pg.click('.mmtalk');
