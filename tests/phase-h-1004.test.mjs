@@ -75,14 +75,15 @@ test('PH-04：NPC の立ち絵の規格：主要 NPC は全身（expr/full）を
   assert.doesNotMatch(HTML.slice(HTML.indexOf('/* 2026-10-04 PHASE H5'), HTML.indexOf('img.nstf[data-npc]')), /filter|hue-rotate/, '色は変えない');
 });
 
-test('PH-05：セルジュ（2026-10-06 正式の立ち絵＝ユーザーの serge_reference の白背景を透過）。リュウは正式の透過素材待ち（置かない・表示しない）', () => {
+test('PH-05：セルジュ（2026-10-06 正式の立ち絵＝ユーザーの serge_reference の白背景を透過）。リュウは会話の NPC には登録しない（2026-10-05 PHASE B：ライバルの遭遇の画面だけ正式立ち絵の透過 WebP）', () => {
   const M = loadNpc(); assert.equal(M.get('ryu'), null); assert.equal(M.get('serge').name, 'セルジュ');
   assert.equal(M.imageOf('serge').src, 'assets/npc/serge/full_normal.webp'); assert.equal(M.standOf('serge', 'closeup', 'normal'), 'assets/npc/serge/full_normal.webp');
   assert.ok(existsSync(path.join(ROOT, 'assets/npc/serge/full_normal.webp'))); assert.match(rd('assets/npc/serge/README.md'), /serge_reference/);
   assert.match(HTML, /const SERGE=\{id:"serge",name:"セルジュ"/); assert.match(fnOf('bureauNpc'), /MMNPC\.get\(SERGE\.id\)/);
   const walk = (d) => readdirSync(path.join(ROOT, d)).flatMap((n) => { const p = path.join(d, n); return statSync(path.join(ROOT, p)).isDirectory() ? walk(p) : [p]; });
   const files = walk('assets').filter((p) => /ryu|09_ryu|04_serge|ranch_20_ui|bureau_ui|base_camp_ui|standing|serge_reference/i.test(p) || (/serge/i.test(p) && /\.(jpe?g|png)$/i.test(p)));
-  assert.deepEqual(files, [], '参考画像・白背景の JPEG・リュウは置かない');
+  assert.deepEqual(files.filter((p) => !/^assets\/npc\/ryu\/(full_normal\.webp|README\.md)$/.test(p.split(path.sep).join('/'))), [], '参考画像・白背景の JPEG は置かない（2026-10-05 PHASE B：リュウはライバルの遭遇のため、正式立ち絵の市松模様を取り除いた透過 WebP だけを置く）');
+  assert.ok(existsSync(path.join(ROOT, 'assets/npc/ryu/full_normal.webp')) && /09_ryu\.jpeg/.test(rd('assets/npc/ryu/README.md')));
 });
 
 test('PH-06：守ること：セーブ v6・キー mr4v6、合体は研究所（牧場に戻さない）、特殊復元は無い、街に独立したアイテム屋は無い、プロローグの PHASE G の仕組みはそのまま', () => {

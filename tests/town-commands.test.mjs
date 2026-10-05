@@ -31,7 +31,7 @@ test('TW-1：街の背景は TOWN_BG の1か所だけで参照し、ファイル
   assert.doesNotMatch(HTML, /MAPIMG/);
   assert.match(HTML, /\.tbg\{[^}]*top:calc\(var\(--tva\) - var\(--tih\) \* var\(--ts\)\)[^}]*background:var\(--town-bg\) center\/100% 100% no-repeat/, '下寄せ：画像の下端を街の枠（バーの上端）にそろえる');
   assert.match(HTML, /--tiw:768;--tih:1360;--ttop:26;--ts:max\(min\(max\(100cqw \/ var\(--tiw\),var\(--tva\) \/ var\(--tih\)\),\(var\(--tva\) - 4px\) \/ \(var\(--tih\) - var\(--ttop\)\)\),var\(--tva\) \/ var\(--tih\)\)/, '幅いっぱいが基本。闘技場の上端（y=26）が画面の上端で切れるときは縮める');
-  assert.match(HTML, /\.tpin\{[^}]*top:calc\(var\(--tva\) - \(var\(--tih\) - var\(--y\)\) \* var\(--ts\)\)/, '施設の札も同じ下寄せの計算');
+  assert.match(HTML, /\.tpin\{[^}]*top:max\(calc\(var\(--tva\) - \(var\(--tih\) - var\(--y\)\) \* var\(--ts\)\),calc\(env\(safe-area-inset-top,0px\) \+ 114px\)\)/, '施設の札も同じ下寄せの計算（2026-10-05 PHASE B：上の中央の名札の下より上には置かない）');
 });
 
 test('TW-2：施設は街の背景の上の札（押せる。下のバーと二重に出さない）＝市場・牧場・研究所・闘技場・聖獣士管理局（アイテム屋は街に無い＝2026-10-04）。下のバーはファーム・プロフィール・セーブ・ロード（1段）。行き先は従来の画面', () => {

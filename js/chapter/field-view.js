@@ -257,6 +257,7 @@
     V.par0 = null; V.focus = null;
     for (const f of MMCH.nextFields(V.g, fieldId)) preloadField(V.cfg, f);   // 次に入る背景（つながりの先。背景IDの連番は前提にしない）
     preloadChests(fv);
+    { const R = (V.cfg.battleTypes || {}).rival || {}; for (const k of [R.encounterFigure, R.encounterPartner]) { const u = k && asset(V.cfg, k); if (u && typeof Image !== 'undefined') { const im = new Image(); im.decoding = 'async'; im.src = u; } } }   // 2026-10-05 PHASE B：ライバルの遭遇の立ち絵を先に読む（遭遇の瞬間に読み込みが間に合わず出ない、を防ぐ）
   }
   /** 宝箱の開封アニメーションの絵を先に読む（開ける瞬間に絵が抜けないように。同じ絵は1回だけ） */
   const CHEST_PRE = new Set();
@@ -1038,11 +1039,14 @@
     const ui = $('#chf-ui'), text = BT.encounter || '', rival = bt === 'rival', cue = rival ? 'rival.appear' : bt === 'rare' ? 'rare.alert' : 'wild.alert';   // 2026-10-06：野生・レア・ライバルは別の正式 SE
     if (!ui || V.calm || !text) { feel(cue, { battleType: bt }); if (text) setMsg(text); await wait(V.calm ? 300 : 600); return; }
     const foe = rival ? null : foeImage(m), tone = esc(BT.tone || bt);
+    // 2026-10-05 PHASE B（「ライバルの竜が表示されない」）：原因＝ライバルの遭遇は人物も相棒も描かない作り（foe＝null・figure＝null）で、竜（リュウの相棒）の正式素材がリポジトリ・受け取ったどの ZIP にも無い。
+    //  ライバル本人＝正式の立ち絵（config.battleTypes.rival.encounterFigure）、相棒＝encounterPartner（素材が届いたら config の1行。無い間は何も描かない＝新しい竜を作らない）
+    const rvFig = rival && BT.encounterFigure ? asset(V.cfg, BT.encounterFigure) : null, rvPart = rival && BT.encounterPartner ? asset(V.cfg, BT.encounterPartner) : null;
     const motes = Array.from({ length: rival ? 14 : 10 }, (_, i) => `<i class="ce-mote" style="--x:${(10 + ((i * 41) % 80)).toFixed(0)}%;--dl:${(i * 0.09).toFixed(2)}s;--s:${(3 + (i % 3) * 2)}px"></i>`).join('');
     const label = rival ? 'RIVAL' : 'ENCOUNTER';
     ui.insertAdjacentHTML('beforeend', `<div class="chf-enc chf-enc2 t-${tone}${BT.aura ? ' aura' : ''}" role="status" aria-label="${esc(text)}">
       <i class="ce-veil"></i>${rival ? `<div class="ce-top"><span>✦ ${label} ✦</span></div>` : ''}
-      <div class="ce-stage">${BT.aura ? '<i class="ce-halo"></i>' : ''}<i class="ce-circle"></i><i class="ce-circle in"></i>${motes}${foe ? `<img class="ce-mon" src="${esc(foe.src)}" alt="${esc(foe.name)}" draggable="false">` : ''}</div>
+      <div class="ce-stage">${BT.aura ? '<i class="ce-halo"></i>' : ''}<i class="ce-circle"></i><i class="ce-circle in"></i>${motes}${foe ? `<img class="ce-mon" src="${esc(foe.src)}" alt="${esc(foe.name)}" draggable="false">` : ''}${rvFig ? `<img class="ce-rival" src="${esc(rvFig)}" alt="${esc(BT.name || 'ライバル')}" draggable="false">` : ''}${rvPart ? `<img class="ce-partner" src="${esc(rvPart)}" alt="" draggable="false">` : ''}</div>
       ${rival ? '' : `<div class="ce-band"><span>${label}</span></div>`}${BT.badge ? `<em class="ce-badge">${esc(BT.badge)}</em>` : ''}<b class="ce-tx">${esc(text)}</b></div>`);
     const el = ui.querySelector('.chf-enc2:last-child');   // 旧い名前 chf-enc も持つ（待ち合わせ・監査のテストが使う。見た目は .chf-enc2 だけ）
     feel(cue, { battleType: bt });   // 絵と文が出た瞬間
@@ -1230,7 +1234,7 @@
     const bag = (gS().inv && gS().inv.bag) || [], list = bag.map((it, i) => ({ it, i, eff: MMCH.fatigueItemEffect(it.id) })).filter((x) => x.eff);
     const ui = $('#chf-ui'); if (!ui) return; chfItemsClose();
     const nm = (id) => { const d = root.MMP7 && root.MMP7.getItemDef(id); return d ? d.name : id; };   // 2026-10-06：p7ItemName は index.html の const（window には無い）＝アイテムの名前は MMP7 の登録から
-    ui.insertAdjacentHTML('beforeend', `<div class="chsheet chitems" id="chitems"><h3>アイテム</h3>${list.length ? list.map((x) => `<button class="p9btn2" onclick="chfItemUse(${x.i})">${esc(nm(x.it.id))}<small>${x.eff.full ? '疲れ 全回復' : `疲れ −${x.eff.amount}`}</small></button>`).join('') : '<p class="p9s">疲れを回復できるアイテムを持っていません。</p>'}<button class="p9btn2" onclick="chfItemsClose()">閉じる</button></div>`);
+    ui.insertAdjacentHTML('beforeend', `<div class="chsheet chitems" id="chitems"><h3>アイテム</h3>${list.length ? list.map((x) => `<button class="p9btn2" onclick="chfItemUse(${x.i})">${root.MM_ITEM_ICON && root.MM_ITEM_ICON[x.it.id] ? `<img class="itic" src="${esc(root.MM_ITEM_ICON[x.it.id])}" alt="" decoding="async">` : ''}${esc(nm(x.it.id))}<small>${x.eff.full ? '疲れ 全回復' : `疲れ −${x.eff.amount}`}</small></button>`).join('') : '<p class="p9s">疲れを回復できるアイテムを持っていません。</p>'}<button class="p9btn2" onclick="chfItemsClose()">閉じる</button></div>`);
   }
   function chfItemsClose() { const d = $('#chitems'); if (d) d.remove(); }
   function chfItemUse(i) { const m = gS() && gS().m; if (!chfActive(m) || busyGet()) return; const r = MMCH.useFatigueItem(gS(), m, i); if (!r.ok) return chfItemsClose(); doSave(); chfBoard(`疲れ −${r.recovered}`); }
