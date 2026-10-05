@@ -442,6 +442,8 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - **Chapter へ入るときの「スパッ」**：正体＝フィールドの器の登場アニメ（chfwin＝不透明度 0→1・0.3秒）の間に、後ろのページの明るい地色が透けて白っぽい画面が約0.1〜0.2秒見えていた。→ フィールドの器の後ろ（#app・ページ）を器と同じ濃紺に（#app:has(>.chfw)・html:has(#app>.chfw)）。Chapter 開始の演出（MMCHI）はそのまま
 - **Chapter の HUD の特訓チケット**：既存のチップ（#chtix＝S.trainTix。新しいセーブ項目なし）を所持金の右に1行で（幅の狭い画面で2行目へ折り返していた＝.chh-chips を nowrap・狭い画面は余白と文字を少し詰める）
 - **リュウ／レグナス**：リュウの正式立ち絵＝assets/npc/ryu/ryu_official_fullbody.webp（ZIP の白背景 JPEG を透過・original/ に元の JPEG）。旧 full_normal.webp は削除。正式の相棒レグナス＝assets/monsters/regnas/regnas_official.webp（市松模様の焼き込みを透過・original/ に元の JPEG）。データは js/phase10/monsters.js の RIVAL_MONSTERS（プレイヤー用の SPECIES とは別＝市場・図鑑・合体・初期選択・特殊復元・牧場には出ない。正式技10個・入手方法は未決＝moves null）、MMRIVAL.CONFIG.partner 'regnas'。遭遇の画面は左にリュウ（全身）・右にレグナス（ch1a の encounterPartner 'rival_regnas'）。バトルの強さ・fight() は変えていない
+- **購入の知らせ「〇〇をつれて帰った！」が街に残り続ける**：原因＝通常の購入は街の案内欄（.tlow の #msg）に出していて、タップするまで消えなかった（救済のときだけ帯だった）。→ 購入の知らせはすべてシステム通知の帯（MMNOTE・モンスターの正式画像・約2.6秒で自動で消える・タップで早く消える）。街の案内欄には出さない＝街の再描画・施設の行き来・再読み込みでは出ない・セーブに入れない。購入処理・所持金・牧場への追加は変えていない（index.html の adopt）
+- **Lv の表記を出さない（ミスティックモンスターズにレベル・経験値・レベルアップは無い）**：ゲーム全体で表示していたのはバトルの2か所だけ＝①バトル開始の演出（intro。fight() の外）の「Lv.N」→ 削除 ②バトルの HUD（自分・相手の名前の横。fight() の中＝Phase 6・変更禁止）→ fight() とバトル画面の保護対象の CSS（.bt 系）は変えず、別の CSS 1行（`#bt .hn1>span{display:none}`）で表示だけ消した。内部に残るもの＝index.html の `lvv()`（6能力の合計 ÷ 50。fight() の中の HUD の表示用にだけ呼ばれる・能力・勝敗の計算には使っていない）。fight() を次に変えてよいときに、HUD の `<span>Lv.…</span>` と lvv を消せる。能力値・新しいランクの数値は足していない
 - やらなかったこと（次回の正式素材待ち）：大会ランク選択の画像素材化・ミストリアの名札の差し替え・マスを線でつなぐ・3D サイコロ・新しいプロフィール UI
 - テスト：tests/trial-1005.test.mjs（TR-01〜08）・audio-manager の AUDIO-28・phase-b-1005 の PB-11、実ブラウザ tests/qa-e2e-trial-1005.test.mjs（TB-1〜8）
 

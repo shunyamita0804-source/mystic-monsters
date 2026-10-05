@@ -91,3 +91,25 @@ test('TR-08：リュウ（正式の全身）＋レグナス（正式の相棒）
   const rv = {}; new Function('window', rd('js/phase8/rival.js'))(rv); assert.equal(rv.MMRIVAL.CONFIG.partner, 'regnas');
   assert.match(HTML, /\.chf-enc2\.t-rival \.ce-stage:has\(\.ce-partner\) \.ce-rival\{left:31%;/);
 });
+
+test('TR-09：購入の知らせ「〇〇をつれて帰った！」はシステム通知の帯（MMNOTE＝自動で消える・タップで消える）だけ。街の案内欄（lobby の msg）には出さない・セーブに入れない', () => {
+  const a = fnOf('adopt');
+  assert.match(a, /lobby\(\(\(\)=>\{[\s\S]*?if\(typeof MMNOTE=="object"&&MMNOTE\)\{[^}]*MMNOTE\.show\(\{\.\.\.\(im\?\{img:im\}:\{icon:"gold"\}\),title:x\.name\+"をつれて帰った！"\+pk,\.\.\.\(rs\?\{sub:rs\}:\{\}\)\}\);return undefined\}/, '帯があれば街の通知は undefined（出さない）');
+  assert.doesNotMatch(a, /S\.(msg|note|lastMsg)\s*=/, 'セーブ（S）に一時的な知らせを入れない');
+  const no = rd('js/feel/notice.js'); assert.match(no, /const MS = 2600;/); assert.match(no, /el\.addEventListener\('click', \(e\) => \{ e\.stopPropagation\(\); if \(Date\.now\(\) - shownAt > 350\) close\(\); \}\);/);
+  assert.doesNotMatch(no, /localStorage|save\(/, '帯は保存しない（再読み込みで出ない）');
+});
+
+test('TR-10：Lv の表記をユーザー向けに出さない。バトル開始の演出（intro）は Lv を消した。fight()（Phase 6）の HUD の Lv は fight() を変えずに CSS で隠す（内部の lvv は fight() の表示用だけ）', () => {
+  const intro = HTML.slice(HTML.indexOf('async function intro(pl){'), HTML.indexOf('\nasync function fight('));
+  assert.doesNotMatch(intro.replace(/\/\/[^\n]*/g, ''), /Lv|lvv/);
+  assert.match(HTML, /\n#bt \.hn1>span\{display:none\}/);
+  const fightSrc = HTML.slice(HTML.indexOf('async function fight('), HTML.indexOf('\n$("#snd").textContent'));
+  assert.match(fightSrc, /<span>Lv\.\$\{lvv\(pl\[s\]\)\}<\/span>/, 'fight() は変えていない（Phase 6）＝表示だけ CSS で消す');
+  // fight() と intro の外のコード（画像データの長い行・コメントを除く）に、ユーザー向けの Lv／LEVEL／レベルの表記は無い
+  let code = ''; const [fa, fb] = [HTML.indexOf('async function fight('), HTML.indexOf('\n$("#snd").textContent')];
+  for (let i = 0; i < HTML.length;) { const n = HTML.indexOf('\n', i), e = n < 0 ? HTML.length : n + 1; if (!(i >= fa && i < fb) && e - i < 50000) code += HTML.slice(i, e); i = e; }
+  code = code.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:"'`])\/\/[^\n]*/g, '$1');
+  const hits = [...code.matchAll(/.{0,30}(?:\bLv\b|Lv\.|LEVEL|レベル).{0,30}/g)].map((m) => m[0]).filter((x) => !/^const lvv=|MMFEEL/.test(x));
+  assert.deepEqual(hits.filter((x) => !/const lvv=x=>/.test(x)), []);
+});

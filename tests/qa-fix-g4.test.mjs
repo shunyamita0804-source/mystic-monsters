@@ -84,6 +84,7 @@ test('QA-G4-2：モンスター名を画面に出すところ（fight()・バト
   for (let i = 0; i < HTML.length; ) { const n = HTML.indexOf('\n', i), e = n < 0 ? HTML.length : n + 1; if (!skip.some(([a, b]) => i >= a && i < b) && e - i < 50000) code += HTML.slice(i, e); i = e; }   // 画像データの長い行は除く
   const ALLOW = [
     /MMNOTE\.show\(\{icon:"gold",title:x\.name\+/g,   // 2026-10-05 PHASE B：システム通知の帯（js/feel/notice.js が文字として表示＝esc）
+    /MMNOTE\.show\(\{\.\.\.\(im\?\{img:im\}:\{icon:"gold"\}\),title:x\.name\+/g,   // 2026-10-05 試遊：購入の知らせ（帯は文字として表示）
     /npcMoment\("partner",x\.name\)/g, /\(MMP10M\.byId\(m\.sp\)\|\|\{\}\)\.name/g,   // 2026-10-05：短いイベントの会話（共通会話は textContent で表示＝HTML として解釈しない）・種族の正式データ
     /p11Esc\(m\.name\)!==s\.name/g,   // ステータス画面の比較（表示するのは種族名 s.name）。p11Esc の許可より先に
     /p11Esc\((?:[A-Za-z_$][\w$]*\.)+name\)/g,                     // 文字として表示（m.name・x.name・S.m.name・d.m.name など）
@@ -173,14 +174,14 @@ test('QA-G4-B1：実ブラウザ：新規開始→市場で「<!--」「<b>X</b>
   await buy(pg, CM);
   let S = await H.getS(pg); assert.equal(S.m.name, CM, '名前は入力のまま保存'); assert.equal(S.g, 500, '2026-10-06：新人支援の 1000G − 500G（補填なし）');
   assert.equal(await count(pg, '#app .svb'), 1, '街の「セーブ・ロード」が残る');
-  assert.equal((await txt(pg, '#msg'))[0], `${CM}をつれて帰った！`);
+  assert.equal(await pg.evaluate(() => MMNOTE.log().slice(-1)[0].title), `${CM}をつれて帰った！`);   // 2026-10-05 試遊：購入の知らせはシステム通知の帯（文字として表示）
   assert.equal(await count(pg, '#app .map ~ .tlow .card'), 0, '街にはモンスターカードを出さない（2026-09-30。名前は牧場・ファームで文字のまま出ることを下で確かめる）');
   await pg.evaluate(() => { S.g = 5000; save(); lobby(); });
   await buy(pg, BOLD);
-  assert.equal((await txt(pg, '#msg'))[0], `${BOLD}をつれて帰った！（牧場に預けました）`); assert.equal(await count(pg, '#msg b'), 0, '名前のタグは効かない');
+  assert.equal(await pg.evaluate(() => MMNOTE.log().slice(-1)[0].title), `${BOLD}をつれて帰った！（牧場に預けました）`); assert.equal(await count(pg, '#msg b, .mmnote-tx b b'), 0, '名前のタグは効かない');
   await buy(pg, XSS);
   S = await H.getS(pg); assert.deepEqual(S.box.map((x) => x.name), [BOLD, XSS8], '購入シートは従来どおり8文字まで');
-  assert.equal((await txt(pg, '#msg'))[0], `${XSS8}をつれて帰った！（牧場に預けました）`); assert.equal(await count(pg, '#app .svb'), 1);
+  assert.equal(await pg.evaluate(() => MMNOTE.log().slice(-1)[0].title), `${XSS8}をつれて帰った！（牧場に預けました）`); assert.equal(await count(pg, '#app .svb'), 1);
   await noInjected(p);
   // 牧場：預ける・受け取る・合体・売る
   await pg.click('.hz[onclick="farm()"]'); await pg.waitForSelector('#app .rn2 .rnact');

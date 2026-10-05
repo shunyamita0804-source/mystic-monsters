@@ -229,7 +229,7 @@ test('QA-RF-B1：市場で買った1体目は手持ち、2体目は牧場へ。�
     assert.equal(s.box.length, 1);
     assert.equal(s.box[0].name, 'ガウB'); assert.equal(s.box[0].sp, 1); assert.equal(s.box[0].speed, 7); assert.equal(s.box[0].raise.state, 'none');
     assert.notEqual(s.box[0].uid, uidA);
-    assert.match(await txt(pg, '#msg'), /ガウBをつれて帰った！（牧場に預けました）/);
+    assert.match(await pg.evaluate(() => MMNOTE.log().slice(-1)[0].title), /ガウBをつれて帰った！（牧場に預けました）/);   // 2026-10-05 試遊：購入の知らせはシステム通知の帯
     // 牧場の一覧に並ぶ（1 / 20）
     await toRanch(pg);
     assert.equal(await txt(pg, '.rncnt'), '1 / 8');
@@ -318,6 +318,7 @@ test('QA-RF-B4：所持上限（2026-10-06）：牧場は8体まで（預けら�
     await pg.fill('#mnm', 'ハチ');
     await tap(pg, '.p10ok');
     await pg.waitForSelector('#app .map');
+    assert.match(await pg.evaluate(() => MMNOTE.log().slice(-1)[0].title), /^ハチをつれて帰った！$/, '2026-10-05 試遊：購入の知らせは帯（手持ちへ＝「牧場に預けました」なし）'); await pg.evaluate(() => MMNOTE.flush());   // 帯（約2.6秒で消える）を片付けてから次の操作
     let s = await H.storedSave(pg);
     assert.equal(s.m.name, 'ハチ'); assert.equal(s.box.length, 8); assert.equal(owned(s).length, 9); assert.equal(s.g, 4500);
     assert.doesNotMatch(await txt(pg, '#msg'), /牧場に預けました/);

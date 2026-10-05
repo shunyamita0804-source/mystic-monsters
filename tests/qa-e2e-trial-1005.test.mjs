@@ -166,3 +166,41 @@ T('TB-8：Chapter のフィールドの BGM＝デコード後は AudioBuffer で
   assert.ok(c && c.pos >= b, `バトルから戻ると続きから ${b} → ${c && c.pos}`);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
+
+T('TB-9：購入の知らせ＝帯で1回だけ・約2.6秒で自動で消える・タップで早く消える・街の再描画／施設の行き来／再読み込みで出ない・セーブに入らない・別の購入はその名前で1回', async () => {
+  const p = await openPage({}); const pg = p.page;
+  await H.newGame(pg, 'ユウ');
+  const notes = () => pg.evaluate(() => MMNOTE.log().filter((x) => /つれて帰った/.test(x.title)).map((x) => x.title));
+  const town = () => pg.evaluate(() => ({ msg: (document.querySelector('#msg') || {}).textContent || '', on: !!document.querySelector('#app>.map ~ .tlow.on, .tlow.on'), band: [...document.querySelectorAll('.mmnote')].map((e) => e.innerText) }));
+  await pg.evaluate(() => { S.g = 2000; save(); adopt(0, 'ソラ'); });
+  await pg.waitForSelector('.map.town'); await pg.waitForSelector('.mmnote');
+  let t = await town(); assert.match(t.band.join('|'), /ソラをつれて帰った！/); assert.doesNotMatch(t.msg, /つれて帰った/, '街の案内欄には出さない'); assert.equal(t.on, false);
+  assert.ok(await pg.evaluate(() => { const i = document.querySelector('.mmnote img'); return !!i && /solamo/.test(i.src); }), 'モンスターの正式画像');
+  await pg.waitForFunction(() => !document.querySelector('.mmnote'), null, { timeout: 4000 });   // 自動で消える
+  assert.deepEqual(await notes(), ['ソラをつれて帰った！'], '1回だけ');
+  await pg.evaluate(() => lobby()); await pg.waitForTimeout(400); t = await town(); assert.deepEqual([t.band, /つれて帰った/.test(t.msg)], [[], false], '街の再描画で出ない');
+  await pg.evaluate(() => market()); await pg.waitForTimeout(500); await pg.evaluate(() => lobby()); await pg.waitForTimeout(400); t = await town(); assert.deepEqual([t.band, /つれて帰った/.test(t.msg)], [[], false], '施設の行き来で出ない');
+  assert.doesNotMatch(JSON.stringify(await H.storedSave(pg)), /つれて帰った/, 'セーブに入らない');
+  await pg.reload(); await pg.waitForFunction(() => typeof S === 'object' && typeof lobby === 'function'); await pg.evaluate(() => lobby()); await pg.waitForTimeout(600);
+  t = await town(); assert.deepEqual([t.band, /つれて帰った/.test(t.msg)], [[], false], '再読み込みで出ない');
+  // 別のモンスター：その名前で1回・タップで早く消える
+  await pg.evaluate(() => adopt(1, 'ガウ')); await pg.waitForSelector('.mmnote'); await pg.waitForTimeout(450);
+  assert.match((await town()).band.join('|'), /ガウをつれて帰った！（牧場に預けました）/);
+  const t0 = Date.now(); await pg.click('.mmnote'); await pg.waitForFunction(() => !document.querySelector('.mmnote'), null, { timeout: 1500 }); assert.ok(Date.now() - t0 < 1500, 'タップで早く消える');
+  assert.deepEqual(await pg.evaluate(() => MMNOTE.log().filter((x) => /つれて帰った/.test(x.title)).map((x) => x.title)), ['ガウをつれて帰った！（牧場に預けました）'], '再読み込みのあと（ページの中の記録）はガウの1回だけ');
+  const s = await H.getS(pg); assert.deepEqual([s.m.name, s.box.map((x) => x.name)], ['ソラ', ['ガウ']], '購入・牧場への追加は従来どおり');
+  assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+});
+
+T('TB-10：バトル開始の演出・バトルの HUD（自分・相手）に Lv の表記が出ない（能力値・名前・ライフは従来どおり）', async () => {
+  const p = await openPage({}); const pg = p.page;
+  await H.newGame(pg, 'テスト');
+  await pg.evaluate(() => { const m = mk(0); m.name = 'ソラモ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); save(); board(); const r = S.m.raise; r.pend = { roll: 1, left: 0, stage: 'battle', fx: { kind: 'battle', battleType: 'wild' } }; MMP8.beginBattle(S, S.m, { kind: 'practice', rank: 0 }); save(); fight(0); });
+  await pg.waitForSelector('#bt .intro'); await pg.waitForTimeout(800);
+  const a = await pg.evaluate(() => document.querySelector('#bt').innerText);
+  assert.doesNotMatch(a, /Lv|LEVEL|レベル/i, 'バトル開始の演出'); assert.match(a, /ソラモ/);
+  await pg.waitForSelector('#bt .intro', { state: 'detached', timeout: 15000 }); await pg.waitForTimeout(1500);
+  const b = await pg.evaluate(() => ({ t: document.querySelector('#bt').innerText, hp: [...document.querySelectorAll('#bt .hn1 b')].map((e) => e.textContent) }));
+  assert.doesNotMatch(b.t, /Lv|LEVEL|レベル/i, 'バトルの HUD'); assert.equal(b.hp[0], 'ソラモ', '名前は出る');
+  assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+});

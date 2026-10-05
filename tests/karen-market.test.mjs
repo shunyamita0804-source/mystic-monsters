@@ -151,7 +151,7 @@ test('KR-B2：購入確認：カレンのアップ画像（normal）と一言。
   const s = await talkState(pg); assert.deepEqual([s.name, s.text], ['カレン', 'ありがとう。大切に育ててあげてね。']); assert.match(s.img, /04_sold\.webp$/);   // 購入成立＝04
   const st = await H.storedSave(pg); assert.deepEqual([st.g, st.cnt, st.m.sp], [500, 1, 0], '会話の前に購入・保存は済んでいる');
   await H.finishTalk(pg); await pg.waitForSelector('.map.town');
-  assert.match(await pg.evaluate(() => document.querySelector('#msg').textContent), /をつれて帰った！/);
+  assert.match(await pg.evaluate(() => MMNOTE.log().slice(-1)[0].title), /をつれて帰った！/, '2026-10-05 試遊：購入の知らせはシステム通知の帯');
   assert.deepEqual(await pg.evaluate(() => [document.querySelectorAll('.mmtalk').length, document.querySelectorAll('#p10ov').length]), [0, 0]);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });

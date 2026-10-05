@@ -95,7 +95,7 @@ test('PB-06：正式の会話窓（event_dialogue_window）はイベント・大
   assert.match(HTML, /\{note:\{icon:"gold",title:"1000G を受け取った！",sub:"新人聖獣士支援制度",se:"GOLD_GET"\}\}/); assert.match(HTML, /\{note:\{img:ITEM_ICON\.herb,title:"薬草 を1つ受け取った！"[^}]*se:"REWARD"\}\}/);
   assert.match(fnOf('talkSeq'), /if\(x&&x\.note\)\{await flush\(\);await MMNOTE\.show\(x\.note\)\}/);
   assert.match(fnOf('opAfterReg'), /MMNOTE\.show\(\{icon:"unlock",title:"世界地図 が使えるようになった！"/, '機能の解放');
-  assert.match(fnOf('adopt'), /if\(rs&&typeof MMNOTE=="object"&&MMNOTE\)\{MMNOTE\.show\(\{icon:"gold",title:x\.name\+"をつれて帰った！"\+pk,sub:rs\}\);return undefined\}/, '古いセーブの救済（街の通知は出さない＝帯だけ）');
+  assert.match(fnOf('adopt'), /if\(typeof MMNOTE=="object"&&MMNOTE\)\{const sp=MMP10M\.byId\(x\.sp\),im=sp&&sp\.image&&sp\.image\.src;MMNOTE\.show\(\{\.\.\.\(im\?\{img:im\}:\{icon:"gold"\}\),title:x\.name\+"をつれて帰った！"\+pk,\.\.\.\(rs\?\{sub:rs\}:\{\}\)\}\);return undefined\}/, '購入の知らせ（救済も通常も）は帯だけ＝街の通知は出さない（2026-10-05 試遊）');
   assert.match(fnOf('p9TourResult'), /MMNOTE\.show\(\{icon:"reward",title:`賞金 \$\{w\.prize\}G を手に入れた！`/, '大会の報酬');
   // 帯は文字として表示（HTML として解釈しない）
   const w = {}; const els = []; const doc = { body: { appendChild: (e) => els.push(e) }, querySelector: () => null, createElement: () => ({ setAttribute() {}, addEventListener() {}, appendChild() {}, classList: { add() {} }, remove() {} }) };

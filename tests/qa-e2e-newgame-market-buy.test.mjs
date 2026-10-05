@@ -74,7 +74,7 @@ async function confirmBuy(pg, name) {
   await pg.click('#p10ov .p10ok');
   await pg.waitForFunction(() => !document.getElementById('p10ov') && !!document.querySelector('.map'), null, { timeout: 15000 });
 }
-const townMsg = (pg) => pg.evaluate(() => document.querySelector('#msg').textContent);
+const townMsg = (pg) => pg.evaluate(() => { const l = MMNOTE.log().slice(-1)[0]; return l ? l.title : null; });   // 2026-10-05 試遊：購入の知らせはシステム通知の帯（MMNOTE）だけ（街の案内欄には残さない）
 /** 2026-10-05 PHASE B：古いセーブの救済（補填）の知らせはシステム通知の帯（MMNOTE・顔と名前なし）。帯の1行目＋（2行目） */
 const rescueMsg = (pg) => pg.evaluate(() => { const l = MMNOTE.log().slice(-1)[0]; return l ? l.title + (l.sub ? `（${l.sub}）` : '') : null; });
 
