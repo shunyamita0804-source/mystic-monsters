@@ -88,12 +88,12 @@ async function toRanch(pg, tab) {
   else if (tab) await tap(pg, `.ftile[onclick="farm('','${tab}')"]`);
   await pg.waitForFunction((t) => typeof ft === 'string' && (!t || ft === t), tab || null);
 }
-/** 不変条件：保存＝メモリ、21体・牧場20体まで、牧場に個体以外が無い、uid が一意、エラー・404なし */
+/** 不変条件：保存＝メモリ、9体・牧場8体まで、牧場に個体以外が無い、uid が一意、エラー・404なし */
 async function invariants(p) {
   const mem = await H.getS(p.page), sto = await H.storedSave(p.page);
   assert.deepEqual(sto, mem, '保存内容とメモリが一致');
   const all = owned(mem);
-  assert.ok(all.length <= 21, `所持 ${all.length}`); assert.ok(mem.box.length <= 20, `牧場 ${mem.box.length}`);   // 2026-10-04 PHASE H3：牧場20・所持21
+  assert.ok(all.length <= 9, `所持 ${all.length}`); assert.ok(mem.box.length <= 8, `牧場 ${mem.box.length}`);   // 2026-10-06：牧場8・所持9
   assert.ok(mem.box.every((x) => x && typeof x === 'object' && !Array.isArray(x)));
   const u = all.map((x) => x.uid);
   assert.ok(u.every((x) => typeof x === 'string' && /^m-/.test(x))); assert.equal(new Set(u).size, u.length);
@@ -308,8 +308,8 @@ test('QA-RF-B14：合体ボタンのダブルクリックでも合体は1回だ�
 test('QA-RF-B15：預ける・受け取る・売却・合体・購入を決まった乱数の順で続けても、手持ち・牧場・所持金がモデルどおりで、再読込後も同じ', { skip: H.skipReason() }, async (t) => {
   const p = await town(); const pg = p.page;
   try {
-    // 2026-10-04 PHASE H3：上限は牧場20・所持21。旧（上限8で6体から）と同じく「上限の2つ手前」から始めて、満杯・上限の場面も通る
-    const uids = await seed(pg, Array.from({ length: 19 }, (_, n) => ({ sp: n % 2, name: 'P' + n })), 3000);
+    // 2026-10-06：上限は牧場8・所持9。旧（上限8で6体から）と同じく「上限の2つ手前」から始めて、満杯・上限の場面も通る
+    const uids = await seed(pg, Array.from({ length: 7 }, (_, n) => ({ sp: n % 2, name: 'P' + n })), 3000);
     await pg.evaluate(() => {
       const st = (v) => ({ li: v, po: v, in: v, hi: v, ev: v, de: v });
       Object.assign(S.box[2].raise, { state: 'done', startStats: st(100), endStats: st(130) }); S.box[2].prog.rankClr = [true, true, false, false, false, false];
@@ -329,7 +329,7 @@ test('QA-RF-B15：預ける・受け取る・売却・合体・購入を決ま�
       async dep() {
         if (!M.m) return false;
         await ranch(); await pick(pg, 0);
-        if (M.box.length >= 20) {                                               // 牧場が20体：押せない・直接呼んでも断られて何も変わらない
+        if (M.box.length >= 8) {                                               // 牧場が8体：押せない・直接呼んでも断られて何も変わらない
           assert.equal(await pg.evaluate(() => document.querySelector('.rna[onclick="dep()"]').disabled), true);
           await pg.evaluate(() => dep());
           await pg.waitForFunction(() => /牧場がいっぱいです。/.test(document.querySelector('.fbub').innerText));
@@ -370,15 +370,15 @@ test('QA-RF-B15：預ける・受け取る・売却・合体・購入を決ま�
       },
       async buy(r) {
         const key = r < 0.5 ? 'solamo' : 'gauru';
-        if (all().length < 21 && M.g < 500) return false;
+        if (all().length < 9 && M.g < 500) return false;
         await toTown();
         await tap(pg, '.hz[onclick="market()"]');
         await pg.waitForSelector('#p10car');
         await pg.evaluate((k) => market(null, k), key);
         await pg.waitForFunction((k) => !P10_ANIM && $('#p10info .p10buy').dataset.key === k, key);
-        if (all().length >= 21) {
+        if (all().length >= 9) {
           await H.marketDetail(pg);
-          assert.deepEqual(await pg.evaluate(() => [$('#p10info .p10buy').disabled, $('#p10info .p10buy').innerText.trim()]), [true, '牧場がいっぱいです（牧場は20体まで）。']);
+          assert.deepEqual(await pg.evaluate(() => [$('#p10info .p10buy').disabled, $('#p10info .p10buy').innerText.trim()]), [true, '牧場がいっぱいです（牧場は8体まで）。']);
           await pg.evaluate(() => lobby()); return 'buy(上限)';
         }
         await H.marketDetail(pg); await tap(pg, '#p10info .p10buy');
@@ -393,7 +393,7 @@ test('QA-RF-B15：預ける・受け取る・売却・合体・購入を決ま�
       },
     };
     // 操作の順は固定（どの切り替わりも一度は通る）。番号・種族は決まった乱数で選ぶ。できない操作なら次の種類へ
-    //  （途中で手持ち＋牧場が21体・牧場20体になり、購入と預けるが断られる場面も通る）
+    //  （途中で手持ち＋牧場が9体・牧場8体になり、購入と預けるが断られる場面も通る）
     const PLAN = ['wd', 'dep', 'fuse', 'buy', 'sell', 'wd', 'buy', 'buy', 'dep', 'buy', 'buy', 'dep', 'fuse', 'wd', 'sell', 'sell', 'dep'];
     const KINDS = ['dep', 'wd', 'sell', 'fuse', 'buy'];
     for (let step = 0; step < PLAN.length; step++) {
