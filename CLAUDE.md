@@ -69,7 +69,8 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 | assets/town/ | 街の背景（**2026-10-03 から正式ミストリア mistria_main.webp**（768×1360。ZIP mm_quality_up_supplement の mistria_town_master）。以下は従来の記録：正式 town_main.jpg。元データは original/、差し替え前の旧背景は previous/。差し替えるときは建物ラベルの位置 TOWN_LABELS も合わせる。README.md） |
 | assets/ranch/ | 牧場（ぽかぽか牧場）の背景（正式 ranch_main.jpg。元データは original/。旧背景は assets/embedded/farmimg_ranch.jpg（FARMIMG、表示には使わない）。README.md） |
 | assets/farm/ | ファームの背景（**正式 2026-10-03＝farm_prep_main.jpg**（冒険準備の拠点・ZIP mismon_claude_assets_2026-10-03 の farm_reference。元データ original/farm_adventure_prep_reference_864x1536.jpg）。旧正式 farm_main.jpg はファイルだけ残す。以下は従来の記録：正式 farm_main.jpg。元データは original/。README.md）。ファーム画面とファームの各画面（ステータス・技管理・特訓メニュー・出発準備・アイテム屋）のぼかし背景に使う。旧背景 TRIMG2（assets/embedded/trimg2_farm_bg.jpg。旧ロゴ入り）と Chapter間ファームの旧背景 MMP12S.FARM_INTERVAL は互換のため残すが、表示には使わない |
-| assets/npc/ryu/ | **リュウ（ライバル）の正式立ち絵 full_normal.webp（2026-10-05 PHASE B）**：ZIP npc_official_standing の 09_ryu.jpeg（市松模様の焼き込み）から市松模様だけを取り除いた透過 WebP。ライバル遭遇の画面だけ（ch1a の battleTypes.rival.encounterFigure → field-view の .ce-rival）。会話の NPC には登録していない。**竜（リュウの相棒）の正式素材はリポジトリ・受け取ったどの ZIP にも無い**＝encounterPartner は null（作らない）。README.md |
+| assets/monsters/regnas/ | **レグナス（リュウの正式相棒・2026-10-05 夜）**：regnas_official.webp（市松模様を取り除いた透過 WebP 663×900）・original/（ユーザーの正式 JPEG）。ライバルの遭遇の画面だけ（.ce-partner）。データは js/phase10/monsters.js の RIVAL_MONSTERS（プレイヤー用ではない）。README.md |
+| assets/npc/ryu/ | **2026-10-05 夜：正式の全身 ryu_official_fullbody.webp（白背景を透過・406×960）に差し替え・旧 full_normal.webp は削除。以下は旧記録：**リュウ（ライバル）の正式立ち絵 full_normal.webp（2026-10-05 PHASE B）：ZIP npc_official_standing の 09_ryu.jpeg（市松模様の焼き込み）から市松模様だけを取り除いた透過 WebP。ライバル遭遇の画面だけ（ch1a の battleTypes.rival.encounterFigure → field-view の .ce-rival）。会話の NPC には登録していない。**竜（リュウの相棒）の正式素材はリポジトリ・受け取ったどの ZIP にも無い**＝encounterPartner は null（作らない）。README.md |
 | assets/npc/fina/ | フィナの正式素材（README.md に元画像との対応）。**2026-10-03：全身 fullbody/ 10ポーズ**（smile・happy・surprised・troubled・worried・serious・guide・normal・wave・greet。JPEG の市松模様を取り除いた透過 WebP。重要な会話＝major で使う）。同じ補足パックの半身16枚は既存の closeup・wave_blink・wave と同じ絵（新しい取り込みなし） |
 | assets/npc/karen/ | カレン（市場担当）の正式素材。アップ画像6表情のみ（README.md に元画像との対応） |
 | assets/npc/dan/ | ダン（ファーム担当）の正式素材。アップ画像6表情と、小さい顔用の face.webp（README.md に元画像との対応） |
@@ -143,6 +144,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - 2026-10-05 夜（正式 BGM・正式 SE 15種・プロローグの固定同期）の後：ふだんの実行は 757件合格・失敗0（tests/audio-manager.test.mjs に AUDIO-27）。実ブラウザ：tests/qa-e2e-prologue.test.mjs の PRO-B1（2サイズ・タップしても時刻が変わらない・Scene と BGM の位置）・PRO-B2（スキップ後に BGM が残らない）、tests/qa-e2e-next-1005.test.mjs の PRO-B4（裏に回って戻る）、新しい tests/qa-e2e-se-1006.test.mjs（SE-B1〜B5：サイコロ1回・道具 → 能力UP・宝箱の段階・遭遇3種・購入の失敗／成立・正式音源の読み込み）
 - 2026-10-06（追加修正・2：マスの並び・ベースキャンプ・会話の読む間・禁則・新人支援・0G・世界地図・街の名札・TEST 大会）の後：ふだんの実行は 764件合格・失敗0（tests/next-1006.test.mjs）。実ブラウザテストの全件（82ファイルを1つずつ）は1回目で 1106件中 25件が古い期待値（初期 300G・補填・ダンの常設・会話の読む間）＝テスト側を新しい仕様に直し、該当の14ファイルを再実行して合格。harness の finishTalk／chooseTalk は回数を多めに（240）
 - 2026-10-05 PHASE B（タイトル BGM の廃止・プロローグ v6・凍結で見た扱いにしない・新しいゲームの確認・会話の改行ずれ・正式の会話窓・システム通知の帯・薬草のアイコン・名札・管理局の BGM・リュウ・大会ランクの正式 UI・アイテム管理・補給所）の後：ふだんの実行は 774件合格・失敗0（新しい tests/phase-b-1005.test.mjs）。実ブラウザ：tests/qa-e2e-phase-b.test.mjs（PB-B1〜B6）・qa-e2e-prologue の PRO-B5／B6。実ブラウザテストの全件（84ファイルを1つずつ・c991c41）は 1127件中 1124件合格・3件失敗＝① IN-B2（開始の音がタップから 430ms＝開始画面の BGM が無くなり音の読み込みがタップの後になった）→ 開始画面で TITLE_START のファイルを先に読む（MMAUDIO.prefetchSe）② QA-G3-B2（「最初からやり直す」のあとの開始に新しいゲームの確認が入った＝古い期待値）③ TL-B1（Playwright の click の待ちで 2回目のタップが 0.3秒を超えた＝タップの間隔をページの中で測る）。直して該当の3ファイルを再実行して合格
+- 2026-10-05 夜（実機試遊の修正＋リュウ／レグナス）の後：ふだんの実行は 1140件（合格784・skip 356・失敗0。tests/trial-1005.test.mjs・AUDIO-28・PB-11 を追加）。実ブラウザ tests/qa-e2e-trial-1005.test.mjs（TB-1〜8）
 - **テスト運用（2026-10-01 正式）**：ふだんの開発は「実装 → 関連テスト → commit → push → public-check」。51ファイルの全件実ブラウザテストを push の前提にしない（大きな節目では push の後に全件を回す）。既知の不安定なテストが落ちたら、変更との関係を確かめ、明らかに不安定なものだけ1回再実行して合格なら既知として報告する（何度も再実行しない）。小さな修正では公開版の手動操作確認は不要で public-check を基本にする。
 
 ### ホーム画面アイコン
@@ -427,6 +429,21 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - **アイテム補給所**（item_shop_screen）：入口＝ベルナの一言＋3つの導線（購入／売却／アイテム図鑑・正式アイコン）。shopScr(msg, bought, tab)：'buy'＝従来の商品一覧（MMP7.shopBuy・商品は未登録＝「商品は準備中です」）、'sell'＝保管庫のアイテム（MMP7.shopSell・売値の無い薬草は「売れない」）、'book'＝アイテム図鑑（MMP7.listItemDefs＝登録済みのアイテムを見るだけ・効果・価格／非売品・所持数）。商品・価格・所持数・購入／売却の処理は変えていない。ベースキャンプの下のバーの「アイテム」は従来どおりアイテム補給所へ。
 - **やらなかったこと**：サイコロの正式差し替え・施設名＋アイコンの入場演出（不採用）は入れていない。
 - テスト：tests/phase-b-1005.test.mjs（PB-01〜10）・tests/qa-e2e-phase-b.test.mjs（PB-B1〜B6）・tests/qa-e2e-prologue.test.mjs の PRO-B5（まっさらな保存領域 → 必ずプロローグ・途中で再読み込み → 見た記録なし → 次の起動もプロローグ・最後まで見たら記録）・PRO-B6（45秒の凍結で一気に進まない・pagehide で止まる）
+
+### 実機試遊の修正＋リュウ／レグナス（2026-10-05 夜。いまの正式。基準 b80d787 への差分）
+
+- **Chapter のフィールド BGM の途切れ**：コードの上では同じ場面の再指定（board() のたびの bgm("chapter")）は何もしない・頭出しもしていなかった（MMAUDIO.scene の「同じ場面は何もしない」）。途切れの原因の候補（iPhone の実機では未確認）＝①iPhone の Safari は `<audio>` → MediaElementSource → GainNode の音を、メインスレッドが忙しい画面（Chapter のフィールド＝カメラ追従・歩行の rAF）で取りこぼしやすい ②Chapter 1 のループ区間の手前で2本目の `<audio>` に同じファイルを読み直していた（約3秒前の load・余裕 0.2秒）③タップのたびに navigator.audioSession.type を設定し直していた。→ registry の `buffer: true`（CHAPTER_1〜4）＝ファイルを一度デコードして AudioBufferSourceNode で鳴らす（音声スレッド・ループ区間はサンプル単位・2本目の `<audio>` を使わない）。デコードが終わるまでは従来の `<audio>`、終わったら同じ位置から切り替える。バトルなどで離れて同じ曲に戻ったら続きの位置から（15分以内。新しく Chapter に出発したとき＝p7Depart は MMAUDIO.resetBgmPos で頭から）。デコードした曲は1曲だけ持つ（iPhone のメモリ）。次の Chapter の曲はベースキャンプで先にデコード（MMAUDIO.prefetchBgm）。audioSession は変わるときだけ設定。曲・音量・ループ区間は変えていない。js/audio/audio-manager.js の bufPlay／bufSwap／bufStop、status().buffer
+- **名前を決めたあとの一瞬の再表示**：原因＝確認の会話の間も #app は名前の入力画面のままで、会話が閉じるフェード（約0.22秒）の間に下の入力画面が見えていた（確認 → 登録完了・登録完了 → 新人支援の2回）。→ 確認を始める前に名前の画面を片付けて管理局の背景だけ（opShell）にし、確認と登録完了を1つの会話（branches.ok）でつなぐ（選んだ時点で登録・保存）。「書き直す」のときだけ名前の画面へ（入力した名前のまま）
+- **新人支援の帯の SE**（MMNOTE.show の se＝帯が出た瞬間に1回・帯は1つずつ＝重ならない）：1000G＝GOLD_GET（既存の所持金の入手の音＝Ivokard bell.ogg。硬貨の「チャリン」専用の音ではない）・薬草＝REWARD・世界地図の解放＝UNLOCK（REWARD と UNLOCK は同じファイル＝ObsydianX confirm_style_6_002）。新しい音源は足していない
+- **聖獣士管理局の通常の画面**：背景＋セルジュ＋下のコマンドだけ（どのコマンドも選ばれていない・パネルは開いていない）。押したコマンドだけ開く＝bureauScr('card')（聖獣士証＋功績）／('ach')（功績一覧）／世界地図。セルジュの立ち絵は高さで決める（.bu .bunpc に height。それまでは元の画素の大きさで巨大に出ていた）。序盤の導線は従来どおり街で終わる
+- **世界地図**：リベルナを光らせる・点滅させるのは序盤の案内（MMMAP.open）だけ。管理局の地図（viewer）は印と名前だけ（.wm-pin.still＝光の輪なし・発光なし）
+- **アイテム屋**（ユーザー向けの名前は「アイテム屋」に統一。旧「アイテム補給所」はユーザー向けの表示から削除）：施設の画面 shopShell＝上に戻る・名札「アイテム屋」（Shippori Mincho）・所持金、正式背景＋ベルナ（全身の表情差分を大きく）、下に購入／売却／アイテム図鑑の3つの導線（正式アイコン）。購入／売却／図鑑の中身は窓（.dbody）でベルナは少し小さく後ろへ。商品・価格・購入／売却の処理は変えていない。ベースキャンプの「アイテム管理」（itemScr）は別の画面のまま
+- **ベースキャンプ**：「出発する」は下のバーから 72px（高さ700px以下は 50px）。モンスターの場所（.bcfield）も同じだけ上へ。モンスターの下の名前・種類の帯（.bcname）は出さない
+- **Chapter へ入るときの「スパッ」**：正体＝フィールドの器の登場アニメ（chfwin＝不透明度 0→1・0.3秒）の間に、後ろのページの明るい地色が透けて白っぽい画面が約0.1〜0.2秒見えていた。→ フィールドの器の後ろ（#app・ページ）を器と同じ濃紺に（#app:has(>.chfw)・html:has(#app>.chfw)）。Chapter 開始の演出（MMCHI）はそのまま
+- **Chapter の HUD の特訓チケット**：既存のチップ（#chtix＝S.trainTix。新しいセーブ項目なし）を所持金の右に1行で（幅の狭い画面で2行目へ折り返していた＝.chh-chips を nowrap・狭い画面は余白と文字を少し詰める）
+- **リュウ／レグナス**：リュウの正式立ち絵＝assets/npc/ryu/ryu_official_fullbody.webp（ZIP の白背景 JPEG を透過・original/ に元の JPEG）。旧 full_normal.webp は削除。正式の相棒レグナス＝assets/monsters/regnas/regnas_official.webp（市松模様の焼き込みを透過・original/ に元の JPEG）。データは js/phase10/monsters.js の RIVAL_MONSTERS（プレイヤー用の SPECIES とは別＝市場・図鑑・合体・初期選択・特殊復元・牧場には出ない。正式技10個・入手方法は未決＝moves null）、MMRIVAL.CONFIG.partner 'regnas'。遭遇の画面は左にリュウ（全身）・右にレグナス（ch1a の encounterPartner 'rival_regnas'）。バトルの強さ・fight() は変えていない
+- やらなかったこと（次回の正式素材待ち）：大会ランク選択の画像素材化・ミストリアの名札の差し替え・マスを線でつなぐ・3D サイコロ・新しいプロフィール UI
+- テスト：tests/trial-1005.test.mjs（TR-01〜08）・audio-manager の AUDIO-28・phase-b-1005 の PB-11、実ブラウザ tests/qa-e2e-trial-1005.test.mjs（TB-1〜8）
 
 ### 大会
 
@@ -739,7 +756,8 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 
 - **2026-10-03 品質向上で残したもの（素材・仕様待ち）**：聖獣士管理局の中（背景・NPC・機能）、特訓チケットの正式アイコン（HUD は文字）、街の札の位置（市場・アイテム屋・聖獣士管理局は絵から読んだ＝要確認）、ワールドマップ（world_map_master。使う場面が無いのでリポジトリに置いていない）、カレン・セドリック・ゲンシンの立ち絵化（今回は顔の吹き出しのまま）、バトル画面の情報の階層（.bt 系 CSS・fight() は Phase 6 のため変えていない＝js/battle/fit.js の大きさの補正だけ）、CHAPTER_CLEAR の SE（到着は無音の指示）、決定音（UI_CONFIRM）の正式素材：未決
 
-- **PHASE B（2026-10-05）で残したもの**：竜（リュウの相棒）の正式素材（リポジトリ・受け取ったどの ZIP にも無い＝届いたら ch1a の encounterPartner に1行）、ランクエンブレム6種のシートの E〜S の対応（見本の絵柄と違う＝使っていない）、アイテム図鑑の「見つけた」記録（今は登録済みのアイテムを全部見せる）、プロローグの段落の読む時間（v6 に合わせて約 12字/秒。実機で読みにくければ要相談）、リュウの立ち絵は市松模様を自動で取り除いた透過（正式の透過素材が届けば差し替えるだけ）
+- **実機試遊の修正（2026-10-05 夜）で残したもの**：硬貨の「チャリン」専用の SE（今は既存の GOLD_GET＝鈴の音）・Chapter の BGM の途切れが iPhone の実機で直ったかの確認・レグナスの正式技10個・入手方法・固有スキルのバトルへの組み込み（Phase 6）・大会ランク選択とミストリアの名札の正式素材（次回）
+- **PHASE B（2026-10-05）で残したもの**：〔2026-10-05 夜に解決：正式の相棒レグナス〕竜（リュウの相棒）の正式素材、ランクエンブレム6種のシートの E〜S の対応（見本の絵柄と違う＝使っていない）、アイテム図鑑の「見つけた」記録（今は登録済みのアイテムを全部見せる）、プロローグの段落の読む時間（v6 に合わせて約 12字/秒。実機で読みにくければ要相談）、リュウの立ち絵は市松模様を自動で取り除いた透過（正式の透過素材が届けば差し替えるだけ）
 - **追加修正（2026-10-06・2）で残したもの**：薬草の正式アイコン（添付・リポジトリに無い＝名前の文字だけ）、ミストリア専用の名札のデザイン（無い＝正式の施設の名札を流用）、プロローグ BGM の作り直し・約38.7秒版・聖獣士管理局の BGM・アイテム屋の改修・ベースキャンプの「アイテム管理」アイコン（次のフェーズ）、TEST 大会は正式リリースで TEST_MODE を false に
 - **正式音源（2026-10-05 夜）で残したもの**：TREASURE_TIER_4（登録のみ・第4段階の宝箱は無い＝未接続）、1マスごとの足音 STEP（silent のまま）、決定音 UI_CONFIRM（silent のまま）、サイコロの SE（2.05秒）は旧ボード・特訓の短いサイコロ演出（約1秒）より長い（1回だけ鳴る）
 
