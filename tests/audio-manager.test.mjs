@@ -220,7 +220,7 @@ function loadRegistry() {
   return { got, REG: w.MMAUDIO_REGISTRY };
 }
 const srcsOf = (v) => (typeof v === 'string' ? [v] : [].concat(v.srcs || v.src || []));
-const onDisk = (src) => path.join(ROOT, src.replace(/^\.\//, ''));
+const onDisk = (src) => path.join(ROOT, src.replace(/^\.\//, '').replace(/[?#].*$/, ''));   // ?v=… はキャッシュよけ（ファイル名ではない）
 
 test('AUDIO-13：registry の BGM：場面の名前が正しく、ファイルが実在し、gain が正の数、fallback の場面が存在する。index.html から読み込む順も正しい', () => {
   const { got, REG } = loadRegistry(), { A } = env();
@@ -298,7 +298,7 @@ test('AUDIO-18：最初のタップ（AudioContext の resume を頼んだ直後
 test('AUDIO-19：index.html：開始のタップは TITLE_START の1音だけ（ファイルが鳴らなければ合成のファンファーレ）。名前登録まで TITLE の曲。VS（対戦相手の発表）・能力比較は TOURNAMENT_MATCHUP、実戦の曲は「FIGHT!」の開始音のあと。ゴールは TOURNAMENT_ENTRY', () => {
   assert.match(HTML, /unlock\(\);clearInterval\(AU\.tm\);AU\.tm=null;AU\.sc=null;if\(!MMAUDIO\.se\("TITLE_START",\{wait:900\}\)\)fanfare\(\);/, '2026-10-04：正式の開始音。最初のタップでデコード中でも合成音へ落とさず、出来しだい鳴らす');
   assert.match(HTML, /class="p15start" data-nsfx="1"/, '開始ボタンは UI_CONFIRM を鳴らさない');
-  assert.match(HTML, /function p11NameScr\(msg\)\{bgm\(opOn\(\)\?"town":"title"\);/, '2026-10-05：正式の序盤導線では登録は街のあと（管理局）＝街の曲。従来の名前登録の画面（自動テストの既定）は開始画面の曲のまま');
+  assert.match(HTML, /function p11NameScr\(msg\)\{bgm\(opOn\(\)\?"bureau":"title"\);/, '2026-10-05 PHASE B：正式の序盤導線では登録は管理局＝管理局の曲（BUREAU）。従来の名前登録の画面（自動テストの既定）は開始画面＝無音（TITLE は silent）');
   assert.match(HTML, /bgm\("matchup"\);try\{MMFEEL\.emit\("battle\.matchup"\)\}catch\(e\)\{\}p9Immersive\(true\);/, 'VS は BGM を止めて発表の音');
   assert.match(HTML, /data-nsfx="1" onclick="p9VsGo\(this\)"/, '対戦開始のボタンの決定音と開始の音を重ねない（2026-10-03：VS 画面は fight() の導入だけ）');
   assert.match(HTML, /function p9PreBattle\(kind,rank,go\)\{const m=S\.m;bgm\("matchup"\);/, '能力比較は発表と同じ場面（音を重ねない）');
@@ -445,14 +445,15 @@ test('AUDIO-26：2026-10-04 正式の開始音（TITLE_START）：最初のタ�
 
 test('AUDIO-27：2026-10-06 正式音源（ユーザー提供・ゲームの所有素材）：TITLE・PROLOGUE（ループしない）の BGM と正式 SE 15種。サイコロは1ロール1回・宝箱は段階ごとに1つ・野生／レア／ライバルは別の音・旧い音を重ねない', async () => {
   const { got } = loadRegistry(), MMB = './assets/audio/bgm/mystic_monsters_official/', MMO = './assets/audio/se/mystic_monsters_official/';
-  assert.deepEqual(got.bgm.TITLE, { src: MMB + 'mystic_monsters_title_theme_official.ogg', gain: 0.56 });
-  assert.deepEqual(got.bgm.PROLOGUE, { src: MMB + 'mystic_monsters_prologue_bgm_official.ogg', gain: 0.56, loop: false });
+  assert.deepEqual(got.bgm.TITLE, { silent: true }, '2026-10-05 PHASE B：開始画面に BGM は無い');
+  assert.deepEqual(got.bgm.PROLOGUE, { src: MMB + 'mystic_monsters_prologue_bgm_official.ogg?v=v6', gain: 0.64, loop: false }, 'プロローグは正式 v6（38.714秒）');
   assert.deepEqual(got.se.TITLE_START, { src: MMO + 'title_start.ogg', gain: 0.8 }, '開始の音はそのまま');
   const want = { DICE_THROW: '01_dice_large_full', TRAINING_ITEM_SPAWN: '02_training_item_spawn', MARKET_PURCHASE: '03_market_purchase_confirm', TRAINING_SUCCESS: '04_training_success', MONSTER_ENTRY: '05_small_monster_entry_steps_4step',
     WILD_ALERT: '06_encounter_wild', RARE_ALERT: '07_encounter_rare', RIVAL_APPEAR: '08_encounter_rival', TREASURE_TIER_1: '09_treasure_open_tier1', TREASURE_TIER_2: '10_treasure_open_tier2', TREASURE_TIER_3: '11_treasure_open_tier3', TREASURE_TIER_4: '12_treasure_open_tier4',
     REST_RECOVER: '13_rest_recover', EVENT_TRIGGER: '14_event_trigger', BRANCH_SELECT: '15_branch_select' };
   for (const [k, f] of Object.entries(want)) { assert.equal(srcsOf(got.se[k])[0], MMO + f + '.ogg', k); assert.ok(got.se[k].gain > 0.5 && got.se[k].gain <= 1.2, `${k} の gain`); assert.ok(existsSync(path.join(ROOT, MMO, f + '.ogg')), f); }
-  for (const f of ['mystic_monsters_title_theme_official', 'mystic_monsters_prologue_bgm_official']) assert.ok(existsSync(path.join(ROOT, MMB, f + '.ogg')), f);
+  for (const f of ['mystic_monsters_prologue_bgm_official', 'mystic_monsters_bureau_bgm_official']) assert.ok(existsSync(path.join(ROOT, MMB, f + '.ogg')), f);
+  assert.ok(!existsSync(path.join(ROOT, MMB, 'mystic_monsters_title_theme_official.ogg')), '旧タイトル曲は置かない（読み込まない）');
   for (const k of ['DICE_LAND', 'DICE_ROLL', 'DICE_STOP', 'STEP']) assert.deepEqual(got.se[k], { silent: true }, `${k}：完成 SE と重ねない`);
   assert.ok(!existsSync(path.join(ROOT, 'assets/audio/bgm/pgs_fantasy_rpg/event_music_1.ogg')) && !existsSync(path.join(ROOT, 'assets/audio/se/alkakrab_fantasy_rpg_vol3/fx_3.ogg')), '使わなくなった旧い音源は置かない');
   // 出来事 → SE：1つの出来事に1つの音

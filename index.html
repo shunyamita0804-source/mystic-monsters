@@ -1512,7 +1512,7 @@ button.mkc b{font-size:.9rem}button.mkc small{font-size:.66rem;color:#ffe9b0}
 .mmpro-u{position:absolute;left:0;right:0;opacity:0;transform:translate3d(0,-50%,0);will-change:transform,opacity}
 .mmpro-u::before{content:"";position:absolute;left:6%;right:6%;top:-28%;bottom:-28%;z-index:-1;background:radial-gradient(closest-side,rgba(2,6,20,.42),rgba(2,6,20,0));pointer-events:none}
 .mmpro-nar .mmpro-u p{position:static;transform:none;will-change:auto}
-.mmpro-skip{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:12px;margin:0;padding:6px 14px;min-height:36px;border-radius:999px;background:rgba(8,15,34,.6);border:1px solid rgba(240,232,212,.5);color:#f3ecd9;font-size:12.5px;font-weight:700;letter-spacing:.06em}
+.mmpro-skip{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:12px;margin:0;padding:6px 14px;min-height:36px;border-radius:999px;background:rgba(8,15,34,.6);border:1px solid rgba(240,232,212,.5);color:#f3ecd9;font-size:12.5px;font-weight:700;letter-spacing:.06em}.mmpro-skip:disabled{opacity:0;pointer-events:none}.mmpro-skip{transition:opacity .3s}
 
 .mmpro-veil{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .9s ease}
 .mmpro.end .mmpro-veil{opacity:1}
@@ -2215,6 +2215,9 @@ button.p10karen img{display:block;width:100%;height:auto;margin-top:2px;transfor
 .mmtalk-next[hidden]{display:none}
 .mmtalk-choices{display:flex;flex-direction:column;gap:8px;margin:10px 0 0}
 .mmtalk-choices[hidden]{display:none}
+/* 2026-10-05 PHASE B：会話の本文は全文を先に組んでから1文字ずつ出す（js/npc/npc.js）。まだの文字は透明で場所を取る＝文字送りの途中で改行の位置が変わらない。禁則のまとまり .mtw は折り返さない */
+.mmtalk-text .mtw{white-space:nowrap}.mmtalk-text .mtc{opacity:0;transition:opacity .09s linear}.mmtalk-text .mtc.on{opacity:1}
+.mmtalk-choices.pre{min-height:calc(var(--n,2)*44px + (var(--n,2) - 1)*8px)}.mmtalk-big .mmtalk-choices.pre{min-height:calc(var(--n,2)*54px + (var(--n,2) - 1)*8px)}.mmtalk-big .mmtalk-choices.pre.two{min-height:54px}
 /* 2026-10-06 正式イベント会話UI（デザイン参考 04_event_ui）：2択は横並び・高さとタップ領域を広く。3択以上は縦並び。横並びは大きな会話窓（.mmtalk-big）だけ＝小さな窓（挿絵の出来事など）は縦のまま（375px で文字が3行に折れない）（.mmtalk-choices の子の数で決まる＝データを変えずに広げられる）。
    押下＝少し沈む＋金の枠の発光（決定の SE は UI_CONFIRM＝正式素材待ちで無音）。送りマーク ▼ はごく弱い上下の動き */
 .mmtalk-big .mmtalk-choices:has(>.mmtalk-choice:nth-child(2):last-child){flex-direction:row;gap:12px}
@@ -2263,6 +2266,46 @@ button.p10karen img{display:block;width:100%;height:auto;margin-top:2px;transfor
 .mmdg-btns .mmdg-danger{border:2px solid #dcb866;background:linear-gradient(#9a2128,#6b1018 60%,#4c0a10);color:#ffe9cf;box-shadow:inset 0 0 0 2px rgba(40,4,8,.8),0 4px 10px rgba(0,0,0,.4)}
 .mmdg-btns .mmdg-danger:disabled{opacity:.6}
 .mmdg-btns button:active:not(:disabled){transform:translateY(2px) scale(.98)}
+/* 2026-10-05 PHASE B：システム通知の帯（js/feel/notice.js・正式デザイン system_notification_banner。NPC の会話とは別の層・顔と名前なし） */
+.mmnote-layer{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 20dvh);z-index:2300;display:flex;flex-direction:column;align-items:center;gap:10px;padding:0 14px;pointer-events:none}
+.mmnote{position:relative;pointer-events:auto;display:flex;align-items:center;gap:12px;width:min(100%,380px);min-height:64px;padding:10px 18px 10px 12px;border-radius:12px;border:2px solid #c9a24f;background:linear-gradient(#1c3170,#122457 55%,#0c1a44);box-shadow:0 0 0 2px rgba(6,11,28,.95),inset 0 0 0 3px rgba(8,15,38,.9),inset 0 0 0 4px rgba(214,178,98,.5),0 10px 24px rgba(0,0,0,.5);animation:mmnoteIn .26s cubic-bezier(.2,.9,.3,1.15) both;cursor:pointer}
+.mmnote.out{animation:mmnoteOut .22s ease-in both}
+@keyframes mmnoteIn{from{opacity:0;transform:translateY(-10px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes mmnoteOut{to{opacity:0;transform:translateY(-6px)}}
+.mmnote-cn{position:absolute;top:5px;bottom:5px;width:10px;border:0 solid #e2c27a;pointer-events:none}
+.mmnote-cn.l{left:5px;border-width:1.5px 0 1.5px 1.5px;border-radius:7px 0 0 7px}.mmnote-cn.r{right:5px;border-width:1.5px 1.5px 1.5px 0;border-radius:0 7px 7px 0}
+.mmnote-ic{flex:0 0 auto;position:relative;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:2px solid #e9c873;background:radial-gradient(circle at 38% 32%,#fff3b8,#f0c43c 40%,#b37a14 80%);box-shadow:0 0 0 2px rgba(8,15,38,.9),0 0 10px rgba(240,196,60,.45)}
+.mmnote-ic.gold::after,.mmnote-ic.reward::after{content:"G";font:900 22px/1 "Shippori Mincho",serif;color:#8a5a08;text-shadow:0 1px 0 rgba(255,240,190,.8)}
+.mmnote-ic.unlock::after{content:"";width:22px;height:22px;background:#8a5a08;clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.mmnote-ic.item,.mmnote-ic.img{background:radial-gradient(circle at 50% 40%,#2a4a92,#142a62 70%,#0c1a44)}
+.mmnote-ic.img img{width:34px;height:34px;object-fit:contain}
+.mmnote-tx{min-width:0;display:flex;flex-direction:column;gap:2px;text-align:left}
+.mmnote-tx b{font-family:"Shippori Mincho",var(--mm-font-head,serif);font-size:17px;font-weight:800;letter-spacing:.04em;color:#fbf3dc;line-break:strict;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.mmnote-tx small{font-size:12.5px;color:#e6dcc0;line-break:strict;line-height:1.45}
+
+/* 2026-10-05 PHASE B：新しいゲームの確認（正式デザイン new_game_confirmation_modal を HTML/CSS で再構成。1枚の画像ではない） */
+.ngm{position:fixed;inset:0;z-index:2400;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(3,7,20,.7);animation:ngmIn .22s ease-out both;touch-action:none}
+@keyframes ngmIn{from{opacity:0}to{opacity:1}}
+.ngm-p{position:relative;width:min(100%,352px);padding:30px 22px 24px;border-radius:18px;text-align:center;border:2px solid #d4ad5c;background:radial-gradient(ellipse at 50% 0%,rgba(110,140,220,.22),rgba(110,140,220,0) 58%),linear-gradient(#1a2f66,#10204c 55%,#0b1738);box-shadow:inset 0 0 0 4px #0b1638,inset 0 0 0 5.5px rgba(226,190,110,.75),0 18px 40px rgba(0,0,0,.6);animation:ngmPop .26s cubic-bezier(.2,.9,.3,1.2) both}
+@keyframes ngmPop{from{transform:scale(.92)}to{transform:none}}
+.ngm-gem{position:absolute;left:50%;width:18px;height:18px;transform:translateX(-50%) rotate(45deg);border:2px solid #e9c873;border-radius:3px;background:linear-gradient(135deg,#bfe1ff,#3f7fe0 55%,#163f9c);box-shadow:0 0 10px rgba(120,180,255,.6)}
+.ngm-gem.t{top:-11px}.ngm-gem.b{bottom:-11px}
+.ngm-cn{position:absolute;width:26px;height:26px;border:2px solid #d4ad5c;opacity:.85}
+.ngm-cn.tl{left:9px;top:9px;border-right:0;border-bottom:0;border-radius:10px 0 0 0}.ngm-cn.tr{right:9px;top:9px;border-left:0;border-bottom:0;border-radius:0 10px 0 0}
+.ngm-cn.bl{left:9px;bottom:9px;border-right:0;border-top:0;border-radius:0 0 0 10px}.ngm-cn.br{right:9px;bottom:9px;border-left:0;border-top:0;border-radius:0 0 10px 0}
+.ngm-t{display:block;font-family:var(--mm-font-head,"Shippori Mincho",serif);font-size:30px;font-weight:800;letter-spacing:.32em;padding-left:.32em;color:#f2d58c;text-shadow:0 2px 0 #050b20,0 0 14px rgba(242,213,140,.35)}
+.ngm-rule{display:block;height:1px;margin:10px 18px 14px;background:linear-gradient(90deg,transparent,#d4ad5c 20%,#d4ad5c 80%,transparent);position:relative}
+.ngm-rule::after{content:"";position:absolute;left:50%;top:-4px;width:8px;height:8px;transform:translateX(-50%) rotate(45deg);background:#e9c873}
+.ngm-paper{padding:16px 8px 12px;border-radius:6px;border:1.5px solid #c9a35a;background:linear-gradient(#fbf3df,#efe2c2);box-shadow:inset 0 0 0 3px #f8eed6,inset 0 0 0 4px rgba(170,130,60,.45),0 3px 8px rgba(0,0,0,.35)}
+.ngm-paper p{margin:0 0 8px;font-size:min(15.5px,3.75vw);font-weight:800;line-height:1.7;letter-spacing:.01em;color:#1b2340;line-break:strict}
+.ngm-paper small{display:block;font-size:12px;color:#6f6a62;line-break:strict}
+.ngm-ok,.ngm-back{display:block;width:100%;margin:0 auto;font-family:var(--mm-font-head,"Shippori Mincho",serif);font-weight:800;letter-spacing:.14em;cursor:pointer}
+.ngm-ok{position:relative;margin-top:18px;min-height:56px;border-radius:14px;border:2px solid #e2bf6c;background:linear-gradient(#3b66c8,#1f3f95 55%,#152d72);color:#fff6dc;font-size:19px;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 0 0 2px rgba(8,16,48,.75),0 0 14px rgba(90,150,255,.35),0 5px 12px rgba(0,0,0,.45)}
+.ngm-ok::before,.ngm-ok::after{content:"";position:absolute;top:50%;width:12px;height:12px;margin-top:-6px;transform:rotate(45deg);background:#e9c873;border:1.5px solid #fff1c4}
+.ngm-ok::before{left:-7px}.ngm-ok::after{right:-7px}
+.ngm-back{margin-top:14px;width:62%;min-height:44px;border-radius:999px;border:1.5px solid #d4ad5c;background:linear-gradient(#1c2f62,#0f1d44);color:#f3e7c8;font-size:16px;box-shadow:inset 0 0 0 2px rgba(6,11,30,.7)}
+.ngm-ok:active,.ngm-back:active{transform:translateY(2px) scale(.98)}
+
 /* 市場の購入詳細（2026-10-06 正式デザイン 03_market）：濃紺＋上品な金・アイボリーの文字。能力の棒は正式色・999 を最大にした長さ（100＝約10%）。素早さは別の欄（10マス）。購入するは金の大きなボタン */
 #app .p10mk .p10info{background:radial-gradient(ellipse at 50% 0%,rgba(90,120,200,.16),rgba(90,120,200,0) 55%),linear-gradient(rgba(17,30,66,.97),rgba(9,17,42,.98));border:2px solid #d8b465;box-shadow:inset 0 0 0 3px rgba(6,11,30,.9),inset 0 0 0 3.8px rgba(226,190,110,.4),0 10px 26px rgba(0,0,0,.5);color:#f4ead2}
 #app .p10mk .p10nm b{font-family:var(--mm-font-head);font-size:1.55rem;color:#fbf1d6;letter-spacing:.1em}
@@ -2309,6 +2352,20 @@ button.p10karen img{display:block;width:100%;height:auto;margin-top:2px;transfor
 .mmtalk.mmtalk-big .mmtalk-text{min-height:5.6em;font-size:18px;line-height:1.8;letter-spacing:.03em}
 .mmtalk.mmtalk-big .mmtalk-next{right:20px;bottom:12px;color:#e8c77d;font-size:.95rem;text-shadow:0 0 6px rgba(232,199,125,.55)}
 .mmtalk.mmtalk-big .mmtalk-choice{border-color:#caa152}
+/* 2026-10-05 PHASE B：正式の会話窓（event_dialogue_window_reference）。濃紺の地・金の太い額＋内側の細い金線・四隅の金の飾り・下の中央の小さな菱形・六角の名札（濃紺＋金縁）・白い文字・金の▼ */
+.mmtalk.mmtalk-big .mmtalk-win{border:2px solid #c9a24f;background:linear-gradient(rgba(16,28,62,.97),rgba(10,19,46,.97) 60%,rgba(8,14,36,.98));box-shadow:0 0 0 2px rgba(6,11,28,.95),0 0 0 3.5px rgba(214,178,98,.75),inset 0 0 0 4px rgba(8,15,38,.95),inset 0 0 0 5px rgba(214,178,98,.55),0 16px 30px rgba(0,0,0,.55)}
+.mmtalk-orn{display:none}
+.mmtalk.mmtalk-big .mmtalk-orn{display:block;position:absolute;inset:0;pointer-events:none}
+.mmtalk.mmtalk-big .mmtalk-orn::before,.mmtalk.mmtalk-big .mmtalk-orn::after{content:"";position:absolute;width:26px;height:26px;border:0 solid #e2c27a}
+.mmtalk.mmtalk-big .mmtalk-orn::before{top:7px;right:7px;border-width:2px 2px 0 0;border-radius:0 9px 0 0}
+.mmtalk.mmtalk-big .mmtalk-orn::after{left:7px;bottom:7px;border-width:0 0 2px 2px;border-radius:0 0 0 9px}
+.mmtalk.mmtalk-big .mmtalk-win>.mmtalk-text::after{content:"";position:absolute;left:50%;bottom:-5px;width:8px;height:8px;margin-left:-4px;transform:rotate(45deg);background:#e2c27a;box-shadow:0 0 6px rgba(226,194,122,.6)}
+.mmtalk.mmtalk-big .mmtalk-name{isolation:isolate;padding:6px 30px 7px;border:0;border-radius:0;background:none;box-shadow:none;color:#fbefcf;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.mmtalk.mmtalk-big .mmtalk-name::before,.mmtalk.mmtalk-big .mmtalk-name::after{content:"";position:absolute;z-index:-1;clip-path:polygon(12px 0,calc(100% - 12px) 0,100% 50%,calc(100% - 12px) 100%,12px 100%,0 50%)}
+.mmtalk.mmtalk-big .mmtalk-name::before{inset:-2px;background:linear-gradient(#f0d488,#b8893a 55%,#e2c27a)}
+.mmtalk.mmtalk-big .mmtalk-name::after{inset:1px;background:linear-gradient(#22397a,#0f1f4a 60%,#0b1838)}
+.mmtalk.mmtalk-big .mmtalk-text{color:#fbf7ee}
+.mmtalk.mmtalk-big .mmtalk-next{color:#e2c27a}
 /* ボード（Chapter）：窓は下の操作欄（--chdeck）の上に置く＝操作欄は見えるが押せない（html[data-mmev]）。立ち絵は窓と一体（窓の上に半身） */
 .mmtalk.mmtalk-board{background:linear-gradient(rgba(4,10,32,0) 30%,rgba(4,10,32,.5) 80%,rgba(4,10,32,.6))}
 .mmtalk.mmtalk-board .mmtalk-stage{margin-bottom:calc(var(--chdeck,clamp(128px,19.7dvh,172px)) + env(safe-area-inset-bottom,0px) - 6px)}
@@ -2930,6 +2987,7 @@ img.nstf[data-npc]{width:auto;max-width:none;aspect-ratio:var(--nk,.754);object-
 <script src="./js/audio/audio-manager.js"></script>
 <script src="./js/audio/audio-registry.js"></script>
 <script src="./js/feel/game-feel.js"></script>
+<script src="./js/feel/notice.js"></script>
 <!-- Chapterフィールドエンジン（共通エンジン＋Chapterごとの config。Chapter 1 Pattern A から。window.MMCH・MMCHD）と画面（chfBoard） -->
 <script src="./js/chapter/engine.js"></script>
 <script src="./js/chapter/events.js"></script>
@@ -3062,8 +3120,8 @@ function loop(){clearInterval(AU.tm);AU.tm=null;if(!AU.ctx||!AU.on||!AU.sc)retur
 function bgmLegacy(sc){if(AU.sc==sc&&AU.tm)return;AU.sc=sc;loop()} // 合成音の BGM（MMAUDIO の legacy。正式な曲の無い場面だけ鳴る）
 function bgmLegacyStop(){clearInterval(AU.tm);AU.tm=null;AU.sc=null} // 正式な曲へ切り替えるとき合成音を止める（二重再生の防止）
 // BGM は場面（MMAUDIO.SCENES）で鳴らす（2026-10-02）。画面のコードの bgm("town") などは、画面の鍵 → 場面へ読み替える（audioSceneFor）。曲とファイルの対応は js/audio/audio-registry.js
-const BGM_SCENE={title:"TITLE",prologue:"PROLOGUE",town:"TOWN",market:"MARKET",ranch:"RANCH",lab:"LABORATORY",farm:"FARM",train:"TRAINING",entry:"TOURNAMENT_ENTRY",matchup:"TOURNAMENT_MATCHUP",result:"RESULT",dojo:"SPECIAL_BATTLE"};
-const LEGACY_BGM={TITLE:"title",PROLOGUE:"title",TOWN:"town",MARKET:"market",RANCH:"farm",LABORATORY:"market",FARM:"farm",TRAINING:"train",CHAPTER_1:"train",CHAPTER_2:"train",CHAPTER_3:"train",CHAPTER_4:"train",WILD_BATTLE:"battle",RARE_WILD_BATTLE:"battle",RIVAL_BATTLE:"battle",TOURNAMENT_ENTRY:"train",TOURNAMENT_LOBBY_LOW:"train",TOURNAMENT_LOBBY_HIGH:"train",TOURNAMENT_MATCHUP:"battle",TOURNAMENT_BATTLE_LOW:"battle",TOURNAMENT_BATTLE_HIGH:"battle",SPECIAL_BATTLE:"dojo",RESULT:"train"}; // 正式な曲の無い場面 → 合成音の曲
+const BGM_SCENE={title:"TITLE",prologue:"PROLOGUE",town:"TOWN",bureau:"BUREAU",market:"MARKET",ranch:"RANCH",lab:"LABORATORY",farm:"FARM",train:"TRAINING",entry:"TOURNAMENT_ENTRY",matchup:"TOURNAMENT_MATCHUP",result:"RESULT",dojo:"SPECIAL_BATTLE"};
+const LEGACY_BGM={TITLE:"title",PROLOGUE:"title",TOWN:"town",BUREAU:"town",MARKET:"market",RANCH:"farm",LABORATORY:"market",FARM:"farm",TRAINING:"train",CHAPTER_1:"train",CHAPTER_2:"train",CHAPTER_3:"train",CHAPTER_4:"train",WILD_BATTLE:"battle",RARE_WILD_BATTLE:"battle",RIVAL_BATTLE:"battle",TOURNAMENT_ENTRY:"train",TOURNAMENT_LOBBY_LOW:"train",TOURNAMENT_LOBBY_HIGH:"train",TOURNAMENT_MATCHUP:"battle",TOURNAMENT_BATTLE_LOW:"battle",TOURNAMENT_BATTLE_HIGH:"battle",SPECIAL_BATTLE:"dojo",RESULT:"train"}; // 正式な曲の無い場面 → 合成音の曲
 const LEGACY_SE={UI_CONFIRM:5,UI_CANCEL:10,UI_ERROR:10,UI_OPEN:0,DICE_THROW:7,DICE_ROLL:7,DICE_LAND:9,STAT_UP:3,GOLD_GET:11,CHEST_OPEN:11,EVENT:3,WILD_ALERT:2,BATTLE_INTRO:12,BATTLE_START:3,BATTLE_ATTACK:9,BATTLE_HIT:1,BATTLE_CRIT:2,BATTLE_MISS:0,BUFF:11,DEBUFF:10,ROULETTE_TICK:7,ROULETTE_STOP:9,VICTORY:3,SWOOSH:6,UNLOCK:11,REWARD:11}; // 正式な SE ファイルの無い出来事 → 合成音の番号（表に無いものは鳴らさない：STEP・TILE_STOP・CHAPTER_START など）
 // 合成音の番号（sfx(n)）→ 出来事の名前（[ふだん, バトル中]）。fight()（Phase 6・変更しない）の中の sfx(n) も、この読み替えで正式な SE へ届く
 const SFX_EVENT={0:["UI_ERROR","BATTLE_MISS"],1:["BATTLE_HIT","BATTLE_HIT"],2:["WILD_ALERT","BATTLE_CRIT"],3:["STAT_UP",null],5:["UI_CONFIRM","UI_CONFIRM"],6:["SWOOSH","SWOOSH"],7:["DICE_THROW","ROULETTE_TICK"],9:["BATTLE_ATTACK","ROULETTE_STOP"],10:["UI_CANCEL","DEBUFF"],11:["GOLD_GET","BUFF"],12:["BATTLE_INTRO","BATTLE_INTRO"]};
@@ -3107,7 +3165,15 @@ function fanfare(){const c=AU.ctx;if(!c||!AU.on||!AU.wet)return;const n=c.curren
  [0,4,7].forEach(x=>note(NT(x+12),m,1.3,LD.horn,.09));}
 // 開始（2026-10-04 G1）：押した手ごたえ＝ボタンの絵だけが沈む → 短い光 → 約0.2秒の余韻 → 暗転して次の画面（旧：0.9秒の黄色い光が画面全体に広がっていた）。
 //  決定の音は TITLE_START（正式の開始音は素材待ち＝registry は silent。silent のときは合成のファンファーレにも落とさない。NG の音は使わない）
-function startGame(el){if(el&&el.dataset.go)return;if(el)el.dataset.go=1;unlock();clearInterval(AU.tm);AU.tm=null;AU.sc=null;if(!MMAUDIO.se("TITLE_START",{wait:900}))fanfare();const p=$(".tpage.mmt");if(p){p.classList.add("tdown");setTimeout(()=>{p.classList.remove("tdown");p.classList.add("tgo")},90)}const v=document.createElement("div");v.className="tveil";document.body.appendChild(v);setTimeout(()=>v.classList.add("on"),280);setTimeout(()=>{if(P_NEWGAME){P_NEWGAME=false;sel=[];S=p10NewSave();save()}p8Resume();v.style.pointerEvents="none";requestAnimationFrame(()=>{v.classList.remove("on");setTimeout(()=>v.remove(),260)})},500)}
+/** 2026-10-05 PHASE B：新しいゲームの確認（正式デザイン new_game_confirmation_modal：濃紺＋金の額・羊皮紙の本文・「確認しました」／「戻る」）。
+ *  「最初からやり直す」のあとの開始画面（P_NEWGAME）で、開始ボタンを押したときだけ出す。出ている間は後ろ（開始ボタンを含む）は押せない（全面の幕が受け止める・開始ボタンも disabled）。
+ *  確認しました＝従来の開始（startGame。開始の音 → 新しいゲーム → プロローグ）／戻る＝新しいゲームをやめて「つづきから」の開始画面へ（セーブは消えていない） */
+function ngAsk(el){if($("#ngm"))return;unlock();const b=$(".p15start");if(b)b.disabled=true;const d=document.createElement("div");d.id="ngm";d.className="ngm";
+ d.innerHTML=`<div class="ngm-p" role="dialog" aria-modal="true" aria-labelledby="ngm-t"><i class="ngm-gem t" aria-hidden="true"></i><i class="ngm-gem b" aria-hidden="true"></i><i class="ngm-cn tl" aria-hidden="true"></i><i class="ngm-cn tr" aria-hidden="true"></i><i class="ngm-cn bl" aria-hidden="true"></i><i class="ngm-cn br" aria-hidden="true"></i><b class="ngm-t" id="ngm-t">確認</b><i class="ngm-rule" aria-hidden="true"></i><div class="ngm-paper"><p>新しいゲームを始めますか？<br>現在のセーブデータは上書きされます。</p><small>続きから始める場合は、戻るを選んでください。</small></div><button class="ngm-ok" data-nsfx="1" onclick="ngOk(this)">確認しました</button><button class="ngm-back" data-se="UI_CANCEL" onclick="ngBack()">戻る</button></div>`;
+ for(const t of ["click","pointerdown","pointerup","touchstart"])d.addEventListener(t,e=>e.stopPropagation());document.body.appendChild(d);tapHold(d,350)}
+function ngOk(btn){const d=$("#ngm");if(!d||d.dataset.go)return;d.dataset.go=1;d.remove();const b=$(".p15start");if(b)b.disabled=false;startGame(b,true)}
+function ngBack(){const d=$("#ngm");if(d)d.remove();P_NEWGAME=false;title()}
+function startGame(el,ok){if(P_NEWGAME&&!ok)return ngAsk(el);if(el&&el.dataset.go)return;if(el)el.dataset.go=1;unlock();clearInterval(AU.tm);AU.tm=null;AU.sc=null;if(!MMAUDIO.se("TITLE_START",{wait:900}))fanfare();const p=$(".tpage.mmt");if(p){p.classList.add("tdown");setTimeout(()=>{p.classList.remove("tdown");p.classList.add("tgo")},90)}const v=document.createElement("div");v.className="tveil";document.body.appendChild(v);setTimeout(()=>v.classList.add("on"),280);setTimeout(()=>{if(P_NEWGAME){P_NEWGAME=false;sel=[];S=p10NewSave();save()}p8Resume();v.style.pointerEvents="none";requestAnimationFrame(()=>{v.classList.remove("on");setTimeout(()=>v.remove(),260)})},500)}
 /** 開始ボタンの「押した瞬間」（指が触れたとき）に沈める。離さずに外へずらしたら戻す */
 function titlePress(e,on){const p=$(".tpage.mmt");if(p&&!p.classList.contains("tgo"))p.classList.toggle("tdown",!!on)}
 MMAUDIO.attachLegacy({bgm:sc=>{if(auBus())bgmLegacy(LEGACY_BGM[sc]||"town")},stop:bgmLegacyStop,sfx:(n,o)=>{const t=o&&o.legacy!=null?o.legacy:LEGACY_SE[n];if(t==null)return false;sfxSynth(t,o&&o.delay);return true},muted:()=>!AU.on,setMuted:on=>{if(AU.on===!on)return;AU.on=!on;try{localStorage.setItem("mr4a",AU.on?"1":"0")}catch(e){}const b=$("#snd");if(b)b.textContent=AU.on?"🔊":"🔇"}}); // 合成音（legacy）を MMAUDIO へつなぐ。sfx の o.legacy＝sfx(n) から来たときの元の番号（合成音は今までどおりの音）
@@ -3276,7 +3342,7 @@ function bureauRows(){const br=S.br??-1;return [["プレイヤー名",`<b class=
 function bureauAch(all){const L=BUREAU_ACH.map(([id,t,f])=>({id,t,ok:!!f(S)})),v=all?L:L.filter(x=>x.ok).concat(L.filter(x=>!x.ok)).slice(0,5);
  return `<ul class="buach">${v.map(x=>`<li class="${x.ok?"ok":""}" data-ach="${x.id}"><i class="bumd" aria-hidden="true"></i><span>${x.t}</span><b class="buck" aria-label="${x.ok?"達成":"未達成"}"></b></li>`).join("")}</ul>`}
 function bureauNpc(){const n=window.MMNPC&&MMNPC.get&&MMNPC.get(SERGE.id),src=n&&npcSrc(SERGE.id);return src?`<img class="bunpc nstf" ${npcStand(SERGE.id)} alt="" aria-hidden="true">`:""}
-function bureauScr(tab){if(p8Blocked())return;bgm("town");p9Immersive(true);const all=tab=="ach";
+function bureauScr(tab){if(p8Blocked())return;bgm("bureau");p9Immersive(true);const all=tab=="ach";
  const crest='<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 5l22 8v17c0 15-10 25-22 30C20 55 10 45 10 30V13z" fill="#1d3570" stroke="#e6bf62" stroke-width="2.5"/><path d="M32 13l15 5.5v12c0 10-6.5 17-15 21-8.5-4-15-11-15-21v-12z" fill="none" stroke="#e6bf62" stroke-width="1.2" opacity=".7"/><path d="M24 36c3-7 6-11 8-17 2 6 5 10 8 17-3-1.5-5.5-2-8-2s-5 .5-8 2z" fill="#e6bf62"/></svg>';
  const card=`<section class="bucard" aria-label="聖獣士証"><div class="bucrest">${crest}</div><h3 class="buh"><span>聖獣士証</span></h3><dl class="burows">${bureauRows().map(r=>`<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join("")}</dl></section>`;
  const ach=`<section class="buachw${all?" all":""}" aria-label="功績"><h3 class="buh2">功績</h3>${bureauAch(all)}${all?"":`<button class="bumore" onclick="bureauScr('ach')">すべて見る ▾</button>`}</section>`;
@@ -3330,7 +3396,7 @@ const OPEN_TALK={
  originA:[{npc:"fina",expression:"happy",text:"リベルナ！ アステリア地方の西のほうにある街だよね。"}],
  originB:[{npc:"fina",expression:"happy",text:"リベルナかぁ。アステリア地方の西のほうにある街だよね。"}],
  mistoria:[{npc:"fina",expression:"guide",text:"ここがミストリア。"},{npc:"fina",expression:"guide",text:"聖獣士管理局のほかにも、研究所や牧場、闘技場なんかが集まってる街だよ。"},{npc:"fina",expression:"smile",text:"一人前の聖獣士を目指すなら、これから何度もお世話になると思う。"}],
- support:n=>[{npc:"serge",text:`${n}さんのような新人の聖獣士には、管理局から支援をお渡ししています。`},{npc:"serge",text:"新人聖獣士支援制度です。まずは、旅立ちの準備金をお受け取りください。"},{npc:null,text:"1000G を受け取った！"},{npc:"serge",text:"それから、こちらもお持ちください。"},{npc:null,text:"薬草 を1つ受け取った！"},{npc:"serge",text:"薬草は、聖獣の疲れを30回復できる道具です。旅の途中で疲れが溜まったら使ってください。"}],
+ support:n=>[{npc:"serge",text:`${n}さんのような新人の聖獣士には、管理局から支援をお渡ししています。`},{npc:"serge",text:"新人聖獣士支援制度です。まずは、旅立ちの準備金をお受け取りください。"},{note:{icon:"gold",title:"1000G を受け取った！",sub:"新人聖獣士支援制度"}},{npc:"serge",text:"それから、こちらもお持ちください。"},{note:{img:ITEM_ICON.herb,title:"薬草 を1つ受け取った！",sub:"聖獣の疲れを30回復できる道具"}},{npc:"serge",text:"薬草は、聖獣の疲れを30回復できる道具です。旅の途中で疲れが溜まったら使ってください。"}],
  unlock:n=>[{npc:"serge",text:"世界地図は、この管理局でいつでもご覧いただけます。"},{npc:"fina",expression:"guide",text:`それじゃあ${n}さん、まずは市場で最初の相棒を迎えに行こう！`}]};
 /** プロローグ（新しいゲームの最初に1回。見た記録は S.npcFlags.prologue）→ 街 */
 /** 2026-10-06：プロローグ（固定尺のオープニング）と正式のプロローグ BGM を同じ時間軸で鳴らす。
@@ -3349,7 +3415,7 @@ function opTownTalk(){if(!S.playerNamePending||OP_TALKING)return;const f=finaFla
  if(f.op=="guide")return hint();
  OP_TALKING=true;setTimeout(()=>{if(!$(".map.town")){OP_TALKING=false;return}MMNPC.talk(OPEN_TALK.first,{kind:"fina",presentation:"standard",big:true,scene:TOWN_BG,branches:{yes:OPEN_TALK.firstYes,no:OPEN_TALK.firstNo}}).then(()=>{OP_TALKING=false;f.op="guide";save();hint()})},350)}
 /** 聖獣士管理局（登録前）：セルジュが登録を受け付ける → 聖獣士登録（名前） */
-function opBureau(){bgm("town");p9Immersive(true);
+function opBureau(){bgm("bureau");p9Immersive(true);
  $("#app").innerHTML=`<div class="bu opbu" style="--bu-bg:url(${BUREAU_BG})"><div class="bubg" aria-hidden="true"></div><header class="buhd"><button class="burb" data-nav="back" onclick="lobby()" aria-label="街にもどる">←</button><div class="buplq"><b>聖獣士管理局</b></div><span class="burb sp" aria-hidden="true"></span></header></div>`;
  MMNPC.talk(OPEN_TALK.serge,{kind:"event",presentation:"standard",big:true,scene:BUREAU_BG}).then(()=>{if(S.playerNamePending&&$(".opbu"))p11NameScr()})}
 /** 名前の確認（セルジュ・2択）→ 登録（MMP11P.confirmName＝プレイヤー名の保存先は従来どおり）→ 登録完了 → フィナ（初めて名前を呼ぶ）・世界地図 */
@@ -3358,19 +3424,24 @@ function opConfirm(v){const n=MMP11P.sanitize(v);
   MMP11P.confirmName(S,n);const f=finaFlags();f.op="map";save();
   MMNPC.talk(OPEN_TALK.done(n),{kind:"event",presentation:"standard",big:true,scene:BUREAU_BG}).then(()=>opAfterReg())})}
 /** 登録のあと：フィナ（名前を呼ぶ）→ 出身地の会話＋世界地図 → ミストリア → 世界地図の解放（セルジュ）→ 最初の相棒（市場）へ */
-async function opAfterReg(){const f=finaFlags(),n=S.playerName||MMP11P.DEFAULT_NAME;if(OP_TALKING)return;OP_TALKING=true;bgm("town");p9Immersive(true);
+async function opAfterReg(){const f=finaFlags(),n=S.playerName||MMP11P.DEFAULT_NAME;if(OP_TALKING)return;OP_TALKING=true;bgm("bureau");p9Immersive(true);
  $("#app").innerHTML=`<div class="bu opbu" style="--bu-bg:url(${BUREAU_BG})"><div class="bubg" aria-hidden="true"></div><header class="buhd"><span class="burb sp" aria-hidden="true"></span><div class="buplq"><b>聖獣士管理局</b></div><span class="burb sp" aria-hidden="true"></span></header></div>`;
  try{
-  if(grantSupport())await MMNPC.talk(OPEN_TALK.support(n),{kind:"event",presentation:"standard",big:true,scene:BUREAU_BG}); // 2026-10-06：登録完了のすぐあと（セルジュ）＝新人支援 1000G＋薬草×1（先に受け取りを確定して保存＝再読み込みで二重に受け取らない）
+  if(grantSupport())await talkSeq(OPEN_TALK.support(n),{kind:"event",presentation:"standard",big:true,scene:BUREAU_BG}); // 2026-10-06：登録完了のすぐあと（セルジュ）＝新人支援 1000G＋薬草×1（先に受け取りを確定して保存＝再読み込みで二重に受け取らない）
   await MMNPC.talk(OPEN_TALK.finaName(n),{kind:"fina",presentation:"standard",big:true,scene:BUREAU_BG});
   const map=window.MMMAP?MMMAP.open():null,T=[],later=(fn,ms)=>T.push(setTimeout(fn,ms));
   const act={0:()=>{if(map)later(()=>map.focus("ferna"),650)},2:()=>{if(map){map.focus("asteria");later(()=>map.focus("liberna",true),1150)}},3:()=>{if(map)map.focus("mistoria",true)}};
   await MMNPC.talk(OPEN_TALK.origin(n).concat([]),{kind:"fina",presentation:"compact",branches:{a:OPEN_TALK.originA.concat(OPEN_TALK.mistoria),b:OPEN_TALK.originB.concat(OPEN_TALK.mistoria)},onLine:i=>{const a=act[i];if(a)a()}});
   T.forEach(clearTimeout);if(map)await map.close();
   f.worldMap=1;save();
+  await MMNOTE.show({icon:"unlock",title:"世界地図 が使えるようになった！",sub:"聖獣士管理局でいつでも見られます"});
   await MMNPC.talk(OPEN_TALK.unlock(n),{kind:"event",presentation:"standard",big:true,scene:BUREAU_BG});
  }finally{OP_TALKING=false}
  f.op="done";f.finaIntro=1;save();lobby(finaMsg(`${p11Esc(n)}さん、まずは市場で最初の相棒を迎えよう！`))}
+/** 2026-10-05 PHASE B：会話とシステム通知の帯を順に出す。seq の { note:{…} } はシステム通知の帯（MMNOTE・顔と名前なし＝会話とは別の層）、それ以外は会話の行（続く行はまとめて1つの会話） */
+async function talkSeq(seq,o){let buf=[];const flush=async()=>{if(buf.length){const b=buf;buf=[];await MMNPC.talk(b,o)}};for(const x of seq){if(x&&x.note){await flush();await MMNOTE.show(x.note)}else buf.push(x)}await flush()}
+/** アイテムの正式アイコン（2026-10-05 PHASE B。無いアイテムは名前の文字だけ） */
+const ITEM_ICON=Object.freeze({herb:"./assets/items/herb.webp"});
 /** 新人支援（2026-10-06 正式）：聖獣士登録のあと1回だけ 1000G と薬草×1。記録は S.npcFlags.support（v6 の任意項目）。
  *  受け取りの記録・所持金・薬草（バッグ。いっぱいなら保管庫）を同時に確定してから保存する＝再読み込み・再訪・再起動で二重に受け取らない。受け取ったら true */
 const SUPPORT=Object.freeze({gold:1000,item:"herb"});
@@ -3380,7 +3451,7 @@ function bureauMap(){if(window.MMMAP)MMMAP.viewer({origin:!!finaFlags().worldMap
 // ---- Phase 11：プレイヤー名（新規ゲームの最初に決める。空欄なら「アルト」） ----
 function p11Esc(t){return String(t).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 const P11_PRO=new WeakSet(); // このセーブ（S）でプロローグを試したか（ページの中だけ。セーブしない）
-function p11NameScr(msg){bgm(opOn()?"town":"title");p9Immersive(true);const d=MMP11P.DEFAULT_NAME; // 2026-10-04 G1：旧い見出し（h1＝金枠の「ミスティックモンスターズ」）は出さない（プロローグの前に一瞬見えていた）
+function p11NameScr(msg){bgm(opOn()?"bureau":"title");p9Immersive(true);const d=MMP11P.DEFAULT_NAME; // 2026-10-04 G1：旧い見出し（h1＝金枠の「ミスティックモンスターズ」）は出さない（プロローグの前に一瞬見えていた）
  // 2026-10-03：新しいゲームの最初に1回だけプロローグ A〜E（MMPRO）。見た記録は S.npcFlags.prologue（既存の任意項目の中）
  // 2026-10-04 G1：記録は「最後まで見た」か「スキップを2度押しで確定した」ときだけ（途中でアプリを閉じたら、次に開いたときもプロローグから）。
  //  背景の読み込みを待つ間も黒い幕で覆い（前の画面・見出しを見せない）、読み込みが遅い・届かないときも飛ばさない（最大6秒待って始める）
@@ -3563,7 +3634,7 @@ function labTable(){const sp=SP.map((_,i)=>i);
  const rows=sp.flatMap(a=>sp.map(b=>{const r=MMP7.resolveFusionSpecies({sp:a},{sp:b});return `<div class="lbtr"><span>${SP[a][0]}</span><i>×</i><span>${SP[b][0]}</span><em>→</em><b>${SP[r.sp]?SP[r.sp][0]:"？？？"}</b></div>`})).join("");
  const rules=["子の種族＝親1（左）の種族。合体専用の種族は未登録【暫定】","能力＝両親の合計の 60%（上限 999）","名前＝親1の前2文字＋親2の後ろ2文字","技＝子の初期技に加えて、両親の追加技から1つ継承（初期技・必殺技は除く）","大会ランク＝高いほうを引き継ぐ","費用 200G。2体は消え、未育成の個体として生まれる"];
  $("#app").innerHTML=labShell("lbt",`<button class="dback" data-nav="back" onclick="museum()">◀ 研究所</button>`,`<div class="labplq"><b>配合表</b><small>合体で生まれる種族と規則</small></div>`,`<div class="labbody">${elSay(ELLIOT_TALK.table,"analyze")}<div class="lbdc lbtb"><div class="lbth"><span>親1</span><span>親2</span><span>生まれる種族</span></div>${rows}<ul class="lbrules">${rules.map(r=>`<li>${r}</li>`).join("")}</ul></div></div>`,"table");try{window.scrollTo(0,0)}catch(e){}}
-function adopt(i,nm){if(p8Blocked())return;const r=MMP10M.purchase(S,MMP10M.keyOf(i),S.box.length+(S.m?1:0));if(!r.ok)return market(P10_WHY[r.reason]||"購入できません。",MMP10M.keyOf(i));S.cnt=(S.cnt||0)+1;const x=mk(i);if(nm)x.name=nm;if(S.m)S.box.push(x);else S.m=x;sel=[];save();if(typeof MMFEEL=="object"&&MMFEEL)MMFEEL.emit("market.buy");/* 2026-10-06：購入が成立した瞬間（MARKET_PURCHASE） */const first=S.cnt==1,go=()=>{lobby(`${p11Esc(x.name)}をつれて帰った！`+(S.m==x?"":"（牧場に預けました）")+(r.rescued?`（はじめての1体のため、所持金を${MMP10M.ECONOMY.marketPrice}Gまで補填しました）`:"")+(r.continueRescued?`（育成を続けるため、不足分${r.topUp}Gを補填して購入しました）`:""));if(first)setTimeout(()=>{try{if(document.querySelector(".map.town"))npcMoment("partner",x.name)}catch(e){}},450)};const kt=typeof karenTalk=="function"?karenTalk("bought"):null;if(kt)kt.then(go);else go()}
+function adopt(i,nm){if(p8Blocked())return;const r=MMP10M.purchase(S,MMP10M.keyOf(i),S.box.length+(S.m?1:0));if(!r.ok)return market(P10_WHY[r.reason]||"購入できません。",MMP10M.keyOf(i));S.cnt=(S.cnt||0)+1;const x=mk(i);if(nm)x.name=nm;if(S.m)S.box.push(x);else S.m=x;sel=[];save();if(typeof MMFEEL=="object"&&MMFEEL)MMFEEL.emit("market.buy");/* 2026-10-06：購入が成立した瞬間（MARKET_PURCHASE） */const first=S.cnt==1,go=()=>{lobby((()=>{const pk=S.m==x?"":"（牧場に預けました）",rs=r.rescued?`はじめての1体のため、所持金を${MMP10M.ECONOMY.marketPrice}Gまで補填しました`:r.continueRescued?`育成を続けるため、不足分${r.topUp}Gを補填して購入しました`:"";if(rs&&typeof MMNOTE=="object"&&MMNOTE){MMNOTE.show({icon:"gold",title:x.name+"をつれて帰った！"+pk,sub:rs});return undefined}return `${p11Esc(x.name)}をつれて帰った！`+pk+(rs?`（${rs}）`:"")})()); /* 2026-10-05 PHASE B：古いセーブの救済（補填）はシステム通知の帯（顔・名前なし・帯は文字として表示）。通常の購入は従来どおり街の通知 */if(first)setTimeout(()=>{try{if(document.querySelector(".map.town"))npcMoment("partner",x.name)}catch(e){}},450)};const kt=typeof karenTalk=="function"?karenTalk("bought"):null;if(kt)kt.then(go);else go()}
 function msave(){let ok=false;try{localStorage.setItem(MMP8.SAVE_KEY,JSON.stringify(S));ok=localStorage.getItem(MMP8.SAVE_KEY)==JSON.stringify(S)}catch(e){}msg0(ok?`セーブしました（${new Date().toLocaleTimeString("ja-JP")}）`:"このブラウザではセーブできません。セーブコードを使ってください。")}
 const nv=typeof navigator!="undefined"?navigator:{};
 const sl=n=>{try{return JSON.parse(localStorage.getItem("mr4s"+n))}catch(e){return null}};
@@ -4266,7 +4337,7 @@ function p9TourResult(msg){const m=S.m,t=m.raise.tour,lg=t.league,rs=t.result,w=
  ${msg?`<div class="p9msg p9tmsg">${msg}</div>`:""}${p9Standings(lg,st,true)}${p9Matrix(lg)}
  <button class="p9btn" onclick="p8EndChapter()">Chapterを終えてベースキャンプへ</button></div>`;try{window.scrollTo(0,0)}catch(e){}
  setTimeout(()=>{try{if(document.querySelector(".p9tour")&&S.m===m)npcMoment(rs.won?"tourWon":"tourLost",null,null,"tourEnd")}catch(e){}},1100); // 2026-10-05：初めての大会の結果（優勝／優勝できなかった。どちらか1回だけ）
- if(w&&w.firstClear&&!P9_SE_SEEN.has(rs)){P9_SE_SEEN.add(rs);MMAUDIO.se("REWARD",{delay:.5});if(w.bagUnlocked)MMAUDIO.se("UNLOCK",{delay:1.2})}} // 2026-10-03：初回優勝の報酬（賞金・特訓チケット）＝REWARD、バッグの拡張＝UNLOCK（登録済みの音。結果の画面を出したとき1回）
+ if(w&&w.firstClear&&!P9_SE_SEEN.has(rs)){P9_SE_SEEN.add(rs);MMAUDIO.se("REWARD",{delay:.5});if(w.bagUnlocked)MMAUDIO.se("UNLOCK",{delay:1.2});if(typeof MMNOTE=="object"&&MMNOTE){MMNOTE.show({icon:"reward",title:`賞金 ${w.prize}G を手に入れた！`,sub:`初回優勝の報酬・特訓チケット ×${w.tickets}`});if(w.bagUnlocked)MMNOTE.show({icon:"unlock",title:"バッグが6枠に拡張された！"})}}} /* 2026-10-05 PHASE B：初回優勝の報酬・バッグの拡張はシステム通知の帯（結果の画面の報酬欄はそのまま） */ // 2026-10-03：初回優勝の報酬（賞金・特訓チケット）＝REWARD、バッグの拡張＝UNLOCK（登録済みの音。結果の画面を出したとき1回）
 const P9_SE_SEEN=new WeakSet();
 function p8RewardText(w){return `<br>ステータスボーナス：${w.bonus.map(b=>`${LAB[b.key]}+${b.amount}`).join("・")}`+(w.firstClear?`<br>初回優勝：賞金 ${w.prize}G・🎫特訓チケット×${w.tickets}`+(w.bagUnlocked?"・バッグが6枠に拡張！":""):"<br>（クリア済みのランクのため、賞金・チケットはありません）")}
 // 2026-10-03（試遊で「対戦前の画面が多く遅い」）：大会は VS 画面（相手の発表＋能力比較＝1枚）から直接 fight() へ。Battle 開始前の導入（p9PreBattle）は練習試合だけ

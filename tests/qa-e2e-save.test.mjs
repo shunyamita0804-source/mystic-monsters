@@ -467,6 +467,8 @@ T('QA-SV11：最初からやり直すは2度押し。1回目では何も消え�
   await pg.waitForSelector('.tpage .p15start'); assert.equal(await stored(pg), cur, 'タイトルへ移っただけでは消さない');
   assert.equal(await pg.evaluate(() => MMAUDIO.status().scene), 'TITLE');
   await pg.waitForTimeout(400); await pg.click('.p15start');
+  await pg.waitForSelector('#ngm .ngm-ok'); await pg.waitForTimeout(450); assert.equal(await stored(pg), cur, '2026-10-05 PHASE B：確認の窓が出ただけでは消さない');
+  await pg.click('#ngm .ngm-ok');
   await pg.waitForSelector('#p11nm');
   const s = JSON.parse(await stored(pg));
   assert.equal(s.v, 6); assert.equal(s.g, 0, '2026-10-06：新しいゲームは 0G（登録で新人支援）'); assert.equal(s.m, null); assert.deepEqual(s.box, []);

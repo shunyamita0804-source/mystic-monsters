@@ -73,6 +73,21 @@
   // 会話の進行（画面に依存しない部分。テストでは時計を差し替えて動かせる）
   // ---------------------------------------------------------
   /** 1文字ずつに分ける（日本語・結合文字・絵文字を1文字として扱う） */
+  /**
+   * 2026-10-05 PHASE B：日本語の禁則のまとまり（会話の本文）。行頭に置けない文字（句読点・閉じ括弧・小さい仮名・長音・…・―・！？）は前の文字に、開き括弧は次の文字に付ける。
+   *  改行（\n）はそれだけで1つ。各行の最後のまとまりが1文字なら前とつなぐ（最後の1文字だけで改行しない）。文字（chars＝splitChars の結果）は変えない＝まとまりの中の文字数の合計は同じ
+   */
+  const NO_HEAD = '。、，．・：；？！!?)）」』】〕〉》’”…‥―ー〜ゃゅょっぁぃぅぇぉゎャュョッァィゥェォヮヵヶ々', NO_TAIL = '(（「『【〔〈《‘“';
+  function kinsokuGroups(chars) {
+    const out = []; let line = [];
+    const flush = () => { if (line.length > 3 && line[line.length - 1].length === 1) { const a = line.pop(); line[line.length - 1] = line[line.length - 1].concat(a); } out.push(...line); line = []; };
+    for (const ch of chars) {
+      if (ch === '\n') { flush(); out.push(['\n']); continue; }
+      const prev = line.length ? line[line.length - 1] : null, last = prev ? prev[prev.length - 1] : '';
+      if (prev && (NO_HEAD.includes(ch) || NO_TAIL.includes(last))) prev.push(ch); else line.push([ch]);
+    }
+    flush(); return out;
+  }
   function splitChars(text) {
     const s = String(text == null ? '' : text);
     try { if (typeof Intl !== 'undefined' && Intl.Segmenter) return [...new Intl.Segmenter('ja', { granularity: 'grapheme' }).segment(s)].map((x) => x.segment); } catch (e) { /* 古い環境は下へ */ }
@@ -105,7 +120,7 @@
     const waiting = () => !st.ended && !st.typing && !!(L[st.idx] && L[st.idx].choices);   // 全文表示のあと、選択肢を選ぶのを待っている
     const stop = () => { if (st.timer != null) { cancel(st.timer); st.timer = null; } };
     const snap = () => { const l = L[st.idx] || {}; return { idx: st.idx, total: L.length, npc: l.npc || null, side: l.side || 'left', name: l.name || '', view: l.img ? l.img.view : l.view || null, expr: l.img ? l.img.expr : l.expr || null,
-      img: l.img ? l.img.src : null, fallback: !!(l.img && l.img.fallback), anim: l.anim ? l.anim.name : null, frames: l.anim ? l.anim.frames : null, fps: l.anim ? l.anim.fps : 0, loop: l.anim ? l.anim.loop : false, text: st.chars.slice(0, st.shown).join(''), full: l.text || '', typing: st.typing, ended: st.ended, timer: st.timer != null,
+      img: l.img ? l.img.src : null, fallback: !!(l.img && l.img.fallback), anim: l.anim ? l.anim.name : null, frames: l.anim ? l.anim.frames : null, fps: l.anim ? l.anim.fps : 0, loop: l.anim ? l.anim.loop : false, text: st.chars.slice(0, st.shown).join(''), shown: st.shown, full: l.text || '', hasChoices: !!(l.choices && l.choices.length), nChoices: l.choices ? l.choices.length : 0, typing: st.typing, ended: st.ended, timer: st.timer != null,
       choices: waiting() ? l.choices.map((c) => ({ ...c })) : null, choice: st.choice }; };
     const emit = () => { if (opts.onUpdate) opts.onUpdate(snap()); };
     function tick(tok) {
@@ -198,15 +213,17 @@
       //  （html[data-mmscene]）。会話が終わり始めたら下の画面を戻し、会話のフェードで自然に戻る。常設 NPC だけを隠す data-mmhide では、施設ごとの通常の UI が後ろに残っていた
       const scene = pres !== 'compact' && typeof opts.scene === 'string' && opts.scene ? opts.scene : '';
       { const d = docEl(); if (d) { if (scene) d.setAttribute('data-mmscene', '1'); else d.removeAttribute('data-mmscene'); } }
-      const ov = h('div', `mmtalk mmtalk-${pres}${opts.big || pres === 'board' ? ' mmtalk-big' : ''}${scene ? ' mmtalk-scene' : ''}`), stage = h('div', 'mmtalk-stage'), fig = h('div', 'mmtalk-fig'), img = h('img'), win = h('div', 'mmtalk-win'), nm = h('div', 'mmtalk-name'), tx = h('p', 'mmtalk-text'), nx = h('span', 'mmtalk-next'), ch = h('div', 'mmtalk-choices');
+      // 2026-10-05 PHASE B：イベント会話・大型の NPC 会話・登録の会話・施設の会話（施設の背景つき）は同じ正式の会話窓（event_dialogue_window＝大型の額）にそろえる
+      const big = !!(opts.big || pres === 'board' || (pres !== 'compact' && (scene || opts.kind === 'event')));
+      const ov = h('div', `mmtalk mmtalk-${pres}${big ? ' mmtalk-big' : ''}${scene ? ' mmtalk-scene' : ''}`), stage = h('div', 'mmtalk-stage'), fig = h('div', 'mmtalk-fig'), img = h('img'), win = h('div', 'mmtalk-win'), nm = h('div', 'mmtalk-name'), tx = h('p', 'mmtalk-text'), nx = h('span', 'mmtalk-next'), ch = h('div', 'mmtalk-choices');
       ov.dataset.pres = pres; if (opts.kind) ov.dataset.kind = String(opts.kind);
       if (scene) { const bg = h('div', 'mmtalk-scenebg'); bg.setAttribute('aria-hidden', 'true'); bg.style.backgroundImage = `url("${scene.replace(/"/g, '%22')}")`; ov.appendChild(bg); }
       ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); img.alt = ''; img.draggable = false; nx.textContent = '▼'; nx.setAttribute('aria-hidden', 'true');
       ch.hidden = true; ch.setAttribute('role', 'group'); let chKey = '';
-      fig.appendChild(img); win.append(nm, tx, ch, nx); stage.append(fig, win); ov.appendChild(stage); document.body.appendChild(ov);
+      fig.appendChild(img); { const orn = h('i', 'mmtalk-orn'); orn.setAttribute('aria-hidden', 'true'); win.append(orn); } win.append(nm, tx, ch, nx); stage.append(fig, win); ov.appendChild(stage); document.body.appendChild(ov);
       const onKey = (e) => { if (e.key === 'Enter' || e.key === ' ') { if (e.target && e.target.closest && e.target.closest('.mmtalk-choices')) return;   // 選択肢のボタン上ではボタンの操作に任せる
         e.preventDefault(); c.tap(); } };
-      let lineIdx = -1;
+      let lineIdx = -1, txLine = -1, txFull = null, txShown = 0, txChars = [];
       let keyT = null;   // keydown を受け付け始めるタイマー（会話を開いたキー操作そのものは会話に届けない）
       const c = createTalk(lines, {
         openGuardMs: OPEN_GUARD_MS,   // ダブルタップの2打目（会話を開いたタップの続き）などで、1行目の文字送りを飛ばさない
@@ -220,9 +237,19 @@
             ANIM.timer = setInterval(() => { if (ANIM.key !== key) return; if (ANIM.frame >= fr.length - 1 && !loop) { clearInterval(ANIM.timer); ANIM.timer = null; return; } const nx = (ANIM.frame + 1) % fr.length, pi = ANIM.pre && ANIM.pre[nx]; if (pi && !(pi.complete && pi.naturalWidth > 0)) return; ANIM.frame = nx; img.src = fr[ANIM.frame]; }, Math.round(1000 / s.fps)); } }
           if (!s.frames && s.img && img.getAttribute('src') !== (stand || s.img)) img.src = stand || s.img;
           img.alt = s.name ? `${s.name}（${s.expr || ''}）` : '';
-          nm.textContent = s.name; nm.hidden = !s.name; tx.textContent = s.text; win.setAttribute('aria-label', (s.name ? s.name + '：' : '') + s.full); nx.hidden = s.typing || !!s.choices;
+          nm.textContent = s.name; nm.hidden = !s.name; win.setAttribute('aria-label', (s.name ? s.name + '：' : '') + s.full); nx.hidden = s.typing || !!s.choices;
+          // 2026-10-05 PHASE B（文字送りの途中で改行の位置が変わる＝行が組み替わって見える）：行の全文を最初に組んで、改行の位置を決めてから文字を出す。
+          //  全部の文字を DOM に置き（禁則のまとまり span.mtw＝折り返さない・1文字ずつ span.mtc）、まだの文字は透明（opacity 0。場所は取る）→ 出た文字から .on。文字の位置は動かない
+          if (s.idx !== txLine || s.full !== txFull) { txLine = s.idx; txFull = s.full; txShown = 0; tx.textContent = ''; txChars = [];
+            for (const g of kinsokuGroups(splitChars(s.full))) { if (g.length === 1 && g[0] === '\n') { tx.appendChild(document.createTextNode('\n')); continue; }
+              const w = h('span', 'mtw'); for (const chr of g) { const cs = h('span', 'mtc'); cs.textContent = chr; w.appendChild(cs); txChars.push(cs); } tx.appendChild(w); }
+            // 選択肢がある行は、選択肢の場所も最初から取っておく（全文のあとに選択肢が出ても本文が上へずれない）
+            ch.classList.toggle('pre', !!(s.hasChoices && !s.choices)); ch.classList.toggle('two', s.nChoices === 2); ch.style.setProperty('--n', String(s.nChoices || 0)); if (s.hasChoices && !s.choices) ch.hidden = false; }
+          const want = Math.min(txChars.length, s.shown); if (want < txShown) { for (let i = want; i < txShown; i++) txChars[i].classList.remove('on'); }
+          for (let i = txShown; i < want; i++) txChars[i].classList.add('on'); txShown = want;
+          if (s.choices) ch.classList.remove('pre');
           const k = s.choices ? s.idx + ':' + s.choices.map((x) => x.id).join(',') : '';   // 選択肢は全文表示のあとだけ（▼の代わり）
-          if (k !== chKey) { chKey = k; ch.textContent = ''; ch.hidden = !s.choices;
+          if (k !== chKey) { chKey = k; ch.textContent = ''; ch.hidden = !s.choices && !ch.classList.contains('pre');
             if (s.choices) for (const x of s.choices) { const bt = h('button', 'mmtalk-choice'); bt.type = 'button'; bt.textContent = x.label; bt.dataset.choice = x.id;
               bt.addEventListener('click', (e) => { e.stopPropagation(); bt.classList.add('on'); c.choose(x.id); });   /* 2026-10-06：押した選択肢を金の枠で光らせる（.on） */ ch.appendChild(bt); } }
         },
@@ -341,5 +368,5 @@
     for (const v of views) for (const src of new Set(Object.values(n.views[v] || {}))) { if (warmed.has(src)) continue; warmed.add(src); const i = new Image(); i.decoding = 'async'; i.src = src; if (i.decode) i.decode().catch(() => {}); }
   }
 
-  root.MMNPC = Object.freeze({ TYPE_MS, MIN_TAP_MS, register, get, list, expressionsOf, animationsOf, imageOf, animOf, preload, splitChars, resolveLines, createTalk, talk, close, state, animState, fromLegacy, EXPR, EXPR_ALIAS, srcOf, warm, standOf, STAND });
+  root.MMNPC = Object.freeze({ TYPE_MS, MIN_TAP_MS, register, get, list, expressionsOf, animationsOf, imageOf, animOf, preload, splitChars, resolveLines, createTalk, talk, close, state, animState, fromLegacy, EXPR, EXPR_ALIAS, srcOf, warm, standOf, STAND, kinsokuGroups });
 })(typeof window !== 'undefined' ? window : globalThis);

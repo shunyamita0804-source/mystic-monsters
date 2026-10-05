@@ -101,7 +101,7 @@ let L;
 test.before(async () => { if (!SKIP) L = await H.launch(); });
 test.after(async () => { if (L) await L.close(); });
 const talkState = (pg) => pg.evaluate(() => { const o = document.querySelector('.mmtalk:not(.mmtalk-out)'); if (!o) return null;
-  return { name: document.querySelector('.mmtalk-name').textContent, text: document.querySelector('.mmtalk-text').textContent, next: !document.querySelector('.mmtalk-next').hidden,
+  return { name: document.querySelector('.mmtalk-name').textContent, text: [...document.querySelector('.mmtalk-text').querySelectorAll('.mtc.on')].map((c) => c.textContent).join(''), next: !document.querySelector('.mmtalk-next').hidden,
     img: document.querySelector('.mmtalk-fig img').getAttribute('src'), side: document.querySelector('.mmtalk-stage').dataset.side, n: document.querySelectorAll('.mmtalk').length }; });
 async function toMarket(p, gold) {
   await H.newGame(p.page, 'テスト');

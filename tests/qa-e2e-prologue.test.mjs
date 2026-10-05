@@ -1,7 +1,7 @@
 // =========================================================
 // QA（実ブラウザ）：プロローグ（js/prologue/prologue.js。2026-10-05 正式の4枚・本文。1文字ずつのフェード）
 //  ・新しいゲームの開始 → プロローグ（A→B→C→D→E の順に背景・ナレーション）→ 聖獣士登録（名前登録）
-//  ・2026-10-06 正式：固定尺のオープニング（タップでは進まない）。Scene 1 と正式のプロローグ BGM が同時に始まり、Scene 2〜4 は BGM の 7.782・21.226・37.342秒。文字は画面に収まる（390×844・375×667）
+//  ・2026-10-06 正式：固定尺のオープニング（タップでは進まない）。Scene 1 と正式のプロローグ BGM が同時に始まり、Scene 2〜4 は BGM の 5.559・15.161・26.673秒（2026-10-05 PHASE B：正式 v6・38.714秒）。文字は画面に収まる（390×844・375×667）
 //  ・スキップは2度押し。見たあとは再読み込みしても出ない
 //  Playwright / Chromium が無い環境では省略（skip）する。
 // =========================================================
@@ -46,10 +46,13 @@ const record = (pg) => pg.evaluate(() => {
 });
 
 for (const size of [[390, 844], [375, 667]]) {
-  T(`PRO-B1（${size.join('×')}）：2026-10-06 固定尺のオープニング：タイトル → Scene 1 と正式のプロローグ BGM が同時に始まる → Scene 2＝7.782秒・Scene 3＝21.226秒・Scene 4＝37.342秒（BGM の位置と一致）→ 自動で終わる → 聖獣士登録。画面を何度タップしても進み方は変わらない・「タップで先へ」は無い。本文はすべて順に・画面に収まる・中央よりやや上。「見た」を保存・再読み込みでは出ない`, async () => {
+  T(`PRO-B1（${size.join('×')}）：2026-10-06 固定尺のオープニング：タイトル → Scene 1 と正式のプロローグ BGM が同時に始まる → Scene 2＝5.559秒・Scene 3＝15.161秒・Scene 4＝26.673秒（BGM の位置と一致）・本文は 36.276秒で終わる・開始画面は無音→ 自動で終わる → 聖獣士登録。画面を何度タップしても進み方は変わらない・「タップで先へ」は無い。本文はすべて順に・画面に収まる・中央よりやや上。「見た」を保存・再読み込みでは出ない`, async () => {
     const p = await openPage({ size, prologue: true }); const pg = p.page;
     mkdirSync(SHOT, { recursive: true });
     await record(pg);
+    await pg.waitForTimeout(600);
+    const t0 = await pg.evaluate(() => ({ scene: MMAUDIO.status().scene, active: MMAUDIO.status().slots.filter((x) => x.active).length, src: MMAUDIO.registryOf('bgm').TITLE }));
+    assert.deepEqual([t0.scene, t0.active, t0.src.silent, t0.src.srcs.length], ['TITLE', 0, true, 0], '開始画面は無音（TITLE は silent・ファイルの BGM は鳴っていない）');
     await pg.click('.p15start');
     await pg.waitForSelector('.mmpro', { timeout: 20000 });
     assert.equal(await pg.evaluate(() => !!document.querySelector('.mmpro-hint') || /タップで先へ/.test(document.querySelector('.mmpro').textContent)), false, '「タップで先へ」は DOM にも画面にも無い');
@@ -75,7 +78,7 @@ for (const size of [[390, 844], [375, 667]]) {
     const pre = ev.filter((e) => e[1] < b1[1] && e[0] === 'scene:PROLOGUE');
     assert.equal(pre.length, 0, 'Scene 1 より前（背景の読み込み待ち）に PROLOGUE の BGM は始まらない');
     const pS = at('scene:PROLOGUE'); assert.ok(pS && pS[1] - b1[1] < 400, `PROLOGUE は Scene 1 と同時に始まる（${pS ? Math.round(pS[1] - b1[1]) : '-'}ms）`);
-    for (const [k, want] of [['bg02', 7.782], ['bg03', 21.226], ['bg04', 37.342]]) {
+    for (const [k, want] of [['bg02', 5.559], ['bg03', 15.161], ['bg04', 26.673]]) {
       const e = at(k); assert.ok(e, k); const t = (e[1] - b1[1]) / 1000;
       assert.ok(Math.abs(t - want) < 0.35, `${k} は Scene 1 から ${want}秒（実測 ${t.toFixed(3)}秒・タップで早まらない）`);
       if (e[2] != null) assert.ok(Math.abs(e[2] - want) < 0.25, `${k} のとき BGM は ${want}秒の位置（実測 ${e[2].toFixed(3)}）`);
@@ -84,8 +87,11 @@ for (const size of [[390, 844], [375, 667]]) {
     assert.deepEqual(order, ['01', '02', '03', '04'], '背景は 1 共存 → 2 異変 → 3 三人のレジェンド → 4 ミストリア到着の順');
     const all = await pg.evaluate(() => MMPRO.SLIDES.flatMap((sl) => sl.pages.flatMap((pg) => MMPRO.units(pg).map((u) => u.join('')))));
     assert.deepEqual(seen.map((x) => x.text), all, '本文はすべて・順番どおり・変えずに出る');
-    assert.equal(await pg.evaluate(() => MMAUDIO.status().scene), 'TITLE', 'プロローグのあとは PROLOGUE の BGM を残さない（聖獣士登録は開始画面の曲）');
-    assert.equal(await pg.evaluate(() => MMAUDIO.status().slots.filter((x) => x.active).length), 1, 'BGM は1本だけ');
+    assert.equal(await pg.evaluate(() => MMAUDIO.status().scene), 'TITLE', 'プロローグのあとは PROLOGUE の BGM を残さない（自動テストの既定の名前登録の画面＝開始画面と同じ無音）');
+    assert.equal(await pg.evaluate(() => MMAUDIO.status().slots.filter((x) => x.active).length), 0, 'ファイルの BGM は鳴っていない');
+    const last = ev.filter((e) => /^bg/.test(e[0])).pop(), pr = await pg.evaluate(() => [...new Set(performance.getEntriesByType('resource').map((r) => r.name).filter((n) => /mystic_monsters_official\/.*\.ogg/.test(n)))]);
+    assert.ok(pr.every((n) => !/title_theme/.test(n)) && pr.some((n) => /prologue_bgm_official\.ogg\?v=v6$/.test(n)), `旧タイトル曲は読み込まない・プロローグは v6（${pr.join(' ')}）`);
+    assert.ok(last && last[0] === 'bg04');
     assert.equal((await H.storedSave(pg)).npcFlags.prologue, 1, '最後まで見た＝見た記録を保存');
     await pg.reload(); await pg.waitForFunction(() => typeof window.MMP8 === 'object');
     await pg.click('.p15start');
@@ -109,7 +115,50 @@ T('PRO-B2：スキップは2度押し（1回目は「もう一度でスキップ
   assert.equal(await pg.evaluate(() => !!document.querySelector('.mmpro')), false);
   await pg.waitForTimeout(900);
   const a = await pg.evaluate(() => ({ scene: MMAUDIO.status().scene, prologue: MMAUDIO.status().slots.filter((x) => x.active && /prologue_bgm/.test(x.src || '')).length, active: MMAUDIO.status().slots.filter((x) => x.active).length }));
-  assert.deepEqual(a, { scene: 'TITLE', prologue: 0, active: 1 }, '2026-10-06：スキップのあと PROLOGUE の BGM は残らない・二重に鳴らない');
+  assert.deepEqual(a, { scene: 'TITLE', prologue: 0, active: 0 }, '2026-10-06：スキップのあと PROLOGUE の BGM は残らない・二重に鳴らない（2026-10-05 PHASE B：開始画面・名前登録は無音）');
   assert.equal((await H.storedSave(pg)).npcFlags.prologue, 1, 'スキップを確定した＝見た記録');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
+
+// ---- 2026-10-05 PHASE B：データを消したあとの起動でプロローグが飛ばされる（iOS）＝「見た」の条件 ----
+const proStart = (pg) => pg.waitForFunction(() => MMPRO.clock() != null, null, { timeout: 30000 });
+T('PRO-B5：まっさらな保存領域（データを全部消したあとの起動）→ 開始 → 必ずプロローグ。Scene 1 が始まるまでスキップは押せない。途中で強制終了（再読み込み）→「見た」にならず、次の起動でもプロローグから。最後まで見たら「見た」', async () => {
+  const p = await openPage({ prologue: true, opening: true }); const pg = p.page;
+  assert.deepEqual(await pg.evaluate(() => { const t = localStorage.getItem(MMP8.SAVE_KEY), v = t && JSON.parse(t); return [!v || !(v.npcFlags || {}).prologue, !!(v && v.playerNamePending), localStorage.getItem(MMP8.LEGACY_KEY)]; }), [true, true, null], 'まっさらな保存領域（起動で作られた新しいゲームのセーブだけ・見た記録なし）');
+  await pg.evaluate(() => { const mo = new MutationObserver(() => { const b = document.querySelector('.mmpro .mmpro-skip'); if (b && window.__skip0 == null) { window.__skip0 = [b.disabled, MMPRO.clock()]; mo.disconnect(); } }); mo.observe(document.body, { childList: true, subtree: true }); });
+  await pg.click('.p15start');
+  await pg.waitForSelector('.mmpro', { timeout: 20000 });
+  assert.deepEqual(await pg.evaluate(() => window.__skip0), [true, null], 'プロローグが出た時点（Scene 1 の時計の前）はスキップを押せない');
+  await proStart(pg); await pg.waitForTimeout(2500);
+  assert.equal(await pg.evaluate(() => document.querySelector('.mmpro-skip').disabled), false);
+  // 途中で強制終了 → 「見た」にならない
+  await pg.reload(); await pg.waitForFunction(() => typeof window.MMP8 === 'object' && typeof S === 'object');
+  const sv = await H.storedSave(pg); assert.ok(!sv || !(sv.npcFlags || {}).prologue, '途中で終わった＝見た記録なし');
+  await pg.click('.p15start');
+  await pg.waitForSelector('.mmpro', { timeout: 20000 }); await proStart(pg);
+  // 最後まで（時計を進めるのではなく、実際に 38.714秒 見る）
+  await pg.waitForSelector('.mmpro', { state: 'detached', timeout: 70000 });
+  assert.equal((await H.storedSave(pg)).npcFlags.prologue, 1, '最後まで見た＝見た記録');
+  assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+});
+
+T('PRO-B6：JS が止まって（visibilitychange なしの凍結・重い処理）戻っても、止まっていた時間で一気に最後まで進まない（「見た」にならない）。裏に回った状態でも進まない', async () => {
+  const p = await openPage({ prologue: true, opening: true }); const pg = p.page;
+  await pg.click('.p15start'); await pg.waitForSelector('.mmpro', { timeout: 20000 }); await proStart(pg);
+  await pg.waitForTimeout(1000);
+  const c0 = await pg.evaluate(() => MMPRO.clock());
+  await pg.evaluate(() => { const e = performance.now() + 45000; while (performance.now() < e) {} });   // 45秒、メインスレッドが止まる（曲の長さより長い）
+  await pg.waitForTimeout(400);
+  const c1 = await pg.evaluate(() => MMPRO.clock());
+  assert.ok(c1 - c0 < MMPRO_STALL + 1500, `止まっていた 45秒は数えない（${Math.round(c0)} → ${Math.round(c1)}ms）`);
+  assert.ok(await pg.$('.mmpro'), 'プロローグは続いている');
+  // pagehide（アプリの切り替え・強制終了の前）でも止まる
+  await pg.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true })));
+  const h0 = await pg.evaluate(() => MMPRO.clock()); await pg.waitForTimeout(2000); const h1 = await pg.evaluate(() => MMPRO.clock());
+  assert.ok(h1 - h0 < 50, `pagehide の間は進まない（${Math.round(h0)} → ${Math.round(h1)}）`);
+  await pg.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })));
+  await pg.waitForTimeout(800); assert.ok((await pg.evaluate(() => MMPRO.clock())) > h1, '戻れば続きから');
+  const sv = await H.storedSave(pg); assert.ok(!sv || !(sv.npcFlags || {}).prologue, 'まだ見た記録なし');
+  assert.deepEqual(p.errors, []);
+});
+const MMPRO_STALL = 1500;

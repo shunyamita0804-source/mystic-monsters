@@ -33,7 +33,14 @@ function clock() {
 function fakeDoc() {
   const docL = {};
   class El {
-    constructor(tag) { this.tagName = tag; this.children = []; this.attrs = {}; this.dataset = {}; this.hidden = false; this.className = ''; this.textContent = ''; this.L = {}; this.parent = null; }
+    constructor(tag) { this.tagName = tag; this.children = []; this.attrs = {}; this.dataset = {}; this.hidden = false; this.className = ''; this.own = ''; this.L = {}; this.parent = null; const me = this;
+      this.style = { setProperty() {} };
+      this.classList = { add: (c) => { if (!me.classList.contains(c)) me.className = (me.className + ' ' + c).trim(); }, remove: (c) => { me.className = String(me.className).split(' ').filter((x) => x && x !== c).join(' '); },
+        toggle: (c, on) => { if (on === undefined) on = !me.classList.contains(c); if (on) me.classList.add(c); else me.classList.remove(c); return on; }, contains: (c) => String(me.className).split(' ').includes(c) }; }
+    get textContent() { return this.own + this.children.map((c) => c.textContent).join(''); }
+    set textContent(v) { this.own = String(v); this.children = []; }
+    /** 見えている文字（2026-10-05 PHASE B：全文を先に組み、出た文字だけ .on） */
+    get shownText() { if (!this.children.length) return this.own; return this.children.map((c) => (c.classList && c.classList.contains('mtc') ? (c.classList.contains('on') ? c.own : '') : c.shownText)).join(''); }
     setAttribute(k, v) { this.attrs[k] = String(v); }
     getAttribute(k) { return k === 'src' ? (this.src == null ? null : this.src) : (k in this.attrs ? this.attrs[k] : null); }
     appendChild(c) { c.parent = this; this.children.push(c); return c; }
@@ -44,7 +51,7 @@ function fakeDoc() {
     click() { const e = { stopPropagation() {} }; (this.L.click || []).slice().forEach((f) => f(e)); }
   }
   const body = new El('body');
-  return { body, createElement: (t) => new El(t), addEventListener: (t, f) => { (docL[t] = docL[t] || []).push(f); }, removeEventListener: (t, f) => { docL[t] = (docL[t] || []).filter((x) => x !== f); },
+  return { body, createElement: (t) => new El(t), createTextNode: (t) => { const e = new El('#text'); e.own = String(t); return e; }, addEventListener: (t, f) => { (docL[t] = docL[t] || []).push(f); }, removeEventListener: (t, f) => { docL[t] = (docL[t] || []).filter((x) => x !== f); },
     keys: () => (docL.keydown || []).length, $: (cls) => body.q(cls),
     key(k) { const e = { key: k, prevented: false, preventDefault() { this.prevented = true; } }; (docL.keydown || []).slice().forEach((f) => f(e)); return e; } };
 }
@@ -62,7 +69,7 @@ function load(c, doc) {
 // ---------------------------------------------------------
 test('QA-G5-1：公開API・文字送りの速さ・連打の最短間隔は従来のまま。開いた直後に受け付けない時間は 0.15〜0.25秒', () => {
   const M = load();
-  assert.deepEqual(Object.keys(M), ['TYPE_MS', 'MIN_TAP_MS', 'register', 'get', 'list', 'expressionsOf', 'animationsOf', 'imageOf', 'animOf', 'preload', 'splitChars', 'resolveLines', 'createTalk', 'talk', 'close', 'state', 'animState', 'fromLegacy', 'EXPR', 'EXPR_ALIAS', 'srcOf', 'warm', 'standOf', 'STAND']);   /* 2026-10-04 PHASE H5：立ち絵の規格（standOf・STAND）を追加 */   // 2026-10-04（追加アセット）：表情差分の一覧・読み替え・画像の URL・施設に入る直前の先読み
+  assert.deepEqual(Object.keys(M), ['TYPE_MS', 'MIN_TAP_MS', 'register', 'get', 'list', 'expressionsOf', 'animationsOf', 'imageOf', 'animOf', 'preload', 'splitChars', 'resolveLines', 'createTalk', 'talk', 'close', 'state', 'animState', 'fromLegacy', 'EXPR', 'EXPR_ALIAS', 'srcOf', 'warm', 'standOf', 'STAND', 'kinsokuGroups']);   /* 2026-10-05 PHASE B：会話の禁則のまとまり（kinsokuGroups）を追加 */   /* 2026-10-04 PHASE H5：立ち絵の規格（standOf・STAND）を追加 */   // 2026-10-04（追加アセット）：表情差分の一覧・読み替え・画像の URL・施設に入る直前の先読み
   assert.equal(M.TYPE_MS, 32); assert.equal(M.MIN_TAP_MS, 80);
   assert.ok(GUARD_MS >= 150 && GUARD_MS <= 250, `OPEN_GUARD_MS=${GUARD_MS}`); assert.equal((SRC.match(/const OPEN_GUARD_MS = \d+;/g) || []).length, 1, '定数は1か所');
   // createTalk を直接使うとき（openGuardMs 省略）は従来どおり、開いた直後のタップも受け付ける
@@ -106,7 +113,7 @@ test('QA-G5-3：画面の会話（talk）：会話を開いたのと同じ Enter
   s = M.state(); assert.deepEqual([s.idx, s.typing, s.text], [0, true, ''], '開いた直後（0.2秒未満）の Enter も会話を送らない（差し替えた時計で測る）');
   c.run(120); doc.$('mmtalk').click(); s = M.state();
   assert.deepEqual([s.idx, s.typing, s.text], [0, true, 'はじめ'], 'ダブルタップの2打目（0.12秒後）も会話を送らない');
-  assert.equal(doc.$('mmtalk-text').textContent, 'はじめ'); assert.equal(doc.$('mmtalk-next').hidden, true, '▼は全文表示後だけ');
+  assert.equal(doc.$('mmtalk-text').shownText, 'はじめ', '見えている文字（全文は先に組んである）'); assert.equal(doc.$('mmtalk-text').textContent, 'はじめまして。私はフィナです！', '2026-10-05 PHASE B：全文を先に組む＝改行の位置が文字送りの途中で変わらない'); assert.equal(doc.$('mmtalk-next').hidden, true, '▼は全文表示後だけ');
   c.run(GUARD_MS - 120); doc.key('Enter'); s = M.state();
   assert.deepEqual([s.idx, s.typing, s.text], [0, false, 'はじめまして。私はフィナです！'], '0.2秒後の Enter は従来どおり全文表示');
   assert.equal(doc.$('mmtalk-next').hidden, false);

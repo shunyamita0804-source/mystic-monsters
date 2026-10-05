@@ -247,7 +247,7 @@ T('PRO-B3（S-2）：プロローグの途中でアプリが裏に回ったら�
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
-T('PRO-B4（2026-10-06）：プロローグの途中で裏に回って戻る → 映像と PROLOGUE BGM は同じ時間軸で止まって続きから（Scene 3 に切り替わる瞬間の BGM の位置が 21.226秒からずれない）。BGM はループしない', async () => {
+T('PRO-B4（2026-10-06）：プロローグの途中で裏に回って戻る → 映像と PROLOGUE BGM は同じ時間軸で止まって続きから（Scene 3 に切り替わる瞬間の BGM の位置が 15.161秒（正式 v6）からずれない）。BGM はループしない', async () => {
   const p = await openPage({ opening: true, prologue: true }); const pg = p.page;
   await pg.evaluate(() => { window.__bg = []; new MutationObserver(() => { const on = document.querySelector('.mmpro .mmpro-bg.on'); const k = on ? (/prologue_(\d\d)/.exec(on.style.backgroundImage) || [])[1] : null; if (k && k !== window.__last) { window.__last = k; window.__bg.push([k, performance.now(), window.MMAUDIO ? MMAUDIO.bgmTime('PROLOGUE') : null]); } }).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'style'] }); });
   await pg.click('.p15start');
@@ -262,7 +262,7 @@ T('PRO-B4（2026-10-06）：プロローグの途中で裏に回って戻る →
   await pg.evaluate(() => { window.__hid = false; document.dispatchEvent(new Event('visibilitychange')); });
   await pg.waitForFunction(() => (window.__bg || []).some((x) => x[0] === '03'), null, { timeout: 30000 });
   const e3 = await pg.evaluate(() => window.__bg.find((x) => x[0] === '03'));
-  assert.ok(e3[2] != null && Math.abs(e3[2] - 21.226) < 0.25, `戻ったあとも Scene 3 は BGM の 21.226秒（実測 ${e3[2]}）`);
+  assert.ok(e3[2] != null && Math.abs(e3[2] - 15.161) < 0.25, `戻ったあとも Scene 3 は BGM の 15.161秒（実測 ${e3[2]}）`);
   const loop = await pg.evaluate(() => { const r = MMAUDIO.registryOf('bgm').PROLOGUE; return [r.loop, MMAUDIO.status().slots.find((x) => x.active && /prologue_bgm/.test(x.src || '')) ? true : false]; });
   assert.deepEqual(loop, [false, true], 'PROLOGUE は1回だけ（ループしない）');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);

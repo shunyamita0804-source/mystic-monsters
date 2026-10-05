@@ -369,7 +369,7 @@ const talkSnap = (pg) => pg.evaluate(() => {
   const T = window.__T, ov = document.querySelector('.mmtalk'), s = MMNPC.state();
   return { n: document.querySelectorAll('.mmtalk').length, state: s && { idx: s.idx, total: s.total, typing: s.typing, text: s.text, full: s.full, expr: s.expr, view: s.view, anim: s.anim, fallback: s.fallback },
     anim: MMNPC.animState().running, npcTo: [...T.to.values()].filter((v) => v.f === 'npc').length, npcIv: [...T.iv.values()].filter((v) => v.f === 'npc').length,
-    keydown: (T.lis.get('document:keydown') || new Set()).size, text: ov ? ov.querySelector('.mmtalk-text').textContent : null, next: ov ? !ov.querySelector('.mmtalk-next').hidden : null,
+    keydown: (T.lis.get('document:keydown') || new Set()).size, text: ov ? [...ov.querySelector('.mmtalk-text').querySelectorAll('.mtc.on')].map((c) => c.textContent).join('') : null, next: ov ? !ov.querySelector('.mmtalk-next').hidden : null,
     img: ov ? ov.querySelector('.mmtalk-fig img').getAttribute('src') : null, fig: ov ? ov.querySelector('.mmtalk-fig').className : null };
 });
 /** 会話が終わって何も残っていないこと */
@@ -533,7 +533,7 @@ B('QA-TN5：会話中に次の会話を開くと、前の会話は終わり（Pr
   const samples = await pg.evaluate((b) => new Promise((ok) => {
     MMNPC.talk([{ npc: 'fina', expression: 'smile', text: b }]).then(() => { window.__b++; });
     const out = [], t0 = performance.now();
-    const id = setInterval(() => { const ov = document.querySelectorAll('.mmtalk'); out.push([ov.length, ov[0] ? ov[0].querySelector('.mmtalk-text').textContent : null]); if (performance.now() - t0 > 700) { clearInterval(id); ok(out); } }, 60);
+    const id = setInterval(() => { const ov = document.querySelectorAll('.mmtalk'); out.push([ov.length, ov[0] ? [...ov[0].querySelector('.mmtalk-text').querySelectorAll('.mtc.on')].map((c) => c.textContent).join('') : null]); if (performance.now() - t0 > 700) { clearInterval(id); ok(out); } }, 60);
   }), B2);
   assert.equal(await pg.evaluate(() => window.__a), 1, '前の会話は終わった');
   assert.ok(samples.length >= 5);

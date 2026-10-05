@@ -27,8 +27,10 @@
   //  【2026-10-03 実機試遊（iPhone）の結果】で NG になった音は silent にした（追加の音源パックで選び直す。行の横の「待ち」）
   const BGM_REGISTRY = {
     // ---- 開始画面・街・施設 ----
-    TITLE:      { src: MMB + 'mystic_monsters_title_theme_official.ogg', gain: 0.56 },   // 2026-10-06 正式（38.9秒・-13.0 LUFS → gain 0.56 で約 -18）。開始画面は最初のタップまで音を出せない（ブラウザの制約）。旧：PGS Event Music 1
-    PROLOGUE:   { src: MMB + 'mystic_monsters_prologue_bgm_official.ogg', gain: 0.56, loop: false },   // 2026-10-06 正式（54.2秒・固定尺・ループしない・ほかの場面に使わない）。プロローグの時刻表（Scene 2＝7.782秒・Scene 3＝21.226秒・Scene 4＝37.342秒）に合わせた曲＝Scene 1 を出す瞬間に 0 秒から（index.html の proPlay）
+    TITLE:      { silent: true },   // 2026-10-05 PHASE B 正式：開始画面に BGM は無い（無音で開始画面 → 開始の音 TITLE_START → Scene 1 でプロローグ BGM）。旧タイトル曲（mystic_monsters_title_theme_official.ogg）は廃止・ファイルも置かない
+    PROLOGUE:   { src: MMB + 'mystic_monsters_prologue_bgm_official.ogg?v=v6', gain: 0.64, loop: false },   // 2026-10-05 PHASE B 正式 v6（38.714秒・-14.1 LUFS → gain 0.64 で約 -18・ループしない・ほかの場面に使わない）。時刻表（Scene 2＝5.559秒・Scene 3＝15.161秒・Scene 4＝26.673秒・本文の終わり 36.276秒）は js/prologue/prologue.js の CUES。
+                                     //  旧 54.2秒版と同じファイル名なので ?v=v6 で端末のキャッシュ（旧い曲）を使わない
+    BUREAU:     { src: MMB + 'mystic_monsters_bureau_bgm_official.ogg', gain: 0.46, loopStart: 0, loopEnd: 45.7, loopXfade: 0.25 },   // 2026-10-05 PHASE B 正式 v6：聖獣士管理局（46.0秒・-13.2 LUFS → gain 0.46 で約 -20＝会話が聞き取れる音量）。終わりの短いフェードの前で頭へ戻してループ
     TOWN:       { src: HG + '02_lively_city.ogg', gain: 0.62 },     // 2026-10-03 第5弾の仮採用：HydroGene「Lively City」65秒・明るい長調（第4弾で NG の Tranquil Radiance は使わない）
     MARKET:     { src: PGS + 'town_village_theme_2.ogg', gain: 0.9 },   // 試遊で OK（変更しない）
     RANCH:      { src: PGS + 'town_village_theme_3.ogg', gain: 0.8 },   // 77秒・温かい【暫定】

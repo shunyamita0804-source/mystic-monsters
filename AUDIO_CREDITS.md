@@ -104,8 +104,9 @@ PGS の曲は「暫定の試遊用」。新しく採用しない（公開リポ�
 
 | リポジトリのファイル | 種類 | 出来事・場面 | 長さ | 元の音量（LUFS） | gain | sha256 |
 |---|---|---|---:|---:|---:|---|
-| bgm/mystic_monsters_official/mystic_monsters_title_theme_official.ogg | BGM | TITLE（開始画面〜プロローグの前。ループ） | 38.919秒 | -13.0 | 0.56 | `7ad3bf877f1f817bcc2a19ac32f174a8d12da25d73137cb7a987b418c17e0f3c` |
-| bgm/mystic_monsters_official/mystic_monsters_prologue_bgm_official.ogg | BGM | PROLOGUE（プロローグ専用・loop:false・Scene 1 の開始と同時） | 54.2秒 | -13.2 | 0.56 | `67a48d4194fdf6a4a6b70cd2a95bf513ab2604adaf5b43c3bfd3c46126f5caf3` |
+| ~~bgm/mystic_monsters_official/mystic_monsters_title_theme_official.ogg~~ | BGM | 【2026-10-05 PHASE B で廃止・ファイル削除】旧 TITLE（開始画面に BGM は無い＝TITLE は silent） | 38.919秒 | -13.0 | — | `7ad3bf877f1f817bcc2a19ac32f174a8d12da25d73137cb7a987b418c17e0f3c` |
+| bgm/mystic_monsters_official/mystic_monsters_prologue_bgm_official.ogg | BGM | PROLOGUE（プロローグ専用・loop:false・Scene 1 の開始と同時）。**2026-10-05 PHASE B：正式 v6 に差し替え**（旧 54.2秒版は削除＝同じファイル名。registry は ?v=v6 で端末のキャッシュを使わない） | 38.714秒 | -14.1 | 0.64 | `64d05bc521b7deb53e08e18ef53189102382fb8838ab545191deca8983a859b0` |
+| bgm/mystic_monsters_official/mystic_monsters_bureau_bgm_official.ogg | BGM | BUREAU（聖獣士管理局・聖獣士登録。ループ＝45.7秒の手前で頭へ 0.25秒のクロスフェード。会話が聞き取れるよう約 -20 LUFS）。2026-10-05 PHASE B 正式 v6（v1〜v5 は使わない） | 46.0秒 | -13.2 | 0.46 | `0fd1e1b8f593bdbae8d20414274bde12ba85f25347a5c45f6a004014a761be90` |
 | se/mystic_monsters_official/01_dice_large_full.ogg | SE | DICE_THROW（1回の出目で1回。LAND・ROLL・STOP は silent のまま） | 2.05秒 | -21.0 | 0.95 | `9fd7d1ac264fc9cbc177c48ce1b37d514e17c1ba70be3a906a104a47e617fff0` |
 | se/mystic_monsters_official/02_training_item_spawn.ogg | SE | TRAINING_ITEM_SPAWN（能力マスの道具が現れる） |  | -18.8 | 1.0 | `04cbf9a1fc4c3476500e750e947cbf13730c6c74b9ec9177d096444fb4a86281` |
 | se/mystic_monsters_official/03_market_purchase_confirm.ogg | SE | MARKET_PURCHASE（市場の購入が成立したときだけ） |  | -16.8 | 1.02 | `a4a14ddfa428e77ecf9b3087d01020680bd107340cf2586f21e94fa5b0153221` |
