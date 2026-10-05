@@ -39,7 +39,7 @@ test('DAN-2：素材は透過PNG（RGBA）。立ち絵6枚は高さ760px（表�
 test('DAN-3：ダンの顔はダンが話す一言（ファームの吹き出し・Chapter間ファーム）だけ。メッセージ欄（ステータス・わざ・修行・準備・ショップ）はシステム通知なので顔なし', () => {
   assert.match(lineOf('const DAN_FACE='), /^const DAN_FACE="assets\/npc\/dan\/face\.webp";/);
   assert.ok((HTML.match(/\$\{DAN_FACE\}/g) || []).length + (HTML.match(/\|\|DAN_FACE\}/g) || []).length <= 2, '2026-10-06：ベースキャンプはダンの常設の顔・一言を出さない');
-  assert.equal((HTML.match(/\$\{msg\?`<div class="dmsg"><span>\$\{msg\}<\/span><\/div>`:""\}/g) || []).length, 2, 'dscr・p7Shell のメッセージ欄は文字だけ');
+  assert.equal((HTML.match(/\$\{msg\?`<div class="dmsg"><span>\$\{msg\}<\/span><\/div>`:""\}/g) || []).length, 3, 'dscr・p7Shell・アイテム屋（shopShell。2026-10-05）のメッセージ欄は文字だけ');
   assert.doesNotMatch(HTML, /class="dmsg"><img/);
 
   assert.equal((HTML.replace(/^\s*\/\/.*$/gm, '').match(/NPI\.b/g) || []).length, 0, '画面から旧コウの顔を参照しない（コメントを除く）');

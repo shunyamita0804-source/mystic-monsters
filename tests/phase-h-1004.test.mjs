@@ -52,7 +52,7 @@ test('PH-03：聖獣士管理局＝正式背景マスター（864×1536）。聖
   const rows = fnOf('bureauRows');
   for (const w of ['p11Esc(S.playerName||MMP11P.DEFAULT_NAME)', 'RN[br]', 'MMP8.raiseDoneCount(S)', 'S.fuseCnt|0', 'bureauFound()', 'S.wins|0']) assert.ok(rows.includes(w), w);
   assert.doesNotMatch(rows + fnOf('bureauScr'), /\b(128|342|96)\b|アルト・ランクー/, '参考画像の見本の値・名前は使わない');
-  const b = fnOf('bureauScr'); assert.match(b, /<nav class="bunav"><button class="bub[^>]*onclick="bureauScr\(\)">聖獣士証<\/button><button class="bub[^>]*onclick="bureauScr\('ach'\)">功績一覧<\/button>\$\{S\.playerNamePending\?"":`<button class="bub bumap" onclick="bureauMap\(\)"[^`]*`\}<\/nav>/);
+  const b = fnOf('bureauScr'); assert.match(b, /<nav class="bunav"><button class="bub[^>]*onclick="bureauScr\('card'\)">聖獣士証<\/button><button class="bub[^>]*onclick="bureauScr\('ach'\)">功績一覧<\/button>\$\{S\.playerNamePending\?"":`<button class="bub bumap" onclick="bureauMap\(\)"[^`]*`\}<\/nav>/);
   assert.doesNotMatch(b, /聖獣士登録|聖獣士証を発行/, '登録済みの画面に「聖獣士登録」「聖獣士証を発行」は使わない');
   assert.doesNotMatch(HTML.slice(HTML.indexOf('const BUREAU_ACH='), HTML.indexOf('function bureauRows(')), /S\.g\s*[+-]=|unlock|reward:/, '功績に報酬・解放は付けない');
   assert.match(HTML, /function townGuild\(\)\{if\(S\.playerNamePending&&opOn\(\)\)return opBureau\(\);bureauScr\(\)\}/); assert.match(HTML, /\["聖獣士管理局","聖獣士証・功績","","townGuild\(\)","ok",0,\[500,594\]\]/, '街の既存の札から入る');
@@ -82,8 +82,8 @@ test('PH-05：セルジュ（2026-10-06 正式の立ち絵＝ユーザーの ser
   assert.match(HTML, /const SERGE=\{id:"serge",name:"セルジュ"/); assert.match(fnOf('bureauNpc'), /MMNPC\.get\(SERGE\.id\)/);
   const walk = (d) => readdirSync(path.join(ROOT, d)).flatMap((n) => { const p = path.join(d, n); return statSync(path.join(ROOT, p)).isDirectory() ? walk(p) : [p]; });
   const files = walk('assets').filter((p) => /ryu|09_ryu|04_serge|ranch_20_ui|bureau_ui|base_camp_ui|standing|serge_reference/i.test(p) || (/serge/i.test(p) && /\.(jpe?g|png)$/i.test(p)));
-  assert.deepEqual(files.filter((p) => !/^assets\/npc\/ryu\/(full_normal\.webp|README\.md)$/.test(p.split(path.sep).join('/'))), [], '参考画像・白背景の JPEG は置かない（2026-10-05 PHASE B：リュウはライバルの遭遇のため、正式立ち絵の市松模様を取り除いた透過 WebP だけを置く）');
-  assert.ok(existsSync(path.join(ROOT, 'assets/npc/ryu/full_normal.webp')) && /09_ryu\.jpeg/.test(rd('assets/npc/ryu/README.md')));
+  assert.deepEqual(files.filter((p) => !/^assets\/npc\/ryu\/(ryu_official_fullbody\.webp|README\.md|original\/ryu_official_fullbody_2026-10-05\.jpg)$/.test(p.split(path.sep).join('/'))), [], '参考画像・白背景の JPEG は置かない（2026-10-05 試遊：リュウは正式の全身の透過 WebP と、ユーザーが正式と指定した元の JPEG（original/）だけ）');
+  assert.ok(existsSync(path.join(ROOT, 'assets/npc/ryu/ryu_official_fullbody.webp')) && /b9bca1841042ace8f4519fb8e6ec8c415c80a3c333a7ea869a335306100020f0/.test(rd('assets/npc/ryu/README.md')));
 });
 
 test('PH-06：守ること：セーブ v6・キー mr4v6、合体は研究所（牧場に戻さない）、特殊復元は無い、街に独立したアイテム屋は無い、プロローグの PHASE G の仕組みはそのまま', () => {

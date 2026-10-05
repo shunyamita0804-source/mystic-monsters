@@ -92,7 +92,7 @@ test('PB-06：正式の会話窓（event_dialogue_window）はイベント・大
   assert.match(HTML, /\.mmtalk\.mmtalk-big \.mmtalk-name::before,\.mmtalk\.mmtalk-big \.mmtalk-name::after\{content:"";position:absolute;z-index:-1;clip-path:polygon/);
   const no = rd('js/feel/notice.js'); assert.doesNotMatch(no.replace(/\/\/.*$/gm, '').replace(/\/\*\*[^*]*\*\//g, ''), /MMNPC|\.name\b|face|mmtalk|dnm/, '顔・名前は出さない（コメントを除いたコード）'); assert.match(HTML, /<script src="\.\/js\/feel\/notice\.js"><\/script>/);
   assert.match(HTML, /\.mmnote-layer\{position:fixed;[^}]*z-index:2300;/);
-  assert.match(HTML, /\{note:\{icon:"gold",title:"1000G を受け取った！",sub:"新人聖獣士支援制度"\}\}/); assert.match(HTML, /\{note:\{img:ITEM_ICON\.herb,title:"薬草 を1つ受け取った！"/);
+  assert.match(HTML, /\{note:\{icon:"gold",title:"1000G を受け取った！",sub:"新人聖獣士支援制度",se:"GOLD_GET"\}\}/); assert.match(HTML, /\{note:\{img:ITEM_ICON\.herb,title:"薬草 を1つ受け取った！"[^}]*se:"REWARD"\}\}/);
   assert.match(fnOf('talkSeq'), /if\(x&&x\.note\)\{await flush\(\);await MMNOTE\.show\(x\.note\)\}/);
   assert.match(fnOf('opAfterReg'), /MMNOTE\.show\(\{icon:"unlock",title:"世界地図 が使えるようになった！"/, '機能の解放');
   assert.match(fnOf('adopt'), /if\(rs&&typeof MMNOTE=="object"&&MMNOTE\)\{MMNOTE\.show\(\{icon:"gold",title:x\.name\+"をつれて帰った！"\+pk,sub:rs\}\);return undefined\}/, '古いセーブの救済（街の通知は出さない＝帯だけ）');
@@ -116,15 +116,17 @@ test('PB-08：アイテム管理（ベースキャンプの独立した導線・
   assert.doesNotMatch(im, /shopBuy|shopSell|p7Buy|p7Sell|price/, '店ではない'); assert.match(im, /MMP7\.moveVaultToBag\(S,i\)/); assert.match(im, /MMP7\.moveBagToVault\(S,i\)/);
   assert.match(fnOf('fmScr'), /<button class="bcitem" onclick="itemScr\(\)" aria-label="アイテム管理"><img src="\$\{ITEM_MGMT_ICON\}"/);
   const sh = HTML.slice(HTML.indexOf('function shopScr('), HTML.indexOf('\nfunction p7Buy('));
-  for (const k of ['buy', 'sell', 'book']) assert.match(sh, new RegExp(`ent\\("${k}"`)); assert.match(sh, /MMP7\.listItemDefs\(\)/);
+  const shell = HTML.slice(HTML.indexOf('function shopShell('), HTML.indexOf('function shopScr('));
+  for (const k of ['buy', 'sell', 'book']) assert.match(shell, new RegExp(`ent\\("${k}"`)); assert.match(sh, /MMP7\.listItemDefs\(\)/);
+  assert.match(shell, /<div class="isp-plq"><b>アイテム屋<\/b>/, '2026-10-05 試遊：施設名は「アイテム屋」'); assert.doesNotMatch(HTML.replace(/\/\/[^\n]*|\/\*[\s\S]*?\*\//g, ''), /アイテム補給所|ベルナの補給所/, '旧名称はユーザー向けに出さない');
   assert.match(fnOf('p7Buy'), /MMP7\.shopBuy\(S,id\)/); assert.match(fnOf('p7Sell'), /MMP7\.shopSell\(S,i\)/);
   const w = {}; new Function('window', rd('js/phase7/progression.js'))(w); assert.deepEqual(w.MMP7.listItemDefs(), [], 'アイテムを勝手に増やさない（登録はゲーム側の薬草だけ）');
 });
 
 test('PB-09：ライバル遭遇＝リュウの正式立ち絵（市松模様を取り除いた透過 WebP）。竜（相棒）の正式素材は無い＝作らない（config の encounterPartner は null）', () => {
   const C = rd('js/chapter/configs/ch1a.js'), FV = rd('js/chapter/field-view.js');
-  assert.match(C, /encounterFigure: 'rival_ryu', encounterPartner: null, encounter: 'リュウが立ちはだかった！'/, '文面は変えない');
-  assert.match(C, /rival_ryu: '\.\/assets\/npc\/ryu\/full_normal\.webp'/); assert.ok(existsSync(path.join(ROOT, 'assets/npc/ryu/full_normal.webp')));
+  assert.match(C, /encounterFigure: 'rival_ryu', encounterPartner: 'rival_regnas', encounter: 'リュウが立ちはだかった！'/, '文面は変えない。2026-10-05：相棒＝レグナス（正式）');
+  assert.match(C, /rival_ryu: '\.\/assets\/npc\/ryu\/ryu_official_fullbody\.webp', rival_regnas: '\.\/assets\/monsters\/regnas\/regnas_official\.webp'/); assert.ok(existsSync(path.join(ROOT, 'assets/npc/ryu/ryu_official_fullbody.webp'))); assert.ok(!existsSync(path.join(ROOT, 'assets/npc/ryu/full_normal.webp')), '旧い絵は使わない');
   assert.match(FV, /\$\{rvFig \? `<img class="ce-rival" src="\$\{esc\(rvFig\)\}"/); assert.match(FV, /\$\{rvPart \? `<img class="ce-partner"/);
   assert.match(C, /figure: null, encounterFigure:/, 'ボードの目印（figure）には立たせない');
 });
@@ -144,4 +146,16 @@ test('PB-10：大会ランク選択の正式 UI：参加可能＝赤（ワイン
   assert.match(fnOf('save'), /^function save\(\)\{if\(P8_LOAD\.locked\|\|TEST_TOUR\)return;/, 'TEST 大会の間は保存しない＝記録は変わらない');
   assert.match(HTML, /const P9_RS_LABEL=\{lock:"参加不可",open:"参加可能",next:"参加可能",clear:"クリア済"\};/);
   assert.match(HTML, /<div class="tcity" aria-label="現在地：ミストリア">/, '街の名札');
+});
+
+test('PB-11：2026-10-05 試遊：新人支援の帯に SE（帯が出た瞬間に1回・帯は1つずつ＝重ならない）。1000G＝GOLD_GET（既存の所持金の入手の音）・薬草＝REWARD・世界地図の解放＝UNLOCK（REWARD と同じファイル）。新しい音源は足していない', () => {
+  const no = rd('js/feel/notice.js'); assert.match(no, /if \(n\.se\) \{ try \{ if \(root\.MMAUDIO\) root\.MMAUDIO\.se\(n\.se\); \} catch \(e\) \{\} \}/);
+  assert.match(fnOf('opAfterReg'), /title:"世界地図 が使えるようになった！",sub:"聖獣士管理局でいつでも見られます",se:"UNLOCK"/);
+  const R = {}; new Function('window', rd('js/audio/audio-registry.js'))({ MMAUDIO: { registerAll: (r) => Object.assign(R, r) } }); const se = R.se || R.SE;
+  assert.equal(se.REWARD.src, se.UNLOCK.src, '薬草と世界地図は同じ音'); assert.match(se.GOLD_GET.src, /ivokard\/bell\.ogg$/);
+  // 帯に se を渡すと、帯が出たときに1回だけ鳴る
+  const w = { MMAUDIO: { calls: [], se(n) { this.calls.push(n); } } }; const els = []; const doc = { body: { appendChild: (e) => els.push(e) }, querySelector: () => null, createElement: () => ({ setAttribute() {}, addEventListener() {}, appendChild() {}, classList: { add() {} }, remove() {} }) };
+  new Function('window', 'document', 'setTimeout', 'clearTimeout', no)(w, doc, () => 1, () => {});
+  w.MMNOTE.show({ title: 'a', se: 'GOLD_GET' }); w.MMNOTE.show({ title: 'b', se: 'REWARD' });
+  assert.deepEqual(w.MMAUDIO.calls, ['GOLD_GET'], '2つ目の帯（と音）は前の帯が消えてから');
 });

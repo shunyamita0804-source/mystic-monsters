@@ -616,13 +616,12 @@ button.wx{padding:2px 10px;font-size:.7rem;border-radius:999px;box-shadow:none;b
 /* アイテム屋（2026-10-03 正式背景・正式NPC）：背景はぼかさず、上下だけ暗くして文字を読めるように。NPC は一覧の後ろに立つ（名前は未確定のため出さない） */
 .ds.shop{background:#20140a}
 .ds.shop>.shopbg{position:absolute;inset:0;z-index:0;background-size:cover;background-position:center 28%}
-.ds.shop::before{background:linear-gradient(rgba(10,6,3,.55),rgba(10,6,3,0) 24%,rgba(10,6,3,0) 46%,rgba(10,6,3,.72) 74%,rgba(10,6,3,.88))}
-.ds.shop>.shopnpc{position:absolute;z-index:1;right:max(2%,calc(50% - 200px));bottom:30%;height:min(50%,430px);width:auto;max-width:none;pointer-events:none}
-#app>.ds.shop>.dbody{flex:0 1 auto;margin-top:auto;max-height:42%;z-index:2}
-@media (max-height:720px){.ds.shop>.shopnpc{height:37%;bottom:31%}}
-/* 2026-10-03 品質向上：店主は腰から上を大きく（全身の絵を大きく置き、腰から下は商品の窓の後ろへ。絵は切り抜かない） */
-.ds.shop>.shopnpc{top:15%;bottom:auto;height:min(112%,1000px);right:max(-6%,calc(50% - 250px))}
-@media (max-height:720px){.ds.shop>.shopnpc{top:17%;bottom:auto;height:min(118%,800px)}}
+.ds.shop::before{background:linear-gradient(rgba(6,10,26,.62),rgba(6,10,26,0) 16%,rgba(6,10,26,0) 52%,rgba(6,10,26,.66) 76%,rgba(6,10,26,.9))}
+/* 2026-10-05 試遊（「汎用 UI っぽい・ベルナが見えない」）：アイテム屋を1つの施設の画面に＝正式背景＋ベルナ（全身の表情差分）＋下の3つの導線（購入／売却／アイテム図鑑の正式アイコン）。
+   上＝施設の名札「アイテム屋」（Shippori Mincho）・戻る・所持金。入口はベルナを大きく（背景の店内が見える）、購入／売却／図鑑は中身の窓の後ろにベルナを少し小さく。画像は加工しない */
+.ds.shop.shopf{display:flex;flex-direction:column;padding:calc(8px + env(safe-area-inset-top,0px)) 12px 0}
+.ds.shop>.shopnpc{position:absolute;z-index:1;left:50%;top:calc(58px + env(safe-area-inset-top,0px));height:min(66dvh,600px);width:auto;max-width:none;transform:translateX(-46%);pointer-events:none;-webkit-mask-image:linear-gradient(#000 70%,transparent 96%);mask-image:linear-gradient(#000 70%,transparent 96%);filter:drop-shadow(0 6px 18px rgba(0,0,0,.45))}
+.ds.shop.tab>.shopnpc{height:min(46dvh,420px);transform:translateX(-12%);opacity:.96}
 .dtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 button.dback{padding:6px 14px;border-radius:999px;background:linear-gradient(#a06a35,#6b4423);color:#fff3dc;border:2px solid #e8c86a;box-shadow:0 3px 0 #3a2410;font-weight:900;font-size:.85rem}
 .dmoney{padding:4px 12px;border-radius:999px;background:rgba(0,0,0,.5);border:2px solid #c9a24d;font-weight:900;font-size:.85rem;margin-right:44px}
@@ -1148,7 +1147,8 @@ button.mkc b{font-size:.9rem}button.mkc small{font-size:.66rem;color:#ffe9b0}
    重ね順（.chf-cam）：遠景の帯（far）→ 背景 → 奥の環境（back）→ 道（停止地点・モンスター：足元の y で前後）→ 手前の環境（front）→ 効果（fx）。ノード・線・番号は出さない */
 #app>.chfw{position:relative;box-sizing:border-box;height:calc(100% + 32px);margin:-16px;overflow:hidden;background:#0b1636;--chdeck:clamp(128px,19vh,166px);--chcmd:118px;--chstop:88px;--chwing:40px;animation:chfwin .3s ease-out both}
 @keyframes chfwin{from{opacity:0}}
-#app:has(>.chfw){overflow:hidden}
+#app:has(>.chfw){overflow:hidden;background:#0b1636} /* 2026-10-05 試遊（ベースキャンプ → Chapter で一瞬「スパッ」と白っぽい画面）：原因＝フィールドの器の登場アニメ（chfwin＝不透明度 0→1・0.3秒）の間、後ろのページの明るい地色が透けていた。後ろを器と同じ濃紺にする（アニメ・Chapter 開始の演出はそのまま） */
+html:has(#app>.chfw),html:has(#app>.chfw) body{background:#0b1636}
 @supports (height:1dvh){#app>.chfw{--chdeck:clamp(128px,19dvh,166px)}}
 .chf{position:absolute;left:0;right:0;top:0;bottom:var(--chdeck);overflow:hidden;background:#0b1636;touch-action:none}
 .chf-cam{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
@@ -1273,6 +1273,10 @@ button.mkc b{font-size:.9rem}button.mkc small{font-size:.66rem;color:#ffe9b0}
 .chh-fat.f-hi b{color:#ffb39a}
 .chh-gold .chh-ic{width:15px;height:15px;flex:none}.chh-gold b{font:800 13.5px/1 var(--mm-font-head);color:#fff}
 .chh-tix span{font-size:10px;color:#cfd8f0}.chh-tix b{font:800 13px/1 var(--mm-font-head);color:#fff}
+/* 2026-10-05 試遊：特訓チケットは所持金の右に（1行に収める＝折り返さない。幅の狭い画面ではチップの余白と文字を少し詰める）。値は既存の S.trainTix */
+.chh-chips{flex-wrap:nowrap;min-width:0}.chh-tix{flex:0 1 auto;min-width:0}
+@media (max-width:389px){.chh-chips{gap:4px}.chh .chip{padding:0 7px;gap:4px}.chh-tix span{font-size:9.5px;letter-spacing:-.02em}.chh-turn b,.chh-fat b,.chh-gold b{font-size:13px}}
+@media (max-width:365px){.chh .chip{padding:0 6px;gap:3px}.chh-tix span{font-size:9px;letter-spacing:-.04em}}
 /* 出目の小さな表示（右上・HUD の下）。サイコロの停止面が主で、文字は補助 */
 .chroll{position:absolute;right:10px;top:calc(env(safe-area-inset-top,0px) + 112px);display:flex;align-items:baseline;gap:5px;padding:5px 12px 6px;border-radius:12px;background:linear-gradient(180deg,rgba(20,36,82,.9),rgba(8,18,46,.9));border:1.5px solid #d9b465;color:#fff;box-shadow:0 3px 10px rgba(0,0,0,.35);animation:chroll .28s cubic-bezier(.2,1.4,.4,1);pointer-events:none;z-index:8}
 .chroll small{font-size:10.5px;color:#e8cf8e}
@@ -1449,11 +1453,14 @@ button.mkc b{font-size:.9rem}button.mkc small{font-size:.66rem;color:#ffe9b0}
 .chf-enc2.t-rival .ce-top span{font-size:15px;color:#ffe2c0;background:linear-gradient(90deg,rgba(60,6,12,0),rgba(70,8,16,.9) 18%,rgba(70,8,16,.9) 82%,rgba(60,6,12,0));border-color:rgba(240,190,110,.9);text-shadow:0 0 8px rgba(255,90,60,.6)}
 .chf-enc2 .ce-badge{position:absolute;left:50%;top:calc(56% - min(40vw,165px) + 4px);transform:translateX(-50%);padding:2px 12px 3px;border:1px solid rgba(236,206,140,.85);border-radius:3px;background:rgba(14,22,44,.86);color:#f3ecd9;font:700 12px/1.3 var(--mm-font-head);font-style:normal;letter-spacing:.12em;animation:cefade .4s .1s ease-out both}
 .chf-enc2 .ce-tx{position:absolute;left:0;right:0;top:calc(56% + min(40vw,165px) + 28px);margin:0 auto;width:max-content;max-width:94%;padding:6px 22px 7px;font:900 clamp(17px,5.2vw,23px)/1.25 var(--mm-font-head);letter-spacing:.04em;color:#fff;text-align:center;text-shadow:0 2px 0 #0b1530,0 0 8px rgba(0,0,0,.9);animation:cetx .4s .14s ease-out both}
-.chf-enc2.t-rival .ce-tx{top:calc(40% + min(32vw,135px) + 4px);text-shadow:0 2px 0 #3a0610,0 0 10px rgba(255,60,40,.55)}
-.chf-enc2.t-rival .ce-stage{top:40%;width:min(64vw,270px);height:min(64vw,270px)}
+.chf-enc2.t-rival .ce-tx{top:calc(42% + min(36vw,150px) + 6px);text-shadow:0 2px 0 #3a0610,0 0 10px rgba(255,60,40,.55)}
+.chf-enc2.t-rival .ce-stage{top:42%;width:min(94vw,372px);height:min(72vw,300px)}
 /* 2026-10-05 PHASE B：ライバルの遭遇＝リュウの正式立ち絵（赤い魔法陣の上・下端は溶かす）。相棒（竜）は素材が届いたら .ce-partner（右手前） */
 .chf-enc2 .ce-rival{position:absolute;left:50%;bottom:6%;height:min(122%,38dvh);width:auto;max-width:none;transform:translateX(-50%);-webkit-mask-image:linear-gradient(#000 78%,transparent);mask-image:linear-gradient(#000 78%,transparent);filter:drop-shadow(0 0 10px rgba(230,60,40,.45)) drop-shadow(0 8px 14px rgba(0,0,0,.6));animation:cemon .6s .06s cubic-bezier(.2,.75,.3,1) both;z-index:2}
-.chf-enc2 .ce-partner{position:absolute;right:-14%;bottom:-6%;height:78%;width:auto;filter:drop-shadow(0 8px 12px rgba(0,0,0,.6));animation:cemon .6s .18s cubic-bezier(.2,.75,.3,1) both;z-index:3} /* ライバルの立つ所＝道の先（自分のモンスターの足元に重ねない。リュウの正式な立ち絵は無い＝人物は描かない） */
+.chf-enc2 .ce-partner{position:absolute;right:-14%;bottom:-6%;height:78%;width:auto;filter:drop-shadow(0 8px 12px rgba(0,0,0,.6));animation:cemon .6s .18s cubic-bezier(.2,.75,.3,1) both;z-index:3}
+/* 2026-10-05 試遊：リュウ（左）＋正式の相棒レグナス（右・リュウのほうを向く）を魔法陣の上に並べる。リュウは大アップにしない（全身）・レグナスは切らない・下の文と重ねない */
+.chf-enc2.t-rival .ce-stage:has(.ce-partner) .ce-rival{left:31%;bottom:5%;height:min(108%,40dvh)}
+.chf-enc2.t-rival .ce-partner{left:auto;right:1%;bottom:3%;height:min(84%,31dvh);max-width:58%;object-fit:contain;object-position:right bottom;-webkit-mask-image:none;mask-image:none;filter:drop-shadow(0 0 10px rgba(80,150,255,.35)) drop-shadow(0 8px 12px rgba(0,0,0,.6))} /* ライバルの立つ所＝道の先（自分のモンスターの足元に重ねない。リュウの正式な立ち絵は無い＝人物は描かない） */
 @keyframes cefade{from{opacity:0}}
 @keyframes cecircle{from{opacity:0;transform:translateX(-50%) scale(.4)}}
 @keyframes cemon{from{opacity:0;transform:translateX(-50%) translateY(18px) scale(.92)}}
@@ -1536,6 +1543,7 @@ button.mkc b{font-size:.9rem}button.mkc small{font-size:.66rem;color:#ffe9b0}
 .wm-dot{width:11px;height:11px;margin:-5.5px 0 0 -5.5px;border-radius:50%;background:#fff6d2;box-shadow:0 0 8px 3px rgba(255,214,110,.95)}
 .wm-ring{width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;border:2px solid rgba(255,226,140,.95);box-shadow:0 0 12px rgba(255,214,110,.8),inset 0 0 8px rgba(255,214,110,.5);animation:wmRing 1.9s ease-out infinite}
 @keyframes wmRing{0%{transform:scale(.7);opacity:1}100%{transform:scale(1.35);opacity:.2}}
+.wmap.view .wm-pin.still .wm-ring{display:none;animation:none}.wmap.view .wm-pin.still .wm-dot{background:#f3e4b0;box-shadow:0 0 0 1.5px #8a5d14}.wmap.view .wm-pin.still .wm-note{box-shadow:0 0 0 1px #8a5d14} /* 2026-10-05 試遊：通常の世界地図ではリベルナを光らせない（序盤の案内だけ） */
 .wm-lb{top:16px;transform:translateX(-50%);white-space:nowrap;padding:2px 11px;border-radius:999px;background:rgba(8,16,44,.9);border:1px solid #e6bf62;color:#fff3cf;font:800 13.5px/1.45 var(--mm-font-head);letter-spacing:.06em;box-shadow:0 2px 8px rgba(0,0,0,.5)}
 .wm-note{top:-46px;transform:translateX(-50%);white-space:nowrap;padding:1px 9px;border-radius:4px;background:linear-gradient(#fff3c2,#e6b54e);color:#3a1f05;font:800 11px/1.55 var(--mm-font-head);font-style:normal;box-shadow:0 0 0 1px #8a5d14,0 0 10px rgba(255,214,110,.8)}
 .wm-hd{position:absolute;left:0;right:0;top:0;z-index:2;display:flex;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 10px) 56px 10px;background:linear-gradient(rgba(4,10,30,.92),rgba(4,10,30,0))}
@@ -2266,7 +2274,7 @@ button.p10karen img{display:block;width:100%;height:auto;margin-top:2px;transfor
 #app .fm.bc .bcbar button.bcb svg{width:28px;height:28px}
 @media (max-height:700px){#app .fm.bc{--bcbar:84px}#app .lab .labnav .labc,#app .rn2 .rna{min-height:64px;padding:7px 2px 6px}#app .lab .labnav .labc svg,#app .rn2 .rna svg{width:26px;height:26px}}
 /* ベースキャンプの主ボタン「出発する」（2026-10-06 正式デザイン 02_basecamp）：赤＋金・下のコマンドより格上の大きさ・下のコマンドとの間に余白・押すと縮んで金の光 */
-#app .fm.bc .bcgo{bottom:calc(var(--bcbar) + 40px + env(safe-area-inset-bottom,0px))}
+#app .fm.bc .bcgo{bottom:calc(var(--bcbar) + 72px + env(safe-area-inset-bottom,0px))} /* 2026-10-05 試遊：「出発する」を下のバーから離す（40px → 72px）。モンスターの場所（.bcfield）も同じだけ上へ */
 #app .fm.bc .fmgo.bcdep{height:auto;min-height:74px;padding:9px 16px 10px;gap:1px;border-radius:18px;border:2px solid #f0cf7c;background:radial-gradient(ellipse at 50% 0%,rgba(255,214,180,.3),rgba(255,214,180,0) 58%),linear-gradient(#b8262c,#86141c 55%,#5c0b12);box-shadow:inset 0 0 0 2px rgba(60,6,10,.85),inset 0 0 0 3.5px rgba(246,214,140,.55),0 0 0 2px rgba(40,14,8,.7),0 6px 16px rgba(0,0,0,.5),0 0 18px rgba(240,200,110,.22);transition:transform .08s ease,box-shadow .14s ease}
 #app .fm.bc .fmgo.bcdep b{font-size:27px;letter-spacing:.18em;color:#fff3cf;text-shadow:0 2px 0 #4a0a10,0 0 10px rgba(255,214,140,.45)}
 #app .fm.bc .fmgo.bcdep .bcsub{font-size:11.5px;letter-spacing:.08em;color:#f6dc9a;text-shadow:0 1px 1px #3a0608}
@@ -2287,7 +2295,7 @@ button.p10karen img{display:block;width:100%;height:auto;margin-top:2px;transfor
 .mmdg-btns .mmdg-danger{border:2px solid #dcb866;background:linear-gradient(#9a2128,#6b1018 60%,#4c0a10);color:#ffe9cf;box-shadow:inset 0 0 0 2px rgba(40,4,8,.8),0 4px 10px rgba(0,0,0,.4)}
 .mmdg-btns .mmdg-danger:disabled{opacity:.6}
 .mmdg-btns button:active:not(:disabled){transform:translateY(2px) scale(.98)}
-/* 2026-10-05 PHASE B：アイテム補給所（正式デザイン item_shop_screen）の3つの導線・アイテム図鑑・ベースキャンプの「アイテム管理」 */
+/* 2026-10-05 PHASE B：アイテム屋（旧アイテム補給所。正式デザイン item_shop_screen）の3つの導線・アイテム図鑑・ベースキャンプの「アイテム管理」 */
 .shtic{width:40px;height:40px;object-fit:contain}
 .shcart{display:block;width:30px;height:30px;color:#f2d58c}.shcart svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round}
 .shmenu{display:flex;flex-direction:column;gap:10px;margin-top:8px}
@@ -2309,9 +2317,33 @@ button.p10karen img{display:block;width:100%;height:auto;margin-top:2px;transfor
 #app .bcitem img{width:64px;height:64px;object-fit:contain}
 #app .bcitem span{padding:1px 6px;border-radius:6px;background:rgba(10,20,52,.82);border:1px solid rgba(214,178,98,.6);font:800 11px/1.3 var(--mm-font-head);letter-spacing:.04em;white-space:nowrap}
 #app .bcitem:active{transform:scale(.96)}
-#app>.ds.shop>.dbody:has(>.shmenu){max-height:64%;padding-top:12px}
-#app>.ds.shop>.dbody:has(.shopsay){padding-top:12px}
-@media (max-height:720px){.shent{min-height:70px;padding:6px 36px 6px 8px;gap:10px}.shent img{width:58px;height:58px}.shent-tx b{font-size:21px}.shent-tx small{font-size:11.5px;padding-top:2px}.shmenu{gap:7px;margin-top:4px}.ds.shop .shopsay{padding:13px 12px 8px}}
+#app>.ds.shop.shopf>.dbody{flex:0 1 auto;margin:auto -12px 0;max-height:48%;padding:12px 12px 8px;z-index:2}
+#app>.ds.shop.shopf:not(.tab)>.dbody{max-height:30%;overflow:visible}
+.isphd{flex:none;display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:8px;z-index:3;padding-right:54px} /* 右上の音のボタン（#snd）と重ねない */
+.ds.shop button.dback.isp-back{width:42px;height:42px;padding:0;margin:0;border-radius:50%;background:linear-gradient(#223766,#12204a);border:1.5px solid #e0b861;box-shadow:0 3px 8px rgba(0,0,0,.45);color:#fff3cf;font:700 20px/1 var(--mm-font-body)}
+.isp-plq{justify-self:center;display:flex;flex-direction:column;align-items:center;padding:4px 22px 5px;border-radius:6px;background:linear-gradient(#1b2f6b,#0d1a44);border:1.5px solid #e6bf62;box-shadow:inset 0 0 0 2px #0b1534,inset 0 0 0 3px rgba(230,191,98,.35),0 4px 12px rgba(0,0,0,.45)}
+.isp-plq b{font:800 19px/1.3 "Shippori Mincho",var(--mm-font-head,serif);letter-spacing:.16em;color:#fff3cf;white-space:nowrap}
+@media (max-width:389px){.isp-plq{padding:4px 12px 5px}.isp-plq b{font-size:17px;letter-spacing:.08em}}
+.isp-plq small{font:700 11px/1.3 var(--mm-font-body);letter-spacing:.12em;color:#f2d58c}
+.isp-gold{display:flex;align-items:center;gap:5px;height:34px;padding:0 12px 0 6px;border-radius:17px;background:linear-gradient(#223766,#12204a);border:1.5px solid #e0b861;color:#fff;font:13px var(--mm-font-body);white-space:nowrap}
+.isp-gold i{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b8,#e6bf62 55%,#a77a26);box-shadow:inset 0 0 0 1.5px #8a6420}.isp-gold b{font-size:14px;font-weight:700}
+.ds.shop.shopf>.dmsg{z-index:3;margin:8px 0 0;background:linear-gradient(rgba(14,24,56,.94),rgba(8,15,34,.96));color:#f3ecd9;border:1px solid rgba(230,191,98,.7);font-weight:700}
+.ds.shop.shopf .dcard{background:linear-gradient(rgba(14,24,56,.95),rgba(8,15,34,.97));border:1.5px solid #c9a24f;box-shadow:inset 0 0 0 3px rgba(8,15,38,.85),inset 0 0 0 4px rgba(214,178,98,.4),0 6px 16px rgba(0,0,0,.5);border-radius:12px}
+.ds.shop.shopf .dcard .dh{font-family:"Shippori Mincho",var(--mm-font-head,serif);color:#f2d58c}
+.ds.shop.shopf .shmenu{flex:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 -2px;padding:8px 0 calc(12px + env(safe-area-inset-bottom,0px));z-index:3}
+.ds.shop.shopf .shent{flex-direction:column;justify-content:center;gap:2px;min-height:118px;padding:8px 4px 10px;text-align:center}
+.ds.shop.shopf .shent img{width:62px;height:62px}
+.ds.shop.shopf .shent-tx{align-items:center;gap:2px}
+.ds.shop.shopf .shent-tx b{font-size:18px;letter-spacing:.04em;white-space:nowrap}
+.ds.shop.shopf .shent-tx small{font-size:10.5px;border-top:0;padding-top:0;line-height:1.35}
+.ds.shop.shopf .shent-go{display:none}
+.ds.shop.shopf .shent.on{border-color:#f6dc8c;box-shadow:0 0 0 2px rgba(6,11,28,.9),inset 0 0 0 3px rgba(8,15,38,.85),inset 0 0 0 4px rgba(255,226,140,.8),0 0 16px rgba(255,214,110,.45)}
+.ds.shop.shopf.tab .shent{min-height:74px;flex-direction:column;gap:2px;padding:6px 4px}
+.ds.shop.shopf.tab .shent img{width:36px;height:36px}.ds.shop.shopf.tab .shent-tx b{font-size:14px;letter-spacing:0}.ds.shop.shopf.tab .shent-tx small{display:none}
+@media (max-height:720px){.ds.shop>.shopnpc{height:min(60dvh,420px)}.ds.shop.tab>.shopnpc{height:min(40dvh,300px)}.ds.shop.shopf .shent{min-height:96px}.ds.shop.shopf .shent img{width:48px;height:48px}.ds.shop.shopf .shent-tx b{font-size:16px}.ds.shop.shopf.tab .shent{min-height:60px}.ds.shop.shopf.tab .shent img{width:32px;height:32px}}
+@media (max-height:720px){.ds.shop:not(.shopf) .shent{min-height:70px;padding:6px 36px 6px 8px;gap:10px}.shent img{width:58px;height:58px}.shent-tx b{font-size:21px}.shent-tx small{font-size:11.5px;padding-top:2px}.shmenu{gap:7px;margin-top:4px}.ds.shop .shopsay{padding:13px 12px 8px}}
+/* 幅の狭い画面（〜389px）：3つの導線の文字を縮める（「アイテム図鑑」がはみ出さない）。中身を開いているときはアイコンの下に名前 */
+@media (max-width:389px){.ds.shop.shopf .shent-tx b{font-size:15.5px;letter-spacing:0}.ds.shop.shopf.tab .shent{flex-direction:column;gap:2px;padding:5px 2px}.ds.shop.shopf.tab .shent img{width:28px;height:28px}.ds.shop.shopf.tab .shent-tx b{font-size:12.5px}}
 
 /* 2026-10-05 PHASE B：アイテムの正式アイコン（薬草 assets/items/herb.webp）。色は変えない */
 .itic{display:inline-block;width:28px;height:28px;object-fit:contain;vertical-align:middle;flex:0 0 auto}.ppsl .itic{display:block;width:34px;height:34px;margin:0 auto 2px}.p7it .itic{margin-right:8px}.chitems .itic{width:30px;height:30px;margin-right:8px}
@@ -2556,13 +2588,13 @@ html[data-mmev-back] #app :is(.nst,.fbub,.kbub,.fmdan,.shopnpc,.gssay,.elsay,.vg
 .fm.bc button.bcrb svg{width:22px;height:22px;fill:none;stroke:#f6dc98;stroke-width:2;stroke-linecap:round}
 body:has(#app>.fm.bc) #snd,body:has(#app>.sts) #snd{display:none}
 /* 中央：ダン（立ち絵の規格 --nk）と育成中のモンスター。足元は「冒険」の上 */
-.fm.bc .bcfield{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 56px);bottom:calc(var(--bcbar) + var(--bcgo) + env(safe-area-inset-bottom,0px));z-index:2;pointer-events:none;--bcbar:84px;--bcgo:178px}
+.fm.bc .bcfield{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 56px);bottom:calc(var(--bcbar) + var(--bcgo) + env(safe-area-inset-bottom,0px));z-index:2;pointer-events:none;--bcbar:84px;--bcgo:210px}
 .fm.bc{--bcbar:84px;--bcgo:122px}
 .fm.bc .bcdan{position:absolute;left:-3%;bottom:-2px;height:min(70%,330px);pointer-events:none}
 .fm.fm2.bc .bcdan img.fmdan{position:relative;left:auto;top:auto;bottom:auto;display:block;height:100%;width:auto;max-width:none;aspect-ratio:var(--nk,.754);object-fit:cover;object-position:50% 0;-webkit-mask-image:linear-gradient(#000 80%,transparent 99%);mask-image:linear-gradient(#000 80%,transparent 99%)}
 .fm.fm2.bc .bcmonw{position:absolute;left:8%;right:8%;bottom:6px;height:min(66%,320px);display:flex;flex-direction:column;align-items:center;pointer-events:none}
 .fm.fm2.bc .fmmon{position:relative;left:auto;right:auto;top:auto;bottom:auto;width:100%;height:auto;flex:1 1 auto;min-height:0}
-.fm.bc .bcname{flex:none;margin-top:2px;padding:2px 14px 3px;border-radius:7px;background:rgba(12,22,48,.86);border:1px solid #e0b861;text-align:center;line-height:1.2;color:#fff}
+.fm.bc .bcname{display:none;flex:none;margin-top:2px;padding:2px 14px 3px;border-radius:7px;background:rgba(12,22,48,.86);border:1px solid #e0b861;text-align:center;line-height:1.2;color:#fff}
 .fm.bc .bcname b{display:block;font-size:12.5px;font-weight:700}.fm.bc .bcname small{display:block;font-size:10px;color:#f3d892}
 /* ダンの一言：ダンの頭の上 */
 .fm.fm2.bc .fmstage{position:absolute;left:calc(3% + 6px);right:auto;top:auto;bottom:100%;width:min(78vw,300px);aspect-ratio:auto;margin-bottom:-2px;z-index:4;pointer-events:none}
@@ -2574,7 +2606,7 @@ body:has(#app>.fm.bc) #snd,body:has(#app>.sts) #snd{display:none}
 .fm.fm2.bc .kav{position:relative;left:auto;right:auto;top:auto;flex:none;width:38px;height:38px;border:2px solid #e0b861;border-radius:50%;overflow:hidden;background:#f3e2c0}
 .fm.fm2.bc .kbub .kdtx b{display:block;margin:0 0 1px;padding:0;border:0;background:none;color:#7a5520;font-size:11px}
 /* Chapter と「冒険」 */
-.fm.fm2.bc .bcgo{position:absolute;left:50%;top:auto;bottom:calc(var(--bcbar) + 40px + env(safe-area-inset-bottom,0px));width:min(74%,290px);transform:translateX(-50%);z-index:4;display:flex;flex-direction:column;align-items:center;gap:4px}
+.fm.fm2.bc .bcgo{position:absolute;left:50%;top:auto;bottom:calc(var(--bcbar) + 72px + env(safe-area-inset-bottom,0px));width:min(74%,290px);transform:translateX(-50%);z-index:4;display:flex;flex-direction:column;align-items:center;gap:4px}
 .fm.bc .bcch{display:flex;flex-direction:column;align-items:center;padding:2px 22px 3px;line-height:1.25;text-align:center;color:#fff;text-shadow:0 1px 3px #000,0 0 6px rgba(0,0,0,.7);background:radial-gradient(ellipse at 50% 50%,rgba(8,15,34,.78),rgba(8,15,34,.35) 60%,rgba(8,15,34,0) 75%)}
 .fm.bc .bcch small{font-family:var(--mm-font-head);font-size:13px;color:#f6dc98;letter-spacing:.06em}.fm.bc .bcch b{font-family:var(--mm-font-head);font-size:15px;font-weight:700;letter-spacing:.08em}
 .fm.fm2.bc .bcgo button.fmgo{width:100%;height:64px;border-radius:16px}
@@ -2589,7 +2621,7 @@ body:has(#app>.fm.bc) #snd,body:has(#app>.sts) #snd{display:none}
 .fm.bc .bctix{position:absolute;top:1px;right:4px;padding:0 6px;border-radius:8px;background:#0c1630;border:1px solid #e0b861;color:#f6dc98;font-style:normal;font-size:9.5px;line-height:15px;letter-spacing:0}
 @media (max-width:389px){.fm.fm2.bc .bcplq b{font-size:14px;letter-spacing:.06em}.fm.bc .bcplq i{width:26px;height:26px}.fm.bc button.bcrb{width:34px;height:34px}.fm.bc .bcgold{height:32px;padding:0 9px 0 5px}.fm.bc .bcr{gap:4px}.fm.fm2.bc .bchd{padding-left:8px;padding-right:8px}}
 .bcmn .bcmnl{display:grid;gap:8px;padding:12px}.bcmn .bcmnl button{margin:0}
-@media (max-height:700px){.fm.bc{--bcbar:72px;--bcgo:150px}.fm.bc .bcfield{--bcbar:72px;--bcgo:150px}#app .fm.bc .bcgo,.fm.fm2.bc .bcgo{bottom:calc(var(--bcbar) + 26px + env(safe-area-inset-bottom,0px))}.fm.fm2.bc .bcgo button.fmgo{height:54px}.fm.fm2.bc .bcgo .fmgo b{font-size:25px}.fm.fm2.bc .bcbar button.bcb svg{width:24px;height:24px}.fm.fm2.bc .bcbar button.bcb{font-size:12px}.fm.bc .bcdan{height:min(74%,280px)}}
+@media (max-height:700px){.fm.bc{--bcbar:72px;--bcgo:150px}.fm.bc .bcfield{--bcbar:72px;--bcgo:186px}#app .fm.bc .bcgo,.fm.fm2.bc .bcgo{bottom:calc(var(--bcbar) + 50px + env(safe-area-inset-bottom,0px))}.fm.fm2.bc .bcgo button.fmgo{height:54px}.fm.fm2.bc .bcgo .fmgo b{font-size:25px}.fm.fm2.bc .bcbar button.bcb svg{width:24px;height:24px}.fm.fm2.bc .bcbar button.bcb{font-size:12px}.fm.bc .bcdan{height:min(74%,280px)}}
 /* ===== 聖獣士管理局（2026-10-04 PHASE H4。デザイン基準 02：正式背景＋濃紺と金の額の「聖獣士証」と羊皮紙の行・功績・下に2つのボタン） ===== */
 #app>.bu{position:relative;box-sizing:border-box;height:calc(100% + 32px);margin:-16px;display:flex;flex-direction:column;overflow:hidden;background:#0c1630;color:#fff}
 .bu .bubg{position:absolute;inset:0;background:var(--bu-bg) 50% 30%/cover no-repeat;pointer-events:none}
@@ -2626,7 +2658,9 @@ body:has(#app>.fm.bc) #snd,body:has(#app>.sts) #snd{display:none}
 .bu .bunav{flex:none;display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:8px 16px calc(12px + env(safe-area-inset-bottom,0px))}
 .bu button.bub{height:54px;min-height:0;margin:0;border-radius:27px;background:linear-gradient(#1d3570,#0f1c46);border:1.5px solid #e0b861;box-shadow:inset 0 0 0 2px #0c1630,inset 0 0 0 3px rgba(224,184,97,.4),0 4px 12px rgba(0,0,0,.5);color:#fff;font-family:var(--mm-font-head);font-size:19px;font-weight:800;letter-spacing:.12em}
 .bu button.bub.on{background:linear-gradient(#2b4a92,#16296a);box-shadow:inset 0 0 0 2px #0c1630,inset 0 0 0 3px rgba(255,220,140,.75),0 0 14px rgba(120,170,255,.45)}
-.bu .bunpc{position:absolute;right:0;bottom:70px;--nsh:min(34dvh,280px);z-index:0;pointer-events:none}
+.bu .bunpc{position:absolute;right:0;bottom:70px;--nsh:min(34dvh,280px);height:var(--nsh);max-width:none;z-index:0;pointer-events:none;-webkit-mask-image:linear-gradient(#000 80%,transparent 99%);mask-image:linear-gradient(#000 80%,transparent 99%)}
+/* 2026-10-05 試遊：セルジュの立ち絵に高さが無く元の画素の大きさ（巨大）で出ていた → ほかの施設の NPC と同じく高さ（--nsh）で決める。通常の画面（パネルなし）は少し大きく右下に */
+.bu.idle .bunpc{--nsh:min(46dvh,400px);right:max(-4%,calc(50% - 230px));bottom:calc(66px + env(safe-area-inset-bottom,0px))}
 body:has(#app>.bu) #snd{display:none}
 /* 2026-10-05：正式のステータス画面（stScr。デザイン基準＝正式採用のステータス画像を HTML/CSS で再現。数値・名前・スキルはデータから） */
 #app:has(>.sts){overflow:hidden}
@@ -3233,7 +3267,7 @@ function startGame(el,ok){if(P_NEWGAME&&!ok)return ngAsk(el);if(el&&el.dataset.g
 function titlePress(e,on){const p=$(".tpage.mmt");if(p&&!p.classList.contains("tgo"))p.classList.toggle("tdown",!!on)}
 MMAUDIO.attachLegacy({bgm:sc=>{if(auBus())bgmLegacy(LEGACY_BGM[sc]||"town")},stop:bgmLegacyStop,sfx:(n,o)=>{const t=o&&o.legacy!=null?o.legacy:LEGACY_SE[n];if(t==null)return false;sfxSynth(t,o&&o.delay);return true},muted:()=>!AU.on,setMuted:on=>{if(AU.on===!on)return;AU.on=!on;try{localStorage.setItem("mr4a",AU.on?"1":"0")}catch(e){}const b=$("#snd");if(b)b.textContent=AU.on?"🔊":"🔇"}}); // 合成音（legacy）を MMAUDIO へつなぐ。sfx の o.legacy＝sfx(n) から来たときの元の番号（合成音は今までどおりの音）
 function auBus(){if(AU.ctx)return true;const c=MMAUDIO.context();if(!c)return false;AU.ctx=c;mkbus(c);return true} // AudioContext は MMAUDIO の1つだけ。合成音の出口（mkbus）はそこへつなぐ
-function unlock(){try{if(navigator.audioSession)navigator.audioSession.type="playback"}catch(e){}auBus();MMAUDIO.unlock()} // 最初の操作：AudioContext の作成・resume・保留した BGM の再開（表裏の suspend／resume も MMAUDIO）
+function unlock(){try{if(navigator.audioSession&&navigator.audioSession.type!="playback")navigator.audioSession.type="playback"}catch(e){}auBus();MMAUDIO.unlock()} // 2026-10-05 試遊：audioSession は変わるときだけ設定（タップのたびに設定し直さない） // 最初の操作：AudioContext の作成・resume・保留した BGM の再開（表裏の suspend／resume も MMAUDIO）
 ["pointerdown","touchend","click","keydown"].forEach(e=>document.addEventListener(e,unlock));
 document.addEventListener("click",e=>{const b=e.target&&e.target.closest?e.target.closest("button,.skt,[role=button]"):null;if(b&&!b.disabled&&b.id!="snd"&&!(b.dataset&&b.dataset.nsfx)&&!(b.closest&&b.closest("#bt")))MMAUDIO.se(b.dataset&&b.dataset.se||(window.MMFEEL&&MMFEEL.navKind(b)=="back"?"UI_CANCEL":"UI_SELECT"))},true); // 2026-10-04 SE 監査：通常のコマンド・施設へ移動＝既存の UI_SELECT（決定音 UI_CONFIRM の正式素材が無いため。ユーザー指示「既存 UI_SELECT で統一」）・戻る＝UI_CANCEL・バトル画面（#bt＝Phase 6）の中はここでは鳴らさない（fight() の sfx と二重にしない） // data-se＝そのボタンの SE（2026-10-03：牧場のタブ＝UI_TAB）。UI_CONFIRM の差し込み口はここ（正式素材が来たら registry の1行で鳴る） // 2026-10-03 総監査：街へ戻るボタン（MMFEEL の back）は登録済みの戻る音 UI_CANCEL。ほかは UI_CONFIRM（NG のため無音）
 function sndToggle(){AU.on=!AU.on;try{localStorage.setItem("mr4a",AU.on?"1":"0")}catch(e){}$("#snd").textContent=AU.on?"🔊":"🔇";unlock();MMAUDIO.setMuted(!AU.on);if(AU.on)setTimeout(()=>MMAUDIO.se("UI_CONFIRM"),250)} // ミュートは MMAUDIO が全部の経路（ファイル BGM・合成 BGM・ファイル SE・合成 SE）へ反映する
@@ -3397,12 +3431,13 @@ function bureauRows(){const br=S.br??-1;return [["プレイヤー名",`<b class=
 function bureauAch(all){const L=BUREAU_ACH.map(([id,t,f])=>({id,t,ok:!!f(S)})),v=all?L:L.filter(x=>x.ok).concat(L.filter(x=>!x.ok)).slice(0,5);
  return `<ul class="buach">${v.map(x=>`<li class="${x.ok?"ok":""}" data-ach="${x.id}"><i class="bumd" aria-hidden="true"></i><span>${x.t}</span><b class="buck" aria-label="${x.ok?"達成":"未達成"}"></b></li>`).join("")}</ul>`}
 function bureauNpc(){const n=window.MMNPC&&MMNPC.get&&MMNPC.get(SERGE.id),src=n&&npcSrc(SERGE.id);return src?`<img class="bunpc nstf" ${npcStand(SERGE.id)} alt="" aria-hidden="true">`:""}
-function bureauScr(tab){if(p8Blocked())return;bgm("bureau");p9Immersive(true);const all=tab=="ach";
+// 2026-10-05 試遊：通常の管理局は「背景＋セルジュ＋下のコマンド」だけ（どのコマンドも選ばれていない・パネルは開いていない）。プレイヤーが押したコマンドだけ開く＝tab：card（聖獣士証）／ach（功績一覧）
+function bureauScr(tab){if(p8Blocked())return;bgm("bureau");p9Immersive(true);const all=tab=="ach",cardOn=tab=="card",idle=!all&&!cardOn;
  const crest='<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 5l22 8v17c0 15-10 25-22 30C20 55 10 45 10 30V13z" fill="#1d3570" stroke="#e6bf62" stroke-width="2.5"/><path d="M32 13l15 5.5v12c0 10-6.5 17-15 21-8.5-4-15-11-15-21v-12z" fill="none" stroke="#e6bf62" stroke-width="1.2" opacity=".7"/><path d="M24 36c3-7 6-11 8-17 2 6 5 10 8 17-3-1.5-5.5-2-8-2s-5 .5-8 2z" fill="#e6bf62"/></svg>';
  const card=`<section class="bucard" aria-label="聖獣士証"><div class="bucrest">${crest}</div><h3 class="buh"><span>聖獣士証</span></h3><dl class="burows">${bureauRows().map(r=>`<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join("")}</dl></section>`;
  const ach=`<section class="buachw${all?" all":""}" aria-label="功績"><h3 class="buh2">功績</h3>${bureauAch(all)}${all?"":`<button class="bumore" onclick="bureauScr('ach')">すべて見る ▾</button>`}</section>`;
- $("#app").innerHTML=`<div class="bu" style="--bu-bg:url(${BUREAU_BG})"><div class="bubg" aria-hidden="true"></div><header class="buhd"><button class="burb" data-nav="back" onclick="lobby()" aria-label="街にもどる">←</button><div class="buplq"><b>聖獣士管理局</b></div><span class="burb sp" aria-hidden="true"></span></header>
- <div class="bubody">${all?ach:card+ach}</div>${bureauNpc()}<nav class="bunav"><button class="bub${all?"":" on"}" onclick="bureauScr()">聖獣士証</button><button class="bub${all?" on":""}" onclick="bureauScr('ach')">功績一覧</button>${S.playerNamePending?"":`<button class="bub bumap" onclick="bureauMap()" aria-label="世界地図"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 4.5l2.4 7.5L12 19.5 9.6 12z" class="nd"/><path d="M12 12l2.4-7.5M12 12l-2.4 7.5"/></svg>世界地図</button>`}</nav></div>`;try{window.scrollTo(0,0)}catch(e){}}
+ $("#app").innerHTML=`<div class="bu${idle?" idle":""}" style="--bu-bg:url(${BUREAU_BG})"><div class="bubg" aria-hidden="true"></div><header class="buhd"><button class="burb" data-nav="back" onclick="lobby()" aria-label="街にもどる">←</button><div class="buplq"><b>聖獣士管理局</b></div><span class="burb sp" aria-hidden="true"></span></header>
+ <div class="bubody">${all?ach:cardOn?card+ach:""}</div>${bureauNpc()}<nav class="bunav"><button class="bub${cardOn?" on":""}" onclick="bureauScr('card')">聖獣士証</button><button class="bub${all?" on":""}" onclick="bureauScr('ach')">功績一覧</button>${S.playerNamePending?"":`<button class="bub bumap" onclick="bureauMap()" aria-label="世界地図"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 4.5l2.4 7.5L12 19.5 9.6 12z" class="nd"/><path d="M12 12l2.4-7.5M12 12l-2.4 7.5"/></svg>世界地図</button>`}</nav></div>`;try{window.scrollTo(0,0)}catch(e){}}
 function townGuild(){if(S.playerNamePending&&opOn())return opBureau();bureauScr()} // 2026-10-04 PHASE H4：街の札「聖獣士管理局」から（既存の札の位置・押し方のまま）。2026-10-05：登録前は聖獣士登録（セルジュ）へ
 /** 街からアイテム屋へ（2026-10-03）。アイテム屋は連れているモンスターがいるとき（従来の shopScr の条件のまま）。戻るは街へ */
 /** プロフィール（暫定の器）：顔（仮の金色の人の形。正式な顔の素材は後日）・プレイヤー名・所持金・最高到達ランク・獲得トロフィー（正式データが無いので枠だけ）。
@@ -3451,7 +3486,7 @@ const OPEN_TALK={
  originA:[{npc:"fina",expression:"happy",text:"リベルナ！ アステリア地方の西のほうにある街だよね。"}],
  originB:[{npc:"fina",expression:"happy",text:"リベルナかぁ。アステリア地方の西のほうにある街だよね。"}],
  mistoria:[{npc:"fina",expression:"guide",text:"ここがミストリア。"},{npc:"fina",expression:"guide",text:"聖獣士管理局のほかにも、研究所や牧場、闘技場なんかが集まってる街だよ。"},{npc:"fina",expression:"smile",text:"一人前の聖獣士を目指すなら、これから何度もお世話になると思う。"}],
- support:n=>[{npc:"serge",text:`${n}さんのような新人の聖獣士には、管理局から支援をお渡ししています。`},{npc:"serge",text:"新人聖獣士支援制度です。まずは、旅立ちの準備金をお受け取りください。"},{note:{icon:"gold",title:"1000G を受け取った！",sub:"新人聖獣士支援制度"}},{npc:"serge",text:"それから、こちらもお持ちください。"},{note:{img:ITEM_ICON.herb,title:"薬草 を1つ受け取った！",sub:"聖獣の疲れを30回復できる道具"}},{npc:"serge",text:"薬草は、聖獣の疲れを30回復できる道具です。旅の途中で疲れが溜まったら使ってください。"}],
+ support:n=>[{npc:"serge",text:`${n}さんのような新人の聖獣士には、管理局から支援をお渡ししています。`},{npc:"serge",text:"新人聖獣士支援制度です。まずは、旅立ちの準備金をお受け取りください。"},{note:{icon:"gold",title:"1000G を受け取った！",sub:"新人聖獣士支援制度",se:"GOLD_GET"}},{npc:"serge",text:"それから、こちらもお持ちください。"},{note:{img:ITEM_ICON.herb,title:"薬草 を1つ受け取った！",sub:"聖獣の疲れを30回復できる道具",se:"REWARD"}},{npc:"serge",text:"薬草は、聖獣の疲れを30回復できる道具です。旅の途中で疲れが溜まったら使ってください。"}],
  unlock:n=>[{npc:"serge",text:"世界地図は、この管理局でいつでもご覧いただけます。"},{npc:"fina",expression:"guide",text:`それじゃあ${n}さん、まずは市場で最初の相棒を迎えに行こう！`}]};
 /** プロローグ（新しいゲームの最初に1回。見た記録は S.npcFlags.prologue）→ 街 */
 /** 2026-10-06：プロローグ（固定尺のオープニング）と正式のプロローグ BGM を同じ時間軸で鳴らす。
@@ -3474,13 +3509,18 @@ function opBureau(){bgm("bureau");p9Immersive(true);
  $("#app").innerHTML=`<div class="bu opbu" style="--bu-bg:url(${BUREAU_BG})"><div class="bubg" aria-hidden="true"></div><header class="buhd"><button class="burb" data-nav="back" onclick="lobby()" aria-label="街にもどる">←</button><div class="buplq"><b>聖獣士管理局</b></div><span class="burb sp" aria-hidden="true"></span></header></div>`;
  MMNPC.talk(OPEN_TALK.serge,{kind:"event",presentation:"standard",big:true,scene:BUREAU_BG}).then(()=>{if(S.playerNamePending&&$(".opbu"))p11NameScr()})}
 /** 名前の確認（セルジュ・2択）→ 登録（MMP11P.confirmName＝プレイヤー名の保存先は従来どおり）→ 登録完了 → フィナ（初めて名前を呼ぶ）・世界地図 */
-function opConfirm(v){const n=MMP11P.sanitize(v);
- MMNPC.talk(OPEN_TALK.confirm(n),{kind:"event",presentation:"standard",big:true,scene:BUREAU_BG,branches:{fix:OPEN_TALK.fix}}).then(c=>{if(c!=="ok"||!S.playerNamePending)return;
-  MMP11P.confirmName(S,n);const f=finaFlags();f.op="map";save();
-  MMNPC.talk(OPEN_TALK.done(n),{kind:"event",presentation:"standard",big:true,scene:BUREAU_BG}).then(()=>opAfterReg())})}
+// 2026-10-05 試遊（名前を決めたあと、名前の画面が一瞬もう一度見える）：原因＝確認の会話の間も #app は名前の入力画面のままで、会話が閉じるフェード（約0.22秒）の間に
+//  data-mmscene が外れて下の入力画面が見えていた（確認 → 登録完了の2つの会話の切れ目と、登録完了 → 新人支援の切れ目の2回）。
+//  → 確認を始める前に名前の画面を片付けて管理局の背景だけ（opShell）にし、確認と登録完了を1つの会話でつなぐ（選んだ時点で登録・保存）。「書き直す」のときだけ名前の画面へ戻す
+function opShell(){$("#app").innerHTML=`<div class="bu opbu" style="--bu-bg:url(${BUREAU_BG})"><div class="bubg" aria-hidden="true"></div><header class="buhd"><span class="burb sp" aria-hidden="true"></span><div class="buplq"><b>聖獣士管理局</b></div><span class="burb sp" aria-hidden="true"></span></header></div>`}
+function opConfirm(v){const n=MMP11P.sanitize(v);opShell();let reg=false;
+ const register=()=>{if(reg||!S.playerNamePending)return;reg=true;MMP11P.confirmName(S,n);const f=finaFlags();f.op="map";save()};
+ MMNPC.talk(OPEN_TALK.confirm(n),{kind:"event",presentation:"standard",big:true,scene:BUREAU_BG,branches:{ok:OPEN_TALK.done(n),fix:OPEN_TALK.fix},onLine:(i,st)=>{if(st&&st.choice==="ok")register()}}).then(c=>{
+  if(c==="ok"){register();return opAfterReg()}
+  if(S.playerNamePending){p11NameScr();const e=$("#p11nm");if(e)e.value=v}})}
 /** 登録のあと：フィナ（名前を呼ぶ）→ 出身地の会話＋世界地図 → ミストリア → 世界地図の解放（セルジュ）→ 最初の相棒（市場）へ */
 async function opAfterReg(){const f=finaFlags(),n=S.playerName||MMP11P.DEFAULT_NAME;if(OP_TALKING)return;OP_TALKING=true;bgm("bureau");p9Immersive(true);
- $("#app").innerHTML=`<div class="bu opbu" style="--bu-bg:url(${BUREAU_BG})"><div class="bubg" aria-hidden="true"></div><header class="buhd"><span class="burb sp" aria-hidden="true"></span><div class="buplq"><b>聖獣士管理局</b></div><span class="burb sp" aria-hidden="true"></span></header></div>`;
+ if(!$(".opbu"))opShell();
  try{
   if(grantSupport())await talkSeq(OPEN_TALK.support(n),{kind:"event",presentation:"standard",big:true,scene:BUREAU_BG}); // 2026-10-06：登録完了のすぐあと（セルジュ）＝新人支援 1000G＋薬草×1（先に受け取りを確定して保存＝再読み込みで二重に受け取らない）
   await MMNPC.talk(OPEN_TALK.finaName(n),{kind:"fina",presentation:"standard",big:true,scene:BUREAU_BG});
@@ -3489,7 +3529,7 @@ async function opAfterReg(){const f=finaFlags(),n=S.playerName||MMP11P.DEFAULT_N
   await MMNPC.talk(OPEN_TALK.origin(n).concat([]),{kind:"fina",presentation:"compact",branches:{a:OPEN_TALK.originA.concat(OPEN_TALK.mistoria),b:OPEN_TALK.originB.concat(OPEN_TALK.mistoria)},onLine:i=>{const a=act[i];if(a)a()}});
   T.forEach(clearTimeout);if(map)await map.close();
   f.worldMap=1;save();
-  await MMNOTE.show({icon:"unlock",title:"世界地図 が使えるようになった！",sub:"聖獣士管理局でいつでも見られます"});
+  await MMNOTE.show({icon:"unlock",title:"世界地図 が使えるようになった！",sub:"聖獣士管理局でいつでも見られます",se:"UNLOCK"}); // 2026-10-05 試遊：SE は帯と同時（1000G＝GOLD_GET・薬草＝REWARD・世界地図＝UNLOCK。REWARD と UNLOCK は同じファイル）
   await MMNPC.talk(OPEN_TALK.unlock(n),{kind:"event",presentation:"standard",big:true,scene:BUREAU_BG});
  }finally{OP_TALKING=false}
  f.op="done";f.finaIntro=1;save();lobby(finaMsg(`${p11Esc(n)}さん、まずは市場で最初の相棒を迎えよう！`))}
@@ -4512,7 +4552,7 @@ function bcCmds(st){return [["hall('s')","train","特訓",""],["shopScr()","item
   st=="farm"?["p8Suspend()","pause","中断",""]:["lobby()","town","街へ戻る",""]]}
 function fmScr(msg){const m=S.m;if(!m)return lobby();p9MenuClose();
  const st=MMP7.raiseState(m),r=m.raise||{},k=MMP8.nextChapterKey(m),fin=k==MMP8.FINAL,last=(r.log||[]).slice(-1)[0],sp=MMP10M.byId(m.sp),done=st=="done",can=done?{ok:true}:MMP8.canDepart(S,m);
- bgm("farm");p9Immersive(true);npcWarm("dan");ht="t";setTimeout(()=>{if(S.m!==m||!document.querySelector(".fm"))return;if(st=="none")npcFirst("farm");else if(st=="farm")farmReturn(m)},0); // 2026-10-04：初回訪問（ダン ↔ フィナ）・Chapter の帰還イベント（ダン＋フィナ。Chapter ごとに1回）
+ bgm("farm");p9Immersive(true);npcWarm("dan");ht="t";try{if(k!=null&&k!=MMP8.FINAL)MMAUDIO.prefetchBgm("CHAPTER_"+Math.max(1,Math.min(4,k|0)))}catch(e){}/* 2026-10-05 試遊：次の Chapter の曲を先にデコードしておく（フィールドで最初から AudioBuffer で鳴らす） */setTimeout(()=>{if(S.m!==m||!document.querySelector(".fm"))return;if(st=="none")npcFirst("farm");else if(st=="farm")farmReturn(m)},0); // 2026-10-04：初回訪問（ダン ↔ フィナ）・Chapter の帰還イベント（ダン＋フィナ。Chapter ごとに1回）
  const chNm=c=>c==MMP8.FINAL?"最終ルート":`Chapter ${c}`,chSub=c=>c==MMP8.FINAL||c==null?"":MMP8.chapterName(c);
  const warn=!done&&!fin&&!can.ok&&can.reason!="rank_gate"?(P7_ERR[can.reason]||"まだ出発できません。"):"";
  const gate=!done&&can.reason=="rank_gate"?p8GateNote(k,can.need):"";if(gate)msg=msg?`${msg}<br>${gate}`:gate;   // 解放条件の案内（システム表示。名前・顔なしの通知に足す）
@@ -4529,7 +4569,7 @@ function fmScr(msg){const m=S.m;if(!m)return lobby();p9MenuClose();
  ${MMP7.canAccessVault(S)?`<button class="bcitem" onclick="itemScr()" aria-label="アイテム管理"><img src="${ITEM_MGMT_ICON}" alt="" decoding="async"><span>アイテム管理</span></button>`:""}
  <div class="bcfield">
   ${msg?`<div class="bcsys"><div class="kbub kt ksys" onclick="this.remove()">${msg}</div></div>`:""}
-  <div class="bcmonw"><div class="fmmon mon">${msv(m)}</div><div class="bcname"><b>${p11Esc(m.name)}</b>${sp?`<small>${sp.kind}</small>`:""}</div></div>
+  <div class="bcmonw"><div class="fmmon mon">${msv(m)}</div></div>
  </div>
  <div class="bcgo fmgate"><div class="bcch">${chip}</div><button class="fmgo${go.c}" onclick="${go.on}">${go.s||warn?`<small>${warn||go.s}</small>`:""}<b>${go.t}</b>${go.sub?`<small class="bcsub">${go.sub}</small>`:""}</button></div>
  <nav class="bcbar fmcmd" aria-label="コマンド">${cmd.map(([on,ic,lb,bd])=>`<button class="fmb bcb${ic=="town"?" back":""}" data-cmd="${ic}" onclick="${on}">${bd}${fmIc(ic)}<span>${lb}</span></button>`).join("")}</nav>
@@ -4699,7 +4739,7 @@ function p7Depart(b){const m=S.m;if(!m)return lobby();
  if(MMP7.raiseState(m)=="none"&&b&&window.MMNPC){if(b.dataset.fina)return;b.dataset.fina="1";const f=finaFlags(),first=!f.raiseIntro;if(first){f.raiseIntro=1;save()}
   const spk="sp"+m.sp,M=f.moment||{},spL=!window.MM_QA_NO_NPC&&window.MMNPCE&&MMNPCE.moment&&!M[spk]?MMNPCE.moment("sp",(MMP10M.byId(m.sp)||{}).name||"この種族"):null; // 2026-10-05：その種族を初めて育成する出発＝ダンの一言を添える（1回だけ）
   const ho=DAN_TALK.handoff;finaTalk(first?"raiseFirst":"raiseAgain",{start:spL?ho.concat(spL):ho}).then(r=>{delete b.dataset.fina;if(r==="start"&&spL)momentMark(spk);if(r==="start"&&S.m===m&&MMP7.raiseState(m)=="none")p7Depart()});return}
- if(MMP7.raiseState(m)=="none"&&b&&!arm(b,"もう一度押すと育成開始（完了か放棄まで街へ戻れません）"))return;const r=MMP8.depart(S,m);if(!r.ok)return prepScr(P7_ERR[r.reason]||"出発できません。");save();board(`${p8ChLabel(r.key)}に出発！サイコロを振って進もう！`)}
+ if(MMP7.raiseState(m)=="none"&&b&&!arm(b,"もう一度押すと育成開始（完了か放棄まで街へ戻れません）"))return;const r=MMP8.depart(S,m);if(!r.ok)return prepScr(P7_ERR[r.reason]||"出発できません。");save();try{MMAUDIO.resetBgmPos()}catch(e){}board(`${p8ChLabel(r.key)}に出発！サイコロを振って進もう！`)}
 
 // ---- アイテム屋（購入品は保管庫へ。バッグは直接操作しない） ----
 // アイテム屋の正式背景・正式NPC（2026-10-03。assets/shop/。README.md）：背景はそのまま（ぼかさない）、NPC は立ち姿だけ（名前は未確定＝名前・セリフは出さない）。商品・価格・売買の処理は変えていない
@@ -4708,25 +4748,27 @@ const SHOP_LOOK={cls:"shop",bg:`<div class="shopbg" style="background-image:url(
 // 2026-10-04（追加アセット）：おばあちゃんの表情（全身 4表情）と一言。毎回は話さない（条件のとき・購入成立のときだけ。名前は付けない＝札は「アイテム屋」）
 function shopLook(ex){return {cls:"shop",bg:`<div class="shopbg" style="background-image:url(${SHOP_BG})"></div><img class="shopnpc" src="${npcSrc("shop",ex,"fullbody")||SHOP_NPC}" alt="" draggable="false" decoding="async" data-ex="${ex}">`}}
 function shopSay(l){return l?`<div class="shopsay"><b>ベルナ</b><span>${l.text}</span></div>`:""}
-/** アイテム補給所（2026-10-05 PHASE B 正式デザイン item_shop_screen：入口＝ベルナの一言＋3つの導線「購入／売却／アイテム図鑑」（正式アイコン）。
+/** アイテム屋（2026-10-05 試遊：ユーザー向けの名前は「アイテム屋」に統一。旧「アイテム補給所」。2026-10-05 PHASE B 正式デザイン item_shop_screen：入口＝ベルナの一言＋3つの導線「購入／売却／アイテム図鑑」（正式アイコン）。
  *  tab：未指定＝入口・"buy"＝購入（従来の商品一覧・処理は MMP7.shopBuy のまま）・"sell"＝売却（保管庫のアイテム・MMP7.shopSell のまま）・"book"＝アイテム図鑑（登録済みのアイテムを見るだけ）。
  *  商品・価格・所持数・購入／売却の処理は変えていない */
 const SHOP_ICON=Object.freeze({buy:"./assets/item_ui/shop_purchase.webp",sell:"./assets/item_ui/shop_sell.webp",book:"./assets/item_ui/shop_encyclopedia.webp"});
-function shopScr(msg,bought,tab){if(!S.m)return lobby();if(!MMP7.canAccessVault(S))return hall("t","Chapter中はアイテム補給所に行けません。");bgm("farm");npcWarm("shop",["fullbody"]);
+/** アイテム屋の画面の器（2026-10-05 試遊：施設の画面として作り直し。名札「アイテム屋」・戻る・所持金／ベルナ（全身）／中身／下の3つの導線。tab＝今開いている導線） */
+function shopShell(tab,body,msg,ex){const T={buy:"購入",sell:"売却",book:"アイテム図鑑"},ent=(k,t,sub)=>`<button class="shent${tab==k?" on":""}" onclick="shopScr('',false,'${k}')"${tab==k?' aria-current="page"':""}><img src="${SHOP_ICON[k]}" alt="" decoding="async"><span class="shent-tx"><b>${t}</b><small>${sub}</small></span><i class="shent-go" aria-hidden="true"></i></button>`;
+ return `<div class="ds shop shopf${tab?" tab":""}">${shopLook(ex).bg}<header class="isphd"><button class="dback isp-back" data-nav="back" onclick="${tab?"shopScr()":"hall('t')"}" aria-label="${tab?"アイテム屋の入口にもどる":"ベースキャンプにもどる"}">←</button><div class="isp-plq"><b>アイテム屋</b>${tab?`<small>${T[tab]}</small>`:""}</div><span class="isp-gold"><i aria-hidden="true"></i><b>${S.g}</b> G</span></header>${msg?`<div class="dmsg"><span>${msg}</span></div>`:""}<div class="dbody">${body}</div><nav class="shmenu" aria-label="アイテム屋のコマンド">${ent("buy","購入","道具を買う")}${ent("sell","売却","保管庫のアイテムを売る")}${ent("book","アイテム図鑑","見つけた道具を確認")}</nav></div>`}
+function shopScr(msg,bought,tab){if(!S.m)return lobby();if(!MMP7.canAccessVault(S))return hall("t","Chapter中はアイテム屋に行けません。");bgm("farm");npcWarm("shop",["fullbody"]);
  let sl=bought&&window.MMNPCE?{...MMNPCE.REVISIT.shop.buy}:window.MMNPCE&&!msg&&!tab?MMNPCE.revisit("shop",npcCtx("shop")):null;
  if(!bought&&!tab){if(sl&&NPC_LAST.shop===sl.id)sl=null;NPC_LAST.shop=sl?sl.id:null}   // 同じ一言を続けて出さない（来るたびに話さない）
  const sex=sl?sl.expression:"normal";
  if(!bought&&!msg&&!tab)setTimeout(()=>{if(document.querySelector(".ds.shop"))npcFirst("shop")},0);   // 初回（フィナ ↔ おばあちゃん）
  const cat=MMP7.getShopCatalog(),vt=S.inv.vault;
  if(tab=="buy"){const buy=cat.length?cat.map(id=>{const d=MMP7.getItemDef(id),pr=Number.isInteger(d.price);return `<button class="t" ${pr&&S.g>=d.price?"":"disabled"} onclick="p7Buy('${id}')">${itemIc(id)}${d.name}<small>${pr?d.price+"G":"価格未設定"}</small></button>`}).join(""):`<div class="p7it emp"><span>商品は準備中です</span></div>`;
-  $("#app").innerHTML=p7Shell(`<img class="shtic" src="${SHOP_ICON.buy}" alt="">`,"購入","道具を買う（買ったアイテムは保管庫へ）",`${shopSay(sl)}<div class="dcard"><div class="dh">購入</div>${buy}</div>`,msg,"shopScr()",shopLook(sex));try{window.scrollTo(0,0)}catch(e){}return}
+  $("#app").innerHTML=shopShell("buy",`${shopSay(sl)}<div class="dcard"><div class="dh">購入 <small>買ったアイテムは保管庫へ</small></div>${buy}</div>`,msg,sex);try{window.scrollTo(0,0)}catch(e){}return}
  if(tab=="sell"){const sell=vt.length?vt.map((it,i)=>{const d=MMP7.getItemDef(it.id),ok=!!d&&Number.isInteger(d.sellPrice);return `<div class="p7it">${itemIc(it)}<span>${p7ItemName(it)}</span><button ${ok?"":"disabled"} onclick="p7Sell(${i})">${ok?"売る "+d.sellPrice+"G":"売れない"}</button></div>`}).join(""):`<div class="p7it emp"><span>保管庫は空です</span></div>`;
-  $("#app").innerHTML=p7Shell(`<img class="shtic" src="${SHOP_ICON.sell}" alt="">`,"売却","保管庫のアイテムを売る",`<div class="dcard"><div class="dh">売却 <small>保管庫のアイテム</small></div>${sell}</div>`,msg,"shopScr()",shopLook(sex));try{window.scrollTo(0,0)}catch(e){}return}
+  $("#app").innerHTML=shopShell("sell",`<div class="dcard"><div class="dh">売却 <small>保管庫のアイテム</small></div>${sell}</div>`,msg,sex);try{window.scrollTo(0,0)}catch(e){}return}
  if(tab=="book"){const own=id=>S.inv.bag.concat(S.inv.vault).filter(x=>x&&x.id===id).length,defs=MMP7.listItemDefs();
   const rows=defs.length?defs.map(d=>{const e=window.MMCH&&MMCH.fatigueItemEffect?MMCH.fatigueItemEffect(d.id):null;return `<div class="shbk">${itemIc(d.id,"big")||'<i class="shbk-noic" aria-hidden="true"></i>'}<div class="shbk-tx"><b>${p11Esc(d.name)}</b><small>${e?(e.full?"疲れを全回復":`疲れを${e.amount}回復`)+"（Chapter のアイテムで使う・ターンは使わない）":"効果は未登録"}</small><small>${Number.isInteger(d.price)?`価格 ${d.price}G`:"非売品"}・所持 ${own(d.id)}</small></div></div>`}).join(""):`<div class="p7it emp"><span>まだ記録がありません</span></div>`;
-  $("#app").innerHTML=p7Shell(`<img class="shtic" src="${SHOP_ICON.book}" alt="">`,"アイテム図鑑","見つけた道具を確認",`<div class="dcard shbook">${rows}</div>`,msg,"shopScr()",shopLook(sex));try{window.scrollTo(0,0)}catch(e){}return}
- const ent=(k,t,sub)=>`<button class="shent" onclick="shopScr('',false,'${k}')"><img src="${SHOP_ICON[k]}" alt="" decoding="async"><span class="shent-tx"><b>${t}</b><small>${sub}</small></span><i class="shent-go" aria-hidden="true"></i></button>`;
- $("#app").innerHTML=p7Shell('<i class="shcart" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 3h3l2.6 11.2a2 2 0 0 0 2 1.6h8.3a2 2 0 0 0 2-1.5L22 7H6.2"/><circle cx="10" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/></svg></i>',"アイテム補給所","ベルナの補給所<br>買ったアイテムは保管庫へ",`${shopSay(sl)}<div class="shmenu">${ent("buy","購入","道具を買う")}${ent("sell","売却","保管庫のアイテムを売る")}${ent("book","アイテム図鑑","見つけた道具を確認")}</div>`,msg,null,shopLook(sex));try{window.scrollTo(0,0)}catch(e){}}
+  $("#app").innerHTML=shopShell("book",`<div class="dcard shbook"><div class="dh">アイテム図鑑</div>${rows}</div>`,msg,sex);try{window.scrollTo(0,0)}catch(e){}return}
+ $("#app").innerHTML=shopShell("",shopSay(sl),msg,sex);try{window.scrollTo(0,0)}catch(e){}}
 function p7Buy(id){const r=MMP7.shopBuy(S,id);if(r.ok)save();shopScr(r.ok?"保管庫に入れました。":P7_ERR[r.reason],r.ok,"buy")}   // 購入成立＝おばあちゃん「はい、これで大丈夫。」（表情＝満足・おすすめ）
 function p7Sell(i){const r=MMP7.shopSell(S,i);if(r.ok)save();shopScr(r.ok?"売却しました。":P7_ERR[r.reason],false,"sell")}
 /** 2026-10-05 PHASE B：ベースキャンプの「アイテム管理」（正式アイコン item_management）。持ち物の確認・バッグと保管庫の整理だけ（店ではない＝購入・売却は置かない）。

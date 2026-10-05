@@ -63,7 +63,7 @@
     if (!srcs.length && !fb) throw new Error('MMAUDIO：BGM の登録が不正です（ファイルか fallback か silent が要る）');
     if (opts.fallback && !fb) throw new Error('MMAUDIO：BGM の fallback の場面が不正です');
     const g = opts.gain != null ? opts.gain : (opts.volume != null ? opts.volume : 1);
-    BGM[key] = fz({ srcs: fz(srcs), gain: Number.isFinite(g) ? Math.max(0, g) : 1, loop: opts.loop !== false, fallback: fb, loopRange: loopRangeOf(opts) });
+    BGM[key] = fz({ srcs: fz(srcs), gain: Number.isFinite(g) ? Math.max(0, g) : 1, loop: opts.loop !== false, fallback: fb, loopRange: loopRangeOf(opts), buffer: !!opts.buffer && opts.loop !== false });   // buffer：デコードした音（AudioBuffer）で鳴らす場面（2026-10-05 試遊：Chapter のフィールド）
   }
   /**
    * ループ区間（秒）：{ loopStart, loopEnd, loopXfade }。曲の終わりがフェードアウトする素材を、ファイルを加工せずに自然につなぐ。
@@ -178,7 +178,7 @@
     if (s.timer) clearTimeout(s.timer);
     s.timer = setTimeout(() => { s.timer = null; if (s.active) return; try { s.el.pause(); } catch (e) {} s.src = null; s.scene = null; }, ms + 40);
   }
-  function stopFiles(ms) { for (const s of st.slots) if (s.active) fadeOutSlot(s, ms); st.cur = null; }
+  function stopFiles(ms) { for (const s of st.slots) if (s.active) fadeOutSlot(s, ms); st.cur = null; bufStop(ms); }
   function onElError(s) {
     const src = s.src; if (!src) return;
     st.failed[src] = true; note('bgm-load', src);
@@ -187,6 +187,8 @@
   /** 場面の BGM をファイルで鳴らす。鳴らせない（登録なし・形式が合わない・読み込み失敗）なら false */
   function playFile(key, entry, ms) {
     const src = pickSrc(entry.srcs); if (!src) return false;
+    if (entry.buffer && bufPlay(key, entry, src, ms)) return true;   // デコード済み：<audio> を使わずに鳴らす
+    bufStop(ms);
     const all = slots(); if (!all.length) return false;
     const cur = st.cur;
     if (cur && cur.active && cur.src === src) { cur.scene = key; cur.gainTarget = entry.gain; cur.loopRange = entry.loopRange || null; st.source = 'file'; legacyStop(); setGain(cur, slotTarget(cur), ms); return true; }   // 同じ曲なら鳴らし直さない
@@ -201,6 +203,7 @@
     if (cur && cur !== s) fadeOutSlot(cur, ms);
     st.cur = s; st.source = 'file'; legacyStop();
     const up = () => { if (s.token !== token || !s.active) return; if (st.pendingScene === key) st.pendingScene = null; setGain(s, slotTarget(s), ms); };
+    if (entry.buffer) bufLoad(src, () => bufSwap(s, token, key, entry, src));   // デコードが終わったら、同じ位置から AudioBuffer へ切り替える
     try {
       const p = s.el.play();
       if (p && typeof p.then === 'function') p.then(up).catch((e) => { if (s.token !== token) return; if (e && /NotSupported/i.test(e.name || '')) { onElError(s); return; } if (!(e && /NotAllowed/i.test(e.name || ''))) note('bgm-play', e); st.pendingScene = key; });   // 自動再生の制約（NotAllowedError）は失敗ではなく保留：最初の操作（unlock）で再開
@@ -243,6 +246,80 @@
     try { s.el.currentTime = L.start; const p = s.el.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
     s.prepared = false;
   }
+  // ---- 2026-10-05 試遊（「Chapter のフィールド BGM が途切れ途切れ」）：デコードした AudioBuffer で鳴らす BGM（registry の buffer: true）----
+  //  原因の候補：iPhone の Safari は <audio> → MediaElementSource → GainNode の音を、メインスレッドが忙しい画面（Chapter のフィールド＝カメラ追従・歩行アニメの rAF）で
+  //  取りこぼしやすい。さらに Chapter 1 はループ区間の手前で2本目の <audio> に同じファイルを読み直していた（約3秒前の load・0.2秒の余裕）。
+  //  → Chapter の曲はファイルを一度デコードして AudioBufferSourceNode（音声スレッドで再生・ループ区間はサンプル単位）で鳴らす。曲・音量・ループ区間は registry のまま。
+  //  デコードが終わるまでは従来の <audio> で鳴らし、終わったら同じ位置から切り替える。バトルなどで離れて同じ曲に戻ったら、続きの位置から鳴らす（頭出ししない）。
+  const BUF = { cache: [], loading: {} };   // cache：[{ src, buffer }]（最大1曲＝iPhone のメモリを使いすぎない。Chapter の曲だけ）、loading：src → 待っている関数
+  const RESUME_MS = 15 * 60 * 1000;          // 同じ曲へ戻ったときに続きから鳴らすのは、離れてからこの時間まで
+  function bufGet(src) { const e = BUF.cache.find((x) => x.src === src); return e ? e.buffer : null; }
+  function bufLoad(src, done) {
+    if (bufGet(src)) { if (done) done(); return; }
+    if (BUF.loading[src]) { if (done) BUF.loading[src].push(done); return; }
+    const c = st.ctx, X = root.XMLHttpRequest; if (!c || typeof X !== 'function' || typeof c.decodeAudioData !== 'function') return;
+    BUF.loading[src] = done ? [done] : [];
+    const fin = (buf) => { const w = BUF.loading[src] || []; delete BUF.loading[src]; if (!buf) return; BUF.cache = BUF.cache.filter((x) => x.src !== src); BUF.cache.push({ src, buffer: buf }); while (BUF.cache.length > 1) BUF.cache.shift(); for (const f of w) { try { f(); } catch (e) {} } };
+    try {
+      const x = new X(); x.open('GET', src, true); x.responseType = 'arraybuffer';
+      x.onload = () => {
+        if (!(x.status >= 200 && x.status < 300 && x.response)) { note('bgm-buf', src); fin(null); return; }
+        let ok = false; const yes = (b) => { if (ok) return; ok = true; fin(b); }, no = (e) => { if (ok) return; ok = true; note('bgm-decode', e && e.message ? e.message : e); fin(null); };
+        try { const r = c.decodeAudioData(x.response, yes, no); if (r && typeof r.then === 'function') r.then(yes, no).catch(() => {}); } catch (e) { no(e); }
+      };
+      x.onerror = () => { note('bgm-buf', src); fin(null); };
+      x.send();
+    } catch (e) { note('bgm-buf', e); fin(null); }
+  }
+  /** 曲の先読み（場面を渡す。AudioContext があればデコードまで。鳴らさない） */
+  function prefetchBgm(name) { try { const e = resolveBgm(resolveScene(name)); if (!e || !e.buffer || !st.ctx) return false; const src = pickSrc(e.srcs); if (src) bufLoad(src); return !!src; } catch (e) { return false; } }
+  const bufLen = (b) => (b && b.duration) || ((b && b.length && b.sampleRate) ? b.length / b.sampleRate : 0);
+  /** 曲の中の位置（秒）。ループ区間（なければ曲全体）で折り返す */
+  function bufPos(bb) {
+    const c = st.ctx; if (!bb || !c) return 0;
+    let p = bb.offset + Math.max(0, c.currentTime - bb.t0);
+    const L = bb.loop; if (p >= L.end && L.end > L.start) p = L.start + ((p - L.start) % (L.end - L.start));
+    return p;
+  }
+  function bufPlay(key, entry, src, ms, at) {
+    const c = st.ctx, buffer = bufGet(src); if (!c || !buffer || st.webAudio === false) return false;
+    const bb = st.bb;
+    if (bb && bb.active && bb.src === src) { bb.scene = key; bb.gainTarget = entry.gain; st.source = 'file'; legacyStop(); for (const s of st.slots) if (s.active) fadeOutSlot(s, ms); st.cur = null; rampParam(bb.gain.gain, entry.gain, ms); return true; }   // 同じ曲なら鳴らし直さない
+    bufStop(ms);
+    const dur = bufLen(buffer), R = entry.loopRange, loop = { start: R ? Math.min(R.start, dur) : 0, end: R ? Math.min(R.end, dur) : dur };
+    let offset = Number.isFinite(at) ? at : 0;
+    const rs = BUF.resume && BUF.resume.src === src && Date.now() - BUF.resume.at < RESUME_MS ? BUF.resume.pos : null;   // バトルなどから戻った：続きから
+    if (!Number.isFinite(at) && rs != null) offset = rs;
+    if (!(offset >= 0 && offset < loop.end)) offset = 0;
+    let node, g;
+    try {
+      g = c.createGain(); g.gain.value = 0; g.connect(st.bgmGain);
+      node = c.createBufferSource(); node.buffer = buffer; node.loop = true; node.loopStart = loop.start; node.loopEnd = loop.end; node.connect(g);
+      node.start(0, offset);
+    } catch (e) { note('bgm-buf-play', e); try { g && g.disconnect(); } catch (e2) {} return false; }
+    st.bb = { src, scene: key, node, gain: g, t0: c.currentTime, offset, loop, gainTarget: entry.gain, active: true };
+    rampParam(g.gain, entry.gain, ms);
+    for (const s of st.slots) if (s.active) fadeOutSlot(s, ms);
+    st.cur = null; st.source = 'file'; legacyStop(); if (st.pendingScene === key) st.pendingScene = null;
+    return true;
+  }
+  /** <audio> で鳴らしていた曲のデコードが終わった：同じ位置から AudioBuffer へ短いクロスフェードで切り替える */
+  function bufSwap(s, token, key, entry, src) {
+    if (s.token !== token || !s.active || st.cur !== s || s.src !== src || st.scene !== key || st.hidden) return;
+    let t = 0; try { t = s.el.currentTime || 0; if (s.el.paused) return; } catch (e) { return; }
+    bufPlay(key, entry, src, 160, t + 0.03);
+  }
+  /** 新しく Chapter に出発したとき：前の続きの位置を忘れる（同じ Chapter の中だけ続きから） */
+  function resetBgmPos() { BUF.resume = null; }
+  function bufStop(ms) {
+    const bb = st.bb; if (!bb || !bb.active) return;
+    bb.active = false; st.bb = null;
+    BUF.resume = { src: bb.src, pos: bufPos(bb), at: Date.now() };
+    rampParam(bb.gain.gain, 0, ms);
+    const c = st.ctx;
+    try { bb.node.stop(c.currentTime + (ms || 0) / 1000 + 0.05); } catch (e) {}
+    setTimeout(() => { try { bb.node.disconnect(); bb.gain.disconnect(); } catch (e) {} }, (ms || 0) + 120);
+  }
   function legacyStop() { try { if (legacy && typeof legacy.stop === 'function') legacy.stop(); } catch (e) { note('legacy-stop', e); } }
   function startLegacy(key) {
     if (legacy && typeof legacy.bgm === 'function') { st.source = 'legacy'; if (!isMuted()) { try { legacy.bgm(key); } catch (e) { note('legacy-bgm', e); } } }
@@ -278,7 +355,7 @@
     return true;
   }
   /** 2026-10-06：今鳴っているファイルの BGM の位置（秒）。場面 key を渡すとその場面のときだけ（止まっている・合成音・別の場面なら null）。プロローグの映像と BGM の位置合わせに使う */
-  function bgmTime(key) { const c = st.cur; if (!c || !c.active || (key && resolveScene(key) !== c.scene)) return null; try { const t = c.el.currentTime; return c.el.paused || !Number.isFinite(t) ? null : t; } catch (e) { return null; } }
+  function bgmTime(key) { const b = st.bb; if (b && b.active && (!key || resolveScene(key) === b.scene)) return bufPos(b); const c = st.cur; if (!c || !c.active || (key && resolveScene(key) !== c.scene)) return null; try { const t = c.el.currentTime; return c.el.paused || !Number.isFinite(t) ? null : t; } catch (e) { return null; } }
   /** 今鳴っているファイルの BGM の位置を合わせる（秒）。鳴らしていなければ何もしない */
   function seekBgm(sec, key) { const c = st.cur; if (!c || !c.active || (key && resolveScene(key) !== c.scene) || !Number.isFinite(sec)) return false; try { c.el.currentTime = Math.max(0, sec); return true; } catch (e) { note('bgm-seek', e); return false; } }
   function stopBgm(opts = {}) { stopFiles(FADE[opts.fade || 'normal'] != null ? FADE[opts.fade || 'normal'] : FADE.normal); legacyStop(); st.scene = null; st.source = 'none'; st.pendingScene = null; }
@@ -399,7 +476,7 @@
     const cur = st.cur; if (cur && cur.active && cur.el.paused && !(cur.el.ended && !cur.el.loop)) {   /* 2026-10-06：最後まで鳴り終えた1回きりの曲（プロローグ）を表に戻ったときに頭から鳴らし直さない */ try { const p = cur.el.play(); if (p && p.catch) p.catch(() => { st.pendingScene = cur.scene; }); } catch (e) { st.pendingScene = cur.scene; } }
   }
   /** 今の状態（テスト・デバッグ用） */
-  const status = () => ({ scene: st.scene, source: st.source, playing: !!(st.cur && st.cur.active) || st.source === 'legacy', plays: st.plays, volume: { ...st.vol }, muted: isMuted(), unlocked: st.unlocked,
+  const status = () => ({ scene: st.scene, source: st.source, playing: !!(st.cur && st.cur.active) || !!(st.bb && st.bb.active) || st.source === 'legacy', buffer: st.bb && st.bb.active ? { src: st.bb.src, scene: st.bb.scene, pos: Math.round(bufPos(st.bb) * 100) / 100 } : null, plays: st.plays, volume: { ...st.vol }, muted: isMuted(), unlocked: st.unlocked,
     webAudio: st.webAudio, context: st.ctx ? st.ctx.state : null, pendingScene: st.pendingScene, errors: [...st.errors], failed: Object.keys(st.failed),
     files: { bgm: Object.keys(BGM).filter((k) => BGM[k].srcs.length), se: Object.keys(SEF).filter((k) => !SEF[k].silent) }, inherits: Object.keys(BGM).filter((k) => !BGM[k].srcs.length && !BGM[k].silent),
     silent: { bgm: Object.keys(BGM).filter((k) => BGM[k].silent), se: Object.keys(SEF).filter((k) => SEF[k].silent) },
@@ -407,6 +484,6 @@
     slots: st.slots.map((s) => ({ i: s.i, src: s.src, scene: s.scene, active: s.active, paused: !!s.el.paused, loop: s.loopRange ? [s.loopRange.start, s.loopRange.end] : null, waiting: !!s.waiting, time: Number.isFinite(s.el.currentTime) ? Math.round(s.el.currentTime * 100) / 100 : null, gain: s.gain ? s.gain.gain.value : s.el.volume })) });
   const registryOf = (kind) => (kind === 'se' ? Object.fromEntries(Object.keys(SEF).map((k) => [k, { srcs: [...SEF[k].srcs], gain: SEF[k].gain, silent: !!SEF[k].silent, maxMs: SEF[k].maxMs }])) : Object.fromEntries(Object.keys(BGM).map((k) => [k, { ...BGM[k], srcs: [...BGM[k].srcs] }])));
 
-  root.MMAUDIO = fz({ SCENES, SCENE_ALIAS, SE, FADE, registerBgm, registerSe, registerAll, clearRegistry, registryOf, prefetchSe, attachLegacy, resolveScene, resolveBgm, scene, stopBgm, bgmTime, seekBgm, se, setVolume, setMuted, unlock, context, legacyInput, status, seLog: () => SE_LOG.slice() });
+  root.MMAUDIO = fz({ SCENES, SCENE_ALIAS, SE, FADE, registerBgm, registerSe, registerAll, clearRegistry, registryOf, prefetchSe, prefetchBgm, resetBgmPos, attachLegacy, resolveScene, resolveBgm, scene, stopBgm, bgmTime, seekBgm, se, setVolume, setMuted, unlock, context, legacyInput, status, seLog: () => SE_LOG.slice() });
   try { if (root.document) { ['pointerdown', 'touchend', 'keydown'].forEach((e) => root.document.addEventListener(e, unlock, { passive: true })); root.document.addEventListener('visibilitychange', onVisibility); } } catch (e) {}
 })(typeof window !== 'undefined' ? window : globalThis);

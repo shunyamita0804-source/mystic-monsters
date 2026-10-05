@@ -255,7 +255,7 @@ T('QA-RB2：育成中（Chapterフィールド）は街・市場・牧場・博�
     assert.equal(await rawSave(pg), raw0, `${call} でセーブは変わらない`);
   }
   // Chapter中は出発準備（バッグ）・アイテム屋も開けず、出発し直すこともできない
-  for (const [call, msg] of [['prepScr()', 'Chapter中はバッグの準備ができません。'], ['shopScr()', 'Chapter中はアイテム補給所に行けません。'], ['p7Depart()', 'Chapter中はバッグの準備ができません。']]) {
+  for (const [call, msg] of [['prepScr()', 'Chapter中はバッグの準備ができません。'], ['shopScr()', 'Chapter中はアイテム屋に行けません。'], ['p7Depart()', 'Chapter中はバッグの準備ができません。']]) {
     if (call === 'p7Depart()') await pg.waitForTimeout(SETTLE);   // 画面が変わった直後の押下を無視する作りでも、拒否の処理まで進むように
     await pg.evaluate((c) => { (0, eval)(c); }, call);
     assert.equal(await pg.evaluate(() => !!document.querySelector('#chf-ui #brollbtn')), true, `${call} のあともフィールドのまま`);

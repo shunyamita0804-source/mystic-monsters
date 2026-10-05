@@ -37,6 +37,18 @@
       params: fz({ chance: 0.1, surviveAtLife: 1, uses: 1 }), hiddenParams: fz(['chance']) }),
   });
 
+  // ---- ライバル専用のモンスター（2026-10-05 正式）：リュウの相棒レグナス。プレイヤー用の SPECIES とは別の表＝市場・図鑑・合体・初期選択・特殊復元・牧場・野生の相手には出さない
+  //  （プレイヤーの入手方法は未決。正式技10個・成長適性も未確定＝null。固有スキルはデータだけ＝implemented:false。バトル（Phase 6）には入れていない）
+  const RIVAL_MONSTERS = fz([
+    fz({ key: 'regnas', name: 'レグナス', en: 'REGNAS', kind: '竜種', personality: '誇り高い・負けず嫌い', owner: 'ryu',
+      base: fz({ li: 90, po: 115, in: 75, hi: 105, ev: 115, de: 100 }), speed: 8, style: '俊敏な地上竜＋回避反撃型',
+      uniqueSkill: fz({ id: 'unique_regnas', name: '蒼銀の反撃', implemented: false, desc: '相手の攻撃を回避すると、次に与えるダメージが一度だけ1.20倍。効果は重複しない。',
+        params: fz({ trigger: 'evade', damageMultiplier: 1.2, uses: 1, stack: false }), hiddenParams: fz([]) }),
+      moves: null, growth: null, playerAvailable: false,
+      image: fz({ src: './assets/monsters/regnas/regnas_official.webp', w: 663, h: 900 }) }),
+  ]);
+  const rivalMonster = (key) => RIVAL_MONSTERS.find((x) => x.key === key) || null;
+
   // ---- 成長適性（2026-10-02 正式）：6能力それぞれに A〜E。能力マスに止まったときの上昇量はこの表だけで決まる（ランダム幅・失敗・大成功なし）。
   //  イベントによる能力変化（賢者 +20・薬草 +6 など）は適性の影響を受けない（イベント側の数値のまま）。
   const GROWTH_GRADES = fz(['A', 'B', 'C', 'D', 'E']);
@@ -229,7 +241,7 @@
       fromStart: !!(P8 && typeof P8.raiseCountFromStart === 'function' && P8.raiseCountFromStart(S)) };
   }
 
-  root.MMP10M = fz({ STAT_KEYS, STAT_LABELS, STAT_MAX, SPEED_MIN, SPEED_MAX, isValidSpeed, UNIQUE_SKILLS, SPECIES,
+  root.MMP10M = fz({ STAT_KEYS, STAT_LABELS, STAT_MAX, SPEED_MIN, SPEED_MAX, isValidSpeed, UNIQUE_SKILLS, SPECIES, RIVAL_MONSTERS, rivalMonster,
     byId, byKey, keyOf, idOf, imageOf, silhouetteOf, speedOf, baseOf, skillOf, skillText, ensureSpeed, ECONOMY, MARKET_CATALOG,
     GROWTH_GRADES, GROWTH_GAIN, GROWTH_UNREGISTERED, growthOf, growthGain, growthRegistered,
     OWN_LIMIT, RANCH_LIMIT, marketItem, canPurchase, purchase, FUSION_COST, setFusionAccess, fusionAvailable, continueRescueApplies, SELL, sellQuote, canSell, sell, NOBITON_STOCK_RAISES, nobitonStock });

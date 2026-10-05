@@ -9,7 +9,7 @@
   'use strict';
   const fz = Object.freeze;
   const CONFIG = {
-    name: 'リュウ', title: 'ライバル', partner: null,   // partner：相棒モンスターの species（未確定＝null。決まったら登録するだけ）
+    name: 'リュウ', title: 'ライバル', partner: 'regnas',   // partner：相棒モンスター（2026-10-05 正式：レグナス＝js/phase10/monsters.js の RIVAL_MONSTERS。バトルの強さは従来どおり下の strength＝fight() は変えない）
     strength: {
       factor: 1.0,                                   // プレイヤーの平均能力に対する倍率（1.0＝同じくらい）
       bias: 0,                                       // 平均に足す固定値（＋なら少し強め）

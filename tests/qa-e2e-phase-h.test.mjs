@@ -29,12 +29,12 @@ for (const size of SIZES) {
     await pg.waitForSelector('.fm.bc .bcbar'); await pg.waitForTimeout(500);
     const a = await pg.evaluate(() => ({ plq: document.querySelector('.bcplq').textContent.trim(), gold: document.querySelector('.bcgold').textContent.replace(/\s+/g, ''), ch: document.querySelector('.bcch').textContent.replace(/\s+/g, ' ').trim(),
       go: document.querySelector('.bcgo .fmgo b').textContent.trim(), sub: (document.querySelector('.bcgo .fmgo .bcsub') || {}).textContent, cmd: [...document.querySelectorAll('.bcbar .bcb')].map((b) => b.querySelector('span').textContent), tix: document.querySelector('.bctix'),
-      name: document.querySelector('.bcname').textContent, sw: document.documentElement.scrollWidth, text: document.querySelector('#app').innerText }));
+      name: document.querySelector('.bcname'), sw: document.documentElement.scrollWidth, text: document.querySelector('#app').innerText }));
     assert.equal(a.plq, 'ベースキャンプ'); assert.equal(a.gold, `${await pg.evaluate(() => S.g)}G`); assert.match(a.ch, /Chapter 1\s*はじまりの草原/); assert.equal(a.go, '出発する'); assert.match(a.sub || '', /CHAPTER 1/);
-    assert.deepEqual(a.cmd, ['特訓', 'アイテム', 'ステータス', '技管理', '街へ戻る']); assert.equal(a.tix, null, '特訓チケットの札は出さない（2026-10-06）'); assert.match(a.name, /ガウ/);
+    assert.deepEqual(a.cmd, ['特訓', 'アイテム', 'ステータス', '技管理', '街へ戻る']); assert.equal(a.tix, null, '特訓チケットの札は出さない（2026-10-06）'); assert.equal(a.name, null, '2026-10-05 試遊：モンスターの下に名前・種類の帯を出さない');
     assert.doesNotMatch(a.text, /ファーム|育成を始める|育成準備中/); assert.equal(a.sw, size[0], '横にはみ出さない');
-    assert.ok((await inView(pg, '.bcbar .bcb, .bcgo .fmgo, .bchd .bcrb, .bcplq, .fmmon, .bcname')).every(Boolean), '主な部品はすべて画面の中');
-    assert.ok(await pg.evaluate(() => { const g = document.querySelector('.bcgo .fmgo').getBoundingClientRect(), b = document.querySelector('.bcbar').getBoundingClientRect(), mn = document.querySelector('.bcmonw').getBoundingClientRect(); return !document.querySelector('.fmdan,.kdan') && b.top - g.bottom >= 24 && Math.abs((mn.left + mn.right) / 2 - innerWidth / 2) < 8; }), '2026-10-06：ダンの常設なし・モンスターが中央の主役・「出発する」は下のバーから少し上（24px 以上）');
+    assert.ok((await inView(pg, '.bcbar .bcb, .bcgo .fmgo, .bchd .bcrb, .bcplq, .fmmon')).every(Boolean), '主な部品はすべて画面の中');
+    assert.ok(await pg.evaluate(() => { const g = document.querySelector('.bcgo .fmgo').getBoundingClientRect(), b = document.querySelector('.bcbar').getBoundingClientRect(), mn = document.querySelector('.bcmonw').getBoundingClientRect(); return !document.querySelector('.fmdan,.kdan') && b.top - g.bottom >= (innerHeight > 700 ? 64 : 44) && Math.abs((mn.left + mn.right) / 2 - innerWidth / 2) < 8; }), '2026-10-06：ダンの常設なし・モンスターが中央の主役・「出発する」は下のバーから離す（2026-10-05 試遊：64px 以上・低い画面は 44px 以上）');
     // 冒険 → 出発準備（従来の prepScr）
     await pg.click('.bcgo .fmgo'); await pg.waitForSelector('button[onclick="p7Depart(this)"]');
     // Chapter間：5つ目は中断・育成放棄はメニュー
@@ -87,7 +87,8 @@ for (const size of SIZES) {
     await H.newGame(pg, 'ユウ');
     await pg.evaluate(() => { S.wins = 3; S.br = 1; S.fuseCnt = 2; S.raiseRec = { done: 4, fromStart: true }; save(); lobby(); });
     await pg.waitForSelector('.tpin[onclick="townGuild()"]'); await pg.click('.tpin[onclick="townGuild()"]');
-    await pg.waitForSelector('.bu .bucard'); await pg.waitForTimeout(400);
+    await pg.waitForSelector('.bu.idle'); assert.equal(await pg.evaluate(() => document.querySelectorAll('.bu .bucard,.bu .bub.on').length), 0, '2026-10-05 試遊：通常の管理局はパネルなし・選ばれたコマンドなし');
+    await pg.click('.bub[onclick="bureauScr(\'card\')"]'); await pg.waitForSelector('.bu .bucard'); await pg.waitForTimeout(400);
     const rows = await pg.evaluate(() => [...document.querySelectorAll('.burows>div')].map((d) => [d.querySelector('dt').textContent, d.querySelector('dd').textContent.replace(/\s+/g, '')]));
     assert.deepEqual(rows, [['プレイヤー名', 'ユウ'], ['大会到達ランク', 'D'], ['育成完了数', `${await pg.evaluate(() => MMP8.raiseDoneCount(S))}回`], ['合体回数', '2回'], ['発見モンスター数', '2種'], ['大会優勝記録', '3回']]);
     assert.ok((await inView(pg, '.bunav .bub, .buhd .burb')).every(Boolean)); assert.equal(await pg.evaluate(() => document.documentElement.scrollWidth), size[0]);

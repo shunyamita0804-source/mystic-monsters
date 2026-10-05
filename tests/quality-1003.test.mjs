@@ -55,7 +55,7 @@ test('QU-04：研究所＝正式背景（assets/lab/lab_main.webp）・エリオ
   assert.ok(existsSync(path.join(ROOT, 'assets/lab/lab_main.webp')));
   const mu = fnOf('museum'); assert.match(mu, /if\(tab=="book"\)return labBook\(\);if\(tab=="fuse"\)return labFuse\(\);if\(tab=="table"\)return labTable\(\);/, '2026-10-04（第二段階）：研究所の主要機能＝図鑑・合体・配合表（特殊復元は主要メニューに無い）');
   assert.doesNotMatch(mu, /labLock|特殊復元/); assert.doesNotMatch(HTML, /function labLock\(/, '旧 labLock（準備中の表示）は廃止');
-  assert.match(HTML, /\.ds\.shop>\.shopnpc\{top:15%;bottom:auto;height:min\(112%,1000px\)/);
+  assert.match(HTML, /\.ds\.shop>\.shopnpc\{position:absolute;z-index:1;left:50%;top:calc\(58px \+ env\(safe-area-inset-top,0px\)\);height:min\(66dvh,600px\)/, '2026-10-05 試遊：アイテム屋の入口はベルナを大きく（背景の店内が見える）');
   // 2026-10-04 PHASE H3：牧場は20体の一覧（デザイン基準 01）＝選んでいる子は一覧の中で光らせる（旧「選んでいる子を大きく」は廃止）
   assert.match(fnOf('farm'), /if\(!all\.some\(x=>x\.uid===rnSel\)\)rnSel=\(m\|\|S\.box\[0\]\|\|\{\}\)\.uid\|\|null;/); assert.match(HTML, /\.rn2 button\.rnc\.on\{/);
 });

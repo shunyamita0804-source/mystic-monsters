@@ -347,7 +347,7 @@
   const SERGE = 'assets/npc/serge/full_normal.webp', SV = { normal: SERGE };
   register('serge', { name: 'セルジュ', role: '聖獣士管理局の職員（正式登録・登録名の確認・聖獣士証・功績の案内）', board: false, defaultView: 'closeup', defaultExpr: 'normal',
     views: { closeup: { ...SV }, fullbody: { ...SV }, stand: { ...SV } } });
-  const NPC_NAME = { karen: ['カレン', '市場担当'], dan: ['ダン', 'ベースキャンプ担当'], nick: ['ニック', '牧場の管理者'], elliot: ['エリオット', '研究所の研究者'], vargas: ['ヴァルガス', '闘技場の管理者'], cedric: ['セドリック', '公式ランク大会の進行役'], genshin: ['ゲンシン', '特訓の指導役'], shop: ['ベルナ', 'アイテムの補給所（ベースキャンプ）'] };
+  const NPC_NAME = { karen: ['カレン', '市場担当'], dan: ['ダン', 'ベースキャンプ担当'], nick: ['ニック', '牧場の管理者'], elliot: ['エリオット', '研究所の研究者'], vargas: ['ヴァルガス', '闘技場の管理者'], cedric: ['セドリック', '公式ランク大会の進行役'], genshin: ['ゲンシン', '特訓の指導役'], shop: ['ベルナ', 'アイテム屋（ベースキャンプ）'] };
   for (const [id, keys] of Object.entries(EXPR)) {
     const dir = `assets/npc/${id}/expr/`, file = (v) => Object.fromEntries(keys.map((k, i) => [k, `${dir}${v}/${String(i + 1).padStart(2, '0')}_${k}.webp`]));
     const views = { closeup: file('closeup'), face: file('face'), fullbody: file('full'), stand: file('full') };   // stand＝会話の立ち絵（全身を 3/4身に切って見せる。PHASE H5）

@@ -66,6 +66,8 @@
     if (cur) cur.close();
     const ov = build('view', `<header class="wm-hd"><b>世界地図</b><button class="wm-x" type="button" aria-label="閉じる">×</button></header><div class="wm-zoom"><button type="button" class="wm-zi" aria-label="拡大">＋</button><button type="button" class="wm-zo" aria-label="縮小">−</button></div>`);
     ov.querySelectorAll('.wm-pin[data-spot="mistoria"]' + (opts.origin ? ',.wm-pin[data-spot="liberna"]' : '')).forEach((e) => e.classList.add('on'));
+    // 2026-10-05 試遊：出身地（リベルナ）を光らせる・点滅させるのは序盤の案内（open）だけ。通常の地図では印と名前だけ（光の輪・発光なし）
+    ov.querySelectorAll('.wm-pin[data-spot="liberna"]').forEach((e) => e.classList.add('still'));
     let st = { x: 0.5, y: 0.5, z: 1 };
     const apply = (instant) => { st.z = Math.max(1, Math.min(3.2, st.z)); st.x = Math.max(0, Math.min(1, st.x)); st.y = Math.max(0, Math.min(1, st.y)); place(ov, st.x, st.y, st.z, instant); };
     apply(true); requestAnimationFrame(() => ov.classList.add('in'));

@@ -37,11 +37,11 @@
     LABORATORY: { src: PGS + 'event_music_2.ogg', gain: 0.65 },        // 103秒・ゆっくり・神秘的【暫定】
     FARM:       { src: HG + '04_peaceful_village.ogg', gain: 0.87 }, // 2026-10-03 第5弾の仮採用：HydroGene「Peaceful Village」86秒・穏やか（第4弾で NG の Lost River は使わない）
     TRAINING:   { src: HG + '20_military_base.ogg', gain: 0.74 },    // 2026-10-03 第5弾の仮採用：HydroGene「Military Base」49秒・行進曲調（旧：合成音）
-    // ---- Chapter ----
-    CHAPTER_1:  { src: HG + '07_spirits_forest_full.ogg', gain: 1.1, loopStart: 27.344, loopEnd: 81.98, loopXfade: 0.2 },   // 2026-10-03 第5弾の仮採用：HydroGene「Spirits Forest」82秒＝前奏 27.3秒＋ループ部 54.6秒（配布の intro／loop と同じ境目）。2周目からはループ部だけ
-    CHAPTER_2:  { src: HG + '17_unknown_island.ogg', gain: 0.86 },   // 2026-10-03 第5弾の仮採用：海岸。HydroGene「Unknown Island」57秒（旧：合成音）
-    CHAPTER_3:  { src: HG + '14_traveling_the_sky.ogg', gain: 0.66 }, // 2026-10-03 第5弾の仮採用：空。HydroGene「Traveling the Sky」70秒（旧：合成音）
-    CHAPTER_4:  { src: HG + '15_volcanic_crater.ogg', gain: 0.57 },  // 2026-10-03 第5弾の仮採用：火山。HydroGene「Volcanic Crater」86秒（旧：合成音）
+    // ---- Chapter ----（2026-10-05 試遊：buffer: true＝デコードした音で鳴らす（iPhone で途切れない・バトルから戻ったら続きから）。曲・音量・ループ区間は変えていない）
+    CHAPTER_1:  { buffer: true, src: HG + '07_spirits_forest_full.ogg', gain: 1.1, loopStart: 27.344, loopEnd: 81.98, loopXfade: 0.2 },   // 2026-10-03 第5弾の仮採用：HydroGene「Spirits Forest」82秒＝前奏 27.3秒＋ループ部 54.6秒（配布の intro／loop と同じ境目）。2周目からはループ部だけ
+    CHAPTER_2:  { buffer: true, src: HG + '17_unknown_island.ogg', gain: 0.86 },   // 2026-10-03 第5弾の仮採用：海岸。HydroGene「Unknown Island」57秒（旧：合成音）
+    CHAPTER_3:  { buffer: true, src: HG + '14_traveling_the_sky.ogg', gain: 0.66 }, // 2026-10-03 第5弾の仮採用：空。HydroGene「Traveling the Sky」70秒（旧：合成音）
+    CHAPTER_4:  { buffer: true, src: HG + '15_volcanic_crater.ogg', gain: 0.57 },  // 2026-10-03 第5弾の仮採用：火山。HydroGene「Volcanic Crater」86秒（旧：合成音）
     // ---- 大会：受付（到着・ランク選択）→ 順位表 → 対戦相手の発表・能力比較 → 実戦 ----
     //  2026-10-03 第5弾の仮採用：大会の受付 → 順位表 → 対戦前 → 結果は HydroGene「Royal Castle」1曲。ENTRY だけに曲を書き、ほかは fallback＝同じファイルなので場面が変わっても鳴らし直さない（頭出ししない）。
     //  実戦（battle）の前は fight() の bgm("battle") で止め、FIGHT! のあと大会の戦闘曲。バトル後の順位表・結果でまた Royal Castle（頭から）。旧：PGS Event Music 4（第4弾で NG・使わない）

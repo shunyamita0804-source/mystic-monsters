@@ -81,6 +81,6 @@ test('N6-06：世界地図（序盤の会話）は世界の全体が見える倍
 test('N6-07：ベースキャンプにダンは常設しない・「出発する」は下のバーから少し上。街の名札「ミストリア」は正式デザインの名札（.tcity・2026-10-05 PHASE B）', () => {
   const f = fnOf('fmScr');
   assert.doesNotMatch(f, /fmdan|kdan|bcomm\(\)/);
-  assert.match(HTML, /#app \.fm\.bc \.bcgo\{bottom:calc\(var\(--bcbar\) \+ 40px \+ env\(safe-area-inset-bottom,0px\)\)\}/);
+  assert.match(HTML, /#app \.fm\.bc \.bcgo\{bottom:calc\(var\(--bcbar\) \+ 72px \+ env\(safe-area-inset-bottom,0px\)\)\}/, '2026-10-05 試遊：さらに上へ（40 → 72px）');
   assert.match(HTML, /<div class="tcity" aria-label="現在地：ミストリア">[^`]*<b>ミストリア<\/b><\/div>/, '2026-10-05 PHASE B：正式の名札（.fmplq の流用はやめた）'); assert.doesNotMatch(HTML, /fmplq tplace/);
 });

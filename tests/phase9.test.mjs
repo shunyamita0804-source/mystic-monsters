@@ -339,7 +339,7 @@ test('T4-3：ベースキャンプの中央：正式背景（UI・NPC なし）�
   assert.match(HTML, /const BC_BG="assets\/basecamp\/basecamp_main\.webp";/); assert.ok(existsSync(path.join(ROOT, 'assets/basecamp/basecamp_main.webp')));
   assert.match(HTML, /const FARM_BG="assets\/farm\/farm_prep_main\.jpg";/, 'ファームの各画面のぼかし背景は従来どおり');
   assert.doesNotMatch(f, /fmdan|danEx\(|bcomm\(\)/, '2026-10-06：通常のベースキャンプにダンは立たない（モンスターが主役。ダンはイベントの会話だけ）');
-  assert.match(f, /<div class="fmmon mon">\$\{msv\(m\)\}<\/div><div class="bcname"><b>\$\{p11Esc\(m\.name\)\}<\/b>\$\{sp\?`<small>\$\{sp\.kind\}<\/small>`:""\}<\/div>/, '育成中の個体は msv（正式画像）。種族は固定しない');
+  assert.match(f, /<div class="bcmonw"><div class="fmmon mon">\$\{msv\(m\)\}<\/div><\/div>/, '育成中の個体は msv（正式画像）。種族は固定しない。2026-10-05 試遊：立ち絵の下の名前・種類の帯は出さない'); assert.doesNotMatch(f, /class="bcname"/);
   assert.doesNotMatch(f, /大会ランク|rankLabel|KS\.map|fmbot|fminfo/, '大会ランク・6能力・旧情報欄は出さない');
   assert.match(HTML, /\.fm,\.fm\.p9farm\{[^}]*height:100dvh;[^}]*display:flex;flex-direction:column;overflow:hidden;/, '1画面（100dvh）に収める');
 });

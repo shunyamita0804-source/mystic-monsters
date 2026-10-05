@@ -125,7 +125,7 @@ T('DL-B3：SE 監査：街の施設の札・下のバー・ファームのコマ
   await arm();
   await tap('.tpin[onclick="townArena()"]'); assert.deepEqual(await got(), ['UI_ERROR'], '闘技場（未開放）＝UI_ERROR だけ');
   await pg.evaluate(() => townMsgClose(document.querySelector('.tlow'))); await pg.waitForTimeout(200); await got();
-  await tap('.tpin[onclick="townGuild()"]'); await pg.waitForSelector('.bu .bucard'); assert.deepEqual(await got(), ['UI_SELECT'], '聖獣士管理局（2026-10-04 PHASE H4：開いた）＝UI_SELECT を1回');
+  await tap('.tpin[onclick="townGuild()"]'); await pg.waitForSelector('.bu.idle'); assert.deepEqual(await got(), ['UI_SELECT'], '聖獣士管理局（2026-10-04 PHASE H4：開いた）＝UI_SELECT を1回');
   await tap('.bu .burb[onclick="lobby()"]'); await pg.waitForSelector('.tpin[onclick="market()"]'); assert.deepEqual(await got(), ['UI_CANCEL'], '街へ戻る＝UI_CANCEL を1回');
   await tap('.tpin[onclick="market()"]'); await pg.waitForSelector('.p10mk'); assert.deepEqual(await got(), ['UI_SELECT'], '市場へ＝UI_SELECT を1回');
   await tap('.p10mk .p10back'); await pg.waitForSelector('.tpin[onclick="farm()"]'); assert.deepEqual(await got(), ['UI_CANCEL'], '街へ戻る＝UI_CANCEL を1回');

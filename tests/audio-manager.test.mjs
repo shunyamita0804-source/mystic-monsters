@@ -479,3 +479,23 @@ test('AUDIO-27：2026-10-06 正式音源（ユーザー提供・ゲームの所�
   assert.ok(log.plays <= 1, `1ロールで鳴る音は1つ（${log.plays}）`);
 });
 
+
+test('AUDIO-28：2026-10-05 試遊（Chapter のフィールド BGM が途切れる）：buffer の場面はデコード後に AudioBuffer で鳴らす・同じ場面の再指定で鳴らし直さない・バトルから戻ると続きから', async () => {
+  const { A, log, w } = env(); legacySpy(A);
+  A.registerBgm('CHAPTER_1', './bgm/ch1.ogg', { gain: 1.1, buffer: true }); A.registerBgm('WILD_BATTLE', './bgm/wild.ogg', { gain: 0.6 });
+  A.unlock(); A.scene('CHAPTER_1'); await tick(30);
+  let s = A.status(); assert.ok(s.buffer && s.buffer.src === './bgm/ch1.ogg', 'デコード後は AudioBuffer で鳴る'); assert.equal(active(A).length, 0, '<audio> はフェードアウトして止まる');
+  const xhr = log.xhr.filter((u) => u === './bgm/ch1.ogg').length;
+  for (let i = 0; i < 5; i++) assert.equal(A.scene('CHAPTER_1'), false, '同じ場面は何もしない');
+  assert.equal(log.xhr.filter((u) => u === './bgm/ch1.ogg').length, xhr, '読み直さない');
+  // 曲の位置を進めてからバトルへ → 戻ると続きから
+  const ctx = A.context(); ctx.currentTime += 2.5;
+  A.stopBgm({ fade: 'quick' }); A.scene('WILD_BATTLE'); await tick(10); A.scene('CHAPTER_1'); await tick(10);
+  s = A.status(); assert.ok(s.buffer, 'Chapter の曲はすぐ AudioBuffer で鳴る（デコード済み）'); assert.ok(s.buffer.pos >= 2.4 && s.buffer.pos <= 2.6, '続きの位置から：' + s.buffer.pos);
+  assert.ok(A.registryOf('bgm').CHAPTER_1.buffer, 'registry の buffer');
+  // registry の Chapter 1〜4 は buffer
+  const R = {}; new Function('window', rd('js/audio/audio-registry.js'))({ MMAUDIO: { registerAll: (r) => Object.assign(R, r) } });
+  const reg = R.bgm || R.BGM || {}; for (const k of ['CHAPTER_1', 'CHAPTER_2', 'CHAPTER_3', 'CHAPTER_4']) assert.equal(reg[k] && reg[k].buffer, true, k);
+  assert.match(HTML, /navigator\.audioSession\.type!="playback"/, 'audioSession はタップのたびに設定し直さない');
+  void w;
+});

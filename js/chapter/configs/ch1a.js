@@ -237,7 +237,7 @@
       // encounter（2026-10-03）：遭遇の演出の文（絵と同時に出る）【暫定の文面】。tone＝帯の色（wild 赤金・rare 深紅・rival 紫）。ライバルは草むらの揺れ・野生のカットインを使わない
       wild: { label: '野生のモンスター', asset: 'battle_wild', encounter: '野生のモンスターが現れた！', tone: 'wild' },   // 2026-10-04 G3：遭遇は正式のモンスター＋魔法陣＋ENCOUNTER（field-view の encounterShow）。赤い刃の交差のカットイン（fx_battle_encounter）は野生には強すぎるので使わない（素材は残す）   // cutin：野生バトル突入のカットイン（2026-10-02 正式。赤と金の交差。レア・ライバルには付けない）
       rare: { label: 'レアモンスター', asset: 'battle_wild', encounter: 'レアモンスターが現れた！', tone: 'rare', aura: true, badge: '★ レア' },   // aura（2026-10-03 デザイン参考 04）：同じ遭遇の作りに淡い後光・金のリムライト・光の粒・「★ レア」の札（見た目だけ。出現率・判定は変えない）   // レアモンスターマス（10%）。敵データ・報酬・遭遇演出は未登録＝【暫定】バトルの中身は野生と同じ
-      rival: { label: 'ライバルのリュウ', name: 'リュウ', asset: 'battle_rival', figure: null, encounterFigure: 'rival_ryu', encounterPartner: null, encounter: 'リュウが立ちはだかった！', tone: 'rival', noRustle: true,   // 2026-10-05 PHASE B：遭遇の画面にリュウの正式立ち絵。相棒（竜）の正式素材は未着＝encounterPartner は null
+      rival: { label: 'ライバルのリュウ', name: 'リュウ', asset: 'battle_rival', figure: null, encounterFigure: 'rival_ryu', encounterPartner: 'rival_regnas', encounter: 'リュウが立ちはだかった！', tone: 'rival', noRustle: true,   // 2026-10-05 試遊：遭遇の画面にリュウ（正式立ち絵）と正式の相棒レグナス（js/phase10/monsters.js の RIVAL_MONSTERS）を並べる
         note: 'リュウの相棒は、今のこの子と同じくらいの強さみたい。' },   // 2026-10-04：ライバルの正式名＝リュウ（各 Chapter に登場する同一人物。相棒モンスターは未確定）。強さは js/phase8/rival.js（MMRIVAL）   // sting（2026-10-03 デザイン参考 04 の A1）：1秒未満の「RIVAL」の映画的な一瞬（ネイビー・アイボリーの細い罫線）。ライバルの会話（A2）・自動でバトルへ（A3）は未決＝ライバルの人物・会話のデータが無い
     },
     // ---- Chapter のイベント（2026-10-02。MMCH.storyEvents のデータ。本文は【暫定】）：フィナは節目だけ話す（通常マスごとには話さない）。
@@ -281,7 +281,7 @@
       stat_hi: A + 'nodes/stat_accuracy.webp', stat_ev: A + 'nodes/stat_evasion.webp', stat_de: A + 'nodes/stat_toughness.webp',
       event_normal: A + 'nodes/event_normal.webp', event_rare: A + 'nodes/event_rare.webp', event_special: A + 'nodes/event_special.webp',
       treasure_normal: A + 'nodes/treasure_normal.webp', treasure_rare: A + 'nodes/treasure_rare.webp', treasure_special: A + 'nodes/treasure_special.webp',
-      battle_wild: A + 'nodes/battle_wild.webp', battle_rival: A + 'nodes/battle_rival.webp', rival_ryu: './assets/npc/ryu/full_normal.webp',
+      battle_wild: A + 'nodes/battle_wild.webp', battle_rival: A + 'nodes/battle_rival.webp', rival_ryu: './assets/npc/ryu/ryu_official_fullbody.webp', rival_regnas: './assets/monsters/regnas/regnas_official.webp',
       grass_front: A + 'env/grass_flower_border.webp',
       // 演出（2026-10-02。ZIP mystic-monsters-board-ui-assets-2026-10-01-v2 の 03_board_effects を透過化。assets/fields/ch1a/effects/README.md）
       fx_battle_encounter: A + 'effects/effect_battle_encounter.webp', fx_stat_up: A + 'effects/frame_stat_up.webp', fx_turn_warning: A + 'effects/ui_turn_warning.webp',

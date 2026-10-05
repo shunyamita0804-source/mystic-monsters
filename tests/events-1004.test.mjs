@@ -135,7 +135,7 @@ test('EV-06：Chapter の帰還イベント（ダン＋フィナ）：Chapter 1�
 
 test('EV-07：ライバル リュウ（MMRIVAL）：名前は正式に「リュウ」・相棒は未確定（null）。強さ＝今の個体の平均能力に最も近いランク（fight() の表 E 70〜S 300）を Chapter ごとの下限・上限で挟む。値は CONFIG の1か所', () => {
   const E = onCh1(31), { RV, P7, P8, S } = E;
-  assert.equal(RV.CONFIG.name, 'リュウ'); assert.equal(RV.CONFIG.partner, null);
+  assert.equal(RV.CONFIG.name, 'リュウ'); assert.equal(RV.CONFIG.partner, 'regnas', '2026-10-05 正式：相棒＝レグナス');
   const at = (st, ch) => { const m = mon(P7, P8, S, st); m.raise = { ...m.raise, ch }; return RV.rankFor(m); };
   assert.equal(at(100, 1), 1, '100 → 90（D）'); assert.equal(at(70, 1), 0); assert.equal(at(140, 1), 2); assert.equal(at(300, 1), 3, 'Chapter 1 の上限 B'); assert.equal(at(50, 3), 2, 'Chapter 3 の下限 C'); assert.equal(at(300, 4), 5);
   assert.equal(RV.rankFor(mon(P7, P8, S, 100), { strength: { factor: 1.5 } }), 3, '倍率を変えれば変わる（150 → 160＝B。下限・上限の無い設定）');

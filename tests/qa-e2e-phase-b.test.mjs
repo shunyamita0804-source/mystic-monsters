@@ -82,7 +82,7 @@ for (const size of SIZES) {
     await pg.evaluate(() => { window.__mr = Math.random; Math.random = () => 0.1; }); await pg.click('#brollbtn'); await pg.evaluate(() => { Math.random = window.__mr; });
     await pg.waitForSelector('.chf-enc2.t-rival .ce-rival', { timeout: 20000 }); await pg.waitForTimeout(700);
     const r = await pg.evaluate(() => { const i = document.querySelector('.chf-enc2 .ce-rival'), b = i.getBoundingClientRect(), cs = getComputedStyle(i), x = b.left + b.width / 2, y = b.top + b.height * 0.3, hit = document.elementFromPoint(x, y); return { ok: i.complete && i.naturalWidth > 0, src: i.getAttribute('src'), b: [b.left, b.top, b.right, b.bottom], op: +cs.opacity, vis: cs.visibility, encTop: (() => { const e = document.querySelector('.chf-enc2'), z = +getComputedStyle(e).zIndex || 0, ce = getComputedStyle(e); return +ce.opacity > 0.9 && ce.visibility === 'visible' && [...e.parentElement.children].filter((c) => c !== e && !c.classList.contains('chf-enc2')).every((c) => (+getComputedStyle(c).zIndex || 0) <= z || getComputedStyle(c).visibility === 'hidden' || +getComputedStyle(c).opacity === 0); })(), tx: document.querySelector('.chf-enc2 .ce-tx').textContent }; });
-    assert.ok(r.ok, 'リュウの絵が読み込まれている'); assert.match(r.src, /assets\/npc\/ryu\/full_normal\.webp$/);
+    assert.ok(r.ok, 'リュウの絵が読み込まれている'); assert.match(r.src, /assets\/npc\/ryu\/ryu_official_fullbody\.webp$/);
     assert.ok(r.b[0] >= 0 && r.b[2] <= size[0] && r.b[1] >= 0 && r.b[3] <= size[1], `画面の中 ${r.b.map(Math.round)}`);
     assert.ok(r.op > 0.9 && r.vis === 'visible' && r.encTop, `不透明・見えている（遭遇の層は画面のいちばん上・背景に埋もれない）${JSON.stringify([r.op, r.vis, r.encTop])}`);
     assert.equal(r.tx, 'リュウが立ちはだかった！', '文面はそのまま');

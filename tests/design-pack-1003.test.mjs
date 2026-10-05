@@ -64,12 +64,13 @@ test('DP-02：宝箱 4種類の派生（透過 WebP・同じ種類は同じ大�
   assert.match(CF, /treasurePool: \{ tierWeights: \{ normal: 70, rare: 25, special: 5 \}, contents: \{ handler: 'gold_table', params: \{ table: \[\{ w: 4, gold: 50 \}, \{ w: 1, gold: 150 \}\] \} \} \}/, '確率・報酬は変えていない');
 });
 
+const fnOf2 = (n) => { const i = HTML.indexOf(`function ${n}(`); return HTML.slice(i, HTML.indexOf('\nfunction ', i + 5)); };
 test('DP-03：アイテム屋：正式背景（ぼかさない）と正式NPC の立ち姿。固有名は付けない（札は「アイテム屋」）。2026-10-04：表情差分と短い一言（初回・条件・購入成立）。商品・売買の処理は従来どおり', () => {
   assert.match(HTML, /const SHOP_BG="assets\/shop\/shop_bg\.webp",SHOP_NPC="assets\/shop\/shop_npc\.webp";/);
   for (const f of ['assets/shop/shop_bg.webp', 'assets/shop/shop_npc.webp']) assert.ok(existsSync(path.join(ROOT, f)), f);
   const shop = HTML.slice(HTML.indexOf('function shopScr('), HTML.indexOf('\nfunction p7Buy('));   // 2026-10-05 PHASE B：入口（3つの導線）と購入・売却・図鑑の画面
   assert.match(shop, /MMP7\.getShopCatalog\(\)/); assert.match(shop, /p7Buy\('\$\{id\}'\)/); assert.match(shop, /p7Sell\(\$\{i\}\)/);
-  assert.match(shop, /,msg,null,shopLook\(sex\)\);/, '2026-10-04（追加アセット）：おばあちゃんの表情（全身 4表情）');
+  assert.match(shop, /shopShell\("",shopSay\(sl\),msg,sex\)/, '2026-10-04（追加アセット）：おばあちゃんの表情（全身 4表情）。2026-10-05 試遊：施設の画面（shopShell）'); assert.match(fnOf2('shopShell'), /\$\{shopLook\(ex\)\.bg\}/);
   const look = HTML.slice(HTML.indexOf('const SHOP_LOOK='), HTML.indexOf('function shopScr('));
   assert.doesNotMatch(look, /MMNPC|name/, 'NPC の固有名は出さない'); assert.match(look, /<b>ベルナ<\/b>/, '2026-10-04 PHASE H：正式の名前「ベルナ」（ZIP mystic-monsters_npc_official_standing の README で確定）'); assert.match(rd('js/npc/npc.js'), /shop: \['ベルナ', /, '名前はベルナ');
   assert.match(HTML, /\.ds\.shop>\.shopbg\{[^}]*background-size:cover/);
