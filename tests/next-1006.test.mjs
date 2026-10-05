@@ -83,5 +83,5 @@ test('N6-07：ベースキャンプにダンは常設しない・「出発する
   assert.doesNotMatch(f, /fmdan|kdan|bcomm\(\)/);
   assert.match(HTML, /#app \.fm\.bc \.bcgo\{bottom:calc\(var\(--bcbar\) \+ 72px \+ env\(safe-area-inset-bottom,0px\)\)\}/, '2026-10-05 試遊：さらに上へ（40 → 72px）');
   assert.match(HTML, /<div class="tcity" aria-label="現在地：ミストリア"><img class="tcity-img" src="\$\{TOWN_NAMEPLATE\}" alt="ミストリア"/, '2026-10-05 正式素材：名札は正式画像（.fmplq の流用はやめた）');
-  assert.match(HTML, /const TOWN_NAMEPLATE="\.\/assets\/town\/nameplate\/mistria_nameplate\.webp";/); assert.match(HTML, /#app \.map\.town \.tcity\{[^}]*aspect-ratio:720\/357;/, '縦横比のまま'); assert.doesNotMatch(HTML, /fmplq tplace/);
+  assert.match(HTML, /const TOWN_NAMEPLATE="\.\/assets\/town\/nameplate\/mistria_nameplate\.webp";/); assert.match(HTML, /#app \.map\.town \.tcity\{[^}]*aspect-ratio:686\/280;/, '縦横比のまま'); assert.doesNotMatch(HTML, /fmplq tplace/);
 });

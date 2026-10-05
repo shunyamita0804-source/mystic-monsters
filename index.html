@@ -2446,8 +2446,8 @@ html[data-mmev-back] #app :is(.nst,.fbub,.kbub,.fmdan,.shopnpc,.gssay,.elsay,.vg
 /* 2026-10-06：街の名札「ミストリア」＝正式の施設の名札（.fmplq）をそのまま小さく。左上（お知らせの右・闘技場の札にかからない幅） */
 /* 2026-10-05 PHASE B：街の名札「ミストリア」（正式デザイン mistoria_city_nameplate：上の中央・お知らせと設定の間・濃紺＋金の額・上の小さな紋章・城の印。押せない） */
 /* 2026-10-05 正式素材：街の名札「ミストリア」は正式画像（assets/town/nameplate/mistria_nameplate.webp。縦横比のまま・押せない）。お知らせ・設定の丸ボタンと重ならない幅 */
-#app .map.town .tcity{position:absolute;z-index:3;left:50%;top:calc(env(safe-area-inset-top,0px) + 4px);transform:translate(-50%,-6.72%);width:min(calc(100% - 136px),168px);aspect-ratio:720/357;pointer-events:none} /* 画像の上の透明な余白（24/357）だけ上へ。絵の下端＝上から約70px（施設の札の上端より上） */
-#app .map.town .tcity-img{display:block;width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none}
+#app .map.town .tcity{position:absolute;z-index:3;left:50%;top:calc(env(safe-area-inset-top,0px) + 4px);transform:translateX(-50%);width:min(calc(100% - 136px),136px);aspect-ratio:686/280;overflow:hidden;pointer-events:none} /* 箱＝絵の部分だけ（画像 720×357 の x 17〜703・y 24〜304）。絵の下端＝上から約58px（施設の札より上） */
+#app .map.town .tcity-img{display:block;position:absolute;left:-2.478%;top:-8.571%;width:104.96%;height:auto;user-select:none;-webkit-user-drag:none}
 .fmplq::before{left:-4px}.fmplq::after{right:-4px}
 .fmplq b{font-family:var(--mm-font-head);font-weight:800;font-size:17px;letter-spacing:.3em;margin-right:-.3em;color:#f6dc98;text-shadow:0 1px 0 #000}
 .fm .fmab{margin:4px 46px 0 0;padding:4px 11px;min-height:30px;border-radius:15px;font-size:11px;font-weight:700;box-shadow:0 2px 5px rgba(0,0,0,.35);background:linear-gradient(#4a2419,#2c140d);border:1px solid #8a5238;color:#e9c3ad}
@@ -2594,7 +2594,8 @@ body:has(#app>.fm.bc) #snd,body:has(#app>.sts) #snd{display:none}
 #app .fm.bc .fmgo.bcdep .bcsub{font-size:clamp(9px,2.6vw,11px);letter-spacing:.02em}
 .fm.bc .bcgold,.isp-gold{height:34px;aspect-ratio:540/169;box-sizing:border-box;justify-content:flex-start;padding:0 0 0 12%;border:0;border-radius:0;background:url(./assets/ui/a_group/a05_currency_panel.webp) center/100% 100% no-repeat;box-shadow:none}
 .fm.bc .bcgold i,.isp-gold i{display:none}
-@media (max-width:389px){.fm.bc .bcgold{height:32px;padding:0 0 0 12%}}
+.fm.bc .bcgold{height:30px}.fm.bc .bcgold b{font-size:13px} /* 縦横比が決まった画像なので、高さで幅を決める（右上の音のボタンを押し出さない） */
+@media (max-width:389px){.fm.bc .bcgold{height:27px;padding:0 0 0 12%}.fm.bc .bcgold b{font-size:12px}}
 @media (max-height:700px){.fm.fm2.bc .bcgo{width:min(66%,240px)}.fm.fm2.bc .bcgo button.fmgo{height:auto}}
 /* ===== 聖獣士管理局（2026-10-04 PHASE H4。デザイン基準 02：正式背景＋濃紺と金の額の「聖獣士証」と羊皮紙の行・功績・下に2つのボタン） ===== */
 #app>.bu{position:relative;box-sizing:border-box;height:calc(100% + 32px);margin:-16px;display:flex;flex-direction:column;overflow:hidden;background:#0c1630;color:#fff}

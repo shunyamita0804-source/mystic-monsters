@@ -27,12 +27,12 @@ for (const size of SIZES) {
     await pg.waitForSelector('.map.town .tcity-img'); await loaded(pg, '.tcity-img'); await pg.waitForTimeout(400);
     const r = await pg.evaluate(() => {
       const c = document.querySelector('.tcity').getBoundingClientRect(), w = c.width, h = c.height;
-      const ct = { l: c.left + w * 17 / 720, r: c.left + w * 703 / 720, t: c.top + h * 24 / 357, b: c.top + h * 304 / 357 };   // 絵の部分（透明な余白を除く）
-      const hit = [...document.querySelectorAll('.map.town .tround')].filter((e) => { const o = e.getBoundingClientRect(); return !(o.right <= ct.l || o.left >= ct.r || o.bottom <= ct.t || o.top >= ct.b); }).length;
+      const ct = { l: c.left, r: c.right, t: c.top, b: c.bottom };   // 箱＝絵の部分（透明な余白を除いた 686×280）
+      const hit = [...document.querySelectorAll('.map.town .tround, .map.town .tpin span')].filter((e) => { const o = e.getBoundingClientRect(); return !(o.right <= ct.l || o.left >= ct.r || o.bottom <= ct.t || o.top >= ct.b); }).length;
       const im = document.querySelector('.tcity-img');
-      return { hit, ratio: w / h, nat: im.naturalWidth / im.naturalHeight, src: im.getAttribute('src'), top: ct.t, sw: document.documentElement.scrollWidth, text: !!document.querySelector('.tcity b') };
+      return { hit, ratio: w / h, nat: 686 / 280, src: im.getAttribute('src'), top: ct.t, sw: document.documentElement.scrollWidth, text: !!document.querySelector('.tcity b') };
     });
-    assert.equal(r.hit, 0, 'お知らせ・設定と重ならない'); assert.ok(Math.abs(r.ratio - r.nat) < 0.02, '縦横比のまま'); assert.match(r.src, /assets\/town\/nameplate\/mistria_nameplate\.webp$/);
+    assert.equal(r.hit, 0, 'お知らせ・設定・施設の札と重ならない'); assert.ok(Math.abs(r.ratio - r.nat) < 0.02, '縦横比のまま'); assert.match(r.src, /assets\/town\/nameplate\/mistria_nameplate\.webp$/);
     assert.ok(r.top >= 0); assert.equal(r.sw, size[0]); assert.equal(r.text, false, 'コードで作った名札は出さない');
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   });
