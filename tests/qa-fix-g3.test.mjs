@@ -452,7 +452,7 @@ test('QA-G3-B9：実ブラウザ：新規開始→市場で購入→牧場→出
   await pg.waitForTimeout(DELIBERATE);
   await pg.click('#p10ov .p10ok');
   await pg.waitForSelector('#app .map');
-  let S = await H.getS(pg); assert.equal(S.m.sp, 0); assert.equal(S.g, 0, 'はじめての1体（補填つき）は従来どおり');
+  let S = await H.getS(pg); assert.equal(S.m.sp, 0); assert.equal(S.g, 500, '2026-10-06：新人支援の 1000G − 500G（補填なし）');
   await pg.click('.hz[onclick="farm()"]'); await pg.waitForSelector('#app .rn2 .rnact');
   await pg.click('#app button.back'); await pg.waitForSelector('#app .map');
   await pg.click('.hz[onclick="hall()"]'); await pg.click('#app button[onclick="prepScr()"]');

@@ -427,7 +427,7 @@ B('QA-TN2：文字送り中のタップで全文・▼表示・タイマー0、�
   await pg.click('.mmtalk', { force: true });
   t = await talkSnap(pg);
   assert.deepEqual([t.text, t.state.typing, t.next, t.npcTo, t.state.idx], [LONG, false, true, 0, 0], 'タップで全文表示・▼表示・文字送りのタイマーなし');
-  await pg.waitForTimeout(150);
+  await pg.waitForTimeout(350);   // 2026-10-06：全文を出したタップから0.3秒は読む間（次へ進まない）
   await pg.click('.mmtalk', { force: true });
   t = await talkSnap(pg);
   assert.deepEqual([t.state.idx, t.state.expr, t.img, t.state.typing, t.next], [1, 'happy', 'assets/npc/fina/closeup/happy.webp', true, false], '次のタップで次の行（表情も切り替わる）');
@@ -437,7 +437,7 @@ B('QA-TN2：文字送り中のタップで全文・▼表示・タイマー0、�
   t = await talkSnap(pg);
   assert.deepEqual([t.state.idx, t.state.typing, t.text], [1, false, LONG2], '連打しても2行進んだり終わったりしない');
   // Enter キーで最後の行を終える
-  await pg.waitForTimeout(150);
+  await pg.waitForTimeout(350);
   await pg.keyboard.press('Enter');
   await assertTalkGone(pg, keydown0, 'Enter で終えた後');
   assert.equal(await pg.evaluate(() => window.__ended), 1, '会話の終了は1回だけ（Promise が解決）');

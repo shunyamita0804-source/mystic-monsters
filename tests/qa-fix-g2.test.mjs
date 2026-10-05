@@ -474,7 +474,7 @@ test('QA-G2-B5：実ブラウザ：新規開始→市場で購入→牧場→出
   await p.page.click('#p10ov .p10ok');
   await p.page.waitForSelector('#app .map');
   let S = await H.getS(p.page);
-  assert.equal(S.m.sp, 0); assert.equal(S.m.name, 'ソラモ'); assert.equal(S.g, 0);
+  assert.equal(S.m.sp, 0); assert.equal(S.m.name, 'ソラモ'); assert.equal(S.g, 500, '2026-10-06：新人支援の 1000G − 500G');
   await p.page.click('.hz[onclick="farm()"]');
   await p.page.waitForSelector('#app .rn2 .rnact');
   await p.page.click('#app button.back');

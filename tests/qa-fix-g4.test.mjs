@@ -170,9 +170,9 @@ test('QA-G4-B1：実ブラウザ：新規開始→市場で「<!--」「<b>X</b>
   await H.newGame(pg, 'テスト');
   await pg.waitForSelector('#app .map');
   await buy(pg, CM);
-  let S = await H.getS(pg); assert.equal(S.m.name, CM, '名前は入力のまま保存'); assert.equal(S.g, 0, '初回救済は従来どおり');
+  let S = await H.getS(pg); assert.equal(S.m.name, CM, '名前は入力のまま保存'); assert.equal(S.g, 500, '2026-10-06：新人支援の 1000G − 500G（補填なし）');
   assert.equal(await count(pg, '#app .svb'), 1, '街の「セーブ・ロード」が残る');
-  assert.equal((await txt(pg, '#msg'))[0], `${CM}をつれて帰った！（はじめての1体のため、所持金を500Gまで補填しました）`);
+  assert.equal((await txt(pg, '#msg'))[0], `${CM}をつれて帰った！`);
   assert.equal(await count(pg, '#app .map ~ .tlow .card'), 0, '街にはモンスターカードを出さない（2026-09-30。名前は牧場・ファームで文字のまま出ることを下で確かめる）');
   await pg.evaluate(() => { S.g = 5000; save(); lobby(); });
   await buy(pg, BOLD);
