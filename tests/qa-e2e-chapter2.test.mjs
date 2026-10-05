@@ -131,7 +131,7 @@ test('CH2-B5：Chapter 3 の解放条件（公式Cランク大会クリア）：
     assert.match(a.sub, /Chapter 3 解放条件：公式Cランク大会クリア/); assert.match(a.note, /Chapter 3 解放条件.*公式Cランク大会クリア.*このモンスターの育成はここまでです/);
     assert.ok(a.inView, '進行ボタンは画面の中'); assert.equal(a.sw, a.iw, '横にはみ出さない');
     await pg.click('.fm .fmgo'); await pg.waitForTimeout(500); await pg.click('.fm .fmgo');   // 2度押し
-    await pg.waitForSelector('.p9done', { timeout: 20000 }); await H.finishTalk(pg);
+    await pg.waitForSelector('.p9done', { state: 'attached', timeout: 20000 }); await H.finishTalk(pg);   // 2026-10-06：フィナの会話の間は施設の UI を隠す（data-mmscene）
     const d = await pg.evaluate(() => ({ state: S.m.raise.state, txt: document.querySelector('.p9done').textContent, done: MMP8.raiseDoneCount(S), saved: JSON.parse(localStorage.getItem('mr4v6')).m.raise.state }));
     assert.deepEqual([d.state, d.done, d.saved], ['done', 1, 'done']); assert.match(d.txt, /Chapter 3 の解放条件（公式Cランク大会クリア）に届かなかったため/); assert.match(d.txt, /解放条件（公式Cランク大会クリア）に届かず（ここで育成完了）/);
     const after = await pg.evaluate(() => ({ uid: S.m.uid, name: S.m.name, po: S.m.po, li: S.m.li, g: S.g, sk: JSON.stringify(S.m.sk) }));
