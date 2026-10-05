@@ -228,7 +228,7 @@ test('QA-G4-B2：実ブラウザ：名前「<!--」の個体でも Chapter間（
     // 2026-10-04 PHASE H2：ベースキャンプ＝下の1列5つ（特訓・アイテム・ステータス・技管理・中断）・冒険・メニュー
     assert.equal(await count(pg, '#app .fmcmd button.fmb'), 5, '下の5つ');
     assert.equal(await count(pg, '#app button.fmgo[onclick="prepScr()"], #app button.bcb[onclick="p8Suspend()"], #app button.bcrb[onclick="bcMenu()"]'), 3, '冒険・中断・メニュー');
-    assert.deepEqual(await txt(pg, '#app .bcname b'), [CM]);
+    assert.equal(await count(pg, '#app .bcname'), 0, '2026-10-05 試遊：モンスターの下に名前の帯を出さない（名前はステータス画面で文字のまま＝下で確認）');
   }
   await pg.click('#app .fmcmd button[onclick="hall(\'st\')"]'); await pg.waitForSelector('#app .sts .stnm');
   assert.deepEqual(await txt(pg, '#app .sts .stnm'), [CM], 'ステータスの名前');
@@ -273,7 +273,7 @@ test('QA-G4-B4：実ブラウザ：育成完了画面・ファームの完了表
   assert.equal(await count(pg, `#app button[onclick="farm('','a')"]`), 1, '「牧場へ」が残る');
   await H.finishTalk(pg);
   await pg.evaluate(() => hall('t')); await pg.waitForSelector('#app .fm-done');
-  assert.deepEqual(await txt(pg, '#app .bcname b'), [CM], 'ベースキャンプ（育成完了。2026-10-04 PHASE H2）の名前は文字のまま');
+  assert.equal(await count(pg, '#app .bcname'), 0, 'ベースキャンプ（育成完了）：2026-10-05 試遊でモンスターの下の名前の帯は出さない');
   assert.deepEqual(await txt(pg, '#app .bcch small'), ['育成完了']);
   await noInjected(p);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);

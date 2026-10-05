@@ -124,7 +124,7 @@ test('TW-B2：各コマンドの遷移と「街にもどる」：市場・牧場
   assert.match(await H.text(pg), /◀ 図鑑/);
   await pg.click('.lbd .dback'); await pg.waitForSelector('.lbk .lbgrid'); await pg.click('.lbk .dtop .dback'); await pg.waitForSelector('.lab .labnpc'); await toTown(pg);
   // 聖獣士管理局（2026-10-04 PHASE H4）：聖獣士証と功績の画面へ（見るだけ＝セーブは変わらない）→ 街へ
-  const b0 = await H.storedSave(pg); await pg.click('.hz[onclick="townGuild()"]'); await pg.waitForSelector('.bu .bucard');
+  const b0 = await H.storedSave(pg); await pg.click('.hz[onclick="townGuild()"]'); await pg.waitForSelector('.bu.idle'); await pg.click('.bub[onclick="bureauScr(\'card\')"]'); await pg.waitForSelector('.bu .bucard');   // 2026-10-05 試遊：通常の管理局はパネルなし＝聖獣士証は押して開く
   assert.deepEqual(await H.storedSave(pg), b0); await pg.click('.bu .burb[onclick="lobby()"]'); await pg.waitForSelector('.map.town');
   // 闘技場：未開放の案内だけ（街のまま・セーブは変わらない）
   const before = await H.storedSave(pg);
