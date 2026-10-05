@@ -296,7 +296,7 @@ T('QA-SV4：読めないセーブ（壊れたJSON）→ 原文を mr4_unreadable
   await pg.waitForSelector('.map');
   const s = JSON.parse(await stored(pg));
   assert.equal(s.v, 6); assert.equal(s.playerName, 'あたらしく'); assert.equal(s.m, null); assert.deepEqual(s.box, []);
-  assert.equal(s.g, 300, '新規ゲームの初期所持金');
+  assert.equal(s.g, 1000, '新規ゲームは 0G＋聖獣士登録の新人支援 1000G（2026-10-06）');
   assert.equal(await pg.evaluate(() => localStorage.getItem('mr4_unreadable_backup')), bad, '新しく遊び始めても退避は残る');
   // 再読み込み：新しいセーブで続きから。退避は変わらない
   await reload(pg);
@@ -449,7 +449,7 @@ T('QA-SV10：新しい版・壊れたセーブコードは読み込まず mr4v6 
   noErrors(p);
 });
 
-T('QA-SV11：最初からやり直すは2度押し。1回目では何も消えず、2回目でタイトル画面へ（まだ消さない）→ 開始で新規（300G・0体・名前登録から）。スロットは消えない', async () => {
+T('QA-SV11：最初からやり直すは2度押し。1回目では何も消えず、2回目でタイトル画面へ（まだ消さない）→ 開始で新規（0G・0体・名前登録から）。スロットは消えない', async () => {
   const p = await openPage(); const pg = p.page;
   await setupTown(pg, { g: 5000 });
   await openSaveScreen(pg);
@@ -469,7 +469,7 @@ T('QA-SV11：最初からやり直すは2度押し。1回目では何も消え�
   await pg.waitForTimeout(400); await pg.click('.p15start');
   await pg.waitForSelector('#p11nm');
   const s = JSON.parse(await stored(pg));
-  assert.equal(s.v, 6); assert.equal(s.g, 300); assert.equal(s.m, null); assert.deepEqual(s.box, []);
+  assert.equal(s.v, 6); assert.equal(s.g, 0, '2026-10-06：新しいゲームは 0G（登録で新人支援）'); assert.equal(s.m, null); assert.deepEqual(s.box, []);
   assert.equal(s.playerNamePending, true, '名前登録から');
   assert.equal(await pg.evaluate(() => localStorage.getItem('mr4s1')), slot, 'スロットは残る');
   noErrors(p);

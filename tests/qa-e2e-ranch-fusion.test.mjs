@@ -214,7 +214,7 @@ test('QA-RF-B1：市場で買った1体目は手持ち、2体目は牧場へ。�
     await pg.waitForSelector('#app .map');
     let s = await H.storedSave(pg);
     assert.equal(s.m.name, 'ソラA'); assert.equal(s.m.sp, 0); assert.equal(s.m.speed, 5); assert.equal(s.m.raise.state, 'none');
-    assert.deepEqual(s.box, []); assert.equal(s.g, 0);                          // 初回購入救済（300G→500G→0G）
+    assert.deepEqual(s.box, []); assert.equal(s.g, 500);                        // 2026-10-06：新人支援の 1000G − 500G（補填なし）
     const uidA = s.m.uid;
     await pg.evaluate(() => { S.g = 5000; save(); market(null, 'gauru'); });
     await pg.waitForFunction(() => !P10_ANIM && $('#p10info .p10buy').dataset.key === 'gauru');
