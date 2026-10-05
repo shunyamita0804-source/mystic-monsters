@@ -139,8 +139,8 @@ try {
   rec('牧場：受け取り', await page.evaluate(() => !!S.m));
 
   await page.evaluate(() => hall('t')); await sleep(1200); await drain(); await sleep(300);   // 2026-10-04：初回訪問の会話（ダン ↔ フィナ）を送る
-  const h = await page.evaluate(() => { const b = document.querySelector('.kdan b'); const i = document.querySelector('.kav img'); return { name: b && b.textContent, src: i && i.getAttribute('src'), nw: i && i.naturalWidth }; });
-  rec('ファーム：ダン（顔が読める）', h.name === 'ダン' && /assets\/npc\/dan\/expr\/face\/0[1-4]_\w+\.webp/.test(h.src || '') && h.nw > 0, JSON.stringify(h));
+  const h = await page.evaluate(() => { const i = document.querySelector('.bcmonw .fmmon img'); return { mon: !!(i && i.naturalWidth > 0), dan: document.querySelectorAll('.fmdan,.kdan').length, go: !!document.querySelector('.bcgo .fmgo') }; });
+  rec('ベースキャンプ：モンスターが主役（ダンの常設なし・出発する）', h.mon && h.dan === 0 && h.go, JSON.stringify(h));   // 2026-10-06
   await page.screenshot({ path: `${OUT}/hall_390.png` });
 
   await page.evaluate(() => prepScr()); await sleep(1000);

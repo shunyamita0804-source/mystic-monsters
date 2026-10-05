@@ -117,7 +117,7 @@ export const storedSave = (page) => page.evaluate((k) => { const t = localStorag
 /** 画面の文字 */
 export const text = (page) => page.evaluate(() => document.body.innerText);
 /** 共通会話（MMNPC）が開いていれば最後まで送る（1文字表示中は全文→次へ、を繰り返す） */
-export async function finishTalk(page, max = 60) {
+export async function finishTalk(page, max = 240) {   // 2026-10-06：全文を出したタップから0.3秒は次へ進まない（読む間）ので回数を多めに
   for (let i = 0; i < max; i++) {
     const open = await page.evaluate(() => !!document.querySelector('.mmtalk:not(.mmtalk-out)'));   // 退場中（フェード）のウィンドウは数えない
     if (!open) { await page.waitForFunction(() => !document.querySelector('.mmtalk'), null, { timeout: 5000 }).catch(() => {}); return i; }   // フェードが終わって DOM が消えるまで待つ
@@ -128,7 +128,7 @@ export async function finishTalk(page, max = 60) {
   throw new Error('会話が終わらない');
 }
 /** 共通会話を送り、選択肢が出たら指定の選択肢（id）を押す（選択肢は、出てから0.35秒・直前のタップから0.4秒あけないと受け付けないので、手を止めてから押す）。選択肢が出る前に会話が終われば false */
-export async function chooseTalk(page, id, max = 60) {
+export async function chooseTalk(page, id, max = 240) {
   for (let i = 0; i < max; i++) {
     const s = await page.evaluate(() => (document.querySelector('.mmtalk') && window.MMNPC ? MMNPC.state() : null));
     if (!s) return false;

@@ -1198,7 +1198,7 @@
     let go = null; if (host) { go = document.createElement('button'); go.type = 'button'; go.className = 'chf-fina-st'; go.setAttribute('aria-label', '会話を進める'); go.dataset.nsfx = '1'; host.appendChild(go); }
     // 読める長さだけ見せる（文字数に合わせる・タップで次へ）。通常マスでは出さない（節目だけ）
     const ms = V.calm ? 900 : Math.min(4200, 1600 + 80 * String(rx.text).length), t0 = Date.now();
-    await new Promise((ok) => { const t = setTimeout(ok, ms); const next = (e) => { if (e) { e.preventDefault(); e.stopPropagation(); } if (Date.now() - t0 < 300) return; clearTimeout(t); ok(); }; d.addEventListener('click', next); if (go) go.addEventListener('click', next); });
+    await new Promise((ok) => { const t = root.MM_QA_FINA_AUTO || root.MM_QA_NO_STORY ? setTimeout(ok, ms) : null; /* 2026-10-06：タップで進む（自動では次へ進まない＝自分のペースで読む）。自動テストだけ読める長さで進む */ const next = (e) => { if (e) { e.preventDefault(); e.stopPropagation(); } if (Date.now() - t0 < 300) return; clearTimeout(t); ok(); }; d.addEventListener('click', next); if (go) go.addEventListener('click', next); });
     if (go) go.remove();
     d.classList.add('out'); await wait(220); d.remove();
   }

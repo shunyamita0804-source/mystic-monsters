@@ -102,10 +102,11 @@
     document.addEventListener('visibilitychange', onVis);
     const showBg = (src) => { const nx = bgs[1 - front]; nx.style.backgroundImage = `url(${src})`; nx.classList.add('on'); bgs[front].classList.remove('on'); front = 1 - front; };
     const esc = (t) => t.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+
     let cur = null;
     const apply = (e) => {
       if (e.k === 'bg') showBg(SLIDES[e.si].bg);
-      else if (e.k === 'show') { let k = 0; const c = calm(); nar.innerHTML = `<div class="mmpro-u${c ? ' full' : ''}" style="top:${(POS.y * 100).toFixed(1)}%;--chf:${T.chFade}ms;--chr:${T.chRise}px;--chb:${T.chBlur}px">${e.u.map((t) => `<p>${Array.from(t).map((ch) => `<span class="mpc" style="--d:${(k++) * T.chGap}ms">${ch === ' ' ? '&nbsp;' : esc(ch)}</span>`).join('')}</p>`).join('')}</div>`; cur = nar.firstElementChild; }
+      else if (e.k === 'show') { let k = 0; const c = calm(); nar.innerHTML = `<div class="mmpro-u${c ? ' full' : ''}" style="top:${(POS.y * 100).toFixed(1)}%;--chf:${T.chFade}ms;--chr:${T.chRise}px;--chb:${T.chBlur}px">${e.u.map((t) => `<p>${kinsoku(t).map((w) => `<span class="mpw">${Array.from(w).map((ch) => `<span class="mpc" style="--d:${(k++) * T.chGap}ms">${ch === ' ' ? '&nbsp;' : esc(ch)}</span>`).join('')}</span>`).join('')}</p>`).join('')}</div>`; cur = nar.firstElementChild; }
       else if (e.k === 'full') { if (cur) cur.classList.add('full'); }
       else if (e.k === 'out') { if (cur) { const o = cur.animate ? cur.animate([{ opacity: 1 }, { opacity: 0 }], { duration: T.outMs, easing: 'ease-out', fill: 'forwards' }) : null; if (!o) cur.style.opacity = '0'; } }
       else if (e.k === 'clear') { nar.innerHTML = ''; cur = null; }
@@ -131,5 +132,18 @@
     } finally { document.removeEventListener('visibilitychange', onVis); ov.remove(); busy = false; }
     return done;
   }
-  root.MMPRO = fz({ SLIDES, LEGENDS, T, POS, units, revealMs, readMs, play, ready, readyOrTimeout, pageMs, schedule, sceneStarts, isBusy: () => busy });
+  // 2026-10-06：日本語の禁則（文字ごとの span は行の途中のどこでも折り返せてしまう＝「。」「、」などが行頭に1文字だけ落ちていた）。
+  //  折り返さないまとまり（span.mpw＝white-space:nowrap）に分ける：行頭に置けない文字（句読点・閉じ括弧・小さい仮名・長音・…・―）は前の文字に、開き括弧は次の文字に付ける。
+  //  段落の最後の1文字だけが次の行へ落ちないよう、最後のまとまりが1文字なら前のまとまりとつなぐ。本文は変えない
+  const NO_HEAD = '。、，．・：；？！!?)）」』】〕〉》’”…‥―ー〜ゃゅょっぁぃぅぇぉゎャュョッァィゥェォヮヵヶ々', NO_TAIL = '(（「『【〔〈《‘“';
+  function kinsoku(t) {
+    const out = [];
+    for (const ch of Array.from(String(t))) {
+      const prev = out.length ? out[out.length - 1] : null;
+      if (prev != null && (NO_HEAD.includes(ch) || NO_TAIL.includes(prev.slice(-1)))) out[out.length - 1] = prev + ch; else out.push(ch);
+    }
+    if (out.length > 3 && Array.from(out[out.length - 1]).length === 1) out.splice(-2, 2, out[out.length - 2] + out[out.length - 1]);
+    return out;
+  }
+  root.MMPRO = fz({ SLIDES, LEGENDS, T, POS, units, kinsoku, revealMs, readMs, play, ready, readyOrTimeout, pageMs, schedule, sceneStarts, isBusy: () => busy });
 })(typeof window !== 'undefined' ? window : globalThis);

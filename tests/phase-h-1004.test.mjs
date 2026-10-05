@@ -23,9 +23,10 @@ function loadMon() { const w = {}; new Function('window', rd('js/phase10/monster
 test('PH-01：ベースキャンプ＝正式背景マスター（768×1360・UI なし）・名札「ベースキャンプ」・所持金・メニュー・音／ダン＋育成中の個体＋一言／次の Chapter＋「冒険」／下の1列5つ。「ファーム」「育成を始める」「育成準備中」は出さない', () => {
   assert.deepEqual(webpSize('assets/basecamp/basecamp_main.webp'), [768, 1360]); assert.match(rd('assets/basecamp/README.md'), /157cf00222fafea99943d00016daacb28320534a59b7801b34fa61d6b81e6e2f/);
   const f = fnOf('fmScr') + fnOf('bcCmds');   // 2026-10-05：下の1列の並びは bcCmds（ステータス画面の下と共通）
-  for (const w of ['<b>ベースキャンプ</b>', 'class="bcgold"', 'onclick="bcMenu()"', 'onclick="sndToggle();', 'class="fmdan bcnpc" data-npc="dan"', '${msv(m)}', '<span class="kdtx"><b>ダン</b>${bcomm()}</span>', '<div class="bcch">${chip}</div>', 't:"出発する"', '<nav class="bcbar fmcmd"']) assert.ok(f.includes(w), w);
+  for (const w of ['<b>ベースキャンプ</b>', 'class="bcgold"', 'onclick="bcMenu()"', 'onclick="sndToggle();', '${msv(m)}', '<div class="bcch">${chip}</div>', 't:"出発する"', '<nav class="bcbar fmcmd"']) assert.ok(f.includes(w), w);
   assert.deepEqual([...f.matchAll(/\["([^"]+)","(\w+)","([^"]+)",/g)].map((m) => m[3]), ['特訓', 'アイテム', 'ステータス', '技管理', '中断', '街へ戻る'], '下の1列5つ（育成中は街へ戻れない＝5つ目は中断）');
   assert.doesNotMatch(f, /ファーム|育成を始める|育成準備中|rankLabel/);
+  assert.doesNotMatch(f, /fmdan|kdan|bcomm\(\)/, '2026-10-06：通常のベースキャンプにダンの常設の立ち絵・一言は出さない（モンスターが主役）');
   assert.doesNotMatch(f, /bctix|チケット \$\{S\.trainTix\}/, '2026-10-06：特訓の上のチケットの札は出さない（正式に削除済み）');
   assert.match(HTML, /\["ベースキャンプ","育成","#tic-farm","hall\(\)"/, '街の下のバーも「ベースキャンプ」');
   assert.match(HTML, /\.fm\.fm2\.bc \.bcbar\{[^}]*grid-template-columns:repeat\(5,1fr\)/, '下は1列');

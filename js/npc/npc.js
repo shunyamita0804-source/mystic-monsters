@@ -24,6 +24,8 @@
   const CHOICE_GUARD_MS = 350;
   /** 選択肢の押下は、直前のタップ（本文のタップ・無視した押下も含む）から、この時間あいていないと受け付けない（ミリ秒）。会話を送る連打のリズムのまま選択肢を確定させない（2度押しの確認と同じ0.4秒） */
   const CHOICE_GAP_MS = 400;
+  /** 2026-10-06：タップで全文を出した直後、次のセリフへ進む押下を受け付けない時間（ミリ秒）。全文表示のタップの続き（ダブルタップの2打目）で、読む前に次のセリフへ進まない */
+  const READ_GUARD_MS = 300;
 
   // ---------------------------------------------------------
   // NPCの登録
@@ -122,8 +124,9 @@
       if (st.ended) return 'ended';
       const t = now(); st.lastInput = t; if (t >= st.openedAt && t - st.openedAt < guardMs) return 'ignored';   // 開いた直後：会話を開いた入力の続き（連打の間隔の記録にも入れない。時計が戻っても止まらない）
       if (t - st.lastTap < MIN_TAP_MS) return 'ignored'; st.lastTap = t;
-      if (st.typing) { stop(); st.token++; st.shown = st.chars.length; st.typing = false; st.fullAt = t; emit(); return 'full'; }   // 表示中：全文表示
+      if (st.typing) { stop(); st.token++; st.shown = st.chars.length; st.typing = false; st.fullAt = t; st.fullTap = t; emit(); return 'full'; }   // 表示中：全文表示
       if (waiting()) return 'choice';   // 選択肢を待っている：本文のタップでは進まない
+      if (t - (st.fullTap || -1e9) < READ_GUARD_MS) return 'ignored';   // 全文を出したタップの続き：まだ次へ進まない（読む間）
       if (st.idx < L.length - 1) { show(st.idx + 1); return 'next'; }   // 全文表示後：次のセリフ
       end(); return 'end';   // 最後のセリフ：会話終了
     }

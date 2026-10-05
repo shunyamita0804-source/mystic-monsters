@@ -1544,6 +1544,8 @@ button.mkc b{font-size:.9rem}button.mkc small{font-size:.66rem;color:#ffe9b0}
 /* 2026-10-05：プロローグの文字は1文字ずつ（文字ごとに独立したアニメーション：opacity 0→1・下から --chr・ぼかし --chb→0。開始は --d（48ms 間隔）・長さ --chf（160ms）。段落全体の一括フェードはしない） */
 .mmpro-u .mpc{display:inline-block;opacity:0;transform:translate3d(0,var(--chr,3px),0);filter:blur(var(--chb,1.5px));animation:mmproCh var(--chf,160ms) cubic-bezier(.2,.6,.3,1) var(--d,0ms) forwards;white-space:pre}
 @keyframes mmproCh{to{opacity:1;transform:none;filter:blur(0)}}
+/* 2026-10-06：禁則（MMPRO.kinsoku のまとまり＝句読点・閉じ括弧を前の文字に、開き括弧を次の文字に付ける。最後の1文字だけで改行しない） */
+.mmpro-u .mpw{white-space:nowrap}.mmpro-u p{line-break:strict;text-wrap:pretty}
 .mmpro-u.full .mpc{animation:none;opacity:1;transform:none;filter:none}
 .mmpro-nar .mmpro-u{opacity:1}
 @media (prefers-reduced-motion:reduce){.mmpro-u .mpc{animation:none;opacity:1;transform:none;filter:none}}
@@ -2191,7 +2193,7 @@ button.p10karen img{display:block;width:100%;height:auto;margin-top:2px;transfor
 /* ===== 共通NPC会話（MMNPC・js/npc/npc.js）：JRPG風の会話ウィンドウ。正式な枠デザインを後で差し替えられるよう、見た目はこのブロックだけにまとめる ===== */
 .mmtalk{position:fixed;inset:0;z-index:900;display:flex;align-items:flex-end;justify-content:center;background:linear-gradient(rgba(4,10,32,0) 35%,rgba(4,10,32,.55));cursor:pointer;-webkit-tap-highlight-color:transparent;animation:mmtalkIn .18s ease-out}
 @keyframes mmtalkIn{from{opacity:0}to{opacity:1}}
-.mmtalk-stage{position:relative;display:flex;flex-direction:column;align-items:flex-start;width:min(100% - 16px,560px);margin:0 auto calc(env(safe-area-inset-bottom,0px) + 10px)}
+.mmtalk-stage{position:relative;display:flex;flex-direction:column;align-items:flex-start;width:min(100% - 16px,560px);margin:0 auto calc(env(safe-area-inset-bottom,0px) + clamp(24px,4.2dvh,40px))} /* 2026-10-06：会話窓を少し上へ（下端に張り付かない） */
 .mmtalk-fig{position:relative;z-index:1;margin:0 0 -18px 2%;pointer-events:none}
 .mmtalk-stage[data-side=right]{align-items:flex-end}
 .mmtalk-stage[data-side=right] .mmtalk-fig{margin:0 2% -18px 0}
@@ -2208,7 +2210,7 @@ button.p10karen img{display:block;width:100%;height:auto;margin-top:2px;transfor
 .mmtalk-win::after{right:6px;bottom:6px;border-width:0 1px 1px 0;border-radius:0 0 3px 0}
 .mmtalk-name{position:absolute;top:-17px;left:14px;padding:4px 18px 5px;border-radius:4px;border:1px solid rgba(240,232,212,.7);background:linear-gradient(#17284f,#0b1631);color:#f3ecd9;font-family:"Shippori Mincho",var(--mm-font-head,serif);font-weight:700;font-size:1rem;letter-spacing:.08em;line-height:1.2;box-shadow:0 3px 6px rgba(0,0,0,.45)}
 .mmtalk-name[hidden]{display:none}
-.mmtalk-text{margin:0;min-height:5.25em;color:#f3ecd9;font-family:"Noto Sans JP",var(--mm-font-body,sans-serif);font-size:16px;font-weight:500;line-height:1.75;letter-spacing:.02em;white-space:pre-wrap;word-break:break-word;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.mmtalk-text{margin:0;min-height:5.25em;color:#f3ecd9;font-family:"Noto Sans JP",var(--mm-font-body,sans-serif);font-size:16px;font-weight:500;line-height:1.75;letter-spacing:.02em;white-space:pre-wrap;word-break:normal;overflow-wrap:anywhere;line-break:strict;text-wrap:pretty;text-shadow:0 1px 2px rgba(0,0,0,.6)} /* 2026-10-06：日本語の禁則（句読点・閉じ括弧を行頭に置かない＝line-break:strict。最後の行が1文字だけにならないよう text-wrap:pretty） */
 .mmtalk-next{position:absolute;right:16px;bottom:10px;color:#efe6cf;font-size:.8rem;animation:mmtalkNx 1s ease-in-out infinite}
 .mmtalk-next[hidden]{display:none}
 .mmtalk-choices{display:flex;flex-direction:column;gap:8px;margin:10px 0 0}
@@ -2240,7 +2242,7 @@ button.p10karen img{display:block;width:100%;height:auto;margin-top:2px;transfor
 #app .fm.bc .bcbar button.bcb svg{width:28px;height:28px}
 @media (max-height:700px){#app .fm.bc{--bcbar:84px}#app .lab .labnav .labc,#app .rn2 .rna{min-height:64px;padding:7px 2px 6px}#app .lab .labnav .labc svg,#app .rn2 .rna svg{width:26px;height:26px}}
 /* ベースキャンプの主ボタン「出発する」（2026-10-06 正式デザイン 02_basecamp）：赤＋金・下のコマンドより格上の大きさ・下のコマンドとの間に余白・押すと縮んで金の光 */
-#app .fm.bc .bcgo{bottom:calc(var(--bcbar) + 16px + env(safe-area-inset-bottom,0px))}
+#app .fm.bc .bcgo{bottom:calc(var(--bcbar) + 40px + env(safe-area-inset-bottom,0px))}
 #app .fm.bc .fmgo.bcdep{height:auto;min-height:74px;padding:9px 16px 10px;gap:1px;border-radius:18px;border:2px solid #f0cf7c;background:radial-gradient(ellipse at 50% 0%,rgba(255,214,180,.3),rgba(255,214,180,0) 58%),linear-gradient(#b8262c,#86141c 55%,#5c0b12);box-shadow:inset 0 0 0 2px rgba(60,6,10,.85),inset 0 0 0 3.5px rgba(246,214,140,.55),0 0 0 2px rgba(40,14,8,.7),0 6px 16px rgba(0,0,0,.5),0 0 18px rgba(240,200,110,.22);transition:transform .08s ease,box-shadow .14s ease}
 #app .fm.bc .fmgo.bcdep b{font-size:27px;letter-spacing:.18em;color:#fff3cf;text-shadow:0 2px 0 #4a0a10,0 0 10px rgba(255,214,140,.45)}
 #app .fm.bc .fmgo.bcdep .bcsub{font-size:11.5px;letter-spacing:.08em;color:#f6dc9a;text-shadow:0 1px 1px #3a0608}
@@ -2436,11 +2438,11 @@ html[data-mmev-back] #app :is(.nst,.fbub,.kbub,.fmdan,.shopnpc,.gssay,.elsay,.vg
 .fm.bc button.bcrb svg{width:22px;height:22px;fill:none;stroke:#f6dc98;stroke-width:2;stroke-linecap:round}
 body:has(#app>.fm.bc) #snd,body:has(#app>.sts) #snd{display:none}
 /* 中央：ダン（立ち絵の規格 --nk）と育成中のモンスター。足元は「冒険」の上 */
-.fm.bc .bcfield{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 56px);bottom:calc(var(--bcbar) + var(--bcgo) + env(safe-area-inset-bottom,0px));z-index:2;pointer-events:none;--bcbar:84px;--bcgo:122px}
+.fm.bc .bcfield{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 56px);bottom:calc(var(--bcbar) + var(--bcgo) + env(safe-area-inset-bottom,0px));z-index:2;pointer-events:none;--bcbar:84px;--bcgo:178px}
 .fm.bc{--bcbar:84px;--bcgo:122px}
 .fm.bc .bcdan{position:absolute;left:-3%;bottom:-2px;height:min(70%,330px);pointer-events:none}
 .fm.fm2.bc .bcdan img.fmdan{position:relative;left:auto;top:auto;bottom:auto;display:block;height:100%;width:auto;max-width:none;aspect-ratio:var(--nk,.754);object-fit:cover;object-position:50% 0;-webkit-mask-image:linear-gradient(#000 80%,transparent 99%);mask-image:linear-gradient(#000 80%,transparent 99%)}
-.fm.fm2.bc .bcmonw{position:absolute;left:43%;right:3%;bottom:4px;height:min(46%,230px);display:flex;flex-direction:column;align-items:center;pointer-events:none}
+.fm.fm2.bc .bcmonw{position:absolute;left:8%;right:8%;bottom:6px;height:min(66%,320px);display:flex;flex-direction:column;align-items:center;pointer-events:none}
 .fm.fm2.bc .fmmon{position:relative;left:auto;right:auto;top:auto;bottom:auto;width:100%;height:auto;flex:1 1 auto;min-height:0}
 .fm.bc .bcname{flex:none;margin-top:2px;padding:2px 14px 3px;border-radius:7px;background:rgba(12,22,48,.86);border:1px solid #e0b861;text-align:center;line-height:1.2;color:#fff}
 .fm.bc .bcname b{display:block;font-size:12.5px;font-weight:700}.fm.bc .bcname small{display:block;font-size:10px;color:#f3d892}
@@ -2448,11 +2450,13 @@ body:has(#app>.fm.bc) #snd,body:has(#app>.sts) #snd{display:none}
 .fm.fm2.bc .fmstage{position:absolute;left:calc(3% + 6px);right:auto;top:auto;bottom:100%;width:min(78vw,300px);aspect-ratio:auto;margin-bottom:-2px;z-index:4;pointer-events:none}
 .fm.fm2.bc .kbub{position:relative;left:auto;right:auto;top:auto;bottom:auto;display:flex;align-items:center;gap:8px;width:auto;min-height:0;padding:7px 12px 7px 7px;border:1.5px solid #c9a24d;border-radius:12px;background:rgba(251,243,224,.94);color:#2a2014;font-size:12.5px;line-height:1.45;font-weight:500;opacity:0;pointer-events:auto}
 .fm.fm2.bc .kbub.kt{opacity:1}
+/* 2026-10-06：通常のベースキャンプにダンは立たない（モンスターが主役）。通知（msg）は顔・名前なしの帯を上に */
+.fm.bc .bcsys{position:absolute;left:50%;top:6px;transform:translateX(-50%);width:min(86vw,330px);z-index:4;pointer-events:none}.fm.fm2.bc .bcsys .kbub.ksys{margin:0;text-align:center;pointer-events:auto}
 .fm.fm2.bc .kbub.ksys{display:block;margin-bottom:6px;padding:7px 12px;background:rgba(12,31,86,.94);color:#fff}
 .fm.fm2.bc .kav{position:relative;left:auto;right:auto;top:auto;flex:none;width:38px;height:38px;border:2px solid #e0b861;border-radius:50%;overflow:hidden;background:#f3e2c0}
 .fm.fm2.bc .kbub .kdtx b{display:block;margin:0 0 1px;padding:0;border:0;background:none;color:#7a5520;font-size:11px}
 /* Chapter と「冒険」 */
-.fm.fm2.bc .bcgo{position:absolute;left:50%;top:auto;bottom:calc(var(--bcbar) + 12px + env(safe-area-inset-bottom,0px));width:min(74%,290px);transform:translateX(-50%);z-index:4;display:flex;flex-direction:column;align-items:center;gap:4px}
+.fm.fm2.bc .bcgo{position:absolute;left:50%;top:auto;bottom:calc(var(--bcbar) + 40px + env(safe-area-inset-bottom,0px));width:min(74%,290px);transform:translateX(-50%);z-index:4;display:flex;flex-direction:column;align-items:center;gap:4px}
 .fm.bc .bcch{display:flex;flex-direction:column;align-items:center;padding:2px 22px 3px;line-height:1.25;text-align:center;color:#fff;text-shadow:0 1px 3px #000,0 0 6px rgba(0,0,0,.7);background:radial-gradient(ellipse at 50% 50%,rgba(8,15,34,.78),rgba(8,15,34,.35) 60%,rgba(8,15,34,0) 75%)}
 .fm.bc .bcch small{font-family:var(--mm-font-head);font-size:13px;color:#f6dc98;letter-spacing:.06em}.fm.bc .bcch b{font-family:var(--mm-font-head);font-size:15px;font-weight:700;letter-spacing:.08em}
 .fm.fm2.bc .bcgo button.fmgo{width:100%;height:64px;border-radius:16px}
@@ -2467,7 +2471,7 @@ body:has(#app>.fm.bc) #snd,body:has(#app>.sts) #snd{display:none}
 .fm.bc .bctix{position:absolute;top:1px;right:4px;padding:0 6px;border-radius:8px;background:#0c1630;border:1px solid #e0b861;color:#f6dc98;font-style:normal;font-size:9.5px;line-height:15px;letter-spacing:0}
 @media (max-width:389px){.fm.fm2.bc .bcplq b{font-size:14px;letter-spacing:.06em}.fm.bc .bcplq i{width:26px;height:26px}.fm.bc button.bcrb{width:34px;height:34px}.fm.bc .bcgold{height:32px;padding:0 9px 0 5px}.fm.bc .bcr{gap:4px}.fm.fm2.bc .bchd{padding-left:8px;padding-right:8px}}
 .bcmn .bcmnl{display:grid;gap:8px;padding:12px}.bcmn .bcmnl button{margin:0}
-@media (max-height:700px){.fm.bc{--bcbar:72px;--bcgo:108px}.fm.bc .bcfield{--bcbar:72px;--bcgo:108px}.fm.fm2.bc .bcgo button.fmgo{height:54px}.fm.fm2.bc .bcgo .fmgo b{font-size:25px}.fm.fm2.bc .bcbar button.bcb svg{width:24px;height:24px}.fm.fm2.bc .bcbar button.bcb{font-size:12px}.fm.bc .bcdan{height:min(74%,280px)}}
+@media (max-height:700px){.fm.bc{--bcbar:72px;--bcgo:150px}.fm.bc .bcfield{--bcbar:72px;--bcgo:150px}#app .fm.bc .bcgo,.fm.fm2.bc .bcgo{bottom:calc(var(--bcbar) + 26px + env(safe-area-inset-bottom,0px))}.fm.fm2.bc .bcgo button.fmgo{height:54px}.fm.fm2.bc .bcgo .fmgo b{font-size:25px}.fm.fm2.bc .bcbar button.bcb svg{width:24px;height:24px}.fm.fm2.bc .bcbar button.bcb{font-size:12px}.fm.bc .bcdan{height:min(74%,280px)}}
 /* ===== 聖獣士管理局（2026-10-04 PHASE H4。デザイン基準 02：正式背景＋濃紺と金の額の「聖獣士証」と羊皮紙の行・功績・下に2つのボタン） ===== */
 #app>.bu{position:relative;box-sizing:border-box;height:calc(100% + 32px);margin:-16px;display:flex;flex-direction:column;overflow:hidden;background:#0c1630;color:#fff}
 .bu .bubg{position:absolute;inset:0;background:var(--bu-bg) 50% 30%/cover no-repeat;pointer-events:none}
@@ -3330,23 +3334,23 @@ function opTownTalk(){if(!S.playerNamePending||OP_TALKING)return;const f=finaFla
 /** 聖獣士管理局（登録前）：セルジュが登録を受け付ける → 聖獣士登録（名前） */
 function opBureau(){bgm("town");p9Immersive(true);
  $("#app").innerHTML=`<div class="bu opbu" style="--bu-bg:url(${BUREAU_BG})"><div class="bubg" aria-hidden="true"></div><header class="buhd"><button class="burb" data-nav="back" onclick="lobby()" aria-label="街にもどる">←</button><div class="buplq"><b>聖獣士管理局</b></div><span class="burb sp" aria-hidden="true"></span></header></div>`;
- MMNPC.talk(OPEN_TALK.serge,{kind:"event",presentation:"standard",big:true}).then(()=>{if(S.playerNamePending&&$(".opbu"))p11NameScr()})}
+ MMNPC.talk(OPEN_TALK.serge,{kind:"event",presentation:"standard",big:true,scene:BUREAU_BG}).then(()=>{if(S.playerNamePending&&$(".opbu"))p11NameScr()})}
 /** 名前の確認（セルジュ・2択）→ 登録（MMP11P.confirmName＝プレイヤー名の保存先は従来どおり）→ 登録完了 → フィナ（初めて名前を呼ぶ）・世界地図 */
 function opConfirm(v){const n=MMP11P.sanitize(v);
- MMNPC.talk(OPEN_TALK.confirm(n),{kind:"event",presentation:"standard",big:true,branches:{fix:OPEN_TALK.fix}}).then(c=>{if(c!=="ok"||!S.playerNamePending)return;
+ MMNPC.talk(OPEN_TALK.confirm(n),{kind:"event",presentation:"standard",big:true,scene:BUREAU_BG,branches:{fix:OPEN_TALK.fix}}).then(c=>{if(c!=="ok"||!S.playerNamePending)return;
   MMP11P.confirmName(S,n);const f=finaFlags();f.op="map";save();
-  MMNPC.talk(OPEN_TALK.done(n),{kind:"event",presentation:"standard",big:true}).then(()=>opAfterReg())})}
+  MMNPC.talk(OPEN_TALK.done(n),{kind:"event",presentation:"standard",big:true,scene:BUREAU_BG}).then(()=>opAfterReg())})}
 /** 登録のあと：フィナ（名前を呼ぶ）→ 出身地の会話＋世界地図 → ミストリア → 世界地図の解放（セルジュ）→ 最初の相棒（市場）へ */
 async function opAfterReg(){const f=finaFlags(),n=S.playerName||MMP11P.DEFAULT_NAME;if(OP_TALKING)return;OP_TALKING=true;bgm("town");p9Immersive(true);
  $("#app").innerHTML=`<div class="bu opbu" style="--bu-bg:url(${BUREAU_BG})"><div class="bubg" aria-hidden="true"></div><header class="buhd"><span class="burb sp" aria-hidden="true"></span><div class="buplq"><b>聖獣士管理局</b></div><span class="burb sp" aria-hidden="true"></span></header></div>`;
  try{
-  await MMNPC.talk(OPEN_TALK.finaName(n),{kind:"fina",presentation:"standard",big:true});
+  await MMNPC.talk(OPEN_TALK.finaName(n),{kind:"fina",presentation:"standard",big:true,scene:BUREAU_BG});
   const map=window.MMMAP?MMMAP.open():null,T=[],later=(fn,ms)=>T.push(setTimeout(fn,ms));
   const act={0:()=>{if(map)later(()=>map.focus("ferna"),650)},2:()=>{if(map){map.focus("asteria");later(()=>map.focus("liberna",true),1150)}},3:()=>{if(map)map.focus("mistoria",true)}};
   await MMNPC.talk(OPEN_TALK.origin(n).concat([]),{kind:"fina",presentation:"compact",branches:{a:OPEN_TALK.originA.concat(OPEN_TALK.mistoria),b:OPEN_TALK.originB.concat(OPEN_TALK.mistoria)},onLine:i=>{const a=act[i];if(a)a()}});
   T.forEach(clearTimeout);if(map)await map.close();
   f.worldMap=1;save();
-  await MMNPC.talk(OPEN_TALK.unlock(n),{kind:"event",presentation:"standard",big:true});
+  await MMNPC.talk(OPEN_TALK.unlock(n),{kind:"event",presentation:"standard",big:true,scene:BUREAU_BG});
  }finally{OP_TALKING=false}
  f.op="done";f.finaIntro=1;save();lobby(finaMsg(`${p11Esc(n)}さん、まずは市場で最初の相棒を迎えよう！`))}
 /** 聖獣士管理局の「世界地図」（序盤の会話を見たら出身地の印も） */
@@ -4361,13 +4365,12 @@ function fmScr(msg){const m=S.m;if(!m)return lobby();p9MenuClose();
   :can.reason=="rank_gate"?{t:"育成を完了して街へ戻る",s:`Chapter ${k} 解放条件：公式${MMP8.RANK_LETTERS[can.need]}ランク大会クリア`,on:"pfixFinishNoFinal(this)",c:" bcfin"}
   :{t:"出発する",sub:k!=null?`${k==MMP8.FINAL?"最終ルート":`CHAPTER ${k}`}${chSub(k)?`「${chSub(k)}」`:""}へ`:"",on:"prepScr()",c:" bcdep"+(st=="farm"?" p9c-go":"")}; // 2026-10-06 正式：主ボタン「出発する」（赤＋金・下に行き先）。押すと従来の出発準備（prepScr）
  const chip=done?`<small>育成完了</small><b>${last?`Chapter ${last.ch} まで`:""}</b>`:`<small>${chNm(k)}</small><b>${chSub(k)}</b>`;
- const ex=danEx(m,st,can),dan=(window.MMNPC&&MMNPC.standOf&&MMNPC.standOf("dan","closeup",ex))||npcSrc("dan",ex)||DAN_FIG;
+ // 2026-10-06：通常のベースキャンプはダンの常設の立ち絵・一言を出さない（モンスターが主役。ダンはイベントの会話だけ＝npcFirst・farmReturn・育成開始）。通知（msg）は顔・名前なしのまま
  const cmd=bcCmds(st);
  $("#app").innerHTML=`<div class="fm fm2 bc fm-${st}${st=="farm"?" p9farm p15f":""}" style="--bc-bg:url(${BC_BG})"><div class="bcbg" aria-hidden="true"></div>
  <header class="fmhd bchd"><div class="fmplq bcplq"><i aria-hidden="true">${fmIc("compass")}</i><b>ベースキャンプ</b></div><div class="bcr"><span class="bcgold"><i aria-hidden="true"></i><b>${S.g}</b> G</span><button class="bcrb" onclick="bcMenu()" aria-label="メニュー">${fmIc("menu")}</button><button class="bcrb bcsnd" onclick="sndToggle();this.textContent=AU.on?'🔊':'🔇'" aria-label="音">${AU.on?"🔊":"🔇"}</button></div></header>
  <div class="bcfield">
-  <div class="bcdan"><img class="fmdan bcnpc" data-npc="dan" src="${dan}" alt="" aria-hidden="true" data-ex="${ex}" decoding="async">
-   <div class="fmstage">${msg?`<div class="kbub kt ksys">${msg}</div>`:""}<div class="kbub kdan${msg?"":" kt"}"><span class="kav" onclick="const p=this.closest('.fmstage'),s=p.querySelector('.ksys'),b=p.querySelector('.kdan');if(s)s.remove();if(b){b.classList.remove('kt');void b.offsetWidth;b.classList.add('kt')}" aria-label="ダンのコメントを見る"><img src="${npcSrc("dan",BCOMM_EX,"face")||DAN_FACE}" alt=""></span><span class="kdtx"><b>ダン</b>${bcomm()}</span></div></div></div>
+  ${msg?`<div class="bcsys"><div class="kbub kt ksys" onclick="this.remove()">${msg}</div></div>`:""}
   <div class="bcmonw"><div class="fmmon mon">${msv(m)}</div><div class="bcname"><b>${p11Esc(m.name)}</b>${sp?`<small>${sp.kind}</small>`:""}</div></div>
  </div>
  <div class="bcgo fmgate"><div class="bcch">${chip}</div><button class="fmgo${go.c}" onclick="${go.on}">${go.s||warn?`<small>${warn||go.s}</small>`:""}<b>${go.t}</b>${go.sub?`<small class="bcsub">${go.sub}</small>`:""}</button></div>
@@ -4526,7 +4529,7 @@ function farmReturn(m){if(window.MM_QA_NO_NPC||!window.MMNPCE||!window.MMNPC||!m
  seen.push(key);if(ev.rumor)seen.push("rumor");save();MMNPC.talk(ev.lines,{kind:"event",presentation:"major",big:true,scene:BC_BG});return true}
 const FINA_PRES={raiseAgain:"compact",done:"major"}; // 会話の見せ方（短い確認は小さな窓・育成完了は重要イベント。ほかは通常）
 function finaTalk(key,branches){return window.MMNPC&&FINA_TALK[key]?MMNPC.talk(FINA_TALK[key],{kind:"fina",presentation:FINA_PRES[key]||"standard",big:FINA_BIG.has(key),scene:finaScene(key),...(branches?{branches}:{})}):Promise.resolve(null)}
-const finaScene=k=>k=="intro"?TOWN_BG:k=="done"?BC_BG:""; // 2026-10-06：大型の会話（街の案内・育成完了）は施設の背景だけを後ろに（下の画面を隠す）
+const finaScene=k=>k=="intro"?TOWN_BG:k=="done"||k=="raiseFirst"||k=="raiseAgain"?BC_BG:""; /* 2026-10-06：育成開始の確認・フィナ ↔ ダンの掛け合いもベースキャンプの背景だけ（後ろのコマンド・パネルを出さない） */ // 2026-10-06：大型の会話（街の案内・育成完了）は施設の背景だけを後ろに（下の画面を隠す）
 const FINA_BIG=new Set(["intro","done"]); // 2026-10-04 G2：大型の会話窓（街の案内・育成完了＝イベント） // branches：選択肢ごとの続きの行（同じ会話ウィンドウで続ける）。選んだ id で解決
 /** 名前登録の直後に1度だけ：先に「表示済み」を保存してから会話を出す（再読込しても二度出ない） */
 function finaIntro(){const f=finaFlags();if(f.finaIntro)return;f.finaIntro=1;save();finaTalk("intro")}

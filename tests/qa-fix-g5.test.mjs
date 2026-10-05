@@ -86,8 +86,8 @@ test('QA-G5-2：createTalk（openGuardMs）：開いてからの時間は差し�
   c.run(GUARD_MS - 121); assert.equal(T.tap(), 'ignored', '受け付けない時間の最後');
   c.run(1); assert.equal(T.tap(), 'full', '受け付けない時間を過ぎたら従来どおり（直前の無視したタップは連打の間隔に数えない）');
   assert.equal(T.state().text, 'はじめまして。私はフィナです！'); assert.equal(c.active(), 0);
-  c.run(100); assert.equal(T.tap(), 'next'); assert.equal(T.state().idx, 1, '2行目以降は受け付けない時間なし（行ごとには数えない）');
-  c.run(100); assert.equal(T.tap(), 'full'); c.run(100); assert.equal(T.tap(), 'end');
+  c.run(320); assert.equal(T.tap(), 'next'); assert.equal(T.state().idx, 1, '2行目以降は受け付けない時間なし（行ごとには数えない。2026-10-06：全文を出したタップから0.3秒は読む間）');
+  c.run(100); assert.equal(T.tap(), 'full'); c.run(320); assert.equal(T.tap(), 'end');
   // 端末の時計が戻っても（開いた時刻より前になっても）会話が送れなくならない
   let tt = 1000; const B = M.createTalk(['あいうえお'], { now: () => tt, schedule: () => 1, cancel: () => {}, openGuardMs: GUARD_MS }).start();
   tt = 999; assert.equal(B.tap(), 'full');
@@ -110,8 +110,8 @@ test('QA-G5-3：画面の会話（talk）：会話を開いたのと同じ Enter
   c.run(GUARD_MS - 120); doc.key('Enter'); s = M.state();
   assert.deepEqual([s.idx, s.typing, s.text], [0, false, 'はじめまして。私はフィナです！'], '0.2秒後の Enter は従来どおり全文表示');
   assert.equal(doc.$('mmtalk-next').hidden, false);
-  c.run(100); doc.$('mmtalk').click(); assert.equal(M.state().idx, 1, '全文表示後のタップで次のセリフ');
-  c.run(100); doc.key(' '); c.run(100); doc.$('mmtalk').click();
+  c.run(320); doc.$('mmtalk').click(); assert.equal(M.state().idx, 1, '全文表示後のタップで次のセリフ（2026-10-06：全文を出した押下から0.3秒は読む間）');
+  c.run(100); doc.key(' '); c.run(320); doc.$('mmtalk').click();
   await Promise.resolve();
   assert.deepEqual([M.state(), done, doc.keys(), doc.$('mmtalk'), c.active()], [null, 1, 0, null, 0], '最後のタップで終了（keydown・画面・タイマーは残らない）');
   // keydown を受け付け始める前に閉じても、あとから keydown が付かない

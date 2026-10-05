@@ -34,7 +34,7 @@ for (const size of SIZES) {
     assert.deepEqual(a.cmd, ['特訓', 'アイテム', 'ステータス', '技管理', '街へ戻る']); assert.equal(a.tix, null, '特訓チケットの札は出さない（2026-10-06）'); assert.match(a.name, /ガウ/);
     assert.doesNotMatch(a.text, /ファーム|育成を始める|育成準備中/); assert.equal(a.sw, size[0], '横にはみ出さない');
     assert.ok((await inView(pg, '.bcbar .bcb, .bcgo .fmgo, .bchd .bcrb, .bcplq, .fmmon, .bcname')).every(Boolean), '主な部品はすべて画面の中');
-    assert.ok(await pg.evaluate(() => { const d = document.querySelector('.fmdan').getBoundingClientRect(), b = document.querySelector('.bcbar').getBoundingClientRect(); return d.top >= 0 && d.right > innerWidth * 0.3 && d.top < b.top; }), 'ダンの頭は画面の中（左端は少し切れてよい＝デザインどおり）');
+    assert.ok(await pg.evaluate(() => { const g = document.querySelector('.bcgo .fmgo').getBoundingClientRect(), b = document.querySelector('.bcbar').getBoundingClientRect(), mn = document.querySelector('.bcmonw').getBoundingClientRect(); return !document.querySelector('.fmdan,.kdan') && b.top - g.bottom >= 24 && Math.abs((mn.left + mn.right) / 2 - innerWidth / 2) < 8; }), '2026-10-06：ダンの常設なし・モンスターが中央の主役・「出発する」は下のバーから少し上（24px 以上）');
     // 冒険 → 出発準備（従来の prepScr）
     await pg.click('.bcgo .fmgo'); await pg.waitForSelector('button[onclick="p7Depart(this)"]');
     // Chapter間：5つ目は中断・育成放棄はメニュー

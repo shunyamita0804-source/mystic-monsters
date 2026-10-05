@@ -38,17 +38,15 @@ test('DAN-2：素材は透過PNG（RGBA）。立ち絵6枚は高さ760px（表�
 
 test('DAN-3：ダンの顔はダンが話す一言（ファームの吹き出し・Chapter間ファーム）だけ。メッセージ欄（ステータス・わざ・修行・準備・ショップ）はシステム通知なので顔なし', () => {
   assert.match(lineOf('const DAN_FACE='), /^const DAN_FACE="assets\/npc\/dan\/face\.webp";/);
-  assert.equal((HTML.match(/\$\{DAN_FACE\}/g) || []).length + (HTML.match(/\|\|DAN_FACE\}/g) || []).length, 2, '2026-10-04：ダンの小さい顔は表情（BCOMM_EX）つき');
+  assert.ok((HTML.match(/\$\{DAN_FACE\}/g) || []).length + (HTML.match(/\|\|DAN_FACE\}/g) || []).length <= 2, '2026-10-06：ベースキャンプはダンの常設の顔・一言を出さない');
   assert.equal((HTML.match(/\$\{msg\?`<div class="dmsg"><span>\$\{msg\}<\/span><\/div>`:""\}/g) || []).length, 2, 'dscr・p7Shell のメッセージ欄は文字だけ');
   assert.doesNotMatch(HTML, /class="dmsg"><img/);
 
   assert.equal((HTML.replace(/^\s*\/\/.*$/gm, '').match(/NPI\.b/g) || []).length, 0, '画面から旧コウの顔を参照しない（コメントを除く）');
   const hall = HTML.slice(HTML.indexOf('function fmScr(msg){'), HTML.indexOf('\n// ---- Phase 8：育成中の画面遷移'));   // ファーム（正式デザイン。育成開始前・Chapter間・育成完了）
-  // 2026-10-04 PHASE H2：ベースキャンプ（旧ファーム）では、ダンの一言は顔つきの吹き出し（顔・名前・一言）をダンの頭の上に。通知は名前・顔なしの別のトーストのまま
-  assert.match(hall, /\$\{msg\?`<div class="kbub kt ksys">\$\{msg\}<\/div>`:""\}<div class="kbub kdan\$\{msg\?"":" kt"\}">/, 'ベースキャンプ：通知は名前なしの別のトースト');
-  assert.match(hall, /<span class="kdtx"><b>ダン<\/b>\$\{bcomm\(\)\}<\/span><\/div>/, 'ダンの吹き出しはダンの一言だけ');
-  assert.match(hall, /s=p\.querySelector\('\.ksys'\),b=p\.querySelector\('\.kdan'\);if\(s\)s\.remove\(\);/, '顔を押すとダンの吹き出し（通知は消す）');
-  assert.match(hall, /aria-label="ダンのコメントを見る"><img src="\$\{(DAN_FACE|npcSrc\("dan",BCOMM_EX,"face"\)\|\|DAN_FACE)\}" alt="">/);
+  // 2026-10-06：通常のベースキャンプはモンスターが主役＝ダンの常設の立ち絵・一言は出さない（ダンはイベントの会話だけ）。通知（msg）は名前・顔なしの帯
+  assert.match(hall, /\$\{msg\?`<div class="bcsys"><div class="kbub kt ksys" onclick="this\.remove\(\)">\$\{msg\}<\/div><\/div>`:""\}/, 'ベースキャンプ：通知は名前・顔なし');
+  assert.doesNotMatch(hall, /kdan|fmdan|bcomm\(\)|DAN_FACE/, 'ダンの常設の立ち絵・一言なし');
   const code = HTML.replace(/^\s*\/\/.*$/gm, '');
   assert.doesNotMatch(code.slice(code.indexOf('function _hall('), code.indexOf('\nfunction after(')), /コウ/, 'ファームにコウの名前を出さない');
   assert.doesNotMatch(hall, /コウ/, 'ファーム（fmScr）にコウの名前を出さない');
@@ -118,20 +116,18 @@ async function buyFirst(pg) {
 }
 const imgOk = (pg, sel) => pg.evaluate((s) => [...document.querySelectorAll(s)].map((i) => [i.getAttribute('src'), i.complete && i.naturalWidth > 0]), sel);
 
-test('DAN-B1：ファーム：ダンの吹き出し（名前ダン・顔）。システム通知は名前・顔なし（ファームは別のトースト、ステータス・準備のメッセージ欄は文字だけ）', { skip: SKIP }, async () => {
+test('DAN-B1：ベースキャンプ：ダンの常設の立ち絵・吹き出しなし（2026-10-06）。システム通知は名前・顔なし（ファームは別のトースト、ステータス・準備のメッセージ欄は文字だけ）', { skip: SKIP }, async () => {
   const p = await L.open(); const pg = p.page;
   await buyFirst(pg);
-  await pg.evaluate(() => hall('t')); await pg.waitForSelector('.kdan'); await pg.waitForTimeout(300);
-  assert.equal(await pg.evaluate(() => document.querySelector('.kdan b').textContent), 'ダン');
-  assert.equal(await pg.evaluate(() => document.querySelectorAll('.ksys').length), 0, '通知が無ければダンの吹き出しだけ');
-  { const k = await imgOk(pg, '.kav img'); assert.equal(k.length, 1); assert.match(k[0][0], /^assets\/npc\/dan\/expr\/face\/0[1-4]_(normal|cheer|caution|proud)\.webp$/, '2026-10-04（追加アセット）：一言の表情の顔'); assert.equal(k[0][1], true); }
-  assert.equal(await pg.evaluate(() => document.querySelector('.kav').getAttribute('aria-label')), 'ダンのコメントを見る');
+  // 2026-10-06：通常のベースキャンプはモンスターが主役＝ダンの常設の立ち絵・一言（吹き出し）は出さない
+  await pg.evaluate(() => hall('t')); await pg.waitForSelector('.bcmonw .fmmon img'); await pg.waitForTimeout(300);
+  assert.deepEqual(await pg.evaluate(() => [document.querySelectorAll('.fmdan,.kdan,.kav').length, document.querySelectorAll('.ksys').length]), [0, 0], 'ダンは立たない・通知が無ければ帯も無い');
   assert.doesNotMatch(await H.text(pg), /コウ/);
-  // 通知つき：名前なしの通知トースト。ダンの吹き出しは出していない。顔を押すと通知を消してダンの吹き出し
+  // 通知つき：名前・顔なしの帯（押すと消える）
   await pg.evaluate(() => hall('t', 'テストの通知です。')); await pg.waitForSelector('.ksys'); await pg.waitForTimeout(300);
-  assert.deepEqual(await pg.evaluate(() => { const s = document.querySelector('.ksys'); return [s.textContent, !!s.querySelector('b'), document.querySelector('.kdan').classList.contains('kt')]; }), ['テストの通知です。', false, false]);
-  await pg.click('.kav'); await pg.waitForTimeout(200);
-  assert.deepEqual(await pg.evaluate(() => [document.querySelectorAll('.ksys').length, document.querySelector('.kdan').classList.contains('kt')]), [0, true]);
+  assert.deepEqual(await pg.evaluate(() => { const s = document.querySelector('.ksys'); return [s.textContent, !!s.querySelector('b,img'), document.querySelectorAll('.kdan').length]; }), ['テストの通知です。', false, 0]);
+  await pg.click('.ksys'); await pg.waitForTimeout(200);
+  assert.equal(await pg.evaluate(() => document.querySelectorAll('.ksys').length), 0);
   // メッセージ欄：文字だけ（顔なし）
   await pg.evaluate(() => hall('st', '並び順を変更しました。')); await pg.waitForSelector('.sts .stmsg'); await pg.waitForTimeout(200);   // 2026-10-05：正式ステータス画面（stScr）のメッセージ欄
   assert.deepEqual(await pg.evaluate(() => [document.querySelector('.sts .stmsg').textContent, document.querySelectorAll('.sts .stmsg img').length]), ['並び順を変更しました。', 0]);
@@ -162,7 +158,7 @@ test('DAN-B2：育成開始：フィナの確認と選択肢。「まだやめ�
     if (!s.next) { await pg.click('.mmtalk'); await pg.waitForTimeout(60); s = await talkState(pg); if (!s) break; }
     seen.push([s.name, s.side, s.text, s.img]);
     assert.equal(await pg.evaluate(() => S.m.raise.state), 'none', '掛け合いの間はまだ出発しない');
-    await pg.waitForTimeout(120); await pg.click('.mmtalk');
+    await pg.waitForTimeout(350); await pg.click(".mmtalk");
   }
   assert.deepEqual(seen.map((x) => x.slice(0, 3)), [['フィナ', 'left', 'ダン、この子と一緒に行ってくるね！'], ['ダン', 'right', 'ああ。準備はできてるな。気をつけて行ってこい。']]);
   assert.match(seen[1][3], /assets\/npc\/dan\/expr\/(?:closeup|full)\/02_cheer\.webp$/, '2026-10-04：出発の後押し＝02');   /* 2026-10-04 PHASE H5：会話・施設の立ち絵は規格 stand（expr/full を CSS で 3/4身に切る） */

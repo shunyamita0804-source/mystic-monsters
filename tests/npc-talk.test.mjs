@@ -38,8 +38,8 @@ test('NT-2：タップ：表示中＝全文表示／全文表示後＝次のセ�
   const T = M.createTalk(['一つ目のセリフです。', '二つ目。'], { ...c, onEnd: () => ends++ }).start();
   c.run(100); assert.equal(T.state().typing, true);
   assert.equal(T.tap(), 'full'); assert.equal(T.state().text, '一つ目のセリフです。'); assert.equal(c.active(), 0);
-  c.run(100); assert.equal(T.tap(), 'next'); assert.equal(T.state().idx, 1); assert.equal(T.state().text, '');
-  c.run(100); assert.equal(T.tap(), 'full'); c.run(100); assert.equal(T.tap(), 'end');
+  c.run(100); assert.equal(T.tap(), 'ignored', '2026-10-06：全文を出したタップの続き（0.3秒以内）では次へ進まない＝読む間'); c.run(250); assert.equal(T.tap(), 'next'); assert.equal(T.state().idx, 1); assert.equal(T.state().text, '');
+  c.run(100); assert.equal(T.tap(), 'full'); c.run(320); assert.equal(T.tap(), 'end');
   assert.deepEqual([T.state().ended, ends, c.active()], [true, 1, 0]); c.run(100); assert.equal(T.tap(), 'ended'); assert.equal(ends, 1);
 });
 
