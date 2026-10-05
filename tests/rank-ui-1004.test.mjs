@@ -50,16 +50,17 @@ test('RK-02：Chapter 1〜4 で同じ部品（Chapter 2 以降のゴールも p9
   assert.doesNotMatch(comp, /p9rank|p9rlock|p8TourStart|PRIZE|初回優勝|推奨|FREE|ランクF|CHAPTER \$\{/, '旧カード・賞金・推奨戦力・F・FREE・旧 Chapter 見出しは無い');
   assert.match(comp, /参加者 \$\{sz\}体 \/ \$\{sz-1\}試合/); assert.match(comp, /MMP8L\.LEAGUE_SIZE\[k\]/);
   assert.match(rd('js/phase8/league.js'), /const LEAGUE_SIZE = Object\.freeze\(\[6, 6, 8, 8, 8, 8\]\);/);
-  assert.match(fnOf('p9RankRow'), /return ok\?`<button class="rcv-row ok st-\$\{st\}"[^`]*onclick="p9RcvPick\(\$\{k\},this\)"/, '選べるランク（クリア済の再挑戦を含む）だけ button');
+  assert.match(fnOf('p9RankRow'), /return ok\?`<button class="rcv-row ok st-\$\{st\}\$\{un\?" unlocking":""\}"[^`]*onclick="p9RcvPick\(\$\{k\},this\)"/, '選べるランク（クリア済の再挑戦を含む）だけ button（2026-10-05 PHASE B：解除の演出の行は unlocking）');
   assert.match(fnOf('p9RankRow'), /:`<div class="rcv-row lk st-\$\{st\}"[^`]*aria-disabled="true"/, '未解放は押せない div');
   assert.match(fnOf('p9RcvPick'), /MMP8\.eligibleRanks\(m,m\.raise\.ch\)\.includes\(k\)\)return;/); assert.match(fnOf('p9RcvJoin'), /MMP8\.eligibleRanks\(m,m\.raise\.ch\)\.includes\(k\)\)return;/);
 });
 
-test('RK-03：見た目は HTML/CSS（青＋金）。未解放＝灰色がかった濃紺（黒い塗りつぶしではない）＋鎖と錠、挑戦目標＝金の光と札、クリア済＝金のチェック、選択中＝明るい金の枠と光。画像を背景に固定しない', () => {
+test('RK-03：見た目は HTML/CSS（2026-10-05 PHASE B：参加可能＝赤＋金・未解放＝青＋鎖と錠）。未解放＝灰色がかった濃紺（黒い塗りつぶしではない）＋鎖と錠、挑戦目標＝金の光と札、クリア済＝金のチェック、選択中＝明るい金の枠と光。画像を背景に固定しない', () => {
   const css = HTML.slice(HTML.indexOf('/* 2026-10-04 正式デザイン（大会ランク選択'), HTML.indexOf('.rcv-note{'));
-  assert.match(css, /\.rcv-plate::before\{[^}]*background:linear-gradient\(#2a4fb0/, '参加可能＝青');
+  assert.match(css, /\.rcv-plate::before\{[^}]*linear-gradient\(#a3192b,#7c0f20 50%,#5a0816\)/, '2026-10-05 PHASE B 正式（rank_selection_final）：参加可能＝赤〜ワインレッド');
   assert.match(css, /\.rcv-plate\{[^}]*background:linear-gradient\(90deg,#a8781f,#f3d27a/, '金の縁');
-  assert.match(css, /\.rcv-row\.st-lock \.rcv-plate::before\{background:linear-gradient\(#3a4360,#283048/, '未解放＝灰色がかった濃紺');
+  assert.match(css, /\.rcv-row\.st-lock \.rcv-plate::before\{background:[^}]*linear-gradient\(#2c4c9e,#1b3478 55%,#10225a\)/, '2026-10-05 PHASE B：未解放＝青〜濃紺＋鎖（交差）と南京錠');
+  assert.match(css, /\.rcv-chain\.b\{transform:rotate\(8deg\)\}/); assert.match(css, /\.rcv-lock\{/); assert.match(css, /\.rcv-unveil\{/); assert.match(css, /\.rcv-row\.st-lock \.rcv-st\{[^}]*linear-gradient\(#b3202f,#7a0f1e\)/, '参加不可の札＝赤'); assert.match(css, /\.rcv-st\{[^}]*linear-gradient\(#2f9a4c,#1a6a32\)/, '参加可能の札＝緑');
   assert.match(css, /\.rcv-chain\{/); assert.match(HTML, /const P9_PADLOCK=/);
   assert.match(css, /\.rcv-row\.st-next \.rcv-plate\{filter:drop-shadow\(0 0 7px rgba\(255,212,110/); assert.match(css, /\.rcv-next\{/);
   assert.match(css, /\.rcv-row\.st-clear \.rcv-ic\{color:#ffd25a\}/); assert.match(css, /\.rcv-row\.ok\.sel \.rcv-plate\{/);

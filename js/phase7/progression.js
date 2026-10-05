@@ -469,6 +469,8 @@
     itemDefs[def.id] = Object.freeze({ id: def.id, name: def.name || def.id, price: def.price ?? null, sellPrice: def.sellPrice ?? null });
   }
   function getItemDef(id) { return itemDefs[id] || null; }
+  /** 登録済みのアイテムの定義（登録順。2026-10-05 PHASE B：アイテム図鑑＝既存のデータを見るだけ） */
+  function listItemDefs() { return Object.values(itemDefs); }
   function setShopCatalog(ids) { shopCatalog = Array.isArray(ids) ? [...ids] : []; }
   function getShopCatalog() { return shopCatalog.filter((id) => itemDefs[id]); }
   /** 購入品は保管庫へ入る（アイテム屋はバッグを直接操作しない） */
@@ -508,6 +510,6 @@
     rollDice, rollDie, trainSquare, canStartTraining, startTraining, advanceTraining, finishTraining,
     addFusionSpeciesResolver, resolveFusionSpecies, fusionInheritCandidates, pickFusionInherit,
     bagCap, bagFree, vaultHasRoom, canAccessVault, bagAdd, setBagFullHandler, moveVaultToBag, moveBagToVault,
-    registerItem, getItemDef, setShopCatalog, getShopCatalog, shopBuy, shopSell,
+    registerItem, getItemDef, setShopCatalog, getShopCatalog, shopBuy, shopSell, listItemDefs,
   });
 })(typeof window !== 'undefined' ? window : globalThis);

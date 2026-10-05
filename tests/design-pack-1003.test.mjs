@@ -67,7 +67,7 @@ test('DP-02：宝箱 4種類の派生（透過 WebP・同じ種類は同じ大�
 test('DP-03：アイテム屋：正式背景（ぼかさない）と正式NPC の立ち姿。固有名は付けない（札は「アイテム屋」）。2026-10-04：表情差分と短い一言（初回・条件・購入成立）。商品・売買の処理は従来どおり', () => {
   assert.match(HTML, /const SHOP_BG="assets\/shop\/shop_bg\.webp",SHOP_NPC="assets\/shop\/shop_npc\.webp";/);
   for (const f of ['assets/shop/shop_bg.webp', 'assets/shop/shop_npc.webp']) assert.ok(existsSync(path.join(ROOT, f)), f);
-  const shop = HTML.slice(HTML.indexOf('function shopScr('), HTML.indexOf('\n', HTML.indexOf('$("#app").innerHTML=p7Shell("🛒"')));
+  const shop = HTML.slice(HTML.indexOf('function shopScr('), HTML.indexOf('\nfunction p7Buy('));   // 2026-10-05 PHASE B：入口（3つの導線）と購入・売却・図鑑の画面
   assert.match(shop, /MMP7\.getShopCatalog\(\)/); assert.match(shop, /p7Buy\('\$\{id\}'\)/); assert.match(shop, /p7Sell\(\$\{i\}\)/);
   assert.match(shop, /,msg,null,shopLook\(sex\)\);/, '2026-10-04（追加アセット）：おばあちゃんの表情（全身 4表情）');
   const look = HTML.slice(HTML.indexOf('const SHOP_LOOK='), HTML.indexOf('function shopScr('));
