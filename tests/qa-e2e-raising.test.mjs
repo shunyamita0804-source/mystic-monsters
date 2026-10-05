@@ -182,7 +182,7 @@ T('QA-RB1：市場で購入 → ファーム → 出発準備：1回目の押下
   await pg.click('#p10ov .p10ok');
   await pg.waitForFunction(() => !!S.m && !!document.querySelector('.map'));
   const s0 = await H.getS(pg);
-  assert.deepEqual([s0.m.name, s0.m.sp, s0.m.raise.state, s0.g], ['ソラモ', 0, 'none', 0]);
+  assert.deepEqual([s0.m.name, s0.m.sp, s0.m.raise.state, s0.g], ['ソラモ', 0, 'none', 500], '2026-10-06：新人支援の 1000G − 500G');
   // 街 → ファーム（未育成の間は街へ戻るボタンがある）
   await pg.click('.hz[onclick="hall()"]');
   await pg.waitForSelector('button[onclick="prepScr()"]');
@@ -199,7 +199,7 @@ T('QA-RB1：市場で購入 → ファーム → 出発準備：1回目の押下
   await pg.click(dep);
   await pg.waitForSelector('.mmtalk');
   assert.equal(await pg.evaluate(() => S.m.raise.state), 'none', '会話中は育成を始めない');
-  assert.deepEqual((await H.storedSave(pg)).npcFlags, { finaIntro: 1, karenIntro: 1, raiseIntro: 1 }, '初回の説明は表示した記録を先に保存する（市場に入ったのでカレンの初回あいさつも表示済み）');
+  assert.deepEqual((await H.storedSave(pg)).npcFlags, { finaIntro: 1, karenIntro: 1, raiseIntro: 1, support: 1 }, '初回の説明は表示した記録を先に保存する（市場に入ったのでカレンの初回あいさつも表示済み）');
   const t1 = await readUntilChoice(pg);
   assert.deepEqual(t1.who, ['フィナ']);
   assert.deepEqual(t1.lines, await pg.evaluate(() => FINA_TALK.raiseFirst.map((x) => x.text)));

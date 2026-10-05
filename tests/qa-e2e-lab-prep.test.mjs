@@ -57,7 +57,7 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
   test(`LP-B2（${size.join('×')}）：出発準備：育成中モンスター・Chapter の札・バッグ5スロット・保管庫のシート・Chapter 1 のカード・「出発する」→ フィナの確認（従来の出発）`, { skip: SKIP }, async () => {
     const p = await openPage({ size }); const pg = p.page; mkdirSync(SHOT, { recursive: true });
     await H.newGame(pg, 'テスト');
-    await pg.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; S.inv.vault.push({ id: 'qa_item' }); save(); prepScr(); });
+    await pg.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; S.inv.vault.push({ id: 'qa_item' }); S.inv.bag = []; save(); prepScr(); });   // 2026-10-06：新人支援の薬草（バッグ）は外して空のバッグで確かめる
     await pg.waitForSelector('.pp .ppslots');
     const r = await pg.evaluate(() => ({ slots: document.querySelectorAll('.ppsl').length, on: document.querySelectorAll('.ppsl.on').length, name: document.querySelector('.ppname b').textContent, img: document.querySelector('.ppmon img').getAttribute('src'), ch: document.querySelector('.ppch').textContent.replace(/\s+/g, ''), card: document.querySelector('.ppcin').textContent.replace(/\s+/g, ''), art: getComputedStyle(document.querySelector('.ppart')).backgroundImage, go: document.querySelector('.ppgobtn').textContent.replace(/\s+/g, ''), goOn: !document.querySelector('.ppgobtn').disabled, sheet: document.querySelector('#ppvault').hidden }));
     assert.equal(r.slots, 5); assert.equal(r.on, 0); assert.equal(r.name, 'ソラ'); assert.match(r.img, /assets\/monsters\/solamo\.png$/);

@@ -140,7 +140,7 @@ T('QA-NG1：開始画面：初回は正式画像（無加工）・「はじめ�
   assert.ok(t.btnIn, '開始ボタンが 390×844 の画面内にある');
   assert.equal(t.sw, t.iw, '横スクロールが出ない');
   assert.equal(t.pending, true, '新規ゲームは名前の登録待ち');
-  assert.deepEqual([t.g, t.m, t.box, t.v], [300, null, 0, 6], '初期所持金300G・モンスターなし・セーブversion 6');
+  assert.deepEqual([t.g, t.m, t.box, t.v], [0, null, 0, 6], '初期所持金0G（2026-10-06：聖獣士登録の新人支援で 1000G）・モンスターなし・セーブversion 6');
   noErrors(p);
 });
 
@@ -163,8 +163,8 @@ T('QA-NG2：開始ボタン → 名前登録画面（初期値「アルト」・
     '開いた直後：1行目を1文字ずつ表示中で、▼はまだ出ない');
   const st = await H.storedSave(pg);
   assert.equal(st.v, 6); assert.equal(st.playerName, 'ゆうしゃ'); assert.ok(!st.playerNamePending, '名前登録待ちは消える');
-  assert.deepEqual(st.npcFlags, { finaIntro: 1 }, 'あいさつ済みを会話の前に保存する');
-  assert.equal(st.g, 300); assert.deepEqual(st.raiseRec, { done: 0, fromStart: true }, '育成完了回数は0回から記録');
+  assert.deepEqual(st.npcFlags, { support: 1, finaIntro: 1 }, 'あいさつ済みを会話の前に保存する（2026-10-06：登録で新人支援 support）');
+  assert.equal(st.g, 1000); assert.deepEqual(st.raiseRec, { done: 0, fromStart: true }, '育成完了回数は0回から記録');
   assert.equal(st.m, null); assert.deepEqual(st.box, []);
   const lines = await talkLines(pg);
   assert.doesNotMatch(lines[0].img, /animations\/wave\//, '2026-10-04 G2：1行目も静止画（手を振り続けるアニメはやめた）');
@@ -193,7 +193,7 @@ T('QA-NG2：開始ボタン → 名前登録画面（初期値「アルト」・
   assert.equal(t.fina, 0, '会話が終われば街にフィナは残らない');
   // プレイヤー情報（名前・所持金・最高到達ランク）はプロフィールに出す
   await pg.click('.hz[onclick="profileScr()"]'); await pg.waitForSelector('.pfds');
-  assert.match(await pg.evaluate(() => document.querySelector('.pfds .tplate').innerText.replace(/\s+/g, ' ')), /プレイヤー ゆうしゃ 所持金 300 ?G 最高到達ランク ー 育成完了 0 ?回 大会の勝利 0 ?勝 獲得トロフィー 準備中/);
+  assert.match(await pg.evaluate(() => document.querySelector('.pfds .tplate').innerText.replace(/\s+/g, ' ')), /プレイヤー ゆうしゃ 所持金 1,?000 ?G 最高到達ランク ー 育成完了 0 ?回 大会の勝利 0 ?勝 獲得トロフィー 準備中/);
   await pg.click('.pfds .dback'); await pg.waitForSelector('.tbar .tcmd');
   noErrors(p);
 });
@@ -207,7 +207,7 @@ T('QA-NG3：名前は Enter キーでも決定できる（決定は1回だけ・
   const s = await pg.evaluate(() => { const s = MMNPC.state(); return { idx: s.idx, name: s.name, n: document.querySelectorAll('.mmtalk').length, reg: !!document.querySelector('#p11nm') }; });
   assert.deepEqual(s, { idx: 0, name: 'フィナ', n: 1, reg: false }, 'Enter で名前登録が終わり、会話が1つだけ1行目から始まる');
   const st = await H.storedSave(pg);
-  assert.equal(st.playerName, 'エンター'); assert.ok(!st.playerNamePending); assert.deepEqual(st.npcFlags, { finaIntro: 1 });
+  assert.equal(st.playerName, 'エンター'); assert.ok(!st.playerNamePending); assert.deepEqual(st.npcFlags, { support: 1, finaIntro: 1 });
   const lines = await talkLines(pg);
   assert.equal(lines.length, 3, 'あいさつは3行とも表示される');
   await pg.waitForSelector('.map');
@@ -269,7 +269,7 @@ T('QA-NG6：フィナの初回あいさつは1度だけ：会話を終えてか�
   await startFromTitle(pg, '.map');
   await pg.waitForTimeout(300);
   const t = await pg.evaluate(() => ({ talk: document.querySelectorAll('.mmtalk').length, reg: !!document.querySelector('#p11nm'), name: S.playerName, flags: S.npcFlags, msg: document.querySelector('#msg').textContent }));
-  assert.deepEqual(t, { talk: 0, reg: false, name: 'いちど', flags: { finaIntro: 1 }, msg: 'モンスターがいません。まずは市場で選ぼう。' });
+  assert.deepEqual(t, { talk: 0, reg: false, name: 'いちど', flags: { support: 1, finaIntro: 1 }, msg: 'モンスターがいません。まずは市場で選ぼう。' });
   noErrors(p);
 });
 
@@ -285,7 +285,7 @@ T('QA-NG7：あいさつの途中で再読込しても、名前は保存済み�
   await startFromTitle(pg, '.map');
   await pg.waitForTimeout(300);
   const t = await pg.evaluate(() => ({ talk: document.querySelectorAll('.mmtalk').length, reg: !!document.querySelector('#p11nm'), name: S.playerName, pending: !!S.playerNamePending, flags: S.npcFlags }));
-  assert.deepEqual(t, { talk: 0, reg: false, name: 'とちゅう', pending: false, flags: { finaIntro: 1 } });
+  assert.deepEqual(t, { talk: 0, reg: false, name: 'とちゅう', pending: false, flags: { support: 1, finaIntro: 1 } });
   noErrors(p);
 });
 
@@ -332,7 +332,7 @@ T('QA-MK1：街の市場ボタンで市場を開く：ソラモ・ガウル・�
   assert.deepEqual(t.dots, ['ソラモ', 'ガウル', 'ノビトン']);
   assert.doesNotMatch(t.html, /ジオル|jiol/, 'ジオルは市場に出さない');
   assert.ok(t.filters.every((f) => f === 'none'), '正式画像の色を filter で変えない');
-  assert.match(t.who, /いちば/); assert.match(t.who, /300 ?G/);
+  assert.match(t.who, /いちば/); assert.match(t.who, /1,?000 ?G/, '2026-10-06：新人支援の 1000G');
   assert.equal(t.back, 'lobby()'); assert.deepEqual(t.arrows, ['前のモンスター', '次のモンスター']);
   const c = await car(pg);
   assertCentered(c, 'solamo');

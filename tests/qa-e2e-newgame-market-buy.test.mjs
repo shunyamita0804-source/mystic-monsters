@@ -79,10 +79,10 @@ const townMsg = (pg) => pg.evaluate(() => document.querySelector('#msg').textCon
 // ---------------------------------------------------------
 // 初回購入救済・通常の購入
 // ---------------------------------------------------------
-T('QA-BY1：新規ゲーム（300G・0体）の初回購入：案内と確認画面に補填の説明 → 500Gまで補填して購入 → 0G。個体は手持ちに入り、再読込後も「つづきから」', async () => {
+T('QA-BY1：所持金 300G・0体（古いセーブ。2026-10-06 から新しいゲームは新人支援で 1000G＝補填は古いセーブの詰み防止だけ）の初回購入：案内と確認画面に補填の説明 → 500Gまで補填して購入 → 0G。個体は手持ちに入り、再読込後も「つづきから」', async () => {
   const p = await openPage({ size: H.SIZES.base }); const pg = p.page;
   await H.newGame(pg, 'はじめて');
-  await pg.waitForSelector('.map');
+  await pg.waitForSelector('.map'); await pg.evaluate(() => { S.g = 300; save(); });
   await pg.click('.hz[onclick="market()"]');
   await settle(pg);
   const b = await buyBox(pg);

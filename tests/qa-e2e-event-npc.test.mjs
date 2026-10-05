@@ -183,7 +183,7 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
       for (let i = 0; i < keys.length; i++) {
         await pg.waitForFunction((k) => { const o = document.querySelector('.mmtalk:not(.mmtalk-out)'); const im = o && o.querySelector('.mmtalk-fig img'); return !!im && im.complete && im.naturalWidth > 0 && im.getAttribute('src').includes(`_${k}.webp`); }, keys[i], { timeout: 8000 });
         rs.push(await rect(pg, '.mmtalk:not(.mmtalk-out) .mmtalk-fig img'));
-        if (i < keys.length - 1) for (let k = 0; k < 6 && (await pg.evaluate(() => MMNPC.state().idx)) === i; k++) { await pg.click('.mmtalk:not(.mmtalk-out)', { force: true }); await pg.waitForTimeout(80); }
+        if (i < keys.length - 1) for (let k = 0; k < 20 && (await pg.evaluate(() => MMNPC.state().idx)) === i; k++) { await pg.click('.mmtalk:not(.mmtalk-out)', { force: true }); await pg.waitForTimeout(80); }
       }
       await H.finishTalk(pg);
       for (const r of rs) for (const k of ['x', 'y', 'w', 'h']) assert.ok(Math.abs(r[k] - rs[0][k]) <= 1, `${id}：表情を変えても ${k} が同じ ${JSON.stringify(rs)}`);
