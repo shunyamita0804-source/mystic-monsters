@@ -298,7 +298,7 @@ T('QA-RB3：サイコロ（出目3）→ 1地点ずつ移動し1歩ごとに保�
   assert.deepEqual([after.g, after.trainTix], [before.g, before.trainTix]);
   assert.equal(after.m.raise.fatigue, 7, '出目3で疲れ +7');
   assert.equal(await bmsg(pg), 'START でサイコロを振る。休むこともできる。');
-  assert.match(await pg.evaluate(() => document.querySelector('.chh-turn').textContent), /Turn\s*2\s*\/\s*30/);
+  assert.match(await pg.evaluate(() => document.querySelector('.chh-turn').textContent), /Turn\s*2\s*\/\s*45/);
   assert.equal(await pg.evaluate(() => document.querySelector('#bmonw').dataset.node), 'p1_3', 'モンスターの表示位置も p1_3');
   assert.equal(await pg.evaluate(() => !document.querySelector('#brollbtn').disabled), true, '次のターンを振れる');
   await assertSynced(pg);
