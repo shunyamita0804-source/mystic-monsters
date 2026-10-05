@@ -89,7 +89,7 @@ try {
   await sleep(1200); await page.screenshot({ path: `${OUT}/prologue_01_390.png` });
   if (pro) { await sleep(500); await page.click('.mmpro-skip'); await sleep(500); await page.click('.mmpro-skip'); }
   rec('プロローグ（正式4枚が読める・1文字ずつ・スキップで街へ）', pro && proImgs, `表示:${pro} 背景:${proImgs}`);
-  await page.waitForSelector('.map.town', { timeout: 20000 }); await sleep(900);
+  await page.waitForSelector('.map.town', { state: 'attached', timeout: 20000 });   /* 2026-10-06：フィナの会話の間は街の UI を隠す（data-mmscene）*/ await sleep(900);
   const c1 = await drain(); if (c1 === 'choice') { await sleep(450); await page.click('.mmtalk-choice[data-choice="yes"]'); await sleep(300); }
   const c1b = await drain(); await sleep(400);
   const guide = await page.evaluate(() => { const g = [...document.querySelectorAll('.map.town .tpin.opgo')].map((b) => b.getAttribute('onclick')); return g.length === 1 && g[0] === 'townGuild()' && [...document.querySelectorAll('.map.town .tpin:not(.opgo)')].every((b) => b.disabled); });
