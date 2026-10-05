@@ -106,7 +106,8 @@ try {
   await page.fill('#p11nm', 'テスト');
   await page.click('[onclick*="p11NameGo"]'); await sleep(800);
   const cf = await drain(); if (cf === 'choice') { await sleep(450); await page.click('.mmtalk-choice[data-choice="ok"]'); await sleep(1200); }
-  const cg = await drain(); if (cg === 'choice') { await sleep(1500); await page.screenshot({ path: `${OUT}/worldmap_390.png` }); await page.click('.mmtalk-choice[data-choice="a"]'); await sleep(400); }
+  let cg = 'none'; for (let k = 0; k < 30 && cg !== 'choice'; k++) { cg = await drain(); if (cg !== 'choice') await sleep(700); }   // 2026-10-05 PHASE B：新人支援の会話の間にシステム通知の帯（会話ではない）が入る
+  if (cg === 'choice') { await sleep(1500); await page.screenshot({ path: `${OUT}/worldmap_390.png` }); await page.click('.mmtalk-choice[data-choice="a"]'); await sleep(400); }
   let d1 = 'open'; for (let k = 0; k < 40; k++) { if (await page.evaluate(() => !!document.querySelector('.map.town') && !document.querySelector('.mmtalk') && S.npcFlags.op === 'done')) { d1 = 'none'; break; } d1 = await drain(); await sleep(700); }   // 会話と会話の間（フェード）を待ちながら送る
   await sleep(600);
   const town = await page.evaluate(() => !!document.querySelector('.map.town [onclick*="market()"]') && S.playerName === 'テスト' && !S.playerNamePending && S.npcFlags.op === 'done' && S.npcFlags.worldMap === 1);
