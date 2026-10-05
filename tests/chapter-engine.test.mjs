@@ -523,7 +523,7 @@ test('CH1-28：道の安全域（fieldScenes[].road）：中央線と半幅は�
   const s8 = cfg.fieldScenes.find((s) => s.bgKey === '08'); assert.ok(CH.roadAt(s8, 0.9).x < 0.52 && CH.roadAt(s8, 0.55).x > 0.58, '08 水道橋の見える道：奥で右へ曲がる中央線');
   assert.equal(CH.roadAt({}, 0.5), null, 'road の無い背景は制限なし'); assert.deepEqual(CH.clampToRoad({}, 0.1, 0.5), { x: 0.1, clamped: false, road: null });
   let n = 0;
-  for (const id of g.order) { const nd = g.nodes[id], s = cfg.fieldScenes.find((x) => x.id === nd.field), r = CH.roadAt(s, nd.my); assert.ok(nd.mx >= r.safeLeft && nd.mx <= r.safeRight, `${id}：安全域の中（${nd.mx} in ${r.safeLeft}〜${r.safeRight}）`); const lane = /[lr]_$/.test(nd.path) ? (nd.path.endsWith('l_') ? -1 : 1) : 0; assert.ok(Math.abs(nd.mx - (r.x + lane * 0.42 * r.half)) < 0.012, `${id}：中央線（左右の道は中央 ± 0.42×半幅）の上（${nd.mx} vs ${r.x}）`); n++; }
+  for (const id of g.order) { const nd = g.nodes[id], s = cfg.fieldScenes.find((x) => x.id === nd.field), r = CH.roadAt(s, nd.my); assert.ok(nd.mx >= r.safeLeft && nd.mx <= r.safeRight, `${id}：安全域の中（${nd.mx} in ${r.safeLeft}〜${r.safeRight}）`); const lane = /[lr]_$/.test(nd.path) ? (nd.path.endsWith('l_') ? -1 : 1) : 0; assert.ok(Math.abs(nd.mx - (r.x + lane * 0.36 * r.half)) < 0.012, `${id}：中央線（左右の道は中央 ± 0.36×半幅（2026-10-06：0.42 → 0.36））の上（${nd.mx} vs ${r.x}）`); n++; }
   assert.equal(n, 85, '公式マス84＋スタート（2026-10-06）');
   const c = CH.clampToRoad(sc, 0.05, 0.7, 0.03); assert.equal(c.clamped, true); assert.ok(c.x >= c.road.safeLeft + 0.03 - 1e-9 && c.x < 0.55, `端に寄った x は安全域へ（${c.x}）`);
   assert.deepEqual(CH.clampToRoad(sc, 0.5, 0.47, 0.2).x, CH.roadAt(sc, 0.47).x, '安全域が体より狭ければ中央');
