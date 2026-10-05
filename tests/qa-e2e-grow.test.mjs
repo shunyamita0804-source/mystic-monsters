@@ -30,7 +30,7 @@ test('GR-B1（390×844）：能力マス：アイコン（正式マスUI）が�
   await pg.evaluate(() => { window.__g = []; const t = () => { const d = document.querySelector('.chpop:not(.out)'), r = d && d.querySelector('.chf-grow'), i = r && r.querySelector('.chf-gauge i'); window.__g.push(d ? { t: performance.now(), on: !!(r && r.classList.contains('on')), grown: !!(r && r.classList.contains('grown')), cnt: r ? r.querySelector('.cnt').textContent : '', w: i ? i.style.width : '', ic: r ? (r.querySelector('.chf-grow-ic img') || {}).getAttribute?.('src') || '' : '', c: r ? getComputedStyle(r).getPropertyValue('--c').trim() : '', frame: d.classList.contains('framed') } : null); if (window.__g.length < 1200) requestAnimationFrame(t); }; requestAnimationFrame(t); });
   await rollAs(pg, 1); await idle(pg);
   const G = (await pg.evaluate(() => window.__g)).filter(Boolean), li1 = await pg.evaluate(() => S.m.li);
-  assert.equal(li1 - li0, 5); assert.ok(G.length > 5, '成長の枠が出た');
+  assert.equal(li1 - li0, 3);   // 2026-10-06：Chapter 1 は C+3 assert.ok(G.length > 5, '成長の枠が出た');
   const ms = G[G.length - 1].t - G[0].t; assert.ok(ms >= 600 && ms <= 1300, `全体 0.6〜1.3秒（${Math.round(ms)}ms）`);
   assert.ok(G.every((x) => x.frame), '枠は正式素材のまま'); assert.ok(G.some((x) => x.on), 'アイコンが浮く'); assert.ok(G.every((x) => /tile_stat_life\.webp$/.test(x.ic)), 'アイコンは正式マスUIのライフ');
   assert.equal(G[0].cnt, '+0'); assert.equal(G[G.length - 1].cnt, '+3');   // 2026-10-06：Chapter 1 は C+3 assert.ok(new Set(G.map((x) => x.cnt)).size >= 3, 'カウントアップ');
