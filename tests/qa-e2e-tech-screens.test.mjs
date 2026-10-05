@@ -133,7 +133,7 @@ async function buyCenter(pg) {
   await H.marketDetail(pg); await pg.click('#p10info .p10buy');
   await waitSel(pg, '#p10ov .p10ok');
   await pg.waitForTimeout(550);
-  await pg.click('#p10ov .p10ok');
+  await pg.click('#p10ov .p10ok'); await pg.waitForFunction(() => !document.getElementById('p10ov')); await pg.evaluate(() => MMNOTE.flush());   // 2026-10-05 試遊：購入の知らせの帯（約2.6秒）を片付けてから次の画面を確かめる
   await pg.waitForFunction(() => !document.getElementById('p10ov') && !document.getElementById('p10car'));
 }
 /** 2度押しの確認（2回目は1回目から十分に間をあける） */
@@ -216,7 +216,7 @@ describe('QA-TS：390×844 の通し（JS エラー・読み込み・壊れた�
     await waitSel(pg, '#p10ov .p10ok');
     await check(pg, '購入確認シート', SEL.sheet, { fixed: ['#p10ov .p10ok', '#p10ov .p10no'], wait: 400 });
     await pg.waitForTimeout(150);   // 確認シートが出てから 0.5 秒以上たってから押す
-    await pg.click('#p10ov .p10ok');
+    await pg.click('#p10ov .p10ok'); await pg.waitForFunction(() => !document.getElementById('p10ov')); await pg.evaluate(() => MMNOTE.flush());   // 2026-10-05 試遊：購入の知らせの帯（約2.6秒）を片付けてから次の画面を確かめる
     await waitSel(pg, '.hz[onclick="hall()"]:not(.dis)');
     await check(pg, '街（1体）', SEL.town, { filter: false });
     const s = await H.getS(pg);
@@ -397,7 +397,7 @@ for (const [key, label] of [['se', 'iPhone SE 相当'], ['android', 'Android 相
     await waitSel(pg, '#p10ov .p10ok');
     await check(pg, '購入確認シート', SEL.sheet, { fixed: ['#p10ov .p10ok', '#p10ov .p10no'], wait: 400 });
     await pg.waitForTimeout(150);   // 確認シートが出てから 0.5 秒以上たってから押す
-    await pg.click('#p10ov .p10ok');
+    await pg.click('#p10ov .p10ok'); await pg.waitForFunction(() => !document.getElementById('p10ov')); await pg.evaluate(() => MMNOTE.flush());   // 2026-10-05 試遊：購入の知らせの帯（約2.6秒）を片付けてから次の画面を確かめる
     await waitSel(pg, '.hz[onclick="farm()"]');
     await pg.click('.hz[onclick="farm()"]');
     await waitSel(pg, '.rn2 .rnact');

@@ -120,7 +120,7 @@ test('PB-B5：アイテム管理（薬草の正式アイコン・バッグ ⇄ �
     await pg.waitForSelector('.bcitem'); const bb = await box(pg, '.bcitem');
     assert.ok(bb.l >= 0 && bb.t >= 0 && bb.h >= 44, 'アイテム管理の導線（押せる大きさ）');
     await pg.click('.bcitem'); await pg.waitForSelector('.ds.itemmg');
-    await pg.waitForFunction(() => [...document.querySelectorAll('#app .itic')].every((i) => i.complete), null, { timeout: 5000 }).catch(() => {});   // 画像の読み込みを待つ（出た直後の1フレームでは読み込み中のことがある）
+    await pg.waitForFunction(() => [...document.querySelectorAll('#app .itic')].every((i) => i.complete && i.naturalWidth > 0), null, { timeout: 10000 }).catch(() => {});   // 画像の読み込みを待つ（出た直後の1フレームでは読み込み中のことがある）
     const t = await pg.evaluate(() => ({ tx: document.querySelector('#app').innerText, icons: [...document.querySelectorAll('#app .itic')].map((i) => [i.getAttribute('src'), i.complete && i.naturalWidth > 0]), buy: !!document.querySelector('[onclick^="p7Buy"],[onclick^="p7Sell"]') }));
     assert.match(t.tx, /アイテム管理/); assert.match(t.tx, /薬草/); assert.equal(t.buy, false, '購入・売却は置かない');
     assert.ok(t.icons.length >= 2 && t.icons.every(([s, ok]) => /herb\.webp$/.test(s) && ok), '薬草の正式アイコン');
@@ -131,6 +131,7 @@ test('PB-B5：アイテム管理（薬草の正式アイコン・バッグ ⇄ �
     assert.deepEqual(await pg.evaluate(() => [S.inv.bag.map((x) => x.id), S.inv.vault.length]), [['herb'], 0], '保管庫 → バッグ');
     // アイテム補給所
     await pg.evaluate(() => shopScr()); await pg.waitForSelector('.shmenu'); await H.finishTalk(pg).catch(() => {});
+    await pg.waitForFunction(() => [...document.querySelectorAll('.shent img')].every((i) => i.complete && i.naturalWidth > 0), null, { timeout: 10000 }).catch(() => {});   // 画像の読み込みを待つ（重いときは画面が出た直後にはまだ読み込み中）
     const ents = await pg.evaluate(() => [...document.querySelectorAll('.shent')].map((b) => { const r = b.getBoundingClientRect(), i = b.querySelector('img'); return [b.querySelector('b').textContent, i.complete && i.naturalWidth > 0, r.bottom <= innerHeight + 1]; }));
     assert.deepEqual(ents.map((x) => x[0]), ['購入', '売却', 'アイテム図鑑']); assert.ok(ents.every((x) => x[1]), '正式アイコン'); assert.ok(ents.every((x) => x[2]), '3つとも画面の中');
     await pg.click('.shent:nth-child(3)'); await pg.waitForSelector('.shbook');

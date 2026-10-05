@@ -386,6 +386,7 @@ test('QA-RF-B15：預ける・受け取る・売却・合体・購入を決ま�
         await pg.fill('#mnm', 'N' + done.length);
         await tap(pg, '.p10ok');
         await pg.waitForSelector('#app .map');
+        await pg.evaluate(() => MMNOTE.flush());   // 2026-10-05 試遊：購入の知らせの帯（約2.6秒で消える）を片付けてから次の操作（帯の上を押すと帯が閉じるだけ）
         const x = await pg.evaluate((u) => [S.m, ...S.box].filter(Boolean).map((y) => y.uid).find((y) => !u.includes(y)), all());
         assert.ok(x, '新しい個体');
         if (M.m) M.box.push(x); else M.m = x;
