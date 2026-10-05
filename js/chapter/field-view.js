@@ -1101,7 +1101,7 @@
         const P = objPoint(obj); if (P) camFocus(P, 0.45, CA().zoom.focus);
         if (obj && obj.classList.contains('hid')) { obj.classList.remove('hid'); await wait(V.calm ? 0 : 300); }
         if (obj) { obj.classList.add('shake'); await wait(V.calm ? 0 : 320); obj.classList.remove('shake'); const im = obj.querySelector('img[data-open]'); await chestFrames(im); if (im && im.dataset.open) im.src = im.dataset.open; obj.classList.add('open', 'hit'); }
-        feel(['normal', 'rare', 'special'].includes(fx.tier) ? `chest.open.${fx.tier}` : 'chest.open', { tier: fx.tier }); monReact('treasure');   // 2026-10-06：段階ごとに1つだけ（TREASURE_TIER_1〜3） chestSparks(obj);   // 2026-10-04 PHASE E：開封の光の粒
+        feel(['normal', 'rare', 'special'].includes(fx.tier) ? `chest.open.${fx.tier}` : 'chest.open', { tier: fx.tier }); monReact('treasure'); /* 2026-10-06：段階ごとに1つだけ（TREASURE_TIER_1〜3） */ chestSparks(obj);   // 2026-10-04 PHASE E：開封の光の粒
         setMsg(T.t);
         await popup(T.h, T.c, holdOf(3, 900), null, async (d) => { await wait(V.calm ? 0 : 260); if (gold > 0) await goldToHud(g0, g1, d.querySelector('b') || d); });
         if (obj) { obj.classList.remove('hit'); obj.classList.add('used'); }

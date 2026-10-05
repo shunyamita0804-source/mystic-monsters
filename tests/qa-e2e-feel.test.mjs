@@ -57,7 +57,7 @@ test('FE-2：能力UP：止まる → 間 → マスが光る → モンスタ�
   const firstPop = fx.findIndex((x) => x[0]), firstReact = fx.findIndex((x) => x[1]), firstHit = fx.findIndex((x) => x[2]);
   assert.ok(firstHit >= 0 && firstReact > firstHit && firstPop > firstReact, `マス → モンスター → 枠の順（${firstHit}・${firstReact}・${firstPop}）`);
   assert.ok(fx.filter((x) => x[0]).every((x) => x[3] !== false), '結果を見せている間は START を押せない（ボタンが無いか disabled）');
-  assert.deepEqual(r[2].filter((e) => e !== 'step').slice(-5), ['dice.throw', 'dice.land', 'dice.stop', 'dice.result', 'stat.up']);   // dice.stop＝完全に止まったフレーム（2026-10-03）   // step＝1マスごとの足音（2026-10-02 夜）は数えない
+  assert.deepEqual(r[2].filter((e) => e !== 'step').slice(-6), ['dice.throw', 'dice.land', 'dice.stop', 'dice.result', 'train.item', 'stat.up']);   /* 2026-10-06：道具が出た瞬間（train.item＝TRAINING_ITEM_SPAWN）→ 能力UP（stat.up＝TRAINING_SUCCESS） */   // dice.stop＝完全に止まったフレーム（2026-10-03）   // step＝1マスごとの足音（2026-10-02 夜）は数えない
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
@@ -74,7 +74,7 @@ test('FE-3：宝箱：現れる → 揺れて開く → 報酬 →「+NG」が H
   const fly = G.findIndex((x) => x[1]); assert.ok(fly > 0, '「+NG」が飛ぶ'); assert.ok(G.slice(0, fly).every((x) => x[0] === g0), '飛んで届くまで HUD は前の額');
   const vals = [...new Set(G.map((x) => x[0]).filter((v) => v >= 0))]; assert.ok(vals.length >= 3, `HUD の数字が増えていく（${vals.join(' ')}）`);
   assert.ok(G.some((x) => /shake/.test(x[2])) && G.some((x) => /open/.test(x[2])), '宝箱が揺れて開く');
-  assert.deepEqual((await pg.evaluate(() => MMFEEL.log())).slice(-2), ['chest.open', 'gold.get']);
+  assert.deepEqual((await pg.evaluate(() => MMFEEL.log())).slice(-2), ['chest.open.normal', 'gold.get']);   /* 2026-10-06：段階ごとの宝箱の音（TREASURE_TIER_1） */
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
