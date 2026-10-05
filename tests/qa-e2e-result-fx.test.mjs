@@ -23,7 +23,7 @@ async function toField(pg, sp = 0) {
 const place = (pg, node) => pg.evaluate((node) => { const r = S.m.raise, g = MMCH.graphFor(S.m); r.node = node; r.pend = null; r.field.fieldId = g.nodes[node].field; save(); board(); }, node);
 async function rollAs(pg, v) { await pg.evaluate((v) => { window.__mr = Math.random; Math.random = () => ({ 1: 0.1, 2: 0.5, 3: 0.9 }[v]); }, v); await pg.click('#brollbtn'); await pg.evaluate(() => { Math.random = window.__mr; }); }
 /** 結果演出（.chf-rfx）と結果の窓（.chpop）が出た順・中身を記録 */
-const watch = (pg) => pg.evaluate(() => { window.__r = []; const o = new MutationObserver(() => { for (const e of document.querySelectorAll('#chf-ui .chf-rfx,#chf-ui .chpop')) if (!e.__seen) { e.__seen = 1; const im = e.querySelector('.rfx-im'), b = e.getBoundingClientRect(); window.__r.push({ cls: e.className, key: e.dataset.key || '', src: im ? im.getAttribute('src') : '', tx: (e.querySelector('.rfx-tx') || {}).textContent || '', t: performance.now(), in: b.left >= -1 && b.right <= innerWidth + 1 && b.top >= -1 && b.bottom <= innerHeight + 1 }); } }); o.observe(document.querySelector('#chf-ui'), { childList: true, subtree: true }); window.__ro = o; });
+const watch = (pg) => pg.evaluate(() => { window.__r = []; const o = new MutationObserver(() => { for (const e of document.querySelectorAll('#chf-ui .chf-rfx,#chf-ui .chpop,#chf .chf-tact,#chf-ui .chf-tact-tx')) if (!e.__seen) { e.__seen = 1; const tact = e.classList.contains('chf-tact'), im = e.querySelector(tact ? 'img' : '.rfx-im'), b = e.getBoundingClientRect(), lean = document.querySelector('#bmonw .chf-lean'); window.__r.push({ cls: e.className, key: tact ? (e.className.match(/k-(\w+)/) || [])[1] : e.dataset.key || '', src: im ? im.getAttribute('src') : '', tx: e.classList.contains('chf-tact-tx') ? e.textContent : (e.querySelector('.rfx-tx') || {}).textContent || '', t: performance.now(), in: b.left >= -1 && b.right <= innerWidth + 1 && b.top >= -1 && b.bottom <= innerHeight + 1, moving: !!(lean && lean.getAnimations().length) }); } }); o.observe(document.body, { childList: true, subtree: true }); });
 const LAB = { li: 'ライフ', po: 'ちから', in: 'かしこさ', hi: '命中', ev: '回避', de: '丈夫さ' };
 const TOOL = { li: 'li_hurdle', po: 'po_weight', in: 'in_grimoire', hi: 'hi_target', ev: 'ev_balls', de: 'de_shield' };
 
@@ -37,13 +37,14 @@ for (const size of [[390, 844], [375, 667]]) {
       await rollAs(pg, 1); await idle(pg);
       const v1 = await pg.evaluate((k) => S.m[k], k), R = await pg.evaluate(() => window.__r), gain = v1 - v0;
       assert.ok(gain > 0, `${k} が上がった`);
-      const tool = R.findIndex((x) => /k-tool/.test(x.cls)), pop = R.findIndex((x) => /chpop/.test(x.cls));
+      // 2026-10-06：能力UPのアクション＝道具をモンスターのそばに置き、モンスターが特訓の動き（.chf-lean のアニメーション）→ 頭の上に結果の文 → 成長演出
+      const tool = R.findIndex((x) => /chf-tact(\s|$)/.test(x.cls)), cap = R.findIndex((x) => /chf-tact-tx/.test(x.cls)), pop = R.findIndex((x) => /chpop/.test(x.cls));
       assert.ok(tool >= 0 && pop > tool, `${k}：道具 → 成長演出の順（${tool} / ${pop}）`);
-      const T = R[tool]; assert.equal(T.key, k); assert.ok(T.src.endsWith(`assets/chapter/stat_tools/${TOOL[k]}.webp`), `${k} の道具 ${T.src}`);
-      assert.equal(T.tx, `${LAB[k]} +${gain}`, '実際の能力名と値'); assert.ok(T.in, '画面に収まる');
-      assert.ok(R[pop].t - T.t < 1100, '短い（約0.8秒）');
+      const T = R[tool]; assert.equal(T.key, k); assert.ok(T.src.endsWith(`assets/chapter/stat_tools/${TOOL[k]}.webp`), `${k} の道具 ${T.src}`); assert.ok(T.moving, `${k}：モンスターが動く`);
+      assert.equal(R[cap].tx, `${LAB[k]} +${gain}`, '実際の能力名と値'); assert.ok(R[cap].in, '結果の文が画面に収まる');
+      assert.ok(R[pop].t - T.t >= 800 && R[pop].t - T.t < 1700, `アクションは 0.8〜1.5秒（${Math.round(R[pop].t - T.t)}ms）`);
     }
-    assert.equal(await pg.evaluate(() => document.querySelectorAll('.chf-rfx').length), 0, '演出は残らない');
+    assert.equal(await pg.evaluate(() => document.querySelectorAll('.chf-rfx,.chf-tact,.chf-tact-tx').length), 0, '演出は残らない');
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   });
 }

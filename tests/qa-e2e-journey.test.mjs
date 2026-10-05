@@ -51,8 +51,8 @@ test('JR-2：1地点進むだけでも画面上ではっきり歩き（カメラ
   const pos = () => pg.evaluate(() => { const r = document.querySelector('#bmonw .mon img').getBoundingClientRect(), f = document.querySelector('#chf').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.bottom, w: f.width, h: f.height, node: S.m.raise.node, field: MMCHV.state().field, cam: MMCHV.state().cam.ty }; });
   const a = await pos(); await rollAs(pg, 1); await idle(pg); const b = await pos();
   assert.equal(b.node, 'p1_1'); assert.ok(Math.abs(b.cam - a.cam) + Math.hypot(b.x - a.x, b.y - a.y) >= 40, `1地点＝手前のマスから次のマスへ（2026-10-01：01 は5マス）（カメラ ${Math.abs(b.cam - a.cam).toFixed(0)}px・画面 ${Math.hypot(b.x - a.x, b.y - a.y).toFixed(0)}px）`);
-  await place(pg, 'p1_2'); await idle(pg); await rollAs(pg, 3); await idle(pg); const c = await pos();
-  assert.deepEqual([c.node, c.field], ['p2_0', 2], '3地点：p1_3 → p1_4 → 背景の切り替え → p2_0');
+  await place(pg, 'p1_4'); await idle(pg); await rollAs(pg, 3); await idle(pg); const c = await pos();   // 2026-10-06：01 は7地点
+  assert.deepEqual([c.node, c.field], ['p2_0', 2], '3地点：p1_5 → p1_6 → 背景の切り替え → p2_0');
   assert.ok(c.y > c.h * 0.35 && c.y < c.h * 0.88 && c.x > 0 && c.x < c.w, `切り替え後も画面の中央より少し下（${c.y.toFixed(0)} / ${c.h}）`);
   const cams = await pg.evaluate(() => document.querySelectorAll('.chf-cam').length); assert.equal(cams, 1);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
@@ -223,13 +223,13 @@ test('JR-16：通常マスに止まる（2026-10-02 の60マス再設計）：�
   const p = await open(); const pg = p.page;
   await toField(pg, false);
   const nm = await pg.evaluate(() => { const g = MMCH.graphFor(S.m); return g.order.filter((id) => g.nodes[id].kind === 'slot' && g.nodes[id].tile === 'normal' && g.nodes[id].field <= 2); });
-  assert.deepEqual(nm, ['p1_1', 'p1_3', 'p2_2'], '01・02 の通常マス');
+  assert.deepEqual(nm, ['p1_1', 'p1_3', 'p2_2', 'p2_5'], '01・02 の通常マス（2026-10-06）');
   await pg.evaluate(() => { window.__nodes = []; const t = () => { const w = document.querySelector('#bmonw'); if (w && w.dataset.node && window.__nodes[window.__nodes.length - 1] !== w.dataset.node) window.__nodes.push(w.dataset.node); requestAnimationFrame(t); }; requestAnimationFrame(t); });
   const s0 = await pg.evaluate(() => ({ st: [S.m.li, S.m.po, S.m.in, S.m.hi, S.m.ev, S.m.de], g: S.g }));
   await rollAs(pg, 1); await idle(pg);
-  const r = await pg.evaluate(() => ({ node: S.m.raise.node, turns: S.m.raise.turnsUsed, pend: S.m.raise.pend, ph: MMP8.boardPhase(S.m), st: [S.m.li, S.m.po, S.m.in, S.m.hi, S.m.ev, S.m.de], g: S.g, tile: (() => { const t = document.querySelector('#chf .chf-tile[data-id="p1_1"]'); return t ? [t.dataset.type, t.classList.contains('ped'), t.classList.contains('k-normal')] : null; })(), start: !document.querySelector('#brollbtn').disabled, f: MMCH.fatigue(S.m) }));
+  const r = await pg.evaluate(() => ({ node: S.m.raise.node, turns: S.m.raise.turnsUsed, pend: S.m.raise.pend, ph: MMP8.boardPhase(S.m), st: [S.m.li, S.m.po, S.m.in, S.m.hi, S.m.ev, S.m.de], g: S.g, tile: (() => { const t = document.querySelector('#chf .chf-tile[data-id="p1_1"]'); return t ? [t.dataset.type, t.classList.contains('disc'), /tile_blank/.test((t.querySelector('img') || {}).src || '')] : null; })(), start: !document.querySelector('#brollbtn').disabled, f: MMCH.fatigue(S.m) }));
   assert.deepEqual([r.node, r.turns, r.pend, r.ph, r.start], ['p1_1', 1, null, 'roll', true], '出目1で通常マス p1_1 に止まり、ターンが終わって START に戻る');
-  assert.deepEqual([r.st, r.g, r.f], [s0.st, s0.g, 3], '何も起きない（疲れは出目1のぶんだけ）'); assert.deepEqual(r.tile, ['normal', true, true], '通常マスは共通の台座');
+  assert.deepEqual([r.st, r.g, r.f], [s0.st, s0.g, 3], '何も起きない（疲れは出目1のぶんだけ）'); assert.deepEqual(r.tile, ['normal', true, true], '通常マスは白紙の立体マス（2026-10-06）');
   await rollAs(pg, 2); await idle(pg); assert.equal(await pg.evaluate(() => S.m.raise.node), 'p1_3', '出目2：p1_2 を通過して通常マス p1_3 に止まる');
   assert.deepEqual(await pg.evaluate(() => window.__nodes), ['p1_0', 'p1_1', 'p1_2', 'p1_3'], '経由点はマスにならない（data-node はマスだけ）');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
@@ -253,7 +253,7 @@ test('JR-10：START の1タップだけで、サイコロは自動で止まっ�
 test('JR-11：30ターン目（2026-10-04 正式）に大会会場へ着けなかった：大会なし・ランクは上がらない・Chapter は終了して能力と持ち物は保持 → ファーム → 次の Chapter へ進める', { skip: SKIP }, async () => {
   const p = await open(); const pg = p.page;
   await toField(pg);
-  await pg.evaluate(() => { const r = S.m.raise; r.node = 'p2_0'; r.turnsUsed = 29; r.fatigue = 10; S.m.po = 160; S.g = 999; S.inv.bag.push({ id: 'herb' }); save(); board(); }); await idle(pg);
+  await pg.evaluate(() => { const r = S.m.raise; r.node = 'p2_0'; r.turnsUsed = 44; r.fatigue = 10; S.m.po = 160; S.g = 999; S.inv.bag.push({ id: 'herb' }); save(); board(); }); await idle(pg);
   await rollAs(pg, 2); await pg.waitForSelector('.chsheet [onclick="p8EndChapter()"]', { timeout: 20000 });
   const a = await pg.evaluate(() => ({ ph: MMP8.boardPhase(S.m), text: document.querySelector('.chsheet').innerText.replace(/\s+/g, ' '), tour: S.m.raise.tour, canRoll: MMP8.canRoll(S.m), ranks: document.querySelectorAll('.p9rank').length }));
   assert.equal(a.ph, 'timeup'); assert.match(a.text, /公式大会には参加できません/); assert.equal(a.tour, null); assert.equal(a.canRoll, false); assert.equal(a.ranks, 0, '大会の選択は出ない');
@@ -313,12 +313,12 @@ test('JR-13：大会会場への到着：14 の最後のマス（ゴール）に
   await H.newGame(pg, 'ユウ');
   await pg.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); save(); board(); });
   await pg.waitForSelector('#chf .chf-bg'); await idle(pg);
-  await place(pg, 'p14_1', { turnsUsed: 29 }); await idle(pg);   // 2026-10-04：30ターン（最後のターンでゴール）
+  await place(pg, 'p14_2', { turnsUsed: 44 }); await idle(pg);   // 2026-10-06：45ターン（最後のターンでゴール）
   assert.equal(await pg.evaluate(() => document.querySelector('#chf .chf-bg').getAttribute('src')), './assets/fields/ch1a/final/field/ch1_bg_14.webp');
   await rollAs(pg, 1);
   await pg.waitForSelector('#chfarr.on', { timeout: 20000 });
   const a = await pg.evaluate(() => ({ node: S.m.raise.node, goal: S.m.raise.goal, bg: document.querySelector('#chfarr img').getAttribute('src'), name: document.querySelector('.chf-arrive-name b').textContent, deck: !!document.querySelector('#chdock,#brollbtn,.chh,.chsheet') }));
-  assert.deepEqual(a, { node: 'p14_2', goal: true, bg: './assets/fields/ch1a/final/event/ch1_bg_15_event.webp', name: '公式大会会場・正門前', deck: false }, '15 の背景へ。HUD・操作欄・マスの UI は出さない');
+  assert.deepEqual(a, { node: 'p14_3', goal: true, bg: './assets/fields/ch1a/final/event/ch1_bg_15_event.webp', name: '公式大会会場・正門前', deck: false }, '15 の背景へ。HUD・操作欄・マスの UI は出さない');
   await pg.waitForSelector('.mmtalk:not(.mmtalk-out)', { timeout: 15000 });
   const lines = []; for (let i = 0; i < 12 && await pg.$('.mmtalk:not(.mmtalk-out)'); i++) { await pg.waitForTimeout(450); const t = await pg.evaluate(() => { const e = document.querySelector('.mmtalk:not(.mmtalk-out)'); return e ? [e.querySelector('.mmtalk-name').textContent, e.getAttribute('aria-label') || '', e.querySelector('.mmtalk-text').textContent] : null; }); if (t && !lines.some((x) => x[2] === t[2])) lines.push(t); await pg.click('.mmtalk', { force: true }).catch(() => {}); }
   await pg.waitForSelector('#chrcv .rcv-row', { timeout: 15000 });
@@ -331,7 +331,7 @@ test('JR-13：大会会場への到着：14 の最後のマス（ゴール）に
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
-test('JR-14：マスUI（正式素材）：今の背景のマスに正式素材が、ノードの座標どおりに共通の台座の上に出る（通常マスは絵の無い台座だけ）。仮表示（点線・「仮 #番号」）は通常プレイに出ない（?chdebug=1 だけ）。旧目印（石碑・宝箱など）は出さない。能力マスに止まると適性の値（ガウルの丈夫さ E＝+3）', { skip: SKIP }, async () => {
+test('JR-14：マスUI（正式素材）：今の背景のマスに正式素材が、ノードの座標どおりに共通の台座の上に出る（通常マスは絵の無い台座だけ）。仮表示（点線・「仮 #番号」）は通常プレイに出ない（?chdebug=1 だけ）。旧目印（石碑・宝箱など）は出さない。能力マスに止まると適性の値（ガウルの丈夫さ E＝+2・2026-10-06）', { skip: SKIP }, async () => {
   const p = await open(); const pg = p.page;
   await H.newGame(pg, 'テスト');
   await pg.evaluate(() => { const m = mk(1); m.name = 'ガル'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); const a = S.m.raise.field.nodeAssignments; a.p1_1 = { t: 'stat', k: 'de' }; a.p1_2 = { t: 'treasure', tier: 'normal' }; delete a.p1_3; a.p1_4 = { t: 'treasure', tier: 'rare' }; save(); board(); });
@@ -340,10 +340,11 @@ test('JR-14：マスUI（正式素材）：今の背景のマスに正式素材�
   const a = await read();
   assert.equal(a.objs, 0, '旧目印は出さない'); assert.ok(a.tiles.every((t) => !t.ph && !/仮/.test(t.text) && (t.ok || t.type === 'normal') && t.dx < 0.5 && t.dy < 0.5), `正式素材がノードの座標に：${JSON.stringify(a.tiles)}`);
   const by = Object.fromEntries(a.tiles.map((t) => [t.id, t.img]));
-  assert.equal(by.p1_1, './assets/fields/ch1a/tiles/tile_stat_toughness.webp'); assert.equal(by.p1_2, './assets/fields/ch1a/tiles/tile_treasure.webp'); assert.equal(by.p1_3, null, '通常マスは絵の無い台座だけ'); assert.equal(a.tiles.find((t) => t.id === 'p1_3').type, 'normal'); assert.equal(by.p1_0, undefined, 'スタートには置かない');
-  // 能力マス（丈夫さ）に止まる：ガウル（丈夫さ E）は +3、マスが光り、使ったマスは少し暗く
-  const de0 = await pg.evaluate(() => S.m.de); await rollAs(pg, 1); await pg.waitForSelector('.chpop'); await pg.waitForFunction(() => /\+3/.test((document.querySelector('.chpop') || {}).textContent || ''), null, { timeout: 5000 }); const pop = await pg.evaluate(() => [document.querySelector('.chpop').textContent, document.querySelector('.chf-tile[data-id="p1_1"]').classList.contains('hit')]); await idle(pg);
-  assert.deepEqual([pop[1], await pg.evaluate(() => S.m.de) - de0, await pg.evaluate(() => document.querySelector('.chf-tile[data-id="p1_1"]').classList.contains('used'))], [true, 3, true]); assert.match(pop[0], /丈夫さ \+3/);
+  const T2 = './assets/fields/ch1a/tiles_v2/';   // 2026-10-06：小型の立体マス（宝箱は段階ごと）
+  assert.equal(by.p1_1, T2 + 'tile_stat_toughness.webp'); assert.equal(by.p1_2, T2 + 'tile_treasure_1.webp'); assert.equal(by.p1_4, T2 + 'tile_treasure_2.webp', 'rare＝宝箱2'); assert.equal(by.p1_3, T2 + 'tile_blank.webp', '通常マスは白紙の円盤'); assert.equal(a.tiles.find((t) => t.id === 'p1_3').type, 'normal'); assert.equal(by.p1_0, undefined, 'スタートには置かない');
+  // 能力マス（丈夫さ）に止まる：ガウル（丈夫さ E）は +2（2026-10-06：Chapter 1 は C+3 の表）、マスが光り、使ったマスは少し暗く
+  const de0 = await pg.evaluate(() => S.m.de); await rollAs(pg, 1); await pg.waitForSelector('.chpop'); await pg.waitForFunction(() => /\+2/.test((document.querySelector('.chpop') || {}).textContent || ''), null, { timeout: 5000 }); const pop = await pg.evaluate(() => [document.querySelector('.chpop').textContent, document.querySelector('.chf-tile[data-id="p1_1"]').classList.contains('hit')]); await idle(pg);
+  assert.deepEqual([pop[1], await pg.evaluate(() => S.m.de) - de0, await pg.evaluate(() => document.querySelector('.chf-tile[data-id="p1_1"]').classList.contains('used'))], [true, 2, true]); assert.match(pop[0], /丈夫さ \+2/);
   // 宝箱（normal）：止まると通常の宝箱が現れて開く。rare は宝箱の絵を出さない（従来の表示＝マスUIだけ）
   const chest = () => pg.evaluate(() => { const o = document.querySelector('#chf .chf-obj[data-id="p1_2"]'), im = o && o.querySelector('img'); return o ? { hid: o.classList.contains('hid'), src: im.getAttribute('src'), ok: im.naturalWidth > 0 } : null; });
   assert.deepEqual(await chest(), { hid: true, src: './assets/chests/chest_01_base.webp', ok: true }, '止まるまでは見えない（2026-10-03 正式の宝箱 chest_01）');
@@ -353,7 +354,7 @@ test('JR-14：マスUI（正式素材）：今の背景のマスに正式素材�
   // デバッグ（?chdebug=1）：ノードの点と道筋が出る（仮表示は出さない＝どのマスにも正式の表示がある）
   const q = await open({ query: '?chdebug=1' }); const qg = q.page; await H.newGame(qg, 'テスト');
   await qg.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); save(); board(); });
-  await qg.waitForSelector('#chf .chf-bg'); assert.deepEqual(await qg.evaluate(() => [!!document.querySelector('.chf-dbg'), document.querySelectorAll('.chf-tile.ph').length, !!document.querySelector('.chf-tile.k-normal[data-id="p1_3"]')]), [true, 0, true], 'デバッグでもマスは正式の表示（通常マスは台座）');
+  await qg.waitForSelector('#chf .chf-bg'); assert.deepEqual(await qg.evaluate(() => [!!document.querySelector('.chf-dbg'), document.querySelectorAll('.chf-tile.ph').length, !!document.querySelector('.chf-tile.disc[data-type="normal"][data-id="p1_3"]')]), [true, 0, true], 'デバッグでもマスは正式の表示（通常マスは白紙の円盤）');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
@@ -376,6 +377,7 @@ test('JR-15：ソラモの後ろ向き歩行（390×844）：止まっている�
   assert.deepEqual([a.end.f, a.end.walk], ['1', false], '着いたら 01');
   // 背景 01 → 02 をまたいで止まる：歩いたまま前の背景が透明になって次の背景へ溶けて変わる（2026-10-02 の60マス再設計：暗転は使わない）。その間も歩行のコマは止まらない
   await pg.evaluate(() => { window.__sw = []; const t = () => { const o = document.querySelector('.chf-cam.chf-xout'), b = document.querySelector('#bmonw .chf-spr'); window.__sw.push([document.querySelectorAll('.chf-cam').length, o ? +getComputedStyle(o).opacity : -1, !!document.querySelector('.chf-veil'), b ? b.dataset.f : '']); requestAnimationFrame(t); }; requestAnimationFrame(t); });
+  await place(pg, 'p1_5'); await idle(pg);   // 2026-10-06：01 は7地点＝p1_5 から3マスで 02 へ
   const b = await walkSample(3);
   const sw = await pg.evaluate(() => window.__sw), xf = sw.filter((x) => x[0] === 2);
   assert.ok(xf.length >= 3, `前と次の背景が重なる（${xf.length}フレーム）`); assert.ok(xf.some((x) => x[1] > 0.2 && x[1] < 0.8), '前の背景は少しずつ透明に'); assert.ok(!sw.some((x) => x[2]), '暗転しない');

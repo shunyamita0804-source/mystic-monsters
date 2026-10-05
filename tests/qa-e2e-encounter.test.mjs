@@ -89,12 +89,12 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
       await pg.waitForSelector('#chf .chf-bg'); await idle(pg);
       const t = await pg.evaluate(() => {
         const g = MMCH.graphFor(S.m), f = MMCHV.state().field, sc = MMCH.getConfig(1).fieldScenes.find((s) => s.id === f);
-        return [...document.querySelectorAll('#chf .chf-tile')].map((e) => { const n = g.nodes[e.dataset.id], b = e.querySelector('.chf-tbase'); return { id: e.dataset.id, type: e.dataset.type, d: n.d, w: parseFloat(e.style.width), base: !!b, op: Number(getComputedStyle(e).opacity), road: MMCHV.seenRoadW(sc, n) }; });
+        return [...document.querySelectorAll('#chf .chf-tile.disc')].map((e) => { const n = g.nodes[e.dataset.id]; return { id: e.dataset.id, type: e.dataset.type, d: n.d, w: parseFloat(e.style.width), op: Number(getComputedStyle(e).opacity), road: MMCHV.seenRoadW(sc, n), want: MMCHV.discBox(MMCH.getConfig(1).tileUI, n, sc).w }; });
       });
-      for (const x of t) {
-        const want = Math.min(193 * Math.pow(x.d, 0.9), x.road * 0.62);
-        assert.ok(Math.abs(x.w - want) < 0.2, `${x.id}（${x.type}）：外側の大きさは奥行きだけで決まる（${x.w} / ${want.toFixed(1)}）`);
-        assert.ok(x.base, `${x.id}：共通の土台`); assert.ok(x.op >= 0.99 || x.op >= 0.67, `${x.id}：薄くしない（${x.op}）`);
+      assert.ok(t.length >= 3, 'その背景の小型の立体マス');
+      for (const x of t) {   // 2026-10-06：小型の立体マス（tileUI.discs）＝大きさは奥行きだけで決まり（種類に関係なし）、見えている道幅の 42% 以下
+        assert.ok(Math.abs(x.w - Math.min(128 * Math.pow(x.d, 0.9), x.road * 0.42)) < 0.2 && Math.abs(x.w - x.want) < 0.2, `${x.id}（${x.type}）：外側の大きさは奥行きだけで決まる（${x.w}）`);
+        assert.ok(x.op >= 0.67, `${x.id}：薄くしない（${x.op}）`);
       }
       await pg.screenshot({ path: path.join(SHOT, `${size[0]}_tiles_${id}.png`) });
     }

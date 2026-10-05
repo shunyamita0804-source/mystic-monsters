@@ -52,7 +52,7 @@ test('FE-2：能力UP：止まる → 間 → マスが光る → モンスタ�
   const li0 = await pg.evaluate(() => S.m.li);
   await rollAs(pg, 1); await idle(pg);
   const fx = await pg.evaluate(() => window.__fx), cnts = fx.map((x) => x[0]).filter(Boolean), r = await pg.evaluate(() => [S.m.raise.node, S.m.li, MMFEEL.log()]);
-  assert.equal(r[0], 'p1_2'); assert.equal(r[1] - li0, 5, 'ソラモのライフ（C）は +5');
+  assert.equal(r[0], 'p1_2'); assert.equal(r[1] - li0, 3, 'ソラモのライフ（C）は +3（2026-10-06：Chapter 1 の表）');
   assert.equal(cnts[0], '+0', '数値は +0 から'); assert.equal(cnts[cnts.length - 1], '+5'); assert.ok(new Set(cnts).size >= 3, `カウントアップ（${[...new Set(cnts)].join(' ')}）`);
   const firstPop = fx.findIndex((x) => x[0]), firstReact = fx.findIndex((x) => x[1]), firstHit = fx.findIndex((x) => x[2]);
   assert.ok(firstHit >= 0 && firstReact > firstHit && firstPop > firstReact, `マス → モンスター → 枠の順（${firstHit}・${firstReact}・${firstPop}）`);
@@ -63,10 +63,11 @@ test('FE-2：能力UP：止まる → 間 → マスが光る → モンスタ�
 
 test('FE-3：宝箱：現れる → 揺れて開く → 報酬 →「+NG」が HUD の所持金へ飛び、HUD の数字が前の額から増える', { skip: SKIP }, async () => {
   const p = await open(); const pg = p.page; await toField(pg);
-  await pg.evaluate(() => { const A = S.m.raise.field.nodeAssignments; A.p2_3.tier = 'normal'; save(); });
-  await place(pg, 'p2_2'); await idle(pg);
+  await pg.evaluate(() => { const A = S.m.raise.field.nodeAssignments; A.p2_0.tier = 'normal'; save(); });
+  await place(pg, 'p1_6');   // 2026-10-06：02 の最初のマス p2_0 が宝箱
+  await idle(pg);
   const g0 = await pg.evaluate(() => S.g);
-  await pg.evaluate(() => { window.__g = []; const t = () => { const b = document.querySelector('#chgold b'), o = document.querySelector('#chf .chf-obj[data-id="p2_3"]'); window.__g.push([b ? +b.textContent : -1, !!document.querySelector('.chf-gfly'), o ? o.className : '']); if (window.__g.length < 900) requestAnimationFrame(t); }; requestAnimationFrame(t); });
+  await pg.evaluate(() => { window.__g = []; const t = () => { const b = document.querySelector('#chgold b'), o = document.querySelector('#chf .chf-obj[data-id="p2_0"]'); window.__g.push([b ? +b.textContent : -1, !!document.querySelector('.chf-gfly'), o ? o.className : '']); if (window.__g.length < 900) requestAnimationFrame(t); }; requestAnimationFrame(t); });
   await rollAs(pg, 1); await idle(pg);
   const G = await pg.evaluate(() => window.__g), g1 = await pg.evaluate(() => S.g), hud = await pg.evaluate(() => +document.querySelector('#chgold b').textContent);
   assert.ok(g1 > g0, '所持金が増えた'); assert.equal(hud, g1, 'HUD は最後に新しい額');
@@ -79,8 +80,9 @@ test('FE-3：宝箱：現れる → 揺れて開く → 報酬 →「+NG」が H
 
 test('FE-4：野生：止まった瞬間には「！」を出さない（静止の間）→「！」→ 遭遇の演出（2026-10-04 G3：正式のモンスターと文を同時に。予兆の草むらは出さない）→ バトルの案内', { skip: SKIP }, async () => {
   const p = await open(); const pg = p.page; await toField(pg);
-  await pg.evaluate(() => { S.m.raise.field.nodeAssignments.p3_2.bt = 'wild'; save(); });
-  await place(pg, 'p3_1'); await idle(pg);
+  await pg.evaluate(() => { S.m.raise.field.nodeAssignments.p4_2.bt = 'wild'; save(); });
+  await place(pg, 'p4_1');   // 2026-10-06：野生は p4_2
+  await idle(pg);
   await pg.evaluate(() => { window.__w = []; const t0 = performance.now(), t = () => { window.__w.push([Math.round(performance.now() - t0), S.m.raise.pend ? S.m.raise.pend.stage : null, !!document.querySelector('.chf-rustle'), !!document.querySelector('.chf-alert'), !!document.querySelector('.chf-enc2 .ce-mon') && !!document.querySelector('.chf-enc2 .ce-tx'), !!document.querySelector('.chbat'), (document.querySelector('.chf-enc2 .ce-tx') || {}).textContent || '']); if (window.__w.length < 1200) requestAnimationFrame(t); }; requestAnimationFrame(t); });
   await rollAs(pg, 1); await pg.waitForSelector('.chbat', { timeout: 20000 }); await pg.waitForTimeout(200);
   const W = await pg.evaluate(() => window.__w), at = (k) => (W.find((x) => x[k]) || [-1])[0];

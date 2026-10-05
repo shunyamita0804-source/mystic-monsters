@@ -240,7 +240,7 @@ T('QA-SR7：育成完了画面（フィナの会話中）で再読み込み → 
     for (let i = 0; i < 3; i++) { m.raise.turnsUsed = m.raise.turnLimit; m.raise.pend = null; MMP8.endChapter(S, m); MMP8.depart(S, m); }
     m.raise.turnsUsed = m.raise.turnLimit; m.raise.pend = null; save(); p8EndChapter();
   });
-  await pg.waitForSelector('.p9farm.p9done');
+  await pg.waitForSelector('.p9farm.p9done', { state: 'attached' });   // 2026-10-06：フィナの会話の間は施設の UI を隠す（data-mmscene）
   const done = await H.getS(pg);
   assert.equal(done.m.raise.state, 'done');
   assert.equal(done.raiseRec.done, 1, '育成完了1回');
