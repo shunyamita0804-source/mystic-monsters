@@ -66,7 +66,7 @@ for (const size of SIZES) {
     await pg.waitForSelector('.mmtalk:not(.mmtalk-out)'); await pg.waitForTimeout(300);
     const p0 = (await snap()).pos; await pg.click('.mmtalk'); const s1 = await snap();
     assert.equal(s1.on, s1.n, 'タップで全文'); assert.equal(s1.pos, p0, '全文にしても文字は動かない');
-    await pg.waitForTimeout(100); await pg.click('.mmtalk'); assert.equal(await pg.evaluate(() => MMNPC.state().idx), 0, '0.3秒は進まない');
+    assert.equal(await pg.evaluate(() => new Promise((ok) => setTimeout(() => { document.querySelector('.mmtalk').click(); ok(MMNPC.state().idx); }, 100))), 0, '0.3秒は進まない（間隔はページの中で測る）');
     await pg.waitForTimeout(400); await pg.click('.mmtalk'); assert.equal(await pg.evaluate(() => MMNPC.state().idx), 1, '次のセリフ');
     await H.finishTalk(pg);
     assert.deepEqual(p.errors, []);

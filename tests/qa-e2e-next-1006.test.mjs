@@ -77,9 +77,9 @@ test('TL-B1：会話：タップで全文 → すぐ（0.3秒以内）のタッ�
   const p = await open(); const pg = p.page;
   await pg.evaluate(() => { MMNPC.talk([{ npc: 'fina', text: 'これは読むための長めのセリフです。最後まで読めますか？' }, { text: '二つ目のセリフです。' }]); });
   await pg.waitForSelector('.mmtalk:not(.mmtalk-out)'); await pg.waitForTimeout(300);
-  await pg.click('.mmtalk'); assert.equal(await pg.evaluate(() => MMNPC.state().typing), false, '全文');
-  await pg.waitForTimeout(120); await pg.click('.mmtalk');
-  assert.equal(await pg.evaluate(() => MMNPC.state().idx), 0, 'すぐのタップでは進まない（読む間）');
+  // 2026-10-05 PHASE B：タップの間隔はページの中で測る（Playwright の click は待ちが入り、0.3秒を超えることがある）
+  const r = await pg.evaluate(() => new Promise((ok) => { const o = document.querySelector('.mmtalk'); o.click(); const full = !MMNPC.state().typing; setTimeout(() => { o.click(); ok([full, MMNPC.state().idx]); }, 120); }));
+  assert.equal(r[0], true, '全文'); assert.equal(r[1], 0, 'すぐ（0.12秒後）のタップでは進まない（読む間）');
   await pg.waitForTimeout(400); await pg.click('.mmtalk');
   assert.equal(await pg.evaluate(() => MMNPC.state().idx), 1, '間をおいたタップで次のセリフ');
   await H.finishTalk(pg);
