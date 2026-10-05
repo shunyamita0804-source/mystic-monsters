@@ -148,7 +148,7 @@ test('R6：500G以上なら救済なしで代金500Gだけを支払う。価格�
   const F = save(P7, P8, Array(M.OWN_LIMIT).fill('done'), 100);
   assert.deepEqual(M.purchase(F, 'solamo', M.OWN_LIMIT), { ok: false, reason: 'full' }, '所持上限は救済より先に判定（2026-10-04 PHASE H3：牧場20＋連れている1＝21体）');
   assert.deepEqual(M.MARKET_CATALOG.map((c) => [c.key, c.status, c.price ?? null]), [['solamo', 'sale', 500], ['gauru', 'sale', 500], ['nobiton', 'waiting', null]]);
-  assert.deepEqual(M.ECONOMY, { initialGold: 300, marketPrice: 500 });
+  assert.deepEqual(M.ECONOMY, { initialGold: 0, marketPrice: 500 } /* 2026-10-06：新しいゲームは 0G・登録の新人支援で 1000G */);
 });
 
 test('R7：二度押し・再読込で補填・購入が二重にならない（実物の adopt()）。確認画面が閉じた後の押下は無視する', () => {

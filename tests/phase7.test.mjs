@@ -673,7 +673,8 @@ test('P7-30：アイテム屋の基盤（購入品は保管庫へ・価格未設
   assert.equal(S.g, 80);
   const Q = loadP7();
   assert.deepEqual(Q.getShopCatalog(), []);
-  assert.doesNotMatch(HTML, /MMP7\.(registerItem|setShopCatalog)\(/, '本番ではアイテム・商品を登録していない');
+  assert.doesNotMatch(HTML, /MMP7\.setShopCatalog\(/, '本番では商品を登録していない（アイテム屋の品ぞろえは未決）');
+  assert.deepEqual((HTML.match(/MMP7\.registerItem\(\{[^}]*\}\)/g) || []), ['MMP7.registerItem({id:"herb",name:"薬草"})'], '2026-10-06：登録したアイテムは新人支援の薬草だけ（価格なし＝売り物ではない）');
 });
 
 // ---------------------------------------------------------
@@ -799,7 +800,8 @@ test('P7-37：バッグ満杯時の処理は固定されていない（将来ハ
   assert.equal(S.inv.bag.length, 5);
   P.setBagFullHandler(null);
   assert.equal(P.bagAdd(S, 'y').policy, 'undecided');
-  assert.doesNotMatch(HTML, /MMP7\.setBagFullHandler\(|MMP7\.bagAdd\(/, '本番では満杯時処理もアイテム取得処理も接続していない');
+  assert.doesNotMatch(HTML, /MMP7\.setBagFullHandler\(/, '本番では満杯時処理を接続していない');
+  assert.equal((HTML.match(/MMP7\.bagAdd\(/g) || []).length, 1, '2026-10-06：アイテムの取得は新人支援の薬草だけ（grantSupport。バッグがいっぱいなら保管庫）');
 });
 
 // ---------------------------------------------------------

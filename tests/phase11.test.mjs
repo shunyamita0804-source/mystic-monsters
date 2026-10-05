@@ -79,7 +79,7 @@ test('N2-4：画面：新規ゲームは街の前に名前入力（初期値ア�
   assert.match(line('function lobby(msg,open){'), /^function lobby\(msg,open\)\{if\(p8Blocked\(\)\)return;if\(S\.playerNamePending&&!opOn\(\)\)return p11NameScr\(msg\);/);
   const scr = between('function p11NameScr(msg){', '\nfunction p11NameGo(');
   assert.match(scr, /id="p11nm"/); assert.match(scr, /value="\$\{p11Esc\(S\.playerName\|\|d\)\}"/); assert.match(scr, /空欄のままなら「\$\{d\}」ではじまります/); assert.match(scr, /!event\.isComposing/, '日本語変換中のEnterでは確定しない');
-  assert.match(line('function p11NameGo(){'), /MMP11P\.confirmName\(S,e\?e\.value:""\);save\(\);lobby\(/);
+  assert.match(line('function p11NameGo(){'), /MMP11P\.confirmName\(S,e\?e\.value:""\);grantSupport\(\);save\(\);lobby\(/);
   assert.match(line('function p10Who(){'), /p11Esc\(S\.playerName\|\|MMP11P\.DEFAULT_NAME\)/);
   const esc = new Function(`${line('function p11Esc(t){')}\nreturn p11Esc;`)();
   assert.equal(esc('<b>"ア&ル\'ト"</b>'), '&lt;b&gt;&quot;ア&amp;ル&#39;ト&quot;&lt;/b&gt;');

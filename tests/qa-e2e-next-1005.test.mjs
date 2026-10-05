@@ -24,7 +24,7 @@ const SIZES = [[390, 844], [375, 667]];
 
 const talkState = (pg) => pg.evaluate(() => (document.querySelector('.mmtalk:not(.mmtalk-out)') && window.MMNPC ? MMNPC.state() : null));
 /** 会話を1行ずつ送り、各行の話者・本文・地図の様子を記録する（選択肢は記録して止まる） */
-async function readTalk(pg, max = 40) {
+async function readTalk(pg, max = 160) {   // 2026-10-06：全文を出したタップから0.3秒は次へ進まない（読む間）ので回数を多めに
   const out = [];
   for (let i = 0; i < max; i++) {
     const s = await talkState(pg); if (!s) break;
@@ -66,7 +66,7 @@ for (const [si, size] of SIZES.entries()) {
     assert.ok(await pg.evaluate(() => [...document.querySelectorAll('.map.town .tbar button')].every((b) => b.disabled)), '下のバーも押せない（登録前に自由に動かない）');
     assert.ok(await pg.$('.tpin.opgo .opmk'), '「タップ」の印');
     await pg.click('.tpin.opgo');
-    await pg.waitForSelector('.opbu');
+    await pg.waitForSelector('.opbu', { state: 'attached' });   // 2026-10-06：セルジュの会話の間は施設の背景だけ（下の画面は隠れる）
     await pg.waitForSelector('.mmtalk:not(.mmtalk-out)');
     const serge = await readTalk(pg);
     assert.equal(serge[0].npc, 'serge'); assert.equal(serge[0].name, 'セルジュ'); assert.match(serge[0].full, /登録を担当しております、セルジュ/);
@@ -90,13 +90,22 @@ for (const [si, size] of SIZES.entries()) {
     assert.equal(S1.playerName, 'ミナト'); assert.ok(!S1.playerNamePending); assert.equal(S1.v, 6, 'セーブ version 6（キー mr4v6）');
     // 登録より前の会話に名前は出ていない
     for (const x of [...first, ...after, ...serge]) assert.doesNotMatch(x.full, /ミナト/);
+    // 2026-10-06：登録完了のすぐあと＝新人支援（セルジュ）。1000G と薬草×1（システム通知は顔・名前なし）。受け取りは会話の前に確定して保存
     await nextTalk(pg, done[done.length - 1].full);
+    const sup = await readTalk(pg);
+    assert.match(sup.map((x) => x.full).join('|'), /新人聖獣士支援制度.*1000G を受け取った！.*薬草 を1つ受け取った！.*疲れを30回復/, '支援の会話の順');
+    assert.ok(['1000G を受け取った！', '薬草 を1つ受け取った！'].every((t) => sup.some((x) => x.full === t && !x.npc && !x.name)), 'システム通知（顔・名前なし）');
+    const SS = await H.storedSave(pg);
+    assert.deepEqual([SS.g, SS.inv.bag.map((i) => i.id), SS.npcFlags.support], [1000, ['herb'], 1], '1000G・薬草×1・受け取りの記録');
+    await nextTalk(pg, sup[sup.length - 1].full);
     const nm = await readTalk(pg);
     assert.match(nm[0].full, /ミナトさん、っていうんだね/, 'フィナが初めて名前を呼ぶ');
     await nextTalk(pg, nm[nm.length - 1].full);
     const org = await readTalk(pg);
     assert.match(org[0].full, /フェルナ地方の出身/); assert.ok(await pg.$('.wmap.guide'), '世界地図が出る');
     assert.equal(org[0].map.focus, 'ferna');
+    assert.ok(await pg.evaluate(() => { const v = document.querySelector('.wmap .wm-view').getBoundingClientRect(), i = document.querySelector('.wmap .wm-img').getBoundingClientRect(); return i.left >= v.left - 1 && i.right <= v.right + 1 && i.width <= v.width + 1; }), '2026-10-06：世界地図の全体が見える（寄りすぎない）');
+    assert.ok(await pg.evaluate(() => { const r = document.querySelector('.wmap .wm-reg.on[data-spot="ferna"]').getBoundingClientRect(), t = document.querySelector('.mmtalk-win').getBoundingClientRect(); return r.bottom > 0 && r.top < t.top; }), '光っている地点は会話窓・選択肢に隠れない');
     assert.deepEqual(org[org.length - 1].choices, ['a', 'b']);
     await choose(pg, si ? 'b' : 'a');
     const mi = await readTalk(pg);
@@ -110,6 +119,7 @@ for (const [si, size] of SIZES.entries()) {
     await pg.waitForSelector('.map.town');
     const S2 = await H.storedSave(pg);
     assert.equal(S2.npcFlags.op, 'done'); assert.equal(S2.npcFlags.worldMap, 1);
+    assert.deepEqual([S2.g, S2.inv.bag.length], [1000, 1], '支援は1回だけ（二重に受け取らない）');
     const ps2 = await pins(pg);
     assert.deepEqual(ps2.filter((x) => x.go).map((x) => x.on), ['market()'], '最初の相棒＝市場を案内');
     assert.ok(ps2.every((x) => !x.dis), '登録のあとは自由に動ける');
@@ -129,9 +139,27 @@ for (const [si, size] of SIZES.entries()) {
     // 再読み込みしても序盤はくり返さない
     await pg.reload(); await pg.waitForFunction(() => typeof window.MMP8 === 'object'); await pg.click('.p15start'); await pg.waitForSelector('.map.town'); await pg.waitForTimeout(800);
     assert.equal(await pg.$('.mmtalk'), null, '再読み込みで序盤の会話は出ない');
+    assert.deepEqual(await pg.evaluate(() => [S.g, S.inv.bag.length]), [1000, 1], '再読み込みしても支援を二重に受け取らない');
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   });
 }
+
+T('OP-B3（2026-10-06）：新人支援は1回だけ。登録の直後（支援の会話の前・途中）に再読み込み → 受け取っていなければ1回だけ受け取る／受け取っていれば会話も受け取りも出ない', async () => {
+  for (const got of [false, true]) {
+    const sv = { v: 6 }; const p = await openPage({ opening: true }); const pg = p.page;
+    await pg.evaluate((got) => { S = p10NewSave(); S.playerName = 'ミナト'; delete S.playerNamePending; finaFlags().op = 'map'; if (got) { finaFlags().support = 1; S.g = 1000; MMP7.bagAdd(S, 'herb'); } save(); }, got);
+    await pg.reload(); await pg.waitForFunction(() => typeof window.MMP8 === 'object'); await pg.click('.p15start');
+    await pg.waitForSelector('.mmtalk:not(.mmtalk-out)');
+    const t = await readTalk(pg);
+    if (got) assert.doesNotMatch(t.map((x) => x.full).join('|'), /支援/, '受け取り済みなら支援の会話を出さない');
+    else assert.match(t.map((x) => x.full).join('|'), /新人聖獣士支援制度/);
+    assert.deepEqual(await pg.evaluate(() => [S.g, S.inv.bag.map((i) => i.id), finaFlags().support]), [1000, ['herb'], 1], `二重に受け取らない（${got}）`);
+    await pg.reload(); await pg.waitForFunction(() => typeof window.MMP8 === 'object');
+    assert.deepEqual(await pg.evaluate(() => [S.g, S.inv.bag.length]), [1000, 1], 'もう一度読み込んでも同じ');
+    assert.deepEqual(p.errors, []);
+    void sv;
+  }
+});
 
 T('OP-B2：登録済みの古いセーブ（序盤の記録なし）では序盤の導線を出さない。街の札はすべて押せる', async () => {
   const p = await openPage({ opening: true }); const pg = p.page;

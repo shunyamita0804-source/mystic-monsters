@@ -8,13 +8,14 @@
   'use strict';
   const fz = Object.freeze;
   const MAP = fz({ src: './assets/worldmap/world_map.webp', w: 1448, h: 1086 });
+  //  2026-10-06：序盤の会話の地図は世界の全体が見える倍率のまま（z 1＝画面の幅いっぱい。旧 2.0〜3.0 は寄りすぎて世界のどこか分からなかった）。案内している地点だけを光（地方）・光点とリング（町）でやわらかく脈打たせる
   /** 地点：kind＝region（地方をやわらかく光らせる。名前は絵の文字）／city（光点・リング・ラベル）／here（現在地＝リングと「現在地」の札。名前は絵の文字） */
   const SPOTS = fz({
     world: fz({ x: 0.5, y: 0.5, z: 1 }),
-    ferna: fz({ x: 0.19, y: 0.27, z: 2.1, kind: 'region', rx: 0.17, ry: 0.2, label: 'フェルナ地方' }),
-    asteria: fz({ x: 0.77, y: 0.25, z: 2.0, kind: 'region', rx: 0.2, ry: 0.2, label: 'アステリア地方' }),
-    liberna: fz({ x: 0.665, y: 0.3, z: 3.0, kind: 'city', label: 'リベルナ', note: '出身地' }),   // 【暫定】アステリア地方の西部（絵に町の名前は無い＝ここだけ UI のラベル）
-    mistoria: fz({ x: 0.832, y: 0.252, z: 3.0, kind: 'here', label: 'ミストリア', note: '現在地' }),
+    ferna: fz({ x: 0.19, y: 0.27, z: 1, kind: 'region', rx: 0.17, ry: 0.2, label: 'フェルナ地方' }),
+    asteria: fz({ x: 0.77, y: 0.25, z: 1, kind: 'region', rx: 0.2, ry: 0.2, label: 'アステリア地方' }),
+    liberna: fz({ x: 0.665, y: 0.3, z: 1, kind: 'city', label: 'リベルナ', note: '出身地' }),   // 【暫定】アステリア地方の西部（絵に町の名前は無い＝ここだけ UI のラベル）
+    mistoria: fz({ x: 0.832, y: 0.252, z: 1, kind: 'here', label: 'ミストリア', note: '現在地' }),
   });
   const calm = () => !!(root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches);
   let cur = null;

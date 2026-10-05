@@ -106,7 +106,9 @@
   if (root.MMP8 && typeof root.MMP8.addIndividualNormalizer === 'function') root.MMP8.addIndividualNormalizer(ensureSpeed);
 
   // ---- お金と市場（正式値。ゲームの購入処理・初期所持金への反映は市場Step〔Step 4〕で行う） ----
-  const ECONOMY = fz({ initialGold: 300, marketPrice: 500 });
+  // 2026-10-06 正式：新しいゲームの所持金は 0G。聖獣士登録の新人支援で 1000G（index.html の grantSupport）→ 市場で 500G の1体を迎えて 500G 残る。
+  //  旧（2026-10-05 まで）：初期 300G＋市場で 500G に満たなければ補填＝初回購入救済。救済の判定は古いセーブの詰み防止として残す（通常の新規プレイでは所持金が足りるので出ない）
+  const ECONOMY = fz({ initialGold: 0, marketPrice: 500 });
   //  市場に存在するモンスター（並び順＝カルーセルの順）。ジオルは市場に存在しない（入れない）。
   //  status：'sale'（販売中）／'waiting'（入荷待ち＝購入不可。ロック・未解放ではない）
   const MARKET_CATALOG = fz([

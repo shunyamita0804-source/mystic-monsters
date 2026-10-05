@@ -1524,9 +1524,9 @@ button.mkc b{font-size:.9rem}button.mkc small{font-size:.66rem;color:#ffe9b0}
 .wmap.view .wm-view{cursor:grab}
 .wm-cam{position:absolute;left:0;top:0;transform-origin:0 0;transition:transform 1.1s cubic-bezier(.45,.05,.25,1);will-change:transform}
 .wm-img{display:block;width:100%;height:100%;pointer-events:none;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;box-shadow:0 0 0 2px rgba(230,191,98,.5),0 10px 40px rgba(0,0,0,.6)}
-.wm-reg{position:absolute;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(255,240,180,.5),rgba(255,214,110,.22) 62%,rgba(255,214,110,0));opacity:0;transition:opacity .7s ease;pointer-events:none;animation:wmPulse 2.4s ease-in-out infinite}
+.wm-reg{position:absolute;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(255,246,200,.72),rgba(255,214,110,.42) 58%,rgba(255,214,110,0));box-shadow:0 0 22px 6px rgba(255,214,110,.28);mix-blend-mode:screen;opacity:0;transition:opacity .7s ease;pointer-events:none;animation:wmPulse 2.4s ease-in-out infinite}
 .wm-reg.on{opacity:1}
-@keyframes wmPulse{50%{filter:brightness(1.25)}}
+@keyframes wmPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.45)}} /* 2026-10-06：世界の全体を見せる倍率でも分かるよう、案内している地方の光を少し強く（やわらかく脈打つ） */
 .wm-pin{position:absolute;width:0;height:0;opacity:0;transform:scale(var(--inv,1));transform-origin:0 0;transition:opacity .45s ease,transform 1.1s cubic-bezier(.45,.05,.25,1);pointer-events:none}
 .wm-pin.on{opacity:1}
 .wm-pin>*{position:absolute;left:0;top:0}
@@ -2335,6 +2335,12 @@ html[data-mmev-back] #app :is(.nst,.fbub,.kbub,.fmdan,.shopnpc,.gssay,.elsay,.vg
 .fmhd{position:relative;z-index:4;flex:none;display:flex;justify-content:space-between;align-items:flex-start;padding-top:calc(env(safe-area-inset-top,0px) + 10px)}
 .fmplq{position:relative;flex:none;white-space:nowrap;padding:6px 22px 7px;border-radius:8px;background:linear-gradient(#223766,#12204a);border:1.5px solid #e0b861;box-shadow:inset 0 0 0 2px #0c1630,inset 0 0 0 3px rgba(224,184,97,.55),0 3px 8px rgba(0,0,0,.4)}
 .fmplq::before,.fmplq::after{content:"";position:absolute;top:50%;width:7px;height:7px;background:#e0b861;transform:translateY(-50%) rotate(45deg)}
+/* 2026-10-06：日本語の禁則（街の案内・通知・施設の吹き出しも、句読点・閉じ括弧を行頭に置かない／最後の行を1文字だけにしない） */
+#app :is(.dlg,#msg,.kbub,.fbub,.dmsg,.dbub,.gssay,.vgsay,.elsay,.p9ced,.chf-fina){line-break:strict;text-wrap:pretty}
+/* 2026-10-06：試遊用の TEST 大会の入口（TEST_MODE のときだけ。正式の UI ではない＝小さな文字のボタン） */
+#app .map.town .ttest{position:absolute;z-index:3;right:10px;top:calc(env(safe-area-inset-top,0px) + 60px);margin:0;padding:2px 7px;min-height:0;height:20px;border-radius:5px;border:1px dashed #f0d58a;background:rgba(10,18,46,.78);color:#f6dc98;font:700 10.5px/1 var(--mm-font-body);letter-spacing:.04em}
+/* 2026-10-06：街の名札「ミストリア」＝正式の施設の名札（.fmplq）をそのまま小さく。左上（お知らせの右・闘技場の札にかからない幅） */
+#app .map.town .tplace{position:absolute;z-index:3;left:64px;top:calc(env(safe-area-inset-top,0px) + 13px);padding:5px 13px 6px;pointer-events:none}#app .map.town .tplace b{font-size:13px;letter-spacing:.12em;margin-right:-.12em}
 .fmplq::before{left:-4px}.fmplq::after{right:-4px}
 .fmplq b{font-family:var(--mm-font-head);font-weight:800;font-size:17px;letter-spacing:.3em;margin-right:-.3em;color:#f6dc98;text-shadow:0 1px 0 #000}
 .fm .fmab{margin:4px 46px 0 0;padding:4px 11px;min-height:30px;border-radius:15px;font-size:11px;font-weight:700;box-shadow:0 2px 5px rgba(0,0,0,.35);background:linear-gradient(#4a2419,#2c140d);border:1px solid #8a5238;color:#e9c3ad}
@@ -3154,7 +3160,17 @@ MMP8.addSaveNormalizer((d,c)=>{if(!c.isNew)legacyFix(d)});
 // 読み込み・v4/v5→v6移行・原文退避・「自分より新しい版のセーブ」の保護は MMP8.loadFromStorage が行う。
 const P8_LOAD=MMP8.loadFromStorage((()=>{try{return localStorage}catch(e){return null}})());
 function load(){return P8_LOAD.S}
-function save(){if(P8_LOAD.locked)return;try{localStorage.setItem(MMP8.SAVE_KEY,JSON.stringify(S))}catch(e){}}
+// ---- 2026-10-06：試遊用の TEST 大会（開発・試遊の期間だけ）。正式リリースでは TEST_MODE を false にするだけで入口ごと出なくなる ----
+//  街の小さなボタン → 今のセーブを丸ごと控える → 連れている子の写し（いなければソラモ）で Chapter 1 の大会受付へ直接 → 大会 → 終わり・辞退・中断・放棄で控えたセーブへ戻して街へ。
+//  TEST 大会の間は保存しない（save() は何もしない）＝正式の Chapter の進行・大会ランクの解放・所持金・記録・セーブを書き換えない。正式の UI として作り込まない（新しい画像なし）
+const TEST_MODE=true;
+let TEST_TOUR=null; // { snap }＝始める前のセーブ（JSON）。ページの中だけ（保存しない）
+function testTour(){if(!TEST_MODE||TEST_TOUR||S.playerNamePending)return;const snap=JSON.stringify(S);TEST_TOUR={snap};
+ try{const base=S.m?JSON.parse(JSON.stringify(S.m)):Object.assign(mk(0),{name:"テスト"});delete base.raise;MMP7.ensureProg(base);S.m=base;S.inv.bag=[];
+  const r=MMP8.depart(S,base,Math.random);if(!r.ok)throw new Error(r.reason||"depart");Object.assign(base.raise,{goal:true,pend:null});if(base.raise.field)base.raise.field.arrivalSeen=true;board()}
+ catch(e){testTourEnd("TEST 大会を始められませんでした。")}}
+function testTourEnd(msg){if(!TEST_TOUR)return false;const snap=TEST_TOUR.snap;TEST_TOUR=null;p9MenuClose();try{const d=$("#bt");if(d)d.remove()}catch(e){}S=JSON.parse(snap);lobby(msg||"TEST 大会を終了しました（セーブは変わっていません）。");return true}
+function save(){if(P8_LOAD.locked||TEST_TOUR)return;try{localStorage.setItem(MMP8.SAVE_KEY,JSON.stringify(S))}catch(e){}}
 // Phase 10：新規ゲームの初期所持金は正式値（300G）。既存セーブの所持金は変えない
 function p10NewSave(){const n=MMP8.newSave();n.g=MMP10M.ECONOMY.initialGold;return n}
 let S=P8_LOAD.S||p10NewSave(),sel=[],ht="t";
@@ -3286,7 +3302,7 @@ function lobby(msg,open){if(p8Blocked())return;if(S.playerNamePending&&!opOn())r
  if(opOn()&&!finaFlags().prologue&&window.MMPRO&&!window.MM_QA_NO_PROLOGUE&&!P11_PRO.has(S))return opPrologue(msg); // 2026-10-05：正式の序盤導線＝プロローグ → 街（フィナ）→ 聖獣士管理局（セルジュの登録）→ 世界地図
  if(!S.playerNamePending&&finaFlags().op=="map"&&!window.MM_QA_NO_OPENING)return opAfterReg(); // 登録のあと、世界地図の会話の途中で閉じた＝続きから
  const h1=$("h1");if(h1)h1.style.display="";bgm("town");const m=S.m; // 街では見出し（h1）を CSS で隠す（main:has(>#app>.map.town)）。ほかの画面へ移れば元どおり
- townPreload();$("#app").innerHTML=`<div class="map town" style="--town-bg:url(${TOWN_BG})"><div class="tbg" aria-hidden="true"></div>${TOWN_SVG}<button class="tround tnews${opLock()?" oplk":""}" ${opLock()?"disabled":""} onclick="newsScr()" aria-label="お知らせ" title="お知らせ"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#tic-news"/></svg></button><button class="tround tconf" onclick="confScr()" aria-label="設定" title="設定"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#tic-conf"/></svg></button>${townPins(m).map(c=>{const g=opGuide(c,m),lk=g=="lk";return `<button class="hz tpin ${c[4]=="ok"?"":c[4]}${lk?" oplk":g=="go"?" opgo":""}" style="--x:${c[6][0]};--y:${c[6][1]}" ${c[4]=="dis"||lk?"disabled":""}${c[4]=="lock"?' data-nsfx="1"':""} onclick="${c[3]}" aria-label="${c[0]}${c[4]=="lock"?"（未開放）":""}" title="${c[1]}"><span>${c[4]=="lock"?TPIN_LOCK:""}${c[0]}</span><i></i>${g=="go"?'<em class="opmk" aria-hidden="true">タップ</em>':""}</button>`}).join("")}</div><nav class="tcmds tbar" aria-label="街のコマンド">${townBar(m).map((c,i)=>`<button class="hz tcmd ${c[4]=="ok"?"":c[4]}${i==0?" tsub tfarm":i==1?" tsub tprof":" tsub tsave svb"}${opLock()?" oplk":""}" ${c[4]=="dis"||opLock()?"disabled":""} onclick="${c[3]}" aria-label="${c[0]}" title="${c[1]}"><span class="ti">${townIcon(c[2])}</span><b>${c[5]||c[0]}</b></button>`).join("")}</nav>
+ townPreload();$("#app").innerHTML=`<div class="map town" style="--town-bg:url(${TOWN_BG})"><div class="tbg" aria-hidden="true"></div>${TOWN_SVG}<button class="tround tnews${opLock()?" oplk":""}" ${opLock()?"disabled":""} onclick="newsScr()" aria-label="お知らせ" title="お知らせ"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#tic-news"/></svg></button><div class="fmplq tplace" aria-label="現在地：ミストリア"><b>ミストリア</b></div>${TEST_MODE&&!S.playerNamePending?`<button class="ttest" onclick="testTour()" aria-label="TEST 大会（試遊用）">TEST 大会</button>`:""}<button class="tround tconf" onclick="confScr()" aria-label="設定" title="設定"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#tic-conf"/></svg></button>${townPins(m).map(c=>{const g=opGuide(c,m),lk=g=="lk";return `<button class="hz tpin ${c[4]=="ok"?"":c[4]}${lk?" oplk":g=="go"?" opgo":""}" style="--x:${c[6][0]};--y:${c[6][1]}" ${c[4]=="dis"||lk?"disabled":""}${c[4]=="lock"?' data-nsfx="1"':""} onclick="${c[3]}" aria-label="${c[0]}${c[4]=="lock"?"（未開放）":""}" title="${c[1]}"><span>${c[4]=="lock"?TPIN_LOCK:""}${c[0]}</span><i></i>${g=="go"?'<em class="opmk" aria-hidden="true">タップ</em>':""}</button>`}).join("")}</div><nav class="tcmds tbar" aria-label="街のコマンド">${townBar(m).map((c,i)=>`<button class="hz tcmd ${c[4]=="ok"?"":c[4]}${i==0?" tsub tfarm":i==1?" tsub tprof":" tsub tsave svb"}${opLock()?" oplk":""}" ${c[4]=="dis"||opLock()?"disabled":""} onclick="${c[3]}" aria-label="${c[0]}" title="${c[1]}"><span class="ti">${townIcon(c[2])}</span><b>${c[5]||c[0]}</b></button>`).join("")}</nav>
  <div class="tlow${msg||!m?" on":""}"><div class="dlg${msg&&/class="fmsg"/.test(msg)?" fina nst r":" sys"}" onclick="townMsgClose(this)">${msg&&/class="fmsg"/.test(msg)?`<img class="nstf" src="${finaStandSrc()}" alt="" decoding="async">`:`<i class="dsys" aria-hidden="true"></i>`}<div class="dbub" id="msg">${msg&&/class="fmsg"/.test(msg)?`<span class="dnm">フィナ</span>`:""}${msg||(m?"行きたい場所をタップしよう！":"モンスターがいません。まずは市場で選ぼう。")}</div></div></div>`;try{window.scrollTo(0,0)}catch(e){}if(opOn())opTownTalk(); // 街は1画面で固定（2026-09-30）：案内文は知らせることがあるときだけ背景の上に出す。セーブ・ロードは下のバー、大会・育成完了の回数はプロフィールへ
 }
 // ---- 2026-10-05：正式の序盤導線（新しいゲームの最初に1回）----
@@ -3314,6 +3330,7 @@ const OPEN_TALK={
  originA:[{npc:"fina",expression:"happy",text:"リベルナ！ アステリア地方の西のほうにある街だよね。"}],
  originB:[{npc:"fina",expression:"happy",text:"リベルナかぁ。アステリア地方の西のほうにある街だよね。"}],
  mistoria:[{npc:"fina",expression:"guide",text:"ここがミストリア。"},{npc:"fina",expression:"guide",text:"聖獣士管理局のほかにも、研究所や牧場、闘技場なんかが集まってる街だよ。"},{npc:"fina",expression:"smile",text:"一人前の聖獣士を目指すなら、これから何度もお世話になると思う。"}],
+ support:n=>[{npc:"serge",text:`${n}さんのような新人の聖獣士には、管理局から支援をお渡ししています。`},{npc:"serge",text:"新人聖獣士支援制度です。まずは、旅立ちの準備金をお受け取りください。"},{npc:null,text:"1000G を受け取った！"},{npc:"serge",text:"それから、こちらもお持ちください。"},{npc:null,text:"薬草 を1つ受け取った！"},{npc:"serge",text:"薬草は、聖獣の疲れを30回復できる道具です。旅の途中で疲れが溜まったら使ってください。"}],
  unlock:n=>[{npc:"serge",text:"世界地図は、この管理局でいつでもご覧いただけます。"},{npc:"fina",expression:"guide",text:`それじゃあ${n}さん、まずは市場で最初の相棒を迎えに行こう！`}]};
 /** プロローグ（新しいゲームの最初に1回。見た記録は S.npcFlags.prologue）→ 街 */
 /** 2026-10-06：プロローグ（固定尺のオープニング）と正式のプロローグ BGM を同じ時間軸で鳴らす。
@@ -3344,6 +3361,7 @@ function opConfirm(v){const n=MMP11P.sanitize(v);
 async function opAfterReg(){const f=finaFlags(),n=S.playerName||MMP11P.DEFAULT_NAME;if(OP_TALKING)return;OP_TALKING=true;bgm("town");p9Immersive(true);
  $("#app").innerHTML=`<div class="bu opbu" style="--bu-bg:url(${BUREAU_BG})"><div class="bubg" aria-hidden="true"></div><header class="buhd"><span class="burb sp" aria-hidden="true"></span><div class="buplq"><b>聖獣士管理局</b></div><span class="burb sp" aria-hidden="true"></span></header></div>`;
  try{
+  if(grantSupport())await MMNPC.talk(OPEN_TALK.support(n),{kind:"event",presentation:"standard",big:true,scene:BUREAU_BG}); // 2026-10-06：登録完了のすぐあと（セルジュ）＝新人支援 1000G＋薬草×1（先に受け取りを確定して保存＝再読み込みで二重に受け取らない）
   await MMNPC.talk(OPEN_TALK.finaName(n),{kind:"fina",presentation:"standard",big:true,scene:BUREAU_BG});
   const map=window.MMMAP?MMMAP.open():null,T=[],later=(fn,ms)=>T.push(setTimeout(fn,ms));
   const act={0:()=>{if(map)later(()=>map.focus("ferna"),650)},2:()=>{if(map){map.focus("asteria");later(()=>map.focus("liberna",true),1150)}},3:()=>{if(map)map.focus("mistoria",true)}};
@@ -3353,6 +3371,10 @@ async function opAfterReg(){const f=finaFlags(),n=S.playerName||MMP11P.DEFAULT_N
   await MMNPC.talk(OPEN_TALK.unlock(n),{kind:"event",presentation:"standard",big:true,scene:BUREAU_BG});
  }finally{OP_TALKING=false}
  f.op="done";f.finaIntro=1;save();lobby(finaMsg(`${p11Esc(n)}さん、まずは市場で最初の相棒を迎えよう！`))}
+/** 新人支援（2026-10-06 正式）：聖獣士登録のあと1回だけ 1000G と薬草×1。記録は S.npcFlags.support（v6 の任意項目）。
+ *  受け取りの記録・所持金・薬草（バッグ。いっぱいなら保管庫）を同時に確定してから保存する＝再読み込み・再訪・再起動で二重に受け取らない。受け取ったら true */
+const SUPPORT=Object.freeze({gold:1000,item:"herb"});
+function grantSupport(){const f=finaFlags();if(f.support)return false;f.support=1;S.g=(S.g||0)+SUPPORT.gold;if(!MMP7.bagAdd(S,SUPPORT.item).ok)S.inv.vault.push({id:SUPPORT.item});save();return true}
 /** 聖獣士管理局の「世界地図」（序盤の会話を見たら出身地の印も） */
 function bureauMap(){if(window.MMMAP)MMMAP.viewer({origin:!!finaFlags().worldMap})}
 // ---- Phase 11：プレイヤー名（新規ゲームの最初に決める。空欄なら「アルト」） ----
@@ -3372,7 +3394,7 @@ function p11NameScr(msg){bgm(opOn()?"town":"title");p9Immersive(true);const d=MM
  <div class="p11field"><input id="p11nm" maxlength="${MMP11P.MAX_LEN*2}" value="${p11Esc(S.playerName||d)}" placeholder="ここに名前を入力" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" aria-describedby="p11hint" onkeydown="if(event.key==='Enter'&&!event.isComposing){this.blur();p11NameGo()}"></div>
  <p class="p11hint" id="p11hint">${MMP11P.MAX_LEN}文字まで・空欄のままなら「${d}」ではじまります</p><div class="p11seal" aria-hidden="true"></div></div></div>
  <button class="p11go" onclick="p11NameGo()">登録する</button><p class="p11cap2">名前を入力して登録を完了してください</p></div>`}
-function p11NameGo(){if(p11NameGo.busy)return;p11NameGo.busy=1;setTimeout(()=>p11NameGo.busy=0,600);const e=$("#p11nm");if(e&&e.blur)e.blur();if(typeof opOn=="function"&&opOn())return opConfirm(e?e.value:"");const n=MMP11P.confirmName(S,e?e.value:"");save();lobby(finaMsg(`ようこそ、${p11Esc(n)}さん！ まずは市場でモンスターを選ぼう。`));finaIntro()}
+function p11NameGo(){if(p11NameGo.busy)return;p11NameGo.busy=1;setTimeout(()=>p11NameGo.busy=0,600);const e=$("#p11nm");if(e&&e.blur)e.blur();if(typeof opOn=="function"&&opOn())return opConfirm(e?e.value:"");const n=MMP11P.confirmName(S,e?e.value:"");grantSupport();save();lobby(finaMsg(`ようこそ、${p11Esc(n)}さん！ まずは市場でモンスターを選ぼう。`));finaIntro()}
 /** 街の案内欄をフィナの台詞として出す（顔・名前つき）。街でのプレイヤーへの案内役はフィナ。システム通知（ロード・購入など）はこれまでどおり顔・名前なし */
 function finaMsg(t){return `<span class="fmsg" data-npc="fina">${t}</span>`}
 /** 街のフィナ（2026-10-03 品質向上）：小さな顔ではなく半身の立ち絵（正式 closeup の guide＝案内）を案内欄の右上に立たせる */
@@ -4004,7 +4026,7 @@ function p9Immersive(on){const h1=$("h1");if(h1)h1.style.display=on?"none":""}
 function p8TurnText(m){const r=m.raise;return r.turnLimit==null?`<b>${r.turnsUsed}</b>ターン目`:`残りターン <b>${MMP8.turnsLeft(m)}</b><small>/${r.turnLimit}</small>`}
 function p8BoardMenu(){return `<div class="p8menu"><button onclick="p9MenuClose();hall('st')">📊 ステータス</button><button onclick="p9MenuClose();hall('w')">⚔️ わざ</button>${window.chfActive&&chfActive(S.m)?"":`<button onclick="p9Legend()">🗺 マスの説明</button>`}<button onclick="p9MenuClose();p8Suspend()">⏸ 中断</button><button class="p8danger" onclick="p9MenuClose();p8AbandonAsk()">🏳 育成放棄</button></div>`}
 function p9Menu(){if(bBusy)return;p9MenuClose();const d=document.createElement("div");d.className="p9ov";d.id="p9ov";tapAt(d);d.onclick=e=>{if(e.target===d&&!tapSoon(d,350))p9MenuClose()};
- d.innerHTML=`<div class="p9ovc" role="dialog" aria-modal="true"><div class="p9ovh">メニュー<button class="p9x" onclick="p9MenuClose()" aria-label="閉じる">✕</button></div>${p8BoardMenu()}</div>`;document.body.appendChild(d)}
+ d.innerHTML=`<div class="p9ovc" role="dialog" aria-modal="true"><div class="p9ovh">メニュー<button class="p9x" onclick="p9MenuClose()" aria-label="閉じる">✕</button></div>${TEST_TOUR?`<button class="p9btn2 ttest" onclick="testTourEnd()">TEST 大会をやめて街へ戻る</button>`:""}${p8BoardMenu()}</div>`;document.body.appendChild(d)}
 function p9MenuClose(){const d=$("#p9ov");if(d)d.remove()}
 function p9Legend(){const d=$("#p9ov .p9ovc");if(!d)return;const T=["life","power","wisdom","hit","evasion","toughness","event","rare","treasure","battle","ticket","normal"];
  d.innerHTML=`<div class="p9ovh">マスの説明<button class="p9x" onclick="p9MenuClose()" aria-label="閉じる">✕</button></div><div class="p9leg">${T.map(t=>`<div>${MMP9ART.iconSvg(t,26)}<b>${MMP9ART.SQ[t].label}</b><small>${MMP9ART.SQ[t].desc}</small></div>`).join("")}</div><button class="p9btn2" data-se="UI_CANCEL" onclick="p9Menu()">もどる</button>`}
@@ -4282,7 +4304,7 @@ function p9VsGo(b){if(bBusy||!p9arm(b,"もう一度押すと試合開始"))retur
 function p8Hud(pre=""){return `<div class="p8hud">${pre}${MMP8.resources(S).map(x=>`<span class="p9chip p9res" title="${x.label}">${x.id=="trainTix"?MMP9ART.ticketIcon(26):x.icon}<span class="p9rl">${x.label}</span><b>×${x.value}</b></span>`).join("")}</div>`}
 function p8TourDecline(b){if(!arm(b,"もう一度押すと辞退（報酬なしでChapter終了）"))return;const r=MMP8.declineTournament(S,S.m);if(!r.ok)return board();save();p8AfterChapterEnd(r)}
 function p8EndChapter(){if(bBusy)return;const r=MMP8.endChapter(S,S.m);if(!r.ok)return board();save();p8AfterChapterEnd(r)}
-function p8AfterChapterEnd(r){if(r.next=="done")return p8DoneScr();const gt=typeof r.next=="number"?MMP8.chapterGate(S.m,r.next):{ok:true};if(!gt.ok)return hall("t",`${p8ChLabel(r.entry.ch)}が終わった。`);hall("t",`${p8ChLabel(r.entry.ch)}が終わった。`+(r.next==MMP8.FINAL?(MMP8.isPlayable(MMP8.FINAL)?"Aランク以上をクリアしたので、次は最終Chapterへ進みます！":"Aランク以上をクリアした！ 最終ルートは準備中のため、ここで育成を完了して街へ戻れます。"):"準備ができたら次のChapterへ出発しよう。"))}
+function p8AfterChapterEnd(r){if(testTourEnd())return;if(r.next=="done")return p8DoneScr();const gt=typeof r.next=="number"?MMP8.chapterGate(S.m,r.next):{ok:true};if(!gt.ok)return hall("t",`${p8ChLabel(r.entry.ch)}が終わった。`);hall("t",`${p8ChLabel(r.entry.ch)}が終わった。`+(r.next==MMP8.FINAL?(MMP8.isPlayable(MMP8.FINAL)?"Aランク以上をクリアしたので、次は最終Chapterへ進みます！":"Aランク以上をクリアした！ 最終ルートは準備中のため、ここで育成を完了して街へ戻れます。"):"準備ができたら次のChapterへ出発しよう。"))}
 function p8DoneScr(msg){const m=S.m,lg=(m.raise&&m.raise.log)||[];bgm("farm");p9Immersive(true);const cf=Array.from({length:14},(_,i)=>`<i style="left:${(i*41)%100}%;animation-delay:${(i%5)*.4}s"></i>`).join("");$("#app").innerHTML=`<div class="p9farm p9done"><div class="p9win p9dn"><div class="cf">${cf}</div><small class="p9dt">育成完了</small><div class="mon p9bob">${msv(m)}</div><b class="big">🎉 ${p11Esc(m.name)}の育成が完了した！</b><div class="sub">最高クリアランク：<b>${MMP8.rankLabel(m)}</b></div>${msg?`<div class="sub">${msg}</div>`:""}</div>${lg.length?`<section class="p9card"><h3>育成の記録</h3><div class="p9res2">${lg.map(e=>`<span>${p8ChLabel(e.ch)}</span><b>${e.skipped?(e.reason=="rank_gate"?`解放条件（公式${MMP8.RANK_LETTERS[e.need]||""}ランク大会クリア）に届かず（ここで育成完了）`:"準備中のため未実施（ここで育成完了）"):e.legacy?"（旧セーブから引き継ぎ）":`${e.reachedGoal?`${e.turnsUsed}ターンでゴール`:"ゴールできず"}${e.tour?`／ランク${RN[e.tour.rank]}大会 ${e.tour.place}位`:e.declined?"／大会辞退":""}`}</b>`).join("")}</div></section>`:""}<div class="p9card p9dnb"><button class="p9btn" onclick="farm('','a')">牧場へ</button></div></div>`;try{window.scrollTo(0,0)}catch(e){}finaTalk("done")}
 // ---- 通し試遊の修正：最終ルートのマップが未登録のときだけ、Chapter間ファームから育成を完了して街へ戻れる（最終ルートの内容・ルールは作らない） ----
 function pfixFinalNote(){if(MMP8.isPlayable(MMP8.FINAL))return `<p class="p9s">Aランク以上をクリアしたため、最終ルートへ進みます。</p>`;
@@ -4385,14 +4407,14 @@ function p8Resume(msg){const h1=$("h1");if(h1)h1.style.display="";if(P8_LOAD.loc
 function p8Blocked(){if(P8_LOAD.locked){p8LockScr();return true}if(!MMP8.canVisitTown(S)){p8Resume("育成中は、街・牧場・市場・研究所へは行けません。");return true}return false}
 function p8LockScr(){$("#app").innerHTML=`<div class="p8lock"><b>このセーブデータ（v${P8_LOAD.version}）は、この版より新しい版のゲームで作られています。</b><p>データを守るため、この版では読み込みも保存も行いません。最新版のゲームで開いてください。</p></div>`}
 // 中断：いまの進行を保存してタイトルへ（ターンは消費しない。再開はタイトル→p8Resume）
-function p8Suspend(){if(bBusy||p7Busy)return;save();title()}
+function p8Suspend(){if(testTourEnd())return;if(bBusy||p7Busy)return;save();title()}
 // 育成放棄：誤操作を防ぐため2段階で確認し、最後のボタンは数秒待たないと押せない。確認中に対象の個体が変わったら何もしない（uidで照合）。
 let p8AbT=0; // 最終確認のカウントダウン（setInterval）。閉じる・開き直すときに止める
 /** 2026-10-06：共通の危険操作モーダル（正式デザイン 02_basecamp/raising_abandon_confirmation：濃紺＋金・上に赤い宝石の紋章・安全側＝濃紺＋金・危険側＝深い赤）。
  *  o＝{ title, lines:[HTML], note, safe:{label,on}, danger:{label,on,id,disabled} }。育成放棄で使う（売却・最初からやり直す・セーブの上書きにも使える形）。中身の HTML は呼ぶ側で p11Esc 済み */
 function dangerInner(o){return `<i class="mmdg-crest" aria-hidden="true"></i><b class="mmdg-t">${o.title}</b>${o.lines.map(l=>`<p>${l}</p>`).join("")}${o.note?`<p class="mmdg-note"><small>${o.note}</small></p>`:""}<div class="p8mbtn mmdg-btns"><button class="go mmdg-safe" onclick="${o.safe.on}">${o.safe.label}</button><button class="p8danger mmdg-danger"${o.danger.id?` id="${o.danger.id}"`:""}${o.danger.disabled?" disabled":""} onclick="${o.danger.on}">${o.danger.label}</button></div>`}
 function dangerModalHtml(o){return `<div class="p8mc mmdg" role="dialog" aria-modal="true" aria-label="${o.title}">${dangerInner(o)}</div>`}
-function p8AbandonAsk(){const m=S.m;if(!m||bBusy||p7Busy||!MMP8.canAbandon(S).ok)return;p8ModalClose();
+function p8AbandonAsk(){if(testTourEnd())return;const m=S.m;if(!m||bBusy||p7Busy||!MMP8.canAbandon(S).ok)return;p8ModalClose();
  const d=document.createElement("div");d.className="p8m";d.id="p8m";
  d.innerHTML=dangerModalHtml({title:"育成放棄",lines:[`<b class="mmdg-nm">${p11Esc(m.name)}</b>の育成をやめますか？`,"この個体とChapterの進行はすべて削除され、元に戻せません。放棄すると街へ戻ります。"],note:"所持金・特訓チケット・バッグ・保管庫はそのまま残ります。",safe:{label:"やめない",on:"p8ModalClose()"},danger:{label:"放棄に進む",on:`p8AbandonAsk2('${m.uid}')`}});
  document.body.appendChild(d)}
@@ -4436,6 +4458,8 @@ async function trRoll(){if(p7Busy||!S.m||!MMP7.trainRunOf(S.m))return;p7Busy=tru
 
 // ---- 出発準備（バッグ⇄保管庫・Chapter選択） ----
 const p7ItemName=it=>{const d=MMP7.getItemDef(it.id);return d?d.name:it.id};
+// 2026-10-06：薬草（新人支援で1つ）＝疲れ −30（Chapter のアイテム＝サイコロを振る前に使う。ターンは使わない）。売り物ではない（価格なし）。正式アイコンは未着＝名前の文字だけ
+MMP7.registerItem({id:"herb",name:"薬草"});if(window.MMCH)MMCH.registerFatigueItem("herb",{amount:30});
 function p7Shell(ic,title,sub,body,msg,back,o){o=o||{};return `<div class="ds${o.cls?" "+o.cls:""}" style="--dc:#e8b23a">${o.bg||`<div class="dbg" style="background-image:url(${FARM_BG})"></div>`}<div class="dtop"><button class="dback" data-nav="back" onclick="${back||"hall('t')"}">◀ ベースキャンプ</button><div class="dmoney">🪙 ${S.g}G</div></div><div class="dtitle"><div class="mico">${ic}</div><div><b>${title}</b><small>${sub}</small></div></div>${msg?`<div class="dmsg"><span>${msg}</span></div>`:""}<div class="dbody">${body}</div></div>`}
 const PP_ART={1:"assets/fields/ch1a/intro/ch1_intro_overview.webp",2:"assets/fields/ch2a/intro/ch2_intro_overview_v2.webp"}; // 出発準備の Chapter カードの絵（正式の俯瞰図。無い Chapter は絵なし）
 // 出発準備（2026-10-04 第二段階。デザイン参考 07）：上＝育成中モンスター（正式画像）と Chapter の札、中＝バッグの5スロット（空き＝空枠・所持＝名前。タップ＝保管庫へ／空きのタップ＝保管庫から選ぶ）、その下＝次の Chapter のカード、下＝「出発する」。

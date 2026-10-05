@@ -187,7 +187,7 @@ test('M3-4：市場データ（正式値）：ソラモ・ガウルは500Gで販
   assert.deepEqual(M.MARKET_CATALOG.map((c) => [c.key, c.status, c.price ?? null]), [['solamo', 'sale', 500], ['gauru', 'sale', 500], ['nobiton', 'waiting', null]]);
   assert.ok(!M.MARKET_CATALOG.some((c) => c.key === 'jiol'), 'ジオルはカルーセル・シルエット・入荷待ちのどれにも出さない');
   for (const c of M.MARKET_CATALOG) assert.ok(!('lock' in c) && !('locked' in c) && !/lock/.test(c.status), 'ロック扱いの項目を持たない');
-  assert.deepEqual(M.ECONOMY, { initialGold: 300, marketPrice: 500 });
+  assert.deepEqual(M.ECONOMY, { initialGold: 0, marketPrice: 500 } /* 2026-10-06：新しいゲームは 0G・登録の新人支援で 1000G */);
   assert.ok(M.byKey('jiol'), 'ジオルは正式マスターには登録済み');
 });
 
@@ -210,7 +210,7 @@ const between = (a, b) => { const i = HTML.indexOf(a), k = HTML.indexOf(b, i + a
 test('M4-1：新規ゲームの初期所持金は300G（既存セーブの所持金は変えない）', () => {
   const { P8, M } = load();
   const p10NewSave = new Function('MMP8', 'MMP10M', `${line('function p10NewSave(')}\nreturn p10NewSave;`)(P8, M);
-  assert.equal(p10NewSave().g, 300); assert.equal(p10NewSave().v, 6);
+  assert.equal(p10NewSave().g, 0, '2026-10-06：新しいゲームは 0G（登録の新人支援で 1000G）'); assert.equal(p10NewSave().v, 6);
   assert.match(HTML, /let S=P8_LOAD\.S\|\|p10NewSave\(\),sel=\[\],ht="t";/); assert.match(HTML, /if\(P_NEWGAME\)\{P_NEWGAME=false;sel=\[\];S=p10NewSave\(\);save\(\)\}p8Resume\(\)/, 'はじめから（リセット）も300G（2026-10-03：タイトルで実際に始めたときに初期化）');
   const st = store({ mr4v6: JSON.stringify({ ...P8.newSave(), g: 4321 }) });
   assert.equal(P8.loadFromStorage(st).S.g, 4321, '既存セーブの所持金はそのまま');

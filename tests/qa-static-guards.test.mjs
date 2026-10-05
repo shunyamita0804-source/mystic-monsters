@@ -356,12 +356,12 @@ test('QA-C1：原種4体の種族ID・番号・名前・種族・6能力・素�
   for (const sp of [0, 1]) { const m = mk(sp); assert.deepEqual([m.name, M.STAT_KEYS.map((k) => m[k]), m.speed], [TABLE[sp][2], TABLE[sp][4], TABLE[sp][5]], `mk(${sp})`); }
 });
 
-test('QA-C2：新規ゲームの所持金は300G（p10NewSave）、セーブは version 6', () => {
+test('QA-C2：新規ゲームの所持金は0G（p10NewSave。2026-10-06：登録の新人支援で 1000G）、セーブは version 6', () => {
   const { P8, M } = load();
-  assert.deepEqual({ ...M.ECONOMY }, { initialGold: 300, marketPrice: 500 });
+  assert.deepEqual({ ...M.ECONOMY }, { initialGold: 0, marketPrice: 500 } /* 2026-10-06：新しいゲームは 0G・登録の新人支援で 1000G */);
   const p10NewSave = new Function('MMP8', 'MMP10M', `${lineOf(HTML, 'function p10NewSave(')}\nreturn p10NewSave;`)(P8, M);
   const S = p10NewSave();
-  assert.deepEqual([S.g, S.v, S.m, S.box.length], [300, 6, null, 0]);
+  assert.deepEqual([S.g, S.v, S.m, S.box.length], [0, 6, null, 0]);   // 2026-10-06：新しいゲームは 0G（登録の新人支援で 1000G）
   // MMP8.newSave() の所持金は旧来の既定値のままなので、index.html で新しいセーブを作るのは必ず p10NewSave を通す
   const raw = [...CODE.matchAll(/MMP[78]\.newSave\(/g)].map((m) => enclosingFn(CODE, m.index));
   assert.deepEqual(raw, ['p10NewSave'], 'MMP8/MMP7.newSave を直接呼ぶのは p10NewSave の中だけ');

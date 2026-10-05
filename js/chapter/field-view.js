@@ -1229,7 +1229,7 @@
     const m = gS() && gS().m; if (!chfActive(m) || busyGet() || P8().boardPhase(m) !== 'roll') return;
     const bag = (gS().inv && gS().inv.bag) || [], list = bag.map((it, i) => ({ it, i, eff: MMCH.fatigueItemEffect(it.id) })).filter((x) => x.eff);
     const ui = $('#chf-ui'); if (!ui) return; chfItemsClose();
-    const nm = (id) => (root.p7ItemName ? root.p7ItemName({ id }) : id);
+    const nm = (id) => { const d = root.MMP7 && root.MMP7.getItemDef(id); return d ? d.name : id; };   // 2026-10-06：p7ItemName は index.html の const（window には無い）＝アイテムの名前は MMP7 の登録から
     ui.insertAdjacentHTML('beforeend', `<div class="chsheet chitems" id="chitems"><h3>アイテム</h3>${list.length ? list.map((x) => `<button class="p9btn2" onclick="chfItemUse(${x.i})">${esc(nm(x.it.id))}<small>${x.eff.full ? '疲れ 全回復' : `疲れ −${x.eff.amount}`}</small></button>`).join('') : '<p class="p9s">疲れを回復できるアイテムを持っていません。</p>'}<button class="p9btn2" onclick="chfItemsClose()">閉じる</button></div>`);
   }
   function chfItemsClose() { const d = $('#chitems'); if (d) d.remove(); }

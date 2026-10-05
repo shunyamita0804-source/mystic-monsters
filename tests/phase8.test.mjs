@@ -128,7 +128,7 @@ test('S2-7：自分より新しい版のセーブは読み込まず・何も書�
   assert.equal(JSON.stringify(st.s), before, '元データを一切変更しない');
   assert.equal(P8.migrateSave({ v: 7, box: [] }), null);
   const saveLine = fnLine('function save(){');
-  assert.match(saveLine, /^function save\(\)\{if\(P8_LOAD\.locked\)return;/);
+  assert.match(saveLine, /^function save\(\)\{if\(P8_LOAD\.locked(\|\|TEST_TOUR)?\)return;/);   // 2026-10-06：TEST 大会の間も保存しない
   assert.match(saveLine, /MMP8\.SAVE_KEY/); assert.doesNotMatch(saveLine, /"mr4"/, 'v6を旧キーへ書かない');
 });
 
