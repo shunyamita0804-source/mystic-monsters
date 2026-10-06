@@ -148,7 +148,8 @@
     battleTypes: {
       wild: { label: '野生のモンスター', asset: 'battle_wild' },
       strong: { label: '強敵', asset: 'battle_strong' },
-      rival: { label: 'ライバル', asset: 'battle_rival', figure: null },
+      rival: { label: 'ライバルのリュウ', name: 'リュウ', asset: 'battle_rival', figure: null, encounterFigure: 'rival_ryu', encounterPartner: 'rival_regnas', encounter: 'リュウが立ちはだかった！', tone: 'rival', noRustle: true,   // 2026-10-06 重大修正：リュウ（各 Chapter に登場する同一人物）の相棒はレグナス＝Chapter 1 と同じ遭遇の画面（リュウ＋レグナス）
+        note: 'リュウの相棒は、今のこの子と同じくらいの強さみたい。' },
     },
     companion: { npc: 'fina', reactions: {} },
     assets: {
@@ -156,7 +157,7 @@
       stat_hi: C1 + 'nodes/stat_accuracy.webp', stat_ev: C1 + 'nodes/stat_evasion.webp', stat_de: C1 + 'nodes/stat_toughness.webp',
       event_normal: C1 + 'nodes/event_normal.webp', event_rare: C1 + 'nodes/event_rare.webp', event_special: C1 + 'nodes/event_special.webp',
       treasure_normal: C1 + 'nodes/treasure_normal.webp', treasure_rare: C1 + 'nodes/treasure_rare.webp', treasure_special: C1 + 'nodes/treasure_special.webp',
-      battle_wild: C1 + 'nodes/battle_wild.webp', battle_rival: C1 + 'nodes/battle_rival.webp', battle_strong: C1 + 'nodes/battle_wild.webp',
+      battle_wild: C1 + 'nodes/battle_wild.webp', battle_rival: C1 + 'nodes/battle_rival.webp', battle_strong: C1 + 'nodes/battle_wild.webp', rival_ryu: './assets/npc/ryu/ryu_official_fullbody.webp', rival_regnas: './assets/monsters/regnas/regnas_official.webp',
       grass_front: C1 + 'env/grass_flower_border.webp',
     },
     nodeLook: {

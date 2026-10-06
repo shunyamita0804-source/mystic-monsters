@@ -446,13 +446,13 @@ test('AUDIO-26：2026-10-04 正式の開始音（TITLE_START）：最初のタ�
 test('AUDIO-27：2026-10-06 正式音源（ユーザー提供・ゲームの所有素材）：TITLE・PROLOGUE（ループしない）の BGM と正式 SE 15種。サイコロは1ロール1回・宝箱は段階ごとに1つ・野生／レア／ライバルは別の音・旧い音を重ねない', async () => {
   const { got } = loadRegistry(), MMB = './assets/audio/bgm/mystic_monsters_official/', MMO = './assets/audio/se/mystic_monsters_official/';
   assert.deepEqual(got.bgm.TITLE, { silent: true }, '2026-10-05 PHASE B：開始画面に BGM は無い');
-  assert.deepEqual(got.bgm.PROLOGUE, { src: MMB + 'mystic_monsters_prologue_bgm_official.ogg?v=v6', gain: 0.64, loop: false }, 'プロローグは正式 v6（38.714秒）');
+  assert.deepEqual(got.bgm.PROLOGUE, { silent: true }, '2026-10-06 重大修正：プロローグ BGM は削除（プツプツ鳴る）');
   assert.deepEqual(got.se.TITLE_START, { src: MMO + 'title_start.ogg', gain: 0.8 }, '開始の音はそのまま');
   const want = { DICE_THROW: '01_dice_large_full', TRAINING_ITEM_SPAWN: '02_training_item_spawn', MARKET_PURCHASE: '03_market_purchase_confirm', TRAINING_SUCCESS: '04_training_success', MONSTER_ENTRY: '05_small_monster_entry_steps_4step',
     WILD_ALERT: '06_encounter_wild', RARE_ALERT: '07_encounter_rare', RIVAL_APPEAR: '08_encounter_rival', TREASURE_TIER_1: '09_treasure_open_tier1', TREASURE_TIER_2: '10_treasure_open_tier2', TREASURE_TIER_3: '11_treasure_open_tier3', TREASURE_TIER_4: '12_treasure_open_tier4',
     REST_RECOVER: '13_rest_recover', EVENT_TRIGGER: '14_event_trigger', BRANCH_SELECT: '15_branch_select' };
   for (const [k, f] of Object.entries(want)) { assert.equal(srcsOf(got.se[k])[0], MMO + f + '.ogg', k); assert.ok(got.se[k].gain > 0.5 && got.se[k].gain <= 1.2, `${k} の gain`); assert.ok(existsSync(path.join(ROOT, MMO, f + '.ogg')), f); }
-  for (const f of ['mystic_monsters_prologue_bgm_official', 'mystic_monsters_bureau_bgm_official']) assert.ok(existsSync(path.join(ROOT, MMB, f + '.ogg')), f);
+  assert.ok(existsSync(path.join(ROOT, MMB, 'mystic_monsters_bureau_bgm_official.ogg'))); assert.ok(!existsSync(path.join(ROOT, MMB, 'mystic_monsters_prologue_bgm_official.ogg')), '2026-10-06：プロローグ BGM のファイルは置かない');
   assert.ok(!existsSync(path.join(ROOT, MMB, 'mystic_monsters_title_theme_official.ogg')), '旧タイトル曲は置かない（読み込まない）');
   for (const k of ['DICE_LAND', 'DICE_ROLL', 'DICE_STOP', 'STEP']) assert.deepEqual(got.se[k], { silent: true }, `${k}：完成 SE と重ねない`);
   assert.ok(!existsSync(path.join(ROOT, 'assets/audio/bgm/pgs_fantasy_rpg/event_music_1.ogg')) && !existsSync(path.join(ROOT, 'assets/audio/se/alkakrab_fantasy_rpg_vol3/fx_3.ogg')), '使わなくなった旧い音源は置かない');
@@ -498,4 +498,27 @@ test('AUDIO-28：2026-10-05 試遊（Chapter のフィールド BGM が途切れ
   const reg = R.bgm || R.BGM || {}; for (const k of ['CHAPTER_1', 'CHAPTER_2', 'CHAPTER_3', 'CHAPTER_4']) assert.equal(reg[k] && reg[k].buffer, true, k);
   assert.match(HTML, /navigator\.audioSession\.type!="playback"/, 'audioSession はタップのたびに設定し直さない');
   void w;
+});
+
+test('AUDIO-29：2026-10-06 重大修正（iOS）：アラームなどで AudioContext が止められた（interrupted）→ 表に戻る・pageshow・focus・次の操作で resume し、今の曲だけを続きから（二重に鳴らない）。ミュート・音量はそのまま。動かなければ操作の中で suspend → resume をやり直し、無音の1音も鳴らし直す', async () => {
+  const { A, log, doc } = env(); legacySpy(A); BGM(A, 'TOWN', './bgm/town.ogg');
+  A.unlock(); A.scene('TOWN'); await tick(20);
+  A.setVolume('bgm', 0.4); A.setMuted(true);
+  const c = A.context(), el = log.audios.find((x) => x.src === './bgm/town.ogg'), plays0 = el.plays;
+  // システムが止める（アラーム）：ページは隠れない・<audio> も止まる
+  c.state = 'interrupted'; c.onstatechange(); el.paused = true;
+  assert.equal(A.status().interrupted, true);
+  A.wake(); await tick(5);
+  assert.equal(c.state, 'running', 'resume'); assert.equal(el.plays, plays0 + 1, '今の曲を続きから（1回だけ）'); assert.equal(active(A).length, 1, '新しい曲を始めない＝二重に鳴らない');
+  assert.equal(A.status().muted, true, 'ミュートはそのまま'); assert.equal(A.status().volume.bgm, 0.4, '音量はそのまま'); assert.equal(A.status().interrupted, false);
+  // resume しても動かない（iOS）→ 次の操作で suspend → resume をやり直す・無音の1音を鳴らし直す
+  let stuck = 1; c.resume = function () { if (stuck-- > 0) { this.state = 'interrupted'; return Promise.resolve(); } this.state = 'running'; return Promise.resolve(); };
+  let ticks = 0; const mk = c.createBufferSource.bind(c); c.createBufferSource = () => { const n = mk(); const st = n.start; n.start = () => { if (n.buffer && n.buffer.length === 1) ticks++; st(); }; return n; };
+  c.state = 'interrupted'; c.onstatechange();
+  A.unlock(); await tick(300);
+  assert.equal(c.state, 'running', '操作の中でやり直して戻る'); assert.equal(ticks, 1, '無音の1音を鳴らし直す（iOS は操作の中で音を始めないと戻らない）');
+  // 自分で裏に回って止めた suspend は中断として数えない
+  doc.hidden = true; doc.emit('visibilitychange'); c.onstatechange(); assert.equal(A.status().interrupted, false);
+  doc.hidden = false; doc.emit('visibilitychange'); await tick(5); assert.equal(c.state, 'running');
+  const src = rd('js/audio/audio-manager.js'); assert.match(src, /root\.addEventListener\('pageshow'/); assert.match(src, /root\.addEventListener\('focus', \(\) => wake\(\)\)/);
 });

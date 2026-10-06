@@ -75,13 +75,10 @@ for (const size of [[390, 844], [375, 667]]) {
     const ev = await pg.evaluate(() => { clearInterval(window.__scTimer); return window.__ev; });
     const at = (k) => ev.find((e) => e[0] === k), b1 = at('bg01');
     assert.ok(b1, 'Scene 1');
-    const pre = ev.filter((e) => e[1] < b1[1] && e[0] === 'scene:PROLOGUE');
-    assert.equal(pre.length, 0, 'Scene 1 より前（背景の読み込み待ち）に PROLOGUE の BGM は始まらない');
-    const pS = at('scene:PROLOGUE'); assert.ok(pS && pS[1] - b1[1] < 400, `PROLOGUE は Scene 1 と同時に始まる（${pS ? Math.round(pS[1] - b1[1]) : '-'}ms）`);
+    assert.ok(ev.every((e) => e[2] == null), '2026-10-06 重大修正：プロローグの間 PROLOGUE の BGM は鳴らない（位置が無い）');
     for (const [k, want] of [['bg02', 5.559], ['bg03', 15.161], ['bg04', 26.673]]) {
       const e = at(k); assert.ok(e, k); const t = (e[1] - b1[1]) / 1000;
       assert.ok(Math.abs(t - want) < 0.35, `${k} は Scene 1 から ${want}秒（実測 ${t.toFixed(3)}秒・タップで早まらない）`);
-      if (e[2] != null) assert.ok(Math.abs(e[2] - want) < 0.25, `${k} のとき BGM は ${want}秒の位置（実測 ${e[2].toFixed(3)}）`);
     }
     const order = seen.map((x) => x.bg).filter((b, i, a) => a[i - 1] !== b);
     assert.deepEqual(order, ['01', '02', '03', '04'], '背景は 1 共存 → 2 異変 → 3 三人のレジェンド → 4 ミストリア到着の順');
@@ -90,7 +87,7 @@ for (const size of [[390, 844], [375, 667]]) {
     assert.equal(await pg.evaluate(() => MMAUDIO.status().scene), 'TITLE', 'プロローグのあとは PROLOGUE の BGM を残さない（自動テストの既定の名前登録の画面＝開始画面と同じ無音）');
     assert.equal(await pg.evaluate(() => MMAUDIO.status().slots.filter((x) => x.active).length), 0, 'ファイルの BGM は鳴っていない');
     const last = ev.filter((e) => /^bg/.test(e[0])).pop(), pr = await pg.evaluate(() => [...new Set(performance.getEntriesByType('resource').map((r) => r.name).filter((n) => /mystic_monsters_official\/.*\.ogg/.test(n)))]);
-    assert.ok(pr.every((n) => !/title_theme/.test(n)) && pr.some((n) => /prologue_bgm_official\.ogg\?v=v6$/.test(n)), `旧タイトル曲は読み込まない・プロローグは v6（${pr.join(' ')}）`);
+    assert.ok(pr.every((n) => !/title_theme|prologue_bgm/.test(n)), `旧タイトル曲・プロローグ BGM（2026-10-06 削除）は読み込まない（${pr.join(' ')}）`);
     assert.ok(last && last[0] === 'bg04');
     assert.equal((await H.storedSave(pg)).npcFlags.prologue, 1, '最後まで見た＝見た記録を保存');
     await pg.reload(); await pg.waitForFunction(() => typeof window.MMP8 === 'object');
@@ -128,7 +125,7 @@ T('PRO-B5：まっさらな保存領域（データを全部消したあとの�
   await pg.evaluate(() => { const mo = new MutationObserver(() => { const b = document.querySelector('.mmpro .mmpro-skip'); if (b && window.__skip0 == null) { window.__skip0 = [b.disabled, MMPRO.clock()]; mo.disconnect(); } }); mo.observe(document.body, { childList: true, subtree: true }); });
   await pg.click('.p15start');
   await pg.waitForSelector('.mmpro', { timeout: 20000 });
-  assert.deepEqual(await pg.evaluate(() => window.__skip0), [true, null], 'プロローグが出た時点（Scene 1 の時計の前）はスキップを押せない');
+  { const s0 = await pg.evaluate(() => window.__skip0); assert.ok(s0[1] == null ? s0[0] === true : s0[1] < 1000, `Scene 1 の時計が動く前はスキップを押せない（2026-10-06：BGM を待たないので時計はすぐ動く）${JSON.stringify(s0)}`); }
   await proStart(pg); await pg.waitForTimeout(2500);
   assert.equal(await pg.evaluate(() => document.querySelector('.mmpro-skip').disabled), false);
   // 途中で強制終了 → 「見た」にならない

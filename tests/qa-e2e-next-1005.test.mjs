@@ -253,24 +253,24 @@ T('PRO-B3（S-2）：プロローグの途中でアプリが裏に回ったら�
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
-T('PRO-B4（2026-10-06）：プロローグの途中で裏に回って戻る → 映像と PROLOGUE BGM は同じ時間軸で止まって続きから（Scene 3 に切り替わる瞬間の BGM の位置が 15.161秒（正式 v6）からずれない）。BGM はループしない', async () => {
+T('PRO-B4（2026-10-06）：プロローグの途中で裏に回って戻る → 映像の時計は止まって続きから（Scene 3 は時計の 15.161秒）。2026-10-06 重大修正：プロローグ BGM は鳴らない（裏から戻っても鳴り出さない）', async () => {
   const p = await openPage({ opening: true, prologue: true }); const pg = p.page;
-  await pg.evaluate(() => { window.__bg = []; new MutationObserver(() => { const on = document.querySelector('.mmpro .mmpro-bg.on'); const k = on ? (/prologue_(\d\d)/.exec(on.style.backgroundImage) || [])[1] : null; if (k && k !== window.__last) { window.__last = k; window.__bg.push([k, performance.now(), window.MMAUDIO ? MMAUDIO.bgmTime('PROLOGUE') : null]); } }).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'style'] }); });
+  await pg.evaluate(() => { window.__bg = []; new MutationObserver(() => { const on = document.querySelector('.mmpro .mmpro-bg.on'); const k = on ? (/prologue_(\d\d)/.exec(on.style.backgroundImage) || [])[1] : null; if (k && k !== window.__last) { window.__last = k; window.__bg.push([k, performance.now(), window.MMPRO ? MMPRO.clock() : null]); } }).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'style'] }); });
   await pg.click('.p15start');
   await pg.waitForFunction(() => (window.__bg || []).some((x) => x[0] === '02'), null, { timeout: 30000 });
   await pg.waitForTimeout(1500);
   await pg.evaluate(() => { window.__hid = true; Object.defineProperty(document, 'hidden', { configurable: true, get: () => !!window.__hid }); document.dispatchEvent(new Event('visibilitychange')); });
   await pg.waitForTimeout(500);
-  const hid = await pg.evaluate(() => ({ t: MMAUDIO.status().slots.find((x) => x.active).time, paused: MMAUDIO.status().slots.find((x) => x.active).paused, bg: window.__last }));
+  const hid = await pg.evaluate(() => ({ c: MMPRO.clock(), bg: window.__last }));
   await pg.waitForTimeout(5000);
-  const still = await pg.evaluate(() => ({ t: MMAUDIO.status().slots.find((x) => x.active).time, bg: window.__last }));
-  assert.ok(hid.paused && Math.abs(still.t - hid.t) < 0.05 && still.bg === hid.bg, `裏の間は BGM も映像も進まない ${JSON.stringify([hid, still])}`);
+  const still = await pg.evaluate(() => ({ c: MMPRO.clock(), bg: window.__last }));
+  assert.ok(Math.abs(still.c - hid.c) < 60 && still.bg === hid.bg, `裏の間は映像が進まない ${JSON.stringify([hid, still])}`);
   await pg.evaluate(() => { window.__hid = false; document.dispatchEvent(new Event('visibilitychange')); });
   await pg.waitForFunction(() => (window.__bg || []).some((x) => x[0] === '03'), null, { timeout: 30000 });
   const e3 = await pg.evaluate(() => window.__bg.find((x) => x[0] === '03'));
-  assert.ok(e3[2] != null && Math.abs(e3[2] - 15.161) < 0.25, `戻ったあとも Scene 3 は BGM の 15.161秒（実測 ${e3[2]}）`);
-  const loop = await pg.evaluate(() => { const r = MMAUDIO.registryOf('bgm').PROLOGUE; return [r.loop, MMAUDIO.status().slots.find((x) => x.active && /prologue_bgm/.test(x.src || '')) ? true : false]; });
-  assert.deepEqual(loop, [false, true], 'PROLOGUE は1回だけ（ループしない）');
+  assert.ok(e3[2] != null && Math.abs(e3[2] - 15161) < 300, `戻ったあとも Scene 3 は時計の 15.161秒（実測 ${e3[2]}）`);
+  const a = await pg.evaluate(() => ({ active: MMAUDIO.status().slots.filter((x) => x.active).length, pro: MMAUDIO.registryOf('bgm').PROLOGUE.silent, t: MMAUDIO.bgmTime('PROLOGUE') }));
+  assert.deepEqual(a, { active: 0, pro: true, t: null }, 'プロローグ BGM は鳴らない');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 

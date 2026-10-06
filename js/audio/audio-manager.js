@@ -119,6 +119,9 @@
     const C = root.AudioContext || root.webkitAudioContext; if (!C) { st.webAudio = false; return null; }
     let c; try { c = new C(); } catch (e) { note('ctx', e); st.webAudio = false; return null; }
     st.ctx = c; st.webAudio = true;
+    // 2026-10-06 重大修正（iOS）：アラーム・電話などで AudioContext が止められる（'interrupted'／自分で止めていない 'suspended'）。
+    //  気づいた印を付け、次の目覚め（表に戻る・pageshow・focus・次の操作）で resume し、次の操作では無音の1音を鳴らし直す（iOS は操作の中で音を始めないと戻らない）
+    try { c.onstatechange = () => { if (c.state === 'interrupted' || (c.state === 'suspended' && !st.hidden && !st.selfSuspend)) { st.interrupted = true; st.ticked = false; } else if (c.state === 'running') st.interrupted = false; }; } catch (e) {}
     try {
       st.master = c.createGain(); st.master.gain.value = isMuted() ? 0 : 1; st.master.connect(c.destination);
       st.bgmGain = c.createGain(); st.bgmGain.gain.value = st.vol.bgm; st.bgmGain.connect(st.master);
@@ -461,6 +464,7 @@
     if (c) {
       if (c.state !== 'running') { st.resuming = true; try { const p = c.resume(); const done = () => { st.resuming = false; }; if (p && p.then) p.then(done, (e) => { done(); note('resume', e); }); else done(); } catch (e) { st.resuming = false; note('resume', e); } }
       if (!st.ticked) { st.ticked = true; try { const b = c.createBuffer(1, 1, 22050), n = c.createBufferSource(); n.buffer = b; n.connect(st.master || c.destination); n.start(0); } catch (e) {} }
+      if (st.interrupted) reviveContext(c);
       for (const n of Object.keys(SEF)) decodeSe(n);
     }
     primeSlots();
@@ -471,19 +475,34 @@
   function onVisibility() {
     const d = root.document; if (!d) return;
     st.hidden = !!d.hidden; const c = st.ctx;
-    if (st.hidden) { try { if (c && c.state === 'running') c.suspend(); } catch (e) {} for (const s of st.slots) if (s.active) { try { s.el.pause(); } catch (e) {} } return; }
-    try { if (c && c.state !== 'running') { const p = c.resume(); if (p && p.catch) p.catch(() => {}); } } catch (e) {}
-    const cur = st.cur; if (cur && cur.active && cur.el.paused && !(cur.el.ended && !cur.el.loop)) {   /* 2026-10-06：最後まで鳴り終えた1回きりの曲（プロローグ）を表に戻ったときに頭から鳴らし直さない */ try { const p = cur.el.play(); if (p && p.catch) p.catch(() => { st.pendingScene = cur.scene; }); } catch (e) { st.pendingScene = cur.scene; } }
+    if (st.hidden) { try { if (c && c.state === 'running') { st.selfSuspend = true; c.suspend(); } } catch (e) {} for (const s of st.slots) if (s.active) { try { s.el.pause(); } catch (e) {} } return; }
+    wake();
+  }
+  /** 2026-10-06 重大修正（iOS の音の中断からの復帰）：表に戻った・pageshow・focus で呼ぶ。止まっている AudioContext を resume し、今の場面の曲だけを続きから（新しく曲を始めない＝二重に鳴らない）。
+   *  ミュート・音量は Master／BGM／SE の GainNode のまま（触らない）。resume が操作の中でしか通らない iOS では、次の操作（unlock）でもう一度 */
+  function wake() {
+    if (st.hidden || !st.unlocked) return;
+    const c = st.ctx;
+    try { if (c && c.state !== 'running') { const p = c.resume(); if (p && p.then) p.then(() => { st.selfSuspend = false; if (c.state === 'running') st.interrupted = false; }, () => {}); } else { st.selfSuspend = false; st.interrupted = false; } } catch (e) {}
+    const cur = st.cur; if (cur && cur.active && cur.el.paused && !(cur.el.ended && !cur.el.loop)) {   /* 2026-10-06：最後まで鳴り終えた1回きりの曲を表に戻ったときに頭から鳴らし直さない */ try { const p = cur.el.play(); if (p && p.catch) p.catch(() => { st.pendingScene = cur.scene; }); } catch (e) { st.pendingScene = cur.scene; } }
+  }
+  /** 操作の中で呼ぶ：中断のあと resume しても動かない（iOS で 'interrupted' のまま・'suspended' に戻る）ときは、suspend → resume をやり直す。
+   *  それでも動かないときは、次の操作でもう一度（AudioContext・<audio> の作り直しはしない＝要素は1つの AudioContext にしかつなげない）。SE の AudioBuffer はそのまま使える */
+  function reviveContext(c) {
+    const ok = () => c.state === 'running';
+    const again = () => { if (ok()) { st.interrupted = false; return; } try { const s = c.suspend(); const r = () => { try { const p = c.resume(); if (p && p.then) p.then(() => { if (ok()) st.interrupted = false; }, () => {}); } catch (e) {} }; if (s && s.then) s.then(r, r); else r(); } catch (e) {} };
+    setTimeout(again, 120);
   }
   /** 今の状態（テスト・デバッグ用） */
   const status = () => ({ scene: st.scene, source: st.source, playing: !!(st.cur && st.cur.active) || !!(st.bb && st.bb.active) || st.source === 'legacy', buffer: st.bb && st.bb.active ? { src: st.bb.src, scene: st.bb.scene, pos: Math.round(bufPos(st.bb) * 100) / 100 } : null, plays: st.plays, volume: { ...st.vol }, muted: isMuted(), unlocked: st.unlocked,
-    webAudio: st.webAudio, context: st.ctx ? st.ctx.state : null, pendingScene: st.pendingScene, errors: [...st.errors], failed: Object.keys(st.failed),
+    webAudio: st.webAudio, context: st.ctx ? st.ctx.state : null, interrupted: !!st.interrupted, pendingScene: st.pendingScene, errors: [...st.errors], failed: Object.keys(st.failed),
     files: { bgm: Object.keys(BGM).filter((k) => BGM[k].srcs.length), se: Object.keys(SEF).filter((k) => !SEF[k].silent) }, inherits: Object.keys(BGM).filter((k) => !BGM[k].srcs.length && !BGM[k].silent),
     silent: { bgm: Object.keys(BGM).filter((k) => BGM[k].silent), se: Object.keys(SEF).filter((k) => SEF[k].silent) },
     se: Object.fromEntries(Object.keys(SEF).map((k) => [k, SEF[k].silent ? 'silent' : SEF[k].buffer ? 'ready' : (SEF[k].failed ? 'failed' : 'loading')])),
     slots: st.slots.map((s) => ({ i: s.i, src: s.src, scene: s.scene, active: s.active, paused: !!s.el.paused, loop: s.loopRange ? [s.loopRange.start, s.loopRange.end] : null, waiting: !!s.waiting, time: Number.isFinite(s.el.currentTime) ? Math.round(s.el.currentTime * 100) / 100 : null, gain: s.gain ? s.gain.gain.value : s.el.volume })) });
   const registryOf = (kind) => (kind === 'se' ? Object.fromEntries(Object.keys(SEF).map((k) => [k, { srcs: [...SEF[k].srcs], gain: SEF[k].gain, silent: !!SEF[k].silent, maxMs: SEF[k].maxMs }])) : Object.fromEntries(Object.keys(BGM).map((k) => [k, { ...BGM[k], srcs: [...BGM[k].srcs] }])));
 
-  root.MMAUDIO = fz({ SCENES, SCENE_ALIAS, SE, FADE, registerBgm, registerSe, registerAll, clearRegistry, registryOf, prefetchSe, prefetchBgm, resetBgmPos, attachLegacy, resolveScene, resolveBgm, scene, stopBgm, bgmTime, seekBgm, se, setVolume, setMuted, unlock, context, legacyInput, status, seLog: () => SE_LOG.slice() });
-  try { if (root.document) { ['pointerdown', 'touchend', 'keydown'].forEach((e) => root.document.addEventListener(e, unlock, { passive: true })); root.document.addEventListener('visibilitychange', onVisibility); } } catch (e) {}
+  root.MMAUDIO = fz({ SCENES, SCENE_ALIAS, SE, FADE, registerBgm, registerSe, registerAll, clearRegistry, registryOf, prefetchSe, prefetchBgm, resetBgmPos, attachLegacy, resolveScene, resolveBgm, scene, stopBgm, bgmTime, seekBgm, se, setVolume, setMuted, unlock, wake, context, legacyInput, status, seLog: () => SE_LOG.slice() });
+  try { if (root.document) { ['pointerdown', 'touchend', 'keydown'].forEach((e) => root.document.addEventListener(e, unlock, { passive: true })); root.document.addEventListener('visibilitychange', onVisibility); }
+    if (root.addEventListener) { root.addEventListener('pageshow', () => { st.hidden = !!(root.document && root.document.hidden); wake(); }); root.addEventListener('focus', () => wake()); } } catch (e) {}
 })(typeof window !== 'undefined' ? window : globalThis);

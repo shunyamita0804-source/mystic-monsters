@@ -28,7 +28,7 @@
   const BGM_REGISTRY = {
     // ---- 開始画面・街・施設 ----
     TITLE:      { silent: true },   // 2026-10-05 PHASE B 正式：開始画面に BGM は無い（無音で開始画面 → 開始の音 TITLE_START → Scene 1 でプロローグ BGM）。旧タイトル曲（mystic_monsters_title_theme_official.ogg）は廃止・ファイルも置かない
-    PROLOGUE:   { src: MMB + 'mystic_monsters_prologue_bgm_official.ogg?v=v6', gain: 0.64, loop: false },   // 2026-10-05 PHASE B 正式 v6（38.714秒・-14.1 LUFS → gain 0.64 で約 -18・ループしない・ほかの場面に使わない）。時刻表（Scene 2＝5.559秒・Scene 3＝15.161秒・Scene 4＝26.673秒・本文の終わり 36.276秒）は js/prologue/prologue.js の CUES。
+    PROLOGUE:   { silent: true },   // 2026-10-06 重大修正：プロローグの音がプツプツ鳴る＝プロローグ BGM は一旦削除（鳴らさない・合成音にも落とさない。ファイルも置かない）。プロローグの時刻表・本文・スキップは変えない
                                      //  旧 54.2秒版と同じファイル名なので ?v=v6 で端末のキャッシュ（旧い曲）を使わない
     BUREAU:     { src: MMB + 'mystic_monsters_bureau_bgm_official.ogg', gain: 0.46, loopStart: 0, loopEnd: 45.7, loopXfade: 0.25 },   // 2026-10-05 PHASE B 正式 v6：聖獣士管理局（46.0秒・-13.2 LUFS → gain 0.46 で約 -20＝会話が聞き取れる音量）。終わりの短いフェードの前で頭へ戻してループ
     TOWN:       { src: HG + '02_lively_city.ogg', gain: 0.62 },     // 2026-10-03 第5弾の仮採用：HydroGene「Lively City」65秒・明るい長調（第4弾で NG の Tranquil Radiance は使わない）

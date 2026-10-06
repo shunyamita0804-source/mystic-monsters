@@ -7,6 +7,9 @@
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon-v2.PNG?v=soramo-20260928">
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon.png?v=soramo-20260928">
 <style>
+/* 2026-10-06 重大修正：ダブルタップでズームしない（iPhone Safari）。manipulation＝タップ・スクロール・ピンチは残し、ダブルタップのズームだけ止める。
+   個別に none／pan-y を指定した要素（市場のカルーセル・会話など）はその指定のまま（* の詳細度は 0） */
+html,body,*{touch-action:manipulation}
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#fff6e4;--fg:#2a2340;--card:#fffdf7;--line:#2a2340;--acc:#5b3df5;--mut:#7a7290;--hp:#2fbf71}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1a1626;--fg:#f3eeff;--card:#251f38;--line:#f3eeff;--acc:#9b86ff;--mut:#a89fc4;--hp:#4fd68c}}
 :root[data-theme="dark"]{--bg:#1a1626;--fg:#f3eeff;--card:#251f38;--line:#f3eeff;--acc:#9b86ff;--mut:#a89fc4;--hp:#4fd68c}
@@ -3505,7 +3508,7 @@ const OPEN_TALK={
 function proBgmStart(){const A=window.MMAUDIO;if(!A)return null;A.scene("PROLOGUE",{fade:"none"});const t0=Date.now();
  return new Promise(r=>{const f=()=>{const t=A.bgmTime("PROLOGUE");if((t!=null&&t>0)||Date.now()-t0>1500||A.status().source!=="file")return r(t);setTimeout(f,10)};f()})}
 function proPlay(cv){const A=window.MMAUDIO;if(A)A.stopBgm({fade:"normal"});
- return Promise.all([MMPRO.readyOrTimeout(6000),new Promise(r=>setTimeout(r,A?750:0))]).then(()=>MMPRO.play({cover:cv,onStart:proBgmStart,audioTime:()=>A?A.bgmTime("PROLOGUE"):null,seek:t=>A&&A.seekBgm(t,"PROLOGUE")}))
+ return Promise.all([MMPRO.readyOrTimeout(6000),new Promise(r=>setTimeout(r,A?750:0))]).then(()=>MMPRO.play({cover:cv})) /* 2026-10-06 重大修正：プロローグ BGM は削除（鳴らさない）＝onStart・BGM との位置合わせは渡さない。時刻表（固定尺）・本文・スキップは従来どおり */
   .then(ok=>{if(A&&A.status().scene==="PROLOGUE")A.stopBgm({fade:"normal"});return ok})}
 function opPrologue(msg){P11_PRO.add(S);$("#app").innerHTML="";const cv=document.createElement("div");cv.className="p11cover";document.body.appendChild(cv);
  proPlay(cv).then(ok=>{cv.remove();if(ok){finaFlags().prologue=1;save()}}).catch(()=>cv.remove()).then(()=>lobby(msg))}
