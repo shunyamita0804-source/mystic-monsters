@@ -56,7 +56,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 | assets/tournament/rank_ui/ | **大会ランク選択の正式画像（2026-10-05 夜・2）**：rank_available_E〜S（参加可能）・rank_unavailable_E〜S（参加不可＝鎖と錠）。index.html の P9_RANK_IMG・p9RankRow。README.md に元ファイル・sha256 |
 | assets/town/nameplate/ | **街の名札「ミストリア」の正式画像（2026-10-05 夜・2）**：mistria_nameplate.webp。index.html の TOWN_NAMEPLATE・lobby の .tcity。README.md |
 | assets/ui/a_group/ | **共通UI A群の一部（2026-10-05 夜・2）**：a04_main_button_red（ベースキャンプの「出発する」）・a05_currency_panel（ベースキャンプ・アイテム屋の所持金）。ほかの部品は素材待ち（市松模様の焼き込み・元 PNG は 403）。README.md |
-| assets/ui/b_group/ | **共通UI B群（＋A2・A3）の一部（2026-10-06）**：ZIP mismon_UI_A2／A3／B1〜B3_prepared（75枚・RGB＝市松模様の焼き込み）のうち、安全に透過できて用途がはっきりした9枚（B-02 プレイヤーの札・B-04 セーブのスロット・B-06 ロード不可・B-13 研究所の3つ・B-14 牧場の枠・B-15 牧場の4つ・B-23 固有スキルの枠・B-44／B-45 市場の矢印）。A-20・A-22（セーブ・ロード）は assets/ui/a_group/。README.md に元ファイル・sha256・使っていない部品と理由 |
+| assets/ui/a_group/、assets/ui/b_group/ | **共通UI A群・B群の正式部品（2026-10-06 第1弾・第2弾。正本は PNG＝可逆の PNG のまま表示の約2倍へ縮小。JPEG・WebP にしない。A-04・A-05 だけ 10-05 の WebP）**：施設名ラベル B-01・プレイヤーの札 B-02・プロフィール行 B-03・セーブのスロット B-04／A-20／A-22／B-06・オートセーブ B-07・バックアップ B-08・Chapter のリボン B-09・市場のドット B-11／B-12・研究所の3つ B-13・牧場 B-14／B-15・冒険の進行ヘッダー B-20・冒険のメニュー B-22・固有スキル B-23・能力バーの色 B-26〜B-31・未習得の技 B-37・ステータスの丸 B-43・市場の矢印 B-44／B-45・赤 B-49・押せない B-50・お知らせ B-51・羊皮紙 A-17・青 A-19。README.md（b_group）に元ファイル・sha256・使っていない部品と理由 |
 | assets/monsters/regnas/moves/ | **レグナスの技の演出素材（2026-10-05 夜・2）**：poses/ 11枚・fx/ 10枚（11_claw_slash_medium・12_claw_slash_large は市松模様が焼き込まれていて使わない）。README.md に技との対応・sha256 |
 | assets/basecamp/ | **ベースキャンプ（旧ファーム）の正式背景マスター basecamp_main.webp（2026-10-04 PHASE H2。768×1360・UI・NPC・モンスターなし。ZIP mystic-monsters_new_designs_2026-10-04_v2 の 06。README.md）**。index.html の BC_BG |
 | assets/bureau/ | **聖獣士管理局の正式背景マスター bureau_main.webp（2026-10-04 PHASE H4。864×1536・UI・セルジュなし。同じ ZIP の 05。README.md）**。index.html の BUREAU_BG（管理局・聖獣士登録の共通背景） |
@@ -465,12 +465,23 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - **共通UI A群**：安全に透過できた2点だけ適用（A-04 赤の主ボタン＝ベースキャンプの「出発する」、A-05 所持金のパネル＝ベースキャンプ・アイテム屋）。ほかは素材待ち（assets/ui/a_group/README.md）。元の PNG の URL は 403。
 - テスト：tests/rival-partner-1005.test.mjs（RP-01〜06）、実ブラウザ tests/qa-e2e-rival-1005.test.mjs（RV-B1／B1b／B2）・tests/qa-e2e-ui-1005.test.mjs（UI-B1〜B3）。RK-03・PB-10・TN-01・N6-07・TR-08・JR-6・PB-B4 を新しい素材に合わせて書き直し
 
-### 共通UI の正式素材（2026-10-06。いまの正式。基準 a4fb03a への差分）
+### 共通UI の正式素材（2026-10-06 第1弾。基準 a4fb03a への差分。**下の「重大修正と共通UI 第2弾」が優先**＝WebP は PNG に置き換え・「使っていない」の一部は第2弾で採用）
 
 - 受け取った ZIP mismon_UI_A2／A3／B1／B2／B3_prepared（A-13〜A-36・B-01〜B-51 の75枚）は**すべて RGB＝市松模様が画素として焼き込まれている**。外周から続く彩度の低い明るい画素（市松模様と外側の淡い光）だけを透明にし、縁を元の 8px（表示で約1px）内側へ。目視で市松模様・白い縁が残らないものだけを採用（assets/ui/b_group/README.md）。
 - **ユーザーの選択＝「対応が明確な画面に適用」**：セーブ／ロード（スロット B-04・右の四角＝そのスロットの連れている子の正式画像・セーブ A-20・ロード A-22・空きスロットのロード B-06）、プロフィール（プレイヤーの札 B-02＝丸の中に顔・右に名前。行は従来のまま）、牧場（下の4つ B-15＝見る・名前変更・預ける／受け取る・売る（赤）・一覧の枠 B-14＝border-image の外枠だけ）、ステータス（固有スキルの枠 B-23＝border-image・点線は round）、研究所（下の3つ B-13）、市場（左右の矢印 B-45／B-44）。画像は縦横比のまま（背景 100% 100%＋同じ aspect-ratio、または border-image）・文字とアイコンは HTML・押せる範囲は従来のボタン・処理と遷移は変えていない。プロフィールは低い画面で器の中だけスクロール。
 - **使っていない**：透過できない（光の白・中の市松模様）＝A-14・A-19・A-21・A-27・A-32・A-34・A-35・B-05・B-07・B-08・B-11・B-16・B-18・B-20・B-35・B-37・B-42／見本の中身が焼き込まれている＝B-17・B-24・B-26〜B-32（能力バーの長さが固定）・B-36・B-38／空いた枠に入れるアイコンが無い＝B-03（プロフィールの行）／使う場所の判断が要る＝そのほか（Chapter の操作欄 B-21 は正式の deck 画像のまま）。
 - テスト：tests/ui-b-1006.test.mjs（UB-01〜02）・実ブラウザ tests/qa-e2e-ui-b-1006.test.mjs（UB-B1＝4サイズ×6画面・UB-B2＝画像の上のボタンが押せる）。セーブ画面の「ロード」の saturate の filter（色を変える）は消した（画像の色を変えない）
+
+### 重大修正と共通UI 第2弾（2026-10-06・2。いまの正式。基準 83a3bcb への差分）
+
+- **ダブルタップでズームしない**：index.html の `<style>` の先頭で `html,body,*{touch-action:manipulation}`（ダブルタップのズームだけ止める。タップ・スクロール・横スワイプ・ピンチは従来どおり）。viewport の maximum-scale・user-scalable は変えていない（ピンチで拡大できる）。iPhone 実機の最終確認はユーザー
+- **プロローグ BGM を削除**（プツプツ鳴るため）：js/audio/audio-registry.js の PROLOGUE＝{ silent:true }・ファイル mystic_monsters_prologue_bgm_official.ogg は削除・index.html の proPlay は BGM を鳴らさない（proBgmStart は残るが呼ばない）。プロローグの時刻表（MMPRO.CUES）・本文・スキップ（2度押し）・見た記録・裏に回ったときの止まり方は変えていない。開始画面は従来どおり無音・開始の音 TITLE_START はそのまま
+- **iOS で外部の音（アラームなど）のあとに音が出ない**：js/audio/audio-manager.js の context().onstatechange が 'interrupted'（iOS）と、裏に回していないのに 'suspended' になったことを記録（st.interrupted）→ 次のタップ（unlock）で resume、効かなければ約0.12秒後に suspend → resume（reviveContext）。表へ戻ったとき（visibilitychange）・pageshow・focus では wake()＝AudioContext を resume し、今の場面の BGM の `<audio>` が止まっていればその1本だけ鳴らし直す（終わった非ループの曲は鳴らさない・2本目を作らない＝BGM の二重再生なし）。AudioContext は作り直さない（`<audio>` は MediaElementSource に1回しかつなげない）。ミュート・音量（localStorage mmaudio・mr4a）は触らない。status().interrupted・MMAUDIO.wake。テスト AUDIO-29。iPhone 実機の最終確認はユーザー
+- **リュウの相棒は全経路でレグナス**：監査＝フィールドのバトルの入口は bBattleGo だけ（ライバルのマスは MMRP.arm()＝fight() が相手を作った直後に名前・絵・技をレグナスへ）・バトル中の再読み込み → 中断扱い → もう一度選ぶと arm し直す・勝ち負けの文に相手の名前は無い・Chapter 3／4 にライバルは無い。**Chapter 2 のライバル（sa_2）の遭遇の画面に人物・相棒が無かった** → js/chapter/configs/ch2a.js の battleTypes.rival を Chapter 1 と同じに（ライバルのリュウ・encounterFigure rival_ryu・encounterPartner rival_regnas・「リュウが立ちはだかった！」）。通常のガウル（市場・図鑑・自分の子）は変えていない。テスト RV-B3（遭遇〜導入〜実戦で相手側にガウルが出ない・自分のガウルはそのまま）・RV-B4（途中で再読み込み → 再戦もレグナス）・RV-B5（Chapter 2）
+- **共通UI 第2弾**（index.html の CSS「2026-10-06 共通UI 第2弾」の1か所・素材は assets/ui/。README.md）：施設名ラベル B-01（ステータス・牧場・アイテム屋・セーブ／ロード・ベースキャンプの名札。ベースキャンプの名札の羅針盤の印は出さない）、Chapter のリボン B-09（ベースキャンプの次の Chapter・Chapter 開始の演出の Chapter 名）、プロフィール行 B-03（丸＝線画のアイコン PROFILE_IC・帯＝見出しと値・四角＝単位。設定の行は従来のまま）、オートセーブ B-07（四角＝連れている子の正式画像・下の枠＝所持金 .svgold）、バックアップ B-08、市場のドット B-12（ほか）／B-11（いま）、ステータスの能力バーの色 B-26〜B-31（フィルの部分だけ。ライフ 黄・ちから 赤・かしこさ 緑・命中 ピンク・回避 水色・丈夫さ 青。長さは値）・能力の丸 B-43、技の一覧の未習得 B-37（🔒 の代わり）、赤の正式ボタン B-49（危険の確認の「育成をやめる」・市場の「購入する」・大会の「この大会に参加する」・冒険のメニューの「育成放棄」）・押せない B-50・青 A-19（危険の確認の「やめない」・新しいゲームの「確認しました」・冒険のメニューのボタン）、新しいゲームの確認の羊皮紙 A-17、お知らせのノート B-51、Chapter の HUD の上段＝冒険の進行ヘッダー B-20（丸＝Chapter 番号・2本の帯＝Chapter 名と背景名・線＝進み具合（育成中の子の顔が動く）・四角＝☰。START／GOAL の文字は出さない。DOM と id は従来のまま）、冒険のメニュー（☰）の枠 B-22（上の金の帯＝「メニュー」・右上の ✕ の上に透明な閉じるボタン）。処理・押せる範囲・無効／選択の状態は変えていない
+- **使っていない部品**（理由は assets/ui/b_group/README.md）：光のにじみ（A-21・A-32・A-34・A-35・B-05）、見本入り（B-16・B-17・B-24・B-32・B-36・B-38）、技のルーレットの空き枠 B-35（技管理の行の class がバトルの技ルーレットと同じ＝Phase 6 の保護 P7-32 に当たる）、今の画面に合う場所が無い（B-10・B-18・B-19・B-21・B-25・B-33・B-34・B-39〜B-42・B-46〜B-48・A-13〜A-16・A-18・A-23〜A-31・A-33・A-36）。**A1（A-01〜A-12）と docs の ZIP は受け取っていない**
+- 牧場の .rn（画面の器）と技管理のルーレットの名前の span（.rn）が同じ class 名（既存の衝突。今は表に出ない）
+- テスト：tests/ui-b-1006.test.mjs（UB-01＝PNG・RGBA・表示の約2倍まで・使う部品だけ置く、UB-02、UB-03＝第2弾の縦横比・色の対応・filter なし・処理は従来のボタン）、実ブラウザ tests/qa-e2e-ui-b-1006.test.mjs
 
 ### 大会
 

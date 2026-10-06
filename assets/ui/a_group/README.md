@@ -24,4 +24,4 @@ ZIP `mismon_ui_assets_A_group_FINAL_2026-10-06`。元の PNG の URL（A_group_s
 
 ## 追加（2026-10-06・ZIP mismon_UI_A2／A3_prepared）
 
-- a20_button_red_small_plain.webp（A-20）＝セーブ／ロードの「セーブ」、a22_button_blue_large_panel.webp（A-22）＝「ロード」。透過の手順・元の sha256・使っていない A 群の部品は assets/ui/b_group/README.md
+- a20_button_red_small_plain.png（A-20）＝セーブ／ロードの「セーブ」、a22_button_blue_large_panel.png（A-22）＝「ロード」、a17_popup_frame_parchment_plain.png（A-17）＝新しいゲームの確認の羊皮紙、a19_button_blue_ornate_gems.png（A-19）＝青の正式ボタン。可逆の PNG（正本の PNG を縮小しただけ）。透過の手順・元の sha256・使っていない A 群の部品は assets/ui/b_group/README.md
