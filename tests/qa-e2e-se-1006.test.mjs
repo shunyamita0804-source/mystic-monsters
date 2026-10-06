@@ -90,14 +90,15 @@ test('SE-B4：市場：購入できなかったときは購入の音を鳴らさ
   assert.deepEqual(p.errors, []);
 });
 
-test('SE-B5：正式音源（タイトル・プロローグの BGM と SE 15種）がすべて 200 で読める', { skip: SKIP }, async () => {
+test('SE-B5：正式音源（管理局の BGM と SE 15種・開始の音）がすべて 200 で読める（プロローグの BGM は 2026-10-06 に削除）', { skip: SKIP }, async () => {
   const p = await open(); const pg = p.page;
   const res = await pg.evaluate(async () => {
     const srcs = new Set(), add = (v) => { for (const s of (v && v.srcs) || []) if (/mystic_monsters_official/.test(s)) srcs.add(s); };
     for (const v of Object.values(MMAUDIO.registryOf('bgm'))) add(v); for (const v of Object.values(MMAUDIO.registryOf('se'))) add(v);
     const out = []; for (const s of srcs) { const r = await fetch(s); out.push([s, r.status, (await r.arrayBuffer()).byteLength]); } return out;
   });
-  assert.equal(res.length, 18, `正式音源 18 ファイル（BGM 2・SE 15・開始の音 1）：${res.length}`);
+  assert.equal(res.length, 17, `正式音源 17 ファイル（BGM 1＝管理局・SE 15・開始の音 1。2026-10-06：プロローグの BGM は削除）：${res.length}`);
+  assert.ok(!res.some(([s]) => /prologue_bgm/.test(s)), 'プロローグの BGM は登録しない');
   for (const [s, st, n] of res) { assert.equal(st, 200, s); assert.ok(n > 1000, s); }
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
