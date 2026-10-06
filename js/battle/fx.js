@@ -74,6 +74,7 @@
   /** 追加されたノードを見て、対応する演出を出す（ダメージの数字・決着の帯） */
   function onAdded(n) {
     if (!n || n.nodeType !== 1) return;
+    if (root.MMRULES && root.MMRULES.swallow && root.MMRULES.swallow(n)) return;   // 2026-10-06：まひ・ねむりで動けない行動の MISS は出さない（js/battle/rules.js）
     if (n.id === 'ban') { const t = (n.textContent || '').trim(); if (t === 'WIN!') showEnd('victory'); else if (t === 'LOSE') showEnd('defeat'); return; }
     const cl = n.classList, p = n.parentNode;
     if (n.tagName === 'SPAN' && cl && cl.contains('dmg') && !cl.contains('ef') && p && /^f[01]$/.test(p.id || '')) {

@@ -1,7 +1,7 @@
 // 技辞典 `MMMOVEDEX`（2026-10-06）：正式の技アニメーション資料（assets/moves/。緑の背景・1技1枚・複数カット）と技の性能を見る画面。
 //  開く場所：技管理の技の詳細（index.html の skSheet「技の演出を見る」）・技の一覧の「技辞典」・研究所の図鑑の詳細（musd）。
 //  データは js/phase10/monsters.js の movesOf（ソラモ・ノビトン・ジオル・ガウル・レグナス）の1か所。表示だけ（セーブ・バトルには触れない）。
-//  状態異常（まひ・ねむり）・回復は今のバトルエンジンに無い＝「バトルでは未対応」と書く（ノビトンはまだバトルに出ない）。ジオルの数値は未同期＝出さない。
+//  状態異常（まひ・ねむり）・回復は 2026-10-06・5 からバトルで動く（js/battle/rules.js）。ジオルの数値は未同期＝出さない。
 (function () {
   'use strict';
   const esc = (t) => String(t == null ? '' : t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -43,7 +43,7 @@
     const ef = (mv.effects || []).map((e) => `<li>${esc(effLine(e))}</li>`).join('');
     const ail = mv.ailment ? `<li>${Math.round(mv.ailment.chance * 100)}%で「${esc(mv.ailment.label)}」</li>` : '';
     const heal = mv.heal ? `<li>最大ライフの${Math.round(mv.heal.lifeRatio * 100)}%を回復${mv.heal.cureAilments ? '・自分の状態異常をすべて治す' : ''}${mv.heal.clearStatChanges === false ? '（能力の上げ下げは残る）' : ''}</li>` : '';
-    const na = mv.ailment || mv.heal ? '<small class="mvnote">※ 状態異常・回復は今のバトルでは未対応（正式仕様のデータだけ）</small>' : '';
+    const na = mv.ailment ? `<small class="mvnote">※ ${esc(mv.ailment.label)}：${mv.ailment.kind === 'sleep' ? '最大2回の行動の機会を失う（ダメージを受けると起きる）' : '3回の行動の機会のあいだ、毎回25%で動けない'}</small>` : '';
     return `<div class="mvh"><b>${esc(mv.name)}</b>${t ? `<span class="mvt ${t[1]}">${t[0]}</span>` : ''}</div>`
       + (num ? `<div class="mvn"><span>威力<b>${mv.power}</b></span><span>命中<b>${mv.accuracy}%</b></span><span>CR<b>${mv.critical}%</b></span></div>` : (mv.type === 'support' || mv.type === 'heal' ? '<div class="mvn"><span>ダメージなし</span></div>' : '<div class="mvn"><span>性能の数値は未同期</span></div>'))
       + (mv.desc ? `<p class="mvd">${esc(mv.desc)}</p>` : '') + (ef || ail || heal ? `<ul class="mvef">${ef}${ail}${heal}</ul>` : '') + na;

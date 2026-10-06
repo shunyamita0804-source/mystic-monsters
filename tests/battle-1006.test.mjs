@@ -130,7 +130,7 @@ test('MV-04：技辞典（MMMOVEDEX）の入口＝技管理の技の詳細（技
   assert.match(CODE, /<span class="dcat">\$\{x\[1\]\?\(x\[7\]=="p"\?"✊ ちから":"📖 かしこさ"\):"✨ 補助"\}<\/span>/, '補助技は「補助」と表示');
   const JS = rd('js/battle/movedex.js');
   assert.doesNotMatch(JS, /localStorage|save\(|mr4v6|S\.m/, '表示だけ');
-  assert.match(JS, /状態異常・回復は今のバトルでは未対応/);
+  assert.match(JS, /3回の行動の機会のあいだ、毎回25%で動けない/);   // 2026-10-06・5：状態異常はバトルで動く（js/battle/rules.js）
 });
 
 test('MV-05：UI の修正：フィナの2択「はい／いいえ」・セルジュの確認「はい／いいえ」・プロフィールの「ミスティックモンスターズ」の見出しを出さない・市場の購入確認は正式ボタン（A-19・B-49）。このゲームに「ガッツ」は無い', () => {

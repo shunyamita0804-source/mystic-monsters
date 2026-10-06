@@ -2,7 +2,11 @@
 // Phase 8：公式ランク大会（総当たりリーグ）の計算（window.MMP8L）
 //  参加人数：E・D＝6体、C〜S＝8体（プレイヤーを含む）。全員が全員と1回ずつ戦う（円形法）。
 //  NPC同士の試合は大会の作成時に内部演算して結果を確定し、大会状態に保存する（中断・再開で再抽選しない）。
-//  同じ勝ち数の順位：勝ち数 → 同じ勝ち数どうしの対戦成績 → 大会作成時に決めた抽選値【暫定】。
+//  順位（2026-10-06 正式・同率1位は作らない）：勝ち数 → 残りライフの合計 → 大会中の総ダメージ → 命中の総回数
+//   → （それでも同じなら従来の決め方）同じ勝ち数どうしの対戦成績 → 大会作成時に決めた抽選値。
+//   残りライフ＝各試合の終わりのライフを最大ライフに対する % にして足したもの（モンスターごとの最大ライフの差で決まらないように）。
+//   プレイヤーの試合はバトルの実際の値（js/battle/rules.js の battleStats）を記録する。NPC 同士の試合（結果だけ内部演算）と、
+//   値が記録されていない試合（古いセーブ・途中の再読み込み）は、大会のシード値と試合から決まる値【暫定】で補う＝再読み込みで変わらない。
 //  【暫定】NPCの名前・強さ・NPC同士の勝敗の決め方は仮実装。正式データ・ロジックは
 //          setNpcProvider / setNpcMatchResolver で差し替えられる（保存済みの大会には影響しない）。
 // =========================================================
@@ -74,22 +78,39 @@
     const mt = lg.rounds[lg.round].find((x) => x.a === 0 || x.b === 0);
     return { round: lg.round, opp: mt.a === 0 ? mt.b : mt.a, match: mt };
   }
-  /** プレイヤーの試合結果を記録し、そのラウンドを終える（同じラウンドのNPC戦の結果も公開される） */
-  function recordPlayerResult(lg, won) {
+  /** プレイヤーの試合結果を記録し、そのラウンドを終える（同じラウンドのNPC戦の結果も公開される）。stats＝{ me, opp }（各 { life:%, dmg, hits }。任意） */
+  function recordPlayerResult(lg, won, stats) {
     const pm = playerMatch(lg); if (!pm) return null;
     pm.match.winner = won ? 0 : pm.opp; lg.round += 1;
+    const ok = (x) => x && [x.life, x.dmg, x.hits].every((v) => Number.isFinite(v) && v >= 0);
+    if (stats && ok(stats.me) && ok(stats.opp)) pm.match.st = { [0]: pick(stats.me), [pm.opp]: pick(stats.opp) };
     return pm;
   }
-  /** 終わったラウンドまでの順位表 */
+  const pick = (x) => ({ life: Math.max(0, Math.min(100, Math.round(x.life))), dmg: Math.round(x.dmg), hits: Math.round(x.hits) });
+  /** 1試合の内容（残りライフ%・与えたダメージ・命中回数）。記録が無ければシード値と試合から決める【暫定】 */
+  function matchStats(lg, r, mt) {
+    if (mt.st && mt.st[mt.a] && mt.st[mt.b]) return mt.st;
+    const rnd = mulberry32(((lg.seed >>> 0) ^ Math.imul(r * 97 + mt.a * 13 + mt.b * 7 + 1, 0x9e3779b1)) >>> 0);
+    const base = PROVISIONAL_OPPONENT_STAT[lg.rank] || 100, w = mt.winner, l = w === mt.a ? mt.b : mt.a;
+    const wl = 15 + Math.floor(rnd() * 71), ll = rnd() < 0.7 ? 0 : Math.min(wl - 1, 5 + Math.floor(rnd() * 31));
+    return { [w]: { life: wl, dmg: Math.round(base * (100 - ll) / 100), hits: 3 + Math.floor(rnd() * 6) },
+      [l]: { life: ll, dmg: Math.round(base * (100 - wl) / 100), hits: 1 + Math.floor(rnd() * 6) } };
+  }
+  /** 終わったラウンドまでの順位表（同率は作らない） */
   function standings(lg) {
-    const done = lg.rounds.slice(0, lg.round).flat().filter((mt) => mt.winner != null);
-    const tally = lg.entrants.map((e) => ({ id: e.id, name: e.name, player: !!e.player, w: 0, l: 0, lot: e.lot }));
-    for (const mt of done) { tally[mt.winner].w++; tally[mt.winner === mt.a ? mt.b : mt.a].l++; }
+    const tally = lg.entrants.map((e) => ({ id: e.id, name: e.name, player: !!e.player, w: 0, l: 0, life: 0, dmg: 0, hits: 0, lot: e.lot }));
+    const done = [];
+    lg.rounds.slice(0, lg.round).forEach((rd, r) => rd.forEach((mt) => {
+      if (mt.winner == null) return;
+      done.push(mt); tally[mt.winner].w++; tally[mt.winner === mt.a ? mt.b : mt.a].l++;
+      const st = matchStats(lg, r, mt);
+      for (const id of [mt.a, mt.b]) { const x = st[id]; tally[id].life += x.life; tally[id].dmg += x.dmg; tally[id].hits += x.hits; }
+    }));
     for (const t of tally) {   // 同じ勝ち数どうしの対戦での勝ち数
       const grp = tally.filter((x) => x.w === t.w).map((x) => x.id);
       t.tb = done.filter((mt) => mt.winner === t.id && grp.includes(mt.a === t.id ? mt.b : mt.a)).length;
     }
-    tally.sort((p, q) => q.w - p.w || q.tb - p.tb || p.lot - q.lot);
+    tally.sort((p, q) => q.w - p.w || q.life - p.life || q.dmg - p.dmg || q.hits - p.hits || q.tb - p.tb || p.lot - q.lot || p.id - q.id);
     tally.forEach((t, i) => { t.place = i + 1; });
     return tally;
   }
@@ -110,7 +131,7 @@
     }
     return 'pending';
   }
-  Object.assign(L, { LEAGUE_SIZE, mulberry32, roundRobin, createLeague, isFinished, playerMatch, recordPlayerResult, standings, playerPlace,
+  Object.assign(L, { LEAGUE_SIZE, mulberry32, roundRobin, createLeague, isFinished, playerMatch, recordPlayerResult, standings, playerPlace, matchStats, TIEBREAK: Object.freeze(['w', 'life', 'dmg', 'hits', 'tb', 'lot']),
     setNpcProvider, setNpcMatchResolver, PROVISIONAL: true, PROVISIONAL_OPPONENT_STAT, STAT_KEYS, setSpeciesCount, entrantView, resultCell });
   root.MMP8L = Object.freeze(L);
 })(typeof window !== 'undefined' ? window : globalThis);

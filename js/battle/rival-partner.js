@@ -90,6 +90,7 @@
   function onAction(opts, r) {
     const pl = G('BPL');
     if (!pl || !MARK.has(pl) || !r || !opts || !opts.session) return;
+    if (r.rules && r.rules.blocked) return;   // まひ・ねむりで動けなかった行動は「回避」ではない（js/battle/rules.js）
     const s = opts.session;
     let st = SKILL.get(s);
     if (!st) { st = { armed: false }; SKILL.set(s, st); }

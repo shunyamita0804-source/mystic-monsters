@@ -285,16 +285,16 @@ test('T3-5：大会の途中保存・再開：参加者（種族・能力）・�
   assert.deepEqual(LG.entrantView(T.m.raise.tour.league, 5), LG.entrantView(S.m.raise.tour.league, 5));
 });
 
-test('T3-6：初回優勝＝賞金・修行チケット・ステータスボーナス／クリア済みランクの再優勝＝ステータスボーナスのみ（報酬の値はPhase 8のまま）', () => {
+test('T3-6：初回優勝＝賞金・特訓チケット・ステータスボーナス／クリア済みランクの再優勝＝報酬なし（2026-10-06 正式）', () => {
   const { P7, P8 } = load();
   const A = tourSave(P7, P8, 0, 1); A.g = 0; A.trainTix = 0; let f; for (let i = 0; i < 5; i++) f = playLeague(P8, A, true);   // ボードで拾った修行チケットと大会の報酬を分けて数える（B・Cと同じ）
   assert.equal(f.won, true); assert.deepEqual([f.reward.firstClear, f.reward.prize, f.reward.tickets, f.reward.bonus.length], [true, 100, 1, 3]);
   assert.deepEqual([A.g, A.trainTix], [100, 1]);
   const B = tourSave(P7, P8, 1, 2); B.m.prog.rankClr[1] = true; B.g = 0; B.trainTix = 0; for (let i = 0; i < 5; i++) f = playLeague(P8, B, true);
-  assert.deepEqual([f.reward.firstClear, f.reward.prize, f.reward.tickets, f.reward.bonus.length], [false, 0, 0, 3]);
+  assert.deepEqual([f.reward.firstClear, f.reward.prize, f.reward.tickets, f.reward.bonus.length], [false, 0, 0, 0]);
   assert.deepEqual([B.g, B.trainTix], [0, 0]);
   const C = tourSave(P7, P8, 2, 3); C.g = 0; for (let i = 0; i < 7; i++) f = playLeague(P8, C, true);
-  assert.deepEqual([f.reward.prize, f.reward.tickets], [350, 2], 'C以上は初回チケット2枚');
+  assert.deepEqual([f.reward.prize, f.reward.tickets], [350, 1], '2026-10-06 正式：C は初回チケット1枚（B〜S は2枚）');
   const res = between('function p9TourResult(msg){', '\nfunction p8RewardText(');
   for (const w of ['優勝！', '初回優勝の報酬', '再優勝の報酬', '賞金', '特訓チケット', 'ステータスボーナス', '報酬はありません', 'p9Standings(lg,st,true)', 'p8EndChapter()']) assert.ok(res.includes(w), w);
 });

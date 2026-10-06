@@ -18,21 +18,21 @@
   const isValidSpeed = (v) => Number.isInteger(v) && v >= SPEED_MIN && v <= SPEED_MAX;
   const fz = (o) => Object.freeze(o);
 
-  // ---- 固有スキル（データのみ。implemented:false ＝ まだ発動しない） ----
+  // ---- 固有スキル（2026-10-06・5：4種ともバトルで発動＝js/battle/rules.js。値はこの params の1か所） ----
   //  id は種族の文字ID（solamo 等）に基づく安定した内部ID。
   //  params は正式説明文にある数値だけを機械可読にしたもの。hiddenParams はプレイヤー向け表示に出さない値。
   const UNIQUE_SKILLS = fz({
-    unique_solamo: fz({ id: 'unique_solamo', species: 0, speciesKey: 'solamo', name: '逆境のひと踏ん張り', implemented: false,
+    unique_solamo: fz({ id: 'unique_solamo', species: 0, speciesKey: 'solamo', name: '逆境のひと踏ん張り', implemented: true,
       desc: 'ライフが20％以下になると、次に与えるダメージが1度だけ1.25倍になる。',
       params: fz({ lifeRatioAtMost: 0.2, damageMultiplier: 1.25, uses: 1 }), hiddenParams: fz([]) }),
-    unique_gauru: fz({ id: 'unique_gauru', species: 1, speciesKey: 'gauru', name: '紅翼の猛攻', implemented: false,
+    unique_gauru: fz({ id: 'unique_gauru', species: 1, speciesKey: 'gauru', name: '紅翼の猛攻', implemented: true,
       desc: '戦闘開始から3ターンの間、ちからとかしこさがそれぞれ5％アップする。',
       params: fz({ turnsFromStart: 3, statUpRatio: 0.05, stats: fz(['po', 'in']) }), hiddenParams: fz([]) }),
-    unique_nobiton: fz({ id: 'unique_nobiton', species: 2, speciesKey: 'nobiton', name: 'ふしぎな嗅覚', implemented: false,
-      // 状態異常システムは未確定：発動条件の「状態異常」は定義されていない（仮の状態異常は作らない）
+    unique_nobiton: fz({ id: 'unique_nobiton', species: 2, speciesKey: 'nobiton', name: 'ふしぎな嗅覚', implemented: true,
+      // 状態異常＝まひ・ねむり（2026-10-06・5 正式。js/battle/rules.js）
       desc: '相手が状態異常の間、自分のちから・かしこさ・丈夫さがそれぞれ5％アップする。',
       params: fz({ condition: 'opponent_has_status_ailment', statUpRatio: 0.05, stats: fz(['po', 'in', 'de']) }), hiddenParams: fz([]) }),
-    unique_jiol: fz({ id: 'unique_jiol', species: 3, speciesKey: 'jiol', name: '大地の守り', implemented: false,
+    unique_jiol: fz({ id: 'unique_jiol', species: 3, speciesKey: 'jiol', name: '大地の守り', implemented: true,
       desc: '致命的なダメージを受けた際、確率で1度だけライフ1で耐えることがある。',
       params: fz({ chance: 0.1, surviveAtLife: 1, uses: 1 }), hiddenParams: fz(['chance']) }),
   });

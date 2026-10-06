@@ -418,8 +418,8 @@ test('S5-2：初回優勝＝賞金・修行チケット・ステータスボー�
   const { P7, P8 } = load(); const S = P8.newSave(); S.m = P8.initIndividual(S, mon(P7)); S.g = 1000; S.wins = 5; S.br = 0;
   const before = { ...S.m };
   const r = P8.grantTournamentWin(S, S.m, 2, seq(0, 0, 0.5, 0.5, 0.99, 0.99));
-  assert.equal(r.firstClear, true); assert.equal(r.prize, 350); assert.equal(r.tickets, 2);
-  assert.equal(S.g, 1350); assert.equal(S.trainTix, 2);
+  assert.equal(r.firstClear, true); assert.equal(r.prize, 350); assert.equal(r.tickets, 1, '2026-10-06 正式：C は 1枚');
+  assert.equal(S.g, 1350); assert.equal(S.trainTix, 1);
   assert.equal(r.bonus.length, 3); assert.equal(new Set(r.bonus.map((b) => b.key)).size, 3, '異なる3能力');
   for (const b of r.bonus) { assert.ok(b.amount >= 4 && b.amount <= 7, 'Cは+4〜7'); assert.equal(S.m[b.key], before[b.key] + b.amount); }
   const others = ['li', 'po', 'in', 'hi', 'ev', 'de'].filter((k) => !r.bonus.some((b) => b.key === k));
@@ -429,22 +429,24 @@ test('S5-2：初回優勝＝賞金・修行チケット・ステータスボー�
   assert.equal(S.wins, 6); assert.equal(S.br, 2); assert.equal(P8.rankLabel(S.m), 'C');
 });
 
-test('S5-3：再優勝はステータスボーナスのみ／飛ばした下位ランクの初回報酬は付与しない', () => {
+test('S5-3：再優勝は報酬なし（2026-10-06 正式：賞金・チケット・ステータスボーナス・ランクアップなし）／飛ばした下位ランクの初回報酬は付与しない', () => {
   const { P7, P8 } = load(); const S = P8.newSave(); S.m = P8.initIndividual(S, mon(P7)); S.g = 0;
   P8.grantTournamentWin(S, S.m, 2, () => 0);           // いきなりC（E・Dは飛ばした）
   const g1 = S.g, t1 = S.trainTix;
   const re = P8.grantTournamentWin(S, S.m, 2, () => 0);  // Cを再優勝
-  assert.equal(re.firstClear, false); assert.equal(S.g, g1); assert.equal(S.trainTix, t1); assert.equal(re.bonus.length, 3);
+  const st1 = ['li', 'po', 'in', 'hi', 'ev', 'de'].map((k) => S.m[k]);
+  assert.equal(re.firstClear, false); assert.equal(S.g, g1); assert.equal(S.trainTix, t1); assert.equal(re.bonus.length, 0); assert.equal(re.rankUp, null, 'ランクアップなし');
+  assert.deepEqual(['li', 'po', 'in', 'hi', 'ev', 'de'].map((k) => S.m[k]), st1, '能力も変わらない');
   const low = P8.grantTournamentWin(S, S.m, 1, () => 0); // 飛ばしたDで優勝
   assert.equal(low.firstClear, false, 'クリア扱い済みなので初回ではない');
   assert.equal(S.g, g1, 'Dの賞金は付与しない'); assert.equal(S.trainTix, t1, 'Dのチケットも付与しない');
-  assert.equal(low.bonus.length, 3, 'ステータスボーナスは付く');
+  assert.equal(low.bonus.length, 0, 'ステータスボーナスも付かない'); assert.equal(low.rankUp, null);
 });
 
 test('S5-4：報酬の値は定数で管理（賞金・チケット・ボーナス範囲E〜S）', () => {
   const { P7, P8 } = load();
   assert.deepEqual(P8.PRIZE, [100, 200, 350, 550, 800, 1200]);
-  assert.deepEqual(P8.FIRST_CLEAR_TICKETS, [1, 1, 2, 2, 2, 2]);
+  assert.deepEqual(P8.FIRST_CLEAR_TICKETS, [1, 1, 1, 2, 2, 2]);
   assert.deepEqual(P8.WIN_BONUS_RANGE, [[2, 4], [3, 5], [4, 7], [6, 9], [8, 12], [11, 16]]);
   assert.equal(P8.WIN_BONUS_COUNT, 3);
   for (let rank = 0; rank < 6; rank++) {
@@ -548,18 +550,38 @@ test('S6-5：大会はゴール後のみ・各Chapter 1回・挑戦できるラ�
   assert.equal(P8.startTournament(D, D.m, 0).reason, 'not_in_chapter');
 });
 
-test('S6-6：同じ勝ち数の順位は「その中での対戦成績→作成時の抽選値」で決まる（保存済みの値を使うので再抽選しない）', () => {
+test('S6-6：順位（2026-10-06 正式・同率1位なし）＝勝ち数 → 残りライフの合計 → 総ダメージ → 命中の総回数 → 対戦成績 → 抽選値。記録の無い試合はシード値から決まる（再読み込みで変わらない）', () => {
   const { LG } = load();
+  assert.deepEqual([...LG.TIEBREAK], ['w', 'life', 'dmg', 'hits', 'tb', 'lot']);
   const lg = LG.createLeague(0, 3, 'A');
   for (const rd of lg.rounds) for (const mt of rd) mt.winner = Math.min(mt.a, mt.b);   // 番号の若い方が勝つ
   lg.round = lg.rounds.length;
-  assert.deepEqual(LG.standings(lg).map((t) => t.id), [0, 1, 2, 3, 4, 5]);
+  assert.deepEqual(LG.standings(lg).map((t) => t.id), [0, 1, 2, 3, 4, 5], '勝ち数がすべて違えば勝ち数の順');
+  // 勝ち数が同じ2人：残りライフ → 総ダメージ → 命中回数の順で決まる
+  const two = (a, b) => { const g = LG.createLeague(0, 7, 'A'); g.rounds.flat().forEach((mt) => { mt.winner = mt.a === 0 || mt.b === 0 ? (mt.a === 0 ? mt.b : mt.a) : Math.min(mt.a, mt.b); mt.st = null; }); g.round = g.rounds.length;
+    // 1 と 2 を同じ勝ち数（4勝）にする：1 vs 2 を 2 の勝ち・0 vs 2 を 0 の勝ちに
+    const x = g.rounds.flat().find((mt) => (mt.a === 1 && mt.b === 2) || (mt.a === 2 && mt.b === 1)); x.winner = 2;
+    g.rounds.flat().find((mt) => (mt.a === 0 && mt.b === 2) || (mt.a === 2 && mt.b === 0)).winner = 0;   // 2 は 0 に負ける＝1 と 2 が4勝で並ぶ
+    g.rounds.flat().forEach((mt) => { mt.st = { [mt.a]: { life: 10, dmg: 10, hits: 1 }, [mt.b]: { life: 10, dmg: 10, hits: 1 } }; });
+    Object.assign(x.st[1], a); Object.assign(x.st[2], b); return LG.standings(g); };
+  const ord = (st) => st.filter((t) => t.id === 1 || t.id === 2).map((t) => t.id);
+  assert.deepEqual(ord(two({ life: 60 }, { life: 20 })), [1, 2], '残りライフが多い方が上');
+  assert.deepEqual(ord(two({ dmg: 90 }, { dmg: 30 })), [1, 2], 'ライフが同じなら総ダメージ');
+  assert.deepEqual(ord(two({ hits: 9 }, { hits: 3 })), [1, 2], 'ダメージも同じなら命中回数');
+  assert.deepEqual(ord(two({}, {})), [2, 1], 'すべて同じなら従来どおり対戦成績（2 が 1 に勝った）');
+  // 同率の順位は作らない
+  for (const st of [LG.standings(lg)]) assert.deepEqual(st.map((t) => t.place), [1, 2, 3, 4, 5, 6]);
+  // 記録の無い試合（NPC 同士・古いセーブ）の値はシード値から決まる
   const lg2 = LG.createLeague(0, 3, 'A');
-  lg2.rounds[0][0].winner = lg2.rounds[0][0].a; lg2.round = 1;   // 1ラウンド目だけ
+  lg2.rounds[0][0].winner = lg2.rounds[0][0].a; lg2.round = 1;
   const st = LG.standings(lg2), ones = st.filter((t) => t.w === 1), zeros = st.filter((t) => t.w === 0);
   assert.ok(st.indexOf(ones[0]) < st.indexOf(zeros[0]), '勝ち数が多い方が上');
-  for (let i = 1; i < ones.length; i++) assert.ok(ones[i - 1].lot <= ones[i].lot, '同勝数・対戦なしは抽選値順');
   assert.deepEqual(LG.standings(lg2), LG.standings(j(lg2)));
+  // プレイヤーの試合は記録した値を使う
+  const lg3 = LG.createLeague(0, 5, 'A');
+  LG.recordPlayerResult(lg3, true, { me: { life: 73.4, dmg: 88, hits: 6 }, opp: { life: 0, dmg: 41, hits: 3 } });
+  const me = LG.standings(lg3).find((t) => t.player);
+  assert.equal(me.life, 73); assert.equal(me.dmg, 88); assert.equal(me.hits, 6);
 });
 
 test('S6-7：【暫定】NPCの生成・NPC同士の勝敗は差し替えられる（正式データ未確定）', () => {

@@ -19,6 +19,9 @@
   const STAT = { atk: 'atk', de: 'de', hi: 'hi', ev: 'ev' };
   const LV = { small: 1, medium: 2, large: 3 };
   const SUPPORT_ACC = 100;
+  // 初期技の並び（2026-10-06 正式の習得ルート）：ソラモ＝たいあたり・ひっかき・しっぽアタック・吠える／ガウル＝つつく・ウィンド・スパイラルダイブ・ソニックムーブ。
+  //  番号（習得の枠）はそのまま＝並び（新しく迎えた子の m.sk・m.eq の順）だけ。既存のセーブの並びは変えない
+  const INITIAL = { 0: [0, 1, 2, 3], 1: [11, 12, 10, 13] };
   let installed = false, orig = null;
 
   /** 正式技の tier（演出の長さ）：support（補助）・basic（威力 85 以下）・strong（90〜115）・finisher（120 以上） */
@@ -48,6 +51,8 @@
       if (SFR && orig.sfr && orig.sfr[v]) SFR[k] = orig.sfr[v];
       if (SKM && orig.skm && orig.skm[v]) SKM[k] = orig.skm[v];
     }));
+    const SP = G('SP');
+    if (Array.isArray(SP)) Object.keys(INITIAL).forEach((sp) => { const a = SP[sp] && SP[sp][6]; if (Array.isArray(a)) a.splice(0, a.length, ...INITIAL[sp]); });
     installed = true;
     return true;
   }
@@ -59,5 +64,5 @@
     return mv ? { mv, tier: tierOf(mv), owner: mv.owner } : null;
   }
 
-  window.MMMOVES = Object.freeze({ install, info, tierOf, VISUAL, get installed() { return installed; }, _orig: () => orig });
+  window.MMMOVES = Object.freeze({ install, info, tierOf, VISUAL, INITIAL, get installed() { return installed; }, _orig: () => orig });
 })();

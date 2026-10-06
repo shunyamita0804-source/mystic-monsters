@@ -49,7 +49,7 @@ test('M1-2：素早さは1〜10の整数で、数値が大きいほど速い（P
 test('M1-3：固有スキルは4体すべてにデータだけ登録（未実装フラグ・ジオルの確率は内部データで説明文に出さない）', () => {
   const { M } = load();
   const exp = [['unique_solamo', '逆境のひと踏ん張り'], ['unique_gauru', '紅翼の猛攻'], ['unique_nobiton', 'ふしぎな嗅覚'], ['unique_jiol', '大地の守り']];   // Phase 10 Step 3：種族の文字IDに基づくIDへ（未保存・未使用の段階で変更）
-  M.SPECIES.forEach((s, i) => { const k = M.skillOf(s.id); assert.deepEqual([k.id, k.name, k.species, k.implemented], [...exp[i], s.id, false]); assert.ok(k.desc.length > 10); });
+  M.SPECIES.forEach((s, i) => { const k = M.skillOf(s.id); assert.deepEqual([k.id, k.name, k.species, k.implemented], [...exp[i], s.id, true]); assert.ok(k.desc.length > 10); });
   assert.equal(M.skillOf(3).params.chance, 0.1); assert.deepEqual(M.skillOf(3).hiddenParams, ['chance']);
   assert.doesNotMatch(M.skillText(3).desc, /10|％|%/, 'プレイヤー向け説明に具体的な確率を出さない');
   assert.match(M.skillOf(0).desc, /20％.*1\.25倍/); assert.match(M.skillOf(1).desc, /3ターン.*5％/); assert.match(M.skillOf(2).desc, /状態異常/);

@@ -569,7 +569,7 @@
   const RANK_UNLOCK_STEP = 1;
   const RANK_FLOOR = RANK_D;   // 最初から選べる上限（Chapter 1 の時点で D まで）
   const PRIZE = Object.freeze([100, 200, 350, 550, 800, 1200]);                                    // 初回優勝の賞金（E〜S）
-  const FIRST_CLEAR_TICKETS = Object.freeze([1, 1, 2, 2, 2, 2]);                                 // 初回優勝の修行チケット（E〜S）
+  const FIRST_CLEAR_TICKETS = Object.freeze([1, 1, 1, 2, 2, 2]);                                 // 初回優勝の特訓チケット（E〜S。2026-10-06 正式：E1 D1 C1 B2 A2 S2）
   const WIN_BONUS_RANGE = Object.freeze([[2, 4], [3, 5], [4, 7], [6, 9], [8, 12], [11, 16]].map(Object.freeze)); // 優勝ボーナス（1能力あたり、E〜S）
   const WIN_BONUS_COUNT = 3;                                                                     // 6能力から異なる3能力
   const BONUS_STATS = Object.freeze(['li', 'po', 'in', 'hi', 'ev', 'de']);
@@ -584,7 +584,7 @@
   const canChallenge = (m, key, rank) => Number.isInteger(rank) && eligibleRanks(m, key).includes(rank);
   /**
    * 大会で最終1位になったときの正式報酬（大会の決着時に1回だけ呼ばれる）。
-   *  初回優勝：賞金・修行チケット・ステータスボーナス・実績。再優勝：ステータスボーナスのみ。
+   *  初回優勝：賞金・特訓チケット・ステータスボーナス・実績。再優勝（クリア済みのランク）：報酬なし（2026-10-06 正式＝チケット・賞金・能力のボーナス・ランクアップなし）。
    *  上位ランクの優勝で下位ランクもクリア扱いになるが、飛ばした下位ランクの初回報酬は付与しない。
    */
   function grantTournamentWin(S, m, rank, rnd = Math.random) {
@@ -597,15 +597,20 @@
       S.trainTix = (S.trainTix || 0) + reward.tickets;
       reward.bagUnlocked = P7.recordRankClear(S, m, rank).bagUnlocked;   // 実績（下位ランクもクリア扱い）
     }
-    const pool = [...BONUS_STATS], [lo, hi] = WIN_BONUS_RANGE[rank];
-    for (let i = 0; i < WIN_BONUS_COUNT; i++) {
-      const key = pool.splice(Math.floor(rnd() * pool.length), 1)[0];
-      reward.bonus.push({ key, amount: addStat(m, key, lo + Math.floor(rnd() * (hi - lo + 1))) });
+    if (firstClear) {
+      const pool = [...BONUS_STATS], [lo, hi] = WIN_BONUS_RANGE[rank];
+      for (let i = 0; i < WIN_BONUS_COUNT; i++) {
+        const key = pool.splice(Math.floor(rnd() * pool.length), 1)[0];
+        reward.bonus.push({ key, amount: addStat(m, key, lo + Math.floor(rnd() * (hi - lo + 1))) });
+      }
     }
     // 旧来の記録（大会勝利数・ブリーダーランク・個体のランク欄）は「大会優勝1回」として1回だけ更新（個別試合では増やさない）
     S.wins = (S.wins || 0) + 1;
     S.br = Math.max(S.br == null ? -1 : S.br, rank);
-    m.rk = Math.max(m.rk || 0, highestCleared(m));
+    const rk0 = m.rk || 0;
+    m.rk = Math.max(rk0, highestCleared(m));
+    // ランクアップ＝初回優勝で、その個体のクリア最高ランクが上がったとき（次の上位ランクが選べるようになる）。再優勝では起きない
+    reward.rankUp = firstClear && m.rk > rk0 ? { from: rk0, to: m.rk, unlocked: Math.min(RANK_S, maxChallengeRank(m)) } : null;
     return reward;
   }
   Object.assign(API, { PRIZE, FIRST_CLEAR_TICKETS, WIN_BONUS_RANGE, WIN_BONUS_COUNT, maxChallengeRank, eligibleRanks, canChallenge, grantTournamentWin });
@@ -647,13 +652,43 @@
     finish(S, m, b, won, rnd) {
       const t = m.raise.tour;
       if (!t || t.status !== 'league' || t.league.round !== b.round) return {};
-      LG().recordPlayerResult(t.league, won);
+      LG().recordPlayerResult(t.league, won, b.stats);   // b.stats＝その試合の残りライフ%・与えたダメージ・命中回数（index.html が fight() の後に入れる。無ければ順位の計算で補う）
       const out = { round: b.round };
       if (LG().isFinished(t.league)) Object.assign(out, settleTournament(S, m, rnd));
       return out;
     },
   };
   Object.assign(API, { canStartTournament, startTournament, tourNext });
+
+  // 大会の終わりの順（2026-10-06 正式）：全試合の終了 → 最終順位の確定 → 優勝の表示 → 初回クリアの報酬 → （必要なら）ランクアップ → セドリックの締め → 次の画面。
+  //  1試合ごとには報酬・ランクアップを出さない（決着＝settleTournament の1回だけ）。ランクアップの演出・セドリックの正式 UI は素材待ち＝
+  //  ここでは順番と差し込み口だけ（registerTourEndHook(step, fn)。fn(data) が Promise を返せば終わるまで待つ）。
+  const TOUR_END_STEPS = Object.freeze(['final', 'champion', 'firstReward', 'rankUp', 'cedricEnd', 'next']);
+  const tourEndHooks = {};
+  function registerTourEndHook(step, fn) {
+    if (!TOUR_END_STEPS.includes(step)) throw new Error(`大会の終わりの段階が不正です：${step}`);
+    if (typeof fn === 'function') (tourEndHooks[step] = tourEndHooks[step] || []).push(fn); else delete tourEndHooks[step];
+  }
+  /** 決着の結果（m.raise.tour.result）から、表示する段階を順に並べる（その大会で起きない段階は入れない） */
+  function tourEndSteps(result) {
+    if (!result) return [];
+    const rw = result.reward, out = [{ step: 'final', place: result.place }];
+    if (result.won) out.push({ step: 'champion', rank: result.rank });
+    if (rw && rw.firstClear) out.push({ step: 'firstReward', prize: rw.prize, tickets: rw.tickets, bonus: rw.bonus, bagUnlocked: rw.bagUnlocked });
+    if (rw && rw.rankUp) out.push({ step: 'rankUp', ...rw.rankUp });
+    out.push({ step: 'cedricEnd', won: !!result.won }, { step: 'next' });
+    return out;
+  }
+  /** 段階を順に流す（差し込み口が無い段階は飛ばす）。戻り値＝流した段階の名前 */
+  async function runTourEnd(result) {
+    const ran = [];
+    for (const d of tourEndSteps(result)) {
+      ran.push(d.step);
+      for (const fn of tourEndHooks[d.step] || []) { try { await fn(d); } catch (e) { /* 演出の失敗で進行を止めない */ } }
+    }
+    return ran;
+  }
+  Object.assign(API, { TOUR_END_STEPS, registerTourEndHook, tourEndSteps, runTourEnd });
 
   // =========================================================
   // 育成リソース（HUD）と修行チケットマス（Step 7）

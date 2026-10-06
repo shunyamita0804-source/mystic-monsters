@@ -733,8 +733,8 @@ test('QA-RL25：参加数はE・D 6体（自分の試合5）、C〜S 8体（自�
 test('QA-RL26：初回優勝の賞金 E100／D200／C350／B550／A800／S1200G（修行チケットも）。途中の試合では賞金・勝利数・ランクは付かない', () => {
   const { P8 } = load();
   assert.deepEqual([...P8.PRIZE], PRIZE);
-  // 修行チケットの枚数（E・D 1枚、C〜S 2枚）はコードの定義（CLAUDE.md には記載なし）
-  assert.deepEqual([...P8.FIRST_CLEAR_TICKETS], [1, 1, 2, 2, 2, 2]);
+  // 初回優勝の特訓チケット（2026-10-06 正式）：E1 D1 C1 B2 A2 S2
+  assert.deepEqual([...P8.FIRST_CLEAR_TICKETS], [1, 1, 1, 2, 2, 2]);
   for (let rank = 0; rank < 6; rank++) {
     const { P8: Q, S } = atGoal(4, rank - 1);
     const g0 = S.g, t0 = S.trainTix, w0 = S.wins, m = S.m, s0 = stats(m);
@@ -764,15 +764,15 @@ test('QA-RL26：初回優勝の賞金 E100／D200／C350／B550／A800／S1200G�
   }
 });
 
-test('QA-RL27：クリア済みランクで再び優勝しても賞金・修行チケットは出ない（初回優勝の賞金は個体ごと・ランクごとに1回）', () => {
+test('QA-RL27：クリア済みランクで再び優勝しても報酬は出ない（2026-10-06 正式：賞金・特訓チケット・ステータスボーナス・ランクアップなし。初回優勝の賞金は個体ごと・ランクごとに1回）', () => {
   for (const rank of [0, 1]) {
     const { P8, S } = atGoal(2, 1);   // E・D クリア済み
-    const g0 = S.g, t0 = S.trainTix, rc0 = [...S.m.prog.rankClr];
+    const g0 = S.g, t0 = S.trainTix, rc0 = [...S.m.prog.rankClr], s0 = stats(S.m);
     P8.startTournament(S, S.m, rank, 3);
     const f = playLeague(P8, S);
     assert.deepEqual([f.won, f.place, f.reward.firstClear, f.reward.prize, f.reward.tickets], [true, 1, false, 0, 0]);
-    // 再優勝でも優勝ボーナス（異なる3能力）は付く（コードの動き。CLAUDE.md は賞金だけを記載）
-    assert.equal(f.reward.bonus.length, 3);
+    assert.equal(f.reward.bonus.length, 0, '再優勝はステータスボーナスも無し'); assert.equal(f.reward.rankUp, null, 'ランクアップなし');
+    assert.deepEqual(stats(S.m), s0, '能力は変わらない');
     assert.deepEqual([S.g, S.trainTix], [g0, t0]);
     assert.deepEqual(S.m.prog.rankClr, rc0);
     assert.equal(P8.endChapter(S, S.m).entry.tour.firstClear, false);
@@ -1098,7 +1098,7 @@ test('QA-RL40：新規開始から育成完了まで通し（正式マップ・�
   assert.deepEqual(S.m.raise.log.map((e) => [e.ch, e.tour ? `${P8.RANK_LETTERS[e.tour.rank]}${e.tour.place}位` : e.declined ? '辞退' : e.skipped ? '未実施' : '']),
     [[1, 'D1位'], [2, 'C1位'], [3, 'B1位'], [4, 'A1位'], ['final', '未実施']]);
   assert.equal(S.g - g0, boardGold + 200 + 350 + 550 + 800, '賞金はD・C・B・Aの初回優勝分だけ（飛ばしたEは出ない）');
-  assert.equal(S.trainTix - t0, boardTix + 1 + 2 + 2 + 2);
+  assert.equal(S.trainTix - t0, boardTix + 1 + 1 + 2 + 2, '2026-10-06 正式：D1・C1・B2・A2');
   assert.deepEqual(S.m.prog.rankClr, clr(4));
   assert.equal(P8.rankLabel(S.m), 'A');
 });
