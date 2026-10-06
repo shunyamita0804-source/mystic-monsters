@@ -203,17 +203,19 @@ test('JR-9：Chapter開始の演出（2026-10-02 正式）：全景を止めて�
   assert.equal(await pg.evaluate(() => JSON.parse(localStorage.getItem('mr4v6')).m.raise.field.introSeen), true);
   await pg.reload(); await pg.waitForFunction(() => typeof MMP8 === 'object'); await pg.click('.p15start'); await pg.waitForSelector('#chf .chf-bg'); await pg.waitForTimeout(600);
   assert.equal(await pg.evaluate(() => !!document.querySelector('.chintro')), false, '再読み込みでは出さない');
-  // タップで飛ばす：START の位置を連打しても、飛ばすのは1回・サイコロは振られない・正式な開始状態
-  for (const at of [300, 1500, 3100]) {
+  // 2026-10-06（試遊修正）：タップでは飛ばさない（必ず最後まで見せる）。START の位置を連打しても演出は続き、サイコロは振られない・終われば正式な開始状態
+  for (const at of [300, 1500]) {
     await pg.evaluate(() => { delete S.m.raise.field.introSeen; save(); document.querySelector('#app').innerHTML = ''; board(); });   // 新しい出発と同じ状態
     await pg.waitForSelector('.chintro', { timeout: 8000 }); await pg.waitForTimeout(at);
+    assert.equal(await pg.evaluate(() => !!document.querySelector('.chintro-tap')), false, '「タップでとばす」は出さない');
     const pos = await pg.evaluate(() => { const r = document.querySelector('#brollbtn').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; });
-    const tS = Date.now(); for (let i = 0; i < 6; i++) { await pg.mouse.click(pos[0], pos[1]); await pg.waitForTimeout(40); }
-    await pg.waitForFunction(() => !document.querySelector('.chintro') && !bBusy && !document.querySelector('#brollbtn').disabled, null, { timeout: 4000 });
-    assert.ok(Date.now() - tS < 1500, `飛ばすとすぐ（${Date.now() - tS}ms）`);
+    for (let i = 0; i < 6; i++) { await pg.mouse.click(pos[0], pos[1]); await pg.waitForTimeout(40); }
+    await pg.waitForTimeout(700);
+    assert.equal(await pg.evaluate(() => !!document.querySelector('.chintro')), true, `${at}ms のタップで飛ばさない（演出は続く）`);
+    await pg.waitForFunction(() => !document.querySelector('.chintro') && !bBusy && !document.querySelector('#brollbtn').disabled, null, { timeout: 12000 });
     await pg.waitForTimeout(500);
     const c = await pg.evaluate(() => ({ turns: S.m.raise.turnsUsed, pend: S.m.raise.pend, intros: document.querySelectorAll('.chintro').length, cls: document.querySelector('#chfw').className, tiles: document.querySelectorAll('#chf .chf-tile').length, mon: !!document.querySelector('#bmonw img.on'), node: S.m.raise.node }));
-    assert.deepEqual([c.turns, c.pend, c.intros, c.node, c.mon], [0, null, 0, 'p1_0', true], `${at}ms で飛ばす：飛ばしたタップでサイコロは振られない`); assert.doesNotMatch(c.cls, /chf-intro/); assert.ok(c.tiles > 0);
+    assert.deepEqual([c.turns, c.pend, c.intros, c.node, c.mon], [0, null, 0, 'p1_0', true], `${at}ms のタップ：サイコロは振られない`); assert.doesNotMatch(c.cls, /chf-intro/); assert.ok(c.tiles > 0);
   }
   await pg.click('#brollbtn'); await pg.waitForFunction(() => S.m.raise.turnsUsed === 1, null, { timeout: 5000 });   // そのあと START は押せる
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);

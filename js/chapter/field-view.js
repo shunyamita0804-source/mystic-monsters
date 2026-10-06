@@ -1044,9 +1044,12 @@
     const rvFig = rival && BT.encounterFigure ? asset(V.cfg, BT.encounterFigure) : null, rvPart = rival && BT.encounterPartner ? asset(V.cfg, BT.encounterPartner) : null;
     const motes = Array.from({ length: rival ? 14 : 10 }, (_, i) => `<i class="ce-mote" style="--x:${(10 + ((i * 41) % 80)).toFixed(0)}%;--dl:${(i * 0.09).toFixed(2)}s;--s:${(3 + (i % 3) * 2)}px"></i>`).join('');
     const label = rival ? 'RIVAL' : 'ENCOUNTER';
-    ui.insertAdjacentHTML('beforeend', `<div class="chf-enc chf-enc2 t-${tone}${BT.aura ? ' aura' : ''}" role="status" aria-label="${esc(text)}">
+    // 2026-10-06（試遊修正）：野生の遭遇だけ、相手は正体の分からない黒いシルエット（画像の色は変えず、絵の形を mask にした黒い面）・画面の中央付近に。
+    //  img（今回の相手＝バトルの相手と同じ種族）は形と位置の基準として置くだけ（見せない・名前は出さない）。レア・ライバルは従来どおり
+    const sil = bt === 'wild' && !!foe, silBox = sil ? `<i class="ce-sil" aria-hidden="true" style="-webkit-mask-image:url('${esc(foe.src)}');mask-image:url('${esc(foe.src)}')"></i>` : '';
+    ui.insertAdjacentHTML('beforeend', `<div class="chf-enc chf-enc2 t-${tone}${BT.aura ? ' aura' : ''}${sil ? ' sil' : ''}" role="status" aria-label="${esc(text)}">
       <i class="ce-veil"></i>${rival ? `<div class="ce-top"><span>✦ ${label} ✦</span></div>` : ''}
-      <div class="ce-stage">${BT.aura ? '<i class="ce-halo"></i>' : ''}<i class="ce-circle"></i><i class="ce-circle in"></i>${motes}${foe ? `<img class="ce-mon" src="${esc(foe.src)}" alt="${esc(foe.name)}" draggable="false">` : ''}${rvFig ? `<img class="ce-rival" src="${esc(rvFig)}" alt="${esc(BT.name || 'ライバル')}" draggable="false">` : ''}${rvPart ? `<img class="ce-partner" src="${esc(rvPart)}" alt="" draggable="false">` : ''}</div>
+      <div class="ce-stage">${BT.aura ? '<i class="ce-halo"></i>' : ''}<i class="ce-circle"></i><i class="ce-circle in"></i>${motes}${foe ? `<img class="ce-mon" src="${esc(foe.src)}" alt="${sil ? '？？？' : esc(foe.name)}" draggable="false">` : ''}${silBox}${rvFig ? `<img class="ce-rival" src="${esc(rvFig)}" alt="${esc(BT.name || 'ライバル')}" draggable="false">` : ''}${rvPart ? `<img class="ce-partner" src="${esc(rvPart)}" alt="" draggable="false">` : ''}</div>
       ${rival ? '' : `<div class="ce-band"><span>${label}</span></div>`}${BT.badge ? `<em class="ce-badge">${esc(BT.badge)}</em>` : ''}<b class="ce-tx">${esc(text)}</b></div>`);
     const el = ui.querySelector('.chf-enc2:last-child');   // 旧い名前 chf-enc も持つ（待ち合わせ・監査のテストが使う。見た目は .chf-enc2 だけ）
     feel(cue, { battleType: bt });   // 絵と文が出た瞬間

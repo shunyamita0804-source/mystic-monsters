@@ -62,14 +62,14 @@ test('N6-04：会話＝タップで全文を出した直後0.3秒は次へ進ま
   assert.match(rd('js/chapter/field-view.js'), /const t = root\.MM_QA_FINA_AUTO \|\| root\.MM_QA_NO_STORY \? setTimeout\(ok, ms\) : null;/);
 });
 
-test('N6-05：禁則＝プロローグは句読点・閉じ括弧を前の文字に・開き括弧を次の文字に付けたまとまりで折り返す（最後の1文字だけで改行しない）。会話・案内は line-break:strict・text-wrap:pretty', () => {
+test('N6-05：禁則＝プロローグは句読点・閉じ括弧を前の文字に・開き括弧を次の文字に付けたまとまりで折り返す（最後の1文字だけで改行しない）。会話・案内は line-break:strict（2026-10-06 試遊修正：text-wrap:pretty は Safari で行が早く折り返されるため使わない）', () => {
   const P = load('js/prologue/prologue.js', 'MMPRO');
   assert.deepEqual(P.kinsoku('世界を救った。'), ['世', '界', 'を', '救っ', 'た。']);
   assert.deepEqual(P.kinsoku('「聖獣」と共に――'), ['「聖', '獣」', 'と', '共', 'に――']);
   for (const s of P.SLIDES) for (const pg of s.pages) for (const t of pg) for (const u of P.kinsoku(t)) assert.ok(!/^[。、！？…―」』）]/.test(u), `行頭に句読点を置かない：${u}`);
   assert.match(HTML, /\.mmpro-u \.mpw\{white-space:nowrap\}/);
-  assert.match(HTML, /\.mmtalk-text\{[^}]*line-break:strict;text-wrap:pretty;/);
-  assert.match(HTML, /#app :is\(\.dlg,#msg,\.kbub,\.fbub,\.dmsg,\.dbub,\.gssay,\.vgsay,\.elsay,\.p9ced,\.chf-fina\)\{line-break:strict;text-wrap:pretty\}/);
+  assert.match(HTML, /\.mmtalk-text\{[^}]*line-break:strict;text-wrap:wrap;/);
+  assert.match(HTML, /#app :is\(\.dlg,#msg,\.kbub,\.fbub,\.dmsg,\.dbub,\.gssay,\.vgsay,\.elsay,\.p9ced,\.chf-fina\)\{line-break:strict;text-wrap:wrap\}/);
 });
 
 test('N6-06：世界地図（序盤の会話）は世界の全体が見える倍率（寄りすぎない）。案内している地点は光（地方）・光点とリング（町）', () => {
@@ -84,4 +84,19 @@ test('N6-07：ベースキャンプにダンは常設しない・「出発する
   assert.match(HTML, /#app \.fm\.bc \.bcgo\{bottom:calc\(var\(--bcbar\) \+ 72px \+ env\(safe-area-inset-bottom,0px\)\)\}/, '2026-10-05 試遊：さらに上へ（40 → 72px）');
   assert.match(HTML, /<div class="tcity" aria-label="現在地：ミストリア"><img class="tcity-img" src="\$\{TOWN_NAMEPLATE\}" alt="ミストリア"/, '2026-10-05 正式素材：名札は正式画像（.fmplq の流用はやめた）');
   assert.match(HTML, /const TOWN_NAMEPLATE="\.\/assets\/town\/nameplate\/mistria_nameplate\.webp";/); assert.match(HTML, /#app \.map\.town \.tcity\{[^}]*aspect-ratio:686\/280;/, '縦横比のまま'); assert.doesNotMatch(HTML, /fmplq tplace/);
+});
+
+test('N6-08（2026-10-06 試遊修正）：会話の本文は「語＋うしろの助詞」のまとまりで折り返す（語の途中・助詞の前・句読点の前で切らない・最後の1文字だけの行を作らない）', () => {
+  const N = load('js/npc/npc.js', 'MMNPC');
+  const g = (t) => N.phraseGroups(t).map((x) => x.join(''));
+  const a = g('アルトさんのような新人の聖獣士には、管理局から支援をお渡ししています。');
+  assert.equal(a.join(''), 'アルトさんのような新人の聖獣士には、管理局から支援をお渡ししています。', '文字は変えない');
+  assert.ok(a.includes('聖獣士には、'), `語の途中で切らない：${a.join('|')}`);
+  assert.ok(a.includes('お渡ししています。'), `「お」は次の語に・句読点は前に：${a.join('|')}`);
+  for (const u of a) assert.ok(!/^[のにはをがでとも、。！？]/.test(u), `助詞・句読点で始まらない：${u}`);
+  const b = g('育成を始めるときは、街の下の「ベースキャンプ」から。準備ができたら行ってみよう！');
+  assert.ok(b.some((u) => u.startsWith('「ベースキャンプ」')), `開き括弧は次・閉じ括弧は前：${b.join('|')}`);
+  for (const t of ['はい', 'あ', '一行目\n二行目']) assert.equal(g(t).join(''), t);
+  assert.ok(g('一行目\n二行目').some((u) => u === '\n'), '改行はそのまま');
+  for (const u of g('ああああああああああああああああああああああああああああああ')) assert.ok(u.length <= 14, 'とても長い語は分ける（窓からはみ出さない）');
 });

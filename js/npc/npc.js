@@ -88,6 +88,39 @@
     }
     flush(); return out;
   }
+  /**
+   * 2026-10-06（試遊修正「会話が早く改行される」）：会話の本文を「語＋うしろの助詞・活用」のまとまり（文節に近い）に分ける。
+   *  まとまりの中では折り返さない（span.mtw）＝語の途中・助詞の前では改行しない。まとまりの間でだけ折り返す＝会話窓の横幅をいっぱいに使う。
+   *  語の区切りは Intl.Segmenter（word）。続く漢字・続くカタカナは1語に、ひらがなだけの語（助詞・活用）は前の語に付ける（長くなりすぎない範囲）。
+   *  「お」「ご」（＋漢字の語）は次の語に。句読点・閉じ括弧は前、開き括弧は次（kinsokuGroups と同じ文字）。行の最後が1文字だけにならない。
+   *  Intl.Segmenter が無い環境・とても長い語は従来の kinsokuGroups（1文字ずつ）。文字そのもの（splitChars の結果）は変えない
+   */
+  const PUNCT_END = '。、，．！？!?…‥」』）)】〕〉》’”', HIRA = /^[ぁ-ゟ]+$/, KANJI = /[一-鿿々]/, KATA = /[ァ-ヺー]/, PHRASE_MAX = 10;
+  function phraseGroups(text) {
+    const s = String(text == null ? '' : text);
+    let Seg = null; try { if (typeof Intl !== 'undefined' && Intl.Segmenter) Seg = new Intl.Segmenter('ja', { granularity: 'word' }); } catch (e) { Seg = null; }
+    if (!Seg) return kinsokuGroups(splitChars(s));
+    const out = [];
+    s.split('\n').forEach((ln, li) => {
+      if (li) out.push(['\n']);
+      const segs = [...Seg.segment(ln)].map((x) => x.segment), line = []; let pend = null;
+      for (let i = 0; i < segs.length; i++) {
+        const seg = segs[i], ch = splitChars(seg); if (!ch.length) continue;
+        if (pend) { line.push(pend.concat(ch)); pend = null; continue; }
+        const prev = line.length ? line[line.length - 1] : null, last = prev ? prev[prev.length - 1] : '', first = ch[0];
+        const next = segs[i + 1], prefix = (seg === 'お' || seg === 'ご') && next && !HIRA.test(next);
+        if (prev && (NO_HEAD.includes(first) || NO_TAIL.includes(last))) { prev.push(...ch); continue; }   // 句読点・閉じ括弧は前に（長さに関係なく）
+        if (NO_TAIL.includes(ch[ch.length - 1]) || prefix) { pend = ch; continue; }                       // 開き括弧・「お」「ご」は次の語に
+        const joinable = prev && !PUNCT_END.includes(last) && prev.length + ch.length <= PHRASE_MAX;
+        if (joinable && (HIRA.test(seg) || (KANJI.test(first) && KANJI.test(last)) || (KATA.test(first) && KATA.test(last)))) { prev.push(...ch); continue; }
+        line.push(ch);
+      }
+      if (pend) line.push(pend);
+      if (line.length > 1 && line[line.length - 1].length === 1) { const a = line.pop(); line[line.length - 1] = line[line.length - 1].concat(a); }   // 最後の1文字だけで改行しない
+      for (const g of line) { if (g.length > 14) out.push(...kinsokuGroups(g)); else out.push(g); }   // とても長い語は従来どおり（窓からはみ出さない）
+    });
+    return out;
+  }
   function splitChars(text) {
     const s = String(text == null ? '' : text);
     try { if (typeof Intl !== 'undefined' && Intl.Segmenter) return [...new Intl.Segmenter('ja', { granularity: 'grapheme' }).segment(s)].map((x) => x.segment); } catch (e) { /* 古い環境は下へ */ }
@@ -241,7 +274,7 @@
           // 2026-10-05 PHASE B（文字送りの途中で改行の位置が変わる＝行が組み替わって見える）：行の全文を最初に組んで、改行の位置を決めてから文字を出す。
           //  全部の文字を DOM に置き（禁則のまとまり span.mtw＝折り返さない・1文字ずつ span.mtc）、まだの文字は透明（opacity 0。場所は取る）→ 出た文字から .on。文字の位置は動かない
           if (s.idx !== txLine || s.full !== txFull) { txLine = s.idx; txFull = s.full; txShown = 0; tx.textContent = ''; txChars = [];
-            for (const g of kinsokuGroups(splitChars(s.full))) { if (g.length === 1 && g[0] === '\n') { tx.appendChild(document.createTextNode('\n')); continue; }
+            for (const g of phraseGroups(s.full)) { if (g.length === 1 && g[0] === '\n') { tx.appendChild(document.createTextNode('\n')); continue; }
               const w = h('span', 'mtw'); for (const chr of g) { const cs = h('span', 'mtc'); cs.textContent = chr; w.appendChild(cs); txChars.push(cs); } tx.appendChild(w); }
             // 選択肢がある行は、選択肢の場所も最初から取っておく（全文のあとに選択肢が出ても本文が上へずれない）
             ch.classList.toggle('pre', !!(s.hasChoices && !s.choices)); ch.classList.toggle('two', s.nChoices === 2); ch.style.setProperty('--n', String(s.nChoices || 0)); if (s.hasChoices && !s.choices) ch.hidden = false; }
@@ -368,5 +401,5 @@
     for (const v of views) for (const src of new Set(Object.values(n.views[v] || {}))) { if (warmed.has(src)) continue; warmed.add(src); const i = new Image(); i.decoding = 'async'; i.src = src; if (i.decode) i.decode().catch(() => {}); }
   }
 
-  root.MMNPC = Object.freeze({ TYPE_MS, MIN_TAP_MS, register, get, list, expressionsOf, animationsOf, imageOf, animOf, preload, splitChars, resolveLines, createTalk, talk, close, state, animState, fromLegacy, EXPR, EXPR_ALIAS, srcOf, warm, standOf, STAND, kinsokuGroups });
+  root.MMNPC = Object.freeze({ TYPE_MS, MIN_TAP_MS, register, get, list, expressionsOf, animationsOf, imageOf, animOf, preload, splitChars, resolveLines, createTalk, talk, close, state, animState, fromLegacy, EXPR, EXPR_ALIAS, srcOf, warm, standOf, STAND, kinsokuGroups, phraseGroups });
 })(typeof window !== 'undefined' ? window : globalThis);

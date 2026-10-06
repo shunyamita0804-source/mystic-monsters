@@ -13,7 +13,7 @@ const USED = ['b_group/b02_player_card_frame_blank', 'b_group/b04_save_slot_row_
   'b_group/b01_facility_label_blank', 'b_group/b03_profile_row_blank', 'b_group/b07_autosave_panel_blank', 'b_group/b08_backup_button_blank', 'b_group/b09_chapter_ribbon_blank',
   'b_group/b11_page_dot_on_glow', 'b_group/b12_page_dot_off', 'b_group/b20_board_progress_header_blank', 'b_group/b22_adventure_menu_popup_blank',
   'b_group/b26_ability_bar_fill_lightblue', 'b_group/b27_ability_bar_fill_darkblue', 'b_group/b28_ability_bar_fill_pink', 'b_group/b29_ability_bar_fill_green',
-  'b_group/b30_ability_bar_fill_red', 'b_group/b31_ability_bar_fill_yellow', 'b_group/b37_skill_slot_locked_blank', 'b_group/b43_round_portrait_frame_plain',
+  'b_group/b30_ability_bar_fill_red', 'b_group/b31_ability_bar_fill_yellow', 'b_group/b34_roulette_slot_blank', 'b_group/b37_skill_slot_locked_blank', 'b_group/b43_round_portrait_frame_plain',
   'b_group/b49_button_red_large_ornate', 'b_group/b50_button_disabled_gray_ornate', 'b_group/b51_parchment_note_frame_blank',
   'a_group/a17_popup_frame_parchment_plain', 'a_group/a19_button_blue_ornate_gems'];
 const RAN = (HTML.match(/assets\/ui\/[ab]_group\/[a-z0-9_]+\.png/g) || []);
@@ -58,7 +58,7 @@ test('UB-03（第2弾）：施設名ラベル・リボン・プロフィール�
   // 能力バーの色＝正式色の対応（ライフ 黄・ちから 赤・かしこさ 緑・命中 ピンク・回避 水色・丈夫さ 青）
   for (const [k, c] of [['li', 'yellow'], ['po', 'red'], ['in', 'green'], ['hi', 'pink'], ['ev', 'lightblue'], ['de', 'darkblue']]) assert.match(css, new RegExp(`\\.sts \\.stb\\[data-k="${k}"\\]\\{--fill:url\\(\\./assets/ui/b_group/b\\d\\d_ability_bar_fill_${c}\\.png\\)\\}`), k);
   assert.match(css, /mmdg-danger,[^{]*\{aspect-ratio:720\/209;background-image:url\([^)]*b49_button_red_large_ornate\.png\)/, '取り返しのつかない操作は赤');
-  assert.match(css, /:disabled[^{]*\{background-image:url\([^)]*b50_button_disabled_gray_ornate\.png\)/, '押せないボタンは灰色');
+  assert.match(css, /:disabled[^{]*\{background:url\([^)]*b50_button_disabled_gray_ornate\.png\) center\/100% 100% no-repeat;/, '押せないボタンは灰色（大きさも指定＝古い一括指定で絵が切れない）');
   assert.doesNotMatch(css, /hue-rotate|saturate|grayscale|sepia|invert|filter/, '正式画像の色は変えない（filter を使わない）');
   // 処理は変えない（押す範囲は従来のボタン）
   assert.match(readFileSync(path.join(ROOT, 'js/chapter/field-view.js'), 'utf8'), /<button class="p9mbtn chh-menu" onclick="p9Menu\(\)" aria-label="メニュー">☰<\/button>/);

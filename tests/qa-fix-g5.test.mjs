@@ -69,7 +69,7 @@ function load(c, doc) {
 // ---------------------------------------------------------
 test('QA-G5-1：公開API・文字送りの速さ・連打の最短間隔は従来のまま。開いた直後に受け付けない時間は 0.15〜0.25秒', () => {
   const M = load();
-  assert.deepEqual(Object.keys(M), ['TYPE_MS', 'MIN_TAP_MS', 'register', 'get', 'list', 'expressionsOf', 'animationsOf', 'imageOf', 'animOf', 'preload', 'splitChars', 'resolveLines', 'createTalk', 'talk', 'close', 'state', 'animState', 'fromLegacy', 'EXPR', 'EXPR_ALIAS', 'srcOf', 'warm', 'standOf', 'STAND', 'kinsokuGroups']);   /* 2026-10-05 PHASE B：会話の禁則のまとまり（kinsokuGroups）を追加 */   /* 2026-10-04 PHASE H5：立ち絵の規格（standOf・STAND）を追加 */   // 2026-10-04（追加アセット）：表情差分の一覧・読み替え・画像の URL・施設に入る直前の先読み
+  assert.deepEqual(Object.keys(M), ['TYPE_MS', 'MIN_TAP_MS', 'register', 'get', 'list', 'expressionsOf', 'animationsOf', 'imageOf', 'animOf', 'preload', 'splitChars', 'resolveLines', 'createTalk', 'talk', 'close', 'state', 'animState', 'fromLegacy', 'EXPR', 'EXPR_ALIAS', 'srcOf', 'warm', 'standOf', 'STAND', 'kinsokuGroups', 'phraseGroups']);   /* 2026-10-06：会話の折り返しのまとまり（phraseGroups）を追加 */   /* 2026-10-05 PHASE B：会話の禁則のまとまり（kinsokuGroups）を追加 */   /* 2026-10-04 PHASE H5：立ち絵の規格（standOf・STAND）を追加 */   // 2026-10-04（追加アセット）：表情差分の一覧・読み替え・画像の URL・施設に入る直前の先読み
   assert.equal(M.TYPE_MS, 32); assert.equal(M.MIN_TAP_MS, 80);
   assert.ok(GUARD_MS >= 150 && GUARD_MS <= 250, `OPEN_GUARD_MS=${GUARD_MS}`); assert.equal((SRC.match(/const OPEN_GUARD_MS = \d+;/g) || []).length, 1, '定数は1か所');
   // createTalk を直接使うとき（openGuardMs 省略）は従来どおり、開いた直後のタップも受け付ける

@@ -51,7 +51,7 @@
    * 演出を再生する（Promise。終わると俯瞰図は消え、下の実プレイ画面（FIELD 1）が見えている）
    *  流れ：全景を表示して止める → 「Chapter N」がゆっくり現れる → Chapter 名 → 少し見せる → タイトルが消える
    *        → 全景の中を旅の開始地点へカメラが移動 → その終わりに FIELD 1 へクロスフェード（UI の表示は呼び出し側＝field-view）
-   *  opts：{ key, host, chapterId, title, patternId, calm }。タップで飛ばす（何回押しても1回だけ。飛ばしたら最後の状態へすぐ移る）
+   *  opts：{ key, host, chapterId, title, patternId, calm }。2026-10-06：タップでは飛ばさない（必ず最後まで）。MMCHI.skip() はコードからだけ（テスト・画面の片付け）
    *  戻り値：{ played, skipped }
    */
   async function play(cfg, opts = {}) {
@@ -63,14 +63,15 @@
     const ov = document.createElement('div'); ov.className = 'chintro'; ov.setAttribute('role', 'presentation');
     ov.innerHTML = `<div class="chintro-cam"><img class="chintro-img" src="${esc(src)}" alt="" draggable="false" decoding="async"></div>
       <div class="chintro-title"><small class="chintro-ch">${esc(label)}</small><b class="chintro-name">${esc(name)}</b></div>
-      <p class="chintro-tap">タップでとばす</p>`;
+`;   // 2026-10-06（試遊修正）：Chapter 開始の演出はスキップできない＝「タップでとばす」は出さない
     host.appendChild(ov);
     const cam = ov.querySelector('.chintro-cam'), img = ov.querySelector('.chintro-img'), title = ov.querySelector('.chintro-title');
     const ch = ov.querySelector('.chintro-ch'), nm = ov.querySelector('.chintro-name');
     let skipped = false, wake = null, anim = null, cued = false;
     const titleCue = () => { if (cued) return; cued = true; try { if (typeof opts.onTitle === 'function') opts.onTitle(); } catch (e) {} };
     const skip = () => { if (skipped) return; skipped = true; if (wake) wake(); };   // 何回押しても1回だけ
-    ov.addEventListener('pointerdown', (e) => { e.preventDefault(); skip(); });
+    ov.addEventListener('pointerdown', (e) => { e.preventDefault(); });   // 2026-10-06：タップでは飛ばさない（必ず最後まで見せる）。タップは下の画面へ届かせない
+    ov.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); });
     current = { skip };
     const race = (ms) => new Promise((ok) => { if (skipped || ms <= 0) return ok(); const t = setTimeout(() => { wake = null; ok(); }, ms); wake = () => { clearTimeout(t); wake = null; ok(); }; });
     const fadeIn = (el, ms) => { el.style.transition = `opacity ${ms}ms ease, transform ${ms}ms ease`; el.classList.add('on'); };
