@@ -419,7 +419,7 @@ T('QA-RL4：Chapter 3（旧ボード）のゴール → ランク選択（クリ
 });
 
 let LAST_MATCH_MSG = null;   // QA-RL6 で記録した「最終戦に勝って2位」の結果の文言（QA-RL6b で確かめる）
-T('QA-RL5：大会の決着：全勝で優勝 → 初回優勝の賞金350G・修行チケット2枚・ステータスボーナスを1回だけ（結果画面で再読み込みしても増えない）→ Chapterを終えてファーム（前回の結果に優勝）', async () => {
+T('QA-RL5：大会の決着：全勝で優勝 → 初回優勝の賞金350G・特訓チケット1枚（2026-10-06 正式：C は1枚）・ステータスボーナスを1回だけ（結果画面で再読み込みしても増えない）→ Chapterを終えてファーム（前回の結果に優勝）', async () => {
   const p = await boot(seed({ ch: 3, node: 'G', goal: true, turnsUsed: 12, log: [LOG1, LOG2D] }, { g: 1000, trainTix: 0 }, 1), '.rcv-row'); const pg = p.page;
   await startTour(pg, 2);
   const s0 = await H.getS(pg);
@@ -431,8 +431,8 @@ T('QA-RL5：大会の決着：全勝で優勝 → 初回優勝の賞金350G・�
   assert.equal(t.status, 'settled');
   const { reward, ...res } = t.result;
   assert.deepEqual(res, { rank: 2, place: 1, won: true, firstClear: true });
-  assert.deepEqual([reward.prize, reward.tickets, reward.firstClear], [350, 2, true]);
-  assert.deepEqual([s.g, s.trainTix, s.wins], [s0.g + 350, s0.trainTix + 2, (s0.wins || 0) + 1], '賞金・チケット・優勝回数は大会全体で1回だけ');
+  assert.deepEqual([reward.prize, reward.tickets, reward.firstClear], [350, 1, true]);
+  assert.deepEqual([s.g, s.trainTix, s.wins], [s0.g + 350, s0.trainTix + 1, (s0.wins || 0) + 1], '賞金・チケット・優勝回数は大会全体で1回だけ');
   assert.deepEqual(s.m.prog.rankClr, clr(2));
   // ステータスボーナス：異なる3能力に +4〜7（ランクC）。ほかの能力は変わらない
   assert.equal(new Set(reward.bonus.map((b) => b.key)).size, 3);
@@ -440,7 +440,7 @@ T('QA-RL5：大会の決着：全勝で優勝 → 初回優勝の賞金350G・�
   assert.deepEqual(up, Object.fromEntries(reward.bonus.map((b) => [b.key, b.amount])));
   for (const b of reward.bonus) assert.ok(b.amount >= 4 && b.amount <= 7, `${b.key} +${b.amount}`);
   const res0 = await textOf(pg, '.p9tour');
-  for (const w of ['優勝！', '初回優勝の報酬', '賞金 350G', '特訓チケット ×2', 'ステータスボーナス', 'Chapterを終えてベースキャンプへ']) assert.ok(res0.includes(w), `結果画面に「${w}」`);
+  for (const w of ['優勝！', '初回優勝の報酬', '賞金 350G', '特訓チケット ×1', 'ステータスボーナス', 'Chapterを終えてベースキャンプへ']) assert.ok(res0.includes(w), `結果画面に「${w}」`);
   assert.deepEqual(await myTable(pg), { w: '7', l: '0', mx: '○○○○○○○' });
   await assertSynced(pg);
   // 結果画面で再読み込み → 同じ結果画面、報酬は増えない
@@ -455,7 +455,7 @@ T('QA-RL5：大会の決着：全勝で優勝 → 初回優勝の賞金350G・�
   assert.deepEqual([r.state, r.ch], ['farm', 4]);
   assert.deepEqual(r.log.at(-1), { ch: 3, reachedGoal: true, turnsUsed: 12, turnLimit: 20, declined: false, tour: { rank: 2, place: 1, won: true, firstClear: true } });
   const txt = await H.text(pg);
-  assert.equal(await pg.evaluate(() => S.trainTix), 2, 'チケット2枚（2026-10-06：特訓の上の札は出さない）'); assert.equal(await pg.$('.bctix'), null);
+  assert.equal(await pg.evaluate(() => S.trainTix), 1, 'チケット1枚（2026-10-06・5 正式。特訓の上の札は出さない）'); assert.equal(await pg.$('.bctix'), null);
   assert.equal((await H.getS(pg)).g, s0.g + 350);
   noErrors(p);
 });
