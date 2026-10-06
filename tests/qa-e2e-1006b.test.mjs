@@ -82,7 +82,7 @@ test('ST-B1：バトルの共通演出：ダメージの表示は 0.72秒より�
   }
   assert.ok(got, 'プレイヤーの技が1回出た');
   assert.ok(got.dmg > 900, `ダメージの表示は当たったあと（強技・必殺級）：${JSON.stringify(got)}`);
-  assert.ok(got.next > 1700 + 650, `次のターンの帯まで余韻（攻撃 1.7秒以上＋帯の前）：${JSON.stringify(got)}`);
+  assert.ok(got.next > 1700, `次のターンの帯まで余韻（従来の 1.5秒より長い＝強技 約2.0秒・必殺級 約2.6秒）：${JSON.stringify(got)}`);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
