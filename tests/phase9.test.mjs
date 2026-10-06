@@ -304,7 +304,7 @@ test('T3-7：VS画面：左に自分・右に相手・中央にVS、正式6能�
   const vs = between('function p9VsScr(){', '\nfunction p9VsGo(');
   for (const w of ['p9Pt(m,"l me")', 'p9Pt(o,"l")', 'class="vsx">VS<', 'P9_STAT.map', 'class="p9bar l"', 'class="p9bar r"', '${a>b?"hi":""}', '${b>a?"hi":""}', 'p9VsGo(this)', '対戦開始', '【暫定】']) assert.ok(vs.includes(w), w);
   assert.doesNotMatch(vs, /有利|不利/, '「高い方が有利」とは書かない');
-  assert.match(fnLine('function p9VsGo('), /p9arm\(b,"もう一度押すと試合開始"\)\)return;p8TourFight\(\)/);
+  assert.match(fnLine('function p9VsGo('), /p9arm\(b,"もう一度押すと試合開始"\)\)return;/); assert.match(between('function p9VsGo(', '\nconst TB_INTRO'), /p8TourFight\(\)/, '2026-10-06：2度押し → 大会3（VS 演出）→ p8TourFight');
 });
 
 // ---------------------------------------------------------

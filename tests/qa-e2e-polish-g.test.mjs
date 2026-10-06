@@ -170,7 +170,7 @@ for (const size of SIZES) {
     assert.deepEqual(sk.rivals, ['p5_0'], 'ライバルは p5_0 だけ'); assert.notEqual(sk.p14_0, 'rival', '大会会場の門前（p14_0）はライバルではない');
     await pg.evaluate(() => { window.__g = { frames: 0, grass: 0 }; const tick = () => { if (document.querySelector('.chf-rustle')) __g.grass++; if (document.querySelector('.chf-enc2')) __g.frames++; if (!document.querySelector('.chbat') && __g.n++ < 4000) requestAnimationFrame(tick); }; __g.n = 0; requestAnimationFrame(tick); });
     const id = await pg.evaluate(() => { const g = MMCH.graphFor(S.m), a = S.m.raise.field.nodeAssignments, id = g.order.find((x) => a[x] && a[x].t === 'battle' && a[x].bt === 'wild'); const r = S.m.raise; r.node = id; r.pend = { roll: 1, left: 0, stage: 'resolve' }; save(); board(); return id; });
-    await pg.waitForSelector('.chf-enc2 .ce-mon', { timeout: 15000 });
+    await pg.waitForSelector('.chf-enc2 .ce-mon', { state: 'attached', timeout: 15000 });   // 2026-10-06・3：野生は黒いシルエット（.sil の img は visibility:hidden）
     const enc = await pg.evaluate(() => ({ src: document.querySelector('.chf-enc2 .ce-mon').getAttribute('src'), band: document.querySelector('.chf-enc2 .ce-band').textContent, cut: !!document.querySelector('.chf-enc-art'), fs: MMCH.foeSpecies(S.m, battleFoeCount()) }));
     assert.equal(enc.band, 'ENCOUNTER'); assert.equal(enc.cut, false, '赤い刃の交差のカットインは出さない');
     await pg.waitForSelector('.chbat', { timeout: 15000 });
@@ -248,8 +248,8 @@ for (const size of SIZES) {
     await pg.click('.rcv-row.ok[data-rank="0"]'); await pg.waitForTimeout(450); await pg.click('#p9join');
     await pg.waitForSelector('.p9tour.tp2 .p9next .p9go', { timeout: 20000 }); await pg.waitForTimeout(300);
     assert.equal(await noTix(), true, '大会進行に特訓チケットは無い');
-    const hd = await pg.evaluate(() => ({ flags: getComputedStyle(document.querySelector('.p9th .flags')).display, pips: getComputedStyle(document.querySelector('.p9th .pips')).display, menu: !!document.querySelector('.p9th .p9mbtn'), sw: document.documentElement.scrollWidth, W: innerWidth }));
-    assert.deepEqual([hd.flags, hd.pips, hd.menu], ['none', 'none', true], '旧い見出しの飾り（旗・試合の点）は出さない・メニューは残す'); assert.ok(hd.sw <= hd.W + 1, '横にはみ出さない');
+    const hd = await pg.evaluate(() => ({ old: !!document.querySelector('.p9th'), menu: !!document.querySelector('.tb1 .p9mbtn'), sw: document.documentElement.scrollWidth, W: innerWidth }));
+    assert.deepEqual([hd.old, hd.menu], [false, true], '2026-10-06：大会1 対戦表＝旧い見出し（旗・試合の点）は無い・メニューは残す'); assert.ok(hd.sw <= hd.W + 1, '横にはみ出さない');
     await pg.reload(); await pg.waitForFunction(() => typeof window.MMP8 === 'object'); await pg.click('.p15start');
     await pg.waitForSelector('.p9tour.tp2', { timeout: 20000 });
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);

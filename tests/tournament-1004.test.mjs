@@ -4,7 +4,7 @@
 // =========================================================
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -22,22 +22,39 @@ test('TN-01：ランク選択（デザイン参考 01）は従来どおり：S�
   assert.match(rd('js/phase8/league.js'), /const LEAGUE_SIZE = Object\.freeze\(\[6, 6, 8, 8, 8, 8\]\);/, 'E・D 6体（5試合）・C〜S 8体（7試合）');
 });
 
-test('TN-02：大会進行（デザイン参考 02）：CHAPTER・公式大会・第N戦、現在の成績（第N戦 勝利／敗北／次の試合／未定）、次の対戦相手（自分 VS 相手）、セドリックの一言、「対戦開始」→ パラメーター比較。順位表・対戦表は下に残す', () => {
+test('TN-02：大会1 対戦表（2026-10-06 正式素材 ui1）：題字の札・第N試合 / 全M試合・対戦表（6体＝grid6／8体＝grid8）・次の相手が光る・凡例・あなた／次の相手の札・「対戦する」→ 大会2。旧「現在の成績」の一覧（不採用）・順位表・対戦表の表は出さない', () => {
   const t = fnOf('p8TourScr');
-  for (const s of ['<h3>現在の成績</h3>', 'class="tp2r ${cls}"', '勝利', '敗北', '次の試合', '未定', '<h3>次の対戦相手</h3>', 'class="p9vsl">VS</span>', '？？？', 'onclick="p9CompareScr()">⚔️ 対戦開始</button>', '${p9Standings(lg,st,false)}${p9Matrix(lg)}', '第${pm.round+1}試合 / 全${lg.rounds.length}試合']) assert.ok(t.includes(s), s);
-  assert.match(t, /i<cur\?\(won\?"win":"lose"\):i===cur\?"next":"todo"/, '終わった試合＝勝敗・今＝次の試合・あと＝未定');
-  assert.doesNotMatch(t, /p9Cmp\(|p9VsGo/, '数字の比較・2度押しは大会進行には無い（パラメーター比較へ）');
+  for (const s of ['<header class="tbttl"><b>公式ランク${RN[t.rank]}大会</b></header>', '第${pm.round+1}試合 / 全${lg.rounds.length}試合', '${tbBoardGrid(lg,pm,enter)}', 'ui1/legend.png', 'ui1/tag_you.png" alt="あなた"', 'ui1/tag_next.png" alt="次の相手"', 'class="p9vsl">VS</span>', 'onclick="p9CompareScr()" aria-label="対戦する"']) assert.ok(t.includes(s), s);
+  assert.doesNotMatch(t, /現在の成績|tp2r |p9Standings\(|p9Matrix\(|p9Cmp\(|p9VsGo/, '旧い一覧・順位表・表・数字の比較・2度押しは大会1には無い');
+  const g = fnOf('tbBoardGrid');
+  assert.match(g, /MMP8L\.resultCell\(lg,e\.id,o\.id\)/, '勝敗のマスは大会の処理（resultCell）から'); assert.match(g, /mark_\$\{mk\}\.png/); assert.match(g, /e\.id===nx\?" nx":""/, '次の相手の行・丸が光る');
+  assert.match(CODE, /const TB_GRID=\{6:\{img:"ui1\/grid6\.png"/); assert.match(CODE, /8:\{img:"ui1\/grid8\.png"/);
+  for (const f of ['title_plate', 'sub_plate', 'grid6', 'grid8', 'legend', 'btn_battle', 'tag_you', 'tag_next', 'mark_win', 'mark_loss', 'mark_pending', 'mark_next']) assert.ok(existsSync(path.join(ROOT, 'assets/tournament/ui1', f + '.png')), f);
 });
 
-test('TN-03：パラメーター比較（デザイン参考 03）：両者の正式画像・6能力のゲージ＝999 を最大とした絶対の目盛り・正式色。数字・戦力・勝率・有利は出さない。「対戦開始」（2度押し p9VsGo）→ fight()。「順位表にもどる」', () => {
+test('TN-03：大会2 対戦前比較（正式素材 ui2）：第N試合 / 全M試合（大会名は重ねない）・あなた／対戦相手の札・左右のカードの中に正式画像・VS・能力の比較（枠の見本のバーの上に HTML のバー＝999 を最大・数字なし）・固有スキル・「対戦開始」（2度押し）→ 大会3 → fight()・「対戦表にもどる」', () => {
   const c = fnOf('p9CompareScr');
   assert.match(c, /const pct=v=>Math\.round\(Math\.min\(999,Math\.max\(0,v\|0\)\)\/999\*100\);/);
-  assert.match(c, /KS\.map\(k=>`<div class="pcg"><div class="pcb l" style="--c:\$\{STAT_COLOR\[k\]\}"><i style="width:\$\{pct\(m\[k\]\)\}%"><\/i><\/div><span class="pcl">\$\{LAB\[k\]\}<\/span><div class="pcb r" style="--c:\$\{STAT_COLOR\[k\]\}"><i style="width:\$\{pct\(o\[k\]\)\}%"><\/i><\/div><\/div>`\)/);
-  assert.doesNotMatch(c, /\$\{m\[k\]\}|\$\{o\[k\]\}|戦力|勝率|有利/, '数字・戦力・勝率・有利を出さない');
-  assert.match(c, /data-nsfx="1" onclick="p9VsGo\(this\)">⚔️ 対戦開始<\/button>/); assert.match(c, /onclick="board\(\)">順位表にもどる<\/button>/);
-  assert.match(c, /p9Pt\(m,"me"\)/); assert.match(c, /p9Pt\(o\)/); assert.match(c, /BTB\[t\.rank\]\[0\]/, '背景は fight() と同じ大会の背景');
-  assert.match(CODE, /function p9VsGo\(b\)\{if\(bBusy\|\|!p9arm\(b,"もう一度押すと試合開始"\)\)return;p8TourFight\(\)\}/, '2度押し → fight()（導入の VS → FIGHT!）');
-  assert.match(HTML, /\.pcb i\{[^}]*background:var\(--c\)/); assert.match(HTML, /\.p9cmps\{position:relative;margin:-16px;height:100dvh;/);
+  assert.match(c, /<div class="pcb l" style="--c:\$\{STAT_COLOR\[k\]\};left:\$\{TB_STAT\.l\[0\]\}%;width:\$\{TB_STAT\.l\[1\]\}%"><i style="width:\$\{pct\(m\[k\]\)\}%"><\/i><\/div>/);
+  assert.match(c, /<div class="pcb r" style="--c:\$\{STAT_COLOR\[k\]\};left:\$\{TB_STAT\.r\[0\]\}%;width:\$\{TB_STAT\.r\[1\]\}%"><i style="width:\$\{pct\(o\[k\]\)\}%"><\/i><\/div>/);
+  assert.doesNotMatch(c, /\$\{m\[k\]\}|\$\{o\[k\]\}|戦力|勝率|有利|公式ランク\$\{RN/, '数字・戦力・勝率・有利・大会名を出さない');
+  assert.match(c, /<header class="pchd tbsub"><b>第\$\{pm\.round\+1\}試合 \/ 全\$\{lg\.rounds\.length\}試合<\/b><\/header>/);
+  assert.match(c, /data-nsfx="1" onclick="p9VsGo\(this\)" aria-label="対戦開始"/); assert.match(c, /onclick="board\(\)" aria-label="対戦表にもどる"/);
+  assert.match(c, /tbSkill\(m\)/); assert.match(c, /tbSkill\(o\)/); assert.match(c, /BTB\[t\.rank\]\[0\]/, '背景は fight() と同じ大会の背景');
+  assert.match(c, /ui2\/badge_you\.png/); assert.match(c, /ui2\/badge_opponent\.png/); assert.match(c, /ui2\/card_left\.png/); assert.match(c, /ui2\/card_right\.png/); assert.match(c, /ui2\/stats_panel\.png/);
+  assert.doesNotMatch(c, /ui2\/header\.png|01_header/, 'ヘッダーの画像（「公式ランクE大会」の焼き込み）は使わない');
+  assert.match(CODE, /function p9VsGo\(b\)\{if\(bBusy\|\|!p9arm\(b,"もう一度押すと試合開始"\)\)return;/, '2度押し → 大会3 → fight()');
+  assert.match(HTML, /\.tb2 \.pcb i\{[^}]*var\(--c\)/); assert.match(HTML, /\.p9cmps\{position:relative;margin:-16px;height:100dvh;/);
+  for (const f of ['badge_you', 'badge_opponent', 'card_left', 'card_right', 'vs_emblem', 'stats_panel', 'skill_left', 'skill_right', 'btn_start', 'btn_back']) assert.ok(existsSync(path.join(ROOT, 'assets/tournament/ui2', f + '.png')), f);
+  assert.ok(!existsSync(path.join(ROOT, 'assets/tournament/ui2/header.png')));
+});
+
+test('TN-03b：大会3 VS 演出（正式素材 vs）：背景・VS のロゴ・斜めの光・名前の札・飾り＋正式画像 → fight()。fight() の導入（intro）はこの試合だけ出さない（二重の VS にしない）。fight()・intro() の中身は変えない', () => {
+  const v = CODE.slice(CODE.indexOf('function tourVsShow('), CODE.indexOf('function tourVsOut('));
+  for (const f of ['vs/vs_background.webp', 'vs/vs_diagonal.png', 'vs/vs_nameplate.png', 'vs/vs_ornament.png', 'vs/vs_logo.png']) { assert.ok(v.includes(f), f); assert.ok(existsSync(path.join(ROOT, 'assets/tournament', f)), f); }
+  assert.match(v, /p11Esc\(o\.name\)/); assert.match(v, /p11Esc\(m\.name\)/); assert.match(v, /msv\(o\)/); assert.match(v, /msv\(m\)/);
+  assert.match(CODE, /const TB_INTRO=intro;intro=function\(pl\)\{if\(TB_SKIP_INTRO\)\{TB_SKIP_INTRO=false;return Promise\.resolve\(\)\}return TB_INTRO\(pl\)\};/);
+  assert.match(CODE, /if\(window\.MM_QA_NO_TOURVS\|\|!t\|\|t\.status!="league"\)return p8TourFight\(\);/, '自動テストの既定は大会2 から直接バトル（tourvs:true で大会3）');
 });
 
 test('TN-04：VS（デザイン参考 04）＝fight() の導入（CHALLENGER／YOUR MONSTER・VS・自動で FIGHT!）。fight()・intro()・.bt 系 CSS は変えず、色（金の VS・札）だけ', () => {

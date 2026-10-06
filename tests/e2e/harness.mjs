@@ -84,7 +84,9 @@ export async function launch() {
     // 市場のカレンの会話（初回来店・購入成功）は、ふだんのテストでは出さない（市場・購入の操作を止めないため）。カレンのテストは open({ karen: true })
     if (!opt.karen) await ctx.addInitScript(() => { window.MM_QA_NO_KAREN = true; });
     if (!opt.npc) await ctx.addInitScript(() => { window.MM_QA_NO_NPC = true; });   // 2026-10-04：施設の初回訪問の会話・Chapter の帰還イベント（MMNPCE）は npc:true のテストだけ
-    if (!opt.intro) await ctx.addInitScript(() => { window.MM_QA_NO_INTRO = true; });   // Chapter開始の俯瞰図の演出は intro:true のテストだけ
+    if (!opt.intro) await ctx.addInitScript(() => { window.MM_QA_NO_INTRO = true; });
+    if (!opt.stage) await ctx.addInitScript(() => { window.MM_QA_NO_STAGE = true; });   // 2026-10-06：バトルの共通演出（構え・溜め・ヒットストップ・余韻＝js/battle/stage.js）は stage:true のテストだけ（既定は従来の時間）
+    if (!opt.tourvs) await ctx.addInitScript(() => { window.MM_QA_NO_TOURVS = true; });   // 2026-10-06：大会3（VS 演出）は tourvs:true のテストだけ（既定は大会2 から直接バトル）   // Chapter開始の俯瞰図の演出は intro:true のテストだけ
     if (!opt.arrival) await ctx.addInitScript(() => { window.MM_QA_NO_ARRIVAL = true; });
     if (!opt.prologue) await ctx.addInitScript(() => { window.MM_QA_NO_PROLOGUE = true; });   // 新しいゲームの最初のプロローグ（MMPRO）は prologue:true のテストだけ
     if (!opt.opening) await ctx.addInitScript(() => { window.MM_QA_NO_OPENING = true; });   // 2026-10-05：正式の序盤導線（フィナ → 管理局 → セルジュの登録 → 世界地図）は opening:true のテストだけ（既定は従来の名前登録の画面）

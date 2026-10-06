@@ -165,8 +165,8 @@ T('EN-B3b：ファームへの帰還＝ダン 04（誇らしげ）・大会の�
   await q.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); const g = MMCH.graphFor(m); Object.assign(m.raise, { node: g.goal, goal: true, pend: null }); m.raise.field.arrivalSeen = true; save(); MMP8.startTournament(S, S.m, 0, 7); save(); board(); });
   await q.waitForSelector('.p9tour.tp2 .p9next .p9go', { timeout: 15000 });
   assert.match(await q.evaluate(() => document.querySelector('.p9tour .p9ced img').getAttribute('src')), /cedric\/expr\/face\/01_host\.webp$/, 'セドリック：E ランクの進行＝01 司会');
-  await q.waitForTimeout(400); await q.click('.p9next .p9go'); await q.waitForSelector('.p9cmps .pcced .p9ced img');
-  assert.match(await q.evaluate(() => document.querySelector('.pcced .p9ced img').getAttribute('src')), /cedric\/expr\/face\/02_kickoff\.webp$/, 'セドリック：試合開始＝02');
+  await q.waitForTimeout(400); await q.click('.p9next .p9go'); await q.waitForSelector('.p9cmps .pcgo');
+  assert.equal(await q.evaluate(() => document.querySelectorAll('.p9cmps .p9ced').length), 0, '2026-10-06：大会2（対戦前比較）は正式デザインどおりセドリックを出さない');
   const fit = await q.evaluate(() => { const a = document.querySelector('.pcacts').getBoundingClientRect(); return [a.bottom <= innerHeight + 1, document.documentElement.scrollWidth <= innerWidth + 1]; });
   assert.deepEqual(fit, [true, true], '対戦開始のボタンは画面内・横はみ出しなし');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []); assert.deepEqual(p2.errors, []); assert.deepEqual(p2.bad, []);

@@ -66,6 +66,86 @@
   ]);
   const rivalMonster = (key) => RIVAL_MONSTERS.find((x) => x.key === key) || null;
 
+  // ---- 正式技（2026-10-06 正式。ソラモ・ノビトン・ジオル・ガウル＋レグナスの技辞典の画像）。このゲームに「ガッツ」は無い（技のデータ・表示に使わない） ----
+  //  type：power＝ちから／wisdom＝かしこさ／support＝補助（威力なし）／heal＝回復・補助／special＝特殊（どの能力で計算するかは未決＝要確認）。
+  //  effects：{ target:'self'|'opponent', stat:'atk'（ちから・かしこさ＝攻撃力）|'de'（丈夫さ＝防御力）|'hi'|'ev', dir:'up'|'down', size:'small'|'medium'|'large', turns }。
+  //    ダメージのある技の effects は命中して相手が倒れなかったときだけ（バトルエンジンの規則のまま）。
+  //  ailment：状態異常（まひ・ねむり）の確率。heal：回復。どちらも今のバトルエンジン（Phase 6）には無い＝データだけ（ノビトンはまだバトルに出ない）。
+  //  slot：今のバトルの技の番号（index.html の SK の番号）。ソラモ 0〜9・ガウル 10〜19 は「習得の枠」（初期・各特訓）をそのまま使い、中身だけ正式技へ（js/battle/official-moves.js が起動時に入れ替える）。
+  //    ノビトン・ジオルは技の番号なし（市場に出ない・バトルに出ない）＝slot null。
+  //  sheet：技アニメーションの正式資料（assets/moves/。技辞典で見る）。cuts：その資料のカット数。
+  const E = (target, stat, dir, size, turns) => fz({ target, stat, dir, size, turns });
+  const MV = (o) => fz({ effects: fz([]), ailment: null, heal: null, ...o, effects: fz(o.effects || []) });
+  const sheetOf = (key, no, id) => `./assets/moves/${key}/${String(no).padStart(2, '0')}_${id}.webp`;
+  const OFFICIAL_MOVES = fz({
+    solamo: fz({ style: '万能型＋ピンチ時の逆転力', list: fz([
+      MV({ no: 1, id: 'taiatari', name: 'たいあたり', type: 'power', power: 70, accuracy: 90, critical: 5, slot: 0, cuts: 4, desc: '低く構えて勢いをため、全身で相手にぶつかる。' }),
+      MV({ no: 2, id: 'hikkaki', name: 'ひっかき', type: 'power', power: 60, accuracy: 100, critical: 10, slot: 1, cuts: 4, desc: 'するどいツメでひっかく。当たりやすい。' }),
+      MV({ no: 3, id: 'shippo_attack', name: 'しっぽアタック', type: 'power', power: 85, accuracy: 80, critical: 10, slot: 2, cuts: 4, desc: 'しっぽを大きく振ってなぎはらう。' }),
+      MV({ no: 4, id: 'star_crash', name: 'スタークラッシュ', type: 'power', power: 105, accuracy: 85, critical: 15, slot: 4, cuts: 4, desc: '星の光をまとって突進し、相手に激突する。' }),
+      MV({ no: 5, id: 'hoshi_no_mamori', name: 'ほしのまもり', type: 'support', slot: 7, cuts: 4, desc: '星の光で身を包み、自分の命中と回避を少し上げる（2ターン）。',
+        effects: [E('self', 'hi', 'up', 'small', 2), E('self', 'ev', 'up', 'small', 2)] }),
+      MV({ no: 6, id: 'hoeru', name: '吠える', type: 'support', slot: 3, cuts: 4, desc: '大きな声で吠えて、相手の丈夫さを少し下げる（2ターン）。',
+        effects: [E('opponent', 'de', 'down', 'small', 2)] }),
+      MV({ no: 7, id: 'soramo_beam', name: 'ソラモビーム', type: 'wisdom', power: 90, accuracy: 85, critical: 10, slot: 5, cuts: 4, desc: 'エネルギーを集めて光のビームを放つ。' }),
+      MV({ no: 8, id: 'sunakake', name: 'すなかけ', type: 'support', slot: 6, cuts: 4, desc: '砂をまいて、相手の命中を少し下げる（2ターン）。',
+        effects: [E('opponent', 'hi', 'down', 'small', 2)] }),
+      MV({ no: 9, id: 'stardust_ray', name: 'スターダストレイ', type: 'wisdom', power: 120, accuracy: 95, critical: 20, slot: 8, cuts: 4, desc: '星の力を集めて放つ強力な光線。' }),
+      MV({ no: 10, id: 'star_fall', name: 'スターフォール', type: 'wisdom', power: 140, accuracy: 85, critical: 25, slot: 9, cuts: 4, desc: '夜空から無数の星を降らせる、ソラモの大技。' }),
+    ]), removed: fz(['とっしん', 'ドリルアタック', '超スターダストレイ']) }),
+    nobiton: fz({ style: '高ライフ・高耐久・低速。状態異常／デバフ／自己回復で粘る長期戦型', list: fz([
+      MV({ no: 1, id: 'hana_binta', name: 'はなビンタ', type: 'power', power: 65, accuracy: 90, critical: 5, slot: null, cuts: 4, desc: '長い鼻でビンタする。' }),
+      MV({ no: 2, id: 'zutsuki', name: 'ずつき', type: 'power', power: 80, accuracy: 75, critical: 10, slot: null, cuts: 4, desc: '頭から勢いよくぶつかる。' }),
+      MV({ no: 3, id: 'hanamizu', name: 'はなみず', type: 'wisdom', power: 55, accuracy: 95, critical: 5, slot: null, cuts: 4, desc: '鼻水を飛ばし、相手の防御力を少し下げる（1ターン）。',
+        effects: [E('opponent', 'de', 'down', 'small', 1)] }),
+      MV({ no: 4, id: 'hitoyasumi', name: 'ひとやすみ', type: 'heal', slot: null, cuts: 4, desc: '休んで、自分の状態異常をすべて治し、最大ライフの20%を回復する（能力の上げ下げは残る）。',
+        heal: fz({ lifeRatio: 0.2, cureAilments: true, clearStatChanges: false }) }),
+      MV({ no: 5, id: 'hammer_nose', name: 'ハンマーノーズ', type: 'power', power: 105, accuracy: 80, critical: 15, slot: null, cuts: 4, desc: '鼻をハンマーのように振り下ろす。' }),
+      MV({ no: 6, id: 'nose_wave', name: 'ノーズウェーブ', type: 'wisdom', power: 90, accuracy: 90, critical: 10, slot: null, cuts: 4, desc: '鼻から不思議な波動を放つ。' }),
+      MV({ no: 7, id: 'shibire_tsuki', name: 'しびれ突き', type: 'power', power: 75, accuracy: 100, critical: 10, slot: null, cuts: 4, desc: '鼻で鋭く突く。30%で相手を「まひ」にする。',
+        ailment: fz({ kind: 'paralysis', label: 'まひ', chance: 0.3 }), formerName: 'ピンポイント突き' }),
+      MV({ no: 8, id: 'mirage_nose', name: 'ミラージュノーズ', type: 'power', power: 100, accuracy: 90, critical: 30, slot: null, cuts: 4, desc: '幻のような動きで鼻を打ちつける。急所に当たりやすい。' }),
+      MV({ no: 9, id: 'downer_mist', name: 'ダウナーミスト', type: 'special', power: 60, accuracy: 95, critical: 0, slot: null, cuts: 4, desc: '気だるい霧で包み、相手の攻撃力と防御力を下げる（中・2ターン）。20%で「ねむり」。',
+        effects: [E('opponent', 'atk', 'down', 'medium', 2), E('opponent', 'de', 'down', 'medium', 2)], ailment: fz({ kind: 'sleep', label: 'ねむり', chance: 0.2 }) }),
+      MV({ no: 10, id: 'gigant_nose', name: 'ギガントノーズ', type: 'power', power: 150, accuracy: 75, critical: 25, slot: null, cuts: 4, desc: '巨大化させた鼻で押しつぶす、ノビトンの大技。' }),
+    ]), removed: fz(['くっつく']), renamed: fz({ 'ピンポイント突き': 'しびれ突き' }) }),
+    // ジオル：正式10技の名前は維持（2026-10-06）。威力・命中・効果の数値は同期されていない＝null（推測で入れない・要確認）
+    jiol: fz({ style: null, list: fz(['パンチ', 'キック', '力をためる', 'のしかかり', 'グランドハンマー', 'クリスタルレイ', 'グランドスパイク', 'ロックアッパー', 'ジオインパクト', 'クリスタルノヴァ'].map((name, i) =>
+      MV({ no: i + 1, id: ['punch', 'kick', 'chikara_wo_tameru', 'noshikakari', 'ground_hammer', 'crystal_ray', 'ground_spike', 'rock_upper', 'geo_impact', 'crystal_nova'][i], name, type: null, power: null, accuracy: null, critical: null, slot: null, cuts: null, desc: null }))) }),
+    gauru: fz({ style: '高速・高火力・短期決戦型の両刀アタッカー', list: fz([
+      MV({ no: 1, id: 'tsutsuku', name: 'つつく', type: 'power', power: 60, accuracy: 100, critical: 5, slot: 11, cuts: 4, desc: 'くちばしで素早くつつく。' }),
+      MV({ no: 2, id: 'wind', name: 'ウィンド', type: 'wisdom', power: 65, accuracy: 95, critical: 5, slot: 12, cuts: 4, desc: '風をまとい、相手に風の力をぶつける。' }),
+      MV({ no: 3, id: 'spiral_dive', name: 'スパイラルダイブ', type: 'power', power: 95, accuracy: 85, critical: 15, slot: 10, cuts: 4, desc: '体を回転させて急降下し、相手を貫く。', formerName: 'ドリルアタック' }),
+      MV({ no: 4, id: 'sonic_move', name: 'ソニックムーブ', type: 'support', slot: 13, cuts: 4, desc: '高速で動いて残像を残し、自分の命中と回避を少し上げる（2ターン）。',
+        effects: [E('self', 'hi', 'up', 'small', 2), E('self', 'ev', 'up', 'small', 2)] }),
+      MV({ no: 5, id: 'kouyoku_slash', name: '紅翼スラッシュ', type: 'power', power: 110, accuracy: 90, critical: 15, slot: 14, cuts: 4, desc: '紅い翼で鋭く切り裂く。', formerName: 'ウイングアタック' }),
+      MV({ no: 6, id: 'fireball', name: 'ファイアボール', type: 'wisdom', power: 100, accuracy: 90, critical: 10, slot: 15, cuts: 4, desc: '炎のエネルギーを凝縮した火の玉を放つ。' }),
+      MV({ no: 7, id: 'sky_rush', name: 'スカイラッシュ', type: 'power', power: 125, accuracy: 85, critical: 20, slot: 17, cuts: 4, desc: '空から連続で襲いかかる。', formerName: 'バードアタック' }),
+      MV({ no: 8, id: 'flare_ray', name: 'フレアレイ', type: 'wisdom', power: 120, accuracy: 90, critical: 15, slot: 16, cuts: 4, desc: '強大な炎の光線を一直線に放つ。', formerName: 'ファイアビーム' }),
+      MV({ no: 9, id: 'feather_storm', name: 'フェザーストーム', type: 'wisdom', power: 145, accuracy: 70, critical: 20, slot: 18, cuts: 4, desc: '燃える羽根の嵐を巻き起こす。高火力だが当たりにくい大技。' }),
+      MV({ no: 10, id: 'seinaru_honoo', name: '聖なる炎', type: 'wisdom', power: 115, accuracy: 90, critical: 15, slot: 19, cuts: 6, desc: '神聖な炎と光を広げて相手に届かせ、そのあと自分に加護が残る（ちから・かしこさ・命中・回避・丈夫さ 小・1ターン）。',
+        effects: [E('self', 'atk', 'up', 'small', 1), E('self', 'hi', 'up', 'small', 1), E('self', 'ev', 'up', 'small', 1), E('self', 'de', 'up', 'small', 1)] }),
+    ]), removed: fz(['ひっかき']) }),
+  });
+  // レグナス（技の数値は RIVAL_MONSTERS の1か所）の技辞典の画像：ZIP の並び（1 しっぽアタック…10 残影ステップ）とデータの no は違う＝id で引く
+  const REGNAS_SHEET = fz({ shippo_attack: 1, kirisaku: 2, genei_claw: 3, soujin_ranbu: 4, tail_cyclone: 5, dragon_crash: 6, snipe_fang: 7, soukou_breath: 8, ryugan_lock: 9, zanei_step: 10 });
+  /** 技辞典の一覧（種族の番号・文字ID・'regnas'）。[{ no, id, name, type, power, accuracy, critical, effects, ailment, heal, desc, slot, sheet }] */
+  function movesOf(ref) {
+    if (ref === 'regnas') {
+      const r = rivalMonster('regnas');
+      return r ? r.moves.list.map((m) => ({ ...m, effects: m.effect ? [{ target: m.effect.target, stat: m.effect.stat, dir: 'up', size: m.effect.size, turns: m.effect.turns }] : [],
+        ailment: null, heal: null, desc: null, slot: 19 + m.no, sheet: sheetOf('regnas', REGNAS_SHEET[m.id], m.id) })) : [];
+    }
+    const s = typeof ref === 'string' ? byKey(ref) : byId(ref);
+    const t = s && OFFICIAL_MOVES[s.key];
+    return t ? t.list.map((m) => ({ ...m, sheet: sheetOf(s.key, m.no, m.id) })) : [];
+  }
+  /** 技の番号（SK）→ 正式技（ソラモ・ガウルの 0〜19・レグナスの 20〜29）。無ければ null */
+  function moveBySlot(k) {
+    for (const key of ['solamo', 'gauru', 'regnas']) { const m = movesOf(key).find((x) => x.slot === k); if (m) return { ...m, owner: key }; }
+    return null;
+  }
+
   // ---- 成長適性（2026-10-02 正式）：6能力それぞれに A〜E。能力マスに止まったときの上昇量はこの表だけで決まる（ランダム幅・失敗・大成功なし）。
   //  イベントによる能力変化（賢者 +20・薬草 +6 など）は適性の影響を受けない（イベント側の数値のまま）。
   const GROWTH_GRADES = fz(['A', 'B', 'C', 'D', 'E']);
@@ -258,7 +338,7 @@
       fromStart: !!(P8 && typeof P8.raiseCountFromStart === 'function' && P8.raiseCountFromStart(S)) };
   }
 
-  root.MMP10M = fz({ STAT_KEYS, STAT_LABELS, STAT_MAX, SPEED_MIN, SPEED_MAX, isValidSpeed, UNIQUE_SKILLS, SPECIES, RIVAL_MONSTERS, rivalMonster,
+  root.MMP10M = fz({ STAT_KEYS, STAT_LABELS, STAT_MAX, SPEED_MIN, SPEED_MAX, isValidSpeed, UNIQUE_SKILLS, SPECIES, RIVAL_MONSTERS, rivalMonster, OFFICIAL_MOVES, movesOf, moveBySlot,
     byId, byKey, keyOf, idOf, imageOf, silhouetteOf, speedOf, baseOf, skillOf, skillText, ensureSpeed, ECONOMY, MARKET_CATALOG,
     GROWTH_GRADES, GROWTH_GAIN, GROWTH_UNREGISTERED, growthOf, growthGain, growthRegistered,
     OWN_LIMIT, RANCH_LIMIT, marketItem, canPurchase, purchase, FUSION_COST, setFusionAccess, fusionAvailable, continueRescueApplies, SELL, sellQuote, canSell, sell, NOBITON_STOCK_RAISES, nobitonStock });

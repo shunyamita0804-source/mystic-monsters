@@ -150,11 +150,11 @@ test('JR-7：大会開始：ランクを選んで「この大会に参加する�
   await pg.waitForFunction(() => !document.querySelector('#p9intro') && !!document.querySelector('.p9tour'), null, { timeout: 15000 });
   const seq = await pg.evaluate(() => window.__seq);
   assert.ok(seq.indexOf('emblem') < seq.indexOf('cedric') && seq.indexOf('cedric') < seq.indexOf('tour'), `順序：エンブレム → セドリック → 順位表（${seq.join('→')}）`);
-  const en = await pg.evaluate(() => ({ enter: !!document.querySelector('.p9st.p9enter'), rows: [...document.querySelectorAll('.p9st .p9r:not(.hd)')].map((r) => r.getAnimations().length > 0) }));
+  const en = await pg.evaluate(() => ({ enter: !!document.querySelector('.tb1g.tbenter'), rows: [...document.querySelectorAll('.tb1g .tbnm')].map((r) => r.getAnimations().length > 0) }));   // 2026-10-06：大会1 対戦表の参加者が順に入る
   assert.equal(en.enter, true); assert.ok(en.rows.some(Boolean), '参加者が順に入ってくる');
-  await pg.waitForFunction(() => [...document.querySelectorAll('.p9st .p9r:not(.hd)')].every((r) => r.getAnimations().every((a) => a.playState !== 'running' || !Number.isFinite(a.effect.getComputedTiming().endTime))), null, { timeout: 10000 });
-  const st = await pg.evaluate(() => { const rows = [...document.querySelectorAll('.p9st .p9r:not(.hd)')]; const nx = rows.filter((r) => r.classList.contains('nxt')); const pm = MMP8.tourNext(S.m); return { n: rows.length, nxt: nx.length, name: nx[0] && nx[0].querySelector('.nm').textContent, opp: MMP8L.entrantView(S.m.raise.tour.league, pm.opp).name, inside: rows.every((r) => { const b = r.getBoundingClientRect(); return b.left >= -1 && b.right <= innerWidth + 1; }), vis: rows.every((r) => getComputedStyle(r).opacity === '1'), ced: document.querySelectorAll('.p9ced:not(.p9fina)').length }; });
-  assert.equal(st.n, 6); assert.equal(st.nxt, 1, '次の対戦相手の行だけ'); assert.ok(st.name.includes(st.opp)); assert.ok(st.inside && st.vis, '登場のあとは通常の表示'); assert.equal(st.ced, 1, '順位表のセドリックは従来どおり');
+  await pg.waitForTimeout(1200);
+  const st = await pg.evaluate(() => { const rows = [...document.querySelectorAll('.tb1g .tbnm')]; const nx = rows.filter((r) => r.classList.contains('nx')); const pm = MMP8.tourNext(S.m); const lg = S.m.raise.tour.league; return { n: rows.length, nxt: nx.length, name: nx[0] && nx[0].textContent, opp: lg.entrants[pm.opp].name, inside: rows.every((r) => { const b = r.getBoundingClientRect(); return b.left >= -1 && b.right <= innerWidth + 1; }), vis: rows.every((r) => getComputedStyle(r).opacity === '1' || r.classList.contains('nx')), ced: document.querySelectorAll('.p9tour .p9ced').length }; });
+  assert.equal(st.n, 6); assert.equal(st.nxt, 1, '次の対戦相手の行だけ光る'); assert.ok(String(st.opp).includes(st.name), `${st.name} / ${st.opp}`); assert.ok(st.inside && st.vis, '登場のあとは通常の表示'); assert.equal(st.ced, 1, '大会1のセドリックは従来どおり');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 

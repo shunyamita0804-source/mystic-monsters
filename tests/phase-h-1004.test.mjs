@@ -81,7 +81,7 @@ test('PH-05：セルジュ（2026-10-06 正式の立ち絵＝ユーザーの ser
   assert.ok(existsSync(path.join(ROOT, 'assets/npc/serge/full_normal.webp'))); assert.match(rd('assets/npc/serge/README.md'), /serge_reference/);
   assert.match(HTML, /const SERGE=\{id:"serge",name:"セルジュ"/); assert.match(fnOf('bureauNpc'), /MMNPC\.get\(SERGE\.id\)/);
   const walk = (d) => readdirSync(path.join(ROOT, d)).flatMap((n) => { const p = path.join(d, n); return statSync(path.join(ROOT, p)).isDirectory() ? walk(p) : [p]; });
-  const files = walk('assets').filter((p) => /ryu|09_ryu|04_serge|ranch_20_ui|bureau_ui|base_camp_ui|standing|serge_reference/i.test(p) || (/serge/i.test(p) && /\.(jpe?g|png)$/i.test(p)));
+  const files = walk('assets').filter((p) => !/^assets[\\/]moves[\\/]/.test(p)).filter((p) => /ryu|09_ryu|04_serge|ranch_20_ui|bureau_ui|base_camp_ui|standing|serge_reference/i.test(p) || (/serge/i.test(p) && /\.(jpe?g|png)$/i.test(p)));
   assert.deepEqual(files.filter((p) => !/^assets\/npc\/ryu\/(ryu_official_fullbody\.webp|README\.md|original\/ryu_official_fullbody_2026-10-05\.jpg)$/.test(p.split(path.sep).join('/'))), [], '参考画像・白背景の JPEG は置かない（2026-10-05 試遊：リュウは正式の全身の透過 WebP と、ユーザーが正式と指定した元の JPEG（original/）だけ）');
   assert.ok(existsSync(path.join(ROOT, 'assets/npc/ryu/ryu_official_fullbody.webp')) && /b9bca1841042ace8f4519fb8e6ec8c415c80a3c333a7ea869a335306100020f0/.test(rd('assets/npc/ryu/README.md')));
 });

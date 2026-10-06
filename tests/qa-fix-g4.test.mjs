@@ -251,8 +251,7 @@ test('QA-G4-B3：実ブラウザ：大会（次の相手・順位表・星取表
     await start(p, '#app .p9tour');
     assert.equal((await txt(pg, '#app .p9next .tp2p.me .tp2nm b'))[0], n, '次の対戦相手（自分の名前。2026-10-04 PHASE D）');
     assert.equal(await count(pg, '#app .p9next button[onclick="p9CompareScr()"]'), 1, '「対戦開始」が残る（大会進行 → パラメーター比較）');
-    assert.deepEqual(await txt(pg, '#app .p9r.me .nm'), [`${n}あなた`], '順位表');
-    assert.ok((await txt(pg, '#app tr.me .nm')).includes(n), '星取表');
+    assert.deepEqual(await txt(pg, '#app .tb1g .tbnm.me b'), [n], '2026-10-06：大会1 対戦表の自分の名前');
     await pg.evaluate(() => p9CompareScr()); await pg.waitForSelector('#app .p9cmps');   // パラメーター比較（2026-10-04）でも名前は文字のまま
     assert.equal((await txt(pg, '#app .p9cmps .pcs b'))[0], n, 'パラメーター比較'); assert.equal(await count(pg, '#app .p9cmps button'), 2, '「対戦開始」「順位表にもどる」');
     await pg.evaluate(() => p9VsScr()); await pg.waitForSelector('#app .p9vs');   // 流れから外した VS 画面（関数は残す）でも名前は文字のまま

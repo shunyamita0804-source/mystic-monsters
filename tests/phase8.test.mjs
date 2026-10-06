@@ -578,8 +578,8 @@ test('S6-8：画面：ゴールで挑戦できるランクだけを表示し、�
   assert.match(goal, /return p9ReceptionHtml\(m\)/); assert.match(goal, /MMP8\.eligibleRanks\(m,m\.raise\.ch\)/); assert.match(goal, /大会に参加しない/);
   assert.match(between('function p9RcvPick(', '\n// ---- 大会開始'), /tapAt\(j\)/); assert.match(between('function p9RcvJoin(', '\n// ---- 大会開始'), /tapSoon\(b,350\)/);
   const scr = between('function p8TourScr(msg){', '\nfunction p9TourResult(');
-  assert.match(scr, /MMP8L\.standings\(lg\)/); assert.match(scr, /次の対戦相手/); assert.match(scr, /onclick="p9CompareScr\(\)">⚔️ 対戦開始<\/button>/, '2026-10-04：大会進行 →「対戦開始」→ パラメーター比較'); assert.match(between('function p9CompareScr(){', '\nfunction '), /data-nsfx="1" onclick="p9VsGo\(this\)">⚔️ 対戦開始<\/button>/, 'パラメーター比較の「対戦開始」（2度押し）→ fight()。VS・対面は fight() の導入だけ（二重にしない）');
-  assert.match(fnLine('function p9VsGo('), /p9arm\(b,[^)]*\)\)return;p8TourFight\(\)/);
+  assert.match(scr, /\$\{tbBoardGrid\(lg,pm,enter\)\}/); assert.match(scr, /tag_next\.png" alt="次の相手"/); assert.match(scr, /onclick="p9CompareScr\(\)" aria-label="対戦する"><\/button>/, '2026-10-06：大会1 対戦表 →「対戦する」→ 大会2 対戦前比較'); assert.match(between('function p9CompareScr(){', '\nfunction '), /data-nsfx="1" onclick="p9VsGo\(this\)" aria-label="対戦開始"><\/button>/, '大会2の「対戦開始」（2度押し）→ 大会3 VS 演出 → fight()（fight() の導入の VS は出さない＝二重にしない）');
+  assert.match(fnLine('function p9VsGo('), /p9arm\(b,"もう一度押すと試合開始"\)\)return;/); assert.match(between('function p9VsGo(', '\nconst TB_INTRO'), /tourVsShow\(m,p9Npc\(t\.league,pm\.opp\)\)\.then\([^\n]*p8TourFight\(\)/);
   assert.match(fnLine('function p8TourFight('), /MMP8\.beginBattle\(S,m,\{kind:"league",rank:t\.rank\}\)[^;]*;save\(\);fight\(t\.rank\)/);
   assert.ok(HTML.indexOf('js/phase8/league.js') < HTML.indexOf('js/phase8/raising.js'), 'league.js を先に読み込む');
 });
@@ -614,7 +614,7 @@ test('S7-2：HUDは複数リソースに対応（今回は🎫修行チケット
   assert.match(between('function board(msg){', '\nfunction bPositionMon('), /\$\{p9BoardHud\(m\)\}/, 'ボードのHUD（Phase 9で2段化）');
   assert.match(between('function p9BoardHud(m){', '\nfunction board(msg){'), /\$\{p8Hud\(`<span class="p9chip p9turn">/, 'HUDの2段目に残りターンと育成リソースを並べる');
   // Phase 9：大会画面のHUDは大会見出し（p9TourHead）に置く
-  assert.match(between('function p8TourScr(msg){', '\nfunction p9TourResult('), /\$\{p9TourHead\(m,t\)\}/);
+  assert.match(between('function p8TourScr(msg){', '\nfunction p9TourResult('), /onclick="p9Menu\(\)"/); assert.doesNotMatch(between('function p8TourScr(msg){', '\nfunction p9TourResult('), /p8Hud\(/, '2026-10-06：大会1 対戦表にも特訓チケットは出さない');
   assert.doesNotMatch(between('function p9TourHead(m,t){', '\nfunction p9Standings('), /p8Hud\(/, '2026-10-04 G4：大会の画面には特訓チケットを出さない');
   assert.match(between('function p8FarmPanel(){', '\n// ---- Phase 8：育成中の画面遷移'), /st=="farm"\?p8Hud\(\)/);
   assert.match(HTML, /const BTYPE_LABEL=\{ticket:"特訓チケット",/); assert.match(HTML, /const BTYPE_ICON=\{ticket:"🎫",/);

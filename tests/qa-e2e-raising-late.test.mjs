@@ -164,10 +164,15 @@ const simMatch = (pg, won) => pg.evaluate((won) => {
   return { ok: true, round: t.league.round, status: t.status, msg: (document.querySelector('.p9tmsg') || {}).textContent || '' };
 }, won);
 /** 順位表の自分の行（勝・敗）と、対戦表の自分の行の ○×◎ */
-const myTable = (pg) => pg.evaluate(() => {
-  const r = document.querySelector('.p9st .p9r.me');
-  return { w: r.querySelector('.w').textContent, l: r.querySelector('.l').textContent,
-    mx: [...document.querySelectorAll('.p9mx tbody tr.me td')].map((td) => td.textContent).join('') };
+const myTable = (pg) => pg.evaluate(() => {   // 2026-10-06：大会1 対戦表（.tb1g）の自分の行のマス（勝ち○・負け×・次の試合◎・未対戦・）
+  if (!document.querySelector('.tb1g')) {   // 結果の画面は従来の順位表・対戦表
+    const q = document.querySelector('.p9st .p9r.me');
+    return { w: q.querySelector('.w').textContent, l: q.querySelector('.l').textContent, mx: [...document.querySelectorAll('.p9mx tbody tr.me td')].map((td) => td.textContent).join('') };
+  }
+  const lg = S.m.raise.tour.league, r = lg.entrants.findIndex((e) => e.player), mk = { win: '○', loss: '×', next: '◎', pending: '・' };
+  const cell = (c) => { const el = document.querySelector(`.tb1g .tbc[data-r="${r}"][data-c="${c}"]`); const k = el && [...el.classList].find((x) => x.startsWith('c-')); return k ? mk[k.slice(2)] : ''; };
+  const cs = lg.entrants.map((_, c) => (c === r ? '' : cell(c)));
+  return { w: String(cs.filter((x) => x === '○').length), l: String(cs.filter((x) => x === '×').length), mx: cs.join('') };
 });
 
 // ---------------------------------------------------------
@@ -376,7 +381,7 @@ T('QA-RL4：Chapter 3（旧ボード）のゴール → ランク選択（クリ
   assert.equal(await pg.evaluate(() => window.__seedTour), false, '固定した抽選シードで大会を作った');
   r = await raiseOf(pg);
   assert.deepEqual([r.tour.rank, r.tour.status, r.tour.league.size, r.tour.league.rounds.length, r.tour.league.round], [2, 'league', 8, 7, 0]);
-  assert.deepEqual(await pg.evaluate(() => [document.querySelectorAll('.p9th .pips i').length, document.querySelectorAll('.p9st .p9r:not(.hd)').length, document.querySelectorAll('.p9mx tbody tr').length]), [7, 8, 8]);
+  assert.deepEqual(await pg.evaluate(() => [document.querySelectorAll('.tb1g.n8 .tbnm').length, document.querySelectorAll('.tb1g .tbic.hd').length, document.querySelectorAll('.tb1g .tbc.c-next').length]), [8, 8, 2], '2026-10-06：大会1 対戦表（8体）');
   assert.match(await textOf(pg, '.p9next'), /第1試合 \/ 全7試合/);
   await assertSynced(pg);
   // 第1試合：勝ち（旧 fight() の賞金・勝利数・疲労は取り消される）

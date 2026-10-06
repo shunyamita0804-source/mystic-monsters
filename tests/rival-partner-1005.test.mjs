@@ -94,7 +94,8 @@ test('RP-04：蒼銀の反撃＝相手の攻撃を回避 → 次にレグナス�
 test('RP-05：index.html はフックを呼ぶだけ（ライバルのバトルだけ arm・anim() の先頭・SK／EFF の定義の行は変えない）。レグナスの名前は index.html に書かない。セーブに入れない', () => {
   assert.match(HTML, /<script src="\.\/js\/battle\/rival-partner\.js"><\/script>/);
   assert.match(HTML, /if\(bt=="rival"&&window\.MMRP\)MMRP\.arm\(\);if\(!MMP8\.beginBattle/);
-  assert.match(HTML, /function anim\(k,s\)\{if\(k>=20&&window\.MMRP&&MMRP\.anim\(k,s\)\)return;if\(SFR\[k\]\)return frm\(k,s\);/);
+  assert.match(HTML, /function anim\(k,s\)\{if\(window\.MMSTAGE&&MMSTAGE\.run\(k,s,animRaw\)\)return;animRaw\(k,s\)\}/, '2026-10-06：共通演出（js/battle/stage.js）が先＝レグナスの演出は animRaw の先頭');
+  assert.match(HTML, /function animRaw\(k,s\)\{if\(k>=20&&window\.MMRP&&MMRP\.anim\(k,s\)\)return;if\(SFR\[k\]\)return frm\(k,s\);/);
   assert.match(HTML, /\nif\(window\.MMRP\)MMRP\.install\(\);/);
   const JS = rd('js/battle/rival-partner.js');
   assert.doesNotMatch(JS, /localStorage|save\(|S\.npcFlags|mr4v6/, 'スキルの状態はセーブしない');

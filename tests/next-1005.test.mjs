@@ -39,7 +39,7 @@ test('NX5-02：プロローグの文字＝1文字ずつ（開始の間隔 40〜5
 
 test('NX5-03：序盤の導線＝フィナの2択（どちらも管理局へ）・セルジュ（画像なし＝名前だけ・仮の人物を作らない）・名前の確認・登録のあとに初めて名前を呼ぶ・出身（フェルナ／リベルナ）・世界地図（画像に焼き込まない）', () => {
   const first = HTML.slice(HTML.indexOf('const OPEN_TALK={'), HTML.indexOf('/** プロローグ（新しいゲームの最初に1回'));
-  assert.match(first, /あの……もしかして、今日ミストリアで聖獣士登録をする予定の方ですか？",choices:\[\{id:"yes",label:"はい"\},\{id:"no",label:"ちがいます"\}\]/);
+  assert.match(first, /あの……もしかして、今日ミストリアで聖獣士登録をする予定の方ですか？",choices:\[\{id:"yes",label:"はい"\},\{id:"no",label:"いいえ"\}\]/);
   const before = first.slice(0, first.indexOf(' confirm:'));
   assert.doesNotMatch(before, /\$\{n\}/, '登録より前の会話に名前は入らない');
   assert.match(fnOf('opTownTalk'), /branches:\{yes:OPEN_TALK\.firstYes,no:OPEN_TALK\.firstNo\}/);
