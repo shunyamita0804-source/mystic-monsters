@@ -1576,7 +1576,7 @@ html:has(#app>.chfw),html:has(#app>.chfw) body{background:#0b1636}
 .svs .card.slot .row2{grid-column:2;grid-row:1/3;display:flex;gap:6px;margin:0}
 .svs .card.slot .row2 button{flex:none;min-width:64px;margin:0;padding:8px 10px;border-radius:999px;border:1.5px solid #d9b465;background:linear-gradient(180deg,#8e1b2a,#5a0f1c);color:#fff6d8;font:800 13px/1 var(--mm-font-head);letter-spacing:.06em;box-shadow:0 2px 0 rgba(0,0,0,.4),inset 0 1px 0 rgba(255,236,180,.3)}
 .svs .card.slot .row2 button+button{background:linear-gradient(180deg,#2a4a90,#14275a)}
-.svs .card.slot .row2 button:disabled{opacity:.45;filter:saturate(.5)}
+.svs .card.slot .row2 button:disabled{opacity:.45}
 .svs .card.slot.svauto{grid-template-columns:1fr;padding:7px 12px;background:rgba(255,255,255,.06);border-style:dashed;border-color:rgba(217,180,101,.6)}
 .svs .card.slot.svauto b{font-size:12.5px;color:#e8cf8e}
 .svs details.svmore{margin:2px 0 0;padding:0}
@@ -2239,6 +2239,39 @@ button.p10karen img{display:block;width:100%;height:auto;margin-top:2px;transfor
 #app .fm.bc .bcbar button.bcb span{font-size:13px;letter-spacing:.02em}
 #app .fm.bc .bcbar button.bcb svg{width:28px;height:28px}
 @media (max-height:700px){#app .fm.bc{--bcbar:84px}#app .lab .labnav .labc,#app .rn2 .rna{min-height:64px;padding:7px 2px 6px}#app .lab .labnav .labc svg,#app .rn2 .rna svg{width:26px;height:26px}}
+/* 2026-10-06 共通UI（正式素材 A2・A3・B1〜B3 のうち安全に透過できて用途がはっきりしたもの。assets/ui/b_group・a_group の README.md）。
+   画像は縦横比のまま（背景 100% 100% ＋ 同じ aspect-ratio／枠は border-image）・文字とアイコンは HTML・押せる範囲は従来のボタン。処理・遷移は変えない */
+#app .rn2 nav.rnact{position:relative;display:block;width:100%;height:auto;aspect-ratio:800/138;margin-top:10px;background:url(./assets/ui/b_group/b15_ranch_four_action_bar_blank.webp) center/100% 100% no-repeat}
+#app .rn2 nav.rnact .rna{position:absolute;top:11.7%;height:75.2%;min-height:0;margin:0;padding:0;gap:1px;border:0;border-radius:7px;background:none;box-shadow:none}
+#app .rn2 nav.rnact .rna::before{display:none}
+#app .rn2 nav.rnact .rna:nth-child(1){left:3.4%;width:22.4%}#app .rn2 nav.rnact .rna:nth-child(2){left:27.3%;width:21.9%}#app .rn2 nav.rnact .rna:nth-child(3){left:50.6%;width:22.3%}#app .rn2 nav.rnact .rna:nth-child(4){left:74.2%;width:22.4%}
+#app .rn2 nav.rnact .rna svg{width:22px;height:22px}#app .rn2 nav.rnact .rna span{font-size:12.5px;letter-spacing:0}
+#app .rn2 nav.rnact .rna:active:not(:disabled){transform:scale(.96);box-shadow:inset 0 0 0 2px rgba(242,213,140,.75),0 0 12px rgba(242,213,140,.45)}
+#app .rn2 nav.rnact .rna:disabled{opacity:1}#app .rn2 nav.rnact .rna:disabled>*{opacity:.42}
+#app>.rn.rn2>.wpanel.rnpanel{border:20px solid transparent;border-image:url(./assets/ui/b_group/b14_ranch_list_panel_blank.webp) 70 / 20px / 0 stretch;border-radius:0;padding:2px 0}
+#app .lab nav.labnav{position:relative;display:block;width:100%;height:auto;aspect-ratio:800/93;background:url(./assets/ui/b_group/b13_facility_three_button_bar_blank.webp) center/100% 100% no-repeat}
+#app .lab nav.labnav .labc{position:absolute;top:6%;height:88%;min-height:0;margin:0;padding:0 0 0 4%;flex-direction:row;gap:6px;border:0;border-radius:7px;background:none;box-shadow:none}
+#app .lab nav.labnav .labc::before{display:none}
+#app .lab nav.labnav .labc:nth-child(1){left:8.6%;width:27.1%}#app .lab nav.labnav .labc:nth-child(2){left:36.9%;width:28.8%}#app .lab nav.labnav .labc:nth-child(3){left:66.6%;width:27.7%}
+#app .lab nav.labnav .labc svg{width:20px;height:20px}#app .lab nav.labnav .labc b{font-size:14px}
+#app .lab nav.labnav .labc.on,#app .lab nav.labnav .labc:active{transform:none;box-shadow:inset 0 0 0 2px rgba(242,213,140,.85),0 0 12px rgba(242,213,140,.5)}
+.p10mk .p10arw{width:50px;height:52px;border:0;border-radius:50%;background:url(./assets/ui/b_group/b45_nav_back_medallion.webp) center/contain no-repeat;box-shadow:none}
+.p10mk .p10arw.next{background-image:url(./assets/ui/b_group/b44_nav_next_medallion.webp)}
+.p10mk .p10arw svg{display:none}
+#app .sts .stskill{border:12px solid transparent;border-image:url(./assets/ui/b_group/b23_unique_skill_frame_blank.webp) 46 fill / 12px / 0 round;border-radius:0;background:none;padding:0 2px 2px}
+.svs .card.slot:not(.svauto){position:relative;box-sizing:border-box;aspect-ratio:720/178;height:auto;grid-template-columns:minmax(0,1fr) auto;padding:0 25% 0 6%;column-gap:6px;row-gap:4px;align-content:center;border:0;border-radius:0;background:url(./assets/ui/b_group/b04_save_slot_row_blank.webp) center/100% 100% no-repeat;box-shadow:none}
+.svs .card.slot .row2{flex-direction:column;align-items:center;gap:4px}
+.svs .card.slot:not(.svauto) .row2 button{height:28px;width:auto;aspect-ratio:400/107;min-width:0;padding:0;border:0;border-radius:0;background:url(./assets/ui/a_group/a20_button_red_small_plain.webp) center/100% 100% no-repeat;box-shadow:none;font-size:12.5px;text-shadow:0 1px 2px rgba(0,0,0,.7)}
+.svs .card.slot:not(.svauto) .row2 button+button{aspect-ratio:400/130;background-image:url(./assets/ui/a_group/a22_button_blue_large_panel.webp)}
+.svs .card.slot:not(.svauto) .row2 button+button:disabled{aspect-ratio:400/111;background-image:url(./assets/ui/b_group/b06_load_button_disabled.webp);opacity:1;color:#f1f1f1}
+.svs .card.slot .svpic{position:absolute;left:78.6%;width:14.8%;top:16%;height:68%;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.svs .card.slot .svpic img{max-width:92%;max-height:92%;object-fit:contain}
+#app>.ds.pfprof{overflow-y:auto;overscroll-behavior:contain}
+.pfprof .tplate{margin:8px 0 0;padding:0;background:none;border:0;box-shadow:none}
+.pfprof .tplate>:not(.pfhead):not(.pfrows),.pfprof .tplate::before{display:none}
+.pfprof .pfhead{position:relative;display:block;width:min(100%,325px);aspect-ratio:720/443;margin:0 auto;background:url(./assets/ui/b_group/b02_player_card_frame_blank.webp) center/100% 100% no-repeat}
+.pfprof .pfhead .tav{position:absolute;left:3%;top:9%;width:24%;height:auto;aspect-ratio:1;border:0;box-shadow:none;background:none}
+.pfprof .pfhead .pfn{position:absolute;left:32%;right:8%;top:14%;height:30%;justify-content:center}
 /* ベースキャンプの主ボタン「出発する」（2026-10-06 正式デザイン 02_basecamp）：赤＋金・下のコマンドより格上の大きさ・下のコマンドとの間に余白・押すと縮んで金の光 */
 #app .fm.bc .bcgo{bottom:calc(var(--bcbar) + 72px + env(safe-area-inset-bottom,0px))} /* 2026-10-05 試遊：「出発する」を下のバーから離す（40px → 72px）。モンスターの場所（.bcfield）も同じだけ上へ */
 #app .fm.bc .fmgo.bcdep{height:auto;min-height:74px;padding:9px 16px 10px;gap:1px;border-radius:18px;border:2px solid #f0cf7c;background:radial-gradient(ellipse at 50% 0%,rgba(255,214,180,.3),rgba(255,214,180,0) 58%),linear-gradient(#b8262c,#86141c 55%,#5c0b12);box-shadow:inset 0 0 0 2px rgba(60,6,10,.85),inset 0 0 0 3.5px rgba(246,214,140,.55),0 0 0 2px rgba(40,14,8,.7),0 6px 16px rgba(0,0,0,.5),0 0 18px rgba(240,200,110,.22);transition:transform .08s ease,box-shadow .14s ease}
@@ -3420,7 +3453,7 @@ function townGuild(){if(S.playerNamePending&&opOn())return opBureau();bureauScr(
 /** プロフィール（暫定の器）：顔（仮の金色の人の形。正式な顔の素材は後日）・プレイヤー名・所持金・最高到達ランク・獲得トロフィー（正式データが無いので枠だけ）。
  * 行は PROFILE_ROWS に［見出し, 値のHTMLを返す関数］で足していく（大会戦績・育成記録・実績など）。セーブには何も足さない */
 const PROFILE_ROWS=[["所持金",()=>`<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#tic-coin"/></svg>${S.g}<small>G</small>`],["最高到達ランク",()=>(S.br??-1)>=0?RN[S.br]:"ー"],["育成完了",()=>`${MMP8.raiseDoneCount(S)}<small>回</small>`],["大会の勝利",()=>`${S.wins||0}<small>勝</small>`],["獲得トロフィー",()=>null]];
-function profileScr(){if(p8Blocked())return;bgm("town");$("#app").innerHTML=`<div class="ds pfds">${TOWN_SVG}<div class="dtop"><button class="dback" onclick="lobby()">◀ 街にもどる</button></div><div class="dtitle" style="--dc:#d9b465"><div class="mico"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#tic-profile"/></svg></div><div><b>プロフィール</b><small>プレイヤーの記録</small></div></div><div class="tplate">${townCorners()}<div class="pfhead"><div class="tav"><svg viewBox="0 0 34 34" aria-hidden="true"><use href="#tic-player"/></svg></div><div class="pfn"><small>プレイヤー</small><b class="p115pn">${p11Esc(S.playerName||MMP11P.DEFAULT_NAME)}</b></div></div><dl class="pfrows">${PROFILE_ROWS.map(r=>{const v=r[1]();return `<div class="pfrow"><dt>${r[0]}</dt>${v==null?`<dd class="pfnone">準備中</dd>`:`<dd>${v}</dd>`}</div>`}).join("")}</dl></div></div>`;try{window.scrollTo(0,0)}catch(e){}}
+function profileScr(){if(p8Blocked())return;bgm("town");$("#app").innerHTML=`<div class="ds pfds pfprof">${TOWN_SVG}<div class="dtop"><button class="dback" onclick="lobby()">◀ 街にもどる</button></div><div class="dtitle" style="--dc:#d9b465"><div class="mico"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#tic-profile"/></svg></div><div><b>プロフィール</b><small>プレイヤーの記録</small></div></div><div class="tplate">${townCorners()}<div class="pfhead"><div class="tav"><svg viewBox="0 0 34 34" aria-hidden="true"><use href="#tic-player"/></svg></div><div class="pfn"><small>プレイヤー</small><b class="p115pn">${p11Esc(S.playerName||MMP11P.DEFAULT_NAME)}</b></div></div><dl class="pfrows">${PROFILE_ROWS.map(r=>{const v=r[1]();return `<div class="pfrow"><dt>${r[0]}</dt>${v==null?`<dd class="pfnone">準備中</dd>`:`<dd>${v}</dd>`}</div>`}).join("")}</dl></div></div>`;try{window.scrollTo(0,0)}catch(e){}}
 /** お知らせ（仮の画面）：正式なお知らせ機能は未決。配信・データ・セーブは作らず「準備中」だけ */
 function newsScr(){if(p8Blocked())return;$("#app").innerHTML=`<div class="ds pfds tnewsscr">${TOWN_SVG}<div class="dtop"><button class="dback" onclick="lobby()">◀ 街にもどる</button></div><div class="dtitle" style="--dc:#d9b465"><div class="mico"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#tic-news"/></svg></div><div><b>お知らせ</b><small>ミスティックモンスターズからのお知らせ</small></div></div><div class="tplate">${townCorners()}<p class="pfnote">お知らせは準備中です。</p></div></div>`;try{window.scrollTo(0,0)}catch(e){}}
 /** 設定：今ある設定（BGM・効果音のオン／オフ＝既存の sndToggle と localStorage の mr4a）だけを置く。新しい設定・セーブ項目は作らない。
@@ -3715,7 +3748,7 @@ const sl=n=>{try{return JSON.parse(localStorage.getItem("mr4s"+n))}catch(e){retu
 const slab=d=>!d?"（空き）":`${d.m?p11Esc(d.m.name)+"（ランク"+(d.m.prog?MMP8.rankLabel(d.m):RN[d.m.rk||0])+"）":"モンスターなし"}　🪙${d.g}G`;
 function savescr(msg){if(p8Blocked())return;
  bgm("town");p9Immersive(true);
- $("#app").innerHTML=`<div class="svs"><header class="svhead"><button class="back" onclick="lobby()">◀ 街にもどる</button><h2>セーブ・ロード</h2></header><div class="dbub svmsg" id="msg">${msg||"3つのスロットにセーブできます。進行は自動でも保存されています。"}</div>${[1,2,3].map(n=>{const d=sl(n);return `<div class="card slot"><b>スロット${n}</b><small>${slab(d)}</small><div class="row2"><button onclick="slotSave(${n},this)">セーブ</button><button ${d?"":"disabled"} onclick="slotLoad(${n},this)">ロード</button></div></div>`}).join("")}<div class="card slot svauto"><b>いまの進行（オートセーブ）</b><small>${slab(S)}</small></div><details class="sv svmore"><summary>セーブコードで引っこし・バックアップ</summary><p><small>コードを別の端末に貼り付ければ、続きから遊べます。</small></p><div class="row2"><button onclick="exp()">コードを作る（コピー）</button><button onclick="shareCode()">共有</button></div><textarea id="sc" rows="3" placeholder="ここにコードが出ます／貼り付け"></textarea><div class="row2"><button onclick="pasteCode()">貼り付け</button><button onclick="imp()">このコードで読み込む</button></div></details><button class="ghost" onclick="reset(this)">最初からやり直す</button></div>`;tapAt($("#app .ghost"))}
+ $("#app").innerHTML=`<div class="svs"><header class="svhead"><button class="back" onclick="lobby()">◀ 街にもどる</button><h2>セーブ・ロード</h2></header><div class="dbub svmsg" id="msg">${msg||"3つのスロットにセーブできます。進行は自動でも保存されています。"}</div>${[1,2,3].map(n=>{const d=sl(n),mi=d&&d.m&&MMP10M.byId(d.m.sp);return `<div class="card slot"><b>スロット${n}</b><small>${slab(d)}</small><div class="row2"><button onclick="slotSave(${n},this)">セーブ</button><button ${d?"":"disabled"} onclick="slotLoad(${n},this)">ロード</button></div><i class="svpic" aria-hidden="true">${mi?`<img src="${mi.image.src}" alt="">`:""}</i></div>`}).join("")}<div class="card slot svauto"><b>いまの進行（オートセーブ）</b><small>${slab(S)}</small></div><details class="sv svmore"><summary>セーブコードで引っこし・バックアップ</summary><p><small>コードを別の端末に貼り付ければ、続きから遊べます。</small></p><div class="row2"><button onclick="exp()">コードを作る（コピー）</button><button onclick="shareCode()">共有</button></div><textarea id="sc" rows="3" placeholder="ここにコードが出ます／貼り付け"></textarea><div class="row2"><button onclick="pasteCode()">貼り付け</button><button onclick="imp()">このコードで読み込む</button></div></details><button class="ghost" onclick="reset(this)">最初からやり直す</button></div>`;tapAt($("#app .ghost"))}
 // 連打・すり抜けタップ対策（1か所で管理）：tapAt(el)＝el が押せるようになった時刻を記録／tapSoon(el,ms)＝その時刻から ms 未満なら true（その押下は受け付けず、そこから数え直す＝連打が続くあいだは確定しない）
 //  ・2度押し確認（arm・p9arm・reset）：確認状態になってから0.4秒未満の押下では確定しない（ダブルタップで確認を飛ばさない）
 //  ・tapHold(box,ms)：画面・シートを出した直後（ms 未満）は box の中のボタンを押せない（前の画面での連打の2打目が、同じ位置に出たボタンに届くのを防ぐ。指定したボタンだけに使う）

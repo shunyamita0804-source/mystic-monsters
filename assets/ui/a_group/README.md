@@ -21,3 +21,7 @@ ZIP `mismon_ui_assets_A_group_FINAL_2026-10-06`。元の PNG の URL（A_group_s
 - latest_overrides の PNG 3点（A-04 押下・A-12 選択・A-16 強調）：半透明の市松模様の質感が残っている
 - A-01 見出し・A-02 戻る・A-03 青のボタン・A-04 小（押下）・A-05 無地・A-07 簡易：該当する絵が受け取った JPEG に無い（または対応が判別できない）
 - 会話窓（A-06）・ポップアップ（A-15）・タブ（A-10）・リストの行（A-11）・丸いアイコンの枠（A-13）・名札（A-07 装飾）・パネル（A-08／A-09）：絵はきれいに切り出せるが、既存の正式 UI（会話窓・確認の窓など）と置き換える範囲の判断が要る＝今回は適用しない
+
+## 追加（2026-10-06・ZIP mismon_UI_A2／A3_prepared）
+
+- a20_button_red_small_plain.webp（A-20）＝セーブ／ロードの「セーブ」、a22_button_blue_large_panel.webp（A-22）＝「ロード」。透過の手順・元の sha256・使っていない A 群の部品は assets/ui/b_group/README.md
