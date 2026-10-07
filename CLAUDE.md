@@ -81,6 +81,8 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 | assets/legends/ | **三人のレジェンドと相棒（2026-10-07 正式）**：astrad・leona・ragnas の full／closeup、zelvarn・griffel・dragnol の monster。データは js/prologue/prologue.js の LEGENDS（アストラッド＋ゼルヴァーン・レオナ＋グリフェル・ラグナス＋ドラグノル）。今は表示する場面なし（将来のレジェンド挑戦）。README.md |
 | assets/battle/arena・idle・roulette/、assets/tournament/faces/ | **2026-10-07**：会場の背景 E〜S・待機立ち絵5体・横型ルーレットの部品（arch・center_frame・stop・plate_normal／selected／miss）・大会の顔アイコン5体（対戦表）。各 README.md |
 | assets/ui/cmd/、assets/ui/market/ | **2026-10-07**：研究所（図鑑・合体・配合表）・聖獣士管理局（聖獣士証・功績一覧・世界地図）・牧場（見る・名前変更・預ける／受け取る・売る）のコマンドの正式画像（data-cmd で CSS の背景）、市場の左右の矢印・会話欄。README.md |
+| assets/ui/skill/ | **技一覧の未習得パネル（2026-10-07 夜）**：locked_skill_panel.png（ZIP mystic_monsters_locked_skill の透過版を切り抜いて縮小）。技一覧の未習得の技の絵の代わり。README.md |
+| assets/audio/bgm/licensed_20261007/ | **正式採用の BGM 14曲（2026-10-07 夜）**：ユーザー提供の MP3／WAV を OGG Vorbis q5 に変換しただけ（ユーザー指示）。プロローグ6場面・セドリック・対戦表・対戦前比較・ライバル・闘技場・野生・レア・公式ランク戦。作者・出典・gain・ループは AUDIO_CREDITS.md |
 | assets/lab/ | 研究所の正式背景 lab_main.webp（2026-10-03。巨大な図鑑・青く光る装置） |
 | js/fx/sequence.js | 連続コマの演出の再生器 `MMSEQ`（2026-10-03。sacredBeast＝野生聖獣の遭遇8コマ。どこからも呼んでいない＝聖獣のシステムが無い。将来は MMSEQ.play('sacredBeast')） |
 | assets/title/ | 開始画面の正式画像（README.md に出どころ） |
@@ -166,6 +168,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - 2026-10-06・4（本体修正＋大会UI統合＋技アニメ＋バトル演出）の後：ふだんの実行は 1189件（合格803・skip 386・失敗0。新しい tests/battle-1006.test.mjs＝MV-01〜05、tests/tournament-1004.test.mjs の TN-02・TN-03 を大会1・2 に書き直し＋TN-03b）。実ブラウザ tests/qa-e2e-1006b.test.mjs（TB-B1＝大会1→2→3→バトル 4サイズ、TB-B2＝8体、ST-B1＝バトルの演出の時間、MD-B1＝技辞典）。harness は MM_QA_NO_STAGE（バトルの共通演出）・MM_QA_NO_TOURVS（大会3）を既定で切る（open({ stage:true })・open({ tourvs:true })）
 - 2026-10-06・5（大会・状態異常・固有スキル・技習得ルートの正式仕様の差分）の後：ふだんの実行は 1200件（合格811・skip 389・失敗0。新しい tests/battle-rules-1006.test.mjs＝BR-01〜08、phase8 の S5-2〜4・S6-6・phase9 の T3-6・qa-raising-logic の QA-RL26／27／40・phase10・phase-b-1005 の PB-06・battle-1006 を新しい仕様に書き直し）。実ブラウザ tests/qa-e2e-rules-1006.test.mjs（RB-B1＝1試合目の勝利で賞金・ランクアップを出さない、RB-B2＝ねむり、RB-B3＝まひ）
 - 2026-10-07（今回差分の最終統合）の後：ふだんの実行は 1205件（合格816・skip 389・失敗0。新しい tests/diff-1007.test.mjs＝RX-01〜02・DF-01〜03。プロローグ6枚・大会2 の刷新・リュウ／セドリック・コマンド画像の data-cmd に合わせて NX5-01・QU-01・PB-02・TN-03／03b・PH-01／03／05・T4-2・NICK-6・TR-02・UB-03・F2-1・QA-C14・CED-4・CH1-29・S6-8・BR-07・QA-G4-2 を書き直し）
+- 2026-10-07 夜（BGM 14曲・セドリックの会場背景・UI 再回収）の後：ふだんの実行は 1206件（合格817・skip 389・失敗0。tests/audio-manager.test.mjs に AUDIO-30、AUDIO-22／24・GF-03・PB-01 を新しい BGM に書き直し）
 - **テスト運用（2026-10-01 正式）**：ふだんの開発は「実装 → 関連テスト → commit → push → public-check」。51ファイルの全件実ブラウザテストを push の前提にしない（大きな節目では push の後に全件を回す）。既知の不安定なテストが落ちたら、変更との関係を確かめ、明らかに不安定なものだけ1回再実行して合格なら既知として報告する（何度も再実行しない）。小さな修正では公開版の手動操作確認は不要で public-check を基本にする。
 
 ### ホーム画面アイコン
@@ -526,6 +529,13 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - **バトルの共通演出（js/battle/stage.js）**：tier（正式技の威力。補助＝威力なし・基本＝85以下・強技＝90〜115・必殺級＝120以上）ごとに 構え 0.17〜0.21秒 → 溜め（強技 0.23秒・必殺級 0.52秒＝背景を暗く・光の輪・粒）→ 今までの技の絵（基本 ×1.4・強技 ×1.18・必殺級 ×1.0 の速さ）→ ヒットストップ（0.07／0.1／0.14秒・クリティカルは +0.05秒＝バトル画面の動きを止める）→ ノックバック・被弾の光（相手の絵の形のマスクに白＝色の加工なし）・HP の枠と背景の揺れ → ダメージの表示（当たったあと約0.07秒）・HP バーは さらに 0.12秒遅れて減る → 余韻（0.24〜0.42秒）→ 次のターン。攻撃の長さ＝基本 約1.24秒・強技 約1.69秒・必殺級 約2.23秒（＋余韻）。攻撃中は背景を攻撃側へ少し寄せ、ルーレットは引っ込めたまま（既存の .bui.anim）。外れたときは相手がかわす動き（被弾の演出なし）。補助技（ほしのまもり＝光の盾と粒／ソニックムーブ＝高速の左右移動と残像）・聖なる炎（炎の溜め → 攻撃 → 加護の光が残る）・フェザーストーム（羽根の渦）は専用のテンポ。判定（命中・ダメージ・効果）は act() が先に確定していて変えない。
 - **UI の修正**：フィナの2択「はい／いいえ」（旧 はい／ちがいます）・セルジュの名前の確認「はい／いいえ」（旧 この名前で登録する／書き直す）・プロフィールの上の「ミスティックモンスターズ」の見出しを出さない・市場の購入確認「やめる」＝A-19 青・「連れて帰る」＝B-49 赤・技管理の詳細で補助技は「✨ 補助」。新しいデザイン素材が要る UI（聖獣士登録・受け取り通知・市場の上部と札とセリフ枠・街の名札と下のコマンド・会話の名札と枠・プロフィールの戻る）は作り変えず、差し替え口を docs/ui-pending.md にまとめた。
 - テスト：tests/battle-1006.test.mjs（MV-01〜05）・tests/qa-e2e-1006b.test.mjs（TB-B1〜B2・ST-B1・MD-B1）
+
+### BGM 正式採用・セドリックの会場・UI 再回収（2026-10-07 夜。いまの正式。基準 d77e8b0 への差分）
+
+- **BGM 14用途**（js/audio/audio-registry.js の LIC＝assets/audio/bgm/licensed_20261007/。ユーザー提供の MP3 13曲・WAV 1曲を OGG Vorbis q5 に変換＝ユーザー指示 2026-10-07。曲の切り出しはしない）：プロローグ＝Scene ごとに1曲（PROLOGUE_1〜6・各曲の頭から・loop なし。js/prologue/prologue.js の opts.onScene → index.html の proPlay が MMAUDIO.scene('PROLOGUE_N', { fade:'quick' })。時刻表・本文・スキップは従来どおり。旧1曲の PROLOGUE は silent のまま）／セドリックの大会前の導入＝CEDRIC（p9TourOpen の bgm("cedric")。会話のあと対戦表の曲へ）／大会1 対戦表＝TOURNAMENT_LOBBY_LOW（HIGH は fallback）＝17秒から（MMAUDIO の新しい start＝メディアフラグメント #t=17・ループも 17〜135.2秒）／大会2 対戦前比較＝TOURNAMENT_MATCHUP の短いジングル（loop なし。p9CompareScr を bgm("matchup") に）／ライバル戦 RIVAL_BATTLE／野生 WILD_BATTLE／レア RARE_WILD_BATTLE（専用曲）／公式ランク戦 TOURNAMENT_BATTLE_LOW（HIGH・SPECIAL_BATTLE は fallback）／闘技場 ARENA（**闘技場の画面は未実装＝登録だけ・どこからも鳴らさない**）。受付と大会の結果は従来の Royal Castle。置き換えた旧い戦闘曲4つ（PGS Battle Music 1／2・alkakrab Battle of the Skies／Clash of Arcane Titans）はファイルを外した（AUDIO_CREDITS.md に記録）。不採用：「いざ出発！」「冒険への誘い」。音量は gain（BGM 約 -18 LUFS・セドリックの会話の場面 約 -20 LUFS）。iOS の復帰・ミュート・音量の処理は変えていない。
+- **セドリックの会話の背景**：大会前の導入・大会後の締めとも、そのランクの会場（MMARENA.arenaSrc＝assets/battle/arena/arena_E〜S。index.html の cedricBg）。会話の窓・構造は共通。対戦表・比較画面にセドリックは出さない（従来どおり）。
+- **UI 再回収**：技一覧の未習得＝正式の未習得パネル（assets/ui/skill/）。研究所（図鑑・合体・配合表）・聖獣士管理局（聖獣士証・功績一覧・世界地図）のコマンドを大きく・少し上へ、牧場のコマンドを下から離す、市場の会話欄を高く（下から 34px）。PART0 のコマンド画像・市場の矢印と会話欄は前回取り込んだものと同一（sha256 一致）＝差し替えなし。冒険のメニュー（☰）と最終確認は前回の簡素化のまま。
+- **やらなかったこと・残り**：ルーレットの巡航速度（引き継ぎ書どおり変えない）、闘技場の画面（未実装＝ARENA の曲は登録だけ）、VS の「正式勝負絵」（受け取った素材に無い＝待機立ち絵のまま）、牧場の「黄色い菱形」（コマンドの菱形は前回外した。施設名ラベル B-01 の絵の中の飾りは画像の一部）、旧正式 UI の ZIP 6つ（seijuushi_ui・095601・talk_ui・basecamp_UI・market_ui・大会UI 102319）は今回も無い。
 
 ### 今回差分の最終統合（2026-10-07。いまの正式。基準 829c772 への差分）
 
