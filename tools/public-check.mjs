@@ -83,12 +83,12 @@ try {
   await sleep(1500);
 
   await page.click('[onclick*="startGame"]'); await sleep(600);
-  // 2026-10-05：新しいゲームの最初はプロローグ（正式4枚・1文字ずつ）→ 街 → フィナの声かけ（2択）→ 聖獣士管理局（光る札）→ セルジュ → 聖獣士登録
-  const pro = await page.waitForFunction(() => { const b = document.querySelector('.mmpro .mmpro-bg.on'); return b && /prologue_01_coexistence\.webp/.test(b.style.backgroundImage) && document.querySelector('.mmpro .mmpro-u .mpc'); }, null, { timeout: 20000 }).then(() => true, () => false);
-  const proImgs = await page.evaluate(() => Promise.all(['01_coexistence', '02_anomaly', '03_three_legends', '04_arrival_mistoria'].map((k) => new Promise((ok) => { const i = new Image(); i.onload = () => ok(i.naturalWidth > 0); i.onerror = () => ok(false); i.src = `assets/prologue/prologue_${k}.webp`; })))).then((a) => a.every(Boolean));
+  // 2026-10-05：新しいゲームの最初はプロローグ（2026-10-07 正式6枚・1文字ずつ）→ 街 → フィナの声かけ（2択）→ 聖獣士管理局（光る札）→ セルジュ → 聖獣士登録
+  const pro = await page.waitForFunction(() => { const b = document.querySelector('.mmpro .mmpro-bg.on'); return b && /v2\/prologue_01_peace\.webp/.test(b.style.backgroundImage) && document.querySelector('.mmpro .mmpro-u .mpc'); }, null, { timeout: 20000 }).then(() => true, () => false);
+  const proImgs = await page.evaluate(() => Promise.all(['01_peace', '02_calamity', '03_culture', '04_legends', '05_tournament', '06_departure'].map((k) => new Promise((ok) => { const i = new Image(); i.onload = () => ok(i.naturalWidth > 0); i.onerror = () => ok(false); i.src = `assets/prologue/v2/prologue_${k}.webp`; })))).then((a) => a.every(Boolean));
   await sleep(1200); await page.screenshot({ path: `${OUT}/prologue_01_390.png` });
   if (pro) { await sleep(500); await page.click('.mmpro-skip'); await sleep(500); await page.click('.mmpro-skip'); }
-  rec('プロローグ（正式4枚が読める・1文字ずつ・スキップで街へ）', pro && proImgs, `表示:${pro} 背景:${proImgs}`);
+  rec('プロローグ（正式6枚が読める・1文字ずつ・スキップで街へ）', pro && proImgs, `表示:${pro} 背景:${proImgs}`);
   await page.waitForSelector('.map.town', { state: 'attached', timeout: 20000 });   /* 2026-10-06：フィナの会話の間は街の UI を隠す（data-mmscene）*/ await sleep(900);
   const c1 = await drain(); if (c1 === 'choice') { await sleep(450); await page.click('.mmtalk-choice[data-choice="yes"]'); await sleep(300); }
   const c1b = await drain(); await sleep(400);
