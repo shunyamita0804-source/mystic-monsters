@@ -21,6 +21,7 @@
   const AKSE = SE_DIR + 'alkakrab_fantasy_rpg_vol3/'; // 同じパックの Fx（短い効果音）
   const HG = BGM_DIR + 'hydrogene_16bit_rpg/';         // HydroGene「High Quality 16-bit RPG Music」（CC0。AUDIO_CREDITS.md）
   const MMO = SE_DIR + 'mystic_monsters_official/';   // ミスティックモンスターズの正式素材（ユーザー提供・2026-10-04。AUDIO_CREDITS.md）
+  const LIC = BGM_DIR + 'licensed_20261007/';        // 2026-10-07 正式採用の BGM 14曲（DOVA-SYNDROME・Pixabay・itch.io。ユーザー提供の MP3／WAV を OGG Vorbis q5 に変換しただけ・曲の切り出しはしない。作者・出典は AUDIO_CREDITS.md）
   const MMB = BGM_DIR + 'mystic_monsters_official/';  // 同じく正式の BGM（2026-10-06：タイトル・プロローグ。ユーザー提供・ゲームの所有素材。AUDIO_CREDITS.md）
 
   // 書き方：{ src, gain, loopStart, loopEnd, loopXfade } ＝ファイルで鳴らす（loopEnd を書くと、曲の終わりのフェードアウトの前で loopStart へクロスフェードで戻る。秒）／{ fallback: '場面' } ＝ほかの場面の曲を使う／{ silent: true } ＝鳴らさない（合成音にも落とさない。試遊で「合わない」となった音の一時的な置き場）／行が無い ＝合成音
@@ -30,6 +31,15 @@
     TITLE:      { silent: true },   // 2026-10-05 PHASE B 正式：開始画面に BGM は無い（無音で開始画面 → 開始の音 TITLE_START → Scene 1 でプロローグ BGM）。旧タイトル曲（mystic_monsters_title_theme_official.ogg）は廃止・ファイルも置かない
     PROLOGUE:   { silent: true },   // 2026-10-06 重大修正：プロローグの音がプツプツ鳴る＝プロローグ BGM は一旦削除（鳴らさない・合成音にも落とさない。ファイルも置かない）。プロローグの時刻表・本文・スキップは変えない
                                      //  旧 54.2秒版と同じファイル名なので ?v=v6 で端末のキャッシュ（旧い曲）を使わない
+    // 2026-10-07 正式：プロローグは Scene ごとに1曲（各曲の頭から・loop なし＝Scene は約6.3秒）。index.html の proPlay が Scene の切り替えで PROLOGUE_1〜6 へ（短いクロスフェード）
+    PROLOGUE_1: { src: LIC + '01_prologue_peace.ogg', gain: 0.54, loop: false },          // 穏やかで少しワクワクする今日 / 今川彰人オーケストラ（-12.6 LUFS → 約 -18）
+    PROLOGUE_2: { src: LIC + '02_prologue_calamity.ogg', gain: 0.35, loop: false },       // 悪魔との戦闘 / 今川彰人オーケストラ（-9.0）
+    PROLOGUE_3: { src: LIC + '03_prologue_hopeful.ogg', gain: 0.44, loop: false },        // Hopeful / Fukagawa（-10.9）
+    PROLOGUE_4: { src: LIC + '04_prologue_legend_battle.ogg', gain: 0.52, loop: false },  // 高貴なる戦闘 / 香居（-12.4）
+    PROLOGUE_5: { src: LIC + '05_prologue_tournament.ogg', gain: 0.42, loop: false },     // Tournament / Ebunny（-10.4）
+    PROLOGUE_6: { src: LIC + '06_prologue_departure.ogg', gain: 0.68, loop: false },      // Bon Voyage! / HarumachiMusic（-14.7）
+    CEDRIC:     { src: LIC + '07_cedric_pre_tournament.ogg', gain: 0.3, loopStart: 0, loopEnd: 378.5, loopXfade: 1 },   // セドリックの大会前の導入：REACH FOR the FATE / Keyta（-9.5 → 会話が聞こえる約 -20）
+    ARENA:      { src: LIC + '11_arena_swords_at_midnight_loop.ogg', gain: 0.67 },          // 闘技場の施設の曲：Swords At Midnight Loop（ループ素材・-14.5）。闘技場の画面は未実装（ロック中）＝登録だけで、今はどこからも鳴らさない
     BUREAU:     { src: MMB + 'mystic_monsters_bureau_bgm_official.ogg', gain: 0.46, loopStart: 0, loopEnd: 45.7, loopXfade: 0.25 },   // 2026-10-05 PHASE B 正式 v6：聖獣士管理局（46.0秒・-13.2 LUFS → gain 0.46 で約 -20＝会話が聞き取れる音量）。終わりの短いフェードの前で頭へ戻してループ
     TOWN:       { src: HG + '02_lively_city.ogg', gain: 0.62 },     // 2026-10-03 第5弾の仮採用：HydroGene「Lively City」65秒・明るい長調（第4弾で NG の Tranquil Radiance は使わない）
     MARKET:     { src: PGS + 'town_village_theme_2.ogg', gain: 0.9 },   // 試遊で OK（変更しない）
@@ -46,17 +56,17 @@
     //  2026-10-03 第5弾の仮採用：大会の受付 → 順位表 → 対戦前 → 結果は HydroGene「Royal Castle」1曲。ENTRY だけに曲を書き、ほかは fallback＝同じファイルなので場面が変わっても鳴らし直さない（頭出ししない）。
     //  実戦（battle）の前は fight() の bgm("battle") で止め、FIGHT! のあと大会の戦闘曲。バトル後の順位表・結果でまた Royal Castle（頭から）。旧：PGS Event Music 4（第4弾で NG・使わない）
     TOURNAMENT_ENTRY:       { src: HG + '03_royal_castle.ogg', gain: 0.68, loopStart: 0, loopEnd: 64.28, loopXfade: 0.08 },   // 大会会場への到着・受付・ランク選択。64秒（ファイルの終わりと頭の波形に段差があるので、ごく短いクロスフェードで戻す）
-    TOURNAMENT_LOBBY_LOW:   { fallback: 'TOURNAMENT_ENTRY' },   // 順位表（E〜C）：Royal Castle を続ける
-    TOURNAMENT_LOBBY_HIGH:  { fallback: 'TOURNAMENT_ENTRY' },   // 順位表（B〜S）：Royal Castle を続ける
-    TOURNAMENT_MATCHUP:     { fallback: 'TOURNAMENT_ENTRY' },   // 対戦相手の発表・能力比較（1枚の画面）：Royal Castle を続ける（発表の SE MATCHUP は無音のまま）
+    TOURNAMENT_LOBBY_LOW:   { src: LIC + '08_tournament_table_start17s.ogg', gain: 0.69, start: 17, loopStart: 17, loopEnd: 135.2, loopXfade: 1 },   // 2026-10-07 正式：大会1 対戦表＝Battle - スタンバイフェイズ / lei（17秒付近から・ループも 17秒へ。135.5秒からの無音の前で戻す。-14.8）
+    TOURNAMENT_LOBBY_HIGH:  { fallback: 'TOURNAMENT_LOBBY_LOW' },   // B〜S の対戦表も同じ曲
+    TOURNAMENT_MATCHUP:     { src: LIC + '09_prebattle_compare_jingle.ogg', gain: 1.07, loop: false },   // 2026-10-07 正式：大会2 対戦前比較＝trumpetbuildup / theredshore（約12秒の短いジングル・ループしない。-18.6）
     RESULT:                 { fallback: 'TOURNAMENT_ENTRY' },   // 大会の結果（勝ち・負け共通）：Royal Castle
     // ---- 実戦（「FIGHT!」の開始音のあとで始まる）----
-    WILD_BATTLE:            { src: PGS + 'battle_music_1.ogg', gain: 0.58 },   // 104秒・147BPM【暫定】
-    RARE_WILD_BATTLE:       { fallback: 'WILD_BATTLE' },                       // 専用曲が届くまで野生と同じ
-    RIVAL_BATTLE:           { src: AK + 'action_2_battle_of_the_skies.ogg', gain: 0.74, loopStart: 0, loopEnd: 110, loopXfade: 0.2 },   // 第3弾試遊候補：alkakrab「Battle of the Skies」117秒・140BPM。110秒の終わりの一撃のあとの余韻の前で頭へ
-    TOURNAMENT_BATTLE_LOW:  { src: PGS + 'battle_music_2.ogg', gain: 0.57 },   // 大会 E〜C。92秒・178BPM【暫定】
-    TOURNAMENT_BATTLE_HIGH: { src: AK + 'action_1_clash_of_arcane_titans.ogg', gain: 0.71, loopStart: 0, loopEnd: 86.3, loopXfade: 0.2 },   // 第3弾試遊候補（大会 B〜S）：alkakrab「Clash of Arcane Titans」89秒・150BPM。86秒の終わりのあとの余韻の前で頭へ
-    SPECIAL_BATTLE:         { fallback: 'TOURNAMENT_BATTLE_HIGH' },            // 入口が無い（旧「師匠との特訓」）。将来の特殊戦は上位の曲を仮に使う
+    WILD_BATTLE:            { src: LIC + '12_wild_battle.ogg', gain: 0.43, loopStart: 0, loopEnd: 108, loopXfade: 0.5 },   // 2026-10-07 正式：通常戦闘曲 - α / lei（-10.7。108.2秒からの無音の前で戻す）
+    RARE_WILD_BATTLE:       { src: LIC + '13_rare_monster_battle.ogg', gain: 0.29 },   // 2026-10-07 正式：中ボスくらいの戦闘風 / Motoyuki（-7.2）
+    RIVAL_BATTLE:           { src: LIC + '10_rival_battle.ogg', gain: 0.37, loopStart: 0, loopEnd: 202, loopXfade: 0.5 },   // 2026-10-07 正式：To The Death / Junipersona（-9.4。202.3秒からの無音の前で戻す）
+    TOURNAMENT_BATTLE_LOW:  { src: LIC + '14_official_rank_battle.ogg', gain: 0.61, loopStart: 0, loopEnd: 233.4, loopXfade: 0.5 },   // 2026-10-07 正式：公式ランク戦（E〜S 共通）＝戦いの旅路を征く / MATSU（-13.7。233.6秒からの無音の前で戻す）
+    TOURNAMENT_BATTLE_HIGH: { fallback: 'TOURNAMENT_BATTLE_LOW' },   // 2026-10-07 正式：B〜S も同じ公式ランク戦の曲
+    SPECIAL_BATTLE:         { fallback: 'TOURNAMENT_BATTLE_LOW' },            // 入口が無い（旧「師匠との特訓」）。将来の特殊戦は上位の曲を仮に使う
   };
 
   const SE_REGISTRY = {

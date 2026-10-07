@@ -3536,8 +3536,8 @@ function loop(){clearInterval(AU.tm);AU.tm=null;if(!AU.ctx||!AU.on||!AU.sc)retur
 function bgmLegacy(sc){if(AU.sc==sc&&AU.tm)return;AU.sc=sc;loop()} // 合成音の BGM（MMAUDIO の legacy。正式な曲の無い場面だけ鳴る）
 function bgmLegacyStop(){clearInterval(AU.tm);AU.tm=null;AU.sc=null} // 正式な曲へ切り替えるとき合成音を止める（二重再生の防止）
 // BGM は場面（MMAUDIO.SCENES）で鳴らす（2026-10-02）。画面のコードの bgm("town") などは、画面の鍵 → 場面へ読み替える（audioSceneFor）。曲とファイルの対応は js/audio/audio-registry.js
-const BGM_SCENE={title:"TITLE",prologue:"PROLOGUE",town:"TOWN",bureau:"BUREAU",market:"MARKET",ranch:"RANCH",lab:"LABORATORY",farm:"FARM",train:"TRAINING",entry:"TOURNAMENT_ENTRY",matchup:"TOURNAMENT_MATCHUP",result:"RESULT",dojo:"SPECIAL_BATTLE"};
-const LEGACY_BGM={TITLE:"title",PROLOGUE:"title",TOWN:"town",BUREAU:"town",MARKET:"market",RANCH:"farm",LABORATORY:"market",FARM:"farm",TRAINING:"train",CHAPTER_1:"train",CHAPTER_2:"train",CHAPTER_3:"train",CHAPTER_4:"train",WILD_BATTLE:"battle",RARE_WILD_BATTLE:"battle",RIVAL_BATTLE:"battle",TOURNAMENT_ENTRY:"train",TOURNAMENT_LOBBY_LOW:"train",TOURNAMENT_LOBBY_HIGH:"train",TOURNAMENT_MATCHUP:"battle",TOURNAMENT_BATTLE_LOW:"battle",TOURNAMENT_BATTLE_HIGH:"battle",SPECIAL_BATTLE:"dojo",RESULT:"train"}; // 正式な曲の無い場面 → 合成音の曲
+const BGM_SCENE={title:"TITLE",prologue:"PROLOGUE",cedric:"CEDRIC",arena:"ARENA",town:"TOWN",bureau:"BUREAU",market:"MARKET",ranch:"RANCH",lab:"LABORATORY",farm:"FARM",train:"TRAINING",entry:"TOURNAMENT_ENTRY",matchup:"TOURNAMENT_MATCHUP",result:"RESULT",dojo:"SPECIAL_BATTLE"};
+const LEGACY_BGM={TITLE:"title",PROLOGUE:"title",PROLOGUE_1:"title",PROLOGUE_2:"title",PROLOGUE_3:"title",PROLOGUE_4:"title",PROLOGUE_5:"title",PROLOGUE_6:"title",CEDRIC:"train",ARENA:"battle",TOWN:"town",BUREAU:"town",MARKET:"market",RANCH:"farm",LABORATORY:"market",FARM:"farm",TRAINING:"train",CHAPTER_1:"train",CHAPTER_2:"train",CHAPTER_3:"train",CHAPTER_4:"train",WILD_BATTLE:"battle",RARE_WILD_BATTLE:"battle",RIVAL_BATTLE:"battle",TOURNAMENT_ENTRY:"train",TOURNAMENT_LOBBY_LOW:"train",TOURNAMENT_LOBBY_HIGH:"train",TOURNAMENT_MATCHUP:"battle",TOURNAMENT_BATTLE_LOW:"battle",TOURNAMENT_BATTLE_HIGH:"battle",SPECIAL_BATTLE:"dojo",RESULT:"train"}; // 正式な曲の無い場面 → 合成音の曲
 const LEGACY_SE={UI_CONFIRM:5,UI_CANCEL:10,UI_ERROR:10,UI_OPEN:0,DICE_THROW:7,DICE_ROLL:7,DICE_LAND:9,STAT_UP:3,GOLD_GET:11,CHEST_OPEN:11,EVENT:3,WILD_ALERT:2,BATTLE_INTRO:12,BATTLE_START:3,BATTLE_ATTACK:9,BATTLE_HIT:1,BATTLE_CRIT:2,BATTLE_MISS:0,BUFF:11,DEBUFF:10,ROULETTE_TICK:7,ROULETTE_STOP:9,VICTORY:3,SWOOSH:6,UNLOCK:11,REWARD:11}; // 正式な SE ファイルの無い出来事 → 合成音の番号（表に無いものは鳴らさない：STEP・TILE_STOP・CHAPTER_START など）
 // 合成音の番号（sfx(n)）→ 出来事の名前（[ふだん, バトル中]）。fight()（Phase 6・変更しない）の中の sfx(n) も、この読み替えで正式な SE へ届く
 const SFX_EVENT={0:["UI_ERROR","BATTLE_MISS"],1:["BATTLE_HIT","BATTLE_HIT"],2:["WILD_ALERT","BATTLE_CRIT"],3:["STAT_UP",null],5:["UI_CONFIRM","UI_CONFIRM"],6:["SWOOSH","SWOOSH"],7:["DICE_THROW","ROULETTE_TICK"],9:["BATTLE_ATTACK","ROULETTE_STOP"],10:["UI_CANCEL","DEBUFF"],11:["GOLD_GET","BUFF"],12:["BATTLE_INTRO","BATTLE_INTRO"]};
@@ -3832,8 +3832,8 @@ OPEN_TALK.ryu=n=>[{npc:"ryu",expression:"normal",text:"あれ？ フィナじゃ
 function proBgmStart(){const A=window.MMAUDIO;if(!A)return null;A.scene("PROLOGUE",{fade:"none"});const t0=Date.now();
  return new Promise(r=>{const f=()=>{const t=A.bgmTime("PROLOGUE");if((t!=null&&t>0)||Date.now()-t0>1500||A.status().source!=="file")return r(t);setTimeout(f,10)};f()})}
 function proPlay(cv){const A=window.MMAUDIO;if(A)A.stopBgm({fade:"normal"});
- return Promise.all([MMPRO.readyOrTimeout(6000),new Promise(r=>setTimeout(r,A?750:0))]).then(()=>MMPRO.play({cover:cv})) /* 2026-10-06 重大修正：プロローグ BGM は削除（鳴らさない）＝onStart・BGM との位置合わせは渡さない。時刻表（固定尺）・本文・スキップは従来どおり */
-  .then(ok=>{if(A&&A.status().scene==="PROLOGUE")A.stopBgm({fade:"normal"});return ok})}
+ return Promise.all([MMPRO.readyOrTimeout(6000),new Promise(r=>setTimeout(r,A?750:0))]).then(()=>MMPRO.play({cover:cv,onScene:si=>{if(A)A.scene("PROLOGUE_"+(si+1),{fade:"quick"})}})) /* 2026-10-07：Scene ごとの正式 BGM（PROLOGUE_1〜6・各曲の頭から・場面の切り替えで短いクロスフェード）。時刻表（固定尺）・本文・スキップは従来どおり（2026-10-06 の1曲の BGM は削除のまま） */
+  .then(ok=>{if(A&&/^PROLOGUE/.test(A.status().scene||""))A.stopBgm({fade:"normal"});return ok})}
 function opPrologue(msg){P11_PRO.add(S);$("#app").innerHTML="";const cv=document.createElement("div");cv.className="p11cover";document.body.appendChild(cv);
  proPlay(cv).then(ok=>{cv.remove();if(ok){finaFlags().prologue=1;save()}}).catch(()=>cv.remove()).then(()=>lobby(msg))}
 let OP_TALKING=false;
@@ -4785,7 +4785,7 @@ function tbSkill(x){const k=x&&MMP10M.skillText(x.sp);return k?p11Esc(k.name):"�
 // 2026-10-07 正式（mock_compare）：主役は左右のモンスター（待機立ち絵・相手は左向き）・上に大会名・名前の札・固有スキルの名前＋短い説明・中央に能力の名前・左右に数値＋能力のバー（正式色）・対戦開始／対戦表にもどる。セドリックは出さない
 function tbIdle(x,side){const s=window.MMARENA&&x&&MMARENA.idleSrc(x.sp);return s?`<img class="tbidle${MMARENA.flipOf(side,x.sp)?" fl":""}" src="${s}" alt="">`:msv(x)}
 function tbSkillDesc(x){const k=x&&MMP10M.skillText(x.sp);return k?`<small class="tbskn"><i>スキル</i>${p11Esc(k.name)}</small><span class="tbskd">${p11Esc(k.desc||"")}</span>`:`<small class="tbskn"><i>スキル</i>―</small>`}
-function p9CompareScr(){const m=S.m,t=m&&m.raise&&m.raise.tour;if(!t||t.status!="league")return board();const lg=t.league,pm=MMP8.tourNext(m);if(!pm)return board();const o=p9Npc(lg,pm.opp);bgm("tour");p9Immersive(true);p9MenuClose();
+function p9CompareScr(){const m=S.m,t=m&&m.raise&&m.raise.tour;if(!t||t.status!="league")return board();const lg=t.league,pm=MMP8.tourNext(m);if(!pm)return board();const o=p9Npc(lg,pm.opp);bgm("matchup");p9Immersive(true);p9MenuClose();
  const v=x=>Math.max(0,x|0),g=KS.map(k=>{const a=v(m[k]),b=v(o[k]),mx=Math.max(a,b,100)*1.08;return `<div class="pcg"><b class="pcv">${a}</b><div class="pcb l" style="--c:${STAT_COLOR[k]}"><i style="width:${Math.round(a/mx*100)}%"></i></div><span class="pcl">${LAB[k]}</span><div class="pcb r" style="--c:${STAT_COLOR[k]}"><i style="width:${Math.round(b/mx*100)}%"></i></div><b class="pcv">${b}</b></div>`}).join("");
  $("#app").innerHTML=`<div class="p9cmps tb2 tb3"><div class="pcbg" style="background-image:url(${P9_LOBBY_BG})"></div><header class="tbttl"><b>公式ランク${RN[t.rank]}大会</b></header> <div class="pcduo"><div class="pcs me"><span class="tbmon">${tbIdle(m,0)}</span><b class="tbnp">${p11Esc(m.name)}</b><div class="tbskp l">${tbSkillDesc(m)}</div></div>
  <div class="pcs op"><span class="tbmon">${tbIdle(o,1)}</span><b class="tbnp">${p11Esc(p9Short(lg,pm.opp))}</b><div class="tbskp r">${tbSkillDesc(o)}</div></div></div>
@@ -4829,13 +4829,14 @@ const CEDRIC_EV={
   if(rs.won)return[{npc:"cedric",expression:"victory",text:`勝負あり！ 優勝は${n}です！`},{npc:"cedric",expression:"host",text:"さすがの戦いぶりでした。皆さん、お疲れさまでした！"}];
   return[{npc:"cedric",expression:"host",text:`公式ランク${R}大会、これにて閉幕です。${n}は${rs.place}位でした。`},{npc:"cedric",expression:"host",text:"最後まで見事な戦いでした。この経験は、きっと次の大会で力になります。"},{npc:"cedric",expression:"host",text:"皆さん、お疲れさまでした！"}]}};
 const cedricOn=()=>!window.MM_QA_NO_NPC&&!!window.MMNPC;
+const cedricBg=k=>(window.MMARENA&&MMARENA.arenaSrc(RN[k]))||P9_LOBBY_BG; // 2026-10-07：セドリックの会話の背景はそのランクの会場（arena_E〜S。UI は共通・ランクの差は会場の背景）
 async function p9TourOpen(k){const on=cedricOn();await p9TourIntro(k,on);
- if(on){const f=finaFlags(),first=!f.cedricWelcome;if(first){f.cedricWelcome=1;save()}try{await MMNPC.talk(CEDRIC_EV.open(k,first),{kind:"event",big:true,scene:P9_LOBBY_BG})}catch(e){}}
+ if(on){const f=finaFlags(),first=!f.cedricWelcome;if(first){f.cedricWelcome=1;save()}bgm("cedric");try{await MMNPC.talk(CEDRIC_EV.open(k,first),{kind:"event",big:true,scene:cedricBg(k)})}catch(e){}} // 2026-10-07：大会前の導入の曲（CEDRIC）→ 対戦表で対戦表の曲
  P9_ENTER=true;board()}
 let P9_END_RS=null,P9_END_UP=null,P9_END_AFTER=null;
 MMP8.registerTourEndHook("final",()=>{P9_END_UP=null});
 MMP8.registerTourEndHook("rankUp",d=>{P9_END_UP=d});
-MMP8.registerTourEndHook("cedricEnd",async()=>{const rs=P9_END_RS,m=S.m;if(!rs||!cedricOn())return;await new Promise(r=>setTimeout(r,rs.won?2200:900));if(!document.querySelector(".p9tour")||S.m!==m)return;try{await MMNPC.talk(CEDRIC_EV.close(rs,P9_END_UP,m&&m.name),{kind:"event",big:true,scene:P9_LOBBY_BG})}catch(e){}});
+MMP8.registerTourEndHook("cedricEnd",async()=>{const rs=P9_END_RS,m=S.m;if(!rs||!cedricOn())return;await new Promise(r=>setTimeout(r,rs.won?2200:900));if(!document.querySelector(".p9tour")||S.m!==m)return;try{await MMNPC.talk(CEDRIC_EV.close(rs,P9_END_UP,m&&m.name),{kind:"event",big:true,scene:cedricBg(rs.rank)})}catch(e){}});
 MMP8.registerTourEndHook("next",()=>{const f=P9_END_AFTER;P9_END_AFTER=null;if(f)setTimeout(f,cedricOn()?300:1100)});
 
 // 大会の終わりの段階の差し込み口（2026-10-06）：初回クリアの報酬＝従来の音と帯（REWARD・UNLOCK・MMNOTE）。ランクアップの演出・セドリックの締めの正式 UI は素材待ち（何も出さない）

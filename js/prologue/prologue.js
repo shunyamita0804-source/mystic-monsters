@@ -123,7 +123,7 @@
 
     let cur = null;
     const apply = (e) => {
-      if (e.k === 'bg') showBg(SLIDES[e.si].bg);
+      if (e.k === 'bg') { showBg(SLIDES[e.si].bg); if (opts.onScene) { try { opts.onScene(e.si); } catch (x) {} } }   // 2026-10-07：Scene ごとの BGM（opts.onScene(番号)）
       else if (e.k === 'show') { let k = 0; const c = calm(); nar.innerHTML = `<div class="mmpro-u${c ? ' full' : ''}" style="top:${(POS.y * 100).toFixed(1)}%;--chf:${T.chFade}ms;--chr:${T.chRise}px;--chb:${T.chBlur}px">${e.u.map((t) => `<p>${kinsoku(t).map((w) => `<span class="mpw">${Array.from(w).map((ch) => `<span class="mpc" style="--d:${(k++) * T.chGap}ms">${ch === ' ' ? '&nbsp;' : esc(ch)}</span>`).join('')}</span>`).join('')}</p>`).join('')}</div>`; cur = nar.firstElementChild; }
       else if (e.k === 'full') { if (cur) cur.classList.add('full'); }
       else if (e.k === 'out') { if (cur) { const o = cur.animate ? cur.animate([{ opacity: 1 }, { opacity: 0 }], { duration: T.outMs, easing: 'ease-out', fill: 'forwards' }) : null; if (!o) cur.style.opacity = '0'; } }
@@ -132,7 +132,7 @@
     const EV = schedule();
     let done = false;
     try {
-      showBg(SLIDES[0].bg);
+      showBg(SLIDES[0].bg); if (opts.onScene) { try { opts.onScene(0); } catch (x) {} }
       let a0 = null; if (opts.onStart) { try { a0 = await opts.onStart(); } catch (e) {} }   // Scene 1 の開始＝BGM の開始（ここが 0.000秒）
       started = true; if (Number.isFinite(a0) && a0 > 0 && a0 < 0.5) acc = a0 * 1000;   // BGM が実際に鳴り始めた位置から時計を始める（数十 ms のずれも持ち込まない）
       if (!hidden()) t0 = now();

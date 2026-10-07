@@ -16,7 +16,7 @@
   'use strict';
   const fz = Object.freeze;
   /** BGM の場面（正式名）。曲はファイル名ではなく場面で指定する */
-  const SCENES = fz(['TITLE', 'PROLOGUE', 'TOWN', 'BUREAU', 'MARKET', 'RANCH', 'LABORATORY', 'FARM', 'TRAINING',
+  const SCENES = fz(['TITLE', 'PROLOGUE', 'PROLOGUE_1', 'PROLOGUE_2', 'PROLOGUE_3', 'PROLOGUE_4', 'PROLOGUE_5', 'PROLOGUE_6', 'CEDRIC', 'ARENA', 'TOWN', 'BUREAU', 'MARKET', 'RANCH', 'LABORATORY', 'FARM', 'TRAINING',
     'CHAPTER_1', 'CHAPTER_2', 'CHAPTER_3', 'CHAPTER_4',
     'WILD_BATTLE', 'RARE_WILD_BATTLE', 'RIVAL_BATTLE',
     'TOURNAMENT_ENTRY', 'TOURNAMENT_LOBBY_LOW', 'TOURNAMENT_LOBBY_HIGH', 'TOURNAMENT_MATCHUP', 'TOURNAMENT_BATTLE_LOW', 'TOURNAMENT_BATTLE_HIGH',
@@ -63,7 +63,7 @@
     if (!srcs.length && !fb) throw new Error('MMAUDIO：BGM の登録が不正です（ファイルか fallback か silent が要る）');
     if (opts.fallback && !fb) throw new Error('MMAUDIO：BGM の fallback の場面が不正です');
     const g = opts.gain != null ? opts.gain : (opts.volume != null ? opts.volume : 1);
-    BGM[key] = fz({ srcs: fz(srcs), gain: Number.isFinite(g) ? Math.max(0, g) : 1, loop: opts.loop !== false, fallback: fb, loopRange: loopRangeOf(opts), buffer: !!opts.buffer && opts.loop !== false });   // buffer：デコードした音（AudioBuffer）で鳴らす場面（2026-10-05 試遊：Chapter のフィールド）
+    BGM[key] = fz({ srcs: fz(srcs), gain: Number.isFinite(g) ? Math.max(0, g) : 1, loop: opts.loop !== false, fallback: fb, loopRange: loopRangeOf(opts), buffer: !!opts.buffer && opts.loop !== false, start: Number(opts.start) > 0 ? Number(opts.start) : 0 });   // start：最初に鳴らし始める位置（秒。2026-10-07：大会の対戦表の曲は 17秒から。ファイルは加工しない＝メディアフラグメント #t=）   // buffer：デコードした音（AudioBuffer）で鳴らす場面（2026-10-05 試遊：Chapter のフィールド）
   }
   /**
    * ループ区間（秒）：{ loopStart, loopEnd, loopXfade }。曲の終わりがフェードアウトする素材を、ファイルを加工せずに自然につなぐ。
@@ -201,7 +201,7 @@
     const token = ++s.token;
     s.src = src; s.scene = key; s.gainTarget = entry.gain; s.active = true; s.prepared = false; s.waiting = false; s.loopRange = entry.loopRange || null;
     attachSlot(s);
-    try { s.el.loop = entry.loop !== false && !s.loopRange; s.el.src = src; if (s.el.load) s.el.load(); } catch (e) { note('bgm-src', e); s.active = false; s.src = null; return false; }
+    try { s.el.loop = entry.loop !== false && !s.loopRange; s.el.src = entry.start ? src + '#t=' + entry.start : src; if (s.el.load) s.el.load(); } catch (e) { note('bgm-src', e); s.active = false; s.src = null; return false; }
     setGain(s, 0, 0);
     if (cur && cur !== s) fadeOutSlot(cur, ms);
     st.cur = s; st.source = 'file'; legacyStop();

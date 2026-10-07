@@ -3,6 +3,29 @@
 ミスティックモンスターズ（Mystic Monsters）で使っている BGM・SE の記録。素材を足したら、この表と `js/audio/audio-registry.js` を更新する。
 ZIP の README・LICENSE の原文は、受け取った ZIP の中にある（リポジトリには採用した音源ファイルだけを置き、ZIP はそのまま入れない）。
 
+## 2026-10-07 正式採用の BGM 14曲（assets/audio/bgm/licensed_20261007/）
+
+ユーザー提供の MP3（13曲）・WAV（1曲）を OGG Vorbis（q5）に変換しただけ（ユーザー指示 2026-10-07。曲の切り出し・加工はしない＝開始位置・ループ区間は registry の値で指定）。音量は registry の gain（BGM 約 -18 LUFS・セドリックの会話の場面は約 -20 LUFS）。**公開・商用リリースの前に、各曲の作者・出典の記録を保ち、それぞれの利用規約を再確認すること**（ユーザーのメモ）。
+
+| 場面（registry） | ファイル | 曲名 / 作者 | 出典 | 長さ | 元の音量 | gain | 開始・ループ |
+|---|---|---|---|---|---|---|---|
+| PROLOGUE_1（平和な時代） | 01_prologue_peace.ogg | 穏やかで少しワクワクする今日 / 今川彰人オーケストラ | https://dova-s.jp/bgm/detail/6451 | 86秒 | -12.6 | 0.54 | 頭から・loop なし |
+| PROLOGUE_2（厄災襲来） | 02_prologue_calamity.ogg | 悪魔との戦闘 / 今川彰人オーケストラ | https://dova-s.jp/bgm/detail/11157 | 99秒 | -9.0 | 0.35 | 頭から・loop なし |
+| PROLOGUE_3（育成・共闘文化） | 03_prologue_hopeful.ogg | Hopeful / Fukagawa | https://dova-s.jp/bgm/detail/19898 | 90秒 | -10.9 | 0.44 | 頭から・loop なし |
+| PROLOGUE_4（三人のレジェンド） | 04_prologue_legend_battle.ogg | 高貴なる戦闘 / 香居 | https://dova-s.jp/bgm/detail/22002 | 33秒 | -12.4 | 0.52 | 頭から・loop なし |
+| PROLOGUE_5（大会文化） | 05_prologue_tournament.ogg | Tournament / Ebunny | https://pixabay.com/music/main-title-tournament-354188/ | 147秒 | -10.4 | 0.42 | 頭から・loop なし |
+| PROLOGUE_6（旅立ち） | 06_prologue_departure.ogg | Bon Voyage! / HarumachiMusic | https://pixabay.com/music/main-title-bon-voyage-magnificent-bright-uplifting-orchestra-205093/ | 99秒 | -14.7 | 0.68 | 頭から・loop なし |
+| CEDRIC（セドリックの大会前の導入） | 07_cedric_pre_tournament.ogg | REACH FOR the FATE / Keyta | https://dova-s.jp/bgm/detail/4664 | 381秒 | -9.5 | 0.3 | 0〜378.5秒 |
+| TOURNAMENT_LOBBY_LOW／HIGH（大会1 対戦表） | 08_tournament_table_start17s.ogg | Battle - スタンバイフェイズ / lei | https://dova-s.jp/bgm/detail/9701 | 141秒 | -14.8 | 0.69 | 17秒から・17〜135.2秒 |
+| TOURNAMENT_MATCHUP（大会2 対戦前比較） | 09_prebattle_compare_jingle.ogg | trumpetbuildup / theredshore | https://pixabay.com/ja/sound-effects/ミュージカル-trumpetbuildup-87758/ | 12秒 | -18.6 | 1.07 | ジングル・loop なし |
+| RIVAL_BATTLE | 10_rival_battle.ogg | To The Death / Junipersona | https://pixabay.com/music/video-games-to-the-death-159171/ | 204秒 | -9.4 | 0.37 | 0〜202秒 |
+| ARENA（闘技場の施設・画面は未実装） | 11_arena_swords_at_midnight_loop.ogg | Swords At Midnight Loop（Action RPG Battle Music pack） | https://chimera-forge-productions.itch.io/action-rpg-battle-music | 89秒 | -14.5 | 0.67 | ループ素材 |
+| WILD_BATTLE | 12_wild_battle.ogg | 通常戦闘曲 - α / lei | https://dova-s.jp/bgm/detail/11060 | 111秒 | -10.7 | 0.43 | 0〜108秒 |
+| RARE_WILD_BATTLE | 13_rare_monster_battle.ogg | 中ボスくらいの戦闘風 / Motoyuki | https://dova-s.jp/bgm/detail/12683 | 158秒 | -7.2 | 0.29 | ループ |
+| TOURNAMENT_BATTLE_LOW／HIGH（公式ランク戦 E〜S） | 14_official_rank_battle.ogg | 戦いの旅路を征く / MATSU | https://dova-s.jp/bgm/detail/12447 | 236秒 | -13.7 | 0.61 | 0〜233.4秒 |
+
+置き換えて外した旧い曲（記録は下の表に残す）：PGS「Battle Music 1」（旧 WILD_BATTLE）・「Battle Music 2」（旧 TOURNAMENT_BATTLE_LOW）・alkakrab「Battle of the Skies」（旧 RIVAL_BATTLE）・「Clash of Arcane Titans」（旧 TOURNAMENT_BATTLE_HIGH）。不採用（ユーザー指示）：「いざ出発！」「冒険への誘い」。
+
 ## 使用中の素材（2026-10-02 夜・第1弾）
 
 | 素材パック | 作者 | 配布元 | ライセンス | 商用利用 | クレジット | 置き場 |
