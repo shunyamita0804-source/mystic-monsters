@@ -3185,9 +3185,9 @@ img.nstf[data-npc]{width:auto;max-width:none;aspect-ratio:var(--nk,.754);object-
 .sts .stic{border:0;border-radius:0;background:url(./assets/ui/b_group/b43_round_portrait_frame_plain.png) center/100% 100% no-repeat}
 #app .fm.fm2.bc .bcplq{width:min(164px,40vw);padding:0 12% 6%}#app .fm.fm2.bc .bcplq b{font-size:clamp(11.5px,3.4vw,14px);letter-spacing:.02em;margin:0}
 #app .svhead h2{background-color:transparent}
-#app .fm.bc .bcch,.chintro-name{box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;aspect-ratio:560/153;width:min(240px,64vw);height:auto;margin:0 auto;padding:4% 15% 2%;background:url(./assets/ui/b_group/b09_chapter_ribbon_blank.png) center/100% 100% no-repeat;text-shadow:0 1px 2px #000}
+#app .fm.bc .bcch{box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;aspect-ratio:560/153;width:min(240px,64vw);height:auto;margin:0 auto;padding:4% 15% 2%;background:url(./assets/ui/b_group/b09_chapter_ribbon_blank.png) center/100% 100% no-repeat;text-shadow:0 1px 2px #000}
 #app .fm.bc .bcch small{font-size:10.5px;line-height:1.1}#app .fm.bc .bcch b{font-size:14px;line-height:1.2;white-space:nowrap}
-.chintro-name{width:min(330px,86vw);padding:3% 14% 0;font-size:clamp(20px,6.6vw,26px);white-space:nowrap}
+/* 2026-10-07 試遊：Chapter 開始の「はじまりの草原」は以前の見せ方（リボン B-09 の大きな札をやめる＝1357〜1360 行の文字の見せ方） */
 .pfprof .pfrows{gap:6px;align-items:center}
 .pfprof .pfrow{position:relative;box-sizing:border-box;width:min(100%,330px);height:auto;min-height:0;aspect-ratio:720/195;padding:0 22% 0 25%;border:0;border-radius:0;background:url(./assets/ui/b_group/b03_profile_row_blank.png) center/100% 100% no-repeat}
 .pfprof .pfrow dt{font-size:13px;white-space:nowrap}
@@ -3277,6 +3277,65 @@ img.nstf[data-npc]{width:auto;max-width:none;aspect-ratio:var(--nk,.754);object-
 .p8mc.mmdg{border:20px solid transparent;border-image:url(./assets/ui/b_group/b14_ranch_list_panel_blank.png) 70 / 20px / 0 stretch;border-radius:0;padding:30px 8px 8px;background:linear-gradient(#142450,#0b1638 60%,#08112c) padding-box;box-shadow:0 10px 30px rgba(0,0,0,.55)}
 .p8mc.mmdg .mmdg-crest{top:-44px;width:52px;height:54px;border:0;border-radius:0;background:url(./assets/ui/b_group/b43_round_portrait_frame_plain.png) center/100% 100% no-repeat;box-shadow:none}
 .p8mc.mmdg .mmdg-crest::after{inset:auto;left:50%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border:1.5px solid #fff1c4;border-radius:2px;background:linear-gradient(135deg,#fff3c8,#e6bf62 55%,#a87a28)}
+
+/* ===== 2026-10-07 試遊修正（5-C）・正式のコマンド素材 ===== */
+/* ベースキャンプ：章名の札＝モンスターの上・所持金の下（画面の中央上部） */
+#app .fm.bc .bcch.bctop{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 104px);transform:translateX(-50%);z-index:4;margin:0;pointer-events:none}
+#app .fm.bc .bcfield{top:calc(env(safe-area-inset-top,0px) + 150px)}
+/* 出発前の会話：会話の間は「出発する」を見せない（会話と主ボタンが同時に主張しない） */
+html[data-mmev] #app .fm.bc .bcgo{opacity:0;pointer-events:none;transition:opacity .18s}
+/* 研究所・牧場・聖獣士管理局：下のコマンド＝正式の画像・縦に大きく・少し上へ（文字は画像に描かれている＝HTML の文字は読み上げ用） */
+#app .cmdimg button[data-cmd],#app nav.rnact .rna[data-cmd]{position:relative;background-size:100% 100%!important;background-position:center!important;background-repeat:no-repeat!important;border:0!important;border-radius:12px;box-shadow:0 3px 8px rgba(0,0,0,.45)!important;color:transparent;font-size:0;padding:0;min-height:0;overflow:hidden}
+#app .cmdimg button[data-cmd]>*,#app nav.rnact .rna[data-cmd]:not([data-cmd=ranch_take])>*{opacity:0}
+#app .cmdimg button[data-cmd]::before,#app .cmdimg button[data-cmd]::after,#app nav.rnact .rna[data-cmd]::before{display:none!important}
+#app .cmdimg button[data-cmd].on{box-shadow:0 0 0 2px #f6dc98,0 0 14px rgba(246,220,152,.55)!important}
+#app .cmdimg button[data-cmd]:active:not(:disabled),#app nav.rnact .rna[data-cmd]:active:not(:disabled){transform:scale(.96)}
+[data-cmd=lab_book]{background-image:url(./assets/ui/cmd/lab_book.png)!important}[data-cmd=lab_fuse]{background-image:url(./assets/ui/cmd/lab_fuse.png)!important}[data-cmd=lab_table]{background-image:url(./assets/ui/cmd/lab_table.png)!important}
+[data-cmd=bureau_card]{background-image:url(./assets/ui/cmd/bureau_card.png)!important}[data-cmd=bureau_ach]{background-image:url(./assets/ui/cmd/bureau_ach.png)!important}[data-cmd=bureau_map]{background-image:url(./assets/ui/cmd/bureau_map.png)!important}
+[data-cmd=ranch_look]{background-image:url(./assets/ui/cmd/ranch_look.png)!important}[data-cmd=ranch_rename]{background-image:url(./assets/ui/cmd/ranch_rename.png)!important}[data-cmd=ranch_deposit]{background-image:url(./assets/ui/cmd/ranch_deposit.png)!important}[data-cmd=ranch_sell]{background-image:url(./assets/ui/cmd/ranch_sell.png)!important}
+#app .lab nav.labnav.cmdimg{display:grid!important;grid-template-columns:repeat(3,1fr);gap:8px;width:min(92vw,360px);height:auto;aspect-ratio:auto!important;margin:0 auto calc(22px + env(safe-area-inset-bottom,0px));padding:0;background:none!important;border:0;box-shadow:none}
+#app .lab nav.labnav.cmdimg .labc[data-cmd]{position:relative!important;left:auto!important;top:auto!important;width:auto!important;height:auto!important;aspect-ratio:232/145;padding:0!important}
+#app .bu nav.bunav.cmdimg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:min(90vw,340px);height:auto;margin:0 auto;bottom:calc(30px + env(safe-area-inset-bottom,0px));padding:0;background:none;border:0}
+#app .bu nav.bunav.cmdimg button[data-cmd]{width:100%;height:auto;aspect-ratio:230/210}
+#app .bu nav.bunav.cmdimg svg{display:none}
+#app .rn2 nav.rnact{display:grid!important;grid-template-columns:repeat(4,1fr);gap:6px;aspect-ratio:auto!important;background:none!important;margin:10px 0 16px}
+#app .rn2 nav.rnact .rna{position:relative!important;left:auto!important;top:auto!important;width:auto!important;height:auto!important;aspect-ratio:169/116}
+#app .rn2 nav.rnact .rna:disabled{opacity:.5}#app .rn2 nav.rnact .rna:disabled>*{opacity:0}
+#app .rn2 nav.rnact .rna[data-cmd=ranch_take]{border-radius:14px;background:linear-gradient(#3f70c9,#1d3f86 55%,#122c63)!important;border:2px solid #d9b465!important;color:#fff;font-size:13px;font-weight:800;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+#app .rn2 nav.rnact .rna[data-cmd=ranch_take]>*{opacity:1}
+/* 牧場：一覧の枠の黄色い菱形の飾りをやめる（B-14 の外枠 → 細い金の線） */
+#app>.rn.rn2>.wpanel.rnpanel{border-image:none!important;border:1.5px solid rgba(214,178,98,.7)!important;border-radius:12px!important}
+/* 市場：左右の矢印を簡素に（同じ大きさ・同じ押せる範囲）・下の会話欄を少し高く（文字なしの正式の欄＋NPC の顔と文） */
+.p10mk .p10arw,.p10mk .p10arw.next{width:46px;height:46px;background:url(./assets/ui/market/arrow_left.png) center/contain no-repeat;box-shadow:none;border:0;filter:none}
+.p10mk .p10arw.next{background-image:url(./assets/ui/market/arrow_right.png)}
+.p10mk .p10arw::after{content:"";position:absolute;inset:-8px}
+.p10kbar{min-height:72px;padding:8px 14px 8px 8px;border:0;border-radius:0;background:url(./assets/ui/market/dialogue_blank.png) center/100% 100% no-repeat;box-shadow:none}
+button.p10karen{width:52px;height:52px;align-self:center}
+button.p10karen img{width:100%;height:100%;margin:0;object-fit:cover;object-position:50% 14%;transform:none}
+.p10kt{font-size:13.5px;line-height:1.45}
+/* 冒険中のメニュー（☰）・育成放棄の確認：豪華な額（B-22・B-14・B-43・B-49）をやめ、「はい／いいえ」程度の上品さへ */
+#p9ov .p9ovc{border:1.5px solid rgba(214,178,98,.8)!important;border-image:none!important;border-radius:16px 16px 0 0!important;padding:14px 14px calc(16px + env(safe-area-inset-bottom,0px))!important;background:linear-gradient(#13254f,#0a1634)!important}
+#p9ov .p9ovc::before,#p9ov .p9ovc::after{display:none!important}
+#p9ov .p8menu{display:grid!important;grid-template-columns:1fr 1fr;gap:8px}
+#p9ov .p8menu button{height:48px!important;background:linear-gradient(#22407e,#152b5c)!important;border:1.5px solid #d9b465!important;border-radius:10px!important;box-shadow:0 2px 6px rgba(0,0,0,.4)!important;color:#fff!important;min-height:48px;background-image:none}
+#p9ov .p8menu button.p8danger{background:linear-gradient(#8c2a2a,#5e1717)!important}
+.p8mc.mmdg{border:1.5px solid rgba(214,178,98,.85)!important;border-image:none!important;border-radius:14px!important;padding:18px 14px 14px!important;background:linear-gradient(#13254f,#0a1634)!important}
+.p8mc.mmdg .mmdg-crest{display:none!important}
+.p8mc.mmdg .mmdg-btns button.mmdg-safe,.p8mc.mmdg .mmdg-btns button.mmdg-danger{aspect-ratio:auto!important;min-height:48px;border-radius:10px!important;border:1.5px solid #d9b465!important;background:linear-gradient(#22407e,#152b5c)!important;box-shadow:0 2px 6px rgba(0,0,0,.4)!important;color:#fff!important;text-shadow:none!important}
+.p8mc.mmdg .mmdg-btns button.mmdg-danger{background:linear-gradient(#8c2a2a,#5e1717)!important}
+.p8mc.mmdg .mmdg-btns button.mmdg-danger:disabled{opacity:.55;background:linear-gradient(#4a4f60,#30343f)!important}
+/* Chapter の遭遇：遭遇の文に帯を敷いて読みやすく・バトルの案内のあいだは周りを暗くし、下の操作欄（START）と案内文を引っ込める */
+.chf-enc2 .ce-tx{padding:6px 18px;border-radius:999px;background:rgba(6,10,26,.72);box-shadow:0 0 0 1px rgba(214,178,98,.55)}
+.chsheet.chbat{box-shadow:0 0 0 100vmax rgba(4,8,20,.5),0 10px 26px rgba(0,0,0,.5);text-align:center}
+.chsheet.chbat .chbat-kind{display:inline-block;margin-bottom:2px;padding:1px 10px;border-radius:999px;background:rgba(214,178,98,.18);border:1px solid rgba(214,178,98,.6);color:#f3d98e;font-size:11px;letter-spacing:.08em}
+.chsheet.chbat h3{font-size:18px}
+#app>.chfw:has(.chbat) .chmsg{visibility:hidden}
+#app>.chfw:has(.chbat) :is(.chdeck,.chcmds){opacity:.35;pointer-events:none;transition:opacity .2s}
+/* 技の一覧：まだ覚えていない技＝？のロックカード */
+main:has(>#app>.ds) h1{display:none}
+.dsk.dsq{cursor:default}.dsk.dsq .dska{display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,#203a76,#0b1736);border:1.5px solid rgba(214,178,98,.55)}
+.dsk.dsq .dsqm{font-style:normal;font-family:var(--mm-font-head);font-size:34px;color:#e8d29a;text-shadow:0 0 10px rgba(232,210,154,.4)}
+.dsk.dsq b{color:#c9c2ad;letter-spacing:.2em}.dsk.dsq .dsp span{font-size:10px;color:#9aa6c4}
 </style></head><body><main>
 <h1>ミスティックモンスターズ</h1>
 <div id="app"></div>
@@ -3606,7 +3665,7 @@ function farm(msg,tab){if(p8Blocked())return;p9Immersive(true);bgm("ranch");npcW
   const sq=x?MMP10M.canSell(S,x.uid):{ok:false},mv=!x?["","預ける",true]:x===m?["dep()","預ける",busy||S.box.length>=L]:[`wd(${bi})`,"受け取る",busy];
   body=`<section class="rnlist" aria-label="牧場のモンスター"><header class="rnlh2"><b>牧場のモンスター</b><span class="rncnt"><b>${S.box.length}</b> / ${L}</span></header>
   ${m?`<div class="rncur">${rnCell(m)}</div>`:""}<div class="rngrid">${S.box.length?S.box.map(rnCell).join(""):`<p class="rnempty">牧場にはまだモンスターがいません。</p>`}</div></section>
-  <nav class="rnact" aria-label="牧場のコマンド"><button class="rna" ${x?"":"disabled"} onclick="rnView=rnSel;farm('','e')">${rnIc("look")}<span>見る</span></button><button class="rna" ${x?"":"disabled"} onclick="farm('','n')">${rnIc("ren")}<span>名前変更</span></button><button class="rna" ${mv[2]?"disabled":""} onclick="${mv[0]}">${rnIc(x===m?"dep":"wd")}<span>${mv[1]}</span></button><button class="rna rnsell" ${sq.ok?"":"disabled"} onclick="pfSellUid=rnSel;farm('','d')">${rnIc("sell")}<span>売る</span></button></nav>`}
+  <nav class="rnact" aria-label="牧場のコマンド"><button class="rna" data-cmd="ranch_look" ${x?"":"disabled"} onclick="rnView=rnSel;farm('','e')">${rnIc("look")}<span>見る</span></button><button class="rna" data-cmd="ranch_rename" ${x?"":"disabled"} onclick="farm('','n')">${rnIc("ren")}<span>名前変更</span></button><button class="rna" data-cmd="${x===m?"ranch_deposit":"ranch_take"}" ${mv[2]?"disabled":""} onclick="${mv[0]}">${rnIc(x===m?"dep":"wd")}<span>${mv[1]}</span></button><button class="rna rnsell" data-cmd="ranch_sell" ${sq.ok?"":"disabled"} onclick="pfSellUid=rnSel;farm('','d')">${rnIc("sell")}<span>売る</span></button></nav>`}
  $("#app").innerHTML=`<div class="rn rn2"><header class="rnhd"><button class="back" data-nav="back" onclick="pfSellUid=null;lobby()">◀ 街にもどる</button><div class="rnplq"><b>牧場</b></div><div class="fhud"><span class="rncoin">G</span><b>${S.g}G</b></div></header><div class="rnbg" style="background-image:url(${RANCH_BG})" aria-hidden="true"></div>
  <div class="rnnick">${msg?`<div class="fbub sys">${msg}</div>`:(l=>`<div class="fbub rnsay"><img src="${npcSrc("nick",ft=="d"?"serious":ft=="e"&&x&&MMP7.raiseState(x)=="done"?"impressed":ft=="e"?"gentle":(l?l.expression:"normal"),"face")||NICK_FACE}" alt=""><span><b>ニック</b>${l?l.text:""}</span></div>`)(npcLineX("ranch",NICK_TALK.ranch,"normal"))}</div>
  <div class="wpanel rnpanel">${body}</div></div>`;
@@ -3679,7 +3738,7 @@ function bureauScr(tab){if(p8Blocked())return;bgm("bureau");p9Immersive(true);co
  const card=`<section class="bucard" aria-label="聖獣士証"><div class="bucrest">${crest}</div><h3 class="buh"><span>聖獣士証</span></h3><dl class="burows">${bureauRows().map(r=>`<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join("")}</dl></section>`;
  const ach=`<section class="buachw${all?" all":""}" aria-label="功績"><h3 class="buh2">功績</h3>${bureauAch(all)}${all?"":`<button class="bumore" onclick="bureauScr('ach')">すべて見る ▾</button>`}</section>`;
  $("#app").innerHTML=`<div class="bu${idle?" idle":""}" style="--bu-bg:url(${BUREAU_BG})"><div class="bubg" aria-hidden="true"></div><header class="buhd"><button class="burb" data-nav="back" onclick="lobby()" aria-label="街にもどる">←</button><div class="buplq"><b>聖獣士管理局</b></div><span class="burb sp" aria-hidden="true"></span></header>
- <div class="bubody">${all?ach:cardOn?card+ach:""}</div>${bureauNpc()}<nav class="bunav"><button class="bub${cardOn?" on":""}" onclick="bureauScr('card')">聖獣士証</button><button class="bub${all?" on":""}" onclick="bureauScr('ach')">功績一覧</button>${S.playerNamePending?"":`<button class="bub bumap" onclick="bureauMap()" aria-label="世界地図"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 4.5l2.4 7.5L12 19.5 9.6 12z" class="nd"/><path d="M12 12l2.4-7.5M12 12l-2.4 7.5"/></svg>世界地図</button>`}</nav></div>`;try{window.scrollTo(0,0)}catch(e){}}
+ <div class="bubody">${all?ach:cardOn?card+ach:""}</div>${bureauNpc()}<nav class="bunav cmdimg"><button class="bub${cardOn?" on":""}" data-cmd="bureau_card" onclick="bureauScr('card')">聖獣士証</button><button class="bub${all?" on":""}" data-cmd="bureau_ach" onclick="bureauScr('ach')">功績一覧</button>${S.playerNamePending?"":`<button class="bub bumap" data-cmd="bureau_map" onclick="bureauMap()" aria-label="世界地図"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 4.5l2.4 7.5L12 19.5 9.6 12z" class="nd"/><path d="M12 12l2.4-7.5M12 12l-2.4 7.5"/></svg>世界地図</button>`}</nav></div>`;try{window.scrollTo(0,0)}catch(e){}}
 function townGuild(){if(S.playerNamePending&&opOn())return opBureau();bureauScr()} // 2026-10-04 PHASE H4：街の札「聖獣士管理局」から（既存の札の位置・押し方のまま）。2026-10-05：登録前は聖獣士登録（セルジュ）へ
 /** 街からアイテム屋へ（2026-10-03）。アイテム屋は連れているモンスターがいるとき（従来の shopScr の条件のまま）。戻るは街へ */
 /** プロフィール（暫定の器）：顔（仮の金色の人の形。正式な顔の素材は後日）・プレイヤー名・所持金・最高到達ランク・獲得トロフィー（正式データが無いので枠だけ）。
@@ -3950,7 +4009,7 @@ const LAB_IC={book:'<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 7h9a
  fuse:'<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="12" cy="13" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="20" cy="13" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="16" cy="20" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>',
  table:'<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M13 5h6M14 5v8L7 25a2 2 0 0 0 2 3h14a2 2 0 0 0 2-3l-7-12V5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 21h12" stroke="currentColor" stroke-width="1.8"/></svg>'};
 /** 研究所の下の機能（図鑑・合体・配合表。2026-10-04 正式。復元の機能は主要メニューに置かない） */
-function labNav(cur){return `<nav class="labcmd labnav" aria-label="研究所の機能">${[["book","図鑑"],["fuse","合体"],["table","配合表"]].map(([k,l])=>`<button class="labc${cur==k?" on":""}" onclick="museum('${k}')" data-se="${cur==k?"UI_TAB":"UI_SELECT"}">${LAB_IC[k]}<b>${l}</b></button>`).join("")}</nav>`}
+function labNav(cur){return `<nav class="labcmd labnav cmdimg" aria-label="研究所の機能">${[["book","図鑑"],["fuse","合体"],["table","配合表"]].map(([k,l])=>`<button class="labc${cur==k?" on":""}" data-cmd="lab_${k}" onclick="museum('${k}')" data-se="${cur==k?"UI_TAB":"UI_SELECT"}">${LAB_IC[k]}<b>${l}</b></button>`).join("")}</nav>`} // 2026-10-07：正式のコマンド画像（assets/ui/cmd/lab_*.png）
 function labShell(cls,back,plq,body,cur){return `<div class="lab ${cls}"><div class="labbg" style="background-image:url(${LAB_BG})"></div><div class="dtop">${back}</div>${plq}${body}${labNav(cur)}</div>`}
 // 研究所（2026-10-04 第二段階）：入口＝エリオット＋機能のカード（図鑑・合体・配合表）。図鑑はデザイン参考 06（濃紺＋金・魔法図鑑・2列・No.・名前・未発見は近日公開）。合体は牧場から移した（処理 fuse・selm・cname はそのまま）。
 //  配合表は既存の規則（MMP7.resolveFusionSpecies＝子は親1の種族・能力60%・名前・技の継承・200G）だけを表示する（データの無い組み合わせは作らない）
@@ -4124,7 +4183,7 @@ function dscr(id,msg){if(id=="b")return hall("t"); // Phase 8：旧「腕試し�
   const own=Array.isArray(m.sk)?m.sk:[],st3=(k)=>k<0||!SK[k]?`<div class="rst"><div><small>威力</small><b>?</b></div><div><small>命中率</small><b>?</b></div><div><small>クリ率</small><b>?</b></div></div>`:`<div class="rst"><div><small>${SK[k][1]?"威力":"効果"}</small><b>${SK[k][1]?Math.round(SK[k][1]*100):efIco(k)}</b></div><div><small>命中率</small><b>${SK[k][8]}%</b></div><div><small>クリ率</small><b>${Math.round(SK[k][9]*100)}%</b></div></div>`;
   const rows=m.eq.map((k,q)=>k<0||!SK[k]?`<div class="rw ms ${q==selSlot?"sel":""}" onclick="selS(${q})"><span class="ric">${q+1}</span><span class="rsil"></span><span class="rn">ミス</span>${st3(-1)}<div class="wmv"><button ${q==0?"disabled":""} onclick="event.stopPropagation();moveSlot(${q},-1)">▲</button><button ${q==5?"disabled":""} onclick="event.stopPropagation();moveSlot(${q},1)">▼</button></div></div>`:`<div class="rw ${SK[k][7]=="p"?"cp":"ci"} ${q==selSlot?"sel":""}" onclick="selS(${q})"><span class="ric">${q+1}</span><img class="rt" src="${SKART[k]}" alt=""><span class="rn">${SK[k][0]}</span>${st3(k)}<div class="wmv"><button ${q==0?"disabled":""} onclick="event.stopPropagation();moveSlot(${q},-1)">▲</button><button ${q==5?"disabled":""} onclick="event.stopPropagation();moveSlot(${q},1)">▼</button></div><button class="wx2" onclick="event.stopPropagation();clrS(${q})">✕</button></div>`).join("");
   const list=skl(m).filter(k=>wflt=="a"||SK[k][7]==wflt);
-  const cards=list.map(k=>{const x=SK[k],ok=own.includes(k),at=m.eq.indexOf(k);return `<div class="dsk ${x[7]=="p"?"kp":"ki"} ${ok?"":"lock"} ${k==lastSk?"cur":""}" role="button" onclick="${ok?`skd(${k})`:`skd(${k})`}"><div class="dska"><img src="${SKART[k]}" alt="">${at>=0?`<i class="dsb">${at+1}</i>`:""}${ok?"":'<i class="dlk">🔒</i>'}</div><b>${x[0]}</b>${EFF[k]?`<div class="dsef">${EFF[k].map(e=>efChip(e)).join("")}</div>`:""}<div class="dsp"><span>威${x[1]?Math.round(x[1]*100):"—"}</span><span>命${x[8]}</span><span>ク${Math.round(x[9]*100)}</span></div></div>`}).join("");
+  const cards=list.map(k=>{const x=SK[k],ok=own.includes(k),at=m.eq.indexOf(k);if(!ok)return `<div class="dsk dsq ${x[7]=="p"?"kp":"ki"}" aria-label="まだ覚えていない技"><div class="dska"><i class="dsqm">？</i></div><b>？？？</b><div class="dsp"><span>まだ覚えていない技</span></div></div>`;return `<div class="dsk ${x[7]=="p"?"kp":"ki"} ${ok?"":"lock"} ${k==lastSk?"cur":""}" role="button" onclick="${ok?`skd(${k})`:`skd(${k})`}"><div class="dska"><img src="${SKART[k]}" alt="">${at>=0?`<i class="dsb">${at+1}</i>`:""}${ok?"":'<i class="dlk">🔒</i>'}</div><b>${x[0]}</b>${EFF[k]?`<div class="dsef">${EFF[k].map(e=>efChip(e)).join("")}</div>`:""}<div class="dsp"><span>威${x[1]?Math.round(x[1]*100):"—"}</span><span>命${x[8]}</span><span>ク${Math.round(x[9]*100)}</span></div></div>`}).join("");
   const n=m.eq.filter(x=>x>=0&&SK[x]).length;
   c=`<div class="dcard"><div class="dh">バトルのルーレット <small>${n} / 6 セット中</small></div><div class="dhint">枠をタップして選び、下の技をタップしてセット</div><div class="drl">${rows}</div></div>
   <div class="dcard"><div class="dh">技の一覧 <small>${own.length} / ${skl(m).length} 習得</small>${window.MMMOVEDEX&&MMMOVEDEX.listOf(m.sp).length?`<button class="dmvall" onclick="MMMOVEDEX.open(${m.sp})">📖 技辞典</button>`:""}</div><div class="dflt">${[["a","すべて"],["p","✊ ちから"],["i","📖 かしこさ"]].map(([v,l])=>`<button class="${wflt==v?"on":""}" onclick="wflt='${v}';hall('w')">${l}</button>`).join("")}</div><div class="dskg">${cards}</div></div>`}
@@ -4855,7 +4914,8 @@ function fmScr(msg){const m=S.m;if(!m)return lobby();p9MenuClose();
   ${msg?`<div class="bcsys"><div class="kbub kt ksys" onclick="this.remove()">${msg}</div></div>`:""}
   <div class="bcmonw"><div class="fmmon mon">${msv(m)}</div></div>
  </div>
- <div class="bcgo fmgate"><div class="bcch">${chip}</div><button class="fmgo${go.c}" onclick="${go.on}">${go.s||warn?`<small>${warn||go.s}</small>`:""}<b>${go.t}</b>${go.sub?`<small class="bcsub">${go.sub}</small>`:""}</button></div>
+ <div class="bcch bctop">${chip}</div>
+ <div class="bcgo fmgate"><button class="fmgo${go.c}" onclick="${go.on}">${go.s||warn?`<small>${warn||go.s}</small>`:""}<b>${go.t}</b>${go.sub?`<small class="bcsub">${go.sub}</small>`:""}</button></div>
  <nav class="bcbar fmcmd" aria-label="コマンド">${cmd.map(([on,ic,lb,bd])=>`<button class="fmb bcb${ic=="town"?" back":""}" data-cmd="${ic}" onclick="${on}">${bd}${fmIc(ic)}<span>${lb}</span></button>`).join("")}</nav>
 </div>`;try{window.scrollTo(0,0)}catch(e){}}
 
