@@ -83,7 +83,7 @@ test('N6-07：ベースキャンプにダンは常設しない・「出発する
   assert.doesNotMatch(f, /fmdan|kdan|bcomm\(\)/);
   assert.match(HTML, /#app \.fm\.bc \.bcgo\{bottom:calc\(var\(--bcbar\) \+ 72px \+ env\(safe-area-inset-bottom,0px\)\)\}/, '2026-10-05 試遊：さらに上へ（40 → 72px）');
   assert.match(HTML, /<div class="tcity" aria-label="現在地：ミストリア"><img class="tcity-img" src="\$\{TOWN_NAMEPLATE\}" alt="ミストリア"/, '2026-10-05 正式素材：名札は正式画像（.fmplq の流用はやめた）');
-  assert.match(HTML, /const TOWN_NAMEPLATE="\.\/assets\/town\/nameplate\/mistria_nameplate\.webp";/); assert.match(HTML, /#app \.map\.town \.tcity\{[^}]*aspect-ratio:686\/280;/, '縦横比のまま'); assert.doesNotMatch(HTML, /fmplq tplace/);
+  assert.match(HTML, /const TOWN_NAMEPLATE="\.\/assets\/ui\/recovery_1006\/town\/nameplate_mistria\.png";/, '2026-10-07 正式UI回収：ZIP 095601 の名札'); assert.match(HTML, /#app \.map\.town \.tcity\{[^}]*aspect-ratio:400\/204;/, '縦横比のまま'); assert.doesNotMatch(HTML, /fmplq tplace/);
 });
 
 test('N6-08（2026-10-06 試遊修正）：会話の本文は「語＋うしろの助詞」のまとまりで折り返す（語の途中・助詞の前・句読点の前で切らない・最後の1文字だけの行を作らない）', () => {

@@ -3372,6 +3372,129 @@ main:has(>#app>.ds) h1{display:none}
 .tb1g.tbv2.tbenter .tbrw{animation:tbin .42s cubic-bezier(.2,.8,.3,1) both}
 .tb1 .tbmain{gap:14px}
 .tb1 .p9prov{display:none}   /* 対戦表に説明の文を足さない（ADDENDUM2） */
+/* ===== 2026-10-07 正式UI回収（前回未送付の正式UI素材 ZIP 7つ：聖獣士登録 102415・共通会話 093729・プロフィール・街 095601・ベースキャンプ 100342・市場 095842・大会 102319）=====
+ *  素材は assets/ui/recovery_1006/（透過 PNG を表示の約2倍に縮小。見本の文字（アルト・1000 など）が焼き込まれた所だけ空欄にした＝README.md）。
+ *  文字・数値・押す範囲・処理は従来の HTML のまま（画像の上に重ねる）。画像の色は変えない（色を変える効果は使わない） */
+.mm-sr,.p11reg .p11t,.p11reg .p11lb,.p11reg .p11s,.p11reg .p11go,.p11reg .p11cap2{font-size:0;color:transparent;text-shadow:none;-webkit-text-fill-color:transparent;letter-spacing:0;text-indent:0}
+/* 1 聖獣士登録 */
+.p11reg .p11t{width:min(86%,330px);min-width:0;aspect-ratio:640/133;padding:0;margin:4px auto 0;background:url(./assets/ui/recovery_1006/reg/title_banner.png) center/100% 100% no-repeat;border:0;box-shadow:none}
+.p11reg .p11t::before,.p11reg .p11t::after{display:none}
+.p11reg .p11card{padding:0;background:none;border:0;border-radius:0;box-shadow:none}
+.p11reg .p11card::before,.p11reg .p11card::after{display:none}
+.p11reg .p11sheet{display:flex;flex-direction:column;align-items:center;gap:10px;padding:0;background:none;box-shadow:none}
+.p11reg .p11lb{position:static;transform:none;display:block;width:min(64%,220px);aspect-ratio:440/109;padding:0;background:url(./assets/ui/recovery_1006/reg/label_player_name.png) center/100% 100% no-repeat;border:0;box-shadow:none}
+.p11reg .p11s{order:-1;width:min(96%,330px);aspect-ratio:620/231;margin:0 0 4px;background:url(./assets/ui/recovery_1006/reg/message_welcome.png) center/100% 100% no-repeat}
+.p11reg .p11field{width:min(100%,340px);aspect-ratio:640/137;padding:0;border-radius:0;background:url(./assets/ui/recovery_1006/reg/name_field_blank.png) center/100% 100% no-repeat;box-shadow:none}
+.p11reg .p11field::after{display:none}
+.p11reg .p11card input{height:100%;padding:0 18%;border:0;border-radius:0;background:transparent;box-shadow:none;color:#fff;font-size:1.35rem;text-shadow:0 2px 3px rgba(0,0,0,.65)}
+.p11reg .p11card input:focus{box-shadow:none;background:radial-gradient(60% 70% at 50% 50%,rgba(140,200,255,.18),rgba(140,200,255,0))}
+.p11reg .p11hint{margin:0;color:#e9dfc4;text-shadow:0 1px 3px rgba(0,0,0,.85)}
+.p11reg .p11seal{width:52px;height:52px;margin:2px auto 0;border-radius:0;background:url(./assets/ui/recovery_1006/reg/round_confirm.png) center/contain no-repeat;box-shadow:none}
+.p11reg .p11go{width:min(96%,340px);min-height:0;aspect-ratio:640/137;padding:0;margin:14px auto 0;border:0;border-radius:0;background:url(./assets/ui/recovery_1006/reg/button_touroku.png) center/100% 100% no-repeat;box-shadow:none}
+.p11reg .p11go::before,.p11reg .p11go::after{display:none}
+.p11reg .p11go:active,.p11reg .p11go.prs{box-shadow:none;transform:translateY(2px) scale(.985)}
+.p11reg .p11cap2{width:min(92%,320px);aspect-ratio:600/96;margin:8px auto 0;background:url(./assets/ui/recovery_1006/reg/footer_note.png) center/100% 100% no-repeat}
+@media (max-height:700px){.p11reg .p11s{width:min(84%,290px)}.p11reg .p11sheet{gap:6px}.p11reg .p11go{margin-top:8px}}
+/* 2 共通会話：正式のセリフ枠（border-image＝四隅の飾りは縮尺のまま）・名前ラベル（空欄の札＝どの NPC も名前を HTML で）・選択肢のボタン */
+.mmtalk .mmtalk-win,.mmtalk.mmtalk-big .mmtalk-win,.mmtalk.mmtalk-compact .mmtalk-win{border:22px solid transparent;border-image:url(./assets/ui/recovery_1006/talk/dialogue_window_blank.png) 60 fill / 22px / 0 stretch;border-radius:0;background:none;box-shadow:none}
+.mmtalk .mmtalk-win{padding:8px 4px 6px}.mmtalk.mmtalk-big .mmtalk-win{padding:14px 8px 12px}.mmtalk.mmtalk-compact .mmtalk-win{padding:4px 2px 2px}
+.mmtalk .mmtalk-win::before,.mmtalk .mmtalk-win::after,.mmtalk.mmtalk-big .mmtalk-orn,.mmtalk.mmtalk-big .mmtalk-win>.mmtalk-text::after{display:none}
+.mmtalk .mmtalk-name,.mmtalk.mmtalk-big .mmtalk-name{top:-46px;left:2px;min-width:112px;box-sizing:border-box;padding:7px 30px 8px;border:0;border-radius:0;text-align:center;background:url(./assets/ui/recovery_1006/talk/name_label_blank.png) center/100% 100% no-repeat;box-shadow:none;color:#1d2442;font-size:16px;letter-spacing:.14em;text-shadow:0 1px 0 rgba(255,250,235,.7)}
+.mmtalk.mmtalk-big .mmtalk-name::before,.mmtalk.mmtalk-big .mmtalk-name::after{display:none}
+.mmtalk .mmtalk-stage[data-side=right] .mmtalk-name{left:auto;right:2px}
+.mmtalk .mmtalk-choices.pre,.mmtalk-big .mmtalk-choices.pre{min-height:calc(var(--n,2)*46px + (var(--n,2) - 1)*8px)}.mmtalk-big .mmtalk-choices.pre.two{min-height:46px}
+.mmtalk .mmtalk-choice,.mmtalk.mmtalk-big .mmtalk-choice{box-sizing:border-box;height:46px;padding:0 6px;line-height:1.2;min-height:46px;border:0 solid transparent;border-width:0 22px;border-image:url(./assets/ui/recovery_1006/talk/button_blank.png) 0 54 fill / 0 22px / 0 stretch;border-radius:0;background:none;box-shadow:none;color:#fff;font-family:"Shippori Mincho",var(--mm-font-head,serif);font-size:16px;letter-spacing:.12em;text-shadow:0 1px 2px #000}
+.mmtalk .mmtalk-choice:active,.mmtalk .mmtalk-choice.on,.mmtalk.mmtalk-big .mmtalk-choice:active,.mmtalk.mmtalk-big .mmtalk-choice.on{box-shadow:none;transform:translateY(2px) scale(.985)}
+/* 3 プロフィール（正式の札・行。行の見出しと単位は絵の文字、数値だけ HTML） */
+#app .pfprof .dback{width:132px;height:auto;aspect-ratio:300/89;min-height:0;padding:0;border:0;border-radius:0;background:url(./assets/ui/recovery_1006/profile/back_town.png) center/100% 100% no-repeat;box-shadow:none;font-size:0;color:transparent}
+#app .pfprof .dtitle{width:min(100%,340px);aspect-ratio:680/188;height:auto;margin:6px auto 4px;padding:0;border:0;background:url(./assets/ui/recovery_1006/profile/heading.png) center/100% 100% no-repeat;box-shadow:none}
+#app .pfprof .dtitle>*{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+#app .pfprof .tplate{padding:0;background:none;border:0;box-shadow:none}
+#app .pfprof .tplate>.tcorner,#app .pfprof .tplate>i{display:none}
+#app .pfprof .pfhead{position:relative;width:min(100%,340px);aspect-ratio:680/244;margin:0 auto 6px;padding:0;border:0;border-image:none;background:url(./assets/ui/recovery_1006/profile/player_card_blank.png) center/100% 100% no-repeat;box-shadow:none}
+#app .pfprof .pfhead .tav{display:none}
+#app .pfprof .pfhead .pfn{position:absolute;left:36%;right:6%;top:52%;bottom:16%;display:flex;align-items:center}
+#app .pfprof .pfhead .pfn small{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+#app .pfprof .pfhead .pfn b{font:800 clamp(20px,6.4vw,27px)/1.1 var(--mm-font-head);letter-spacing:.06em;color:#f6dc97;text-shadow:0 2px 2px rgba(0,0,0,.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#app .pfprof .pfrows{display:flex;flex-direction:column;align-items:center;gap:6px;margin:0;padding:0}
+#app .pfprof .pfrow{position:relative;width:min(100%,340px);height:auto;aspect-ratio:680/137;margin:0;padding:0;border:0;border-image:none;background:url(./assets/ui/recovery_1006/profile/row_gold.png) center/100% 100% no-repeat;box-shadow:none;--vl:69.1%;--vr:13.6%;--vt:31%;--vb:25%}
+#app .pfprof .pfrow:nth-child(2){aspect-ratio:680/149;background-image:url(./assets/ui/recovery_1006/profile/row_rank.png);--vl:71.7%;--vr:4.5%;--vt:25%;--vb:23%}
+#app .pfprof .pfrow:nth-child(3){aspect-ratio:680/143;background-image:url(./assets/ui/recovery_1006/profile/row_raise.png);--vl:71.2%;--vr:14.3%;--vt:28%;--vb:26%}
+#app .pfprof .pfrow:nth-child(4){aspect-ratio:680/147;background-image:url(./assets/ui/recovery_1006/profile/row_wins.png);--vl:71.7%;--vr:12.8%;--vt:25%;--vb:23%}
+#app .pfprof .pfrow .pfri{display:none}
+#app .pfprof .pfrow dt,#app .pfprof .pfrow dd small,#app .pfprof .pfrow dd svg{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#app .pfprof .pfrow dd{position:absolute;left:var(--vl);right:var(--vr);top:var(--vt);bottom:var(--vb);margin:0;padding:0;display:flex;align-items:center;justify-content:center;font:800 clamp(15px,4.6vw,19px)/1 var(--mm-font-head);color:#f6dc97;text-shadow:0 1px 2px #000;background:none;border:0}
+/* 4 街：名札・下のコマンド（ベースキャンプ・プロフィール・セーブ／ロードは正式の札の絵。押す範囲は従来のボタン） */
+#app .map.town .tcity{width:min(calc(100% - 132px),116px);aspect-ratio:400/204;top:calc(env(safe-area-inset-top,0px) + 2px)}
+#app .map.town .tcity-img{left:0;top:0;width:100%}
+.tbar{display:flex;align-items:center;gap:4px;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}   /* 3つとも同じ高さ（幅は正式の札の縦横比） */
+.tbar button.hz.tcmd.tsub,.tbar button.hz.tcmd.tprof,.tbar button.hz.tcmd.tsave,.tbar button.hz.tcmd.svb{flex:2.54 1 0;min-width:0;height:auto;min-height:0;aspect-ratio:360/142;margin:0;padding:0;border:0;border-radius:0;background:url(./assets/ui/recovery_1006/town/menu_profile.png) center/100% 100% no-repeat;box-shadow:none}
+.tbar button.hz.tcmd.tfarm{flex:2.65 1 0;aspect-ratio:440/166;background-image:url(./assets/ui/recovery_1006/town/menu_basecamp.png)}
+.tbar button.hz.tcmd.tsave,.tbar button.hz.tcmd.tsave.svb{flex:2.73 1 0;aspect-ratio:360/132;background-image:url(./assets/ui/recovery_1006/town/menu_saveload.png)}
+.tbar button.hz.tcmd.tsub::before{display:none}
+.tbar button.hz.tcmd.tsub .ti,.tbar button.hz.tcmd.tsub b{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.tbar button.hz.tcmd.tsub:active{background-color:transparent;transform:scale(.97)}
+.tbar button.hz.tcmd.tsub.dis{opacity:.55}
+/* 5 ベースキャンプの下の5つ（正式の5つのボタン。中断は正式の絵が無いので従来の枠 B-34） */
+#app .bcbar.fmcmd.fmcmd button.bcb.fmb[data-cmd=train],#app .bcbar.fmcmd.fmcmd button.bcb.fmb[data-cmd=item],#app .bcbar.fmcmd.fmcmd button.bcb.fmb[data-cmd=status],#app .bcbar.fmcmd.fmcmd button.bcb.fmb[data-cmd=moves],#app .bcbar.fmcmd.fmcmd button.bcb.fmb[data-cmd=town]{border:0;border-image:none;background:url(./assets/ui/recovery_1006/basecamp/01_tokkun.png) center/contain no-repeat}
+#app .bcbar.fmcmd.fmcmd button.bcb.fmb[data-cmd=item]{background-image:url(./assets/ui/recovery_1006/basecamp/02_item.png)}
+#app .bcbar.fmcmd.fmcmd button.bcb.fmb[data-cmd=status]{background-image:url(./assets/ui/recovery_1006/basecamp/03_status.png)}
+#app .bcbar.fmcmd.fmcmd button.bcb.fmb[data-cmd=moves]{background-image:url(./assets/ui/recovery_1006/basecamp/04_wazakanri.png)}
+#app .bcbar.fmcmd.fmcmd button.bcb.fmb[data-cmd=town]{background-image:url(./assets/ui/recovery_1006/basecamp/05_machie_modoru.png)}
+#app .bcbar.fmcmd.fmcmd button.bcb.fmb:is([data-cmd=train],[data-cmd=item],[data-cmd=status],[data-cmd=moves],[data-cmd=town])>:is(svg,span){position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+#app .bcbar.fmcmd.fmcmd button.bcb.fmb:is([data-cmd=train],[data-cmd=item],[data-cmd=status],[data-cmd=moves],[data-cmd=town])::before{display:none}
+#app .bcbar.fmcmd.fmcmd button.bcb.fmb.on{transform:scale(1.04)}
+/* 6 市場：上の札（戻る＋市場）・プレイヤーの札・名前と価格の札・左右の矢印 */
+.p10mk .p10top{padding-right:50px;gap:4px}
+.p10mk .p10ttl{position:relative;flex:0 1 46%;min-width:0;aspect-ratio:640/125;height:auto;padding:0;border:0;border-radius:0;background:url(./assets/ui/recovery_1006/market/header.png) center/100% 100% no-repeat;box-shadow:none}
+.p10mk .p10ttl b{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.p10mk .p10back{position:absolute;left:0;top:0;width:19%;height:100%;min-height:0;margin:0;padding:0;border:0;border-radius:0;background:none;box-shadow:none;color:transparent;font-size:0}
+.p10mk .p10back::after{content:"";position:absolute;inset:-6px}
+.p10mk .p10who{position:relative;flex:0 1 50%;min-width:0;aspect-ratio:520/147;height:auto;padding:0;border:0;border-radius:0;background:url(./assets/ui/recovery_1006/market/player_info_blank.png) center/100% 100% no-repeat;box-shadow:none}
+.p10mk .p10who .p10crest,.p10mk .p10who .p10wt>small{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.p10mk .p10who .p10wt>b{position:absolute;left:32.4%;right:8%;top:16%;height:36%;display:flex;align-items:center;font:800 clamp(12px,3.6vw,15px)/1 var(--mm-font-head);color:#fff3d6;text-shadow:0 1px 2px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.p10mk .p10who .p10gold{position:absolute;left:61%;right:9%;top:58%;height:30%;display:flex;align-items:center;gap:1px;font:800 clamp(11px,3.3vw,14px)/1 var(--mm-font-head);color:#ffe7a8;text-shadow:0 1px 2px #000;white-space:nowrap}
+.p10mk .p10who .p10gold>svg,.p10mk .p10who .p10gold>.p10coin,.p10mk .p10who .p10gold>i{display:none}
+.p10mk .p10who .p10gold small{margin-left:2px;font-size:.85em}
+.p10mk .p10plate{min-width:0;width:min(40vw,152px);aspect-ratio:340/123;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4% 12%;border:0;border-radius:0;background:url(./assets/ui/recovery_1006/market/plate_side_blank.png) center/100% 100% no-repeat;box-shadow:none}
+.p10mk .p10sl.on .p10plate{width:min(48vw,190px);aspect-ratio:460/224;padding:5% 14% 4%;background-image:url(./assets/ui/recovery_1006/market/plate_center_blank.png)}
+.p10mk .p10plate b{font:800 clamp(13px,3.9vw,17px)/1.15 var(--mm-font-head);color:#fff3d6;text-shadow:0 1px 2px #000}
+.p10mk .p10sl.on .p10plate b{font-size:clamp(16px,5vw,21px)}
+.p10mk .p10plate span{font:800 clamp(11px,3.4vw,14px)/1.2 var(--mm-font-head);color:#ffe08a;text-shadow:0 1px 2px #000}
+.p10mk .p10plate .p10wait{display:inline-block;padding:1px 10px;border-radius:999px;background:linear-gradient(#ffe9a0,#d9a53a);color:#2a1a06;font:800 11px/1.4 var(--mm-font-head);font-style:normal;text-shadow:none;box-shadow:0 0 0 1px #8a5d14}
+.p10mk .p10sl.on .p10plate::after{margin-top:3px;font-size:clamp(9px,2.7vw,11px);color:#f6ead0}
+.p10mk .p10arw,.p10mk .p10arw.next{width:48px;height:51px;background:url(./assets/ui/recovery_1006/market/arrow_left.png) center/contain no-repeat}
+.p10mk .p10arw.next{background-image:url(./assets/ui/recovery_1006/market/arrow_right.png)}
+/* 7 大会ランク選択（正式版 102319）：見出しの札・ランクの帯（鎖なし）＋状態の札（HTML）・参加する／参加しない・参加の確認 */
+.rcv .rcv-ban{width:min(230px,60vw);aspect-ratio:600/220;padding:0;background-image:url(./assets/ui/recovery_1006/tournament/header.png)}
+.rcv .rcv-ban b{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.rcv .rcv-row{aspect-ratio:760/198;width:min(100%,calc((100dvh - var(--rcv-res) - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)) / 6 * 3.84))}
+.rcv .rcv-img{top:0;height:100%;object-fit:contain}
+.rcv-stat{position:absolute;z-index:2;left:60.5%;width:22%;top:22%;bottom:12%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4%;pointer-events:none}
+.rcv-stat small{display:block;text-align:left;font:800 clamp(7px,2.9cqw,11px)/1.25 var(--mm-font-head);color:#fff3d6;letter-spacing:.04em;text-shadow:0 1px 2px #000;white-space:nowrap}
+.rcv .rcv-row{container-type:inline-size}
+.rcv-st{position:relative;display:grid;place-items:center;width:100%;height:40%}
+.rcv-st i{grid-area:1/1;display:grid;place-items:center;width:100%;height:100%;box-sizing:border-box;font:800 clamp(8px,3.7cqw,13px)/1 var(--mm-font-head);font-style:normal;letter-spacing:.06em;white-space:nowrap;color:#fff6dc;text-shadow:0 1px 1px rgba(0,0,0,.7);clip-path:polygon(7% 0,93% 0,100% 50%,93% 100%,7% 100%,0 50%);border:1px solid #e8c86a;background:linear-gradient(#2fa354,#137033 60%,#0d5426)}
+.rcv-st.no i,.rcv-st i.rcv-was{background:linear-gradient(#c4283a,#8a1020 60%,#640a17)}
+.rcv-row.unlocking .rcv-was{animation:rcvPillOut .5s 1s ease-in forwards}
+.rcv-row.unlocking .rcv-now{animation:rcvPillIn .5s 1.2s ease-out both}
+@keyframes rcvPillOut{to{opacity:0;transform:translateY(6px) scale(.9)}}
+@keyframes rcvPillIn{from{opacity:0;transform:scale(1.25)}60%{opacity:1;transform:scale(1.08)}}
+@media (prefers-reduced-motion:reduce){.rcv-row.unlocking .rcv-was,.rcv-row.unlocking .rcv-now{animation-duration:.01s;animation-delay:0s}}
+.rcv .rcv-acts{flex-direction:column;gap:2px}
+.rcv{--rcv-res:300px}
+@media (max-height:720px){.rcv{--rcv-res:318px}}
+.rcv .rcv-join,.rcv .rcv-join:disabled{width:min(88%,300px);height:auto;aspect-ratio:640/142;padding:0;border:0;border-radius:0;background:url(./assets/ui/recovery_1006/tournament/button_join.png) center/100% 100% no-repeat;box-shadow:none;font-size:0;color:transparent;text-shadow:none}
+.rcv .rcv-join small{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.rcv .rcv-join:disabled{opacity:.5}
+.rcv .rcv-dec{flex:none;align-self:center;width:min(42%,150px);height:auto;aspect-ratio:300/70;min-height:0;padding:0;border:0;border-radius:0;background:url(./assets/ui/recovery_1006/tournament/button_decline.png) center/100% 100% no-repeat;box-shadow:none;font-size:0;color:transparent}
+.p9conf{position:fixed;inset:0;z-index:960;display:grid;place-items:center;background:rgba(3,7,20,.62);animation:p9confIn .18s ease-out}
+@keyframes p9confIn{from{opacity:0}}
+.p9conf-box{position:relative;width:min(88vw,340px);aspect-ratio:640/434}
+.p9conf-box img{display:block;width:100%;height:100%;pointer-events:none;user-select:none;-webkit-user-drag:none}
+.p9conf-box button{position:absolute;left:7%;right:7%;min-height:0;margin:0;padding:0;border:0;border-radius:999px;background:transparent;box-shadow:none;color:transparent;font-size:0;-webkit-tap-highlight-color:transparent}
+.p9conf-yes{top:38.5%;height:19%}.p9conf-no{top:62.5%;height:19%}
+.p9conf-box button:active{background:radial-gradient(closest-side,rgba(255,230,160,.28),rgba(255,230,160,0))}
 </style></head><body><main>
 <h1>ミスティックモンスターズ</h1>
 <div id="app"></div>
@@ -3730,7 +3853,7 @@ function dep(){if(p8Blocked())return;if(!S.m)return farm("","a");if(MMP7.trainRu
 function wd(j){if(p8Blocked())return;if(MMP7.trainRunOf(S.m))return farm("特訓中のモンスターがいるため、いまは入れ替えできません。","b");const x=S.box.splice(j,1)[0];if(!x)return farm("","b");if(S.m)S.box.push(S.m);S.m=x;sel=[];rnSel=x.uid;save();farm(`${p11Esc(x.name)}を受け取りました。`,"b")}
 // 街の背景画像（2026-10-03：正式ミストリア mistria_main.webp＝ZIP mm_quality_up_supplement の mistria_town_master。768×1360。旧 town_main.jpg はファイルだけ残す）。
 // 施設の札（TOWN_CMDS の7番目＝地図の上の点）はこの画像の画素で書く。TOWN_IMG.top＝闘技場の上端（低い画面でもここが切れない倍率にする）
-const TOWN_NAMEPLATE="./assets/town/nameplate/mistria_nameplate.webp"; // 2026-10-05 正式素材：街の名札（lobby の .tcity）
+const TOWN_NAMEPLATE="./assets/ui/recovery_1006/town/nameplate_mistria.png"; // 2026-10-07 正式UI回収（ZIP 095601 の街の名札。旧 2026-10-05 の名札はファイルだけ残す）：lobby の .tcity
 const TOWN_BG="assets/town/mistria_main.webp",TOWN_IMG={w:768,h:1360,top:26};
 // 2026-10-04：アイテム屋は街の独立した施設ではない（正式）。ファーム（育成準備の拠点）の屋台から shopScr を開く。街の札 townShop・SHOP_FROM は廃止（戻るはファームへ）
 // 街の施設コマンド［表示名, 補足, アイコン, 押したとき, 状態］。状態：ok＝行ける／dis＝今は行けない（ボタンを無効）／lock＝未開放（押すと案内だけ）
@@ -3782,7 +3905,7 @@ function townGuild(){if(S.playerNamePending&&opOn())return opBureau();bureauScr(
  * 行は PROFILE_ROWS に［見出し, 値のHTMLを返す関数］で足していく（大会戦績・育成記録・実績など）。セーブには何も足さない */
 /** 2026-10-06：プロフィール行（正式素材 B-03）の左の丸に入れる線画（硬貨・ランクの紋章・育成・勝利・トロフィー） */
 const PROFILE_IC=['<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="5.5"/>','<path d="M12 3l8 9-8 9-8-9z"/><path d="M12 7.5l4 4.5-4 4.5-4-4.5z"/>','<path d="M4 20c2-6 6-9 8-15 2 6 6 9 8 15"/><path d="M8 20c1-3 2.5-5 4-7 1.5 2 3 4 4 7"/>','<path d="M5 19L19 5M15 5h4v4M5 5l14 14M9 19H5v-4"/>','<path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 20h8"/>'];
-const PROFILE_ROWS=[["所持金",()=>`<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#tic-coin"/></svg>${S.g}<small>G</small>`],["最高到達ランク",()=>(S.br??-1)>=0?RN[S.br]:"ー"],["育成完了",()=>`${MMP8.raiseDoneCount(S)}<small>回</small>`],["大会の勝利",()=>`${S.wins||0}<small>勝</small>`],["獲得トロフィー",()=>null]];
+const PROFILE_ROWS=[["所持金",()=>`<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#tic-coin"/></svg>${S.g}<small>G</small>`],["最高到達ランク",()=>(S.br??-1)>=0?RN[S.br]:"ー"],["育成完了",()=>`${MMP8.raiseDoneCount(S)}<small>回</small>`],["大会の勝利",()=>`${S.wins||0}<small>勝</small>`]]; // 2026-10-07 正式UI回収：正式のプロフィールの行は4つ（所持金・最高到達ランク・育成完了・大会の勝利）＝仮の「獲得トロフィー 準備中」は出さない
 function profileScr(){if(p8Blocked())return;bgm("town");$("#app").innerHTML=`<div class="ds pfds pfprof">${TOWN_SVG}<div class="dtop"><button class="dback" data-ui="back-town" onclick="lobby()">◀ 街にもどる</button></div><div class="dtitle" style="--dc:#d9b465"><div class="mico"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#tic-profile"/></svg></div><div><b>プロフィール</b><small>プレイヤーの記録</small></div></div><div class="tplate">${townCorners()}<div class="pfhead"><div class="tav"><svg viewBox="0 0 34 34" aria-hidden="true"><use href="#tic-player"/></svg></div><div class="pfn"><small>プレイヤー</small><b class="p115pn">${p11Esc(S.playerName||MMP11P.DEFAULT_NAME)}</b></div></div><dl class="pfrows">${PROFILE_ROWS.map((r,i)=>{const v=r[1]();return `<div class="pfrow"><i class="pfri" aria-hidden="true"><svg viewBox="0 0 24 24">${PROFILE_IC[i]||""}</svg></i><dt>${r[0]}</dt>${v==null?`<dd class="pfnone">準備中</dd>`:`<dd>${v}</dd>`}</div>`}).join("")}</dl></div></div>`;try{window.scrollTo(0,0)}catch(e){}}
 /** お知らせ（仮の画面）：正式なお知らせ機能は未決。配信・データ・セーブは作らず「準備中」だけ */
 function newsScr(){if(p8Blocked())return;$("#app").innerHTML=`<div class="ds pfds tnewsscr">${TOWN_SVG}<div class="dtop"><button class="dback" onclick="lobby()">◀ 街にもどる</button></div><div class="dtitle" style="--dc:#d9b465"><div class="mico"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#tic-news"/></svg></div><div><b>お知らせ</b><small>ミスティックモンスターズからのお知らせ</small></div></div><div class="tplate">${townCorners()}<p class="pfnote">お知らせは準備中です。</p></div></div>`;try{window.scrollTo(0,0)}catch(e){}}
@@ -4712,10 +4835,11 @@ const P9_CHECK='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="
  *  状態（p9RankState）・選べるか（MMP8.eligibleRanks＝Chapter の上限と個体のクリア実績）・参加者と試合数（MMP8L.LEAGUE_SIZE）はすべて既存のロジックから。
  *  2026-10-05 正式素材：行の見た目は正式画像（参加可能＝rank_available_X／参加不可＝rank_unavailable_X。画像の「参加可能／参加不可」「参加者・対戦」は正式デザインの文字＝E・D 6名5試合／C〜S 8名7試合）。
  *  押せる行＝参加可能の画像の button、押せない行＝参加不可の画像の div。next＝挑戦目標の札と光／clear＝クリア済の札／選択中＝.sel（光）。読み上げ用の文字（.rcv-sr）は画面に出さない */
-const P9_RANK_IMG=(k,ok)=>`./assets/tournament/rank_ui/rank_${ok?"available":"unavailable"}_${RN[k]}.webp`;
+// 2026-10-07 正式UI回収（ZIP 102319＝前回未送付の正式版）：行の絵はランクごとの帯（状態の文字・鎖は焼き込まない）。状態の札・参加者と試合数は HTML（.rcv-stat）。旧 2026-10-05 の rank_ui はファイルだけ残す
+const P9_RANK_IMG=k=>`./assets/ui/recovery_1006/tournament/rank_${RN[k]}.png`;
 function p9RankRow(m,k,el,un){const L=RN[k],st=p9RankState(m,k,el),ok=el.includes(k),sz=MMP8L.LEAGUE_SIZE[k];
- const sr=`<span class="rcv-sr"><span class="rcv-st">${P9_RS_LABEL[st]}</span><small>参加者 ${sz}体 / ${sz-1}試合</small></span>`;
- const img=`<img class="rcv-img ${ok?"av":"na"}" src="${P9_RANK_IMG(k,ok)}" alt="" decoding="async" draggable="false">${un?`<img class="rcv-img lockimg" src="${P9_RANK_IMG(k,false)}" alt="" decoding="async" draggable="false">`:""}`;
+ const sr=`<span class="rcv-stat"><span class="rcv-st ${ok?"go":"no"}">${un?'<i class="rcv-was">参加不可</i>':""}<i class="rcv-now">${ok?"参加可能":"参加不可"}</i></span><small>参加者 ${sz}名<br>対戦 ${sz-1}試合</small><span class="rcv-sr">${P9_RS_LABEL[st]} 参加者 ${sz}体 / ${sz-1}試合</span></span>`;
+ const img=`<img class="rcv-img ${ok?"av":"na"}" src="${P9_RANK_IMG(k)}" alt="" decoding="async" draggable="false">`;
  const body=`${img}${st=="next"?'<i class="rcv-next">挑戦目標</i>':""}${st=="clear"?`<i class="rcv-clr">${P9_CHECK}クリア済</i>`:""}${sr}`;
  return ok?`<button class="rcv-row ok st-${st}${un?" unlocking":""}" data-rank="${k}" data-state="${st}" onclick="p9RcvPick(${k},this)" aria-pressed="false" aria-label="ランク${L}大会（${P9_RS_LABEL[st]}）">${body}</button>`
   :`<div class="rcv-row lk st-${st}" data-rank="${k}" data-state="${st}" aria-disabled="true" aria-label="ランク${L}大会（${st=="clear"?"クリア済・このChapterでは参加できない":"参加不可"}）">${body}</div>`}   // クリア済でもこの Chapter の上限より上は押せない（参加不可の画像＋クリア済の札）
@@ -4731,7 +4855,14 @@ function p9RcvPick(k,b){const m=S.m;if(bBusy||!m||!b||!MMP8.eligibleRanks(m,m.ra
  document.querySelectorAll(".rcv-row.ok").forEach(x=>{const on=x===b;x.classList.toggle("sel",on);x.setAttribute("aria-pressed",on?"true":"false")});
  finaRankSay(k);const j=$("#p9join");if(j){j.disabled=false;j.dataset.rank=k;j.innerHTML=`この大会に参加する<small>公式ランク${RN[k]}大会</small>`;tapAt(j)}} // 選んだ直後（0.35秒）の押下は無視（連打で確定しない）
 function p9RcvJoin(b){const m=S.m;if(bBusy||!m||!b||b.disabled||tapSoon(b,350))return;const k=+b.dataset.rank;if(!Number.isInteger(k)||!MMP8.eligibleRanks(m,m.raise.ch).includes(k))return;
+ if(!window.MM_QA_NO_TOURCONF&&b.dataset.ok!=String(k))return p9RcvConfirm(b,k); // 2026-10-07 正式UI回収：参加の確認（正式の確認ダイアログ「この大会に参加しますか？ はい／いいえ」）
  b.disabled=true;const r=MMP8.startTournament(S,m,k);if(!r.ok)return board();save();p9TourOpen(k)}
+/** 2026-10-07 正式UI回収（ZIP 102319 の 04）：参加の確認ダイアログ。絵の「はい」「いいえ」の上に押せるボタン（出た直後0.35秒は無視）。はい＝従来の開始、いいえ＝閉じるだけ */
+function p9RcvConfirm(b,k){if($("#p9conf"))return;const d=document.createElement("div");d.id="p9conf";d.className="p9conf";d.setAttribute("role","dialog");d.setAttribute("aria-label","この大会に参加しますか？");
+ d.innerHTML=`<div class="p9conf-box"><img src="./assets/ui/recovery_1006/tournament/confirm_dialog.png" alt="" draggable="false"><button class="p9conf-yes" aria-label="はい（公式ランク${RN[k]}大会に参加する）">はい</button><button class="p9conf-no" aria-label="いいえ">いいえ</button></div>`;
+ document.body.appendChild(d);const y=d.querySelector(".p9conf-yes"),n=d.querySelector(".p9conf-no");tapAt(y);tapAt(n);
+ const close=()=>{d.remove()};n.onclick=()=>{if(tapSoon(n,350))return;close()};d.onclick=e=>{if(e.target===d&&!tapSoon(n,350))close()};
+ y.onclick=()=>{if(tapSoon(y,350))return;close();b.dataset.ok=String(k);p9RcvJoin(b);delete b.dataset.ok}}
 // ---- 大会開始の演出（E〜S 共通）：暗転 → ランクのエンブレム「公式ランクE大会」→ セドリックの一言 → 順位表（参加者が右から順に入る）。タップで飛ばせる。視差効果を減らす設定では短く ----
 let P9_ENTER=false;
 function p9TourIntro(k,noCed){return new Promise(res=>{const calm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches),im=window.MMNPC&&MMNPC.imageOf("cedric","face",k>=3?"tense":"host");

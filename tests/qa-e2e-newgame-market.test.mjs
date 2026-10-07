@@ -193,7 +193,7 @@ T('QA-NG2：開始ボタン → 名前登録画面（初期値「アルト」・
   assert.equal(t.fina, 0, '会話が終われば街にフィナは残らない');
   // プレイヤー情報（名前・所持金・最高到達ランク）はプロフィールに出す
   await pg.click('.hz[onclick="profileScr()"]'); await pg.waitForSelector('.pfds');
-  assert.match(await pg.evaluate(() => document.querySelector('.pfds .tplate').innerText.replace(/\s+/g, ' ')), /プレイヤー ゆうしゃ 所持金 1,?000 ?G 最高到達ランク ー 育成完了 0 ?回 大会の勝利 0 ?勝 獲得トロフィー 準備中/);
+  assert.match(await pg.evaluate(() => document.querySelector('.pfds .tplate').innerText.replace(/\s+/g, ' ')), /プレイヤー ゆうしゃ 所持金 1,?000 ?G 最高到達ランク ー 育成完了 0 ?回 大会の勝利 0 ?勝/);
   await pg.click('.pfds .dback'); await pg.waitForSelector('.tbar .tcmd');
   noErrors(p);
 });

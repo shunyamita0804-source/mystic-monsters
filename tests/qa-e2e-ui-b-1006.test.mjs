@@ -17,7 +17,7 @@ test.afterEach(async () => { for (const p of OPEN.splice(0)) await p.ctx.close()
 const T = (name, fn) => test(name, { skip: SKIP }, fn);
 // 2026-10-07：牧場・研究所の下のコマンドは1つずつ正式画像（assets/ui/cmd/。data-cmd）＝ボタンごとに確かめる
 const SCR = { save: 'savescr()', profile: 'profileScr()', ranch: 'farm()', status: "hall('st')", lab: 'museum()', market: 'market()' };
-const PART = { save: ['.svs .card.slot', 720 / 178], profile: ['.pfprof .pfhead', 720 / 443], ranch: ['.rn2 nav.rnact .rna[data-cmd="ranch_look"]', 0], status: ['.sts .stskill', 0], lab: ['.lab nav.labnav .labc[data-cmd="lab_book"]', 0], market: ['.p10mk .p10arw.next', 0] };
+const PART = { save: ['.svs .card.slot', 720 / 178], profile: ['.pfprof .pfhead', 680 / 244], ranch: ['.rn2 nav.rnact .rna[data-cmd="ranch_look"]', 0], status: ['.sts .stskill', 0], lab: ['.lab nav.labnav .labc[data-cmd="lab_book"]', 0], market: ['.p10mk .p10arw.next', 0] };
 
 async function setup(pg) {
   await H.newGame(pg, 'ユウ');

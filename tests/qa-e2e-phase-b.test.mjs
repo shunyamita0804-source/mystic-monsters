@@ -92,17 +92,18 @@ for (const size of SIZES) {
   });
 }
 
-test('PB-B4：TEST 大会の受付＝正式のランク行（E・D＝赤・参加可能／C〜S＝青＋鎖＋錠・参加不可・押せない）。やめると記録・所持金は始める前のまま', { skip: SKIP }, async () => {
+test('PB-B4：TEST 大会の受付＝正式のランク行（2026-10-07 正式版 102319：E・D＝参加可能の緑の札／C〜S＝参加不可の赤の札・押せない）。やめると記録・所持金は始める前のまま', { skip: SKIP }, async () => {
   for (const size of SIZES) {
     const p = await open({ size }); const pg = p.page;
     await H.newGame(pg, 'テスト');
     await pg.evaluate(() => { const m = mk(1); m.name = 'ガウ'; MMP7.ensureProg(m); S.m = m; save(); lobby(); }); await pg.waitForSelector('.map.town .ttest');
     const before = await stored(pg);
     await pg.click('.map.town .ttest'); await pg.waitForSelector('.rcv-row'); await pg.waitForTimeout(500); await pg.waitForFunction(() => [...document.querySelectorAll('.rcv-img')].every((i) => i.complete && i.naturalWidth > 0), null, { timeout: 10000 });
-    const rows = await pg.evaluate(() => [...document.querySelectorAll('.rcv-row')].map((r) => { const im = r.querySelector('.rcv-img'), src = im.getAttribute('src'), b = r.getBoundingClientRect(); return { k: +r.dataset.rank, st: r.dataset.state, tag: r.tagName, chains: /rank_unavailable_/.test(src) ? 2 : 0, lock: /rank_unavailable_/.test(src), chip: r.querySelector('.rcv-st').textContent, info: r.querySelector('.rcv-sr small').textContent, red: /rank_available_/.test(src) && im.naturalWidth > 0, blue: /rank_unavailable_/.test(src) && im.naturalWidth > 0, inView: b.left >= -1 && b.right <= innerWidth + 1 && b.top >= 0 && b.bottom <= innerHeight }; }));
+    const rows = await pg.evaluate(() => [...document.querySelectorAll('.rcv-row')].map((r) => { const im = r.querySelector('.rcv-img'), src = im.getAttribute('src'), b = r.getBoundingClientRect(); return { k: +r.dataset.rank, st: r.dataset.state, tag: r.tagName, src: src.replace(/^.*\//, ''), loaded: im.naturalWidth > 0, chip: r.querySelector('.rcv-now').textContent, red: r.querySelector('.rcv-st').classList.contains('no'), info: r.querySelector('.rcv-stat small').textContent, inView: b.left >= -1 && b.right <= innerWidth + 1 && b.top >= 0 && b.bottom <= innerHeight }; }));   // 2026-10-07 正式UI回収（ZIP 102319）：ランクの帯（鎖なし）＋状態の札（HTML）
     assert.deepEqual(rows.map((r) => r.k), [5, 4, 3, 2, 1, 0], 'S→E（F は無い）');
-    for (const r of rows.filter((x) => x.k >= 2)) { assert.deepEqual([r.st, r.tag, r.chains, r.lock, r.blue], ['lock', 'DIV', 2, true, true], `ランク${r.k}＝青＋鎖＋錠・押せない`); assert.match(r.chip, /参加不可/); assert.match(r.info, /参加者 8体 \/ 7試合/); }
-    for (const r of rows.filter((x) => x.k < 2)) { assert.deepEqual([r.tag, r.chains, r.lock, r.red], ['BUTTON', 0, false, true], `ランク${r.k}＝赤・参加可能・押せる`); assert.match(r.chip, /参加可能/); assert.match(r.info, /参加者 6体 \/ 5試合/); }
+    for (const r of rows) { assert.equal(r.src, `rank_${'EDCBAS'[r.k]}.png`); assert.ok(r.loaded, `ランク${r.k}の帯`); }
+    for (const r of rows.filter((x) => x.k >= 2)) { assert.deepEqual([r.st, r.tag, r.red], ['lock', 'DIV', true], `ランク${r.k}＝参加不可（赤の札）・押せない`); assert.equal(r.chip, '参加不可'); assert.equal(r.info, '参加者 8名対戦 7試合'); }
+    for (const r of rows.filter((x) => x.k < 2)) { assert.deepEqual([r.tag, r.red], ['BUTTON', false], `ランク${r.k}＝参加可能（緑の札）・押せる`); assert.equal(r.chip, '参加可能'); assert.equal(r.info, '参加者 6名対戦 5試合'); }
     assert.ok(rows.every((r) => r.inView), '6段とも画面の中');
     await pg.click('.rcv-row[data-rank="0"]'); await pg.waitForTimeout(450);
     assert.equal(await pg.evaluate(() => document.querySelector('#p9join').disabled), false, 'E を選ぶと参加できる');

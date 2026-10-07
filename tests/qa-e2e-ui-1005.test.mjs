@@ -30,9 +30,9 @@ for (const size of SIZES) {
       const ct = { l: c.left, r: c.right, t: c.top, b: c.bottom };   // 箱＝絵の部分（透明な余白を除いた 686×280）
       const hit = [...document.querySelectorAll('.map.town .tround, .map.town .tpin span')].filter((e) => { const o = e.getBoundingClientRect(); return !(o.right <= ct.l || o.left >= ct.r || o.bottom <= ct.t || o.top >= ct.b); }).length;
       const im = document.querySelector('.tcity-img');
-      return { hit, ratio: w / h, nat: 686 / 280, src: im.getAttribute('src'), top: ct.t, sw: document.documentElement.scrollWidth, text: !!document.querySelector('.tcity b') };
+      return { hit, ratio: w / h, nat: 400 / 204, src: im.getAttribute('src'), top: ct.t, sw: document.documentElement.scrollWidth, text: !!document.querySelector('.tcity b') };
     });
-    assert.equal(r.hit, 0, 'お知らせ・設定・施設の札と重ならない'); assert.ok(Math.abs(r.ratio - r.nat) < 0.02, '縦横比のまま'); assert.match(r.src, /assets\/town\/nameplate\/mistria_nameplate\.webp$/);
+    assert.equal(r.hit, 0, 'お知らせ・設定・施設の札と重ならない'); assert.ok(Math.abs(r.ratio - r.nat) < 0.02, '縦横比のまま'); assert.match(r.src, /assets\/ui\/recovery_1006\/town\/nameplate_mistria\.png$/);   // 2026-10-07 正式UI回収（ZIP 095601）
     assert.ok(r.top >= 0); assert.equal(r.sw, size[0]); assert.equal(r.text, false, 'コードで作った名札は出さない');
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   });
@@ -53,20 +53,26 @@ for (const size of SIZES) {
   });
 }
 
-T('UI-B3：大会ランク選択＝行ごとに正式画像（参加可能 E・D／参加不可 C〜S）。新しく選べるようになった行は参加不可の画像が消えてから参加可能。参加不可は選べない', async () => {
-  const p = await openPage({ size: [390, 844] }); const pg = p.page;
+T('UI-B3：大会ランク選択（2026-10-07 正式UI回収＝ZIP 102319）＝行ごとにランクの帯＋状態の札（参加可能 E・D／参加不可 C〜S）。新しく選べるようになった行は札が参加不可 → 参加可能。参加不可は選べない。参加は確認ダイアログ（いいえ＝閉じるだけ／はい＝開始）', async () => {
+  const p = await openPage({ size: [390, 844], tourconf: true }); const pg = p.page;
   await H.newGame(pg, 'ユウ');
   await pg.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); const g = MMCH.graphFor(m); Object.assign(m.raise, { node: g.goal, goal: true, pend: null }); m.raise.field.arrivalSeen = true; S.npcFlags = S.npcFlags || {}; S.npcFlags.rankSeen = { [m.uid]: 0 }; save(); board(); });   // 前に見た最高＝E → D が新しく選べる
   await pg.waitForSelector('.rcv-row'); await loaded(pg, '.rcv-img');
-  const r = await pg.evaluate(() => [...document.querySelectorAll('.rcv-row')].map((x) => ({ k: +x.dataset.rank, tag: x.tagName, src: [...x.querySelectorAll('.rcv-img')].map((i) => i.getAttribute('src').replace(/^.*\//, '')), un: x.classList.contains('unlocking') })));
+  const r = await pg.evaluate(() => [...document.querySelectorAll('.rcv-row')].map((x) => ({ k: +x.dataset.rank, tag: x.tagName, src: [...x.querySelectorAll('.rcv-img')].map((i) => i.getAttribute('src').replace(/^.*\//, '')), now: x.querySelector('.rcv-now').textContent, un: x.classList.contains('unlocking') })));
   assert.deepEqual(r.map((x) => x.k), [5, 4, 3, 2, 1, 0]);
-  for (const x of r.filter((x) => x.k >= 2)) assert.deepEqual([x.tag, x.src], ['DIV', [`rank_unavailable_${'EDCBAS'[x.k]}.webp`]]);
-  assert.deepEqual(r.find((x) => x.k === 1), { k: 1, tag: 'BUTTON', src: ['rank_available_D.webp', 'rank_unavailable_D.webp'], un: true }, 'D は解除の演出');
-  assert.deepEqual(r.find((x) => x.k === 0), { k: 0, tag: 'BUTTON', src: ['rank_available_E.webp'], un: false });
-  await pg.waitForTimeout(1800);
-  assert.equal(await pg.evaluate(() => +getComputedStyle(document.querySelector('.rcv-row[data-rank="1"] .lockimg')).opacity), 0, '参加不可の画像は消える');
+  for (const x of r.filter((x) => x.k >= 2)) assert.deepEqual([x.tag, x.src, x.now], ['DIV', [`rank_${'EDCBAS'[x.k]}.png`], '参加不可']);
+  assert.deepEqual(r.find((x) => x.k === 1), { k: 1, tag: 'BUTTON', src: ['rank_D.png'], now: '参加可能', un: true }, 'D は解除の演出');
+  assert.deepEqual(r.find((x) => x.k === 0), { k: 0, tag: 'BUTTON', src: ['rank_E.png'], now: '参加可能', un: false });
+  await pg.waitForTimeout(1900);
+  assert.deepEqual(await pg.evaluate(() => [+getComputedStyle(document.querySelector('.rcv-row[data-rank="1"] .rcv-was')).opacity, +getComputedStyle(document.querySelector('.rcv-row[data-rank="1"] .rcv-now')).opacity]), [0, 1], '参加不可の札が消えて参加可能');
   await pg.click('.rcv-row.lk[data-rank="2"]', { force: true }); assert.equal(await pg.evaluate(() => document.querySelectorAll('.rcv-row.sel').length), 0, '参加不可は選べない');
   await pg.click('.rcv-row[data-rank="1"]'); await pg.waitForTimeout(450);
   assert.equal(await pg.evaluate(() => document.querySelector('#p9join').disabled), false);
+  await pg.click('#p9join'); await pg.waitForSelector('#p9conf .p9conf-no'); await pg.waitForTimeout(420);
+  await pg.click('#p9conf .p9conf-no'); await pg.waitForTimeout(200);
+  assert.deepEqual(await pg.evaluate(() => [!!document.getElementById('p9conf'), !!S.m.raise.tour]), [false, false], 'いいえ＝閉じるだけ');
+  await pg.waitForTimeout(400); await pg.click('#p9join'); await pg.waitForSelector('#p9conf .p9conf-yes'); await pg.waitForTimeout(420);
+  await pg.click('#p9conf .p9conf-yes'); await pg.waitForTimeout(300);
+  assert.deepEqual(await pg.evaluate(() => [!!document.getElementById('p9conf'), S.m.raise.tour && S.m.raise.tour.rank]), [false, 1], 'はい＝ランクDで開始');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });

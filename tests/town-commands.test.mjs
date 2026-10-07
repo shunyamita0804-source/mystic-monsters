@@ -146,7 +146,7 @@ test('TW-B2：各コマンドの遷移と「街にもどる」：市場・牧場
   const s0 = await H.storedSave(pg);
   await pg.click('.hz[onclick="profileScr()"]'); await pg.waitForSelector('.pfds');
   const pf = await pg.evaluate(() => ({ t: document.querySelector('.pfds .tplate').innerText.replace(/\s+/g, ' '), bar: document.querySelectorAll('.tbar').length }));
-  assert.match(pf.t, /^プレイヤー テスト 所持金 500 ?G 最高到達ランク ー 育成完了 0 ?回 大会の勝利 0 ?勝 獲得トロフィー 準備中$/, '暫定の器：名前・所持金・最高到達ランク・育成完了・大会の勝利（2026-09-30 に街の下の欄から移した）・獲得トロフィー（枠だけ）');
+  assert.match(pf.t, /^プレイヤー テスト 所持金 500 ?G 最高到達ランク ー 育成完了 0 ?回 大会の勝利 0 ?勝$/, '暫定の器：名前・所持金・最高到達ランク・育成完了・大会の勝利（2026-09-30 に街の下の欄から移した）・獲得トロフィー（枠だけ）');
   assert.equal(pf.bar, 0, 'プロフィールでは街のコマンドバーを出さない');
   assert.deepEqual(await H.storedSave(pg), s0, 'プロフィールを開いてもセーブは変わらない');
   await toTown(pg);
@@ -167,7 +167,7 @@ test('TW-B3：再読み込み→開始でも街はコマンド式で表示され
 });
 
 for (const [k, size] of Object.entries(H.SIZES)) {
-  test(`TW-B4（${size.join('×')}）：横はみ出しなし。施設の札は背景の上で画面の中・押せる大きさ（高さ40px以上）・重ならない・他の要素に隠れていない。下のバーは1段（ファーム55%／プロフィール22.5%／セーブ・ロード22.5%）。背景は下寄せで闘技場の上が切れない。街はスクロールしない`, { skip: SKIP }, async () => {
+  test(`TW-B4（${size.join('×')}）：横はみ出しなし。施設の札は背景の上で画面の中・押せる大きさ（高さ40px以上）・重ならない・他の要素に隠れていない。下のバーは1段（ベースキャンプ・プロフィール・セーブ／ロード＝正式の札の絵・同じ高さ）。背景は下寄せで闘技場の上が切れない。街はスクロールしない`, { skip: SKIP }, async () => {
     const p = await L.open({ size }); const pg = p.page;
     await town(p);
     await pg.evaluate(async () => { await document.fonts.ready; document.querySelector('#app>.tlow').classList.remove('on'); });
@@ -188,8 +188,10 @@ for (const [k, size] of Object.entries(H.SIZES)) {
     for (let a = 0; a < r.pins.length; a++) for (let b = a + 1; b < r.pins.length; b++) { const A = r.pins[a], B = r.pins[b]; assert.ok(A.r <= B.l || B.r <= A.l || A.b <= B.t || B.b <= A.t, `札が重ならない（${A.name}／${B.name}）`); }
     assert.equal(r.b.length, 3); assert.equal(new Set(r.b.map((b) => Math.round(b.t))).size, 1, 'バーは1段');
     for (let i = 1; i < 3; i++) assert.ok(r.b[i].l > r.b[i - 1].r, '左から ファーム・プロフィール・セーブ・ロード');
-    const all = r.b[0].w + r.b[1].w + r.b[2].w, ratio = r.b[0].w / all; assert.ok(ratio > 0.53 && ratio < 0.57 && Math.abs(r.b[1].w - r.b[2].w) <= 1, `ファーム 55%（${ratio}）`);
-    for (const b of r.b) { assert.ok(b.h >= 48 && b.w >= 70, `押しやすい大きさ（${b.w}×${b.h}）`); assert.ok(b.hit, '他の要素に隠れていない'); }
+    // 2026-10-07 正式UI回収：3つは正式の札の絵（ベースキャンプ 440×166・プロフィール 360×142・セーブ／ロード 360×132）＝同じ高さ・幅は絵の縦横比のまま
+    assert.ok(Math.max(...r.b.map((b) => b.h)) - Math.min(...r.b.map((b) => b.h)) <= 1, '3つとも同じ高さ');
+    [440 / 166, 360 / 142, 360 / 132].forEach((ar, i) => assert.ok(Math.abs(r.b[i].w / r.b[i].h - ar) < 0.05, `縦横比のまま（${i}）`));
+    for (const b of r.b) { assert.ok(b.h >= 40 && b.w >= 100, `押しやすい大きさ（${b.w}×${b.h}）`); assert.ok(b.hit, '他の要素に隠れていない'); }
     const rd = await pg.evaluate(() => [...document.querySelectorAll('.map.town .tround')].map((e) => { const x = e.getBoundingClientRect(); return [e.getAttribute('aria-label'), x.width, x.height, e.getAttribute('onclick')]; }));
     assert.deepEqual(rd.map((x) => [x[0], x[3]]), [['お知らせ', 'newsScr()'], ['設定', 'confScr()']]); assert.ok(rd.every((x) => x[1] >= 44 && x[2] >= 44));
     const s = await pg.evaluate(() => { scrollTo(0, 1e6); const a = document.getElementById('app'); return { y: a.scrollTop, page: scrollY }; });

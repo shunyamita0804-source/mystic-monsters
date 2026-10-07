@@ -15,7 +15,7 @@ const CODE = HTML.slice(HTML.lastIndexOf('<script>'));
 const fnOf = (name) => { const i = CODE.indexOf(`function ${name}(`); return CODE.slice(i, CODE.indexOf('\nfunction ', i + 10)); };
 
 test('TN-01：ランク選択（デザイン参考 01）は従来どおり：S→E の6段・参加可能／参加不可（鎖と錠）・フィナの見立て・「この大会に参加する」・辞退。E・D は最初から、クリアごとに1つ上（RANK_UNLOCK_STEP 1・RANK_FLOOR D）', () => {
-  const rc = fnOf('p9RankRow') + fnOf('p9RankListHtml') + fnOf('p9ReceptionHtml'); assert.match(rc, /\[5,4,3,2,1,0\]\.map\(k=>p9RankRow\(m,k,el[,)]/); assert.match(rc, /P9_RS_LABEL\[st\]/); assert.match(rc, /p9RankState\(m,k,el\)/); assert.match(rc, /P9_RANK_IMG\(k,ok\)/);   // 2026-10-05：参加可能／参加不可（鎖と錠）は正式画像   // 2026-10-04 PHASE H：状態（未解放・参加可能・挑戦目標・クリア済）は進行で決まる
+  const rc = fnOf('p9RankRow') + fnOf('p9RankListHtml') + fnOf('p9ReceptionHtml'); assert.match(rc, /\[5,4,3,2,1,0\]\.map\(k=>p9RankRow\(m,k,el[,)]/); assert.match(rc, /P9_RS_LABEL\[st\]/); assert.match(rc, /p9RankState\(m,k,el\)/); assert.match(rc, /P9_RANK_IMG\(k\)/);   // 2026-10-05：参加可能／参加不可（鎖と錠）は正式画像   // 2026-10-04 PHASE H：状態（未解放・参加可能・挑戦目標・クリア済）は進行で決まる
   assert.match(HTML, /const P9_RS_LABEL=\{lock:"参加不可",open:"参加可能",next:"参加可能",clear:"クリア済"\};/); assert.match(rc, /参加者 \$\{sz\}体 \/ \$\{sz-1\}試合/);
   assert.doesNotMatch(rc, /PRIZE|推奨|FREE|ランクF/, '賞金・推奨戦力・FREE 大会・F ランクは出さない'); assert.match(rc, /p8TourDecline\(this\)/);
   const R = rd('js/phase8/raising.js'); assert.match(R, /const RANK_UNLOCK_STEP = 1;/); assert.match(R, /const RANK_FLOOR = RANK_D;/);
