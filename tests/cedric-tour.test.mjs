@@ -62,11 +62,11 @@ test('CED-4：表示場所：ゴールのランク選択・順位表（次の相
   assert.doesNotMatch(between('function p8GoalHtml(', '\nconst P9_PADLOCK') + between('function p9RankRow(', '\nvar P9_LOBBY_BG'), /p9Ced|CEDRIC/, 'ランク選択の画面にセドリックは出さない');
   assert.ok(between('function p9TourIntro(', '\n// セドリック').includes('CEDRIC_TALK.open') || HTML.includes('${CEDRIC_TALK.open.replace("{R}",RN[k])}'), '大会開始の演出でセドリックの一言');
   const tour = between('function p8TourScr(msg){', '\nfunction p9TourResult(');
-  assert.ok(tour.includes('<div class="tbced">${p9Ced(lg.round==0?CEDRIC_TALK.first:CEDRIC_TALK.next[lg.round%CEDRIC_TALK.next.length],t.rank>=3?"tense":"host")}</div>') && tour.includes('<button class="p9btn p9go tp2go tbgo" onclick="p9CompareScr()"'), '2026-10-04：大会進行＝次の対戦相手のあとにセドリックの一言 →「対戦開始」（パラメーター比較へ）');
+  assert.ok(!tour.includes('p9Ced(') && tour.includes('<button class="p9btn p9go tp2go tbgo" onclick="p9CompareScr()"'), '2026-10-07 ADDENDUM2：対戦表にセドリックの常駐の一言は出さない（大会の始まりと締めの会話だけ）→「対戦する」');
   assert.ok(tour.includes('${msg?`<div class="p9msg p9tmsg">${msg}</div>`:""}'), '試合結果などの通知は顔・名前なしのまま');
   assert.ok(between('function p9VsScr(){', '\nfunction p9VsGo(').includes('${p9Ced(CEDRIC_TALK.vs,"kickoff")}<div class="p9vs-fr">'));
   assert.ok(between('function p9TourResult(msg){', '\nfunction p8RewardText(').includes('${p9Ced(rs.won?CEDRIC_TALK.won:CEDRIC_TALK.lost,rs.won?"victory":"host")}'));
-  assert.equal((HTML.match(/p9Ced\(/g) || []).length, 4, '定義＋3か所（大会1 対戦表・旧 VS 画面 p9VsScr（流れから外した）・結果）だけ。2026-10-06：大会2（対戦前比較）は正式デザインどおりセドリックを出さない。ランク選択はフィナ');
+  assert.equal((HTML.match(/p9Ced\(/g) || []).length, 3, '定義＋2か所（2026-10-07：大会1 対戦表からは外した・旧 VS 画面 p9VsScr（流れから外した）・結果）だけ。2026-10-06：大会2（対戦前比較）は正式デザインどおりセドリックを出さない。ランク選択はフィナ');
   // 大会の処理（参加・試合開始・辞退・終了）は変えていない
   assert.match(lineOf('function p8TourStart('), /^function p8TourStart\(k,b\)\{if\(bBusy\)return;if\(!p9arm\(b,`もう一度押すとランク\$\{RN\[k\]\}大会に参加`\)\)\{finaRankSay\(k\);return\}const r=MMP8\.startTournament\(S,S\.m,k\);if\(!r\.ok\)return board\(\);save\(\);p9TourOpen\(k\)\}$/, '1回目の押下はフィナの見立て、2回目で参加 → 開始演出 → 順位表');
   assert.match(lineOf('function p8TourFight('), /beginBattle\(S,m,\{kind:"league",rank:t\.rank\}\)/);

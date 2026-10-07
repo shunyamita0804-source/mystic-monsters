@@ -22,20 +22,20 @@ test('TN-01：ランク選択（デザイン参考 01）は従来どおり：S�
   assert.match(rd('js/phase8/league.js'), /const LEAGUE_SIZE = Object\.freeze\(\[6, 6, 8, 8, 8, 8\]\);/, 'E・D 6体（5試合）・C〜S 8体（7試合）');
 });
 
-test('TN-02：大会1 対戦表（2026-10-06 正式素材 ui1）：題字の札・第N試合 / 全M試合・対戦表（6体＝grid6／8体＝grid8）・次の相手が光る・凡例・あなた／次の相手の札・「対戦する」→ 大会2。旧「現在の成績」の一覧（不採用）・順位表・対戦表の表は出さない', () => {
+test('TN-02：大会1 対戦表（2026-10-07 ADDENDUM2＝最終モック）：題字は「公式ランクX大会」だけ・左に参加者・右に対戦マトリクス（同じ順）・勝ち＝赤○・負け＝青×・未対戦は空欄・自分自身は斜線・プレイヤーの行が光る・次の相手との交点が光る・「対戦する」→ 大会2。試合数の見出し・凡例・「あなた／次の相手」・セドリックは出さない', () => {
   const t = fnOf('p8TourScr');
-  for (const s of ['<header class="tbttl"><b>公式ランク${RN[t.rank]}大会</b></header>', '第${pm.round+1}試合 / 全${lg.rounds.length}試合', '${tbBoardGrid(lg,pm,enter)}', 'ui1/legend.png', 'ui1/tag_you.png" alt="あなた"', 'ui1/tag_next.png" alt="次の相手"', 'class="p9vsl">VS</span>', 'onclick="p9CompareScr()" aria-label="対戦する"']) assert.ok(t.includes(s), s);
-  assert.doesNotMatch(t, /現在の成績|tp2r |p9Standings\(|p9Matrix\(|p9Cmp\(|p9VsGo/, '旧い一覧・順位表・表・数字の比較・2度押しは大会1には無い');
+  for (const s of ['<header class="tbttl"><b>公式ランク${RN[t.rank]}大会</b></header>', '${tbBoardGrid(lg,pm,enter)}', 'onclick="p9CompareScr()" aria-label="対戦する"']) assert.ok(t.includes(s), s);
+  assert.doesNotMatch(t, /試合 \/ 全|legend\.png|tag_you|tag_next|p9Ced\(|現在の成績|p9Standings\(|p9Matrix\(|p9VsGo/, '試合数・凡例・札・セドリック・旧い一覧・2度押しは大会1には無い');
   const g = fnOf('tbBoardGrid');
-  assert.match(g, /MMP8L\.resultCell\(lg,e\.id,o\.id\)/, '勝敗のマスは大会の処理（resultCell）から'); assert.match(g, /mark_\$\{mk\}\.png/); assert.match(g, /e\.id===nx\?" nx":""/, '次の相手の行・丸が光る');
-  assert.match(CODE, /const TB_GRID=\{6:\{img:"ui1\/grid6\.png"/); assert.match(CODE, /8:\{img:"ui1\/grid8\.png"/);
-  for (const f of ['title_plate', 'sub_plate', 'grid6', 'grid8', 'legend', 'btn_battle', 'tag_you', 'tag_next', 'mark_win', 'mark_loss', 'mark_pending', 'mark_next']) assert.ok(existsSync(path.join(ROOT, 'assets/tournament/ui1', f + '.png')), f);
+  assert.match(g, /MMP8L\.resultCell\(lg,e\.id,o\.id\)/, '勝敗のマスは大会の処理（resultCell）から');
+  assert.match(g, /<i class="tbo" aria-label="勝ち"><\/i>/); assert.match(g, /<i class="tbx" aria-label="負け"><\/i>/); assert.match(g, /c-self/, '自分自身'); assert.match(g, /e\.player\?" rme":""/, 'プレイヤーの行');
+  assert.match(HTML, /\.tb1g\.tbv2 \.tbo\{[^}]*#ff4d5e/); assert.match(HTML, /\.tb1g\.tbv2 \.tbx::before,\.tb1g\.tbv2 \.tbx::after\{[^}]*#4fb4ff/); assert.match(HTML, /\.tb1g\.tbv2 \.c-next\.hot\{/);
 });
 
 test('TN-03：大会2 対戦前比較（2026-10-07 刷新）：大会名・第N試合 / 全M試合・左右に待機の立ち絵（相手はこちら向き）と名前・固有スキルの説明・能力の数値と棒（左右で比べる）・「対戦開始」（2度押し）→ 大会3 → fight()・「対戦表にもどる」。セドリックは出さない', () => {
   const c = fnOf('p9CompareScr');
   assert.match(c, /<header class="tbttl"><b>公式ランク\$\{RN\[t\.rank\]\}大会<\/b><\/header>/);
-  assert.match(c, /<div class="pchd tbsub"><b>第\$\{pm\.round\+1\}試合 \/ 全\$\{lg\.rounds\.length\}試合<\/b><\/div>/);
+  assert.doesNotMatch(c, /試合 \/ 全/, 'ADDENDUM2：比較画面に試合数は出さない');
   assert.match(c, /tbIdle\(m,0\)/); assert.match(c, /tbIdle\(o,1\)/); assert.match(c, /tbSkillDesc\(m\)/); assert.match(c, /tbSkillDesc\(o\)/);
   assert.match(c, /<b class="pcv">\$\{a\}<\/b><div class="pcb l" style="--c:\$\{STAT_COLOR\[k\]\}"><i style="width:\$\{Math\.round\(a\/mx\*100\)\}%"><\/i><\/div><span class="pcl">\$\{LAB\[k\]\}<\/span><div class="pcb r" style="--c:\$\{STAT_COLOR\[k\]\}"><i style="width:\$\{Math\.round\(b\/mx\*100\)\}%"><\/i><\/div><b class="pcv">\$\{b\}<\/b>/, '能力は数値と棒');
   assert.doesNotMatch(c, /戦力|勝率|有利|p9Ced\(/, '戦力・勝率・有利は出さない・セドリックは出さない');

@@ -538,6 +538,12 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - **セドリックの大会前導入・大会後の締め**（index.html の CEDRIC_EV・p9TourOpen・cedricEnd の差し込み）：ランク選択 → ランクのエンブレム → セドリック（「さあ、いよいよ公式ランクX大会の開幕です！」→ 初めての参加なら歓迎（S.npcFlags.cedricWelcome）→ 参加者の一言 →「それでは、参加者をご紹介しましょう！」）→ 対戦表。締め＝MMP8.runTourEnd の cedricEnd（最終順位 → 優勝 → 初回報酬 → ランクアップのあと）＝優勝＋ランクアップ／再優勝／優勝できなかった、で文を変える。その後に初めての大会の結果の短いイベント（npcMoment）。E の文面は指定どおり・D〜S の参加者の一言は【暫定】。自動テストは MM_QA_NO_NPC で出さない。
 - **冒険リアクションイベント100件**：§2 の js/chapter/reactions.js。原案の「宝箱率補助」「イベント補助」「分岐補助」「ライフ気分」は対応する仕組みが無いので演出だけ（新しい仕組みは作っていない）。レグナスの20件はプレイヤーが育てられないので今は出ない。
 - テスト：tests/diff-1007.test.mjs（RX-01〜02・DF-01〜03）
+- **ADDENDUM／ADDENDUM2（同日・追加差分。上の記述より優先）**：
+  - 大会1 対戦表＝最終モック（index.html の tbBoardGrid・.tb1g.tbv2）：題字は「公式ランクX大会」だけ・左に参加者・右に対戦マトリクス（行と列は同じ順）・勝ち＝赤○（.tbo）・負け＝青×（.tbx）・未対戦は空欄・自分自身は斜線（.c-self）・プレイヤーの行は青く光る（.rme）・次の相手との交点が金に光る（.c-next.hot）・「対戦する」。試合数の見出し・凡例・「あなた／次の相手」の札・セドリックの一言・【暫定】の注記は出さない（ui1 の grid6／grid8・legend・tag・mark の画像は使わなくなった＝ファイルは残す）。
+  - 大会2 対戦前比較：試合数の見出しを出さない。VS（大会3）は従来どおり約2.5秒・タップで早送り・反転は相手のモンスターの絵だけ・バトル側の導入（intro）は出さない。
+  - バトルの HUD（js/battle/arena.js）：顔アイコンを出さない（.pti を隠す。旧 setupHudFace は削除）・ライフゲージ 9px → 12px（約1.3倍）・左右の HUD は同じ幅（flex 1・最大 50%＝長い名前でも広がらない）。
+  - ルーレット：R.accelMs 350（起動の加速）・R.stopMs 500（STOP 後の慣性の減速）・R.overshootPx 6（行き過ぎ → 中央へ吸着）。巡航の速さは fight() の光（BASE_STEP_MS 85ms／枠＝約11.8候補／秒・Phase 6）に合わせたまま＝STOP の時刻と結果の関係を変えない（ADDENDUM2 の目安 4.5〜5.5候補／秒にするには fight() の変更が要る＝未決・報告）。レールの土台 assets/battle/roulette/rail_base.png（正式補助素材・透過 RGBA）をプレートの下に。battle_roulette_base_REFERENCE_ONLY.png（市松模様の焼き込み）はリポジトリに置かない。
+  - 旧正式UI素材7系統（ADDENDUM §6）：リポジトリにあるのは VS 素材（assets/tournament/vs）・大会ランク選択（assets/tournament/rank_ui＝2026-10-05 FINAL）・街の名札（assets/town/nameplate）・共通UI A群／B群（assets/ui/a_group・b_group）。seijuushi_ui_png_transparent_20261006_102415・MysticMonsters_UI_PNG_20261006_095601・mismon_talk_ui_assets_20261006_093729・mismon_basecamp_UI_20261006_100342・mismon_market_ui_iphone_20261006_095842・ミスモン_大会UI素材_透過PNG_20261006_102319 の ZIP そのものは受け取っていない＝該当の画面は従来のまま（素材待ち・捏造しない）。
 
 ### 大会・状態異常・固有スキル・技習得ルート（2026-10-06・5。いまの正式。基準 1c1e2b8 への差分）
 

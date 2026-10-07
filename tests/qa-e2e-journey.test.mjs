@@ -167,7 +167,7 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     await pg.click('.p9next .p9go'); await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(400);   // 2026-10-04（PHASE D）：大会進行 →「対戦開始」→ パラメーター比較（数字なしのゲージ）→ 2度押しで fight()
     const pre = await pg.evaluate(() => { const st = [...document.querySelectorAll('.pcgs .pcg')].map((r) => [...r.querySelectorAll('.pcb i')].map((x) => parseFloat(x.style.width))); const go = document.querySelector('.pcgo').getBoundingClientRect(); return { battle: S.m.raise.battle, bt: !!document.querySelector('#bt'), st, digits: /\d/.test(document.querySelector('.pcgs').textContent), opp: MMP8L.PROVISIONAL_OPPONENT_STAT[0], go: [go.top, go.bottom] }; });
     assert.equal(pre.battle, null, '対戦開始までは試合を始めない'); assert.equal(pre.bt, false, 'fight() は動いていない');
-    const pc = (v) => Math.round(v / 999 * 100); assert.deepEqual(pre.st, Array(6).fill([pc(100), pc(pre.opp)]), '能力の比較＝999 を最大とした絶対のゲージ（自分の6能力と、fight() が作る相手と同じ値 MMP8L.PROVISIONAL_OPPONENT_STAT）'); assert.equal(pre.digits, false, '比較の画面に数字は出さない');
+    const mx = Math.max(100, pre.opp, 100) * 1.08, pc = (v) => Math.round(v / mx * 100); assert.deepEqual(pre.st, Array(6).fill([pc(100), pc(pre.opp)]), '能力の比較（2026-10-07 刷新：数値と棒。自分の6能力と、fight() が作る相手と同じ値 MMP8L.PROVISIONAL_OPPONENT_STAT）'); assert.equal(pre.digits, true, '2026-10-07：能力の数値を出す');
     await pg.click('.pcgo'); await pg.waitForTimeout(600); await pg.click('.pcgo');
     await pg.waitForSelector('#bt'); await pg.waitForTimeout(600);
     const after = await pg.evaluate(() => ({ kind: S.m.raise.battle && S.m.raise.battle.kind, pbt: !!document.querySelector('#pbt'), vs: !!document.querySelector('.p9vs'), bt: !!document.querySelector('#bt') }));

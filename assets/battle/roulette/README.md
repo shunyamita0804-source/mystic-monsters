@@ -13,3 +13,5 @@ arch＝青金の円弧の土台、center_frame＝中央の選択フレーム、s
 | c/PART1_BattleTournament/battle/roulette_latest/roulette_normal.jpg | a687c60bc32ef15cff00614c79f84ca99e2999ad2a5f1bbd92374a6d6de3c12f |
 | c/PART1_BattleTournament/battle/roulette_latest/roulette_selected.jpg | f5ac48c2126bbc3a00c6514f15dcaa30307f03a9edbdfc671d4e4e459eefc2e1 |
 | c/PART1_BattleTournament/battle/roulette_latest/stop_button_transparent.png | 2d13cbf2acc7bbc5a6621d6bd50af31ac9e1ac5e3eadf3c673b8c5062e12467e |
+
+追加（ADDENDUM2・2026-10-07）：rail_base.png＝ルーレットの下のレール（ZIP Mismon_Claude_ADDENDUM2_AfterAudit_20261007 の roulette_rail_base.png＝透過 RGBA。透過の余白を切って幅 800px の可逆 PNG に縮小。sha256 95fc8b7a1b501577ec1eb3c8f6074868bfba76723a5be9f544139e519158827e）。同じ ZIP の battle_roulette_base_REFERENCE_ONLY.png は市松模様の焼き込み（RGB）＝参考のみでリポジトリに置かない。

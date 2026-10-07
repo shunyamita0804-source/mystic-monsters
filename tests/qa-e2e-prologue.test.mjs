@@ -76,19 +76,20 @@ for (const size of [[390, 844], [375, 667]]) {
     const at = (k) => ev.find((e) => e[0] === k), b1 = at('bg01');
     assert.ok(b1, 'Scene 1');
     assert.ok(ev.every((e) => e[2] == null), '2026-10-06 重大修正：プロローグの間 PROLOGUE の BGM は鳴らない（位置が無い）');
-    for (const [k, want] of [['bg02', 5.559], ['bg03', 15.161], ['bg04', 26.673]]) {
+    const cues = await pg.evaluate(() => [...MMPRO.CUES.scenes]);   // 2026-10-07：6枚（時刻は MMPRO.CUES）
+    for (const [k, want] of cues.slice(1).map((ms, i) => [`bg0${i + 2}`, ms / 1000])) {
       const e = at(k); assert.ok(e, k); const t = (e[1] - b1[1]) / 1000;
       assert.ok(Math.abs(t - want) < 0.35, `${k} は Scene 1 から ${want}秒（実測 ${t.toFixed(3)}秒・タップで早まらない）`);
     }
     const order = seen.map((x) => x.bg).filter((b, i, a) => a[i - 1] !== b);
-    assert.deepEqual(order, ['01', '02', '03', '04'], '背景は 1 共存 → 2 異変 → 3 三人のレジェンド → 4 ミストリア到着の順');
+    assert.deepEqual(order, ['01', '02', '03', '04', '05', '06'], '背景は 1 平和 → 2 厄災 → 3 文化 → 4 三人のレジェンド → 5 大会 → 6 旅立ちの順（2026-10-07）');
     const all = await pg.evaluate(() => MMPRO.SLIDES.flatMap((sl) => sl.pages.flatMap((pg) => MMPRO.units(pg).map((u) => u.join('')))));
     assert.deepEqual(seen.map((x) => x.text), all, '本文はすべて・順番どおり・変えずに出る');
     assert.equal(await pg.evaluate(() => MMAUDIO.status().scene), 'TITLE', 'プロローグのあとは PROLOGUE の BGM を残さない（自動テストの既定の名前登録の画面＝開始画面と同じ無音）');
     assert.equal(await pg.evaluate(() => MMAUDIO.status().slots.filter((x) => x.active).length), 0, 'ファイルの BGM は鳴っていない');
     const last = ev.filter((e) => /^bg/.test(e[0])).pop(), pr = await pg.evaluate(() => [...new Set(performance.getEntriesByType('resource').map((r) => r.name).filter((n) => /mystic_monsters_official\/.*\.ogg/.test(n)))]);
     assert.ok(pr.every((n) => !/title_theme|prologue_bgm/.test(n)), `旧タイトル曲・プロローグ BGM（2026-10-06 削除）は読み込まない（${pr.join(' ')}）`);
-    assert.ok(last && last[0] === 'bg04');
+    assert.ok(last && last[0] === 'bg06');
     assert.equal((await H.storedSave(pg)).npcFlags.prologue, 1, '最後まで見た＝見た記録を保存');
     await pg.reload(); await pg.waitForFunction(() => typeof window.MMP8 === 'object');
     await pg.click('.p15start');

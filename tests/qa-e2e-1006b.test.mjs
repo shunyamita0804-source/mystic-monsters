@@ -32,18 +32,18 @@ for (const size of [H.SIZES.base, H.SIZES.se, H.SIZES.android, [414, 896]]) {
     await toTournament(pg, 0);
     const b1 = await pg.evaluate(() => { const a = document.querySelector('#app>.p9tour.tb1'); const r = (s) => [...document.querySelectorAll(s)];
       return { sw: document.documentElement.scrollWidth, W: innerWidth, sh: a.scrollHeight, ch: a.clientHeight, rows: r('.tb1g .tbnm').length, heads: r('.tb1g .tbic.hd').length,
-        next: r('.tb1g .tbc.c-next').length, pend: r('.tb1g .tbc.c-pending').length, nx: r('.tb1g .tbnm.nx').length, me: r('.tb1g .tbnm.me').length, sub: document.querySelector('.tbsub b').textContent,
-        myName: document.querySelector('.tbnx .tp2p.me .tp2nm b').textContent, imgs: r('.tb1 img').every((i) => i.complete && i.naturalWidth > 0) }; });
+        next: r('.tb1g .tbc.c-next').length, pend: r('.tb1g .tbc.c-pending').length, nx: r('.tb1g .tbnm.nx').length, me: r('.tb1g .tbnm.me').length, sub: !!document.querySelector('.tb1 .tbsub'), legend: !!document.querySelector('.tb1 .tblg'), ced: !!document.querySelector('.tb1 .p9ced'),
+        myName: document.querySelector('.tb1g .tbnm.me b').textContent, hot: document.querySelectorAll('.tb1g .c-next.hot').length, self: document.querySelectorAll('.tb1g .c-self').length, imgs: r('.tb1 img').every((i) => i.complete && i.naturalWidth > 0) }; });
     assert.deepEqual([b1.rows, b1.heads, b1.next, b1.pend, b1.nx, b1.me], [6, 6, 2, 28, 1, 1], `6体の対戦表：次の試合2マス・未対戦28マス・次の相手が光る ${JSON.stringify(b1)}`);
-    assert.equal(b1.sub, '第1試合 / 全5試合'); assert.equal(b1.myName, 'ソラ'); assert.ok(b1.imgs, '素材が読み込まれている');
+    assert.deepEqual([b1.sub, b1.legend, b1.ced, b1.hot, b1.self], [false, false, false, 1, 6], 'ADDENDUM2：試合数・凡例・セドリックなし・次の相手との交点が光る・自分自身は斜線'); assert.equal(b1.myName, 'ソラ'); assert.ok(b1.imgs, '素材が読み込まれている');
     assert.ok(b1.sw <= b1.W + 1 && b1.sh <= b1.ch + 1, `大会1：はみ出さない・スクロールしない ${JSON.stringify(b1)}`);
     await pg.click('.tb1 .tbgo'); await pg.waitForSelector('.tb2 .pcgo'); await pg.waitForTimeout(600);
     const b2 = await pg.evaluate(() => { const a = document.querySelector('.p9cmps'), last = a.querySelector('.pcacts').getBoundingClientRect();
       return { sw: document.documentElement.scrollWidth, W: innerWidth, bottom: last.bottom, H: innerHeight, bars: [...document.querySelectorAll('.tb2 .pcg')].map((g) => [g.querySelector('.pcl').textContent, ...[...g.querySelectorAll('.pcb i')].map((i) => parseFloat(i.style.width))]),
-        names: [...document.querySelectorAll('.tb2 .pcs b')].map((b) => b.textContent), skills: [...document.querySelectorAll('.tb2 .tbskp b')].map((b) => b.textContent), hd: document.querySelector('.tb2 .pchd').textContent,
+        names: [...document.querySelectorAll('.tb2 .pcs b')].map((b) => b.textContent), skills: [...document.querySelectorAll('.tb2 .tbskp .tbskn')].map((b) => b.textContent.replace(/^スキル/, '')), descs: [...document.querySelectorAll('.tb2 .tbskp .tbskd')].map((b) => b.textContent), vals: [...document.querySelectorAll('.tb2 .pcg .pcv')].map((b) => b.textContent), hd: !!document.querySelector('.tb2 .pchd'),
         btns: document.querySelectorAll('.p9cmps button').length }; });
-    assert.equal(b2.hd, '第1試合 / 全5試合'); assert.equal(b2.names[0], 'ソラ'); assert.equal(b2.skills[0], '逆境のひと踏ん張り'); assert.equal(b2.btns, 2);
-    assert.deepEqual(b2.bars.map((r) => r[0]), ['ライフ', 'ちから', 'かしこさ', '命中', '回避', '丈夫さ']); assert.equal(b2.bars[0][1], Math.round(100 / 999 * 100));
+    assert.equal(b2.hd, false, 'ADDENDUM2：比較画面に試合数は出さない'); assert.equal(b2.names[0], 'ソラ'); assert.equal(b2.skills[0], '逆境のひと踏ん張り'); assert.equal(b2.btns, 2);
+    assert.deepEqual(b2.bars.map((r) => r[0]), ['ライフ', 'ちから', 'かしこさ', '命中', '回避', '丈夫さ']); assert.ok(b2.bars.every((r) => r[1] > 0 && r[1] <= 100 && r[2] > 0 && r[2] <= 100), '棒の長さ'); assert.equal(b2.vals[0], '100', '2026-10-07：能力の数値を出す'); assert.ok(b2.descs[0].length > 4, '固有スキルの説明');
     assert.ok(b2.sw <= b2.W + 1 && b2.bottom <= b2.H + 1, `大会2：はみ出さない ${JSON.stringify(b2)}`);
     await pg.click('.pcback'); await pg.waitForSelector('.tb1 .tbgo'); await pg.waitForTimeout(500);
     await pg.click('.tb1 .tbgo'); await pg.waitForSelector('.tb2 .pcgo'); await pg.waitForTimeout(500);
@@ -61,8 +61,8 @@ for (const size of [H.SIZES.base, H.SIZES.se, H.SIZES.android, [414, 896]]) {
 test('TB-B2：8体（ランクC）の対戦表＝8行・次の試合2マス・未対戦54マス', { skip: SKIP, timeout: 90000 }, async () => {
   const p = await openPage({ size: H.SIZES.base }); const pg = p.page;
   await toTournament(pg, 2);
-  const r = await pg.evaluate(() => ({ rows: document.querySelectorAll('.tb1g.n8 .tbnm').length, next: document.querySelectorAll('.tb1g .tbc.c-next').length, pend: document.querySelectorAll('.tb1g .tbc.c-pending').length, sub: document.querySelector('.tbsub b').textContent }));
-  assert.deepEqual(r, { rows: 8, next: 2, pend: 54, sub: '第1試合 / 全7試合' });
+  const r = await pg.evaluate(() => ({ rows: document.querySelectorAll('.tb1g.n8 .tbnm').length, next: document.querySelectorAll('.tb1g .tbc.c-next').length, pend: document.querySelectorAll('.tb1g .tbc.c-pending').length, sub: !!document.querySelector('.tbsub'), sw: document.documentElement.scrollWidth <= innerWidth + 1 }));
+  assert.deepEqual(r, { rows: 8, next: 2, pend: 54, sub: false, sw: true });
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 

@@ -18,7 +18,7 @@
   const RANKS = 'EDCBAS';
   /** ルーレットの見た目（中央を 0 とした |d| ごとの値。間は直線補間） */
   const R = Object.freeze({
-    slots: 7, lag: 1.5, stopMs: 520, overshoot: 0.06, lockMs: 280, spacing: 0.235,   // spacing＝板の間隔（ルーレットの幅に対する割合）
+    slots: 7, lag: 1.5, accelMs: 350, stopMs: 500, overshootPx: 6, lockMs: 280, spacing: 0.235,   // 2026-10-07 ADDENDUM2：起動の加速 約0.35秒・STOP 後の慣性の減速 約0.5秒・行き過ぎ 約6px（そこから中央へ吸着）。巡航の速さは fight() の光の速さ（BASE_STEP_MS 85ms／枠＝約11.8候補／秒・Phase 6）に合わせる＝STOP の時刻と結果の関係を変えない   // spacing＝板の間隔（ルーレットの幅に対する割合）
     scale: [1.15, 0.92, 0.78, 0.64], rot: [0, 10, 19, 26], drop: [0, 0.10, 0.27, 0.46], dim: [1, 0.96, 0.82, 0.62], // drop＝下げる量（板の高さに対する割合）
   });
   const $ = (s, el) => (el || document).querySelector(s);
@@ -46,9 +46,14 @@
       '#bt .mon:not(.mma-on) .mma-idle{display:none}',
       // HUD（名前・HP）：濃紺＋細い金の縁
       '#bt .hpn{background:linear-gradient(rgba(10,18,44,.92),rgba(6,12,32,.9));border:1.5px solid rgba(214,178,98,.85);border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.45)}',
+      // ADDENDUM2：HUD に顔アイコンを常設しない・ライフゲージを約1.3倍の太さ・長い名前でも HUD の幅を広げない
+      '#bt .hpn .pti{display:none}',
+      '#bt .hpr .hpn{flex:1 1 0;min-width:0;max-width:50%;padding:6px 10px}',
+      '#bt .hpn .bar{height:12px}',
       // ルーレット
       '#bt .mmr{position:relative;width:100%;height:var(--mmr-h);flex:none;pointer-events:none;overflow:hidden;-webkit-mask:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent);mask:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent)}',
       '#bt .mmr .arch{position:absolute;left:50%;width:118%;top:63%;transform:translateX(-50%);opacity:.95}',
+      '#bt .mmr .rail{position:absolute;left:50%;width:108%;top:80%;transform:translateX(-50%);opacity:.9;pointer-events:none}',   // ADDENDUM2：レールの土台（透過 RGBA の正式補助素材）
       '#bt .mmr .trk{position:absolute;inset:0;perspective:700px}',
       '#bt .mmr .pl{position:absolute;left:50%;top:6%;width:var(--mmr-pw);aspect-ratio:229/360;margin-left:calc(var(--mmr-pw)/-2);transform-origin:50% 60%;will-change:transform,opacity}',
       '#bt .mmr .pl img.bgp{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}',
@@ -96,12 +101,6 @@
     });
   }
 
-  // ---- HUD の顔（大会の顔アイコン） ----
-  function setupHudFace(bt) {
-    const pl = G('BPL'); if (!pl || !root.MMARENA) return;
-    [0, 1].forEach((s) => { const im = $(`#hp${s} .ptim img`, bt), f = pl[s] && root.MMARENA.faceSrc(pl[s].sp); if (im && f) { im.src = f; im.style.transform = 'none'; im.style.filter = 'none'; im.style.objectFit = 'cover'; } });
-  }
-
   // ---- ルーレット ----
   function setupRoulette(bt) {
     const rl = $('#rl', bt), bui = $('.bui', bt), gow = $('.gow', bt), go = $('#go', bt);
@@ -111,7 +110,7 @@
     const pw = Math.round(Math.min(W * 0.2, 104));
     const box = document.createElement('div'); box.className = 'mmr'; box.setAttribute('aria-hidden', 'true');
     box.style.setProperty('--mmr-pw', pw + 'px'); box.style.setProperty('--mmr-h', Math.round(pw * 360 / 229 * 1.16 + 28) + 'px');
-    box.innerHTML = `<img class="arch" src="${A}roulette/arch.webp" alt=""><div class="trk"></div><img class="fr" src="${A}roulette/center_frame.webp" alt="">`;
+    box.innerHTML = `<img class="arch" src="${A}roulette/arch.webp" alt=""><img class="rail" src="${A}roulette/rail_base.png" alt=""><div class="trk"></div><img class="fr" src="${A}roulette/center_frame.webp" alt="">`;
     rl.style.display = 'none';
     bui.insertBefore(box, rl);
     bui.classList.add('mmr-on');
@@ -199,11 +198,11 @@
       const t = now();
       if (S.mode === 'spin') {
         const target = S.n + Math.min(1, (t - S.tn) / S.dt) - R.lag;
-        const ramp = Math.min(1, (t - S.start) / 220);   // 起動：短い加速
+        const ramp = Math.min(1, (t - S.start) / R.accelMs);   // 起動：なめらかな加速
         S.vis += (target - S.vis) * Math.min(1, 0.35 * (0.3 + 0.7 * ramp));
       } else if (S.mode === 'stop' && S.stop) {
         const q = Math.min(1, (t - S.stop.t0) / S.stop.ms), d = S.stop.to - S.stop.from;
-        const os = R.overshoot;   // 慣性で減速 → ごく小さな行き過ぎ → 吸着
+        const os = R.overshootPx / Math.max(1, R.spacing * W);   // 慣性で減速 → ごく小さな行き過ぎ（px を候補の単位へ）→ 吸着
         const v = q < 0.82 ? easeOut(q / 0.82) * (1 + os / Math.max(0.5, d)) : 1 + (os / Math.max(0.5, d)) * (1 - easeOut((q - 0.82) / 0.18));
         S.vis = S.stop.from + d * v;
         if (q >= 1) { S.vis = S.stop.to; S.mode = 'locked'; box.classList.add('lock'); }
@@ -220,7 +219,6 @@
     try { setupBg(bt); } catch (e) { /* 見た目だけ */ }
     try { setupIdle(bt); } catch (e) { /* 見た目だけ */ }
     try { setupRoulette(bt); } catch (e) { /* 見た目だけ */ }
-    try { setupHudFace(bt); } catch (e) { /* 見た目だけ */ }
   }
   function watch() {
     if (typeof MutationObserver === 'undefined' || !document.body) return;

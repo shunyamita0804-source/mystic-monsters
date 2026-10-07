@@ -3336,6 +3336,32 @@ main:has(>#app>.ds) h1{display:none}
 .dsk.dsq{cursor:default}.dsk.dsq .dska{display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,#203a76,#0b1736);border:1.5px solid rgba(214,178,98,.55)}
 .dsk.dsq .dsqm{font-style:normal;font-family:var(--mm-font-head);font-size:34px;color:#e8d29a;text-shadow:0 0 10px rgba(232,210,154,.4)}
 .dsk.dsq b{color:#c9c2ad;letter-spacing:.2em}.dsk.dsq .dsp span{font-size:10px;color:#9aa6c4}
+
+/* ===== 2026-10-07 ADDENDUM2：大会1 対戦表（最終モック）＝左に参加者・右に対戦マトリクス（同じ順）・勝ち＝赤○・負け＝青×・未対戦は空欄・自分自身は斜線・プレイヤーの行は青く光る・次の相手との交点が光る。試合数の見出し・凡例・「あなた／次の相手」・セドリックは出さない ===== */
+.tb1g.tbv2{display:grid;grid-template-columns:minmax(0,1.9fr) repeat(var(--n),minmax(0,1fr));width:min(94vw,400px,52dvh);aspect-ratio:auto;background:rgba(10,20,46,.9);border:1.5px solid rgba(214,178,98,.85);box-shadow:0 6px 20px rgba(0,0,0,.45);container-type:inline-size}
+.tb1g.tbv2>span{position:relative;box-sizing:border-box;border-right:1px solid rgba(214,178,98,.35);border-bottom:1px solid rgba(214,178,98,.35)}
+.tb1g.tbv2 .tbcorner{background:rgba(6,12,30,.6)}
+.tb1g.tbv2 .tbh{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:5px 1px 4px}
+.tb1g.tbv2 .tbh b{font:700 clamp(7px,2.5cqw,11px)/1.1 var(--mm-font-head,serif);color:#f3ecd9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.tb1g.tbv2 .tbic{position:relative;left:auto;top:auto;transform:none;width:72%;max-width:44px;box-shadow:0 0 0 1px rgba(214,178,98,.7)}
+.tb1g.tbv2 .tbic.me,.tb1g.tbv2 .tbic.nx{animation:none;box-shadow:0 0 0 1px rgba(214,178,98,.7)}
+.tb1g.tbv2 .tbrw{display:flex;align-items:center;gap:4px;padding:3px 4px;aspect-ratio:1.9}
+.tb1g.tbv2 .tbrw .tbic{width:auto;height:84%;flex:none}
+.tb1g.tbv2 .tbnm{position:static;transform:none;padding:0;width:auto;height:auto;flex:1;min-width:0;background:none;box-shadow:none;animation:none}
+.tb1g.tbv2 .tbnm b{font-size:clamp(8px,3.1cqw,13px);color:#f3ecd9}
+.tb1g.tbv2 .tbnm.me b,.tb1g.tbv2 .tbnm.nx b{color:#f3ecd9}
+.tb1g.tbv2 .tbc{position:relative;left:auto;top:auto;transform:none;width:auto;aspect-ratio:1;display:grid;place-items:center;animation:none}
+.tb1g.tbv2 .rme{background:linear-gradient(rgba(70,140,255,.22),rgba(70,140,255,.12));box-shadow:inset 0 1px 0 rgba(120,190,255,.7),inset 0 -1px 0 rgba(120,190,255,.7)}
+.tb1g.tbv2 .c-self{background:linear-gradient(to bottom right,transparent calc(50% - .6px),rgba(214,178,98,.75) 50%,transparent calc(50% + .6px))}
+.tb1g.tbv2 .c-self.rme{background:linear-gradient(to bottom right,transparent calc(50% - .6px),rgba(214,178,98,.75) 50%,transparent calc(50% + .6px)),linear-gradient(rgba(70,140,255,.22),rgba(70,140,255,.12))}
+.tb1g.tbv2 .tbo{width:52%;aspect-ratio:1;border-radius:50%;border:2px solid #ff4d5e;box-shadow:0 0 6px rgba(255,60,80,.8),inset 0 0 4px rgba(255,60,80,.6)}
+.tb1g.tbv2 .tbx{position:relative;width:52%;aspect-ratio:1}
+.tb1g.tbv2 .tbx::before,.tb1g.tbv2 .tbx::after{content:"";position:absolute;left:50%;top:50%;width:120%;height:2px;background:#4fb4ff;box-shadow:0 0 6px rgba(70,170,255,.9);transform:translate(-50%,-50%) rotate(45deg)}
+.tb1g.tbv2 .tbx::after{transform:translate(-50%,-50%) rotate(-45deg)}
+.tb1g.tbv2 .c-next.hot{box-shadow:inset 0 0 0 2px #f2c860,0 0 10px rgba(242,200,96,.7);z-index:1;animation:tbnx 1.6s ease-in-out infinite}
+.tb1g.tbv2.tbenter .tbrw{animation:tbin .42s cubic-bezier(.2,.8,.3,1) both}
+.tb1 .tbmain{gap:14px}
+.tb1 .p9prov{display:none}   /* 対戦表に説明の文を足さない（ADDENDUM2） */
 </style></head><body><main>
 <h1>ミスティックモンスターズ</h1>
 <div id="app"></div>
@@ -4737,23 +4763,22 @@ const TB_GRID={6:{img:"ui1/grid6.png",ar:"1098/841",cy:[19.44,32.25,45.05,57.86,
 // 専用のモンスターアイコンは未着＝正式画像を丸い枠で切り抜く（顔のあたり。種族の番号 → object-position）。専用アイコンが届いたらここを差し替える
 const TOUR_ICON_POS={0:"58% 22%",1:"55% 18%",2:"58% 28%",3:"50% 25%"};
 function tbIcon(x){const f=window.MMARENA&&x&&MMARENA.faceSrc(x.sp);if(f)return `<img class="tbface" src="${f}" alt="">`;const s=x&&MMP10M.byId(x.sp);if(x&&x.s2==null&&!x.h&&s)return `<img src="${s.image.src}" alt="" style="object-position:${TOUR_ICON_POS[x.sp]||"50% 30%"}">`;return `<span class="tbsv">${msv(x)}</span>`}
-function tbBoardGrid(lg,pm,enter){const n=lg.entrants.length,G=TB_GRID[n]||TB_GRID[n<=6?6:8],nx=pm?pm.opp:-1,mark={win:"win",loss:"loss",next:"next",pending:"pending"},cw=(G.gx[1]-G.gx[0])/n,ch=(G.gy[1]-G.gy[0])/n;
- const rows=lg.entrants.map((e,i)=>{const x=p9Npc(lg,e.id),y=G.cy[i];const dl=enter?`;animation-delay:${i*90}ms`:"";return `<span class="tbic${e.player?" me":""}${e.id===nx?" nx":""}" style="left:${G.lx}%;top:${y}%;width:${G.ld}%${dl}">${tbIcon(x)}</span><span class="tbnm${e.player?" me":""}${e.id===nx?" nx":""}" data-r="${i}" style="left:${G.px}%;top:${y}%;width:${G.pw}%;height:${G.ph}%${dl}"><b>${p11Esc(p9Short(lg,e.id))}</b></span>`}).join("");
- const heads=lg.entrants.map((e,i)=>`<span class="tbic hd${e.player?" me":""}${e.id===nx?" nx":""}" style="left:${G.gx[0]+cw*(i+.5)}%;top:${G.hy}%;width:${G.hd}%">${tbIcon(p9Npc(lg,e.id))}</span>`).join("");
- const cells=lg.entrants.map((e,r)=>lg.entrants.map((o,c)=>{const k=MMP8L.resultCell(lg,e.id,o.id),mk=mark[k];return mk?`<span class="tbc c-${k}" data-r="${r}" data-c="${c}" style="left:${G.gx[0]+cw*(c+.5)}%;top:${G.gy[0]+ch*(r+.5)}%;width:${cw*.62}%"><img src="${TB_UI}ui1/mark_${mk}.png" alt=""></span>`:""}).join("")).join("");
- return `<div class="tb1g n${n}${enter?" tbenter":""}" style="aspect-ratio:${G.ar}" aria-label="対戦表"><img class="tbgbg" src="${TB_UI+G.img}" alt="">${rows}${heads}${cells}</div>`}
+function tbBoardGrid(lg,pm,enter){const E=lg.entrants,n=E.length,nx=pm?pm.opp:-1,me=(E.find(e=>e.player)||{}).id; // 2026-10-07（ADDENDUM2）：最終モックどおり＝左に参加者・右に対戦マトリクス（行と列は同じ順）・勝ち＝赤○・負け＝青×・未対戦は空欄・自分自身は斜線・プレイヤーの行は青く光る・次の相手との交点が光る
+ const cls=e=>`${e.player?" me":""}${e.id===nx?" nx":""}`;
+ const heads=E.map(e=>`<span class="tbh${cls(e)}"><span class="tbic hd${cls(e)}">${tbIcon(p9Npc(lg,e.id))}</span><b>${p11Esc(p9Short(lg,e.id))}</b></span>`).join("");
+ const rows=E.map((e,r)=>{const dl=enter?` style="animation-delay:${r*90}ms"`:"",rc=e.player?" rme":"";
+  return `<span class="tbrw${rc}${cls(e)}"${dl}><span class="tbic${cls(e)}">${tbIcon(p9Npc(lg,e.id))}</span><span class="tbnm${cls(e)}" data-r="${r}"><b>${p11Esc(p9Short(lg,e.id))}</b></span></span>`+E.map((o,c)=>{if(e.id===o.id)return `<span class="tbc c-self${rc}" data-r="${r}" data-c="${c}"></span>`;const k=MMP8L.resultCell(lg,e.id,o.id)||"pending",hot=k=="next"&&(e.id===me||o.id===me)&&e.id===me;return `<span class="tbc c-${k}${rc}${hot?" hot":""}" data-r="${r}" data-c="${c}">${k=="win"?'<i class="tbo" aria-label="勝ち"></i>':k=="loss"?'<i class="tbx" aria-label="負け"></i>':""}</span>`}).join("")}).join("");
+ return `<div class="tb1g tbv2 n${n}${enter?" tbenter":""}" style="--n:${n}" aria-label="対戦表"><span class="tbcorner"></span>${heads}${rows}</div>`}
 function p8TourScr(msg){const m=S.m,t=m.raise.tour,lg=t.league;bgm(t.status=="settled"?"result":"tour");p9Immersive(true);p9MenuClose();
  if(t.status=="settled")return p9TourResult(msg);
  if(lg.round===0)setTimeout(()=>{try{if(document.querySelector(".p9tour")&&S.m===m)npcMoment("tour")}catch(e){}},900); // 2026-10-05：初めての公式大会（1回だけ）
  const pm=MMP8.tourNext(m),o=p9Npc(lg,pm.opp),enter=P9_ENTER;P9_ENTER=false; // 大会開始の演出の直後は対戦表の参加者が順に入る
  $("#app").innerHTML=`<div class="p9tour tp2 tb1"><div class="tbbg" style="background-image:url(${P9_LOBBY_BG})"></div><button class="p9mbtn tbmenu" onclick="p9Menu()" aria-label="メニュー">☰</button>
  <header class="tbttl"><b>公式ランク${RN[t.rank]}大会</b></header>
- <section class="p9next tbmain"><div class="tbsub"><b>第${pm.round+1}試合 / 全${lg.rounds.length}試合</b></div>${tbBoardGrid(lg,pm,enter)}<img class="tblg" src="${TB_UI}ui1/legend.png" alt="勝ち・負け・未対戦・次の試合">
- <div class="tbnx"><div class="tp2p me"><img class="tbtag" src="${TB_UI}ui1/tag_you.png" alt="あなた"><span class="tp2nm"><b>${p11Esc(m.name)}</b></span></div><span class="p9vsl">VS</span><div class="tp2p op"><img class="tbtag" src="${TB_UI}ui1/tag_next.png" alt="次の相手"><span class="tp2nm"><b>${p11Esc(o.name)}</b></span></div></div>
- <div class="tbced">${p9Ced(lg.round==0?CEDRIC_TALK.first:CEDRIC_TALK.next[lg.round%CEDRIC_TALK.next.length],t.rank>=3?"tense":"host")}</div>
+ <section class="p9next tbmain">${tbBoardGrid(lg,pm,enter)}
  <button class="p9btn p9go tp2go tbgo" onclick="p9CompareScr()" aria-label="対戦する"></button></section>
  ${msg?`<div class="p9msg p9tmsg">${msg}</div>`:""}<p class="p9prov">【暫定】大会参加者の名前・種族は仮のデータです。実際の試合では、ランク${RN[t.rank]}相当の相手と戦います。</p></div>`;try{window.scrollTo(0,0)}catch(e){}}
-// 大会2 対戦前比較：上＝第N試合 / 全M試合（大会名は重ねない）・あなた／対戦相手の札・左右のカード（中に正式画像）・VS・能力の比較（枠の見本のバーの上に HTML のバー＝999 を最大・数字なし）・固有スキル・対戦開始（2度押し）・対戦表にもどる
+// 大会2 対戦前比較（2026-10-07 刷新・ADDENDUM2）：大会名・左右に待機の立ち絵と名前・固有スキル・能力の数値と棒・対戦開始（2度押し）・対戦表にもどる（試合数とセドリックは出さない）。下の TB_STAT は旧デザインの値（今は使わない）
 //  能力の枠（ui2/stats_panel.png。912×540 の範囲）の上のバーの位置（README.md）
 const TB_STAT={l:[9.43,28.51],r:[61.84,28.62],y:[17.41,29.44,41.67,54.07,66.48,78.89],h:2.6};
 function tbSkill(x){const k=x&&MMP10M.skillText(x.sp);return k?p11Esc(k.name):"―"}
@@ -4762,8 +4787,7 @@ function tbIdle(x,side){const s=window.MMARENA&&x&&MMARENA.idleSrc(x.sp);return 
 function tbSkillDesc(x){const k=x&&MMP10M.skillText(x.sp);return k?`<small class="tbskn"><i>スキル</i>${p11Esc(k.name)}</small><span class="tbskd">${p11Esc(k.desc||"")}</span>`:`<small class="tbskn"><i>スキル</i>―</small>`}
 function p9CompareScr(){const m=S.m,t=m&&m.raise&&m.raise.tour;if(!t||t.status!="league")return board();const lg=t.league,pm=MMP8.tourNext(m);if(!pm)return board();const o=p9Npc(lg,pm.opp);bgm("tour");p9Immersive(true);p9MenuClose();
  const v=x=>Math.max(0,x|0),g=KS.map(k=>{const a=v(m[k]),b=v(o[k]),mx=Math.max(a,b,100)*1.08;return `<div class="pcg"><b class="pcv">${a}</b><div class="pcb l" style="--c:${STAT_COLOR[k]}"><i style="width:${Math.round(a/mx*100)}%"></i></div><span class="pcl">${LAB[k]}</span><div class="pcb r" style="--c:${STAT_COLOR[k]}"><i style="width:${Math.round(b/mx*100)}%"></i></div><b class="pcv">${b}</b></div>`}).join("");
- $("#app").innerHTML=`<div class="p9cmps tb2 tb3"><div class="pcbg" style="background-image:url(${P9_LOBBY_BG})"></div><header class="tbttl"><b>公式ランク${RN[t.rank]}大会</b></header><div class="pchd tbsub"><b>第${pm.round+1}試合 / 全${lg.rounds.length}試合</b></div>
- <div class="pcduo"><div class="pcs me"><span class="tbmon">${tbIdle(m,0)}</span><b class="tbnp">${p11Esc(m.name)}</b><div class="tbskp l">${tbSkillDesc(m)}</div></div>
+ $("#app").innerHTML=`<div class="p9cmps tb2 tb3"><div class="pcbg" style="background-image:url(${P9_LOBBY_BG})"></div><header class="tbttl"><b>公式ランク${RN[t.rank]}大会</b></header> <div class="pcduo"><div class="pcs me"><span class="tbmon">${tbIdle(m,0)}</span><b class="tbnp">${p11Esc(m.name)}</b><div class="tbskp l">${tbSkillDesc(m)}</div></div>
  <div class="pcs op"><span class="tbmon">${tbIdle(o,1)}</span><b class="tbnp">${p11Esc(p9Short(lg,pm.opp))}</b><div class="tbskp r">${tbSkillDesc(o)}</div></div></div>
  <div class="pcgs tbst" aria-label="能力の比較">${g}</div>
  <div class="pcacts"><button class="p9btn p9go pcgo tbstart" data-nsfx="1" onclick="p9VsGo(this)" aria-label="対戦開始"></button><button class="pcback tbback" data-nav="back" onclick="board()" aria-label="対戦表にもどる"></button></div></div>`;try{window.scrollTo(0,0)}catch(e){}}

@@ -122,7 +122,14 @@ for (const [si, size] of SIZES.entries()) {
     await nextTalk(pg, mi[mi.length - 1].full);
     const un = await readTalk(pg);
     assert.match(un.map((x) => x.full).join('|'), /世界地図は、この管理局でいつでも.*市場で最初の相棒/);
+    // 2026-10-07：街でリュウの初対面（フィナと同じ町の出身・先に S ランク → レジェンドへ・先に「はじまりの草原」へ）→ 市場の案内
+    await nextTalk(pg, un[un.length - 1].full);
+    const ry = await readTalk(pg);
+    assert.ok(ry.some((x) => x.npc === 'ryu' && x.name === 'リュウ') && ry.some((x) => x.npc === 'fina'), 'リュウとフィナの会話');
+    assert.match(ry.map((x) => x.full).join('|'), /ミナトより先にSランクをクリアして、レジェンドに挑んでやる.*はじまりの草原/);
+    assert.doesNotMatch(ry.map((x) => x.full).join('|'), /同じように旅してるリュウ/);
     await pg.waitForSelector('.map.town');
+    assert.equal((await H.storedSave(pg)).npcFlags.ryuMet, 1, 'リュウの初対面は1回だけ');
     const S2 = await H.storedSave(pg);
     assert.equal(S2.npcFlags.op, 'done'); assert.equal(S2.npcFlags.worldMap, 1);
     assert.deepEqual([S2.g, S2.inv.bag.length], [1000, 1], '支援は1回だけ（二重に受け取らない）');
@@ -268,7 +275,7 @@ T('PRO-B4（2026-10-06）：プロローグの途中で裏に回って戻る →
   await pg.evaluate(() => { window.__hid = false; document.dispatchEvent(new Event('visibilitychange')); });
   await pg.waitForFunction(() => (window.__bg || []).some((x) => x[0] === '03'), null, { timeout: 30000 });
   const e3 = await pg.evaluate(() => window.__bg.find((x) => x[0] === '03'));
-  assert.ok(e3[2] != null && Math.abs(e3[2] - 15161) < 300, `戻ったあとも Scene 3 は時計の 15.161秒（実測 ${e3[2]}）`);
+  assert.ok(e3[2] != null && Math.abs(e3[2] - 12600) < 300, `戻ったあとも Scene 3 は時計の 12.6秒（2026-10-07 の6枚）（実測 ${e3[2]}）`);
   const a = await pg.evaluate(() => ({ active: MMAUDIO.status().slots.filter((x) => x.active).length, pro: MMAUDIO.registryOf('bgm').PROLOGUE.silent, t: MMAUDIO.bgmTime('PROLOGUE') }));
   assert.deepEqual(a, { active: 0, pro: true, t: null }, 'プロローグ BGM は鳴らない');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
