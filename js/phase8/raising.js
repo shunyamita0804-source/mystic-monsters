@@ -691,6 +691,19 @@
   Object.assign(API, { TOUR_END_STEPS, registerTourEndHook, tourEndSteps, runTourEnd });
 
   // =========================================================
+  // LEGEND ランク（2026-10-07 正式仕様。今は差し込み口だけ）
+  //  ランク体系＝E → D → C → B → A → S → LEGEND。LEGEND は E〜S の通常大会（ランク選択・参加人数・対戦表）に1枠足すものではない＝
+  //  S をクリアした個体が挑める特別な「レジェンド挑戦」（三人のレジェンドのうち誰か1人に勝つと LEGEND へ）。
+  //  レジェンドの戦闘能力・技・挑戦の画面、アストラッド撃破後の厄災・最終裏ボスは未指定＝作らない（名前・能力・画像を捏造しない）。
+  //  セーブには何も足していない（挑戦の記録を持つときは v6 の任意項目で足す）。
+  // =========================================================
+  const LEGEND = Object.freeze({ id: 'LEGEND', after: 'S',
+    holders: Object.freeze([Object.freeze({ id: 'astrad', name: 'アストラッド', partner: 'ゼルヴァーン' }), Object.freeze({ id: 'leona', name: 'レオナ', partner: 'グリフェル' }), Object.freeze({ id: 'ragnas', name: 'ラグナス', partner: 'ドラグノル' })]) });
+  /** レジェンド挑戦の条件を満たしているか（その個体が S ランク大会をクリア済み）。画面は未実装 */
+  const legendChallengeOpen = (m) => !!(m && isObj(m.prog) && Array.isArray(m.prog.rankClr) && m.prog.rankClr[RANK_S]);
+  Object.assign(API, { LEGEND, legendChallengeOpen });
+
+  // =========================================================
   // 育成リソース（HUD）と修行チケットマス（Step 7）
   //  修行チケットはバッグ枠外の育成リソース（セーブ全体で所持、Chapterをまたいで保持、修行1回で1枚消費）。
   //  HUDは複数リソースを並べられる形にしておき、今回は修行チケットだけを表示する。

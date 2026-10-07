@@ -84,7 +84,7 @@ const SCRIPTS = [
   'js/chapter/engine.js', 'js/chapter/events.js', 'js/chapter/configs/ch1a.js', 'js/chapter/configs/ch2a.js', 'js/chapter/dice-renderer.js', 'js/chapter/field-view.js', 'js/chapter/intro.js',   // 2026-09-30：Chapterフィールドエンジン
   'js/battle/fit.js',   // 2026-09-30：バトル画面の表示だけの補正（fight()・.bt 系 CSS は変えない）
   'js/battle/fx.js',    // 2026-10-03：バトル共通演出の正式素材（fight()・.bt 系 CSS は変えない。外から見て重ねる）
-  'js/battle/rival-partner.js', 'js/battle/official-moves.js', 'js/battle/rules.js', 'js/battle/stage.js', 'js/battle/movedex.js', // 2026-10-06：正式技（ソラモ・ガウルの SK を実行時に入れ替え）・バトルの共通演出・技辞典。2026-10-05：ライバルの相棒（レグナス）の正式技・固有スキル・技の演出（fight() は変えない＝外から差し込む）
+  'js/battle/rival-partner.js', 'js/battle/official-moves.js', 'js/battle/rules.js', 'js/battle/arena.js', 'js/battle/stage.js', 'js/battle/movedex.js', // 2026-10-06：正式技（ソラモ・ガウルの SK を実行時に入れ替え）・バトルの共通演出・技辞典。2026-10-05：ライバルの相棒（レグナス）の正式技・固有スキル・技の演出（fight() は変えない＝外から差し込む）
   'js/fx/sequence.js',  // 2026-10-03：連続コマの演出の再生器（野生聖獣の遭遇の正式8コマ。今はどこからも呼ばない＝将来つなぐ準備）
   'js/prologue/prologue.js',  // 2026-10-03：プロローグ（MMPRO。新しいゲームの最初に1回。2026-10-05 から正式の4枚）
   'js/opening/worldmap.js',   // 2026-10-05：世界地図（MMMAP。序盤の出身地の会話・聖獣士管理局の「世界地図」）

@@ -2919,6 +2919,32 @@ main:has(>#app>.p9cmps) h1{display:none}#app:has(>.p9cmps){overflow:hidden}
 .tb1 .tbgo.arm,.tb2 .tbstart.arm{position:relative}
 .tb1 .tbgo.arm .p9tx,.tb2 .tbstart.arm .p9tx{position:absolute;left:14%;right:14%;top:22%;bottom:22%;display:grid;place-items:center;border-radius:999px;background:rgba(10,16,40,.86);color:#ffe9b0;font-size:12px;line-height:1.2}
 /* 大会3 VS 演出 */
+/* 2026-10-07 正式（mock_compare）：大会2 の作り直し（.tb3）。大会1 の顔アイコン（assets/tournament/faces）・VS の待機立ち絵と向き */
+.tbic img.tbface{object-fit:cover;object-position:50% 50%}
+.tb3{gap:min(.9dvh,8px)}
+.tb3 .tbttl{position:relative;flex:none}
+.tb3 .pchd{flex:none}.tb3 .pchd b{font-size:clamp(11px,3.2vw,13px)}
+.tb3 .pcduo{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:min(96vw,390px);align-items:end}
+.tb3 .pcs{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+.tb3 .tbmon{position:relative;display:block;width:100%;height:min(25dvh,190px);background:none}
+.tb3 .tbmon .tbidle{position:absolute;left:50%;bottom:0;height:100%;width:auto;max-width:112%;object-fit:contain;transform:translateX(-50%);filter:drop-shadow(0 6px 6px rgba(0,0,0,.45))}
+.tb3 .tbmon .tbidle.fl{transform:translateX(-50%) scaleX(-1)}
+.tb3 .tbnp{min-width:62%;max-width:96%;padding:4px 14px;border-radius:7px;background:linear-gradient(#13254f,#0a1634);border:1.5px solid #d6b262;color:#f3ecd9;font-family:var(--mm-font-head);font-size:clamp(12px,3.6vw,15px);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.tb3 .tbskp{position:static;aspect-ratio:auto;width:100%;display:flex;flex-direction:column;align-items:center;gap:1px;text-align:center;line-height:1.3}
+.tb3 .tbskn{display:inline-flex;align-items:center;gap:5px;padding:1px 8px;border-radius:999px;background:rgba(8,15,34,.86);border:1px solid rgba(214,178,98,.6);color:#f3ecd9;font-size:clamp(9px,2.6vw,11px);font-weight:700;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb3 .tbskn i{font-style:normal;color:#e8d29a;font-size:.9em}
+.tb3 .tbskp span{position:static;left:auto;right:auto;top:auto;bottom:auto}
+.tb3 .tbskd{font-size:clamp(8px,2.3vw,10px);color:#f3ecd9;text-shadow:0 1px 2px #000;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tb3 .tbst{position:static;width:min(96vw,390px);aspect-ratio:auto;display:flex;flex-direction:column;gap:min(.6dvh,5px);padding:min(1dvh,8px) 8px;border-radius:10px;background:rgba(8,15,34,.86);border:1.5px solid rgba(214,178,98,.7);box-sizing:border-box}
+.tb3 .pcg{position:static;display:grid;grid-template-columns:2.2em 1fr 4.6em 1fr 2.2em;align-items:center;gap:6px;height:min(3.2dvh,24px)}
+.tb3 .pcv{color:#fff;font-size:clamp(11px,3.3vw,14px);font-weight:800;text-align:center}
+.tb3 .pcl{position:static;width:auto;height:auto;overflow:visible;clip-path:none;white-space:nowrap;text-align:center;padding:2px 0;border-radius:5px;background:linear-gradient(#13254f,#0a1634);border:1px solid rgba(214,178,98,.6);color:#f3ecd9;font-size:clamp(10px,2.9vw,12px);font-weight:700}
+.tb3 .pcb{position:relative;height:9px;top:auto;bottom:auto;left:auto;width:auto;border-radius:5px;background:#0b1430;overflow:hidden}
+.tb3 .pcb i{background:var(--c)}
+.tb3 .pcb.l i{left:auto;right:0}
+.tvshd{left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 1.2%);text-align:center;font-family:var(--mm-font-head);font-size:clamp(18px,5.4vw,24px);letter-spacing:.4em;color:#fff6dc;text-shadow:0 2px 8px #000;opacity:0;transition:opacity .3s .2s}.tvs.in .tvshd{opacity:1}
+.tvs .tvsnp.op{top:calc(env(safe-area-inset-top,0px) + 7.5%)}.tvs .tvsm.op{top:calc(env(safe-area-inset-top,0px) + 7.5% + var(--np) + 6px)}
+.tvsm .mon img.tbidle{width:100%;height:100%;object-fit:contain}.tvsm .mon img.tbidle.fl{transform:scaleX(-1)}
 .tvs{position:fixed;inset:0;z-index:90;overflow:hidden;background:#05080f;color:#fff;touch-action:manipulation}
 .tvs>*{position:absolute;pointer-events:none}
 .tvsbg{inset:-4%;background-size:cover;background-position:center;transform:scale(1.1);transition:transform 2.4s cubic-bezier(.2,.7,.3,1)}
@@ -3301,6 +3327,7 @@ img.nstf[data-npc]{width:auto;max-width:none;aspect-ratio:var(--nk,.754);object-
 <script src="./js/battle/rival-partner.js"></script>
 <script src="./js/battle/official-moves.js"></script>
 <script src="./js/battle/rules.js"></script>
+<script src="./js/battle/arena.js"></script>
 <script src="./js/battle/stage.js"></script>
 <script src="./js/battle/movedex.js"></script>
 <script src="./js/fx/sequence.js"></script>
@@ -4635,7 +4662,7 @@ const TB_GRID={6:{img:"ui1/grid6.png",ar:"1098/841",cy:[19.44,32.25,45.05,57.86,
  8:{img:"ui1/grid8.png",ar:"1083/784",cy:[16.39,26.62,36.85,47.08,57.31,67.54,77.77,88.0],lx:7.94,ld:5.1,px:13.3,pw:26.4,ph:7.65,hy:14.8,hd:4.0,gx:[43.03,92.43],gy:[20.03,89.92]}};
 // 専用のモンスターアイコンは未着＝正式画像を丸い枠で切り抜く（顔のあたり。種族の番号 → object-position）。専用アイコンが届いたらここを差し替える
 const TOUR_ICON_POS={0:"58% 22%",1:"55% 18%",2:"58% 28%",3:"50% 25%"};
-function tbIcon(x){const s=x&&MMP10M.byId(x.sp);if(x&&x.s2==null&&!x.h&&s)return `<img src="${s.image.src}" alt="" style="object-position:${TOUR_ICON_POS[x.sp]||"50% 30%"}">`;return `<span class="tbsv">${msv(x)}</span>`}
+function tbIcon(x){const f=window.MMARENA&&x&&MMARENA.faceSrc(x.sp);if(f)return `<img class="tbface" src="${f}" alt="">`;const s=x&&MMP10M.byId(x.sp);if(x&&x.s2==null&&!x.h&&s)return `<img src="${s.image.src}" alt="" style="object-position:${TOUR_ICON_POS[x.sp]||"50% 30%"}">`;return `<span class="tbsv">${msv(x)}</span>`}
 function tbBoardGrid(lg,pm,enter){const n=lg.entrants.length,G=TB_GRID[n]||TB_GRID[n<=6?6:8],nx=pm?pm.opp:-1,mark={win:"win",loss:"loss",next:"next",pending:"pending"},cw=(G.gx[1]-G.gx[0])/n,ch=(G.gy[1]-G.gy[0])/n;
  const rows=lg.entrants.map((e,i)=>{const x=p9Npc(lg,e.id),y=G.cy[i];const dl=enter?`;animation-delay:${i*90}ms`:"";return `<span class="tbic${e.player?" me":""}${e.id===nx?" nx":""}" style="left:${G.lx}%;top:${y}%;width:${G.ld}%${dl}">${tbIcon(x)}</span><span class="tbnm${e.player?" me":""}${e.id===nx?" nx":""}" data-r="${i}" style="left:${G.px}%;top:${y}%;width:${G.pw}%;height:${G.ph}%${dl}"><b>${p11Esc(p9Short(lg,e.id))}</b></span>`}).join("");
  const heads=lg.entrants.map((e,i)=>`<span class="tbic hd${e.player?" me":""}${e.id===nx?" nx":""}" style="left:${G.gx[0]+cw*(i+.5)}%;top:${G.hy}%;width:${G.hd}%">${tbIcon(p9Npc(lg,e.id))}</span>`).join("");
@@ -4656,21 +4683,21 @@ function p8TourScr(msg){const m=S.m,t=m.raise.tour,lg=t.league;bgm(t.status=="se
 //  能力の枠（ui2/stats_panel.png。912×540 の範囲）の上のバーの位置（README.md）
 const TB_STAT={l:[9.43,28.51],r:[61.84,28.62],y:[17.41,29.44,41.67,54.07,66.48,78.89],h:2.6};
 function tbSkill(x){const k=x&&MMP10M.skillText(x.sp);return k?p11Esc(k.name):"―"}
+// 2026-10-07 正式（mock_compare）：主役は左右のモンスター（待機立ち絵・相手は左向き）・上に大会名・名前の札・固有スキルの名前＋短い説明・中央に能力の名前・左右に数値＋能力のバー（正式色）・対戦開始／対戦表にもどる。セドリックは出さない
+function tbIdle(x,side){const s=window.MMARENA&&x&&MMARENA.idleSrc(x.sp);return s?`<img class="tbidle${MMARENA.flipOf(side,x.sp)?" fl":""}" src="${s}" alt="">`:msv(x)}
+function tbSkillDesc(x){const k=x&&MMP10M.skillText(x.sp);return k?`<small class="tbskn"><i>スキル</i>${p11Esc(k.name)}</small><span class="tbskd">${p11Esc(k.desc||"")}</span>`:`<small class="tbskn"><i>スキル</i>―</small>`}
 function p9CompareScr(){const m=S.m,t=m&&m.raise&&m.raise.tour;if(!t||t.status!="league")return board();const lg=t.league,pm=MMP8.tourNext(m);if(!pm)return board();const o=p9Npc(lg,pm.opp);bgm("tour");p9Immersive(true);p9MenuClose();
- const pct=v=>Math.round(Math.min(999,Math.max(0,v|0))/999*100);
- const g=KS.map((k,i)=>`<div class="pcg" style="top:${TB_STAT.y[i]}%;height:${TB_STAT.h}%"><span class="pcl">${LAB[k]}</span><div class="pcb l" style="--c:${STAT_COLOR[k]};left:${TB_STAT.l[0]}%;width:${TB_STAT.l[1]}%"><i style="width:${pct(m[k])}%"></i></div><div class="pcb r" style="--c:${STAT_COLOR[k]};left:${TB_STAT.r[0]}%;width:${TB_STAT.r[1]}%"><i style="width:${pct(o[k])}%"></i></div></div>`).join("");
- $("#app").innerHTML=`<div class="p9cmps tb2"><div class="pcbg" style="background-image:url(${BTB[t.rank][0]})"></div><header class="pchd tbsub"><b>第${pm.round+1}試合 / 全${lg.rounds.length}試合</b></header>
- <div class="pcduo"><div class="pcs me"><img class="tbbadge" src="${TB_UI}ui2/badge_you.png" alt="あなた"><div class="tbcard l"><span class="tbmon">${msv(m)}</span><img class="tbfr" src="${TB_UI}ui2/card_left.png" alt=""><b>${p11Esc(m.name)}</b></div></div>
- <img class="tbvs" src="${TB_UI}ui2/vs_emblem.png" alt="VS">
- <div class="pcs op"><img class="tbbadge" src="${TB_UI}ui2/badge_opponent.png" alt="対戦相手"><div class="tbcard r"><span class="tbmon">${msv(o)}</span><img class="tbfr" src="${TB_UI}ui2/card_right.png" alt=""><b>${p11Esc(p9Short(lg,pm.opp))}</b></div></div></div>
- <div class="pcgs tbst" aria-label="能力の比較（999 を最大とした目安）"><img class="tbstbg" src="${TB_UI}ui2/stats_panel.png" alt="">${g}</div>
- <div class="tbsk"><div class="tbskp l"><img src="${TB_UI}ui2/skill_left.png" alt=""><span><small>固有スキル</small><b>${tbSkill(m)}</b></span></div><div class="tbskp r"><img src="${TB_UI}ui2/skill_right.png" alt=""><span><small>固有スキル</small><b>${tbSkill(o)}</b></span></div></div>
+ const v=x=>Math.max(0,x|0),g=KS.map(k=>{const a=v(m[k]),b=v(o[k]),mx=Math.max(a,b,100)*1.08;return `<div class="pcg"><b class="pcv">${a}</b><div class="pcb l" style="--c:${STAT_COLOR[k]}"><i style="width:${Math.round(a/mx*100)}%"></i></div><span class="pcl">${LAB[k]}</span><div class="pcb r" style="--c:${STAT_COLOR[k]}"><i style="width:${Math.round(b/mx*100)}%"></i></div><b class="pcv">${b}</b></div>`}).join("");
+ $("#app").innerHTML=`<div class="p9cmps tb2 tb3"><div class="pcbg" style="background-image:url(${P9_LOBBY_BG})"></div><header class="tbttl"><b>公式ランク${RN[t.rank]}大会</b></header><div class="pchd tbsub"><b>第${pm.round+1}試合 / 全${lg.rounds.length}試合</b></div>
+ <div class="pcduo"><div class="pcs me"><span class="tbmon">${tbIdle(m,0)}</span><b class="tbnp">${p11Esc(m.name)}</b><div class="tbskp l">${tbSkillDesc(m)}</div></div>
+ <div class="pcs op"><span class="tbmon">${tbIdle(o,1)}</span><b class="tbnp">${p11Esc(p9Short(lg,pm.opp))}</b><div class="tbskp r">${tbSkillDesc(o)}</div></div></div>
+ <div class="pcgs tbst" aria-label="能力の比較">${g}</div>
  <div class="pcacts"><button class="p9btn p9go pcgo tbstart" data-nsfx="1" onclick="p9VsGo(this)" aria-label="対戦開始"></button><button class="pcback tbback" data-nav="back" onclick="board()" aria-label="対戦表にもどる"></button></div></div>`;try{window.scrollTo(0,0)}catch(e){}}
 // 大会3 VS 演出（背景・VS のロゴ・斜めの光・名前の札・飾りは正式素材。モンスターは正式画像）→ バトル。タップで早送り。fight() の導入（intro）はこの試合だけ出さない（二重の VS にしない）
 let TB_SKIP_INTRO=false;
 function tourVsShow(m,o){return new Promise(res=>{const calm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
  const d=document.createElement("div");d.className="tvs"+(calm?" calm":"");d.id="tvs";
- d.innerHTML=`<div class="tvsbg" style="background-image:url(${TB_UI}vs/vs_background.webp)"></div><img class="tvsline" src="${TB_UI}vs/vs_diagonal.png" alt=""><div class="tvsm op"><span class="mon">${msv(o)}</span></div><div class="tvsm me"><span class="mon">${msv(m)}</span></div>
+ d.innerHTML=`<div class="tvsbg" style="background-image:url(${TB_UI}vs/vs_background.webp)"></div><img class="tvsline" src="${TB_UI}vs/vs_diagonal.png" alt=""><b class="tvshd">マッチアップ</b><div class="tvsm op"><span class="mon">${tbIdle(o,1)}</span></div><div class="tvsm me"><span class="mon">${tbIdle(m,0)}</span></div>
  <div class="tvsnp op"><img src="${TB_UI}vs/vs_nameplate.png" alt=""><b>${p11Esc(o.name)}</b><img class="tvsorn" src="${TB_UI}vs/vs_ornament.png" alt=""></div><div class="tvsnp me"><img src="${TB_UI}vs/vs_nameplate.png" alt=""><b>${p11Esc(m.name)}</b><img class="tvsorn" src="${TB_UI}vs/vs_ornament.png" alt=""></div>
  <img class="tvslogo" src="${TB_UI}vs/vs_logo.png" alt="VS"><i class="tvsfl"></i>`;
  document.body.appendChild(d);try{MMFEEL.emit("battle.matchup")}catch(e){}
@@ -4695,7 +4722,7 @@ const P9_SE_SEEN=new WeakSet();
 MMP8.registerTourEndHook("firstReward",d=>{MMAUDIO.se("REWARD",{delay:.5});if(d.bagUnlocked)MMAUDIO.se("UNLOCK",{delay:1.2});if(typeof MMNOTE=="object"&&MMNOTE){MMNOTE.show({icon:"reward",title:`賞金 ${d.prize}G を手に入れた！`,sub:`初回優勝の報酬・特訓チケット ×${d.tickets}`});if(d.bagUnlocked)MMNOTE.show({icon:"unlock",title:"バッグが6枠に拡張された！"})}});
 function p8RewardText(w){return (w.bonus.length?`<br>ステータスボーナス：${w.bonus.map(b=>`${LAB[b.key]}+${b.amount}`).join("・")}`:"")+(w.firstClear?`<br>初回優勝：賞金 ${w.prize}G・🎫特訓チケット×${w.tickets}`+(w.bagUnlocked?"・バッグが6枠に拡張！":""):"<br>（クリア済みのランクのため、報酬はありません）")}
 // 2026-10-03（試遊で「対戦前の画面が多く遅い」）：大会は VS 画面（相手の発表＋能力比較＝1枚）から直接 fight() へ。Battle 開始前の導入（p9PreBattle）は練習試合だけ
-function p8TourFight(){const m=S.m,t=m&&m.raise.tour;if(bBusy||!t||t.status!="league")return board();if(!MMP8.beginBattle(S,m,{kind:"league",rank:t.rank}).ok)return board();save();fight(t.rank)}
+function p8TourFight(){const m=S.m,t=m&&m.raise.tour;if(bBusy||!t||t.status!="league")return board();if(!MMP8.beginBattle(S,m,{kind:"league",rank:t.rank}).ok)return board();save();try{const pm=MMP8.tourNext(m),ev=pm&&MMP8L.entrantView(t.league,pm.opp);if(ev)battleFoeOnce(ev.sp)}catch(e){}fight(t.rank)} // 2026-10-07：実際の相手の種族＝対戦表・大会2・VS の相手の種族（fight() は変えず、最初の乱数の1回だけ）
 // ---- Battle 開始前の導入（表示だけ）：バトルの背景（fight() と同じ BTB）の上に両者が登場 → 個性スキル → 主要パラメーター → 「BATTLE START」→ go()（beginBattle と fight()）
 //  Battle Engine の処理は go() の中でだけ動く（二重発動なし）。相手の能力は MMP8L.PROVISIONAL_OPPONENT_STAT（fight() が作る相手と同じ値）を参照し、別の値を持たない
 //  個性スキルは正式データが未登録（未決）のため「―（未登録）」の枠だけ。練習試合の相手は fight() が種族を決めるため、姿は「？」で出す
