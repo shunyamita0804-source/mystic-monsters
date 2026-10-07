@@ -124,7 +124,7 @@ test('PF-B3（375×667・タッチ）：スワイプ（指で上へ払う）で�
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
-test('PF-B4（4サイズ）：街は1画面で固定（スクロールしない）。セーブ・ロードは下のバー（ファーム 55%・プロフィール・セーブ・ロード）から押せる。案内文・ヴァルガスの一言はバーの上に見える', { skip: SKIP }, async () => {
+test('PF-B4（4サイズ）：街は1画面で固定（スクロールしない）。セーブ・ロードは下のバー（ベースキャンプ・プロフィール・セーブ／ロード＝正式の札）から押せる。案内文・ヴァルガスの一言はバーの上に見える', { skip: SKIP }, async () => {
   for (const size of Object.values(H.SIZES)) {
     const p = await L.open({ size }); const pg = p.page;
     await setup(p);
@@ -138,7 +138,7 @@ test('PF-B4（4サイズ）：街は1画面で固定（スクロールしない�
     assert.deepEqual([r.st, r.can, r.y], [0, false, 0], `${tag}：街はスクロールしない`);
     assert.equal(r.bg, bg0, `${tag}：背景は動かない`);
     assert.ok(r.hit, `${tag}：セーブ・ロードは押せる`); assert.deepEqual(r.lab, ['セーブ', 'ロード'], `${tag}：セーブ・ロードは2行`);
-    const all = r.cells.reduce((a, b) => a + b, 0); assert.ok(Math.abs(r.cells[0] / all - 0.55) < 0.03 && Math.abs(r.cells[1] - r.cells[2]) <= 1, `${tag}：下のバー（1段・2026-10-03）は ファーム 55%・プロフィールとセーブ・ロードが半分ずつ（${r.cells}）`);
+    const all = r.cells.reduce((a, b) => a + b, 0); assert.ok(Math.abs(r.cells[0] / all - 2.65 / 7.92) < 0.03 && Math.abs(r.cells[2] / all - 2.73 / 7.92) < 0.03, `${tag}：下のバー（1段）は正式の札の絵（2026-10-07 正式UI回収：ベースキャンプ・プロフィール・セーブ／ロード＝同じ高さ・幅は絵の縦横比）（${r.cells}）`);
     assert.equal(r.tlow, 'none', `${tag}：知らせることが無いときは案内文を背景に重ねない`);
     await pg.click('.tbar .svb'); await pg.waitForSelector('#sc', { state: 'attached' });
     await pg.evaluate(() => lobby()); await pg.waitForTimeout(300); await settle(pg);
