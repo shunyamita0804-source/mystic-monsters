@@ -37,7 +37,7 @@ T('TB-1：名前を決めたあと、名前の入力画面は一瞬も見えな�
   await pg.waitForFunction(() => !document.querySelector('.p11reg'), null, { timeout: 3000 });
   await pg.evaluate(() => { window.__seen = []; });   // 押した瞬間（会話が開く前）は除く。ここから先に名前の画面が戻らないこと
   await H.chooseTalk(pg, 'ok');
-  for (let i = 0; i < 400 && (await pg.evaluate(() => window.__notes.length)) < 3; i++) {   // 会話を送る（出身地の2択は a）・帯はそのまま消えるのを待つ
+  for (let i = 0; i < 400 && (await pg.evaluate(() => window.__notes.length)) < 2; i++) {   // 会話を送る（出身地の2択は a）・帯はそのまま消えるのを待つ
     const st = await pg.evaluate(() => (document.querySelector('.mmtalk:not(.mmtalk-out)') && window.MMNPC ? MMNPC.state() : null));
     if (st && st.choices) await H.chooseTalk(pg, st.choices[0].id); else if (st) await pg.click('.mmtalk:not(.mmtalk-out)', { force: true }).catch(() => {});
     await pg.waitForTimeout(120);
@@ -45,7 +45,7 @@ T('TB-1：名前を決めたあと、名前の入力画面は一瞬も見えな�
   const r = await pg.evaluate(() => { window.__stop = 1; return { seen: window.__seen, notes: window.__notes, S: { name: S.playerName, pend: !!S.playerNamePending } }; });
   assert.deepEqual(r.seen, [], '確認・登録完了・新人支援の間に名前の入力画面が見えない');
   assert.equal(r.S.name, 'ミナト'); assert.equal(r.S.pend, false);
-  assert.deepEqual(r.notes, [['1000G を受け取った！', 'GOLD_GET'], ['薬草 を1つ受け取った！', 'REWARD'], ['世界地図 が使えるようになった！', 'UNLOCK']], '帯が出た瞬間にその帯の SE');
+  assert.deepEqual(r.notes, [['1000G', 'GOLD_GET'], ['世界地図が使えるようになった', 'UNLOCK']], '帯が出た瞬間にその帯の SE（2026-10-07 試遊：1000G と薬草は1つの帯）');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 

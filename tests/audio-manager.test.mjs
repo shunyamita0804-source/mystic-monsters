@@ -537,7 +537,8 @@ test('AUDIO-30：2026-10-07 正式採用の BGM 14曲：プロローグ6場面�
   A.scene('TOURNAMENT_MATCHUP'); await tick(800); assert.equal(active(A).length, 1); assert.match(active(A)[0].src, /09_prebattle_compare_jingle/);
   // 画面 → 場面
   const HTML = readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-  assert.match(HTML, /MMPRO\.play\(\{cover:cv,onScene:si=>\{if\(A\)A\.scene\("PROLOGUE_"\+\(si\+1\),\{fade:"quick"\}\)\}\}\)\)/, 'プロローグの Scene ごとに曲を切り替える');
+  assert.match(HTML, /MMPRO\.play\(\{cover:cv,onScene:si=>\{if\(A&&si===0\)\{A\.scene\("PROLOGUE_1",\{fade:"quick"\}\);proWarm\(2\)\}\},audioLeadMs:PRO_AUDIO_LEAD,onSceneAudio:si=>\{if\(A\)A\.scene\("PROLOGUE_"\+\(si\+1\),\{fade:"normal"\}\);proWarm\(si\+2\)\}\}\)\)/, 'プロローグの Scene ごとに曲を切り替える（2026-10-07 試遊：Scene 2〜6 は切り替えの少し前からクロスフェード）');
+  assert.match(HTML, /const PRO_AUDIO_LEAD=500;/);
   assert.match(HTML.slice(HTML.indexOf('function p9CompareScr('), HTML.indexOf('function p9CompareScr(') + 400), /bgm\("matchup"\)/, '対戦前比較はジングル');
   assert.match(HTML, /cedric:"CEDRIC"/); assert.match(HTML.slice(HTML.indexOf('async function p9TourOpen('), HTML.indexOf('async function p9TourOpen(') + 600), /bgm\("cedric"\)/, 'セドリックの大会前の導入で CEDRIC');
   assert.ok(!existsSync(path.join(ROOT, 'assets/audio/bgm/pgs_fantasy_rpg/battle_music_1.ogg')) && !existsSync(path.join(ROOT, 'assets/audio/bgm/alkakrab_fantasy_rpg_vol3/action_2_battle_of_the_skies.ogg')), '置き換えた旧い戦闘曲は置かない');

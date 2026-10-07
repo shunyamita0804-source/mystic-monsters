@@ -20,9 +20,12 @@
   function next() {
     if (cur || !Q.length || typeof document === 'undefined' || !document.body) return;
     const n = Q.shift(), el = document.createElement('div');
-    const ic = n.img ? `<i class="mmnote-ic img"><img src="${esc(n.img)}" alt="" decoding="async"></i>` : `<i class="mmnote-ic ${esc(n.icon || 'gold')}" aria-hidden="true"></i>`;
-    el.className = 'mmnote'; el.setAttribute('role', 'status');
-    el.innerHTML = `${ic}<div class="mmnote-tx"><b>${esc(n.title)}</b>${n.sub ? `<small>${esc(n.sub)}</small>` : ''}</div><i class="mmnote-cn l" aria-hidden="true"></i><i class="mmnote-cn r" aria-hidden="true"></i>`;
+    const icOf = (o, cls) => (o.img ? `<i class="mmnote-ic img${cls}${o.cmd ? ' cmd' : ''}"><img src="${esc(o.img)}" alt="" decoding="async"></i>` : `<i class="mmnote-ic ${esc(o.icon || 'gold')}${cls}" aria-hidden="true"></i>`);
+    el.className = 'mmnote' + (n.small ? ' small' : '') + (n.rows ? ' rows' : ''); el.setAttribute('role', 'status');
+    // 2026-10-07 試遊：rows＝1つの帯に複数の入手を短く並べる（[{ icon|img, text }]）。small＝短い知らせ（小さめの帯）。cmd＝正式のコマンドの絵を四角のまま印にする
+    const body = n.rows ? `<div class="mmnote-rows">${n.rows.map((r) => `<div class="mmnote-row">${icOf(r, ' sm')}<b>${esc(r.text)}</b></div>`).join('')}</div>`
+      : `${icOf(n, '')}<div class="mmnote-tx"><b>${esc(n.title)}</b>${n.sub ? `<small>${esc(n.sub)}</small>` : ''}</div>`;
+    el.innerHTML = `${body}<i class="mmnote-cn l" aria-hidden="true"></i><i class="mmnote-cn r" aria-hidden="true"></i>`;
     layer().appendChild(el);
     if (n.se) { try { if (root.MMAUDIO) root.MMAUDIO.se(n.se); } catch (e) {} }   // 2026-10-05 試遊：帯が出た瞬間に1回だけ（帯は1つずつ順に出る＝音も重ならない）
     let done = false; const shownAt = Date.now();
@@ -33,7 +36,7 @@
   }
   /** 帯を出す（順番待ち）。消えたら resolve */
   function show(o = {}) {
-    LOG.push({ icon: o.img ? 'img' : (o.icon || 'gold'), title: String(o.title || ''), sub: o.sub ? String(o.sub) : '', ...(o.se ? { se: String(o.se) } : {}) });
+    LOG.push({ icon: o.rows ? 'rows' : o.img ? 'img' : (o.icon || 'gold'), title: String(o.title || (o.rows ? o.rows.map((r) => r.text).join('／') : '')), sub: o.sub ? String(o.sub) : '', ...(o.se ? { se: String(o.se) } : {}) });
     return new Promise((resolve) => { Q.push({ ...o, resolve }); next(); });
   }
   /** 出ている帯・順番待ちをすぐに片付ける（画面を作り直すとき・自動テスト） */

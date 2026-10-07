@@ -107,7 +107,7 @@ test('PB-B4：TEST 大会の受付＝正式のランク行（2026-10-07 正式�
     assert.ok(rows.every((r) => r.inView), '6段とも画面の中');
     await pg.click('.rcv-row[data-rank="0"]'); await pg.waitForTimeout(450);
     assert.equal(await pg.evaluate(() => document.querySelector('#p9join').disabled), false, 'E を選ぶと参加できる');
-    await pg.evaluate(() => p9Menu()); await pg.waitForSelector('#p9ov .ttest'); await pg.click('#p9ov .ttest'); await pg.waitForSelector('.map.town');
+    await pg.evaluate(() => p9Menu()); await pg.waitForSelector('#p9ov .ttest'); await pg.click('#p9ov .ttest'); await pg.waitForSelector('#ynm .ynm-y'); await pg.waitForTimeout(450); await pg.click('#ynm .ynm-y'); await pg.waitForSelector('.map.town');   // 2026-10-07 試遊：はい／いいえ の確認
     assert.equal(await stored(pg), before, '記録・所持金は始める前のまま（TEST 大会は保存しない）');
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   }

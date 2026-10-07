@@ -198,7 +198,7 @@ test('QA-G3-6：市場のスワイプ：カルーセルの外で離したら始�
 test('QA-G3-7：ガードは指定した場所だけ（全体には掛けない）。購入確認の「連れて帰る」の onclick・着地処理の中身は従来どおり', () => {
   const code = HTML.split('\n').filter((l) => !l.trimStart().startsWith('//')).join('\n');   // 説明のコメント行は数えない
   const uses = (name) => code.split(`${name}(`).length - 1;
-  assert.equal(uses('tapHold'), 4, '定義＋市場の購入確認シート＋修行メニュー＋新しいゲームの確認（2026-10-05 PHASE B）だけ');
+  assert.equal(uses('tapHold'), 5, '定義＋市場の購入確認シート＋修行メニュー＋新しいゲームの確認（2026-10-05 PHASE B）＋共通の小さな確認 ynAsk（2026-10-07）だけ');
   assert.match(lineOf(' <div class="p10shb">'), /onclick="mkgo\(\$\{s\.id\}\);p10Close\(\)">連れて帰る（\$\{c\.price\}G）<\/button><\/div><\/div>`;document\.body\.appendChild\(d\);tapHold\(d\.querySelector\("\.p10shb"\),350\)\}$/);
   assert.match(lineOf(' if(id=="s")tapHold('), /^ if\(id=="s"\)tapHold\(\$\("#app \.dbody"\),350\);/, '修行メニュー（カードだけが入る .dbody）');
   assert.equal(uses('tapSoon'), 12, '定義＋tapHold・arm・p9arm・reset・ボードのメニューの背景・Battle 開始前の BATTLE START・大会受付の参加ボタン・ベースキャンプのメニューの背景（2026-10-04 PHASE H2）・大会の参加確認の はい／いいえ／背景（2026-10-07）');

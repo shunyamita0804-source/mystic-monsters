@@ -229,5 +229,5 @@ test('BR-08：Phase 6（fight()・battle-bridge・adapter）に触れない・�
   assert.match(HTML, /if\(window\.MMRULES\)MMRULES\.install\(\);/);
   assert.match(rd('js/battle/fx.js'), /root\.MMRULES\.swallow\(n\)/);
   assert.doesNotMatch(HTML.replace(/<[^>]*base64[^>]*>/g, ''), /10000G/, '10000G にしない');
-  assert.match(HTML, /title:"1000G を受け取った！"/);
+  assert.match(HTML, /\{icon:"gold",text:"1000G"\}/);   // 2026-10-07 試遊：1000G と薬草は1つの帯
 });

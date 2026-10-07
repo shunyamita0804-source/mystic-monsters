@@ -130,6 +130,9 @@
       else if (e.k === 'clear') { nar.innerHTML = ''; cur = null; }
     };
     const EV = schedule();
+    // 2026-10-07 試遊（Scene 2 などで次の曲の鳴り始めが遅い）：opts.onSceneAudio(番号) を Scene の切り替えより opts.audioLeadMs だけ早く呼ぶ（映像の時刻表 CUES は変えない）
+    const AQ = opts.onSceneAudio ? sceneStarts().slice(1).map((t, k) => ({ t: Math.max(0, t - (opts.audioLeadMs || 0)), si: k + 1 })) : [];
+    let ai = 0;
     let done = false;
     try {
       showBg(SLIDES[0].bg); if (opts.onScene) { try { opts.onScene(0); } catch (x) {} }
@@ -140,10 +143,11 @@
       let i = 1;   // EV[0]＝Scene 1 の背景（上で出した）
       while (!quit && i < EV.length) {
         tick(); const c = clock();
+        while (ai < AQ.length && AQ[ai].t <= c) { try { opts.onSceneAudio(AQ[ai].si); } catch (x) {} ai++; }
         while (i < EV.length && EV[i].t <= c) { if (EV[i].k === 'end') { i = EV.length; break; } apply(EV[i]); i++; }
         if (i >= EV.length) break;
         syncAudio(false);
-        const dt = hidden() ? 1e9 : Math.max(8, Math.min(250, EV[i].t - c));
+        const dt = hidden() ? 1e9 : Math.max(8, Math.min(250, EV[i].t - c, ai < AQ.length ? AQ[ai].t - c : 1e9));
         await new Promise((r) => { const tm = setTimeout(() => { wake = null; r(); }, dt); wake = () => { clearTimeout(tm); wake = null; r(); }; });
       }
       done = true;   // 最後まで見た（時計は表に出ている間だけ進む＝裏で最後まで進まない）または スキップを2度押しで確定した

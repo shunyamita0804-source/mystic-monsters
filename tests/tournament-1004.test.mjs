@@ -28,7 +28,7 @@ test('TN-02：大会1 対戦表（2026-10-07 ADDENDUM2＝最終モック）：�
   assert.doesNotMatch(t, /試合 \/ 全|legend\.png|tag_you|tag_next|p9Ced\(|現在の成績|p9Standings\(|p9Matrix\(|p9VsGo/, '試合数・凡例・札・セドリック・旧い一覧・2度押しは大会1には無い');
   const g = fnOf('tbBoardGrid');
   assert.match(g, /MMP8L\.resultCell\(lg,e\.id,o\.id\)/, '勝敗のマスは大会の処理（resultCell）から');
-  assert.match(g, /<i class="tbo" aria-label="勝ち"><\/i>/); assert.match(g, /<i class="tbx" aria-label="負け"><\/i>/); assert.match(g, /c-self/, '自分自身'); assert.match(g, /e\.player\?" rme":""/, 'プレイヤーの行');
+  assert.match(g, /<i class="tbo" aria-label="勝ち"><\/i>/); assert.match(g, /<i class="tbx" aria-label="負け"><\/i>/); assert.match(g, /c-self/, '自分自身'); assert.match(g, /e\.player\?" rme":e\.id===nx\?" rnx":""/, 'プレイヤーの行（2026-10-07 試遊：次の相手の行は rnx）');
   assert.match(HTML, /\.tb1g\.tbv2 \.tbo\{[^}]*#ff4d5e/); assert.match(HTML, /\.tb1g\.tbv2 \.tbx::before,\.tb1g\.tbv2 \.tbx::after\{[^}]*#4fb4ff/); assert.match(HTML, /\.tb1g\.tbv2 \.c-next\.hot\{/);
 });
 

@@ -62,7 +62,7 @@ test('UB-03（第2弾）：施設名ラベル・リボン・プロフィール�
   assert.doesNotMatch(css, /hue-rotate|saturate|grayscale|sepia|invert|filter/, '正式画像の色は変えない（filter を使わない）');
   // 処理は変えない（押す範囲は従来のボタン）
   assert.match(readFileSync(path.join(ROOT, 'js/chapter/field-view.js'), 'utf8'), /<button class="p9mbtn chh-menu" onclick="p9Menu\(\)" aria-label="メニュー">☰<\/button>/);
-  assert.match(HTML, /<button class="ngm-ok" data-nsfx="1" onclick="ngOk\(this\)">確認しました<\/button>/);
+  assert.match(HTML, /<button class="ngm-ok" data-nsfx="1" onclick="ngOk\(this\)">はい<\/button><button class="ngm-back" data-se="UI_CANCEL" onclick="ngBack\(\)">いいえ<\/button>/);   // 2026-10-07 試遊：はい／いいえ
   assert.match(HTML, /class="pfrow"><i class="pfri" aria-hidden="true">/);
   assert.match(HTML, /<div class="card slot svauto">[\s\S]{0,500}<span class="svgold">\$\{S\.g\}G<\/span><\/div>/);
 });

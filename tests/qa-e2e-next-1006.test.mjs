@@ -58,7 +58,7 @@ test('TT-B1：TEST 大会：街のボタン → 大会受付へ直接 → 参加
   await pg.evaluate(() => { const r = MMP8.startTournament(S, S.m, 0); if (!r.ok) throw new Error(r.reason); save(); board(); }); await pg.waitForTimeout(800);
   assert.ok(await pg.evaluate(() => !!S.m.raise.tour), '大会が始まった');
   assert.equal(await stored(pg), before, 'TEST 大会の間は保存しない');
-  await pg.evaluate(() => p9Menu()); await pg.waitForSelector('#p9ov .ttest'); await pg.click('#p9ov .ttest');
+  await pg.evaluate(() => p9Menu()); await pg.waitForSelector('#p9ov .ttest'); await pg.click('#p9ov .ttest'); await pg.waitForSelector('#ynm .ynm-y'); await pg.waitForTimeout(450); await pg.click('#ynm .ynm-y');   // 2026-10-07 試遊：はい／いいえ の確認
   await pg.waitForSelector('.map.town');
   assert.equal(await stored(pg), before, 'セーブは始める前のまま'); assert.equal(await pg.evaluate(() => JSON.stringify(S)), sBefore, '画面の状態（S）も始める前のまま');
   // ② 受付で辞退 → 街へ

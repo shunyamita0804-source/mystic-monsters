@@ -65,7 +65,7 @@ test('PB-04：新しいゲームの確認（「最初からやり直す」のあ
   assert.match(fnOf('startGame'), /^function startGame\(el,ok\)\{if\(P_NEWGAME&&!ok\)return ngAsk\(el\);/);
   const a = fnOf('ngAsk');
   assert.match(a, /b\.disabled=true/, '開始ボタンも押せない'); assert.match(a, /for\(const t of \["click","pointerdown","pointerup","touchstart"\]\)d\.addEventListener\(t,e=>e\.stopPropagation\(\)\)/);
-  assert.match(a, /新しいゲームを始めますか？<br>現在のセーブデータは上書きされます。/); assert.match(a, /続きから始める場合は、戻るを選んでください。/); assert.match(a, />確認しました</); assert.match(a, />戻る</);
+  assert.match(a, /<p class="ngm-q" id="ngm-t">新しいゲームを始めますか？<\/p><small class="ngm-s">現在のセーブデータは上書きされます。<\/small>/); assert.match(a, />はい</); assert.match(a, />いいえ</);   // 2026-10-07 試遊：共通の はい／いいえ
   assert.match(a, /tapHold\(d,350\)/, '出た直後0.35秒の押下は無視');
   assert.match(fnOf('ngOk'), /startGame\(b,true\)/); assert.match(fnOf('ngBack'), /P_NEWGAME=false;title\(\)/);
   assert.match(HTML, /\.ngm\{position:fixed;inset:0;z-index:2400;/);
@@ -92,9 +92,9 @@ test('PB-06：正式の会話窓（event_dialogue_window）はイベント・大
   assert.match(HTML, /\.mmtalk\.mmtalk-big \.mmtalk-name::before,\.mmtalk\.mmtalk-big \.mmtalk-name::after\{content:"";position:absolute;z-index:-1;clip-path:polygon/);
   const no = rd('js/feel/notice.js'); assert.doesNotMatch(no.replace(/\/\/.*$/gm, '').replace(/\/\*\*[^*]*\*\//g, ''), /MMNPC|\.name\b|face|mmtalk|dnm/, '顔・名前は出さない（コメントを除いたコード）'); assert.match(HTML, /<script src="\.\/js\/feel\/notice\.js"><\/script>/);
   assert.match(HTML, /\.mmnote-layer\{position:fixed;[^}]*z-index:2300;/);
-  assert.match(HTML, /\{note:\{icon:"gold",title:"1000G を受け取った！",sub:"新人聖獣士支援制度",se:"GOLD_GET"\}\}/); assert.match(HTML, /\{note:\{img:ITEM_ICON\.herb,title:"薬草 を1つ受け取った！"[^}]*se:"REWARD"\}\}/);
+  assert.match(HTML, /\{note:\{rows:\[\{icon:"gold",text:"1000G"\},\{img:ITEM_ICON\.herb,text:"薬草を手に入れた"\}\],se:"GOLD_GET"\}\}/, '2026-10-07 試遊：1000G と薬草は1つの短い帯（薬草は正式アイコン）');
   assert.match(fnOf('talkSeq'), /if\(x&&x\.note\)\{await flush\(\);await MMNOTE\.show\(x\.note\)\}/);
-  assert.match(fnOf('opAfterReg'), /MMNOTE\.show\(\{icon:"unlock",title:"世界地図 が使えるようになった！"/, '機能の解放');
+  assert.match(fnOf('opAfterReg'), /MMNOTE\.show\(\{img:"\.\/assets\/ui\/cmd\/bureau_map\.png",cmd:true,small:true,title:"世界地図が使えるようになった"/, '機能の解放（2026-10-07 試遊：短い知らせ）');
   assert.match(fnOf('adopt'), /if\(typeof MMNOTE=="object"&&MMNOTE\)\{const sp=MMP10M\.byId\(x\.sp\),im=sp&&sp\.image&&sp\.image\.src;MMNOTE\.show\(\{\.\.\.\(im\?\{img:im\}:\{icon:"gold"\}\),title:x\.name\+"をつれて帰った！"\+pk,\.\.\.\(rs\?\{sub:rs\}:\{\}\)\}\);return undefined\}/, '購入の知らせ（救済も通常も）は帯だけ＝街の通知は出さない（2026-10-05 試遊）');
   assert.match(fnOf('p9TourResult'), /MMP8\.runTourEnd\(rs\)/, '大会の報酬（2026-10-06：大会の終わりの順の firstReward の段階で帯を出す）');
   assert.match(HTML, /MMP8\.registerTourEndHook\("firstReward",d=>\{[^\n]*MMNOTE\.show\(\{icon:"reward",title:`賞金 \$\{d\.prize\}G を手に入れた！`/, '大会の報酬');
@@ -152,7 +152,7 @@ test('PB-10：大会ランク選択の正式 UI：参加可能＝赤（ワイン
 
 test('PB-11：2026-10-05 試遊：新人支援の帯に SE（帯が出た瞬間に1回・帯は1つずつ＝重ならない）。1000G＝GOLD_GET（既存の所持金の入手の音）・薬草＝REWARD・世界地図の解放＝UNLOCK（REWARD と同じファイル）。新しい音源は足していない', () => {
   const no = rd('js/feel/notice.js'); assert.match(no, /if \(n\.se\) \{ try \{ if \(root\.MMAUDIO\) root\.MMAUDIO\.se\(n\.se\); \} catch \(e\) \{\} \}/);
-  assert.match(fnOf('opAfterReg'), /title:"世界地図 が使えるようになった！",sub:"聖獣士管理局でいつでも見られます",se:"UNLOCK"/);
+  assert.match(fnOf('opAfterReg'), /title:"世界地図が使えるようになった",se:"UNLOCK"/);
   const R = {}; new Function('window', rd('js/audio/audio-registry.js'))({ MMAUDIO: { registerAll: (r) => Object.assign(R, r) } }); const se = R.se || R.SE;
   assert.equal(se.REWARD.src, se.UNLOCK.src, '薬草と世界地図は同じ音'); assert.match(se.GOLD_GET.src, /ivokard\/bell\.ogg$/);
   // 帯に se を渡すと、帯が出たときに1回だけ鳴る
