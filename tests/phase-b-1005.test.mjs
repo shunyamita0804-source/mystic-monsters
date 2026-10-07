@@ -26,7 +26,7 @@ test('PB-01：開始画面に BGM は無い（TITLE は silent・旧タイトル
   assert.equal(sha('assets/audio/bgm/mystic_monsters_official/mystic_monsters_bureau_bgm_official.ogg'), '0fd1e1b8f593bdbae8d20414274bde12ba85f25347a5c45f6a004014a761be90', '聖獣士管理局 v6');
   assert.ok(!existsSync(path.join(ROOT, 'assets/audio/bgm/mystic_monsters_official/mystic_monsters_title_theme_official.ogg')), '旧タイトル曲は置かない＝読み込みようがない');
   assert.notEqual(B.BUREAU.loop, false); assert.ok(B.BUREAU.gain < 0.5, '会話が聞こえる音量（約 -20 LUFS）');
-  assert.match(HTML, /const BGM_SCENE=\{title:"TITLE",prologue:"PROLOGUE",town:"TOWN",bureau:"BUREAU",/);
+  assert.match(HTML, /const BGM_SCENE=\{title:"TITLE",prologue:"PROLOGUE",(?:cedric:"CEDRIC",arena:"ARENA",)?town:"TOWN",bureau:"BUREAU",/);
   for (const f of ['bureauScr', 'opBureau', 'opAfterReg']) assert.match(fnOf(f), /bgm\("bureau"\)/, `${f}：管理局に入ったら管理局の曲`);
   assert.match(fnOf('p11NameScr'), /bgm\(opOn\(\)\?"bureau":"title"\)/, '聖獣士登録（管理局）も同じ曲＝会話で止めない');
   assert.match(fnOf('startGame'), /MMAUDIO\.se\("TITLE_START",\{wait:900\}\)/, '開始の音（正式 SE）はそのまま');
