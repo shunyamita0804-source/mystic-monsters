@@ -600,7 +600,7 @@ test('S6-8：画面：ゴールで挑戦できるランクだけを表示し、�
   assert.match(goal, /return p9ReceptionHtml\(m\)/); assert.match(goal, /MMP8\.eligibleRanks\(m,m\.raise\.ch\)/); assert.match(goal, /大会に参加しない/);
   assert.match(between('function p9RcvPick(', '\n// ---- 大会開始'), /tapAt\(j\)/); assert.match(between('function p9RcvJoin(', '\n// ---- 大会開始'), /tapSoon\(b,350\)/);
   const scr = between('function p8TourScr(msg){', '\nfunction p9TourResult(');
-  assert.match(scr, /\$\{tbBoardGrid\(lg,pm,enter\)\}/); assert.match(scr, /onclick="p9CompareScr\(\)" aria-label="対戦する"><\/button>/, '2026-10-06：大会1 対戦表 →「対戦する」→ 大会2 対戦前比較'); assert.match(between('function p9CompareScr(){', '\nfunction '), /data-nsfx="1" onclick="p9VsGo\(this\)" aria-label="対戦開始"><\/button>/, '大会2の「対戦開始」（2度押し）→ 大会3 VS 演出 → fight()（fight() の導入の VS は出さない＝二重にしない）');
+  assert.match(scr, /\$\{tbBoardGrid\(lg,pm,enter\)\}/); assert.match(scr, /onclick="p9CompareScr\(\)" aria-label="対戦する">対戦する<\/button>/, '2026-10-06：大会1 対戦表 →「対戦する」→ 大会2 対戦前比較'); assert.match(between('function p9CompareScr(){', '\nfunction '), /data-nsfx="1" onclick="p9VsGo\(this\)" aria-label="対戦開始">対戦開始<\/button>/, '大会2の「対戦開始」（2度押し）→ 大会3 VS 演出 → fight()（fight() の導入の VS は出さない＝二重にしない）');
   assert.match(fnLine('function p9VsGo('), /p9arm\(b,"もう一度押すと試合開始"\)\)return;/); assert.match(between('function p9VsGo(', '\nconst TB_INTRO'), /tourVsShow\(m,p9Npc\(t\.league,pm\.opp\)\)\.then\([^\n]*p8TourFight\(\)/);
   assert.match(fnLine('function p8TourFight('), /MMP8\.beginBattle\(S,m,\{kind:"league",rank:t\.rank\}\)[^;]*;save\(\);.*fight\(t\.rank\)/);
   assert.ok(HTML.indexOf('js/phase8/league.js') < HTML.indexOf('js/phase8/raising.js'), 'league.js を先に読み込む');

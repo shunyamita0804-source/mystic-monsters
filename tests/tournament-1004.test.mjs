@@ -47,7 +47,7 @@ test('TN-03：大会2 対戦前比較（2026-10-07 刷新）：大会名・第N�
 
 test('TN-03b：大会3 VS 演出（正式素材 vs）：背景・VS のロゴ・斜めの光・名前の札・飾り＋待機の立ち絵（相手はこちら向き）→ fight()。fight() の導入（intro）はこの試合だけ出さない（二重の VS にしない）。fight()・intro() の中身は変えない', () => {
   const v = CODE.slice(CODE.indexOf('function tourVsShow('), CODE.indexOf('function tourVsOut('));
-  for (const f of ['vs/vs_background.webp', 'vs/vs_diagonal.png', 'vs/vs_nameplate.png', 'vs/vs_ornament.png', 'vs/vs_logo.png']) { assert.ok(v.includes(f), f); assert.ok(existsSync(path.join(ROOT, 'assets/tournament', f)), f); }
+  assert.ok(v.includes('${TB_VENUE('), '2026-10-07 追補便：VS の背景はそのランクの正式の会場（venue_E〜S）'); for (const f of ['vs/vs_diagonal.png', 'vs/vs_nameplate.png', 'vs/vs_ornament.png', 'vs/vs_logo.png']) { assert.ok(v.includes(f), f); assert.ok(existsSync(path.join(ROOT, 'assets/tournament', f)), f); }
   assert.match(v, /p11Esc\(o\.name\)/); assert.match(v, /p11Esc\(m\.name\)/); assert.match(v, /tbIdle\(o,1\)/); assert.match(v, /tbIdle\(m,0\)/);
   assert.match(CODE, /const TB_INTRO=intro;intro=function\(pl\)\{if\(TB_SKIP_INTRO\)\{TB_SKIP_INTRO=false;return Promise\.resolve\(\)\}return TB_INTRO\(pl\)\};/);
   assert.match(CODE, /if\(window\.MM_QA_NO_TOURVS\|\|!t\|\|t\.status!="league"\)return p8TourFight\(\);/, '自動テストの既定は大会2 から直接バトル（tourvs:true で大会3）');

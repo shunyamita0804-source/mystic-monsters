@@ -250,6 +250,7 @@
       const big = !!(opts.big || pres === 'board' || (pres !== 'compact' && (scene || opts.kind === 'event')));
       const ov = h('div', `mmtalk mmtalk-${pres}${big ? ' mmtalk-big' : ''}${scene ? ' mmtalk-scene' : ''}`), stage = h('div', 'mmtalk-stage'), fig = h('div', 'mmtalk-fig'), img = h('img'), win = h('div', 'mmtalk-win'), nm = h('div', 'mmtalk-name'), tx = h('p', 'mmtalk-text'), nx = h('span', 'mmtalk-next'), ch = h('div', 'mmtalk-choices');
       ov.dataset.pres = pres; if (opts.kind) ov.dataset.kind = String(opts.kind);
+      if (scene && opts.noFig) ov.classList.add('mmtalk-nofig');   // 2026-10-07：背景の絵に人物が描かれている場面（セドリックの大会イベント）は立ち絵を重ねない
       if (scene) { const bg = h('div', 'mmtalk-scenebg'); bg.setAttribute('aria-hidden', 'true'); bg.style.backgroundImage = `url("${scene.replace(/"/g, '%22')}")`; ov.appendChild(bg); }
       ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); img.alt = ''; img.draggable = false; nx.textContent = '▼'; nx.setAttribute('aria-hidden', 'true');
       ch.hidden = true; ch.setAttribute('role', 'group'); let chKey = '';

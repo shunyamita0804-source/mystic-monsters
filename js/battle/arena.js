@@ -29,7 +29,7 @@
 
   /** 上の帯の文字（「ランクX大会」）から会場のランク（E〜S）。読めなければ null */
   function rankOf(bt) { const t = (($('.tm small', bt) || {}).textContent || ''); const m = /ランク([EDCBAS])大会/.exec(t); return m ? m[1] : null; }
-  const arenaSrc = (r) => (r && RANKS.includes(r) ? `${A}arena/arena_${r}.webp` : null);
+  const arenaSrc = (r) => (r && RANKS.includes(r) ? `./assets/tournament/venues/venue_${r}.webp` : null);   // 2026-10-07 追補便：正式の大会会場 venue_E〜S（旧 arena_E〜S はファイルだけ残す）
   const idleSrc = (sp) => (IDLE[sp] ? `${A}idle/${IDLE[sp]}.webp` : null);
   /** 立ち絵を左右反転するか（プレイヤー＝右向き・相手＝左向き） */
   const flipOf = (side, sp) => (FACE[sp] === 'L') === (side === 0);

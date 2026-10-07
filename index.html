@@ -3495,6 +3495,24 @@ main:has(>#app>.ds) h1{display:none}
 .p9conf-box button{position:absolute;left:7%;right:7%;min-height:0;margin:0;padding:0;border:0;border-radius:999px;background:transparent;box-shadow:none;color:transparent;font-size:0;-webkit-tap-highlight-color:transparent}
 .p9conf-yes{top:38.5%;height:19%}.p9conf-no{top:62.5%;height:19%}
 .p9conf-box button:active{background:radial-gradient(closest-side,rgba(255,230,160,.28),rgba(255,230,160,0))}
+/* ===== 2026-10-07 大会〜バトル追補便（正式素材：セドリックの大会イベント・大会会場 venue_E〜S・ランク開始 A1〜A6・ランクアップ B1〜B7・対戦表／対戦前比較の正式デザイン基準）=====
+ *  画像の色は変えない。演出のカットは全画面で順にクロスフェード（p9Frames）。対戦表・比較の処理・ボタンの onclick は従来どおり */
+.p9fx{position:fixed;inset:0;z-index:940;background:#02040c;cursor:pointer;animation:p9fxIn .2s ease-out}
+@keyframes p9fxIn{from{opacity:0}}
+.p9fx img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .32s ease;pointer-events:none;user-select:none;-webkit-user-drag:none}
+.p9fx img.on{opacity:1}
+.p9fx.out{transition:opacity .26s ease;opacity:0}
+.mmtalk-nofig .mmtalk-fig{display:none}
+.mmtalk-nofig>.mmtalk-scenebg{background-position:center top}
+.mmtalk-nofig>.mmtalk-scenebg::after{background:linear-gradient(180deg,rgba(6,12,30,0) 0%,rgba(6,12,30,0) 55%,rgba(6,12,30,.5) 100%)}
+.tb1>.tbbg::after{background:linear-gradient(rgba(6,12,30,.28),rgba(6,12,30,.08) 35%,rgba(6,12,30,.5))}
+.p9cmps>.pcbg::after{background:linear-gradient(rgba(6,12,30,.25),rgba(6,12,30,.05) 30%,rgba(6,12,30,.45) 70%,rgba(6,12,30,.78))}
+.tb1 .tbttl,.tb3 .tbttl{width:auto;min-width:min(62vw,240px);aspect-ratio:auto;padding:7px 26px 8px;box-sizing:border-box;border:1.5px solid #c9a24f;border-radius:4px;background:linear-gradient(#152657,#0b1636);box-shadow:0 0 0 2px rgba(6,11,28,.85),0 4px 10px rgba(0,0,0,.45)}
+.tb3 .tbttl{border-radius:999px}
+.tb1 .tbgo{width:min(46vw,180px);height:44px;aspect-ratio:auto;border:2px solid #e8c86a;border-radius:999px;background:linear-gradient(#d84040,#a01d22 60%,#7a1016);color:#fff6e6;font:800 17px/1 var(--mm-font-head);letter-spacing:.24em;text-indent:.24em;text-shadow:0 1px 2px rgba(0,0,0,.6);box-shadow:0 0 0 2px rgba(60,8,12,.85),0 4px 10px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,220,200,.35)}
+.tb2 .tbstart{width:min(86vw,330px);height:52px;aspect-ratio:auto;border:1.5px solid #fff0b8;border-radius:10px;background:linear-gradient(#ffe590,#eab73e 55%,#c88a1a);color:#3a2306;font:800 21px/1 var(--mm-font-head);letter-spacing:.28em;text-indent:.28em;text-shadow:0 1px 0 rgba(255,245,210,.6);box-shadow:0 0 0 2px rgba(80,50,6,.6),0 5px 12px rgba(0,0,0,.45)}
+.tb2 .tbback{width:auto;height:auto;aspect-ratio:auto;padding:8px 24px;border:1px solid #c9a24f;border-radius:999px;background:linear-gradient(#1b2e5e,#0d1a3c);color:#f3ecd9;font:700 13px/1.2 var(--mm-font-head);letter-spacing:.08em}
+@media (max-height:760px){.tb1 .tbgo{height:38px;font-size:15px}.tb2 .tbstart{height:44px;font-size:18px}}
 </style></head><body><main>
 <h1>ミスティックモンスターズ</h1>
 <div id="app"></div>
@@ -4865,9 +4883,23 @@ function p9RcvConfirm(b,k){if($("#p9conf"))return;const d=document.createElement
  y.onclick=()=>{if(tapSoon(y,350))return;close();b.dataset.ok=String(k);p9RcvJoin(b);delete b.dataset.ok}}
 // ---- 大会開始の演出（E〜S 共通）：暗転 → ランクのエンブレム「公式ランクE大会」→ セドリックの一言 → 順位表（参加者が右から順に入る）。タップで飛ばせる。視差効果を減らす設定では短く ----
 let P9_ENTER=false;
-function p9TourIntro(k,noCed){return new Promise(res=>{const calm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches),im=window.MMNPC&&MMNPC.imageOf("cedric","face",k>=3?"tense":"host");
+/** 2026-10-07 正式素材（大会〜バトル追補便）：大会の会場（ランク別 venue_E〜S）・セドリックの大会イベント（opening＝開会＝正式素材 standing_UI の上部／booth＝締め）・ランク開始（A1〜A6）・ランクアップ（B1〜B7） */
+const TB_VENUE=k=>`./assets/tournament/venues/venue_${RN[k]}.webp`;
+const CED_SCENE=(k,kind)=>`./assets/tournament/cedric/${kind}_${RN[k]}.webp`;
+const RANK_START_FX=["A1","A2","A3","A4","A5","A6"].map(n=>`./assets/tournament/rank_start/${n}.webp`),RANK_START_MS=[420,520,620,700,1150,620];   // E ランク基準の正式カット（エンブレムの E・「公式ランクE大会」が絵の中）
+const RANK_UP_FX=["B1","B2","B3","B4","B5","B6","B7"].map(n=>`./assets/tournament/rank_up/${n}.webp`),RANK_UP_MS=[600,700,460,800,700,1500,700];   // E → D の正式カット（「Dランクに昇格！」が絵の中）
+/** 正式カットを順にクロスフェードで見せる（全画面・タップで飛ばせる＝出た直後0.35秒は無視・視差を減らす設定では最後のカットだけ短く）。画像は先に読み込む（最大1.5秒待つ） */
+function p9Frames(srcs,ms,cls){return new Promise(res=>{const calm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
+ const d=document.createElement("div");d.className="p9fx "+(cls||"");d.setAttribute("aria-hidden","true");d.innerHTML=srcs.map(u=>`<img src="${u}" alt="" decoding="async" draggable="false">`).join("");
+ document.body.appendChild(d);const im=[...d.querySelectorAll("img")],T=[];let done=false;const t0=performance.now();
+ const fin=()=>{if(done)return;done=true;T.forEach(clearTimeout);d.classList.add("out");setTimeout(()=>{d.remove();res()},calm?0:260)};
+ d.onclick=()=>{if(performance.now()-t0>350)fin()};
+ const go=()=>{if(done)return;if(calm){im[im.length-1].classList.add("on");T.push(setTimeout(fin,700));return}let t=0;im.forEach((x,i)=>{T.push(setTimeout(()=>{im.forEach((y,j)=>y.classList.toggle("on",j===i))},t));t+=ms[i]||600});T.push(setTimeout(fin,t))};
+ Promise.race([Promise.all(im.map(x=>x.decode?x.decode().catch(()=>{}):0)),new Promise(r=>setTimeout(r,1500))]).then(go)})}
+function p9TourIntro(k,noCed){if(k===0)return p9Frames(RANK_START_FX,RANK_START_MS,"p9rs"); // E＝正式のランク開始演出（A1〜A6）。D〜S は正式カットが無い＝従来の演出（背景だけ正式の A1）
+ return new Promise(res=>{const calm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches),im=window.MMNPC&&MMNPC.imageOf("cedric","face",k>=3?"tense":"host");
  const d=document.createElement("div");d.className="p9intro";d.id="p9intro";
- d.innerHTML=`<div class="p9ibg"></div><div class="p9iem"><span class="p9iem-w"><i class="p9iem-rays"></i><svg class="p9iem-lau" viewBox="0 0 200 200" aria-hidden="true"><path d="M58 168C22 140 14 92 34 52M142 168c36-28 44-76 24-116"/><path d="M40 140l-14 2M32 118l-14-2M30 96l-13-5M34 74l-11-8M46 150l-8 12M154 150l8 12M160 140l14 2M168 118l14-2M170 96l13-5M166 74l11-8"/></svg><span class="p9iem-l">${RN[k]}</span></span><span class="p9iem-r">RANK</span><b>公式ランク${RN[k]}大会</b></div><div class="p9iced"><img src="${im?im.src:CEDRIC_FACE}" alt=""><div class="tx"><b>セドリック</b>${CEDRIC_TALK.open.replace("{R}",RN[k])}</div></div><small class="p9iskip">タップで飛ばす</small>`;
+ d.innerHTML=`<div class="p9ibg" style="background:#05081a url(${RANK_START_FX[0]}) center/cover no-repeat"></div><div class="p9iem"><span class="p9iem-w"><i class="p9iem-rays"></i><svg class="p9iem-lau" viewBox="0 0 200 200" aria-hidden="true"><path d="M58 168C22 140 14 92 34 52M142 168c36-28 44-76 24-116"/><path d="M40 140l-14 2M32 118l-14-2M30 96l-13-5M34 74l-11-8M46 150l-8 12M154 150l8 12M160 140l14 2M168 118l14-2M170 96l13-5M166 74l11-8"/></svg><span class="p9iem-l">${RN[k]}</span></span><span class="p9iem-r">RANK</span><b>公式ランク${RN[k]}大会</b></div><div class="p9iced"><img src="${im?im.src:CEDRIC_FACE}" alt=""><div class="tx"><b>セドリック</b>${CEDRIC_TALK.open.replace("{R}",RN[k])}</div></div><small class="p9iskip">タップで飛ばす</small>`;
  document.body.appendChild(d);let done=false;const T=[];const fin=()=>{if(done)return;done=true;T.forEach(clearTimeout);d.classList.add("out");setTimeout(()=>{d.remove();res()},calm?0:240)};d.onclick=fin;
  if(calm){setTimeout(fin,80);return}
  if(noCed){T.push(setTimeout(()=>d.classList.add("em"),60),setTimeout(()=>d.classList.add("em-out"),1350),setTimeout(fin,1650));return}
@@ -4914,10 +4946,10 @@ function p8TourScr(msg){const m=S.m,t=m.raise.tour,lg=t.league;bgm(t.status=="se
  if(t.status=="settled")return p9TourResult(msg);
  if(lg.round===0)setTimeout(()=>{try{if(document.querySelector(".p9tour")&&S.m===m)npcMoment("tour")}catch(e){}},900); // 2026-10-05：初めての公式大会（1回だけ）
  const pm=MMP8.tourNext(m),o=p9Npc(lg,pm.opp),enter=P9_ENTER;P9_ENTER=false; // 大会開始の演出の直後は対戦表の参加者が順に入る
- $("#app").innerHTML=`<div class="p9tour tp2 tb1"><div class="tbbg" style="background-image:url(${P9_LOBBY_BG})"></div><button class="p9mbtn tbmenu" onclick="p9Menu()" aria-label="メニュー">☰</button>
+ $("#app").innerHTML=`<div class="p9tour tp2 tb1"><div class="tbbg" style="background-image:url(${TB_VENUE(t.rank)})"></div><button class="p9mbtn tbmenu" onclick="p9Menu()" aria-label="メニュー">☰</button>
  <header class="tbttl"><b>公式ランク${RN[t.rank]}大会</b></header>
  <section class="p9next tbmain">${tbBoardGrid(lg,pm,enter)}
- <button class="p9btn p9go tp2go tbgo" onclick="p9CompareScr()" aria-label="対戦する"></button></section>
+ <button class="p9btn p9go tp2go tbgo" onclick="p9CompareScr()" aria-label="対戦する">対戦する</button></section>
  ${msg?`<div class="p9msg p9tmsg">${msg}</div>`:""}<p class="p9prov">【暫定】大会参加者の名前・種族は仮のデータです。実際の試合では、ランク${RN[t.rank]}相当の相手と戦います。</p></div>`;try{window.scrollTo(0,0)}catch(e){}}
 // 大会2 対戦前比較（2026-10-07 刷新・ADDENDUM2）：大会名・左右に待機の立ち絵と名前・固有スキル・能力の数値と棒・対戦開始（2度押し）・対戦表にもどる（試合数とセドリックは出さない）。下の TB_STAT は旧デザインの値（今は使わない）
 //  能力の枠（ui2/stats_panel.png。912×540 の範囲）の上のバーの位置（README.md）
@@ -4928,15 +4960,15 @@ function tbIdle(x,side){const s=window.MMARENA&&x&&MMARENA.idleSrc(x.sp);return 
 function tbSkillDesc(x){const k=x&&MMP10M.skillText(x.sp);return k?`<small class="tbskn"><i>スキル</i>${p11Esc(k.name)}</small><span class="tbskd">${p11Esc(k.desc||"")}</span>`:`<small class="tbskn"><i>スキル</i>―</small>`}
 function p9CompareScr(){const m=S.m,t=m&&m.raise&&m.raise.tour;if(!t||t.status!="league")return board();const lg=t.league,pm=MMP8.tourNext(m);if(!pm)return board();const o=p9Npc(lg,pm.opp);bgm("matchup");p9Immersive(true);p9MenuClose();
  const v=x=>Math.max(0,x|0),g=KS.map(k=>{const a=v(m[k]),b=v(o[k]),mx=Math.max(a,b,100)*1.08;return `<div class="pcg"><b class="pcv">${a}</b><div class="pcb l" style="--c:${STAT_COLOR[k]}"><i style="width:${Math.round(a/mx*100)}%"></i></div><span class="pcl">${LAB[k]}</span><div class="pcb r" style="--c:${STAT_COLOR[k]}"><i style="width:${Math.round(b/mx*100)}%"></i></div><b class="pcv">${b}</b></div>`}).join("");
- $("#app").innerHTML=`<div class="p9cmps tb2 tb3"><div class="pcbg" style="background-image:url(${P9_LOBBY_BG})"></div><header class="tbttl"><b>公式ランク${RN[t.rank]}大会</b></header> <div class="pcduo"><div class="pcs me"><span class="tbmon">${tbIdle(m,0)}</span><b class="tbnp">${p11Esc(m.name)}</b><div class="tbskp l">${tbSkillDesc(m)}</div></div>
+ $("#app").innerHTML=`<div class="p9cmps tb2 tb3"><div class="pcbg" style="background-image:url(${TB_VENUE(t.rank)})"></div><header class="tbttl"><b>公式ランク${RN[t.rank]}大会</b></header> <div class="pcduo"><div class="pcs me"><span class="tbmon">${tbIdle(m,0)}</span><b class="tbnp">${p11Esc(m.name)}</b><div class="tbskp l">${tbSkillDesc(m)}</div></div>
  <div class="pcs op"><span class="tbmon">${tbIdle(o,1)}</span><b class="tbnp">${p11Esc(p9Short(lg,pm.opp))}</b><div class="tbskp r">${tbSkillDesc(o)}</div></div></div>
  <div class="pcgs tbst" aria-label="能力の比較">${g}</div>
- <div class="pcacts"><button class="p9btn p9go pcgo tbstart" data-nsfx="1" onclick="p9VsGo(this)" aria-label="対戦開始"></button><button class="pcback tbback" data-nav="back" onclick="board()" aria-label="対戦表にもどる"></button></div></div>`;try{window.scrollTo(0,0)}catch(e){}}
+ <div class="pcacts"><button class="p9btn p9go pcgo tbstart" data-nsfx="1" onclick="p9VsGo(this)" aria-label="対戦開始">対戦開始</button><button class="pcback tbback" data-nav="back" onclick="board()" aria-label="対戦表にもどる">対戦表にもどる</button></div></div>`;try{window.scrollTo(0,0)}catch(e){}}
 // 大会3 VS 演出（背景・VS のロゴ・斜めの光・名前の札・飾りは正式素材。モンスターは正式画像）→ バトル。タップで早送り。fight() の導入（intro）はこの試合だけ出さない（二重の VS にしない）
 let TB_SKIP_INTRO=false;
 function tourVsShow(m,o){return new Promise(res=>{const calm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
  const d=document.createElement("div");d.className="tvs"+(calm?" calm":"");d.id="tvs";
- d.innerHTML=`<div class="tvsbg" style="background-image:url(${TB_UI}vs/vs_background.webp)"></div><img class="tvsline" src="${TB_UI}vs/vs_diagonal.png" alt=""><b class="tvshd">マッチアップ</b><div class="tvsm op"><span class="mon">${tbIdle(o,1)}</span></div><div class="tvsm me"><span class="mon">${tbIdle(m,0)}</span></div>
+ d.innerHTML=`<div class="tvsbg" style="background-image:url(${TB_VENUE(S.m&&S.m.raise&&S.m.raise.tour?S.m.raise.tour.rank:0)})"></div><img class="tvsline" src="${TB_UI}vs/vs_diagonal.png" alt=""><b class="tvshd">マッチアップ</b><div class="tvsm op"><span class="mon">${tbIdle(o,1)}</span></div><div class="tvsm me"><span class="mon">${tbIdle(m,0)}</span></div>
  <div class="tvsnp op"><img src="${TB_UI}vs/vs_nameplate.png" alt=""><b>${p11Esc(o.name)}</b><img class="tvsorn" src="${TB_UI}vs/vs_ornament.png" alt=""></div><div class="tvsnp me"><img src="${TB_UI}vs/vs_nameplate.png" alt=""><b>${p11Esc(m.name)}</b><img class="tvsorn" src="${TB_UI}vs/vs_ornament.png" alt=""></div>
  <img class="tvslogo" src="${TB_UI}vs/vs_logo.png" alt="VS"><i class="tvsfl"></i>`;
  document.body.appendChild(d);try{MMFEEL.emit("battle.matchup")}catch(e){}
@@ -4970,14 +5002,17 @@ const CEDRIC_EV={
   if(rs.won)return[{npc:"cedric",expression:"victory",text:`勝負あり！ 優勝は${n}です！`},{npc:"cedric",expression:"host",text:"さすがの戦いぶりでした。皆さん、お疲れさまでした！"}];
   return[{npc:"cedric",expression:"host",text:`公式ランク${R}大会、これにて閉幕です。${n}は${rs.place}位でした。`},{npc:"cedric",expression:"host",text:"最後まで見事な戦いでした。この経験は、きっと次の大会で力になります。"},{npc:"cedric",expression:"host",text:"皆さん、お疲れさまでした！"}]}};
 const cedricOn=()=>!window.MM_QA_NO_NPC&&!!window.MMNPC;
-const cedricBg=k=>(window.MMARENA&&MMARENA.arenaSrc(RN[k]))||P9_LOBBY_BG; // 2026-10-07：セドリックの会話の背景はそのランクの会場（arena_E〜S。UI は共通・ランクの差は会場の背景）
+const cedricBg=k=>TB_VENUE(k)||P9_LOBBY_BG; // 2026-10-07 追補便：会場は正式の venue_E〜S（セドリックのイベントそのものは CED_SCENE＝opening／booth） // 2026-10-07：セドリックの会話の背景はそのランクの会場（arena_E〜S。UI は共通・ランクの差は会場の背景）
 async function p9TourOpen(k){const on=cedricOn();await p9TourIntro(k,on);
- if(on){const f=finaFlags(),first=!f.cedricWelcome;if(first){f.cedricWelcome=1;save()}bgm("cedric");try{await MMNPC.talk(CEDRIC_EV.open(k,first),{kind:"event",big:true,scene:cedricBg(k)})}catch(e){}} // 2026-10-07：大会前の導入の曲（CEDRIC）→ 対戦表で対戦表の曲
+ if(on){const f=finaFlags(),first=!f.cedricWelcome;if(first){f.cedricWelcome=1;save()}bgm("cedric");try{await MMNPC.talk(CEDRIC_EV.open(k,first),{kind:"event",big:true,scene:CED_SCENE(k,"opening"),noFig:true})}catch(e){}} // 2026-10-07：大会前の導入の曲（CEDRIC）→ 対戦表で対戦表の曲
  P9_ENTER=true;board()}
-let P9_END_RS=null,P9_END_UP=null,P9_END_AFTER=null;
+let P9_END_RS=null,P9_END_UP=null,P9_END_AFTER=null,P9_END_FX=false;
 MMP8.registerTourEndHook("final",()=>{P9_END_UP=null});
-MMP8.registerTourEndHook("rankUp",d=>{P9_END_UP=d});
-MMP8.registerTourEndHook("cedricEnd",async()=>{const rs=P9_END_RS,m=S.m;if(!rs||!cedricOn())return;await new Promise(r=>setTimeout(r,rs.won?2200:900));if(!document.querySelector(".p9tour")||S.m!==m)return;try{await MMNPC.talk(CEDRIC_EV.close(rs,P9_END_UP,m&&m.name),{kind:"event",big:true,scene:cedricBg(rs.rank)})}catch(e){}});
+MMP8.registerTourEndHook("rankUp",async d=>{P9_END_UP=d;P9_END_FX=false;const m=S.m;
+ if(d.from!==0||d.to!==1||window.MM_QA_NO_TOURFX)return;   // 2026-10-07 正式素材 B1〜B7 は E → D だけ（ほかのランクの正式カットは未着＝演出なし）
+ await new Promise(r=>setTimeout(r,2600));if(!document.querySelector(".p9tour")||S.m!==m)return;   // 先に優勝（モンスターの勝利）と初回報酬を見せてから
+ await p9Frames(RANK_UP_FX,RANK_UP_MS,"p9ru");P9_END_FX=true});
+MMP8.registerTourEndHook("cedricEnd",async()=>{const rs=P9_END_RS,m=S.m;if(!rs||!cedricOn())return;await new Promise(r=>setTimeout(r,P9_END_FX?300:rs.won?2200:900));if(!document.querySelector(".p9tour")||S.m!==m)return;try{await MMNPC.talk(CEDRIC_EV.close(rs,P9_END_UP,m&&m.name),{kind:"event",big:true,scene:CED_SCENE(rs.rank,"booth"),noFig:true})}catch(e){}});
 MMP8.registerTourEndHook("next",()=>{const f=P9_END_AFTER;P9_END_AFTER=null;if(f)setTimeout(f,cedricOn()?300:1100)});
 
 // 大会の終わりの段階の差し込み口（2026-10-06）：初回クリアの報酬＝従来の音と帯（REWARD・UNLOCK・MMNOTE）。ランクアップの演出・セドリックの締めの正式 UI は素材待ち（何も出さない）

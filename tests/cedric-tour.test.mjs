@@ -125,35 +125,32 @@ async function joinD(pg) {
 const noOverflow = (pg) => pg.evaluate(() => ({ sw: document.documentElement.scrollWidth, W: innerWidth,
   inside: [...document.querySelectorAll('.p9ced')].every((c) => { const r = c.getBoundingClientRect(); return r.left >= -1 && r.right <= innerWidth + 1; }) }));
 
-test('CED-B1：ゴールのランク選択 → 順位表 → 試合後 → VS画面 → 結果（優勝）の各画面で、セドリックの名前・顔・一言。試合結果の通知は顔・名前なしの別表示', { skip: SKIP }, async () => {
-  const p = await boot(H.SIZES.base); const pg = p.page; const T = await pg.evaluate(() => CEDRIC_TALK);
-  // 大会一覧（ゴールのランク選択）
+test('CED-B1（2026-10-07 追補便）：ランク選択はフィナの見立て（セドリックは出さない）→ 参加 → セドリックの開会イベント（正式素材 standing＝そのランクの会場に立つセドリック・立ち絵は重ねない）→ 大会1 対戦表（セドリックは出さない）→ 優勝 → セドリックの締め（正式素材 booth＝実況席）。試合結果の通知は顔・名前なし', { skip: SKIP }, async () => {
+  const p = await L.open({ size: H.SIZES.base, save: goalSave(), npc: true }); const pg = p.page;
+  await pg.waitForSelector('.p15start'); await pg.evaluate(() => p8Resume()); await pg.waitForSelector('.rcv-row', { timeout: 20000 }); await H.finishTalk(pg).catch(() => {});
   await waitImg(pg);
-  // 2026-09-30：ランク選択はフィナの見立て（セドリックは大会開始の紹介 p9TourIntro から）
   assert.deepEqual(await ceds(pg), [{ name: 'フィナ', src: 'assets/npc/fina/closeup/smile.webp', ok: true, text: 'フィナ' + (await pg.evaluate(() => FINA_RANK_TALK.pick)) }]);
   assert.equal(await pg.evaluate(() => document.querySelectorAll('.p9ced:not(.p9fina)').length), 0, 'ランク選択にセドリックは出さない');
   assert.ok(await sysClean(pg));
   assert.equal(await pg.evaluate(() => document.querySelectorAll('.rcv-row.ok').length), 2, 'ランクの選択肢（E クリア＋1＝E・D）');
-  // 参加 → 順位表（最初の試合の前）
-  await joinD(pg); await waitImg(pg);
-  assert.deepEqual((await ceds(pg)).map((c) => [c.name, c.ok, c.text]), [['セドリック', true, T.first]]);
-  assert.equal(await pg.evaluate(() => !!document.querySelector('.p9tmsg')), false);
-  // 1試合目のあと：通知（第1試合：勝ち！）は顔・名前なし、セドリックは次の対戦の案内
-  assert.ok(await simMatch(pg, true)); await pg.waitForSelector('.p9tmsg'); await waitImg(pg);
+  const scene = () => pg.evaluate(() => { const o = document.querySelector('.mmtalk:not(.mmtalk-out)'), bg = o && o.querySelector('.mmtalk-scenebg'), fig = o && o.querySelector('.mmtalk-fig');
+    return o ? { nofig: o.classList.contains('mmtalk-nofig'), bg: bg ? (bg.style.backgroundImage.match(/assets\/[^"')]+/) || [''])[0] : '', fig: fig ? getComputedStyle(fig).display : '', name: o.querySelector('.mmtalk-name').textContent, text: o.dataset.npc } : null; });
+  await joinD(pg).catch(() => {}); await pg.waitForSelector('.mmtalk-nofig', { timeout: 15000 });
+  const s1 = await scene();
+  assert.deepEqual([s1.nofig, s1.bg, s1.fig, s1.name, s1.text], [true, 'assets/tournament/cedric/opening_D.webp', 'none', 'セドリック', 'cedric'], '開会＝ランクDの standing（立ち絵は重ねない）');
+  assert.ok(await pg.evaluate(() => new Promise((r) => { const i = new Image(); i.onload = () => r(i.naturalWidth > 0); i.onerror = () => r(false); i.src = './assets/tournament/cedric/opening_D.webp'; })));
+  await H.finishTalk(pg); await H.finishTalk(pg).catch(() => {});
+  await pg.waitForSelector('.tb1 .tbgo');
+  assert.equal(await pg.evaluate(() => document.querySelectorAll('.p9ced:not(.p9fina)').length), 0, '大会1 対戦表にセドリックは出さない（ADDENDUM2）');
+  assert.match(await pg.evaluate(() => document.querySelector('.tb1>.tbbg').style.backgroundImage), /tournament\/venues\/venue_D\.webp/, '対戦表の会場＝正式の venue');
+  assert.ok(await simMatch(pg, true)); await pg.waitForSelector('.p9tmsg');
   assert.equal(await pg.evaluate(() => document.querySelector('.p9tmsg').textContent), '第1試合：勝ち！');
   assert.ok(await sysClean(pg), '試合結果の通知にセドリックの顔・名前は付かない');
-  assert.deepEqual((await ceds(pg)).map((c) => c.text), [T.next[1]]);
-  // 2026-10-03 品質向上：対戦前の画面を1つに＝順位表の「次の相手」に能力の比較と「対戦開始」（2度押し）。VS 画面（p9VsScr）は流れから外した
-  assert.deepEqual(await pg.evaluate(() => { const r = S.m.raise.tour.league.entrants.findIndex((e) => e.player); return [document.querySelectorAll('.tb1g .tbnm').length, document.querySelectorAll(`.tb1g .tbc.c-win[data-r="${r}"]`).length, document.querySelector('.tbsub b').textContent]; }), [6, 1, '第2試合 / 全5試合'], '2026-10-06：大会1 対戦表＝D は6体・自分の行に勝ったマス1つ・第2試合');
-  await pg.waitForTimeout(550); await pg.click('.p9next .p9go'); await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(500);
-  assert.equal(await pg.evaluate(() => document.querySelectorAll('.pcgs .pcg').length), 6, 'パラメーター比較＝6能力のゲージ（2026-10-04）');
-  await pg.click('.pcgo'); await pg.waitForTimeout(100);
-  assert.equal(await pg.evaluate(() => S.m.raise.battle), null, '1回目の押下では試合はまだ始まらない（2度押し）');
-  await pg.evaluate(() => board()); await pg.waitForSelector('.p9tour .p9next');
-  // 残り4試合も勝って優勝 → 結果画面
   for (let i = 0; i < 4; i++) assert.ok(await simMatch(pg, true));
-  await pg.waitForSelector('.p9tour.p9won'); await waitImg(pg);
-  assert.deepEqual((await ceds(pg)).map((c) => [c.name, c.ok, c.text]), [['セドリック', true, T.won]]);
+  await pg.waitForSelector('.p9tour.p9won'); await H.finishTalk(pg).catch(() => {});
+  await pg.waitForFunction(() => { const o = document.querySelector('.mmtalk-nofig:not(.mmtalk-out)'); return o && /booth_D/.test(o.querySelector('.mmtalk-scenebg').style.backgroundImage); }, null, { timeout: 20000 });
+  const s2 = await scene(); assert.deepEqual([s2.bg, s2.fig, s2.name], ['assets/tournament/cedric/booth_D.webp', 'none', 'セドリック'], '締め＝ランクDの booth（実況席）');
+  await H.finishTalk(pg).catch(() => {});
   assert.ok(await sysClean(pg), '報酬・結果の表示にセドリックの顔・名前は付かない');
   const s = await H.getS(pg);
   assert.deepEqual([s.m.raise.tour.result.place, s.m.raise.tour.result.reward.prize, s.m.raise.tour.result.reward.tickets], [1, 200, 1], '報酬は従来どおり（ランクD初回優勝）');
