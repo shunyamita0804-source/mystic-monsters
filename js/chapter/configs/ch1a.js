@@ -253,7 +253,7 @@
       { id: 'tut_rest', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { recovery: true }, lines: [{ expression: 'guide', text: '休憩マスだね。疲れが減ったよ。' }, { expression: 'normal', text: '疲れが100になるとサイコロが振れなくなるから、操作欄の「休む」も使ってね。' }] },
       { id: 'tut_treasure', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { kind: 'treasure' }, lines: [{ expression: 'happy', text: '宝箱だ！ 中身はその時によって違うよ。' }, { expression: 'guide', text: '珍しい宝箱ほど、いいものが入ってるみたい。' }] },
       { id: 'tut_wild', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { fx: 'battle', battleType: 'wild' }, lines: [{ expression: 'surprised', text: '野生のモンスターだ！ ここでバトルするか、やめておくか選べるよ。' }, { expression: 'guide', text: '勝っても賞金は無いけど、いい練習になる。バトルのあとは少し疲れるから気をつけてね。' }] },
-      { id: 'tut_rival', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { fx: 'battle', battleType: 'rival' }, lines: [{ expression: 'serious', text: 'あれは…リュウ！ 私たちと同じように旅をしてるライバルだよ。' }, { expression: 'guide', text: '向こうもこの旅で強くなってる。ここは避けて通れないから、がんばろう！' }] },
+      { id: 'tut_rival', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { fx: 'battle', battleType: 'rival' }, lines: [{ expression: 'surprised', text: 'あっ、リュウ！ やっぱり先に来てたんだね。' }, { speaker: 'ryu', text: 'おっ、もう追いついてきたのか。ちょうどいい、オレの相棒の力を見せてやるよ！' }, { expression: 'guide', text: '街で会ったときより強くなってるはず。でも、私たちだって負けないよ！' }] },   // 2026-10-07：街で先に会っている（登録のあと・市場の前）＝後追いの説明「同じように旅をしてるリュウ」は使わない
       { id: 'tut_branch', trigger: 'branch', scope: 'save', priority: 50, presentation: 'talk', lines: [{ expression: 'guide', text: '分かれ道だよ。どっちの道を通るかは、自分で決められるんだ。' }, { expression: 'smile', text: '道によって出来事や相手が少し変わるみたい。好きなほうを選んでね。' }] },
       { id: 'tut_goal', trigger: 'land', scope: 'save', priority: 60, presentation: 'talk', when: { goal: true }, lines: [{ expression: 'happy', text: 'ゴールだ！ ここから公式大会に挑戦できるよ。' }, { expression: 'guide', text: '大会はランクE〜S。今のこの子に合うランクを選ぼう。参加しない選択もできるよ。' }] },
       { id: 'ch1_start', trigger: 'start', lines: [{ expression: 'happy', text: 'いよいよ出発だね！ 大会会場まで、一緒にがんばろう。' }] },
@@ -265,7 +265,7 @@
       { id: 'ch1_bridge_gauru', trigger: 'land', priority: 13, when: { branch: 'bridge', field: [9], species: ['gauru'] }, lines: [{ expression: 'smile', text: 'ガウル、風が気持ちいいのかな。うれしそう！' }] },
       { id: 'ch1_merge', trigger: 'land', priority: 11, when: { field: [10] }, lines: [{ expression: 'smile', text: '道がひとつに戻ったね。大会会場はもうすぐだよ。' }] },
       { id: 'ch1_castle', trigger: 'land', priority: 11, when: { field: [13] }, lines: [{ expression: 'happy', text: 'お城が見えてきた！ あそこが大会会場だよ。' }] },
-      { id: 'ch1_rival_before', trigger: 'land', priority: 20, when: { field: [4] }, lines: [{ expression: 'serious', text: 'この先に誰かいる…。もしかして、ライバル？' }] },
+      { id: 'ch1_rival_before', trigger: 'land', priority: 20, when: { field: [4] }, lines: [{ expression: 'serious', text: 'この先に誰かいる…。もしかして、リュウ？' }] },
       { id: 'ch1_special_event', trigger: 'land', priority: 25, when: { tier: 'special' }, lines: [{ expression: 'surprised', text: 'すごい…！ 今のは、めったに起きないことだよ！' }] },
       { id: 'ch1_tired', trigger: 'land', priority: 5, when: { fatigueMin: 80 }, lines: [{ expression: 'worried', text: 'だいぶ疲れてきたみたい。無理しないで、休もうね。' }] },
     ],

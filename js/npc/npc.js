@@ -380,6 +380,9 @@
   const SERGE = 'assets/npc/serge/full_normal.webp', SV = { normal: SERGE };
   register('serge', { name: 'セルジュ', role: '聖獣士管理局の職員（正式登録・登録名の確認・聖獣士証・功績の案内）', board: false, defaultView: 'closeup', defaultExpr: 'normal',
     views: { closeup: { ...SV }, fullbody: { ...SV }, stand: { ...SV } } });
+  // リュウ（ライバル。2026-10-07：街で最初に会うイベント・Chapter 1 のライバル戦の会話）：正式の全身（assets/npc/ryu/ryu_official_fullbody.webp）。表情は1つ
+  const RYU = 'assets/npc/ryu/ryu_official_fullbody.webp', RV = { normal: RYU };
+  register('ryu', { name: 'リュウ', role: 'ライバル（フィナと同じ町の出身）', board: false, defaultView: 'closeup', defaultExpr: 'normal', views: { closeup: { ...RV }, fullbody: { ...RV }, stand: { ...RV } } });
   const NPC_NAME = { karen: ['カレン', '市場担当'], dan: ['ダン', 'ベースキャンプ担当'], nick: ['ニック', '牧場の管理者'], elliot: ['エリオット', '研究所の研究者'], vargas: ['ヴァルガス', '闘技場の管理者'], cedric: ['セドリック', '公式ランク大会の進行役'], genshin: ['ゲンシン', '特訓の指導役'], shop: ['ベルナ', 'アイテム屋（ベースキャンプ）'] };
   for (const [id, keys] of Object.entries(EXPR)) {
     const dir = `assets/npc/${id}/expr/`, file = (v) => Object.fromEntries(keys.map((k, i) => [k, `${dir}${v}/${String(i + 1).padStart(2, '0')}_${k}.webp`]));
