@@ -322,7 +322,7 @@ test('T4-2：ベースキャンプ（旧ファーム。2026-10-04 PHASE H2）の
   // 書き直しの理由：PHASE H2 でファームを正式デザイン（03_base_camp_ui_reference）のベースキャンプへ。4コマンド（背景の目印の上）と「育成を始める」は廃止＝下の1列5つ＋「冒険」
   assert.match(f, /const cmd=bcCmds\(st\);/, '2026-10-05：並びは bcCmds（ステータス画面の下と共通）');
   assert.match(between('function bcCmds(st){', '\nfunction fmScr(msg){'), /return \[\["hall\('s'\)","train","特訓",""\],\["shopScr\(\)","item","アイテム",""\],\["hall\('st'\)","status","ステータス",""\],\["hall\('w'\)","moves","技管理",""\],\n  st=="farm"\?\["p8Suspend\(\)","pause","中断",""\]:\["lobby\(\)","town","街へ戻る",""\]\]\}/, '下の5つ。育成中（Chapter間）は街へ戻れない（正式仕様）＝5つ目は中断');
-  assert.match(f, /<nav class="bcbar fmcmd" aria-label="コマンド">/); assert.match(f, /<div class="bcgo fmgate"><div class="bcch">\$\{chip\}<\/div><button class="fmgo\$\{go\.c\}" onclick="\$\{go\.on\}">/);
+  assert.match(f, /<nav class="bcbar fmcmd" aria-label="コマンド">/); assert.match(f, /<div class="bcch bctop">\$\{chip\}<\/div>/, '2026-10-07：次の Chapter の札は上部へ'); assert.match(f, /<div class="bcgo fmgate"><button class="fmgo\$\{go\.c\}" onclick="\$\{go\.on\}">/);
   assert.doesNotMatch(f, /"ボード"|ボード閲覧|育成を始める|育成準備中|ファーム/, 'ボードのコマンド・「育成を始める」・「育成準備中」・ファームの名前は出さない');
   assert.match(f, /:\{t:"出発する",sub:[^;]*on:"prepScr\(\)",c:" bcdep"\+\(st=="farm"\?" p9c-go":""\)\};/, '2026-10-06：主ボタン「出発する」＝従来の出発準備 prepScr（出発の確認＝フィナの選択肢はそこから）');
   assert.match(f, /const go=done\?\{t:"街へ戻る",on:"lobby\(\)",c:" back"\}/);

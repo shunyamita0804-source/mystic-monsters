@@ -54,7 +54,7 @@ test('UB-03（第2弾）：施設名ラベル・リボン・プロフィール�
   const css = HTML.slice(HTML.indexOf('/* 2026-10-06 共通UI 第2弾'), HTML.indexOf('</style></head><body><main>'));
   assert.ok(css.length > 1000);
   const rule = (sel) => { const i = css.indexOf(sel); assert.ok(i >= 0, sel); return css.slice(i, css.indexOf('}', i)); };
-  for (const [sel, ar] of [['#app .fm.fm2.bc .bcplq{box-sizing', '560/144'], ['#app .fm.bc .bcch,.chintro-name{', '560/153'], ['.pfprof .pfrow{', '720/195'], ['.svs .card.slot.svauto{', '720/156'], ['.svs details.svmore summary{', '720/122'], ['.chh .chh-top{', '800/106'], ['.tnewsscr .pfnote{', '480/625']]) assert.match(rule(sel), new RegExp(`aspect-ratio:${ar.replace('/', '\\/')}`), sel);
+  for (const [sel, ar] of [['#app .fm.fm2.bc .bcplq{box-sizing', '560/144'], ['#app .fm.bc .bcch{', '560/153'], ['.pfprof .pfrow{', '720/195'], ['.svs .card.slot.svauto{', '720/156'], ['.svs details.svmore summary{', '720/122'], ['.chh .chh-top{', '800/106'], ['.tnewsscr .pfnote{', '480/625']]) assert.match(rule(sel), new RegExp(`aspect-ratio:${ar.replace('/', '\\/')}`), sel);
   // 能力バーの色＝正式色の対応（ライフ 黄・ちから 赤・かしこさ 緑・命中 ピンク・回避 水色・丈夫さ 青）
   for (const [k, c] of [['li', 'yellow'], ['po', 'red'], ['in', 'green'], ['hi', 'pink'], ['ev', 'lightblue'], ['de', 'darkblue']]) assert.match(css, new RegExp(`\\.sts \\.stb\\[data-k="${k}"\\]\\{--fill:url\\(\\./assets/ui/b_group/b\\d\\d_ability_bar_fill_${c}\\.png\\)\\}`), k);
   assert.match(css, /mmdg-danger,[^{]*\{aspect-ratio:720\/209;background-image:url\([^)]*b49_button_red_large_ornate\.png\)/, '取り返しのつかない操作は赤');

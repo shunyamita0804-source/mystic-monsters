@@ -14,17 +14,18 @@ const HTML = rd('index.html');
 const fnOf = (name) => { const i = HTML.indexOf(`function ${name}(`); assert.ok(i > 0, name); return HTML.slice(i, HTML.indexOf('\nfunction ', i + 10)); };
 const load = (f, name) => { const w = {}; new Function('window', 'document', rd(f))(w, undefined); return w[name]; };
 
-test('NX5-01：プロローグ＝正式4枚（共存 → 異変 → 三人のレジェンド → ミストリア到着）・本文の始まりと終わり・三人のレジェンドと聖獣（本文には名前を出さない）', () => {
+test('NX5-01：プロローグ（2026-10-07 正式：6枚＝平和 → 厄災 → 文化 → 三人のレジェンド → 大会 → 旅立ち）・本文の始まりと終わり・三人のレジェンドと聖獣（本文には名前を出さない）', () => {
   const P = load('js/prologue/prologue.js', 'MMPRO');
-  assert.deepEqual(P.SLIDES.map((s) => s.id), ['1', '2', '3', '4']);
-  assert.deepEqual(P.SLIDES.map((s) => path.basename(s.bg)), ['prologue_01_coexistence.webp', 'prologue_02_anomaly.webp', 'prologue_03_three_legends.webp', 'prologue_04_arrival_mistoria.webp']);
+  assert.deepEqual(P.SLIDES.map((s) => s.id), ['1', '2', '3', '4', '5', '6']);
+  assert.deepEqual(P.SLIDES.map((s) => path.basename(s.bg)), ['prologue_01_peace.webp', 'prologue_02_calamity.webp', 'prologue_03_culture.webp', 'prologue_04_legends.webp', 'prologue_05_tournament.webp', 'prologue_06_departure.webp']);
   for (const s of P.SLIDES) assert.ok(existsSync(path.join(ROOT, s.bg)), s.bg);
   const all = P.SLIDES.flatMap((s) => s.pages.flat()).join('');
-  assert.ok(all.startsWith('遥か昔から、人と聖獣は共に生きてきた。'));
-  assert.match(all, /十年前/); assert.match(all, /ミストリア/);
-  assert.deepEqual(P.LEGENDS.map((l) => `${l.name}+${l.beast}`), ['レオナ+グリフェル', 'アストラッド+ゼルヴァーン', 'バルド+ドラグノル']);
+  assert.ok(all.startsWith('はるか昔、人と聖獣は'));
+  assert.ok(all.endsWith('聖獣都市ミストリアへ旅立つ。'));
+  assert.match(all, /10年前/); assert.match(all, /三人のレジェンド/);
+  assert.deepEqual(P.LEGENDS.map((l) => `${l.name}+${l.beast}`), ['アストラッド+ゼルヴァーン', 'レオナ+グリフェル', 'ラグナス+ドラグノル']);
   for (const l of P.LEGENDS) assert.ok(!all.includes(l.name), `本文に ${l.name} を出さない`);
-  assert.doesNotMatch(all, /死|亡くな|引退|異世界/, 'レジェンドの死亡・引退・異世界の主人公は書かない');
+  assert.doesNotMatch(all, /死|亡くな|引退|異世界|バルド|聖獣師/, 'レジェンドの死亡・引退・旧名は書かない');
 });
 
 test('NX5-02：プロローグの文字＝1文字ずつ（開始の間隔 40〜55ms・各 120〜180ms で重なる・数px の移動とぼかし）・位置は中央よりやや上・段落は空行で区切る', () => {
@@ -53,7 +54,7 @@ test('NX5-03：序盤の導線＝フィナの2択（どちらも管理局へ）�
   assert.equal(MAP.SPOTS.liberna.note, '出身地'); assert.equal(MAP.SPOTS.mistoria.note, '現在地');
   assert.ok(existsSync(path.join(ROOT, MAP.MAP.src)));
   assert.match(fnOf('opAfterReg'), /focus\("ferna"\)[\s\S]*focus\("asteria"\)[\s\S]*focus\("liberna",true\)[\s\S]*focus\("mistoria",true\)/, '世界 → フェルナ → アステリア → リベルナ → ミストリア');
-  assert.match(HTML, /<button class="bub bumap" onclick="bureauMap\(\)" aria-label="世界地図">/, '管理局の常設「世界地図」');
+  assert.match(HTML, /<button class="bub bumap" (?:data-cmd="bureau_map" )?onclick="bureauMap\(\)" aria-label="世界地図">/, '管理局の常設「世界地図」');
   assert.match(fnOf('lobby'), /if\(S\.playerNamePending&&!opOn\(\)\)return p11NameScr\(msg\);/, '自動テスト（MM_QA_NO_OPENING）は従来の名前登録');
 });
 

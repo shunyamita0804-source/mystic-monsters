@@ -68,7 +68,7 @@ test('CED-4：表示場所：ゴールのランク選択・順位表（次の相
   assert.ok(between('function p9TourResult(msg){', '\nfunction p8RewardText(').includes('${p9Ced(rs.won?CEDRIC_TALK.won:CEDRIC_TALK.lost,rs.won?"victory":"host")}'));
   assert.equal((HTML.match(/p9Ced\(/g) || []).length, 4, '定義＋3か所（大会1 対戦表・旧 VS 画面 p9VsScr（流れから外した）・結果）だけ。2026-10-06：大会2（対戦前比較）は正式デザインどおりセドリックを出さない。ランク選択はフィナ');
   // 大会の処理（参加・試合開始・辞退・終了）は変えていない
-  assert.match(lineOf('function p8TourStart('), /^function p8TourStart\(k,b\)\{if\(bBusy\)return;if\(!p9arm\(b,`もう一度押すとランク\$\{RN\[k\]\}大会に参加`\)\)\{finaRankSay\(k\);return\}const r=MMP8\.startTournament\(S,S\.m,k\);if\(!r\.ok\)return board\(\);save\(\);p9TourIntro\(k\)\.then\(\(\)=>\{P9_ENTER=true;board\(\)\}\)\}$/, '1回目の押下はフィナの見立て、2回目で参加 → 開始演出 → 順位表');
+  assert.match(lineOf('function p8TourStart('), /^function p8TourStart\(k,b\)\{if\(bBusy\)return;if\(!p9arm\(b,`もう一度押すとランク\$\{RN\[k\]\}大会に参加`\)\)\{finaRankSay\(k\);return\}const r=MMP8\.startTournament\(S,S\.m,k\);if\(!r\.ok\)return board\(\);save\(\);p9TourOpen\(k\)\}$/, '1回目の押下はフィナの見立て、2回目で参加 → 開始演出 → 順位表');
   assert.match(lineOf('function p8TourFight('), /beginBattle\(S,m,\{kind:"league",rank:t\.rank\}\)/);
   const fight = HTML.slice(HTML.indexOf('async function fight('), HTML.indexOf('\n$("#snd").textContent'));
   assert.doesNotMatch(fight, /CEDRIC|p9Ced|セドリック/, 'Phase 6（fight()）には入れない');

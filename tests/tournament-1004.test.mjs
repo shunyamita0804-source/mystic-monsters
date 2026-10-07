@@ -32,27 +32,23 @@ test('TN-02：大会1 対戦表（2026-10-06 正式素材 ui1）：題字の札�
   for (const f of ['title_plate', 'sub_plate', 'grid6', 'grid8', 'legend', 'btn_battle', 'tag_you', 'tag_next', 'mark_win', 'mark_loss', 'mark_pending', 'mark_next']) assert.ok(existsSync(path.join(ROOT, 'assets/tournament/ui1', f + '.png')), f);
 });
 
-test('TN-03：大会2 対戦前比較（正式素材 ui2）：第N試合 / 全M試合（大会名は重ねない）・あなた／対戦相手の札・左右のカードの中に正式画像・VS・能力の比較（枠の見本のバーの上に HTML のバー＝999 を最大・数字なし）・固有スキル・「対戦開始」（2度押し）→ 大会3 → fight()・「対戦表にもどる」', () => {
+test('TN-03：大会2 対戦前比較（2026-10-07 刷新）：大会名・第N試合 / 全M試合・左右に待機の立ち絵（相手はこちら向き）と名前・固有スキルの説明・能力の数値と棒（左右で比べる）・「対戦開始」（2度押し）→ 大会3 → fight()・「対戦表にもどる」。セドリックは出さない', () => {
   const c = fnOf('p9CompareScr');
-  assert.match(c, /const pct=v=>Math\.round\(Math\.min\(999,Math\.max\(0,v\|0\)\)\/999\*100\);/);
-  assert.match(c, /<div class="pcb l" style="--c:\$\{STAT_COLOR\[k\]\};left:\$\{TB_STAT\.l\[0\]\}%;width:\$\{TB_STAT\.l\[1\]\}%"><i style="width:\$\{pct\(m\[k\]\)\}%"><\/i><\/div>/);
-  assert.match(c, /<div class="pcb r" style="--c:\$\{STAT_COLOR\[k\]\};left:\$\{TB_STAT\.r\[0\]\}%;width:\$\{TB_STAT\.r\[1\]\}%"><i style="width:\$\{pct\(o\[k\]\)\}%"><\/i><\/div>/);
-  assert.doesNotMatch(c, /\$\{m\[k\]\}|\$\{o\[k\]\}|戦力|勝率|有利|公式ランク\$\{RN/, '数字・戦力・勝率・有利・大会名を出さない');
-  assert.match(c, /<header class="pchd tbsub"><b>第\$\{pm\.round\+1\}試合 \/ 全\$\{lg\.rounds\.length\}試合<\/b><\/header>/);
+  assert.match(c, /<header class="tbttl"><b>公式ランク\$\{RN\[t\.rank\]\}大会<\/b><\/header>/);
+  assert.match(c, /<div class="pchd tbsub"><b>第\$\{pm\.round\+1\}試合 \/ 全\$\{lg\.rounds\.length\}試合<\/b><\/div>/);
+  assert.match(c, /tbIdle\(m,0\)/); assert.match(c, /tbIdle\(o,1\)/); assert.match(c, /tbSkillDesc\(m\)/); assert.match(c, /tbSkillDesc\(o\)/);
+  assert.match(c, /<b class="pcv">\$\{a\}<\/b><div class="pcb l" style="--c:\$\{STAT_COLOR\[k\]\}"><i style="width:\$\{Math\.round\(a\/mx\*100\)\}%"><\/i><\/div><span class="pcl">\$\{LAB\[k\]\}<\/span><div class="pcb r" style="--c:\$\{STAT_COLOR\[k\]\}"><i style="width:\$\{Math\.round\(b\/mx\*100\)\}%"><\/i><\/div><b class="pcv">\$\{b\}<\/b>/, '能力は数値と棒');
+  assert.doesNotMatch(c, /戦力|勝率|有利|p9Ced\(/, '戦力・勝率・有利は出さない・セドリックは出さない');
   assert.match(c, /data-nsfx="1" onclick="p9VsGo\(this\)" aria-label="対戦開始"/); assert.match(c, /onclick="board\(\)" aria-label="対戦表にもどる"/);
-  assert.match(c, /tbSkill\(m\)/); assert.match(c, /tbSkill\(o\)/); assert.match(c, /BTB\[t\.rank\]\[0\]/, '背景は fight() と同じ大会の背景');
-  assert.match(c, /ui2\/badge_you\.png/); assert.match(c, /ui2\/badge_opponent\.png/); assert.match(c, /ui2\/card_left\.png/); assert.match(c, /ui2\/card_right\.png/); assert.match(c, /ui2\/stats_panel\.png/);
-  assert.doesNotMatch(c, /ui2\/header\.png|01_header/, 'ヘッダーの画像（「公式ランクE大会」の焼き込み）は使わない');
   assert.match(CODE, /function p9VsGo\(b\)\{if\(bBusy\|\|!p9arm\(b,"もう一度押すと試合開始"\)\)return;/, '2度押し → 大会3 → fight()');
-  assert.match(HTML, /\.tb2 \.pcb i\{[^}]*var\(--c\)/); assert.match(HTML, /\.p9cmps\{position:relative;margin:-16px;height:100dvh;/);
-  for (const f of ['badge_you', 'badge_opponent', 'card_left', 'card_right', 'vs_emblem', 'stats_panel', 'skill_left', 'skill_right', 'btn_start', 'btn_back']) assert.ok(existsSync(path.join(ROOT, 'assets/tournament/ui2', f + '.png')), f);
-  assert.ok(!existsSync(path.join(ROOT, 'assets/tournament/ui2/header.png')));
+  assert.match(fnOf('tbIdle'), /MMARENA\.idleSrc\(x\.sp\)/); assert.match(fnOf('tbIdle'), /MMARENA\.flipOf\(side,x\.sp\)/);
+  assert.match(fnOf('tbSkillDesc'), /MMP10M\.skillText\(x\.sp\)/); assert.match(fnOf('tbSkillDesc'), /p11Esc\(k\.desc\|\|""\)/);
 });
 
-test('TN-03b：大会3 VS 演出（正式素材 vs）：背景・VS のロゴ・斜めの光・名前の札・飾り＋正式画像 → fight()。fight() の導入（intro）はこの試合だけ出さない（二重の VS にしない）。fight()・intro() の中身は変えない', () => {
+test('TN-03b：大会3 VS 演出（正式素材 vs）：背景・VS のロゴ・斜めの光・名前の札・飾り＋待機の立ち絵（相手はこちら向き）→ fight()。fight() の導入（intro）はこの試合だけ出さない（二重の VS にしない）。fight()・intro() の中身は変えない', () => {
   const v = CODE.slice(CODE.indexOf('function tourVsShow('), CODE.indexOf('function tourVsOut('));
   for (const f of ['vs/vs_background.webp', 'vs/vs_diagonal.png', 'vs/vs_nameplate.png', 'vs/vs_ornament.png', 'vs/vs_logo.png']) { assert.ok(v.includes(f), f); assert.ok(existsSync(path.join(ROOT, 'assets/tournament', f)), f); }
-  assert.match(v, /p11Esc\(o\.name\)/); assert.match(v, /p11Esc\(m\.name\)/); assert.match(v, /msv\(o\)/); assert.match(v, /msv\(m\)/);
+  assert.match(v, /p11Esc\(o\.name\)/); assert.match(v, /p11Esc\(m\.name\)/); assert.match(v, /tbIdle\(o,1\)/); assert.match(v, /tbIdle\(m,0\)/);
   assert.match(CODE, /const TB_INTRO=intro;intro=function\(pl\)\{if\(TB_SKIP_INTRO\)\{TB_SKIP_INTRO=false;return Promise\.resolve\(\)\}return TB_INTRO\(pl\)\};/);
   assert.match(CODE, /if\(window\.MM_QA_NO_TOURVS\|\|!t\|\|t\.status!="league"\)return p8TourFight\(\);/, '自動テストの既定は大会2 から直接バトル（tourvs:true で大会3）');
 });

@@ -81,7 +81,7 @@ const SCRIPTS = [
   'js/battle-bridge.js', 'js/integration/adapter.js', 'js/phase7/progression.js', 'js/phase8/league.js', 'js/phase8/raising.js', 'js/phase8/rival.js',
   'js/phase10/monsters.js', 'js/phase11/player.js', 'js/phase12/scenes.js', 'js/phase12/dice.js', 'js/phase13/field.js',
   'js/phase9/chapters.js', 'js/phase9/board-art.js', 'js/npc/npc.js', 'js/npc/npc-events.js', 'js/audio/audio-manager.js', 'js/audio/audio-registry.js', 'js/feel/game-feel.js', 'js/feel/notice.js',   // 2026-10-02：Audio Manager・Audio Registry（BGM・SE の対応表）・Game Feel の共通基盤
-  'js/chapter/engine.js', 'js/chapter/events.js', 'js/chapter/configs/ch1a.js', 'js/chapter/configs/ch2a.js', 'js/chapter/dice-renderer.js', 'js/chapter/field-view.js', 'js/chapter/intro.js',   // 2026-09-30：Chapterフィールドエンジン
+  'js/chapter/engine.js', 'js/chapter/events.js', 'js/chapter/configs/ch1a.js', 'js/chapter/configs/ch2a.js', 'js/chapter/dice-renderer.js', 'js/chapter/reactions.js', 'js/chapter/field-view.js', 'js/chapter/intro.js',   // 2026-09-30：Chapterフィールドエンジン
   'js/battle/fit.js',   // 2026-09-30：バトル画面の表示だけの補正（fight()・.bt 系 CSS は変えない）
   'js/battle/fx.js',    // 2026-10-03：バトル共通演出の正式素材（fight()・.bt 系 CSS は変えない。外から見て重ねる）
   'js/battle/rival-partner.js', 'js/battle/official-moves.js', 'js/battle/rules.js', 'js/battle/arena.js', 'js/battle/stage.js', 'js/battle/movedex.js', // 2026-10-06：正式技（ソラモ・ガウルの SK を実行時に入れ替え）・バトルの共通演出・技辞典。2026-10-05：ライバルの相棒（レグナス）の正式技・固有スキル・技の演出（fight() は変えない＝外から差し込む）
@@ -508,7 +508,7 @@ test('QA-C14：フィナの登場は指定の3か所だけ（名前登録の直�
   const calls = callSites(CODE, 'finaTalk').map((c) => `${c.fn}:${c.arg}`).sort();
   assert.deepEqual(calls, ['finaIntro:"intro"', 'p7Depart:first?"raiseFirst":"raiseAgain",{start:spL?ho.concat(spL', 'p8DoneScr:"done"']);
   assert.deepEqual(callSites(CODE, 'finaIntro').map((c) => c.fn), ['p11NameGo'], 'あいさつは名前登録の確定からだけ');
-  assert.deepEqual([...new Set(callSites(CODE, 'MMNPC\\.talk').map((c) => c.fn))].sort(), ['farmReturn', 'finaTalk', 'karenSay', 'npcFirst', 'npcMoment', 'opAfterReg', 'opBureau', 'opConfirm', 'opTownTalk', 'talkSeq'], '2026-10-05 PHASE B：talkSeq＝会話とシステム通知の帯を順に出す（新人支援）。共通会話を開くのは finaTalk・市場のカレン（karenSay）・施設の初回訪問（npcFirst）・Chapter の帰還（farmReturn）だけ（2026-10-04）');
+  assert.deepEqual([...new Set(callSites(CODE, 'MMNPC\\.talk').map((c) => c.fn))].sort(), ['farmReturn', 'finaTalk', 'karenSay', 'npcFirst', 'npcMoment', 'opAfterReg', 'opBureau', 'opConfirm', 'opRyu', 'opTownTalk', 'p9TourOpen', 'talkSeq'], '2026-10-05 PHASE B：talkSeq＝会話とシステム通知の帯を順に出す（新人支援）。共通会話を開くのは finaTalk・市場のカレン（karenSay）・施設の初回訪問（npcFirst）・Chapter の帰還（farmReturn）だけ（2026-10-04）');
   assert.deepEqual(callSites(CODE, 'karenTalk').map((c) => c.fn).sort(), ['adopt', 'karenIntro'], 'カレンの会話ウィンドウは市場の入店と購入成功だけ（切り替え・ボタンは案内欄の一言）');
   const ft = cut(CODE, 'const FINA_TALK={', '};');
   assert.deepEqual(Object.keys(new Function(`return ${ft.slice('const FINA_TALK='.length)}}`)()), ['intro', 'raiseFirst', 'raiseAgain', 'done']);

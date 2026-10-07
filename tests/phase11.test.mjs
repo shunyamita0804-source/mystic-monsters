@@ -154,7 +154,7 @@ test('F2-1：街の「ブリーダー」欄はプレイヤー名を表示（新�
   assert.doesNotMatch(bp, /p115pn|playerName|ランク|S\.g\b/, '下の欄に名前・ランク・所持金を重ねて出さない');
   assert.doesNotMatch(top + bp, /🧑‍🌾 ブリーダー/);
   const refs = HTML.split('\n').filter((l) => /S\.playerName(?!Pending)/.test(l));
-  assert.equal(refs.length, 5, 'プレイヤー名の参照は5か所だけ（別の名前を持たない）。2026-10-04 PHASE H4：聖獣士証（bureauRows）・2026-10-05：登録のあとフィナが名前を呼ぶ（opAfterReg）'); assert.equal(refs.filter((l) => l.startsWith('async function opAfterReg(){')).length, 1, '序盤導線'); assert.equal(refs.filter((l) => l.startsWith('function bureauRows(){')).length, 1, '聖獣士証');
+  assert.equal(refs.length, 6, 'プレイヤー名の参照は6か所だけ（別の名前を持たない）。2026-10-07：リュウの初対面（opRyu）。2026-10-04 PHASE H4：聖獣士証（bureauRows）・2026-10-05：登録のあとフィナが名前を呼ぶ（opAfterReg）'); assert.equal(refs.filter((l) => l.startsWith('async function opAfterReg(){')).length, 1, '序盤導線'); assert.equal(refs.filter((l) => l.startsWith('function bureauRows(){')).length, 1, '聖獣士証');
   assert.equal(refs.filter((l) => l.includes('id="p11nm"') || l.includes('for="p11nm"')).length, 1, '名前入力'); assert.equal(refs.filter((l) => l.startsWith('function p10Who(){')).length, 1, '市場'); assert.equal(refs.filter((l) => l.startsWith('function profileScr(')).length, 1, 'プロフィール（プレイヤー情報）');
 });
 

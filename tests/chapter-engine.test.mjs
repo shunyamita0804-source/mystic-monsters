@@ -463,7 +463,7 @@ test('CH1-29：大会会場への到着（config.arrival）と大会受付：到
   assert.match(fn('p9RankListHtml'), /MMP8\.eligibleRanks\(m,m\.raise\.ch\)/); assert.match(fn('p9RankListHtml'), /\[5,4,3,2,1,0\]\.map\(k=>p9RankRow\(m,k,el[,)]/, '上から S→E（2026-10-04：Chapter 1〜4 共通の部品）'); assert.match(fn('p9ReceptionHtml'), /p9RankListHtml\(m\)/);
   assert.match(fn('p9RcvPick'), /MMP8\.eligibleRanks\(m,m\.raise\.ch\)\.includes\(k\)\)return;/, '参加できないランクは選べない'); assert.match(fn('p9RcvPick'), /finaRankSay\(k\)/, 'フィナは見立てを話すだけ');
   const join = HTML.slice(HTML.indexOf('function p9RcvJoin('), HTML.indexOf('// ---- 大会開始の演出'));
-  assert.match(join, /MMP8\.startTournament\(S,m,k\);if\(!r\.ok\)return board\(\);save\(\);p9TourIntro\(k\)\.then\(\(\)=>\{P9_ENTER=true;board\(\)\}\)/, '既存の大会開始 → 開始演出 → セドリックの進行');
+  assert.match(join, /MMP8\.startTournament\(S,m,k\);if\(!r\.ok\)return board\(\);save\(\);p9TourOpen\(k\)/, '既存の大会開始 → 開始演出 → セドリックの導入（2026-10-07 p9TourOpen）');
   const { CH } = loadEngine(); assert.ok(CH.getConfig(1).arrival); assert.equal(CH.getConfig(2).arrival, undefined, 'Chapter 2 は従来どおり（ゴールのシートでランク選択）');
 });
 

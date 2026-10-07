@@ -15,17 +15,19 @@ const HTML = rd('index.html');
 const fnOf = (name) => { const i = HTML.indexOf(`function ${name}(`); return HTML.slice(i, HTML.indexOf('\nfunction ', i + 10)); };
 function loadPro() { const w = { matchMedia: () => ({ matches: false }) }; new Function('window', rd('js/prologue/prologue.js'))(w); return w.MMPRO; }
 
-test('QU-01：プロローグ（2026-10-05 正式：4枚・本文はユーザー指定のとおり）。文字は画像に焼き込まず HTML の層・1文字ずつ。新しいゲームの最初に1回', () => {
+test('QU-01：プロローグ（2026-10-07 正式：6枚・本文はユーザー指定のとおり）。文字は画像に焼き込まず HTML の層・1文字ずつ。新しいゲームの最初に1回', () => {
   const P = loadPro(), txt = (id) => P.SLIDES.find((s) => s.id === id).pages.flat().join('');
-  assert.deepEqual(P.SLIDES.map((s) => s.id), ['1', '2', '3', '4']);
-  assert.equal(txt('1'), '遥か昔から、人と聖獣は共に生きてきた。力を貸し、心を通わせ、時に支え合いながら、同じ大地を歩む存在として――。');
-  assert.equal(txt('2'), 'だが、およそ百年前。これまで知られていなかった、異質な力を宿す聖獣が現れ、世界はかつてない脅威にさらされた。その出来事をきっかけに、人々は各地で聖獣士を育て、聖獣を鍛え、来るべき危機に備えるようになった。');
-  assert.equal(txt('3'), 'そして十年前――。再び世界を揺るがす大きな脅威が現れた。その脅威に立ち向かったのは、ミストリアの三人の聖獣士と、その聖獣たち。激しい戦いの末、彼らは脅威を退け、世界を救った。その名は今も、伝説として語り継がれている。');
-  assert.equal(txt('4'), 'それから十年。戦いの傷を乗り越えたミストリアは、今や世界有数の聖獣士が集う街として、新たな時代を迎えていた。そして今日――。その街に憧れ、一人前の聖獣士になることを夢見る一人の若者が、ミストリアを訪れる。');
-  assert.deepEqual(P.LEGENDS.map((l) => `${l.name}＋${l.beast}`), ['レオナ＋グリフェル', 'アストラッド＋ゼルヴァーン', 'バルド＋ドラグノル']);
+  assert.deepEqual(P.SLIDES.map((s) => s.id), ['1', '2', '3', '4', '5', '6']);
+  assert.equal(txt('1'), 'はるか昔、人と聖獣はこの大陸で共に暮らしていた。');
+  assert.equal(txt('2'), 'だが100年前、厄災の聖獣が現れ、大陸は滅びかけた。');
+  assert.equal(txt('3'), '人々は悲劇を繰り返さぬため、聖獣を育て、共に戦う術を受け継いだ。');
+  assert.equal(txt('4'), 'そして10年前、再び現れた厄災は、ミストリアの三人のレジェンドによって退けられた。');
+  assert.equal(txt('5'), 'やがて聖獣を育て競い合う文化は花開き、大会は人々の憧れとなった。');
+  assert.equal(txt('6'), '今、レジェンドランクを目指すあなたもまた、聖獣都市ミストリアへ旅立つ。');
+  assert.deepEqual(P.LEGENDS.map((l) => `${l.name}＋${l.beast}`), ['アストラッド＋ゼルヴァーン', 'レオナ＋グリフェル', 'ラグナス＋ドラグノル']);
   assert.doesNotMatch(P.SLIDES.map((s) => s.pages.flat().join('')).join(''), /ブリーダー|死|消滅|引退/);
-  const files = ['prologue_01_coexistence', 'prologue_02_anomaly', 'prologue_03_three_legends', 'prologue_04_arrival_mistoria'];
-  P.SLIDES.forEach((s, i) => { const f = `assets/prologue/${files[i]}.webp`; assert.equal(s.bg, './' + f); assert.ok(existsSync(path.join(ROOT, f)), f); });
+  const files = ['prologue_01_peace', 'prologue_02_calamity', 'prologue_03_culture', 'prologue_04_legends', 'prologue_05_tournament', 'prologue_06_departure'];
+  P.SLIDES.forEach((s, i) => { const f = `assets/prologue/v2/${files[i]}.webp`; assert.equal(s.bg, './' + f); assert.ok(existsSync(path.join(ROOT, f)), f); });
   assert.ok(P.T.chGap >= 40 && P.T.chGap <= 55, '文字の開始間隔 40〜55ms'); assert.ok(P.T.chFade >= 120 && P.T.chFade <= 180, '各文字 120〜180ms'); assert.ok(P.T.chFade > P.T.chGap, '前の文字が出きる前に次が始まる');
   assert.equal(P.T.tapGuard, undefined, '2026-10-06：タップでは何も進まない（固定尺）'); assert.equal(P.POS.y, 0.42, '中央よりやや上');
   const pro = rd('js/prologue/prologue.js'); assert.match(pro, /<span class="mpc" style="--d:\$\{\(k\+\+\) \* T\.chGap\}ms">/, '文字ごとに開始をずらす'); assert.match(pro, /if \(cur\) cur\.classList\.add\('full'\)/, '時刻表のとおりに全部出る（2026-10-06：タップでは全部出さない）'); assert.doesNotMatch(pro, /addEventListener\('click', \(e\) => \{\n\s+if \(e\.target === skip\)/, '画面のタップの受け口は無い'); assert.doesNotMatch(pro, /mmpro-hint/, '「タップで先へ」の表示は無い');

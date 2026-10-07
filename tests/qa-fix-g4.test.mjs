@@ -94,6 +94,7 @@ test('QA-G4-2：モンスター名を画面に出すところ（fight()・バト
     /if\(x\.name=="ハヤテ"\)x\.name="ガウル"/g,                       // 旧セーブの名前の移行（表示ではない）
     /x\.name=v;save\(\);farm\(`\$\{on\}の名前を/g,   // 2026-10-04 PHASE H3：牧場の名前変更（保存する名前はそのまま。表示は p11Esc 済みの on）
     /if\(nm\)x\.name=nm;/g, /c\.name=cname\(a,b\);/g, /a\.name\.slice\(0,2\)\+b\.name\.slice\(-2\)/g,   // 名前を付ける（保存する名前はそのまま）
+    /CEDRIC_EV\.close\(rs,P9_END_UP,m&&m\.name\)/g,   // 2026-10-07：セドリックの締め（共通会話は textContent で表示＝HTML として解釈しない）
     /name:v\.name,/g, /e\.player\?S\.m\.name:String\(e\.name\)/g,    // 大会の表示データ（表示するところで p11Esc）
   ];
   for (const re of ALLOW) code = code.replace(re, '');

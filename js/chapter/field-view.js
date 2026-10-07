@@ -1136,6 +1136,7 @@
       if (fx.kind !== 'battle' && V.focus) camFocus(null);   // 寄り・ズームを戻す（次の操作の前にいつもの見え方へ）
       if (gb && gold > 0 && gb.textContent !== String(g1)) gb.textContent = String(g1);   // 念のため（演出を飛ばしたとき）
       if (r.goal) tail = `${tail}　大会会場に着いた！`.trim(); else if (r.timeUp) tail = `${tail}　ターンを使い切った…`.trim();
+      if (!fx.ev && !['chstat', 'treasure', 'battle', 'choice'].includes(fx.kind) && tileKeyOf(m, id) === 'normal' && !r.goal && !r.timeUp) await reactionAt(m);   // 2026-10-07：冒険リアクション（通常マスだけ）
       await showReaction(m, fx);
       await storyAt(m, 'land', { fx, goal: !!r.goal });
     } finally { if (card) await evCardClose(card); busySet(false); }
@@ -1224,6 +1225,32 @@
       if (!onField()) return;
       if (ev.presentation === 'talk' && root.MMNPC) { await MMNPC.talk((ev.lines || []).map((l) => ({ npc: l.speaker || 'fina', expression: l.expression || 'normal', text: l.text })), { kind: 'fina', presentation: 'board' }); return; }   // 2026-10-04 G2：チュートリアル（宝箱の説明など）はボードの大きな窓（操作欄の上・操作欄は押せない）
       for (const l of ev.lines || []) { if (!onField()) break; await finaBubble({ text: l.text, expression: l.expression || 'normal' }); }
+    });
+  }
+  /**
+   * 冒険リアクションイベント（2026-10-07。js/chapter/reactions.js の MMREACT）：通常マスに止まったとき、確率で
+   *  モンスターのしぐさ（共通モーション）→ フィナの解釈（小さな会話窓・最後に選択肢）→ 選んだ小さな結果（疲れ・能力 +1・薬草・演出だけ）。モンスターは喋らない。
+   *  発生の記録は配置の中（m.raise.field.rx）。自動テストは MM_QA_NO_STORY で出さない
+   */
+  async function reactionAt(m) {
+    const R = root.MMREACT; if (!R || !root.MMNPC || root.MM_QA_NO_STORY || !onField()) return;
+    const ev = R.pick(m); if (!ev) return;
+    R.mark(m, ev.id); doSave();
+    await queued(async () => {
+      if (!onField()) return;
+      const w = $('#bmonw'); await wait(beatOf(1)); const ms = R.play(w, ev.motion); await wait(V.calm ? 0 : Math.min(ms, 900));
+      const id = await MMNPC.talk([{ npc: 'fina', expression: ev.expression, text: ev.line, choices: ev.choices.map((c, i) => ({ id: String(i), label: c.label })) }], { kind: 'fina', presentation: 'compact' });
+      const f0 = MMCH.fatigue(m), res = R.apply(gS(), m, ev, id == null ? 0 : +id); doSave();
+      const f1 = MMCH.fatigue(m); refreshHud(m); const fb = $('#chfat b'); if (fb && f1 !== f0) { fb.textContent = String(f0); fatLevel(f0); }
+      const nm = (k) => { const d = root.MMP7 && root.MMP7.getItemDef(k); return d ? d.name : k; };
+      if (res.kind === 'stat') monReact('up');   // +1 は小さな結果＝能力UPの音（TRAINING_SUCCESS）は鳴らさない
+      else if (res.kind === 'fatigue' && res.fatigue < 0) monReact('rest');
+      else if (res.kind === 'item') monReact('treasure');
+      else R.play(w, ev.sp === 4 ? 'lookAway' : ev.sp === 3 ? 'stoneReaction' : 'happy');
+      const eff = res.kind === 'stat' ? `${labOf(res.key)} +${res.amount}` : res.kind === 'fatigue' ? `疲れ ${res.fatigue < 0 ? '−' : '+'}${Math.abs(res.fatigue)}` : res.kind === 'item' ? `${nm(res.item)} を見つけた！` : '';
+      const head = esc(res.text || ev.title);
+      setMsg(eff ? `${head}　${esc(eff)}` : head);
+      await popup(eff ? `<small>${head}</small><b>${esc(eff)}</b>` : `<small>${esc(ev.title)}</small><b>${head}</b>`, 'ev ev-normal rx', holdOf(2, 1000), null, async () => { if (f1 !== f0) await fatigueHud(f0, f1); });
     });
   }
   let reactionRenderer = (rx) => finaBubble(rx);

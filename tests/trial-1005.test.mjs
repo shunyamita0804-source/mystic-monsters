@@ -29,9 +29,9 @@ test('TR-02：聖獣士管理局の通常の画面＝どのコマンドも選ば
   const b = fnOf('bureauScr');
   assert.match(b, /const all=tab=="ach",cardOn=tab=="card",idle=!all&&!cardOn;/);
   assert.match(b, /<div class="bubody">\$\{all\?ach:cardOn\?card\+ach:""\}<\/div>/, '通常はパネルなし');
-  assert.match(b, /<button class="bub\$\{cardOn\?" on":""\}" onclick="bureauScr\('card'\)">聖獣士証<\/button>/, '押したコマンドだけ選ばれた見た目');
+  assert.match(b, /<button class="bub\$\{cardOn\?" on":""\}" (?:data-cmd="bureau_card" )?onclick="bureauScr\('card'\)">聖獣士証<\/button>/, '押したコマンドだけ選ばれた見た目');
   assert.match(HTML, /\.bu \.bunpc\{position:absolute;right:0;bottom:70px;--nsh:min\(34dvh,280px\);height:var\(--nsh\);/);
-  assert.match(fnOf('opAfterReg'), /f\.op="done";f\.finaIntro=1;save\(\);lobby\(/, '序盤の導線は街で終わる（管理局の画面に会話の状態を残さない）');
+  assert.match(fnOf('opAfterReg'), /f\.op="done";f\.finaIntro=1;f\.ryuMet=0;save\(\);opRyu\(\)/, '序盤の導線は街で終わる（管理局の画面に会話の状態を残さない）');
 });
 
 test('TR-03：世界地図：リベルナを光らせるのは序盤の案内（open）だけ。通常の地図（viewer）は印と名前だけ', () => {

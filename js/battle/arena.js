@@ -2,7 +2,7 @@
 // 正式バトル画面（2026-10-07）`MMARENA`：ランク別の会場の背景・待機立ち絵・HUD の見た目・擬似3D 半楕円の横型技ルーレット。
 //  fight()・battle-bridge・adapter・Battle Engine・旧ルーレットの処理（spin／drawList）・index.html の .bt 系 CSS（Phase 6）は変えない。
 //  #bt が出たら外から重ねるだけ（fit.js・fx.js と同じ方式）：
-//   ・背景：上の帯の「ランクX大会」（fight() の lb）から E〜S を読み、assets/battle/arena/arena_X.webp を .bgs の上に敷く（修行・読めないときは従来のまま）
+//   ・背景：上の帯の「ランクX大会」（fight() の lb）から E〜S を読み、assets/battle/arena/ のそのランクの絵（arena_ ＋ランク）を .bgs の上に敷く（修行・読めないときは従来のまま）
 //   ・立ち絵：.mon に静止の絵（IMG[sp]）があるあいだだけ、待機立ち絵（assets/battle/idle/）を重ねる。技のコマ（SFR・poseSeq）が出ている間は従来の絵。
 //     向き：プレイヤー（左）は右向き・相手（右）は左向き（FACE＝素材の元の向き）
 //   ・ルーレット：fight() が作る旧ルーレット（#rl の行・.on／.hit）を見て、同じ7候補（6技＋MISS）を半楕円の横型ルーレットに映す。

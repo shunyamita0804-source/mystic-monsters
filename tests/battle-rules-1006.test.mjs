@@ -218,7 +218,7 @@ test('BR-07：大会＝初回チケット E1 D1 C1 B2 A2 S2・賞金は従来の
   assert.match(R8, /if \(firstClear\) \{\n\s+const pool = \[\.\.\.BONUS_STATS\]/, '再優勝はステータスボーナスなし');
   // 画面：再優勝は「報酬はありません」・終わりの順の差し込み口
   assert.match(HTML, /クリア済みランクのため、報酬はありません/);
-  assert.match(HTML, /if\(!P9_SE_SEEN\.has\(rs\)\)\{P9_SE_SEEN\.add\(rs\);MMP8\.runTourEnd\(rs\)\}/);
+  assert.match(HTML, /if\(!P9_SE_SEEN\.has\(rs\)\)\{P9_SE_SEEN\.add\(rs\);P9_END_RS=rs;MMP8\.runTourEnd\(rs\)\}/);
   assert.match(HTML, /m\.raise\.battle\.kind=="league"&&m\.raise\.battle\.done&&window\.MMRULES\)\{const bs=MMRULES\.battleStats\(\);if\(bs\)m\.raise\.battle\.stats=bs\}/, '試合の内容（順位の計算用）');
 });
 

@@ -2927,7 +2927,7 @@ main:has(>#app>.p9cmps) h1{display:none}#app:has(>.p9cmps){overflow:hidden}
 .tb3 .pcduo{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:min(96vw,390px);align-items:end}
 .tb3 .pcs{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
 .tb3 .tbmon{position:relative;display:block;width:100%;height:min(25dvh,190px);background:none}
-.tb3 .tbmon .tbidle{position:absolute;left:50%;bottom:0;height:100%;width:auto;max-width:112%;object-fit:contain;transform:translateX(-50%);filter:drop-shadow(0 6px 6px rgba(0,0,0,.45))}
+.tb3 .tbmon .tbidle{position:absolute;left:50%;bottom:0;height:100%;width:auto;max-width:112%;object-fit:contain;transform:translateX(-50%)}
 .tb3 .tbmon .tbidle.fl{transform:translateX(-50%) scaleX(-1)}
 .tb3 .tbnp{min-width:62%;max-width:96%;padding:4px 14px;border-radius:7px;background:linear-gradient(#13254f,#0a1634);border:1.5px solid #d6b262;color:#f3ecd9;font-family:var(--mm-font-head);font-size:clamp(12px,3.6vw,15px);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 8px rgba(0,0,0,.4)}
 .tb3 .tbskp{position:static;aspect-ratio:auto;width:100%;display:flex;flex-direction:column;align-items:center;gap:1px;text-align:center;line-height:1.3}
@@ -3306,7 +3306,7 @@ html[data-mmev] #app .fm.bc .bcgo{opacity:0;pointer-events:none;transition:opaci
 /* 牧場：一覧の枠の黄色い菱形の飾りをやめる（B-14 の外枠 → 細い金の線） */
 #app>.rn.rn2>.wpanel.rnpanel{border-image:none!important;border:1.5px solid rgba(214,178,98,.7)!important;border-radius:12px!important}
 /* 市場：左右の矢印を簡素に（同じ大きさ・同じ押せる範囲）・下の会話欄を少し高く（文字なしの正式の欄＋NPC の顔と文） */
-.p10mk .p10arw,.p10mk .p10arw.next{width:46px;height:46px;background:url(./assets/ui/market/arrow_left.png) center/contain no-repeat;box-shadow:none;border:0;filter:none}
+.p10mk .p10arw,.p10mk .p10arw.next{width:46px;height:46px;background:url(./assets/ui/market/arrow_left.png) center/contain no-repeat;box-shadow:none;border:0}
 .p10mk .p10arw.next{background-image:url(./assets/ui/market/arrow_right.png)}
 .p10mk .p10arw::after{content:"";position:absolute;inset:-8px}
 .p10kbar{min-height:72px;padding:8px 14px 8px 8px;border:0;border-radius:0;background:url(./assets/ui/market/dialogue_blank.png) center/100% 100% no-repeat;box-shadow:none}
@@ -3377,6 +3377,7 @@ main:has(>#app>.ds) h1{display:none}
 <script src="./js/chapter/configs/ch1a.js"></script>
 <script src="./js/chapter/configs/ch2a.js"></script>
 <script src="./js/chapter/dice-renderer.js"></script>
+<script src="./js/chapter/reactions.js"></script>
 <script src="./js/chapter/field-view.js"></script>
 <script src="./js/chapter/intro.js"></script>
 <!-- バトル画面の表示だけの補正（fight()・.bt 系 CSS は変えない）：モンスターの絵を HUD と技UIの間に収める -->

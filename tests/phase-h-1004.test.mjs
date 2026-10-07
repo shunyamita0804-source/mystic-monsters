@@ -23,7 +23,7 @@ function loadMon() { const w = {}; new Function('window', rd('js/phase10/monster
 test('PH-01：ベースキャンプ＝正式背景マスター（768×1360・UI なし）・名札「ベースキャンプ」・所持金・メニュー・音／ダン＋育成中の個体＋一言／次の Chapter＋「冒険」／下の1列5つ。「ファーム」「育成を始める」「育成準備中」は出さない', () => {
   assert.deepEqual(webpSize('assets/basecamp/basecamp_main.webp'), [768, 1360]); assert.match(rd('assets/basecamp/README.md'), /157cf00222fafea99943d00016daacb28320534a59b7801b34fa61d6b81e6e2f/);
   const f = fnOf('fmScr') + fnOf('bcCmds');   // 2026-10-05：下の1列の並びは bcCmds（ステータス画面の下と共通）
-  for (const w of ['<b>ベースキャンプ</b>', 'class="bcgold"', 'onclick="bcMenu()"', 'onclick="sndToggle();', '${msv(m)}', '<div class="bcch">${chip}</div>', 't:"出発する"', '<nav class="bcbar fmcmd"']) assert.ok(f.includes(w), w);
+  for (const w of ['<b>ベースキャンプ</b>', 'class="bcgold"', 'onclick="bcMenu()"', 'onclick="sndToggle();', '${msv(m)}', '<div class="bcch bctop">${chip}</div>', 't:"出発する"', '<nav class="bcbar fmcmd"']) assert.ok(f.includes(w), w);
   assert.deepEqual([...f.matchAll(/\["([^"]+)","(\w+)","([^"]+)",/g)].map((m) => m[3]), ['特訓', 'アイテム', 'ステータス', '技管理', '中断', '街へ戻る'], '下の1列5つ（育成中は街へ戻れない＝5つ目は中断）');
   assert.doesNotMatch(f, /ファーム|育成を始める|育成準備中|rankLabel/);
   assert.doesNotMatch(f, /fmdan|kdan|bcomm\(\)/, '2026-10-06：通常のベースキャンプにダンの常設の立ち絵・一言は出さない（モンスターが主役）');
@@ -52,7 +52,7 @@ test('PH-03：聖獣士管理局＝正式背景マスター（864×1536）。聖
   const rows = fnOf('bureauRows');
   for (const w of ['p11Esc(S.playerName||MMP11P.DEFAULT_NAME)', 'RN[br]', 'MMP8.raiseDoneCount(S)', 'S.fuseCnt|0', 'bureauFound()', 'S.wins|0']) assert.ok(rows.includes(w), w);
   assert.doesNotMatch(rows + fnOf('bureauScr'), /\b(128|342|96)\b|アルト・ランクー/, '参考画像の見本の値・名前は使わない');
-  const b = fnOf('bureauScr'); assert.match(b, /<nav class="bunav"><button class="bub[^>]*onclick="bureauScr\('card'\)">聖獣士証<\/button><button class="bub[^>]*onclick="bureauScr\('ach'\)">功績一覧<\/button>\$\{S\.playerNamePending\?"":`<button class="bub bumap" onclick="bureauMap\(\)"[^`]*`\}<\/nav>/);
+  const b = fnOf('bureauScr'); assert.match(b, /<nav class="bunav(?: cmdimg)?"><button class="bub[^>]*onclick="bureauScr\('card'\)">聖獣士証<\/button><button class="bub[^>]*onclick="bureauScr\('ach'\)">功績一覧<\/button>\$\{S\.playerNamePending\?"":`<button class="bub bumap" (?:data-cmd="bureau_map" )?onclick="bureauMap\(\)"[^`]*`\}<\/nav>/);
   assert.doesNotMatch(b, /聖獣士登録|聖獣士証を発行/, '登録済みの画面に「聖獣士登録」「聖獣士証を発行」は使わない');
   assert.doesNotMatch(HTML.slice(HTML.indexOf('const BUREAU_ACH='), HTML.indexOf('function bureauRows(')), /S\.g\s*[+-]=|unlock|reward:/, '功績に報酬・解放は付けない');
   assert.match(HTML, /function townGuild\(\)\{if\(S\.playerNamePending&&opOn\(\)\)return opBureau\(\);bureauScr\(\)\}/); assert.match(HTML, /\["聖獣士管理局","聖獣士証・功績","","townGuild\(\)","ok",0,\[500,594\]\]/, '街の既存の札から入る');
@@ -76,7 +76,7 @@ test('PH-04：NPC の立ち絵の規格：主要 NPC は全身（expr/full）を
 });
 
 test('PH-05：セルジュ（2026-10-06 正式の立ち絵＝ユーザーの serge_reference の白背景を透過）。リュウは会話の NPC には登録しない（2026-10-05 PHASE B：ライバルの遭遇の画面だけ正式立ち絵の透過 WebP）', () => {
-  const M = loadNpc(); assert.equal(M.get('ryu'), null); assert.equal(M.get('serge').name, 'セルジュ');
+  const M = loadNpc(); assert.equal(M.get('ryu').name, 'リュウ', '2026-10-07：街での初対面の会話のため登録（立ち絵は正式の全身）'); assert.equal(M.get('serge').name, 'セルジュ');
   assert.equal(M.imageOf('serge').src, 'assets/npc/serge/full_normal.webp'); assert.equal(M.standOf('serge', 'closeup', 'normal'), 'assets/npc/serge/full_normal.webp');
   assert.ok(existsSync(path.join(ROOT, 'assets/npc/serge/full_normal.webp'))); assert.match(rd('assets/npc/serge/README.md'), /serge_reference/);
   assert.match(HTML, /const SERGE=\{id:"serge",name:"セルジュ"/); assert.match(fnOf('bureauNpc'), /MMNPC\.get\(SERGE\.id\)/);
