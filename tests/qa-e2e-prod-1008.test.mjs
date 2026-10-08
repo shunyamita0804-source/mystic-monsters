@@ -124,9 +124,10 @@ test('PR-B2：野生の練習試合の帯・札・相手名・会場（M-06・M-
   assert.equal(await pg.evaluate(() => /ランク.大会|ランク.の対戦相手/.test(document.getElementById('bt').innerText)), false);
   // 降参（2度押し）
   await pg.waitForFunction(() => { const g = document.getElementById('go'); return g && !g.disabled; }, null, { timeout: 15000 });
-  await pg.click('#sur'); await pg.waitForTimeout(300); await pg.click('#sur');
-  await pg.click('#go').catch(() => {});   // 今のターンを進めて降参を確定
-  await pg.waitForFunction(() => { const g = document.getElementById('go'); return !!g && g.classList.contains('bk'); }, null, { timeout: 30000 });
+  await pg.click('#sur', { force: true }); await pg.waitForTimeout(300); await pg.click('#sur', { force: true });
+  // 降参はラウンドの区切りで確定する（それまでは STOP を押して進める）
+  for (let i = 0; i < 80; i++) { if (await pg.evaluate(() => { const g = document.getElementById('go'); return !!g && g.classList.contains('bk'); })) break;
+    if (await pg.evaluate(() => { const g = document.getElementById('go'); return !!g && !g.disabled; })) await pg.click('#go').catch(() => {}); await pg.waitForTimeout(400); }
   assert.match(await pg.evaluate(() => document.getElementById('msg').textContent), /降参|敗北|負け/);
   await pg.click('#go');
   await pg.waitForFunction(() => !document.getElementById('bt') && !!document.querySelector('#chf'), null, { timeout: 20000 });
