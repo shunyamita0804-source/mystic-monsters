@@ -79,8 +79,8 @@
     { id: 'p4_', scene: 5, seq: ['rest', 'stat_life', 'wild', 'normal', 'treasure', 'stat_evasion'], next: ['p5_'] },
     { id: 'p5_', scene: 6, seq: ['rival', 'stat_toughness', 'event', 'branch'], next: ['p6_', 'p8_'] },   // 分岐 C（ライバル＝強制停止 p5_0）
     { id: 'p6_', scene: 7, side: -1, branch: 'forest', seq: ['stat_evasion', 'event', 'stat_life', 'rest', 'stat_intelligence'], next: ['p7_'] },
+    { id: 'p7_', scene: 8, side: -1, branch: 'forest', seq: ['treasure', 'normal', 'stat_accuracy', 'event', 'stat_life'], next: ['p10_'] },   // 並びは 2026-10-06 と同じ（p6_ → p7_ → p8_ → p9_）＝同じ seed なら同じ配置（中身の抽選の順が変わらない）
     { id: 'p8_', scene: 7, side: 1, branch: 'bridge', seq: ['wild', 'stat_power', 'normal', 'treasure', 'wild'], next: ['p9_'] },
-    { id: 'p7_', scene: 8, side: -1, branch: 'forest', seq: ['treasure', 'normal', 'stat_accuracy', 'event', 'stat_life'], next: ['p10_'] },
     { id: 'p9_', scene: 8, side: 1, branch: 'bridge', seq: ['stat_toughness', 'wild', 'treasure', 'normal', 'stat_intelligence'], next: ['p10_'] },
     { id: 'p10_', scene: 9, seq: ['merge', 'stat_power', 'normal'], next: ['p10_b'] },
     { id: 'p10_', key: 'p10_b', off: 3, scene: 10, seq: ['wild', 'stat_evasion', 'event'], next: ['p11_'] },

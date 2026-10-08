@@ -22,6 +22,7 @@ test('BD-01：ゲームの中身は 2026-10-06 と同じ（ノードID・マス�
   const s = JSON.stringify({ rows, start: g.start, goal: g.goal, ba: g.branchAt, br: cfg.branches.map((b) => [b.at, b.options.map((o) => [o.id, o.to])]) });
   assert.equal(sha(s), 'c0f4804b09d4ba7fa75da621729a75967c1feaf479b928154885b57873f02d57', '2026-10-06 のグラフ（84マス＋スタート）と同じ');
   assert.deepEqual(g.routes.map((r) => r.seq.length - 1), Array(8).fill(64), 'どの道でも 64歩');
+  assert.equal(sha(g.order.join(',')), '5db747fe104cffcc48ac82ed74a07530a5cc99e9485d942d9a71d7ae8b34f4a5', 'ノードの順も 2026-10-06 と同じ＝同じ seed なら同じ配置（イベント・宝箱の段階・レアの抽選の順が変わらない）');
   assert.deepEqual(CH.rulesOf(cfg).turnLimit, 45);
 });
 
