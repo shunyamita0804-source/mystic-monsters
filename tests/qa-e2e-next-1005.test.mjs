@@ -275,7 +275,7 @@ T('PRO-B4（2026-10-06）：プロローグの途中で裏に回って戻る →
   await pg.evaluate(() => { window.__hid = false; document.dispatchEvent(new Event('visibilitychange')); });
   await pg.waitForFunction(() => (window.__bg || []).some((x) => x[0] === '03'), null, { timeout: 30000 });
   const e3 = await pg.evaluate(() => window.__bg.find((x) => x[0] === '03'));
-  assert.ok(e3[2] != null && Math.abs(e3[2] - 12600) < 300, `戻ったあとも Scene 3 は時計の 12.6秒（2026-10-07 の6枚）（実測 ${e3[2]}）`);
+  assert.ok(e3[2] != null && Math.abs(e3[2] - 16100) < 300, `戻ったあとも Scene 3 は時計の 16.1秒（2026-10-08：各 Scene を延長）（実測 ${e3[2]}）`);
   const a = await pg.evaluate(() => ({ active: MMAUDIO.status().slots.filter((x) => x.active).length, pro: MMAUDIO.registryOf('bgm').PROLOGUE.silent, scene: MMAUDIO.status().scene }));
   assert.ok(a.active <= 1 && a.pro === true && /^PROLOGUE_[34]$/.test(a.scene), `2026-10-07：Scene ごとの曲（旧1曲の PROLOGUE は無音のまま）・裏から戻っても二重に鳴らない ${JSON.stringify(a)}`);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);

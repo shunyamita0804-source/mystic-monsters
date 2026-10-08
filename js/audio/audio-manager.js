@@ -176,7 +176,7 @@
   function fadeOutSlot(s, ms) {
     if (!s) return;
     if (s.loopT) { clearTimeout(s.loopT); s.loopT = null; }
-    s.active = false; s.token++;
+    s.active = false; s.token++; s.fadeAt = Date.now();
     setGain(s, 0, ms);
     if (s.timer) clearTimeout(s.timer);
     s.timer = setTimeout(() => { s.timer = null; if (s.active) return; try { s.el.pause(); } catch (e) {} s.src = null; s.scene = null; }, ms + 40);
@@ -195,7 +195,7 @@
     const all = slots(); if (!all.length) return false;
     const cur = st.cur;
     if (cur && cur.active && cur.src === src) { cur.scene = key; cur.gainTarget = entry.gain; cur.loopRange = entry.loopRange || null; st.source = 'file'; legacyStop(); setGain(cur, slotTarget(cur), ms); return true; }   // 同じ曲なら鳴らし直さない
-    const s = all.find((x) => x !== cur) || all[0];
+    const s = all.find((x) => x !== cur && !x.timer) || all.filter((x) => x !== cur).sort((x, y) => (x.fadeAt || 0) - (y.fadeAt || 0))[0] || all[0];   // 2026-10-08（監査 L-22）：フェードアウト中（timer あり）の1本は奪わない（両方フェード中なら先にフェードを始めたほう）＝プロローグをスキップした直後などに前の曲が途中で切れない
     if (s.timer) { clearTimeout(s.timer); s.timer = null; }
     if (s.loopT) { clearTimeout(s.loopT); s.loopT = null; }
     const token = ++s.token;

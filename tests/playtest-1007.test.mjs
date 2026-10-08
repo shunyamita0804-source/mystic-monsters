@@ -64,7 +64,7 @@ test('PT-05：プロローグの曲は少し前から（時刻表は変えない
   const pro = rd('js/prologue/prologue.js');
   assert.match(pro, /const AQ = opts\.onSceneAudio \? sceneStarts\(\)\.slice\(1\)\.map\(\(t, k\) => \(\{ t: Math\.max\(0, t - \(opts\.audioLeadMs \|\| 0\)\), si: k \+ 1 \}\)\) : \[\];/);
   const w = {}; new Function('window', 'document', pro)(w, undefined);
-  assert.deepEqual(w.MMPRO.sceneStarts(), [0, 6300, 12600, 18900, 25600, 32000]);
+  assert.deepEqual(w.MMPRO.sceneStarts(), [0, 7800, 16100, 24400, 34100, 42500]);   // 2026-10-08：各 Scene を1〜3秒延長
   assert.match(fnOf('p9Frames'), /x\.classList\.add\("on"\);T\.push\(setTimeout\(\(\)=>\{im\.forEach\(\(y,j\)=>\{if\(j<i\)y\.classList\.remove\("on"\)\}\)\},520\)\)/);
 });
 

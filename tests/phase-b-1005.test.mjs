@@ -32,12 +32,14 @@ test('PB-01：開始画面に BGM は無い（TITLE は silent・旧タイトル
   assert.match(fnOf('startGame'), /MMAUDIO\.se\("TITLE_START",\{wait:900\}\)/, '開始の音（正式 SE）はそのまま');
 });
 
-test('PB-02：プロローグの時刻表＝2026-10-07 正式6枚（約6.3秒ずつ・本文の終わり 38.4・終わり 39.4秒。BGM なし）。本文は変えない・読む間を残す', () => {
+test('PB-02：プロローグの時刻表＝2026-10-07 正式6枚（2026-10-08：各 Scene を1〜3秒延長＝7.8〜9.7秒・本文の終わり 50.9・終わり 51.9秒）。本文は変えない・読む間を残す', () => {
   const P = load('js/prologue/prologue.js', 'MMPRO');
-  assert.deepEqual(P.sceneStarts(), [0, 6300, 12600, 18900, 25600, 32000]);
+  assert.deepEqual(P.sceneStarts(), [0, 7800, 16100, 24400, 34100, 42500]);
+  const len = P.sceneStarts().concat([50900]).slice(1).map((t, i) => t - P.sceneStarts()[i]), old = [6300, 6300, 6300, 6700, 6400, 6400];
+  len.forEach((d, i) => assert.ok(d - old[i] >= 1000 && d - old[i] <= 3000, `Scene ${i + 1}：+1〜3秒（${old[i]}→${d}）`));
   const ev = P.schedule(), at = (k) => ev.filter((e) => e.k === k).map((e) => e.t);
-  assert.deepEqual([at('lastText'), at('end')], [[38400], [39400]]);
-  assert.deepEqual({ ...P.CUES, scenes: [...P.CUES.scenes] }, { scenes: [0, 6300, 12600, 18900, 25600, 32000], lastText: 38400, end: 39400 });
+  assert.deepEqual([at('lastText'), at('end')], [[50900], [51900]]);
+  assert.deepEqual({ ...P.CUES, scenes: [...P.CUES.scenes] }, { scenes: [0, 7800, 16100, 24400, 34100, 42500], lastText: 50900, end: 51900 });
   // 本文は全部・順番どおり（schedule の show の並び＝SLIDES の段落の並び）
   const shown = ev.filter((e) => e.k === 'show').map((e) => e.u.join(''));
   assert.deepEqual(shown, P.SLIDES.flatMap((s) => s.pages.flatMap((pg) => P.units(pg).map((u) => u.join('')))));
@@ -45,7 +47,7 @@ test('PB-02：プロローグの時刻表＝2026-10-07 正式6枚（約6.3秒ず
   let cur = null, full = null;
   for (const e of ev) { if (e.k === 'show') cur = e; if (e.k === 'full') full = e; if (e.k === 'out') { const n = Array.from(cur.u.join('')).length; assert.ok((e.t - cur.t) / n >= 70, `「${cur.u[0].slice(0, 8)}」${e.t - cur.t}ms/${n}字`); assert.ok(e.t - full.t >= 1000, '全部出てから1秒以上'); } }
   // Scene の切り替えより前に、その Scene の最後の段落が消え終わる
-  const S = P.sceneStarts().concat([38400]); for (const e of ev.filter((x) => x.k === 'clear')) assert.ok(S.some((t) => t === e.t) || S.every((t) => Math.abs(t - e.t) > 0), 'clear');
+  const S = P.sceneStarts().concat([50900]); for (const e of ev.filter((x) => x.k === 'clear')) assert.ok(S.some((t) => t === e.t) || S.every((t) => Math.abs(t - e.t) > 0), 'clear');
   assert.equal(P.T.chGap, 48, '1文字ずつの間隔はそのまま');
   assert.doesNotMatch(rd('js/prologue/prologue.js'), /7782|21226|37342|50786/, '旧い時刻表を使わない');
 });

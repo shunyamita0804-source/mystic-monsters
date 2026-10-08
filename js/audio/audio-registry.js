@@ -31,7 +31,7 @@
     TITLE:      { silent: true },   // 2026-10-05 PHASE B 正式：開始画面に BGM は無い（無音で開始画面 → 開始の音 TITLE_START → Scene 1 でプロローグ BGM）。旧タイトル曲（mystic_monsters_title_theme_official.ogg）は廃止・ファイルも置かない
     PROLOGUE:   { silent: true },   // 2026-10-06 重大修正：プロローグの音がプツプツ鳴る＝プロローグ BGM は一旦削除（鳴らさない・合成音にも落とさない。ファイルも置かない）。プロローグの時刻表・本文・スキップは変えない
                                      //  旧 54.2秒版と同じファイル名なので ?v=v6 で端末のキャッシュ（旧い曲）を使わない
-    // 2026-10-07 正式：プロローグは Scene ごとに1曲（各曲の頭から・loop なし＝Scene は約6.3秒）。index.html の proPlay が Scene の切り替えで PROLOGUE_1〜6 へ（短いクロスフェード）
+    // 2026-10-07 正式：プロローグは Scene ごとに1曲（各曲の頭から・loop なし＝Scene は約7.8〜9.7秒。2026-10-08 に延長）。index.html の proPlay が Scene の切り替えで PROLOGUE_1〜6 へ（短いクロスフェード）
     PROLOGUE_1: { src: LIC + '01_prologue_peace.ogg', gain: 0.54, loop: false },          // 穏やかで少しワクワクする今日 / 今川彰人オーケストラ（-12.6 LUFS → 約 -18）
     PROLOGUE_2: { src: LIC + '02_prologue_calamity.ogg', gain: 0.35, loop: false },       // 悪魔との戦闘 / 今川彰人オーケストラ（-9.0）
     PROLOGUE_3: { src: LIC + '03_prologue_hopeful.ogg', gain: 0.44, loop: false },        // Hopeful / Fukagawa（-10.9）

@@ -544,3 +544,19 @@ test('AUDIO-30：2026-10-07 正式採用の BGM 14曲：プロローグ6場面�
   assert.ok(!existsSync(path.join(ROOT, 'assets/audio/bgm/pgs_fantasy_rpg/battle_music_1.ogg')) && !existsSync(path.join(ROOT, 'assets/audio/bgm/alkakrab_fantasy_rpg_vol3/action_2_battle_of_the_skies.ogg')), '置き換えた旧い戦闘曲は置かない');
   for (const f of ['.mp3', '.wav']) assert.ok(!readFileSync(path.join(ROOT, 'js/audio/audio-registry.js'), 'utf8').includes(f + "'"), `${f} は使わない（OGG に変換）`);
 });
+
+test('AUDIO-31：2026-10-08（監査 L-22）：曲を止めた（stopBgm＝フェードアウト中）すぐあとに次の場面の曲を始めても、フェード中の1本を奪わない＝前の曲が途中で切れない', async () => {
+  const { A, log } = env(); legacySpy(A);
+  A.registerBgm('PROLOGUE_1', './bgm/p1.ogg', { gain: 0.6, loop: false }); A.registerBgm('PROLOGUE_2', './bgm/p2.ogg', { gain: 0.6, loop: false }); A.registerBgm('PROLOGUE_3', './bgm/p3.ogg', { gain: 0.6, loop: false }); A.registerBgm('TOWN', './bgm/town.ogg');
+  A.unlock(); const F = A.FADE.normal + 80; A.scene('PROLOGUE_1'); await tick(F); A.scene('PROLOGUE_2'); await tick(F); A.scene('PROLOGUE_3'); await tick(F);   // Scene は数秒ずつ＝前の曲のクロスフェードは終わっている   // プロローグの Scene 1→2→3（slot 0→1→0）
+  const p3 = log.audios.find((x) => x.src === './bgm/p3.ogg'); assert.ok(p3 && !p3.paused);
+  A.stopBgm({ fade: 'normal' });   // スキップ：P3 をフェードアウト
+  A.scene('TOWN'); await tick(10);   // すぐ次の場面
+  assert.equal(p3.src, './bgm/p3.ogg', 'フェード中の P3 の <audio> は差し替えない'); assert.equal(p3.paused, false, 'P3 はフェードの間は鳴り続ける（途中で切れない）');
+  const town = log.audios.find((x) => x.src === './bgm/town.ogg'); assert.ok(town && town !== p3, '次の曲は別の1本で');
+  assert.equal(active(A).length, 1);
+  // 両方フェード中（切り替えの直後に止めた）でも、先にフェードを始めた1本を使う
+  const e2 = env(); legacySpy(e2.A); for (const k of ['PROLOGUE_1', 'PROLOGUE_2', 'TOWN']) e2.A.registerBgm(k, `./bgm/${k}.ogg`, { loop: false });
+  e2.A.unlock(); e2.A.scene('PROLOGUE_1'); await tick(10); e2.A.scene('PROLOGUE_2'); await tick(30); e2.A.stopBgm({ fade: 'normal' }); e2.A.scene('TOWN'); await tick(10);
+  assert.equal(e2.log.audios.find((x) => x.src === './bgm/PROLOGUE_2.ogg') ? 1 : 0, 1, 'あとからフェードを始めた PROLOGUE_2 は残る');
+});
