@@ -28,7 +28,26 @@ ZIP の README・LICENSE の原文は、受け取った ZIP の中にある（�
 
 ## 2026-10-08 正式採用：街の曲（assets/audio/bgm/licensed_20261008/）
 
-ユーザー提供の MP3「冒険への誘い(2).mp3」（ZIP Mismon_NextBatch_PART2_Market_Ryu_WorldMap_TownBGM_20261008 の town_bgm/。sha256 `b86897fa6a540ffc…`）を OGG Vorbis（q5）に変換しただけ（曲の切り出し・加工はしない）。**作者・出典・ライセンスは受け取った ZIP に書かれていない＝要確認**（10-07 の一覧では不採用だった曲。2026-10-08 にユーザーが街の曲として正式採用）。
+ユーザー提供の MP3「冒険への誘い(2).mp3」（ZIP Mismon_NextBatch_PART2_Market_Ryu_WorldMap_TownBGM_20261008 の town_bgm/。sha256 `b86897fa6a540ffc…`）を OGG Vorbis（q5）に変換しただけ（曲の切り出し・加工はしない）。（10-07 の一覧では不採用だった曲。2026-10-08 にユーザーが街の曲として正式採用）。
+
+作者・出典・ライセンス（2026-10-08 ユーザー確認済み）：
+
+- 曲名：冒険への誘い
+- 作曲者：のる
+- 配布元：OpenTracks（旧 DOVA-SYNDROME）
+- 用途：街BGM
+- ゲーム利用：可
+- 商用利用：可
+- 広告付き／アプリ内課金ゲーム：可
+- MP3→OGG変換およびループ用編集：可
+- クレジット表記：必須ではないが、ミスモンでは記載する
+
+クレジット表記（統一）：
+
+```
+BGM「冒険への誘い」 / のる
+OpenTracks（旧 DOVA-SYNDROME）
+```
 
 | 場面（registry） | ファイル | 曲名 | 長さ | 元の音量 | gain | ループ |
 |---|---|---|---|---|---|---|
