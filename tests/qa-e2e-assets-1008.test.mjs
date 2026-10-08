@@ -118,12 +118,33 @@ test('AS8-B6：街の BGM＝「冒険への誘い」（ループ区間つき）'
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
+test('AS8-B9：街 → 市場 → 街＝「冒険への誘い」へ戻る（旧い曲に戻らない・無音にならない・二重に鳴らない）', { skip: SKIP, timeout: 90000 }, async () => {
+  const p = await openPage({ size: H.SIZES.base }); const pg = p.page;
+  await H.newGame(pg, 'テスト');
+  await pg.waitForSelector('#app .map.town'); await pg.mouse.click(5, 300); await pg.waitForTimeout(1500);
+  const play = () => pg.evaluate(() => { const s = MMAUDIO.status(); return { scene: s.scene, on: s.slots.filter((x) => !x.paused && x.gain > 0.001).map((x) => ({ src: x.src, t: x.time, g: x.gain })) }; });
+  const a = await play();
+  assert.equal(a.scene, 'TOWN'); assert.equal(a.on.length, 1, JSON.stringify(a)); assert.match(a.on[0].src, /town_bouken_e_no_izanai\.ogg/);
+  await pg.evaluate(() => market()); await pg.waitForTimeout(2500);
+  const b = await play();
+  assert.equal(b.scene, 'MARKET'); assert.ok(!b.on.some((x) => /town_bouken/.test(x.src) && x.g > 0.05), '市場では街の曲が残らない：' + JSON.stringify(b));
+  await pg.evaluate(() => lobby()); await pg.waitForTimeout(2500);
+  const c = await play();
+  assert.equal(c.scene, 'TOWN'); assert.equal(c.on.length, 1, '二重に鳴らない：' + JSON.stringify(c));
+  assert.match(c.on[0].src, /licensed_20261008\/town_bouken_e_no_izanai\.ogg/, '旧い街の曲（Lively City）に戻らない');
+  await pg.waitForTimeout(1200);
+  const d = await play();
+  assert.ok(d.on.length === 1 && d.on[0].t > c.on[0].t, '再生が進んでいる（無音・止まったままではない）：' + JSON.stringify([c, d]));
+  assert.ok(c.on[0].t < 6, '戻ったら頭からすぐ鳴る（長い無音の位置ではない）：' + c.on[0].t);
+  assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+});
+
 test('AS8-B7：D 優勝の結果＝最終順位 → モンスターの勝利演出（正式の勝利画像・種族で出し分け）→ 初回報酬 → ランクアップ（Final D→C）→ セドリックの締め（booth_D）→ 次の画面', { skip: SKIP, timeout: 180000 }, async () => {
   const p = await openPage({ size: H.SIZES.base, npc: true, tourfx: true }); const pg = p.page;
   await H.newGame(pg, 'テスト');
   await pg.evaluate(() => {
     const T = []; window.__T = T; const t0 = performance.now(); const seen = new Set();
-    new MutationObserver(() => { for (const [k, sel] of [['victory', '.p9vic'], ['reward', '.mmnote'], ['rankup', '.p9ruf'], ['cedric', '.mmtalk-scene']]) { const el = document.querySelector(sel); if (el && !seen.has(k)) { seen.add(k); T.push([k, Math.round(performance.now() - t0), k === 'victory' ? el.querySelector('.vicmon').getAttribute('src') : k === 'cedric' ? el.querySelector('.mmtalk-scenebg').style.backgroundImage : '']); } } }).observe(document.body, { childList: true, subtree: true });
+    new MutationObserver(() => { for (const [k, sel] of [['victory', '.p9vic'], ['reward', '.mmnote'], ['rankup', '.p9ruf'], ['cedric', '.mmtalk-scene']]) { const el = document.querySelector(sel); if (el && !seen.has(k)) { seen.add(k); T.push([k, Math.round(performance.now() - t0), k === 'victory' ? el.querySelector('.vicmon').getAttribute('src') : k === 'cedric' ? el.querySelector('.mmtalk-scenebg').style.backgroundImage : '', document.querySelectorAll('.p9wmon').length]); } } }).observe(document.body, { childList: true, subtree: true });
     const m = mk(1); m.name = 'ガウ'; Object.assign(m, { li: 999, po: 999, in: 999, hi: 999, ev: 999, de: 999 }); MMP7.ensureProg(m); S.m = m; MMP8.depart(S, m, () => 0.3);
     const g = MMCH.graphFor(m); Object.assign(m.raise, { node: g.goal, goal: true, pend: null }); m.raise.field.arrivalSeen = true;
     if (!MMP8.startTournament(S, m, 1, 11).ok) throw new Error('D');
@@ -140,6 +161,7 @@ test('AS8-B7：D 優勝の結果＝最終順位 → モンスターの勝利演�
   assert.deepEqual(order.filter((k) => ['victory', 'rankup', 'cedric'].includes(k)), ['victory', 'rankup', 'cedric'], JSON.stringify(r.T));
   assert.ok(order.indexOf('reward') > order.indexOf('victory') && order.indexOf('reward') < order.indexOf('rankup'), '初回報酬は勝利演出のあと・ランクアップの前：' + JSON.stringify(r.T));
   assert.match(r.T.find((x) => x[0] === 'victory')[2], /victory\/gauru_victory\.webp$/, 'ガウルの勝利画像');
+  assert.equal(r.T.find((x) => x[0] === 'victory')[3], 0, '勝利画像の下に旧い仮演出（立ち絵が跳ねる .p9wmon）が無い');
   assert.match(r.T.find((x) => x[0] === 'cedric')[2], /cedric\/booth_D\.webp/);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });

@@ -125,7 +125,7 @@ test('AF-05：M-01 大会の終わりの正式の順＝最終順位 → 優勝�
   assert.match(rd('js/phase8/raising.js'), /TOUR_END_STEPS = Object\.freeze\(\['final', 'champion', 'firstReward', 'rankUp', 'cedricEnd', 'legendUnlock', 'next'\]\)/);
   const R = fnOf('p9TourResult');
   assert.match(R, /<div class="p9tour p9end\$\{ec\} /, '始めた段階＝e-段階名（再読み込みでも同じ見え方）');
-  assert.match(R, /<div class="p9wmon" aria-hidden="true"><div class="mon">\$\{msv\(m\)\}<\/div><\/div>/, '優勝＝モンスターの正式画像の勝利演出');
+  assert.doesNotMatch(HTML, /p9wmon|p9wjump|p9wglow/, '旧い仮演出（立ち絵が跳ねて光る）は無い＝勝利演出は正式の勝利画像（p9VictoryShow）だけ');
   assert.match(R, /\$\{cedricOn\(\)\?"":p9Ced\(/, 'セドリックの静的な一言は締めの会話を出さないときだけ（二重にしない）');
   assert.equal((R.match(/class="p9btn[^"]*p9endbtn"\$\{dis\}/g) || []).length, 2, '次の画面のボタンは next まで押せない（L-02）');
   const css = HTML.slice(0, HTML.indexOf('</style>'));
