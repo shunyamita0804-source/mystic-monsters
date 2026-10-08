@@ -231,7 +231,7 @@ T('QA-RL2：Chapter間ファームの「育成放棄」は2段階の確認（最
   const raw0 = await rawSave(pg);
   const uid = await pg.evaluate(() => S.m.uid);
   // 2026-10-04 PHASE H2：ベースキャンプでは育成放棄はメニュー（☰）の中（2段階の確認＋3秒は従来どおり）
-  const ask = '#p9ov button.fmab[onclick="p9MenuClose();p8AbandonAsk()"]', openAsk = async () => { await pg.click('.bcrb[onclick="bcMenu()"]'); await pg.waitForSelector(ask); await pg.waitForTimeout(400); await pg.click(ask); };
+  const ask = '#p9ov button.p8danger[onclick="p9MenuClose();p8AbandonAsk()"]', openAsk = async () => { await pg.click('.bcrb[onclick="bcMenu()"]'); await pg.waitForSelector(ask); await pg.waitForTimeout(400); await pg.click(ask); };
   // 1段目で「やめない」
   await pg.waitForTimeout(SETTLE);
   await openAsk();

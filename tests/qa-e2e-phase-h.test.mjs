@@ -42,8 +42,8 @@ for (const size of SIZES) {
     await pg.waitForSelector('.fm.bc.fm-farm'); await pg.waitForTimeout(400); await H.finishTalk(pg).catch(() => {});
     assert.deepEqual(await pg.evaluate(() => [...document.querySelectorAll('.bcbar .bcb span')].map((s) => s.textContent)), ['特訓', 'アイテム', 'ステータス', '技管理', '中断']);
     assert.equal(await pg.evaluate(() => document.querySelectorAll('#app [onclick*="lobby("]').length), 0, '育成中は街へ戻れない');
-    await pg.click('.bcrb[onclick="bcMenu()"]'); await pg.waitForSelector('#p9ov .fmab');
-    assert.ok((await inView(pg, '#p9ov .fmab')).every(Boolean)); await pg.evaluate(() => p9MenuClose());
+    await pg.click('.bcrb[onclick="bcMenu()"]'); await pg.waitForSelector('#p9ov .p8danger');
+    assert.ok((await inView(pg, '#p9ov .p8danger')).every(Boolean)); await pg.evaluate(() => p9MenuClose());
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   });
 
@@ -68,9 +68,9 @@ for (const size of SIZES) {
     const uid = await pg.evaluate(() => rnSel);
     await pg.click('.rna[onclick="farm(\'\',\'n\')"]'); await pg.waitForSelector('#rnnm'); await pg.fill('#rnnm', '<b>ポチ</b>'); await pg.click('.rnren .go');
     await pg.waitForSelector('.rngrid');
-    assert.equal(await pg.evaluate((u) => S.box.find((x) => x.uid === u).name, uid), '<b>ポチ</b>'.slice(0, 8), '保存する名前はそのまま（8文字まで）');
-    assert.equal(await pg.evaluate((u) => document.querySelector(`.rnc[data-uid="${u}"] b`).textContent, uid), '<b>ポチ</b>'.slice(0, 8), '表示は文字のまま（p11Esc）');
-    assert.equal((await H.storedSave(pg)).box.find((x) => x.uid === uid).name, '<b>ポチ</b>'.slice(0, 8), '保存された');
+    assert.equal(await pg.evaluate((u) => S.box.find((x) => x.uid === u).name, uid), '＜b＞ポチ＜/b', '保存する名前は正規化（HTML の記号は全角・8文字まで。2026-10-08 監査 H-05）');
+    assert.equal(await pg.evaluate((u) => document.querySelector(`.rnc[data-uid="${u}"] b`).textContent, uid), '＜b＞ポチ＜/b', '表示は文字のまま（p11Esc）');
+    assert.equal((await H.storedSave(pg)).box.find((x) => x.uid === uid).name, '＜b＞ポチ＜/b', '保存された');
     // 売却（2度押し）
     const g0 = await pg.evaluate(() => S.g);
     await pg.click('.rna.rnsell'); await pg.waitForSelector('.pfsell'); await pg.click('button[onclick="pfSellGo(this)"]');
@@ -131,11 +131,11 @@ for (const size of SIZES) {
       await pg.evaluate((clr) => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); m.prog.rankClr = clr.map(Boolean); const g = MMCH.graphFor(m); Object.assign(m.raise, { node: g.goal, goal: true, pend: null }); m.raise.field.arrivalSeen = true; save(); board(); }, clr);
       await pg.waitForSelector('.rcv-row', { timeout: 20000 }); await pg.waitForTimeout(600);
       const r = await pg.evaluate(() => ({ st: [...document.querySelectorAll('.rcv-row')].map((x) => RN[+x.dataset.rank] + ':' + x.dataset.state).join(' '), info: [...document.querySelectorAll('.rcv-row')].map((x) => x.querySelector('small').textContent),
-        lab: [...document.querySelectorAll('.rcv-row .rcv-st')].map((x) => x.textContent), btns: [...document.querySelectorAll('.rcv-row')].map((x) => x.tagName), sw: document.documentElement.scrollWidth,
+        lab: [...document.querySelectorAll('.rcv-row .rcv-st')].map((x) => x.textContent), clr: !!document.querySelector('.rcv-row[data-rank="0"] .rcv-clr'), btns: [...document.querySelectorAll('.rcv-row')].map((x) => x.tagName), sw: document.documentElement.scrollWidth,
         inView: [...document.querySelectorAll('.rcv-row, #p9join, .rcv-dec')].every((e) => { const b = e.getBoundingClientRect(); return b.top >= 0 && b.bottom <= innerHeight + 1 && b.left >= -1 && b.right <= innerWidth + 1; }) }));
       assert.equal(r.st, want);
-      assert.deepEqual(r.info, ['参加者 8体 / 7試合', '参加者 8体 / 7試合', '参加者 8体 / 7試合', '参加者 8体 / 7試合', '参加者 6体 / 5試合', '参加者 6体 / 5試合']);
-      assert.deepEqual(r.lab.slice(0, 4), ['参加不可', '参加不可', '参加不可', '参加不可']); assert.equal(r.lab[4], '参加可能'); assert.equal(r.lab[5], clr[0] ? 'クリア済' : '参加可能');
+      assert.deepEqual(r.info, ['参加者 8名対戦 7試合', '参加者 8名対戦 7試合', '参加者 8名対戦 7試合', '参加者 8名対戦 7試合', '参加者 6名対戦 5試合', '参加者 6名対戦 5試合']   /* 2026-10-07 正式UI回収：「参加者 N名／対戦 N−1試合」 */);
+      assert.deepEqual(r.lab.slice(0, 4), ['参加不可', '参加不可', '参加不可', '参加不可']); assert.equal(r.lab[4], '参加可能'); assert.equal(r.lab[5], '参加可能'); assert.equal(r.clr, !!clr[0], 'クリア済は別の札（.rcv-clr。2026-10-07 正式UI回収：状態の札は 参加可能／参加不可 の2つ）');
       assert.deepEqual(r.btns, ['DIV', 'DIV', 'DIV', 'DIV', 'BUTTON', 'BUTTON'], '未解放は押せない（クリア済の E は再挑戦できる）');
       assert.ok(r.inView, '6段・参加・辞退が画面に収まる'); assert.equal(r.sw, size[0]);
       assert.ok(await pg.evaluate(() => !!document.querySelector('.rcv-row.st-next .rcv-next')), '挑戦目標の札');

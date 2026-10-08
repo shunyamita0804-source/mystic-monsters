@@ -411,7 +411,7 @@ test('QA-G3-B7：実ブラウザ：育成放棄の最終確認を「やめない
   await start(p, '#app .p9farm');
   await pg.evaluate(() => document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('#p8m .p8danger:not(#p8abgo)')) window.__t0 = performance.now(); }, true));
   // 2026-10-04 PHASE H2：育成放棄はベースキャンプのメニューの中
-  const ask = async () => { await pg.click('.bcrb[onclick="bcMenu()"]'); await pg.waitForSelector('#p9ov .fmab'); await pg.waitForTimeout(400); await pg.click('#p9ov .fmab'); };
+  const ask = async () => { await pg.click('.bcrb[onclick="bcMenu()"]'); await pg.waitForSelector('#p9ov .p8danger'); await pg.waitForTimeout(400); await pg.click('#p9ov .p8danger'); };   // 2026-10-08 M-09：冒険中のメニューと同じ部品（.p8danger）
   await ask(); await pg.click('#p8m .p8danger'); await pg.waitForSelector('#p8abgo');
   await pg.waitForTimeout(500);
   await pg.click('#p8m .go'); await pg.waitForSelector('#p8m', { state: 'detached' });

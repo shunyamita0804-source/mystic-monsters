@@ -241,7 +241,7 @@ test('QA-G4-B2：実ブラウザ：名前「<!--」の個体でも Chapter間（
   await pg.click('#app .fmcmd button[onclick="hall(\'st\')"]'); await pg.waitForSelector('#app .sts .stnm');
   assert.deepEqual(await txt(pg, '#app .sts .stnm'), [NN(CM)], 'ステータスの名前（読み込みで正規化）');
   await pg.evaluate(() => hall('t')); await pg.waitForSelector('#app .fmcmd');
-  await pg.click('#app .bcrb[onclick="bcMenu()"]'); await pg.waitForSelector('#p9ov .fmab'); await pg.waitForTimeout(400); await pg.click('#p9ov .fmab'); await pg.waitForSelector('.p8mc');
+  await pg.click('#app .bcrb[onclick="bcMenu()"]'); await pg.waitForSelector('#p9ov .p8danger'); await pg.waitForTimeout(400); await pg.click('#p9ov .p8danger'); await pg.waitForSelector('.p8mc');
   assert.equal((await txt(pg, '.p8mc p'))[0], `${NN(CM)}の育成をやめますか？`); assert.equal(await count(pg, '.p8mc button'), 2, '「やめない」「放棄に進む」');
   await pg.click('.p8mc button.p8danger'); await pg.waitForSelector('#p8abgo');
   assert.deepEqual((await txt(pg, '.p8mc p')).slice(0, 2), [`${NN(CM)}の育成をやめますか？`, 'この操作は取り消せません。']);   // 2026-10-06：最終確認の正式の文 assert.equal(await count(pg, '.p8mc button'), 2);
