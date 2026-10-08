@@ -558,7 +558,7 @@
     const nm = $('#bmonw');
     if (old) { if (xf) { old.style.transition = `opacity ${xf}ms ease-in-out`; void old.offsetWidth; old.style.opacity = '0'; setTimeout(() => old.remove(), xf + 40); } else old.remove(); }
     const cue = cueStart();
-    const P = E && E.length >= 2 ? E : [[sx, sy], [ex, ey]], ems = V.calm ? 40 : Math.max(E ? spanMs(P, 0.85) : 0, M.enterMs, E ? 0 : (T.enterMs || 0));
+    const P = E && E.length >= 2 ? E : [[sx, sy], [ex, ey]], ems = V.calm ? 40 : Math.max(E ? spanMs(P, 0.85) : 0, M.enterMs, T.enterMs || 0, xf + 80);   // 溶けている間は歩き続ける（クロスフェードより先に止まらない）
     matchCut(nm, oldPos, ems);
     await moveAlong(P, ems, [0.05, last ? 0.3 : 0.05]);
     cueEnd(cue);
