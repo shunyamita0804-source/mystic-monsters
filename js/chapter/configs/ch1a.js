@@ -126,7 +126,6 @@
   const fieldOfAt = (at) => P(at.replace(/\d+$/, '')).field;
   BRANCHES.sort((a, b) => fieldOfAt(a.at) - fieldOfAt(b.at));   // A（03）→ C（05）→ B（11）
   for (const b of BRANCHES) b.options = b.options.map((o) => ({ ...o, ...OPT[o.id] }));
-  const GROWTH = { A: 5, B: 4, C: 3, D: 2, E: 2 };
   const BRANCH_AT = BRANCHES.find((b) => b.split === 'C').at;
 
   const cfg = {
@@ -137,7 +136,7 @@
     playable: true,
     // 通常マス（normal）は止まれる公式のマス（2026-10-02 の60マス再設計：出目に数え、止まると何も起きずにターンが終わる。旧 passNormal＝通過専用は廃止）。
     //  歩きの見た目だけの経由点（paths[].pts の道の中央線の点）はマスではなく、出目に数えない
-    rules: { turnLimit: root.MMCH_CH1A_TURN_LIMIT || 45, diceSides: 3, ...(root.MMCH_CH1A_GROWTH !== undefined ? (root.MMCH_CH1A_GROWTH ? { growthGain: root.MMCH_CH1A_GROWTH } : {}) : { growthGain: GROWTH }) },   // 2026-10-04：正式仕様＝Chapter 1〜4 すべて 30ターン（ユーザー確認 2026-10-03）。サイコロは 1〜3（4〜6 の素材・共通の仕組みは残す）。旧：試遊用の 40
+    rules: { turnLimit: root.MMCH_CH1A_TURN_LIMIT || 45, diceSides: 3, ...(root.MMCH_CH1A_GROWTH ? { growthGain: root.MMCH_CH1A_GROWTH } : {}) },   // 2026-10-08：能力マスの上昇量は全 Chapter 共通の GROWTH_GAIN（js/phase10/monsters.js）。MMCH_CH1A_GROWTH はシミュレーション用の上書き口   // 2026-10-04：正式仕様＝Chapter 1〜4 すべて 30ターン（ユーザー確認 2026-10-03）。サイコロは 1〜3（4〜6 の素材・共通の仕組みは残す）。旧：試遊用の 40
     forceStopKinds: ['rival'],
     tournamentDestination: 'official',
     // ---- ゴール（14 の最後のマス）に着いたあと：到着イベント専用の背景（マス・サイコロ・操作欄なし）→ フィナの短い会話 → 大会受付（ランク選択）。

@@ -4980,6 +4980,7 @@ const TB_VENUE=k=>`./assets/tournament/venues/venue_${RN[k]}.webp`;
 const CED_SCENE=(k,kind)=>`./assets/tournament/cedric/${kind}_${RN[k]}.webp`;
 const RANK_START_FX=["A1","A2","A3","A4","A5","A6"].map(n=>`./assets/tournament/rank_start/${n}.webp`),RANK_START_MS=[420,520,620,700,1150,620];   // E ランク基準の正式カット（エンブレムの E・「公式ランクE大会」が絵の中）
 const RANK_UP_FX=["B1","B2","B3","B4","B5","B6","B7"].map(n=>`./assets/tournament/rank_up/${n}.webp`),RANK_UP_MS=[600,700,460,800,700,1500,700];   // E → D の正式カット（「Dランクに昇格！」が絵の中）
+const RANK_UP_ART={};   // 2026-10-08：昇格で新しく解放されたランク（番号）→ 正式カット。E・D は最初から解放済みのため E→D の B1〜B7（RANK_UP_FX）は使わない。D→C 以降の正式カットは未着
 /** 正式カットを順にクロスフェードで見せる（全画面・タップで飛ばせる＝出た直後0.35秒は無視・視差を減らす設定では最後のカットだけ短く）。画像は先に読み込む（最大1.5秒待つ） */
 function p9Frames(srcs,ms,cls){return new Promise(res=>{const calm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
  const d=document.createElement("div");d.className="p9fx "+(cls||"");d.setAttribute("aria-hidden","true");d.innerHTML=srcs.map(u=>`<img src="${u}" alt="" decoding="async" draggable="false">`).join("");
@@ -5076,15 +5077,26 @@ function tourVsOut(d){if(!d)return;d.classList.add("out");setTimeout(()=>d.remov
 function p9TourResult(msg){const m=S.m,t=m.raise.tour,lg=t.league,rs=t.result,w=rs.reward,st=MMP8L.standings(lg);
  const cf=Array.from({length:18},(_,i)=>`<i style="left:${(i*37)%100}%;animation-delay:${(i%6)*.35}s"></i>`).join("");
  $("#app").innerHTML=`<div class="p9tour ${rs.won?"p9won":""}">${p9TourHead(m,t)}
- ${rs.won?`<div class="p9win"><div class="cf">${cf}</div>${P9_TROPHY}<b class="big">優勝！</b><div class="sub">ランク${RN[t.rank]}大会を制した！（${st[0].w}勝${st[0].l}敗）</div>${t.rank===5?`<div class="p9newroad"><b>S ランク制覇！</b><span>新たな道が開かれた…（Chapter 5 は準備中）</span></div>`:""}</div>`
+ ${rs.won?`<div class="p9win"><div class="cf">${cf}</div>${P9_TROPHY}<b class="big">優勝！</b><div class="sub">ランク${RN[t.rank]}大会を制した！（${st[0].w}勝${st[0].l}敗）</div>${t.rank===5?`<div class="p9newroad"><b>S ランク制覇！</b></div>`:""}</div>`
   :`<div class="p9lose"><div class="plc">${rs.place}<small>位</small></div><div class="sub">大会終了。優勝（1位）できなかったため、報酬はありません。</div></div>`}
  ${p9Ced(rs.won?CEDRIC_TALK.won:CEDRIC_TALK.lost,rs.won?"victory":"host")}
  ${w?`<section class="p9board2 p9rw"><h3>${w.firstClear?"初回優勝の報酬":"再優勝の報酬"}</h3>${w.firstClear?`<div class="it">🪙 賞金 <b>${w.prize}G</b></div><div class="it">${MMP9ART.ticketIcon(24)} 特訓チケット <b>×${w.tickets}</b></div>`:`<div class="it dim">クリア済みランクのため、報酬はありません</div>`}${w.bonus.length?`<div class="it">⬆ ステータスボーナス <b>${w.bonus.map(b=>`${LAB[b.key]}+${b.amount}`).join("　")}</b></div>`:""}${w.bagUnlocked?`<div class="it">🎒 バッグが6枠に拡張された！</div>`:""}</section>`:""}
  ${msg?`<div class="p9msg p9tmsg">${msg}</div>`:""}${p9Standings(lg,st,true)}${p9Matrix(lg)}
- <button class="p9btn" onclick="p8EndChapter()">Chapterを終えてベースキャンプへ</button></div>`;try{window.scrollTo(0,0)}catch(e){}
+ ${MMP8.canStartFinalTournament(S,m).ok?`<button class="p9btn p9final" onclick="p9FinalTour(this)">最終公式大会へ挑戦する<small>同じ子のまま 公式ランクS大会へ</small></button>`:""}
+ <button class="p9btn" onclick="${MMP8.canStartFinalTournament(S,m).ok?"p9FinalSkip()":"p8EndChapter()"}">Chapterを終えてベースキャンプへ</button></div>`;try{window.scrollTo(0,0)}catch(e){}
  P9_END_AFTER=()=>{try{if(document.querySelector(".p9tour")&&S.m===m)npcMoment(rs.won?"tourWon":"tourLost",null,null,"tourEnd")}catch(e){}}; // 2026-10-05：初めての大会の結果（優勝／優勝できなかった。どちらか1回だけ）
  if(!P9_SE_SEEN.has(rs)){P9_SE_SEEN.add(rs);P9_END_RS=rs;MMP8.runTourEnd(rs)}} // 2026-10-06：大会の終わりの順（最終順位 → 優勝 → 初回クリアの報酬 → ランクアップ → セドリックの締め → 次）。js/phase8/raising.js の runTourEnd /* 2026-10-05 PHASE B：初回優勝の報酬・バッグの拡張はシステム通知の帯（結果の画面の報酬欄はそのまま） */ // 2026-10-03：初回優勝の報酬（賞金・特訓チケット）＝REWARD、バッグの拡張＝UNLOCK（登録済みの音。結果の画面を出したとき1回）
 const P9_SE_SEEN=new WeakSet();
+// 2026-10-08 正式：最終公式大会＝Chapter 4 の A ランク大会に優勝したあと、同じ育成中の子のまま S ランク大会へ（新しい Chapter は作らない。js/phase8/raising.js の startFinalTournament）
+function p9FinalTour(b){const m=S.m;if(bBusy||!m||!MMP8.canStartFinalTournament(S,m).ok)return;
+ const go=()=>{const r=MMP8.startFinalTournament(S,m);if(!r.ok)return board();save();p9TourOpen(r.rank)};
+ if(window.MM_QA_NO_TOURCONF)return go();ynAsk("最終公式大会（公式ランクS大会）に参加しますか？","Aランク大会を制した、この子のまま挑戦します。",go)}
+function p9FinalSkip(){ynAsk("最終公式大会に挑戦せずに終えますか？","Chapterを終えると、この子はSランク大会に挑戦できません。",()=>p8EndChapter())}
+// 2026-10-08 正式：S ランク大会の優勝 → イベント（いまは最小限のシステム通知。本格的な演出・台詞は後工程）→ 三伝説への挑戦が解禁（S.npcFlags.legend＝2）。
+//  大会の終わりの段階 legendUnlock から。途中でアプリを閉じたなどで残っていたら、ベースキャンプ・街に来たときに1回
+function legendEvent(){if(!window.MMP8||MMP8.legendStage(S)!==MMP8.LEGEND_PENDING||TEST_TOUR)return false;
+ if(typeof MMNOTE=="object"&&MMNOTE)MMNOTE.show({icon:"unlock",title:"三伝説への挑戦が解禁された！",sub:"Sランク制覇の証。挑戦の舞台は準備中です",se:"UNLOCK"});
+ MMP8.completeLegendUnlock(S);save();return true}
 // ---- 2026-10-07：セドリックの大会前導入イベント・大会終了後イベント（大会の始まりと締めの司会。大会2 には出さない） ----
 //  導入＝ランクのエンブレム → セドリックの会話（大会の概要・前向きな一言・初めての参加なら歓迎。このセーブで最初の1回＝S.npcFlags.cedricWelcome）→ 対戦表（参加者が順に入る）
 //  締め＝MMP8.runTourEnd の cedricEnd（最終順位 → 優勝 → 初回報酬 → ランクアップのあと）。文面は E だけ指定どおり・D〜S の参加者の一言は【暫定】。自動テストは MM_QA_NO_NPC で出さない
@@ -5105,10 +5117,11 @@ async function p9TourOpen(k){const on=cedricOn();await p9TourIntro(k,on);
 let P9_END_RS=null,P9_END_UP=null,P9_END_AFTER=null,P9_END_FX=false;
 MMP8.registerTourEndHook("final",()=>{P9_END_UP=null});
 MMP8.registerTourEndHook("rankUp",async d=>{P9_END_UP=d;P9_END_FX=false;const m=S.m;
- if(d.from!==0||d.to!==1||window.MM_QA_NO_TOURFX)return;   // 2026-10-07 正式素材 B1〜B7 は E → D だけ（ほかのランクの正式カットは未着＝演出なし）
+ if(!RANK_UP_ART[d.to]||window.MM_QA_NO_TOURFX)return;   // 2026-10-08 正式：昇格＝D優勝→C・C→B・B→A・A→S。E・D は最初から解放済み＝E→D の昇格は無い（E→D 用の B1〜B7 は使わない・流用しない）。D→C 以降の正式カットは未着＝演出なし（解放だけ）
  await new Promise(r=>setTimeout(r,2600));if(!document.querySelector(".p9tour")||S.m!==m)return;   // 先に優勝（モンスターの勝利）と初回報酬を見せてから
- await p9Frames(RANK_UP_FX,RANK_UP_MS,"p9ru");P9_END_FX=true});
+ const A=RANK_UP_ART[d.to];await p9Frames(A.fx,A.ms,"p9ru");P9_END_FX=true});
 MMP8.registerTourEndHook("cedricEnd",async()=>{const rs=P9_END_RS,m=S.m;if(!rs||!cedricOn())return;await new Promise(r=>setTimeout(r,P9_END_FX?300:rs.won?2200:900));if(!document.querySelector(".p9tour")||S.m!==m)return;try{await MMNPC.talk(CEDRIC_EV.close(rs,P9_END_UP,m&&m.name),{kind:"event",big:true,scene:CED_SCENE(rs.rank,"booth"),noFig:true})}catch(e){}});
+MMP8.registerTourEndHook("legendUnlock",()=>{legendEvent()});
 MMP8.registerTourEndHook("next",()=>{const f=P9_END_AFTER;P9_END_AFTER=null;if(f)setTimeout(f,cedricOn()?300:1100)});
 
 // 大会の終わりの段階の差し込み口（2026-10-06）：初回クリアの報酬＝従来の音と帯（REWARD・UNLOCK・MMNOTE）。ランクアップの演出・セドリックの締めの正式 UI は素材待ち（何も出さない）
@@ -5175,8 +5188,8 @@ after=function(t){const m=S.m;if(m&&m.raise&&m.raise.battle){if(m.raise.battle.k
 if(window.MMRP)MMRP.install(); // 2026-10-05：ライバルの相棒の正式技（SK・EFF の空いた番号 20〜29 に実行時に追加。js/battle/rival-partner.js。fight() は変えない）
 if(window.MMMOVES)MMMOVES.install(); // 2026-10-06：ソラモ・ガウルの正式技（SK の 0〜19 の中身を入れ替える。js/battle/official-moves.js）
 if(window.MMRULES)MMRULES.install(); // 2026-10-06・5：状態異常（まひ・ねむり）・固有スキル・ノビトンの正式技（SK の 30〜39）・純補助技の命中 100%・1試合ごとの「賞金」「ランクアップ」を出さない（js/battle/rules.js。fight() は変えない）
-// 2026-10-04：S ランク制覇＝Chapter 5 の解放フラグ S.npcFlags.chapter5（画面は未実装＝「新たな道が開かれた」の導線だけ）
-function p8AfterBattle(f){if(f.kind=="league"){if(f.settled&&f.won&&S.m&&S.m.raise&&S.m.raise.tour&&S.m.raise.tour.rank===5&&!finaFlags().chapter5){finaFlags().chapter5=1;save()}if(f.interrupted)return board("大会の試合は途中で終わった。同じ試合をもう一度行えます。");return board(`第${f.round+1}試合：${(f.matchWon??f.won)?"勝ち！":"負け…"}`+(f.settled?(f.won?" 大会全体で1位になった！":` 大会は${f.place}位で終わった。`):""))}const tail=f.goal?" ゴールに到着した！":f.timeUp?" ターンを使い切った…":"";if(f.kind=="practice"&&f.won&&!f.interrupted&&globalThis.MM_LAST_BT=="wild"&&globalThis.MMCHV&&MMCHV.queueWin)MMCHV.queueWin();globalThis.MM_LAST_BT=null;return board((f.interrupted?"練習試合は途中で終わった。":f.won?"練習試合に勝った！（練習試合のため賞金・ランクアップ・実績はありません）":"練習試合に負けた…（練習試合のため影響はありません）")+tail)}
+// 2026-10-08：旧「S ランク制覇＝Chapter 5 の解放フラグ（S.npcFlags.chapter5）」は廃止＝S 優勝の記録は js/phase8/raising.js の LEGEND の状態（S.npcFlags.legend）
+function p8AfterBattle(f){if(f.kind=="league"){if(f.interrupted)return board("大会の試合は途中で終わった。同じ試合をもう一度行えます。");return board(`第${f.round+1}試合：${(f.matchWon??f.won)?"勝ち！":"負け…"}`+(f.settled?(f.won?" 大会全体で1位になった！":` 大会は${f.place}位で終わった。`):""))}const tail=f.goal?" ゴールに到着した！":f.timeUp?" ターンを使い切った…":"";if(f.kind=="practice"&&f.won&&!f.interrupted&&globalThis.MM_LAST_BT=="wild"&&globalThis.MMCHV&&MMCHV.queueWin)MMCHV.queueWin();globalThis.MM_LAST_BT=null;return board((f.interrupted?"練習試合は途中で終わった。":f.won?"練習試合に勝った！（練習試合のため賞金・ランクアップ・実績はありません）":"練習試合に負けた…（練習試合のため影響はありません）")+tail)}
 
 /* ===== Chapterマップの登録（計算・状態変更は MMP7 / MMP8） ===== */
 // Phase 9：正式Chapter 1〜4 の育成ボードを登録する（データは js/phase9/chapters.js）。
@@ -5227,7 +5240,7 @@ function bcMenu(){p9MenuClose();const m=S.m,st=m?MMP7.raiseState(m):"none",d=doc
 /** ベースキャンプの下のコマンド（1列5つ）。ステータス画面（2026-10-05）でも同じ並び */
 function bcCmds(st){return [["hall('s')","train","特訓",""],["shopScr()","item","アイテム",""],["hall('st')","status","ステータス",""],["hall('w')","moves","技管理",""],
   st=="farm"?["p8Suspend()","pause","中断",""]:["lobby()","town","街へ戻る",""]]}
-function fmScr(msg){const m=S.m;if(!m)return lobby();p9MenuClose();
+function fmScr(msg){const m=S.m;if(!m)return lobby();p9MenuClose();if(window.MMP8&&MMP8.legendStage&&MMP8.legendStage(S)===MMP8.LEGEND_PENDING)setTimeout(legendEvent,700); /* 2026-10-08：S 優勝のあとの解禁イベントが残っていたら */
  const st=MMP7.raiseState(m),r=m.raise||{},k=MMP8.nextChapterKey(m),fin=k==MMP8.FINAL,last=(r.log||[]).slice(-1)[0],sp=MMP10M.byId(m.sp),done=st=="done",can=done?{ok:true}:MMP8.canDepart(S,m);
  bgm("farm");p9Immersive(true);npcWarm("dan");ht="t";try{if(k!=null&&k!=MMP8.FINAL)MMAUDIO.prefetchBgm("CHAPTER_"+Math.max(1,Math.min(4,k|0)))}catch(e){}/* 2026-10-05 試遊：次の Chapter の曲を先にデコードしておく（フィールドで最初から AudioBuffer で鳴らす） */setTimeout(()=>{if(S.m!==m||!document.querySelector(".fm"))return;if(st=="none")npcFirst("farm");else if(st=="farm")farmReturn(m)},0); // 2026-10-04：初回訪問（ダン ↔ フィナ）・Chapter の帰還イベント（ダン＋フィナ。Chapter ごとに1回）
  const chNm=c=>c==MMP8.FINAL?"最終ルート":`Chapter ${c}`,chSub=c=>c==MMP8.FINAL||c==null?"":MMP8.chapterName(c);

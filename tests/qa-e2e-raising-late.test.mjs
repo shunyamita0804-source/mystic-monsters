@@ -560,7 +560,9 @@ T('QA-RL8：Chapter 4 で A ランク大会に優勝 → 最終ルート（準�
   let s = await H.getS(pg);
   assert.deepEqual([s.m.raise.tour.result.won, s.g, s.trainTix, s.m.prog.rankClr], [true, 900, 2, clr(4)], 'A 初回優勝：800G・チケット2枚');
   await pg.waitForTimeout(SETTLE);
-  await pg.click('button[onclick="p8EndChapter()"]');
+  // 2026-10-08：A 優勝のあとは「最終公式大会へ挑戦する」（S）が出る。挑戦せずに終える＝確認（はい）
+  assert.equal(await pg.evaluate(() => !!document.querySelector('.p9final')), true, '最終公式大会へ挑戦できる');
+  await pg.click('button[onclick="p9FinalSkip()"]'); await pg.waitForSelector('#ynm .ynm-y'); await pg.waitForTimeout(450); await pg.click('#ynm .ynm-y');
   await pg.waitForSelector('.p9farm.p15f');
   let r = await raiseOf(pg);
   assert.deepEqual([r.state, r.ch], ['farm', 'final']);

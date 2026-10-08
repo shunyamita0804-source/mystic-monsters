@@ -65,7 +65,7 @@ test('CH-ENGINE-01：config からフィールド（正式背景14枚 ch1_bg_01�
   assert.equal(g.nodes.p5_0.forceStop, true); assert.equal(P8.trackOf(1).nodes.p5_0.stop, true);   // ライバルは道中（p5_0）
   const R = CH.rulesOf(cfg);
   assert.deepEqual([R.diceSides, R.turnLimit, R.onTimeUp, !!R.passNormal], [3, 45, 'end', false], '1〜3・45ターン（2026-10-06）・間に合わなければ大会なしで終了・通常マスは止まれる'); assert.equal(Object.keys(cfg.dice.resultSprites).length, 6, '4〜6 の停止画像は残す');
-  assert.deepEqual(R.growthGain, { A: 5, B: 4, C: 3, D: 2, E: 2 }, '2026-10-06：能力マスの上昇量（C +3。tests/chapter1-board-sim.mjs で比べて決めた）');
+  assert.equal(R.growthGain, undefined, '2026-10-08：Chapter 1 だけの上昇量の表は無い（全 Chapter 共通の GROWTH_GAIN）');
   assert.equal(cfg.arrival.bg, './assets/fields/ch1a/final/event/ch1_bg_15_event.webp'); assert.ok(existsSync(path.join(ROOT, cfg.arrival.bg)));
   assert.ok(!cfg.fieldScenes.some((s) => s.bg === cfg.arrival.bg), '15 はフィールドの背景ではない');
   assert.deepEqual(cfg.arrival.talk.map((l) => l.text), ['やっと着いたね、{name}さん！', 'ようこそ、大会会場へ！', 'さあ、参加する大会を選ぼう。']); assert.equal(cfg.arrival.lobby.bg, './assets/tournament/lobby/lobby_main.webp'); assert.ok(existsSync(path.join(ROOT, 'assets/tournament/lobby/lobby_main.webp')), 'ロビーの背景'); assert.equal(cfg.arrival.talk[0].npc, 'fina');
@@ -159,24 +159,24 @@ test('CH1-07：疲れ100ならサイコロは振れない（休むだけ）。99
   m.raise.fatigue = 99; assert.equal(P8.canRoll(m), true); P8.roll(S, m, () => DIE[3]); assert.equal(E.CH.fatigue(m), 100, '上限100');
 });
 
-test('CH1-08：能力マスの上昇量＝成長適性（A+7・B+6・C+5・D+4・E+3。2026-10-02 正式）。ランダム幅・失敗・大成功なし、疲れの影響なし。表は monsters.js の GROWTH_GAIN の1か所', () => {
+test('CH1-08：能力マスの上昇量＝成長適性（2026-10-08 正式：全 Chapter 共通 A+25・B+21・C+18・D+14・E+11。1体の育成を最後まで終えて適性 A が 100→250 前後）。ランダム幅・失敗・大成功なし、疲れの影響なし。表は monsters.js の GROWTH_GAIN の1か所', () => {
   const { w, CH } = loadEngine(), M = w.MMP10M;
-  assert.deepEqual({ ...M.GROWTH_GAIN }, { A: 7, B: 6, C: 5, D: 4, E: 3 }); assert.deepEqual([...M.GROWTH_GRADES], ['A', 'B', 'C', 'D', 'E']);
+  assert.deepEqual({ ...M.GROWTH_GAIN }, { A: 25, B: 21, C: 18, D: 14, E: 11 }); assert.deepEqual([...M.GROWTH_GRADES], ['A', 'B', 'C', 'D', 'E']);
   const K = ['li', 'po', 'in', 'hi', 'ev', 'de'], of = (sp) => K.map((k) => M.growthOf({ sp }, k)).join(''), gain = (sp) => K.map((k) => M.growthGain({ sp }, k));
-  assert.equal(of(0), 'CCCCCC', 'ソラモ'); assert.deepEqual(gain(0), [5, 5, 5, 5, 5, 5]);
-  assert.equal(of(1), 'DBBCBE', 'ガウル'); assert.deepEqual(gain(1), [4, 6, 6, 5, 6, 3]);
-  assert.equal(of(2), 'BDDDEC', 'ノビトン'); assert.deepEqual(gain(2), [6, 4, 4, 4, 3, 5]);
-  assert.equal(of(3), 'CAEDEA', 'ジオル'); assert.deepEqual(gain(3), [5, 7, 3, 4, 3, 7]);
+  assert.equal(of(0), 'CCCCCC', 'ソラモ'); assert.deepEqual(gain(0), [18, 18, 18, 18, 18, 18]);
+  assert.equal(of(1), 'DBBCBE', 'ガウル'); assert.deepEqual(gain(1), [14, 21, 21, 18, 21, 11]);
+  assert.equal(of(2), 'BDDDEC', 'ノビトン'); assert.deepEqual(gain(2), [21, 14, 14, 14, 11, 18]);
+  assert.equal(of(3), 'CAEDEA', 'ジオル'); assert.deepEqual(gain(3), [18, 25, 11, 14, 11, 25]);
   assert.deepEqual([0, 1, 2, 3].map((sp) => M.growthRegistered(sp)), [true, true, true, true], '4原種とも登録済み（種族ごとのデータ。種族名の分岐は書かない）');
   assert.ok(!/sp\s*===?\s*[0-3]|key\s*===?\s*'(solamo|gauru|nobiton|jiol)'/.test(rd('js/phase10/monsters.js').slice(rd('js/phase10/monsters.js').indexOf('function growthOf'), rd('js/phase10/monsters.js').indexOf('const growthRegistered'))), '適性の取り出しに種族ごとの分岐を書かない');
-  assert.equal(M.growthOf({ sp: 0, growth: { po: 'A' } }, 'po'), 'A', '個体ごとの適性（合体個体など将来用）を優先'); assert.equal(M.growthGain({ sp: 0, growth: { po: 'Z' } }, 'po'), 5, '不正な値は種族の適性');
+  assert.equal(M.growthOf({ sp: 0, growth: { po: 'A' } }, 'po'), 'A', '個体ごとの適性（合体個体など将来用）を優先'); assert.equal(M.growthGain({ sp: 0, growth: { po: 'Z' } }, 'po'), 18, '不正な値は種族の適性');
   const SRC = rd('js/chapter/engine.js'); assert.ok(!/statGainRange|greatMultiplier|statOdds/.test(SRC.replace(/^\s*\/\/.*$/gm, '')), '旧仕様（+10〜15・疲れの失敗／大成功）は残さない');
-  assert.ok(!/A:\s*7/.test(SRC) && !/\bE:\s*3\b/.test(rd('js/phase8/raising.js')), '上昇量の表を重複して書かない');
-  assert.equal(CH.statGain({ sp: 1 }, 'de').amount, 3);
+  assert.ok(!/A:\s*25/.test(SRC) && !/\bE:\s*11\b/.test(rd('js/phase8/raising.js')) && !/growthGain:\s*\{/.test(rd('js/chapter/configs/ch1a.js') + rd('js/chapter/configs/ch2a.js')), '上昇量の表を重複して書かない（Chapter ごとの表も無い）');
+  assert.equal(CH.statGain({ sp: 1 }, 'de').amount, 11);
 });
 
-test('CH1-09：能力マスに止まる → その能力だけ 適性の値ぶん上がる（どの疲れ・どの乱数でも同じ。2026-10-06：Chapter 1 は config の表 rules.growthGain＝A5 B4 C3 D2 E2）。イベントの能力変化は適性の影響を受けない', () => {
-  for (const [sp, want] of [[0, { li: 3, po: 3, in: 3, hi: 3, ev: 3, de: 3 }], [1, { li: 2, po: 4, in: 4, hi: 3, ev: 4, de: 2 }], [2, { li: 4, po: 2, in: 2, hi: 2, ev: 2, de: 3 }], [3, { li: 3, po: 5, in: 2, hi: 2, ev: 2, de: 5 }]]) {
+test('CH1-09：能力マスに止まる → その能力だけ 適性の値ぶん上がる（どの疲れ・どの乱数でも同じ。2026-10-08：全 Chapter 共通の GROWTH_GAIN＝A25 B21 C18 D14 E11）。イベントの能力変化は適性の影響を受けない', () => {
+  for (const [sp, want] of [[0, { li: 18, po: 18, in: 18, hi: 18, ev: 18, de: 18 }], [1, { li: 14, po: 21, in: 21, hi: 18, ev: 21, de: 11 }], [2, { li: 21, po: 14, in: 14, hi: 14, ev: 11, de: 18 }], [3, { li: 18, po: 25, in: 11, hi: 14, ev: 11, de: 25 }]]) {
     for (const k of Object.keys(want)) for (const [fat, rv] of [[0, 0.01], [55, 0.5], [99, 0.99]]) {
       const E = onCh1(); E.m.sp = sp; const g = E.CH.graphFor(E.m), id = g.order.find((x) => x !== g.start && g.nodes[x].kind === 'slot');
       E.m.raise.field.nodeAssignments[id] = { t: 'stat', k }; E.m.raise.node = id; E.m.raise.pend = { roll: 1, left: 0, stage: 'resolve' }; E.m.raise.fatigue = fat;

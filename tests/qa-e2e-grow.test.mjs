@@ -23,17 +23,17 @@ async function rollAs(pg, v) { await pg.evaluate((v) => { window.__mr = Math.ran
 /** 配置から、種別名（rest・treasure…）のマスとその1つ手前のマスを探す */
 const findTile = (pg, type) => pg.evaluate((type) => { const m = S.m, g = MMCH.graphFor(m); for (let i = 1; i < g.order.length; i++) { const id = g.order[i]; if (MMCH.nodeTypeName(MMCH.typeAt(m, id)) === type && (g.conn[g.order[i - 1]] || [])[0] === id) return [g.order[i - 1], id]; } return null; }, type);
 
-test('GR-B1（390×844）：能力マス：アイコン（正式マスUI）が浮く →「ライフ +3」が +0 から上がる → 黄のゲージが 999 を最大とした目盛りで伸びる → 粒子。全体 0.6〜1.3秒。枠は frame_stat_up', { skip: SKIP }, async () => {
+test('GR-B1（390×844）：能力マス：アイコン（正式マスUI）が浮く →「ライフ +18」が +0 から上がる → 黄のゲージが 999 を最大とした目盛りで伸びる → 粒子。全体 0.6〜1.3秒。枠は frame_stat_up', { skip: SKIP }, async () => {
   const p = await open(); const pg = p.page; await toField(pg);
   await place(pg, 'p1_1'); await idle(pg);
   const li0 = await pg.evaluate(() => S.m.li);
   await pg.evaluate(() => { window.__g = []; const t = () => { const d = document.querySelector('.chpop:not(.out)'), r = d && d.querySelector('.chf-grow'), i = r && r.querySelector('.chf-gauge i'); window.__g.push(d ? { t: performance.now(), on: !!(r && r.classList.contains('on')), grown: !!(r && r.classList.contains('grown')), cnt: r ? r.querySelector('.cnt').textContent : '', w: i ? i.style.width : '', ic: r ? (r.querySelector('.chf-grow-ic img') || {}).getAttribute?.('src') || '' : '', c: r ? getComputedStyle(r).getPropertyValue('--c').trim() : '', frame: d.classList.contains('framed') } : null); if (window.__g.length < 1200) requestAnimationFrame(t); }; requestAnimationFrame(t); });
   await rollAs(pg, 1); await idle(pg);
   const G = (await pg.evaluate(() => window.__g)).filter(Boolean), li1 = await pg.evaluate(() => S.m.li);
-  assert.equal(li1 - li0, 3);   // 2026-10-06：Chapter 1 は C+3 assert.ok(G.length > 5, '成長の枠が出た');
+  assert.equal(li1 - li0, 18);   // 2026-10-08：全 Chapter 共通 C+18 assert.ok(G.length > 5, '成長の枠が出た');
   const ms = G[G.length - 1].t - G[0].t; assert.ok(ms >= 600 && ms <= 1300, `全体 0.6〜1.3秒（${Math.round(ms)}ms）`);
   assert.ok(G.every((x) => x.frame), '枠は正式素材のまま'); assert.ok(G.some((x) => x.on), 'アイコンが浮く'); assert.ok(G.every((x) => /tile_stat_life\.webp$/.test(x.ic)), 'アイコンは正式マスUIのライフ');
-  assert.equal(G[0].cnt, '+0'); assert.equal(G[G.length - 1].cnt, '+3');   // 2026-10-06：Chapter 1 は C+3 assert.ok(new Set(G.map((x) => x.cnt)).size >= 3, 'カウントアップ');
+  assert.equal(G[0].cnt, '+0'); assert.equal(G[G.length - 1].cnt, '+18');   // 2026-10-08：全 Chapter 共通 C+18 assert.ok(new Set(G.map((x) => x.cnt)).size >= 3, 'カウントアップ');
   const pc = (v) => Math.round(Math.min(999, v) / 999 * 1000) / 10;
   assert.equal(G[0].w, `${pc(li0)}%`, 'ゲージは上がる前の値から'); assert.equal(G[G.length - 1].w, `${pc(li1)}%`, '上がった後の値へ（999 を最大）'); assert.ok(G.some((x) => x.grown), '粒子');
   assert.equal(G[0].c, '#f2c14e', 'ライフ＝黄');

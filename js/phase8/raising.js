@@ -502,6 +502,7 @@
     const r = m.raise, key = r.ch, res = r.tour && r.tour.result;
     const entry = { ch: key, reachedGoal: !!r.goal, turnsUsed: r.turnsUsed, turnLimit: r.turnLimit, declined: !!extra.declined,
       tour: res ? { rank: res.rank, place: res.place, won: res.won, firstClear: res.firstClear } : null };
+    if (r.tour && r.tour.final && isObj(r.tour.prev)) { entry.finalTour = entry.tour; entry.tour = r.tour.prev; }   // 最終公式大会：tour＝その Chapter の通常の大会（A）、finalTour＝S
     r.log.push(entry);
     const nx = nextAfterChapter(m, key);
     { const d = driverFor(key); if (d && d.onClose) d.onClose(S, m); }   // 配置はChapterごと（疲れは持ち越す）
@@ -591,6 +592,7 @@
     P7.ensureProg(m);
     const firstClear = !m.prog.rankClr[rank];
     const reward = { rank, firstClear, prize: 0, tickets: 0, bonus: [], bagUnlocked: false };
+    const cap0 = maxChallengeRank(m);   // 優勝前に挑戦できた上限（Chapter の上限は含めない）
     if (firstClear) {
       reward.prize = PRIZE[rank]; reward.tickets = FIRST_CLEAR_TICKETS[rank];
       S.g = (S.g || 0) + reward.prize;
@@ -607,10 +609,13 @@
     // 旧来の記録（大会勝利数・ブリーダーランク・個体のランク欄）は「大会優勝1回」として1回だけ更新（個別試合では増やさない）
     S.wins = (S.wins || 0) + 1;
     S.br = Math.max(S.br == null ? -1 : S.br, rank);
-    const rk0 = m.rk || 0;
-    m.rk = Math.max(rk0, highestCleared(m));
-    // ランクアップ＝初回優勝で、その個体のクリア最高ランクが上がったとき（次の上位ランクが選べるようになる）。再優勝では起きない
-    reward.rankUp = firstClear && m.rk > rk0 ? { from: rk0, to: m.rk, unlocked: Math.min(RANK_S, maxChallengeRank(m)) } : null;
+    m.rk = Math.max(m.rk || 0, highestCleared(m));   // 旧来の個体のランク欄（互換のため更新だけ。昇格の判定には使わない）
+    // ランクアップ（2026-10-08 正式）＝初回優勝で、次の上位ランクが新しく選べるようになったとき（D優勝→C解放・C→B・B→A・A→S）。
+    //  E・D は最初から解放済み＝E の優勝では昇格しない。S の優勝は上がる先が無い（→ LEGEND の解禁＝下）。再優勝では起きない
+    const cap1 = maxChallengeRank(m);
+    reward.rankUp = firstClear && cap1 > cap0 ? { from: cap0, to: cap1, unlocked: cap1 } : null;
+    // S ランク大会の初回優勝 → 三伝説（LEGEND）への挑戦の解禁を「イベント待ち」にする（解禁はイベントのあと＝completeLegendUnlock）
+    reward.legend = rank === RANK_S && firstClear && legendStage(S) === 0 ? (legendFlags(S).legend = LEGEND_PENDING, true) : false;
     return reward;
   }
   Object.assign(API, { PRIZE, FIRST_CLEAR_TICKETS, WIN_BONUS_RANGE, WIN_BONUS_COUNT, maxChallengeRank, eligibleRanks, canChallenge, grantTournamentWin });
@@ -635,6 +640,26 @@
     m.raise.tour = { rank, status: 'league', league: LG().createLeague(rank, seed, m.name), result: null };
     return { ok: true };
   }
+  // ---- 最終公式大会（2026-10-08 正式）：Chapter 4 で A ランク大会に優勝したあと、同じ育成中の個体のまま S ランク大会へ挑戦できる。
+  //  新しい Chapter は作らない（同じ Chapter 4 のゴールで2つ目の大会）。人数・順位・報酬は通常の大会と同じ（S＝8体7試合）。
+  //  記録：m.raise.tour を S の大会に置き換え、A の結果は tour.prev（v6 の任意項目）→ Chapter の記録（log）にも残す。S の大会のあとは通常どおり Chapter 終了
+  const FINAL_TOUR = Object.freeze({ chapter: LAST_NORMAL_CHAPTER, after: RANK_A, rank: RANK_S });
+  function canStartFinalTournament(S, m) {
+    if (!m || m !== S.m || !P7.inChapter(m)) return { ok: false, reason: 'not_in_chapter' };
+    const r = m.raise, t = r.tour;
+    if (r.ch !== FINAL_TOUR.chapter) return { ok: false, reason: 'not_final_chapter' };
+    if (!t || t.status !== 'settled' || t.final || !t.result || !t.result.won || t.rank !== FINAL_TOUR.after) return { ok: false, reason: 'no_a_victory' };
+    if (r.pend || r.battle) return { ok: false, reason: 'busy' };
+    if (!canChallenge(m, r.ch, FINAL_TOUR.rank)) return { ok: false, reason: 'rank_locked' };
+    return { ok: true, rank: FINAL_TOUR.rank };
+  }
+  function startFinalTournament(S, m, seed = Math.floor(Math.random() * 0x7fffffff)) {
+    const c = canStartFinalTournament(S, m); if (!c.ok) return c;
+    const res = m.raise.tour.result;
+    m.raise.tour = { rank: FINAL_TOUR.rank, status: 'league', league: LG().createLeague(FINAL_TOUR.rank, seed, m.name), result: null, final: true,
+      prev: { rank: res.rank, place: res.place, won: res.won, firstClear: !!res.firstClear } };
+    return { ok: true, rank: FINAL_TOUR.rank };
+  }
   /** 大会で次に行う自分の試合（無ければ null） */
   function tourNext(m) { const t = m && isObj(m.raise) && m.raise.tour; return t && t.status === 'league' ? LG().playerMatch(t.league) : null; }
   /** リーグ終了時の決着（1大会1回だけ）：最終1位のときだけ正式報酬 */
@@ -658,12 +683,12 @@
       return out;
     },
   };
-  Object.assign(API, { canStartTournament, startTournament, tourNext });
+  Object.assign(API, { canStartTournament, startTournament, tourNext, FINAL_TOUR, canStartFinalTournament, startFinalTournament });
 
   // 大会の終わりの順（2026-10-06 正式）：全試合の終了 → 最終順位の確定 → 優勝の表示 → 初回クリアの報酬 → （必要なら）ランクアップ → セドリックの締め → 次の画面。
   //  1試合ごとには報酬・ランクアップを出さない（決着＝settleTournament の1回だけ）。ランクアップの演出・セドリックの正式 UI は素材待ち＝
   //  ここでは順番と差し込み口だけ（registerTourEndHook(step, fn)。fn(data) が Promise を返せば終わるまで待つ）。
-  const TOUR_END_STEPS = Object.freeze(['final', 'champion', 'firstReward', 'rankUp', 'cedricEnd', 'next']);
+  const TOUR_END_STEPS = Object.freeze(['final', 'champion', 'firstReward', 'rankUp', 'cedricEnd', 'legendUnlock', 'next']);   // legendUnlock（2026-10-08）＝S 優勝のあとの解禁イベント
   const tourEndHooks = {};
   function registerTourEndHook(step, fn) {
     if (!TOUR_END_STEPS.includes(step)) throw new Error(`大会の終わりの段階が不正です：${step}`);
@@ -676,7 +701,9 @@
     if (result.won) out.push({ step: 'champion', rank: result.rank });
     if (rw && rw.firstClear) out.push({ step: 'firstReward', prize: rw.prize, tickets: rw.tickets, bonus: rw.bonus, bagUnlocked: rw.bagUnlocked });
     if (rw && rw.rankUp) out.push({ step: 'rankUp', ...rw.rankUp });
-    out.push({ step: 'cedricEnd', won: !!result.won }, { step: 'next' });
+    out.push({ step: 'cedricEnd', won: !!result.won });
+    if (result.won && result.rank === RANK_S) out.push({ step: 'legendUnlock' });   // 解禁済みなら差し込み口の側で何もしない
+    out.push({ step: 'next' });
     return out;
   }
   /** 段階を順に流す（差し込み口が無い段階は飛ばす）。戻り値＝流した段階の名前 */
@@ -699,9 +726,23 @@
   // =========================================================
   const LEGEND = Object.freeze({ id: 'LEGEND', after: 'S',
     holders: Object.freeze([Object.freeze({ id: 'astrad', name: 'アストラッド', partner: 'ゼルヴァーン' }), Object.freeze({ id: 'leona', name: 'レオナ', partner: 'グリフェル' }), Object.freeze({ id: 'ragnas', name: 'ラグナス', partner: 'ドラグノル' })]) });
-  /** レジェンド挑戦の条件を満たしているか（その個体が S ランク大会をクリア済み）。画面は未実装 */
+  // 解禁の条件（2026-10-08 正式）＝S ランク大会で「優勝」したあと（S に到達しただけでは解禁しない）。S 優勝 → イベントを1つ挟んで → 三伝説への挑戦が解禁。
+  //  状態はセーブ全体の S.npcFlags.legend（v6 の任意項目）：0／なし＝未解禁、1＝S 優勝済み・イベント待ち、2＝解禁済み。
+  //  旧 S.npcFlags.chapter5（2026-10-04：S 優勝で立てていた「Chapter 5」の旧フラグ）は「イベント待ち」として読み替える（新しくは立てない）。
+  //  三伝説との本戦・LEGEND 昇格・アストラッド戦・厄災・エンディングは未実装（画面・能力・台詞を作らない）
+  const LEGEND_PENDING = 1, LEGEND_OPEN = 2;
+  const legendFlags = (S) => { if (!isObj(S.npcFlags)) S.npcFlags = {}; return S.npcFlags; };
+  function legendStage(S) {
+    const f = S && isObj(S.npcFlags) ? S.npcFlags : null; if (!f) return 0;
+    if (f.legend === LEGEND_OPEN) return LEGEND_OPEN;
+    return f.legend === LEGEND_PENDING || f.chapter5 ? LEGEND_PENDING : 0;
+  }
+  /** イベントのあとに呼ぶ：S 優勝済み（イベント待ち）なら解禁済みにする。戻り値＝今回解禁したか */
+  function completeLegendUnlock(S) { if (!S || legendStage(S) !== LEGEND_PENDING) return false; legendFlags(S).legend = LEGEND_OPEN; return true; }
+  const legendUnlocked = (S) => legendStage(S) === LEGEND_OPEN;
+  /** その個体が S ランク大会で優勝しているか（rankClr の S は S の優勝でだけ付く）。三伝説の画面は未実装 */
   const legendChallengeOpen = (m) => !!(m && isObj(m.prog) && Array.isArray(m.prog.rankClr) && m.prog.rankClr[RANK_S]);
-  Object.assign(API, { LEGEND, legendChallengeOpen });
+  Object.assign(API, { LEGEND, LEGEND_PENDING, LEGEND_OPEN, legendStage, completeLegendUnlock, legendUnlocked, legendChallengeOpen });
 
   // =========================================================
   // 育成リソース（HUD）と修行チケットマス（Step 7）

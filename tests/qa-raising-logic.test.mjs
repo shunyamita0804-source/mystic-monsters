@@ -194,16 +194,16 @@ test('QA-RL5：通過したマスでは効果が出ず、最後に止まった�
     P8.roll(S, S.m, die(3)); move(P8, S);
     const x = P8.resolveLanding(S, S.m, () => 0);
     assert.equal(x.fx.kind, 'none'); assert.deepEqual(wallet(S), w0); assert.equal(S.m.raise.pend, null); assert.equal(S.m.raise.turnsUsed, 1); }
-  // Chapter 2：ライフ(a1)・何も起きない(a2)を通過して かしこさ(a3)に止まる → かしこさだけ上がる（成長適性：ソラモ C＝+5）
+  // Chapter 2：ライフ(a1)・何も起きない(a2)を通過して かしこさ(a3)に止まる → かしこさだけ上がる（成長適性：ソラモ C＝+18。2026-10-08 の GROWTH_GAIN）
   { const ctx = load(); const { P8 } = ctx; const S = departTo(ctx, 2); const w0 = wallet(S);
     P8.roll(S, S.m, die(3)); assert.deepEqual(move(P8, S), ['a1', 'a2', 'a3']);
     const x = P8.resolveLanding(S, S.m, () => 0);
-    assert.deepEqual(x.fx, { kind: 'stat', key: 'in', amount: 5 }); assert.deepEqual(wallet(S), { ...w0, in: w0.in + 5 }); }
+    assert.deepEqual(x.fx, { kind: 'stat', key: 'in', amount: 18 }); assert.deepEqual(wallet(S), { ...w0, in: w0.in + 18 }); }
   // Chapter 4：ちから(a1)を通過して ライフ(a2)に止まる → ライフだけ上がる
   { const ctx = load(); const { P8 } = ctx; const S = departTo(ctx, 4); const w0 = wallet(S);
     P8.roll(S, S.m, die(2)); assert.deepEqual(move(P8, S), ['a1', 'a2']);
     P8.resolveLanding(S, S.m, () => 0.99);
-    assert.deepEqual(wallet(S), { ...w0, li: w0.li + 5 }, 'ソラモのライフ適性 C＝+5（2026-10-02：乱数に関係なく適性の値）'); }
+    assert.deepEqual(wallet(S), { ...w0, li: w0.li + 18 }, 'ソラモのライフ適性 C＝+18（2026-10-08：乱数に関係なく適性の値）'); }
   // Chapter 2：分岐Aで寄り道（砂浜の海岸線）を選び、宝箱(c1)・ちから(c2)を通過して修行チケット(c3)に止まる → チケット+1だけ
   { const ctx = load(); const { P8 } = ctx; const S = departTo(ctx, 2); S.m.raise.node = 'A'; const w0 = wallet(S);
     P8.roll(S, S.m, die(3)); assert.deepEqual(move(P8, S, () => 'c1'), ['c1', 'c2', 'c3']);
@@ -242,7 +242,7 @@ test('QA-RL6：通しプレイの不変条件（全Chapter×25通り・固定乱
       if (r.node === trk.goal) assert.ok(hops >= 1 && hops <= value, 'ゴールに着いたら残り移動は消える'); else assert.equal(hops, value, '出目の数だけ進む');
       const type = trk.nodes[r.node].type, x = P8.resolveLanding(S, S.m, rnd);
       assert.ok(FX_OF[type].includes(x.fx.kind), `CH${no} ${r.node}(${type}) → ${x.fx.kind}`);
-      if (KEY_OF[type]) { assert.equal(x.fx.key, KEY_OF[type]); assert.ok(x.fx.amount >= 5 && x.fx.amount <= 7, '【暫定】能力マス+5〜7'); }
+      if (KEY_OF[type]) { assert.equal(x.fx.key, KEY_OF[type]); assert.ok(x.fx.amount >= 11 && x.fx.amount <= 25, '能力マス＝成長適性（2026-10-08：+11〜25）'); }
       if (x.fx.kind === 'battle') { assert.equal(x.wait, true); assert.deepEqual(wallet(S), before); assert.equal(P8.skipBattleSquare(S, S.m).ok, true); }
       assert.equal(r.pend, null);
       assert.deepEqual(wallet(S), after(before, x.fx), '止まったマスの効果だけが1回入る');
@@ -403,7 +403,7 @@ test('QA-RL12：途中の状態（出目・残り移動・分岐待ち・マス�
     const T = reload(P8, S); const w0 = wallet(T);
     assert.deepEqual(T.m.raise.pend, { roll: 3, left: 0, stage: 'resolve' });
     P8.resolveLanding(T, T.m, () => 0);
-    assert.deepEqual(wallet(T), { ...w0, in: w0.in + 5 });
+    assert.deepEqual(wallet(T), { ...w0, in: w0.in + 18 });
     const U = reload(P8, T);
     assert.deepEqual(P8.resolveLanding(U, U.m, () => 0), { ok: false }); assert.deepEqual(wallet(U), wallet(T)); }
   // 練習試合の選択待ち

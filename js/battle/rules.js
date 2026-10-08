@@ -97,6 +97,7 @@
 
   // ---- resolveAction を包む ----
   const STATES = new WeakMap();
+  let surrenderPl = null;   // 降参したバトル（fight() の pl 配列。ban('降参') で記録）
   let cur = null;   // { sess, pl }（今のバトル。ban の時点ではまだ act が無いこともある）
   let last = null;  // 最後のバトル（画面を閉じたあとも、大会の記録のために残す）
   const stateOf = (sess) => { let s = STATES.get(sess); if (!s) { s = newState(); STATES.set(sess, s); } return s; };
@@ -107,6 +108,20 @@
    * 包んだ resolveAction の本体（テストからも直接呼べる）。base＝元の resolveAction、pl＝[自分, 相手]（sp・name）、rnd＝状態異常・耐える の乱数
    *  戻り値に r.rules＝{ blocked, notes[] } を足す（表示用）
    */
+  // 2026-10-08 正式：同じ能力・同じ向き・同じ強さのバフ／デバフを掛け直したら、スタックせずに残りターンを正式値へ更新する。
+  //  battle-bridge（Phase 6）の applyEffect は「同じ強さなら残りが厳密に長いときだけ」置き換えるため、付与した次のラウンドの掛け直し（残りが同じ）が
+  //  更新されなかった。ここで外側から置き換える（強い方で上書き・弱いのは上書きしない・上げと下げは別、は従来どおり）。
+  function refreshSameEffects(sess, r) {
+    if (!sess || !r || !Array.isArray(r.effectsApplied)) return;
+    for (const a of r.effectsApplied) {
+      const e = a && a.effect; if (!e || e.stackable) continue;
+      const bucket = e.direction === 'up' ? sess.buffs : sess.debuffs, list = bucket && bucket[a.target];
+      if (!Array.isArray(list) || list.includes(e)) continue;
+      const i = list.findIndex((x) => x.category === e.category && !x.stackable && x.ratio === e.ratio && x.remainingTurns <= e.remainingTurns);
+      if (i < 0) continue;
+      const next = list.slice(); next[i] = e; bucket[a.target] = next;
+    }
+  }
   function resolveWith(base, opts, pl, rnd = Math.random) {
     const sess = opts.session, st = stateOf(sess), atk = opts.attackerSide, def = other(atk);
     const k = kOf(opts.move), bh = BEHAVIOR[k] || {};
@@ -122,6 +137,7 @@
     const o2 = Object.assign({}, opts, { baseStats: bs });
     if (bh.support) o2.rng = Object.assign({}, opts.rng || {}, { hitRng: () => 0 });   // 純補助技は必ず決まる（基本命中 100%）
     const r = base(o2);
+    refreshSameEffects(sess, r);
     const notes = [];
     // ソラモ「逆境のひと踏ん張り」：構えていれば、この攻撃のダメージを1度だけ ×1.25
     if (SPECIES[spOf(pl, atk)] === 'solamo' && st.armed[atk] && r.hit && r.damage > 0) {
@@ -169,6 +185,27 @@
     return r;
   }
 
+  /** 参加者の正式の素早さ（1〜10）：個体が持っていればその値、無ければ種族の正式値（レグナスは RIVAL_MONSTERS）。分からなければ null */
+  function speedOfUnit(u) {
+    const P = root.MMP10M, ok = (v) => Number.isInteger(v) && v >= 1 && v <= 10;
+    if (u && ok(u.speed)) return u.speed;
+    if (!P || !u) return null;
+    // プレイヤーの個体：fight() の写しは「素早さ分離処理」（index.html の p10LegacyBattle＝Phase 6 保護対象）で speed を外してあるので、元の個体（S.m）の値を読む
+    { const S = G('S'), m = S && S.m; if (m && u.uid != null && m.uid === u.uid && u.speciesId === m.sp && ok(m.speed)) return m.speed; }
+    const s = typeof P.speedOf === 'function' ? P.speedOf(u.speciesId) : null;
+    if (ok(s)) return s;
+    if (u.speciesId === 4 && typeof P.rivalMonster === 'function') { const r = P.rivalMonster('regnas'); if (r && ok(r.speed)) return r.speed; }
+    return null;
+  }
+  /** createBattleSession の引数へ正式の素早さを入れ、差があれば速い側が必ず先攻になる乱数（0＝「速い側が先攻」の確率の下）にする */
+  function withSpeed(o) {
+    if (!o || !o.unitA || !o.unitB) return o;
+    const a = speedOfUnit(o.unitA), b = speedOfUnit(o.unitB);
+    const unitA = a != null ? Object.assign({}, o.unitA, { speed: a }) : o.unitA, unitB = b != null ? Object.assign({}, o.unitB, { speed: b }) : o.unitB;
+    const out = Object.assign({}, o, { unitA, unitB });
+    if (a != null && b != null && a !== b) out.rng = () => 0;
+    return out;
+  }
   function wrapBattle() {
     const B = root.MMBattle;
     if (!B || B.__rl || typeof B.resolveAction !== 'function') return;
@@ -182,6 +219,12 @@
       try { r = resolveWith((o) => B.resolveAction(o), opts, pl); } catch (e) { return B.resolveAction(opts); }
       try { show(r, opts.attackerSide); } catch (e) { /* 表示の失敗でバトルを止めない */ }
       return r;
+    };
+    // 2026-10-08 正式：素早さで先攻を決める（高い方が必ず先攻・同じ値だけ 50%／50%）。battle-bridge（Phase 6）の determineFirstActor は差に応じた確率なので、
+    //  外側で正式の素早さ（個体の speed／種族の正式値）を渡し、差があるときは「速い側が先攻」になる乱数を渡す。
+    if (typeof B.createBattleSession === 'function') W.createBattleSession = function (o) {
+      try { o = withSpeed(o); } catch (e) { /* 失敗しても従来どおり */ }
+      return B.createBattleSession(o);
     };
     root.MMBattle = Object.freeze(W);
   }
@@ -278,7 +321,7 @@
   function hookGlobals() {
     if (hooked) return; hooked = true;
     const wrapFn = (name, mk) => { const f = root[name]; if (typeof f === 'function') root[name] = mk(f); };
-    wrapFn('ban', (f) => function (t) { const r = f.apply(this, arguments); try { onBan(t); } catch (e) { /* */ } return r; });
+    wrapFn('ban', (f) => function (t) { const r = f.apply(this, arguments); try { if (t === '降参') surrenderPl = G('BPL'); onBan(t); } catch (e) { /* */ } return r; });
     wrapFn('anim', (f) => function (k, s) { const b = blockedNow(s); if (b) { try { blockedAnim(s, b); } catch (e) { /* */ } return; } return f.apply(this, arguments); });
     wrapFn('skb', (f) => function (k, s) { if (blockedNow(s)) return; return f.apply(this, arguments); });
     wrapFn('skSfx', (f) => function (k) { if (cur && STATES.get(cur.sess) && STATES.get(cur.sess).block) return; return f.apply(this, arguments); });
@@ -323,16 +366,23 @@
     if (document.body) start(); else root.addEventListener('DOMContentLoaded', start);
   }
 
-  /** 最後のバトルの内容（大会の順位の計算用）：{ me, opp } 各 { life：残りライフ%, dmg：与えたダメージ, hits：命中回数 }。そのバトルが無ければ null */
+  /** 最後のバトルの内容（大会の順位の計算用）：{ me, opp } 各 { life：残りライフ%, dmg：与えたダメージ, hits：命中回数 }。そのバトルが無ければ null
+   *  2026-10-08 正式：プレイヤーが降参した試合は、残りライフ% を 0 として記録する（降参が順位で得にならない）。与えたダメージ・命中回数は実際の値のまま。
+   *  1回も行動していないうちの降参（セッションの記録が無い）でも、降参なら me.life 0・相手 100% の内容を返す */
   function battleStats(sess) {
-    const s = sess || (last && last.pl === G('BPL') ? last.sess : null);
-    if (!s || !s.participants) return null;
+    const pl = G('BPL'), sur = !sess && surrenderPl != null && surrenderPl === pl;
+    const s = sess || (last && last.pl === pl ? last.sess : null);
+    if (!s || !s.participants) return sur ? { me: { life: 0, dmg: 0, hits: 0 }, opp: { life: 100, dmg: 0, hits: 0 }, surrendered: true } : null;
     const one = (k) => { const max = s.participants[k].maxLife || 1; return { life: Math.max(0, Math.min(100, Math.round(s.currentLife[k] / max * 100))), dmg: Math.round(s.totalDamage[k] || 0), hits: s.hitCount[k] || 0 }; };
-    return { me: one('A'), opp: one('B') };
+    const out = { me: one('A'), opp: one('B') };
+    if (sur) { out.me.life = 0; out.surrendered = true; }
+    return out;
   }
+  /** 今のバトルでプレイヤーが降参したか（fight() の ban('降参') を見ている） */
+  const surrendered = () => surrenderPl != null && surrenderPl === G('BPL');
 
   wrapBattle();
-  root.MMRULES = Object.freeze({ AILMENTS, NOBI_FIRST, install, wrapBattle, swallow, cleanResult, battleStats, current: () => (cur && cur.pl === G('BPL') ? cur.sess : null), drawAil, behavior: (k) => BEHAVIOR[k] || null,
+  root.MMRULES = Object.freeze({ AILMENTS, NOBI_FIRST, install, wrapBattle, swallow, cleanResult, battleStats, surrendered, refreshSameEffects, withSpeed, speedOfUnit, current: () => (cur && cur.pl === G('BPL') ? cur.sess : null), drawAil, behavior: (k) => BEHAVIOR[k] || null,
     // テスト用の純粋な処理
     newState, applyAilment, opportunity, cureAll, hasAilment, statMul, resolveWith, stateOf });
 })(typeof window !== 'undefined' ? window : globalThis);

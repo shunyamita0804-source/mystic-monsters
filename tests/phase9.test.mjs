@@ -140,7 +140,7 @@ test('T1-7：ライフマス・宝箱マスの効果（暫定値）／修行チ�
   P7.registerChapterBoard(1, trk);
   const S = P8.newSave(); S.g = 0; S.m = P8.initIndividual(S, mon(P7)); P8.depart(S, S.m);
   const step1 = (rnd) => { P8.roll(S, S.m, () => 0); P8.step(S, S.m); return P8.resolveLanding(S, S.m, rnd); };
-  const a = step1(() => 0); assert.equal(a.fx.key, 'li'); assert.equal(S.m.li, 105);
+  const a = step1(() => 0); assert.equal(a.fx.key, 'li'); assert.equal(S.m.li, 118, 'ライフマス＝ソラモ C の +18（2026-10-08 の GROWTH_GAIN）');
   const b = step1(() => 0); assert.deepEqual(b.fx, { kind: 'gold', ev: 'chest', amount: 50 }); assert.equal(S.g, 50);
   const c = step1(() => 0); assert.deepEqual(c.fx, { kind: 'ticket', amount: 1 });
   assert.match(P8SRC_CHEST(), /【暫定】/);

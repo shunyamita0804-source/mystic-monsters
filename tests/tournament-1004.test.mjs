@@ -60,9 +60,9 @@ test('TN-04：VS（デザイン参考 04）＝fight() の導入（CHALLENGER／Y
   assert.match(CODE, /ban\(lb,"#ffffff"\);await sleep\(1000\);ban\("FIGHT!","#ff5a3a"\);sfx\(3\);/, 'BATTLE START＝大会名の帯 → FIGHT!（fight() のまま）');
 });
 
-test('TN-05：S ランク制覇＝Chapter 5 の解放フラグ（S.npcFlags.chapter5）と「新たな道が開かれた」の表示だけ。Chapter 5 の画面・ボードは作らない', () => {
-  assert.match(fnOf('p8AfterBattle'), /if\(f\.settled&&f\.won&&S\.m&&S\.m\.raise&&S\.m\.raise\.tour&&S\.m\.raise\.tour\.rank===5&&!finaFlags\(\)\.chapter5\)\{finaFlags\(\)\.chapter5=1;save\(\)\}/);
-  assert.match(fnOf('p9TourResult'), /t\.rank===5\?`<div class="p9newroad"><b>S ランク制覇！<\/b><span>新たな道が開かれた…（Chapter 5 は準備中）<\/span><\/div>`:""/);
-  assert.doesNotMatch(CODE, /chapter5Scr|function ch5|Chapter 5 へ出発/, 'Chapter 5 の画面は無い');
-  assert.doesNotMatch(rd('js/phase8/raising.js'), /chapter5/, '解放の記録は画面側の任意項目だけ（セーブの形は変えない）');
+test('TN-05：S ランク制覇の表示（2026-10-08 正式：旧「Chapter 5 は準備中」と S.npcFlags.chapter5 は廃止＝LEGEND の解禁の状態へ整理）。Chapter 5 の画面・ボードは作らない', () => {
+  assert.doesNotMatch(fnOf('p8AfterBattle'), /chapter5/, 'S 優勝で旧 chapter5 フラグを立てない');
+  assert.match(fnOf('p9TourResult'), /t\.rank===5\?`<div class="p9newroad"><b>S ランク制覇！<\/b><\/div>`:""/);
+  assert.doesNotMatch(CODE, /Chapter 5 は準備中|chapter5Scr|function ch5|Chapter 5 へ出発/, 'Chapter 5 の表示・画面は無い');
+  assert.match(CODE, /MMP8\.registerTourEndHook\("legendUnlock",\(\)=>\{legendEvent\(\)\}\)/, 'S 優勝 → イベント（システム通知）→ 解禁');
 });

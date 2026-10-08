@@ -201,12 +201,14 @@ test('BR-07：大会＝初回チケット E1 D1 C1 B2 A2 S2・賞金は従来の
   const P8 = ctx.window.MMP8;
   assert.deepEqual([...P8.FIRST_CLEAR_TICKETS], [1, 1, 1, 2, 2, 2]);
   assert.deepEqual([...P8.PRIZE], [100, 200, 350, 550, 800, 1200], '賞金の額は変えない');
-  assert.deepEqual([...P8.TOUR_END_STEPS], ['final', 'champion', 'firstReward', 'rankUp', 'cedricEnd', 'next']);
+  assert.deepEqual([...P8.TOUR_END_STEPS], ['final', 'champion', 'firstReward', 'rankUp', 'cedricEnd', 'legendUnlock', 'next'], '2026-10-08：S 優勝のあとの LEGEND 解禁イベント（legendUnlock）');
   const first = { rank: 1, place: 1, won: true, reward: { firstClear: true, prize: 200, tickets: 1, bonus: [], bagUnlocked: false, rankUp: { from: 0, to: 1, unlocked: 2 } } };
   assert.deepEqual(P8.tourEndSteps(first).map((d) => d.step), ['final', 'champion', 'firstReward', 'rankUp', 'cedricEnd', 'next']);
   const again = { rank: 1, place: 1, won: true, reward: { firstClear: false, prize: 0, tickets: 0, bonus: [], rankUp: null } };
   assert.deepEqual(P8.tourEndSteps(again).map((d) => d.step), ['final', 'champion', 'cedricEnd', 'next'], '再優勝は報酬・ランクアップの段階なし');
   assert.deepEqual(P8.tourEndSteps({ rank: 1, place: 3, won: false, reward: null }).map((d) => d.step), ['final', 'cedricEnd', 'next']);
+  assert.deepEqual(P8.tourEndSteps({ rank: 5, place: 1, won: true, reward: { firstClear: true, prize: 1200, tickets: 2, bonus: [], rankUp: null } }).map((d) => d.step), ['final', 'champion', 'firstReward', 'cedricEnd', 'legendUnlock', 'next'], 'S の優勝だけ legendUnlock');
+  assert.deepEqual(P8.tourEndSteps({ rank: 5, place: 2, won: false, reward: null }).map((d) => d.step), ['final', 'cedricEnd', 'next'], 'S に参加しただけ（優勝なし）では解禁の段階なし');
   // 1試合ごとの旧表示（fight() の結果の文）
   const E = load();
   assert.equal(E.R.cleanResult('勝利！ 賞金 200G を獲得！ ランクDにランクアップ！'), '勝利！');

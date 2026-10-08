@@ -312,7 +312,7 @@ test('S4-2：20ターン目の移動とマス効果を実行してからChapter�
   const po0 = S.m.po, g0 = S.g;
   for (let t = 1; t <= 20; t++) { assert.equal(P8.roll(S, S.m, () => 0).ok, true, `${t}ターン目`); runTurn(P8, S, () => 0); }
   assert.equal(S.m.raise.turnsUsed, 20); assert.equal(S.m.raise.node, 'n20', '20ターン目の移動も行われる');
-  assert.equal(S.m.po, po0 + 20 * 5, '20ターン目に止まったマスの効果も発生');
+  assert.equal(S.m.po, po0 + 20 * 18, '20ターン目に止まったマスの効果も発生（ソラモ C＝+18。2026-10-08 の GROWTH_GAIN）');
   assert.equal(P8.canRoll(S.m), false); assert.equal(P8.boardPhase(S.m), 'timeup');
   assert.equal(P8.declineTournament(S, S.m).ok, false, 'ゴールしていないので大会の選択肢自体がない');
   const e = P8.endChapter(S, S.m);
