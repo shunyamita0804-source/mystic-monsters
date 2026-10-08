@@ -81,7 +81,7 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     });
   }
 
-  test(`ENC-B2（${size.join('×')}）：マスの外側の土台は、同じ奥行きなら種類が違っても同じ大きさ（中の紋様だけが違う）。道の幅を越えない`, { skip: SKIP }, async () => {
+  test(`ENC-B2（${size.join('×')}）：マスの大きさは種類にも奥行きにも関係なく同じ（2026-10-08 正式：全背景共通の node-size token。画面の上の幅も同じ）`, { skip: SKIP }, async () => {
     const p = await openPage({ size }); const pg = p.page;
     await start(pg);
     for (const id of ['p3_0', 'p9_0', 'p12_0']) {
@@ -89,11 +89,11 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
       await pg.waitForSelector('#chf .chf-bg'); await idle(pg);
       const t = await pg.evaluate(() => {
         const g = MMCH.graphFor(S.m), f = MMCHV.state().field, sc = MMCH.getConfig(1).fieldScenes.find((s) => s.id === f);
-        return [...document.querySelectorAll('#chf .chf-tile.disc')].map((e) => { const n = g.nodes[e.dataset.id]; return { id: e.dataset.id, type: e.dataset.type, d: n.d, w: parseFloat(e.style.width), op: Number(getComputedStyle(e).opacity), road: MMCHV.seenRoadW(sc, n), want: MMCHV.discBox(MMCH.getConfig(1).tileUI, n, sc).w }; });
+        return [...document.querySelectorAll('#chf .chf-tile.disc')].map((e) => { const n = g.nodes[e.dataset.id]; const F = MMCH.getConfig(1).tileUI.fixedSize, tok = Math.max(F.min, Math.min(F.max, document.querySelector('#chf').clientWidth * F.vw)); return { id: e.dataset.id, type: e.dataset.type, d: n.d, w: parseFloat(e.style.width), sw: e.getBoundingClientRect().width, tok, op: Number(getComputedStyle(e).opacity) }; });
       });
       assert.ok(t.length >= 3, 'その背景の小型の立体マス');
-      for (const x of t) {   // 2026-10-06：小型の立体マス（tileUI.discs）＝大きさは奥行きだけで決まり（種類に関係なし）、見えている道幅の 42% 以下
-        assert.ok(Math.abs(x.w - Math.min(128 * Math.pow(x.d, 0.9), x.road * 0.42)) < 0.2 && Math.abs(x.w - x.want) < 0.2, `${x.id}（${x.type}）：外側の大きさは奥行きだけで決まる（${x.w}）`);
+      for (const x of t) {   // 2026-10-08：小型の立体マス＝大きさは token（種類・奥行きに関係なし）。カメラの拡大は --inv で打ち消す＝画面の上の幅も token
+        assert.ok(Math.abs(x.w - x.tok) < 0.2 && Math.abs(x.sw - x.tok) < 1, `${x.id}（${x.type}・奥行き ${x.d}）：大きさ ${x.w}／画面 ${x.sw.toFixed(1)}＝${x.tok}`);
         assert.ok(x.op >= 0.67, `${x.id}：薄くしない（${x.op}）`);
       }
       await pg.screenshot({ path: path.join(SHOT, `${size[0]}_tiles_${id}.png`) });
