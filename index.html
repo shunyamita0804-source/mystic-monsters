@@ -3739,6 +3739,8 @@ main:has(>#app>.ds) h1{display:none}
 <script src="./js/battle/rules.js"></script>
 <script src="./js/battle/arena.js"></script>
 <script src="./js/battle/stage.js"></script>
+<script src="./js/battle/art25d-data.js"></script>
+<script src="./js/battle/art25d.js"></script>
 <script src="./js/battle/movedex.js"></script>
 <script src="./js/fx/sequence.js"></script>
 <script src="./js/prologue/prologue.js"></script>
@@ -4537,7 +4539,7 @@ function frm(k,s){const v=$(".vs");if(!v||!v.appendChild)return;const F=SFR[k],f
  setTimeout(()=>{burst(v,tx,ty,c,14);knock(tid,f);shake(v);flash(c)},dur*ht);
  if(mv=="lunge")setTimeout(()=>{burst(v,tx,ty,c,8)},dur*.58)}
 function anim(k,s){if(window.MMSTAGE&&MMSTAGE.run(k,s,animRaw))return;animRaw(k,s)} // 2026-10-06：バトルの共通演出（構え・溜め・ヒットストップ・余韻。js/battle/stage.js）
-function animRaw(k,s){if(k>=20&&window.MMRP&&MMRP.anim(k,s))return;if(SFR[k])return frm(k,s);if(SKM[k])return spr(k,s);const v=$(".vs");if(!v)return;const mv=MOVE[k],ax=s?75:25,tx=s?25:75,el=$("#m"+s);if(el)el.style.cssText="--d:"+(s?-1:1);cls(s,"mv-"+mv);const e=document.createElement("div");e.className="fxl";e.style.cssText=`--d:${s?-1:1};--c:${SK[k][3]};--ax:${ax}%;--tx:${tx}%;--l:${Math.min(ax,tx)}%;--w:${Math.abs(tx-ax)}%;--o:${s?"right":"left"}`;e.innerHTML=FXH[mv];v.appendChild(e);setTimeout(()=>e.remove(),1100)}
+function animRaw(k,s){if(window.MM25D&&MM25D.anim(k,s))return;if(k>=20&&window.MMRP&&MMRP.anim(k,s))return;if(SFR[k])return frm(k,s);if(SKM[k])return spr(k,s);const v=$(".vs");if(!v)return;const mv=MOVE[k],ax=s?75:25,tx=s?25:75,el=$("#m"+s);if(el)el.style.cssText="--d:"+(s?-1:1);cls(s,"mv-"+mv);const e=document.createElement("div");e.className="fxl";e.style.cssText=`--d:${s?-1:1};--c:${SK[k][3]};--ax:${ax}%;--tx:${tx}%;--l:${Math.min(ax,tx)}%;--w:${Math.abs(tx-ax)}%;--o:${s?"right":"left"}`;e.innerHTML=FXH[mv];v.appendChild(e);setTimeout(()=>e.remove(),1100)}
 const TABS=["assets/embedded/tabs_0_training.jpg", "assets/embedded/tabs_1_tournament.jpg", "assets/embedded/tabs_2_shugyo.jpg", "assets/embedded/tabs_3_status.jpg", "assets/embedded/tabs_4_waza.jpg"];
 const skt=(k,m,cl,lk)=>{const x=SK[k],ok=m.sk.includes(k),on=m.eq.includes(k),tg=m.s2!=null&&m.s2!=m.sp?(k<10?"【ソ】":"【ガ】"):"";return `<div class="skt ${x[7]=="p"?"kp":"ki"} ${ok?"":"lock"} ${on?"eq":""}" style="--c:${x[3]}" role="button" onclick="${ok?cl+"("+k+")":lk+"()"}"><div class="ski2"><img src="${SKART[k]}" alt=""></div><div class="skn">${on?"✔ ":""}${tg}${x[0]}</div><div class="skp"><span>威${Math.round(x[1]*100)}</span><span>命${x[8]}</span><span>ク${Math.round(x[9]*100)}%</span></div><div class="skd2">${x[6]}</div></div>`};
 function skLock(){hall("w","まだ覚えていない技です。特訓で覚えよう。")}

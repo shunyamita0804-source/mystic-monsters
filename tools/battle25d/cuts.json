@@ -1,0 +1,23 @@
+{
+"_note":"mode: self=その場 / move=相手へ向かう途中 / contact=相手に当たる位置 / past=相手を抜けた先 / target=相手の位置に出る。clip=[左端,右端]（コマの幅の割合。外側はぼかして消す）。erase=[[x0,y0,x1,y1]]。skip=理由",
+"s01":{"slot":0,"name":"たいあたり","cuts":[{"m":"self"},{"m":"move"},{"skip":"木人と本体・衝撃が重なる"},{"m":"past"}]},
+"s02":{"slot":1,"name":"ひっかき","cuts":[{"m":"self"},{"m":"move"},{"skip":"木人と前足・衝撃が重なる（向きも逆）"},{"m":"self"}]},
+"s03":{"slot":2,"name":"しっぽアタック","cuts":[{"m":"self"},{"m":"move"},{"skip":"しっぽの先が木人に重なる"},{"m":"self"}]},
+"s04":{"slot":3,"name":"吠える","cuts":[{"m":"self"},{"m":"self"},{"m":"self","clip":[0,0.66]},{"m":"self"}]},
+"s05":{"slot":5,"name":"ソラモビーム","cuts":[{"m":"self"},{"m":"self"},{"m":"self","clip":[0,0.74]},{"m":"self"}]},
+"s06":{"slot":7,"name":"ほしのまもり","cuts":[{"m":"self"},{"m":"self"},{"m":"self"},{"m":"self"}]},
+"s07":{"slot":6,"name":"すなかけ","cuts":[{"m":"self"},{"m":"self"},{"m":"self","clip":[0,0.72]},{"m":"self","clip":[0,0.6]}]},
+"s08":{"slot":4,"name":"スタークラッシュ","cuts":[{"m":"self"},{"m":"move"},{"m":"move"},{"m":"contact","flip":true,"clip":[0,0.64]},{"skip":"木の破片が全体に散る"},{"m":"self"}]},
+"s09":{"slot":8,"name":"スターダストレイ","cuts":[{"m":"self"},{"m":"self"},{"m":"self"},{"m":"self","clip":[0,0.76]},{"m":"self"},{"m":"self"}]},
+"s10":{"slot":9,"name":"スターフォール","cuts":[{"m":"self"},{"m":"self"},{"m":"self"},{"m":"self","erase":[[0.42,0.5,1,1]]},{"skip":"木人と大きな星が本体の下に重なる"},{"skip":"爆発と木の破片だけ（本体なし）"},{"skip":"木の破片が本体の周りに散る"},{"m":"self"}]},
+"g01":{"slot":11,"name":"つつく","cuts":[{"m":"self"},{"m":"move","clip":[0,0.86]},{"skip":"くちばしと木人・衝撃が重なる"},{"m":"self","clip":[0,0.86]}]},
+"g02":{"slot":10,"name":"スパイラルダイブ","cuts":[{"m":"self"},{"m":"move"},{"m":"move"},{"skip":"爪と木人・爆発が重なる"}]},
+"g03":{"slot":13,"name":"ソニックムーブ","cuts":[{"m":"self"},{"m":"self"},{"m":"self"},{"m":"self"}]},
+"g04":{"slot":14,"name":"紅翼スラッシュ","cuts":[{"m":"self"},{"m":"self"},{"m":"move","clip":[0,0.84]},{"skip":"斬撃と木人が本体に重なる"}]},
+"g05":{"slot":15,"name":"ファイアボール","cuts":[{"m":"self"},{"m":"self"},{"m":"self","clip":[0,0.8]},{"m":"self","clip":[0,0.42]}]},
+"g06":{"slot":16,"name":"フレアレイ","cuts":[{"m":"self"},{"m":"self"},{"m":"self","clip":[0,0.6]},{"m":"self","clip":[0,0.64]}]},
+"g07":{"slot":12,"name":"ウィンド","cuts":[{"m":"self"},{"m":"self"},{"m":"self","clip":[0,0.66]},{"m":"self"}]},
+"g08":{"slot":17,"name":"スカイラッシュ","cuts":[{"m":"self","erase":[[0.56,0.6,1,1]]},{"m":"move"},{"skip":"爪と木人・衝撃が重なる"},{"skip":"木人が本体の間に入る"},{"skip":"爪と木人・衝撃が重なる"},{"m":"self"}]},
+"g09":{"slot":18,"name":"フェザーストーム","cuts":[{"m":"self"},{"m":"self"},{"skip":"木人が羽の嵐に入る"},{"skip":"木人と破片が全体に散る"},{"skip":"木人と破片が全体に散る"},{"skip":"木人と砂煙が全体に散る"}]},
+"g10":{"slot":19,"name":"聖なる炎","cuts":[{"m":"self"},{"m":"self"},{"m":"self"},{"m":"self"},{"m":"self"},{"m":"self"}]}
+}

@@ -93,7 +93,7 @@
       const sync = () => {
         let idle = mon.querySelector('.mma-idle');
         if (still()) {
-          if (!idle) { idle = new Image(); idle.className = 'mma-idle' + (flipOf(s, sp) ? ' fl' : ''); idle.alt = ''; idle.src = src; mon.appendChild(idle); }
+          if (!idle) { idle = new Image(); idle.className = 'mma-idle' + (flipOf(s, sp) ? ' fl' : ''); idle.alt = ''; idle.src = src; mon.appendChild(idle); if (root.MM25D) MM25D.syncIdle(bt); }   // 2026-10-08：比較試遊（?battleArt=2p5d）のときはソラモ・ガウルを 2.5D の立ち絵に（js/battle/art25d.js）
           mon.classList.add('mma-on');
         } else mon.classList.remove('mma-on');
       };

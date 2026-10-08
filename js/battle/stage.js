@@ -68,7 +68,8 @@
   }
 
   /** 今までの技の絵が当たる時刻と長さ（ms・速さ 1.0） */
-  function rawTiming(k) {
+  function rawTiming(k, s) {
+    if (window.MM25D) { const t = MM25D.timing(k, s); if (t) return t; }   // 2026-10-08：比較試遊の 2.5D のコマ（js/battle/art25d.js）
     if (k >= 20 && k <= 29) { const no = k - 19; return { hit: RP_HIT[no], dur: RP_DUR[no] || 1000 }; }
     const SFR = G('SFR'), F = SFR && SFR[k];
     if (F && Array.isArray(F.f)) {
@@ -183,7 +184,7 @@
       busy++;
       ensureWrap();
       const me2 = cur = {};
-      const kind = SPECIAL[k];
+      const p25 = !!(window.MM25D && MM25D.handles(k, s)), kind = p25 && (SPECIAL[k] === 'guard' || SPECIAL[k] === 'sonic') ? null : SPECIAL[k];   // 比較試遊の 2.5D：補助技もコマで見せる
       // 1 構え：少し沈んで後ろへ（攻撃側を少し大きく）
       const wind = anim(mon, [{ transform: 'none' }, { transform: `translateX(${-8 * f}px) scale(1.05,.94)`, offset: 0.6 }, { transform: `translateX(${-6 * f}px) scale(1.04,.96)` }], { duration: T0.windup, easing: EASE.out, fill: 'forwards' });
       // 背景を攻撃側へ軽く寄せる
@@ -204,7 +205,7 @@
         ST(() => { L.remove(); busy--; if (cur === me2) cur = null; }, total + 50);
         return true;
       }
-      const rt = rawTiming(k), rate = T0.rate, hit = rt.hit != null ? pre + rt.hit / rate : null, dur = pre + rt.dur / rate;
+      const rt = rawTiming(k, s), rate = T0.rate, hit = rt.hit != null ? pre + rt.hit / rate : null, dur = pre + rt.dur / rate;
       // 3 攻撃動作：構えを戻してから今までの技の絵
       ST(() => { if (wind) wind.cancel(); anim(mon, [{ transform: `translateX(${-6 * f}px) scale(1.04,.96)` }, { transform: 'none' }], { duration: 90, fill: 'none' }); callRaw(rate); if (kind === 'storm') storm(L, T, dur - pre); }, pre);
       if (hit != null) {
