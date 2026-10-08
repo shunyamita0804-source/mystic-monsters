@@ -26,6 +26,16 @@ ZIP の README・LICENSE の原文は、受け取った ZIP の中にある（�
 
 置き換えて外した旧い曲（記録は下の表に残す）：PGS「Battle Music 1」（旧 WILD_BATTLE）・「Battle Music 2」（旧 TOURNAMENT_BATTLE_LOW）・alkakrab「Battle of the Skies」（旧 RIVAL_BATTLE）・「Clash of Arcane Titans」（旧 TOURNAMENT_BATTLE_HIGH）。不採用（ユーザー指示）：「いざ出発！」「冒険への誘い」。
 
+## 2026-10-08 正式採用：街の曲（assets/audio/bgm/licensed_20261008/）
+
+ユーザー提供の MP3「冒険への誘い(2).mp3」（ZIP Mismon_NextBatch_PART2_Market_Ryu_WorldMap_TownBGM_20261008 の town_bgm/。sha256 `b86897fa6a540ffc…`）を OGG Vorbis（q5）に変換しただけ（曲の切り出し・加工はしない）。**作者・出典・ライセンスは受け取った ZIP に書かれていない＝要確認**（10-07 の一覧では不採用だった曲。2026-10-08 にユーザーが街の曲として正式採用）。
+
+| 場面（registry） | ファイル | 曲名 | 長さ | 元の音量 | gain | ループ |
+|---|---|---|---|---|---|---|
+| TOWN（街。お知らせ・設定・プロフィールも） | town_bouken_e_no_izanai.ogg | 冒険への誘い | 182.7秒（179秒から末尾は無音） | -15.1 LUFS | 0.7（約 -18） | 0〜178.6秒・頭へ 1.2秒のクロスフェード |
+
+置き換えて外した曲：HydroGene「Lively City」（02_lively_city.ogg。第5弾の仮採用の街の曲。下の表の記録は残す）。
+
 ## 使用中の素材（2026-10-02 夜・第1弾）
 
 | 素材パック | 作者 | 配布元 | ライセンス | 商用利用 | クレジット | 置き場 |

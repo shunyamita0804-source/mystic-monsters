@@ -22,6 +22,7 @@
   const HG = BGM_DIR + 'hydrogene_16bit_rpg/';         // HydroGene「High Quality 16-bit RPG Music」（CC0。AUDIO_CREDITS.md）
   const MMO = SE_DIR + 'mystic_monsters_official/';   // ミスティックモンスターズの正式素材（ユーザー提供・2026-10-04。AUDIO_CREDITS.md）
   const LIC = BGM_DIR + 'licensed_20261007/';        // 2026-10-07 正式採用の BGM 14曲（DOVA-SYNDROME・Pixabay・itch.io。ユーザー提供の MP3／WAV を OGG Vorbis q5 に変換しただけ・曲の切り出しはしない。作者・出典は AUDIO_CREDITS.md）
+  const LIC8 = BGM_DIR + 'licensed_20261008/';       // 2026-10-08 正式採用：街の曲「冒険への誘い」（ユーザー提供の MP3 を OGG Vorbis q5 に変換しただけ。AUDIO_CREDITS.md）
   const MMB = BGM_DIR + 'mystic_monsters_official/';  // 同じく正式の BGM（2026-10-06：タイトル・プロローグ。ユーザー提供・ゲームの所有素材。AUDIO_CREDITS.md）
 
   // 書き方：{ src, gain, loopStart, loopEnd, loopXfade } ＝ファイルで鳴らす（loopEnd を書くと、曲の終わりのフェードアウトの前で loopStart へクロスフェードで戻る。秒）／{ fallback: '場面' } ＝ほかの場面の曲を使う／{ silent: true } ＝鳴らさない（合成音にも落とさない。試遊で「合わない」となった音の一時的な置き場）／行が無い ＝合成音
@@ -41,7 +42,7 @@
     CEDRIC:     { src: LIC + '07_cedric_pre_tournament.ogg', gain: 0.3, loopStart: 0, loopEnd: 378.5, loopXfade: 1 },   // セドリックの大会前の導入：REACH FOR the FATE / Keyta（-9.5 → 会話が聞こえる約 -20）
     ARENA:      { src: LIC + '11_arena_swords_at_midnight_loop.ogg', gain: 0.67 },          // 闘技場の施設の曲：Swords At Midnight Loop（ループ素材・-14.5）。闘技場の画面は未実装（ロック中）＝登録だけで、今はどこからも鳴らさない
     BUREAU:     { src: MMB + 'mystic_monsters_bureau_bgm_official.ogg', gain: 0.46, loopStart: 0, loopEnd: 45.7, loopXfade: 0.25 },   // 2026-10-05 PHASE B 正式 v6：聖獣士管理局（46.0秒・-13.2 LUFS → gain 0.46 で約 -20＝会話が聞き取れる音量）。終わりの短いフェードの前で頭へ戻してループ
-    TOWN:       { src: HG + '02_lively_city.ogg', gain: 0.62 },     // 2026-10-03 第5弾の仮採用：HydroGene「Lively City」65秒・明るい長調（第4弾で NG の Tranquil Radiance は使わない）
+    TOWN:       { src: LIC8 + 'town_bouken_e_no_izanai.ogg', gain: 0.7, loopStart: 0, loopEnd: 178.6, loopXfade: 1.2 },     // 2026-10-08 正式採用「冒険への誘い」（-15.1 LUFS → 約 -18）。182.7秒のうち 179秒から末尾は無音＝曲が消えきる手前 178.6秒で頭へ 1.2秒のクロスフェード（ファイルは加工しない）。旧：HydroGene「Lively City」（第5弾の仮採用）     // 2026-10-03 第5弾の仮採用：HydroGene「Lively City」65秒・明るい長調（第4弾で NG の Tranquil Radiance は使わない）
     MARKET:     { src: PGS + 'town_village_theme_2.ogg', gain: 0.9 },   // 試遊で OK（変更しない）
     RANCH:      { src: PGS + 'town_village_theme_3.ogg', gain: 0.8 },   // 77秒・温かい【暫定】
     LABORATORY: { src: PGS + 'event_music_2.ogg', gain: 0.65 },        // 103秒・ゆっくり・神秘的【暫定】

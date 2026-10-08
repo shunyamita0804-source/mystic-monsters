@@ -398,9 +398,9 @@ test('AUDIO-23：2026-10-03 第4弾の試遊で NG の音は無音（silent＝�
   assert.match(DR, /await frame\(\);   \/\/ 止まった姿が描かれたフレームで「完全停止」\n    ov\.dataset\.stopped = '1'; feel\('dice\.stop'\);/, 'dice.stop はサイコロが見た目の上で止まったフレーム');
 });
 
-test('AUDIO-24：2026-10-03 第5弾の仮採用（HydroGene 16-bit・CC0）：街・ファーム・特訓・Chapter 1〜4・大会の受付と結果（Royal Castle）', async () => {
+test('AUDIO-24：2026-10-03 第5弾の仮採用（HydroGene 16-bit・CC0）：（街は 2026-10-08 に正式採用の曲へ＝AUDIO-34）ファーム・特訓・Chapter 1〜4・大会の受付と結果（Royal Castle）', async () => {
   const { got } = loadRegistry(), HG = /hydrogene_16bit_rpg\//;
-  const want = { TOWN: '02_lively_city', FARM: '04_peaceful_village', TRAINING: '20_military_base', CHAPTER_1: '07_spirits_forest_full', CHAPTER_2: '17_unknown_island', CHAPTER_3: '14_traveling_the_sky', CHAPTER_4: '15_volcanic_crater', TOURNAMENT_ENTRY: '03_royal_castle' };
+  const want = { FARM: '04_peaceful_village', TRAINING: '20_military_base', CHAPTER_1: '07_spirits_forest_full', CHAPTER_2: '17_unknown_island', CHAPTER_3: '14_traveling_the_sky', CHAPTER_4: '15_volcanic_crater', TOURNAMENT_ENTRY: '03_royal_castle' };
   for (const [k, f] of Object.entries(want)) { const s = srcsOf(got.bgm[k])[0]; assert.match(s, HG, k); assert.ok(s.endsWith(f + '.ogg'), `${k}：${s}`); }
   assert.deepEqual(got.bgm.RESULT, { fallback: 'TOURNAMENT_ENTRY' }, '大会の結果は受付と同じ Royal Castle（2026-10-07：対戦表・対戦前比較は正式採用の BGM＝AUDIO-30）');
   // 変えない：市場・牧場・研究所（2026-10-07：野生・レア・ライバル・大会の実戦は正式採用の BGM＝AUDIO-30）
@@ -582,4 +582,15 @@ test('AUDIO-33：2026-10-08（監査 M-12）：プロローグ Scene 5 の曲は
   assert.match(HTML, /const PRO_AUDIO_LEAD=500;/);
   const { A, log } = env(); legacySpy(A); A.registerBgm('PROLOGUE_5', './bgm/p5.ogg', { loop: false, start: 0.38 }); A.unlock(); A.scene('PROLOGUE_5');
   assert.ok(log.audios.some((x) => x.src === './bgm/p5.ogg#t=0.38'), 'メディアフラグメント #t=0.38 で読む');
+});
+
+test('AUDIO-34：2026-10-08 正式採用：街の曲「冒険への誘い」（OGG・ループは曲が消えきる手前で頭へ）。旧 Lively City は外した。市場・牧場・研究所には専用曲を足さない', async () => {
+  const { got } = loadRegistry();
+  const t = got.bgm.TOWN; assert.ok(srcsOf(t)[0].endsWith('licensed_20261008/town_bouken_e_no_izanai.ogg'), srcsOf(t)[0]);
+  assert.deepEqual([t.gain, t.loopStart, t.loopEnd, t.loopXfade], [0.7, 0, 178.6, 1.2]);
+  assert.ok(existsSync(path.join(ROOT, 'assets/audio/bgm/licensed_20261008/town_bouken_e_no_izanai.ogg')));
+  assert.ok(!existsSync(path.join(ROOT, 'assets/audio/bgm/hydrogene_16bit_rpg/02_lively_city.ogg')), '使わない曲は置かない');
+  const keep = { MARKET: 'town_village_theme_2', RANCH: 'town_village_theme_3', LABORATORY: 'event_music_2' };
+  for (const [k, f] of Object.entries(keep)) assert.ok(srcsOf(got.bgm[k])[0].endsWith(f + '.ogg'), k);
+  assert.match(rd('AUDIO_CREDITS.md'), /town_bouken_e_no_izanai\.ogg/);
 });

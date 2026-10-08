@@ -3616,6 +3616,43 @@ main:has(>#app>.ds) h1{display:none}
 .tb1g.tbv2.n8 .tbrw{aspect-ratio:auto;padding:2px 3px;gap:3px}
 .tb1g.tbv2.n8 .tbrw .tbic{height:auto;width:min(30%,26px)}
 .tb1g.tbv2.n8 .tbnm b{white-space:normal;word-break:break-all;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;font-size:clamp(8px,2.9cqw,12px);line-height:1.15;text-overflow:clip}
+/* 2026-10-08 正式：市場の木製UI（ZIP PART2 market_ui＝中央名札・サブ名札・左右のナビ。assets/ui/market_wood/＝透明な余白を切り詰めて表示の約2倍に縮小した PNG。絵は変えない）。
+   木の札は平たい（約4.5:1）ので、名前と価格は1行に並べ、「タップでくわしく」は中央の札のすぐ下。カルーセル（中央100%・左右70%・ループ・スワイプ・矢印・ドット）と処理は従来どおり */
+.p10mk .p10plate{width:min(40vw,152px);aspect-ratio:1433/302;flex-direction:row;flex-wrap:nowrap;gap:5px;padding:0 9%;background:url(./assets/ui/market_wood/plate_side.png) center/100% 100% no-repeat}
+.p10mk .p10sl.on .p10plate{bottom:15px;width:min(62vw,240px);aspect-ratio:1674/375;padding:0 9%;gap:8px;background-image:url(./assets/ui/market_wood/plate_center.png)}
+.p10mk .p10plate b{font-size:clamp(10px,3vw,12px);line-height:1;white-space:nowrap;color:#fff6e2;text-shadow:0 1px 2px #2a1404,0 0 3px #2a1404}
+.p10mk .p10sl.on .p10plate b{font-size:clamp(15px,4.6vw,19px)}
+.p10mk .p10plate span{font-size:clamp(9px,2.6vw,11px);line-height:1;white-space:nowrap;text-shadow:0 1px 2px #2a1404,0 0 3px #2a1404}
+.p10mk .p10sl.on .p10plate span{font-size:clamp(11px,3.3vw,14px)}
+.p10mk .p10plate span svg{width:1em;height:1em}
+.p10mk .p10plate .p10wait{padding:0 6px;font-size:9px;line-height:1.5}
+.p10mk .p10sl.on .p10plate::after{position:absolute;left:0;right:0;top:100%;margin-top:3px;text-align:center;text-shadow:0 1px 2px #000,0 0 4px #000}
+.p10mk .p10arw,.p10mk .p10arw.next{width:52px;height:53px;background:url(./assets/ui/market_wood/arrow_left.png) center/contain no-repeat}
+.p10mk .p10arw.next{background-image:url(./assets/ui/market_wood/arrow_right.png)}
+/* 2026-10-08 正式：ランク昇格 Final（p9RankUpFinal）＝光 → 枠 → 文字 → 解放の札（画像は加工しない・動きと不透明度だけ） */
+.p9ruf{position:fixed;inset:0;z-index:960;display:grid;place-items:center;overflow:hidden;cursor:pointer}
+.p9ruf .rufbg{position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,rgba(40,52,96,.9),rgba(4,8,22,.96) 70%);opacity:0;transition:opacity .35s}
+.p9ruf>img,.p9ruf .rufsh{position:absolute;left:50%;top:42%;width:min(84vw,380px,46dvh);aspect-ratio:1;transform:translate(-50%,-50%) scale(.9);opacity:0;pointer-events:none}
+.p9ruf .ruffx{width:min(100vw,460px,56dvh);transform:translate(-50%,-50%) scaleY(.6)}
+.p9ruf .ruflt{width:min(52vw,236px,29dvh);transform:translate(-50%,-50%) scale(.55)}
+.p9ruf .rufsh{width:min(70vw,320px,38dvh);border-radius:50%;background:radial-gradient(circle,rgba(255,250,225,.95),rgba(255,224,140,.45) 38%,rgba(255,224,140,0) 70%)}
+.p9ruf .rufpl{position:absolute;left:50%;top:calc(42% + min(84vw,380px,46dvh)*.5 + 10px);width:min(86vw,360px);transform:translate(-50%,20px);opacity:0;pointer-events:none}
+.p9ruf .rufpl img{display:block;width:100%;height:auto}
+.p9ruf .rufpl b{position:absolute;inset:0 16% 0;display:flex;align-items:center;justify-content:center;font:800 clamp(16px,5vw,22px)/1 var(--mm-font-head);color:#ffe7a8;letter-spacing:.06em;text-shadow:0 1px 2px #000,0 0 8px rgba(255,210,110,.6);white-space:nowrap}
+.p9ruf.go .rufbg{opacity:1}
+.p9ruf.go .ruffx{transition:opacity .5s ease .1s,transform .7s cubic-bezier(.2,.9,.3,1) .1s;opacity:1;transform:translate(-50%,-50%) scaleY(1)}
+.p9ruf.go .ruffr{transition:opacity .4s ease .45s,transform .6s cubic-bezier(.2,1.3,.4,1) .45s;opacity:1;transform:translate(-50%,-50%) scale(1)}
+.p9ruf.go .ruflt{transition:opacity .35s ease .85s,transform .55s cubic-bezier(.2,1.5,.4,1) .85s;opacity:1;transform:translate(-50%,-50%) scale(1)}
+.p9ruf.go .rufsh{animation:rufsh .7s ease-out .95s both}
+@keyframes rufsh{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}35%{opacity:.9}100%{opacity:0;transform:translate(-50%,-50%) scale(1.25)}}
+.p9ruf.go .rufpl{transition:opacity .4s ease 1.55s,transform .5s cubic-bezier(.2,.9,.3,1) 1.55s;opacity:1;transform:translate(-50%,0)}
+.p9ruf.calm .rufbg,.p9ruf.calm>img,.p9ruf.calm .rufpl{transition:opacity .2s!important}
+.p9ruf.calm .rufsh{display:none}
+.p9ruf.calm.go>img{transform:translate(-50%,-50%)!important}.p9ruf.calm.go .rufpl{transform:translate(-50%,0)!important}
+.p9ruf.out{transition:opacity .3s;opacity:0}
+/* 2026-10-08：セドリックの大会前の導入（standing_UI の上部＝opening_X）。高さの 80% に広げていたため大きなアップに見えていた → 元の絵と同じ縮尺（画面の幅に合わせる）で上に置き、絵の下端から会話窓までは濃紺へ溶かす（画像は加工しない） */
+.mmtalk-nofig>.mmtalk-scenebg[style*="opening_"]{--cw:max(100vw,min(118vw,calc((100dvh - 200px)*.768)));background-size:var(--cw) auto;background-position:center top}
+.mmtalk-nofig>.mmtalk-scenebg[style*="opening_"]::after{background:linear-gradient(180deg,rgba(11,22,54,0) 0,rgba(11,22,54,0) calc(var(--cw)*1000/768 - 110px),#0b1636 calc(var(--cw)*1000/768 - 4px),#0b1636 100%)}
 </style></head><body><main>
 <h1>ミスティックモンスターズ</h1>
 <div id="app"></div>
@@ -4081,11 +4118,12 @@ const OPEN_TALK={
  support:n=>[{npc:"serge",text:`${n}さんのような新人の聖獣士には、管理局から支援をお渡ししています。`},{npc:"serge",text:"新人聖獣士支援制度です。まずは、旅立ちの準備金をお受け取りください。"},{npc:"serge",text:"それから、こちらもお持ちください。"},{note:{rows:[{icon:"gold",text:"1000G"},{img:ITEM_ICON.herb,text:"薬草を手に入れた"}],se:"GOLD_GET"}},{npc:"serge",text:"薬草は、聖獣の疲れを30回復できる道具です。旅の途中で疲れが溜まったら使ってください。"}],
  unlock:n=>[{npc:"serge",text:"世界地図は、この管理局でいつでもご覧いただけます。"},{npc:"fina",expression:"guide",text:`それじゃあ${n}さん、まずは市場で最初の相棒を迎えに行こう！`}]};
 // リュウとの出会い（2026-10-07 正式の導線。台本＝ライバルらしく前向きで少し自信家。S ランクを先にクリアしてレジェンドに挑むと宣言し、先に「はじまりの草原」へ）
-OPEN_TALK.ryu=n=>[{npc:"ryu",expression:"normal",text:"あれ？ フィナじゃないか！"},{npc:"fina",expression:"surprised",text:"リュウ！？ どうしてミストリアにいるの？"},
- {npc:"ryu",expression:"normal",text:"決まってるだろ。聖獣士になりに来たんだよ。……で、そっちは？"},{npc:"fina",expression:"smile",text:`こちらは${n}さん。今日、聖獣士登録をしたばかりなんだ。`},
- {npc:"fina",expression:"guide",text:`${n}さん、この人はリュウ。私と同じ町の出身で、小さい頃からの知り合いなの。`},{npc:"ryu",expression:"normal",text:`へえ、新人か。よろしくな、${n}。`},
- {npc:"ryu",expression:"normal",text:`先に言っとくぜ。オレは${n}より先にSランクをクリアして、レジェンドに挑んでやる。`},{npc:"fina",expression:"troubled",text:"もう、リュウは相変わらずなんだから……。"},
- {npc:"ryu",expression:"normal",text:"オレは先に『はじまりの草原』へ行ってる。追いつけるもんなら、追いついてみな！"},{npc:"fina",expression:"smile",text:`行っちゃった……。${n}さん、私たちも負けてられないね！`}];
+// 2026-10-08：リュウの正式の表情5種（台詞は変えない）＝驚き → 自信 → 柔らかい笑み → 真剣 → 自信
+OPEN_TALK.ryu=n=>[{npc:"ryu",expression:"surprise",text:"あれ？ フィナじゃないか！"},{npc:"fina",expression:"surprised",text:"リュウ！？ どうしてミストリアにいるの？"},
+ {npc:"ryu",expression:"confident",text:"決まってるだろ。聖獣士になりに来たんだよ。……で、そっちは？"},{npc:"fina",expression:"smile",text:`こちらは${n}さん。今日、聖獣士登録をしたばかりなんだ。`},
+ {npc:"fina",expression:"guide",text:`${n}さん、この人はリュウ。私と同じ町の出身で、小さい頃からの知り合いなの。`},{npc:"ryu",expression:"soft_smile",text:`へえ、新人か。よろしくな、${n}。`},
+ {npc:"ryu",expression:"serious",text:`先に言っとくぜ。オレは${n}より先にSランクをクリアして、レジェンドに挑んでやる。`},{npc:"fina",expression:"troubled",text:"もう、リュウは相変わらずなんだから……。"},
+ {npc:"ryu",expression:"confident",text:"オレは先に『はじまりの草原』へ行ってる。追いつけるもんなら、追いついてみな！"},{npc:"fina",expression:"smile",text:`行っちゃった……。${n}さん、私たちも負けてられないね！`}];
 /** プロローグ（新しいゲームの最初に1回。見た記録は S.npcFlags.prologue）→ 街 */
 /** 2026-10-06：プロローグ（固定尺のオープニング）と正式のプロローグ BGM を同じ時間軸で鳴らす。
  *  開始画面の曲をフェードアウト → 背景の読み込みを待つ（その間は BGM を鳴らさない）→ Scene 1 を出す瞬間に PROLOGUE（0.000秒・フェードなし）→ 実際に鳴り始めた位置から映像の時計を始める
@@ -5017,7 +5055,18 @@ const TB_VENUE=k=>`./assets/tournament/venues/venue_${RN[k]}.webp`;
 const CED_SCENE=(k,kind)=>`./assets/tournament/cedric/${kind}_${RN[k]}.webp`;
 const RANK_START_FX=["A1","A2","A3","A4","A5","A6"].map(n=>`./assets/tournament/rank_start/${n}.webp`),RANK_START_MS=[420,520,620,700,1150,620];   // E ランク基準の正式カット（エンブレムの E・「公式ランクE大会」が絵の中）
 const RANK_UP_FX=["B1","B2","B3","B4","B5","B6","B7"].map(n=>`./assets/tournament/rank_up/${n}.webp`),RANK_UP_MS=[600,700,460,800,700,1500,700];   // E → D の正式カット（「Dランクに昇格！」が絵の中）
-const RANK_UP_ART={};   // 2026-10-08：昇格で新しく解放されたランク（番号）→ 正式カット。E・D は最初から解放済みのため E→D の B1〜B7（RANK_UP_FX）は使わない。D→C 以降の正式カットは未着
+// 2026-10-08 正式：ランク昇格 Final（assets/tournament/rankup_final/＝ZIP RankUp_Final_20261008_034245。段階ごとに 文字 letter・枠 frame・光 fx・解放の札 plaque の4枚を重ねる。旧 B1〜B7 より優先＝B1〜B7 は使わない）
+//  昇格で新しく選べるようになったランク（番号 d.to）→ 段階。E・D は最初から解放済み＝昇格は D優勝→C・C→B・B→A・A→S。E_to_D は定義だけ（今の規則では起きない）
+const RANK_UP_ART={1:"E_to_D",2:"D_to_C",3:"C_to_B",4:"B_to_A",5:"A_to_S"};
+const RANK_UP_SRC=(st,kind)=>`./assets/tournament/rankup_final/${st}/${kind}.webp`;
+/** 4枚を重ねて見せる（光 → 枠 → 文字 → 解放の札。約3.4秒・タップで飛ばせる＝出た直後0.35秒は無視・視差を減らす設定では動かさず短く）。画像は先に読み込む（最大1.5秒） */
+function p9RankUpFinal(st,to){return new Promise(res=>{const calm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches),R=RN[to]||"";
+ const d=document.createElement("div");d.className="p9ruf"+(calm?" calm":"");d.setAttribute("role","img");d.setAttribute("aria-label",`ランク${R}大会が解放された`);
+ d.innerHTML=`<i class="rufbg"></i><img class="ruffx" src="${RANK_UP_SRC(st,"fx")}" alt="" draggable="false"><img class="ruffr" src="${RANK_UP_SRC(st,"frame")}" alt="" draggable="false"><img class="ruflt" src="${RANK_UP_SRC(st,"letter")}" alt="" draggable="false"><i class="rufsh"></i><div class="rufpl"><img src="${RANK_UP_SRC(st,"plaque")}" alt="" draggable="false"><b>ランク${R}大会 解放！</b></div>`;
+ document.body.appendChild(d);const im=[...d.querySelectorAll("img")],T=[];let done=false;const t0=performance.now();
+ const fin=()=>{if(done)return;done=true;T.forEach(clearTimeout);d.classList.add("out");setTimeout(()=>{d.remove();res()},calm?0:300)};
+ d.onclick=()=>{if(performance.now()-t0>350)fin()};
+ Promise.race([Promise.all(im.map(x=>x.decode?x.decode().catch(()=>{}):0)),new Promise(r=>setTimeout(r,1500))]).then(()=>{if(done)return;d.classList.add("go");T.push(setTimeout(fin,calm?1200:3400))})})}
 /** 正式カットを順にクロスフェードで見せる（全画面・タップで飛ばせる＝出た直後0.35秒は無視・視差を減らす設定では最後のカットだけ短く）。画像は先に読み込む（最大1.5秒待つ） */
 function p9Frames(srcs,ms,cls){return new Promise(res=>{const calm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
  const d=document.createElement("div");d.className="p9fx "+(cls||"");d.setAttribute("aria-hidden","true");d.innerHTML=srcs.map(u=>`<img src="${u}" alt="" decoding="async" draggable="false">`).join("");
@@ -5090,6 +5139,9 @@ function p8TourScr(msg){const m=S.m,t=m.raise.tour,lg=t.league;bgm(t.status=="se
 const TB_STAT={l:[9.43,28.51],r:[61.84,28.62],y:[17.41,29.44,41.67,54.07,66.48,78.89],h:2.6};
 function tbSkill(x){const k=x&&MMP10M.skillText(x.sp);return k?p11Esc(k.name):"―"}
 // 2026-10-07 正式（mock_compare）：主役は左右のモンスター（待機立ち絵・相手は左向き）・上に大会名・名前の札・固有スキルの名前＋短い説明・中央に能力の名前・左右に数値＋能力のバー（正式色）・対戦開始／対戦表にもどる。セドリックは出さない
+// 2026-10-08 正式：大会3（VS）の専用勝負絵（assets/tournament/vs_monsters/＝ZIP Mismon_VS_Battle_Transparent の 01〜05。5体とも右向き）。向きは待機立ち絵と同じ規則（プレイヤー＝右向き・相手＝左右反転。反転はモンスターの絵だけ）。無い種族は待機立ち絵
+const TB_VS=["solamo","gauru","nobiton","jiol","regnas"];
+function tbVs(x,side){const k=x&&TB_VS[x.sp];return k?`<img class="tbidle tbvs${window.MMARENA&&MMARENA.flipOf(side,x.sp)?" fl":""}" src="./assets/tournament/vs_monsters/${k}_vs.webp" alt="">`:tbIdle(x,side)}
 function tbIdle(x,side){const s=window.MMARENA&&x&&MMARENA.idleSrc(x.sp);return s?`<img class="tbidle${MMARENA.flipOf(side,x.sp)?" fl":""}" src="${s}" alt="">`:msv(x)}
 function tbSkillDesc(x){const k=x&&MMP10M.skillText(x.sp);return k?`<small class="tbskn"><i>スキル</i>${p11Esc(k.name)}</small><span class="tbskd">${p11Esc(k.desc||"")}</span>`:`<small class="tbskn"><i>スキル</i>―</small>`}
 function p9CompareScr(){const m=S.m,t=m&&m.raise&&m.raise.tour;if(!t||t.status!="league")return board();const lg=t.league,pm=MMP8.tourNext(m);if(!pm)return board();const o=p9Npc(lg,pm.opp);bgm("matchup");p9Immersive(true);p9MenuClose();
@@ -5102,7 +5154,7 @@ function p9CompareScr(){const m=S.m,t=m&&m.raise&&m.raise.tour;if(!t||t.status!=
 let TB_SKIP_INTRO=false;
 function tourVsShow(m,o){return new Promise(res=>{const calm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
  const d=document.createElement("div");d.className="tvs"+(calm?" calm":"");d.id="tvs";
- d.innerHTML=`<div class="tvsbg" style="background-image:url(${TB_VENUE(S.m&&S.m.raise&&S.m.raise.tour?S.m.raise.tour.rank:0)})"></div><img class="tvsline" src="${TB_UI}vs/vs_diagonal.png" alt=""><b class="tvshd">マッチアップ</b><div class="tvsm op"><span class="mon">${tbIdle(o,1)}</span></div><div class="tvsm me"><span class="mon">${tbIdle(m,0)}</span></div>
+ d.innerHTML=`<div class="tvsbg" style="background-image:url(${TB_VENUE(S.m&&S.m.raise&&S.m.raise.tour?S.m.raise.tour.rank:0)})"></div><img class="tvsline" src="${TB_UI}vs/vs_diagonal.png" alt=""><b class="tvshd">マッチアップ</b><div class="tvsm op"><span class="mon">${tbVs(o,1)}</span></div><div class="tvsm me"><span class="mon">${tbVs(m,0)}</span></div>
  <div class="tvsnp op"><img src="${TB_UI}vs/vs_nameplate.png" alt=""><b>${p11Esc(o.name)}</b><img class="tvsorn" src="${TB_UI}vs/vs_ornament.png" alt=""></div><div class="tvsnp me"><img src="${TB_UI}vs/vs_nameplate.png" alt=""><b>${p11Esc(m.name)}</b><img class="tvsorn" src="${TB_UI}vs/vs_ornament.png" alt=""></div>
  <img class="tvslogo" src="${TB_UI}vs/vs_logo.png" alt="VS"><i class="tvsfl"></i>`;
  document.body.appendChild(d);try{MMFEEL.emit("battle.matchup")}catch(e){}
@@ -5162,8 +5214,8 @@ const p9EndHere=m=>!!document.querySelector(".p9tour.p9end")&&S.m===m;
 MMP8.registerTourEndHook("final",async()=>{const m=S.m;p9EndMark("final");if(p9EndHere(m))await p9EndWait(900)});
 MMP8.registerTourEndHook("champion",async()=>{const m=S.m;p9EndMark("champion");if(p9EndHere(m))await p9EndWait(1900)});   // モンスターの勝利演出（正式画像が跳ねて光る。専用の素材・音は未着）
 MMP8.registerTourEndHook("rankUp",async d=>{P9_END_UP=d;P9_END_FX=false;const m=S.m;p9EndMark("rankUp");
- if(!RANK_UP_ART[d.to]||window.MM_QA_NO_TOURFX)return;   // 2026-10-08 正式：昇格＝D優勝→C・C→B・B→A・A→S。E・D は最初から解放済み＝E→D の昇格は無い（E→D 用の B1〜B7 は使わない・流用しない）。D→C 以降の正式カットは未着＝演出なし（解放だけ）
- if(!p9EndHere(m))return;const A=RANK_UP_ART[d.to];await p9Frames(A.fx,A.ms,"p9ru");P9_END_FX=true});
+ if(!RANK_UP_ART[d.to]||window.MM_QA_NO_TOURFX)return;   // 2026-10-08 正式：昇格＝D優勝→C・C→B・B→A・A→S。E・D は最初から解放済み＝E→D の昇格は無い（E→D 用の B1〜B7 は使わない・流用しない）。2026-10-08：D→C 以降は正式の RankUp Final（p9RankUpFinal）
+ if(!p9EndHere(m))return;await p9RankUpFinal(RANK_UP_ART[d.to],d.to);P9_END_FX=true});
 MMP8.registerTourEndHook("cedricEnd",async()=>{const rs=P9_END_RS,m=S.m;p9EndMark("cedricEnd");if(!rs||!cedricOn())return;await p9EndWait(P9_END_FX?300:600);if(!p9EndHere(m))return;try{await MMNPC.talk(CEDRIC_EV.close(rs,rs.reward&&rs.reward.rankUp,m&&m.name),{kind:"event",big:true,scene:CED_SCENE(rs.rank,"booth"),noFig:true})}catch(e){}});   // ランクアップの有無は結果のデータから（再読み込みで rankUp の段階を飛ばしても文が変わらない）
 MMP8.registerTourEndHook("legendUnlock",()=>{p9EndMark("legendUnlock");legendEvent()});
 MMP8.registerTourEndHook("next",()=>{p9EndMark("next");const f=P9_END_AFTER;P9_END_AFTER=null;if(f)setTimeout(f,cedricOn()?300:1100)});

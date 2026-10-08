@@ -234,5 +234,5 @@ test('SF-08：E・D は最初から解放＝E の優勝で昇格しない・D �
   { const { res } = one(1, [0], 1); assert.deepEqual(res.reward.rankUp, { from: 1, to: 2, unlocked: 2 }, 'E クリア済みでも D 優勝で C'); }
   // 合体の子（旧フィールド rk を継いでいても）D の初回優勝で C 解放
   { const { S, m } = atGoal(E, 1); m.rk = 3; P8.startTournament(S, m, 1, 4); assert.equal(playTour(P8, S, m, true).res.reward.rankUp.to, 2); }
-  assert.match(HTML, /\nconst RANK_UP_ART=\{\};/, 'D→C 以降の正式カットは未着＝演出なし');
+  assert.match(HTML, /\nconst RANK_UP_ART=\{1:"E_to_D",2:"D_to_C",3:"C_to_B",4:"B_to_A",5:"A_to_S"\};/, '2026-10-08 正式：RankUp Final（昇格で新しく選べるランク → 段階。E_to_D は定義だけ）'); assert.match(HTML, /await p9RankUpFinal\(RANK_UP_ART\[d\.to\],d\.to\);/);
 });
