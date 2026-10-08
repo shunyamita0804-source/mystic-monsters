@@ -117,3 +117,39 @@ test('AS8-B6：街の BGM＝「冒険への誘い」（ループ区間つき）'
   assert.deepEqual(sl.loop, [0, 178.6]);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
+
+test('AS8-B7：D 優勝の結果＝最終順位 → モンスターの勝利演出（正式の勝利画像・種族で出し分け）→ 初回報酬 → ランクアップ（Final D→C）→ セドリックの締め（booth_D）→ 次の画面', { skip: SKIP, timeout: 180000 }, async () => {
+  const p = await openPage({ size: H.SIZES.base, npc: true, tourfx: true }); const pg = p.page;
+  await H.newGame(pg, 'テスト');
+  await pg.evaluate(() => {
+    const T = []; window.__T = T; const t0 = performance.now(); const seen = new Set();
+    new MutationObserver(() => { for (const [k, sel] of [['victory', '.p9vic'], ['reward', '.mmnote'], ['rankup', '.p9ruf'], ['cedric', '.mmtalk-scene']]) { const el = document.querySelector(sel); if (el && !seen.has(k)) { seen.add(k); T.push([k, Math.round(performance.now() - t0), k === 'victory' ? el.querySelector('.vicmon').getAttribute('src') : k === 'cedric' ? el.querySelector('.mmtalk-scenebg').style.backgroundImage : '']); } } }).observe(document.body, { childList: true, subtree: true });
+    const m = mk(1); m.name = 'ガウ'; Object.assign(m, { li: 999, po: 999, in: 999, hi: 999, ev: 999, de: 999 }); MMP7.ensureProg(m); S.m = m; MMP8.depart(S, m, () => 0.3);
+    const g = MMCH.graphFor(m); Object.assign(m.raise, { node: g.goal, goal: true, pend: null }); m.raise.field.arrivalSeen = true;
+    if (!MMP8.startTournament(S, m, 1, 11).ok) throw new Error('D');
+    while (m.raise.tour.status === 'league') { MMP8.beginBattle(S, m, { kind: 'league', rank: 1 }); S.wins = (S.wins || 0) + 1; MMP8.markBattleDone(S); MMP8.finishBattle(S, m); }
+    save(); board();
+  });
+  for (let i = 0; i < 200; i++) { if (await pg.$('.mmtalk-scene')) break; await pg.waitForTimeout(100); }
+  await pg.waitForTimeout(800); await H.finishTalk(pg);
+  await pg.waitForFunction(() => MMP8.tourEndSeen(S.m.raise.tour.result, 'next'), null, { timeout: 20000 });
+  const r = await pg.evaluate(() => ({ T: window.__T, won: S.m.raise.tour.result.won, seen: S.m.raise.tour.result.endSeen }));
+  assert.equal(r.won, true);
+  assert.deepEqual(r.seen, ['final', 'champion', 'firstReward', 'rankUp', 'cedricEnd', 'next']);
+  const order = r.T.map((x) => x[0]);
+  assert.deepEqual(order.filter((k) => ['victory', 'rankup', 'cedric'].includes(k)), ['victory', 'rankup', 'cedric'], JSON.stringify(r.T));
+  assert.ok(order.indexOf('reward') > order.indexOf('victory') && order.indexOf('reward') < order.indexOf('rankup'), '初回報酬は勝利演出のあと・ランクアップの前：' + JSON.stringify(r.T));
+  assert.match(r.T.find((x) => x[0] === 'victory')[2], /victory\/gauru_victory\.webp$/, 'ガウルの勝利画像');
+  assert.match(r.T.find((x) => x[0] === 'cedric')[2], /cedric\/booth_D\.webp/);
+  assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+});
+
+test('AS8-B8：世界地図の解放の知らせ＝正式の透過アイコン（読み込まれる・市松模様の四角ではない）', { skip: SKIP, timeout: 60000 }, async () => {
+  const p = await openPage({ size: H.SIZES.base }); const pg = p.page;
+  await H.newGame(pg, 'テスト');
+  await pg.evaluate(() => { MMNOTE.show({ img: './assets/ui/worldmap_icon/worldmap_unlock.png', cmd: true, small: true, title: '世界地図が使えるようになった' }); });
+  await pg.waitForSelector('.mmnote .mmnote-ic img'); await pg.waitForTimeout(400);
+  const r = await pg.evaluate(() => { const i = document.querySelector('.mmnote .mmnote-ic img'); const c = document.createElement('canvas'); c.width = i.naturalWidth; c.height = i.naturalHeight; const x = c.getContext('2d'); x.drawImage(i, 0, 0); return { ok: i.naturalWidth > 0, corner: x.getImageData(1, 1, 1, 1).data[3] }; });
+  assert.equal(r.ok, true); assert.equal(r.corner, 0, '角は透明');
+  assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+});

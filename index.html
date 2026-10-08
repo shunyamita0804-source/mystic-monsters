@@ -3653,6 +3653,20 @@ main:has(>#app>.ds) h1{display:none}
 /* 2026-10-08：セドリックの大会前の導入（standing_UI の上部＝opening_X）。高さの 80% に広げていたため大きなアップに見えていた → 元の絵と同じ縮尺（画面の幅に合わせる）で上に置き、絵の下端から会話窓までは濃紺へ溶かす（画像は加工しない） */
 .mmtalk-nofig>.mmtalk-scenebg[style*="opening_"]{--cw:max(100vw,min(118vw,calc((100dvh - 200px)*.768)));background-size:var(--cw) auto;background-position:center top}
 .mmtalk-nofig>.mmtalk-scenebg[style*="opening_"]::after{background:linear-gradient(180deg,rgba(11,22,54,0) 0,rgba(11,22,54,0) calc(var(--cw)*1000/768 - 110px),#0b1636 calc(var(--cw)*1000/768 - 4px),#0b1636 100%)}
+/* 2026-10-08 正式：モンスターの勝利演出（p9VictoryShow）＝会場の上に育てたモンスターの勝利画像。フェード・ごく軽い拡大・短い光だけ */
+.p9vic{position:fixed;inset:0;z-index:960;overflow:hidden;background:#0b1636;cursor:pointer}
+.p9vic .vicbg{position:absolute;inset:0;background:#0b1636 center/cover no-repeat;opacity:0;transition:opacity .35s}
+.p9vic .vicbg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,12,30,.25),rgba(6,12,30,.05) 40%,rgba(6,12,30,.55))}
+.p9vic .vicglow{position:absolute;left:50%;top:52%;width:min(120vw,560px);aspect-ratio:1;transform:translate(-50%,-50%) scale(.7);border-radius:50%;background:radial-gradient(circle,rgba(255,236,170,.6),rgba(255,214,110,.18) 45%,rgba(255,214,110,0) 70%);opacity:0;pointer-events:none}
+.p9vic .vicmon{position:absolute;left:50%;top:52%;height:min(78dvh,620px);width:auto;max-width:96vw;object-fit:contain;transform:translate(-50%,-50%) scale(.94);opacity:0;pointer-events:none}
+.p9vic .vicfl{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(255,250,230,.75),rgba(255,250,230,0) 60%);opacity:0;pointer-events:none}
+.p9vic.go .vicbg{opacity:1}
+.p9vic.go .vicglow{transition:opacity .5s ease .15s,transform .9s cubic-bezier(.2,.9,.3,1) .15s;opacity:1;transform:translate(-50%,-50%) scale(1)}
+.p9vic.go .vicmon{transition:opacity .45s ease .2s,transform .8s cubic-bezier(.2,.9,.3,1) .2s;opacity:1;transform:translate(-50%,-50%) scale(1)}
+.p9vic.go .vicfl{animation:vicfl .6s ease-out .45s both}
+@keyframes vicfl{0%{opacity:0}30%{opacity:.85}100%{opacity:0}}
+.p9vic.calm .vicglow,.p9vic.calm .vicmon{transition:opacity .2s!important;transform:translate(-50%,-50%)!important}.p9vic.calm .vicfl{display:none}
+.p9vic.out{transition:opacity .32s;opacity:0}
 </style></head><body><main>
 <h1>ミスティックモンスターズ</h1>
 <div id="app"></div>
@@ -4170,7 +4184,7 @@ async function opAfterReg(){const f=finaFlags(),n=S.playerName||MMP11P.DEFAULT_N
   await MMNPC.talk(OPEN_TALK.origin(n).concat([]),{kind:"fina",presentation:"compact",branches:{a:OPEN_TALK.originA.concat(OPEN_TALK.mistoria),b:OPEN_TALK.originB.concat(OPEN_TALK.mistoria)},onLine:i=>{const a=act[i];if(a)a()}});
   T.forEach(clearTimeout);if(map)await map.close();
   f.worldMap=1;save();
-  await MMNOTE.show({img:"./assets/ui/cmd/bureau_map.png",cmd:true,small:true,title:"世界地図が使えるようになった",se:"UNLOCK"}); /* 2026-10-07 試遊：短い知らせ・印は聖獣士管理局の正式のコマンドの絵（世界地図）。専用の地図アイコンは素材待ち */ // 2026-10-05 試遊：SE は帯と同時（1000G＝GOLD_GET・薬草＝REWARD・世界地図＝UNLOCK。REWARD と UNLOCK は同じファイル）
+  await MMNOTE.show({img:"./assets/ui/worldmap_icon/worldmap_unlock.png",cmd:true,small:true,title:"世界地図が使えるようになった",se:"UNLOCK"}); /* 2026-10-08 正式：世界地図の解放アイコン（assets/ui/worldmap_icon/＝ユーザーが添付し直した透過 PNG を余白を切り詰めて 256px に） */ /* 2026-10-07 試遊：短い知らせ・印は聖獣士管理局の正式のコマンドの絵（世界地図）。専用の地図アイコンは素材待ち */ // 2026-10-05 試遊：SE は帯と同時（1000G＝GOLD_GET・薬草＝REWARD・世界地図＝UNLOCK。REWARD と UNLOCK は同じファイル）
   await MMNPC.talk(OPEN_TALK.unlock(n),{kind:"event",presentation:"standard",big:true,scene:BUREAU_BG});
  }finally{OP_TALKING=false}
  f.op="done";f.finaIntro=1;f.ryuMet=0;save();opRyu()}
@@ -5201,6 +5215,16 @@ const CEDRIC_EV={
   return[{npc:"cedric",expression:"host",text:`公式ランク${R}大会、これにて閉幕です。${n}は${rs.place}位でした。`},{npc:"cedric",expression:"host",text:"最後まで見事な戦いでした。この経験は、きっと次の大会で力になります。"},{npc:"cedric",expression:"host",text:"皆さん、お疲れさまでした！"}]}};
 const cedricOn=()=>!window.MM_QA_NO_NPC&&!!window.MMNPC;
 const cedricBg=k=>TB_VENUE(k)||P9_LOBBY_BG; // 2026-10-07 追補便：会場は正式の venue_E〜S（セドリックのイベントそのものは CED_SCENE＝opening／booth） // 2026-10-07：セドリックの会話の背景はそのランクの会場（arena_E〜S。UI は共通・ランクの差は会場の背景）
+// 2026-10-08 正式：モンスターの勝利演出＝育てたモンスターの正式の勝利画像（assets/tournament/victory/＝ユーザーが添付し直した透過の切り抜き5体。種族で出し分け）を、そのランクの会場の上に。
+//  短いフェード・ごく軽い拡大・短い光だけ（画像は加工しない）。約2.2秒・タップで先へ（出た直後0.35秒は無視）・視差を減らす設定では動かさず短く。自動テスト（MM_QA_NO_TOURFX）では出さない
+const VICTORY_IMG=["solamo","gauru","nobiton","jiol","regnas"];
+function p9VictoryShow(m,rank){return new Promise(res=>{const k=m&&VICTORY_IMG[m.sp];if(!k||window.MM_QA_NO_TOURFX)return res();const calm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
+ const d=document.createElement("div");d.className="p9vic"+(calm?" calm":"");d.setAttribute("role","img");d.setAttribute("aria-label",`${p11Esc(m.name)}の勝利`);
+ d.innerHTML=`<i class="vicbg" style="background-image:url(${TB_VENUE(rank)})"></i><i class="vicglow"></i><img class="vicmon" src="./assets/tournament/victory/${k}_victory.webp" alt="" draggable="false"><i class="vicfl"></i>`;
+ document.body.appendChild(d);const im=d.querySelector(".vicmon"),T=[];let done=false;const t0=performance.now();
+ const fin=()=>{if(done)return;done=true;T.forEach(clearTimeout);d.classList.add("out");setTimeout(()=>{d.remove();res()},calm?0:320)};
+ d.onclick=()=>{if(performance.now()-t0>350)fin()};
+ Promise.race([im.decode?im.decode().catch(()=>{}):Promise.resolve(),new Promise(r=>setTimeout(r,1200))]).then(()=>{if(done)return;d.classList.add("go");T.push(setTimeout(fin,calm?1200:2200))})})}
 async function p9TourOpen(k){const on=cedricOn();await p9TourIntro(k,on);
  if(on){const f=finaFlags(),first=!f.cedricWelcome;if(first){f.cedricWelcome=1;save()}bgm("cedric");let drawn=false;try{await MMNPC.talk(CEDRIC_EV.open(k,first),{kind:"event",big:true,scene:CED_SCENE(k,"opening"),noFig:true,onClose:()=>{drawn=true;P9_ENTER=true;board()}})}catch(e){}if(drawn)return} // 2026-10-07：大会前の導入の曲（CEDRIC）→ 対戦表で対戦表の曲 // 2026-10-07 試遊：閉じ始めに対戦表を下に描く（会話のフェードの間に受付の画面が一瞬見えていた）
  P9_ENTER=true;board()}
@@ -5212,7 +5236,7 @@ const p9EndWait=ms=>window.MM_QA_NO_TOURFX||(window.matchMedia&&matchMedia("(pre
 const p9EndMark=step=>{const el=document.querySelector(".p9tour.p9end");if(!el)return false;el.classList.add("e-"+step);if(step=="next")el.querySelectorAll(".p9endbtn").forEach(b=>b.disabled=false);return true};
 const p9EndHere=m=>!!document.querySelector(".p9tour.p9end")&&S.m===m;
 MMP8.registerTourEndHook("final",async()=>{const m=S.m;p9EndMark("final");if(p9EndHere(m))await p9EndWait(900)});
-MMP8.registerTourEndHook("champion",async()=>{const m=S.m;p9EndMark("champion");if(p9EndHere(m))await p9EndWait(1900)});   // モンスターの勝利演出（正式画像が跳ねて光る。専用の素材・音は未着）
+MMP8.registerTourEndHook("champion",async()=>{const m=S.m;p9EndMark("champion");if(!p9EndHere(m))return;const t=m.raise&&m.raise.tour;if(window.MM_QA_NO_TOURFX)return p9EndWait(1900);await p9VictoryShow(m,t?t.rank:0)});   // モンスターの勝利演出（2026-10-08：正式の勝利画像）
 MMP8.registerTourEndHook("rankUp",async d=>{P9_END_UP=d;P9_END_FX=false;const m=S.m;p9EndMark("rankUp");
  if(!RANK_UP_ART[d.to]||window.MM_QA_NO_TOURFX)return;   // 2026-10-08 正式：昇格＝D優勝→C・C→B・B→A・A→S。E・D は最初から解放済み＝E→D の昇格は無い（E→D 用の B1〜B7 は使わない・流用しない）。2026-10-08：D→C 以降は正式の RankUp Final（p9RankUpFinal）
  if(!p9EndHere(m))return;await p9RankUpFinal(RANK_UP_ART[d.to],d.to);P9_END_FX=true});

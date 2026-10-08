@@ -79,6 +79,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 | assets/worldmap/ | 世界地図の正式画像 world_map.webp（2026-10-05。ZIP next-phase-assets の world map を WebP 品質86 に） |
 | assets/prologue/ | **2026-10-07 正式6枚＝v2/prologue_01_peace・02_calamity・03_culture・04_legends・05_tournament・06_departure.webp（v2/README.md）**。旧 4 枚（prologue_01_coexistence 〜 04_arrival_mistoria）・旧 A〜E はファイルだけ残す（参照しない） |
 | assets/legends/ | **三人のレジェンドと相棒（2026-10-07 正式）**：astrad・leona・ragnas の full／closeup、zelvarn・griffel・dragnol の monster。データは js/prologue/prologue.js の LEGENDS（アストラッド＋ゼルヴァーン・レオナ＋グリフェル・ラグナス＋ドラグノル）。今は表示する場面なし（将来のレジェンド挑戦）。README.md |
+| assets/tournament/victory・vs_monsters・rankup_final/、assets/ui/market_wood・worldmap_icon/、assets/npc/ryu/expr/、assets/audio/bgm/licensed_20261008/ | **2026-10-08 正式素材の統合・次便**：勝利演出5体・VS 専用勝負絵5体・ランク昇格 Final・市場の木製UI・世界地図の解放アイコン・リュウの表情5種・街の BGM。各 README.md（§3「正式素材の統合・次便」） |
 | assets/battle/arena・idle・roulette/、assets/tournament/faces/ | **2026-10-07**：会場の背景 E〜S・待機立ち絵5体・横型ルーレットの部品（arch・center_frame・stop・plate_normal／selected／miss）・大会の顔アイコン5体（対戦表）。各 README.md |
 | assets/ui/cmd/、assets/ui/market/ | **2026-10-07**：研究所（図鑑・合体・配合表）・聖獣士管理局（聖獣士証・功績一覧・世界地図）・牧場（見る・名前変更・預ける／受け取る・売る）のコマンドの正式画像（data-cmd で CSS の背景）、市場の左右の矢印・会話欄。README.md |
 | assets/tournament/cedric・venues・rank_start・rank_up/ | **大会〜バトル追補便（2026-10-07）**：セドリックの開会（opening＝standing_UI の上部）・締め（booth）・大会会場 venue_E〜S・ランク開始 A1〜A6（E）・ランクアップ B1〜B7（E → D）。README_followup_20261007.md |
@@ -173,7 +174,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - 2026-10-07 夜（BGM 14曲・セドリックの会場背景・UI 再回収）の後：ふだんの実行は 1206件（合格817・skip 389・失敗0。tests/audio-manager.test.mjs に AUDIO-30、AUDIO-22／24・GF-03・PB-01 を新しい BGM に書き直し）
 - 2026-10-08（監査後の仕様確定差分）の後：ふだんの実行は 1237件（合格836・skip 401・失敗0。新しい tests/spec-fix-1008.test.mjs＝SF-01〜08）。実ブラウザ tests/qa-e2e-spec-1008.test.mjs（SF-B1・SF-B2）
 - 2026-10-08（深層監査の修正・第1便）の後：ふだんの実行は 1252件（合格845・skip 407・失敗0。新しい tests/audit-fix-1008.test.mjs＝AF-01〜07）。実ブラウザ tests/qa-e2e-audit-1008.test.mjs（AF-B1〜B6）。stale だった TB-4・QA-G4-B3・JR-6・JR-7・CH1-B14（バトルの案内の見出し＝遭遇の文）・QA-RL4（参加者の札の文字・試合数の見出しが無い対戦表）・CH2-B3（見出し）・JR-14／QA-G3-B6（成長量 A25〜E11）・QA-G2-B3（未習得の技のパネル）を今の画面・仕様に合わせて書き直した。名前の正規化で QA-G4-B1〜B5・QA-NG5・QA-BY13 の期待値を、大会の終わりの順で CED-B1（初めての大会の一言を先に送る・締めの会話の間は結果の画面が隠れる）を合わせた。CH1-B17 の不安定（VS のカットインの枠が画面の外から滑り込む途中で測っていた＝375×667 で 3回に1回）は、両方の枠が画面に入りきって動きが止まってから測る形にした（直したあと 8回連続で合格）
-- 2026-10-08（正式素材の統合・次便）の後：ふだんの実行に tests/assets-1008.test.mjs（AS8-01〜05）・AUDIO-34。実ブラウザ tests/qa-e2e-assets-1008.test.mjs（AS8-B1〜B6）。文字列で確かめていた TN-03b・TF-02・SF-05 相当（RANK_UP_ART）・PH-05・TR-08・AUDIO-24 を書き直した
+- 2026-10-08（正式素材の統合・次便）の後：ふだんの実行に tests/assets-1008.test.mjs（AS8-01〜07）・AUDIO-34。実ブラウザ tests/qa-e2e-assets-1008.test.mjs（AS8-B1〜B6）。文字列で確かめていた TN-03b・TF-02・SF-05 相当（RANK_UP_ART）・PH-05・TR-08・AUDIO-24 を書き直した
 - 2026-10-08（深層監査の修正・第2便）の後：ふだんの実行は 1268件（合格849・skip 419・失敗0。AUDIO-32〜33・BR-09 を追加）。実ブラウザ tests/qa-e2e-prod-1008.test.mjs（PR-B1＝本番の設定で大会を最後まで・PR-B2＝野生の練習試合と降参・PR-B3／B4＝メニューと8体の対戦表 4サイズ・PR-B5＝壊れた大会データ・mr4ng）。文字列で確かめていた T2-2・T4-2・PH-01・QU-05／06・TD-2・S3-6・QA-G4-2 と、仮の大会データ（{ round: 2 }）を使っていた T1-9 を書き直した
 - 2026-10-07 深夜（正式UI回収）の後：ふだんの実行は 1208件（合格819・skip 389・失敗0。新しい tests/ui-recovery-1007.test.mjs）
 - **テスト運用（2026-10-01 正式）**：ふだんの開発は「実装 → 関連テスト → commit → push → public-check」。51ファイルの全件実ブラウザテストを push の前提にしない（大きな節目では push の後に全件を回す）。既知の不安定なテストが落ちたら、変更との関係を確かめ、明らかに不安定なものだけ1回再実行して合格なら既知として報告する（何度も再実行しない）。小さな修正では公開版の手動操作確認は不要で public-check を基本にする。
@@ -616,8 +617,9 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - **市場の木製UI**（assets/ui/market_wood/＝中央の札・左右の札・左右のナビ）：木の札は平たいので名前と価格を1行に、「タップでくわしく」は中央の札のすぐ下（札を 15px 上げた）。カルーセル（中央100%・左右70%・ループ・スワイプ・矢印・ドット）と処理は変えていない。旧 recovery_1006/market の札・矢印はファイルだけ残す
 - **VS の専用勝負絵**（assets/tournament/vs_monsters/＝5体・512×512 の透過 WebP・5体とも右向き）：大会3（tourVsShow）の tbVs。向きは待機立ち絵と同じ規則（自分＝右向き・相手＝モンスターの絵だけ反転。背景・文字・UI は反転しない）。大会2（比較）・バトル画面は従来の待機立ち絵。バトル側の導入（intro）は従来どおり出さない
 - **ランク昇格 Final**（assets/tournament/rankup_final/＝段階ごとに letter・frame・fx・plaque）：RANK_UP_ART＝{1:E_to_D, 2:D_to_C, 3:C_to_B, 4:B_to_A, 5:A_to_S}（昇格で新しく選べるランク → 段階）・p9RankUpFinal（光 → 枠 → 文字 → 解放の札「ランクX大会 解放！」＝HTML。約3.4秒・タップで飛ばせる・視差を減らす設定では動かさない）。旧 B1〜B7 は使わない。昇格の規則・大会の終わりの順・報酬は変えていない（E・D は最初から解放＝**E_to_D は定義だけ**で今の規則では流れない）
-- **保留（ユーザーが添付し直す）**：モンスターの勝利画像5枚（solamo・gaul・nobiton・geol・legnas_victory.png）と世界地図の解放アイコン＝どちらも RGB で市松模様が画素として焼き込まれていた。勝利演出は従来の CSS の仮演出のまま
-- テスト：tests/assets-1008.test.mjs（AS8-01〜05）・AUDIO-34、実ブラウザ tests/qa-e2e-assets-1008.test.mjs（AS8-B1＝E と B のセドリック・B2＝VS・B3＝RankUp Final・B4＝リュウ・B5＝市場・B6＝街の BGM）
+- **モンスターの勝利演出**（assets/tournament/victory/＝5体。最初の ZIP の5枚は RGB で市松模様が焼き込まれていた＝ユーザーが透過の切り抜き missmon_victory_png を添付し直した）：大会の終わりの champion の段階（優勝のとき）に index.html の p9VictoryShow＝そのランクの会場（venue_X）の上に、育てたモンスターの勝利画像（VICTORY_IMG＝m.sp で出し分け）を短いフェード・ごく軽い拡大・短い光で約2.2秒（タップで先へ・視差を減らす設定では動かさない・自動テスト MM_QA_NO_TOURFX では出さない）。旧 CSS の仮演出（結果の画面の .p9wmon が跳ねる）は残るが、その上に正式の演出が重なる。終わりの順（最終順位 → 勝利演出 → 初回報酬 → ランクアップ → セドリックの締め → 次の画面）は変えていない
+- **世界地図の解放アイコン**（assets/ui/worldmap_icon/worldmap_unlock.png。添付し直した透過 PNG の余白を切り詰めて 256px）：世界地図の解放の知らせ（MMNOTE）。旧：管理局のコマンドの絵で代用
+- テスト：tests/assets-1008.test.mjs（AS8-01〜05）・AUDIO-34、実ブラウザ tests/qa-e2e-assets-1008.test.mjs（AS8-B1＝E と B のセドリック・B2＝VS・B3＝RankUp Final・B4＝リュウ・B5＝市場・B6＝街の BGM・B7＝D 優勝の終わりの順と勝利演出・B8＝世界地図のアイコン）。AS8-06〜07＝勝利演出・地図アイコン
 
 ### 深層監査の修正・第2便（2026-10-08。いまの正式。基準 1bfd8b2 への差分）
 

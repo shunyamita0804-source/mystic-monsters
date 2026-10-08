@@ -85,7 +85,7 @@ test('TR-08：リュウ（正式の全身）＋レグナス（正式の相棒）
   assert.equal(r.moves.list.length, 10, '2026-10-05：正式技10個'); assert.equal(r.playerAvailable, false);
   assert.ok(!M.SPECIES.some((x) => x.key === 'regnas'), 'プレイヤー用の種族の表には入れない'); assert.equal(M.SPECIES.length, 4);
   assert.ok(!JSON.stringify(M.MARKET_CATALOG).includes('regnas'), '市場に出さない');
-  assert.doesNotMatch(HTML.replace(/\/\/[^\n]*|\/\*[\s\S]*?\*\//g, '').replace(/const TB_VS=\[[^\]]*\];/, ''), /regnas|レグナス/, '図鑑・合体・初期選択・牧場（index.html）には出さない（2026-10-08：大会3 VS の専用勝負絵の表 TB_VS だけは例外＝ライバル戦の相手の絵）');
+  assert.doesNotMatch(HTML.replace(/\/\/[^\n]*|\/\*[\s\S]*?\*\//g, '').replace(/const (TB_VS|VICTORY_IMG)=\[[^\]]*\];/g, ''), /regnas|レグナス/, '図鑑・合体・初期選択・牧場（index.html）には出さない（2026-10-08：大会3 VS の専用勝負絵の表 TB_VS だけは例外＝ライバル戦の相手の絵）');
   assert.doesNotMatch(rd('js/phase7/progression.js'), /regnas/, '合体の規則に入れない');
   const C = rd('js/chapter/configs/ch1a.js'); assert.match(C, /encounterFigure: 'rival_ryu', encounterPartner: 'rival_regnas'/);
   const rv = {}; new Function('window', rd('js/phase8/rival.js'))(rv); assert.equal(rv.MMRIVAL.CONFIG.partner, 'regnas');

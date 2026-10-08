@@ -53,3 +53,16 @@ test('AS8-05：リュウの表情5種（closeup）。全身は従来の正式の
   assert.deepEqual([...r.matchAll(/npc:"ryu",expression:"(\w+)"/g)].map((m) => m[1]), ['surprise', 'confident', 'soft_smile', 'serious', 'confident']);
   for (const t of ['あれ？ フィナじゃないか！', '決まってるだろ。聖獣士になりに来たんだよ。……で、そっちは？', 'へえ、新人か。よろしくな、${n}。', 'オレは先に『はじまりの草原』へ行ってる。追いつけるもんなら、追いついてみな！']) assert.ok(r.includes(t), t);
 });
+
+test('AS8-06：モンスターの勝利演出＝種族ごとの正式の勝利画像（透過）を会場の上に。大会の終わりの順（final → champion → firstReward → rankUp → cedricEnd）は変えない', () => {
+  assert.match(HTML, /const VICTORY_IMG=\["solamo","gauru","nobiton","jiol","regnas"\];/);
+  for (const k of ['solamo', 'gauru', 'nobiton', 'jiol', 'regnas']) assert.ok(ex(`assets/tournament/victory/${k}_victory.webp`), k);
+  assert.match(HTML, /src="\.\/assets\/tournament\/victory\/\$\{k\}_victory\.webp"/);
+  assert.match(HTML, /registerTourEndHook\("champion",async\(\)=>\{const m=S\.m;p9EndMark\("champion"\);if\(!p9EndHere\(m\)\)return;const t=m\.raise&&m\.raise\.tour;if\(window\.MM_QA_NO_TOURFX\)return p9EndWait\(1900\);await p9VictoryShow\(m,t\?t\.rank:0\)\}\);/);
+  assert.match(rd('js/phase8/raising.js'), /TOUR_END_STEPS = Object\.freeze\(\['final', 'champion', 'firstReward', 'rankUp', 'cedricEnd', 'legendUnlock', 'next'\]\)/);
+});
+
+test('AS8-07：世界地図の解放アイコン（透過・意匠は変えない）', () => {
+  assert.ok(ex('assets/ui/worldmap_icon/worldmap_unlock.png'));
+  assert.match(HTML, /MMNOTE\.show\(\{img:"\.\/assets\/ui\/worldmap_icon\/worldmap_unlock\.png",cmd:true,small:true,title:"世界地図が使えるようになった",se:"UNLOCK"\}\)/);
+});
