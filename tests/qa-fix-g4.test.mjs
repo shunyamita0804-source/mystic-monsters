@@ -114,7 +114,7 @@ test('QA-G4-2：モンスター名を画面に出すところ（fight()・バト
 });
 
 test('QA-G4-3：モンスターカード・合体の枠・ステータス・セーブスロットの表示で、名前は文字のまま（ふつうの名前は以前と同じ表示）', () => {
-  const env = new Function('msv', 'MMP8', `const KS=["li"],LAB={li:"ライフ"},RN=["E","D","C","B","A","S"];${ESC}\n${lineOf('const mcard=')}\n${lineOf('const slot=')}\n${lineOf('const stat=')}\n${lineOf('const slab=')}\nreturn {mcard,slot,stat,slab};`)(() => '<i class="mv"></i>', { rankLabel: () => 'E' });
+  const env = new Function('msv', 'MMP8', `const KS=["li"],LAB={li:"ライフ"},RN=["E","D","C","B","A","S"],GCOIN="🪙";${ESC}\n${lineOf('const mcard=')}\n${lineOf('const slot=')}\n${lineOf('const stat=')}\n${lineOf('const slab=')}\nreturn {mcard,slot,stat,slab};`)   /* GCOIN は 2026-10-08 から画像（ここでは従来の印で比べる） */(() => '<i class="mv"></i>', { rankLabel: () => 'E' });
   for (const n of [CM, BOLD, XSS]) {
     const m = { name: n, li: 100, prog: {} };
     for (const k of ['mcard', 'slot', 'stat']) { const h = env[k](m); assert.ok(h.includes(`<b>${esc(n)}</b>`), `${k}：${n}`); assert.ok(!h.includes(n), `${k}：${n} を素通ししない`); }

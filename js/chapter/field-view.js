@@ -525,7 +525,7 @@
    * HUD（2026-10-03 品質向上で全面刷新）：上に細い進行ライン（START → GOAL。今の位置に育成中の子の小さな顔。進み具合は MMCH.progressOf＝道の上の位置）、
    *  その下に小さな情報のチップ（Turn・疲れ・所持金・特訓チケット）。背景を隠しすぎない。id（chturn・chfat・chgold）と .chh-turn・.chh-menu は従来どおり
    */
-  const COIN_SVG = '<svg class="chh-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="#e6bf62" stroke="#8a611f" stroke-width="1"/><circle cx="12" cy="12" r="7.6" fill="none" stroke="#9c7430" stroke-width="1"/><path d="M12 7.2l1.4 3 3.2.3-2.4 2.1.7 3.2L12 14.2l-2.9 1.6.7-3.2-2.4-2.1 3.2-.3z" fill="#fff4c4" stroke="#9c7430" stroke-width=".6"/></svg>';   // 街のプロフィールと同じ硬貨の印（#tic-coin と同じ形）
+  const COIN_SVG = '<img class="chh-ic" src="./assets/ui/gold/coin.png" alt="" aria-hidden="true" draggable="false">';   // 2026-10-08 正式：お金（ゴールド）のアイコン（旧：SVG の硬貨）
   function faceSrc(m) { const sp = root.MMP10M && MMP10M.byId ? MMP10M.byId(m.sp) : null; return sp && sp.image ? sp.image.src : ''; }
   function hudHtml(m) {
     const r = m.raise, cfg = V.cfg, fat = MMCH.fatigue(m), lv = fat >= 80 ? 'hi' : fat >= 50 ? 'mid' : 'lo';

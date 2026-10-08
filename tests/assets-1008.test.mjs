@@ -66,3 +66,14 @@ test('AS8-07：世界地図の解放アイコン（透過・意匠は変えな�
   assert.ok(ex('assets/ui/worldmap_icon/worldmap_unlock.png'));
   assert.match(HTML, /MMNOTE\.show\(\{img:"\.\/assets\/ui\/worldmap_icon\/worldmap_unlock\.png",cmd:true,small:true,title:"世界地図が使えるようになった",se:"UNLOCK"\}\)/);
 });
+
+test('AS8-08：お金（ゴールド）のアイコン＝assets/ui/gold/coin.png に統一（市場・HUD・プロフィール・牧場・ファーム・ステータス・賞金・セーブ・通知）。札に描かれた旧い硬貨の上にも重ねる', () => {
+  assert.ok(ex('assets/ui/gold/coin.png'));
+  assert.match(HTML, /const GCOIN_SRC="\.\/assets\/ui\/gold\/coin\.png",GCOIN=`<img class="gcoin" src="\$\{GCOIN_SRC\}"/);
+  assert.match(HTML, /const P10_COIN=`<img class="p10coin gcoin" src="\$\{GCOIN_SRC\}"/);
+  assert.match(rd('js/chapter/field-view.js'), /const COIN_SVG = '<img class="chh-ic" src="\.\/assets\/ui\/gold\/coin\.png"/);
+  for (const t of ['<div class="dmoney">${GCOIN} ${S.g}G</div>', '<span class="rncoin">${GCOIN}</span>', '<div class="ppgold">${GCOIN} ${S.g}G</div>', '<div class="it">${GCOIN} 賞金', '["所持金",()=>`${GCOIN}${S.g}']) assert.ok(HTML.includes(t), t);
+  const ui = HTML.replace(/<script[\s\S]*?<\/script>/g, (x) => x.replace(/txt:"[^"]*"|t=f\.ev[^;]*;/g, ''));
+  assert.doesNotMatch(ui.replace(/^.*(QA|テスト).*$/gm, ''), /<div class="(dmoney|ppgold)">🪙|<span>🪙 \$\{S\.g\}G/);
+  for (const sel of ['.mmnote-ic.gold{background:url(./assets/ui/gold/coin.png)', '.sts .stgold i{background:url(./assets/ui/gold/coin.png)', '.fm.bc .bcgold::after,.isp-gold::after{content:""', '.p10mk .p10who::after{content:""', '.svs .card.slot.svauto::after{content:""']) assert.ok(HTML.includes(sel), sel);
+});

@@ -619,7 +619,8 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - **ランク昇格 Final**（assets/tournament/rankup_final/＝段階ごとに letter・frame・fx・plaque）：RANK_UP_ART＝{1:E_to_D, 2:D_to_C, 3:C_to_B, 4:B_to_A, 5:A_to_S}（昇格で新しく選べるランク → 段階）・p9RankUpFinal（光 → 枠 → 文字 → 解放の札「ランクX大会 解放！」＝HTML。約3.4秒・タップで飛ばせる・視差を減らす設定では動かさない）。旧 B1〜B7 は使わない。昇格の規則・大会の終わりの順・報酬は変えていない（E・D は最初から解放＝**E_to_D は定義だけ**で今の規則では流れない）
 - **モンスターの勝利演出**（assets/tournament/victory/＝5体。最初の ZIP の5枚は RGB で市松模様が焼き込まれていた＝ユーザーが透過の切り抜き missmon_victory_png を添付し直した）：大会の終わりの champion の段階（優勝のとき）に index.html の p9VictoryShow＝そのランクの会場（venue_X）の上に、育てたモンスターの勝利画像（VICTORY_IMG＝m.sp で出し分け）を短いフェード・ごく軽い拡大・短い光で約2.2秒（タップで先へ・視差を減らす設定では動かさない・自動テスト MM_QA_NO_TOURFX では出さない）。旧 CSS の仮演出（結果の画面の .p9wmon が跳ねる）は残るが、その上に正式の演出が重なる。終わりの順（最終順位 → 勝利演出 → 初回報酬 → ランクアップ → セドリックの締め → 次の画面）は変えていない
 - **世界地図の解放アイコン**（assets/ui/worldmap_icon/worldmap_unlock.png。添付し直した透過 PNG の余白を切り詰めて 256px）：世界地図の解放の知らせ（MMNOTE）。旧：管理局のコマンドの絵で代用
-- テスト：tests/assets-1008.test.mjs（AS8-01〜05）・AUDIO-34、実ブラウザ tests/qa-e2e-assets-1008.test.mjs（AS8-B1＝E と B のセドリック（booth）・B2＝VS・B3＝RankUp Final・B4＝リュウ・B5＝市場・B6＝街の BGM・B7＝D 優勝の終わりの順と勝利演出・B8＝世界地図のアイコン）。AS8-06〜07＝勝利演出・地図アイコン
+- **お金（ゴールド）のアイコン**（assets/ui/gold/coin.png＝ユーザー提供の透過 PNG を 128px に）：index.html の GCOIN・P10_COIN・field-view の COIN_SVG。市場の価格・Chapter の HUD・プロフィール・牧場・ファームの各画面・出発準備・ステータス・大会の初回賞金・セーブスロット・通知の帯の「G」をこの1つに統一。札の絵に旧い硬貨が描かれている所（A-05＝ベースキャンプ・アイテム屋の所持金、市場のプレイヤーの札、B-07＝オートセーブ）は硬貨の上に重ねる（札は加工しない）。文章の中の「🪙」の絵文字はそのまま
+- テスト：tests/assets-1008.test.mjs（AS8-01〜05・08）・AUDIO-34、実ブラウザ tests/qa-e2e-assets-1008.test.mjs（AS8-B1＝E と B のセドリック（booth）・B2＝VS・B3＝RankUp Final・B4＝リュウ・B5＝市場・B6＝街の BGM・B7＝D 優勝の終わりの順と勝利演出・B8＝世界地図のアイコン）。AS8-06〜07＝勝利演出・地図アイコン
 
 ### 深層監査の修正・第2便（2026-10-08。いまの正式。基準 1bfd8b2 への差分）
 
