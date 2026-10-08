@@ -244,7 +244,7 @@ test('S3-5：育成中は預け／受け取り／合体／市場／街などを�
 
 test('S3-6：起動・再読み込みは街を経由せず育成状態へ復帰／中断はターンを消費しない', () => {
   const { P7, P8 } = load(); const S = raisingSave(P7, P8);
-  assert.match(fnLine('function startGame('), /setTimeout\(\(\)=>\{if\(P_NEWGAME\)\{P_NEWGAME=false;sel=\[\];S=p10NewSave\(\);save\(\)\}p8Resume\(\);[^\n]*\},500\)\}/, 'タイトルから p8Resume へ（「はじめから」で来たときだけ、ここで新しいゲームに初期化）');
+  assert.match(fnLine('function startGame('), /setTimeout\(\(\)=>\{try\{if\(P_NEWGAME\)\{P_NEWGAME=false;sel=\[\];S=p10NewSave\(\);save\(\)\}p8Resume\(\)\}catch\(e\)\{resumeFailed\(e\)\}finally\{[^\n]*\},500\)\}/, 'タイトルから p8Resume へ（「はじめから」で来たときだけ、ここで新しいゲームに初期化。2026-10-08 M-15：例外でも暗転を外す）');
   const sus = fnLine('function p8Suspend(');
   assert.match(sus, /save\(\);title\(\)/); assert.doesNotMatch(sus, /MMP8\.(roll|step|depart)/, '中断で進行を動かさない');
   const go = [];

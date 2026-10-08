@@ -404,7 +404,7 @@ T('QA-RB7：☰メニュー →「中断」→ 開始画面（つづきから）
   await pg.click('.chh-menu');
   await pg.waitForSelector('#p9ov');
   const items = await pg.evaluate(() => [...document.querySelectorAll('#p9ov .p8menu button')].map((b) => b.textContent.trim()));
-  assert.deepEqual(items, ['📊 ステータス', '⚔️ わざ', '⏸ 中断', '🏳 育成放棄'], 'フィールドではマスの説明（旧ボードの凡例）は出さない');
+  assert.deepEqual(items, ['📊 ステータス', '⚔️ 技管理', '⏸ 中断', '🏳 育成放棄'], 'フィールドではマスの説明（旧ボードの凡例）は出さない');
   await pg.waitForTimeout(SETTLE);
   await pg.click('#p9ov button[onclick*="p8Suspend"]');
   await pg.waitForSelector('.p15start');

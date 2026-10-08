@@ -30,7 +30,7 @@ test('PH-01：ベースキャンプ＝正式背景マスター（768×1360・UI 
   assert.doesNotMatch(f, /bctix|チケット \$\{S\.trainTix\}/, '2026-10-06：特訓の上のチケットの札は出さない（正式に削除済み）');
   assert.match(HTML, /\["ベースキャンプ","育成","#tic-farm","hall\(\)"/, '街の下のバーも「ベースキャンプ」');
   assert.match(HTML, /\.fm\.fm2\.bc \.bcbar\{[^}]*grid-template-columns:repeat\(5,1fr\)/, '下は1列');
-  assert.match(fnOf('bcMenu'), /p8AbandonAsk\(\)">育成放棄<\/button>`:""/, '育成放棄はメニューの中（2段階の確認は従来どおり）');
+  assert.match(fnOf('bcMenu'), /p8AbandonAsk\(\)">🏳 育成放棄<\/button>`:""/, '育成放棄はメニューの中（2段階の確認は従来どおり）');
 });
 
 test('PH-02：牧場は最大8体（2026-10-06。MMP10M.RANCH_LIMIT。所持上限＝8＋連れている1）。2列の一覧だけがスクロールし、見る・名前変更・受け取る（預ける）・売る。合体は置かない', () => {

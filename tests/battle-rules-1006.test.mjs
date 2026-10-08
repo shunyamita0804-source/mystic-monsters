@@ -233,3 +233,35 @@ test('BR-08：Phase 6（fight()・battle-bridge・adapter）に触れない・�
   assert.doesNotMatch(HTML.replace(/<[^>]*base64[^>]*>/g, ''), /10000G/, '10000G にしない');
   assert.match(HTML, /\{icon:"gold",text:"1000G"\}/);   // 2026-10-07 試遊：1000G と薬草は1つの帯
 });
+
+test('BR-09：2026-10-08 監査 M-13：ライバル戦で蒼銀の反撃の上乗せダメージで初めて20%以下になったら、その行動の直後にソラモが構える（1行動遅れない）。上乗せは1回だけ（外側の包みで二度足さない）。ジオルの耐えは上乗せのあとに判定', () => {
+  const E = load();
+  E.ctx.setTimeout = () => 0;   // 「蒼銀の反撃！」の札（0.72秒後の表示）は出さない
+  vm.runInContext('var IMG=["0","1","2","3"];var SPECIAL_MOVES=new Set();var Image=function(){};var matchMedia=()=>({matches:false});', E.ctx);
+  vm.runInContext(rd('js/battle/rival-partner.js'), E.ctx);
+  const RP = E.ctx.MMRP;
+  // 上乗せなしのダメージを測る
+  let b = battle(E, unit('ソラモ', 0, { li: 100 }), unit('レグナス', 4, {}));
+  const d = b.act('B', 0).damage; assert.ok(d > 0 && d < 60, 'ダメージ ' + d);
+  const extra = Math.round(d * 1.2) - d; assert.ok(extra >= 1);
+  // 本番：BPL＝レグナス戦。ソラモ（A）が攻撃をかわして反撃を構えさせる → ライフを「上乗せなしなら 21 残る」値に
+  b = battle(E, unit('ソラモ', 0, { li: 100 }), unit('レグナス', 4, {}));
+  RP._swap(b.pl); E.ctx.BPL = b.pl;
+  RP._onAction({ session: b.sess, move: { power: 80 } }, { actor: 'A', target: 'B', hit: false, damage: 0 });
+  b.sess.currentLife.A = 21 + d;
+  const r = b.act('B', 0);
+  assert.equal(r.damage, d + extra, '上乗せ（×1.20）'); assert.equal(r.counter, true);
+  assert.ok(b.sess.currentLife.A <= 20 && b.sess.currentLife.A > 0, 'ライフ ' + b.sess.currentLife.A);
+  assert.equal(b.st.armed.A, true, '上乗せで20%以下になった行動の直後に構える');
+  // 外側の包み（ライバル戦の wrapBattle）が同じ結果にもう一度呼んでも足さない
+  const life = b.sess.currentLife.A; RP._onAction({ session: b.sess, move: { power: 80 } }, r);
+  assert.equal(b.sess.currentLife.A, life); assert.equal(r.damage, d + extra);
+  // ジオル：反撃の上乗せで倒れる攻撃にも、耐えの判定が効く（1度だけライフ1）
+  b = battle(E, unit('ジオル', 3, { li: 100 }), unit('レグナス', 4, {}));
+  RP._swap(b.pl); E.ctx.BPL = b.pl;
+  RP._onAction({ session: b.sess, move: { power: 80 } }, { actor: 'A', target: 'B', hit: false, damage: 0 });
+  const dj = battle(E, unit('ジオル', 3, { li: 100 }), unit('レグナス', 4, {})).act('B', 0).damage;
+  b.sess.currentLife.A = dj + 1;   // 上乗せがあるときだけ倒れる
+  const rj = b.act('B', 0, () => 0.05);
+  assert.deepEqual([rj.ko, b.sess.currentLife.A, rj.endured], [false, 1, true]);
+});

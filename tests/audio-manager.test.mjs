@@ -560,3 +560,26 @@ test('AUDIO-31：2026-10-08（監査 L-22）：曲を止めた（stopBgm＝フ�
   e2.A.unlock(); e2.A.scene('PROLOGUE_1'); await tick(10); e2.A.scene('PROLOGUE_2'); await tick(30); e2.A.stopBgm({ fade: 'normal' }); e2.A.scene('TOWN'); await tick(10);
   assert.equal(e2.log.audios.find((x) => x.src === './bgm/PROLOGUE_2.ogg') ? 1 : 0, 1, 'あとからフェードを始めた PROLOGUE_2 は残る');
 });
+
+test('AUDIO-32：2026-10-08（監査 M-11）：1回きりの曲（対戦前比較のジングル）が鳴り終わったあと、タップ（unlock）で頭から鳴らし直さない。ループ曲の中断からの復帰は従来どおり', async () => {
+  const { A, log } = env(); legacySpy(A);
+  A.registerBgm('TOURNAMENT_MATCHUP', './bgm/jingle.ogg', { gain: 0.6, loop: false }); A.registerBgm('TOWN', './bgm/town.ogg');
+  A.unlock(); A.scene('TOURNAMENT_MATCHUP'); await tick(30);
+  const j = log.audios.find((x) => x.src === './bgm/jingle.ogg'); assert.ok(j && !j.paused); const n = j.plays;
+  j.ended = true; j.paused = true; j.emit('ended');   // 鳴り終わった
+  A.unlock(); A.unlock(); await tick(10);
+  assert.equal(j.plays, n, 'タップで play() を呼ばない'); assert.equal(j.paused, true);
+  // ループ曲が中断で止まった（ended ではない）なら、タップで続きから
+  A.scene('TOWN'); await tick(A.FADE.normal + 80);
+  const t = log.audios.find((x) => x.src === './bgm/town.ogg'); t.paused = true; const m = t.plays;
+  A.unlock(); await tick(10); assert.equal(t.plays, m + 1, '中断したループ曲は再開する');
+});
+
+test('AUDIO-33：2026-10-08（監査 M-12）：プロローグ Scene 5 の曲は頭の無音（0.88秒）を飛ばして 0.38秒から（先に鳴らす 0.5秒と合わせて、Scene の切り替えの瞬間に音が出る）。ほかの Scene は頭から', () => {
+  const src = rd('js/audio/audio-registry.js');
+  assert.match(src, /PROLOGUE_5: \{ src: LIC \+ '05_prologue_tournament\.ogg', gain: 0\.42, loop: false, start: 0\.38 \}/);
+  for (const n of [1, 2, 3, 4, 6]) assert.doesNotMatch(src.split('\n').find((l) => l.includes(`PROLOGUE_${n}:`)), /start:/, `PROLOGUE_${n} は頭から`);
+  assert.match(HTML, /const PRO_AUDIO_LEAD=500;/);
+  const { A, log } = env(); legacySpy(A); A.registerBgm('PROLOGUE_5', './bgm/p5.ogg', { loop: false, start: 0.38 }); A.unlock(); A.scene('PROLOGUE_5');
+  assert.ok(log.audios.some((x) => x.src === './bgm/p5.ogg#t=0.38'), 'メディアフラグメント #t=0.38 で読む');
+});

@@ -157,13 +157,13 @@ test('T1-8：通常ルートでゴールすると、その章の公式大会（�
 });
 
 test('T1-9：旧仮マップ（旧CH1）途中のv6セーブは同じChapterの開始地点・0ターンから／大会中なら大会を続ける', () => {
-  const { P7, P8 } = load();
+  const { P7, P8, LG } = load();
   const S = P8.newSave(); S.m = P8.initIndividual(S, mon(P7));
   Object.assign(S.m.raise, { state: 'board', ch: 1, node: 'm7', turnsUsed: 9, turnLimit: 20, pend: { roll: 2, left: 1, stage: 'move' } });
   const T = P8.migrateSave(j(S));
   assert.deepEqual(P8.ensureBoardPosition(T, T.m), { changed: true });
   assert.deepEqual([T.m.raise.node, T.m.raise.turnsUsed, T.m.raise.pend], ['S', 0, null]);
-  Object.assign(S.m.raise, { node: 'goal', turnsUsed: 11, pend: null, goal: true, tour: { rank: 1, status: 'league', league: { round: 2 }, result: null } });
+  Object.assign(S.m.raise, { node: 'goal', turnsUsed: 11, pend: null, goal: true, tour: { rank: 1, status: 'league', league: Object.assign(LG.createLeague(1, 7, 'テスト'), { round: 2 }), result: null } });   // 2026-10-08 M-15：読み込みの検査に通る本物の大会データ（旧：{ round: 2 } だけの仮の形）
   const U = P8.migrateSave(j(S)); P8.ensureBoardPosition(U, U.m);
   assert.deepEqual([U.m.raise.node, U.m.raise.goal, U.m.raise.turnsUsed, U.m.raise.tour.league.round], ['G', true, 11, 2], '大会は失わない');
 });
@@ -191,7 +191,7 @@ test('T2-2：ボードのHUD：Chapter番号・Chapter名（折り返さない�
   assert.match(hud, /MMP8\.rankLabel\(m\)/); assert.match(hud, /p8TurnText\(m\)/); assert.match(hud, /\$\{p8Hud\(/); assert.match(hud, /onclick="p9Menu\(\)"/);
   assert.match(HTML, /\.p9plq \.nm\{[^}]*white-space:nowrap/, 'Chapter名は1行で表示');
   assert.match(fnLine('function p8Hud('), /MMP9ART\.ticketIcon\(/, '修行チケットは絵文字ではなくチケットの絵');
-  assert.match(fnLine('function p8BoardMenu('), /ステータス[\s\S]*わざ[\s\S]*マスの説明[\s\S]*中断[\s\S]*育成放棄/);
+  assert.match(fnLine('function p8BoardMenu('), /ステータス[\s\S]*技管理[\s\S]*マスの説明[\s\S]*中断[\s\S]*育成放棄/);
 });
 
 test('T2-3：分岐：ルート種別（通常ルート・近道・寄り道）・ルート名・合流までのマス数・この先のマスを表示し、地図のマスをタップしても選べる', () => {
@@ -331,7 +331,7 @@ test('T4-2：ベースキャンプ（旧ファーム。2026-10-04 PHASE H2）の
   // 上：名札・所持金・メニュー・音。育成放棄はメニューの中（2段階確認＋3秒は p8AbandonAsk のまま）
   assert.match(f, /<b>ベースキャンプ<\/b>/); assert.match(f, /<span class="bcgold"><i aria-hidden="true"><\/i><b>\$\{S\.g\}<\/b> G<\/span><button class="bcrb" onclick="bcMenu\(\)"/); assert.match(f, /onclick="sndToggle\(\);/);
   const menu = between('function bcMenu(){', '\nfunction fmScr(msg){');
-  assert.match(menu, /st=="farm"\?`<button class="fmab p8danger" onclick="p9MenuClose\(\);p8AbandonAsk\(\)">育成放棄<\/button>`:""/);
+  assert.match(menu, /st=="farm"\?`<button class="p8danger" onclick="p9MenuClose\(\);p8AbandonAsk\(\)">🏳 育成放棄<\/button>`:""/);   // 2026-10-08 M-09：冒険中のメニューと同じ部品・名前
   assert.doesNotMatch(f, /ファームメニュー|market\(|museum\(|farm\(\)/);
 });
 test('T4-3：ベースキャンプの中央：正式背景（UI・NPC なし）・ダン（正式素材の立ち絵）と育成中の個体（正式画像・名前と種族の小さな札）とダンの一言。大会ランク・6能力・「育成準備中」の大きな情報欄は出さない', () => {

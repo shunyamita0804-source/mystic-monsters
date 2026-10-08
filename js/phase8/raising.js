@@ -99,8 +99,19 @@
     && ((p.stage !== 'move' && p.stage !== 'branch') || Number.isInteger(p.left)) && (p.stage !== 'branch' || Array.isArray(p.opts));
   const validTrainRun = (t) => isObj(t) && P7.TRAIN_KINDS.includes(t.kind) && Number.isInteger(t.pos) && t.pos >= 0 && t.pos <= P7.TRAIN_LEN;
   const validBattle = (b) => isObj(b) && isObj(b.snap) && (b.kind === 'practice' || Object.prototype.hasOwnProperty.call(BATTLE_KINDS, b.kind));
+  // 2026-10-08 監査 M-15：大会の途中状態（m.raise.tour）。今のコードが作る形（createLeague・settleTournament）でなければ null＝大会の前（受付）へ戻す（黒い画面で詰まない）
+  const validTour = (t) => {
+    if (!isObj(t) || !Number.isInteger(t.rank) || t.rank < 0 || t.rank >= P7.RANK_COUNT || !['league', 'settled'].includes(t.status)) return false;
+    const lg = t.league; if (!isObj(lg) || !Array.isArray(lg.entrants) || !Array.isArray(lg.rounds) || !Number.isInteger(lg.round)) return false;
+    const n = lg.entrants.length; if (n < 2 || !lg.entrants.every(isObj) || !isObj(lg.entrants[0]) || !lg.entrants[0].player) return false;
+    if (lg.round < 0 || lg.round > lg.rounds.length) return false;
+    const ok = (i) => Number.isInteger(i) && i >= 0 && i < n;
+    if (!lg.rounds.every((rd) => Array.isArray(rd) && rd.every((mt) => isObj(mt) && ok(mt.a) && ok(mt.b) && (mt.winner == null || ok(mt.winner))))) return false;
+    return t.status !== 'settled' || isObj(t.result);
+  };
   function sanitizeLoadedRaise(m) {
     const r = m.raise;
+    if (r.tour != null && !validTour(r.tour)) r.tour = null;
     if (!Number.isFinite(r.fatigue) || r.fatigue < 0 || r.fatigue > 100) r.fatigue = Number.isFinite(r.fatigue) ? Math.max(0, Math.min(100, Math.round(r.fatigue))) : 0;
     if (r.field != null && !isObj(r.field)) r.field = null;
     if (DRIVER && DRIVER.sanitize) DRIVER.sanitize(m);                          // エンジンの配置の検査（壊れた配置は null＝開始地点から作り直す）

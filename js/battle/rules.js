@@ -138,6 +138,9 @@
     if (bh.support) o2.rng = Object.assign({}, opts.rng || {}, { hitRng: () => 0 });   // 純補助技は必ず決まる（基本命中 100%）
     const r = base(o2);
     refreshSameEffects(sess, r);
+    // 2026-10-08 監査 M-13：レグナス「蒼銀の反撃」の上乗せダメージ（js/battle/rival-partner.js）は、固有スキルの判定（ソラモの構え・ジオルの耐え）より前に入れる
+    //  （ライバル戦の外側の包みで後から足すと、上乗せで初めて20%以下になったソラモの構えが1行動遅れ、ジオルの耐えも打ち消される）
+    try { const rp = root.MMRP; if (rp && typeof rp.counter === 'function') rp.counter(opts, r); } catch (e) { /* 演出の失敗でバトルを止めない */ }
     const notes = [];
     // ソラモ「逆境のひと踏ん張り」：構えていれば、この攻撃のダメージを1度だけ ×1.25
     if (SPECIES[spOf(pl, atk)] === 'solamo' && st.armed[atk] && r.hit && r.damage > 0) {

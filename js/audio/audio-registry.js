@@ -36,7 +36,7 @@
     PROLOGUE_2: { src: LIC + '02_prologue_calamity.ogg', gain: 0.35, loop: false },       // 悪魔との戦闘 / 今川彰人オーケストラ（-9.0）
     PROLOGUE_3: { src: LIC + '03_prologue_hopeful.ogg', gain: 0.44, loop: false },        // Hopeful / Fukagawa（-10.9）
     PROLOGUE_4: { src: LIC + '04_prologue_legend_battle.ogg', gain: 0.52, loop: false },  // 高貴なる戦闘 / 香居（-12.4）
-    PROLOGUE_5: { src: LIC + '05_prologue_tournament.ogg', gain: 0.42, loop: false },     // Tournament / Ebunny（-10.4）
+    PROLOGUE_5: { src: LIC + '05_prologue_tournament.ogg', gain: 0.42, loop: false, start: 0.38 },     // Tournament / Ebunny（-10.4）。2026-10-08 監査 M-12：頭に 0.88秒の無音があり、先に鳴らす 0.5秒（PRO_AUDIO_LEAD）を越えて Scene 5 の切り替え直後に約0.38秒の無音＝0.38秒から鳴らす（ファイルは加工しない）
     PROLOGUE_6: { src: LIC + '06_prologue_departure.ogg', gain: 0.68, loop: false },      // Bon Voyage! / HarumachiMusic（-14.7）
     CEDRIC:     { src: LIC + '07_cedric_pre_tournament.ogg', gain: 0.3, loopStart: 0, loopEnd: 378.5, loopXfade: 1 },   // セドリックの大会前の導入：REACH FOR the FATE / Keyta（-9.5 → 会話が聞こえる約 -20）
     ARENA:      { src: LIC + '11_arena_swords_at_midnight_loop.ogg', gain: 0.67 },          // 闘技場の施設の曲：Swords At Midnight Loop（ループ素材・-14.5）。闘技場の画面は未実装（ロック中）＝登録だけで、今はどこからも鳴らさない

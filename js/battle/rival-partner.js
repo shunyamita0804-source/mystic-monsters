@@ -90,6 +90,8 @@
   function onAction(opts, r) {
     const pl = G('BPL');
     if (!pl || !MARK.has(pl) || !r || !opts || !opts.session) return;
+    if (r.__rpDone) return;   // 2026-10-08 監査 M-13：js/battle/rules.js が固有スキルの判定の前に済ませた（外側の包みでもう一度足さない）
+    try { Object.defineProperty(r, '__rpDone', { value: true, enumerable: false }); } catch (e) {}
     if (r.rules && r.rules.blocked) return;   // まひ・ねむりで動けなかった行動は「回避」ではない（js/battle/rules.js）
     const s = opts.session;
     let st = SKILL.get(s);
@@ -282,5 +284,5 @@
     return true;
   }
 
-  window.MMRP = Object.freeze({ install, arm, anim, idOf, learnByToughness, FIRST_ID, SPRITE, POSE, FX, _onAction: onAction, _swap: swap, _mark: MARK, _skill: SKILL });
+  window.MMRP = Object.freeze({ install, arm, anim, counter: onAction, idOf, learnByToughness, FIRST_ID, SPRITE, POSE, FX, _onAction: onAction, _swap: swap, _mark: MARK, _skill: SKILL });
 })();

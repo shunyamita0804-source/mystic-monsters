@@ -469,7 +469,7 @@
     }
     primeSlots();
     if (st.pendingScene) retryPending();
-    else if (st.cur && st.cur.active && st.cur.el.paused) { try { const p = st.cur.el.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {} }   // 中断（電話など）からの復帰
+    else if (st.cur && st.cur.active && st.cur.el.paused && !(st.cur.el.ended && !st.cur.el.loop)) { try { const p = st.cur.el.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {} }   // 中断（電話など）からの復帰（2026-10-08 監査 M-11：鳴り終えた1回きりの曲＝対戦前比較のジングルはタップで鳴らし直さない）
     if (st.source === 'legacy' && st.scene && !isMuted() && legacy && typeof legacy.bgm === 'function') { try { legacy.bgm(st.scene); } catch (e) { note('legacy-bgm', e); } }
   }
   function onVisibility() {
