@@ -72,7 +72,7 @@ test('CH2-B3：会場前のゴール（大会会場の階段の手前）：出�
   await toFarm(pg); await departUI(pg); await idle(pg);
   await place(pg, 'sa_0', { fatigue: 0, turnsUsed: 20 }); await idle(pg);
   await rollAs(pg, 3); await pg.waitForSelector('.chbat', { timeout: 20000 });
-  assert.deepEqual(await pg.evaluate(() => [S.m.raise.node, S.m.raise.pend.left, document.querySelector('.chbat h3').textContent]), ['sa_2', 0, 'ライバルのリュウ'], 'ライバルで止まり残りは消える');
+  assert.deepEqual(await pg.evaluate(() => [S.m.raise.node, S.m.raise.pend.left, document.querySelector('.chbat h3').textContent]), ['sa_2', 0, 'リュウが立ちはだかった！'], 'ライバルで止まり残りは消える（2026-10-08 監査 stale：5e27556 から案内の見出し＝遭遇の文）');
   await pg.waitForTimeout(450); await pg.click('.chbat .p9btn2'); await idle(pg);
   await place(pg, 'sa_3', { fatigue: 10, turnsUsed: 22 }); await idle(pg);
   // 2026-10-04：Chapter 2 のゴールも Chapter 1 と同じランク選択（共通の部品・会場のロビーの背景）

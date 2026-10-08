@@ -13,6 +13,8 @@ import path from 'node:path';
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const rd = (p) => readFileSync(path.join(ROOT, p), 'utf8');
 const HTML = rd('index.html');
+// 2026-10-08（監査 H-05）：index.html の名前の入口（adopt・fuse・mkgo・rnRename）は MMP11P（js/phase11/player.js）の正規化を通す
+globalThis.MMP11P ??= (() => { const w = {}; new Function('window', readFileSync(path.join(ROOT, 'js/phase11/player.js'), 'utf8'))(w); return w.MMP11P; })();
 const SRC = { p7: rd('js/phase7/progression.js'), lg: rd('js/phase8/league.js'), p8: rd('js/phase8/raising.js'), mo: rd('js/phase10/monsters.js') };
 function load() { const w = {}; for (const k of ['p7', 'lg', 'p8', 'mo']) new Function('window', SRC[k])(w); return { P7: w.MMP7, P8: w.MMP8, M: w.MMP10M }; }
 const j = (o) => JSON.parse(JSON.stringify(o));

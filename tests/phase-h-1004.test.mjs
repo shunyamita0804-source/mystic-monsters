@@ -43,7 +43,7 @@ test('PH-02：牧場は最大8体（2026-10-06。MMP10M.RANCH_LIMIT。所持上�
   assert.doesNotMatch(f.replace(/\/\/.*$/gm, ''), /合体|Fuse|labFuse\(/, '牧場に合体を置かない（研究所。コメントを除く）');
   assert.match(HTML, /\.rn2 \.rngrid\{[^}]*overflow-y:auto;[^}]*grid-template-columns:1fr 1fr;/, '2列・一覧だけがスクロール'); assert.match(HTML, /#app>\.rn\.rn2>\.wpanel\.rnpanel\{[^}]*overflow:hidden/);
   assert.match(fnOf('rnCell'), /\$\{p11Esc\(x\.name\)\}/); assert.match(fnOf('rnTag'), /"育成完了"[\s\S]*"未育成"/);
-  const r = fnOf('rnRename'); assert.match(r, /\.trim\(\)\.slice\(0,8\)/, '名前は8文字まで（市場と同じ）'); assert.match(r, /save\(\);/);
+  const r = fnOf('rnRename'); assert.match(r, /MMP11P\.cleanName\(e&&e\.value,null\)/, '名前は8文字まで・記号は全角（2026-10-08 監査 H-05：市場・登録・合体と同じ正規化）'); assert.match(r, /save\(\);/);
   assert.match(fnOf('pfSellGo'), /if\(!arm\(b,`もう一度押すと売却/, '売却は従来どおり2度押し'); assert.equal(M.SELL.unraised, 50); assert.equal(M.SELL.max, 400);
 });
 

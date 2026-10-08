@@ -23,6 +23,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 const rd = (p) => readFileSync(path.join(ROOT, p), 'utf8');
 const HTML = rd('index.html');
+// 2026-10-08（監査 H-05）：index.html の名前の入口（adopt・fuse・mkgo・rnRename）は MMP11P（js/phase11/player.js）の正規化を通す
+globalThis.MMP11P ??= (() => { const w = {}; new Function('window', readFileSync(path.join(ROOT, 'js/phase11/player.js'), 'utf8'))(w); return w.MMP11P; })();
 // 本番（index.html）と同じ順で読み込む
 const SRC = ['js/phase7/progression.js', 'js/phase8/league.js', 'js/phase8/raising.js', 'js/phase10/monsters.js', 'js/phase11/player.js', 'js/phase9/chapters.js'].map(rd);
 function load() {
@@ -41,6 +43,8 @@ const CM = '<!--';                                 // 後ろの画面（ボタ�
 const BOLD = '<b>X</b>';                           // 名前がタグとして効いていた
 const XSS = '"><img src=x onerror=alert(1)>';      // 属性を閉じて画像タグ（スクリプト）を入れる
 const XSS8 = XSS.slice(0, 8);                      // 購入シートで入力したとき（8文字まで）＝ '"><img s'
+// 2026-10-08（監査 H-05）：名前は入口で正規化（HTML の記号は全角・8文字）。保存・表示されるのは正規化した名前
+const NN = (t) => MMP11P.monsterName(t, 0);
 const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 function mon(over = {}) {
@@ -93,8 +97,8 @@ test('QA-G4-2：モンスター名を画面に出すところ（fight()・バト
     /\$\{T\.name\}/g, /d\?d\.name:it\.id/g, /\$\{d\.name\}<small>/g,   // 修行場・アイテムの定義
     /if\(x\.name=="ハヤテ"\)x\.name="ガウル"/g,                       // 旧セーブの名前の移行（表示ではない）
     /x\.name=v;save\(\);farm\(`\$\{on\}の名前を/g,   // 2026-10-04 PHASE H3：牧場の名前変更（保存する名前はそのまま。表示は p11Esc 済みの on）
-    /if\(nm\)x\.name=nm;/g, /c\.name=cname\(a,b\);/g, /a\.name\.slice\(0,2\)\+b\.name\.slice\(-2\)/g,   // 名前を付ける（保存する名前はそのまま）
-    /CEDRIC_EV\.close\(rs,P9_END_UP,m&&m\.name\)/g,   // 2026-10-07：セドリックの締め（共通会話は textContent で表示＝HTML として解釈しない）
+    /if\(nm\)x\.name=MMP11P\.monsterName\(nm,x\.sp\);/g, /c\.name=MMP11P\.monsterName\(cname\(a,b\),c\.sp\);/g, /a\.name\.slice\(0,2\)\+b\.name\.slice\(-2\)/g,   // 名前を付ける（保存する名前はそのまま）
+    /CEDRIC_EV\.close\(rs,rs\.reward&&rs\.reward\.rankUp,m&&m\.name\)/g,   // 2026-10-07：セドリックの締め（共通会話は textContent で表示＝HTML として解釈しない）
     /name:v\.name,/g, /e\.player\?S\.m\.name:String\(e\.name\)/g,    // 大会の表示データ（表示するところで p11Esc）
   ];
   for (const re of ALLOW) code = code.replace(re, '');
@@ -120,7 +124,7 @@ test('QA-G4-3：モンスターカード・合体の枠・ステータス・セ�
   assert.equal(env.slab({ m, g: 10 }), 'ソラモ（ランクE）　🪙10G'); assert.equal(env.slab(null), '（空き）');
 });
 
-test('QA-G4-4：購入（実物の adopt()）：街のメッセージの名前は文字として出す。保存する名前は入力のまま', () => {
+test('QA-G4-4：購入（実物の adopt()）：街のメッセージの名前は文字として出す。保存する名前は正規化（2026-10-08 監査 H-05：記号は全角・8文字）', () => {
   const { P7, P8, M } = load();
   for (const n of [CM, BOLD, XSS8]) {
     const S = P8.newSave(); S.g = 300; const log = [];
@@ -128,8 +132,9 @@ test('QA-G4-4：購入（実物の adopt()）：街のメッセージの名前�
     const adopt = new Function('S', 'MMP10M', 'P10_WHY', 'mk', 'save', 'lobby', 'market', 'p8Blocked', 'sel', `${ESC}\n${lineOf('function adopt(i,nm){')}\nreturn adopt;`)(
       S, M, {}, mk, () => log.push('save'), (x) => log.push(['lobby', x]), () => log.push('market'), () => false, []);
     adopt(0, n);
-    assert.equal(S.m.name, n, '保存する名前は入力のまま（変えない）'); assert.equal(S.g, 0, '初回救済・代金は従来どおり');
-    assert.deepEqual(log, ['save', ['lobby', `${esc(n)}をつれて帰った！（はじめての1体のため、所持金を500Gまで補填しました）`]]);
+    const nn = MMP11P.monsterName(n, 0);
+    assert.equal(S.m.name, nn, '保存する名前は正規化（HTML の記号は全角）'); assert.doesNotMatch(S.m.name, /[<>&"'`\\]/); assert.equal(S.g, 0, '初回救済・代金は従来どおり');
+    assert.deepEqual(log, ['save', ['lobby', `${esc(nn)}をつれて帰った！（はじめての1体のため、所持金を500Gまで補填しました）`]]);
   }
 });
 
@@ -173,50 +178,50 @@ test('QA-G4-B1：実ブラウザ：新規開始→市場で「<!--」「<b>X</b>
   await H.newGame(pg, 'テスト');
   await pg.waitForSelector('#app .map');
   await buy(pg, CM);
-  let S = await H.getS(pg); assert.equal(S.m.name, CM, '名前は入力のまま保存'); assert.equal(S.g, 500, '2026-10-06：新人支援の 1000G − 500G（補填なし）');
+  let S = await H.getS(pg); assert.equal(S.m.name, NN(CM), '名前は正規化して保存（2026-10-08 監査 H-05）'); assert.equal(S.g, 500, '2026-10-06：新人支援の 1000G − 500G（補填なし）');
   assert.equal(await count(pg, '#app .svb'), 1, '街の「セーブ・ロード」が残る');
-  assert.equal(await pg.evaluate(() => MMNOTE.log().slice(-1)[0].title), `${CM}をつれて帰った！`);   // 2026-10-05 試遊：購入の知らせはシステム通知の帯（文字として表示）
+  assert.equal(await pg.evaluate(() => MMNOTE.log().slice(-1)[0].title), `${NN(CM)}をつれて帰った！`);   // 2026-10-05 試遊：購入の知らせはシステム通知の帯（文字として表示）
   assert.equal(await count(pg, '#app .map ~ .tlow .card'), 0, '街にはモンスターカードを出さない（2026-09-30。名前は牧場・ファームで文字のまま出ることを下で確かめる）');
   await pg.evaluate(() => { S.g = 5000; save(); lobby(); });
   await buy(pg, BOLD);
-  assert.equal(await pg.evaluate(() => MMNOTE.log().slice(-1)[0].title), `${BOLD}をつれて帰った！（牧場に預けました）`); assert.equal(await count(pg, '#msg b, .mmnote-tx b b'), 0, '名前のタグは効かない');
+  assert.equal(await pg.evaluate(() => MMNOTE.log().slice(-1)[0].title), `${NN(BOLD)}をつれて帰った！（牧場に預けました）`); assert.equal(await count(pg, '#msg b, .mmnote-tx b b'), 0, '名前のタグは効かない');
   await buy(pg, XSS);
-  S = await H.getS(pg); assert.deepEqual(S.box.map((x) => x.name), [BOLD, XSS8], '購入シートは従来どおり8文字まで');
-  assert.equal(await pg.evaluate(() => MMNOTE.log().slice(-1)[0].title), `${XSS8}をつれて帰った！（牧場に預けました）`); assert.equal(await count(pg, '#app .svb'), 1);
+  S = await H.getS(pg); assert.deepEqual(S.box.map((x) => x.name), [NN(BOLD), NN(XSS8)], '購入シートは従来どおり8文字まで・記号は全角');
+  assert.equal(await pg.evaluate(() => MMNOTE.log().slice(-1)[0].title), `${NN(XSS8)}をつれて帰った！（牧場に預けました）`); assert.equal(await count(pg, '#app .svb'), 1);
   await noInjected(p);
   // 牧場：預ける・受け取る・合体・売る
   await pg.click('.hz[onclick="farm()"]'); await pg.waitForSelector('#app .rn2 .rnact');
   // 2026-10-04 PHASE H3：牧場20体の一覧（連れている子＋牧場の子）。名前は文字のまま
-  assert.deepEqual(await txt(pg, '.rnc .rncn b'), [CM, BOLD, XSS8]); await pg.click('.rncur .rnc'); assert.equal(await count(pg, '.rna[onclick="dep()"]'), 1, '連れている子を選ぶと「預ける」');
+  assert.deepEqual(await txt(pg, '.rnc .rncn b'), [CM, BOLD, XSS8].map(NN)); await pg.click('.rncur .rnc'); assert.equal(await count(pg, '.rna[onclick="dep()"]'), 1, '連れている子を選ぶと「預ける」');
   await pg.evaluate(() => farm('', 'c')); await pg.waitForSelector('.lbf .wpanel');   // 2026-10-04：合体は研究所（museum('fuse')）。farm('','c') は研究所へ送る
   assert.equal(await count(pg, '.wpanel button[onclick^="selm("]'), 3);
   await pg.click('.wpanel button[onclick="selm(0)"]'); await pg.click('.wpanel button[onclick="selm(1)"]');
-  assert.deepEqual(await txt(pg, '.wpanel .fz .slot b'), [CM, BOLD], '合体の枠');
-  assert.ok((await txt(pg, '.wpanel .card b'))[0] === `生まれるモンスター：${CM.slice(0, 2)}${BOLD.slice(-2)}`, '生まれるモンスターの名前（従来どおり前2文字＋後2文字）');
+  assert.deepEqual(await txt(pg, '.wpanel .fz .slot b'), [NN(CM), NN(BOLD)], '合体の枠');
+  assert.ok((await txt(pg, '.wpanel .card b'))[0] === `生まれるモンスター：${NN(CM).slice(0, 2)}${NN(BOLD).slice(-2)}`, '生まれるモンスターの名前（従来どおり前2文字＋後2文字）');
   assert.equal(await count(pg, '.wpanel button[onclick="fuse()"]'), 1, '「合体させる！」が残る');
   await pg.evaluate(() => farm('', 'd')); await pg.waitForSelector('#app .rn2 .rnact');   // 牧場の「売る」へ
-  assert.deepEqual(await txt(pg, '.rnc .rncn b'), [CM, BOLD, XSS8]);
+  assert.deepEqual(await txt(pg, '.rnc .rncn b'), [CM, BOLD, XSS8].map(NN));
   await pg.click('.rngrid .rnc:nth-child(2)'); await pg.waitForTimeout(200); await pg.click('.rna.rnsell'); await pg.waitForSelector('.pfsell');
-  assert.deepEqual((await txt(pg, '.wpanel .pfsell > b')).slice(1), [XSS8], '売却の確認の名前'); assert.equal(await count(pg, '.wpanel button[onclick="pfSellGo(this)"]'), 1);
+  assert.deepEqual((await txt(pg, '.wpanel .pfsell > b')).slice(1), [NN(XSS8)], '売却の確認の名前'); assert.equal(await count(pg, '.wpanel button[onclick="pfSellGo(this)"]'), 1);
   await pg.click('.wpanel button[onclick="pfSellPick(-1)"]');
   await pg.click('.rngrid .rnc:nth-child(1)'); await pg.waitForTimeout(200); await pg.click('.rna[onclick="wd(0)"]');
-  assert.ok((await txt(pg, '.fbub'))[0].endsWith(`${BOLD}を受け取りました。`), '受け取りのメッセージ');
+  assert.ok((await txt(pg, '.fbub'))[0].endsWith(`${NN(BOLD)}を受け取りました。`), '受け取りのメッセージ');
   await pg.waitForSelector('.rngrid .rnc:nth-child(2)'); await pg.click('.rngrid .rnc:nth-child(2)'); await pg.waitForTimeout(200); await pg.click('.rna[onclick="wd(1)"]');   // 「<!--」を連れ直す
-  S = await H.getS(pg); assert.equal(S.m.name, CM); assert.equal(S.box.length, 2);
+  S = await H.getS(pg); assert.equal(S.m.name, NN(CM)); assert.equal(S.box.length, 2);
   await noInjected(p);
   // セーブ画面：スロット表示
   await pg.click('#app button.back'); await pg.waitForSelector('#app .map');
   await pg.click('#app .svb'); await pg.waitForSelector('#app button[onclick="slotSave(1,this)"]');
   await pg.click('#app button[onclick="slotSave(1,this)"]'); await pg.waitForFunction(() => /スロット1にセーブしました/.test(document.querySelector('#msg').textContent));
   const labels = await txt(pg, '#app .card.slot small');
-  assert.ok(labels[0].startsWith(`${CM}（ランク`), 'スロット1'); assert.ok(labels[3].startsWith(`${CM}（ランク`), 'オートセーブ');
+  assert.ok(labels[0].startsWith(`${NN(CM)}（ランク`), 'スロット1'); assert.ok(labels[3].startsWith(`${NN(CM)}（ランク`), 'オートセーブ');
   assert.equal(await count(pg, '#app button[onclick="imp()"]'), 1); assert.equal(await count(pg, '#app .ghost'), 1, '「最初からやり直す」も残る');
   // 出発（フィナの確認 →「始める」→ フィナ→ダン）
   await pg.click('#app button.back'); await pg.waitForSelector('#app .map');
   await pg.click('.hz[onclick="hall()"]'); await pg.click('#app button[onclick="prepScr()"]');
   const dep = '#app button[onclick="p7Depart(this)"]';
   await H.startRaising(pg, dep);
-  S = await H.getS(pg); assert.equal(S.m.raise.state, 'board'); assert.equal(S.m.name, CM);
+  S = await H.getS(pg); assert.equal(S.m.raise.state, 'board'); assert.equal(S.m.name, NN(CM));
   await noInjected(p);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
@@ -233,12 +238,12 @@ test('QA-G4-B2：実ブラウザ：名前「<!--」の個体でも Chapter間（
     assert.equal(await count(pg, '#app .bcname'), 0, '2026-10-05 試遊：モンスターの下に名前の帯を出さない（名前はステータス画面で文字のまま＝下で確認）');
   }
   await pg.click('#app .fmcmd button[onclick="hall(\'st\')"]'); await pg.waitForSelector('#app .sts .stnm');
-  assert.deepEqual(await txt(pg, '#app .sts .stnm'), [CM], 'ステータスの名前');
+  assert.deepEqual(await txt(pg, '#app .sts .stnm'), [NN(CM)], 'ステータスの名前（読み込みで正規化）');
   await pg.evaluate(() => hall('t')); await pg.waitForSelector('#app .fmcmd');
   await pg.click('#app .bcrb[onclick="bcMenu()"]'); await pg.waitForSelector('#p9ov .fmab'); await pg.waitForTimeout(400); await pg.click('#p9ov .fmab'); await pg.waitForSelector('.p8mc');
-  assert.equal((await txt(pg, '.p8mc p'))[0], `${CM}の育成をやめますか？`); assert.equal(await count(pg, '.p8mc button'), 2, '「やめない」「放棄に進む」');
+  assert.equal((await txt(pg, '.p8mc p'))[0], `${NN(CM)}の育成をやめますか？`); assert.equal(await count(pg, '.p8mc button'), 2, '「やめない」「放棄に進む」');
   await pg.click('.p8mc button.p8danger'); await pg.waitForSelector('#p8abgo');
-  assert.deepEqual((await txt(pg, '.p8mc p')).slice(0, 2), [`${CM}の育成をやめますか？`, 'この操作は取り消せません。']);   // 2026-10-06：最終確認の正式の文 assert.equal(await count(pg, '.p8mc button'), 2);
+  assert.deepEqual((await txt(pg, '.p8mc p')).slice(0, 2), [`${NN(CM)}の育成をやめますか？`, 'この操作は取り消せません。']);   // 2026-10-06：最終確認の正式の文 assert.equal(await count(pg, '.p8mc button'), 2);
   await pg.click('.p8mc button.go'); await pg.waitForSelector('.p8mc', { state: 'detached' });
   assert.equal((await H.getS(pg)).m.raise.state, 'farm', '放棄はしていない');
   await noInjected(p);
@@ -250,13 +255,13 @@ test('QA-G4-B3：実ブラウザ：大会（次の相手・順位表・星取表
   for (const n of [CM, XSS]) {
     const M = load(); const p = await open({ save: j(inTour(M, n)) }); const pg = p.page;
     await start(p, '#app .p9tour');
-    assert.equal((await txt(pg, '#app .p9next .tp2p.me .tp2nm b'))[0], n, '次の対戦相手（自分の名前。2026-10-04 PHASE D）');
-    assert.equal(await count(pg, '#app .p9next button[onclick="p9CompareScr()"]'), 1, '「対戦開始」が残る（大会進行 → パラメーター比較）');
-    assert.deepEqual(await txt(pg, '#app .tb1g .tbnm.me b'), [n], '2026-10-06：大会1 対戦表の自分の名前');
+    // 2026-10-08（監査 stale）：旧 .p9next（2026-10-04 PHASE D の大会進行）は 2026-10-07 ADDENDUM2 の対戦表で無くなった＝今の対戦表で確かめる。名前は読み込みで正規化
+    assert.deepEqual(await txt(pg, '#app .tb1g .tbnm.me b'), [NN(n)], '大会1 対戦表の自分の名前');
+    assert.equal(await count(pg, '#app .tb1 button[onclick="p9CompareScr()"]'), 1, '「対戦する」が残る（対戦表 → 対戦前比較）');
     await pg.evaluate(() => p9CompareScr()); await pg.waitForSelector('#app .p9cmps');   // パラメーター比較（2026-10-04）でも名前は文字のまま
-    assert.equal((await txt(pg, '#app .p9cmps .pcs b'))[0], n, 'パラメーター比較'); assert.equal(await count(pg, '#app .p9cmps button'), 2, '「対戦開始」「順位表にもどる」');
+    assert.equal((await txt(pg, '#app .p9cmps .pcs b'))[0], NN(n), 'パラメーター比較'); assert.equal(await count(pg, '#app .p9cmps button'), 2, '「対戦開始」「順位表にもどる」');
     await pg.evaluate(() => p9VsScr()); await pg.waitForSelector('#app .p9vs');   // 流れから外した VS 画面（関数は残す）でも名前は文字のまま
-    assert.equal((await txt(pg, '#app .p9vs-fr .np'))[0], n, 'VS画面');
+    assert.equal((await txt(pg, '#app .p9vs-fr .np'))[0], NN(n), 'VS画面');
     assert.equal(await count(pg, '#app .p9vs button'), 2, '「対戦開始」「順位表にもどる」');
     await noInjected(p);
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
@@ -270,7 +275,7 @@ test('QA-G4-B4：実ブラウザ：育成完了画面・ファームの完了表
   const p = await open({ save: j(S) }); const pg = p.page;
   await start(p, '#app .map');
   await pg.evaluate(() => p8DoneScr()); await pg.waitForSelector('#app .p9done', { state: 'attached' });   // 2026-10-06：フィナの会話の間は施設の UI を隠す（data-mmscene）
-  assert.equal((await txt(pg, '#app .p9dn b.big'))[0], `🎉 ${CM}の育成が完了した！`);
+  assert.equal((await txt(pg, '#app .p9dn b.big'))[0], `🎉 ${NN(CM)}の育成が完了した！`);
   assert.equal(await count(pg, `#app button[onclick="farm('','a')"]`), 1, '「牧場へ」が残る');
   await H.finishTalk(pg);
   await pg.evaluate(() => hall('t')); await pg.waitForSelector('#app .fm-done');
@@ -290,13 +295,13 @@ test('QA-G4-B5：実ブラウザ：セーブコードの名前「"><img src=x on
   await pg.click('#app details summary');   // 「セーブコードで引っこし・バックアップ」を開く
   await pg.fill('#sc', b64); await pg.click('#app button[onclick="imp()"]');
   await pg.waitForFunction(() => /ロードしました/.test((document.querySelector('#msg') || {}).textContent || ''));
-  const S = await H.getS(pg); assert.equal(S.m.name, XSS, '読み込んだ名前はそのまま'); assert.equal(S.box[0].name, CM);
+  const S = await H.getS(pg); assert.equal(S.m.name, NN(XSS), '読み込んだ名前は正規化（2026-10-08 監査 H-05：記号は全角・8文字）'); assert.equal(S.box[0].name, NN(CM)); assert.doesNotMatch(S.m.name, /[<>"']/);
   assert.equal(await count(pg, '#app .svb'), 1);
   await pg.click('.hz[onclick="farm()"]'); await pg.waitForSelector('#app .rn2 .rnact');
-  assert.deepEqual((await txt(pg, '.rnc .rncn b'))[0], XSS, '牧場の一覧（連れている子）の名前');
+  assert.deepEqual((await txt(pg, '.rnc .rncn b'))[0], NN(XSS), '牧場の一覧（連れている子）の名前');
   await pg.click('.back'); await pg.waitForSelector('#app .map');
   await pg.click('.hz[onclick="farm()"]'); await pg.waitForSelector('#app .rn2 .rnact');
-  assert.deepEqual(await txt(pg, '.rnc .rncn b'), [XSS, CM]); await pg.click('.rncur .rnc'); await pg.waitForTimeout(200); await pg.click('.rna.rnsell'); await pg.waitForSelector('.pfsell');
+  assert.deepEqual(await txt(pg, '.rnc .rncn b'), [NN(XSS), NN(CM)]); await pg.click('.rncur .rnc'); await pg.waitForTimeout(200); await pg.click('.rna.rnsell'); await pg.waitForSelector('.pfsell');
   await noInjected(p);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, [], '画像（src=x）の読み込みも起きない');
 });

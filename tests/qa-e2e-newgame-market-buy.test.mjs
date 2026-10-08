@@ -394,10 +394,10 @@ T('QA-BY13：購入確認で入れたモンスター名に HTML が含まれて�
   await openSheet(pg);
   await confirmBuy(pg, '<b>x</b>');
   const t = await pg.evaluate(() => ({ msg: MMNOTE.log().slice(-1)[0].title, msgB: document.querySelectorAll('.mmnote-tx b b, #msg b').length, note: (document.querySelector('.mmnote-tx b') || {}).textContent || null, app: document.body.innerText, svb: !!document.querySelector('.svb') }));
-  assert.ok(t.msg.startsWith('<b>x</b>をつれて帰った！'), '救済の知らせ（システム通知の帯・2026-10-05 PHASE B）に名前を文字のまま表示');
-  if (t.note != null) assert.ok(t.note.startsWith('<b>x</b>をつれて帰った！'), '帯の画面の文字');
+  assert.ok(t.msg.startsWith('＜b＞x＜/b＞をつれて帰った！'), '知らせ（システム通知の帯）に名前を文字で表示（2026-10-08 監査 H-05：記号は全角で保存）');
+  if (t.note != null) assert.ok(t.note.startsWith('＜b＞x＜/b＞をつれて帰った！'), '帯の画面の文字');
   assert.equal(t.msgB, 0, '案内の中に <b> 要素ができない');
-  assert.ok(t.app.includes('<b>x</b>'), 'モンスターの情報欄にも文字のまま表示');
+  assert.ok(t.app.includes('＜b＞x＜/b＞'), 'モンスターの情報欄にも文字で表示');
   assert.equal(t.svb, true);
   noErrors(p);
 });

@@ -50,7 +50,7 @@ test('LP-04：合体は研究所から（selm → museum("fuse")・牧場の内�
   assert.match(line('function selm('), /museum\("fuse"\)\}$/);
   assert.match(fnOf('farm'), /if\(ft=="c"\)return museum\("fuse"\);/);   /* 2026-10-04 PHASE H3：牧場の作り直し（送り先は同じ） */ assert.doesNotMatch(fnOf('farm'), /sel\.map\(i=>all\[i\]\)|合体させる！/, '牧場に合体の画面は無い');
   const lf = fnOf('labFuse'); for (const t of ['onclick="selm(${i})"', 'onclick="fuse()"', 'cname(a,c)', '(a[k]+c[k])*.6', '<div class="fz"><div class="slot">', 'wpanel lbwp']) assert.ok(lf.includes(t), t);
-  assert.match(fnOf('fuse'), /S\.g-=200;/); assert.match(fnOf('fuse'), /c\.name=cname\(a,b\);/);
+  assert.match(fnOf('fuse'), /S\.g-=200;/); assert.match(fnOf('fuse'), /c\.name=MMP11P\.monsterName\(cname\(a,b\),c\.sp\);/, '2026-10-08（監査 H-05）：合体の子の名前も正規化');
   assert.match(CODE, /MMP10M\.setFusionAccess\(\(\)=>true\)/);
 });
 

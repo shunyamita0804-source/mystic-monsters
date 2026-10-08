@@ -96,8 +96,8 @@ test('PB-06：正式の会話窓（event_dialogue_window）はイベント・大
   assert.match(fnOf('talkSeq'), /if\(x&&x\.note\)\{await flush\(\);await MMNOTE\.show\(x\.note\)\}/);
   assert.match(fnOf('opAfterReg'), /MMNOTE\.show\(\{img:"\.\/assets\/ui\/cmd\/bureau_map\.png",cmd:true,small:true,title:"世界地図が使えるようになった"/, '機能の解放（2026-10-07 試遊：短い知らせ）');
   assert.match(fnOf('adopt'), /if\(typeof MMNOTE=="object"&&MMNOTE\)\{const sp=MMP10M\.byId\(x\.sp\),im=sp&&sp\.image&&sp\.image\.src;MMNOTE\.show\(\{\.\.\.\(im\?\{img:im\}:\{icon:"gold"\}\),title:x\.name\+"をつれて帰った！"\+pk,\.\.\.\(rs\?\{sub:rs\}:\{\}\)\}\);return undefined\}/, '購入の知らせ（救済も通常も）は帯だけ＝街の通知は出さない（2026-10-05 試遊）');
-  assert.match(fnOf('p9TourResult'), /MMP8\.runTourEnd\(rs\)/, '大会の報酬（2026-10-06：大会の終わりの順の firstReward の段階で帯を出す）');
-  assert.match(HTML, /MMP8\.registerTourEndHook\("firstReward",d=>\{[^\n]*MMNOTE\.show\(\{icon:"reward",title:`賞金 \$\{d\.prize\}G を手に入れた！`/, '大会の報酬');
+  assert.match(fnOf('p9TourResult'), /MMP8\.runTourEnd\(rs,\{persist:\(\)=>save\(\)\}\)/, '大会の報酬（2026-10-06：大会の終わりの順の firstReward の段階で帯を出す）');
+  assert.match(HTML, /MMP8\.registerTourEndHook\("firstReward",async d=>\{[^\n]*MMNOTE\.show\(\{icon:"reward",title:`賞金 \$\{d\.prize\}G を手に入れた！`/, '大会の報酬');
   // 帯は文字として表示（HTML として解釈しない）
   const w = {}; const els = []; const doc = { body: { appendChild: (e) => els.push(e) }, querySelector: () => null, createElement: () => ({ setAttribute() {}, addEventListener() {}, appendChild() {}, classList: { add() {} }, remove() {} }) };
   new Function('window', 'document', 'setTimeout', 'clearTimeout', no)(w, doc, () => 1, () => {});

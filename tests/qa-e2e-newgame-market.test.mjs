@@ -246,16 +246,16 @@ T('QA-NG5：名前の整え方：空欄は「アルト」。HTML を含む長い
   await pg.click('.p11go');
   await H.finishTalk(pg);
   await pg.waitForSelector('.map');
-  assert.equal(await pg.evaluate(() => S.playerName), '<b>x</b>', '8文字までに切る');
+  assert.equal(await pg.evaluate(() => S.playerName), '＜b＞x＜/b＞', '8文字までに切る・記号は全角（2026-10-08 監査 H-05）');
   const t0 = await pg.evaluate(() => ({ msg: document.querySelector('#msg').textContent, msgB: document.querySelectorAll('#msg b').length }));
   await pg.click('.hz[onclick="profileScr()"]'); await pg.waitForSelector('.pfds');
   const t = { ...t0, ...(await pg.evaluate(() => ({ pn: document.querySelector('.p115pn').textContent, pnB: document.querySelectorAll('.p115pn b').length }))) };
   await pg.click('.pfds .dback'); await pg.waitForSelector('.tbar .tcmd');
-  assert.ok(t.pn.includes('<b>x</b>'), 'プロフィールでは文字としてそのまま表示'); assert.equal(t.pnB, 0, 'HTML として解釈しない');
-  assert.ok(t.msg.includes('ようこそ、<b>x</b>さん！'), '街の案内でも文字として表示'); assert.equal(t.msgB, 0);
+  assert.ok(t.pn.includes('＜b＞x＜/b＞'), 'プロフィールでは文字として表示'); assert.equal(t.pnB, 0, 'HTML として解釈しない');
+  assert.ok(t.msg.includes('ようこそ、＜b＞x＜/b＞さん！'), '街の案内でも文字として表示'); assert.equal(t.msgB, 0);
   await pg.click('.hz[onclick="market()"]'); await settle(pg);
   const w = await pg.evaluate(() => ({ t: document.querySelector('.p10who b').textContent, n: document.querySelectorAll('.p10who b b').length }));
-  assert.deepEqual(w, { t: '<b>x</b>', n: 0 }, '市場のプレイヤー欄でも文字として表示');
+  assert.deepEqual(w, { t: '＜b＞x＜/b＞', n: 0 }, '市場のプレイヤー欄でも文字として表示');
   noErrors(p2);
 });
 

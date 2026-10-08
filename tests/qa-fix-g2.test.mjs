@@ -24,6 +24,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 const rd = (p) => readFileSync(path.join(ROOT, p), 'utf8');
 const HTML = rd('index.html');
+// 2026-10-08（監査 H-05）：index.html の名前の入口（adopt・fuse・mkgo・rnRename）は MMP11P（js/phase11/player.js）の正規化を通す
+globalThis.MMP11P ??= (() => { const w = {}; new Function('window', readFileSync(path.join(ROOT, 'js/phase11/player.js'), 'utf8'))(w); return w.MMP11P; })();
 // 本番（index.html）と同じ順で読み込む
 const SRC = ['js/phase7/progression.js', 'js/phase8/league.js', 'js/phase8/raising.js', 'js/phase10/monsters.js', 'js/phase11/player.js', 'js/phase9/chapters.js'].map(rd);
 function load() {
@@ -384,7 +386,7 @@ test('QA-G2-B3：実ブラウザ：わざ（技管理）は未知の種族・s2�
   await start(p, '#app .map');
   // 変更前の dscr・skSheet（今のコードから差分を戻したもの）
   const R = [['const own=Array.isArray(m.sk)?m.sk:[],st3=(k)=>k<0||!SK[k]?`', 'const st3=(k)=>k<0?`'], ['const rows=m.eq.map((k,q)=>k<0||!SK[k]?`', 'const rows=m.eq.map((k,q)=>k<0?`'],
-    ['ok=own.includes(k),at=m.eq.indexOf(k);return `<div class="dsk', 'ok=m.sk.includes(k),at=m.eq.indexOf(k);return `<div class="dsk'],
+    ['ok=own.includes(k),at=m.eq.indexOf(k);if(!ok)return `<div class="dsk', 'ok=m.sk.includes(k),at=m.eq.indexOf(k);if(!ok)return `<div class="dsk'],   // 2026-10-08（監査 stale）：5e27556 で未習得の技は「？？？」のパネル（if(!ok)return）
     ['const n=m.eq.filter(x=>x>=0&&SK[x]).length;', 'const n=m.eq.filter(x=>x>=0).length;'], ['${own.length} / ${skl(m).length}', '${m.sk.length} / ${skl(m).length}']];
   const R2 = [['ok=Array.isArray(m.sk)&&m.sk.includes(k),', 'ok=m.sk.includes(k),']];
   const n = await p.page.evaluate(([R, R2]) => {

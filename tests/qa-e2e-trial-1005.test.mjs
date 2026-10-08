@@ -91,9 +91,10 @@ for (const size of SIZES) {
     const p = await openPage({ size }); const pg = p.page;
     await H.newGame(pg, 'ユウ'); await withMon(pg, 1); await pg.evaluate(() => hall('t'));
     await pg.waitForSelector('.fm.bc .bcgo .fmgo'); await pg.waitForTimeout(500);
-    const go = await rect(pg, '.bcgo .fmgo'), bar = await rect(pg, '.bcbar'), ch = await rect(pg, '.bcgo .bcch'), img = await rect(pg, '.bcmonw .fmmon img');
+    // 2026-10-08（監査 stale）：5e27556（今回差分の最終統合）で次の Chapter の札は上部（.bcch.bctop）へ移った＝「出発する」の下ではなく画面の上
+    const go = await rect(pg, '.bcgo .fmgo'), bar = await rect(pg, '.bcbar'), ch = await rect(pg, '.bcch.bctop'), img = await rect(pg, '.bcmonw .fmmon img');
     assert.ok(bar.t - go.b >= (size[1] > 700 ? 64 : 44), `下のバーから離す ${bar.t - go.b}px`);
-    assert.ok(img.b <= ch.t + 24, `モンスターの絵は行き先の札の上 ${img.b} / ${ch.t}`); assert.ok(img.t >= 40, 'モンスターは上で切れない');
+    assert.ok(img.b <= go.t, `モンスターの絵は「出発する」に重ならない ${img.b} / ${go.t}`); assert.ok(img.t >= ch.b, `モンスターの絵は上の札に重ならない ${img.t} / ${ch.b}`);
     assert.equal(await pg.$('.bcname'), null);
     assert.equal(await pg.evaluate(() => document.documentElement.scrollWidth), size[0]);
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);

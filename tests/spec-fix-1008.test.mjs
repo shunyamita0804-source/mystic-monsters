@@ -74,7 +74,7 @@ test('SF-01b：最終公式大会に入れないとき（Chapter 3・A に負け
     assert.equal(P8.legendStage(S), 0, 'S に参加しただけ（優勝なし）では解禁しない'); assert.equal(P8.endChapter(S, m).ok, true); }
   // 画面：結果の画面に「最終公式大会へ挑戦する」（挑戦できるときだけ）
   const fn = HTML.match(/function p9TourResult\(msg\)\{[\s\S]*?\nconst P9_SE_SEEN/)[0];
-  assert.match(fn, /MMP8\.canStartFinalTournament\(S,m\)\.ok\?`<button class="p9btn p9final" onclick="p9FinalTour\(this\)">最終公式大会へ挑戦する/);
+  assert.match(fn, /MMP8\.canStartFinalTournament\(S,m\)\.ok\?`<button class="p9btn p9final p9endbtn"\$\{dis\} onclick="p9FinalTour\(this\)">最終公式大会へ挑戦する/, "2026-10-08（監査 M-01・L-02）：大会の終わりの段階が next まで進むまで押せない");
   const ft = HTML.slice(HTML.indexOf('function p9FinalTour(b){'), HTML.indexOf('function p9FinalSkip(){'));
   assert.match(ft, /MMP8\.startFinalTournament\(S,m\);if\(!r\.ok\)return board\(\);save\(\);p9TourOpen\(r\.rank\)/);
 });

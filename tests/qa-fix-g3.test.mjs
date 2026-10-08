@@ -397,7 +397,7 @@ test('QA-G3-B6：実ブラウザ：ボードを出してすぐ別の画面へ移
     await pg.evaluate(() => board());
     await pg.waitForFunction(() => S.m.raise.pend == null && !bBusy && !document.querySelector('.chpop'), null, { timeout: 15000 });
     S = await H.getS(pg);
-    if (node) { const d = S.m.po - s0.m.po; assert.ok(d >= 3 && d <= 7, `${label}：ちからの地点の効果は1回だけ（+${d}）`); }
+    if (node) { const d = S.m.po - s0.m.po; assert.ok(d >= 11 && d <= 25, `${label}：ちからの地点の効果は1回だけ（+${d}。2026-10-08 正式：GROWTH_GAIN A25〜E11）`); }
     assert.deepEqual(await H.storedSave(pg), S, `${label}：処理した結果を保存`);
     await pg.waitForTimeout(600); assert.deepEqual(await H.getS(pg), S, `${label}：二重には適用しない`);
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);

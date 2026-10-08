@@ -17,6 +17,8 @@ import path from 'node:path';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 const HTML = readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+// 2026-10-08（監査 H-05）：index.html の名前の入口（adopt・fuse・mkgo・rnRename）は MMP11P（js/phase11/player.js）の正規化を通す
+globalThis.MMP11P ??= (() => { const w = {}; new Function('window', readFileSync(path.join(ROOT, 'js/phase11/player.js'), 'utf8'))(w); return w.MMP11P; })();
 const P7SRC = readFileSync(path.join(ROOT, 'js/phase7/progression.js'), 'utf8');
 const sha = (t) => createHash('sha256').update(t).digest('hex');
 

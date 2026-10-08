@@ -663,7 +663,8 @@ button.dcardb:not(:disabled):active{transform:translateY(3px);box-shadow:0 2px 0
 .djs{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px}.djs i{font-style:normal;font-size:.6rem;font-weight:800;padding:0 6px;border-radius:999px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.3);color:#bbb}.djs i.got{color:#3a2000;background:linear-gradient(#ffe89a,#e8b23a);border-color:#fff0b0}
 .drl{display:flex;flex-direction:column;gap:4px;padding:6px;border-radius:12px;background:linear-gradient(#11141f,#0a0c14);border:2px solid #c9a24d}
 .drl .rw{cursor:pointer;height:40px}.drl .rw .ric{font-size:.8rem;font-weight:900;color:#fff}.drl .rw.sel{border-color:#7ef06a;box-shadow:0 0 0 2px #7ef06a,0 0 14px #7ef06a}
-.drl .rw .rst{margin-right:26px}
+.drl .rw .rst{margin-right:52px} /* 2026-10-08（監査 H-06）：▲▼（.wmv＝右から30〜50px）の下にクリ率の数値が隠れていた */
+.drl .rw:not(.ms) .rn{white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;font-size:.72rem;line-height:1.15;word-break:break-all} /* 技名は2行まで（狭い画面で2文字に切れない） */
 button.wx2{position:absolute;right:4px;top:50%;transform:translateY(-50%);z-index:3;width:22px;height:22px;padding:0;border-radius:50%;background:#a33;color:#fff;border:1px solid #fff8;font-size:.7rem;box-shadow:none;line-height:1}
 .wmv{position:absolute;right:30px;top:50%;transform:translateY(-50%);z-index:3;display:flex;flex-direction:column;gap:2px}
 .wmv button{width:20px;height:16px;padding:0;border-radius:4px;background:#456;color:#fff;border:1px solid #fff8;font-size:.6rem;line-height:1;box-shadow:none}
@@ -1079,6 +1080,18 @@ button.mkc b{font-size:.9rem}button.mkc small{font-size:.66rem;color:#ffe9b0}
 .p9rw .it{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:7px 4px;border-bottom:1px dashed rgba(201,162,77,.3);font-size:.92rem}
 .p9rw .it b{color:#ffd970}
 .p9rw .it.dim{color:#a99d82}
+/* 2026-10-08（監査 M-01）：大会の終わりは段階ごとに見せる（最終順位 → 優勝のモンスターの勝利演出 → 初回報酬 → …）。e-段階名＝その段階を始めた */
+.p9tour.p9end:not(.e-final) .p9lose,.p9tour.p9end:not(.e-champion) .p9win,.p9tour.p9end:not(.e-champion) .p9rw,.p9tour.p9end:not(.e-firstReward) .p9rw.fc{display:none}
+.p9tour.p9end.e-champion .p9win{animation:p9endin .5s ease-out both}.p9tour.p9end.e-firstReward .p9rw.fc{animation:p9endin .45s ease-out both}
+@keyframes p9endin{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
+.p9win .p9wmon{position:relative;z-index:1;width:min(42vw,150px);height:min(42vw,150px);margin:-2px auto 0}
+.p9win .p9wmon .mon{width:100%;height:100%}.p9win .p9wmon .mon img,.p9win .p9wmon .mon svg{width:100%;height:100%;object-fit:contain}
+.p9tour.p9end.e-champion .p9wmon{animation:p9wjump 1.1s cubic-bezier(.3,.7,.4,1) .15s both}
+.p9win .p9wmon::before{content:"";position:absolute;inset:8% 4% 0;border-radius:50%;background:radial-gradient(circle,rgba(255,226,140,.75),rgba(255,214,102,0) 68%);animation:p9wglow 1.6s ease-out .2s both;z-index:-1}
+@keyframes p9wjump{0%{transform:translateY(24px) scale(.8);opacity:0}35%{transform:translateY(-18px) scale(1.06);opacity:1}55%{transform:translateY(0) scale(.98)}72%{transform:translateY(-8px)}100%{transform:none}}
+@keyframes p9wglow{0%{opacity:0;transform:scale(.6)}40%{opacity:1}100%{opacity:.55;transform:scale(1.08)}}
+@media (prefers-reduced-motion:reduce){.p9tour.p9end .p9wmon,.p9tour.p9end .p9win,.p9tour.p9end .p9rw.fc,.p9win .p9wmon::before{animation:none}}
+.p9tour.p9end .p9endbtn:disabled{opacity:.45}
 .p9tour>.p9btn{margin-top:14px}
 /* ===== Phase 9：Chapter間ファーム（モンスターが主役） ===== */
 .p9farm{margin:-16px -16px 0;min-height:100vh;background:linear-gradient(#0c1630,#16244a 60%,#0c1630);color:#f6e7c1;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}
@@ -2793,7 +2806,8 @@ body:has(#app>.bu) #snd{display:none}
 @media (max-height:700px){.rn2 button.rnc{height:54px}.rn2 .rnic{width:42px;height:42px}.rn2 button.rna{height:50px}.rn2 .rnnick .fbub{font-size:11.5px}}
 /* ===== 牧場（正式UI 2026-09-30。farm()）：正式背景 RANCH_BG（そのまま）＋ニックの一言、下に4コマンド（2×2）。
    街・ファームと同じ濃紺・金の二重線・金色の線画アイコン。合体は淡い青紫の光と金の飾りで少しだけ特別に、売るは暗い赤茶の差し色で注意を ===== */
-.rn{margin:-16px -16px 0;padding:calc(env(safe-area-inset-top,0px) + 8px) 12px calc(14px + env(safe-area-inset-bottom,0px));min-height:100dvh;box-sizing:border-box;background:linear-gradient(#0c1630,#14234a 40%,#0c1630);color:#fff}
+/* 2026-10-08（監査 H-06）：牧場の器だけに当てる（#app>.rn）。技管理・バトルのルーレットの技名 span.rn（Phase 6 と同じ class）に当たって、技名が濃紺の帯に隠れていた */
+#app>.rn{margin:-16px -16px 0;padding:calc(env(safe-area-inset-top,0px) + 8px) 12px calc(14px + env(safe-area-inset-bottom,0px));min-height:100dvh;box-sizing:border-box;background:linear-gradient(#0c1630,#14234a 40%,#0c1630);color:#fff}
 .rnhd{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-bottom:8px}
 .rn .rnhd button.back{justify-self:start;margin:0;padding:6px 12px;min-height:36px;border-radius:18px;font-size:12.5px;font-weight:700;color:#f6dc98;background:linear-gradient(#223766,#12204a);border:1.5px solid #e0b861;box-shadow:inset 0 0 0 2px #0c1630,0 2px 6px rgba(0,0,0,.4)}
 .rnplq{position:relative;padding:5px 22px 6px;border-radius:8px;background:linear-gradient(#223766,#12204a);border:1.5px solid #e0b861;box-shadow:inset 0 0 0 2px #0c1630,inset 0 0 0 3px rgba(224,184,97,.55);white-space:nowrap}
@@ -3917,7 +3931,7 @@ let rnSel=null;
 function rnPick(uid){if(p8Blocked())return;rnSel=uid;pfSellUid=null;rnView=null;farm("","b")}
 function rnTag(x){const st=MMP7.raiseState(x);return st=="done"?["育成完了","done"]:x===S.m?(st=="none"?["連れている","cur"]:["育成中","ing"]):["未育成","new"]} // 育成を終えた子は連れていても「育成完了」
 function rnCell(x){const t=rnTag(x);return `<button class="rnc${x.uid===rnSel?" on":""}${x===S.m?" cur":""}" data-uid="${x.uid}" onclick="rnPick('${x.uid}')"><span class="rnic mon">${msv(x)}</span><span class="rncn"><b>${p11Esc(x.name)}</b><small class="rntag ${t[1]}">${t[0]}</small></span>${x.uid===rnSel?'<i class="rnck" aria-hidden="true"></i>':""}</button>`}
-function rnRename(){if(p8Blocked())return;const x=[S.m,...S.box].find(v=>v&&v.uid===rnSel);if(!x)return farm("","b");const e=document.getElementById("rnnm");const v=(e&&e.value||"").trim().slice(0,8);if(!v)return farm("名前を入力してください。","n");const on=p11Esc(x.name);x.name=v;save();farm(`${on}の名前を${p11Esc(v)}に変えました。`,"b")}
+function rnRename(){if(p8Blocked())return;const x=[S.m,...S.box].find(v=>v&&v.uid===rnSel);if(!x)return farm("","b");const e=document.getElementById("rnnm");const v=MMP11P.cleanName(e&&e.value,null);if(!v)return farm("名前を入力してください。","n");const on=p11Esc(x.name);x.name=v;save();farm(`${on}の名前を${p11Esc(v)}に変えました。`,"b")}
 function farm(msg,tab){if(p8Blocked())return;p9Immersive(true);bgm("ranch");npcWarm("nick");if(!tab&&!msg)setTimeout(()=>npcFirst("ranch"),0);
  if(tab&&tab!="d")pfSellUid=null;ft=tab||(ft=="c"?"b":ft);if(ft=="c")return museum("fuse"); // 合体は研究所（labFuse）。牧場の内部画面 farm('','c') は互換のため研究所へ送る
  const m=S.m,all=[m,...S.box].filter(Boolean),L=MMP10M.RANCH_LIMIT;if(!all.some(x=>x.uid===rnSel))rnSel=(m||S.box[0]||{}).uid||null; // 2026-10-06：最初は連れている子（＝「預ける」）を選ぶ
@@ -4283,7 +4297,7 @@ function p10Close(){const d=$("#p10ov");if(d)d.remove()}
 document.addEventListener("keydown",e=>{if(!document.getElementById("p10car")||document.getElementById("p10ov"))return;if(e.key=="ArrowRight")p10Step(1);else if(e.key=="ArrowLeft")p10Step(-1)});
 function mkd(i,step){if(p8Blocked())return;market(null,MMP10M.keyOf(i)||0)} // Phase 10：旧・詳細画面は新しい市場（カルーセル）へ統合
 function mkgo(i){if(p8Blocked())return;if(!document.getElementById("p10ov"))return; // 確認画面が閉じた後の二度押しは無視（購入・補填を二重にしない）
- const e=document.getElementById("mnm");let v=(e&&e.value||"").trim().slice(0,8);if(!v)v=SP[i][0];adopt(i,v)}
+ const e=document.getElementById("mnm");adopt(i,MMP11P.monsterName(e&&e.value,i))} // 2026-10-08（監査 H-05）：名前の正規化（記号の全角化・8文字・空なら種族名）
 /** 研究所（2026-10-03 品質向上）：入口＝正式背景（assets/lab/lab_main.webp）を大きく・エリオットの半身・下に機能のカード（図鑑／特殊復元・合体＝研究所の正式な機能だが画面は未実装＝準備中）。
  *  tab "book"＝図鑑の一覧（従来の中身。背景だけ研究所の正式背景） */
 if(window.MMP10M&&MMP10M.setFusionAccess)MMP10M.setFusionAccess(()=>true); // 2026-10-04：研究所の合体UI（museum('fuse')）＝プレイヤーが画面から合体を使える
@@ -4317,7 +4331,7 @@ function labTable(){const sp=SP.map((_,i)=>i);
  const rows=sp.flatMap(a=>sp.map(b=>{const r=MMP7.resolveFusionSpecies({sp:a},{sp:b});return `<div class="lbtr"><span>${SP[a][0]}</span><i>×</i><span>${SP[b][0]}</span><em>→</em><b>${SP[r.sp]?SP[r.sp][0]:"？？？"}</b></div>`})).join("");
  const rules=["子の種族＝親1（左）の種族。合体専用の種族は未登録【暫定】","能力＝両親の合計の 60%（上限 999）","名前＝親1の前2文字＋親2の後ろ2文字","技＝子の初期技に加えて、両親の追加技から1つ継承（初期技・必殺技は除く）","大会ランク＝高いほうを引き継ぐ","費用 200G。2体は消え、未育成の個体として生まれる"];
  $("#app").innerHTML=labShell("lbt",`<button class="dback" data-nav="back" onclick="museum()">◀ 研究所</button>`,`<div class="labplq"><b>配合表</b><small>合体で生まれる種族と規則</small></div>`,`<div class="labbody">${elSay(ELLIOT_TALK.table,"analyze")}<div class="lbdc lbtb"><div class="lbth"><span>親1</span><span>親2</span><span>生まれる種族</span></div>${rows}<ul class="lbrules">${rules.map(r=>`<li>${r}</li>`).join("")}</ul></div></div>`,"table");try{window.scrollTo(0,0)}catch(e){}}
-function adopt(i,nm){if(p8Blocked())return;const r=MMP10M.purchase(S,MMP10M.keyOf(i),S.box.length+(S.m?1:0));if(!r.ok)return market(P10_WHY[r.reason]||"購入できません。",MMP10M.keyOf(i));S.cnt=(S.cnt||0)+1;const x=mk(i);if(nm)x.name=nm;if(S.m)S.box.push(x);else S.m=x;sel=[];save();if(typeof MMFEEL=="object"&&MMFEEL)MMFEEL.emit("market.buy");/* 2026-10-06：購入が成立した瞬間（MARKET_PURCHASE） */const first=S.cnt==1,go=()=>{lobby((()=>{const pk=S.m==x?"":"（牧場に預けました）",rs=r.rescued?`はじめての1体のため、所持金を${MMP10M.ECONOMY.marketPrice}Gまで補填しました`:r.continueRescued?`育成を続けるため、不足分${r.topUp}Gを補填して購入しました`:"";if(typeof MMNOTE=="object"&&MMNOTE){const sp=MMP10M.byId(x.sp),im=sp&&sp.image&&sp.image.src;MMNOTE.show({...(im?{img:im}:{icon:"gold"}),title:x.name+"をつれて帰った！"+pk,...(rs?{sub:rs}:{})});return undefined}return `${p11Esc(x.name)}をつれて帰った！`+pk+(rs?`（${rs}）`:"")})()); /* 2026-10-05 試遊（「〇〇をつれて帰った！」が街に残り続ける）：原因＝通常の購入は街の案内欄（.tlow）に出していて、タップするまで消えなかった。→ 購入の知らせはすべてシステム通知の帯（MMNOTE＝約2.6秒で自動で消える・タップで早く消える・セーブしない・街の再描画では出ない）。救済（補填）の文は2行目 */if(first)setTimeout(()=>{try{if(document.querySelector(".map.town"))npcMoment("partner",x.name)}catch(e){}},450)};const kt=typeof karenTalk=="function"?karenTalk("bought"):null;if(kt)kt.then(go);else go()}
+function adopt(i,nm){if(p8Blocked())return;const r=MMP10M.purchase(S,MMP10M.keyOf(i),S.box.length+(S.m?1:0));if(!r.ok)return market(P10_WHY[r.reason]||"購入できません。",MMP10M.keyOf(i));S.cnt=(S.cnt||0)+1;const x=mk(i);if(nm)x.name=MMP11P.monsterName(nm,x.sp);if(S.m)S.box.push(x);else S.m=x;sel=[];save();if(typeof MMFEEL=="object"&&MMFEEL)MMFEEL.emit("market.buy");/* 2026-10-06：購入が成立した瞬間（MARKET_PURCHASE） */const first=S.cnt==1,go=()=>{lobby((()=>{const pk=S.m==x?"":"（牧場に預けました）",rs=r.rescued?`はじめての1体のため、所持金を${MMP10M.ECONOMY.marketPrice}Gまで補填しました`:r.continueRescued?`育成を続けるため、不足分${r.topUp}Gを補填して購入しました`:"";if(typeof MMNOTE=="object"&&MMNOTE){const sp=MMP10M.byId(x.sp),im=sp&&sp.image&&sp.image.src;MMNOTE.show({...(im?{img:im}:{icon:"gold"}),title:x.name+"をつれて帰った！"+pk,...(rs?{sub:rs}:{})});return undefined}return `${p11Esc(x.name)}をつれて帰った！`+pk+(rs?`（${rs}）`:"")})()); /* 2026-10-05 試遊（「〇〇をつれて帰った！」が街に残り続ける）：原因＝通常の購入は街の案内欄（.tlow）に出していて、タップするまで消えなかった。→ 購入の知らせはすべてシステム通知の帯（MMNOTE＝約2.6秒で自動で消える・タップで早く消える・セーブしない・街の再描画では出ない）。救済（補填）の文は2行目 */if(first)setTimeout(()=>{try{if(document.querySelector(".map.town"))npcMoment("partner",x.name)}catch(e){}},450)};const kt=typeof karenTalk=="function"?karenTalk("bought"):null;if(kt)kt.then(go);else go()}
 function msave(){let ok=false;try{localStorage.setItem(MMP8.SAVE_KEY,JSON.stringify(S));ok=localStorage.getItem(MMP8.SAVE_KEY)==JSON.stringify(S)}catch(e){}msg0(ok?`セーブしました（${new Date().toLocaleTimeString("ja-JP")}）`:"このブラウザではセーブできません。セーブコードを使ってください。")}
 const nv=typeof navigator!="undefined"?navigator:{};
 const sl=n=>{try{return JSON.parse(localStorage.getItem("mr4s"+n))}catch(e){return null}};
@@ -4341,7 +4355,7 @@ function imp(){if(p8Blocked())return;let o=null;try{o=MMP8.migrateSave(JSON.pars
 function selm(i){if(p8Blocked())return;const j=sel.indexOf(i);j>=0?sel.splice(j,1):sel.length<2&&sel.push(i);museum("fuse")}
 async function fuse(){
  const all=[S.m,...S.box].filter(Boolean),[a,b]=sel.map(i=>all[i]),rest=all.filter((x,i)=>!sel.includes(i));
- if(p8Blocked())return;if(MMP7.trainRunOf(S.m))return;if(sel.length!=2||!a||!b||a===b)return;const fsp=MMP7.resolveFusionSpecies(a,b);let c;try{c=mk(fsp.sp)}catch(e){return}if(S.g<200)return;S.g-=200;S.cnt=(S.cnt||0)+1;S.fuseCnt=(S.fuseCnt|0)+1;c.rk=Math.max(a.rk||0,b.rk||0);c.s2=b.sp!=a.sp?b.sp:(a.s2!=null&&a.s2!=a.sp?a.s2:b.s2!=null&&b.s2!=a.sp?b.s2:null);if(fsp.special)c.s2=null;c.h=((a.h||0)+(b.h||0)+(a.sp==b.sp?60:30))%360;c.name=cname(a,b);
+ if(p8Blocked())return;if(MMP7.trainRunOf(S.m))return;if(sel.length!=2||!a||!b||a===b)return;const fsp=MMP7.resolveFusionSpecies(a,b);let c;try{c=mk(fsp.sp)}catch(e){return}if(S.g<200)return;S.g-=200;S.cnt=(S.cnt||0)+1;S.fuseCnt=(S.fuseCnt|0)+1;c.rk=Math.max(a.rk||0,b.rk||0);c.s2=b.sp!=a.sp?b.sp:(a.s2!=null&&a.s2!=a.sp?a.s2:b.s2!=null&&b.s2!=a.sp?b.s2:null);if(fsp.special)c.s2=null;c.h=((a.h||0)+(b.h||0)+(a.sp==b.sp?60:30))%360;c.name=MMP11P.monsterName(cname(a,b),c.sp);
  KS.forEach(k=>c[k]=Math.min(999,Math.round((a[k]+b[k])*.6)));
  // Phase 7：通常合体は「子の初期4技＋親の追加技（初期技・必殺技を除く）からランダム1技」。候補が無ければ継承なし。
  {const inh=MMP7.pickFusionInherit(a,b,c.sk,Math.random);if(inh!=null){c.sk=[...c.sk,inh];c.prog.learnSrc[inh]="inherit"}const u=c.sk.slice(0,6);while(u.length<6)u.push(-1);c.eq=u}
@@ -4600,7 +4614,7 @@ function title(){ngMark(P_NEWGAME);bgm("title");if(MMAUDIO.prefetchSe)MMAUDIO.pr
 function togh(k){const m=S.m;while(m.eq.length<6)m.eq.push(-1);const j=m.eq.indexOf(k);let t="わざ設定を変えました。";if(j>=0){if(m.eq.filter(x=>x>=0).length>1)m.eq[j]=-1;else t="技は最低1つ必要です。"}else{const z=m.eq.indexOf(-1);if(z>=0)m.eq[z]=k;else t="6つまで。先にどれかをはずしてね。"}save();hall("w",t)}
 function bcomm(){const m=S.m,l=window.MMNPCE?npcLineX("farm",null,"normal"):null;BCOMM_EX=l?l.expression:"normal";if(l)return l.text;const a=[DAN_TALK.farm[R(DAN_TALK.farm.length)]];if(MMP7.inChapter(m)&&m.raise.turnLimit!=null)a.push(DAN_TALK.chapter(MMP8.turnsLeft(m)));else if(MMP7.raiseState(m)=="farm")a.push(DAN_TALK.interval);return a[R(a.length)]} // Phase 8：疲労・ストレス・寿命のコメントは廃止 // 2026-10-04：進行状態に合う一言があればそれ（MMNPCE.revisit）、無ければ従来
 const tour=()=>S.wk==4&&S.mo%3==0;
-function adv(){MMP8.markBattleDone(S)} // Phase 8：暦・寿命（加齢）は廃止。fight()終了時の呼び出しを「戦闘が最後まで終わった印」としてだけ使う
+function adv(){MMP8.markBattleDone(S);const b=S.m&&S.m.raise&&S.m.raise.battle;if(b&&b.done&&b.kind=="league"&&window.MMRULES){try{const bs=MMRULES.battleStats();if(bs)b.stats=bs}catch(e){}}} /* 2026-10-08（監査 M-03）：決着（WIN!／LOSE）の時点で試合の内容（残りライフ%・与えたダメージ・命中回数）も入れる。fight() はこのすぐ後に save() する＝決着の画面で閉じても大会の順位の計算に実際の値が残る（従来は「もどる」の after() でだけ入れていた） */ // Phase 8：暦・寿命（加齢）は廃止。fight()終了時の呼び出しを「戦闘が最後まで終わった印」としてだけ使う
 function cal(){const T=o=>o%3==0;return `<div class="cal"><b>${S.y}年 ${S.mo}月 第${S.wk}週</b><div class="wks">${[1,2,3,4].map(w=>`<span class="${w==S.wk?"cur":""}">${w==4&&T(S.mo)?"🏆":w}</span>`).join("")}</div><div class="mos">${[...Array(12)].map((_,i)=>`<span class="${i+1==S.mo?"cur":""}">${i+1}${T(i+1)?"🏆":""}</span>`).join("")}</div></div>`}
 async function train(k){const m=S.m;let up=k=="li"?15+R(6):12+R(4);const fail=Math.random()<Math.max(0,m.fa-30)*.008,v0=m[k];
  if(fail){up=0;m.fa=Math.min(100,m.fa+10);m.st=Math.min(100,m.st+10)}else{up=Math.max(1,Math.round(up*(1-m.st/200)));m[k]=Math.min(999,m[k]+up);m.fa=Math.min(100,m.fa+12);m.st=Math.min(100,m.st+(m.last==k?8:3))}
@@ -5076,16 +5090,17 @@ function tourVsOut(d){if(!d)return;d.classList.add("out");setTimeout(()=>d.remov
 
 function p9TourResult(msg){const m=S.m,t=m.raise.tour,lg=t.league,rs=t.result,w=rs.reward,st=MMP8L.standings(lg);
  const cf=Array.from({length:18},(_,i)=>`<i style="left:${(i*37)%100}%;animation-delay:${(i%6)*.35}s"></i>`).join("");
- $("#app").innerHTML=`<div class="p9tour ${rs.won?"p9won":""}">${p9TourHead(m,t)}
- ${rs.won?`<div class="p9win"><div class="cf">${cf}</div>${P9_TROPHY}<b class="big">優勝！</b><div class="sub">ランク${RN[t.rank]}大会を制した！（${st[0].w}勝${st[0].l}敗）</div>${t.rank===5?`<div class="p9newroad"><b>S ランク制覇！</b></div>`:""}</div>`
+ const sn=k=>MMP8.tourEndSeen(rs,k),ec=MMP8.TOUR_END_STEPS.filter(sn).map(k=>" e-"+k).join(""),dis=sn("next")?"":" disabled";
+ $("#app").innerHTML=`<div class="p9tour p9end${ec} ${rs.won?"p9won":""}">${p9TourHead(m,t)}
+ ${rs.won?`<div class="p9win"><div class="cf">${cf}</div><div class="p9wmon" aria-hidden="true"><div class="mon">${msv(m)}</div></div>${P9_TROPHY}<b class="big">優勝！</b><div class="sub">ランク${RN[t.rank]}大会を制した！（${st[0].w}勝${st[0].l}敗）</div>${t.rank===5?`<div class="p9newroad"><b>S ランク制覇！</b></div>`:""}</div>`
   :`<div class="p9lose"><div class="plc">${rs.place}<small>位</small></div><div class="sub">大会終了。優勝（1位）できなかったため、報酬はありません。</div></div>`}
- ${p9Ced(rs.won?CEDRIC_TALK.won:CEDRIC_TALK.lost,rs.won?"victory":"host")}
- ${w?`<section class="p9board2 p9rw"><h3>${w.firstClear?"初回優勝の報酬":"再優勝の報酬"}</h3>${w.firstClear?`<div class="it">🪙 賞金 <b>${w.prize}G</b></div><div class="it">${MMP9ART.ticketIcon(24)} 特訓チケット <b>×${w.tickets}</b></div>`:`<div class="it dim">クリア済みランクのため、報酬はありません</div>`}${w.bonus.length?`<div class="it">⬆ ステータスボーナス <b>${w.bonus.map(b=>`${LAB[b.key]}+${b.amount}`).join("　")}</b></div>`:""}${w.bagUnlocked?`<div class="it">🎒 バッグが6枠に拡張された！</div>`:""}</section>`:""}
+ ${cedricOn()?"":p9Ced(rs.won?CEDRIC_TALK.won:CEDRIC_TALK.lost,rs.won?"victory":"host")}
+ ${w?`<section class="p9board2 p9rw${w.firstClear?" fc":""}"><h3>${w.firstClear?"初回優勝の報酬":"再優勝の報酬"}</h3>${w.firstClear?`<div class="it">🪙 賞金 <b>${w.prize}G</b></div><div class="it">${MMP9ART.ticketIcon(24)} 特訓チケット <b>×${w.tickets}</b></div>`:`<div class="it dim">クリア済みランクのため、報酬はありません</div>`}${w.bonus.length?`<div class="it">⬆ ステータスボーナス <b>${w.bonus.map(b=>`${LAB[b.key]}+${b.amount}`).join("　")}</b></div>`:""}${w.bagUnlocked?`<div class="it">🎒 バッグが6枠に拡張された！</div>`:""}</section>`:""}
  ${msg?`<div class="p9msg p9tmsg">${msg}</div>`:""}${p9Standings(lg,st,true)}${p9Matrix(lg)}
- ${MMP8.canStartFinalTournament(S,m).ok?`<button class="p9btn p9final" onclick="p9FinalTour(this)">最終公式大会へ挑戦する<small>同じ子のまま 公式ランクS大会へ</small></button>`:""}
- <button class="p9btn" onclick="${MMP8.canStartFinalTournament(S,m).ok?"p9FinalSkip()":"p8EndChapter()"}">Chapterを終えてベースキャンプへ</button></div>`;try{window.scrollTo(0,0)}catch(e){}
+ ${MMP8.canStartFinalTournament(S,m).ok?`<button class="p9btn p9final p9endbtn"${dis} onclick="p9FinalTour(this)">最終公式大会へ挑戦する<small>同じ子のまま 公式ランクS大会へ</small></button>`:""}
+ <button class="p9btn p9endbtn"${dis} onclick="${MMP8.canStartFinalTournament(S,m).ok?"p9FinalSkip()":"p8EndChapter()"}">Chapterを終えてベースキャンプへ</button></div>`;try{window.scrollTo(0,0)}catch(e){}
  P9_END_AFTER=()=>{try{if(document.querySelector(".p9tour")&&S.m===m)npcMoment(rs.won?"tourWon":"tourLost",null,null,"tourEnd")}catch(e){}}; // 2026-10-05：初めての大会の結果（優勝／優勝できなかった。どちらか1回だけ）
- if(!P9_SE_SEEN.has(rs)){P9_SE_SEEN.add(rs);P9_END_RS=rs;MMP8.runTourEnd(rs)}} // 2026-10-06：大会の終わりの順（最終順位 → 優勝 → 初回クリアの報酬 → ランクアップ → セドリックの締め → 次）。js/phase8/raising.js の runTourEnd /* 2026-10-05 PHASE B：初回優勝の報酬・バッグの拡張はシステム通知の帯（結果の画面の報酬欄はそのまま） */ // 2026-10-03：初回優勝の報酬（賞金・特訓チケット）＝REWARD、バッグの拡張＝UNLOCK（登録済みの音。結果の画面を出したとき1回）
+ if(!P9_SE_SEEN.has(rs)){P9_SE_SEEN.add(rs);P9_END_RS=rs;MMP8.runTourEnd(rs,{persist:()=>save()})}} /* 2026-10-08（監査 M-02）：始めた段階は rs.endSeen に保存＝再読み込みで流し直さない */ // 2026-10-06：大会の終わりの順（最終順位 → 優勝 → 初回クリアの報酬 → ランクアップ → セドリックの締め → 次）。js/phase8/raising.js の runTourEnd /* 2026-10-05 PHASE B：初回優勝の報酬・バッグの拡張はシステム通知の帯（結果の画面の報酬欄はそのまま） */ // 2026-10-03：初回優勝の報酬（賞金・特訓チケット）＝REWARD、バッグの拡張＝UNLOCK（登録済みの音。結果の画面を出したとき1回）
 const P9_SE_SEEN=new WeakSet();
 // 2026-10-08 正式：最終公式大会＝Chapter 4 の A ランク大会に優勝したあと、同じ育成中の子のまま S ランク大会へ（新しい Chapter は作らない。js/phase8/raising.js の startFinalTournament）
 function p9FinalTour(b){const m=S.m;if(bBusy||!m||!MMP8.canStartFinalTournament(S,m).ok)return;
@@ -5115,17 +5130,23 @@ async function p9TourOpen(k){const on=cedricOn();await p9TourIntro(k,on);
  if(on){const f=finaFlags(),first=!f.cedricWelcome;if(first){f.cedricWelcome=1;save()}bgm("cedric");let drawn=false;try{await MMNPC.talk(CEDRIC_EV.open(k,first),{kind:"event",big:true,scene:CED_SCENE(k,"opening"),noFig:true,onClose:()=>{drawn=true;P9_ENTER=true;board()}})}catch(e){}if(drawn)return} // 2026-10-07：大会前の導入の曲（CEDRIC）→ 対戦表で対戦表の曲 // 2026-10-07 試遊：閉じ始めに対戦表を下に描く（会話のフェードの間に受付の画面が一瞬見えていた）
  P9_ENTER=true;board()}
 let P9_END_RS=null,P9_END_UP=null,P9_END_AFTER=null,P9_END_FX=false;
-MMP8.registerTourEndHook("final",()=>{P9_END_UP=null});
-MMP8.registerTourEndHook("rankUp",async d=>{P9_END_UP=d;P9_END_FX=false;const m=S.m;
+// 2026-10-08（監査 M-01）：大会の終わりの正式の順＝全試合の終了 → 最終順位 → （優勝なら）モンスターの勝利演出 → 初回報酬 → ランクアップ／解放 → セドリックの締め → 次の画面。
+//  結果の画面は段階ごとに見せる（.p9tour.p9end の e-段階名。始めた段階は rs.endSeen＝再読み込みでも同じ見え方）。「次の画面」のボタンは next の段階まで押せない（L-02）。
+//  間（ms）は本番だけ。自動テスト（MM_QA_NO_TOURFX）・視差を減らす設定では待たない。セドリックの静的な一言（p9Ced）は締めの会話と二重になるため、会話を出さないときだけ
+const p9EndWait=ms=>window.MM_QA_NO_TOURFX||(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)?Promise.resolve():new Promise(r=>setTimeout(r,ms));
+const p9EndMark=step=>{const el=document.querySelector(".p9tour.p9end");if(!el)return false;el.classList.add("e-"+step);if(step=="next")el.querySelectorAll(".p9endbtn").forEach(b=>b.disabled=false);return true};
+const p9EndHere=m=>!!document.querySelector(".p9tour.p9end")&&S.m===m;
+MMP8.registerTourEndHook("final",async()=>{const m=S.m;p9EndMark("final");if(p9EndHere(m))await p9EndWait(900)});
+MMP8.registerTourEndHook("champion",async()=>{const m=S.m;p9EndMark("champion");if(p9EndHere(m))await p9EndWait(1900)});   // モンスターの勝利演出（正式画像が跳ねて光る。専用の素材・音は未着）
+MMP8.registerTourEndHook("rankUp",async d=>{P9_END_UP=d;P9_END_FX=false;const m=S.m;p9EndMark("rankUp");
  if(!RANK_UP_ART[d.to]||window.MM_QA_NO_TOURFX)return;   // 2026-10-08 正式：昇格＝D優勝→C・C→B・B→A・A→S。E・D は最初から解放済み＝E→D の昇格は無い（E→D 用の B1〜B7 は使わない・流用しない）。D→C 以降の正式カットは未着＝演出なし（解放だけ）
- await new Promise(r=>setTimeout(r,2600));if(!document.querySelector(".p9tour")||S.m!==m)return;   // 先に優勝（モンスターの勝利）と初回報酬を見せてから
- const A=RANK_UP_ART[d.to];await p9Frames(A.fx,A.ms,"p9ru");P9_END_FX=true});
-MMP8.registerTourEndHook("cedricEnd",async()=>{const rs=P9_END_RS,m=S.m;if(!rs||!cedricOn())return;await new Promise(r=>setTimeout(r,P9_END_FX?300:rs.won?2200:900));if(!document.querySelector(".p9tour")||S.m!==m)return;try{await MMNPC.talk(CEDRIC_EV.close(rs,P9_END_UP,m&&m.name),{kind:"event",big:true,scene:CED_SCENE(rs.rank,"booth"),noFig:true})}catch(e){}});
-MMP8.registerTourEndHook("legendUnlock",()=>{legendEvent()});
-MMP8.registerTourEndHook("next",()=>{const f=P9_END_AFTER;P9_END_AFTER=null;if(f)setTimeout(f,cedricOn()?300:1100)});
+ if(!p9EndHere(m))return;const A=RANK_UP_ART[d.to];await p9Frames(A.fx,A.ms,"p9ru");P9_END_FX=true});
+MMP8.registerTourEndHook("cedricEnd",async()=>{const rs=P9_END_RS,m=S.m;p9EndMark("cedricEnd");if(!rs||!cedricOn())return;await p9EndWait(P9_END_FX?300:600);if(!p9EndHere(m))return;try{await MMNPC.talk(CEDRIC_EV.close(rs,rs.reward&&rs.reward.rankUp,m&&m.name),{kind:"event",big:true,scene:CED_SCENE(rs.rank,"booth"),noFig:true})}catch(e){}});   // ランクアップの有無は結果のデータから（再読み込みで rankUp の段階を飛ばしても文が変わらない）
+MMP8.registerTourEndHook("legendUnlock",()=>{p9EndMark("legendUnlock");legendEvent()});
+MMP8.registerTourEndHook("next",()=>{p9EndMark("next");const f=P9_END_AFTER;P9_END_AFTER=null;if(f)setTimeout(f,cedricOn()?300:1100)});
 
 // 大会の終わりの段階の差し込み口（2026-10-06）：初回クリアの報酬＝従来の音と帯（REWARD・UNLOCK・MMNOTE）。ランクアップの演出・セドリックの締めの正式 UI は素材待ち（何も出さない）
-MMP8.registerTourEndHook("firstReward",d=>{MMAUDIO.se("REWARD",{delay:.5});if(d.bagUnlocked)MMAUDIO.se("UNLOCK",{delay:1.2});if(typeof MMNOTE=="object"&&MMNOTE){MMNOTE.show({icon:"reward",title:`賞金 ${d.prize}G を手に入れた！`,sub:`初回優勝の報酬・特訓チケット ×${d.tickets}`});if(d.bagUnlocked)MMNOTE.show({icon:"unlock",title:"バッグが6枠に拡張された！"})}});
+MMP8.registerTourEndHook("firstReward",async d=>{const m=S.m;p9EndMark("firstReward");MMAUDIO.se("REWARD",{delay:.5});if(d.bagUnlocked)MMAUDIO.se("UNLOCK",{delay:1.2});if(typeof MMNOTE=="object"&&MMNOTE){MMNOTE.show({icon:"reward",title:`賞金 ${d.prize}G を手に入れた！`,sub:`初回優勝の報酬・特訓チケット ×${d.tickets}`});if(d.bagUnlocked)MMNOTE.show({icon:"unlock",title:"バッグが6枠に拡張された！"})}if(p9EndHere(m))await p9EndWait(d.bagUnlocked?3600:2700)});   // 帯（約2.6秒）を見せてからランクアップ・締めへ
 function p8RewardText(w){return (w.bonus.length?`<br>ステータスボーナス：${w.bonus.map(b=>`${LAB[b.key]}+${b.amount}`).join("・")}`:"")+(w.firstClear?`<br>初回優勝：賞金 ${w.prize}G・🎫特訓チケット×${w.tickets}`+(w.bagUnlocked?"・バッグが6枠に拡張！":""):"<br>（クリア済みのランクのため、報酬はありません）")}
 // 2026-10-03（試遊で「対戦前の画面が多く遅い」）：大会は VS 画面（相手の発表＋能力比較＝1枚）から直接 fight() へ。Battle 開始前の導入（p9PreBattle）は練習試合だけ
 function p8TourFight(){const m=S.m,t=m&&m.raise.tour;if(bBusy||!t||t.status!="league")return board();if(!MMP8.beginBattle(S,m,{kind:"league",rank:t.rank}).ok)return board();save();try{const pm=MMP8.tourNext(m),ev=pm&&MMP8L.entrantView(t.league,pm.opp);if(ev)battleFoeOnce(ev.sp)}catch(e){}fight(t.rank)} // 2026-10-07：実際の相手の種族＝対戦表・大会2・VS の相手の種族（fight() は変えず、最初の乱数の1回だけ）

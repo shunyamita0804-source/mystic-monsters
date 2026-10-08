@@ -119,12 +119,12 @@ async function toGoal(pg, { rk = 0, stats } = {}) {
   await pg.evaluate(([rk, stats]) => { const m = mk(0); m.name = 'ソラ'; if (stats) Object.assign(m, stats); MMP7.ensureProg(m); m.rk = rk; S.m = m; save(); MMP8.depart(S, m, () => 0.37); const t = MMP8.trackOf(1); Object.assign(m.raise, { node: t.goal, goal: true, pend: null, turnsUsed: 20 }); save(); board(); }, [rk, stats || null]);
   await pg.waitForSelector('#chrcv .rcv-row'); await pg.waitForTimeout(450); await pg.waitForFunction(() => [...document.querySelectorAll('.rcv-img')].every((i) => i.complete && i.naturalWidth > 0), null, { timeout: 10000 });
 }
-test('JR-6：大会受付のランク選択：上から S→E。参加できるランク（既存の解放条件）だけ選べ、それ以外は鎖と錠（参加不可・押せない）。セドリックは出さず、フィナが案内。ランクを選ぶとフィナの見立て（余裕／互角／厳しい）。参加はプレイヤーが「この大会に参加する」で決める', { skip: SKIP }, async () => {
+test('JR-6：大会受付のランク選択：上から S→E。参加できるランク（既存の解放条件）だけ選べ、それ以外は参加不可の札（押せない）。セドリックは出さず、フィナが案内。ランクを選ぶとフィナの見立て（余裕／互角／厳しい）。参加はプレイヤーが「この大会に参加する」で決める', { skip: SKIP }, async () => {
   const p = await open(); const pg = p.page;
   await toGoal(pg);
-  const r = await pg.evaluate(() => ({ open: [...document.querySelectorAll('.rcv-row.ok')].map((b) => b.dataset.rank), locked: [...document.querySelectorAll('.rcv-row.lk')].map((d) => [d.dataset.rank, /rank_unavailable_/.test(d.querySelector('.rcv-img').getAttribute('src')), d.querySelector('.rcv-img').complete && d.querySelector('.rcv-img').naturalWidth > 0   /* 2026-10-05：鎖と錠は正式画像（rank_unavailable_X） */, d.tagName, d.textContent.includes('参加不可')]), order: [...document.querySelectorAll('.rcv-row')].map((x) => RN[+x.dataset.rank]).join(''), ban: document.querySelector('.rcv-ban b').textContent, ced: document.querySelectorAll('.p9ced:not(.p9fina)').length, fina: document.querySelector('#p9fsay .p9fina .tx b').textContent, text: document.querySelector('#p9fsay').textContent, join: [document.querySelector('#p9join').disabled, document.querySelector('#p9join').textContent] }));
+  const r = await pg.evaluate(() => ({ open: [...document.querySelectorAll('.rcv-row.ok')].map((b) => b.dataset.rank), locked: [...document.querySelectorAll('.rcv-row.lk')].map((d) => [d.dataset.rank, d.querySelector('.rcv-img').classList.contains('na') && d.querySelector('.rcv-st.no .rcv-now').textContent === '参加不可', d.querySelector('.rcv-img').complete && d.querySelector('.rcv-img').naturalWidth > 0   /* 2026-10-08（監査 stale）：2026-10-07 正式UI回収から全行が recovery_1006/tournament/rank_X.png（鎖なし）。参加不可は画像の .na と赤い札「参加不可」 */, d.tagName, d.textContent.includes('参加不可')]), order: [...document.querySelectorAll('.rcv-row')].map((x) => RN[+x.dataset.rank]).join(''), ban: document.querySelector('.rcv-ban b').textContent, ced: document.querySelectorAll('.p9ced:not(.p9fina)').length, fina: document.querySelector('#p9fsay .p9fina .tx b').textContent, text: document.querySelector('#p9fsay').textContent, join: [document.querySelector('#p9join').disabled, document.querySelector('#p9join').textContent] }));
   assert.deepEqual(r.open, ['1', '0'], 'Chapter 1・未クリア：E・D だけ'); assert.equal(r.order, 'SABCDE'); assert.equal(r.ban, '公式大会');
-  assert.deepEqual(r.locked, [['5', true, true, 'DIV', true], ['4', true, true, 'DIV', true], ['3', true, true, 'DIV', true], ['2', true, true, 'DIV', true]], 'C〜S は鎖と錠・参加不可（押せない）');
+  assert.deepEqual(r.locked, [['5', true, true, 'DIV', true], ['4', true, true, 'DIV', true], ['3', true, true, 'DIV', true], ['2', true, true, 'DIV', true]], 'C〜S は参加不可の札（押せない）');
   assert.equal(r.ced, 0, 'ランク選択にセドリックは出さない'); assert.equal(r.fina, 'フィナ'); assert.match(r.text, /どのランクに挑戦する？/); assert.equal(r.join[0], true, 'ランクを選ぶまで参加できない'); assert.match(r.join[1], /この大会に参加する/);
   await pg.click('.rcv-row.ok[data-rank="0"]', { force: true }); await pg.waitForTimeout(120);
   const s1 = await pg.evaluate(() => ({ j: document.querySelector('#p9fsay').dataset.judge, t: document.querySelector('#p9fsay').textContent, started: !!S.m.raise.tour, sel: [...document.querySelectorAll('.rcv-row.sel')].map((x) => x.dataset.rank), join: !document.querySelector('#p9join').disabled }));
@@ -136,26 +136,32 @@ test('JR-6：大会受付のランク選択：上から S→E。参加できる�
   assert.deepEqual(p.errors, []);
 });
 
-test('JR-7：大会開始：ランクを選んで「この大会に参加する」→ 暗転 → ランクのロゴ（E・RANK・「公式ランクE大会」）→ セドリックの一言 → 順位表（参加者が右から順に入り、そのあと通常の表示）。次の対戦相手の行だけ光る', { skip: SKIP }, async () => {
+test('JR-7：大会開始（E）：ランクを選んで「この大会に参加する」→ 正式のランク開始演出（A1〜A6 を順に重ねる）→ 対戦表（参加者が順に入り、そのあと通常の表示）。次の対戦相手の行だけ光る。D は従来の演出（エンブレム → セドリックの一言）', { skip: SKIP }, async () => {
+  // 2026-10-08（監査 stale）：c72e69c（大会〜バトル追補便）で E の開始演出は正式カット A1〜A6（p9Frames・.p9fx.p9rs）になり、E では #p9intro が出ない。セドリックの開会は共通会話（npc のテストだけ）
   const p = await open(); const pg = p.page;
   await toGoal(pg);
-  await pg.evaluate(() => { window.__seq = []; new MutationObserver(() => { const d = document.querySelector('#p9intro'); const k = !d ? 'none' : d.classList.contains('ced') ? 'cedric' : d.classList.contains('em') ? 'emblem' : 'dark'; if (window.__seq[window.__seq.length - 1] !== k) window.__seq.push(k); if (document.querySelector('.p9tour') && !window.__seq.includes('tour')) window.__seq.push('tour'); }).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class'] }); });
+  await pg.evaluate(() => { window.__seq = []; new MutationObserver(() => { const f = document.querySelector('.p9fx.p9rs'); const k = f ? 'frames' : document.querySelector('.p9tour') ? 'tour' : null; if (k && window.__seq[window.__seq.length - 1] !== k) window.__seq.push(k);
+    if (f) f.querySelectorAll('img.on').forEach((x) => { const i = [...f.querySelectorAll('img')].indexOf(x); if (!window.__seq.includes('A' + (i + 1))) window.__seq.push('A' + (i + 1)); }); }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] }); });
   await pg.click('.rcv-row.ok[data-rank="0"]', { force: true }); await pg.waitForTimeout(450); await pg.click('#p9join', { force: true });
-  await pg.waitForSelector('#p9intro.em');
-  await pg.waitForFunction(() => { const e = document.querySelector('.p9iem-l'); return !!e && e.getBoundingClientRect().width >= 110; }, null, { timeout: 1300 }).catch(() => {});   // 拡大の登場アニメの途中で測らない（約0.5秒）
-  const em = await pg.evaluate(() => ({ l: document.querySelector('.p9iem-l').textContent, r: document.querySelector('.p9iem-r').textContent, t: document.querySelector('.p9iem b').textContent, tour: !!S.m.raise.tour, w: Math.round(document.querySelector('.p9iem-l').getBoundingClientRect().width) }));
-  assert.deepEqual({ ...em, w: em.w >= 110 }, { l: 'E', r: 'RANK', t: '公式ランクE大会', tour: true, w: true }, 'ランクのロゴを大きく（参加は確定済み）');
-  await pg.waitForSelector('#p9intro.ced');
-  assert.deepEqual(await pg.evaluate(() => [document.querySelector('.p9iced .tx b').textContent, document.querySelector('.p9iced .tx').textContent.replace('セドリック', '')]), ['セドリック', '公式ランクE大会を開始します。参加者を紹介しましょう。']);
-  await pg.waitForFunction(() => !document.querySelector('#p9intro') && !!document.querySelector('.p9tour'), null, { timeout: 15000 });
+  await pg.waitForSelector('.p9fx.p9rs');
+  const fx = await pg.evaluate(() => ({ n: document.querySelectorAll('.p9fx.p9rs img').length, src: [...document.querySelectorAll('.p9fx.p9rs img')].map((i) => i.getAttribute('src')), tour: !!S.m.raise.tour, intro: !!document.querySelector('#p9intro') }));
+  assert.equal(fx.n, 6, 'A1〜A6'); assert.ok(fx.src.every((u) => /assets\/tournament\/rank_start\//.test(u)), fx.src.join(',')); assert.equal(fx.tour, true, '参加は確定済み'); assert.equal(fx.intro, false, 'E では旧 #p9intro を出さない');
+  await pg.waitForFunction(() => !document.querySelector('.p9fx') && !!document.querySelector('.p9tour'), null, { timeout: 15000 });
   const seq = await pg.evaluate(() => window.__seq);
-  assert.ok(seq.indexOf('emblem') < seq.indexOf('cedric') && seq.indexOf('cedric') < seq.indexOf('tour'), `順序：エンブレム → セドリック → 順位表（${seq.join('→')}）`);
-  const en = await pg.evaluate(() => ({ enter: !!document.querySelector('.tb1g.tbenter'), rows: [...document.querySelectorAll('.tb1g .tbrw')].map((r) => r.getAnimations().length > 0) }));   // 大会1 対戦表の参加者（行）が順に入る（2026-10-07 ADDENDUM2：行＝.tbrw）
+  assert.deepEqual(seq.filter((x) => /^A/.test(x)), ['A1', 'A2', 'A3', 'A4', 'A5', 'A6'], `カットの順（${seq.join('→')}）`); assert.ok(seq.indexOf('frames') < seq.indexOf('tour'), seq.join('→'));
+  const en = await pg.evaluate(() => ({ enter: !!document.querySelector('.tb1g.tbenter'), rows: [...document.querySelectorAll('.tb1g .tbrw')].map((r) => r.getAnimations().length > 0) }));
   assert.equal(en.enter, true); assert.ok(en.rows.some(Boolean), '参加者が順に入ってくる');
   await pg.waitForTimeout(1200);
-  const st = await pg.evaluate(() => { const rows = [...document.querySelectorAll('.tb1g .tbnm')]; const nx = rows.filter((r) => r.classList.contains('nx')); const pm = MMP8.tourNext(S.m); const lg = S.m.raise.tour.league; return { n: rows.length, nxt: nx.length, name: nx[0] && nx[0].textContent, opp: lg.entrants[pm.opp].name, inside: rows.every((r) => { const b = r.getBoundingClientRect(); return b.left >= -1 && b.right <= innerWidth + 1; }), vis: rows.every((r) => getComputedStyle(r).opacity === '1' || r.classList.contains('nx')), ced: document.querySelectorAll('.p9tour .p9ced').length }; });
-  assert.equal(st.n, 6); assert.equal(st.nxt, 1, '次の対戦相手の行だけ光る'); assert.ok(String(st.opp).includes(st.name), `${st.name} / ${st.opp}`); assert.ok(st.inside && st.vis, '登場のあとは通常の表示'); assert.equal(st.ced, 0, '2026-10-07 ADDENDUM2：対戦表にセドリックの常駐の一言は出さない');
+  const st = await pg.evaluate(() => { const rows = [...document.querySelectorAll('.tb1g .tbnm')]; const nx = rows.filter((r) => r.classList.contains('nx')); const pm = MMP8.tourNext(S.m); const lg = S.m.raise.tour.league;
+    return { n: rows.length, nxt: nx.length, name: nx[0] && nx[0].textContent, opp: lg.entrants[pm.opp].name, inside: rows.every((r) => { const b = r.getBoundingClientRect(); return b.left >= -1 && b.right <= innerWidth + 1; }), ced: document.querySelectorAll('.p9ced').length }; });
+  assert.equal(st.n, 6); assert.equal(st.nxt, 1, '次の対戦相手の行だけ光る'); assert.ok(String(st.opp).includes(st.name), `${st.name} / ${st.opp}`); assert.ok(st.inside, '登場のあとは画面の中'); assert.equal(st.ced, 0, '対戦表にセドリックの常駐の一言は出さない');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+  // D：正式カットが無い＝従来の演出（エンブレム → セドリックの一言。セドリックの会話を出さない設定のとき）。open() は前のページを閉じる
+  const q = await open(); const qg = q.page; await toGoal(qg);
+  await qg.click('.rcv-row.ok[data-rank="1"]', { force: true }); await qg.waitForTimeout(450); await qg.click('#p9join', { force: true });
+  await qg.waitForSelector('#p9intro.em'); assert.equal(await qg.evaluate(() => document.querySelector('.p9iem b').textContent), '公式ランクD大会');
+  await qg.waitForSelector('#p9intro.ced'); await qg.waitForFunction(() => !document.querySelector('#p9intro') && !!document.querySelector('.p9tour'), null, { timeout: 15000 });
+  assert.deepEqual(q.errors, []); assert.deepEqual(q.bad, []);
 });
 
 for (const size of [H.SIZES.base, H.SIZES.se]) {
@@ -344,9 +350,9 @@ test('JR-14：マスUI（正式素材）：今の背景のマスに正式素材�
   const by = Object.fromEntries(a.tiles.map((t) => [t.id, t.img]));
   const T2 = './assets/fields/ch1a/tiles_v2/';   // 2026-10-06：小型の立体マス（宝箱は段階ごと）
   assert.equal(by.p1_1, T2 + 'tile_stat_toughness.webp'); assert.equal(by.p1_2, T2 + 'tile_treasure_1.webp'); assert.equal(by.p1_4, T2 + 'tile_treasure_2.webp', 'rare＝宝箱2'); assert.equal(by.p1_3, T2 + 'tile_blank.webp', '通常マスは白紙の円盤'); assert.equal(a.tiles.find((t) => t.id === 'p1_3').type, 'normal'); assert.equal(by.p1_0, undefined, 'スタートには置かない');
-  // 能力マス（丈夫さ）に止まる：ガウル（丈夫さ E）は +2（2026-10-06：Chapter 1 は C+3 の表）、マスが光り、使ったマスは少し暗く
-  const de0 = await pg.evaluate(() => S.m.de); await rollAs(pg, 1); await pg.waitForSelector('.chpop'); await pg.waitForFunction(() => /\+2/.test((document.querySelector('.chpop') || {}).textContent || ''), null, { timeout: 5000 }); const pop = await pg.evaluate(() => [document.querySelector('.chpop').textContent, document.querySelector('.chf-tile[data-id="p1_1"]').classList.contains('hit')]); await idle(pg);
-  assert.deepEqual([pop[1], await pg.evaluate(() => S.m.de) - de0, await pg.evaluate(() => document.querySelector('.chf-tile[data-id="p1_1"]').classList.contains('used'))], [true, 2, true]); assert.match(pop[0], /丈夫さ \+2/);
+  // 能力マス（丈夫さ）に止まる：ガウル（丈夫さ E）は +11（2026-10-08 正式：全 Chapter 共通の GROWTH_GAIN A25 B21 C18 D14 E11。旧 Chapter 1 の E+2 は廃止）、マスが光り、使ったマスは少し暗く
+  const de0 = await pg.evaluate(() => S.m.de); await rollAs(pg, 1); await pg.waitForSelector('.chpop'); await pg.waitForFunction(() => /\+11/.test((document.querySelector('.chpop') || {}).textContent || ''), null, { timeout: 5000 }); const pop = await pg.evaluate(() => [document.querySelector('.chpop').textContent, document.querySelector('.chf-tile[data-id="p1_1"]').classList.contains('hit')]); await idle(pg);
+  assert.deepEqual([pop[1], await pg.evaluate(() => S.m.de) - de0, await pg.evaluate(() => document.querySelector('.chf-tile[data-id="p1_1"]').classList.contains('used'))], [true, 11, true]); assert.match(pop[0], /丈夫さ \+11/);
   // 宝箱（normal）：止まると通常の宝箱が現れて開く。rare は宝箱の絵を出さない（従来の表示＝マスUIだけ）
   const chest = () => pg.evaluate(() => { const o = document.querySelector('#chf .chf-obj[data-id="p1_2"]'), im = o && o.querySelector('img'); return o ? { hid: o.classList.contains('hid'), src: im.getAttribute('src'), ok: im.naturalWidth > 0 } : null; });
   assert.deepEqual(await chest(), { hid: true, src: './assets/chests/chest_01_base.webp', ok: true }, '止まるまでは見えない（2026-10-03 正式の宝箱 chest_01）');

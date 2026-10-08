@@ -43,7 +43,7 @@ test('N6-02：新人支援＝聖獣士登録のあと1回だけ 1000G＋薬草×
 });
 
 test('N6-03：TEST 大会＝TEST_MODE の1か所で入口ごと消せる。大会の間は保存しない。終わり・辞退・中断・放棄・メニューで始める前のセーブへ戻す', () => {
-  assert.match(HTML, /\nconst TEST_MODE=true;/);
+  assert.match(HTML, /\nconst TEST_MODE=(true|false);/, '2026-10-08（監査 L-37）：値は固定しない（リリースで false にしてもテストが落ちない）。false の挙動は AF-06');
   assert.equal((HTML.match(/onclick="testTour\(\)"/g) || []).length, 1); assert.match(HTML, /\$\{TEST_MODE&&!S\.playerNamePending\?`<button class="ttest" onclick="testTour\(\)"/, 'ボタンは TEST_MODE のときだけ');
   assert.match(fnOf('testTour'), /^function testTour\(\)\{if\(!TEST_MODE\|\|TEST_TOUR\|\|S\.playerNamePending\)return;const snap=JSON\.stringify\(S\);/, 'TEST_MODE が false なら何もしない・始める前のセーブを控える');
   assert.match(fnOf('save'), /^function save\(\)\{if\(P8_LOAD\.locked\|\|TEST_TOUR\)return;/, 'TEST 大会の間は保存しない');

@@ -706,16 +706,25 @@
     out.push({ step: 'next' });
     return out;
   }
-  /** 段階を順に流す（差し込み口が無い段階は飛ばす）。戻り値＝流した段階の名前 */
-  async function runTourEnd(result) {
-    const ran = [];
+  /** 段階を順に流す（差し込み口が無い段階は飛ばす）。戻り値＝流した段階の名前
+   *  2026-10-08（監査 M-02）：始めた段階は result.endSeen（v6 の任意項目・段階名の配列）に印を付け、opts.persist()（セーブ）を呼ぶ。
+   *  結果の画面で再読み込み・再起動しても、もう始めた段階（賞金の帯・ランクアップ・セドリックの締めなど）は流し直さない（データは決着の1回のまま）。
+   *  まだ始めていない段階だけを続きから流す */
+  async function runTourEnd(result, opts) {
+    const ran = [], persist = opts && typeof opts.persist === 'function' ? opts.persist : null;
+    if (result && !Array.isArray(result.endSeen)) result.endSeen = [];
     for (const d of tourEndSteps(result)) {
+      if (result.endSeen.includes(d.step)) continue;
+      result.endSeen.push(d.step);
+      if (persist) { try { persist(d.step); } catch (e) { /* 保存の失敗で進行を止めない */ } }
       ran.push(d.step);
       for (const fn of tourEndHooks[d.step] || []) { try { await fn(d); } catch (e) { /* 演出の失敗で進行を止めない */ } }
     }
     return ran;
   }
-  Object.assign(API, { TOUR_END_STEPS, registerTourEndHook, tourEndSteps, runTourEnd });
+  /** その段階をもう始めたか（結果の画面を描き直すときに使う） */
+  const tourEndSeen = (result, step) => !!(result && Array.isArray(result.endSeen) && result.endSeen.includes(step));
+  Object.assign(API, { TOUR_END_STEPS, registerTourEndHook, tourEndSteps, runTourEnd, tourEndSeen });
 
   // =========================================================
   // LEGEND ランク（2026-10-07 正式仕様。今は差し込み口だけ）

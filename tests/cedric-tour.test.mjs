@@ -65,7 +65,7 @@ test('CED-4：表示場所：ゴールのランク選択・順位表（次の相
   assert.ok(!tour.includes('p9Ced(') && tour.includes('<button class="p9btn p9go tp2go tbgo" onclick="p9CompareScr()"'), '2026-10-07 ADDENDUM2：対戦表にセドリックの常駐の一言は出さない（大会の始まりと締めの会話だけ）→「対戦する」');
   assert.ok(tour.includes('${msg?`<div class="p9msg p9tmsg">${msg}</div>`:""}'), '試合結果などの通知は顔・名前なしのまま');
   assert.ok(between('function p9VsScr(){', '\nfunction p9VsGo(').includes('${p9Ced(CEDRIC_TALK.vs,"kickoff")}<div class="p9vs-fr">'));
-  assert.ok(between('function p9TourResult(msg){', '\nfunction p8RewardText(').includes('${p9Ced(rs.won?CEDRIC_TALK.won:CEDRIC_TALK.lost,rs.won?"victory":"host")}'));
+  assert.ok(between('function p9TourResult(msg){', '\nfunction p8RewardText(').includes('${cedricOn()?"":p9Ced(rs.won?CEDRIC_TALK.won:CEDRIC_TALK.lost,rs.won?"victory":"host")}'), '2026-10-08（監査 M-01）：結果の画面の静的な一言は、締めの会話（cedricEnd）を出さないときだけ（二重にしない）');
   assert.equal((HTML.match(/p9Ced\(/g) || []).length, 3, '定義＋2か所（2026-10-07：大会1 対戦表からは外した・旧 VS 画面 p9VsScr（流れから外した）・結果）だけ。2026-10-06：大会2（対戦前比較）は正式デザインどおりセドリックを出さない。ランク選択はフィナ');
   // 大会の処理（参加・試合開始・辞退・終了）は変えていない
   assert.match(lineOf('function p8TourStart('), /^function p8TourStart\(k,b\)\{if\(bBusy\)return;if\(!p9arm\(b,`もう一度押すとランク\$\{RN\[k\]\}大会に参加`\)\)\{finaRankSay\(k\);return\}const r=MMP8\.startTournament\(S,S\.m,k\);if\(!r\.ok\)return board\(\);save\(\);p9TourOpen\(k\)\}$/, '1回目の押下はフィナの見立て、2回目で参加 → 開始演出 → 順位表');
@@ -143,11 +143,13 @@ test('CED-B1（2026-10-07 追補便）：ランク選択はフィナの見立て
   await pg.waitForSelector('.tb1 .tbgo');
   assert.equal(await pg.evaluate(() => document.querySelectorAll('.p9ced:not(.p9fina)').length), 0, '大会1 対戦表にセドリックは出さない（ADDENDUM2）');
   assert.match(await pg.evaluate(() => document.querySelector('.tb1>.tbbg').style.backgroundImage), /tournament\/venues\/venue_D\.webp/, '対戦表の会場＝正式の venue');
+  // 初めての公式大会の一言（対戦表の 0.9秒後・1回だけ）を先に送る。2026-10-08（監査 M-01）：自動テストでは大会の終わりの段階の間を待たないので、試合を一気に進めるとこの一言が締めの会話を上書きしていた（実際のプレイでは5試合が0.9秒で終わることは無い）
+  await pg.waitForSelector('.mmtalk', { timeout: 5000 }).catch(() => {}); await H.finishTalk(pg).catch(() => {});
   assert.ok(await simMatch(pg, true)); await pg.waitForSelector('.p9tmsg');
   assert.equal(await pg.evaluate(() => document.querySelector('.p9tmsg').textContent), '第1試合：勝ち！');
   assert.ok(await sysClean(pg), '試合結果の通知にセドリックの顔・名前は付かない');
   for (let i = 0; i < 4; i++) assert.ok(await simMatch(pg, true));
-  await pg.waitForSelector('.p9tour.p9won'); await H.finishTalk(pg).catch(() => {});
+  await pg.waitForSelector('.p9tour.p9won', { state: 'attached' });   // 2026-10-08（監査 M-01）：自動テスト（MM_QA_NO_TOURFX）では段階の間を待たないので、締めの会話（背景つき＝下の画面は隠れる）はすぐ出る＝先に送らない
   await pg.waitForFunction(() => { const o = document.querySelector('.mmtalk-nofig:not(.mmtalk-out)'); return o && /booth_D/.test(o.querySelector('.mmtalk-scenebg').style.backgroundImage); }, null, { timeout: 20000 });
   const s2 = await scene(); assert.deepEqual([s2.bg, s2.fig, s2.name], ['assets/tournament/cedric/booth_D.webp', 'none', 'セドリック'], '締め＝ランクDの booth（実況席）');
   await H.finishTalk(pg).catch(() => {});

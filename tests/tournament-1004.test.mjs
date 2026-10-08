@@ -64,5 +64,5 @@ test('TN-05：S ランク制覇の表示（2026-10-08 正式：旧「Chapter 5 �
   assert.doesNotMatch(fnOf('p8AfterBattle'), /chapter5/, 'S 優勝で旧 chapter5 フラグを立てない');
   assert.match(fnOf('p9TourResult'), /t\.rank===5\?`<div class="p9newroad"><b>S ランク制覇！<\/b><\/div>`:""/);
   assert.doesNotMatch(CODE, /Chapter 5 は準備中|chapter5Scr|function ch5|Chapter 5 へ出発/, 'Chapter 5 の表示・画面は無い');
-  assert.match(CODE, /MMP8\.registerTourEndHook\("legendUnlock",\(\)=>\{legendEvent\(\)\}\)/, 'S 優勝 → イベント（システム通知）→ 解禁');
+  assert.match(CODE, /MMP8\.registerTourEndHook\("legendUnlock",\(\)=>\{p9EndMark\("legendUnlock"\);legendEvent\(\)\}\)/, 'S 優勝 → イベント（システム通知）→ 解禁');
 });

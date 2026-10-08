@@ -178,7 +178,7 @@ test('QA-G6-8：合体の子の名前：絵文字（サロゲートペア）を�
   assert.equal(oldCname(nm('ソ🐶'), nm('ガ🐦')).isWellFormed(), false, '（以前の切り方では壊れた文字になる例）');
   for (const [a, b] of [['ソラモ', 'ガウル'], ['ガウル', 'ソラモ'], ['ノビトン', 'ジオル'], ['A', 'B'], ['アルト', 'Z'], ['ｿﾗﾓ★', 'ｶﾞｳﾙ'], ['ソラモソラモソラ', 'ガウルガウルガウ'], ['Sora 2', 'x&<y>']])
     assert.equal(cname(nm(a), nm(b)), oldCname(nm(a), nm(b)), `ふつうの名前は以前と同じ：${a}+${b}`);
-  assert.match(HTML, /c\.name=cname\(a,b\);/, '合体で子に名前を付ける所は従来どおり');
+  assert.match(HTML, /c\.name=MMP11P\.monsterName\(cname\(a,b\),c\.sp\);/, '合体で子に名前を付ける所（2026-10-08 監査 H-05：正規化を通す）');
   assert.match(HTML, /<b>生まれるモンスター：\$\{p11Esc\(cname\(a,c\)\)\}<\/b>/, '表示は従来どおり p11Esc を通す');
 });
 

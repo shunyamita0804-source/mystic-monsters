@@ -319,7 +319,7 @@ test('CH1-B14：バトル地点：目印は無く、着いたら「！」（2026
   await pg.waitForSelector('.chbat'); await idle(pg);
   const order = await pg.evaluate(() => window.__order);
   assert.ok(order.indexOf('alert') >= 0 && order.indexOf('chbat') > order.indexOf('alert'), `「！」のあとに案内（${order.join('→')}）`); assert.equal(order.indexOf('rustle'), -1, '2026-10-04 G3：予兆の草むら（草の断片に見えた）は出さない');
-  assert.deepEqual(await pg.evaluate(() => [document.querySelectorAll('.chf-alert,.chf-rustle').length, document.querySelector('.chbat h3').textContent, [...document.querySelectorAll('.chwing')].map((w) => w.disabled)]), [0, '野生のモンスター', [true, true, true, true]]);
+  assert.deepEqual(await pg.evaluate(() => [document.querySelectorAll('.chf-alert,.chf-rustle').length, document.querySelector('.chbat h3').textContent, [...document.querySelectorAll('.chwing')].map((w) => w.disabled)]), [0, '野生のモンスターが現れた！', [true, true, true, true]], '2026-10-08（監査 stale）：5e27556 からバトルの案内の見出し＝遭遇の文');
   assert.deepEqual(p.errors, []);
 });
 
@@ -398,7 +398,11 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     const p = await L.open({ size }); const pg = p.page;
     await start(p);
     await pg.evaluate(() => { const r = S.m.raise; r.pend = { roll: 1, left: 0, stage: 'battle', fx: { kind: 'battle', battleType: 'wild' } }; MMP8.beginBattle(S, S.m, { kind: 'practice', rank: 0 }); save(); fight(0); });
-    await pg.waitForSelector('#bt .intro .ipn.p1 .iim2 img');   // 出た直後（拡大アニメの一番大きいとき）に測る
+    await pg.waitForSelector('#bt .intro .ipn.p1 .iim2 img');
+    // 2026-10-08（不安定の対策）：出た直後に測ると、枠（.ipn）が画面の外から滑り込む途中（例：left −270px）で、枠と絵の動きの時刻のずれで結果が変わっていた。
+    //  両方の枠が画面に入りきって止まってから測る（絵の拡大の最大はその後も枠の中であることを確かめる）
+    await pg.waitForFunction(() => [0, 1].every((s) => { const e = document.querySelector(`.ipn.p${s}`); if (!e) return false; const b = e.getBoundingClientRect(); return b.left >= -2 && b.right <= innerWidth + 2; })
+      && [...document.querySelectorAll('#bt .intro .ipn, #bt .intro .ipn .iim2')].every((e) => e.getAnimations().every((a) => a.playState !== 'running' || /infinite/.test(String(a.effect && a.effect.getTiming && a.effect.getTiming().iterations)) || (a.effect && a.effect.getTiming && a.effect.getTiming().iterations === Infinity))), null, { timeout: 8000 });
     const intro = await pg.evaluate(() => [0, 1].map((s) => { const pn = document.querySelector(`.ipn.p${s}`).getBoundingClientRect(), im = document.querySelector(`.ipn.p${s} .iim2 img`).getBoundingClientRect(); return { inside: im.left >= pn.left - 2 && im.right <= pn.right + 2 && im.top >= pn.top - 2 && im.bottom <= pn.bottom + 2, w: im.width, h: im.height, pn: [pn.left, pn.top, pn.right, pn.bottom].map(Math.round), im: [im.left, im.top, im.right, im.bottom].map(Math.round) }; }));
     for (const i of intro) assert.ok(i.inside && i.w > 80, `カットインの絵は枠の中（${JSON.stringify(i)}）`);
     await pg.waitForFunction(() => !document.querySelector('#bt .intro'), null, { timeout: 15000 }); await pg.waitForTimeout(800);

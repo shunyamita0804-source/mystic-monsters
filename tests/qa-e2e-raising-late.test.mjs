@@ -364,7 +364,8 @@ T('QA-RL4：Chapter 3（旧ボード）のゴール → ランク選択（クリ
   assert.deepEqual([r.node, r.goal, r.pend, r.turnsUsed], ['G', true, null, 11]);
   // 2026-10-04：Chapter 3・4（旧ボード）のゴールも Chapter 1 と同じランク選択（共通の部品）。賞金・初回報酬の文は出さない
   const ranks = () => pg.evaluate(() => [...document.querySelectorAll('.rcv-row')].map((b) => `${RN[+b.dataset.rank]}:${b.dataset.state}:${b.tagName}:${b.querySelector('small').textContent}`));
-  assert.deepEqual(await ranks(), ['S:lock:DIV:参加者 8体 / 7試合', 'A:lock:DIV:参加者 8体 / 7試合', 'B:lock:DIV:参加者 8体 / 7試合', 'C:next:BUTTON:参加者 8体 / 7試合', 'D:clear:BUTTON:参加者 6体 / 5試合', 'E:clear:BUTTON:参加者 6体 / 5試合'], 'E・D・C の3つ（C が挑戦目標）');
+  // 2026-10-08（監査 stale）：9d38ef0（正式UI回収）から見える文字は「参加者 N名／対戦 N−1試合」（<br> で2行）
+  assert.deepEqual(await ranks(), ['S:lock:DIV:参加者 8名対戦 7試合', 'A:lock:DIV:参加者 8名対戦 7試合', 'B:lock:DIV:参加者 8名対戦 7試合', 'C:next:BUTTON:参加者 8名対戦 7試合', 'D:clear:BUTTON:参加者 6名対戦 5試合', 'E:clear:BUTTON:参加者 6名対戦 5試合'], 'E・D・C の3つ（C が挑戦目標）');
   assert.equal(await pg.evaluate(() => document.querySelectorAll('.p9rank,.p9rlock,#brollbtn').length), 0, '旧カード・サイコロは出さない');
   assert.equal(await pg.evaluate(() => MMP8.canRoll(S.m)), false, 'ゴールのあとはサイコロを振れない');
   await assertSynced(pg, 'ゴール到達は保存済み（再開してもゴールの画面から）');
@@ -382,7 +383,8 @@ T('QA-RL4：Chapter 3（旧ボード）のゴール → ランク選択（クリ
   r = await raiseOf(pg);
   assert.deepEqual([r.tour.rank, r.tour.status, r.tour.league.size, r.tour.league.rounds.length, r.tour.league.round], [2, 'league', 8, 7, 0]);
   assert.deepEqual(await pg.evaluate(() => [document.querySelectorAll('.tb1g.n8 .tbnm').length, document.querySelectorAll('.tb1g .tbic.hd').length, document.querySelectorAll('.tb1g .tbc.c-next').length]), [8, 8, 2], '2026-10-06：大会1 対戦表（8体）');
-  assert.match(await textOf(pg, '.p9next'), /第1試合 \/ 全7試合/);
+  // 2026-10-08（監査 stale）：試合数の見出し・.p9next（PHASE D の大会進行）は 2026-10-07 ADDENDUM2 の対戦表で無くなった＝次の試合のマス（金）で確かめる
+  assert.equal(await pg.evaluate(() => document.querySelectorAll('.tb1g .tbc.c-next').length), 2, '次の試合のマス');
   await assertSynced(pg);
   // 第1試合：勝ち（旧 fight() の賞金・勝利数・疲労は取り消される）
   const s0 = await H.getS(pg);
@@ -391,7 +393,7 @@ T('QA-RL4：Chapter 3（旧ボード）のゴール → ランク選択（クリ
   let s = await H.getS(pg);
   assert.deepEqual([s.g, s.wins, s.m.fa, s.m.st, s.m.rk], [s0.g, s0.wins, s0.m.fa, s0.m.st, s0.m.rk]);
   assert.deepEqual(await myTable(pg), { w: '1', l: '0', mx: '・・・・・◎○' });
-  assert.match(await textOf(pg, '.p9next'), /第2試合 \/ 全7試合/);
+  assert.equal(await pg.evaluate(() => S.m.raise.tour.league.round), 1, '第2試合');
   // 第2試合の途中で再読み込み → その試合はやり直し（結果なし・所持金そのまま）
   const tourBefore = (await raiseOf(pg)).tour;
   await pg.evaluate(() => { MMP8.beginBattle(S, S.m, { kind: 'league', rank: S.m.raise.tour.rank }); save(); S.g += 350; });   // 戦闘中に再読み込みされた状態
@@ -406,10 +408,9 @@ T('QA-RL4：Chapter 3（旧ボード）のゴール → ランク選択（クリ
   // 次の相手（6能力の比較・2026-10-03 から順位表の中）→ 対戦開始の1回目（2度押しの確認）→ 再読み込み → 順位表へ戻る（状態は変わらない）
   const opp = await pg.evaluate(() => MMP8L.entrantView(S.m.raise.tour.league, MMP8.tourNext(S.m).opp).name);
   await pg.waitForTimeout(SETTLE);
-  const nx = await textOf(pg, '.p9next');
-  assert.match(nx, /第2試合 \/ 全7試合/);
-  assert.ok(nx.includes(opp), '次の相手＝次の対戦相手');
-  await pg.click('.p9next .p9go'); await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(SETTLE);   // 2026-10-04（PHASE D）：大会進行 → パラメーター比較（6能力のゲージ）
+  const nx = await textOf(pg, '.tb1g .tbnm.nx');
+  assert.ok(opp.includes(nx), `次の相手の行＝次の対戦相手（${nx} / ${opp}）`);
+  await pg.click('.tb1 .tbgo'); await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(SETTLE);   // 2026-10-04（PHASE D）：大会進行 → パラメーター比較（6能力のゲージ）
   assert.equal(await pg.evaluate(() => document.querySelectorAll('.pcgs .pcg').length), 6);
   await pg.click('.pcgo'); await pg.waitForTimeout(100); assert.equal(await pg.evaluate(() => S.m.raise.battle), null, '1回目では試合は始まらない');
   const raw = await rawSave(pg);
@@ -429,7 +430,7 @@ T('QA-RL5：大会の決着：全勝で優勝 → 初回優勝の賞金350G・�
   const s = await H.getS(pg);
   const t = s.m.raise.tour;
   assert.equal(t.status, 'settled');
-  const { reward, ...res } = t.result;
+  const { reward, endSeen, ...res } = t.result;   // endSeen（2026-10-08 監査 M-02）＝結果の画面で始めた段階
   assert.deepEqual(res, { rank: 2, place: 1, won: true, firstClear: true });
   assert.deepEqual([reward.prize, reward.tickets, reward.firstClear], [350, 1, true]);
   assert.deepEqual([s.g, s.trainTix, s.wins], [s0.g + 350, s0.trainTix + 1, (s0.wins || 0) + 1], '賞金・チケット・優勝回数は大会全体で1回だけ');
