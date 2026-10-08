@@ -36,14 +36,14 @@ for (const size of [H.SIZES.base, H.SIZES.se, H.SIZES.max]) {
     await toField(pg);
     const tok = await pg.evaluate(() => { const F = MMCH.getConfig(1).tileUI.fixedSize, w = document.querySelector('#chf').clientWidth; return Math.round(Math.max(F.min, Math.min(F.max, w * F.vw))); });
     const widths = new Set();
-    for (const [from, v, to, field] of [['p1_2', 3, 'p1_5', 2], ['p2_4', 3, 'p3_0', 4], ['p9_3', 2, 'p10_0', 9], ['p13_1', 3, 'p14_1', 14]]) {
+    for (const [from, v, to, field] of [['p1_2', 3, 'p1_5', 2], ['p2_3', 3, 'p3_0', 4], ['p9_3', 2, 'p10_0', 9], ['p13_1', 3, 'p14_1', 14]]) {
       await place(pg, from, from.startsWith('p9') ? { branch: 'bridge' } : {}); await idle(pg);
       const used = await pg.evaluate(() => S.m.raise.turnsUsed);
       await record(pg); await rollAs(pg, v); await idle(pg); const tr = await stopRec(pg);
       const st = await pg.evaluate(() => ({ node: S.m.raise.node, field: MMCH.graphFor(S.m).nodes[S.m.raise.node].field, used: S.m.raise.turnsUsed, pend: S.m.raise.pend, cams: document.querySelectorAll('.chf-cam').length }));
       assert.deepEqual([st.node, st.field, st.used, st.pend, st.cams], [to, field, used + 1, null, 1], `${from} +${v} → ${to}（背景 ${field}）・ターンは1回・停止地点の処理は終わっている`);
-      let worst = 0; for (let i = 1; i < tr.length; i++) { const dt = Math.max(16, tr[i][0] - tr[i - 1][0]), d = Math.hypot(tr[i][1] - tr[i - 1][1], tr[i][2] - tr[i - 1][2]); worst = Math.max(worst, d / dt); tr[i][3].forEach((w) => widths.add(w)); }
-      assert.ok(worst < 1.4, `${from}：モンスターは画面の上で瞬間移動しない（最大 ${worst.toFixed(2)} px/ms）`);
+      let worst = 0, wi = 0; for (let i = 1; i < tr.length; i++) { let k = i - 1; while (k > 0 && tr[i][0] - tr[k][0] < 48) k--; const dt = Math.max(48, tr[i][0] - tr[k][0]), d = Math.hypot(tr[i][1] - tr[k][1], tr[i][2] - tr[k][2]); if (d / dt > worst) { worst = d / dt; wi = i; } tr[i][3].forEach((w) => widths.add(w)); }   // 速さは 48ms 以上の区間で測る（rAF の時刻の揺れを数えない）。歩き・つなぎは 1px/ms 未満、瞬間移動は数十px が1フレーム
+      assert.ok(worst < 1.0, `${from}：モンスターは画面の上で瞬間移動しない（最大 ${worst.toFixed(2)} px/ms・${JSON.stringify(tr.slice(Math.max(0, wi - 2), wi + 2).map((x) => x.slice(0, 3).map(Math.round)))}）`);
       const s = await stand(pg); assert.ok(s.tile && Math.abs(s.foot[0] - s.tile[0]) < 4 && Math.abs(s.foot[1] - s.tile[1]) < 6, `${to}：止まる位置＝マスの中心（足元 ${s.foot.map(Math.round)}・マス ${s.tile && s.tile.map(Math.round)}）`);
       assert.ok(s.foot[1] > s.H * 0.35 && s.foot[1] < s.H * 0.95, `${to}：モンスターは画面の中央より少し下（${Math.round(s.foot[1])} / ${Math.round(s.H)}）`);
     }
@@ -86,7 +86,7 @@ test('BB-4：Scene14（大会会場前の共通 Scene）→ ゴール → 広場
   await place(pg, 'p14_1'); await idle(pg); await rollAs(pg, 2);
   await pg.waitForSelector('#chfarr');
   assert.equal(await pg.evaluate(() => document.querySelector('#chfarr .chf-arrive-bg').getAttribute('src')), './assets/fields/ch1a/formal_1008/ch1a_scene_14.webp', '到着＝14 の広場の全景');
-  await H.finishTalk(pg);
+  await pg.waitForSelector('.mmtalk', { timeout: 20000 }); await H.finishTalk(pg);   // 門前 → ロビー → フィナの到着の会話
   await pg.waitForSelector('#chrcv', { timeout: 20000 });
   assert.deepEqual(await pg.evaluate(() => [S.m.raise.node, MMP8.boardPhase(S.m), !!S.m.raise.field.arrivalSeen]), ['p14_3', 'goal', true]);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);

@@ -207,7 +207,7 @@
       const dk = T.discs ? discKeyOf(m, id, key) : null, dsrc = dk && (T.discs[dk] || T.discs[key]);
       if (dsrc) { const B = tok ? { w: tok, h: tok * (T.fixedSize.aspect || 0.78) } : discBox(T, n, sc); return `<i class="chf-tile disc${fx}" data-id="${id}" data-type="${key}" style="left:${(n.mx * sc.w).toFixed(1)}px;top:${(n.my * sc.h).toFixed(1)}px;width:${B.w.toFixed(1)}px;height:${B.h.toFixed(1)}px;--d:${n.d}"><img class="chf-ticon" src="${esc(dsrc)}" alt="" draggable="false" decoding="async"></i>`; }
       const src = tileSpriteOf(cfg, key), B = tileBox(T, n, key, sc), no = g.order.indexOf(id) + 1;
-      if (tok) { B.w = tok * 1.12; B.h = B.w * B.f; B.rim = Math.max(1.2, B.w * ((T.size && T.size.rim) || 0.018)); B.op = 1; }
+      if (tok) { B.w = tok; B.h = B.w * B.f; B.rim = Math.max(1.2, B.w * ((T.size && T.size.rim) || 0.018)); B.op = 1; }
       const box = `left:${(n.mx * sc.w).toFixed(1)}px;top:${(n.my * sc.h).toFixed(1)}px;width:${B.w.toFixed(1)}px;height:${B.h.toFixed(1)}px;--d:${n.d};--f:${B.f.toFixed(3)}${ped ? `;--th:${B.th.toFixed(1)}px;--rim:${B.rim.toFixed(1)}px;--op:${B.op.toFixed(2)}` : ''}`;
       const under = base ? `<img class="chf-tbase" src="${esc(base.src)}" alt="" draggable="false" decoding="async" style="--bs:${base.scale || 1.25};--bh:${base.h || 1.25};--bl:${base.lift != null ? base.lift : 0.43}">` : ped ? '<i class="chf-tsh"></i><i class="chf-tped"></i>' : '';
       const u = T.size && T.size.uniform ? ' u' : '';   // 大きさの共通の基準（size.uniform）と、見え方を少し強くする CSS（.u）
@@ -291,7 +291,8 @@
   function viewport() { const fv = $('#chf'); return fv ? { W: fv.clientWidth, H: fv.clientHeight } : { W: 390, H: 680 }; }
   /** 注視点（背景の画素）：モンスターの体の中心 ＋ 進む向きの先読み ＋ 停止地点の物のほうへの寄り */
   function focusPoint(px, py, d) {
-    const C = CA(), { W } = viewport(), S0 = V.cam.S || 1, mh = monH() * d;
+    // 2026-10-08：先読みの量は「その奥行きでのカメラの倍率」から決める（直前のカメラの倍率を使うと、再読み込みの前後でカメラの位置が少し違った）
+    const C = CA(), { W, H } = viewport(), S0 = V.sc && V.sc.depth && V.sc.zoom ? Math.max(W / V.sc.w, H / V.sc.h) * zoomAt(V.sc, d) * (V.tgt.z || 1) : (V.cam.S || 1), mh = monH() * d;
     let fx = px, fy = py - mh * 0.45;
     const la = (C.lookAhead * W) / S0;   // 先読み（画面幅の一定割合を背景の画素へ）
     fx += V.look[0] * la; fy += V.look[1] * la * 0.8;
@@ -832,8 +833,9 @@
       const cx = ns.reduce((s, n) => s + n.mx, 0) / ns.length * V.sc.w, cy = ns.reduce((s, n) => s + n.my, 0) / ns.length * V.sc.h;
       const sh = $('#chf-ui .chbr'), fv = $('#chf');
       if (sh && fv) {
-        const { H } = viewport(), z = CA().zoom.branch, St = (V.cam.S || 1) / (V.cam.z || 1) * z, fr = fv.getBoundingClientRect(), want = sh.getBoundingClientRect().top - fr.top - 14;
-        V.camLoose = Math.max(0, fr.bottom - sh.getBoundingClientRect().top);
+        // シートの上端は登場アニメ（translate）の影響を受けない位置で測る（offsetTop）。足元をシートの上端より 28px 上に
+        const { H } = viewport(), z = CA().zoom.branch, St = (V.cam.S || 1) / (V.cam.z || 1) * z, fr = fv.getBoundingClientRect(), op = sh.offsetParent, top = (op ? op.getBoundingClientRect().top : fr.top) + sh.offsetTop, want = top - fr.top - 28;
+        V.camLoose = Math.max(0, fr.bottom - top);
         camFocus({ x: (cx + V.monPos.x) / 2, y: V.monPos.y - (want - CA().anchorY * H) / St }, 1, z);
       } else camFocus({ x: cx, y: cy }, 0.5, CA().zoom.branch);
       branchHints(m, ns);
