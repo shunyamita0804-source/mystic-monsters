@@ -184,22 +184,27 @@
     const nodes = {}, conn = {}, order = [], curves = {}, OV = cfg.nodeOverrides || {};
     let start = null, goal = null;
     const stopKinds = Array.isArray(cfg.forceStopKinds) ? cfg.forceStopKinds : [];   // 種類ごとの強制停止（例：['rival']）。既定は無し（現行 Chapter 1 の進み方を変えない）
+    // 2026-10-08（Chapter 1 Pattern A 正式ボード）：1本の道（同じ path.id＝同じノードID）を複数の背景へまたがせられる。
+    //  path.key＝この区間の名前（既定は id）、path.idOffset＝この区間の最初のノードの番号（既定 0）。ノードID は `${id}${idOffset + i}` のまま（セーブ互換）。
+    //  next は区間の key を書く（区間の最初のノードへつながる）。従来の config（key・idOffset なし）は今までどおり
+    const keyOf = (p) => p.key || p.id, firstOf = (k) => { const q = cfg.paths.find((x) => keyOf(x) === k); return q ? `${q.id}${q.idOffset || 0}` : `${k}0`; };
     for (const p of cfg.paths) {
-      const sc = scenes[p.field]; if (!sc) throw new Error(`MMCH：path ${p.id} の field ${p.field} がありません`);
+      const sc = scenes[p.field]; if (!sc) throw new Error(`MMCH：path ${keyOf(p)} の field ${p.field} がありません`);
+      const pk = keyOf(p), off = p.idOffset || 0;
       // 道の曲線（既定は滑らか。config の path.curve が 'linear' なら折れ線のまま）。ノードはこの曲線の上に等間隔（奥行き補正）で置く
       const pts = p.curve === 'linear' ? p.pts.map((q) => [q[0], q[1]]) : smoothCurve(p.pts, p.curveSegments || 10);
       const depthAt = (y) => depthOf(sc, y), M = measure(pts, depthAt, sc.w || 1, sc.h || 1);
-      curves[p.id] = { pts, s: M.s, total: M.total, field: p.field, terrain: p.terrain || 'grass', speed: p.speed || 1 };
+      curves[pk] = { pts, s: M.s, total: M.total, field: p.field, terrain: p.terrain || 'grass', speed: p.speed || 1 };
       // マスの座標：path.nodePts（[x, y] を n 個）があればその点（背景ごとに画像を見て決めた座標）。無ければ曲線の上に奥行き補正で等間隔
       const NP = Array.isArray(p.nodePts) && p.nodePts.length === p.n ? p.nodePts : null;
       // マスの種類の固定（2026-10-02 Chapter 1 の60マス）：path.tiles＝[種別名…]（MMCH.NODE_TYPES の名前＋'branch'・'merge'）。骨格の種類（start・goal・rival・strong・special・branch・merge）はそのまま kind に、
       //  それ以外（能力・野生・イベント・宝・休む・通常）は候補ノード（slot）のまま tile に持ち、配置（layoutRules.fixed）がその種類を割り当てる。path.tileLook＝[{ s（大きさの倍率）, f（縦の潰れ） }…]（マスUIの見た目の上書き。任意）
       const TL = Array.isArray(p.tiles) && p.tiles.length === p.n ? p.tiles : null, TLK = Array.isArray(p.tileLook) ? p.tileLook : [];
       for (let i = 0; i < p.n; i++) {
-        const id = `${p.id}${i}`, tile = TL ? TL[i] : null, o = OV[id] || {};
+        const id = `${p.id}${off + i}`, tile = TL ? TL[i] : null, o = OV[id] || {};
         const kind = (p.fixed && p.fixed[i]) || (tile && SKELETON.includes(tile) ? tile : 'slot');
         const s = NP ? sOfPoint(pts, M, NP[i], sc.w || 1, sc.h || 1) : p.n === 1 ? 0 : (M.total * i) / (p.n - 1), pos = NP ? [NP[i][0], NP[i][1]] : pointAt(pts, M, s);
-        nodes[id] = { id, path: p.id, idx: i, field: p.field, x: pos[0], y: pos[1], s, d: +depthOf(sc, pos[1]).toFixed(3), kind, branch: p.branch || null,
+        nodes[id] = { id, path: pk, idx: off + i, field: p.field, x: pos[0], y: pos[1], s, d: +depthOf(sc, pos[1]).toFixed(3), kind, branch: p.branch || null,
           side: o.side || (p.side && p.side[i]) || (i % 2 ? 1 : -1), terrain: o.terrain || p.terrain || 'grass',
           // 見せ方の上書き（config.nodeOverrides）：monster＝止まる位置（既定は道の上の点）、landmark＝目印の位置・大きさ、camera＝カメラの寄り
           mx: clampToRoad(sc, o.monster ? o.monster[0] : pos[0], o.monster ? o.monster[1] : pos[1]).x, my: o.monster ? o.monster[1] : pos[1], lm: o.landmark || null, cam: o.camera || null,   // 止まる位置は道の安全域の中（fieldScenes[].road）
@@ -208,12 +213,12 @@
           ...(tile ? { tile } : {}), ...(isObj(TLK[i]) ? { look: TLK[i] } : {}) };
         if (p.noSlot && p.noSlot.includes(i) && kind === 'slot') nodes[id].kind = 'normal';
         order.push(id);
-        if (i > 0) conn[`${p.id}${i - 1}`] = [id];
+        if (i > 0) conn[`${p.id}${off + i - 1}`] = [id];
       }
-      if (p.start) start = `${p.id}0`;
-      if (p.goal) goal = `${p.id}${p.n - 1}`;
+      if (p.start) start = `${p.id}${off}`;
+      if (p.goal) goal = `${p.id}${off + p.n - 1}`;
     }
-    for (const p of cfg.paths) { const last = `${p.id}${p.n - 1}`; conn[last] = (p.next || []).map((q) => `${q}0`); }
+    for (const p of cfg.paths) { const last = `${p.id}${(p.idOffset || 0) + p.n - 1}`; conn[last] = (p.next || []).map(firstOf); }
     if (!start || !goal) throw new Error('MMCH：スタート・ゴールがありません');
     for (const [id, to] of Object.entries(conn)) for (const t of to) if (!nodes[t]) throw new Error(`MMCH：${id} → ${t} のノードがありません`);
     // 各ルート（スタート→ゴールの道順）を列挙する（分岐の組み合わせ）

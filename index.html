@@ -1248,6 +1248,18 @@ html:has(#app>.chfw),html:has(#app>.chfw) body{background:#0b1636}
 .chf-dbg b{position:absolute;left:10px;top:-4px;color:#fff;text-shadow:0 0 2px #000;white-space:nowrap}
 .chf-dbg.k-slot{background:#9ef}.chf-dbg.k-branch,.chf-dbg.k-merge{background:#f6a}.chf-dbg.k-strong,.chf-dbg.k-rival{background:#f44}
 .chf-dbgsvg{position:absolute;left:0;top:0;z-index:8990;pointer-events:none;fill:none;stroke:#ff0;stroke-width:3;stroke-dasharray:8 6}
+/* 2026-10-08 正式ボード（Chapter 1 Pattern A）：開発用の表示（?chdebug=1 のときだけ）＝道路中央ライン・道の端・背景の範囲・カメラの注視点・今の背景 */
+.chf-dbgsvg .ctr{stroke:#f0f;stroke-width:4;stroke-dasharray:none}
+.chf-dbgsvg .edge{stroke:#f55;stroke-width:2;stroke-dasharray:6 6}
+.chf-dbgsvg line{stroke-width:2;stroke-dasharray:10 6}.chf-dbgsvg line.enter{stroke:#4af}.chf-dbgsvg line.play{stroke:#4f4}.chf-dbgsvg line.handoff{stroke:#fa3}.chf-dbgsvg line.exit{stroke:#f33}
+.chf-dbgsvg text{fill:#fff;stroke:#000;stroke-width:3;paint-order:stroke;stroke-dasharray:none;font:700 22px/1 sans-serif}
+.chf-dbg b small{font-weight:400;opacity:.85}
+.chf-dbgcam{position:absolute;width:28px;height:28px;margin:-14px 0 0 -14px;border:2px solid #0ff;border-radius:50%;z-index:9001;pointer-events:none;box-shadow:0 0 0 1px #000}
+.chf-dbgcam::before,.chf-dbgcam::after{content:"";position:absolute;background:#0ff;left:50%;top:-10px;bottom:-10px;width:2px;margin-left:-1px}.chf-dbgcam::after{top:50%;left:-10px;right:-10px;width:auto;height:2px;bottom:auto;margin:-1px 0 0}
+.chf-dbgsc{position:absolute;left:6px;top:calc(env(safe-area-inset-top,0px) + 120px);z-index:60;max-width:calc(100% - 12px);padding:3px 7px;border-radius:4px;background:rgba(0,0,0,.72);color:#0ff;font:700 11px/1.35 monospace;pointer-events:none}
+/* 2026-10-08 正式：マスの見た目の大きさは手前でも奥でも同じ（node-size token × カメラの拡大の逆数 --inv）。止まる位置＝マスの中心（アンカー）は動かさない */
+.chf-tile.fx{transform:translate(-50%,-50%) scale(var(--inv,1));transform-origin:50% 50%}
+.chf-tile.disc.fx{transform:translate(-50%,-42%) scale(var(--inv,1));transform-origin:50% 42%}
 /* UI（HUD・結果・シート・操作欄）。.chf-ui はフィールド＋操作欄の全体に重ねる */
 .chf-ui{position:absolute;inset:0;pointer-events:none;z-index:5;font-family:var(--mm-font-body)}
 .chf-ui>*{pointer-events:auto}

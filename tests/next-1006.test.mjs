@@ -14,19 +14,17 @@ const HTML = rd('index.html');
 const fnOf = (name) => { const i = HTML.indexOf(`function ${name}(`); assert.ok(i > 0, name); return HTML.slice(i, HTML.indexOf('\nfunction ', i + 10)); };
 const load = (f, name) => { const w = {}; new Function('window', 'document', rd(f))(w, undefined); return w[name]; };
 
-test('N6-01：Chapter 1 のマス＝隣のマスまでの画面の距離 ÷ マスの大きさがどの背景でもそろう（奥で重ならない）。ゴールは大会会場の門の石段の前', () => {
+test('N6-01：Chapter 1 のマス（2026-10-08 正式ボード）＝背景ごとに列の間隔が等しい（マスの見た目の大きさは奥でも同じなので、奥で詰めない）。ゴールは 14 の広場の中央・会場の石段の前', () => {
   let cfg; const w = { MMCH: { registerConfig: (c) => { cfg = c; } } };
   new Function('window', rd('js/chapter/configs/ch1a.js'))(w);
-  const D = [[0.98, 1.22], [0.9, 1.1], [0.84, 1], [0.72, 0.84], [0.6, 0.62], [0.535, 0.5], [0.47, 0.4], [0.425, 0.34], [0.38, 0.28], [0.3, 0.2]];
-  const dep = (y) => { if (y >= D[0][0]) return D[0][1]; for (let i = 1; i < D.length; i++) if (y >= D[i][0]) { const a = D[i - 1], b = D[i]; return b[1] + (a[1] - b[1]) * (y - b[0]) / (a[0] - b[0]); } return D[D.length - 1][1]; };
-  const h = (y) => Math.pow(dep(y), 0.9);
   for (const p of cfg.paths) {
     if (p.nodePts.length < 3) continue;
-    const r = []; for (let i = 1; i < p.nodePts.length; i++) { const a = p.nodePts[i - 1][1], b = p.nodePts[i][1]; r.push((a - b) / ((h(a) + h(b)) / 2)); }
-    assert.ok(Math.max(...r) - Math.min(...r) < 0.01, `${p.id}：間隔がそろう（${r.map((x) => x.toFixed(3)).join(' ')}）`);
+    const r = []; for (let i = 1; i < p.nodePts.length; i++) r.push(p.nodePts[i - 1][1] - p.nodePts[i][1]);
+    assert.ok(Math.max(...r) - Math.min(...r) < 0.002 && Math.min(...r) >= 0.064, `${p.key || p.id}：間隔がそろう（${r.map((x) => x.toFixed(3)).join(' ')}）`);
   }
+  assert.ok(cfg.tileUI.fixedSize && cfg.tileUI.fixedSize.min >= 50 && cfg.tileUI.fixedSize.max <= 90, '全背景共通の node-size token');
   const g = cfg.paths.find((p) => p.goal), goal = g.nodePts[g.nodePts.length - 1];
-  assert.ok(goal[1] >= 0.67 && goal[1] <= 0.69 && Math.abs(goal[0] - 0.5) < 0.02, `ゴール（${goal}）＝門の石段の前（道の中央）`);
+  assert.equal(g.field, 14); assert.ok(goal[1] >= 0.62 && goal[1] <= 0.69 && Math.abs(goal[0] - 0.5) < 0.02, `ゴール（${goal}）＝広場の中央・会場の石段の前`);
 });
 
 test('N6-02：新人支援＝聖獣士登録のあと1回だけ 1000G＋薬草×1（受け取りの記録と同時に確定して保存）。新しいゲームは 0G・市場は 500G のまま', () => {

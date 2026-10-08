@@ -36,7 +36,8 @@
     moving: false, intro: false, facing: 1, look: [0, -1], focus: null, skip: null, pre: new Set(), monPos: null, calm: false, animator: null, seedTuft: 1 };
   const $ = (s) => document.querySelector(s);
   const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const debug = () => { try { return /(^|[?&])chdebug=1(&|$)/.test(root.location.search); } catch (e) { return false; } };
+  // 開発用の表示（?chdebug=1 のときだけ。本番の URL では出ない）：道路中央ライン・道の端・マスの中心と ID・背景の範囲（enter／playable／handoff）・今の背景・カメラの注視点
+  const debug = () => { try { return !!root.MM_CHDEBUG || /(^|[?&])chdebug=1(&|$)/.test(root.location.search); } catch (e) { return false; } };
   const wait = (ms) => new Promise((ok) => setTimeout(ok, ms));
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const isObj = (o) => !!o && typeof o === 'object' && !Array.isArray(o);
@@ -111,7 +112,7 @@
   }
   /** 目印の足元の位置（背景の画素）と大きさ。node.lm（config.nodeOverrides）があればそれを優先 */
   function landmarkPos(cfg, g, sc, id, look) {
-    const n = g.nodes[id], o = n.lm || {}, P = (cfg.paths || []).find((p) => p.id === n.path) || {}, PL = P.landmark || {};   // 道ごとの置き方（橋の上では欄干ぎわ＝gapScale を小さく）
+    const n = g.nodes[id], o = n.lm || {}, P = (cfg.paths || []).find((p) => (p.key || p.id) === n.path) || {}, PL = P.landmark || {};   // 道ごとの置き方（橋の上では欄干ぎわ＝gapScale を小さく）
     const side = look.side === 0 ? 0 : PL.fixedSide ? PL.fixedSide : (PL.side || n.side || 1) * (look.side || 1),   // fixedSide：その道の物はいつもその側（分岐の左右の道＝外側。もう一方の道へはみ出さない）
       off = side ? sideOffset(g, sc, id, side, (look.gap || 96) * (PL.gapScale || 1)) : { dx: 0, dy: 0 };
     const x = o.x != null ? o.x * sc.w : n.x * sc.w + off.dx, y = o.y != null ? o.y * sc.h : n.y * sc.h + off.dy;
@@ -195,19 +196,23 @@
     const F = Z.flat || { near: 1, far: 0.8 }, t = clamp((n.d - 0.4) / (1.12 - 0.4), 0, 1), f = (Z.aspect || 0.8) * (F.far + (F.near - F.far) * t);
     return { w, h: w * f };
   }
+  /** 2026-10-08：マスの見た目の大きさ（全背景共通の node-size token。画面の px）。config.tileUI.fixedSize が無い config は null＝従来の奥行きの大きさ */
+  function nodeToken(T) { const F = T && T.fixedSize; if (!F) return null; const w = viewport().W || 390; return clamp(w * (F.vw || 0.18), F.min || 56, F.max || 80); }
   function tilesHtml(cfg, g, sc, m, ids) {
     const T = cfg.tileUI; if (!T) return '';
+    const tok = nodeToken(T), fx = tok ? ' fx' : '';   // fx：カメラの拡大を打ち消して、いつも同じ見た目の大きさ（CSS の --inv。camApply が毎フレーム更新）
     const ped = !!T.pedestal, base = T.base && T.base.src ? T.base : null;   // 共通の台座（地面 → 薄い接地影 → 石の台座（厚み）→ 金属の縁 → マスの絵）。base＝正式の共通土台の画像（2026-10-03。有れば CSS の台座の代わりに敷く）
     return ids.map((id) => {
       const n = g.nodes[id], key = tileKeyOf(m, id); if (key === 'start') return '';
       const dk = T.discs ? discKeyOf(m, id, key) : null, dsrc = dk && (T.discs[dk] || T.discs[key]);
-      if (dsrc) { const B = discBox(T, n, sc); return `<i class="chf-tile disc" data-id="${id}" data-type="${key}" style="left:${(n.mx * sc.w).toFixed(1)}px;top:${(n.my * sc.h).toFixed(1)}px;width:${B.w.toFixed(1)}px;height:${B.h.toFixed(1)}px;--d:${n.d}"><img class="chf-ticon" src="${esc(dsrc)}" alt="" draggable="false" decoding="async"></i>`; }
+      if (dsrc) { const B = tok ? { w: tok, h: tok * (T.fixedSize.aspect || 0.78) } : discBox(T, n, sc); return `<i class="chf-tile disc${fx}" data-id="${id}" data-type="${key}" style="left:${(n.mx * sc.w).toFixed(1)}px;top:${(n.my * sc.h).toFixed(1)}px;width:${B.w.toFixed(1)}px;height:${B.h.toFixed(1)}px;--d:${n.d}"><img class="chf-ticon" src="${esc(dsrc)}" alt="" draggable="false" decoding="async"></i>`; }
       const src = tileSpriteOf(cfg, key), B = tileBox(T, n, key, sc), no = g.order.indexOf(id) + 1;
+      if (tok) { B.w = tok * 1.12; B.h = B.w * B.f; B.rim = Math.max(1.2, B.w * ((T.size && T.size.rim) || 0.018)); B.op = 1; }
       const box = `left:${(n.mx * sc.w).toFixed(1)}px;top:${(n.my * sc.h).toFixed(1)}px;width:${B.w.toFixed(1)}px;height:${B.h.toFixed(1)}px;--d:${n.d};--f:${B.f.toFixed(3)}${ped ? `;--th:${B.th.toFixed(1)}px;--rim:${B.rim.toFixed(1)}px;--op:${B.op.toFixed(2)}` : ''}`;
       const under = base ? `<img class="chf-tbase" src="${esc(base.src)}" alt="" draggable="false" decoding="async" style="--bs:${base.scale || 1.25};--bh:${base.h || 1.25};--bl:${base.lift != null ? base.lift : 0.43}">` : ped ? '<i class="chf-tsh"></i><i class="chf-tped"></i>' : '';
       const u = T.size && T.size.uniform ? ' u' : '';   // 大きさの共通の基準（size.uniform）と、見え方を少し強くする CSS（.u）
-      if (src) return `<i class="chf-tile${ped ? ' ped' : ''}${base ? ' pb' : ''}${u}" data-id="${id}" data-type="${key}" style="${box}${base ? `;--bi:${base.icon || 0.9}` : ''}">${under}<img class="chf-ticon" src="${esc(src)}" alt="" draggable="false" decoding="async"></i>`;   // 使ったマス（能力・イベント・宝箱）は chfBoard で .used（少し暗く）
-      if (ped && key === 'normal') return `<i class="chf-tile ped k-normal${base ? ' pb' : ''}${u}" data-id="${id}" data-type="normal" style="${box}">${under}${base ? '' : '<i class="chf-tface"></i>'}</i>`;   // 通常マス：絵は無く、土台（または台座の石の面）だけ   // 通常マス：絵は無く、台座の石の面だけ（控えめ）
+      if (src) return `<i class="chf-tile${ped ? ' ped' : ''}${base ? ' pb' : ''}${u}${fx}" data-id="${id}" data-type="${key}" style="${box}${base ? `;--bi:${base.icon || 0.9}` : ''}">${under}<img class="chf-ticon" src="${esc(src)}" alt="" draggable="false" decoding="async"></i>`;   // 使ったマス（能力・イベント・宝箱）は chfBoard で .used（少し暗く）
+      if (ped && key === 'normal') return `<i class="chf-tile ped k-normal${base ? ' pb' : ''}${u}${fx}" data-id="${id}" data-type="normal" style="${box}">${under}${base ? '' : '<i class="chf-tface"></i>'}</i>`;   // 通常マス：絵は無く、土台（または台座の石の面）だけ   // 通常マス：絵は無く、台座の石の面だけ（控えめ）
       return T.placeholder === false && !debug() ? '' : `<i class="chf-tile ph" data-id="${id}" data-type="${key}" style="${box}" title="仮表示（位置確認用）"><b>仮 #${no}</b></i>`;
     }).join('');
   }
@@ -224,7 +229,7 @@
     // 分岐の道の物：選ぶ前はどちらの道も出さない（.brhide。選んだ道だけ chfPick で現れる）。選んだ後は、選ばなかった道の物を出さない
     const objs = ids.filter((id) => !(fb && g.nodes[id].branch && sameBranchGroup(cfg, g.nodes[id].branch, fb) && g.nodes[id].branch !== fb)).map((id) => { const h = nodeObjHtml(cfg, g, sc, m, id); return branchHidden(cfg, g.nodes[id], fb) ? h.replace('class="chf-obj ', 'class="chf-obj brhide ') : h; }).join('');
     const fg = ((cfg.foreground || {})[fieldId] || []).map((F, i) => fgHtml(cfg, sc, F, i)).join('');
-    const dbg = debug() ? ids.map((id) => { const n = g.nodes[id]; return `<i class="chf-dbg k-${n.kind}" style="left:${n.x * sc.w}px;top:${n.y * sc.h}px"><b>${id}</b></i>`; }).join('') + debugRoutes(g, sc, ids) : '';
+    const dbg = debug() ? ids.map((id) => { const n = g.nodes[id]; return `<i class="chf-dbg k-${n.kind}" style="left:${n.x * sc.w}px;top:${n.y * sc.h}px"><b>${id}<small> #${g.order.indexOf(id)}</small></b></i>`; }).join('') + debugRoutes(g, sc, ids) + '<i class="chf-dbgcam" id="chfdbgcam"></i>' : '';
     const farBand = sc.farBand ? `<div class="chf-pg chf-far" data-k="${sc.farBand.k != null ? sc.farBand.k : PXk.far}"><img class="chf-farimg" src="${sc.bg}" alt="" draggable="false" style="--to:${((sc.farBand.to || 0.34) * 100).toFixed(1)}%"></div>` : '';
     return `<div class="chf-cam" id="chfcam" style="width:${sc.w}px;height:${sc.h}px">${farBand}<img class="chf-bg" src="${sc.bg}" alt="${esc(sc.name)}" draggable="false">
       <div class="chf-pg chf-back" data-k="${PXk.back}">${back.map((L, i) => envHtml(cfg, sc, L, i)).join('')}</div>
@@ -236,7 +241,18 @@
   function debugRoutes(g, sc, ids) {
     const segs = [];
     for (const id of ids) for (const to of (g.conn[id] || [])) { const r = MMCH.routeBetween(g, id, to); if (r.length) segs.push(`<polyline points="${r.map((p) => `${(p[0] * sc.w).toFixed(1)},${(p[1] * sc.h).toFixed(1)}`).join(' ')}"/>`); }
-    return `<svg class="chf-dbgsvg" width="${sc.w}" height="${sc.h}" viewBox="0 0 ${sc.w} ${sc.h}">${segs.join('')}</svg>`;
+    // 道路中央ライン（太い線）・道の端（点線）・背景の範囲の横線（enter＝青・playable＝緑・handoff＝橙・exit＝赤）
+    const C = sc.road && Array.isArray(sc.road.center) ? [...sc.road.center].sort((a, b) => b[0] - a[0]) : [], pl = (f) => C.map((c) => `${(f(c) * sc.w).toFixed(1)},${(c[0] * sc.h).toFixed(1)}`).join(' ');
+    const road = C.length ? `<polyline class="ctr" points="${pl((c) => c[1])}"/>${C.every((c) => Number.isFinite(c[2])) ? `<polyline class="edge" points="${pl((c) => c[1] - c[2])}"/><polyline class="edge" points="${pl((c) => c[1] + c[2])}"/>` : ''}` : '';
+    const P = sc.play || {}, hl = (y, k, t) => (Number.isFinite(y) && y > 0 ? `<line class="${k}" x1="0" x2="${sc.w}" y1="${(y * sc.h).toFixed(1)}" y2="${(y * sc.h).toFixed(1)}"/><text class="${k}" x="6" y="${(y * sc.h - 6).toFixed(1)}">${t} ${y}</text>` : '');
+    const lines = hl(P.enter, 'enter', 'enter') + (P.playable ? hl(P.playable[0], 'play', 'playable') + hl(P.playable[1], 'play', 'playable') : '') + hl(P.handoff, 'handoff', 'handoff') + hl(P.exit, 'exit', 'exit');
+    return `<svg class="chf-dbgsvg" width="${sc.w}" height="${sc.h}" viewBox="0 0 ${sc.w} ${sc.h}">${road}${lines}${segs.join('')}</svg>`;
+  }
+  /** 開発用：カメラの注視点（背景の画素）と今の背景の札 */
+  function dbgCam() { const c = $('#chfdbgcam'); if (c) { c.style.left = `${V.tgt.x.toFixed(1)}px`; c.style.top = `${V.tgt.y.toFixed(1)}px`; } }
+  function dbgScene() {
+    if (!V.dbg) return; const fv = $('#chf'); if (!fv || !V.sc) return; let b = $('#chfdbgsc'); if (!b) { fv.insertAdjacentHTML('beforeend', '<div class="chf-dbgsc" id="chfdbgsc"></div>'); b = $('#chfdbgsc'); }
+    const P = V.sc.play || {}; b.textContent = `scene ${V.sc.key || V.sc.id}「${V.sc.name}」 node ${(($('#bmonw') || {}).dataset || {}).node || '-'} playable ${(P.playable || []).join('〜')} handoff ${P.handoff != null ? P.handoff : '-'}`;
   }
   function overlayHtml(cfg, m) {
     const f = MMCH.fieldOf(m), o = f && f.branch && (cfg.branchOverlays || {})[f.branch];
@@ -288,9 +304,13 @@
     const S = base * zoomAt(sc, d) * V.cam.z;
     let tx = W / 2 - V.cam.x * S, ty = H * C.anchorY - V.cam.y * S;
     tx = sc.w * S <= W ? (W - sc.w * S) / 2 : clamp(tx, W - sc.w * S, 0);
-    ty = sc.h * S <= H ? (H - sc.h * S) / 2 : clamp(ty, H - sc.h * S, 0);
+    const top = sc.play && sc.play.exit ? -sc.play.exit * sc.h * S : 0;   // play.exit＝この背景のカメラが見てよい奥の端（0＝画像の上端まで）
+    const lo = H - sc.h * S - (V.camLoose || 0);   // camLoose：下の選択シートに隠れる高さだけ、画像の下端より下まで動いてよい（分かれ道。見えない所なので空白は見えない）
+    ty = sc.h * S <= H ? (H - sc.h * S) / 2 : clamp(ty, lo, Math.max(lo, top));
     V.cam.S = S; V.cam.tx = tx; V.cam.ty = ty;
     cam.style.transform = `translate3d(${tx.toFixed(2)}px,${ty.toFixed(2)}px,0) scale(${S.toFixed(4)})`;
+    cam.style.setProperty('--inv', (1 / S).toFixed(4));   // 2026-10-08：マス（.chf-tile.fx）だけカメラの拡大を打ち消す＝手前でも奥でも同じ見た目の大きさ（transform だけ＝レイアウトの再計算なし）
+    if (V.dbg) dbgCam(tx, ty, S);
     // 視差：グループごとに少し違う速さ（フィールドに入った時のカメラ位置からの差で動かす）
     if (!V.par0) V.par0 = { tx, ty };
     const dx = (tx - V.par0.tx) / S, dy = (ty - V.par0.ty) / S;
@@ -467,28 +487,83 @@
    *  2) 次の背景を前の背景の「下」に作る。モンスターは次の背景の入口の少し手前に置き、画面上の位置が前の背景のモンスターと重なるようにカメラを合わせる
    *  3) 前の背景（上）を ms かけて透明にしながら、次の背景の入口のマスへ歩いて入る（カメラはいつもの追従で自然に戻る）。背景の境目はマスではない（出目に数えない）
    */
+  // ---- 2026-10-08（正式ボード）：背景ごとの play＝{ enter, playable, handoff, exit }（config.fieldScenes[].play）。歩く道は道路中央ライン（road）から作る ----
+  /** 道路中央ライン上の点（背景の画素）。r＝半幅に対する横の位置（-1〜1。左右の道はその割合を保つ） */
+  function roadPt(sc, y, r) { const R = MMCH.roadAt(sc, y); return R ? [(R.x + r * R.half) * sc.w, y * sc.h] : null; }
+  /** ノードが道のどこにあるか（中央＝0・左右の道＝±LANE_K） */
+  function laneRatio(sc, n) { const R = n && MMCH.roadAt(sc, n.y); return R && R.half > 0 ? clamp((n.x - R.x) / R.half, -0.9, 0.9) : 0; }
+  /** y0 → y1 の道路中央ラインに沿った点列（同じ横の割合 r） */
+  function roadSpan(sc, y0, y1, r) { const pts = [], k = Math.max(2, Math.ceil(Math.abs(y1 - y0) / 0.012)); for (let i = 0; i <= k; i++) { const p = roadPt(sc, y0 + (y1 - y0) * i / k, r); if (p) pts.push(p); } return pts; }
+  /** 点列を歩く時間：マスの間（約1列ぶん）と同じ速さ。k＝倍率 */
+  function spanMs(pts, k) { let L = 0; for (let i = 1; i < pts.length; i++) L += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); const M = MO(); return V.calm ? 40 : clamp(M.stepMs * (L / 117) * (k || 1), 200, 620); }
+  /** 次の背景の画像を先にデコード（最大 0.45秒。溶ける途中で空の画面・白を見せない） */
+  function bgReady(sc) {
+    if (!sc || typeof Image === 'undefined') return Promise.resolve();
+    const im = new Image(); im.decoding = 'async'; im.src = sc.bg;
+    const p = im.decode ? im.decode().catch(() => {}) : new Promise((ok) => { im.onload = im.onerror = ok; });
+    return Promise.race([p, wait(450)]);
+  }
+  /**
+   * 背景の切り替えのつなぎ（2026-10-08）：カメラは画像の端より外へ出せないため、次の背景の入口ではモンスターの画面の位置・大きさが前の背景と少し違うことがある。
+   *  新しい背景のモンスターを、前の背景のモンスターと同じ画面の位置・大きさから始め、歩いて入る間に本来の位置・大きさへなめらかに戻す（individual transform の translate・scale だけ。
+   *  道の上の位置・カメラ・進行には触れない）＝溶けている間に2匹が別の場所に見えない・瞬間移動に見えない。視差を減らす設定では何もしない
+   */
+  function matchCut(nm, oldPos, ms) {
+    if (!nm || !oldPos || V.calm || !nm.animate || !(root.CSS && CSS.supports && CSS.supports('scale', '1'))) return;
+    const r = nm.getBoundingClientRect(); if (!r.width || !r.height || !oldPos.height) return;
+    const S = V.cam.S || 1, k = clamp(oldPos.height / r.height, 0.35, 2.5);
+    const dx = (oldPos.left + oldPos.width / 2) - (r.left + r.width / 2), dy = oldPos.bottom - r.bottom;
+    if (Math.abs(dx) < 2 && Math.abs(dy) < 2 && Math.abs(k - 1) < 0.03) return;
+    // #bmonw の個別の translate は transform（奥行きの scale(--d)）より外側・カメラ（S 倍）の内側＝画面の px ÷ S（背景の画素）
+    // 個別の scale は transform-origin（50% 94%＝箱の中の点）のまわりに縮むが、足元（止まる点）は transform の translate(-50%,-94%) で箱の原点へ動いている＝その差 (1 − k) × origin だけ足元がずれるので打ち消す
+    const ox = nm.offsetWidth * 0.5, oy = nm.offsetHeight * 0.94, tx = dx / S - (1 - k) * ox, ty = dy / S - (1 - k) * oy;
+    try { nm.animate([{ translate: `${tx.toFixed(1)}px ${ty.toFixed(1)}px`, scale: String(k.toFixed(3)) }, { translate: '0px 0px', scale: '1' }], { duration: Math.max(260, ms), easing: 'cubic-bezier(.25,.6,.3,1)' }); } catch (e) {}
+  }
+  /** 見せ場の視線誘導（fieldScenes[].cue）：入ってくる間だけ、カメラが少しそちらを見る。止まったら自然に戻す（操作は止めない） */
+  function cueStart() { const c = !V.calm && V.sc && V.sc.cue; if (!c) return null; V.focus = { x: c.x * V.sc.w, y: c.y * V.sc.h, mix: c.mix != null ? c.mix : 0.2, cue: true }; return c; }
+  function cueEnd(c) { if (!c) return; setTimeout(() => { if (V.focus && V.focus.cue) { V.focus = null; if (V.monPos) camTarget(V.monPos.x, V.monPos.y, V.monPos.d, false); } }, c.ms || 650); }
+  /**
+   * 背景の切り替え（クロスフェード。config.backgroundTransition.type 'crossfade'）：止まらずに歩き続けたまま、景色だけが前の背景から次の背景へ溶けて変わる。
+   *  1) 前の背景の最後のマスから、道路中央ラインに沿って handoff（受け渡しの地点）まで歩く（減速しない）。同時に次の背景の画像をデコードしておく
+   *  2) 次の背景を前の背景の「下」に作る。モンスターは次の背景の enter（入口の手前）に置き、画面上の位置が前の背景のモンスターと重なるようにカメラを合わせる
+   *  3) 前の背景（上）を ms かけて透明にしながら、道路中央ラインに沿って入口のマスへ歩いて入る（カメラはいつもの追従で自然に戻る）。境目はマスではない（出目に数えない）
+   *  play の無い背景（Chapter 2 など）は従来どおり（進む向きへ out だけ歩く → 入口の back 手前から歩いて入る）
+   */
   async function crossField(m, fieldId, id, fromId, last) {
     const fv = $('#chf'); if (!fv) return;
     const M = MO(), T = V.cfg.backgroundTransition || {}, xf = V.calm ? 0 : (T.ms || 520), from = V.g.nodes[fromId], out = V.look, ext = (T.out != null ? T.out : 80) * (from ? from.d : 1);
+    const dec = bgReady(sceneOf(V.cfg, fieldId));
     V.moving = true;
-    const p0 = [V.monPos.x, V.monPos.y], p1 = [p0[0] + out[0] * ext, p0[1] + out[1] * ext];
-    await moveAlong([p0, p1], V.calm ? 40 : (T.outMs || 260), [0.05, 0.05]);
+    const H0 = V.sc.play && from && from.field === V.field ? roadSpan(V.sc, from.y, V.sc.play.handoff, laneRatio(V.sc, from)) : null;
+    if (H0 && H0.length >= 2) { H0[0] = [V.monPos.x, V.monPos.y]; await moveAlong(H0, spanMs(H0, 0.8), [0.05, 0.05]); }
+    else { const p0 = [V.monPos.x, V.monPos.y], p1 = [p0[0] + out[0] * ext, p0[1] + out[1] * ext]; await moveAlong([p0, p1], V.calm ? 40 : (T.outMs || 260), [0.05, 0.05]); }
+    await dec;
     const old = $('#chfcam'), om = $('#bmonw'), oldPos = om ? om.getBoundingClientRect() : null;
     if (old) { old.id = 'chfcam-old'; old.classList.add('chf-xout'); old.querySelectorAll('[id]').forEach((e) => { e.id = `${e.id}-old`; }); }
     buildScene(m, fieldId, true, true);
     const n = V.g.nodes[id], nx = (V.g.conn[id] || []).map((k) => V.g.nodes[k]).find((q) => q && q.field === fieldId);
-    let dir = out; if (nx) { const dx = (nx.mx - n.mx) * V.sc.w, dy = (nx.my - n.my) * V.sc.h, L = Math.hypot(dx, dy) || 1; dir = [dx / L, dy / L]; }
+    const ex = n.mx * V.sc.w, ey = n.my * V.sc.h;
+    const E = V.sc.play && V.sc.play.enter > n.y ? roadSpan(V.sc, V.sc.play.enter, n.y, laneRatio(V.sc, n)) : null;
+    let sx, sy, dir = out;
+    if (E && E.length >= 2) { E[E.length - 1] = [ex, ey]; [sx, sy] = E[0]; const dx = E[1][0] - E[0][0], dy = E[1][1] - E[0][1], L = Math.hypot(dx, dy) || 1; dir = [dx / L, dy / L]; }
+    else {
+      if (nx) { const dx = (nx.mx - n.mx) * V.sc.w, dy = (nx.my - n.my) * V.sc.h, L = Math.hypot(dx, dy) || 1; dir = [dx / L, dy / L]; }
+      const back = (T.back != null ? T.back : 90) * n.d; sx = ex - dir[0] * back; sy = ey - dir[1] * back;
+    }
     V.look = dir; face(dir[0]);
-    const ex = n.mx * V.sc.w, ey = n.my * V.sc.h, back = (T.back != null ? T.back : 90) * n.d, sx = ex - dir[0] * back, sy = ey - dir[1] * back;
-    setMonPos(sx, sy, n.d); camTarget(sx, sy, n.d, true);
+    setMonPos(sx, sy, depthAtY(sy)); camTarget(sx, sy, V.monPos.d, true);
     anim('walk', { speed: 1, dir: dir, calm: V.calm }); if (SPR.set) sprShow(Math.floor(SPR.phase) % SPR.set.frames.length);   // 新しい背景のモンスターも最初のフレームから歩きの姿（前の背景と同じコマ）
-    // 画面上のモンスターの位置を前の背景と合わせる（カメラの差だけずらし、歩きながら追従でいつもの位置へ戻る）
+    // 画面上のモンスターの位置は matchCut が前の背景と合わせる（2026-10-08：カメラはずらさない＝画像の端で止まったカメラが次のフレームで跳ねない）
     const nm = $('#bmonw');
-    if (oldPos && nm && !V.calm) { const r = nm.getBoundingClientRect(), S = V.cam.S || 1; V.cam.x += ((r.left + r.width / 2) - (oldPos.left + oldPos.width / 2)) / S; V.cam.y += (r.bottom - oldPos.bottom) / S; camApply(); camKick(); }
     if (old) { if (xf) { old.style.transition = `opacity ${xf}ms ease-in-out`; void old.offsetWidth; old.style.opacity = '0'; setTimeout(() => old.remove(), xf + 40); } else old.remove(); }
-    await moveAlong([[sx, sy], [ex, ey]], V.calm ? 40 : Math.max(M.enterMs, T.enterMs || 0), [0.05, last ? 0.3 : 0.05]);
+    const cue = cueStart();
+    const P = E && E.length >= 2 ? E : [[sx, sy], [ex, ey]], ems = V.calm ? 40 : Math.max(E ? spanMs(P, 0.85) : 0, M.enterMs, E ? 0 : (T.enterMs || 0));
+    matchCut(nm, oldPos, ems);
+    await moveAlong(P, ems, [0.05, last ? 0.3 : 0.05]);
+    cueEnd(cue);
     if (nm) nm.dataset.node = id; markCur(id);
     const fd = $('#chfd'); if (fd) fd.textContent = V.sc.name;
+    dbgScene();
   }
   async function switchField(m, fieldId, id, fromId, last) {
     if ((V.cfg.backgroundTransition || {}).type === 'crossfade') return crossField(m, fieldId, id, fromId, last);
@@ -611,7 +686,7 @@
   function chfBoard(msg) {
     const m = gS() && gS().m; if (!chfActive(m)) return false;
     const r = m.raise, ph = P8().boardPhase(m), f = MMCH.fieldOf(m);
-    V.cfg = MMCH.configFor(m); V.g = MMCH.graphFor(m); V.calm = calmMode();
+    V.cfg = MMCH.configFor(m); V.g = MMCH.graphFor(m); V.calm = calmMode(); V.dbg = debug();
     evArtPreload(m);   // 2026-10-04（追加アセット）：この配置の出来事の挿絵を少しずつ先読み
     rfxPreload();   // 能力UPの道具・結果演出
     if (!V.foeWarm && root.MMP10M && typeof Image !== 'undefined') { V.foeWarm = 1; setTimeout(() => (MMP10M.SPECIES || []).forEach((x) => { if (x.image) { const im = new Image(); im.decoding = 'async'; im.src = x.image.src; } }), 1200); }   // 2026-10-04 G3：遭遇の演出で見せる相手の正式画像（4枚）
@@ -628,13 +703,14 @@
     } else { const w = $('#bmonw'); if (w && w.dataset.node !== r.node) placeMon(r.node, true); }
     // 停止地点の状態（開けた宝箱・使ったイベント）を反映
     document.querySelectorAll('#chf .chf-obj,#chf .chf-tile').forEach((e) => { const id = e.dataset.id; e.classList.toggle('used', f.consumedEvents.includes(id) || f.openedTreasures.includes(id) || f.clearedStats.includes(id)); });
-    markCur(r.node);
+    markCur(r.node); dbgScene();
     // ゴールに着いたあと：config.arrival があれば到着イベント（専用の背景・フィナの会話）→ 大会受付。マス・サイコロ・操作欄は出さない
     if (ph === 'goal' && V.cfg.arrival) { chfArrive(m, same); return true; }
     $('#chfw').classList.remove('arrive'); { const o = $('#chfarr'); if (o) o.remove(); }
     // 2026-10-04：大会のある Chapter で到着イベントが無いとき（Chapter 2 など）も、ゴールでは Chapter 1 と同じランク選択（index.html の p9ReceptionHtml）を会場のロビーの背景の上に。HUD・操作欄は出さない
     if (ph === 'goal' && root.p9ReceptionHtml && (P8().chapterRule(m.raise.ch) || {}).tournament) { $('#chf-ui').innerHTML = `<div class="chrcv bg" id="chrcv" style="--lobby:url(${root.P9_LOBBY_BG || ''})">${root.p9ReceptionHtml(m)}</div>`; return true; }
     $('#chf-ui').innerHTML = hudHtml(m) + sheetHtml(m, ph) + deckHtml(m, ph, msg);
+    if (ph !== 'branch') V.camLoose = 0;
     if (ph === 'branch') branchCamera(m); else if (V.focus && ph === 'roll') camFocus(null);
     if (ph === 'branch') setTimeout(() => { if (onField() && P8().boardPhase(m) === 'branch') storyAt(m, 'branch'); }, 350);   // 2026-10-04：初めての分かれ道（チュートリアル。config.story の trigger 'branch'）
     // Chapter に入った直後（出発してまだ何もしていない）：旅路全体の俯瞰図 → スタート地点へ寄る演出（js/chapter/intro.js）。
@@ -751,7 +827,17 @@
   function branchCamera(m) {
     const r = m.raise, opts = (r.pend && r.pend.opts) || [], ns = opts.map((id) => V.g.nodes[id]).filter((n) => n && n.field === V.field);
     if (!V.monPos) return;
-    if (ns.length) { const cx = ns.reduce((s, n) => s + n.mx, 0) / ns.length * V.sc.w, cy = ns.reduce((s, n) => s + n.my, 0) / ns.length * V.sc.h; camFocus({ x: cx, y: cy }, 0.5, CA().zoom.branch); branchHints(m, ns); }
+    if (ns.length) {
+      // 2026-10-08：同じ背景の左右の道（分岐 A・B）：少し引いて、モンスターを下の選択シートより上に、左右の道の入口と先の数マスを同時に見せる（マスの大きさは変わらない）
+      const cx = ns.reduce((s, n) => s + n.mx, 0) / ns.length * V.sc.w, cy = ns.reduce((s, n) => s + n.my, 0) / ns.length * V.sc.h;
+      const sh = $('#chf-ui .chbr'), fv = $('#chf');
+      if (sh && fv) {
+        const { H } = viewport(), z = CA().zoom.branch, St = (V.cam.S || 1) / (V.cam.z || 1) * z, fr = fv.getBoundingClientRect(), want = sh.getBoundingClientRect().top - fr.top - 14;
+        V.camLoose = Math.max(0, fr.bottom - sh.getBoundingClientRect().top);
+        camFocus({ x: (cx + V.monPos.x) / 2, y: V.monPos.y - (want - CA().anchorY * H) / St }, 1, z);
+      } else camFocus({ x: cx, y: cy }, 0.5, CA().zoom.branch);
+      branchHints(m, ns);
+    }
     else if (((V.cfg.tileUI || {}).gates)) {   // 道の先が別の背景で、左右の門がある：門とモンスターを、下の選択シートより上に見せる（モンスターを画面の 4割の高さへ）
       const { H } = viewport(), S = V.cam.S || 1, mh = monH() * V.monPos.d, up = Math.max(0, (CA().anchorY - 0.4) * H / S);
       camFocus({ x: V.monPos.x, y: V.monPos.y - mh * 0.45 + up }, 1, CA().zoom.branch); branchGates(m);
@@ -844,6 +930,7 @@
     const m = gS() && gS().m; if (!chfActive(m) || busyGet()) return;
     const r = P8().chooseBranch(gS(), m, id); if (!r.ok) return chfBoard(); doSave(); feel('branch.select', { id });   // 2026-10-06：道を選んだ瞬間（BRANCH_SELECT）
     const sh = $('#chf-ui .chbr'); if (sh) sh.remove(); document.querySelectorAll('#chf .chf-brhint,#chf .chf-brgate').forEach((e) => e.remove());
+    V.camLoose = 0;   // シートが消えたので、カメラは画像の中へ戻る（追従でなめらかに）
     const fb = MMCH.fieldOf(m).branch || V.g.nodes[id].branch;   // 選んだ道（f.branch は最初の1歩で記録される）
     document.querySelectorAll('#chf .chf-obj').forEach((e) => { const n = V.g.nodes[e.dataset.id]; if (!n || !n.branch || !sameBranchGroup(V.cfg, n.branch, fb)) return; if (n.branch === fb) e.classList.remove('brhide'); else e.classList.add('gone'); });
     const n = V.g.nodes[id];   // 選んだ道のほうへ少し寄ってから歩き出す（別の背景へ続く道なら、進む向きの先へ）

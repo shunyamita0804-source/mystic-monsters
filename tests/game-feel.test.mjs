@@ -138,7 +138,7 @@ test('GF-08：Chapter のイベント（config.story）：データ駆動（本�
   assert.deepEqual(CH.storyEvents(m, 'start').map((e) => e.id), ['ch1_start']);
   CH.markStory(m, 'ch1_start'); assert.deepEqual(CH.storyEvents(m, 'start'), [], '1回だけ'); assert.deepEqual(m.raise.field.storySeen, ['ch1_start']);
   m.raise.node = 'p5_1'; assert.deepEqual(CH.storyEvents(m, 'land').map((e) => e.id), ['ch1_fork_near'], '分かれ道の近く');
-  m.raise.node = 'p4_4'; assert.deepEqual(CH.storyEvents(m, 'land', { visitedFields: [4] }).map((e) => e.id), ['ch1_rival_before'], '今いる背景と今回通った背景だけ（2026-10-04 G3：ライバルが 05 の最初へ移ったので、その手前の 04 で「この先に誰かいる…」）'); assert.deepEqual(CH.storyEvents(m, 'land', { visitedFields: [4, 5] }).map((e) => e.id), ['ch1_rival_before', 'ch1_fork_near'], '今回の移動で 05 を通った（優先度の高いほうを1つ出す）');
+  m.raise.node = 'p4_4'; assert.deepEqual(CH.storyEvents(m, 'land', { visitedFields: [5] }).map((e) => e.id), ['ch1_rival_before'], '今いる背景と今回通った背景だけ（2026-10-04 G3：ライバルが 05 の最初へ移ったので、その手前の 04 で「この先に誰かいる…」）'); assert.deepEqual(CH.storyEvents(m, 'land', { visitedFields: [5, 6] }).map((e) => e.id), ['ch1_rival_before', 'ch1_fork_near'], '今回の移動で 06 を通った（2026-10-08：分かれ道 C は 06。優先度の高いほうを1つ出す）');
   m.raise.node = 'p9_2'; m.raise.field.branch = 'bridge'; assert.deepEqual(CH.storyEvents(m, 'land', { species: 'gauru' }).map((e) => e.id).slice(0, 2), ['ch1_bridge_gauru', 'ch1_bridge'], '種族の一言が優先');
   assert.deepEqual(CH.storyEvents(m, 'land', { species: 'solamo' }).map((e) => e.id)[0], 'ch1_bridge');
   m.raise.node = 'p3_2'; m.raise.field.branch = null; assert.deepEqual(CH.storyEvents(m, 'land', { fx: { kind: 'battle', battleType: 'wild' } }).map((e) => e.id), ['ch1_first_wild']);
