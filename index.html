@@ -3650,9 +3650,10 @@ main:has(>#app>.ds) h1{display:none}
 .p9ruf.calm .rufsh{display:none}
 .p9ruf.calm.go>img{transform:translate(-50%,-50%)!important}.p9ruf.calm.go .rufpl{transform:translate(-50%,0)!important}
 .p9ruf.out{transition:opacity .3s;opacity:0}
-/* 2026-10-08：セドリックの大会前の導入（standing_UI の上部＝opening_X）。高さの 80% に広げていたため大きなアップに見えていた → 元の絵と同じ縮尺（画面の幅に合わせる）で上に置き、絵の下端から会話窓までは濃紺へ溶かす（画像は加工しない） */
-.mmtalk-nofig>.mmtalk-scenebg[style*="opening_"]{--cw:max(100vw,min(118vw,calc((100dvh - 200px)*.768)));background-size:var(--cw) auto;background-position:center top}
-.mmtalk-nofig>.mmtalk-scenebg[style*="opening_"]::after{background:linear-gradient(180deg,rgba(11,22,54,0) 0,rgba(11,22,54,0) calc(var(--cw)*1000/768 - 110px),#0b1636 calc(var(--cw)*1000/768 - 4px),#0b1636 100%)}
+/* 2026-10-08：セドリックの大会前後のイベントは実況席の正式画像 booth_X（ユーザー指示：standing_UI の上部 opening_X は焼き込みのセリフ窓があり、高さに合わせて広げるとアップに見えていた）。
+   画面の幅に合わせて上に置く（cover で拡大しない＝元の構図のまま）。絵の下の余りは会話窓の後ろ（濃紺へ溶かす）。画像は加工しない */
+.mmtalk-nofig>.mmtalk-scenebg[style*="booth_"]{background-size:100% auto;background-position:center top}
+.mmtalk-nofig>.mmtalk-scenebg[style*="booth_"]::after{background:linear-gradient(180deg,rgba(11,22,54,0) 0,rgba(11,22,54,0) calc(100vw*1360/768 - 90px),#0b1636 calc(100vw*1360/768 - 2px),#0b1636 100%)}
 /* 2026-10-08 正式：モンスターの勝利演出（p9VictoryShow）＝会場の上に育てたモンスターの勝利画像。フェード・ごく軽い拡大・短い光だけ */
 .p9vic{position:fixed;inset:0;z-index:960;overflow:hidden;background:#0b1636;cursor:pointer}
 .p9vic .vicbg{position:absolute;inset:0;background:#0b1636 center/cover no-repeat;opacity:0;transition:opacity .35s}
@@ -5226,7 +5227,7 @@ function p9VictoryShow(m,rank){return new Promise(res=>{const k=m&&VICTORY_IMG[m
  d.onclick=()=>{if(performance.now()-t0>350)fin()};
  Promise.race([im.decode?im.decode().catch(()=>{}):Promise.resolve(),new Promise(r=>setTimeout(r,1200))]).then(()=>{if(done)return;d.classList.add("go");T.push(setTimeout(fin,calm?1200:2200))})})}
 async function p9TourOpen(k){const on=cedricOn();await p9TourIntro(k,on);
- if(on){const f=finaFlags(),first=!f.cedricWelcome;if(first){f.cedricWelcome=1;save()}bgm("cedric");let drawn=false;try{await MMNPC.talk(CEDRIC_EV.open(k,first),{kind:"event",big:true,scene:CED_SCENE(k,"opening"),noFig:true,onClose:()=>{drawn=true;P9_ENTER=true;board()}})}catch(e){}if(drawn)return} // 2026-10-07：大会前の導入の曲（CEDRIC）→ 対戦表で対戦表の曲 // 2026-10-07 試遊：閉じ始めに対戦表を下に描く（会話のフェードの間に受付の画面が一瞬見えていた）
+ if(on){const f=finaFlags(),first=!f.cedricWelcome;if(first){f.cedricWelcome=1;save()}bgm("cedric");let drawn=false;try{await MMNPC.talk(CEDRIC_EV.open(k,first),{kind:"event",big:true,scene:CED_SCENE(k,"booth"),noFig:true,onClose:()=>{drawn=true;P9_ENTER=true;board()}})}catch(e){}if(drawn)return} // 2026-10-07：大会前の導入の曲（CEDRIC）→ 対戦表で対戦表の曲 // 2026-10-07 試遊：閉じ始めに対戦表を下に描く（会話のフェードの間に受付の画面が一瞬見えていた）
  P9_ENTER=true;board()}
 let P9_END_RS=null,P9_END_UP=null,P9_END_AFTER=null,P9_END_FX=false;
 // 2026-10-08（監査 M-01）：大会の終わりの正式の順＝全試合の終了 → 最終順位 → （優勝なら）モンスターの勝利演出 → 初回報酬 → ランクアップ／解放 → セドリックの締め → 次の画面。

@@ -1,6 +1,6 @@
 // =========================================================
 // 2026-10-08 次便：正式素材の統合（実ブラウザのスポット確認）
-//  AS8-B1：セドリックの大会前の導入＝E と B で正式の opening_X（ランク別）→ 対戦表
+//  AS8-B1：セドリックの大会前の導入＝E と B で正式の実況席 booth_X（ランク別・画面の幅に合わせる）→ 対戦表
 //  AS8-B2：大会3 VS＝専用勝負絵（相手は反転）→ バトル（VS は1回だけ）
 //  AS8-B3：ランク昇格 Final＝D→C の4枚が読み込まれて重なり、自動で閉じる
 //  AS8-B4：リュウの表情（街の初対面の会話）
@@ -28,16 +28,16 @@ async function toReception(pg, sp = 0, clear = 0) {
 const sceneSrc = (pg) => pg.evaluate(() => { const b = document.querySelector('.mmtalk-scenebg'); return b ? b.style.backgroundImage : ''; });
 
 for (const [rank, clear] of [[0, 0], [3, 3]]) {
-  test(`AS8-B1：セドリックの大会前の導入（ランク${'EDCBAS'[rank]}）＝正式の opening_${'EDCBAS'[rank]}・元の縮尺に近い → 対戦表`, { skip: SKIP, timeout: 120000 }, async () => {
+  test(`AS8-B1：セドリックの大会前の導入（ランク${'EDCBAS'[rank]}）＝正式の booth_${'EDCBAS'[rank]}・画面の幅に合わせる → 対戦表`, { skip: SKIP, timeout: 120000 }, async () => {
     const p = await openPage({ size: H.SIZES.base, npc: true, tourconf: true, tourfx: true }); const pg = p.page;
     await toReception(pg, 0, 0);
     if (!clear) { await pg.click(`button.rcv-row[data-rank="${rank}"]`); await pg.waitForTimeout(500); await pg.click('#p9join'); await pg.waitForSelector('#p9conf .p9conf-yes'); await pg.waitForTimeout(450); await pg.click('#p9conf .p9conf-yes'); }
     else await pg.evaluate((k) => { for (let r = 0; r < k; r++) MMP7.recordRankClear(S, S.m, r); S.m.raise.ch = 3; if (!MMP8.startTournament(S, S.m, k, 7).ok) throw new Error('start'); save(); p9TourOpen(k); }, rank);   // ほかのランク：受付は Chapter の上限があるので、開始と導入を直接
     await pg.waitForSelector('.mmtalk-scene', { timeout: 30000 });
-    assert.match(await sceneSrc(pg), new RegExp(`cedric/opening_${'EDCBAS'[rank]}\\.webp`));
+    assert.match(await sceneSrc(pg), new RegExp(`cedric/booth_${'EDCBAS'[rank]}\\.webp`));
     const r = await pg.evaluate(() => { const b = document.querySelector('.mmtalk-scenebg'), cs = getComputedStyle(b); return { size: cs.backgroundSize, nofig: document.querySelector('.mmtalk').classList.contains('mmtalk-nofig'), fig: !!document.querySelector('.mmtalk-fig img[src*="cedric"]:not([hidden])') && getComputedStyle(document.querySelector('.mmtalk-fig')).display !== 'none' }; });
     assert.equal(r.nofig, true, '立ち絵（旧アップ）は重ねない'); assert.equal(r.fig, false);
-    const w = parseFloat(r.size); assert.ok(w >= 390 && w <= 390 * 1.18 + 1, `絵の幅＝画面の幅〜1.18倍（旧：高さの80%＝約518px）：${r.size}`);
+    assert.match(r.size, /^(100%|390px)( auto)?$/, `絵の幅＝画面の幅（cover で拡大しない）：${r.size}`);
     await H.finishTalk(pg);
     await pg.waitForSelector('.tb1 .tbgo', { timeout: 20000 });
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);

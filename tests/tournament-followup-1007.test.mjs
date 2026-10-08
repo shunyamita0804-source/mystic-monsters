@@ -11,7 +11,7 @@ test('TF-01：セドリック（opening／booth）・会場 venue・ランク開
   for (const r of 'EDCBAS') for (const f of [`cedric/opening_${r}`, `cedric/booth_${r}`, `venues/venue_${r}`]) { const b = readFileSync(path.join(ROOT, `assets/tournament/${f}.webp`)); assert.equal(b.toString('ascii', 8, 12), 'WEBP', f); }
   for (const n of ['A1', 'A2', 'A3', 'A4', 'A5', 'A6']) assert.ok(existsSync(path.join(ROOT, `assets/tournament/rank_start/${n}.webp`)), n);
   for (const n of ['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7']) assert.ok(existsSync(path.join(ROOT, `assets/tournament/rank_up/${n}.webp`)), n);
-  assert.ok(HTML.includes('scene:CED_SCENE(k,"opening"),noFig:true'), '開会＝standing（opening）'); assert.ok(HTML.includes('scene:CED_SCENE(rs.rank,"booth"),noFig:true'), '締め＝booth');
+  assert.ok(HTML.includes('scene:CED_SCENE(k,"booth"),noFig:true'), '開会＝実況席（2026-10-08 ユーザー指示：booth。旧 standing＝opening はファイルだけ残す）'); assert.ok(HTML.includes('scene:CED_SCENE(rs.rank,"booth"),noFig:true'), '締め＝booth');
   assert.ok(HTML.includes('tbbg" style="background-image:url(${TB_VENUE(t.rank)})"')); assert.ok(HTML.includes('<div class="pcbg" style="background-image:url(${TB_VENUE(t.rank)})">'));
   assert.match(rd('js/battle/arena.js'), /assets\/tournament\/venues\/venue_\$\{r\}\.webp/, 'バトルの会場');
   assert.match(rd('js/npc/npc.js'), /if \(scene && opts\.noFig\) ov\.classList\.add\('mmtalk-nofig'\)/);

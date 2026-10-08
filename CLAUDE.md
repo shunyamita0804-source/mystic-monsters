@@ -611,7 +611,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 
 ### 正式素材の統合・次便（2026-10-08。いまの正式。基準 ec22fe2 への差分）
 
-- **セドリックの大会前後**：正式素材（standing_UI・booth の12枚）は 10-07 の追補便で取り込み済み（今回の ZIP と sha256 が同じ）で、ランク別に使っていた（旧いアップ画像・顔は参照していない）。実機で「アップだけ」に見えた原因＝大会前の導入の絵（standing_UI の上部 768×1000＝opening_X）を画面の高さの 80% に広げていたこと。→ ユーザーの選択「全身寄りに引いて表示」：画面の幅〜1.18倍（--cw）で上に置き、絵の下端から会話窓までは濃紺へ溶かす（画像は加工しない）。締めは従来どおり booth_X。standing_UI の焼き込みのセリフ窓は使わない（ランクごとに文が違い、A の絵は「公式ランクE大会」と誤っている）
+- **セドリックの大会前後**：正式素材（standing_UI・booth の12枚）は 10-07 の追補便で取り込み済み（今回の ZIP と sha256 が同じ）で、ランク別に使っていた（旧いアップ画像・顔は参照していない）。実機で「アップだけ」に見えた原因＝大会前の導入の絵（standing_UI の上部＝opening_X）を画面の高さに合わせて広げていたこと。→ **ユーザー指示（2026-10-08）：大会前の導入も締めも実況席 booth_X（E〜S。ユーザーが同じ6枚を送り直して指定）**。画面の幅に合わせて上に置く（cover で拡大しない）・絵の下の余りは会話窓の後ろで濃紺へ溶かす（画像は加工しない）。standing_UI（opening_X）はファイルだけ残す（焼き込みのセリフ窓はランクごとに文が違い、A の絵は「公式ランクE大会」と誤っている）
 - **街の BGM**＝「冒険への誘い」（assets/audio/bgm/licensed_20261008/town_bouken_e_no_izanai.ogg。MP3 を OGG Vorbis q5 に変換しただけ・182.7秒のうち 179秒からは無音＝registry の TOWN に loopEnd 178.6・頭へ 1.2秒のクロスフェード・gain 0.7）。旧 HydroGene「Lively City」は外した。作者・出典は ZIP に無い＝AUDIO_CREDITS.md で要確認。市場・牧場・研究所の曲は変えていない
 - **リュウの表情5種**（assets/npc/ryu/expr/＝normal・surprise・confident・serious・soft_smile。573×760 の可逆 WebP）：MMNPC の ryu の closeup。stand を持たない（stand があると全身を切って見せるため）。全身（fullbody・遭遇の画面）は従来の正式の全身。街の初対面の会話（OPEN_TALK.ryu）＝驚き → 自信 → 柔らかい笑み → 真剣 → 自信（台詞は変えていない）
 - **市場の木製UI**（assets/ui/market_wood/＝中央の札・左右の札・左右のナビ）：木の札は平たいので名前と価格を1行に、「タップでくわしく」は中央の札のすぐ下（札を 15px 上げた）。カルーセル（中央100%・左右70%・ループ・スワイプ・矢印・ドット）と処理は変えていない。旧 recovery_1006/market の札・矢印はファイルだけ残す
@@ -619,7 +619,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - **ランク昇格 Final**（assets/tournament/rankup_final/＝段階ごとに letter・frame・fx・plaque）：RANK_UP_ART＝{1:E_to_D, 2:D_to_C, 3:C_to_B, 4:B_to_A, 5:A_to_S}（昇格で新しく選べるランク → 段階）・p9RankUpFinal（光 → 枠 → 文字 → 解放の札「ランクX大会 解放！」＝HTML。約3.4秒・タップで飛ばせる・視差を減らす設定では動かさない）。旧 B1〜B7 は使わない。昇格の規則・大会の終わりの順・報酬は変えていない（E・D は最初から解放＝**E_to_D は定義だけ**で今の規則では流れない）
 - **モンスターの勝利演出**（assets/tournament/victory/＝5体。最初の ZIP の5枚は RGB で市松模様が焼き込まれていた＝ユーザーが透過の切り抜き missmon_victory_png を添付し直した）：大会の終わりの champion の段階（優勝のとき）に index.html の p9VictoryShow＝そのランクの会場（venue_X）の上に、育てたモンスターの勝利画像（VICTORY_IMG＝m.sp で出し分け）を短いフェード・ごく軽い拡大・短い光で約2.2秒（タップで先へ・視差を減らす設定では動かさない・自動テスト MM_QA_NO_TOURFX では出さない）。旧 CSS の仮演出（結果の画面の .p9wmon が跳ねる）は残るが、その上に正式の演出が重なる。終わりの順（最終順位 → 勝利演出 → 初回報酬 → ランクアップ → セドリックの締め → 次の画面）は変えていない
 - **世界地図の解放アイコン**（assets/ui/worldmap_icon/worldmap_unlock.png。添付し直した透過 PNG の余白を切り詰めて 256px）：世界地図の解放の知らせ（MMNOTE）。旧：管理局のコマンドの絵で代用
-- テスト：tests/assets-1008.test.mjs（AS8-01〜05）・AUDIO-34、実ブラウザ tests/qa-e2e-assets-1008.test.mjs（AS8-B1＝E と B のセドリック・B2＝VS・B3＝RankUp Final・B4＝リュウ・B5＝市場・B6＝街の BGM・B7＝D 優勝の終わりの順と勝利演出・B8＝世界地図のアイコン）。AS8-06〜07＝勝利演出・地図アイコン
+- テスト：tests/assets-1008.test.mjs（AS8-01〜05）・AUDIO-34、実ブラウザ tests/qa-e2e-assets-1008.test.mjs（AS8-B1＝E と B のセドリック（booth）・B2＝VS・B3＝RankUp Final・B4＝リュウ・B5＝市場・B6＝街の BGM・B7＝D 優勝の終わりの順と勝利演出・B8＝世界地図のアイコン）。AS8-06〜07＝勝利演出・地図アイコン
 
 ### 深層監査の修正・第2便（2026-10-08。いまの正式。基準 1bfd8b2 への差分）
 

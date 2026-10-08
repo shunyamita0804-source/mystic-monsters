@@ -1,6 +1,6 @@
 // =========================================================
 // 2026-10-08 次便：正式素材の統合（セドリック・街BGM・リュウの表情・市場の木製UI・VS 専用勝負絵・ランク昇格 Final）
-//  AS8-01 セドリックの大会前の導入＝ランク別の opening_X（standing_UI の上部）を元の縮尺に近く（高さいっぱいに広げない）。締めは booth_X
+//  AS8-01 セドリックの大会前後＝ランク別の実況席 booth_X（ユーザー指示）を画面の幅に合わせて（cover で拡大しない）
 //  AS8-02 市場の木製UI（中央・左右の札・左右のナビ）。カルーセルの処理は変えない
 //  AS8-03 VS の専用勝負絵 5体（右向き・相手だけ反転）
 //  AS8-04 ランク昇格 Final（段階ごとに4枚）・昇格の規則は変えない
@@ -18,11 +18,11 @@ const HTML = rd('index.html');
 const ex = (p) => existsSync(path.join(ROOT, p));
 const RK = ['E', 'D', 'C', 'B', 'A', 'S'];
 
-test('AS8-01：セドリック＝ランク別の opening_X／booth_X（旧いアップ画像・顔は使わない）。導入の絵は元の縮尺に近く', () => {
+test('AS8-01：セドリック＝大会前の導入も締めもランク別の実況席 booth_X（旧いアップ画像・顔・standing_UI は使わない）。画面の幅に合わせる', () => {
   for (const r of RK) { assert.ok(ex(`assets/tournament/cedric/opening_${r}.webp`), r); assert.ok(ex(`assets/tournament/cedric/booth_${r}.webp`), r); }
   assert.match(HTML, /const CED_SCENE=\(k,kind\)=>`\.\/assets\/tournament\/cedric\/\$\{kind\}_\$\{RN\[k\]\}\.webp`;/);
-  assert.match(HTML, /scene:CED_SCENE\(k,"opening"\),noFig:true/); assert.match(HTML, /scene:CED_SCENE\(rs\.rank,"booth"\),noFig:true/);
-  assert.match(HTML, /\.mmtalk-nofig>\.mmtalk-scenebg\[style\*="opening_"\]\{--cw:max\(100vw,min\(118vw,calc\(\(100dvh - 200px\)\*\.768\)\)\);background-size:var\(--cw\) auto;background-position:center top\}/);
+  assert.match(HTML, /scene:CED_SCENE\(k,"booth"\),noFig:true/); assert.doesNotMatch(HTML, /CED_SCENE\(k,"opening"\)/); assert.match(HTML, /scene:CED_SCENE\(rs\.rank,"booth"\),noFig:true/);
+  assert.match(HTML, /\.mmtalk-nofig>\.mmtalk-scenebg\[style\*="booth_"\]\{background-size:100% auto;background-position:center top\}/);
 });
 
 test('AS8-02：市場の木製UI（assets/ui/market_wood/）＝中央・左右の札・左右のナビ。カルーセルの処理（p10Step・矢印・ドット）は変えない', () => {

@@ -137,8 +137,8 @@ test('CED-B1（2026-10-07 追補便）：ランク選択はフィナの見立て
     return o ? { nofig: o.classList.contains('mmtalk-nofig'), bg: bg ? (bg.style.backgroundImage.match(/assets\/[^"')]+/) || [''])[0] : '', fig: fig ? getComputedStyle(fig).display : '', name: o.querySelector('.mmtalk-name').textContent, text: o.dataset.npc } : null; });
   await joinD(pg).catch(() => {}); await pg.waitForSelector('.mmtalk-nofig', { timeout: 15000 });
   const s1 = await scene();
-  assert.deepEqual([s1.nofig, s1.bg, s1.fig, s1.name, s1.text], [true, 'assets/tournament/cedric/opening_D.webp', 'none', 'セドリック', 'cedric'], '開会＝ランクDの standing（立ち絵は重ねない）');
-  assert.ok(await pg.evaluate(() => new Promise((r) => { const i = new Image(); i.onload = () => r(i.naturalWidth > 0); i.onerror = () => r(false); i.src = './assets/tournament/cedric/opening_D.webp'; })));
+  assert.deepEqual([s1.nofig, s1.bg, s1.fig, s1.name, s1.text], [true, 'assets/tournament/cedric/booth_D.webp', 'none', 'セドリック', 'cedric'], '開会＝ランクDの実況席（2026-10-08 ユーザー指示：booth。立ち絵は重ねない）');
+  assert.ok(await pg.evaluate(() => new Promise((r) => { const i = new Image(); i.onload = () => r(i.naturalWidth > 0); i.onerror = () => r(false); i.src = './assets/tournament/cedric/booth_D.webp'; })));
   await H.finishTalk(pg); await H.finishTalk(pg).catch(() => {});
   await pg.waitForSelector('.tb1 .tbgo');
   assert.equal(await pg.evaluate(() => document.querySelectorAll('.p9ced:not(.p9fina)').length), 0, '大会1 対戦表にセドリックは出さない（ADDENDUM2）');
