@@ -364,7 +364,7 @@ T('QA-RB5：背景の切り替えをまたぐ移動の途中で再読み込み �
   await waitTurnDone(pg, 4);
   const r = await raiseOf(pg);
   assert.deepEqual([r.node, r.pend, r.turnsUsed, r.field.branch], ['p2_0', null, 4, null], '残り1歩で p2_0（命中）に止まる。振り直しなし');
-  assert.equal(await pg.evaluate(() => document.querySelector('#chf .chf-bg').getAttribute('src')), './assets/fields/ch1a/final/field/ch1_bg_02.webp');
+  assert.equal(await pg.evaluate(() => document.querySelector('#chf .chf-bg').getAttribute('src')), './assets/fields/ch1a/formal_1008/ch1a_scene_03.webp');   // 2026-10-08：p2_ は 03
   const s = await H.getS(pg);
   const gain = s.m.hi - before.m.hi;
   assert.equal(gain, 18, `命中 +18（ソラモの命中適性 C。2026-10-08）（実際 +${gain}）`);
@@ -443,7 +443,7 @@ T('QA-RB8：Chapter 1 のゴール（大会会場。残りの移動は消える�
   await pg.waitForSelector('#chrcv .rcv-row', { timeout: 20000 });
   let r = await raiseOf(pg);
   assert.deepEqual([r.node, r.goal, r.pend, r.turnsUsed, r.fatigue], ['p14_3', true, null, 21, 71], 'p14_2 → p14_3（ゴール）で止まり、残り2歩は消える（2026-10-06：14 は4地点）');
-  assert.equal(await pg.evaluate(() => document.querySelector('#chfarr img').getAttribute('src')), './assets/fields/ch1a/final/event/ch1_bg_15_event.webp', '大会会場（到着イベント専用の背景）');
+  assert.equal(await pg.evaluate(() => document.querySelector('#chfarr img').getAttribute('src')), './assets/fields/ch1a/formal_1008/ch1a_scene_14.webp', '大会会場前の広場の全景（2026-10-08）');
   const ranks = await pg.evaluate(() => [...document.querySelectorAll('.rcv-row.ok')].map((b) => +b.dataset.rank).sort());
   assert.deepEqual(ranks, [0, 1], 'Chapter 1 の挑戦上限は D');
   assert.equal(await pg.evaluate(() => MMP8.canRoll(S.m)), false, 'ゴールのあとはサイコロを振れない');

@@ -62,7 +62,7 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
         dice: document.querySelectorAll('.chdf,.chdz').length };
     });
     assert.ok(r.sh <= r.H && r.sw <= r.W, `ページのはみ出し・スクロールなし（${r.sh}/${r.H}）`);
-    assert.deepEqual([r.cams, r.bgs], [1, ['./assets/fields/ch1a/final/field/ch1_bg_01.webp']], '今いるフィールド（旅立ちの街道）の背景だけ');
+    assert.deepEqual([r.cams, r.bgs], [1, ['./assets/fields/ch1a/formal_1008/ch1a_scene_01.webp']], '今いるフィールド（2026-10-08 正式ボード 01）の背景だけ');
     assert.equal(r.dbg, 0, 'ノード・線・番号の表示は無い');
     assert.ok(r.mon[1] <= r.dockTop + 8 && r.mon[0] >= r.hudBottom - 20 && r.mon[2] >= 0 && r.mon[3] <= r.W, `モンスターは画面の中でUIに隠れない（${r.mon}・操作欄 ${r.dockTop}）`);
     assert.deepEqual(r.broken, []); assert.deepEqual(r.filt, [], '正式モンスター画像に色のフィルタをかけない');
@@ -118,9 +118,9 @@ test('CH1-B4：分かれ道（滝の見える道 05 の最後のマス）：左�
   assert.deepEqual(a.routes, ['森の道', '大橋の道']); assert.deepEqual(a.gates, [['forest', true], ['bridge', true]], '左右の門（正式素材）');
   assert.ok(a.monBottom <= a.sheetTop + 4, `モンスターは選択シートより上（${a.monBottom}/${a.sheetTop}）`);
   await pg.click('.chroute.k-forest'); await idle(pg);
-  const s = await st(pg); assert.deepEqual([s.node, s.field], ['p6_0', 6], '森の道 → 06 の最初のマス');
+  const s = await st(pg); assert.deepEqual([s.node, s.field], ['p6_0', 7], '森の道 → 07 の左の道の最初のマス（2026-10-08：森／大橋は 07・08 の左右の道）');
   assert.equal(await pg.evaluate(() => S.m.raise.field.branch), 'forest'); assert.equal(await pg.evaluate(() => document.querySelectorAll('.chf-brgate,.chroute').length), 0, '選ぶと門とシートは消える');
-  assert.deepEqual(await pg.evaluate(() => [...document.querySelectorAll('.chf-bg')].map((i) => i.getAttribute('src'))), ['./assets/fields/ch1a/final/field/ch1_bg_06.webp']);
+  assert.deepEqual(await pg.evaluate(() => [...document.querySelectorAll('.chf-bg')].map((i) => i.getAttribute('src'))), ['./assets/fields/ch1a/formal_1008/ch1a_scene_07.webp']);
   assert.deepEqual(p.errors, []);
 });
 
@@ -131,7 +131,7 @@ test('CH1-B5：背景の切り替え：旅立ちの小道（01）の奥から木
   await place(pg, 'p1_4'); await idle(pg);   // 2026-10-06：01 は7地点（p1_6 が最後）
   await rollAs(pg, 3); await idle(pg);
   const r = await pg.evaluate(() => ({ node: S.m.raise.node, bgs: [...document.querySelectorAll('.chf-bg')].map((i) => i.getAttribute('src')), cams: document.querySelectorAll('.chf-cam').length, fd: document.querySelector('#chfd').textContent }));
-  assert.equal(r.node, 'p2_0'); assert.deepEqual(r.bgs, ['./assets/fields/ch1a/final/field/ch1_bg_02.webp']); assert.equal(r.cams, 1); assert.equal(r.fd, '木漏れ日の森道');
+  assert.equal(r.node, 'p2_0'); assert.deepEqual(r.bgs, ['./assets/fields/ch1a/formal_1008/ch1a_scene_03.webp']); assert.equal(r.cams, 1); assert.equal(r.fd, '大樹の木陰道');   // 2026-10-08：p1_ は 01・02、p2_ は 03
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
@@ -173,7 +173,7 @@ test('CH1-B8：ゴール（14 の最後のマス＝大会会場の門前）→ �
   assert.deepEqual(await pg.evaluate(() => [S.m.raise.node, S.m.raise.goal, S.m.raise.turnsUsed, S.m.raise.field.arrivalSeen]), ['p14_3', true, 21, true], '出目がゴールを超えてもゴールで止まる（到着イベントは1回）');
   const ui = await pg.evaluate(() => ({ arrive: document.querySelector('#chfarr img').getAttribute('src'), on: document.querySelector('#chfarr').classList.contains('on'), deck: !!document.querySelector('#chdock,#brollbtn,.chh'), dice: !!document.querySelector('.chdf,.chdz'),
     rows: [...document.querySelectorAll('.rcv-row')].map((r) => `${r.dataset.rank}${r.classList.contains('ok') ? 'ok' : 'lk'}`), join: document.querySelector('#p9join').disabled }));
-  assert.deepEqual(ui, { arrive: './assets/fields/ch1a/final/event/ch1_bg_15_event.webp', on: true, deck: false, dice: false, rows: ['5lk', '4lk', '3lk', '2lk', '1ok', '0ok'], join: true }, '15 の背景・操作欄なし・S→E（Chapter 1 は E・D だけ参加可能）・ランクを選ぶまで参加できない');
+  assert.deepEqual(ui, { arrive: './assets/fields/ch1a/formal_1008/ch1a_scene_14.webp', on: true, deck: false, dice: false, rows: ['5lk', '4lk', '3lk', '2lk', '1ok', '0ok'], join: true }, '15 の背景・操作欄なし・S→E（Chapter 1 は E・D だけ参加可能）・ランクを選ぶまで参加できない');
   const f0 = (await st(pg)).f;
   await pg.click('.rcv-row.lk[data-rank="2"]', { force: true }); assert.equal(await pg.evaluate(() => document.querySelector('#p9join').disabled), true, '参加できないランクは選べない');
   await pg.click('.rcv-row.ok[data-rank="0"]', { force: true }); await pg.waitForTimeout(450);
@@ -227,7 +227,7 @@ test('CH1-B9：カメラ：移動が始まるとモンスターより少し遅�
 test('CH1-B10：歩き：石板から石板へ道筋の点列で歩く（瞬間移動しない）。出目が決まると約0.1秒の構え → 加速 → 最後に減速して着地の順。1地点 0.38〜0.76秒', { skip: SKIP }, async () => {
   const p = await L.open(); const pg = p.page;
   await start(p);
-  await place(pg, 'p1_1'); await idle(pg);   // 同じ背景（旅立ちの街道）の中で3地点
+  await place(pg, 'p1_0'); await idle(pg);   // 同じ背景（2026-10-08 正式ボード 01＝p1_0〜p1_3）の中で3地点
   await startRecording(pg);
   await rollAs(pg, 3); await idle(pg);
   const rec = await stopRecording(pg);
@@ -235,16 +235,16 @@ test('CH1-B10：歩き：石板から石板へ道筋の点列で歩く（瞬間�
   assert.deepEqual(phases.filter((x) => x !== 'idle'), ['ready', 'walk', 'land'], `構え → 歩き → 着地（${phases.join('→')}）`);
   const walk = rec.filter((r) => /walk/.test(r.cls)), dur = walk[walk.length - 1].t - walk[0].t;
   assert.ok(dur >= 700 && dur <= 2800, `3地点の歩きは ${dur}ms（設計 1.2〜2.3秒。負荷で伸びることがある）`);
-  const steps = await pg.evaluate(() => ['p1_2', 'p1_3', 'p1_4'].map((to, i) => MMCHV.stepDuration(['p1_1', 'p1_2', 'p1_3'][i], to)));
+  const steps = await pg.evaluate(() => ['p1_1', 'p1_2', 'p1_3'].map((to, i) => MMCHV.stepDuration(['p1_0', 'p1_1', 'p1_2'][i], to)));
   for (const ms of steps) assert.ok(ms >= 300 && ms <= 800, `1地点 ${ms}ms`);
   // 速度の形：最初は遅く始まり、最後は遅くなって止まる
   const sp = (a, b) => Math.hypot(b.x - a.x, b.y - a.y) / Math.max(1, b.t - a.t);
   const v0 = sp(walk[0], walk[2]), vm = Math.max(...walk.slice(2, -2).map((r, i) => sp(walk[i + 2], walk[i + 3]))), v1 = sp(walk[walk.length - 3], walk[walk.length - 1]);
   assert.ok(v0 < vm * 0.85 && v1 < vm * 0.85, `加速・減速がある（始 ${v0.toFixed(2)} / 最大 ${vm.toFixed(2)} / 終 ${v1.toFixed(2)} px/ms）`);
   // 道筋：隣の石板へは道筋の点列（巨大街道はまっすぐ＝2点以上）
-  const route = await pg.evaluate(() => { const g = MMCH.graphFor(S.m); return [MMCH.routeBetween(g, 'p1_1', 'p1_2').length, MMCH.routeBetween(g, 'p1_2', 'p1_3').length, MMCH.routeBetween(g, 'p1_3', 'p1_4').length]; });
+  const route = await pg.evaluate(() => { const g = MMCH.graphFor(S.m); return [MMCH.routeBetween(g, 'p1_0', 'p1_1').length, MMCH.routeBetween(g, 'p1_1', 'p1_2').length, MMCH.routeBetween(g, 'p1_2', 'p1_3').length]; });
   for (const n of route) assert.ok(n >= 2, `道筋の点 ${n}`);
-  assert.equal((await st(pg)).node, 'p1_4');
+  assert.equal((await st(pg)).node, 'p1_3');
   assert.deepEqual(p.errors, []);
 });
 
@@ -279,7 +279,7 @@ test('CH1-B12：背景の切り替え（クロスフェード）：前の背景�
   await rollAs(pg, 2); await idle(pg);
   const rec = await stopRecording(pg), xf = await pg.evaluate(() => window.__xf);
   const r = await pg.evaluate(() => ({ node: S.m.raise.node, bgs: [...document.querySelectorAll('.chf-bg')].map((i) => i.getAttribute('src')), cams: document.querySelectorAll('.chf-cam').length, fd: document.querySelector('#chfd').textContent }));
-  assert.equal(r.node, 'p2_0'); assert.deepEqual(r.bgs, ['./assets/fields/ch1a/final/field/ch1_bg_02.webp']); assert.equal(r.cams, 1, '終わると前の背景は消える'); assert.equal(r.fd, '木漏れ日の森道');
+  assert.equal(r.node, 'p2_0'); assert.deepEqual(r.bgs, ['./assets/fields/ch1a/formal_1008/ch1a_scene_03.webp']); assert.equal(r.cams, 1, '終わると前の背景は消える'); assert.equal(r.fd, '大樹の木陰道');
   const both = xf.filter((x) => x[0] === 2); assert.ok(both.length >= 3, `前と次の背景が重なってクロスフェード（${both.length}フレーム）`);
   assert.ok(both.some((x) => x[1] > 0.2 && x[1] < 0.8), '前の背景は少しずつ透明になる'); assert.ok(!xf.some((x) => x[2]), '暗転（.chf-veil）は使わない');
   assert.ok(both.every((x) => x[3]), 'クロスフェードの間も歩き続ける（止まらない）');
@@ -425,7 +425,7 @@ test('CH1-B19：上部 HUD（Chapter・Turn・疲れ・所持金・メニュー�
   await pg.evaluate(() => board()); await pg.waitForSelector('#chf .chf-bg'); await idle(pg); await hud('ステータス画面（スクロール）から戻る');
   await pg.evaluate(() => chfOpen('w')); await pg.waitForFunction(() => !document.querySelector('#chf')); await pg.evaluate(() => { document.querySelector('#app').scrollTop = 400; }); await pg.evaluate(() => board()); await pg.waitForSelector('#chf .chf-bg'); await idle(pg); await hud('技管理（スクロール）から戻る');
   await rollAs(pg, 2); await idle(pg); await hud('サイコロのあと');
-  await place(pg, 'p1_5'); await idle(pg); await rollAs(pg, 2); await idle(pg); assert.equal((await st(pg)).field, 2); await hud('背景の切り替え後');
+  await place(pg, 'p1_5'); await idle(pg); await rollAs(pg, 2); await idle(pg); assert.equal((await st(pg)).field, 3, '2026-10-08：p1_6（02）→ p2_0（03）'); await hud('背景の切り替え後');
   const statId = await pg.evaluate(() => { const g = MMCH.graphFor(S.m), a = S.m.raise.field.nodeAssignments; return g.order.find((x) => a[x] && a[x].t === 'stat'); });
   const prev = await pg.evaluate((id) => Object.keys(MMCH.graphFor(S.m).conn).find((k) => MMCH.graphFor(S.m).conn[k].includes(id)), statId);
   await place(pg, prev); await idle(pg); await rollAs(pg, 1); await idle(pg); await hud('停止地点（能力）の結果のあと');
