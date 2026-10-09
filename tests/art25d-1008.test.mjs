@@ -54,3 +54,20 @@ test('A25-03：2枚のシートの技は順につながる（_1 の全コマ →
   assert.deepEqual(DATA[4].cuts.map((c) => c.src), ['s08_1', 's08_2', 's08_3', 's08_4', 's08b_1', 's08b_2', 's08b_3', 's08b_4']);
   assert.equal(DATA[16].cuts.length, 6);
 });
+
+test('A25-04：切れた辺の光のデータ（ex）＝辺・色・位置の分布の形（2026-10-09）', () => {
+  let n = 0;
+  for (const d of Object.values(DATA)) for (const c of d.cuts) {
+    if (!c.ex) continue; n++;
+    for (const [e, v] of Object.entries(c.ex)) {
+      assert.ok('TBLR'.includes(e) && e.length === 1, c.src + '：辺');
+      assert.equal(v.c.length, 2); v.c.forEach((x) => assert.match(x, /^#[0-9a-f]{6}$/));
+      assert.ok(v.n > 0 && v.n <= 1, c.src + '：量');
+      assert.equal(v.p.length, 10); assert.ok(Math.abs(v.p.reduce((a, b) => a + b, 0) - 1) < 0.05, c.src + '：分布');
+    }
+  }
+  assert.ok(n >= 80, '切れた辺のあるコマ ' + n);
+  const js = rd('js/battle/art25d.js');
+  assert.doesNotMatch(js, /\.p25f\{[^}]*mask-image/, 'コマに四角いマスクを掛けない（縁は素材でなじませた）');
+  assert.doesNotMatch(js.slice(js.indexOf('function particles'), js.indexOf('const med')), /Math\.random/, '光の粒はバトルの乱数を使わない');
+});

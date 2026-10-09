@@ -34,7 +34,7 @@ test('A25-B1：通常の URL では今までの絵・演出（2.5D の素材を�
   await toBattle(pg, 0);
   assert.match(await idleSrc(pg, 0), /assets\/battle\/idle\/idle_soramo\.webp$/);
   await pg.evaluate(() => anim(0, 0)); await pg.waitForTimeout(500);
-  const r = await pg.evaluate(() => ({ p25: document.querySelectorAll('#bt .p25f').length, sw: !!document.querySelector('#bt .p25sw'), on: MM25D.on }));
+  const r = await pg.evaluate(() => ({ p25: document.querySelectorAll('#bt .p25f, #bt .p25p').length, sw: !!document.querySelector('#bt .p25sw'), on: MM25D.on }));
   assert.deepEqual(r, { p25: 0, sw: false, on: false });
   assert.equal(L.requests ? L.requests.filter((u) => /2p5d/.test(u)).length : 0, 0, '2.5D の素材を読まない');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
@@ -52,11 +52,12 @@ for (const size of [H.SIZES.base, H.SIZES.se, [430, 932]]) {
       await pg.waitForTimeout(450);
       const mid = await pg.evaluate(() => { const im = [...document.querySelectorAll('#bt .p25f')]; const bt = document.getElementById('bt').getBoundingClientRect();
         const vis = im.filter((i) => +getComputedStyle(i).opacity > 0.5); const r = vis[0] && vis[0].getBoundingClientRect();
-        return { n: im.length, vis: vis.length, ok: im.every((i) => i.complete && i.naturalWidth > 0), r: r && { l: r.left, r: r.right, t: r.top, b: r.bottom }, W: bt.width, sw: document.documentElement.scrollWidth, iw: innerWidth }; });
+        return { n: im.length, parts: document.querySelectorAll('#bt .p25p').length, vis: vis.length, ok: im.every((i) => i.complete && i.naturalWidth > 0), r: r && { l: r.left, r: r.right, t: r.top, b: r.bottom }, W: bt.width, sw: document.documentElement.scrollWidth, iw: innerWidth }; });
       assert.ok(mid.n >= 3 && mid.vis >= 1 && mid.ok, `コマが出ている ${JSON.stringify(mid)}`);
       assert.ok(mid.sw <= mid.iw + 1, '横にはみ出さない');
+      if (!sp) assert.ok(mid.parts > 0, `コマの外へ続く光の粒が出る ${mid.parts}`);
       await pg.waitForTimeout(2300);
-      assert.equal(await pg.evaluate(() => document.querySelectorAll('#bt .p25f').length), 0, '終わったら DOM を残さない');
+      assert.equal(await pg.evaluate(() => document.querySelectorAll('#bt .p25f, #bt .p25p').length), 0, '終わったら DOM を残さない（コマ・光の粒）');
       // 切り替えの札 → 旧の立ち絵 → もう一度 2.5D
       await pg.click('#bt .p25sw');
       assert.match(await idleSrc(pg, 0), new RegExp(`assets/battle/idle/idle_${name}\\.webp$`));
@@ -104,8 +105,10 @@ async function measureMove(pg, k, s) {
       res.push({ j, src: c.src, dataCut: im.getAttribute('data-cut'), op: vis[j], others: Math.max(0, ...vis.filter((_, q) => q !== j)), loaded: im.complete && im.naturalWidth > 0,
         body: [bx0, r.top + (c.b[1] - c.y) * S, bx1, r.top + (c.b[3] - c.y) * S], img: [r.left, r.top, r.right, r.bottom], flip: new DOMMatrix(getComputedStyle(im).transform).a < 0, tcx });
     }
-    document.querySelectorAll('#bt .p25f, #bt .mmst').forEach((e) => e.remove()); document.getAnimations().forEach((a) => { try { a.cancel(); } catch (e) {} });
-    return { n: d.cuts.length, hit: d.hit, res, hud, W: innerWidth, Hh: innerHeight };
+    const parts = [...document.querySelectorAll('#bt .p25p')], vr = document.querySelector('#bt .vs').getBoundingClientRect();
+    const partsInfo = { n: parts.length, maxPerCut: 0, mask: getComputedStyle(ims[0]).maskImage || getComputedStyle(ims[0]).webkitMaskImage || 'none' };
+    document.querySelectorAll('#bt .p25f, #bt .p25p, #bt .mmst').forEach((e) => e.remove()); document.getAnimations().forEach((a) => { try { a.cancel(); } catch (e) {} });
+    return { n: d.cuts.length, hit: d.hit, res, hud, W: innerWidth, Hh: innerHeight, parts: partsInfo, ex: d.cuts.filter((c) => c.ex).length };
   }, [k, s]);
   return out;
 }
@@ -117,9 +120,12 @@ for (const size of SIZES3) {
       test(`A25-B3（${size.join('×')}・${sp ? 'ガウル' : 'ソラモ'}・${side ? '相手側' : '自分側'}）：全10技の全コマ`, { skip: SKIP, timeout: 240000 }, async () => {
         const p = await openPage({ size, query: '?battleArt=2p5d', stage: true }); const pg = p.page;
         await toBattleVs(pg, side ? 1 - sp : sp, side ? sp : 1 - sp);
-        let cuts = 0;
+        let cuts = 0, parts = 0; const masks = [];
         for (let k = sp * 10; k < sp * 10 + 10; k++) {
           const m = await measureMove(pg, k, side);
+          parts += m.parts.n; masks.push(m.parts.mask);
+          assert.ok(m.parts.n <= m.n * 14, `技${k}：光の粒は1コマ14個まで ${m.parts.n}`);
+          if (m.ex === 0) assert.equal(m.parts.n, 0);
           for (const c of m.res) {
             const at = `技${k} ${c.src}（${size.join('×')}・側${side}）`;
             assert.equal(c.dataCut, c.src, `${at}：順番どおり`);
@@ -133,6 +139,7 @@ for (const size of SIZES3) {
           }
         }
         assert.equal(cuts, sp ? 48 : 49, '全コマを使う');
+        assert.ok(parts > 0, `光の粒が出る ${parts}`); assert.ok(masks.every((m) => m === 'none'), '四角いマスクを使わない');
         assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
       });
     }

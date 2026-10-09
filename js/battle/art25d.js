@@ -57,12 +57,68 @@
     if (document.getElementById('mm25d-style')) return;
     const st = document.createElement('style'); st.id = 'mm25d-style';
     st.textContent = [
-      '#bt .p25f{position:absolute;left:0;top:0;max-width:none;pointer-events:none;z-index:7;will-change:transform,opacity;-webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent),linear-gradient(transparent,#000 4%,#000 96%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent),linear-gradient(transparent,#000 4%,#000 96%,transparent);mask-composite:intersect}',
+      '#bt .p25f{position:absolute;left:0;top:0;max-width:none;pointer-events:none;z-index:7;will-change:transform,opacity}',
+      // 2026-10-09：コマの外へ続く光の粒（切れた辺の色。星・火の粉・風の筋・羽根・砂）
+      '#bt .p25p{position:absolute;left:0;top:0;pointer-events:none;z-index:8;will-change:transform,opacity;border-radius:50%;background:radial-gradient(circle,#fff 0 16%,var(--a) 38%,var(--b) 60%,transparent 71%)}',
+      '#bt .p25p.star{border-radius:0;clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);background:radial-gradient(circle,#fff 0 22%,var(--a) 52%,var(--b))}',
+      '#bt .p25p.streak{border-radius:99px;background:linear-gradient(90deg,transparent,var(--b) 40%,var(--a) 78%,#fff)}',
+      '#bt .p25p.ember{background:radial-gradient(circle,#fff4c4 0 14%,var(--a) 34%,var(--b) 58%,transparent 71%)}',
+      '#bt .p25p.feather{border-radius:50% 50% 50% 50%/80% 80% 22% 22%;background:linear-gradient(90deg,var(--b),var(--a))}',
+      '#bt .p25p.dust{background:radial-gradient(circle,var(--a) 0 28%,var(--b) 52%,transparent 71%)}',
       '#bt .mon .mma-idle.p25{height:calc(118% * var(--p25h,1))}',
       '#bt .p25sw{position:absolute;left:8px;z-index:30;pointer-events:auto;font:800 11px/1 "Noto Sans JP",sans-serif;color:#f3ecd9;background:rgba(8,14,34,.82);border:1.5px solid rgba(214,178,98,.9);border-radius:999px;padding:6px 10px;letter-spacing:.04em}',
       '#bt .p25sw b{color:#ffd76a}',
     ].join('\n');
     document.head.appendChild(st);
+  }
+
+  // ---- コマの外へ続く光の粒（2026-10-09）----
+  // 元のシートで光・炎・風がコマの端で切れている辺（data の ex）から、同じ色の粒を外へ流して消す＝絵の続きをなじませる（新しい絵は描かない）。
+  // 乱数はバトルの乱数（Math.random）を使わない＝技・コマごとに決まった小さな乱数
+  const STY = { 0: 'dust', 1: 'spark', 2: 'spark', 3: 'spark', 4: 'star', 5: 'spark', 6: 'dust', 7: 'star', 8: 'star', 9: 'star',
+    10: 'streak', 11: 'streak', 12: 'streak', 13: 'streak', 14: 'streak', 15: 'ember', 16: 'ember', 17: 'streak', 18: 'feather', 19: 'ember' };
+  const PMAX = 14;   // 1コマの粒の上限
+  function prng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  function pick(p, r) { let x = r(), a = 0; for (let i = 0; i < p.length; i++) { a += p[i]; if (x <= a) return (i + r()) / p.length; } return r(); }
+  /** コマ j の粒（.vs に置く要素の配列）。q＝置き方、win＝そのコマの時間 [始め, 終わり]（ms）、D＝全体の長さ */
+  function particles(v, k, j, s, q, win, D, unit) {
+    const c = q.c, ex = c.ex; if (!ex) return [];
+    const f = s ? -1 : 1, S = q.S, PW = c.pw * S, PH = c.ph * S, r = prng(k * 977 + j * 131 + s * 17 + 1);
+    const p = { x: (q.p0.x + q.p1.x) / 2, y: (q.p0.y + q.p1.y) / 2 }, sty = STY[k] || 'spark';
+    const out = []; let left = PMAX;
+    for (const e of ['T', 'L', 'R', 'B']) {
+      const E = ex[e]; if (!E || left <= 0) continue;
+      const n = Math.min(left, Math.round(2 + 9 * Math.min(1, E.n))); left -= n;
+      for (let i = 0; i < n; i++) {
+        const u = pick(E.p, r);
+        let x, y, dx, dy;
+        if (e === 'T') { x = u * PW; y = PH * 0.1; dx = (r() - 0.5) * 0.9; dy = -1; }
+        else if (e === 'B') { x = u * PW; y = PH * 0.9; dx = (r() < 0.5 ? -1 : 1); dy = 0.25; }
+        else if (e === 'L') { x = PW * 0.1; y = u * PH; dx = -1; dy = (r() - 0.5) * 0.9; }
+        else { x = PW * 0.9; y = u * PH; dx = 1; dy = (r() - 0.5) * 0.9; }
+        if (f < 0) { x = PW - x; dx = -dx; }
+        const L = Math.hypot(dx, dy); dx /= L; dy /= L;
+        const dist = Math.min(PW, PH) * (0.12 + r() * 0.22) * (e === 'B' ? 0.6 : 1);
+        const sz = unit * (0.7 + r() * 0.7), long = sty === 'streak', fe = sty === 'feather';
+        const w = long ? sz * 3.4 : fe ? sz * 1.6 : sz, h = long ? sz * 0.42 : fe ? sz * 0.55 : sz;
+        const el = document.createElement('i'); el.className = 'p25p ' + sty;
+        el.style.width = w + 'px'; el.style.height = h + 'px';
+        el.style.setProperty('--a', E.c[0]); el.style.setProperty('--b', E.c[1]);
+        const x0 = p.x + x - w / 2, y0 = p.y + y - h / 2, x1 = x0 + dx * dist, y1 = y0 + dy * dist;
+        const ang = long ? Math.atan2(dy, dx) * 180 / Math.PI : sty === 'star' || fe ? r() * 360 : 0, spin = sty === 'star' ? 90 : fe ? (r() - 0.5) * 240 : 0;
+        const T = (X, Y, sc, a) => `translate(${X}px,${Y}px) rotate(${a}deg) scale(${sc})`;
+        const st = win[0] + r() * (win[1] - win[0]) * 0.7, dur = 420 + r() * 300;
+        const o0 = Math.max(0, st / D), o1 = Math.min(1, (st + dur) / D), em = 0.0005;
+        const kf = [{ opacity: 0, transform: T(x0, y0, 0.4, ang), offset: 0 }];
+        if (o0 > em) kf.push({ opacity: 0, transform: T(x0, y0, 0.4, ang), offset: o0 });
+        kf.push({ opacity: 1, transform: T(x0 + (x1 - x0) * 0.2, y0 + (y1 - y0) * 0.2, 1, ang + spin * 0.2), offset: Math.min(o1 - em, o0 + (o1 - o0) * 0.2) });
+        kf.push({ opacity: 0, transform: T(x1, y1, 0.7, ang + spin), offset: o1 });
+        if (o1 < 1) kf.push({ opacity: 0, transform: T(x1, y1, 0.7, ang + spin), offset: 1 });
+        v.appendChild(el); out.push(el);
+        el.animate(kf, { duration: D, fill: 'both' }).onfinish = () => el.remove();
+      }
+    }
+    return out;
   }
 
   const med = (a) => { const b = a.slice().sort((x, y) => x - y); return b[Math.floor(b.length / 2)] || 1; };
@@ -160,6 +216,7 @@
       kf.push({ opacity: 0, transform: T(q.p1), offset: Math.min(1, t1) });
       if (t1 < 1) kf.push({ opacity: 0, transform: T(q.p1), offset: 1 });
       im.animate(kf, { duration: D, fill: 'both' }).onfinish = () => im.remove();
+      if (!reduced()) particles(v, k, j, s, q, P.win[j], D, Math.max(6, Math.min(16, idleH * 0.06))).forEach((el) => imgs.push(el));
     });
     setTimeout(() => imgs.forEach((im) => { if (im.parentNode) im.remove(); }), D + 400);   // 途中でバトルが終わっても DOM を残さない
     // 攻撃側の待機の絵は、コマを出している間は隠す → 最後に戻る（復帰）

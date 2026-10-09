@@ -23,7 +23,7 @@ for (const k of moves.split(',').map(Number)) {
   const ok = await pg.evaluate(([k, s]) => { window.__t0 = performance.now(); if (!MM25D.handles(k, s)) return 'not handled sp=' + (BPL && BPL[s] && BPL[s].sp); anim(k, s); return 'ok'; }, [k, +side]);
   if (ok !== 'ok') { results.push({ k, err: ok }); continue; }
   await pg.waitForFunction(() => document.querySelectorAll('#bt .p25f').length > 0, null, { timeout: 4000 });
-  const n = await pg.evaluate(() => { const A = document.getAnimations(); window.__A = A.filter((a) => a.effect && a.effect.target && (a.effect.target.classList.contains('p25f'))); window.__A.forEach((a) => a.pause()); document.getAnimations().forEach((a) => { try { a.pause(); } catch (e) {} }); return document.querySelectorAll('#bt .p25f').length; });
+  const n = await pg.evaluate(() => { const A = document.getAnimations(); window.__A = A.filter((a) => a.effect && a.effect.target && (a.effect.target.classList.contains('p25f') || a.effect.target.classList.contains('p25p'))); window.__A.forEach((a) => a.pause()); document.getAnimations().forEach((a) => { try { a.pause(); } catch (e) {} }); return document.querySelectorAll('#bt .p25f').length; });
   for (let j = 0; j < n; j++) {
     const r = await pg.evaluate(([k, j, s]) => {
       const d = MM25D_DATA[k], P = MM25D.plan(k, true), D = window.__A[0].effect.getTiming().duration;
