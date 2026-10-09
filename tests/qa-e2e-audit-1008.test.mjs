@@ -192,7 +192,7 @@ test('AF-B6：M-05 合体の子（実物の fuse()）も正式なランク解放
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
-test('AF-B7：2026-10-08 プロローグの尺の延長（各 Scene +1〜3秒）：背景の切り替え・Scene ごとの曲（0.5秒前から）・最後まで＝約52秒。6枚の構成は同じ', { skip: SKIP, timeout: 300000 }, async () => {
+test('AF-B7：2026-10-08 プロローグの尺の延長（各 Scene +1〜3秒）：背景の切り替え・Scene ごとの曲（2026-10-09 から1.0秒前から）・最後まで＝約52秒。6枚の構成は同じ', { skip: SKIP, timeout: 300000 }, async () => {
   const p = await openPage({ size: H.SIZES.base, prologue: true }); const pg = p.page;
   await pg.evaluate(() => { window.__ev = []; let last = null, au = null; const t0 = performance.now();
     window.__tm = setInterval(() => { const on = document.querySelector('.mmpro .mmpro-bg.on'), k = on ? (/prologue_(\d\d)/.exec(on.style.backgroundImage) || [])[1] : null, c = window.MMPRO && MMPRO.clock();
@@ -209,7 +209,7 @@ test('AF-B7：2026-10-08 プロローグの尺の延長（各 Scene +1〜3秒）
   const bg = ev.filter((e) => /^bg/.test(e[0]));
   assert.deepEqual(bg.map((e) => e[0]), ['bg01', 'bg02', 'bg03', 'bg04', 'bg05', 'bg06'], '6枚の構成');
   bg.slice(1).forEach((e, i) => assert.ok(Math.abs(e[1] - cues.scenes[i + 1]) < 350, `${e[0]}：${cues.scenes[i + 1]}ms（実測 ${Math.round(e[1])}）`));
-  for (let n = 2; n <= 6; n++) { const a = ev.find((e) => e[0] === `au:PROLOGUE_${n}`); assert.ok(a, `PROLOGUE_${n}`); const d = cues.scenes[n - 1] - a[1]; assert.ok(d > 200 && d < 900, `PROLOGUE_${n} は Scene ${n} の約0.5秒前（${Math.round(d)}ms 前）`); }
+  for (let n = 2; n <= 6; n++) { const a = ev.find((e) => e[0] === `au:PROLOGUE_${n}`); assert.ok(a, `PROLOGUE_${n}`); const d = cues.scenes[n - 1] - a[1]; assert.ok(d > 700 && d < 1400, `PROLOGUE_${n} は Scene ${n} の約1.0秒前（${Math.round(d)}ms 前）`); }
   console.log('AF-B7', JSON.stringify({ wall, ev: ev.map((e) => [e[0], Math.round(e[1])]) }));
   assert.ok(wall >= 50 && wall <= 58, `最後まで約52秒（実測 ${wall.toFixed(1)}秒）`);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
