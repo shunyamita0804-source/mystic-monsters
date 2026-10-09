@@ -1,7 +1,7 @@
 // =========================================================
 // 実ブラウザ：商用品質化・第1次（2026-10-02）の手ごたえ（390×844）
 //  FE-1 押下の手ごたえ・連打で二重に移らない・入りかた／FE-2 能力UP の流れ／FE-3 宝箱 → 所持金へ／FE-4 野生の遭遇の間／
-//  FE-5 フィナの節目の一言（1回だけ）／FE-6 システム通知に顔を付けない／FE-7 BGM の場面と音源なしでも止まらない
+//  FE-5 フィナの節目の一言（1回だけ）／FE-6 システム通知に顔を付けない／FE-7 BGM の場面と音源なしでも止まらない／FE-8 街 ⇄ ベースキャンプのチカチカ
 //  QA_E2E=1 のときだけ実行（tests/e2e/harness.mjs）
 // =========================================================
 import test from 'node:test';
@@ -52,8 +52,8 @@ test('FE-2：能力UP：止まる → 間 → マスが光る → モンスタ�
   const li0 = await pg.evaluate(() => S.m.li);
   await rollAs(pg, 1); await idle(pg);
   const fx = await pg.evaluate(() => window.__fx), cnts = fx.map((x) => x[0]).filter(Boolean), r = await pg.evaluate(() => [S.m.raise.node, S.m.li, MMFEEL.log()]);
-  assert.equal(r[0], 'p1_2'); assert.equal(r[1] - li0, 3, 'ソラモのライフ（C）は +3（2026-10-06：Chapter 1 の表）');
-  assert.equal(cnts[0], '+0', '数値は +0 から'); assert.equal(cnts[cnts.length - 1], '+3'); assert.ok(new Set(cnts).size >= 3, `カウントアップ（${[...new Set(cnts)].join(' ')}）`);
+  assert.equal(r[0], 'p1_2'); assert.equal(r[1] - li0, 18, 'ソラモのライフ（C）は +18（2026-10-08：全 Chapter 共通の GROWTH_GAIN）');
+  assert.equal(cnts[0], '+0', '数値は +0 から'); assert.equal(cnts[cnts.length - 1], '+18'); assert.ok(new Set(cnts).size >= 3, `カウントアップ（${[...new Set(cnts)].join(' ')}）`);
   const firstPop = fx.findIndex((x) => x[0]), firstReact = fx.findIndex((x) => x[1]), firstHit = fx.findIndex((x) => x[2]);
   assert.ok(firstHit >= 0 && firstReact > firstHit && firstPop > firstReact, `マス → モンスター → 枠の順（${firstHit}・${firstReact}・${firstPop}）`);
   assert.ok(fx.filter((x) => x[0]).every((x) => x[3] !== false), '結果を見せている間は START を押せない（ボタンが無いか disabled）');
@@ -130,4 +130,25 @@ test('FE-7：BGM の場面：街＝TOWN、市場＝MARKET、Chapter＝CHAPTER_1�
   const c = await pg.evaluate(() => { const n = MMAUDIO.status().plays; board(); board(); return [MMAUDIO.status(), n]; });
   assert.equal(c[0].scene, 'CHAPTER_1'); assert.equal(c[0].plays, c[1], '同じ場面は鳴らし直さない'); assert.deepEqual(c[0].errors, []); assert.ok(c[0].files.bgm.includes('MARKET') && c[0].files.se.includes('STAT_UP') && c[0].silent.se.includes('UI_CONFIRM') && c[0].files.bgm.includes('TOWN') && c[0].files.bgm.includes('CHAPTER_1'), '正式な音源は registry から登録されている（街の曲・コマンドのタップ音は 2026-10-03 第4弾で NG → 無音）'); assert.equal(c[0].source, 'file', 'Chapter 1 は第5弾で仮採用した曲（HydroGene「Spirits Forest」）をファイルで鳴らす'); assert.equal(c[0].slots.filter((x) => x.active).length, 1, '鳴っている曲は1本だけ');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+});
+
+test('FE-8（2026-10-09 チカチカ）：街 ⇄ ベースキャンプの切り替えで、入り終わった画面がもう一度フェードしない（印を外しても不透明のまま）・切り替えの間のページの地は濃紺（白く光らない）', { skip: SKIP }, async () => {
+  const p = await open({ navDelay: true }); const pg = p.page;
+  await H.newGame(pg, 'テスト');
+  await pg.evaluate(() => { S.g = 2000; save(); adopt(0, 'ソラ'); }); await pg.waitForTimeout(800); await H.finishTalk(pg).catch(() => {});
+  await pg.evaluate(() => { try { MMNOTE.flush(); } catch (e) {} lobby(); }); await pg.waitForTimeout(600);
+  // 毎フレーム：画面（#app>*）の不透明度の最小値と、ページの地の明るさを記録する
+  const rec = () => pg.evaluate(() => { window.__fe8 = []; const t0 = performance.now(); const f = () => { const a = document.querySelector('#app>*'); const bg = getComputedStyle(document.body).backgroundColor.match(/\d+/g).slice(0, 3).map(Number);
+    window.__fe8.push({ t: performance.now() - t0, op: a ? +getComputedStyle(a).opacity : 1, cls: a ? a.className : '', mmtr: document.documentElement.dataset.mmtr || '', bg: (bg[0] + bg[1] + bg[2]) / 3 }); if (performance.now() - t0 < 2600) requestAnimationFrame(f); }; requestAnimationFrame(f); });
+  for (const [sel, want] of [['.tbar [onclick*="hall"]', /\bbc\b/], ['.bcbar [onclick*="lobby"]', /\btown\b/]]) {
+    await rec(); await pg.click(sel); await pg.waitForTimeout(2700);
+    const fr = await pg.evaluate(() => window.__fe8);
+    const ent = fr.findIndex((x) => want.test(x.cls) && x.op >= 0.99);
+    assert.ok(ent >= 0, `${sel}：次の画面が出る`);
+    const after = fr.slice(ent).filter((x) => want.test(x.cls));
+    assert.ok(after.some((x) => !x.mmtr), `${sel}：入りかたの印は外れる`);
+    assert.ok(after.every((x) => x.op >= 0.99), `${sel}：入り終わったあと不透明度が下がらない（${after.map((x) => x.op.toFixed(2)).join(',')}）`);
+    assert.ok(fr.every((x) => x.bg < 80), `${sel}：切り替えの間もページの地は暗い（最大 ${Math.max(...fr.map((x) => x.bg))}）`);
+  }
+  assert.deepEqual(p.errors, []);
 });

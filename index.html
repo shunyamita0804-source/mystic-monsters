@@ -182,6 +182,10 @@ html[data-mmtr="back"] #app>*{animation:scrback var(--mm-enter-back,.2s) var(--m
 html[data-mmtr="special"] #app>*{animation:scrsp var(--mm-enter-special,.52s) var(--mm-ease-ui,ease-out) both}@keyframes scrsp{from{opacity:0;filter:brightness(.4)}}
 /* 2026-10-03 総監査：画面を移る前に今の画面を短くフェードアウト（js/feel/game-feel.js の nav.out）。その間は押せない */
 html[data-mmout] #app>*{opacity:0;transition:opacity var(--mm-out-ms,.17s) var(--mm-ease-in,ease-in);pointer-events:none}
+/* 2026-10-09（街・ベースキャンプのチカチカ）：入り終わった画面は印（data-mmtr）を外してもフェードを流し直さない（js/feel/game-feel.js の settle）。
+   画面の切り替えのフェードの間・街とベースキャンプでは、ページの地を明るい羊皮紙色ではなく濃紺に（白く光らない） */
+#app>.mm-in{animation:none}
+html[data-mmout],html[data-mmout] body,html[data-mmtr],html[data-mmtr] body,html:has(#app>.map.town),html:has(#app>.map.town) body,html:has(#app>.fm.bc),html:has(#app>.fm.bc) body{background:#0b1636}
 /* 押下の手ごたえ：指が触れた瞬間にごく軽く沈む（scale だけ。transform は使わない＝位置合わせの transform と重ならない。絵の色は変えない）。画面を移るボタンは押下の反応を少し見せてから移る（.mm-go） */
 button,[role="button"],.skt{transition:scale var(--mm-press-ms,.11s) var(--mm-ease-ui,ease-out)}
 .mm-press:not(:disabled){scale:var(--mm-press-scale,.97)}
@@ -4251,7 +4255,9 @@ function finaMsg(t){return `<span class="fmsg" data-npc="fina">${t}</span>`}
 /** 街のフィナ（2026-10-03 品質向上）：小さな顔ではなく半身の立ち絵（正式 closeup の guide＝案内）を案内欄の右上に立たせる */
 function finaStandSrc(){const im=window.MMNPC&&MMNPC.imageOf("fina","closeup","guide");return im?im.src:""}
 /** 施設の背景・立ち絵の先読み（2026-10-03：大きな絵を足した画面へ移ったときの読み込みのちらつきを防ぐ。街を出したとき1回だけ） */
-function townPreload(){if(townPreload.done||typeof Image=="undefined")return;townPreload.done=1;setTimeout(()=>{[LAB_BG,RANCH_BG,SHOP_BG,FARM_BG,npcSrc("shop","normal","fullbody"),npcSrc("dan","normal"),npcSrc("nick","normal"),npcSrc("elliot","normal"),npcSrc("vargas","normal"),finaStandSrc()].filter(Boolean).forEach(src=>{const im=new Image();im.decoding="async";im.src=src})},600)}
+/* 2026-10-09：ベースキャンプの背景・ボタンの絵も先読み（街 → ベースキャンプのフェードインのあとに絵が遅れて出て、チカッと見えた）。読み込んだ Image はここに持っておく */
+const TOWN_PRE=[],BC_PRE=["./assets/ui/recovery_1006/basecamp/01_tokkun.png","./assets/ui/recovery_1006/basecamp/02_item.png","./assets/ui/recovery_1006/basecamp/03_status.png","./assets/ui/recovery_1006/basecamp/04_wazakanri.png","./assets/ui/recovery_1006/basecamp/05_machie_modoru.png","./assets/ui/a_group/a04_main_button_red.webp","./assets/ui/a_group/a05_currency_panel.webp","./assets/ui/b_group/b01_facility_label_blank.png","./assets/ui/b_group/b09_chapter_ribbon_blank.png"];
+function townPreload(){if(townPreload.done||typeof Image=="undefined")return;townPreload.done=1;setTimeout(()=>{[BC_BG,...BC_PRE,LAB_BG,RANCH_BG,SHOP_BG,FARM_BG,npcSrc("shop","normal","fullbody"),npcSrc("dan","normal"),npcSrc("nick","normal"),npcSrc("elliot","normal"),npcSrc("vargas","normal"),finaStandSrc()].filter(Boolean).forEach(src=>{const im=new Image();im.decoding="async";im.src=src;TOWN_PRE.push(im)})},600)}
 /** 街の案内欄：タップで閉じる（下の施設の札を押せるように。システム通知も同じ） */
 function townMsgClose(d){const w=d&&d.closest(".tlow");if(w)w.classList.remove("on")}
 function finaFaceSrc(){const im=window.MMNPC&&MMNPC.imageOf("fina","closeup","smile");return im?im.src:""}

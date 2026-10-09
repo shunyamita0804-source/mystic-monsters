@@ -89,7 +89,15 @@
   /** 次の画面の入りかた（html[data-mmtr]。CSS の #app>* のアニメーション）。少したったら外す */
   function transition(kind) {
     const h = root.document && root.document.documentElement; if (!h) return;
-    h.dataset.mmtr = kind || 'light'; clearTimeout(transition.t); transition.t = setTimeout(() => { delete h.dataset.mmtr; }, 900);
+    h.dataset.mmtr = kind || 'light'; clearTimeout(transition.t); transition.t = setTimeout(() => settle(h), 900);
+  }
+  /** 入りかたの印（data-mmtr）を外す。2026-10-09：外すと #app>* のアニメーションが既定の scr に変わって最初から流れ直し、
+   *  入り終わった画面がもう一度フェードインして見えた（街・ベースキャンプのチカチカ）→ 今の画面には .mm-in（animation なし）を付けてから外す */
+  function settle(h) {
+    clearTimeout(transition.t);
+    if (!h.dataset.mmtr) return;
+    try { for (const el of h.querySelectorAll('#app>*')) el.classList.add('mm-in'); } catch (e) {}
+    delete h.dataset.mmtr;
   }
   function setupInput(doc) {
     let pressed = null, t0 = 0;
@@ -115,7 +123,7 @@
         el.classList.remove('mm-press', 'mm-go');
         if (!el.isConnected || el.disabled) { NAV.pending = null; return; }
         // 今の画面をフェードアウト（html[data-mmout]。#app の中だけ・押せない）→ 切り替え → 入りかた（data-mmtr）でフェードイン
-        delete h.dataset.mmtr; h.dataset.mmout = '1';
+        settle(h); h.dataset.mmout = '1';
         setTimeout(() => {
           NAV.pending = null;
           if (!el.isConnected || el.disabled) { delete h.dataset.mmout; return; }
