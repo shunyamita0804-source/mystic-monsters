@@ -1,0 +1,29 @@
+{
+  "passed": 17,
+  "total": 17,
+  "checks": {
+    "299 nodes / 370 edges / 42 intervals": true,
+    "42 exact unique segment IDs": true,
+    "original node interval IDs conserved": true,
+    "editable SVG has all 42 floor groups": true,
+    "42 valid nonzero floor polygons": true,
+    "centers align source anchors": true,
+    "source endpoints retained": true,
+    "floors contain anchor endpoints": true,
+    "no unregistered floor shortcuts": true,
+    "no unregistered centerline intersections": true,
+    "both gates covered by continuous floor": true,
+    "6 independent reward dead ends": true,
+    "reward and optional spur return paths": true,
+    "Q direct R shortcut absent": true,
+    "48 branch states reachable with mandatory gates": true,
+    "48 state CSV length": true,
+    "uncertainty correctly marked": true
+  },
+  "unregistered_overlap_pairs": [],
+  "unregistered_centerline_pairs": [],
+  "conditional_cases": 48,
+  "conditional_cases_pass": 48,
+  "master_art_status": "NOT_TESTED",
+  "physical_3d_support": "NOT_TESTED"
+}

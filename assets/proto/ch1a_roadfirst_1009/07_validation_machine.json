@@ -1,0 +1,24 @@
+{
+  "checks": {
+    "Original 299 nodes / 370 directed edges / 42 segments": true,
+    "42 segment IDs exact match to supplied Phase1.9 CSV": true,
+    "42 nonzero valid floor polygons": true,
+    "endpoint geometry touches exact declared anchors": true,
+    "no unregistered centerline crossings": true,
+    "no unregistered full-width floor intersections": true,
+    "no excessive junction overlaps outside named anchor pads": true,
+    "6 independent reward dead ends and correct parent anchors": true,
+    "6 reward spurs + D_RAND have full return-directed edges": true,
+    "48 original-edge gated combinations reach GOAL and force gates/RIVAL": true,
+    "2 gate portals connected on stone polygon at named anchors": true,
+    "Q->R direct segment absent": true,
+    "RIVAL cannot be bypassed with H route": true
+  },
+  "passed": 13,
+  "total": 13,
+  "non_anchor_overlap_list": [],
+  "centerline_crossing_list": [],
+  "wide_junction_list": [],
+  "state_cases": 48,
+  "state_cases_pass": 48
+}
