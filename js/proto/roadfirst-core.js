@@ -64,10 +64,11 @@
   }
   const needsChoice = (D, st) => !st.done && st.moveLeft > 0 && options(D, st).length > 1;
 
-  /** サイコロを振る（1ターン）。die を渡すとその目（テスト用） */
-  function roll(D, st, die) {
+  /** サイコロを振る（1ターン）。die を渡すとその目（テスト用）。o.max＝出目の上限（既定 6。2026-10-09 育成の試作：ダブルダイス【仮】の 2〜12 用＝js/proto/roadfirst-play.js） */
+  function roll(D, st, die, o = {}) {
     if (st.done || st.timeUp || st.moveLeft > 0 || st.turn >= st.limit) return null;
-    const v = Number.isInteger(die) && die >= 1 && die <= 6 ? die : d6(st);
+    const max = o && Number.isInteger(o.max) ? o.max : 6;
+    const v = Number.isInteger(die) && die >= 1 && die <= max ? die : d6(st);
     st.turn++; st.moveLeft = v; st.lastDie = v; st.discarded = 0;
     // 行き止まりにいる＝今回の移動は戻り道から（自動では戻らない＝ここで初めて戻り始める）
     const r = role(D, st.node);
@@ -153,6 +154,6 @@
     return st;
   }
 
-  const api = { RAND_OPEN_P, STOP_ROLES, DEAD_ROLES, create, options, needsChoice, roll, advance, playTurn, makePolicy, simulate, index, role, mulberry };
+  const api = { RAND_OPEN_P, STOP_ROLES, DEAD_ROLES, d6, create, options, needsChoice, roll, advance, playTurn, makePolicy, simulate, index, role, mulberry };
   if (typeof module === 'object' && module.exports) module.exports = api; else root.MMRF_CORE = api;
 })(typeof window !== 'undefined' ? window : globalThis);
