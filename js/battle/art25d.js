@@ -23,8 +23,6 @@
   const SPK = { 0: 'soramo', 1: 'gauru' };
   /** 待機の立ち絵（新）と、今の立ち絵に対する高さの倍率（足元の位置はそのまま） */
   const IDLE = { 0: { src: A + 'soramo/idle.webp', h: 0.84 }, 1: { src: A + 'gauru/idle.webp', h: 0.9 } };
-  /** 技のコマの大きさの補正（本体の高さの推定は枠で切れた羽・しっぽで小さく出やすい＝今までの立ち絵と同じくらいに見える値） */
-  const ZOOM = { 0: 0.92, 1: 0.68 };
   const owner = (k) => (k >= 0 && k <= 9 ? 0 : k >= 10 && k <= 19 ? 1 : -1);
   const DATA = () => root.MM25D_DATA || {};
 
@@ -40,22 +38,26 @@
   function idleScale(sp) { return on && IDLE[sp] ? IDLE[sp].h : 1; }
 
   // ---- 時間（ms・速さ 1.0）----
-  function plan(k) {
+  // 2026-10-09 完全版：シートの全コマを順に見せる。コマ数に合わせて長さを決める（4コマ 約1.6秒・6コマ 約2.2秒・8コマ 約2.7秒）。
+  // stage.js（共通演出）を通らないとき（視差を減らす設定・自動テストの既定）は fight() の次のターン（1.5秒）に収める
+  function plan(k, viaStage) {
     const d = DATA()[k], n = d.cuts.length;
-    const dur = n <= 4 ? 1500 : n <= 6 ? 1750 : 1950;
-    const body = dur * 0.84, step = body / n;
+    let dur = Math.max(1500, Math.min(2700, 380 + n * 300));
+    if (!viaStage) dur = 1440;
+    const body = dur * 0.88, step = body / n;
     const win = d.cuts.map((c, i) => [i * step, (i + 1) * step]);
     const SK = G('SK'), dmg = !!(SK && SK[k] && SK[k][1] > 0);   // 補助技（威力なし）は当たる瞬間の効果を出さない
-    const hit = d.hit && dmg ? win[d.hit - 1][0] + 30 : null;
+    const hit = d.hit && dmg ? win[d.hit - 1][0] + 40 : null;
     return { dur, body, step, win, hit };
   }
-  function timing(k, s) { if (!handles(k, s)) return null; const p = plan(k); return { hit: p.hit, dur: p.dur }; }
+  const viaStage = () => !!(root.MMSTAGE && root.MMSTAGE.busy > 0);
+  function timing(k, s) { if (!handles(k, s)) return null; const p = plan(k, true); return { hit: p.hit, dur: p.dur }; }
 
   function style() {
     if (document.getElementById('mm25d-style')) return;
     const st = document.createElement('style'); st.id = 'mm25d-style';
     st.textContent = [
-      '#bt .p25f{position:absolute;left:0;top:0;max-width:none;pointer-events:none;z-index:7;will-change:transform,opacity}',
+      '#bt .p25f{position:absolute;left:0;top:0;max-width:none;pointer-events:none;z-index:7;will-change:transform,opacity;-webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent),linear-gradient(transparent,#000 4%,#000 96%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent),linear-gradient(transparent,#000 4%,#000 96%,transparent);mask-composite:intersect}',
       '#bt .mon .mma-idle.p25{height:calc(118% * var(--p25h,1))}',
       '#bt .p25sw{position:absolute;left:8px;z-index:30;pointer-events:auto;font:800 11px/1 "Noto Sans JP",sans-serif;color:#f3ecd9;background:rgba(8,14,34,.82);border:1.5px solid rgba(214,178,98,.9);border-radius:999px;padding:6px 10px;letter-spacing:.04em}',
       '#bt .p25sw b{color:#ffd76a}',
@@ -63,61 +65,106 @@
     document.head.appendChild(st);
   }
 
+  const med = (a) => { const b = a.slice().sort((x, y) => x - y); return b[Math.floor(b.length / 2)] || 1; };
+  /**
+   * 1つの技の置き方（画面の画素）。2026-10-09 完全版：
+   *  ・大きさ＝技ごとに1つ（コマの間で大きさを変えない）。本体（顔・耳・尾・翼・脚）の高さ・面積の中央値が待機の立ち絵と同じくらい、
+   *    かつ全部のコマの本体が画面の幅・HUD から地面までに収まる大きさ
+   *  ・縦＝そのシートの地面（本体の下端の最大）を待機の足元に合わせる＝飛ぶコマはそのぶん上に
+   *  ・横＝モード（self／lunge／move／contact／back）で攻撃側から相手へ。そのあと本体が画面の外・HUD に出ないように、
+   *    その場のコマ（self・lunge・back）は相手の体に重ならないように、コマごとに位置だけを寄せる
+   */
+  function layout(k, s, L) {
+    const d = DATA()[k], f = s ? -1 : 1, calm = reduced();
+    const { Ag, Tg, idleW, idleH, xmin, xmax, ytop, tFront } = L;
+    const bw = d.cuts.map((c) => c.b[2] - c.b[0]), bh = d.cuts.map((c) => c.b[3] - c.b[1]);
+    // 本体の高さ（中央値）と面積（中央値）の2つの見積もりの平均。高さだけだと伏せた姿勢・飛ぶ姿勢で、面積だけだと横に長い姿勢で大きさがずれる
+    const area = med(d.cuts.map((c, i) => bw[i] * bh[i]));
+    let S = (idleH * 0.95 / med(bh) + Math.sqrt((idleW * idleH) / area)) / 2;
+    d.cuts.forEach((c, i) => { S = Math.min(S, (xmax - xmin) * 0.96 / bw[i], (Ag.y + idleH * 0.06 - ytop) / bh[i]); });
+    // その場・踏み込み・戻るのコマの本体が、自分側の画面の端から相手の手前までに収まる大きさ（翼を広げたガウルが相手の顔に重ならない）。
+    // 縮めすぎると立ち絵との大きさの差が目立つ＝最大 22% まで（それ以上は相手の体の手前の端に少し重なってよい）
+    const room = f > 0 ? tFront - xmin : xmax - tFront;
+    if (room > 0) {
+      let S2 = S;
+      d.cuts.forEach((c, i) => { if (c.m === 'self' || c.m === 'back' || c.m === 'lunge') S2 = Math.min(S2, room / (bw[i] * 1.06)); });
+      S = Math.max(S * 0.78, S2);
+    }
+    const ground = {}; d.cuts.forEach((c) => { const key = c.src.replace(/_\d+$/, ''); ground[key] = Math.max(ground[key] || 0, c.b[3]); });
+    const reach = Math.abs(Tg.x - Ag.x);
+    const fx = (c, x) => (f > 0 ? x : c.pw - x);   // 相手側は左右反転（コマの中の x）
+    return d.cuts.map((c) => {
+      const g = ground[c.src.replace(/_\d+$/, '')];
+      const bL = Math.min(fx(c, c.b[0]), fx(c, c.b[2])), bR = Math.max(fx(c, c.b[0]), fx(c, c.b[2]));
+      const bcx = (bL + bR) / 2;
+      // 本体の中心の x（画面）：モードごとの始め → 終わり
+      const at = (r) => Ag.x + f * reach * r;
+      const R = calm ? [[0, 0]] : { self: [0, 0.02], lunge: [0.12, 0.24], move: [0.1, 0.42], contact: [0.46, 0.54], back: [0.3, 0.04] }[c.m] || [0, 0.02];
+      const ends = (calm ? [0, 0] : R).map((r) => {
+        let px = at(r) - bcx * S, py = Ag.y - g * S;   // コマ（元の枠）の左上
+        // 本体を画面の左右・HUD の下・地面の上に収める（3% の余白）
+        const m = (bR - bL) * S * 0.03;
+        const l = px + bL * S - m, rr = px + bR * S + m;
+        if (l < xmin) px += xmin - l; else if (rr > xmax) px -= rr - xmax;
+        const top = py + c.b[1] * S - (c.b[3] - c.b[1]) * S * 0.03;
+        if (top < ytop) py += ytop - top;
+        // その場のコマは相手の体に重ねない（当たるコマ・移動のコマは重なってよい）
+        if (c.m === 'self' || c.m === 'back' || c.m === 'lunge') {
+          if (f > 0) { const over = px + bR * S - tFront; if (over > 0) px -= Math.max(0, Math.min(over, px + bL * S - m - xmin)); }
+          else { const over = tFront - (px + bL * S); if (over > 0) px += Math.max(0, Math.min(over, xmax - (px + bR * S) - m)); }
+        }
+        return { x: px, y: py };
+      });
+      return { c, S, p0: ends[0], p1: ends[1] };
+    });
+  }
+
   /** 技のコマを順に見せる。引き受けたら true */
   function anim(k, s) {
     if (!handles(k, s)) return false;
-    const v = $('.vs'), me = document.getElementById('m' + s), op = document.getElementById('m' + (1 - s));
-    if (!v || !v.appendChild || !me || !op) return false;
+    const v = $('.vs'), bt = document.getElementById('bt'), me = document.getElementById('m' + s), op = document.getElementById('m' + (1 - s));
+    if (!v || !v.appendChild || !me || !op || !bt) return false;
     const mon = $('.mon', me), tmon = $('.mon', op);
     if (!mon || !tmon) return false;
     style();
-    const d = DATA()[k], P = plan(k), f = s ? -1 : 1, calm = reduced();
-    const vr = v.getBoundingClientRect(), ar = mon.getBoundingClientRect(), tr = tmon.getBoundingClientRect();
-    const sp = spOf(s), idleH = ar.height * 1.18 * (IDLE[sp] ? IDLE[sp].h : 1);
-    const Ag = { x: ar.left + ar.width / 2 - vr.left, y: ar.bottom - vr.top };   // 攻撃側の足元
-    const Tg = { x: tr.left + tr.width / 2 - vr.left, y: tr.bottom - vr.top };   // 相手の足元
-    const S = idleH * (ZOOM[sp] || 1) / (d.body.h * d.ph);                                         // コマの1画素 → 画面の画素
-    const foot = { x: d.body.gx * d.pw, y: d.body.gy * d.ph };                    // コマ（元の枠）の中の足元
-    const reach = Math.abs(Tg.x - Ag.x);
-    // モードごとの足元の位置（窓の始め → 終わり）
-    const posOf = (m) => {
-      if (calm) return [Ag, Ag];
-      if (m === 'move') return [{ x: Ag.x + f * reach * 0.08, y: Ag.y }, { x: Ag.x + f * reach * 0.42, y: Ag.y }];
-      if (m === 'contact') return [{ x: Ag.x + f * reach * 0.45, y: Ag.y }, { x: Ag.x + f * reach * 0.52, y: Ag.y }];
-      if (m === 'past') return [{ x: Ag.x + f * reach * 0.62, y: Ag.y }, { x: Ag.x + f * reach * 0.7, y: Ag.y }];
-      return [Ag, { x: Ag.x + f * 6, y: Ag.y }];
+    const d = DATA()[k], P = plan(k, viaStage()), f = s ? -1 : 1;
+    const vr = v.getBoundingClientRect(), br = bt.getBoundingClientRect(), ar = mon.getBoundingClientRect(), tr = tmon.getBoundingClientRect();
+    const sp = spOf(s), ii = mon.querySelector('.mma-idle'), ti = tmon.querySelector('.mma-idle');
+    const ir = ii && ii.getBoundingClientRect().height ? ii.getBoundingClientRect() : null;
+    const idleH = ir ? ir.height : ar.height * 1.18 * (IDLE[sp] ? IDLE[sp].h : 1), idleW = ir ? ir.width : idleH * 1.1;
+    const trr = ti && ti.getBoundingClientRect().width ? ti.getBoundingClientRect() : tr;
+    const hp = bt.querySelector('.hpr'), hb = hp ? hp.getBoundingClientRect().bottom : br.top + br.height * 0.12;
+    const L = {
+      Ag: { x: ar.left + ar.width / 2 - vr.left, y: ar.bottom - vr.top },
+      Tg: { x: tr.left + tr.width / 2 - vr.left, y: tr.bottom - vr.top },
+      idleW, idleH,
+      xmin: br.left - vr.left + 10, xmax: br.right - vr.left - 10, ytop: hb - vr.top + 4,
+      tFront: (f > 0 ? trr.left + trr.width * 0.18 : trr.right - trr.width * 0.18) - vr.left,
     };
-    // 使わないコマの窓は、直前に使ったコマがそのまま続く（動きは次の位置へ）
-    const shown = [];
-    d.cuts.forEach((c, i) => {
-      if (c.f) shown.push({ c, i, w0: P.win[i][0], w1: P.win[i][1], m: c.m });
-      else if (shown.length) { const L = shown[shown.length - 1]; L.w1 = P.win[i][1]; if (L.m === 'move') L.m2 = 'contact'; }
+    const lay = layout(k, s, L);
+    const D = P.dur, X = 60;   // X＝コマの切り替えの重なり（ms）
+    const imgs = [];
+    lay.forEach((q, j) => {
+      const c = q.c, S = q.S, im = document.createElement('img');
+      im.className = 'p25f'; im.alt = ''; im.decoding = 'sync'; im.src = A + c.f; im.dataset.cut = c.src;
+      const W = c.w * S, H = c.h * S, ix = (f > 0 ? c.x : c.pw - c.x - c.w) * S, iy = c.y * S;
+      im.style.width = W + 'px'; im.style.height = H + 'px'; im.style.transformOrigin = '50% 50%';
+      v.appendChild(im); imgs.push(im);
+      const T = (p) => `translate(${p.x + ix}px,${p.y + iy}px) scaleX(${f})`;
+      const [w0, w1] = P.win[j], last = j === lay.length - 1;
+      const t0 = Math.max(0, w0 - (j ? X : 0)) / D, t1 = Math.min(D, w1 + (last ? 0 : X)) / D, e = 0.001;
+      const kf = [{ opacity: 0, transform: T(q.p0), offset: 0 }];
+      if (t0 > e) kf.push({ opacity: 0, transform: T(q.p0), offset: t0 - e });
+      kf.push({ opacity: 1, transform: T(q.p0), offset: Math.min(t0 + (j ? X / D : 0.02), t1 - 2 * e) });
+      kf.push({ opacity: 1, transform: T(q.p1), offset: Math.max(t0 + 2 * e, t1 - (last ? 0.04 : X / D)) });
+      kf.push({ opacity: 0, transform: T(q.p1), offset: Math.min(1, t1) });
+      if (t1 < 1) kf.push({ opacity: 0, transform: T(q.p1), offset: 1 });
+      im.animate(kf, { duration: D, fill: 'both' }).onfinish = () => im.remove();
     });
-    const D = P.dur, X = 70;   // X＝コマの切り替えの重なり（ms）
-    shown.forEach((q, j) => {
-      const c = q.c, im = document.createElement('img');
-      im.className = 'p25f'; im.alt = ''; im.decoding = 'sync'; im.src = A + c.f;
-      const W = c.w * S, H = c.h * S, ox = (foot.x - c.x) * S, oy = (foot.y - c.y) * S;   // 画像の中の足元
-      im.style.width = W + 'px'; im.style.height = H + 'px'; im.style.transformOrigin = `${ox}px ${oy}px`;
-      v.appendChild(im);
-      // 画面の左右からはみ出さないように（コマの構図で本体が枠の端に描かれているもの）横だけずらす
-      const fit = (p) => { const l = f > 0 ? p.x - ox : p.x - (W - ox), r = l + W, VW = vr.width; let dx = 0; if (W <= VW) { if (l < 0) dx = -l; else if (r > VW) dx = VW - r; } return dx ? { x: p.x + dx, y: p.y } : p; };
-      const [p0] = posOf(q.m).map(fit), [, p1] = posOf(q.m2 || q.m).map(fit);
-      const T = (p, z) => `translate(${p.x - ox}px,${p.y - oy}px) scale(${f * z},${z})`;
-      const t0 = Math.max(0, q.w0 - (j ? X : 0)) / D, t1 = Math.min(D, q.w1 + (j < shown.length - 1 ? X : 0)) / D, e = 0.001;
-      const kf = [{ opacity: 0, transform: T(p0, 1), offset: 0 }];
-      if (t0 > e) kf.push({ opacity: 0, transform: T(p0, 1), offset: t0 - e });
-      kf.push({ opacity: 1, transform: T(p0, 1), offset: Math.min(t0 + (j ? X / D : 0.02), t1 - 2 * e) });
-      kf.push({ opacity: 1, transform: T(p1, 1), offset: Math.max(t0 + 2 * e, t1 - (j < shown.length - 1 ? X / D : 0.03)) });
-      kf.push({ opacity: 0, transform: T(p1, 1), offset: Math.min(1, t1) });
-      if (t1 < 1) kf.push({ opacity: 0, transform: T(p1, 1), offset: 1 });
-      const a = im.animate(kf, { duration: D, fill: 'both' });
-      a.onfinish = () => im.remove();
-      setTimeout(() => { if (im.parentNode) im.remove(); }, D + 400);   // 念のため（途中でバトルが終わっても DOM を残さない）
-    });
+    setTimeout(() => imgs.forEach((im) => { if (im.parentNode) im.remove(); }), D + 400);   // 途中でバトルが終わっても DOM を残さない
     // 攻撃側の待機の絵は、コマを出している間は隠す → 最後に戻る（復帰）
-    const end = shown.length ? shown[shown.length - 1].w1 / D : 0.84;
-    me.animate([{ opacity: 0, offset: 0 }, { opacity: 0, offset: Math.min(0.99, end) }, { opacity: 1, offset: Math.min(1, end + 0.12) }, { opacity: 1, offset: 1 }], { duration: D });
+    const end = P.body / D;
+    me.animate([{ opacity: 0, offset: 0 }, { opacity: 0, offset: Math.min(0.99, end - 0.02) }, { opacity: 1, offset: Math.min(1, end + 0.08) }, { opacity: 1, offset: 1 }], { duration: D });
     const ms = me.parentNode; if (ms && ms.style) { ms.style.zIndex = 7; setTimeout(() => { ms.style.zIndex = ''; }, D + 100); }
     // 当たる瞬間：今までの演出と同じ共通の効果（光の輪・相手のノックバック・揺れ・画面の光）。補助技は出さない
     if (P.hit != null) {
@@ -155,7 +202,7 @@
     }
     syncIdle(bt);
     // 使う技のコマを先に読む（このバトルの2体の装備技だけ）
-    if (on) { const pl = G('BPL'); if (pl) [0, 1].forEach((s) => (pl[s] && pl[s].eq || []).forEach((k) => { if (!handles(k, s)) return; DATA()[k].cuts.forEach((c) => { if (c.f) { const i = new Image(); i.decoding = 'async'; i.src = A + c.f; } }); })); }
+    if (on) { const pl = G('BPL'); if (pl) [0, 1].forEach((s) => (pl[s] && pl[s].eq || []).forEach((k) => { if (!handles(k, s)) return; DATA()[k].cuts.forEach((c) => { const i = new Image(); i.decoding = 'async'; i.src = A + c.f; }); })); }
   }
   if (typeof MutationObserver !== 'undefined' && typeof document !== 'undefined') {
     const mo = new MutationObserver(() => { const bt = document.getElementById('bt'); if (bt && !bt.__p25) { bt.__p25 = true; setTimeout(() => setupBattle(bt), 30); } });
@@ -163,5 +210,5 @@
     if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
   }
 
-  root.MM25D = Object.freeze({ anim, handles, timing, idleSrc, idleScale, set, syncIdle, get on() { return on; }, get offered() { return offered; }, owner, plan, IDLE });
+  root.MM25D = Object.freeze({ anim, handles, timing, layout, idleSrc, idleScale, set, syncIdle, get on() { return on; }, get offered() { return offered; }, owner, plan, IDLE });
 })(typeof window !== 'undefined' ? window : globalThis);
