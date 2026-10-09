@@ -527,7 +527,7 @@ test('AUDIO-30：2026-10-07 正式採用の BGM 14曲：プロローグ6場面�
   const want = { PROLOGUE_1: '01_prologue_peace', PROLOGUE_2: '02_prologue_calamity', PROLOGUE_3: '03_prologue_hopeful', PROLOGUE_4: '04_prologue_legend_battle', PROLOGUE_5: '05_prologue_tournament', PROLOGUE_6: '06_prologue_departure', CEDRIC: '07_cedric_pre_tournament', TOURNAMENT_LOBBY_LOW: '08_tournament_table_start17s', TOURNAMENT_MATCHUP: '09_prebattle_compare_jingle', RIVAL_BATTLE: '10_rival_battle', ARENA: '11_arena_swords_at_midnight_loop', WILD_BATTLE: '12_wild_battle', RARE_WILD_BATTLE: '13_rare_monster_battle', TOURNAMENT_BATTLE_LOW: '14_official_rank_battle' };
   for (const [k, f] of Object.entries(want)) { assert.equal(srcsOf(got.bgm[k])[0], L + f + '.ogg', k); assert.ok(existsSync(path.join(ROOT, L, f + '.ogg')), f); assert.ok(got.bgm[k].gain > 0 && got.bgm[k].gain <= 1.2, `${k} gain`); }
   assert.deepEqual([got.bgm.TOURNAMENT_LOBBY_HIGH, got.bgm.TOURNAMENT_BATTLE_HIGH], [{ fallback: 'TOURNAMENT_LOBBY_LOW' }, { fallback: 'TOURNAMENT_BATTLE_LOW' }], 'B〜S も同じ曲');
-  assert.equal(got.bgm.TOURNAMENT_LOBBY_LOW.start, 17, '対戦表は17秒付近から'); assert.equal(got.bgm.TOURNAMENT_LOBBY_LOW.loopStart, 17);
+  assert.equal(got.bgm.TOURNAMENT_LOBBY_LOW.start, 17, '対戦表は17〜31秒の落ち着いた部分から（2026-10-09 ユーザー確認）'); assert.equal(got.bgm.TOURNAMENT_LOBBY_LOW.loopStart, 17);
   for (let i = 1; i <= 6; i++) assert.equal(got.bgm['PROLOGUE_' + i].loop, false, `PROLOGUE_${i} は頭から1回`);
   assert.equal(got.bgm.TOURNAMENT_MATCHUP.loop, false, '対戦前比較は短いジングル（ループしない）');
   assert.deepEqual(got.bgm.PROLOGUE, { silent: true }, '旧1曲のプロローグ BGM は削除のまま');
@@ -538,7 +538,7 @@ test('AUDIO-30：2026-10-07 正式採用の BGM 14曲：プロローグ6場面�
   // 画面 → 場面
   const HTML = readFileSync(path.join(ROOT, 'index.html'), 'utf8');
   assert.match(HTML, /MMPRO\.play\(\{cover:cv,onScene:si=>\{if\(A&&si===0\)\{A\.scene\("PROLOGUE_1",\{fade:"quick"\}\);proWarm\(2\)\}\},audioLeadMs:PRO_AUDIO_LEAD,onSceneAudio:si=>\{if\(A\)A\.scene\("PROLOGUE_"\+\(si\+1\),\{fade:"normal"\}\);proWarm\(si\+2\)\}\}\)\)/, 'プロローグの Scene ごとに曲を切り替える（2026-10-07 試遊：Scene 2〜6 は切り替えの少し前からクロスフェード）');
-  assert.match(HTML, /const PRO_AUDIO_LEAD=500;/);
+  assert.match(HTML, /const PRO_AUDIO_LEAD=1000;/);
   assert.match(HTML.slice(HTML.indexOf('function p9CompareScr('), HTML.indexOf('function p9CompareScr(') + 400), /bgm\("matchup"\)/, '対戦前比較はジングル');
   assert.match(HTML, /cedric:"CEDRIC"/); assert.match(HTML.slice(HTML.indexOf('async function p9TourOpen('), HTML.indexOf('async function p9TourOpen(') + 600), /bgm\("cedric"\)/, 'セドリックの大会前の導入で CEDRIC');
   assert.ok(!existsSync(path.join(ROOT, 'assets/audio/bgm/pgs_fantasy_rpg/battle_music_1.ogg')) && !existsSync(path.join(ROOT, 'assets/audio/bgm/alkakrab_fantasy_rpg_vol3/action_2_battle_of_the_skies.ogg')), '置き換えた旧い戦闘曲は置かない');
@@ -578,8 +578,8 @@ test('AUDIO-32：2026-10-08（監査 M-11）：1回きりの曲（対戦前比�
 test('AUDIO-33：2026-10-08（監査 M-12）：プロローグ Scene 5 の曲は頭の無音（0.88秒）を飛ばして 0.38秒から（先に鳴らす 0.5秒と合わせて、Scene の切り替えの瞬間に音が出る）。ほかの Scene は頭から', () => {
   const src = rd('js/audio/audio-registry.js');
   assert.match(src, /PROLOGUE_5: \{ src: LIC \+ '05_prologue_tournament\.ogg', gain: 0\.42, loop: false, start: 0\.38 \}/);
-  for (const n of [1, 2, 3, 4, 6]) assert.doesNotMatch(src.split('\n').find((l) => l.includes(`PROLOGUE_${n}:`)), /start:/, `PROLOGUE_${n} は頭から`);
-  assert.match(HTML, /const PRO_AUDIO_LEAD=500;/);
+  for (const n of [1, 3, 4]) assert.doesNotMatch(src.split('\n').find((l) => l.includes(`PROLOGUE_${n}:`)), /start:/, `PROLOGUE_${n} は頭から`);   // 2026-10-09：2・6 は静かな頭を飛ばす（AUDIO-35）
+  assert.match(HTML, /const PRO_AUDIO_LEAD=1000;/);
   const { A, log } = env(); legacySpy(A); A.registerBgm('PROLOGUE_5', './bgm/p5.ogg', { loop: false, start: 0.38 }); A.unlock(); A.scene('PROLOGUE_5');
   assert.ok(log.audios.some((x) => x.src === './bgm/p5.ogg#t=0.38'), 'メディアフラグメント #t=0.38 で読む');
 });
@@ -593,4 +593,24 @@ test('AUDIO-34：2026-10-08 正式採用：街の曲「冒険への誘い」（O
   const keep = { MARKET: 'town_village_theme_2', RANCH: 'town_village_theme_3', LABORATORY: 'event_music_2' };
   for (const [k, f] of Object.entries(keep)) assert.ok(srcsOf(got.bgm[k])[0].endsWith(f + '.ogg'), k);
   assert.match(rd('AUDIO_CREDITS.md'), /town_bouken_e_no_izanai\.ogg/);
+});
+
+test('AUDIO-35：2026-10-09 試遊（曲の鳴り始め）：プロローグの次の曲は切り替えの 1.0秒前から・Scene 2／6 の静かな頭を飛ばす、セドリックの導入の曲はランク開始の演出と同時・頭の無音を飛ばす、対戦表は落ち着いた部分（17秒）から・#t= を無視するブラウザでも開始位置へ合わせる', () => {
+  const { got } = loadRegistry(), src = rd('js/audio/audio-registry.js');
+  assert.equal(got.bgm.PROLOGUE_2.start, 0.6); assert.equal(got.bgm.PROLOGUE_6.start, 0.3); assert.equal(got.bgm.PROLOGUE_5.start, 0.38);
+  assert.deepEqual([got.bgm.CEDRIC.start, got.bgm.CEDRIC.loopStart, got.bgm.CEDRIC.loopEnd], [1.3, 1.3, 378.5]);
+  assert.deepEqual([got.bgm.TOURNAMENT_LOBBY_LOW.start, got.bgm.TOURNAMENT_LOBBY_LOW.loopStart, got.bgm.TOURNAMENT_LOBBY_LOW.loopEnd], [17, 17, 135.2]);
+  assert.match(src, /08_tournament_table_start17s\.ogg/, 'ファイルは加工しない（同じファイルの開始位置だけ）');
+  assert.match(HTML, /const PRO_AUDIO_LEAD=1000;/);
+  assert.match(HTML, /async function p9TourOpen\(k\)\{const on=cedricOn\(\);if\(on\)bgm\("cedric"\);await p9TourIntro\(k,on\);/, 'ランク開始の演出より前に CEDRIC');
+  const body = HTML.slice(HTML.indexOf('async function p9TourOpen('), HTML.indexOf('async function p9TourOpen(') + 900);
+  assert.equal(body.match(/bgm\("cedric"\)/g).length, 1, '二重に呼ばない');
+});
+
+test('AUDIO-36：2026-10-09：開始位置（start）は #t= を無視するブラウザでも、長さが分かった時点で合わせる（手前にいるときだけ・1回）', async () => {
+  const { A, log } = env(); legacySpy(A); A.registerBgm('TOURNAMENT_LOBBY_LOW', './bgm/t.ogg', { start: 17, loopStart: 17, loopEnd: 135 }); A.unlock(); A.scene('TOURNAMENT_LOBBY_LOW'); await tick(5);
+  const el = log.audios.find((x) => x.src === './bgm/t.ogg#t=17'); assert.ok(el, '#t=17 で読む');
+  el.currentTime = 0; (el.ls.loadedmetadata || []).forEach((f) => f());
+  assert.equal(el.currentTime, 17, '頭から始まっていたら 17秒へ');
+  el.currentTime = 40; (el.ls.loadedmetadata || []).forEach((f) => f()); assert.equal(el.currentTime, 40, '先にいるときは動かさない');
 });

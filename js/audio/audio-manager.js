@@ -202,6 +202,10 @@
     s.src = src; s.scene = key; s.gainTarget = entry.gain; s.active = true; s.prepared = false; s.waiting = false; s.loopRange = entry.loopRange || null;
     attachSlot(s);
     try { s.el.loop = entry.loop !== false && !s.loopRange; s.el.src = entry.start ? src + '#t=' + entry.start : src; if (s.el.load) s.el.load(); } catch (e) { note('bgm-src', e); s.active = false; s.src = null; return false; }
+    if (entry.start) {   // 2026-10-09 試遊（対戦表の曲が 17秒から鳴らない）：開始位置はメディアフラグメント（#t=）だけだった＝それを無視するブラウザ（iPhone の Safari など）では頭から鳴る → 長さが分かった時点で、まだ手前なら開始位置へ合わせる（1回だけ）
+      const at = entry.start, seek = () => { try { if (s.token === token && s.active && (s.el.currentTime || 0) < at - 0.25) s.el.currentTime = at; } catch (e) {} };
+      try { if (s.el.addEventListener) s.el.addEventListener('loadedmetadata', seek, { once: true }); if (s.el.readyState >= 1) seek(); } catch (e) {}
+    }
     setGain(s, 0, 0);
     if (cur && cur !== s) fadeOutSlot(cur, ms);
     st.cur = s; st.source = 'file'; legacyStop();

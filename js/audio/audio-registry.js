@@ -34,12 +34,12 @@
                                      //  旧 54.2秒版と同じファイル名なので ?v=v6 で端末のキャッシュ（旧い曲）を使わない
     // 2026-10-07 正式：プロローグは Scene ごとに1曲（各曲の頭から・loop なし＝Scene は約7.8〜9.7秒。2026-10-08 に延長）。index.html の proPlay が Scene の切り替えで PROLOGUE_1〜6 へ（短いクロスフェード）
     PROLOGUE_1: { src: LIC + '01_prologue_peace.ogg', gain: 0.54, loop: false },          // 穏やかで少しワクワクする今日 / 今川彰人オーケストラ（-12.6 LUFS → 約 -18）
-    PROLOGUE_2: { src: LIC + '02_prologue_calamity.ogg', gain: 0.35, loop: false },       // 悪魔との戦闘 / 今川彰人オーケストラ（-9.0）
+    PROLOGUE_2: { src: LIC + '02_prologue_calamity.ogg', gain: 0.35, loop: false, start: 0.6 },   // 2026-10-09 試遊（切り替えのあと曲が鳴り始めるのが遅い）：頭の約1.5秒は小さな音から盛り上がる＝0.6秒から（先に鳴らす 1.0秒と合わせて、Scene 2 の切り替えの瞬間に盛り上がりの頂点）。       // 悪魔との戦闘 / 今川彰人オーケストラ（-9.0）
     PROLOGUE_3: { src: LIC + '03_prologue_hopeful.ogg', gain: 0.44, loop: false },        // Hopeful / Fukagawa（-10.9）
     PROLOGUE_4: { src: LIC + '04_prologue_legend_battle.ogg', gain: 0.52, loop: false },  // 高貴なる戦闘 / 香居（-12.4）
     PROLOGUE_5: { src: LIC + '05_prologue_tournament.ogg', gain: 0.42, loop: false, start: 0.38 },     // Tournament / Ebunny（-10.4）。2026-10-08 監査 M-12：頭に 0.88秒の無音があり、先に鳴らす 0.5秒（PRO_AUDIO_LEAD）を越えて Scene 5 の切り替え直後に約0.38秒の無音＝0.38秒から鳴らす（ファイルは加工しない）
-    PROLOGUE_6: { src: LIC + '06_prologue_departure.ogg', gain: 0.68, loop: false },      // Bon Voyage! / HarumachiMusic（-14.7）
-    CEDRIC:     { src: LIC + '07_cedric_pre_tournament.ogg', gain: 0.3, loopStart: 0, loopEnd: 378.5, loopXfade: 1 },   // セドリックの大会前の導入：REACH FOR the FATE / Keyta（-9.5 → 会話が聞こえる約 -20）
+    PROLOGUE_6: { src: LIC + '06_prologue_departure.ogg', gain: 0.68, loop: false, start: 0.3 },   // 2026-10-09 試遊：頭の約0.3秒はほぼ無音＝0.3秒から。      // Bon Voyage! / HarumachiMusic（-14.7）
+    CEDRIC:     { src: LIC + '07_cedric_pre_tournament.ogg', gain: 0.3, start: 1.3, loopStart: 1.3, loopEnd: 378.5, loopXfade: 1 },   // 2026-10-09 試遊（鳴り始めが遅い）：頭の約1.3秒の無音を飛ばす（ループも 1.3秒へ）。鳴らし始めはランク開始の演出と同時（index.html の p9TourOpen）。   // セドリックの大会前の導入：REACH FOR the FATE / Keyta（-9.5 → 会話が聞こえる約 -20）
     ARENA:      { src: LIC + '11_arena_swords_at_midnight_loop.ogg', gain: 0.67 },          // 闘技場の施設の曲：Swords At Midnight Loop（ループ素材・-14.5）。闘技場の画面は未実装（ロック中）＝登録だけで、今はどこからも鳴らさない
     BUREAU:     { src: MMB + 'mystic_monsters_bureau_bgm_official.ogg', gain: 0.46, loopStart: 0, loopEnd: 45.7, loopXfade: 0.25 },   // 2026-10-05 PHASE B 正式 v6：聖獣士管理局（46.0秒・-13.2 LUFS → gain 0.46 で約 -20＝会話が聞き取れる音量）。終わりの短いフェードの前で頭へ戻してループ
     TOWN:       { src: LIC8 + 'town_bouken_e_no_izanai.ogg', gain: 0.7, loopStart: 0, loopEnd: 178.6, loopXfade: 1.2 },     // 2026-10-08 正式採用「冒険への誘い」（-15.1 LUFS → 約 -18）。182.7秒のうち 179秒から末尾は無音＝曲が消えきる手前 178.6秒で頭へ 1.2秒のクロスフェード（ファイルは加工しない）。旧：HydroGene「Lively City」（第5弾の仮採用）     // 2026-10-03 第5弾の仮採用：HydroGene「Lively City」65秒・明るい長調（第4弾で NG の Tranquil Radiance は使わない）
@@ -57,7 +57,7 @@
     //  2026-10-03 第5弾の仮採用：大会の受付 → 順位表 → 対戦前 → 結果は HydroGene「Royal Castle」1曲。ENTRY だけに曲を書き、ほかは fallback＝同じファイルなので場面が変わっても鳴らし直さない（頭出ししない）。
     //  実戦（battle）の前は fight() の bgm("battle") で止め、FIGHT! のあと大会の戦闘曲。バトル後の順位表・結果でまた Royal Castle（頭から）。旧：PGS Event Music 4（第4弾で NG・使わない）
     TOURNAMENT_ENTRY:       { src: HG + '03_royal_castle.ogg', gain: 0.68, loopStart: 0, loopEnd: 64.28, loopXfade: 0.08 },   // 大会会場への到着・受付・ランク選択。64秒（ファイルの終わりと頭の波形に段差があるので、ごく短いクロスフェードで戻す）
-    TOURNAMENT_LOBBY_LOW:   { src: LIC + '08_tournament_table_start17s.ogg', gain: 0.69, start: 17, loopStart: 17, loopEnd: 135.2, loopXfade: 1 },   // 2026-10-07 正式：大会1 対戦表＝Battle - スタンバイフェイズ / lei（17秒付近から・ループも 17秒へ。135.5秒からの無音の前で戻す。-14.8）
+    TOURNAMENT_LOBBY_LOW:   { src: LIC + '08_tournament_table_start17s.ogg', gain: 0.69, start: 17, loopStart: 17, loopEnd: 135.2, loopXfade: 1 },   // 2026-10-07 正式：大会1 対戦表＝Battle - スタンバイフェイズ / lei。17〜31秒の落ち着いた部分から（2026-10-09 ユーザー確認）・ループも 17秒へ。135.5秒からは終わりのフェード。iPhone で頭（前奏）から鳴っていた件は audio-manager の開始位置の合わせ直しで対処
     TOURNAMENT_LOBBY_HIGH:  { fallback: 'TOURNAMENT_LOBBY_LOW' },   // B〜S の対戦表も同じ曲
     TOURNAMENT_MATCHUP:     { src: LIC + '09_prebattle_compare_jingle.ogg', gain: 1.07, loop: false },   // 2026-10-07 正式：大会2 対戦前比較＝trumpetbuildup / theredshore（約12秒の短いジングル・ループしない。-18.6）
     RESULT:                 { fallback: 'TOURNAMENT_ENTRY' },   // 大会の結果（勝ち・負け共通）：Royal Castle

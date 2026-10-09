@@ -4169,7 +4169,7 @@ OPEN_TALK.ryu=n=>[{npc:"ryu",expression:"surprise",text:"あれ？ フィナじ�
  *  → 映像の時計に BGM を合わせる（MMPRO の audioTime／seek）→ 終わったら（スキップでも）PROLOGUE を残さない。曲のファイル・音量・ループ（しない）は js/audio/audio-registry.js */
 function proBgmStart(){const A=window.MMAUDIO;if(!A)return null;A.scene("PROLOGUE",{fade:"none"});const t0=Date.now();
  return new Promise(r=>{const f=()=>{const t=A.bgmTime("PROLOGUE");if((t!=null&&t>0)||Date.now()-t0>1500||A.status().source!=="file")return r(t);setTimeout(f,10)};f()})}
-const PRO_AUDIO_LEAD=500;
+const PRO_AUDIO_LEAD=1000; /* 2026-10-09 試遊（画像が切り替わって曲が鳴り始めてすぐ次の画像になり中途半端）：次の曲を切り替えの 1.0秒前から（旧 0.5秒）。クロスフェード約0.7秒が切り替えの前に終わる＝切り替えの瞬間から次の曲がしっかり聞こえる。映像の時刻表 CUES は変えない */
 function proWarm(n){try{const e=window.MMAUDIO_REGISTRY&&MMAUDIO_REGISTRY.bgm["PROLOGUE_"+n];const src=e&&(Array.isArray(e.src)?e.src[0]:e.src);if(src&&!document.querySelector(`link[data-pro="${n}"]`)){const l=document.createElement("link");l.rel="prefetch";l.href=src;l.dataset.pro=String(n);document.head.appendChild(l)}}catch(e){}}
 function proPlay(cv){const A=window.MMAUDIO;if(A)A.stopBgm({fade:"normal"});
  return Promise.all([MMPRO.readyOrTimeout(6000),new Promise(r=>setTimeout(r,A?750:0))]).then(()=>MMPRO.play({cover:cv,onScene:si=>{if(A&&si===0){A.scene("PROLOGUE_1",{fade:"quick"});proWarm(2)}},audioLeadMs:PRO_AUDIO_LEAD,onSceneAudio:si=>{if(A)A.scene("PROLOGUE_"+(si+1),{fade:"normal"});proWarm(si+2)}})) /* 2026-10-07 試遊：Scene 2〜6 の曲は切り替えの 0.5秒前から約0.7秒のクロスフェードで始める（次の曲のファイルは1つ前の Scene のあいだに先に取っておく）＝切り替えの直後に無音にならない。映像の時刻表は変えない */ /* 2026-10-07：Scene ごとの正式 BGM（PROLOGUE_1〜6・各曲の頭から・場面の切り替えで短いクロスフェード）。時刻表（固定尺）・本文・スキップは従来どおり（2026-10-06 の1曲の BGM は削除のまま） */
@@ -5253,8 +5253,8 @@ function p9VictoryShow(m,rank){return new Promise(res=>{const k=m&&VICTORY_IMG[m
  const fin=()=>{if(done)return;done=true;T.forEach(clearTimeout);d.classList.add("out");setTimeout(()=>{d.remove();res()},calm?0:320)};
  d.onclick=()=>{if(performance.now()-t0>350)fin()};
  Promise.race([im.decode?im.decode().catch(()=>{}):Promise.resolve(),new Promise(r=>setTimeout(r,1200))]).then(()=>{if(done)return;d.classList.add("go");T.push(setTimeout(fin,calm?1200:2200))})})}
-async function p9TourOpen(k){const on=cedricOn();await p9TourIntro(k,on);
- if(on){const f=finaFlags(),first=!f.cedricWelcome;if(first){f.cedricWelcome=1;save()}bgm("cedric");let drawn=false;try{await MMNPC.talk(CEDRIC_EV.open(k,first),{kind:"event",big:true,scene:CED_SCENE(k,"booth"),noFig:true,onClose:()=>{drawn=true;P9_ENTER=true;board()}})}catch(e){}if(drawn)return} // 2026-10-07：大会前の導入の曲（CEDRIC）→ 対戦表で対戦表の曲 // 2026-10-07 試遊：閉じ始めに対戦表を下に描く（会話のフェードの間に受付の画面が一瞬見えていた）
+async function p9TourOpen(k){const on=cedricOn();if(on)bgm("cedric");await p9TourIntro(k,on); /* 2026-10-09 試遊（セドリックの導入の曲の鳴り始めが遅い）：ランク開始の演出（E は約4秒）と同時に CEDRIC を鳴らす（旧：演出が終わってセドリックの会話を出すとき） */
+ if(on){const f=finaFlags(),first=!f.cedricWelcome;if(first){f.cedricWelcome=1;save()}let drawn=false;try{await MMNPC.talk(CEDRIC_EV.open(k,first),{kind:"event",big:true,scene:CED_SCENE(k,"booth"),noFig:true,onClose:()=>{drawn=true;P9_ENTER=true;board()}})}catch(e){}if(drawn)return} // 2026-10-07：大会前の導入の曲（CEDRIC）→ 対戦表で対戦表の曲 // 2026-10-07 試遊：閉じ始めに対戦表を下に描く（会話のフェードの間に受付の画面が一瞬見えていた）
  P9_ENTER=true;board()}
 let P9_END_RS=null,P9_END_UP=null,P9_END_AFTER=null,P9_END_FX=false;
 // 2026-10-08（監査 M-01）：大会の終わりの正式の順＝全試合の終了 → 最終順位 → （優勝なら）モンスターの勝利演出 → 初回報酬 → ランクアップ／解放 → セドリックの締め → 次の画面。
