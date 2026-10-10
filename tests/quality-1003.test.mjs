@@ -15,15 +15,15 @@ const HTML = rd('index.html');
 const fnOf = (name) => { const i = HTML.indexOf(`function ${name}(`); return HTML.slice(i, HTML.indexOf('\nfunction ', i + 10)); };
 function loadPro() { const w = { matchMedia: () => ({ matches: false }) }; new Function('window', rd('js/prologue/prologue.js'))(w); return w.MMPRO; }
 
-test('QU-01：プロローグ（2026-10-07 正式：6枚・本文はユーザー指定のとおり）。文字は画像に焼き込まず HTML の層・1文字ずつ。新しいゲームの最初に1回', () => {
+test('QU-01：プロローグ（2026-10-07 正式：6枚・本文はユーザー指定のとおり。2026-10-10 に各3文へ延長）。文字は画像に焼き込まず HTML の層・1文字ずつ。新しいゲームの最初に1回', () => {
   const P = loadPro(), txt = (id) => P.SLIDES.find((s) => s.id === id).pages.flat().join('');
   assert.deepEqual(P.SLIDES.map((s) => s.id), ['1', '2', '3', '4', '5', '6']);
-  assert.equal(txt('1'), 'はるか昔、人と聖獣はこの大陸で共に暮らしていた。');
-  assert.equal(txt('2'), 'だが100年前、厄災の聖獣が現れ、大陸は滅びかけた。');
-  assert.equal(txt('3'), '人々は悲劇を繰り返さぬため、聖獣を育て、共に戦う術を受け継いだ。');
-  assert.equal(txt('4'), 'そして10年前、再び現れた厄災は、ミストリアの三人のレジェンドによって退けられた。');
-  assert.equal(txt('5'), 'やがて聖獣を育て競い合う文化は花開き、大会は人々の憧れとなった。');
-  assert.equal(txt('6'), '今、レジェンドランクを目指すあなたもまた、聖獣都市ミストリアへ旅立つ。');
+  assert.equal(txt('1'), 'はるか昔、人と聖獣は、この大陸で共に暮らしていた。人は聖獣の力を借り、聖獣もまた人と寄り添い生きていた。その穏やかな日々が、続くと誰もが信じていた。');
+  assert.equal(txt('2'), 'だが100年前、厄災の聖獣が現れ、大陸は滅びかけた。町は焼かれ、多くの人と聖獣が戦いに巻き込まれた。かつての平穏は失われ、その記憶は深い傷として残った。');
+  assert.equal(txt('3'), '人々は悲劇を繰り返さぬため、聖獣を育て、共に戦う術を受け継いだ。聖獣の力を恐れず、理解し、信頼を築く道を選んだのだ。やがて人と聖獣が共に強くなる文化が、大陸へ広がった。');
+  assert.equal(txt('4'), 'そして10年前、再び現れた厄災は、ミストリアの三人のレジェンドによって退けられた。三人とその聖獣たちは、絶望の中でも最後まで戦い抜いた。その戦いは今も語り継がれ、多くの聖獣士の憧れとなっている。');
+  assert.equal(txt('5'), 'やがて聖獣を育て競い合う文化は花開き、大会は人々の憧れとなった。聖獣士たちは相棒と腕を磨き、各地の大会で強さを競い合う。そして最高峰の称号「レジェンド」を目指し、挑戦者たちが集まっている。');
+  assert.equal(txt('6'), '今、レジェンドランクを目指すあなたもまた、聖獣都市ミストリアへ旅立つ。まだ見ぬ聖獣との出会い、修行、そして強敵との戦いが待っている。ここから、あなたと聖獣の新しい物語が始まる。');
   assert.deepEqual(P.LEGENDS.map((l) => `${l.name}＋${l.beast}`), ['アストラッド＋ゼルヴァーン', 'レオナ＋グリフェル', 'ラグナス＋ドラグノル']);
   assert.doesNotMatch(P.SLIDES.map((s) => s.pages.flat().join('')).join(''), /ブリーダー|死|消滅|引退/);
   const files = ['prologue_01_peace', 'prologue_02_calamity', 'prologue_03_culture', 'prologue_04_legends', 'prologue_05_tournament', 'prologue_06_departure'];

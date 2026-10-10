@@ -21,7 +21,7 @@ test('NX5-01：プロローグ（2026-10-07 正式：6枚＝平和 → 厄災 �
   for (const s of P.SLIDES) assert.ok(existsSync(path.join(ROOT, s.bg)), s.bg);
   const all = P.SLIDES.flatMap((s) => s.pages.flat()).join('');
   assert.ok(all.startsWith('はるか昔、人と聖獣は'));
-  assert.ok(all.endsWith('聖獣都市ミストリアへ旅立つ。'));
+  assert.ok(all.endsWith('ここから、あなたと聖獣の新しい物語が始まる。'));   // 2026-10-10：本文を各3文に延長
   assert.match(all, /10年前/); assert.match(all, /三人のレジェンド/);
   assert.deepEqual(P.LEGENDS.map((l) => `${l.name}+${l.beast}`), ['アストラッド+ゼルヴァーン', 'レオナ+グリフェル', 'ラグナス+ドラグノル']);
   for (const l of P.LEGENDS) assert.ok(!all.includes(l.name), `本文に ${l.name} を出さない`);
