@@ -31,9 +31,16 @@
   const ART = {
     ground: { file: 'ground_grass.webp', tile: 128 },       // 草地のくり返し1枚＝128単位
     road: { file: 'road_flagstone.webp', tile: 46 },        // 道の中の敷石のくり返し1枚＝46単位
-    props: [{ key: 'tree', file: 'prop_tree.webp', w: 30, p: 0.68 }, { key: 'rock', file: 'prop_rock.webp', w: 26, p: 0.32 }],
+    strip: { file: 'strip_road_stone.webp', w: 23 },        // 第2便の追加：直線の石の道（縁石つき）を道筋に沿って並べる（幅＝縁石まで 23単位）
+    // 景物の割合（p の合計 1）。第2便で針葉樹・茂み・石柱・小花を追加
+    props: [{ key: 'tree', file: 'prop_tree.webp', w: 30, p: 0.30 }, { key: 'conifer', file: 'prop_conifer.webp', w: 17, p: 0.22 },
+      { key: 'shrub', file: 'prop_shrub.webp', w: 17, p: 0.18 }, { key: 'rock', file: 'prop_rock.webp', w: 24, p: 0.12 },
+      { key: 'flowers', file: 'prop_flowers.webp', w: 13, p: 0.13 }, { key: 'pillar', file: 'prop_pillar.webp', w: 11, p: 0.05 }],
     goal: { file: 'goal_arena.webp', w: 150, dy: 14 },      // GOAL の後ろ（足もと＝GOAL の 14単位手前）
+    // 決まった地点の目印（第2便）：START の旅立ちの門（START のすぐ奥で道をまたぐ＝門の前に立つ）・R_CHEST の見張り台（行き止まりの奥）
+    landmarks: [{ node: 'START', file: 'lm_start_gate.webp', w: 40, along: 7, z: -30 }, { node: 'R_CHEST', file: 'lm_watchpost.webp', w: 40, along: 20, z: -30 }],
   };
+  const APRON = 640;   // 世界の外に続ける草地の幅（単位）
   const rad = (d) => (d * Math.PI) / 180;
 
   // ---- 純粋な関数 ----
@@ -110,9 +117,17 @@
     if (o.art) {
       const base = o.art.base || './assets/proto/board_art_1010/';
       const load = (f) => new Promise((res) => { const im = new root.Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = base + f; });
-      Promise.all([load(ART.ground.file), load(ART.road.file)]).then(([gi, ri]) => { if (S.dead) return; art.ground = gi; art.road = ri; if (gi || ri) { paint(); wrap.classList.add('art'); } });
-      for (const q of scatter(D, o)) { const d = doc.createElement('img'); d.className = 'rfw-prop'; d.alt = ''; d.draggable = false; d.src = base + q.file; bb.appendChild(d); props.push({ el: d, x: q.x, y: q.y, w: q.w }); }
-      const gn = D.nodes.GOAL; if (gn) { const d = doc.createElement('img'); d.className = 'rfw-prop rfw-goal'; d.alt = ''; d.draggable = false; d.src = base + ART.goal.file; bb.appendChild(d); props.push({ el: d, x: gn[0], y: gn[1] + ART.goal.dy, w: ART.goal.w, z: -40 }); }
+      Promise.all([load(ART.ground.file), load(ART.road.file), o.art.road === 'pattern' ? null : load(ART.strip.file)]).then(([gi, ri, si]) => {
+        if (S.dead) return; art.ground = gi; art.road = ri; art.strip = si; if (gi || ri) { paint(); wrap.classList.add('art'); }
+        // 世界の外（端へ寄ったときに見える所）も同じ草地で続ける：平面の中の安い背景（canvas は世界の中だけ）
+        if (gi) { const ap = doc.createElement('div'); ap.className = 'rfw-apron'; const m = APRON;
+          Object.assign(ap.style, { left: -m + 'px', top: -m + 'px', width: WORLD.w + 2 * m + 'px', height: WORLD.h + 2 * m + 'px', backgroundImage: `url(${base + ART.ground.file})`,
+            backgroundSize: `${ART.ground.tile}px ${ART.ground.tile}px`, backgroundPosition: `${m % ART.ground.tile}px ${m % ART.ground.tile}px` });
+          plane.insertBefore(ap, plane.firstChild); } });
+      const add = (file, x, y, w, z, cls) => { const d = doc.createElement('img'); d.className = 'rfw-prop' + (cls ? ' ' + cls : ''); d.alt = ''; d.draggable = false; d.src = base + file; bb.appendChild(d); props.push({ el: d, x, y, w, z: z || 0 }); };
+      for (const q of scatter(D, o)) add(q.file, q.x, q.y, q.w);
+      const gn = D.nodes.GOAL; if (gn) add(ART.goal.file, gn[0], gn[1] + ART.goal.dy, ART.goal.w, -40, 'rfw-goal');
+      for (const L of ART.landmarks) { const at = landmarkAt(D, L); if (at) add(L.file, at[0], at[1], L.w, L.z || 0, 'rfw-lm'); }
     }
     const S = {
       cam: { tx: WORLD.w / 2, ty: WORLD.h / 2, s: 1, tilt: 0, P: o.persp, ax: 0, ay: 0 }, goal: null, mon: null, monGoal: null,
@@ -252,12 +267,49 @@
     const disc = (id, r) => { const n = D.nodes[id]; g.beginPath(); g.arc(n[0], n[1], r, 0, 7); g.fill(); };
     const rp = art && art.road ? pattern(g, art.road, ART.road.tile) : null;
     if (rp) { g.strokeStyle = 'rgba(40,52,20,.28)'; g.lineWidth = o.roadW + 9; for (const s of segs) { path(s[3]); g.stroke(); } }   // 草へ落ちる薄い影
+    if (rp && art.strip) {   // 直線の石の道を道筋に沿って並べる（分かれ目・合流・行き止まりは敷石の円で覆う）
+      for (const s of segs) stripAlong(g, curvePts(s[3].map((id) => D.nodes[id])), art.strip, ART.strip.w);
+      g.fillStyle = '#8f8573'; for (const id of hubs) disc(id, ART.strip.w * 0.62 + 1.5); for (const id of ends) disc(id, ART.strip.w * 0.6 + 1.5);
+      g.fillStyle = rp; for (const id of hubs) disc(id, ART.strip.w * 0.62 - 1); for (const id of ends) disc(id, ART.strip.w * 0.6 - 1);
+      return;
+    }
     g.strokeStyle = rp ? '#8f8573' : '#6f6248'; g.lineWidth = o.roadW + 4; for (const s of segs) { path(s[3]); g.stroke(); }
     g.fillStyle = rp ? '#8f8573' : '#6f6248'; for (const id of hubs) disc(id, o.roadW * 0.8 + 2); for (const id of ends) disc(id, o.roadW * 0.75 + 2);
     g.strokeStyle = rp || '#e7dcc0'; g.lineWidth = o.roadW; for (const s of segs) { path(s[3]); g.stroke(); }
     g.fillStyle = rp || '#ece3ca'; for (const id of hubs) disc(id, o.roadW * 0.8); for (const id of ends) disc(id, o.roadW * 0.75);
   }
 
+  /** 地点を通るなめらかな線（drawRoads の path と同じ曲線）を細かい点の列に */
+  function curvePts(p) {
+    const out = [p[0]];
+    for (let i = 0; i < p.length - 1; i++) { const a = p[i - 1] || p[i], b = p[i], c = p[i + 1], d = p[i + 2] || c;
+      const c1 = [b[0] + (c[0] - a[0]) / 6, b[1] + (c[1] - a[1]) / 6], c2 = [c[0] - (d[0] - b[0]) / 6, c[1] - (d[1] - b[1]) / 6];
+      const n = Math.max(2, Math.ceil(Math.hypot(c[0] - b[0], c[1] - b[1]) / 1.5));
+      for (let k = 1; k <= n; k++) { const t = k / n, u = 1 - t;
+        out.push([u * u * u * b[0] + 3 * u * u * t * c1[0] + 3 * u * t * t * c2[0] + t * t * t * c[0], u * u * u * b[1] + 3 * u * u * t * c1[1] + 3 * u * t * t * c2[1] + t * t * t * c[1]]); } }
+    return out;
+  }
+  /** 横長の帯の絵を点の列に沿って細い切れ端で並べる（帯の高さ＝幅 w・くり返す） */
+  function stripAlong(g, pts, im, w) {
+    const ppu = im.height / w; let u = 0;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const a = pts[i], b = pts[i + 1], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L < 1e-6) continue;
+      let sx = (u * ppu) % im.width, sw = Math.min(L * ppu, im.width - sx);
+      g.save(); g.translate(a[0], a[1]); g.rotate(Math.atan2(b[1] - a[1], b[0] - a[0]));
+      g.drawImage(im, sx, 0, Math.max(1, sw), im.height, -0.35, -w / 2, sw / ppu + 0.7, w);
+      if (sw < L * ppu - 0.5) g.drawImage(im, 0, 0, L * ppu - sw, im.height, sw / ppu - 0.35, -w / 2, L - sw / ppu + 0.7, w);   // 絵の端をまたぐ切れ端
+      g.restore(); u += L;
+    }
+  }
+  /** 目印の置き場所：地点から、その地点へ入ってくる向きに along 単位（負＝手前） */
+  function landmarkAt(D, L) {
+    const n = D.nodes[L.node]; if (!n) return null;
+    const e = D.edges.find((x) => x[1] === L.node && x[3] === 'forward') || null, f = D.edges.find((x) => x[0] === L.node && x[3] === 'forward') || null;
+    const p = e ? D.nodes[e[0]] : null, q = f ? D.nodes[f[1]] : null;
+    let dx = 0, dy = -1;
+    if (p) { dx = n[0] - p[0]; dy = n[1] - p[1]; } else if (q) { dx = q[0] - n[0]; dy = q[1] - n[1]; }
+    const k = Math.hypot(dx, dy) || 1; return [n[0] + dx / k * L.along, n[1] + dy / k * L.along];
+  }
   /** 道の外に木と岩を散らす（決まった乱数・道とマスから離す・道の近くだけ）。第1便の検証用 */
   function scatter(D, o) {
     const pts = []; for (const s of Object.values(D.segments)) { const p = s[3].map((id) => D.nodes[id]);
@@ -271,7 +323,8 @@
     for (let y = 10; y < WORLD.h; y += 30) for (let x = 10; x < WORLD.w; x += 30) {
       const px = x + (rnd() - 0.5) * 24, py = y + (rnd() - 0.5) * 24, d = near(px, py), r = rnd(), pick = rnd();
       if (d < gap || d > 66 || r > 0.62 || py < 150) continue;   // GOAL の会場のまわり（y<150）には置かない
-      const P = pick < ART.props[0].p ? ART.props[0] : ART.props[1];
+      if (ART.landmarks.some((L) => { const at = landmarkAt(D, L); return at && Math.hypot(at[0] - px, at[1] - py) < L.w * 0.75; })) continue;   // 目印のまわりにも置かない
+      let acc = 0, P = ART.props[ART.props.length - 1]; for (const c of ART.props) { acc += c.p; if (pick < acc) { P = c; break; } }
       out.push({ x: px, y: py, file: P.file, w: P.w * (0.8 + rnd() * 0.45) });
     }
     return out;
@@ -291,6 +344,7 @@
 #rfp .rfw-tile span:empty{display:none}
 #rfp .rfw-tile.used img{opacity:.55}
 #rfp .rfw-tile.cur img{filter:drop-shadow(0 0 5px #fff6c0)}
+#rfp .rfw-apron{position:absolute;pointer-events:none}
 #rfp .rfw-prop{position:absolute;left:0;top:0;will-change:transform;pointer-events:none;user-select:none;-webkit-user-drag:none}
 #rfp .rfw.art{background:#7aa84c}
 #rfp .rfw-mon{position:absolute;left:0;top:0;will-change:transform}
@@ -303,6 +357,6 @@
     doc.head.appendChild(s);
   }
 
-  const api = { DEF, WORLD, ART, project, fitZoom, lookahead, create, scatter };
+  const api = { DEF, WORLD, ART, project, fitZoom, lookahead, create, scatter, curvePts, landmarkAt };
   if (typeof module === 'object' && module.exports) module.exports = api; else root.MMRF_WORLD = api;
 })(typeof window !== 'undefined' ? window : globalThis);

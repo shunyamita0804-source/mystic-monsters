@@ -22,3 +22,19 @@ URL に `?chapterBoard=roadfirst&rfView=world&rfArt=1010` を付けたときだ�
 
 透過は本物だが、絵の部分のアルファが 251〜253（わずかに透ける）＝240 以上を 255 にした。
 カーブした道3枚（土・石畳・木の橋）は使わない：道の形はプログラムが描くので、決まった曲がりの部品ははまらない。木の橋は「橋は木の板にするか」の参考にする。
+
+## 第2便（2026-10-11・ZIP MysticMonsters_Ch1A_Batch2_10plus5_20261011）
+
+| ファイル | 元 | 使い方 |
+|---|---|---|
+| tile_start.webp | 01_Batch2_Main_10/G1_start.png | START のマス（tiles_v2 と同じ 320px 幅に） |
+| tile_reward.webp | G6_fixed_reward.png | 宝の行き止まり6か所のマス |
+| lm_start_gate.webp | E01_start_gate.png | START のすぐ奥（道をまたぐ。モンスターは門の前に立つ） |
+| lm_watchpost.webp | E10_watchpost.png | R_CHEST の行き止まりの奥 |
+| prop_conifer／prop_shrub／prop_pillar／prop_flowers.webp | F1b／F1c／F2b／F2c | 道の外に散らす（割合は ART.props） |
+| strip_road_stone.webp | 02_Extra/C2_road_stone_straight_extra.jpeg | 白い背景を抜き、左右の端がいちばん近い2列で切ってくり返せるように。道筋に沿って細い切れ端で並べる（縁石つきの道）。&rfRoad=pattern で前の敷石の模様だけに戻せる |
+| ground_water／ground_valley.webp | A4_water.png／A5_valley_floor.png | 継ぎ目を消してくり返せるように（元は端の差が隣の画素の約3倍）。**まだ画面には出していない**（水辺・谷の範囲を決めてから） |
+| edge_grass／edge_rock.webp | 02_Extra/B1・B2 | 白い背景を抜いて 1024px に。**まだ画面には出していない**（崖のふちは谷の範囲と一緒に） |
+
+使わないもの：C1 土の直線・C3 木の直線（道は石・橋も石に決定）。透過 PNG の絵の部分のアルファ 251〜253 は 255 に、8 以下は 0 にした。
+世界の外（端へ寄ったとき）も草地の絵が続く（平面の中の背景 .rfw-apron）。

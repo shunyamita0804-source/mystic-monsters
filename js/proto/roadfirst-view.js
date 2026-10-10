@@ -31,6 +31,7 @@
   // 2026-10-10 1枚の世界ビュー（絵なしの技術検証）：&rfView=world のときだけ js/proto/roadfirst-world.js（MMRF_WORLD）で描く
   //   （俯瞰 → START へ寄る → 6マス先までの追従・地面を傾ける・マスは既存の tiles_v2 を立てて置く）。&rfTilt=度・&rfRes=px／単位
   const ZWORLD = ON && Q.get('rfView') === 'world';
+  const ART = ZWORLD && Q.get('rfArt') === '1010' ? './assets/proto/board_art_1010/' : null;   // 2026-10-10・11 ボード素材の試し貼り（第1便＋第2便）。&rfRoad=pattern＝道を敷石の模様だけで描く（比較用）
   let world = null;
   const TV2 = './assets/fields/ch1a/tiles_v2/';
   const STAT_FILE = { li: 'life', po: 'power', in: 'intelligence', hi: 'accuracy', ev: 'evasion', de: 'toughness' };
@@ -39,7 +40,9 @@
   function worldLook(id) {
     const n = D.nodes[id], role = n ? n[2] : '', out = { src: TV2 + 'tile_blank.webp', mark: '', used: false };
     const fwd = D.edges.filter((e) => e[0] === id && e[3] === 'forward').length, inn = D.edges.filter((e) => e[1] === id && e[3] === 'forward').length;
-    if (ROLE_MARK[role]) out.mark = ROLE_MARK[role];
+    if (ART && role === 'start') out.src = ART + 'tile_start.webp';   // 第2便の G1・G6
+    else if (ART && role === 'fixed_reward_dead_end') out.src = ART + 'tile_reward.webp';
+    else if (ROLE_MARK[role]) out.mark = ROLE_MARK[role];
     else if (role === 'mandatory_rival') out.src = TV2 + 'tile_rival.webp';
     else if (fwd > 1) out.src = TV2 + 'tile_branch.webp';
     else if (inn > 1) out.mark = '合';
@@ -203,7 +206,7 @@
       const tilt = Number(Q.get('rfTilt')), res = Number(Q.get('rfRes'));
       world = root.MMRF_WORLD.create(el.querySelector('.rf-vp'), D, P, { view: () => zview(), monSrc: monSrc(),
         tilt: Number.isFinite(tilt) && Q.get('rfTilt') !== null ? tilt : undefined, res: Number.isFinite(res) && res > 0 && res <= 4 ? res : undefined,
-        art: Q.get('rfArt') === '1010' ? { base: './assets/proto/board_art_1010/' } : undefined });   // 2026-10-10 第1便の絵の試し貼り
+        art: ART ? { base: ART, road: Q.get('rfRoad') === 'pattern' ? 'pattern' : 'strip' } : undefined });   // 2026-10-10 第1便の絵の試し貼り
     }
     render(); cam(true);
     if (world && st.turn === 0 && st.node === 'START' && !st.wintro && !broken) {   // 開始の俯瞰（この試作の状態で1回・保存は試作の鍵だけ）

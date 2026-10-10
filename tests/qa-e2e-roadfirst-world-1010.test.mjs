@@ -6,6 +6,7 @@
 //  RWB-2 再読み込みで同じ地点・俯瞰は出ない・連打しても1ターン・「最初から」でまた俯瞰
 //  RWB-3 重さ：CPU を4倍遅くして移動中のフレームの間隔を測る（iPhone 実機ではない＝目安）
 //  RWB-4 フラグなし（?chapterBoard=roadfirst だけ）は世界ビューを作らない
+//  RWB-5 ボード素材の試し貼り（&rfArt=1010）：絵がすべて読める（404 なし）・道は直線の石の道を並べる・START／固定報酬の専用マス・目印・JS の例外 0
 //  QA_E2E=1 のときだけ。スクリーンショットは RF_SHOT_DIR があるときだけ
 // =========================================================
 import test from 'node:test';
@@ -19,7 +20,7 @@ test.after(async () => { if (L) await L.close(); });
 async function open(opt = {}) { for (const q of opened) await q.ctx.close().catch(() => {}); const p = await L.open(opt); opened = [p]; return p; }
 const SHOT = process.env.RF_SHOT_DIR || null;
 const shot = (pg, name) => (SHOT ? pg.screenshot({ path: `${SHOT}/${name}.png` }) : null);
-const URL_W = '?chapterBoard=roadfirst&rfView=world&rfRand=closed&rfSeed=';
+const URL_W = '?chapterBoard=roadfirst&rfView=world' + (process.env.RF_URL_EXTRA || '') + '&rfRand=closed&rfSeed=';   // RF_URL_EXTRA＝'&rfArt=1010' で絵を貼った状態でも同じ確かめ
 const overlap = (a, b) => a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
 
 async function boot(pg, seed) { await pg.goto(L.url + 'index.html' + URL_W + seed); await pg.waitForSelector('#rfp .rfw'); }
@@ -130,4 +131,21 @@ test('RWB-4：フラグなしは世界ビューを作らない', { skip: SKIP, t
   await pg.goto(L.url + 'index.html?chapterBoard=roadfirst&rfSeed=3'); await pg.waitForSelector('#rfp .rf-go');
   assert.equal(await pg.evaluate(() => !!document.querySelector('#rfp .rfw')), false);
   assert.equal(await pg.evaluate(() => MMRF.world()), null);
+});
+
+test('RWB-5：ボード素材の試し貼り（&rfArt=1010）＝絵がすべて読める・直線の石の道・専用マス・目印', { skip: SKIP, timeout: 200000 }, async () => {
+  const p = await open({ size: [390, 844] }); const pg = p.page, errs = [], bad = [];
+  pg.on('pageerror', (e) => errs.push(String(e)));
+  pg.on('response', (r) => { if (r.url().includes('board_art_1010') && r.status() >= 400) bad.push(r.url()); });
+  await pg.goto(L.url + 'index.html?chapterBoard=roadfirst&rfView=world&rfArt=1010&rfRand=closed&rfSeed=31'); await pg.waitForSelector('#rfp .rfw'); await idle(pg);
+  await pg.waitForFunction(() => document.querySelector('#rfp .rfw.art'), null, { timeout: 10000 });
+  const r = await pg.evaluate(async () => {
+    const imgs = [...document.querySelectorAll('#rfp .rfw-prop')]; await Promise.all(imgs.map((i) => i.decode().catch(() => null)));
+    return { w: MMRF.world(), props: imgs.length, broken: imgs.filter((i) => !i.naturalWidth).map((i) => i.src), lm: document.querySelectorAll('#rfp .rfw-lm').length,
+      start: document.querySelector('#rfp .rfw-tile[data-node="START"] img').getAttribute('src'), reward: document.querySelector('#rfp .rfw-tile[data-node="R_CHEST"] img').getAttribute('src') };
+  });
+  assert.equal(r.w.art, true, '地面と道の絵'); assert.deepEqual(r.broken, [], '景物の絵が読める'); assert.deepEqual(bad, [], '404 なし');
+  assert.equal(r.lm, 2, 'START の門・R_CHEST の見張り台'); assert.ok(r.props > 100);
+  assert.match(r.start, /tile_start\.webp$/); assert.match(r.reward, /tile_reward\.webp$/);
+  assert.deepEqual(errs, [], 'JS の例外 0');
 });
