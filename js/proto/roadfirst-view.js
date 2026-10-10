@@ -202,7 +202,8 @@
       el.classList.add('rfw-on');
       const tilt = Number(Q.get('rfTilt')), res = Number(Q.get('rfRes'));
       world = root.MMRF_WORLD.create(el.querySelector('.rf-vp'), D, P, { view: () => zview(), monSrc: monSrc(),
-        tilt: Number.isFinite(tilt) && Q.get('rfTilt') !== null ? tilt : undefined, res: Number.isFinite(res) && res > 0 && res <= 4 ? res : undefined });
+        tilt: Number.isFinite(tilt) && Q.get('rfTilt') !== null ? tilt : undefined, res: Number.isFinite(res) && res > 0 && res <= 4 ? res : undefined,
+        art: Q.get('rfArt') === '1010' ? { base: './assets/proto/board_art_1010/' } : undefined });   // 2026-10-10 第1便の絵の試し貼り
     }
     render(); cam(true);
     if (world && st.turn === 0 && st.node === 'START' && !st.wintro && !broken) {   // 開始の俯瞰（この試作の状態で1回・保存は試作の鍵だけ）

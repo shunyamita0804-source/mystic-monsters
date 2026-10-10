@@ -5,6 +5,7 @@
 //  RW-03 lookahead：START から6マス先・分かれ目のあとは3マスずつ・枝を戻る途中は逆向き・原本の接続だけ
 //  RW-04 レア（ユーザー決定）：1つの Chapter に1マス・Z1 右の本道と Z2 石像の尾根の通常マスだけ・野生の隣に置かない・同じ seed＝同じ
 //  RW-05 フラグ：&rfView=world のときだけ・保存の鍵は同じ・index.html の読み込み順・world は保存／通信をしない
+//  RW-06 第1便の絵の試し貼り（&rfArt=1010）：ファイルがそろう・木と岩は道とマスに重ならない・同じ配置・GOAL のまわりに置かない
 // =========================================================
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -74,4 +75,17 @@ test('RW-05：&rfView=world のときだけ・保存の鍵は同じ・読み込�
   assert.doesNotMatch(w, /localStorage|fetch\(|XMLHttpRequest/);
   const iz = html.indexOf('roadfirst-zones.js'), iw = html.indexOf('roadfirst-world.js'), iv = html.indexOf('roadfirst-view.js');
   assert.ok(iz < iw && iw < iv, 'zones → world → view');
+});
+
+test('RW-06：第1便の絵の試し貼り（&rfArt=1010）＝ファイル・木と岩は道に重ならない・同じ配置', async () => {
+  const { existsSync } = await import('node:fs');
+  const A = Wd.ART, files = [A.ground.file, A.road.file, A.goal.file, ...A.props.map((q) => q.file)];
+  for (const f of files) assert.ok(existsSync(path.join(ROOT, 'assets/proto/board_art_1010', f)), f);
+  assert.match(rd('js/proto/roadfirst-view.js'), /art: Q\.get\('rfArt'\) === '1010'/);
+  const o = Object.assign({}, Wd.DEF), a = Wd.scatter(D, o), b = Wd.scatter(D, o);
+  assert.deepEqual(a, b, '決まった乱数'); assert.ok(a.length > 100 && a.length < 600, `景物 ${a.length}`);
+  for (const q of a) {
+    assert.ok(q.y >= 150, 'GOAL の会場のまわりに置かない');
+    for (const n of Object.values(D.nodes)) assert.ok(Math.hypot(n[0] - q.x, n[1] - q.y) >= o.roadW / 2 + 9, `マスに近すぎる (${q.x | 0},${q.y | 0})`);
+  }
 });

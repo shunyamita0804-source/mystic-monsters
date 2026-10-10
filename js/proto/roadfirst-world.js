@@ -25,6 +25,14 @@
     ahead: 6,            // 何マス先まで見せるか
     anchor: 0.70,        // モンスターを空いている所の上から何割の高さに置くか
     margin: 22,          // 空いている所の内側の余白（px）
+    art: null,           // 2026-10-10 第1便の絵の試し貼り（&rfArt=1010）＝{ base }。無ければ仮の色のまま
+  };
+  // 第1便の絵（assets/proto/board_art_1010/README.md）。大きさは世界の単位
+  const ART = {
+    ground: { file: 'ground_grass.webp', tile: 128 },       // 草地のくり返し1枚＝128単位
+    road: { file: 'road_flagstone.webp', tile: 46 },        // 道の中の敷石のくり返し1枚＝46単位
+    props: [{ key: 'tree', file: 'prop_tree.webp', w: 30, p: 0.68 }, { key: 'rock', file: 'prop_rock.webp', w: 26, p: 0.32 }],
+    goal: { file: 'goal_arena.webp', w: 150, dy: 14 },      // GOAL の後ろ（足もと＝GOAL の 14単位手前）
   };
   const rad = (d) => (d * Math.PI) / 180;
 
@@ -76,15 +84,19 @@
     const W = Math.ceil(WORLD.w * o.res), H = Math.ceil(WORLD.h * o.res);
     plane.style.width = WORLD.w + 'px'; plane.style.height = WORLD.h + 'px';
     // 地面と道を区画ごとの canvas に1回だけ描く（区画の大きさ chunk px）
-    const chunks = [];
+    const chunks = [], art = {};
     for (let y = 0; y < H; y += o.chunk) for (let x = 0; x < W; x += o.chunk) {
-      const c = doc.createElement('canvas'); const cw = Math.min(o.chunk, W - x), ch = Math.min(o.chunk, H - y);
-      c.width = cw; c.height = ch; c.className = 'rfw-chunk';
-      c.style.left = x / o.res + 'px'; c.style.top = y / o.res + 'px'; c.style.width = cw / o.res + 'px'; c.style.height = ch / o.res + 'px';
-      const g = c.getContext('2d'); g.setTransform(o.res, 0, 0, o.res, -x, -y);
-      drawGround(g, D, x / o.res, y / o.res, cw / o.res, ch / o.res); drawRoads(g, D, o);
+      // 区画どうしを 1px 重ねる（境目に細い線が出ないように）
+      const c = doc.createElement('canvas'); const cw = Math.min(o.chunk, W - x) + 2, ch = Math.min(o.chunk, H - y) + 2;
+      c.width = cw; c.height = ch; c.className = 'rfw-chunk'; c._x = x - 1; c._y = y - 1;
+      c.style.left = (x - 1) / o.res + 'px'; c.style.top = (y - 1) / o.res + 'px'; c.style.width = cw / o.res + 'px'; c.style.height = ch / o.res + 'px';
       plane.appendChild(c); chunks.push(c);
     }
+    function paint() {
+      for (const c of chunks) { const g = c.getContext('2d'); g.setTransform(o.res, 0, 0, o.res, -c._x, -c._y);
+        drawGround(g, D, c._x / o.res, c._y / o.res, c.width / o.res, c.height / o.res, art); drawRoads(g, D, o, art); }
+    }
+    paint();
     // マス（全地点・立てて置く）とモンスター
     const tiles = {};
     for (const id of Object.keys(D.nodes)) {
@@ -93,6 +105,15 @@
     }
     const rootEl = host.closest ? host.closest('#rfp') || wrap : wrap;
     const mon = doc.createElement('div'); mon.className = 'rfw-mon'; mon.innerHTML = `<img alt="" draggable="false" src="${o.monSrc || './assets/monsters/solamo.png'}">`; bb.appendChild(mon);
+    // 景物（木・岩）と GOAL の大会会場：立てて置く（第1便の絵があるときだけ）
+    const props = [];
+    if (o.art) {
+      const base = o.art.base || './assets/proto/board_art_1010/';
+      const load = (f) => new Promise((res) => { const im = new root.Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = base + f; });
+      Promise.all([load(ART.ground.file), load(ART.road.file)]).then(([gi, ri]) => { if (S.dead) return; art.ground = gi; art.road = ri; if (gi || ri) { paint(); wrap.classList.add('art'); } });
+      for (const q of scatter(D, o)) { const d = doc.createElement('img'); d.className = 'rfw-prop'; d.alt = ''; d.draggable = false; d.src = base + q.file; bb.appendChild(d); props.push({ el: d, x: q.x, y: q.y, w: q.w }); }
+      const gn = D.nodes.GOAL; if (gn) { const d = doc.createElement('img'); d.className = 'rfw-prop rfw-goal'; d.alt = ''; d.draggable = false; d.src = base + ART.goal.file; bb.appendChild(d); props.push({ el: d, x: gn[0], y: gn[1] + ART.goal.dy, w: ART.goal.w, z: -40 }); }
+    }
     const S = {
       cam: { tx: WORLD.w / 2, ty: WORLD.h / 2, s: 1, tilt: 0, P: o.persp, ax: 0, ay: 0 }, goal: null, mon: null, monGoal: null,
       raf: 0, last: 0, intro: null, view: null, frames: [], dead: false,
@@ -131,6 +152,14 @@
         if (t.hid) { t.el.style.display = ''; t.hid = false; }
         t.el.style.transform = `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * 0.62).toFixed(1)}px)`; t.el.style.width = w.toFixed(1) + 'px';
         t.el.style.zIndex = String(Math.round(q.y));
+      }
+      for (const p of props) {
+        const q = project(c, p.x, p.y), w = p.w * c.s * q.k;
+        const vis = q.x > -w && q.x < Wd + w && q.y > -10 && q.y < Hd + w * 1.2 && w > 1.5;
+        if (!vis) { if (!p.hid) { p.el.style.display = 'none'; p.hid = true; } continue; }
+        if (p.hid) { p.el.style.display = ''; p.hid = false; }
+        p.el.style.transform = `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * (p.ah || 0.92)).toFixed(1)}px)`; p.el.style.width = w.toFixed(1) + 'px';
+        p.el.style.zIndex = String(Math.round(q.y) + (p.z || 0));
       }
       if (S.mon) {
         const q = project(c, S.mon[0], S.mon[1]), w = Math.max(c.s < 1 ? 14 : 40, Math.min(100, 24 * c.s * q.k));
@@ -191,7 +220,7 @@
       skipIntro() { if (S.intro) { const d = S.intro.done; S.intro = null; wrap.classList.remove('intro'); rootEl.classList.remove('rfw-intro'); title.style.opacity = '0'; if (S.goal) S.cam = Object.assign({}, S.goal); if (d) d(); } },
       inIntro: () => !!S.intro,
       state: () => ({ cam: Object.assign({}, S.cam), goal: S.goal && Object.assign({}, S.goal), mon: S.mon && S.mon.slice(), view: S.view, intro: !!S.intro, ahead: S.lastAhead || [],
-        tiles: Object.keys(tiles).length, chunks: chunks.length, res: o.res, tilt: o.tilt }),
+        tiles: Object.keys(tiles).length, chunks: chunks.length, res: o.res, tilt: o.tilt, props: props.length, art: !!(art.ground || art.road) }),
       project: (x, y) => project(S.cam, x, y),
       frames: (reset) => { const f = S.frames.slice(); if (reset) S.frames = []; return f; },
       destroy() { S.dead = true; root.cancelAnimationFrame(S.raf); wrap.remove(); },
@@ -202,14 +231,16 @@
   }
 
   // 仮の地面（絵が届いたら A 群のテクスチャ・B 群の縁に替える）：草地の色＋小さなまだら（決まった乱数）
-  function drawGround(g, D, x0, y0, w, h) {
+  function pattern(g, im, tile) { const p = g.createPattern(im, 'repeat'); if (p && p.setTransform && root.DOMMatrix) p.setTransform(new root.DOMMatrix().scale(tile / im.width)); return p; }
+  function drawGround(g, D, x0, y0, w, h, art) {
+    if (art && art.ground) { g.fillStyle = pattern(g, art.ground, ART.ground.tile); g.fillRect(x0, y0, w, h); return; }
     g.fillStyle = '#86b65a'; g.fillRect(x0, y0, w, h);
     let a = ((Math.floor(x0) * 73856093) ^ (Math.floor(y0) * 19349663)) >>> 0;
     const rnd = () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
     for (let i = 0; i < (w * h) / 90; i++) { g.fillStyle = rnd() < 0.5 ? 'rgba(60,110,40,.22)' : 'rgba(180,220,120,.22)'; const r = 1 + rnd() * 3; g.beginPath(); g.arc(x0 + rnd() * w, y0 + rnd() * h, r, 0, 7); g.fill(); }
   }
   // 道：原本の区間ごとに地点を通るなめらかな帯（絵が届いたら C 群の帯の模様を貼る）。分かれ目・合流は小広場、行き止まりは踊り場（D 群）
-  function drawRoads(g, D, o) {
+  function drawRoads(g, D, o, art) {
     const segs = Object.values(D.segments);
     const path = (ids) => { const p = ids.map((id) => D.nodes[id]); g.beginPath(); g.moveTo(p[0][0], p[0][1]);
       for (let i = 0; i < p.length - 1; i++) { const a = p[i - 1] || p[i], b = p[i], c = p[i + 1], d = p[i + 2] || c;
@@ -219,10 +250,31 @@
     const hubs = Object.keys(D.nodes).filter((id) => (out[id] || 0) > 1 || (inn[id] || 0) > 1);
     const ends = Object.keys(D.nodes).filter((id) => /dead_end/.test(D.nodes[id][2]));
     const disc = (id, r) => { const n = D.nodes[id]; g.beginPath(); g.arc(n[0], n[1], r, 0, 7); g.fill(); };
-    g.strokeStyle = '#6f6248'; g.lineWidth = o.roadW + 4; for (const s of segs) { path(s[3]); g.stroke(); }
-    g.fillStyle = '#6f6248'; for (const id of hubs) disc(id, o.roadW * 0.8 + 2); for (const id of ends) disc(id, o.roadW * 0.75 + 2);
-    g.strokeStyle = '#e7dcc0'; g.lineWidth = o.roadW; for (const s of segs) { path(s[3]); g.stroke(); }
-    g.fillStyle = '#ece3ca'; for (const id of hubs) disc(id, o.roadW * 0.8); for (const id of ends) disc(id, o.roadW * 0.75);
+    const rp = art && art.road ? pattern(g, art.road, ART.road.tile) : null;
+    if (rp) { g.strokeStyle = 'rgba(40,52,20,.28)'; g.lineWidth = o.roadW + 9; for (const s of segs) { path(s[3]); g.stroke(); } }   // 草へ落ちる薄い影
+    g.strokeStyle = rp ? '#8f8573' : '#6f6248'; g.lineWidth = o.roadW + 4; for (const s of segs) { path(s[3]); g.stroke(); }
+    g.fillStyle = rp ? '#8f8573' : '#6f6248'; for (const id of hubs) disc(id, o.roadW * 0.8 + 2); for (const id of ends) disc(id, o.roadW * 0.75 + 2);
+    g.strokeStyle = rp || '#e7dcc0'; g.lineWidth = o.roadW; for (const s of segs) { path(s[3]); g.stroke(); }
+    g.fillStyle = rp || '#ece3ca'; for (const id of hubs) disc(id, o.roadW * 0.8); for (const id of ends) disc(id, o.roadW * 0.75);
+  }
+
+  /** 道の外に木と岩を散らす（決まった乱数・道とマスから離す・道の近くだけ）。第1便の検証用 */
+  function scatter(D, o) {
+    const pts = []; for (const s of Object.values(D.segments)) { const p = s[3].map((id) => D.nodes[id]);
+      for (let i = 0; i < p.length - 1; i++) { const n = Math.max(1, Math.ceil(Math.hypot(p[i + 1][0] - p[i][0], p[i + 1][1] - p[i][1]) / 4)); for (let k = 0; k <= n; k++) pts.push([p[i][0] + (p[i + 1][0] - p[i][0]) * k / n, p[i][1] + (p[i + 1][1] - p[i][1]) * k / n]); } }
+    const cell = 24, grid = new Map(), key = (x, y) => Math.floor(x / cell) + ',' + Math.floor(y / cell);
+    for (const q of pts) { const k = key(q[0], q[1]); if (!grid.has(k)) grid.set(k, []); grid.get(k).push(q); }
+    const near = (x, y) => { let m = 1e9; const cx = Math.floor(x / cell), cy = Math.floor(y / cell);
+      for (let i = -3; i <= 3; i++) for (let j = -3; j <= 3; j++) for (const q of grid.get((cx + i) + ',' + (cy + j)) || []) m = Math.min(m, Math.hypot(q[0] - x, q[1] - y)); return m; };
+    let a = 0x1010; const rnd = () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+    const out = [], gap = o.roadW / 2 + 10;
+    for (let y = 10; y < WORLD.h; y += 30) for (let x = 10; x < WORLD.w; x += 30) {
+      const px = x + (rnd() - 0.5) * 24, py = y + (rnd() - 0.5) * 24, d = near(px, py), r = rnd(), pick = rnd();
+      if (d < gap || d > 66 || r > 0.62 || py < 150) continue;   // GOAL の会場のまわり（y<150）には置かない
+      const P = pick < ART.props[0].p ? ART.props[0] : ART.props[1];
+      out.push({ x: px, y: py, file: P.file, w: P.w * (0.8 + rnd() * 0.45) });
+    }
+    return out;
   }
 
   let cssDone = false;
@@ -239,6 +291,8 @@
 #rfp .rfw-tile span:empty{display:none}
 #rfp .rfw-tile.used img{opacity:.55}
 #rfp .rfw-tile.cur img{filter:drop-shadow(0 0 5px #fff6c0)}
+#rfp .rfw-prop{position:absolute;left:0;top:0;will-change:transform;pointer-events:none;user-select:none;-webkit-user-drag:none}
+#rfp .rfw.art{background:#7aa84c}
 #rfp .rfw-mon{position:absolute;left:0;top:0;will-change:transform}
 #rfp .rfw-mon img{display:block;width:100%;height:auto;filter:drop-shadow(0 3px 2px rgba(0,0,0,.45))}
 #rfp .rfw-title{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 18px);text-align:center;font-family:"Shippori Mincho",serif;font-weight:800;font-size:26px;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.6);opacity:0;pointer-events:none;z-index:3}
@@ -249,6 +303,6 @@
     doc.head.appendChild(s);
   }
 
-  const api = { DEF, WORLD, project, fitZoom, lookahead, create };
+  const api = { DEF, WORLD, ART, project, fitZoom, lookahead, create, scatter };
   if (typeof module === 'object' && module.exports) module.exports = api; else root.MMRF_WORLD = api;
 })(typeof window !== 'undefined' ? window : globalThis);
