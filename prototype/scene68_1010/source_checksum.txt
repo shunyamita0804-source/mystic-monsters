@@ -1,0 +1,3 @@
+Original 68 Scene CSV (sha256): 2852ba56ca6a6861c820ad3349422be75167e7c4153e1f2b065c132ea9dd1571
+Number of rows: 68
+Original source: MysticMonsters_Ch1A_BatchCompletionRoadmap_20261010.zip/SOURCE_68_SCENE_PLAN_UNCHANGED.csv

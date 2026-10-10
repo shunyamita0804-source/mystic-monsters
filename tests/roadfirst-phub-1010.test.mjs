@@ -93,7 +93,7 @@ test('RZ-04：カメラ（2サイズ）：今の地点と次の行き先が空�
 
 test('RZ-05：フラグのときだけ・保存の鍵と形式は同じ・index.html の読み込み順', () => {
   const v = rd('js/proto/roadfirst-view.js'), html = rd('index.html');
-  assert.match(v, /const ZON = ON && Q\.get\('rfZones'\) === 'phub'/);
+  assert.match(v, /const ZMODE = ON \? Q\.get\('rfZones'\) : null/); assert.match(v, /const ZON = ZMODE === 'phub' \|\| ZMODE === 'all'/);   // 2026-10-10：rfZones=all を追加（phub は同じ）
   assert.match(v, /const KEY = 'mmrf_proto_v1'/);
   assert.doesNotMatch(v, /st\.(zone|scene)\s*=/, '区域を保存の状態に書かない');
   assert.doesNotMatch(rd('js/proto/roadfirst-zones.js'), /localStorage|fetch\(|XMLHttpRequest/, 'zones は純粋な関数だけ');

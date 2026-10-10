@@ -14,6 +14,8 @@
 //    （prototype/p_hub_1010/scene_registry.json の P 中核の候補画像＝美術承認は保留・構図参考図＝仮）を重ねる。区域・座標・カメラは
 //    js/proto/roadfirst-zones.js（MMRF_ZONES）。移動・サイコロ・保存はこのファイルと MMRF_CORE／MMRF_PLAY のまま（区域は保存しない＝地点と歩いた跡から決まる）。
 //    違う背景へ移るときだけ 0.32秒のフェード・同じ背景の中（P をまたぐ）はカメラだけ。区域の無い地点は従来の図面
+//    &rfZones=all（2026-10-10）：68 Scene（prototype/scene68_1010/scene_index_68.json＝原本 CSV から作る）のどこにいるかを上の帯に出し、
+//    その Scene に測った座標のある区域があれば区域の背景・無ければ図面。Scene は地点と歩いた跡から決める（MMRF_ZONES.sceneOf）
 // =========================================================
 (function (root) {
   'use strict';
@@ -22,7 +24,10 @@
   const KEY = 'mmrf_proto_v1';
   const BG = './assets/proto/ch1a_roadfirst_1009/01_road_geometry.svg';
   const ZOOM = 3, ZOOM_ALL = 0.36;
-  const ZON = ON && Q.get('rfZones') === 'phub';
+  const ZMODE = ON ? Q.get('rfZones') : null;   // 'phub'＝P の前後だけ／'all'＝68 Scene（背景の無い Scene は図面のまま。2026-10-10）
+  const ZON = ZMODE === 'phub' || ZMODE === 'all', ZALL = ZMODE === 'all';
+  const ZIDX = './prototype/scene68_1010/scene_index_68.json';
+  let zidx = null, zso = null;   // 68 Scene の索引・今の Scene（rfZones=all）
   const ZREG = './prototype/p_hub_1010/scene_registry.json', ZBASE = './prototype/p_hub_1010/';
   let zreg = null, zlay = {}, zready = false, zfail = null, zcur = null, zcam = null;   // 区域の表・背景の層・今の区域・今のカメラ
   const NAME = {
@@ -218,10 +223,11 @@
     if (need) { const op = C.options(D, st); const main = op.filter((e) => !C.index(D).spurs.includes(e.seg)); ch.querySelectorAll('button').forEach((b) => { const sp = C.index(D).spurs.includes(b.dataset.seg); if (!sp && main.length === 1 && !NAME[b.dataset.seg]) b.textContent = 'このまま進む'; }); }
   }
   // ---- P ハブの背景ゾーン（&rfZones=phub）。区域は今の地点と歩いた跡から決める（保存しない）----
+  const getJson = (u) => new Promise((ok, ng) => { const x = new XMLHttpRequest(); x.open('GET', u); x.onload = () => { try { if (x.status >= 200 && x.status < 300) ok(JSON.parse(x.responseText)); else ng(new Error(u + ' ' + x.status)); } catch (e) { ng(e); } }; x.onerror = () => ng(new Error(u)); x.send(); });
   function zloadAll() {
     if (!ZON || zreg || zfail) return;
     const Z = root.MMRF_ZONES; if (!Z) { zfail = 'MMRF_ZONES が読み込まれていない'; return; }
-    new Promise((ok, ng) => { const x = new XMLHttpRequest(); x.open('GET', ZREG); x.onload = () => { try { if (x.status >= 200 && x.status < 300) ok(JSON.parse(x.responseText)); else ng(new Error(ZREG + ' ' + x.status)); } catch (e) { ng(e); } }; x.onerror = () => ng(new Error(ZREG)); x.send(); }).then((reg) => {
+    (ZALL ? getJson(ZIDX).then((ix) => { zidx = ix; render(); }) : Promise.resolve()).then(() => getJson(ZREG)).then((reg) => {
       zreg = reg; const ids = Z.assets(reg, null, Z.ROADFIRST_SKIP); let left = ids.length;
       const box = el && el.querySelector('.rf-zone'); if (!box) return;
       for (const id of ids) {   // 背景1枚につき <img> は1つ（Scene・区域をまたいでも src を差し替えない）
@@ -246,7 +252,9 @@
     if (!ZON || !el) return false;
     const box = el.querySelector('.rf-zone'), row = el.querySelector('.rf-zrow'); if (!box) return false;
     const Z = root.MMRF_ZONES, node = vis ? vis.node : st.node, trail = vis ? st.trail.slice(0, vis.n) : st.trail;
-    const r = zready && !zoomAll ? Z.resolve(zreg, node, trail, null, Z.ROADFIRST_SKIP) : null;
+    const ra = ZALL && zidx ? (zready ? Z.resolveAll(zreg, zidx, node, trail, Z.ROADFIRST_SKIP) : Object.assign(Z.sceneOf(zidx, node, trail), { zone: null })) : null;
+    zso = ra;
+    const r = zready && !zoomAll ? (ZALL ? ra && ra.zone : Z.resolve(zreg, node, trail, null, Z.ROADFIRST_SKIP)) : null;
     const before = zcur ? zcur.asset : null;
     zcur = r;
     if (instant) { box.style.transition = 'none'; Object.values(zlay).forEach((o) => { o.el.style.transition = o.map.style.transition = o.mon.style.transition = 'none'; }); requestAnimationFrame(() => requestAnimationFrame(() => { box.style.transition = ''; Object.values(zlay).forEach((o) => { o.el.style.transition = o.map.style.transition = o.mon.style.transition = ''; }); })); }
@@ -255,8 +263,14 @@
     if (row) {
       row.classList.toggle('on', ZON);
       const a = r && zreg.assets[r.asset];
-      row.innerHTML = r ? `<b>${esc(r.scene)}・区域 ${esc(r.id)}</b>｜${a.kind === 'candidate' ? 'P 中核の候補画像（美術は未承認）' : '構図参考図（仮背景）'}｜次の行き先 <b>${nx.length ? nx.map(esc).join('／') : '—'}</b>`
-        : zfail ? esc(zfail) : zready ? `P ハブの区域の外（図面）｜次の行き先 <b>${nx.length ? nx.map(esc).join('／') : '—'}</b>` : 'P ハブの区域の背景を読み込み中…';
+      const nxt = `次の行き先 <b>${nx.length ? nx.map(esc).join('／') : '—'}</b>`;
+      if (ZALL) {
+        const sc = ra && ra.scene;
+        row.innerHTML = (sc ? `<b>${esc(sc.id)}「${esc(sc.title)}」</b>｜` : ra && ra.ambiguous ? `<b>Scene を決められない（${esc((ra.cands || []).join('／'))}）</b>｜` : zidx ? '' : 'Scene の索引を読み込み中…｜') +
+          (r ? `区域 ${esc(r.id)}・${a.kind === 'candidate' ? 'P 中核の候補画像（美術は未承認）' : '構図参考図（仮背景）'}` : zfail ? esc(zfail) : '背景は未制作（図面）') + `｜${nxt}`;
+      } else
+      row.innerHTML = r ? `<b>${esc(r.scene)}・区域 ${esc(r.id)}</b>｜${a.kind === 'candidate' ? 'P 中核の候補画像（美術は未承認）' : '構図参考図（仮背景）'}｜${nxt}`
+        : zfail ? esc(zfail) : zready ? `P ハブの区域の外（図面）｜${nxt}` : 'P ハブの区域の背景を読み込み中…';
     }
     if (!r) { zcam = null; return before !== null; }
     for (const [id, o] of Object.entries(zlay)) o.el.classList.toggle('on', id === r.asset);
@@ -381,7 +395,7 @@
     rest: () => doRest(), ok: () => mainAction(), choice: (i) => pickChoice(i),
     set fast(v) { fast = !!v; if (el) el.classList.toggle('fast', fast); }, get fast() { return fast; },
     busy: () => busy,
-    zones: () => ({ on: ZON, ready: zready, failed: zfail, node: vis ? vis.node : st && st.node, scene: zcur && zcur.scene, zone: zcur && zcur.id, asset: zcur && zcur.asset,
+    zones: () => ({ on: ZON, mode: ZMODE, scene68: zso && zso.scene ? zso.scene.id : null, ambiguous: !!(zso && zso.ambiguous), index: !!zidx, ready: zready, failed: zfail, node: vis ? vis.node : st && st.node, scene: zcur && zcur.scene, zone: zcur && zcur.id, asset: zcur && zcur.asset,
       at: zcur && zcur.at, cam: zcam, view: el && ZON ? zview() : null, next: st && !st.moveLeft && !st.done ? C.options(D, st).map((e) => e.dst) : [] }),
   };
   root.MMRF = api;

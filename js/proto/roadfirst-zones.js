@@ -68,6 +68,29 @@
     return best;
   }
 
+  /** 68 Scene のどれにいるか（2026-10-10 rfZones=all）。idx＝prototype/scene68_1010/scene_index_68.json。
+   *  今の地点だけで決まらないとき（分岐・合流・Scene の境目）は歩いた跡の1つ前の地点：Scene の並びで1つ前（進む向き）→ 1つ後（行き止まりから戻る向き）。
+   *  それでも1つに決まらなければ null（図面のまま・ambiguous で知らせる） */
+  function sceneOf(idx, node, trail) {
+    const c = idx.scenes.filter((s) => s.nodes.includes(node));
+    if (c.length <= 1) return { scene: c[0] || null, ambiguous: false };
+    const t = Array.isArray(trail) ? trail : [], i = t.lastIndexOf(node), prev = i > 0 ? t[i - 1] : null;
+    if (prev) {
+      for (const dir of [-1, 1]) { const m = c.filter((s) => { const k = s.nodes.indexOf(node); return s.nodes[k + dir] === prev; }); if (m.length === 1) return { scene: m[0], ambiguous: false }; if (m.length > 1) return { scene: null, ambiguous: true, cands: m.map((s) => s.id) }; }
+    } else { const m = c.filter((s) => s.nodes[0] === node); if (m.length === 1) return { scene: m[0], ambiguous: false }; }
+    return { scene: null, ambiguous: true, cands: c.map((s) => s.id) };
+  }
+  /** rfZones=all：68 Scene → その Scene に区域（registry の測った座標）があれば区域、無ければ図面（zone null） */
+  function resolveAll(reg, idx, node, trail, skip) {
+    const so = sceneOf(idx, node, trail);
+    if (!so.scene) return { scene: null, ambiguous: so.ambiguous, cands: so.cands || [], zone: null };
+    let zone = null;
+    const L = layoutOf(reg), sc = L && L.scenes[so.scene.id];
+    if (sc) { const z = sc.zones.find((q) => q.nodes.includes(node) && !(skip || []).includes(q.id)), a = z && reg.assets[z.asset];
+      if (z && a && a.file && z.xy && Array.isArray(z.xy[node])) zone = { scene: so.scene.id, zone: z, id: z.id, asset: z.asset, xy: z.xy, at: z.xy[node] }; }
+    return { scene: so.scene, ambiguous: false, zone };
+  }
+
   /** 区域の背景の一覧（<img> は背景1枚につき1つ） */
   function assets(reg, layoutId, skip) {
     const L = layoutOf(reg, layoutId); if (!L) return [];
@@ -82,6 +105,6 @@
     return { nodes: [...all], standIn: [...stand] };
   }
 
-  const api = { ZOOM, MARGIN, ROADFIRST_SKIP, resolve, camera, assets, coverage, layoutOf };
+  const api = { ZOOM, MARGIN, ROADFIRST_SKIP, resolve, sceneOf, resolveAll, camera, assets, coverage, layoutOf };
   if (typeof module === 'object' && module.exports) module.exports = api; else root.MMRF_ZONES = api;
 })(typeof window !== 'undefined' ? window : globalThis);
