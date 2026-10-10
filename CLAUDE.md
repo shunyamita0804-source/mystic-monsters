@@ -672,7 +672,8 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - ZIP MysticMonsters_Ch1A_P_Hub_Claude_Task_20261010。置き場 prototype/p_hub_1010/（README.md に結果・完成背景の差し替え手順・枚数の見直し）。origin/main から作った独立ブランチ（アイテム・成長バランス・前回の背景共用 proto/bg-reuse-1010 は持ち込んでいない）。ゲーム本体・原本グラフ（299／42／370）・68 Scene 表・MMRF_CORE／MMRF_DATA・保存は変えていない
 - 独立プレビュー index.html：P の背景1枚（`<img>` は1つ）を Scene09（左から P・5地点）・Scene20（右から P・6地点）・Scene22（P から下門・5地点）の3画面で共用。scene_registry.json＝背景・Scene ごとのカメラの範囲・Scene ごとの画像の中の座標（背景ごとの表）。進み方は MMRF_CORE（P で Scene22 の画面へ自動で切り替え・C02_01 の先はハブの外）。この4区間は原本で逆向き不可＝逆向きの移動は足していない
 - **仮背景＝ZIP の構図参考（01_Pハブ_3方向構造図_QA専用）**：座標は絵の青い円の中心を測った値。この絵では美術の合格を判定しない。完成背景（p_hub_final）は未着＝座標・カメラは null のまま（推測で埋めない）。**技術プレビューの完了まで・共用の合否は未判定**
-- テスト：tests/p-hub-1010.test.mjs（PH1-01〜04）・実ブラウザ tests/qa-e2e-p-hub-1010.test.mjs（PHB-1 2サイズ・PHB-2 背景の 404）
+- **追加（同日・ZIP MysticMonsters_Ch1A_PHub_Salvage_ClaudeQA_20261010）**：P 中核の候補原画（assets/p_core_candidate.png・無加工・原 QA は FAIL＝橋状の広場・上の門。**美術の承認は保留**・描き直しには戻さない）を、Scene ごとに P に近い3地点だけに使う「区域（背景ゾーン）」の配置 core_zones を既定にした（Scene の途中で背景が変わる＝描画の設定・グラフと 68 Scene は変えない）。遠い地点・門の区域は構図参考図で代用（専用の絵が無い）。違う背景の区域へは 0.32秒のフェード。ZIP の仮座標（03）は P 以外が欄干・道の端にかかっていた＝そのまま xy_zip に残し、石畳の中央を測り直した値を既定に（?xy=zip で比較・?layout=structure で前便の配置）。絵に4本目の道（広場の左上 → 遺跡）が描かれている＝画像の問題として報告。門の出来事は原本の LOWER_GATE だけ
+- テスト：tests/p-hub-1010.test.mjs（PH1-01〜05）・実ブラウザ tests/qa-e2e-p-hub-1010.test.mjs（PHB-1 2サイズ・PHB-2 背景の 404・PHB-3 前便の配置と ZIP の仮座標）
 
 ### 今回差分の最終統合（2026-10-07。いまの正式。基準 829c772 への差分）
 

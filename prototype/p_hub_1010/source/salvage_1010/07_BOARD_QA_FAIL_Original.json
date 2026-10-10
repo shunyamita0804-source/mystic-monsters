@@ -1,0 +1,32 @@
+{
+  "title": "Chapter1 Pattern A P CORE only — one-pass QA",
+  "decision": "FAIL",
+  "generation_attempts": 1,
+  "image_size_px": [
+    1024,
+    1536
+  ],
+  "reference": "01_P_CORE_three_roads_NO_MARKERS_TECHNICAL.png",
+  "structure": {
+    "one_central_P_plaza": "PASS_VISUAL",
+    "three_arms_left_right_upper": "PASS_VISUAL",
+    "all_7_markers_can_be_overlaid": "PASS_PROVISIONAL",
+    "plaza_rock_or_earth_support": "FAIL_suspended_over_ravine",
+    "approach_road_ground_support": "FAIL_bridge_like_approaches",
+    "no_bridges": "FAIL_multiple_stone_bridge_structures",
+    "upper_ordinary_forest_path": "FAIL_decorative_arch_and_ruins",
+    "no_castle_lion_rainbow_chest": "PASS",
+    "no_baked_game_tile_UI_labels": "PASS",
+    "no_extra_walkable_branches": "UNCERTAIN_far_upper_ruin_path_and_left_approach_beyond_camera"
+  },
+  "logic_data_count": {
+    "nodes": 299,
+    "segments": 42,
+    "directed_edges": 370
+  },
+  "required_six_forward_connections_exist": true,
+  "source_sha256": "310044d21b4d0cc885ff42d00fd49ac270db69ba7d2f287e2c393f20d8b3a6b0",
+  "independent_browser_camera_validation": "NOT_PERFORMED_FAIL_GATE",
+  "art_status": "REJECTED_NOT_PRODUCTION",
+  "note": "Image x/y determined by visual estimation for this candidate, not design x/y. Existing source files untouched."
+}

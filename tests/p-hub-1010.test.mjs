@@ -1,11 +1,12 @@
 // =========================================================
 // P ハブ背景共用の独立プレビュー（2026-10-10・試作。prototype/p_hub_1010/）
 //  PH1-01 原本：リポジトリの原本グラフ＝ZIP の SOURCE_GRAPH（sha256）・299／42／370・68 Scene 表（sha256）・68 Scene の隣り合う地点はすべて原本の forward
-//  PH1-02 scene_registry.json：3 Scene の並び＝68 Scene 表・ZIP の 02 の照合表・原本の forward・画像の中の座標（全地点）・カメラの範囲に全地点が入る・
-//         背景は1枚（3 Scene とも同じ asset）・仮背景は art_pass_allowed false・完成背景は未着で座標を空のまま（推測で埋めない）
+//  PH1-02 scene_registry.json：3 Scene の並び＝68 Scene 表・ZIP の 02 の照合表・原本の forward・区域（背景ゾーン）が地点を漏れなく重複なく受け持つ・
+//         区域ごとの座標とカメラの範囲・art_pass_allowed false・完成背景は未着で空のまま（推測で埋めない）
 //  PH1-03 進み方：MMRF_CORE で各 Scene を1マスずつ＝予定の地点・Scene09／20 の終点 P から Scene22 へ・LOWER_GATE で門の出来事・
 //         逆向き：原本の reverse_allowed はすべて false・MMRF_CORE.options は1つ前の地点へ戻る接続を出さない
 //  PH1-04 原本・道路先行の試作・ゲーム本体を書き換えていない・プレビューは localStorage を使わない
+//  PH1-05 P 中核の候補画像（ZIP Salvage）：7地点・6接続・ZIP の仮座標はそのまま・Scene ごとに P に近い3地点・門の出来事は原本の LOWER_GATE だけ
 // =========================================================
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -45,31 +46,54 @@ test('PH1-01：原本＝ZIP の SOURCE_GRAPH・299／42／370・68 Scene 表・�
     for (let i = 1; i < ns.length; i++) assert.ok(FWD.has(ns[i - 1] + '>' + ns[i]), `${r.scene_id}：${ns[i - 1]}→${ns[i]}`); }
 });
 
-test('PH1-02：scene_registry＝3 Scene の並び・背景1枚・Scene ごとの座標とカメラ・仮背景で美術判定しない・完成背景は空のまま', () => {
+test('PH1-02：scene_registry＝3 Scene の並び・区域が Scene の地点を漏れなく重複なく受け持つ・区域ごとの座標とカメラ・美術判定しない・完成背景は空のまま', () => {
   assert.deepEqual(Object.keys(REG.scenes), MAN.p_hub_scenes);
-  const prov = REG.assets.p_hub_qa_structure, fin = REG.assets.p_hub_final;
-  assert.equal(sha(path.join(P, prov.file)), prov.sha256); assert.equal(prov.art_pass_allowed, false); assert.equal(prov.kind, 'provisional');
-  const png = readFileSync(path.join(P, prov.file)); assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [prov.w, prov.h]);
-  assert.equal(fin.file, null, '完成背景は未着');
+  for (const [id, a] of Object.entries(REG.assets)) {
+    if (!a.file) { assert.equal(a.kind, 'final', `${id}：ファイルが無いのは未着の完成背景だけ`); continue; }
+    assert.equal(sha(path.join(P, a.file)), a.sha256, id); assert.equal(a.art_pass_allowed, false, `${id}：美術の合格を判定しない`);
+    const png = readFileSync(path.join(P, a.file)); assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [a.w, a.h], id);
+  }
+  assert.equal(REG.assets.p_hub_final.file, null, '完成背景は未着');
   for (const [sid, s] of Object.entries(REG.scenes)) {
     const plan = PLAN.find((r) => r.scene_id === sid), chk = CHECK.find((r) => r.scene_id === sid);
     assert.deepEqual(s.nodes, plan.visible_node_ids_ordered.split(';'), `${sid}：68 Scene 表の並び`);
     assert.deepEqual(s.nodes, chk.visible_node_ids_ordered.split(';'), `${sid}：ZIP の照合表`); assert.equal(s.nodes.length, Number(chk.count));
-    assert.ok(s.nodes.length >= 4 && s.nodes.length <= 6, `${sid}：4〜6地点`);
     for (let i = 1; i < s.nodes.length; i++) assert.ok(FWD.has(s.nodes[i - 1] + '>' + s.nodes[i]), `${sid}：forward`);
-    const xy = s.xy.p_hub_qa_structure, [x0, y0, x1, y1] = s.camera.p_hub_qa_structure.rect;
-    assert.deepEqual(Object.keys(xy).sort(), s.nodes.slice().sort(), `${sid}：全地点に座標`);
-    for (const [n, [x, y]] of Object.entries(xy)) {
-      assert.ok(x >= 0 && x <= prov.w && y >= 0 && y <= prov.h, `${sid} ${n} は絵の中`);
-      assert.ok(x >= x0 + 40 && x <= x1 - 40 && y >= y0 + 40 && y <= y1 - 40, `${sid} ${n} はカメラの範囲の内側（端で切れない）`);
+    for (const [lid, L] of Object.entries(REG.layouts)) {
+      const zs = L.scenes[sid].zones;
+      assert.deepEqual(zs.flatMap((z) => z.nodes), s.nodes, `${lid}/${sid}：区域は Scene の地点を順に漏れなく重複なく受け持つ`);
+      for (const z of zs) {
+        const a = REG.assets[z.asset]; assert.ok(a && a.file, `${lid}/${sid}/${z.id}：背景がある`);
+        const [x0, y0, x1, y1] = z.camera; assert.ok(x0 >= 0 && y0 >= 0 && x1 <= a.w && y1 <= a.h, `${lid}/${sid}/${z.id}：カメラの範囲は絵の中`);
+        for (const tbl of [z.xy, z.xy_zip].filter(Boolean)) {
+          assert.deepEqual(Object.keys(tbl).sort(), z.nodes.slice().sort(), `${lid}/${sid}/${z.id}：区域の全地点に座標`);
+          for (const [n, [x, y]] of Object.entries(tbl)) assert.ok(x >= x0 + 40 && x <= x1 - 40 && y >= y0 + 40 && y <= y1 - 40, `${lid}/${sid}/${z.id} ${n} はカメラの範囲の内側`);
+        }
+      }
     }
-    assert.equal(s.xy.p_hub_final, null, `${sid}：完成背景の座標は空（推測で埋めない）`); assert.equal(s.camera.p_hub_final, null);
-    assert.ok(x0 >= 0 && y0 >= 0 && x1 <= prov.w && y1 <= prov.h, `${sid}：カメラの範囲は絵の中`);
   }
-  assert.deepEqual(REG.scenes.Scene09.xy.p_hub_qa_structure.P, REG.scenes.Scene20.xy.p_hub_qa_structure.P, '同じ P は同じ位置（同じ背景）');
-  assert.deepEqual(REG.scenes.Scene09.xy.p_hub_qa_structure.P, REG.scenes.Scene22.xy.p_hub_qa_structure.P);
+  const core = (sid) => REG.layouts.core_zones.scenes[sid].zones.find((z) => z.asset === 'p_core_candidate');
+  assert.deepEqual(core('Scene09').xy.P, core('Scene20').xy.P, '同じ P は同じ位置（同じ背景）'); assert.deepEqual(core('Scene09').xy.P, core('Scene22').xy.P);
   const src = rd(path.join(P, 'index.html'));
-  assert.equal((src.match(/<img /g) || []).length, 1, '背景の <img> は1つ（3 Scene で共用）');
+  assert.equal((src.match(/<img /g) || []).length, 1, '<img> を作るのは1か所（背景1枚につき1つ）');
+});
+
+test('PH1-05：P 中核の候補画像＝7地点・6接続（原本）・ZIP の仮座標はそのまま・Scene ごとに P に近い3地点だけ・門の出来事は原本の LOWER_GATE だけ', () => {
+  const S = path.join(P, 'source/salvage_1010');
+  const EDG = csvRows(path.join(S, '04_P_Core_6_Edges_Original_Check.csv'));
+  assert.equal(EDG.length, 6);
+  for (const r of EDG) { const e = G.edges.find((x) => x.id === r.edge_id); assert.ok(e && e.source === r.source && e.target === r.target && e.direction === 'forward', `${r.edge_id}：原本の forward`); }
+  const ZXY = Object.fromEntries(csvRows(path.join(S, '03_P_Core_ImageXY_PROVISIONAL.csv')).map((r) => [r.node_id, [Number(r.image_x), Number(r.image_y)]]));
+  const zones = Object.values(REG.layouts.core_zones.scenes).flatMap((s) => s.zones).filter((z) => z.asset === 'p_core_candidate');
+  const nodes = [...new Set(zones.flatMap((z) => z.nodes))].sort();
+  assert.deepEqual(nodes, Object.keys(ZXY).sort(), '候補画像に載る地点＝ZIP の7地点');
+  assert.deepEqual(zones.map((z) => z.nodes), [['EL04_11', 'EL04_12', 'P'], ['ER04_12', 'ER04_13', 'P'], ['P', 'C01_01', 'C01_02']], 'Scene ごとに P に近い3地点');
+  for (const z of zones) for (const n of z.nodes) assert.deepEqual(z.xy_zip[n], ZXY[n], `${n}：ZIP の仮座標は書き換えていない`);
+  const fail = JSON.parse(rd(path.join(S, '07_BOARD_QA_FAIL_Original.json')));
+  assert.equal(fail.decision, 'FAIL'); assert.equal(fail.source_sha256, MAN.source_sha256);
+  assert.match(REG.assets.p_core_candidate.status, /保留/, '橋状の P 広場の美術承認は保留');
+  const gates = Object.entries(D.nodes).filter(([, v]) => /gate/.test(v[2])).map(([k]) => k);
+  assert.ok(!gates.some((g) => nodes.includes(g)), '候補画像の区域に原本の門の地点は無い（絵の門で出来事を起こさない）');
 });
 
 function walk(sid) {

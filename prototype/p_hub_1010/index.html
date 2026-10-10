@@ -4,8 +4,10 @@
 <!--
   【試作・独立の技術プレビュー】P ハブの背景1枚を Scene09・Scene20・Scene22 の3つの画面で共用する（2026-10-10。ZIP MysticMonsters_Ch1A_P_Hub_Claude_Task_20261010）
   ・道のつながり・1歩の進み方＝../../js/proto/roadfirst-data.js（MMRF_DATA）と roadfirst-core.js（MMRF_CORE）。読むだけ（書き換えない）
-  ・このページが持つのは scene_registry.json＝背景の絵・Scene ごとのカメラの範囲・Scene ごとの画像の中の地点の座標だけ
-  ・3つの画面で <img> は1つ（src を差し替えない）。変わるのはカメラと地点の印だけ
+  ・このページが持つのは scene_registry.json＝背景の絵・Scene の中の区域（背景ゾーン）・区域ごとのカメラの範囲と画像の中の地点の座標だけ
+  ・背景1枚につき <img> は1つ（src を差し替えない）。同じ背景の区域どうしはカメラと地点の印だけ、違う背景の区域へは短いフェード（0.32秒）
+  ・2026-10-10 追加（ZIP MysticMonsters_Ch1A_PHub_Salvage_ClaudeQA_20261010）：P 中核の候補画像を P に近い3地点ずつに使う配置 core_zones（既定）。?layout=structure＝前便の構図参考図だけ、?xy=zip＝ZIP の仮座標で比較
+  ・候補画像の門・橋・遺跡は背景の絵だけ（グラフ・門の出来事は足さない。門の出来事は原本の LOWER_GATE だけ）
   ・逆向きは原本の許可（reverse_allowed）と MMRF_CORE.options が出す接続だけ。この3区間は逆向き不可＝足さない
   ・「表示を戻す」はプレビューの記録をさかのぼるだけ（ゲームの移動ではない）
   ・ブラウザの保存領域を使わない（ゲームのセーブ mr4v6・道路先行の試作 mmrf_proto_v1 に触れない）
@@ -24,13 +26,16 @@ button:disabled{opacity:.42}
 #note{font-size:11px;line-height:1.4;color:#c9d6e6;margin-top:4px;min-height:2.8em}
 #note b{color:var(--gold)}#note .warn{color:#ffb98a}
 #vp{flex:1;position:relative;overflow:hidden;background:#1b2a42;min-height:160px;touch-action:none}
-#map{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;transition:transform .42s cubic-bezier(.3,.7,.3,1)}
-#map img{display:block;pointer-events:none;user-select:none}
+.layer{position:absolute;inset:0;opacity:0;transition:opacity .32s ease;pointer-events:none}
+.layer.on{opacity:1}
+.map{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;transition:transform .42s cubic-bezier(.3,.7,.3,1)}
+.map img{display:block;pointer-events:none;user-select:none}
 .m{position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50%;border:3px solid #fffbdf;background:rgba(25,87,134,.82);color:#fff;font:700 12px/22px Georgia,serif;text-align:center;box-shadow:0 1px 4px #000a;
   transform:translate(-50%,-50%) scale(var(--inv,1));transition:transform .42s cubic-bezier(.3,.7,.3,1)}
 .m.gate{border-radius:6px;background:rgba(108,62,140,.88)}
 .m.hub{background:rgba(160,104,30,.9)}
 .m.cur{width:36px;height:36px;line-height:30px;font-size:14px;border-color:#ffcb54;background:#b4641f;box-shadow:0 0 0 4px #f9d06355,0 0 18px #ffb72e;z-index:2}
+.zone{position:absolute;left:6px;top:6px;z-index:3;font-size:10.5px;line-height:1.3;background:#0b1630d9;border:1px solid #3d5170;border-radius:6px;padding:2px 6px;color:#e9d9a6;pointer-events:none}
 #veil{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;color:#dfe8f5;background:#1b2a42;text-align:center;padding:16px}
 #veil[hidden]{display:none}
 footer{background:var(--panel);border-top:1px solid var(--line);flex:none;padding:6px 10px calc(env(safe-area-inset-bottom,0px) + 8px);display:grid;gap:6px}
@@ -43,7 +48,7 @@ footer{background:var(--panel);border-top:1px solid var(--line);flex:none;paddin
 <header><h1>Pハブ背景共用プレビュー（独立・技術試作）</h1>
 <div class="modes" role="group" aria-label="画面"><button data-mode="Scene09">Scene09<br>左からP</button><button data-mode="Scene20">Scene20<br>右からP</button><button data-mode="Scene22">Scene22<br>Pから下門</button></div>
 <div id="note" aria-live="polite"></div></header>
-<section id="vp"><div id="map"><img id="bg" alt="Pハブの背景"><div id="mk"></div></div><div id="veil">背景を読み込み中…</div></section>
+<section id="vp"><div id="zone" class="zone"></div><div id="veil">背景を読み込み中…</div></section>
 <footer><div class="stat"><span>現在地 <b id="cur">—</b></span><span>Scene内 <b id="cnt">—</b></span><span>Turn <b id="turn">0</b></span></div>
 <div class="act"><button id="prev">◀ 表示戻す</button><button id="next" class="go">1マス進む ▶</button><button id="rev">逆向き確認</button><button id="reset">先頭へ</button></div>
 <div id="log" aria-live="polite"></div></footer>
@@ -55,22 +60,20 @@ footer{background:var(--panel);border-top:1px solid var(--line);flex:none;paddin
   'use strict';
   const D = window.MMRF_DATA, C = window.MMRF_CORE, $ = (id) => document.getElementById(id);
   const EDGE = new Map(D.edges.map((e) => [e[0] + '>' + e[1], e]));
-  const ZOOM = 1.15;   // Scene のカメラの範囲より少しだけ寄る（今の地点を追って動く）
-  let REG = null, asset = null, assetId = null, mode = null, st = null, hist = [], logs = [], loaded = false, failed = false, lastCam = null;
+  const ZOOM = 1.15;   // 区域のカメラの範囲より少しだけ寄る（今の地点を追って動く）
+  const Q = new URLSearchParams(location.search);
+  let REG = null, LAY = null, layoutId = null, useZip = false, mode = null, st = null, hist = [], logs = [], loaded = false, failed = false, lastCam = null, curZone = null;
+  const layers = {};   // asset id → { el, map, img, mk }
 
-  /** 使う背景：URL の ?asset= ＞ registry の active_asset。ファイル・座標・カメラがそろっていない背景は使わない（推測で埋めない） */
-  function usable(id) {
-    const a = REG.assets[id]; if (!a || !a.file) return false;
-    return Object.values(REG.scenes).every((s) => s.camera[id] && s.xy[id] && s.nodes.every((n) => Array.isArray(s.xy[id][n])));
-  }
-  function chooseAsset() {
-    const want = new URLSearchParams(location.search).get('asset');
-    const id = want && usable(want) ? want : (usable(REG.active_asset) ? REG.active_asset : 'p_hub_qa_structure');
-    return { id, refused: want && want !== id ? want : null };
-  }
   const sc = () => REG.scenes[mode];
-  const xyOf = (n, m) => REG.scenes[m || mode].xy[assetId][n];
-
+  /** 今の Scene で、その地点を受け持つ区域（Scene の途中で背景が変わる＝描画の設定。グラフ・Scene の定義は変えない） */
+  const zoneOf = (n, m) => LAY.scenes[m || mode].zones.find((z) => z.nodes.includes(n));
+  const xyTable = (z) => (useZip && z.xy_zip ? z.xy_zip : z.xy);
+  /** 区域で使う背景がそろっていない配置は使わない（推測で埋めない） */
+  function usableLayout(L) {
+    return !!L && Object.entries(REG.scenes).every(([sid, s]) => { const zs = L.scenes[sid] && L.scenes[sid].zones; if (!zs) return false;
+      return s.nodes.every((n) => { const z = zs.find((q) => q.nodes.includes(n)); const a = z && REG.assets[z.asset]; return a && a.file && z.xy && Array.isArray(z.xy[n]) && Array.isArray(z.camera); }); });
+  }
   function newState(first) { const s = C.create(D, { seed: 1, turnLimit: 999, randOpen: true }); s.node = first; s.trail = [first]; return s; }
 
   /** 1マス進む。Scene の最後の地点なら次の Scene（registry にあれば）へ画面だけ切り替えてから進む。進み方は MMRF_CORE */
@@ -80,15 +83,16 @@ footer{background:var(--panel);border-top:1px solid var(--line);flex:none;paddin
     if (i === sc().nodes.length - 1) {
       const nx = sc().next_scene_at_last_node;
       if (!REG.scenes[nx]) return { ok: false, why: `この先は ${nx}（このハブの外）` };
-      hist.push(snap()); mode = nx; i = sc().nodes.indexOf(st.node); logs.push({ info: `画面を ${nx} へ（背景は同じ1枚・カメラと地点の印だけ切り替え）` });
+      hist.push(snap()); mode = nx; i = sc().nodes.indexOf(st.node); logs.push({ info: `画面を ${nx} へ（同じ背景ならカメラと地点の印だけ切り替え）` });
     } else hist.push(snap());
-    const want = sc().nodes[i + 1], before = st.node;
+    const want = sc().nodes[i + 1], before = st.node, zBefore = curZone;
     if (C.roll(D, st, 1) == null) { hist.pop(); return { ok: false, why: 'MMRF_CORE が振れない状態' }; }
     const op = C.options(D, st), pick = (op.find((e) => e.dst === want) || {}).seg;
     const ev = C.advance(D, st, pick ? { choose: pick } : {});
-    const e = EDGE.get(before + '>' + st.node);
+    const e = EDGE.get(before + '>' + st.node), z = zoneOf(st.node);
     const r = { from: before, to: st.node, want, scene: mode, seg: e ? e[2] : null, edge: !!e && e[3] === 'forward', gate: ev.some((x) => x.type === 'gate'),
-      ok: !!e && e[3] === 'forward' && st.node === want && !!xyOf(st.node) };
+      zone: z ? z.id : null, asset: z ? z.asset : null, ok: !!e && e[3] === 'forward' && st.node === want && !!z && !!xyTable(z)[st.node] };
+    if (zBefore && z && zBefore.asset !== z.asset) logs.push({ info: `背景の区域：${zBefore.id} → ${z.id}（フェードで切り替え）` });
     logs.push(r); return r;
   }
   /** 逆向きを試す：MMRF_CORE.options（原本の接続と許可）に「1つ前の地点へ戻る接続」があるときだけ動く。この3区間には無い＝動かない */
@@ -98,39 +102,43 @@ footer{background:var(--panel);border-top:1px solid var(--line);flex:none;paddin
     if (!prevs.length) { const r = { rev: true, at: st.node, ok: true, moved: false, why: 'このハブの中に1つ前の地点が無い' }; logs.push(r); return r; }
     const op = C.options(D, st).filter((e) => prevs.includes(e.dst));
     const raw = D.edges.filter((e) => e[0] === st.node && prevs.includes(e[1]));
-    const fwd = D.edges.filter((e) => prevs.includes(e[0]) && e[1] === st.node).map((e) => e[2]);
-    const r = { rev: true, at: st.node, prevs, coreOptions: op.length, rawReverse: raw.length, segs: fwd, moved: false, ok: op.length === 0 && raw.length === 0 };
+    const r = { rev: true, at: st.node, prevs, coreOptions: op.length, rawReverse: raw.length, moved: false, ok: op.length === 0 && raw.length === 0 };
     logs.push(r); return r;   // 許可されない移動は足さない（動かさない）
   }
   const snap = () => JSON.stringify({ st, mode });
   function back() { if (!hist.length) return; const o = JSON.parse(hist.pop()); st = o.st; mode = o.mode; logs.push({ back: true, to: st.node }); }
 
-  /** カメラ：Scene ごとの範囲（rect）に ZOOM で寄り、今の地点を画面の 55% の高さへ。範囲の外は見せない */
-  function camera() {
-    const vp = $('vp'), W = vp.clientWidth, H = vp.clientHeight, [x0, y0, x1, y1] = sc().camera[assetId].rect, rw = x1 - x0, rh = y1 - y0;
-    const s = Math.min(W / rw, H / rh) * ZOOM, p = xyOf(st.node);
+  /** カメラ：区域ごとの範囲に ZOOM で寄り、今の地点を画面の 55% の高さへ。範囲の外は見せない */
+  function camera(z) {
+    const vp = $('vp'), W = vp.clientWidth, H = vp.clientHeight, [x0, y0, x1, y1] = z.camera, rw = x1 - x0, rh = y1 - y0;
+    const s = Math.min(W / rw, H / rh) * ZOOM, p = xyTable(z)[st.node];
     let tx = W / 2 - p[0] * s, ty = H * 0.55 - p[1] * s;
     tx = rw * s <= W ? W / 2 - (x0 + rw / 2) * s : Math.min(-x0 * s, Math.max(W - x1 * s, tx));
     ty = rh * s <= H ? H / 2 - (y0 + rh / 2) * s : Math.min(-y0 * s, Math.max(H - y1 * s, ty));
+    const a = REG.assets[z.asset];   // 絵の外（暗い余白）は見せない：絵が画面より大きい向きは絵の端で止める
+    if (a.w * s >= W) tx = Math.min(0, Math.max(W - a.w * s, tx));
+    if (a.h * s >= H) ty = Math.min(0, Math.max(H - a.h * s, ty));
     return { s, tx, ty, W, H };
   }
   function layout() {
     if (!loaded) return;
-    const c = camera(), map = $('map'); lastCam = c;
-    map.style.transform = `translate(${c.tx}px,${c.ty}px) scale(${c.s})`; map.style.setProperty('--inv', String(1 / c.s));
-    const nodes = sc().nodes;
-    $('mk').innerHTML = nodes.map((n, k) => { const p = xyOf(n), role = D.nodes[n] ? D.nodes[n][2] : '';
+    const z = zoneOf(st.node), L = layers[z.asset], c = camera(z); curZone = z; lastCam = Object.assign({ asset: z.asset, zone: z.id }, c);
+    for (const [id, o] of Object.entries(layers)) o.el.classList.toggle('on', id === z.asset);
+    L.map.style.transform = `translate(${c.tx}px,${c.ty}px) scale(${c.s})`; L.map.style.setProperty('--inv', String(1 / c.s));
+    const xy = xyTable(z), all = sc().nodes;
+    L.mk.innerHTML = z.nodes.map((n) => { const p = xy[n], role = D.nodes[n] ? D.nodes[n][2] : '', k = all.indexOf(n);
       const cls = (n === st.node ? ' cur' : '') + (/gate/.test(role) ? ' gate' : '') + (n === REG.hub ? ' hub' : '');
       const label = n === REG.hub ? 'P' : /gate/.test(role) ? '門' : String(k + 1);
       return `<div class="m${cls}" data-node="${n}" style="left:${p[0]}px;top:${p[1]}px" title="${n}">${label}</div>`; }).join('');
+    $('zone').textContent = `区域 ${z.id}｜${REG.assets[z.asset].kind === 'candidate' ? 'P 中核の候補画像' : '構図参考図（仮）'}｜${LAY.label}`;
   }
   function render() {
-    const s = sc(), i = s.nodes.indexOf(st.node), a = REG.assets[assetId];
+    const s = sc(), i = s.nodes.indexOf(st.node), z = zoneOf(st.node), a = REG.assets[z.asset];
     document.querySelectorAll('.modes button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
     $('cur').textContent = st.node; $('cnt').textContent = `${i + 1} / ${s.nodes.length}`; $('turn').textContent = st.turn;
     const atEnd = i === s.nodes.length - 1 && !REG.scenes[s.next_scene_at_last_node];
     $('prev').disabled = !hist.length; $('next').disabled = !loaded || atEnd; $('rev').disabled = !loaded;
-    $('note').innerHTML = `<b>${mode}｜${s.title}</b>（${s.route_id}・${s.nodes.length}地点）。背景 <b>${a.kind === 'final' ? '完成背景' : '仮背景'}</b>：${a.status}` +
+    $('note').innerHTML = `<b>${mode}｜${s.title}</b>（${s.route_id}・${s.nodes.length}地点）。背景 <b>${a.short || a.status}</b>${useZip ? '・ZIP の仮座標' : ''}` +
       (a.art_pass_allowed ? '' : '。<span class="warn">美術の合格は判定しない</span>') + (atEnd ? `。この先は ${s.next_scene_at_last_node}（このハブの外）` : '');
     $('log').innerHTML = logs.slice(-6).reverse().map((r) => r.info ? `<span class="info">${r.info}</span>` : r.back ? `表示を戻した（${r.to}・ゲームの移動ではない）` :
       r.rev ? `<span class="${r.ok ? 'ok' : 'ng'}">逆向き：${r.at} → ${(r.prevs || []).join('／') || '—'} ${r.moved ? '' : '動かない'}（${r.why || (r.ok ? '原本は逆向き不可・MMRF_CORE も候補に出さない' : '原本に逆向きの接続がある＝要確認')}）</span>` :
@@ -147,16 +155,25 @@ footer{background:var(--panel);border-top:1px solid var(--line);flex:none;paddin
   addEventListener('resize', () => { if (st) layout(); });
 
   fetch('scene_registry.json').then((r) => r.json()).then((reg) => {
-    REG = reg; const ch = chooseAsset(); assetId = ch.id; asset = REG.assets[assetId];
-    if (ch.refused) logs.push({ info: `背景 ${ch.refused} はファイル・座標がそろっていないので使わない（${assetId} で表示）` });
-    const img = $('bg'); img.width = asset.w; img.height = asset.h;
-    img.onload = () => { loaded = true; $('veil').hidden = true; render(); };
-    img.onerror = () => { failed = true; $('veil').textContent = '背景を読み込めません（' + asset.file + '）'; render(); };
-    img.src = asset.file;
+    REG = reg; const want = Q.get('layout');
+    layoutId = want && usableLayout(reg.layouts[want]) ? want : reg.default_layout; LAY = reg.layouts[layoutId];
+    if (want && want !== layoutId) logs.push({ info: `配置 ${want} は背景・座標がそろっていないので使わない（${layoutId} で表示）` });
+    useZip = Q.get('xy') === 'zip';
+    const ids = [...new Set(Object.values(LAY.scenes).flatMap((s) => s.zones.map((z) => z.asset)))];
+    let left = ids.length;
+    for (const id of ids) {   // 背景1枚につき <img> は1つ（Scene・区域をまたいでも src を差し替えない）
+      const a = REG.assets[id], el = document.createElement('div'); el.className = 'layer'; el.dataset.asset = id;
+      el.innerHTML = `<div class="map"><img alt="背景 ${id}" width="${a.w}" height="${a.h}"><div class="mk"></div></div>`;
+      $('vp').insertBefore(el, $('zone'));
+      const o = layers[id] = { el, map: el.querySelector('.map'), img: el.querySelector('img'), mk: el.querySelector('.mk') };
+      o.img.onload = () => { if (--left === 0 && !failed) { loaded = true; $('veil').hidden = true; render(); } };
+      o.img.onerror = () => { failed = true; $('veil').textContent = '背景を読み込めません（' + a.file + '）'; render(); };
+      o.img.src = a.file;
+    }
     pick('Scene09');
-    window.PHUB = { ready: true, isLoaded: () => loaded, failed: () => failed, asset: () => assetId, pick: (m) => pick(m), step: () => { const r = step(); render(); return r; },
+    window.PHUB = { ready: true, isLoaded: () => loaded, failed: () => failed, layout: () => layoutId, zip: () => useZip, pick: (m) => pick(m), step: () => { const r = step(); render(); return r; },
       reverse: () => { const r = reverse(); render(); return r; }, back: () => { back(); render(); },
-      state: () => ({ mode, node: st.node, turn: st.turn, gates: st.gates.slice(), logs: logs.slice() }), camera: () => lastCam, registry: () => REG };
+      state: () => ({ mode, node: st.node, turn: st.turn, gates: st.gates.slice(), zone: curZone && curZone.id, asset: curZone && curZone.asset, logs: logs.slice() }), camera: () => lastCam, registry: () => REG };
   });
 })();
 </script>
