@@ -1,0 +1,4 @@
+﻿scene_id,visible_node_ids_ordered,count,node_coord_status,graph_edge_validation,note
+Scene09,EL04_09;EL04_10;EL04_11;EL04_12;P,5,ORIGINAL_DESIGN_XY_NOT_ART,PASS,崩落を避ける左岸道・終点
+Scene20,ER04_09;ER04_10;ER04_11;ER04_12;ER04_13;P,6,ORIGINAL_DESIGN_XY_NOT_ART,PASS,滝沿いの右岸道・終点
+Scene22,P;C01_01;C01_02;LOWER_GATE;C02_01,5,ORIGINAL_DESIGN_XY_NOT_ART,PASS,下門をくぐる中央道・入口

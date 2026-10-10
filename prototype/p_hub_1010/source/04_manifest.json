@@ -1,0 +1,20 @@
+{
+  "created": "2026-10-10",
+  "source_sha256": "310044d21b4d0cc885ff42d00fd49ac270db69ba7d2f287e2c393f20d8b3a6b0",
+  "scenes_sha256": "2852ba56ca6a6861c820ad3349422be75167e7c4153e1f2b065c132ea9dd1571",
+  "source_counts": {
+    "nodes": 299,
+    "segments": 42,
+    "directed_edges": 370,
+    "scenes": 68
+  },
+  "all_scene_chains_edges_valid": true,
+  "board_overview_qa_status": "FAIL_NO_MASTER",
+  "claude_background_numbers": "REPORTED_NOT_INDEPENDENTLY_RECHECKED: min23, recommended35, nohub54, strict65-66",
+  "p_hub_scenes": [
+    "Scene09",
+    "Scene20",
+    "Scene22"
+  ],
+  "p_hub_qa_status": "NOT_YET_TESTED_ART_OR_REUSE"
+}
