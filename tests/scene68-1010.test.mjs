@@ -91,5 +91,5 @@ test('S68-06：rfZones=all／phub／無指定・読み込む JS は増やして�
   assert.match(v, /const ZON = ZMODE === 'phub' \|\| ZMODE === 'all', ZALL = ZMODE === 'all'/);
   assert.match(v, /scene68_1010\/scene_index_68\.json/);
   assert.doesNotMatch(v, /\bfetch\s*\(/);
-  assert.equal((rd('index.html').match(/js\/proto\//g) || []).length, 5, 'data・core・play・zones・view の5本のまま');
+  assert.equal((rd('index.html').match(/js\/proto\//g) || []).length, 6, 'data・core・play・zones・world・view の6本（2026-10-10 world を追加）');
 });

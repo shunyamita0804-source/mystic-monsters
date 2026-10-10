@@ -28,6 +28,42 @@
   const ZON = ZMODE === 'phub' || ZMODE === 'all', ZALL = ZMODE === 'all';
   const ZIDX = './prototype/scene68_1010/scene_index_68.json';
   let zidx = null, zso = null;   // 68 Scene の索引・今の Scene（rfZones=all）
+  // 2026-10-10 1枚の世界ビュー（絵なしの技術検証）：&rfView=world のときだけ js/proto/roadfirst-world.js（MMRF_WORLD）で描く
+  //   （俯瞰 → START へ寄る → 6マス先までの追従・地面を傾ける・マスは既存の tiles_v2 を立てて置く）。&rfTilt=度・&rfRes=px／単位
+  const ZWORLD = ON && Q.get('rfView') === 'world';
+  let world = null;
+  const TV2 = './assets/fields/ch1a/tiles_v2/';
+  const STAT_FILE = { li: 'life', po: 'power', in: 'intelligence', hi: 'accuracy', ev: 'evasion', de: 'toughness' };
+  const ROLE_MARK = { start: 'S', goal: 'G', lower_walk_through_gate: '門', upper_walk_through_gate: '門', challenge_d6_5_6: '挑', fixed_reward_dead_end: '宝', optional_random_unlock_dead_end: '隠' };
+  /** その地点に置くマスの絵（既存 tiles_v2）。役割の決まった地点で専用の絵が無い所は白紙＋仮の印（G 群が届いたら差し替える） */
+  function worldLook(id) {
+    const n = D.nodes[id], role = n ? n[2] : '', out = { src: TV2 + 'tile_blank.webp', mark: '', used: false };
+    const fwd = D.edges.filter((e) => e[0] === id && e[3] === 'forward').length, inn = D.edges.filter((e) => e[1] === id && e[3] === 'forward').length;
+    if (ROLE_MARK[role]) out.mark = ROLE_MARK[role];
+    else if (role === 'mandatory_rival') out.src = TV2 + 'tile_rival.webp';
+    else if (fwd > 1) out.src = TV2 + 'tile_branch.webp';
+    else if (inn > 1) out.mark = '合';
+    else if (role === 'ordinary_tile' && st.play) {
+      const t = st.play.tiles[id];
+      if (t) {
+        out.used = !!st.play.used[id];
+        if (t.t === 'stat') out.src = TV2 + 'tile_stat_' + STAT_FILE[t.k] + '.webp';
+        else if (t.t === 'event') out.src = TV2 + 'tile_event.webp';
+        else if (t.t === 'rest') out.src = TV2 + 'tile_rest.webp';
+        else if (t.t === 'wild') out.src = TV2 + (t.rare ? 'tile_rare_monster.webp' : 'tile_wild_monster.webp');
+        else if (t.t === 'treasure') out.src = TV2 + (t.tier === 'rare' ? 'tile_treasure_2.webp' : 'tile_treasure_1.webp');
+      }
+    }
+    return out;
+  }
+  function worldInfo() {
+    const node = vis ? vis.node : st.node;
+    const first = vis || st.done ? null : C.options(D, st).map((e) => e.dst);
+    // 行き止まりに着いたとき（まだ戻り始めていない）：次は枝を戻るので、戻り道を見せる
+    let back = vis ? null : st.back;
+    if (!back && !vis && C.DEAD_ROLES.includes(C.role(D, node))) { const ix = C.index(D); back = ix.spurs.find((k) => ix.endOf[k] === node) || null; }
+    return { node, ahead: st.done ? [] : root.MMRF_WORLD.lookahead(D, node, back ? null : first, back, 6), look: worldLook };
+  }
   const ZREG = './prototype/p_hub_1010/scene_registry.json', ZBASE = './prototype/p_hub_1010/';
   let zreg = null, zlay = {}, zready = false, zfail = null, zcur = null, zcam = null;   // 区域の表・背景の層・今の区域・今のカメラ
   const NAME = {
@@ -162,7 +198,17 @@
     document.body.appendChild(el);
     el.addEventListener('click', onClick);
     root.addEventListener('resize', () => cam());
+    if (ZWORLD && root.MMRF_WORLD) {
+      el.classList.add('rfw-on');
+      const tilt = Number(Q.get('rfTilt')), res = Number(Q.get('rfRes'));
+      world = root.MMRF_WORLD.create(el.querySelector('.rf-vp'), D, P, { view: () => zview(), monSrc: monSrc(),
+        tilt: Number.isFinite(tilt) && Q.get('rfTilt') !== null ? tilt : undefined, res: Number.isFinite(res) && res > 0 && res <= 4 ? res : undefined });
+    }
     render(); cam(true);
+    if (world && st.turn === 0 && st.node === 'START' && !st.wintro && !broken) {   // 開始の俯瞰（この試作の状態で1回・保存は試作の鍵だけ）
+      busy = true; render();
+      world.intro(() => { busy = false; st.wintro = true; persist(); render(); cam(); });
+    }
     if (broken) say('保存されていた試作の状態を読めませんでした（形式が違う・壊れている）。元の保存は消していません。「最初から」を押すと控え（mmrf_proto_v1_broken）を残して新しく始めます。');
     else if (st.play.notice) showNotice();
     else say(st.play.migrated && st.turn ? '続きから再開しました（前の試作の保存に、育成の中身を付けて移行しました）。' : st.turn ? '続きから再開しました。' : `START から大会会場（GOAL）を目指します。サイコロは 1〜6・40ターン。止まったマスで能力が伸びる（${st.play.mon.demo ? 'デモ個体' : esc(st.play.mon.name)}）。`);
@@ -184,6 +230,7 @@
   function say(t) { if (el) { const m = el.querySelector('.rf-msg'); m.classList.remove('nt'); m.innerHTML = t; } }
   function cam(instant) {
     if (!el) return;
+    if (world) { world.update(worldInfo(), instant); return; }
     const vp = el.querySelector('.rf-vp'), W = vp.clientWidth, H = vp.clientHeight, n = D.nodes[vis ? vis.node : st.node];
     let s = zoomAll ? Math.min(W / 1024, H / 1536) : ZOOM, x, y;
     if (zoomAll) { x = (W - 1024 * s) / 2; y = (H - 1536 * s) / 2; }
@@ -218,6 +265,7 @@
     go.textContent = st.done ? '大会の入口へ' : st.timeUp ? '時間切れ（最初から で再挑戦）' : nt && nt.kind !== 'choice' ? 'OK（次へ）' : tired ? '休む（疲れ100）' : p.ddArmed ? 'ダブルダイスで振る' : 'サイコロを振る';
     go.disabled = busy || need || !!broken || (nt && nt.kind === 'choice') || (st.timeUp && !st.done);
     if (ZON) zrender();
+    if (world) world.update(worldInfo());
     if (nt && nt.kind === 'choice') { ch.innerHTML = nt.choices.map((c, i) => `<button type="button" data-nc="${i}" data-seg="nc${i}">${esc(c.label)}${c.desc ? `<br><small>${esc(c.desc)}</small>` : ''}</button>`).join(''); return; }
     ch.innerHTML = need ? C.options(D, st).map((e) => `<button type="button" data-seg="${e.seg}">${esc(NAME[e.seg] || (st.exclude ? 'このまま進む' : e.seg))}${st.rewards[D.segments[e.seg][1]] ? '（取得済み）' : ''}</button>`).join('') : '';
     if (need) { const op = C.options(D, st); const main = op.filter((e) => !C.index(D).spurs.includes(e.seg)); ch.querySelectorAll('button').forEach((b) => { const sp = C.index(D).spurs.includes(b.dataset.seg); if (!sp && main.length === 1 && !NAME[b.dataset.seg]) b.textContent = 'このまま進む'; }); }
@@ -342,6 +390,7 @@
   function doReset(o) {
     if (broken) { try { localStorage.setItem(KEY + '_broken', broken); } catch (e) {} broken = null; }
     st = fresh(o); persist(); render(); cam(true);
+    if (world && !(o && o.noIntro)) { busy = true; render(); world.intro(() => { busy = false; st.wintro = true; persist(); render(); cam(); }); }
   }
   const fmtD = (x) => {
     if (x.k) return `<span class="up"><i class="sw" style="background:${P.STAT_COLOR[x.k]}"></i>${P.STAT_LABEL[x.k]}${x.grade ? `（適性${x.grade}）` : ''} ${x.d >= 0 ? '+' : ''}${x.d} → ${x.to}</span>`;
@@ -395,6 +444,10 @@
     rest: () => doRest(), ok: () => mainAction(), choice: (i) => pickChoice(i),
     set fast(v) { fast = !!v; if (el) el.classList.toggle('fast', fast); }, get fast() { return fast; },
     busy: () => busy,
+    world: () => (world ? world.state() : null),
+    worldFrames: (reset) => (world ? world.frames(reset) : []),
+    worldProject: (x, y) => (world ? world.project(x, y) : null),
+    skipIntro: () => { if (world) world.skipIntro(); },
     zones: () => ({ on: ZON, mode: ZMODE, scene68: zso && zso.scene ? zso.scene.id : null, ambiguous: !!(zso && zso.ambiguous), index: !!zidx, ready: zready, failed: zfail, node: vis ? vis.node : st && st.node, scene: zcur && zcur.scene, zone: zcur && zcur.id, asset: zcur && zcur.asset,
       at: zcur && zcur.at, cam: zcam, view: el && ZON ? zview() : null, next: st && !st.moveLeft && !st.done ? C.options(D, st).map((e) => e.dst) : [] }),
   };
