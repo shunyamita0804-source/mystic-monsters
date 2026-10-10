@@ -5,7 +5,7 @@
 //         区域ごとの座標とカメラの範囲・art_pass_allowed false・完成背景は未着で空のまま（推測で埋めない）
 //  PH1-03 進み方：MMRF_CORE で各 Scene を1マスずつ＝予定の地点・Scene09／20 の終点 P から Scene22 へ・LOWER_GATE で門の出来事・
 //         逆向き：原本の reverse_allowed はすべて false・MMRF_CORE.options は1つ前の地点へ戻る接続を出さない
-//  PH1-04 原本・道路先行の試作・ゲーム本体を書き換えていない・プレビューは localStorage を使わない
+//  PH1-04 原本を書き換えていない・プレビューは localStorage を使わない・ゲーム本体は区域の表を直接読まない（2026-10-10 RoadFirst への統合は tests/roadfirst-phub-1010.test.mjs）
 //  PH1-05 P 中核の候補画像（ZIP Salvage）：7地点・6接続・ZIP の仮座標はそのまま・Scene ごとに P に近い3地点・門の出来事は原本の LOWER_GATE だけ
 // =========================================================
 import test from 'node:test';
@@ -125,7 +125,7 @@ test('PH1-03：MMRF_CORE で1マスずつ＝予定の地点・P から Scene22 �
   assert.deepEqual(C.options(D, t).map((e) => e.dst), ['C01_01'], 'P から出る道は C01_01 だけ（架空の分かれ道は無い）');
 });
 
-test('PH1-04：原本・道路先行の試作・ゲーム本体は変えていない・プレビューは保存に触れない', () => {
+test('PH1-04：原本は変えていない・プレビューは保存に触れない・ゲーム本体の index.html は区域の表を直接読まない（RoadFirst の &rfZones=phub だけ＝RZ-01〜）', () => {
   const src = rd(path.join(P, 'index.html'));
   assert.doesNotMatch(src, /localStorage|sessionStorage|indexedDB/);
   assert.match(src, /\.\.\/\.\.\/js\/proto\/roadfirst-data\.js/); assert.match(src, /\.\.\/\.\.\/js\/proto\/roadfirst-core\.js/);

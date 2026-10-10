@@ -10,6 +10,10 @@
 //  2026-10-09 育成の試作：止まったマスの中身（能力6種・イベント・休憩・野生・宝箱・固定報酬）・疲れ・休む・試作G は js/proto/roadfirst-play.js（MMRF_PLAY）。
 //    状態は同じ鍵 mmrf_proto_v1 の v 2（v 1＝移動だけの保存は v 2 へ移行。読めない保存は消さずに「新しく始める」を押したときだけ mmrf_proto_v1_broken へ控えて置き換える）。
 //    &rfItemLab=1（&rfDD=個数）＝ダブルダイス【仮】の実験。正式の所持金・持ち物・セーブ（mr4v6）には触れない
+//  2026-10-10 P ハブの背景ゾーン（試作）：&rfZones=phub のときだけ、P の前後（Scene09・Scene20・Scene22）で図面の上に区域の背景
+//    （prototype/p_hub_1010/scene_registry.json の P 中核の候補画像＝美術承認は保留・構図参考図＝仮）を重ねる。区域・座標・カメラは
+//    js/proto/roadfirst-zones.js（MMRF_ZONES）。移動・サイコロ・保存はこのファイルと MMRF_CORE／MMRF_PLAY のまま（区域は保存しない＝地点と歩いた跡から決まる）。
+//    違う背景へ移るときだけ 0.32秒のフェード・同じ背景の中（P をまたぐ）はカメラだけ。区域の無い地点は従来の図面
 // =========================================================
 (function (root) {
   'use strict';
@@ -18,6 +22,9 @@
   const KEY = 'mmrf_proto_v1';
   const BG = './assets/proto/ch1a_roadfirst_1009/01_road_geometry.svg';
   const ZOOM = 3, ZOOM_ALL = 0.36;
+  const ZON = ON && Q.get('rfZones') === 'phub';
+  const ZREG = './prototype/p_hub_1010/scene_registry.json', ZBASE = './prototype/p_hub_1010/';
+  let zreg = null, zlay = {}, zready = false, zfail = null, zcur = null, zcam = null;   // 区域の表・背景の層・今の区域・今のカメラ
   const NAME = {
     EL01: '左の道', ER01: '右の道', LATE_SAFE: '安全な道', LATE_L1: '特殊挑戦の道', LATE_R1: '石像方面の道',
     D_LC: '宝の道（L_CHEST）', D_LA: '宝の道（L_ALTAR）', D_RC: '宝の道（R_CHEST）', D_LLA: '宝の道（L_LATE_ALTAR）', D_R5: '宝の道（REWARD5）', D_RS: '宝の道（R_SPECIAL）', D_RAND: '隠し道（D_RAND）',
@@ -100,7 +107,19 @@
 #rfp .rf-panel .sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px;border:1px solid #13233a}
 #rfp .rf-panel ul{margin:2px 0 0;padding-left:16px}#rfp .rf-panel li{margin:1px 0}
 #rfp .rf-panel .proto{color:#8a5a00;font-size:10.5px}
-#rfp .rf-legend{display:flex;flex-wrap:wrap;gap:4px 8px;margin:4px 0;font-size:11.5px}#rfp .rf-legend span{white-space:nowrap}`;
+#rfp .rf-legend{display:flex;flex-wrap:wrap;gap:4px 8px;margin:4px 0;font-size:11.5px}#rfp .rf-legend span{white-space:nowrap}
+#rfp .rf-zone{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .32s,visibility 0s linear .32s;pointer-events:none;background:#0b1636;z-index:2}
+#rfp .rf-zone.on{opacity:1;visibility:visible;transition:opacity .32s,visibility 0s}
+#rfp .rf-zl{position:absolute;inset:0;opacity:0;transition:opacity .32s}#rfp .rf-zl.on{opacity:1}
+#rfp .rf-zmap{position:absolute;left:0;top:0;transform-origin:0 0;transition:transform .26s ease-out}#rfp .rf-zmap>img{position:absolute;left:0;top:0;display:block}
+#rfp.fast .rf-zone,#rfp.fast .rf-zl,#rfp.fast .rf-zmap,#rfp.fast .rf-zmon{transition:none}
+#rfp .rf-zm{position:absolute;left:0;top:0;width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:50%;border:2px solid #13233a;background:rgba(255,255,255,.9);color:#13233a;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;transform:scale(var(--inv,1));box-sizing:border-box}
+#rfp .rf-zm.hub{background:#ffd27a}#rfp .rf-zm.gate{background:#cfe3ff}#rfp .rf-zm.used{opacity:.45}
+#rfp .rf-zm.nx{box-shadow:0 0 0 3px #fff,0 0 0 6px #e0526b;animation:rfnx 1.2s ease-in-out infinite}
+@keyframes rfnx{50%{box-shadow:0 0 0 3px #fff,0 0 0 8px rgba(224,82,107,.55)}}
+#rfp .rf-zmon{position:absolute;left:0;top:0;width:44px;height:44px;margin:-40px 0 0 -22px;transform-origin:50% 90%;transition:transform .2s linear;z-index:3}
+#rfp .rf-zmon img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 2px 2px rgba(0,0,0,.5))}
+#rfp .rf-top .rf-zrow{display:none;color:#bfe6ff;font-size:11.5px}#rfp .rf-top .rf-zrow.on{display:block}#rfp .rf-top .rf-zrow b{font-size:12px;color:#fff}`;
     document.head.appendChild(s);
   }
 
@@ -129,8 +148,8 @@
   function mount() {
     css();
     el = document.createElement('div'); el.id = 'rfp'; el.setAttribute('role', 'application');
-    el.innerHTML = `<div class="rf-vp"><div class="rf-cam"><img src="${BG}" alt="" draggable="false">${svgLayer()}<div class="rf-mon"><img src="${monSrc()}" alt="モンスター" draggable="false"></div></div></div>
-<div class="rf-top"><div><b>Chapter 1 Pattern A 道路先行の試作</b> <span class="rf-warn">（試作・正式ではない／図面はブロックアウト）</span></div><div class="rf-row"><span class="rf-turn"></span><span class="rf-at"></span></div><div class="rf-row"><span class="rf-rw"></span><span class="rf-rand"></span><span class="rf-rule"></span></div><div class="rf-play"><span class="rf-fat"></span><span class="rf-gold"></span><span class="rf-gain"></span></div></div>
+    el.innerHTML = `<div class="rf-vp"><div class="rf-cam"><img src="${BG}" alt="" draggable="false">${svgLayer()}<div class="rf-mon"><img src="${monSrc()}" alt="モンスター" draggable="false"></div></div>${ZON ? '<div class="rf-zone" aria-hidden="true"></div>' : ''}</div>
+<div class="rf-top"><div><b>Chapter 1 Pattern A 道路先行の試作</b> <span class="rf-warn">（試作・正式ではない／図面はブロックアウト）</span></div><div class="rf-row"><span class="rf-turn"></span><span class="rf-at"></span></div><div class="rf-row"><span class="rf-rw"></span><span class="rf-rand"></span><span class="rf-rule"></span></div><div class="rf-play"><span class="rf-fat"></span><span class="rf-gold"></span><span class="rf-gain"></span></div>${ZON ? '<div class="rf-zrow"></div>' : ''}</div>
 <div class="rf-tools"><button type="button" data-a="stats">能力</button><button type="button" data-a="zoom">全体</button><button type="button" data-a="reset">最初から</button><button type="button" data-a="close">閉じる</button></div>
 <div class="rf-panel" role="dialog" aria-label="能力と記録"></div>
 <div class="rf-die"><span></span><small></small></div>
@@ -166,6 +185,7 @@
     else { x = W / 2 - n[0] * s; y = H * 0.56 - n[1] * s; }
     const c = el.querySelector('.rf-cam'); if (instant) { c.style.transition = 'none'; requestAnimationFrame(() => { c.style.transition = ''; }); }
     c.style.transform = `translate(${x}px,${y}px) scale(${s})`;
+    if (ZON) zrender(instant);
   }
   function render() {
     if (!el) return;
@@ -192,16 +212,76 @@
     const dd = el.querySelector('.rf-dd'); if (dd) { dd.textContent = `ダブルダイス【仮】 残り ${p.items.dd}個${p.ddArmed ? '（次の1回に使う）' : '（押すと次の1回に使う）'}`; dd.classList.toggle('on', !!p.ddArmed); dd.disabled = busy || p.items.dd <= 0 || !!nt || st.done || st.timeUp; }
     go.textContent = st.done ? '大会の入口へ' : st.timeUp ? '時間切れ（最初から で再挑戦）' : nt && nt.kind !== 'choice' ? 'OK（次へ）' : tired ? '休む（疲れ100）' : p.ddArmed ? 'ダブルダイスで振る' : 'サイコロを振る';
     go.disabled = busy || need || !!broken || (nt && nt.kind === 'choice') || (st.timeUp && !st.done);
+    if (ZON) zrender();
     if (nt && nt.kind === 'choice') { ch.innerHTML = nt.choices.map((c, i) => `<button type="button" data-nc="${i}" data-seg="nc${i}">${esc(c.label)}${c.desc ? `<br><small>${esc(c.desc)}</small>` : ''}</button>`).join(''); return; }
     ch.innerHTML = need ? C.options(D, st).map((e) => `<button type="button" data-seg="${e.seg}">${esc(NAME[e.seg] || (st.exclude ? 'このまま進む' : e.seg))}${st.rewards[D.segments[e.seg][1]] ? '（取得済み）' : ''}</button>`).join('') : '';
     if (need) { const op = C.options(D, st); const main = op.filter((e) => !C.index(D).spurs.includes(e.seg)); ch.querySelectorAll('button').forEach((b) => { const sp = C.index(D).spurs.includes(b.dataset.seg); if (!sp && main.length === 1 && !NAME[b.dataset.seg]) b.textContent = 'このまま進む'; }); }
+  }
+  // ---- P ハブの背景ゾーン（&rfZones=phub）。区域は今の地点と歩いた跡から決める（保存しない）----
+  function zloadAll() {
+    if (!ZON || zreg || zfail) return;
+    const Z = root.MMRF_ZONES; if (!Z) { zfail = 'MMRF_ZONES が読み込まれていない'; return; }
+    new Promise((ok, ng) => { const x = new XMLHttpRequest(); x.open('GET', ZREG); x.onload = () => { try { if (x.status >= 200 && x.status < 300) ok(JSON.parse(x.responseText)); else ng(new Error(ZREG + ' ' + x.status)); } catch (e) { ng(e); } }; x.onerror = () => ng(new Error(ZREG)); x.send(); }).then((reg) => {
+      zreg = reg; const ids = Z.assets(reg, null, Z.ROADFIRST_SKIP); let left = ids.length;
+      const box = el && el.querySelector('.rf-zone'); if (!box) return;
+      for (const id of ids) {   // 背景1枚につき <img> は1つ（Scene・区域をまたいでも src を差し替えない）
+        const a = reg.assets[id], d = document.createElement('div'); d.className = 'rf-zl'; d.dataset.asset = id;
+        d.innerHTML = `<div class="rf-zmap" style="width:${a.w}px;height:${a.h}px"><img alt="" width="${a.w}" height="${a.h}" draggable="false"><div class="rf-zmk"></div><div class="rf-zmon"><img src="${monSrc()}" alt="" draggable="false"></div></div>`;
+        box.appendChild(d);
+        const o = zlay[id] = { el: d, map: d.querySelector('.rf-zmap'), mk: d.querySelector('.rf-zmk'), mon: d.querySelector('.rf-zmon') };
+        const img = d.querySelector('img');
+        img.onload = () => { if (--left === 0 && !zfail) { zready = true; render(); cam(true); } };
+        img.onerror = () => { zfail = '区域の背景を読み込めません（' + a.file + '）。図面のまま進めます。'; zready = false; render(); cam(true); say(zfail); };
+        img.src = ZBASE + a.file;
+      }
+    }).catch((e) => { zfail = '区域の表を読み込めません。図面のまま進めます。'; say(zfail); });
+  }
+  function zview() {
+    const vp = el.querySelector('.rf-vp').getBoundingClientRect(), t = el.querySelector('.rf-top').getBoundingClientRect(),
+      b = el.querySelector('.rf-bot').getBoundingClientRect(), tl = el.querySelector('.rf-tools').getBoundingClientRect();
+    return { W: vp.width, H: vp.height, top: t.bottom - vp.top + 6, bottom: b.top - vp.top - 6, right: tl.left - vp.left - 6 };
+  }
+  /** 区域の背景を出す・消す。戻り値＝背景が変わったか（フェードを待つ） */
+  function zrender(instant) {
+    if (!ZON || !el) return false;
+    const box = el.querySelector('.rf-zone'), row = el.querySelector('.rf-zrow'); if (!box) return false;
+    const Z = root.MMRF_ZONES, node = vis ? vis.node : st.node, trail = vis ? st.trail.slice(0, vis.n) : st.trail;
+    const r = zready && !zoomAll ? Z.resolve(zreg, node, trail, null, Z.ROADFIRST_SKIP) : null;
+    const before = zcur ? zcur.asset : null;
+    zcur = r;
+    if (instant) { box.style.transition = 'none'; Object.values(zlay).forEach((o) => { o.el.style.transition = o.map.style.transition = o.mon.style.transition = 'none'; }); requestAnimationFrame(() => requestAnimationFrame(() => { box.style.transition = ''; Object.values(zlay).forEach((o) => { o.el.style.transition = o.map.style.transition = o.mon.style.transition = ''; }); })); }
+    box.classList.toggle('on', !!r);
+    const nx = vis || st.moveLeft > 0 || st.done ? [] : C.options(D, st).map((e) => e.dst);
+    if (row) {
+      row.classList.toggle('on', ZON);
+      const a = r && zreg.assets[r.asset];
+      row.innerHTML = r ? `<b>${esc(r.scene)}・区域 ${esc(r.id)}</b>｜${a.kind === 'candidate' ? 'P 中核の候補画像（美術は未承認）' : '構図参考図（仮背景）'}｜次の行き先 <b>${nx.length ? nx.map(esc).join('／') : '—'}</b>`
+        : zfail ? esc(zfail) : zready ? `P ハブの区域の外（図面）｜次の行き先 <b>${nx.length ? nx.map(esc).join('／') : '—'}</b>` : 'P ハブの区域の背景を読み込み中…';
+    }
+    if (!r) { zcam = null; return before !== null; }
+    for (const [id, o] of Object.entries(zlay)) o.el.classList.toggle('on', id === r.asset);
+    const sn = (zreg.scenes[r.scene] || {}).nodes || [], xy = Object.assign({}, r.xy), list = r.zone.nodes.slice();
+    for (const n of nx) if (!list.includes(n)) {   // 次の行き先が隣の Scene の区域でも、同じ背景なら印を出す（P → C01_01）
+      const q = Z.resolve(zreg, n, trail.concat(n), null, Z.ROADFIRST_SKIP); if (q && q.asset === r.asset) { list.push(n); xy[n] = q.at; }
+    }
+    const o = zlay[r.asset], c = zcam = Z.camera(zreg, r, zview(), nx.filter((n) => xy[n]).map((n) => xy[n]));
+    o.map.style.transform = `translate(${c.tx}px,${c.ty}px) scale(${c.s})`; o.map.style.setProperty('--inv', String(1 / c.s));
+    o.mk.innerHTML = list.map((n) => {
+      const p = xy[n], ro = D.nodes[n] ? D.nodes[n][2] : '', look = st.play ? P.tileLook(st, n) : null;
+      const cls = (n === zreg.hub ? ' hub' : '') + (/gate/.test(ro) ? ' gate' : '') + (nx.includes(n) ? ' nx' : '') + (look && look.used ? ' used' : '');
+      const lab = n === zreg.hub ? 'P' : /gate/.test(ro) ? '門' : sn.includes(n) ? String(sn.indexOf(n) + 1) : '次';
+      const bg = look ? (look.t === 'stat' ? look.color : look.t === 'wild' && look.rare ? '#c0143c' : (TILE_LOOK[look.t] || [])[0]) : '';
+      return `<div class="rf-zm${cls}" data-node="${n}" style="left:${p[0]}px;top:${p[1]}px${bg ? `;background:${bg};color:#fff` : ''}" title="${n}">${lab}</div>`;
+    }).join('');
+    o.mon.style.transform = `translate(${r.at[0]}px,${r.at[1]}px) scale(${1 / c.s})`;
+    return before !== r.asset;
   }
   async function showDie(v, label) { const d = el.querySelector('.rf-die'); d.querySelector('span').textContent = v; d.querySelector('small').textContent = label || ''; d.classList.add('on'); await wait(650); d.classList.remove('on'); }
   async function play(ev) {
     const steps = ev.filter((x) => x.type === 'step').length; vis = { node: st.trail[st.trail.length - 1 - steps], n: st.trail.length - steps };
     try { for (const x of ev) {
       if (!el) return;
-      if (x.type === 'step') { vis = { node: x.to, n: vis.n + 1 }; render(); cam(); await wait(210); }
+      if (x.type === 'step') { vis = { node: x.to, n: vis.n + 1 }; const zb = ZON && zcur ? zcur.asset : null; render(); cam(); await wait(ZON && (zcur ? zcur.asset : null) !== zb ? 320 : 210); }
       else if (x.type === 'gate') say(`${placeOf(x.at)}をくぐった（通り抜けの門）。`);
       else if (x.type === 'eventDie') { await showDie(x.die, x.kind === 'Q' ? 'イベントのサイコロ' : '挑戦のサイコロ'); say(x.kind === 'Q' ? `分かれ道 Q：イベントのサイコロ ${x.die}（${x.result === 'odd' ? '奇数 → 左の道' : '偶数 → 右の道'}）。中央の道（Q→R）は通れない。` : `特殊挑戦：サイコロ ${x.die} → ${x.result === 'success' ? '成功（5・6）！上の道へ' : '失敗（1〜4）。下の道へ（通常の道に戻れる・ペナルティなし）'}`); await wait(500); }
       else if (x.type === 'rival') { say('ライバル（リュウ）が立ちはだかった！（必ず通る地点。試作ではバトルなし）'); await wait(500); }
@@ -291,6 +371,7 @@
     const l = load();
     if (l && l.broken) { broken = l.broken; st = fresh(); } else { st = l || fresh(); persist(); }
     if (!document.getElementById('rfp')) mount();
+    if (ZON) zloadAll();
   }
   const api = {
     on: ON, KEY, start, close,
@@ -300,6 +381,8 @@
     rest: () => doRest(), ok: () => mainAction(), choice: (i) => pickChoice(i),
     set fast(v) { fast = !!v; if (el) el.classList.toggle('fast', fast); }, get fast() { return fast; },
     busy: () => busy,
+    zones: () => ({ on: ZON, ready: zready, failed: zfail, node: vis ? vis.node : st && st.node, scene: zcur && zcur.scene, zone: zcur && zcur.id, asset: zcur && zcur.asset,
+      at: zcur && zcur.at, cam: zcam, view: el && ZON ? zview() : null, next: st && !st.moveLeft && !st.done ? C.options(D, st).map((e) => e.dst) : [] }),
   };
   root.MMRF = api;
   if (ON && typeof document !== 'undefined') {
