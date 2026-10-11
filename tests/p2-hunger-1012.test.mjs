@@ -9,6 +9,8 @@
 //  P2-06 言葉：画面の「疲れ」を「空腹」に（回復の出来事9種・チュートリアル・HUD・操作欄）。出来事の数値・重み・挿絵は変えない
 //  P2-07 操作欄の画像：原本 deck_start.webp はそのまま・派生 deck_start_hunger.webp（焼き込みの「疲れ -30」を空欄）＋HTML の「空腹 −10」
 //  P2-08 ソラモ以外（ガウル・ジオル）でも：Chapter 1（1枚の世界）で食べる → 保存・読み込み → Chapter 2 へ（印は消える・−50）→ 食べる
+//  P2-09 重要回帰（PR #8 統合前）：1ターン1個の印は個体ごと（別の個体へ切り替えても持ち越さない・前の個体の印も残らない）・薬草も同じ1個に数える・
+//        育成放棄 → 新しい個体の出発で印なし・休む／読み込みを何度くり返しても1ターン1個・新人支援は読み込みのあとも二重に出ない・旧セーブの薬草は残る
 // =========================================================
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -157,4 +159,33 @@ test('P2-08：ソラモ以外（ガウル・ジオル）でも：Chapter 1 で�
     const bi = S.inv.bag.findIndex((it) => it.id === 'sweet_fruit'); assert.equal(CH.useFatigueItem(S, m, bi).ok, true); assert.equal(m.raise.fatigue, 7);
     S = reload(w, S); assert.equal(S.v, 6); assert.equal(S.m.raise.ate, '2:0');
   }
+});
+
+test('P2-09：重要回帰＝印は個体ごと・薬草も1個に数える・放棄 → 新しい個体・休む／読み込みのくり返し・新人支援の二重支給なし・旧セーブの薬草', () => {
+  const w = load(), { MMP7: P7, MMP8: P8, MMCH: CH } = w;
+  let S = setup(w, 0, 21), m = S.m; P7.bagAdd(S, 'potato', 5); P7.bagAdd(S, 'herb', 1);
+  m.raise.fatigue = 70;
+  const hi = S.inv.bag.findIndex((it) => it.id === 'herb'); assert.equal(CH.useFatigueItem(S, m, hi).ok, true, '薬草も食べ物と同じ欄で使える'); assert.equal(m.raise.fatigue, 40);
+  assert.equal(CH.useFatigueItem(S, m, 0).reason, 'ate', '薬草を使ったターンはジャガイモも使えない（共通の1個）');
+  for (let i = 0; i < 3; i++) {   // 休む → 読み込み をくり返しても、1ターンに1個
+    S = reload(w, S); m = S.m; assert.equal(CH.useFatigueItem(S, m, 0).reason, 'ate', `読み込み ${i}`);
+    assert.equal(P8.rest(S, m).ok, true); assert.equal(CH.useFatigueItem(S, m, 0).ok, true, `休んだ次のターンは1個 ${i}`);
+    assert.equal(CH.useFatigueItem(S, m, 0).reason, 'ate'); S = reload(w, S); m = S.m; assert.equal(CH.useFatigueItem(S, m, 0).reason, 'ate', `食べてすぐの読み込み ${i}`);
+    m.raise.fatigue = 60;
+  }
+  // 別の個体へ：育成を放棄 → 新しい個体（ガウル）が出発 → 印は無い（同じ Chapter・同じターン数でも前の個体の印を持ち越さない）
+  const used = m.raise.turnsUsed; assert.equal(P8.abandon(S, m.uid).ok, true); assert.equal(S.m, null);
+  S.m = P8.initIndividual(S, mon(1)); P7.ensureProg(S.m); assert.equal(P8.depart(S, S.m, lcg(22)).ok, true);
+  const m2 = S.m; assert.equal(m2.raise.ate, undefined); m2.raise.fatigue = 50; m2.raise.turnsUsed = used;
+  assert.equal(CH.useFatigueItem(S, m2, 0).ok, true, '新しい個体は自分の1個を食べられる');
+  // 牧場の個体と連れている個体を入れ替えても（育成中でない子の古い印）、出発で消える
+  const old = { ...mon(3), raise: { ate: `1:0`, ch: 1, turnsUsed: 0 } }; S.box = [old];
+  assert.equal(CH.itemUseState(m2).reason, 'ate', '連れている子は自分の印だけを見る');
+  S = reload(w, S); assert.equal(S.m.raise.ate, `1:${used}`, '印は保存される（v6 の任意項目）'); assert.equal(S.v, 6);
+  // 新人支援：受け取ったあと読み込み・再起動しても二重に出ない／受け取り済みの旧セーブ（薬草あり）は薬草が残る
+  const g = fnOf('grantSupport'), mk = (T) => (T.npcFlags = T.npcFlags || {}, new Function('S', 'finaFlags', 'MMP7', 'save', 'SUPPORT', `let SUPPORT_TO="bag";${g}\nreturn ()=>grantSupport();`)(T, () => T.npcFlags, P7, () => {}, w.MMFOOD.SUPPORT));
+  let N = P8.newSave(); N.g = 0; assert.equal(mk(N)(), true); N = reload(w, N); assert.equal(mk(N)(), false, '読み込みのあとも1回だけ'); N = reload(w, N); assert.equal(mk(N)(), false);
+  assert.deepEqual([N.g, P7.itemCount(N, 'potato')], [1000, 10]);
+  const O = P8.newSave(); O.npcFlags = { support: 1 }; O.inv.bag = [{ id: 'herb' }, { id: 'herb' }];
+  const o2 = reload(w, O); assert.equal(P7.itemCount(o2, 'herb'), 2, '旧セーブの薬草は消えない（まとまるだけ）'); assert.equal(mk(o2)(), false); assert.equal(P7.itemCount(o2, 'potato'), 0, '追加で配らない');
 });
