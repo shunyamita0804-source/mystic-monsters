@@ -74,3 +74,17 @@ URL に `?chapterBoard=roadfirst&rfView=world&rfArt=1010` を付けたときだ�
 | tile_goal／tile_merge／tile_gate／tile_challenge／tile_den.webp | G2／G3／G4／G5／G7 | GOAL／合流（2本以上が入ってくる地点＝P・R・FINAL・L_MERGE など）／下門・上門／特殊挑戦／隠れ家のマス（仮の文字「G・合・門・挑・隠」の代わり） |
 
 E14a と E14b は門以外の細部も少し描き直されている（画素の約1割が違う）。開閉は旅の初めに決まり、旅の途中で入れ替わらないので見た目の問題は無い。
+
+## 第4便（2026-10-11・ZIP mystic_ch1a_board_batch4_10images。10枚・後半の山の区域）
+
+| ファイル | 元 | 加工 | 使い方（js/proto/roadfirst-world.js） |
+|---|---|---|---|
+| ground_cloud.webp | A6_cloudsea.png | 継ぎ目を消して 512px | 雲海＝後半の左右の輪の内側（TERRAIN の sky_l・sky_r）。真ん中の LATE_SAFE は雲海の上の尾根 |
+| edge_cloud.webp | B4_cloud_edge.png | 左右がつながる位置で切り、切れ目の先を頭に重ねて端をつなぐ・高さ 240px | 雲海のふち（岩の断崖 → 雲） |
+| edge_shore.webp | B2_shore.png | 同上・高さ 220px | 谷の中の川の岸（谷の暗さの下） |
+| edge_forest.webp | B3_forest_edge.png | 同上・高さ 220px | 森のふち（影が森の外へ向く）＋森の中の樹冠（この帯を段に重ねたくり返し＝canopyTile） |
+| prop_waterfall／prop_stream_rocks／prop_lilies／prop_reeds.webp | F4a〜F4d | 透明な余白を切って縮小 | 川の景物（waterProps：川の始まりに滝・川筋に渓流の岩と睡蓮を交互・岸に葦・石橋のまわりは空ける） |
+| prop_mossy_rock.webp | F4e | 同上 | 道の外に散らす景物に追加（割合 0.04） |
+| prop_peak.webp | F5 | 同上 | 山の岩峰 8つ（ART.peaks・道から 50単位以上離れた所） |
+
+森（forest_s・forest_se・forest_w・forest_sw）＝START の両側の針葉樹林・左の祭壇のまわり・左下の岩棚の森。形は決まった揺らぎで自然な輪郭に（wobble）。雲海と森の中の目印（ライオン石像・森の祭壇など）のまわりは円く抜いて岩棚・空き地にする。

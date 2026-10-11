@@ -35,10 +35,16 @@
     // 景物の割合（p の合計 1）。第2便で針葉樹・茂み・石柱・小花を追加
     props: [{ key: 'tree', file: 'prop_tree.webp', w: 30, p: 0.30 }, { key: 'conifer', file: 'prop_conifer.webp', w: 17, p: 0.22 },
       { key: 'shrub', file: 'prop_shrub.webp', w: 17, p: 0.18 }, { key: 'rock', file: 'prop_rock.webp', w: 24, p: 0.12 },
-      { key: 'flowers', file: 'prop_flowers.webp', w: 13, p: 0.13 }, { key: 'pillar', file: 'prop_pillar.webp', w: 11, p: 0.05 }],
+      { key: 'flowers', file: 'prop_flowers.webp', w: 13, p: 0.10 }, { key: 'pillar', file: 'prop_pillar.webp', w: 11, p: 0.04 },
+      { key: 'mossy', file: 'prop_mossy_rock.webp', w: 16, p: 0.04 }],   // 第4便：苔むした岩
     goal: { file: 'goal_arena.webp', w: 150, dy: 14 },      // GOAL の後ろ（足もと＝GOAL の 14単位手前）
     terrain: { valley: { file: 'ground_valley.webp', tile: 72 }, water: { file: 'ground_water.webp', tile: 80 },   // 谷底は小さく＝遠く深く見せる
-      edges: { grass: { file: 'edge_grass.webp', w: 22, shift: 5 }, rock: { file: 'edge_rock.webp', w: 22, shift: 5 } }, depth: 0.32 },   // shift＝崖の帯を谷の側へずらす（岩肌が谷へ垂れる）・depth＝谷の暗さ
+      cloud: { file: 'ground_cloud.webp', tile: 150 }, canopy: { row: 13 },   // 第4便：雲海（A6）・森の樹冠（B3 の帯を段に重ねたくり返し・段の間隔 13単位）
+      edges: { grass: { file: 'edge_grass.webp', w: 22, shift: 5 }, rock: { file: 'edge_rock.webp', w: 22, shift: 5 },
+        shore: { file: 'edge_shore.webp', w: 16, shift: 2 }, cloud: { file: 'edge_cloud.webp', w: 26, shift: 7 }, forest: { file: 'edge_forest.webp', w: 30, shift: 3, flip: true } }, depth: 0.32 },
+    // 第4便：水辺の景物（谷の中の川に沿って並べる。滝は川の始まり）・山の岩峰（後半の山の区域の道から離れた所）
+    water: { fall: { file: 'prop_waterfall.webp', w: 40 }, rocks: { file: 'prop_stream_rocks.webp', w: 17 }, lilies: { file: 'prop_lilies.webp', w: 15 }, reeds: { file: 'prop_reeds.webp', w: 12 }, every: 34 },
+    peaks: { file: 'prop_peak.webp', at: [[160, 112, 62], [330, 96, 54], [700, 84, 56], [872, 96, 60], [994, 262, 50], [58, 486, 58], [236, 566, 50], [800, 560, 54]] },   // shift＝崖の帯を谷の側へずらす（岩肌が谷へ垂れる）・depth＝谷の暗さ
     // 決まった地点の目印（第2便・第3便）。along＝進む向きへずらす（行き止まりは奥へ）・side＝進む向きの右へずらす・z＝前後（負＝モンスターより奥）
     //   off＝地点からの決まったずれ（石像＝3本の道の分かれ目の奥の空き地）。門（START・下門・上門）は地点のすぐ奥で道をまたぐ＝モンスターは門の前に立つ。open＝隠れ家が開いている回の絵（st.randOpen）
     landmarks: [{ node: 'START', file: 'lm_start_gate.webp', w: 40, along: 7, z: -30 },
@@ -60,6 +66,14 @@
       loop: [['Q_L1'], ['Q_L2'], ['Q_L3'], ['Q_L4'], ['Q_R4', 1], ['Q_R3', 1], ['Q_R2', 1], ['Q_R1', 1]],
       arms: [{ line: [[410, 770], [372, 794], [325, 856], [262, 938]], w: 44 }, { line: [[614, 770], [652, 794], [699, 856], [762, 938]], w: 44 }],
       bridges: ['Q_L2', 'Q_R2'], water: [{ line: [[600, 745], [652, 794], [699, 856], [762, 938]], w: 22 }] },
+    // 第4便（2026-10-11）：後半の山の区域＝左右の輪の内側が雲海（Scene36〜62「山並み」「雲海」）→ 真ん中の LATE_SAFE は雲海の上の尾根（中央の安全な尾根）
+    { id: 'sky_l', kind: 'cloud', edge: 'cloud', loop: [['LATE_L1'], ['LATE_L_FAIL'], ['LATE_L_FAIL_JOIN'], ['LATE_L_DONE'], ['LATE_SAFE', 1]], arms: [], bridges: [], water: [] },
+    { id: 'sky_r', kind: 'cloud', edge: 'cloud', loop: [['LATE_R1'], ['LATE_R2'], ['LATE_R3'], ['LATE_R_DONE'], ['LATE_SAFE', 1]], arms: [], bridges: [], water: [] },
+    // 森（樹冠）：START の両側の針葉樹林（Scene01）・左の祭壇のまわり（Scene11〜13）・左下の岩棚の森。道のまわり・谷・目印のまわりは空ける
+    { id: 'forest_s', kind: 'forest', edge: 'forest', wobble: 12, poly: [[300, 1352], [470, 1338], [470, 1536], [228, 1536]], arms: [], bridges: [], water: [] },
+    { id: 'forest_se', kind: 'forest', edge: 'forest', wobble: 12, poly: [[554, 1338], [724, 1352], [796, 1536], [554, 1536]], arms: [], bridges: [], water: [] },
+    { id: 'forest_w', kind: 'forest', edge: 'forest', wobble: 12, poly: [[0, 872], [300, 872], [452, 948], [248, 1036], [120, 1006], [0, 1010]], arms: [], bridges: [], water: [] },
+    { id: 'forest_sw', kind: 'forest', edge: 'forest', wobble: 12, poly: [[0, 1262], [196, 1238], [214, 1330], [120, 1536], [0, 1536]], arms: [], bridges: [], water: [] },
   ];
   const ROAD_LAND = 18;   // 道の中心から谷のふちまで（単位）＝道の両側に残す陸
   const APRON = 640;   // 世界の外に続ける草地の幅（単位）
@@ -149,10 +163,12 @@
       const base = o.art.base || './assets/proto/board_art_1010/';
       const load = (f) => new Promise((res) => { const im = new root.Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = base + f; });
       const T = ART.terrain;
+      const EK = Object.keys(T.edges);
       Promise.all([load(ART.ground.file), load(ART.road.file), o.art.road === 'pattern' ? null : load(ART.strip.file),
-        load(T.valley.file), load(T.water.file), load(T.edges.grass.file), load(T.edges.rock.file)]).then(([gi, ri, si, vi, wi, eg, er]) => {
+        load(T.valley.file), load(T.water.file), load(T.cloud.file), ...EK.map((k) => load(T.edges[k].file))]).then(([gi, ri, si, vi, wi, ci, ...ei]) => {
         if (S.dead) return; art.ground = gi; art.road = ri; art.strip = si;
-        if (vi) { art.terrain = terrainMasks(doc, D, o); art.valley = vi; art.water = wi; art.edges = { grass: eg, rock: er }; }
+        if (vi) { art.terrain = terrainMasks(doc, D, o); art.valley = vi; art.water = wi; art.cloud = ci; art.edges = {}; EK.forEach((k, i) => { art.edges[k] = ei[i]; });
+          if (art.edges.forest) art.canopy = canopyTile(doc, art.edges.forest); }
         if (gi || ri) { paint(); wrap.classList.add('art'); } else paint();
         // 世界の外（端へ寄ったときに見える所）も同じ草地で続ける：平面の中の安い背景（canvas は世界の中だけ）
         if (gi) { const ap = doc.createElement('div'); ap.className = 'rfw-apron'; const m = APRON;
@@ -163,6 +179,8 @@
       for (const q of scatter(D, o)) add(q.file, q.x, q.y, q.w);
       const gn = D.nodes.GOAL; if (gn) add(ART.goal.file, gn[0], gn[1] + ART.goal.dy, ART.goal.w, -40, 'rfw-goal');
       for (const L of ART.landmarks) { const at = landmarkAt(D, L); if (at) { add(L.file, at[0], at[1], L.w, L.z || 0, 'rfw-lm'); props[props.length - 1].L = L; } }
+      for (const q of waterProps(D)) add(q.file, q.x, q.y, q.w, q.z || 0, 'rfw-wp');   // 第4便：川の景物
+      for (const [x, y, w] of ART.peaks.at) add(ART.peaks.file, x, y, w, -20, 'rfw-peak');   // 第4便：山の岩峰
     }
     const S = {
       cam: { tx: WORLD.w / 2, ty: WORLD.h / 2, s: 1, tilt: 0, P: o.persp, ax: 0, ay: 0 }, goal: null, mon: null, monGoal: null,
@@ -272,7 +290,8 @@
       skipIntro() { if (S.intro) { const d = S.intro.done; S.intro = null; wrap.classList.remove('intro'); rootEl.classList.remove('rfw-intro'); title.style.opacity = '0'; if (S.goal) S.cam = Object.assign({}, S.goal); if (d) d(); } },
       inIntro: () => !!S.intro,
       state: () => ({ cam: Object.assign({}, S.cam), goal: S.goal && Object.assign({}, S.goal), mon: S.mon && S.mon.slice(), view: S.view, intro: !!S.intro, ahead: S.lastAhead || [],
-        tiles: Object.keys(tiles).length, chunks: chunks.length, painted, res: o.res, tilt: o.tilt, props: props.length, art: !!(art.ground || art.road), rims: art.terrain ? art.terrain.rims.map((r) => r.pts.length) : null }),
+        tiles: Object.keys(tiles).length, chunks: chunks.length, painted, res: o.res, tilt: o.tilt, props: props.length, art: !!(art.ground || art.road), rims: art.terrain ? art.terrain.rims.filter((r) => r.kind === 'valley').map((r) => r.pts.length) : null,
+        rimKinds: art.terrain ? art.terrain.rims.reduce((a, r) => { a[r.kind] = (a[r.kind] || 0) + 1; return a; }, {}) : null }),
       project: (x, y) => project(S.cam, x, y),
       frames: (reset) => { const f = S.frames.slice(); if (reset) S.frames = []; return f; },
       destroy() { S.dead = true; root.cancelAnimationFrame(S.raf); wrap.remove(); },
@@ -321,8 +340,19 @@
   }
 
   /** 谷の多角形（区間を順にたどる） */
+  const POLY_CACHE = new Map();
   function loopPoly(D, T) {
+    if (T.poly) { if (!POLY_CACHE.has(T)) POLY_CACHE.set(T, wobble(T.poly, T.wobble || 0, T.id)); return POLY_CACHE.get(T); }
     const out = []; for (const [id, rev] of T.loop) { const s = D.segments[id]; if (!s) continue; const ns = s[3].map((n) => D.nodes[n]); (rev ? ns.slice().reverse() : ns).forEach((p) => out.push([p[0], p[1]])); }
+    return out;
+  }
+  /** 多角形の辺を細かく分けて、決まった揺らぎ（いくつかの正弦の和）で外へ内へずらす＝森のふちを自然な形に。世界の端の上の点は動かさない */
+  function wobble(poly, amp, seed) {
+    if (!amp) return poly; let h = 0; for (const c of String(seed)) h = (h * 31 + c.charCodeAt(0)) % 997;
+    const out = [], n = poly.length; let u = 0;
+    for (let i = 0; i < n; i++) { const a = poly[i], b = poly[(i + 1) % n], L = Math.hypot(b[0] - a[0], b[1] - a[1]), k = Math.max(1, Math.round(L / 8)), nx = -(b[1] - a[1]) / (L || 1), ny = (b[0] - a[0]) / (L || 1);
+      for (let j = 0; j < k; j++) { const t = j / k, x = a[0] + (b[0] - a[0]) * t, y = a[1] + (b[1] - a[1]) * t, e = x <= 0 || y >= WORLD.h || x >= WORLD.w || y <= 0;
+        const w = e ? 0 : amp * (0.55 * Math.sin(u / 23 + h) + 0.3 * Math.sin(u / 9.7 + h * 1.7) + 0.15 * Math.sin(u / 4.1 + h * 0.3)); out.push([x + nx * w, y + ny * w]); u += L / k; } }
     return out;
   }
   function inPoly(poly, x, y) { let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const a = poly[i], b = poly[j]; if ((a[1] > y) !== (b[1] > y) && x < (b[0] - a[0]) * (y - a[1]) / (b[1] - a[1]) + a[0]) c = !c; } return c; }
@@ -338,21 +368,32 @@
     }
     return null;
   }
-  /** 谷と水の範囲の画像（世界の1単位＝1px。区画ごとに切り抜きに使う）と、谷のふちの線（崖の帯を並べる） */
+  /** 谷・雲海・森と水の範囲の画像（世界の1単位＝1px。区画ごとに切り抜きに使う）と、ふちの線（帯を並べる） */
   function terrainMasks(doc, D, o) {
     const mk = () => { const c = doc.createElement('canvas'); c.width = WORLD.w; c.height = WORLD.h; return c; };
-    const valley = mk(), water = mk(), g = valley.getContext('2d'), wg = water.getContext('2d');
+    const M = { valley: mk(), cloud: mk(), forest: mk() }, water = mk(), wg = water.getContext('2d');
     const bridges = new Set(TERRAIN.flatMap((T) => T.bridges));
-    g.fillStyle = '#fff'; g.strokeStyle = '#fff'; g.lineCap = g.lineJoin = 'round';
-    for (const T of TERRAIN) { const P = loopPoly(D, T); g.beginPath(); P.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.closePath(); g.fill();
+    for (const T of TERRAIN) { const g = M[T.kind || 'valley'].getContext('2d'); g.fillStyle = '#fff'; g.strokeStyle = '#fff'; g.lineCap = g.lineJoin = 'round';
+      const P = loopPoly(D, T); g.beginPath(); P.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.closePath(); g.fill();
       for (const A of T.arms) { g.lineWidth = A.w; g.beginPath(); A.line.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.stroke(); } }
-    g.globalCompositeOperation = 'destination-out'; g.lineWidth = ROAD_LAND * 2;
-    for (const [id, s] of Object.entries(D.segments)) { if (bridges.has(id)) continue; const P = curvePts(s[3].map((n) => D.nodes[n])); g.beginPath(); P.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.stroke(); }
+    for (const [kind, cv] of Object.entries(M)) {   // 道のまわりは陸（谷だけ石橋の区間は谷の上を渡る）
+      const g = cv.getContext('2d'); g.globalCompositeOperation = 'destination-out'; g.lineCap = g.lineJoin = 'round'; g.lineWidth = ROAD_LAND * 2;
+      for (const [id, s] of Object.entries(D.segments)) { if (kind === 'valley' && bridges.has(id)) continue; const P = curvePts(s[3].map((n) => D.nodes[n])); g.beginPath(); P.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.stroke(); }
+      if (kind !== 'valley') {   // 雲海・森：目印（石像・祭壇など）のまわりは岩棚・空き地にする。森は谷にかからない
+        g.fillStyle = '#000'; for (const L of ART.landmarks) { const at = landmarkAt(D, L); if (at) { g.beginPath(); g.arc(at[0], at[1] - L.w * 0.18, L.w * 0.62, 0, 7); g.fill(); } }
+        if (kind === 'forest') g.drawImage(M.valley, 0, 0);
+      }
+    }
     wg.strokeStyle = '#fff'; wg.lineCap = wg.lineJoin = 'round';
     for (const T of TERRAIN) for (const A of T.water || []) { wg.lineWidth = A.w; wg.beginPath(); A.line.forEach((p, i) => (i ? wg.lineTo(p[0], p[1]) : wg.moveTo(p[0], p[1]))); wg.stroke(); }
-    wg.globalCompositeOperation = 'destination-in'; wg.drawImage(valley, 0, 0);
-    // ふちの線：谷の範囲の輪郭（3単位の格子の marching squares → つないで → なめらかに）。谷は進む向きの右側（崖の帯の絵の上＝草は左＝陸）
-    const a = g.getImageData(0, 0, WORLD.w, WORLD.h).data, step = 3, nx = Math.ceil(WORLD.w / step) + 1, ny = Math.ceil(WORLD.h / step) + 1;
+    wg.globalCompositeOperation = 'destination-in'; wg.drawImage(M.valley, 0, 0);
+    const edgeAt = (kind) => (p) => { const T = TERRAIN.filter((t) => (t.kind || 'valley') === kind).find((t) => inPoly(loopPoly(D, t), p[0], p[1]) || t.arms.some((A) => distLine(A.line, p[0], p[1]) < A.w)); return T ? T.edge : kind === 'valley' ? TERRAIN[0].edge : kind; };
+    const rims = [...rimsOf(M.valley, edgeAt('valley'), 'valley'), ...rimsOf(water, () => 'shore', 'water'), ...rimsOf(M.cloud, edgeAt('cloud'), 'cloud'), ...rimsOf(M.forest, edgeAt('forest'), 'forest')];
+    return { valley: M.valley, cloud: M.cloud, forest: M.forest, water, rims };
+  }
+  /** 範囲の画像の輪郭（3単位の格子の marching squares → つないで → なめらかに）。範囲は進む向きの右側（帯の絵の上＝左＝外側） */
+  function rimsOf(cv, edgeOf, kind) {
+    const a = cv.getContext('2d').getImageData(0, 0, WORLD.w, WORLD.h).data, step = 3, nx = Math.ceil(WORLD.w / step) + 1, ny = Math.ceil(WORLD.h / step) + 1;
     const inside = (i, j) => { const x = Math.min(WORLD.w - 1, i * step), y = Math.min(WORLD.h - 1, j * step); return a[(y * WORLD.w + x) * 4 + 3] > 127; };
     const edges = [];
     for (let j = 0; j < ny - 1; j++) for (let i = 0; i < nx - 1; i++) {
@@ -362,29 +403,26 @@
       const map = { 1: [[L, B]], 2: [[B, R]], 3: [[L, R]], 4: [[R, T]], 5: [[L, T], [R, B]], 6: [[B, T]], 7: [[L, T]], 8: [[T, L]], 9: [[T, B]], 10: [[T, R], [B, L]], 11: [[T, R]], 12: [[R, L]], 13: [[R, B]], 14: [[B, L]] };
       for (const e of map[k]) edges.push(e);
     }
-    // 端の点でつなぐ（向きは問わない＝両方向へ伸ばす。向きはあとで谷の側からそろえる）
+    // 端の点でつなぐ（向きは問わない＝両方向へ伸ばす。向きはあとで範囲の側からそろえる）
     const key = (p) => p[0] + ',' + p[1], at = new Map();
     edges.forEach((e, i) => { for (const p of e) { const k = key(p); if (!at.has(k)) at.set(k, []); at.get(k).push(i); } });
     const used = new Set(), lines = [];
     const grow = (ln, tail) => { for (;;) { const k = key(tail ? ln[ln.length - 1] : ln[0]); const n = (at.get(k) || []).find((j) => !used.has(j)); if (n === undefined) return;
       used.add(n); const e = edges[n], nx = key(e[0]) === k ? e[1] : e[0]; if (tail) ln.push(nx); else ln.unshift(nx); } };
     for (let i = 0; i < edges.length; i++) { if (used.has(i)) continue; used.add(i); const ln = [edges[i][0], edges[i][1]]; grow(ln, true); grow(ln, false); if (ln.length > 6) lines.push(ln); }
-    // 向き：谷が進む向きの右側になるようにそろえる（線ごとに確かめる）
-    const valleyAt = (x, y) => x >= 0 && y >= 0 && x < WORLD.w && y < WORLD.h && a[((y | 0) * WORLD.w + (x | 0)) * 4 + 3] > 127;
+    const inAt = (x, y) => x >= 0 && y >= 0 && x < WORLD.w && y < WORLD.h && a[((y | 0) * WORLD.w + (x | 0)) * 4 + 3] > 127;
     const smooth = (p) => { for (let it = 0; it < 3; it++) { const q = [p[0]]; for (let i = 0; i < p.length - 1; i++) { const A = p[i], B = p[i + 1]; q.push([A[0] * 0.75 + B[0] * 0.25, A[1] * 0.75 + B[1] * 0.25], [A[0] * 0.25 + B[0] * 0.75, A[1] * 0.25 + B[1] * 0.75]); } q.push(p[p.length - 1]); p = q; } return p; };
-    const rims = lines.map((ln) => {
+    return lines.map((ln) => {
       let vote = 0; for (let i = 0; i < ln.length - 1; i += 3) { const A = ln[i], B = ln[i + 1], dx = B[0] - A[0], dy = B[1] - A[1], L = Math.hypot(dx, dy) || 1, mx = (A[0] + B[0]) / 2, my = (A[1] + B[1]) / 2;
-        vote += valleyAt(mx - dy / L * 4, my + dx / L * 4) ? 1 : -1; }   // 右側（y が下向き）＝(-dy, dx)
+        vote += inAt(mx - dy / L * 4, my + dx / L * 4) ? 1 : -1; }   // 右側（y が下向き）＝(-dy, dx)
       const p = vote >= 0 ? ln : ln.slice().reverse();
-      const T = TERRAIN.find((t) => inPoly(loopPoly(D, t), p[0][0], p[0][1]) || t.arms.some((A) => distLine(A.line, p[0][0], p[0][1]) < A.w)) || TERRAIN[0];
-      return { pts: resample(smooth(p), 2.5), edge: T.edge };
+      return { pts: resample(smooth(p), 2.5), edge: edgeOf(p[0]), kind };
     });
-    return { valley, water, rims };
   }
   /** 点の列をおよそ同じ間隔（d 単位）に間引く */
   function resample(p, d) { const out = [p[0]]; let acc = 0; for (let i = 1; i < p.length; i++) { acc += Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]); if (acc >= d || i === p.length - 1) { out.push(p[i]); acc = 0; } } return out; }
   let TMP = null;
-  /** 谷（谷底の絵・水）と崖のふちを描く。谷の範囲にかからない区画は何もしない・区画の外の崖の帯は描かない */
+  /** 谷（谷底の絵・水・岸）・崖のふち・雲海・森を描く。どの範囲にもかからない区画は何もしない・区画の外の帯は描かない */
   function drawTerrain(g, D, o, art, bx) {
     const m = art && art.terrain; if (!m) return;
     if (!m.bbox) { const xs = m.rims.flatMap((r) => r.pts.map((q) => q[0])), ys = m.rims.flatMap((r) => r.pts.map((q) => q[1])); m.bbox = [Math.min(...xs) - 30, Math.min(...ys) - 30, Math.max(...xs) + 30, Math.max(...ys) + 30]; }
@@ -392,21 +430,33 @@
     if (!TMP) TMP = g.canvas.ownerDocument.createElement('canvas');
     const tmp = TMP; if (tmp.width !== g.canvas.width || tmp.height !== g.canvas.height) { tmp.width = g.canvas.width; tmp.height = g.canvas.height; }
     const tg = tmp.getContext('2d'); tg.setTransform(g.getTransform());
-    const layer = (im, tile, mask) => { tg.globalCompositeOperation = 'source-over'; tg.clearRect(bx[0], bx[1], bx[2], bx[3]); tg.fillStyle = pattern(tg, im, tile); tg.fillRect(bx[0], bx[1], bx[2], bx[3]);
-      const sx = Math.max(0, Math.floor(bx[0])), sy = Math.max(0, Math.floor(bx[1])), sw = Math.min(WORLD.w, Math.ceil(bx[0] + bx[2])) - sx, sh = Math.min(WORLD.h, Math.ceil(bx[1] + bx[3])) - sy;
-      tg.globalCompositeOperation = 'destination-in'; if (sw > 0 && sh > 0) tg.drawImage(mask, sx, sy, sw, sh, sx, sy, sw, sh); g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(tmp, 0, 0); g.restore(); };
+    const sx = Math.max(0, Math.floor(bx[0])), sy = Math.max(0, Math.floor(bx[1])), sw = Math.min(WORLD.w, Math.ceil(bx[0] + bx[2])) - sx, sh = Math.min(WORLD.h, Math.ceil(bx[1] + bx[3])) - sy;
+    const clip = (mask) => { tg.globalCompositeOperation = 'destination-in'; if (sw > 0 && sh > 0) tg.drawImage(mask, sx, sy, sw, sh, sx, sy, sw, sh); g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(tmp, 0, 0); g.restore(); };
+    const layer = (im, tile, mask) => { if (!im) return; tg.globalCompositeOperation = 'source-over'; tg.clearRect(bx[0], bx[1], bx[2], bx[3]); tg.fillStyle = pattern(tg, im, tile); tg.fillRect(bx[0], bx[1], bx[2], bx[3]); clip(mask); };
+    const edgesOf = (kind) => { for (const r of m.rims) { if (r.kind !== kind) continue; const E = art.edges && art.edges[r.edge], C = ART.terrain.edges[r.edge]; if (E && C) stripAlong(g, C.flip ? r.pts.slice().reverse() : r.pts, E, C.w, bx, C.shift); } };
     layer(art.valley, ART.terrain.valley.tile, m.valley);
-    if (art.water) layer(art.water, ART.terrain.water.tile, m.water);
+    if (art.water) { layer(art.water, ART.terrain.water.tile, m.water); edgesOf('water'); }   // 川の岸（B2）も谷の暗さの下に入れる
     // 深さ：谷全体を少し暗く＋ふちの内側に崖の影（谷の範囲で切り抜く）
     tg.globalCompositeOperation = 'source-over'; tg.clearRect(bx[0], bx[1], bx[2], bx[3]);
     tg.fillStyle = `rgba(8,26,38,${ART.terrain.depth})`; tg.fillRect(bx[0], bx[1], bx[2], bx[3]);
     tg.lineJoin = tg.lineCap = 'round';
     for (const [lw, a] of [[46, 0.22], [26, 0.28]]) { tg.strokeStyle = `rgba(4,14,22,${a})`; tg.lineWidth = lw;
-      for (const r of m.rims) { tg.beginPath(); r.pts.forEach((q, i) => (i ? tg.lineTo(q[0], q[1]) : tg.moveTo(q[0], q[1]))); tg.stroke(); } }
-    { const sx = Math.max(0, Math.floor(bx[0])), sy = Math.max(0, Math.floor(bx[1])), sw = Math.min(WORLD.w, Math.ceil(bx[0] + bx[2])) - sx, sh = Math.min(WORLD.h, Math.ceil(bx[1] + bx[3])) - sy;
-      tg.globalCompositeOperation = 'destination-in'; if (sw > 0 && sh > 0) tg.drawImage(m.valley, sx, sy, sw, sh, sx, sy, sw, sh); }
-    g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(tmp, 0, 0); g.restore();
-    for (const r of m.rims) { const E = art.edges && art.edges[r.edge], C = ART.terrain.edges[r.edge]; if (E) stripAlong(g, r.pts, E, C.w, bx, C.shift); }
+      for (const r of m.rims) { if (r.kind !== 'valley') continue; tg.beginPath(); r.pts.forEach((q, i) => (i ? tg.lineTo(q[0], q[1]) : tg.moveTo(q[0], q[1]))); tg.stroke(); } }
+    clip(m.valley);
+    edgesOf('valley');
+    layer(art.cloud, ART.terrain.cloud.tile, m.cloud); edgesOf('cloud');
+    if (art.canopy) layer(art.canopy.cv, art.canopy.tile, m.forest); edgesOf('forest');
+  }
+  /** 森の樹冠のくり返し（B3 の帯を段に重ねる。横は帯のくり返し・縦は段の間隔でつながる） */
+  function canopyTile(doc, im) {
+    const C = ART.terrain.edges.forest, ppu = im.height / C.w, step = Math.round(ART.terrain.canopy.row * ppu), rows = 4, H = step * rows;
+    const cv = doc.createElement('canvas'); cv.width = im.width; cv.height = H; const g = cv.getContext('2d');
+    g.fillStyle = '#2f5a24'; g.fillRect(0, 0, im.width, H);   // 樹冠のすき間＝暗い森の床
+    // 上の段から下の段へ（下の段が上の段の影を隠す）。くり返しの継ぎ目をまたぐ写しは先に描く
+    const row = (k, dy) => { const x = Math.round((k % rows) * im.width * 0.37) % im.width; for (const xx of [x, x - im.width]) g.drawImage(im, xx, k * step - im.height / 2 + dy); };
+    for (let k = 0; k <= rows; k++) row(k, -H);
+    for (let k = 0; k <= rows; k++) row(k, 0);
+    return { cv, tile: im.width / ppu };
   }
   /** 地点を通るなめらかな線（drawRoads の path と同じ曲線）を細かい点の列に */
   function curvePts(p) {
@@ -442,6 +492,25 @@
     if (p) { dx = n[0] - p[0]; dy = n[1] - p[1]; } else if (q) { dx = q[0] - n[0]; dy = q[1] - n[1]; }
     const k = Math.hypot(dx, dy) || 1, a = L.along || 0, sd = L.side || 0; return [n[0] + (dx * a - dy * sd) / k, n[1] + (dy * a + dx * sd) / k];
   }
+  /** 折れ線の上に d 単位ごとの点（始点を含む） */
+  function alongLine(line, d) { const out = [line[0]]; let rest = d; for (let i = 0; i < line.length - 1; i++) { const a = line[i], b = line[i + 1], L = Math.hypot(b[0] - a[0], b[1] - a[1]); let t = rest;
+    while (t <= L) { out.push([a[0] + (b[0] - a[0]) * t / L, a[1] + (b[1] - a[1]) * t / L]); t += d; } rest = t - L; } return out; }
+  /** 川の景物（決まった並び）：川の始まりに小さな滝、川筋に沿って渓流の岩と睡蓮を交互に、岸に葦。道（石橋）のまわりには置かない */
+  function waterProps(D) {
+    const W = ART.water, out = [], segs = Object.values(D.segments).map((s) => s[3].map((n) => D.nodes[n]));
+    const nearRoad = (x, y, r) => segs.some((l) => distLine(l, x, y) < r);
+    for (const T of TERRAIN) for (const A of T.water || []) {
+      const P = alongLine(A.line, W.every).filter((q) => q[1] < WORLD.h - 20 && q[0] < WORLD.w - 10); out.push({ file: W.fall.file, x: A.line[0][0], y: A.line[0][1] + 6, w: W.fall.w, z: -10 });
+      P.slice(1).forEach((q, i) => {
+        const r = P[Math.min(i + 2, P.length - 1)], dx = r[0] - q[0], dy = r[1] - q[1], L = Math.hypot(dx, dy) || 1, s = i % 2 ? 1 : -1;
+        if (nearRoad(q[0], q[1], 24)) return;
+        const P2 = i % 2 ? W.lilies : W.rocks; out.push({ file: P2.file, x: q[0] - dy / L * A.w * 0.12 * s, y: q[1] + dx / L * A.w * 0.12 * s, w: P2.w });
+        const rx = q[0] + dy / L * (A.w * 0.5 + 3) * s, ry = q[1] - dx / L * (A.w * 0.5 + 3) * s;
+        if (i % 3 === 1 && !nearRoad(rx, ry, 24)) out.push({ file: W.reeds.file, x: rx, y: ry, w: W.reeds.w });
+      });
+    }
+    return out;
+  }
   /** 道の外に木と岩を散らす（決まった乱数・道とマスから離す・道の近くだけ）。第1便の検証用 */
   function scatter(D, o) {
     const pts = []; for (const s of Object.values(D.segments)) { const p = s[3].map((id) => D.nodes[id]);
@@ -457,6 +526,7 @@
       if (d < gap || d > 66 || r > 0.62 || py < 150) continue;   // GOAL の会場のまわり（y<150）には置かない
       if (inValley(D, px, py)) continue;   // 谷の中には置かない
       if (ART.landmarks.some((L) => { const at = landmarkAt(D, L); return at && Math.hypot(at[0] - px, at[1] - py) < L.w * 0.75; })) continue;   // 目印のまわりにも置かない
+      if (ART.peaks.at.some(([x0, y0, w0]) => Math.hypot(x0 - px, y0 - py) < w0 * 0.6)) continue;   // 岩峰のまわりにも置かない
       let acc = 0, P = ART.props[ART.props.length - 1]; for (const c of ART.props) { acc += c.p; if (pick < acc) { P = c; break; } }
       out.push({ x: px, y: py, file: P.file, w: P.w * (0.8 + rnd() * 0.45) });
     }
@@ -490,6 +560,6 @@
     doc.head.appendChild(s);
   }
 
-  const api = { DEF, WORLD, ART, TERRAIN, project, fitZoom, lookahead, create, scatter, curvePts, landmarkAt, inValley, loopPoly };
+  const api = { DEF, WORLD, ART, TERRAIN, project, fitZoom, lookahead, create, scatter, waterProps, curvePts, landmarkAt, inValley, loopPoly };
   if (typeof module === 'object' && module.exports) module.exports = api; else root.MMRF_WORLD = api;
 })(typeof window !== 'undefined' ? window : globalThis);

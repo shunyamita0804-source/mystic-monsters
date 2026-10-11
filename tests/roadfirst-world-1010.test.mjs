@@ -6,6 +6,7 @@
 //  RW-04 レア（ユーザー決定）：1つの Chapter に1マス・Z1 右の本道と Z2 石像の尾根の通常マスだけ・野生の隣に置かない・同じ seed＝同じ
 //  RW-05 フラグ：&rfView=world のときだけ・保存の鍵は同じ・index.html の読み込み順・world は保存／通信をしない
 //  RW-07 地形（2026-10-11）：谷の多角形は原本の区間だけでできる・石橋の区間がある・谷の中／道のまわり（陸）／谷の外を正しく分ける・景物は谷に置かない
+//  RW-08 第4便（2026-10-11）：雲海＝後半の左右の輪の内側（LATE_SAFE は雲海の上の尾根）・森・目印のまわりの岩棚・川の景物・山の岩峰
 //  RW-06 ボード素材の試し貼り（&rfArt=1010・第1便＋第2便）：ファイルがそろう・景物は道とマスに重ならない・同じ配置・GOAL のまわりに置かない
 // =========================================================
 import test from 'node:test';
@@ -104,13 +105,35 @@ test('RW-06：ボード素材の試し貼り（&rfArt=1010）＝ファイル・�
 
 test('RW-07：地形＝谷は原本の区間から・石橋・谷の中と道のまわりの陸・景物は谷に置かない', () => {
   for (const T of Wd.TERRAIN) {
-    for (const [id] of T.loop) assert.ok(D.segments[id], `区間 ${id}`);
     for (const id of T.bridges) assert.ok(D.segments[id], `石橋 ${id}`);
     const P = Wd.loopPoly(D, T); assert.ok(P.length > 20, `${T.id} の多角形`);
+    if (T.poly) { assert.equal(T.kind, 'forest', `${T.id}：決まった形は森だけ`); continue; }
+    for (const [id] of T.loop) assert.ok(D.segments[id], `区間 ${id}`);
     assert.ok(Math.hypot(P[0][0] - P.at(-1)[0], P[0][1] - P.at(-1)[1]) < 1, `${T.id} は閉じた輪`);
   }
   assert.equal(Wd.inValley(D, 512, 1150), 'collapse', '崩落の谷の中'); assert.equal(Wd.inValley(D, 512, 760), 'central', '中央の崖の中');
   for (const id of ['J0', 'P', 'Q', 'R', 'EL1', 'ER3', 'START', 'GOAL']) assert.equal(Wd.inValley(D, D.nodes[id][0], D.nodes[id][1]), null, `${id} は陸`);
   assert.equal(Wd.inValley(D, 512, 1400), null, 'START の道のまわりは谷ではない');
   for (const q of Wd.scatter(D, Object.assign({}, Wd.DEF))) assert.equal(Wd.inValley(D, q.x, q.y), null, `景物 (${q.x | 0},${q.y | 0}) は谷の外`);
+});
+
+test('RW-08：第4便＝雲海は後半の輪の内側・尾根と目印のまわりは陸・森・川の景物・岩峰', async () => {
+  const { existsSync } = await import('node:fs');
+  const A = Wd.ART, T = A.terrain, files = [T.cloud.file, ...Object.values(T.edges).map((e) => e.file), ...Object.values(A.water).filter((v) => v.file).map((v) => v.file), A.peaks.file];
+  for (const f of files) assert.ok(existsSync(path.join(ROOT, 'assets/proto/board_art_1010', f)), f);
+  const kind = (x, y) => { const id = Wd.inValley(D, x, y); return id ? Wd.TERRAIN.find((t) => t.id === id).kind || 'valley' : null; };
+  assert.equal(Wd.inValley(D, 640, 300), 'sky_r', '右の輪の内側＝雲海'); assert.equal(Wd.inValley(D, 420, 330), 'sky_l', '左の輪の内側＝雲海');
+  for (const id of ['H', 'FINAL', 'STATUE', 'HR1', 'HR3', 'CHALLENGE', 'L_MERGE', 'LATE_SAFE_08']) assert.equal(Wd.inValley(D, D.nodes[id][0], D.nodes[id][1]), null, `${id} は陸（尾根）`);
+  assert.equal(kind(60, 940), 'forest', '左の祭壇のまわりは森'); assert.equal(kind(380, 1480), 'forest', 'START の左は森');
+  // 雲海・森の中の目印は岩棚・空き地（マスクから円で抜く＝landmarkAt の位置に雲・樹冠を描かない）
+  const lion = Wd.landmarkAt(D, A.landmarks.find((l) => l.node === 'STATUE')); assert.equal(Wd.inValley(D, lion[0], lion[1]), 'sky_r', 'ライオン石像は雲海の輪の中＝岩棚を抜いて立てる');
+  // 川の景物：川の始まりに滝が2つ・すべて世界の中・道（石橋）から離す
+  const wp = Wd.waterProps(D), segs = Object.values(D.segments).map((s) => s[3].map((n) => D.nodes[n]));
+  const dl = (l, x, y) => { let m = 1e9; for (let i = 0; i < l.length - 1; i++) { const a = l[i], b = l[i + 1], dx = b[0] - a[0], dy = b[1] - a[1], t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / (dx * dx + dy * dy || 1))); m = Math.min(m, Math.hypot(a[0] + dx * t - x, a[1] + dy * t - y)); } return m; };
+  assert.equal(wp.filter((q) => q.file === A.water.fall.file).length, 2, '滝 2'); assert.ok(wp.length >= 16, `川の景物 ${wp.length}`);
+  for (const q of wp) { assert.ok(q.x > 0 && q.x < Wd.WORLD.w && q.y > 0 && q.y < Wd.WORLD.h, '世界の中'); if (q.file !== A.water.fall.file) assert.ok(Math.min(...segs.map((l) => dl(l, q.x, q.y))) >= 20, `道から離す (${q.x | 0},${q.y | 0})`); }
+  assert.deepEqual(Wd.waterProps(D), wp, '決まった並び');
+  // 岩峰：道から十分離れ・地形の外
+  for (const [x, y, w] of A.peaks.at) { assert.ok(Math.min(...segs.map((l) => dl(l, x, y))) > w * 0.9, `岩峰 (${x},${y}) は道から離れる`); assert.equal(Wd.inValley(D, x, y), null, `岩峰 (${x},${y}) は地形の外`); }
+  for (const q of Wd.scatter(D, Object.assign({}, Wd.DEF))) assert.ok(A.peaks.at.every(([x, y, w]) => Math.hypot(x - q.x, y - q.y) >= w * 0.6), '景物は岩峰に重ねない');
 });

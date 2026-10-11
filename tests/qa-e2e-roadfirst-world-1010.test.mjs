@@ -152,6 +152,8 @@ test('RWB-5：ボード素材の試し貼り（&rfArt=1010）＝絵がすべて�
   assert.deepEqual(r.den, ['lm_den_closed.webp'], '隠れ家が閉じている回＝閉じた石門');
   await pg.waitForFunction(() => MMRF.world().painted, null, { timeout: 20000 });
   const w2 = await pg.evaluate(() => MMRF.world()); assert.ok(w2.rims && w2.rims.length >= 3 && w2.rims.every((n) => n > 50), `谷のふちの線 ${w2.rims}`);
+  assert.ok(w2.rimKinds.cloud >= 2 && w2.rimKinds.forest >= 4 && w2.rimKinds.water >= 1, `雲海・森・川の岸のふち ${JSON.stringify(w2.rimKinds)}`);
+  assert.ok(await pg.evaluate(() => document.querySelectorAll('#rfp .rfw-wp').length >= 16 && document.querySelectorAll('#rfp .rfw-peak').length === MMRF_WORLD.ART.peaks.at.length), '川の景物・岩峰');
   assert.match(r.start, /tile_start\.webp$/); assert.match(r.reward, /tile_reward\.webp$/);
   assert.deepEqual(errs, [], 'JS の例外 0');
   // 隠れ家が開いている回＝開いた石門（同じ大きさの絵の入れ替え）
