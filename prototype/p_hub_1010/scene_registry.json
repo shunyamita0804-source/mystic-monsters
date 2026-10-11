@@ -1,0 +1,93 @@
+{
+ "note": "P ハブ（Scene09・Scene20・Scene22）の背景の表（2026-10-10・独立の技術プレビュー。正式ではない）。道のつながり・1歩の進み方は ../../js/proto/roadfirst-data.js（MMRF_DATA）と roadfirst-core.js（MMRF_CORE）だけが決める。ここに書くのは、背景の絵・Scene の中の区域（背景ゾーン）・区域ごとのカメラの範囲・区域ごとの画像の中の地点の座標だけ。299／42／370・68 Scene の定義は変えない（区域は描画の設定）。",
+ "hub": "P",
+ "default_layout": "core_zones",
+ "assets": {
+  "p_hub_qa_structure": {
+   "file": "assets/p_hub_qa_structure.png",
+   "w": 1024,
+   "h": 1536,
+   "sha256": "6ff33101c2bb238fb2bb4bade5659ae9e0378f6094662104c04ab6c15a7cf968",
+   "source": "ZIP MysticMonsters_Ch1A_P_Hub_Claude_Task_20261010 の 01_Pハブ_3方向構造図_QA専用.png（無加工）",
+   "kind": "provisional",
+   "short": "構図参考図（仮）",
+   "art_pass_allowed": false,
+   "status": "仮背景＝QA 用の構図参考（完成美術ではない）。core_zones では「従来の通常道・門の背景」の代わり（専用の背景が無いため）"
+  },
+  "p_core_candidate": {
+   "file": "assets/p_core_candidate.png",
+   "w": 1024,
+   "h": 1536,
+   "sha256": "6852f04e4a15e8ecad674259104d6d543dd2827e3dad9129f277ae6975519296",
+   "source": "ZIP MysticMonsters_Ch1A_PHub_Salvage_ClaudeQA_20261010 の 01_P_Core_Art_Candidate_NO_MARKERS.png（無加工）",
+   "kind": "candidate",
+   "short": "P 中核の候補画像（原 QA は FAIL・美術承認は保留）",
+   "art_pass_allowed": false,
+   "status": "P 中核の候補原画。原 QA は FAIL（広場・道が橋のように宙に浮く・上の門と遺跡）。橋状の P 広場の美術承認は保留＝技術・UI の試遊用"
+  },
+  "p_hub_final": {
+   "file": null,
+   "w": null,
+   "h": null,
+   "sha256": null,
+   "source": "ボード担当の P ハブ完成背景（未着）",
+   "kind": "final",
+   "short": "完成背景",
+   "art_pass_allowed": true,
+   "status": "未着。届いたら file・w・h・sha256 を書き、区域の xy・camera を絵の石畳の上で測って入れる（推測で埋めない）"
+  }
+ },
+ "layouts": {
+  "core_zones": {
+   "label": "P 中核の候補画像（区域で切り替え）",
+   "note": "ZIP の決定事項：P に近い3地点ずつだけ P 中核の絵を使い、遠い地点は元の Scene の背景に残す（ここでは構図参考図で代用）",
+   "scenes": {
+    "Scene09": {
+     "zones": [
+      { "id": "approach", "nodes": ["EL04_09", "EL04_10"], "asset": "p_hub_qa_structure", "camera": [0, 980, 620, 1536],
+        "xy": { "EL04_09": [75, 1450], "EL04_10": [170, 1320] } },
+      { "id": "core", "nodes": ["EL04_11", "EL04_12", "P"], "asset": "p_core_candidate", "camera": [0, 600, 720, 1300],
+        "xy": { "EL04_11": [135, 1100], "EL04_12": [300, 905], "P": [515, 800] },
+        "xy_zip": { "EL04_11": [220, 1113], "EL04_12": [368, 914], "P": [515, 800] } }
+     ]
+    },
+    "Scene20": {
+     "zones": [
+      { "id": "approach", "nodes": ["ER04_09", "ER04_10", "ER04_11"], "asset": "p_hub_qa_structure", "camera": [404, 900, 1024, 1536],
+        "xy": { "ER04_09": [949, 1450], "ER04_10": [840, 1340], "ER04_11": [755, 1190] } },
+      { "id": "core", "nodes": ["ER04_12", "ER04_13", "P"], "asset": "p_core_candidate", "camera": [304, 600, 1024, 1300],
+        "xy": { "ER04_12": [880, 1075], "ER04_13": [720, 915], "P": [515, 800] },
+        "xy_zip": { "ER04_12": [843, 1104], "ER04_13": [686, 915], "P": [515, 800] } }
+     ]
+    },
+    "Scene22": {
+     "zones": [
+      { "id": "core", "nodes": ["P", "C01_01", "C01_02"], "asset": "p_core_candidate", "camera": [290, 330, 890, 960],
+        "xy": { "P": [515, 800], "C01_01": [650, 640], "C01_02": [660, 470] },
+        "xy_zip": { "P": [515, 800], "C01_01": [616, 631], "C01_02": [626, 497] } },
+      { "id": "gate", "nodes": ["LOWER_GATE", "C02_01"], "asset": "p_hub_qa_structure", "camera": [212, 100, 812, 700],
+        "xy": { "LOWER_GATE": [512, 351], "C02_01": [512, 245] } }
+     ]
+    }
+   }
+  },
+  "structure": {
+   "label": "構図参考図だけ（前回の検証）",
+   "note": "1枚の構図参考図に3 Scene の全地点を置く（2026-10-10 前便）",
+   "scenes": {
+    "Scene09": { "zones": [ { "id": "all", "nodes": ["EL04_09", "EL04_10", "EL04_11", "EL04_12", "P"], "asset": "p_hub_qa_structure", "camera": [0, 640, 620, 1536],
+      "xy": { "EL04_09": [75, 1450], "EL04_10": [170, 1320], "EL04_11": [270, 1140], "EL04_12": [378, 940], "P": [512, 740] } } ] },
+    "Scene20": { "zones": [ { "id": "all", "nodes": ["ER04_09", "ER04_10", "ER04_11", "ER04_12", "ER04_13", "P"], "asset": "p_hub_qa_structure", "camera": [404, 640, 1024, 1536],
+      "xy": { "ER04_09": [949, 1450], "ER04_10": [840, 1340], "ER04_11": [755, 1190], "ER04_12": [675, 1040], "ER04_13": [605, 900], "P": [512, 740] } } ] },
+    "Scene22": { "zones": [ { "id": "all", "nodes": ["P", "C01_01", "C01_02", "LOWER_GATE", "C02_01"], "asset": "p_hub_qa_structure", "camera": [212, 140, 812, 900],
+      "xy": { "P": [512, 740], "C01_01": [512, 605], "C01_02": [512, 475], "LOWER_GATE": [512, 351], "C02_01": [512, 245] } } ] }
+   }
+  }
+ },
+ "scenes": {
+  "Scene09": { "title": "崩落を避ける左岸道・終点", "route_id": "LEFT1", "nodes": ["EL04_09", "EL04_10", "EL04_11", "EL04_12", "P"], "next_scene_at_last_node": "Scene22" },
+  "Scene20": { "title": "滝沿いの右岸道・終点", "route_id": "RIGHT1", "nodes": ["ER04_09", "ER04_10", "ER04_11", "ER04_12", "ER04_13", "P"], "next_scene_at_last_node": "Scene22" },
+  "Scene22": { "title": "下門をくぐる中央道・入口", "route_id": "LOWER_CENTER", "nodes": ["P", "C01_01", "C01_02", "LOWER_GATE", "C02_01"], "next_scene_at_last_node": "Scene23" }
+ },
+ "xy_note": "p_core_candidate の xy＝Claude が候補原画の石畳の中央を測り直した値（2026-10-10。proof/p_core_marker_check.jpg）。xy_zip＝ZIP の 03（目視の仮座標・そのまま）＝比較用（?xy=zip）。P 以外の ZIP の仮座標は欄干の柱・道の端にかかる所がある。p_hub_qa_structure の xy＝構図参考図の青い円・金の円の中心（tools/measure_qa_circles.py）。どれも完成背景の座標ではない"
+}

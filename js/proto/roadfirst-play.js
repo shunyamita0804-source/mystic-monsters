@@ -23,7 +23,14 @@
     // マスの割合（通常の地点＝ordinary_tile 261 か所のうち。残りは「通常マス」＝何も起きない）
     density: Object.freeze({ stat: 0.30, event: 0.12, rest: 0.06, wild: 0.08, treasure: 0.03 }),
     calmSegments: Object.freeze(['S01', 'EL01', 'ER01']),   // 序盤（スタートの階段と J0 のすぐ先）には野生・休憩・宝箱を置かない
-    rareRate: 0.10,                              // 野生マス1つごとにレアになる率（既存 Chapter 1 の rareBattleRate を参考にした仮。RoadFirst 全体の率ではない）
+    // レアモンスターマス（2026-10-10 ユーザー決定）：1つの Chapter に1マス・候補は Z1 右の本道と Z2 石像の尾根の通常マスだけ
+    //（行き止まりの終点とその枝・分かれ目・合流・門・ライバル・特殊挑戦は候補にしない）。開始時に配置と一緒に決めて保存。旧：野生マスごと 10%
+    rare: Object.freeze({ count: 1, zones: Object.freeze({
+      Z1: Object.freeze(['ER02_01', 'ER02_02', 'ER02_03', 'ER02_04', 'ER02_05', 'ER02_06', 'ER02_07', 'ER03_01', 'ER03_02', 'ER03_03', 'ER03_04',
+        'ER04_01', 'ER04_02', 'ER04_03', 'ER04_04', 'ER04_05', 'ER04_06', 'ER04_07', 'ER04_08', 'ER04_09']),
+      Z2: Object.freeze(['LATE_R2_01', 'LATE_R2_02', 'LATE_R2_03', 'LATE_R2_04', 'LATE_R2_05', 'LATE_R2_06', 'LATE_R2_07', 'LATE_R3_01', 'LATE_R3_02',
+        'LATE_R3_03', 'LATE_R3_04', 'LATE_R3_05', 'LATE_R_DONE_01', 'LATE_R_DONE_02', 'LATE_R_DONE_03', 'LATE_R_DONE_04', 'LATE_R_DONE_05', 'LATE_R_DONE_06']),
+    }) }),
     fatigueByDie: Object.freeze({ 1: 2, 2: 3, 3: 4, 4: 5, 5: 6, 6: 7 }),   // 移動のサイコロの出目ごとの疲れ（旧 1〜3＝+3/+5/+7 は流用していない）
     fatigueMax: 100,
     restAmount: 30,                              // 「休む」：疲れ −30・1ターン・移動なし（既存のゲームの休むと同じ考え方）
@@ -88,12 +95,18 @@
         if (t === 'stat') { const ks = STAT_KEYS.filter((k) => !(prev && prev.t === 'stat' && prev.k === k)); tile = { t, k: ks[Math.floor(rng() * ks.length)] }; }
         else if (t === 'event' && evs.length) { const e = evById(nextEvent()); tile = { t, e: e.id }; if (e.handler === 'stat_random' && !(e.params && e.params.keys)) tile.k = STAT_KEYS[Math.floor(rng() * 6)]; else if (e.params && Array.isArray(e.params.keys) && e.params.keys.length > 1) tile.k = e.params.keys[Math.floor(rng() * e.params.keys.length)]; }
         else if (t === 'rest' && rec.length) tile = { t, e: pickW(rng, rec).id };
-        else if (t === 'wild') tile = { t, rare: rng() < TUNING.rareRate };
+        else if (t === 'wild') { rng(); tile = { t, rare: false }; }   // 旧い 10% の抽選の分も乱数を進める（ほかのマスの配置を変えないため）
         else if (t === 'treasure') { const x = pickW(rng, TUNING.treasure); tile = { t, gold: x.gold, tier: x.tier }; }
         if (tile) tiles[id] = tile;
         prev = tile;
       }
     }
+    // レアモンスターマス：候補（Z1・Z2 の通常マス）から count 個をこの seed で選ぶ（別の乱数＝ほかのマスの抽選は変えない）
+    const rr = mulberry((seed ^ 0x5EA7A3E) >>> 0);
+    const nb = {}; for (const s of Object.values(D.segments)) for (let i = 0; i < s[3].length; i++) (nb[s[3][i]] = nb[s[3][i]] || []).push(s[3][i - 1], s[3][i + 1]);
+    const wildNear = (id) => (nb[id] || []).some((x) => x && tiles[x] && tiles[x].t === 'wild');   // バトルのマスを続けない（野生の隣には置かない）
+    const cand = Object.values(TUNING.rare.zones).flat().filter((id) => D.nodes[id] && D.nodes[id][2] === 'ordinary_tile' && !wildNear(id));
+    for (let i = 0; i < TUNING.rare.count && cand.length; i++) { const id = cand.splice(Math.floor(rr() * cand.length), 1)[0]; tiles[id] = { t: 'wild', rare: true }; }
     return tiles;
   }
 
