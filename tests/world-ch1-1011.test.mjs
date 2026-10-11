@@ -7,6 +7,8 @@
 //  WC-04 旧い Chapter 1 の途中のセーブ：能力・所持金・疲れはそのままで Chapter 1 の最初から（大会の途中なら大会を続ける）
 //  WC-05 Chapter の終わり：40ターン切れ → 大会なしでベースキャンプ（Chapter 2 の前）・疲れは −50 を持ち越す・配置は消える
 //  WC-06 index.html：読み込み順・board() の切り替え・field-view は新ボードを担当しない・テストの既定（MM_QA_OLD_CH1）
+//  WC-07 フィナの節目の一言（MMWD.storyEvents）：出発＝40ターン・1〜6 の説明・このセーブで1回（S.npcFlags.story）／この Chapter で1回（field.storySeen）・
+//        条件（止まった地点の結果・通った区間・分かれ道の寄り道・運命のサイコロ）・優先度・pass の区間 ID は原本に実在する・旧ボードの「45ターン」は出さない
 // =========================================================
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -143,4 +145,44 @@ test('WC-06：index.html＝読み込み順・board() の切り替え・field-vie
   assert.match(rd('js/chapter/field-view.js'), /function chfActive\(m\) \{[^}]*!\(root\.MMWD && root\.MMWD\.active\(m\)\)/);
   assert.match(rd('tests/e2e/harness.mjs'), /if \(!opt\.worldCh1\) await ctx\.addInitScript\(\(\) => \{ window\.MM_QA_OLD_CH1 = true; \}\)/);
   assert.doesNotMatch(rd('js/chapter/world-driver.js') + rd('js/chapter/world-board.js'), /localStorage|mmrf_proto_v1/, '保存はゲームのセーブ（mr4v6）だけ');
+});
+
+test('WC-07：フィナの節目の一言（MMWD.storyEvents）＝出発の説明・1回だけ・条件・優先度', () => {
+  const w = load(), S = setup(w, 9), m = S.m, WD = w.MMWD, d = w.MMRF_DATA, flags = {};
+  const first = (tr, ctx = {}) => (WD.storyEvents(m, tr, { flags, ...ctx })[0] || {}).id || null;
+  // 出発：このセーブで1回の説明（40ターン・1〜6）→ 見たら次は ch1_start（この Chapter で1回）→ どちらも見たら出ない
+  assert.equal(first('start'), 'tut_turns_w');
+  const tx = WD.STORY.find((e) => e.id === 'tut_turns_w').lines.map((l) => l.text).join('');
+  assert.match(tx, /40ターン/); assert.match(tx, /1〜6/); assert.doesNotMatch(tx, /45ターン|30ターン/);
+  WD.markStory(m, 'tut_turns_w', flags); assert.deepEqual(flags.story, ['tut_turns_w']);
+  assert.equal(first('start'), 'ch1_start');
+  WD.markStory(m, 'ch1_start', flags); assert.deepEqual(m.raise.field.storySeen, ['ch1_start']);
+  assert.equal(first('start'), null);
+  // flags を渡さない古い呼び方では、このセーブで1回のものは出さない（二度出さないため）
+  assert.equal((WD.storyEvents(m, 'land', { fx: { kind: 'stat' } })[0] || {}).id, undefined);
+  // 止まった地点の結果
+  assert.equal(first('land', { fx: { kind: 'stat', key: 'po', amount: 18 } }), 'tut_stat');
+  assert.equal(first('land', { fx: { kind: 'event', recovery: true } }), 'tut_rest');
+  assert.equal(first('land', { fx: { kind: 'event', recovery: false } }), 'tut_event');
+  assert.equal(first('land', { fx: { kind: 'battle', battleType: 'rival' } }), 'tut_rival');
+  assert.equal(first('land', { fx: { kind: 'battle', battleType: 'rare' } }), 'ch1_first_rare');
+  assert.equal(first('land', { fx: { kind: 'reward' } }), 'tut_reward_w');
+  assert.equal(first('land', { fx: { kind: 'none' }, goal: true }), 'tut_goal');
+  // 分かれ道：最初は分かれ道の説明 → 寄り道がある分かれ道では寄り道の説明 → 封印の遺跡門
+  assert.equal(first('branch', { segs: ['EL01', 'ER01'] }), 'tut_branch'); WD.markStory(m, 'tut_branch', flags);
+  assert.equal(first('branch', { segs: ['EL01', 'ER01'] }), null);
+  assert.equal(first('branch', { segs: ['EL03', 'D_LC'] }), 'tut_spur_w');
+  assert.equal(first('branch', { segs: ['LATE_SAFE', 'LATE_L1', 'LATE_R1'] }), 'tut_challenge_w');
+  assert.equal(first('die', { dice: [{ kind: 'Q', die: 3 }] }), 'tut_qdie_w');
+  assert.equal(first('die', { dice: [{ kind: 'CHALLENGE', die: 5 }] }), null);
+  // 通った区間（pass）：区間の途中の地点で判定・ライバルの手前の一言はライバルに止まったときは出さない
+  m.raise.node = d.segments.ER01[3][3];
+  assert.equal(first('land', { fx: { kind: 'none', note: 'normal' }, path: [d.segments.ER01[3][2]] }), 'w_right');
+  m.raise.node = 'RIVAL';
+  assert.notEqual(first('land', { fx: { kind: 'none' }, path: ['C04_01', 'C04_02'] }), 'w_rival_before');
+  m.raise.node = 'C04_02'; assert.equal(first('land', { fx: { kind: 'none' }, path: ['UPPER_GATE', 'C04_01'] }), 'w_rival_before');
+  // データの検査：id は重ならない・pass に書いた地点／区間は原本にある・条件の名前は既知
+  const ids = WD.STORY.map((e) => e.id); assert.equal(new Set(ids).size, ids.length);
+  for (const e of WD.STORY) for (const x of (e.when && e.when.pass) || []) assert.ok(d.nodes[x] || d.segments[x], `${e.id} の pass ${x} は原本にある`);
+  assert.equal(WD.segOf(d.segments.EL01[3][1]), 'EL01'); assert.equal(WD.segOf('J0'), null);
 });

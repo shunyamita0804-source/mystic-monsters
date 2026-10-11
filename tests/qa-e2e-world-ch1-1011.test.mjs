@@ -6,6 +6,9 @@
 //  WB-4：ゴール → 会場のロビー → フィナの会話（arrival:true）→ 大会受付（p9ReceptionHtml）→ D の大会が始まる（canvas は手放す）
 //  WB-5：開始の俯瞰（intro:true）＝操作欄は隠れて押せない → START へ寄ったら押せる・再読み込みでは出ない
 //  WB-6：旧い Chapter 1（14枚）の途中のセーブ → 新ボードの最初から（能力・所持金は保つ）
+//  WB-7（2026-10-11 次の作業・story:true）：出発のチュートリアル（40ターン・1〜6）→ 分かれ道のチュートリアル → 歩行アニメ（奥へ進む間だけ歩行の絵）→
+//        能力マス＝特訓の道具と動き → 能力マスのチュートリアル・見た記録は S.npcFlags.story（再読み込みで出ない）
+//  WB-8（story:true）：通常の地点（使ったマス）に止まる → 冒険リアクション（しぐさ → フィナの選択肢 → 小さな結果）・記録は配置の中（rx）
 //  QA_E2E=1 のときだけ実行（tests/e2e/harness.mjs。既定の MM_QA_OLD_CH1 を worldCh1:true で外す）
 // =========================================================
 import test from 'node:test';
@@ -132,5 +135,82 @@ test('WB-6：旧い Chapter 1（14枚）の途中のセーブ → 新ボード�
   await pg.waitForSelector('.p15start'); await pg.click('.p15start');
   await pg.waitForSelector('#wbw #brollbtn');
   assert.deepEqual(await pg.evaluate(() => [S.m.raise.node, S.m.raise.turnsUsed, S.m.raise.turnLimit, S.m.po, S.g, S.m.raise.field.world]), ['START', 0, 40, 321, 640, 1]);
+  assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+});
+
+test('WB-7：チュートリアル（40ターン・1〜6）→ 分かれ道 → 歩行アニメ → 能力マスの特訓の動き → 見た記録', { skip: SKIP, timeout: 180000 }, async () => {
+  const p = await openPage({ story: true }); const pg = p.page;
+  await H.newGame(pg, 'テスト');
+  await pg.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); save(); board(); });
+  await pg.waitForSelector('.mmtalk:not(.mmtalk-out)', { timeout: 15000 });
+  const t1 = await pg.evaluate(() => MMNPC.state());
+  await H.finishTalk(pg);
+  const seen1 = await pg.evaluate(() => (S.npcFlags.story || []).slice());
+  assert.ok(seen1.includes('tut_turns_w'), `出発のチュートリアルを見た（${seen1}）`);
+  assert.ok(await pg.evaluate(() => !document.getElementById('brollbtn').disabled), '会話のあとは START が押せる');
+  assert.ok(t1, '会話が出た');
+  // 歩行アニメ：歩いている間に .wk-on（奥へ）か .bob（手前へ）が付き、止まると外れる
+  await pg.evaluate(() => { window.__wk = { on: 0, bob: 0 }; const el = document.querySelector('.rfw-mon'); new MutationObserver(() => { if (el.classList.contains('wk-on')) __wk.on++; if (el.classList.contains('bob')) __wk.bob++; }).observe(el, { attributes: true, attributeFilter: ['class'] }); });
+  await rollAs(pg, 3); await idle(pg).catch(() => {});
+  if (await pg.evaluate(() => !!document.querySelector('.mmtalk'))) await H.finishTalk(pg);
+  await idle(pg);
+  const wk = await pg.evaluate(() => ({ ...__wk, now: document.querySelector('.rfw-mon').className, frames: document.querySelectorAll('.rfw-mon img.wk').length }));
+  assert.ok(wk.frames >= 6, `歩行の絵を重ねて置く（${wk.frames}）`);
+  assert.ok(wk.on > 0, `奥へ進む間は歩行の絵（${JSON.stringify(wk)}）`);
+  assert.ok(!/wk-on|bob/.test(wk.now), '止まったら正面の絵');
+  // 分かれ道：J0 の1つ手前から → 分かれ道のチュートリアル
+  const before = await pg.evaluate(() => { const s = MMRF_DATA.segments.S01[3]; return s[s.length - 2]; });
+  await place(pg, before); await idle(pg);
+  await rollAs(pg, 3);
+  await pg.waitForSelector('.wbbr .chroute');
+  await pg.waitForSelector('.mmtalk:not(.mmtalk-out)', { timeout: 10000 });
+  assert.match(await pg.evaluate(() => MMNPC.state().text || document.querySelector('.mmtalk').textContent), /分かれ道/);
+  await H.finishTalk(pg); await idle(pg);
+  await pg.click('.wbbr .chroute'); await idle(pg).catch(() => {});
+  if (await pg.evaluate(() => !!document.querySelector('.mmtalk'))) await H.finishTalk(pg);
+  if (await pg.evaluate(() => !!document.querySelector('.chbat'))) { await pg.click('.chbat .p9btn2'); }
+  await idle(pg);
+  // 能力マス：1つ手前の地点から 1 を出す → 道具と特訓の動き → 能力マスのチュートリアル
+  const tgt = await pg.evaluate(() => {
+    const f = S.m.raise.field, d = MMRF_DATA;
+    for (const [k, s] of Object.entries(d.segments)) { const pts = s[3]; for (let i = 2; i < pts.length - 1; i++) { const t = f.tiles[pts[i]]; if (t && t.t === 'stat' && f.used[pts[i]] == null && /^(EL|ER)0[12]$/.test(k)) return { at: pts[i - 1], id: pts[i], key: t.k }; } }
+    return null;
+  });
+  assert.ok(tgt, '能力マスが見つかる');
+  await place(pg, tgt.at, { turnsUsed: 2 }); await pg.evaluate(() => { S.m.raise.field.core.turn = 2; save(); }); await idle(pg);
+  const v0 = await pg.evaluate((k) => S.m[k], tgt.key);
+  await pg.evaluate(() => { window.__tact = 0; new MutationObserver(() => { if (document.querySelector('#wb-ui .chf-tact')) __tact++; }).observe(document.getElementById('wbw'), { childList: true, subtree: true }); });
+  await rollAs(pg, 1);
+  await pg.waitForSelector('.mmtalk:not(.mmtalk-out)', { timeout: 15000 });
+  assert.match(await pg.evaluate(() => document.querySelector('.mmtalk').textContent), /能力マス/);
+  await H.finishTalk(pg); await idle(pg);
+  const st = await pg.evaluate((k) => ({ v: S.m[k], node: S.m.raise.node, tact: __tact, story: S.npcFlags.story.slice(), left: document.querySelectorAll('.chf-tact,.chf-tact-tx').length }), tgt.key);
+  assert.equal(st.node, tgt.id); assert.ok(st.v > v0, `能力が上がった（${v0}→${st.v}）`);
+  assert.ok(st.tact > 0, '特訓の道具が出た'); assert.equal(st.left, 0, '道具・文字は消える');
+  assert.ok(['tut_turns_w', 'tut_branch', 'tut_stat'].every((x) => st.story.includes(x)), `見た記録（${st.story}）`);
+  await pg.reload(); await pg.waitForFunction(() => typeof window.MMP8 === 'object' && typeof S === 'object'); await pg.waitForSelector('.p15start'); await pg.click('.p15start');
+  await pg.waitForSelector('#wbw #brollbtn'); await pg.waitForTimeout(900);
+  assert.equal(await pg.evaluate(() => !!document.querySelector('.mmtalk')), false, '再読み込みでは同じチュートリアルを出さない');
+  assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+});
+
+test('WB-8：通常の地点に止まる → 冒険リアクション（しぐさ → 選択肢 → 小さな結果）・記録は配置の中', { skip: SKIP, timeout: 150000 }, async () => {
+  const p = await openPage({ story: true }); const pg = p.page;
+  await H.newGame(pg, 'テスト');
+  await pg.evaluate(() => { S.npcFlags = { ...(S.npcFlags || {}), story: ['tut_turns_w', 'tut_branch', 'tut_stat', 'tut_event', 'tut_rest', 'tut_treasure', 'tut_wild'] }; const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); S.m.raise.field.storySeen = ['ch1_start']; save(); board(); });
+  await pg.waitForSelector('#wbw #brollbtn'); await idle(pg);
+  const pts = await pg.evaluate(() => MMRF_DATA.segments.EL01[3]);
+  await place(pg, pts[1], { turnsUsed: 3, fatigue: 40 });
+  await pg.evaluate((id) => { const f = S.m.raise.field; f.used[id] = 0; f.core.turn = 3; f.storySeen.push('w_left'); save(); }, pts[2]); await idle(pg);
+  await rollAs(pg, 1);
+  await pg.evaluate(() => { window.__mr2 = Math.random; Math.random = () => 0.01; });   // 発生の判定（確率 0.4）を必ず通す
+  await pg.waitForFunction(() => window.MMNPC && MMNPC.state() && MMNPC.state().choices, null, { timeout: 15000 });
+  await pg.evaluate(() => { Math.random = window.__mr2; });
+  const rx = await pg.evaluate(() => ({ rx: S.m.raise.field.rx, saved: JSON.parse(localStorage.getItem('mr4v6')).m.raise.field.rx }));
+  assert.ok(Array.isArray(rx.rx) && rx.rx.length === 1 && /^rx\d{3}$/.test(rx.rx[0]), `記録（${JSON.stringify(rx)}）`);
+  assert.deepEqual(rx.saved, rx.rx, '選ぶ前に記録を保存');
+  await H.chooseTalk(pg, '0');
+  await idle(pg);
+  assert.equal(await pg.evaluate(() => MMP8.boardPhase(S.m)), 'roll');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
