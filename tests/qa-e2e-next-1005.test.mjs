@@ -90,19 +90,19 @@ for (const [si, size] of SIZES.entries()) {
     assert.equal(S1.playerName, 'ミナト'); assert.ok(!S1.playerNamePending); assert.equal(S1.v, 6, 'セーブ version 6（キー mr4v6）');
     // 登録より前の会話に名前は出ていない
     for (const x of [...first, ...after, ...serge]) assert.doesNotMatch(x.full, /ミナト/);
-    // 2026-10-06：登録完了のすぐあと＝新人支援（セルジュ）。1000G と薬草×1（システム通知は顔・名前なし）。受け取りは会話の前に確定して保存
+    // 2026-10-06：登録完了のすぐあと＝新人支援（セルジュ）。1000G と支援の品（2026-10-12 P2：ジャガイモ×10。旧 薬草×1）（システム通知は顔・名前なし）。受け取りは会話の前に確定して保存
     // 2026-10-05 PHASE B：受け取りの知らせは会話とは別の層＝システム通知の帯（MMNOTE・顔と名前なし）。会話（セルジュ）→ 帯 1000G → 会話 → 帯 薬草（正式アイコン）→ 会話
     const sup = []; let prevS = done[done.length - 1].full, sawNote = null;
     for (let k = 0; k < 2; k++) {   // 2026-10-07 試遊：1000G と薬草は1つの帯
       if (k) { await pg.waitForSelector('.mmnote', { timeout: 8000 }); const n = await pg.evaluate(() => { const e = document.querySelector('.mmnote'); return { tx: e.innerText, talk: !!document.querySelector('.mmtalk:not(.mmtalk-out)'), img: (e.querySelector('img') || {}).src || null, name: !!e.querySelector('.mmtalk-name,.dnm') }; }); if (!sawNote) sawNote = n; assert.equal(n.talk, false, '帯の間は会話窓を出さない（別の層）'); assert.equal(n.name, false, '顔・名前なし'); }
       await nextTalk(pg, prevS); const t = await readTalk(pg); sup.push(...t); prevS = t[t.length - 1].full;
     }
-    assert.match(sup.map((x) => x.full).join('|'), /新人聖獣士支援制度.*こちらもお持ちください.*疲れを30回復/, '支援の会話の順');
+    assert.match(sup.map((x) => x.full).join('|'), /新人聖獣士支援制度.*こちらもお持ちください.*空腹が少しおさまります.*1ターンに1個まで/, '支援の会話の順');
     assert.ok(sup.every((x) => x.npc === 'serge'), '会話はセルジュだけ（受け取りの知らせは帯）');
     const notes = await pg.evaluate(() => MMNOTE.log().map((x) => x.title + '|' + x.icon));
-    assert.deepEqual(notes.slice(0, 1), ['1000G／薬草を手に入れた|rows'], 'システム通知の帯（1000G と薬草を1つに）');
+    assert.deepEqual(notes.slice(0, 1), ['1000G／ジャガイモ×10を手に入れた|rows'], 'システム通知の帯（1000G と支援の品を1つに。2026-10-12 P2：ジャガイモ×10）');
     const SS = await H.storedSave(pg);
-    assert.deepEqual([SS.g, SS.inv.bag.map((i) => i.id), SS.npcFlags.support], [1000, ['herb'], 1], '1000G・薬草×1・受け取りの記録');
+    assert.deepEqual([SS.g, SS.inv.bag.map((i) => i.id), SS.npcFlags.support], [1000, ['potato'], 1], '1000G・ジャガイモ×10・受け取りの記録');
     await nextTalk(pg, sup[sup.length - 1].full);
     const nm = await readTalk(pg);
     assert.match(nm[0].full, /ミナトさん、っていうんだね/, 'フィナが初めて名前を呼ぶ');
@@ -160,13 +160,13 @@ for (const [si, size] of SIZES.entries()) {
 T('OP-B3（2026-10-06）：新人支援は1回だけ。登録の直後（支援の会話の前・途中）に再読み込み → 受け取っていなければ1回だけ受け取る／受け取っていれば会話も受け取りも出ない', async () => {
   for (const got of [false, true]) {
     const sv = { v: 6 }; const p = await openPage({ opening: true }); const pg = p.page;
-    await pg.evaluate((got) => { S = p10NewSave(); S.playerName = 'ミナト'; delete S.playerNamePending; finaFlags().op = 'map'; if (got) { finaFlags().support = 1; S.g = 1000; MMP7.bagAdd(S, 'herb'); } save(); }, got);
+    await pg.evaluate((got) => { S = p10NewSave(); S.playerName = 'ミナト'; delete S.playerNamePending; finaFlags().op = 'map'; if (got) { finaFlags().support = 1; S.g = 1000; MMP7.bagAdd(S, 'potato', 10); } save(); }, got);
     await pg.reload(); await pg.waitForFunction(() => typeof window.MMP8 === 'object'); await pg.click('.p15start');
     await pg.waitForSelector('.mmtalk:not(.mmtalk-out)');
     const t = await readTalk(pg);
     if (got) assert.doesNotMatch(t.map((x) => x.full).join('|'), /支援/, '受け取り済みなら支援の会話を出さない');
     else assert.match(t.map((x) => x.full).join('|'), /新人聖獣士支援制度/);
-    assert.deepEqual(await pg.evaluate(() => [S.g, S.inv.bag.map((i) => i.id), finaFlags().support]), [1000, ['herb'], 1], `二重に受け取らない（${got}）`);
+    assert.deepEqual(await pg.evaluate(() => [S.g, S.inv.bag.map((i) => i.id), finaFlags().support]), [1000, ['potato'], 1], `二重に受け取らない（${got}）`);
     await pg.reload(); await pg.waitForFunction(() => typeof window.MMP8 === 'object');
     assert.deepEqual(await pg.evaluate(() => [S.g, S.inv.bag.length]), [1000, 1], 'もう一度読み込んでも同じ');
     assert.deepEqual(p.errors, []);
