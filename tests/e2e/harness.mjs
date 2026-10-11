@@ -85,6 +85,7 @@ export async function launch() {
     if (!opt.karen) await ctx.addInitScript(() => { window.MM_QA_NO_KAREN = true; });
     if (!opt.npc) await ctx.addInitScript(() => { window.MM_QA_NO_NPC = true; });   // 2026-10-04：施設の初回訪問の会話・Chapter の帰還イベント（MMNPCE）は npc:true のテストだけ
     if (!opt.intro) await ctx.addInitScript(() => { window.MM_QA_NO_INTRO = true; });
+    if (!opt.worldCh1) await ctx.addInitScript(() => { window.MM_QA_OLD_CH1 = true; });   // 2026-10-11：本編の Chapter 1 は1枚の世界のボード（js/chapter/world-driver.js）。旧い14枚の Chapter 1 を前提にしたテストは既定で旧ボード。新ボードは worldCh1:true
     if (!opt.stage) await ctx.addInitScript(() => { window.MM_QA_NO_STAGE = true; });   // 2026-10-06：バトルの共通演出（構え・溜め・ヒットストップ・余韻＝js/battle/stage.js）は stage:true のテストだけ（既定は従来の時間）
     if (!opt.tourfx) await ctx.addInitScript(() => { window.MM_QA_NO_TOURFX = true; });   // 2026-10-07：ランクアップの正式演出（B1〜B7）は tourfx:true のテストだけ
     if (!opt.tourconf) await ctx.addInitScript(() => { window.MM_QA_NO_TOURCONF = true; });   // 2026-10-07：大会の参加確認ダイアログ（はい／いいえ）は tourconf:true のテストだけ

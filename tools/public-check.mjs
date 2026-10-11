@@ -156,7 +156,6 @@ try {
   await sleep(1000);
   const aft = await page.evaluate(() => ({ talk: !!document.querySelector('.mmtalk'), state: S.m && S.m.raise && S.m.raise.state }));
   rec('「まだやめておく」で育成が始まらない', !aft.talk && aft.state === 'none', JSON.stringify(aft));
-
   // 3) ほかの画面サイズでの横はみ出し
   for (const [w, hh] of [[375, 667], [360, 800], [430, 932]]) {
     await page.setViewportSize({ width: w, height: hh }); await sleep(300);
@@ -167,6 +166,14 @@ try {
       await page.screenshot({ path: `${OUT}/${nm}_${w}x${hh}.png` });
     }
   }
+  // 2026-10-11：本編の Chapter 1＝1枚の世界のボード（js/chapter/world-board.js）。出発すると新ボード（299地点・サイコロ 1〜6・40ターン）
+  await page.setViewportSize({ width: 390, height: 844 }); await sleep(300);
+  await page.evaluate(() => { MMP8.depart(S, S.m); S.m.raise.field.introSeen = true; save(); board(); });
+  await page.waitForSelector('#wbw #brollbtn', { timeout: 20000 }).catch(() => {}); await sleep(2500);
+  const wb = await page.evaluate(() => ({ on: !!document.querySelector('#wbw #brollbtn'), old: !!document.querySelector('#chf'), lim: S.m.raise.turnLimit, sides: MMP8.diceSides(S.m), w: window.MMWB && MMWB.state().world }));
+  await page.screenshot({ path: `${OUT}/world_ch1_390.png` });
+  rec('Chapter 1：1枚の世界のボード（40ターン・1〜6・絵が読める）', wb.on && !wb.old && wb.lim === 40 && wb.sides === 6 && !!wb.w && wb.w.art && wb.w.tiles === 299, JSON.stringify({ ...wb, w: wb.w && { art: wb.w.art, tiles: wb.w.tiles, painted: wb.w.painted } }));
+
 } catch (e) {
   rec('確認の途中で例外', false, String(e).slice(0, 400));
   await page.screenshot({ path: `${OUT}/error.png` }).catch(() => {});

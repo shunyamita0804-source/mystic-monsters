@@ -155,7 +155,7 @@
       const d = doc.createElement('div'); d.className = 'rfw-tile'; d.dataset.node = id; d.innerHTML = '<img alt="" draggable="false"><span></span>';
       bb.appendChild(d); tiles[id] = { el: d, img: d.firstChild, lab: d.lastChild, src: '', mk: '', used: false };
     }
-    const rootEl = host.closest ? host.closest('#rfp') || wrap : wrap;
+    const rootEl = host.closest ? host.closest('#rfp,.wbv') || wrap : wrap;   // 2026-10-11 本編の Chapter 1（js/chapter/world-board.js の .wbv）でも同じ描画
     const mon = doc.createElement('div'); mon.className = 'rfw-mon'; mon.innerHTML = `<img alt="" draggable="false" src="${o.monSrc || './assets/monsters/solamo.png'}">`; bb.appendChild(mon);
     // 景物（木・岩）と GOAL の大会会場：立てて置く（第1便の絵があるときだけ）
     const props = [];
@@ -237,6 +237,7 @@
     const lerp = (a, b, t) => a + (b - a) * t;
     function tick(now) {
       if (S.dead) return;
+      if (!wrap.isConnected) { S.last = 0; S.raf = root.requestAnimationFrame(tick); return; }   // 2026-10-11：本編で別の画面へ移っている間（要素は残して戻ったら付け直す）は何もしない
       const dt = S.last ? Math.min(64, now - S.last) : 16; S.last = now;
       if (S.frames.length < 600) S.frames.push(dt);
       S.view = viewRect();
@@ -537,24 +538,24 @@
   function css(doc) {
     if (cssDone || doc.getElementById('rfw-css')) return; cssDone = true;
     const s = doc.createElement('style'); s.id = 'rfw-css';
-    s.textContent = `#rfp .rfw{position:absolute;inset:0;overflow:hidden;background:#86b65a;z-index:1}
-#rfp .rfw-plane{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
-#rfp .rfw-chunk{position:absolute;display:block}
-#rfp .rfw-bb{position:absolute;inset:0;pointer-events:none}
-#rfp .rfw-tile{position:absolute;left:0;top:0;will-change:transform}
-#rfp .rfw-tile img{display:block;width:100%;height:auto}
-#rfp .rfw-tile span{position:absolute;left:0;right:0;top:30%;text-align:center;font:800 11px/1 "Noto Sans JP",sans-serif;color:#13233a;text-shadow:0 0 3px #fff,0 0 3px #fff}
-#rfp .rfw-tile span:empty{display:none}
-#rfp .rfw-tile.used img{opacity:.55}
-#rfp .rfw-tile.cur img{filter:drop-shadow(0 0 5px #fff6c0)}
-#rfp .rfw-apron{position:absolute;pointer-events:none}
-#rfp .rfw-prop{position:absolute;left:0;top:0;will-change:transform;pointer-events:none;user-select:none;-webkit-user-drag:none}
-#rfp .rfw.art{background:#7aa84c}
-#rfp .rfw-mon{position:absolute;left:0;top:0;will-change:transform}
-#rfp .rfw-mon img{display:block;width:100%;height:auto;filter:drop-shadow(0 3px 2px rgba(0,0,0,.45))}
-#rfp .rfw-title{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 18px);text-align:center;font-family:"Shippori Mincho",serif;font-weight:800;font-size:26px;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.6);opacity:0;pointer-events:none;z-index:3}
-#rfp .rfw-title small{display:block;font-size:12px;letter-spacing:.25em;font-family:"Noto Sans JP",sans-serif}
-#rfp .rfw-title em{display:block;font-style:normal;font-size:12px;font-family:"Noto Sans JP",sans-serif;opacity:.9}
+    s.textContent = `:is(#rfp,.wbv) .rfw{position:absolute;inset:0;overflow:hidden;background:#86b65a;z-index:1}
+:is(#rfp,.wbv) .rfw-plane{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+:is(#rfp,.wbv) .rfw-chunk{position:absolute;display:block}
+:is(#rfp,.wbv) .rfw-bb{position:absolute;inset:0;pointer-events:none}
+:is(#rfp,.wbv) .rfw-tile{position:absolute;left:0;top:0;will-change:transform}
+:is(#rfp,.wbv) .rfw-tile img{display:block;width:100%;height:auto}
+:is(#rfp,.wbv) .rfw-tile span{position:absolute;left:0;right:0;top:30%;text-align:center;font:800 11px/1 "Noto Sans JP",sans-serif;color:#13233a;text-shadow:0 0 3px #fff,0 0 3px #fff}
+:is(#rfp,.wbv) .rfw-tile span:empty{display:none}
+:is(#rfp,.wbv) .rfw-tile.used img{opacity:.55}
+:is(#rfp,.wbv) .rfw-tile.cur img{filter:drop-shadow(0 0 5px #fff6c0)}
+:is(#rfp,.wbv) .rfw-apron{position:absolute;pointer-events:none}
+:is(#rfp,.wbv) .rfw-prop{position:absolute;left:0;top:0;will-change:transform;pointer-events:none;user-select:none;-webkit-user-drag:none}
+:is(#rfp,.wbv) .rfw.art{background:#7aa84c}
+:is(#rfp,.wbv) .rfw-mon{position:absolute;left:0;top:0;will-change:transform}
+:is(#rfp,.wbv) .rfw-mon img{display:block;width:100%;height:auto;filter:drop-shadow(0 3px 2px rgba(0,0,0,.45))}
+:is(#rfp,.wbv) .rfw-title{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 18px);text-align:center;font-family:"Shippori Mincho",serif;font-weight:800;font-size:26px;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.6);opacity:0;pointer-events:none;z-index:3}
+:is(#rfp,.wbv) .rfw-title small{display:block;font-size:12px;letter-spacing:.25em;font-family:"Noto Sans JP",sans-serif}
+:is(#rfp,.wbv) .rfw-title em{display:block;font-style:normal;font-size:12px;font-family:"Noto Sans JP",sans-serif;opacity:.9}
 #rfp.rfw-intro .rf-top,#rfp.rfw-intro .rf-tools,#rfp.rfw-intro .rf-bot{opacity:0;pointer-events:none;transition:opacity .4s}
 #rfp.rfw-on .rf-cam{display:none}`;
     doc.head.appendChild(s);
