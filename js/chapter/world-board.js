@@ -8,6 +8,9 @@
 //  操作欄：Chapter 1 の正式の操作欄の画像（js/chapter/configs/ch1a.js の deck＝START・アイテム・休む・技設定・ステータス）。HUD は既存の .chh の部品。
 //  バトル：野生・レア・ライバルは index.html の bBattleGo（本物の fight()）。大会：ゴール → 会場のロビー → フィナの会話（1回）→ 既存の大会受付（p9ReceptionHtml）。
 //  index.html の board() から：MMWB.active(m) なら MMWB.board(msg)。大会・ほかの Chapter では MMWB.release()（canvas を手放す）。
+//  2026-10-11（次の作業）：フィナの節目の一言・チュートリアル（MMWD.storyEvents）・冒険リアクション（js/chapter/reactions.js の MMREACT＝通常の地点に止まったとき）・
+//    歩行アニメ（ch1a.js の monsterSprites。後ろ姿の種族は奥へ進むときだけ・横向きは向きを左右に）・能力マスの特訓の動き（field-view の TRAIN_ACT と道具の絵）。
+//    自動テストでは一言・リアクションを出さない（MM_QA_NO_STORY）。
 // =========================================================
 (function (root) {
   'use strict';
@@ -30,7 +33,7 @@
   // bBusy は index.html の let（field-view.js と同じく、別のスクリプトからも同じ名前で読み書きできる）
   const busyGet = () => { try { return !!bBusy || !!(root.MMCHD && root.MMCHD.isLocked()); } catch (e) { return !!(root.MMCHD && root.MMCHD.isLocked()); } };
   const busySet = (v) => { try { bBusy = v; } catch (e) {} };
-  const V = { el: null, world: null, key: null, intro: false };
+  const V = { el: null, world: null, key: null, intro: false, path: [] };
   const onBoard = () => !!(V.el && V.el.isConnected);
   const fieldOf = (m) => WD().fieldOf(m);
   function monSrc(m) { const sp = root.MMP10M && root.MMP10M.byId ? root.MMP10M.byId(m.sp) : null; return sp && sp.image ? sp.image.src : './assets/monsters/solamo.png'; }
@@ -147,10 +150,20 @@
 .wbw .wb-arr.on{opacity:1}
 @keyframes wbpop{from{opacity:0;transform:translate(-50%,-46%) scale(.94)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 @keyframes wbpopout{to{opacity:0;transform:translate(-50%,-52%) scale(.97)}}
-@media (prefers-reduced-motion:reduce){.wbw .wb-pop,.wbw .wb-pop.out{animation:none}}`;
+.wbv .rfw-mon .mon{display:block;position:relative}
+.wbv .rfw-mon .mon>img{display:block;width:100%;height:auto;filter:drop-shadow(0 3px 2px rgba(0,0,0,.45))}
+.wbv .rfw-mon .mon>img.wk{position:absolute;left:50%;bottom:0;width:calc(100% * var(--wkh,1));translate:-50% 0;opacity:0}
+.wbv .rfw-mon.wk-on .mon>img.st{opacity:0}
+.wbv .rfw-mon.wk-on .mon>img.wk.on{opacity:1}
+.wbv .rfw-mon.wk-flip .mon>img.wk{scale:-1 1}
+.wbv .rfw-mon.bob .mon{animation:wbbob .32s ease-in-out infinite}
+.wbw .chf-tact,.wbw .chf-tact-tx{z-index:9}
+@keyframes wbbob{50%{translate:0 -6%}}
+@media (prefers-reduced-motion:reduce){.wbw .wb-pop,.wbw .wb-pop.out,.wbv .rfw-mon .mon{animation:none!important}}`
+    + (root.MMREACT ? Object.entries(root.MMREACT.MOTIONS).map(([k, v]) => `.wbv .rfw-mon.mrx-${k} .mon{animation:mrx-${k} ${v.ms}ms cubic-bezier(.4,0,.3,1)}`).join('') : '');
     document.head.appendChild(s);
   }
-  function release() { if (V.intro) busySet(false); if (V.world) { try { V.world.destroy(); } catch (e) {} } V.world = null; V.el = null; V.key = null; V.intro = false; }
+  function release() { sprStop(); if (V.intro) busySet(false); if (V.world) { try { V.world.destroy(); } catch (e) {} } V.world = null; V.el = null; V.key = null; V.intro = false; }
   function ensureView(m) {
     const f = fieldOf(m), key = `${m.uid}:${f.layoutSeed}`, app = $('#app');
     if (V.el && V.key === key) { if (!V.el.isConnected) { app.innerHTML = ''; app.appendChild(V.el); } return false; }
@@ -158,6 +171,7 @@
     app.innerHTML = '<div class="chfw wbw" id="wbw"><div class="wbv" id="wbv"></div><div class="chf-ui" id="wb-ui"></div></div>';
     V.el = $('#wbw'); V.key = key;
     if (root.MMRF_WORLD) V.world = root.MMRF_WORLD.create(V.el.querySelector('.wbv'), D(), root.MMRF_PLAY, { view: viewRect, monSrc: monSrc(m), art: { base: ART, road: 'strip' } });
+    sprSetup(m);
     return true;
   }
   function paint(m, msg, node, instant) {
@@ -174,6 +188,8 @@
     if (ph === 'goal') { paint(m, msg, null, fresh); arrive(m, fresh); return true; }
     paint(m, msg, null, fresh);
     if (fresh && ph === 'roll' && r.turnsUsed === 0 && r.node === 'START' && !f.introSeen && V.world && !root.MM_QA_NO_INTRO) intro(m);
+    else if (ph === 'roll' && r.turnsUsed === 0 && !V.intro) setTimeout(() => { if (onBoard() && active(m) && P8().boardPhase(m) === 'roll' && !busyGet()) storyAt(m, 'start').then((shown) => { if (shown && onBoard()) paint(m); }); }, 350);
+    if (ph === 'branch') setTimeout(() => { if (onBoard() && active(m) && P8().boardPhase(m) === 'branch' && !busyGet()) storyAt(m, 'branch', { segs: (m.raise.pend && m.raise.pend.segs) || [] }); }, 350);
     if (ph === 'move') setTimeout(() => { if (onBoard()) walk(); }, 300);
     else if (ph === 'resolve') setTimeout(() => { if (onBoard()) resolve(); }, 300);
     return true;
@@ -181,7 +197,107 @@
   function intro(m) {
     const f = fieldOf(m); f.introSeen = true; doSave();   // 先に「見た」を保存（途中で再読み込みしても二度出ない）
     V.intro = true; V.el.classList.add('wb-intro'); busySet(true); paint(m);
-    V.world.intro(() => { V.intro = false; busySet(false); if (V.el) V.el.classList.remove('wb-intro'); feel('chapter.start'); if (onBoard() && active(m)) paint(m); });
+    V.world.intro(() => { V.intro = false; busySet(false); if (V.el) V.el.classList.remove('wb-intro'); feel('chapter.start'); if (onBoard() && active(m)) { paint(m); storyAt(m, 'start').then((shown) => { if (shown && onBoard()) paint(m); }); } });
+  }
+
+  // ---- 歩行アニメ（ch1a.js の monsterSprites＝その場歩行の絵。全コマを重ねて置き、見せるコマだけ切り替える＝src を差し替えない）。
+  //  後ろ姿の種族（ソラモ・ガウル・ジオル）は奥（画面の上）へ進むときだけ歩行の絵・手前へ戻るときは正面の絵で小さく弾む。横向き（ノビトン）は進む向きで左右を反転 ----
+  const SIDE_VIEW = ['nobiton'];
+  const SPR = { set: null, side: false, raf: 0, phase: 0, last: 0, frame: -1, on: false };
+  const monEl = () => (V.el ? V.el.querySelector('.rfw-mon') : null);
+  function sprSetup(m) {
+    sprStop(); SPR.set = null;
+    const el = monEl(); if (!el) return;
+    const st = el.querySelector('img'); if (!st) return;
+    st.classList.add('st');
+    const box = document.createElement('span'); box.className = 'mon'; el.insertBefore(box, st); box.appendChild(st);
+    const P = root.MMP10M, key = P && P.keyOf ? P.keyOf(m.sp) : null, set = key && cfg().monsterSprites ? cfg().monsterSprites[key] : null, w = set && set.walk;
+    if (!w || !Array.isArray(w.frames) || !w.frames.length) return;
+    SPR.set = w; SPR.side = SIDE_VIEW.includes(key);
+    el.style.setProperty('--wkh', String(w.h || 0.9));
+    box.insertAdjacentHTML('beforeend', w.frames.map((src, i) => `<img class="wk${i === (w.idle || 0) ? ' on' : ''}" data-i="${i}" src="${esc(src)}" alt="" draggable="false" decoding="async">`).join(''));
+  }
+  function sprShow(i) {
+    const el = monEl(); if (!el || i === SPR.frame) return;
+    const next = el.querySelector(`img.wk[data-i="${i}"]`); if (!next || !next.complete) return;   // 読み込み前のコマには切り替えない
+    const cur = el.querySelector('img.wk.on'); if (cur) cur.classList.remove('on');
+    next.classList.add('on'); SPR.frame = i;
+  }
+  function sprTick(now) {
+    if (!SPR.on || !SPR.set) { SPR.raf = 0; return; }
+    const dt = Math.min(100, now - (SPR.last || now)); SPR.last = now;
+    SPR.phase += (dt / 1000) * (SPR.set.fps || 12); sprShow(Math.floor(SPR.phase) % SPR.set.frames.length);
+    SPR.raf = requestAnimationFrame(sprTick);
+  }
+  /** 1歩ごと：from → to の向きで見た目を決める（位置は MMRF_WORLD が動かす） */
+  function sprWalk(from, to) {
+    const el = monEl(), d = D(), a = d.nodes[from], b = d.nodes[to]; if (!el || !a || !b || calm()) return;
+    const dx = b[0] - a[0], dy = b[1] - a[1], useWalk = !!SPR.set && (SPR.side || dy < -Math.abs(dx) * 0.25);
+    el.classList.toggle('wk-on', useWalk); el.classList.toggle('bob', !useWalk);
+    el.classList.toggle('wk-flip', useWalk && SPR.side && dx < 0);
+    if (useWalk && !SPR.on) { SPR.on = true; SPR.last = 0; if (!SPR.raf) SPR.raf = requestAnimationFrame(sprTick); }
+    else if (!useWalk) SPR.on = false;
+  }
+  function sprStop() {
+    SPR.on = false; if (SPR.raf && root.cancelAnimationFrame) cancelAnimationFrame(SPR.raf); SPR.raf = 0; SPR.phase = 0; SPR.last = 0;
+    const el = monEl(); if (el) el.classList.remove('wk-on', 'bob', 'wk-flip');
+    if (SPR.set) sprShow(SPR.set.idle || 0);
+  }
+
+  // ---- フィナの節目の一言・チュートリアル（MMWD.storyEvents）。見たら記録してから出す（途中で閉じても二度出ない） ----
+  async function storyAt(m, trigger, ctx = {}) {
+    if (root.MM_QA_NO_STORY || !root.MMNPC || !onBoard() || !WD().storyEvents) return false;
+    const S = gS(); if (!S) return false;
+    const flags = (S.npcFlags = isObjv(S.npcFlags) ? S.npcFlags : {});
+    const P = root.MMP10M, ev = WD().storyEvents(m, trigger, { ...ctx, flags, path: V.path, species: P && P.keyOf ? P.keyOf(m.sp) : null })[0];
+    if (!ev) return false;
+    WD().markStory(m, ev.id, flags); doSave();
+    const was = busyGet(); busySet(true);
+    try {
+      const lines = (ev.lines || []).map((l) => ({ npc: l.speaker || 'fina', expression: l.expression || 'normal', text: l.text }));
+      await root.MMNPC.talk(lines, { kind: 'fina', presentation: ev.presentation === 'talk' ? 'board' : 'compact' });
+    } catch (e) {} finally { if (!was) busySet(false); }
+    return true;
+  }
+  const isObjv = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+
+  // ---- 冒険リアクション（js/chapter/reactions.js）：通常の地点に止まったとき、確率でモンスターのしぐさ → フィナの解釈と選択肢 → 小さな結果 ----
+  async function reactionAt(m) {
+    const R = root.MMREACT; if (!R || !root.MMNPC || root.MM_QA_NO_STORY || !onBoard()) return '';
+    const ev = R.pick(m); if (!ev) return '';
+    R.mark(m, ev.id); doSave();
+    const el = monEl(); await wait(calm() ? 0 : 200);
+    const ms = R.play(el, ev.motion); await wait(calm() ? 0 : Math.min(ms, 900));
+    let id = null;
+    try { id = await root.MMNPC.talk([{ npc: 'fina', expression: ev.expression, text: ev.line, choices: ev.choices.map((c, i) => ({ id: String(i), label: c.label })) }], { kind: 'fina', presentation: 'compact' }); } catch (e) {}
+    const res = R.apply(gS(), m, ev, id == null ? 0 : +id); doSave();
+    const nm = (k) => { const d = root.MMP7 && root.MMP7.getItemDef(k); return d ? d.name : k; };
+    if (res.kind === 'fatigue' && res.fatigue < 0) feel('rest.recover');
+    R.play(el, res.kind === 'none' ? (ev.sp === 3 ? 'stoneReaction' : 'happy') : 'happy');
+    const eff = res.kind === 'stat' ? `${labOf(res.key)} +${res.amount}` : res.kind === 'fatigue' ? `疲れ ${res.fatigue < 0 ? '−' : '+'}${Math.abs(res.fatigue)}` : res.kind === 'item' ? `${nm(res.item)} を見つけた！` : '';
+    paint(m); lock();
+    await popup(eff ? `<small>${esc(res.text || ev.title)}</small><b>${esc(eff)}</b>` : `<small>${esc(ev.title)}</small><b>${esc(res.text || '')}</b>`, 1300);
+    return eff ? `${res.text || ev.title}　${eff}` : (res.text || ev.title || '');
+  }
+
+  // ---- 能力マスの特訓の動き（field-view の TRAIN_ACT・道具の絵）：道具をモンスターのそばに置く → モンスターが短く特訓 → 実際に上がった値 ----
+  function trainAct(key, caption) {
+    const CV = root.MMCHV, A = CV && CV.TRAIN_ACT ? CV.TRAIN_ACT[key] : null, src = CV && CV.resultFxSrc ? CV.resultFxSrc('tool', key) : null;
+    const el = monEl(), box = el && el.querySelector('.mon'), ui = $('#wb-ui');
+    if (!A || !src || !box || !ui || !box.animate || calm()) return wait(0);
+    feel('train.item', { key });
+    const hr = ui.getBoundingClientRect(), r = el.getBoundingClientRect(), mh = r.height || r.width, col = (G('STAT_COLOR') || {})[key] || '#ffe08a';
+    const T = A.tool, cx = r.left + r.width / 2 - hr.left, by = r.bottom - hr.top;
+    const tool = document.createElement('i'); tool.className = `chf-tact k-${key}`;
+    tool.style.cssText = `left:${(cx + T.dx * mh).toFixed(1)}px;top:${(by + T.dy * mh).toFixed(1)}px;width:${(mh * T.s).toFixed(1)}px;--c:${col}`;
+    tool.innerHTML = `<img src="${esc(src)}" alt="" draggable="false" decoding="async">`; ui.appendChild(tool);
+    const tx = document.createElement('b'); tx.className = 'chf-tact-tx'; tx.style.setProperty('--c', col); tx.textContent = caption || '';
+    tx.style.left = `${cx.toFixed(0)}px`; tx.style.top = `${Math.max(70, r.top - hr.top - 6).toFixed(0)}px`; if (caption) ui.appendChild(tx);
+    const am = box.animate(A.mon, { duration: A.ms, easing: 'ease-in-out' }), at = tool.animate(A.tk, { duration: A.ms, easing: 'ease-in-out', fill: 'forwards' });
+    return new Promise((ok) => {
+      let done = false; const end = () => { if (done) return; done = true; try { am.cancel(); at.cancel(); } catch (e) {} tool.remove(); tx.classList.add('out'); setTimeout(() => { tx.remove(); ok(); }, 160); };
+      am.finished.then(end, end); setTimeout(end, A.ms + 400);
+    });
   }
 
   // ---- 操作 ----
@@ -196,6 +312,7 @@
     const S = gS(), m = S && S.m; if (!active(m) || busyGet() || V.intro || !P8().canRoll(m)) return;
     busySet(true); lock();
     try {
+      V.path = [];
       const from = pressPoint('#brollbtn'), r = P8().roll(S, m); doSave();   // 出目・ターン・疲れは見せる前に確定して保存
       paint(m, 'サイコロを振った…'); lock();
       await playDie(r.value, from);
@@ -211,10 +328,11 @@
       while (m.raise.pend && m.raise.pend.stage === 'move') {
         if (!onBoard()) break;
         const before = m.raise.node, s = P8().step(S, m); doSave();
-        if (m.raise.node !== before && V.world) { V.world.update(info(m, m.raise.node)); const c = $('#chfd'); if (c) c.textContent = placeName(m.raise.node); await wait(calm() ? 60 : STEP_MS); }
+        if (m.raise.node !== before) V.path.push(m.raise.node);
+        if (m.raise.node !== before && V.world) { sprWalk(before, m.raise.node); V.world.update(info(m, m.raise.node)); const c = $('#chfd'); if (c) c.textContent = placeName(m.raise.node); await wait(calm() ? 60 : STEP_MS); }
         if (s && s.stage === 'branch') break;
       }
-    } finally { busySet(false); }
+    } finally { sprStop(); busySet(false); }
     if (!onBoard()) return;
     const st = m.raise.pend && m.raise.pend.stage;
     if (st === 'resolve') return resolve();
@@ -222,7 +340,8 @@
   }
   function pick(id) {
     const S = gS(), m = S && S.m; if (!active(m) || busyGet()) return;
-    const r = P8().chooseBranch(S, m, id); doSave(); if (!r.ok) return board();
+    const before = m.raise.node, r = P8().chooseBranch(S, m, id); doSave(); if (!r.ok) return board();
+    if (m.raise.node !== before) { V.path.push(m.raise.node); sprWalk(before, m.raise.node); }
     feel('branch.select', { id });
     paint(m, '', m.raise.node); lock(); walk();
   }
@@ -307,6 +426,7 @@
     try {
       const r = P8().resolveLanding(S, m); doSave();
       let fx = r.fx || {};
+      if ((fx.dice || []).length) await storyAt(m, 'die', { dice: fx.dice });
       for (const e of fx.dice || []) {   // イベントのサイコロ（Q の左右・特殊挑戦）：出目はもう決まっている（見せるだけ）
         const tx = (DIE_TEXT[e.kind] || ((x) => `サイコロ：${x.die}`))(e);
         const b = $('#bmsg'); if (b) b.textContent = tx;
@@ -320,7 +440,7 @@
       }
       paint(m, tail); lock();
       if (fx.kind === 'stat') {
-        await wait(calm() ? 0 : 160); feel('stat.up', { key: fx.key, amount: fx.amount });
+        await wait(calm() ? 0 : 160); await trainAct(fx.key, `${labOf(fx.key)} +${fx.amount}`); feel('stat.up', { key: fx.key, amount: fx.amount });
         await popup(`<small>${esc(labOf(fx.key))}のマス</small><b>${esc(labOf(fx.key))} +${fx.amount}</b>`, 1300); tail = `${labOf(fx.key)} +${fx.amount}`;
       } else if (fx.kind === 'treasure') {
         feel(['normal', 'rare', 'special'].includes(fx.tier) ? `chest.open.${fx.tier}` : 'chest.open', { tier: fx.tier });
@@ -336,6 +456,8 @@
         tail = plainOf(fx) || fx.title || '';
       } else if (fx.kind === 'battle') await encounter(m, fx.battleType);
       else if (fx.note === 'claimed') tail = `${fx.title || '宝'}はもう手に入れている。`;
+      const told = await storyAt(m, 'land', { fx, goal: !!r.goal });
+      if (!told && fx.kind === 'none' && fx.note === 'normal' && !r.goal && !r.timeUp) tail = (await reactionAt(m)) || tail;
       if (r.goal) tail = `${tail}　大会会場に着いた！`.trim(); else if (r.timeUp) tail = `${tail}　ターンを使い切った…`.trim();
     } finally { busySet(false); }
     if (onBoard()) board(tail || undefined);

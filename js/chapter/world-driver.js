@@ -138,6 +138,78 @@
     return { kind: 'event', ev: e.id, title: e.title || '出来事', text: c.text || e.text || '', lines: (c.lines || []).slice(), image: e.image || null, choice: c.id, ...apply(S, m, P().eventEff(c.handler, c.params, tile.k)) };
   }
 
+  // ---- フィナの節目の一言・チュートリアル（2026-10-11 次の作業。旧ボードの config.story と同じ形・本文は【暫定】） ----
+  //  trigger：'start'＝Chapter に入った最初／'land'＝止まったあと／'branch'＝分かれ道で選ぶ前／'die'＝運命のサイコロ・特殊挑戦のサイコロを見せる前。
+  //  when：kind／battleType／recovery／hasEvent／goal＝止まった地点の結果、pass＝今回の移動で通った地点（地点 ID か区間 ID）、notNode＝止まった地点がこれなら出さない、
+  //        spurOpt＝分かれ道に寄り道がある、optSeg＝分かれ道の選択肢にこの区間がある、dieKind＝見せるサイコロの種類、fatigueMin、species。
+  //  scope 'save'＝このセーブで1回（S.npcFlags.story。旧ボードのチュートリアルと同じ id は共通＝もう見た人には出さない）／既定＝この個体のこの Chapter で1回（m.raise.field.storySeen）。
+  //  presentation 'talk'＝ボードの大きな会話窓／既定＝小さな会話窓。同時に満たしたら priority の高いものを1つだけ。
+  const L = (expression, text, speaker) => (speaker ? { speaker, expression: expression || 'normal', text } : { expression, text });
+  const STORY = Object.freeze([
+    { id: 'tut_turns_w', trigger: 'start', scope: 'save', priority: 70, presentation: 'talk', lines: [L('guide', `出発の前に、ひとつだけ。この旅は${TURN_LIMIT}ターンだよ。サイコロ（1〜${DICE}）を1回振るか、「休む」を1回使うと、1ターン進むよ。`), L('normal', `${TURN_LIMIT}ターンのうちに大会会場に着けば、公式大会に挑戦できるんだ。`), L('smile', '間に合わなくても失敗じゃないよ。育った能力は、そのまま次へ持っていけるからね。')] },
+    { id: 'tut_stat', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { kind: 'stat' }, lines: [L('guide', '能力マスだよ。止まると、この子の得意に合わせて能力が伸びるんだ。'), L('smile', '伸び方は子ごとに違うから、ステータスで確かめてみてね。')] },
+    { id: 'tut_event', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { hasEvent: true }, lines: [L('guide', 'イベントマスは、止まるたびに違う出来事が起きるよ。'), L('happy', '何が起きるかは、その時のお楽しみ！')] },
+    { id: 'tut_rest', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { recovery: true }, lines: [L('guide', '休憩マスだね。疲れが減ったよ。'), L('normal', '疲れが100になるとサイコロが振れなくなるから、操作欄の「休む」も使ってね。')] },
+    { id: 'tut_treasure', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { kind: 'treasure' }, lines: [L('happy', '宝箱だ！ 中身はその時によって違うよ。'), L('guide', '珍しい宝箱ほど、いいものが入ってるみたい。')] },
+    { id: 'tut_wild', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { kind: 'battle', battleType: 'wild' }, lines: [L('surprised', '野生のモンスターだ！ ここでバトルするか、やめておくか選べるよ。'), L('guide', '勝っても賞金は無いけど、いい練習になる。バトルのあとは少し疲れるから気をつけてね。')] },
+    { id: 'tut_rival', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { kind: 'battle', battleType: 'rival' }, lines: [L('surprised', 'あっ、リュウ！ やっぱり先に来てたんだね。'), L('normal', 'おっ、もう追いついてきたのか。ちょうどいい、オレの相棒の力を見せてやるよ！', 'ryu'), L('guide', '街で会ったときより強くなってるはず。でも、私たちだって負けないよ！')] },
+    { id: 'tut_reward_w', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { kind: 'reward' }, lines: [L('happy', '宝の行き止まりだ！ ここの宝は、一度だけもらえるんだ。'), L('guide', 'ここから先は行き止まり。帰りもサイコロで戻ろうね。')] },
+    { id: 'tut_goal', trigger: 'land', scope: 'save', priority: 60, presentation: 'talk', when: { goal: true }, lines: [L('happy', 'ゴールだ！ ここから公式大会に挑戦できるよ。'), L('guide', '大会はランクE〜S。今のこの子に合うランクを選ぼう。参加しない選択もできるよ。')] },
+    { id: 'tut_branch', trigger: 'branch', scope: 'save', priority: 50, presentation: 'talk', lines: [L('guide', '分かれ道だよ。どっちの道を通るかは、自分で決められるんだ。'), L('smile', '道によって出来事や相手が少し変わるみたい。好きなほうを選んでね。')] },
+    { id: 'tut_challenge_w', trigger: 'branch', scope: 'save', priority: 48, presentation: 'talk', when: { optSeg: 'LATE_L1' }, lines: [L('guide', '左の先には封印の遺跡門があるよ。サイコロで5か6が出れば、門が開いて遺跡の道へ進めるんだ。'), L('normal', '失敗しても、遠回りの道で先へ進めるから安心してね。')] },
+    { id: 'tut_spur_w', trigger: 'branch', scope: 'save', priority: 45, presentation: 'talk', when: { spurOpt: true }, lines: [L('guide', '「寄り道」の先は行き止まりだけど、宝が待ってるんだ。'), L('normal', '行き止まりからは、帰りもサイコロで戻るよ。のこりのターンと相談して決めてね。')] },
+    { id: 'tut_qdie_w', trigger: 'die', scope: 'save', priority: 50, presentation: 'talk', when: { dieKind: 'Q' }, lines: [L('guide', 'ここは運命の分かれ道。どっちへ進むかは、サイコロの目で決まるんだ。'), L('normal', '奇数なら左の道、偶数なら右の道だよ。')] },
+    { id: 'ch1_start', trigger: 'start', lines: [L('happy', 'いよいよ出発だね！ 大会会場まで、一緒にがんばろう。')] },
+    { id: 'ch1_first_wild', trigger: 'land', priority: 30, when: { kind: 'battle', battleType: 'wild' }, lines: [L('surprised', '野生のモンスターだ！ 気をつけて！')] },
+    { id: 'ch1_first_rare', trigger: 'land', priority: 31, when: { kind: 'battle', battleType: 'rare' }, lines: [L('surprised', 'あの子、見たことない色…！ めずらしいモンスターかも！')] },
+    { id: 'w_left', trigger: 'land', priority: 12, when: { pass: ['EL01'] }, lines: [L('surprised', '崩れた谷が見えるね…。足元に気をつけて進もう。')] },
+    { id: 'w_right', trigger: 'land', priority: 12, when: { pass: ['ER01'] }, lines: [L('happy', '滝の音が聞こえる！ 水しぶきが気持ちいいね。')] },
+    { id: 'w_merge', trigger: 'land', priority: 11, when: { pass: ['P', 'C01'] }, lines: [L('smile', '道がひとつに戻ったね。この先に大きな門があるよ。')] },
+    { id: 'w_rival_before', trigger: 'land', priority: 20, when: { pass: ['C03', 'UPPER_GATE', 'C04'], notNode: ['RIVAL'] }, lines: [L('serious', 'この先に誰かいる…。もしかして、リュウ？')] },
+    { id: 'w_safe', trigger: 'land', priority: 12, when: { pass: ['LATE_SAFE'] }, lines: [L('smile', '雲の上の尾根道だね。ここなら安心して進めそう。')] },
+    { id: 'w_statue', trigger: 'land', priority: 13, when: { pass: ['STATUE'] }, lines: [L('surprised', '大きなライオンの石像…！ なんだか見守ってくれてるみたい。')] },
+    { id: 'w_castle', trigger: 'land', priority: 14, when: { pass: ['LATE_L_DONE', 'LATE_R_DONE', 'FINAL', 'S_END'], notNode: ['GOAL'] }, lines: [L('happy', '大会会場が見えてきた！ あと少しだよ。')] },
+    { id: 'ch1_tired', trigger: 'land', priority: 5, when: { fatigueMin: 80 }, lines: [L('worried', 'だいぶ疲れてきたみたい。無理しないで、休もうね。')] },
+  ]);
+  let SEG_OF = null;
+  /** 地点 → 区間（区間の途中の地点だけ。分かれ道・合流などの端の地点は区間に入れない＝pass では地点 ID で書く） */
+  function segOf(id) {
+    if (!SEG_OF) { SEG_OF = {}; for (const [k, s] of Object.entries(D().segments)) { const pts = s[3] || []; for (let i = 1; i < pts.length - 1; i++) SEG_OF[pts[i]] = k; } }
+    return SEG_OF[id] || null;
+  }
+  const STORY_CONDS = {
+    kind: (w, c) => !!c.fx && c.fx.kind === w,
+    battleType: (w, c) => !!c.fx && c.fx.battleType === w,
+    recovery: (w, c) => (!!c.fx && c.fx.kind === 'event' && !!c.fx.recovery) === !!w,
+    hasEvent: (w, c) => (!!c.fx && c.fx.kind === 'event' && !c.fx.recovery) === !!w,
+    goal: (w, c) => !!c.goal === !!w,
+    pass: (w, c) => c.path.some((id) => w.includes(id) || w.includes(segOf(id))),
+    notNode: (w, c) => !w.includes(c.node),
+    spurOpt: (w, c) => (c.segs || []).some((s) => SPUR(s)) === !!w,
+    optSeg: (w, c) => (c.segs || []).includes(w),
+    dieKind: (w, c) => (c.dice || []).some((e) => e.kind === w),
+    fatigueMin: (w, c) => c.fatigue >= w,
+    species: (w, c) => w.includes(c.species),
+  };
+  /** 今の状態で出す節目の一言（優先度の高い順・見たものは除く）。ctx＝{ fx, goal, path（今回の移動で通った地点）, segs, dice, species, flags（S.npcFlags） } */
+  function storyEvents(m, trigger, ctx = {}) {
+    const f = fieldOf(m); if (!f) return [];
+    const seen = Array.isArray(f.storySeen) ? f.storySeen : [], saveSeen = ctx.flags && Array.isArray(ctx.flags.story) ? ctx.flags.story : [];
+    const node = m.raise.node, c = { ...ctx, node, path: [...(Array.isArray(ctx.path) ? ctx.path : []), node], fatigue: clampFat(m.raise.fatigue) };
+    const out = [];
+    for (const e of STORY) {
+      if (e.trigger !== trigger) continue;
+      if (e.scope === 'save' ? (!ctx.flags || saveSeen.includes(e.id)) : seen.includes(e.id)) continue;
+      if (Object.entries(e.when || {}).every(([k, v]) => STORY_CONDS[k] && STORY_CONDS[k](v, c))) out.push(e);
+    }
+    return out.sort((a, b) => (b.priority || 0) - (a.priority || 0));
+  }
+  function markStory(m, id, flags) {
+    const e = STORY.find((x) => x.id === id); if (!e) return;
+    if (e.scope === 'save') { if (!isObj(flags)) return; if (!Array.isArray(flags.story)) flags.story = []; if (!flags.story.includes(id)) flags.story.push(id); return; }
+    const f = fieldOf(m); if (!f) return; if (!Array.isArray(f.storySeen)) f.storySeen = []; if (!f.storySeen.includes(id)) f.storySeen.push(id);
+  }
+
   // ---- raising.js（MMP8）へのつなぎ ----
   const DRIVER = Object.freeze({
     world: true,
@@ -186,6 +258,6 @@
   /** この個体の今の Chapter がこのボードか（画面の切り替え用） */
   const active = (m) => attached && !!m && isObj(m.raise) && m.raise.ch === CH && !!root.MMP7 && root.MMP7.inChapter(m) && !!fieldOf(m);
 
-  root.MMWD = Object.freeze({ CH, TURN_LIMIT, DICE, ROUTE_NAME, PLACE, DRIVER, attach, detach, active, fieldOf, valid, newField, track, routeName, branchOptions, isAttached: () => attached });
+  root.MMWD = Object.freeze({ CH, TURN_LIMIT, DICE, ROUTE_NAME, PLACE, STORY, DRIVER, storyEvents, markStory, segOf, attach, detach, active, fieldOf, valid, newField, track, routeName, branchOptions, isAttached: () => attached });
   attach();
 })(typeof window !== 'undefined' ? window : globalThis);
