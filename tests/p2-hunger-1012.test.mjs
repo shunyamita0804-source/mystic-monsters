@@ -140,7 +140,7 @@ test('P2-07：操作欄＝原本 deck_start.webp はそのまま・派生 deck_s
   assert.equal(dk.start, './assets/fields/ch1a/ui/deck_start_hunger.webp');
   const sz = (p) => { const b = readFileSync(path.join(ROOT, p)); return [b.toString('ascii', 8, 12), b.toString('ascii', 12, 16)]; };
   assert.deepEqual(sz('assets/fields/ch1a/ui/deck_start.webp')[0], 'WEBP'); assert.ok(existsSync(path.join(ROOT, 'tools/p2/blank_deck_rest.py')));
-  for (const f of ['js/chapter/world-board.js', 'js/chapter/field-view.js']) assert.match(rd(f), /<i class="chwlbl" aria-hidden="true">空腹 −\$\{/, f);
+  for (const f of ['js/chapter/world-board.js', 'js/chapter/field-view.js']) assert.match(rd(f), /<i class="chwlbl">空腹 −\$\{/, f);
   assert.match(HTML, /\.chwing\.chwing-img \.chwlbl\{position:absolute;left:44%;width:27%;top:68%;height:19%;/);
 });
 

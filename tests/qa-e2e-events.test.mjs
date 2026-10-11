@@ -57,7 +57,7 @@ T('EV-B1：イベントマス（挿絵つき・澄んだ湧き水）：背景を
   await H.finishTalk(pg);
   await pg.waitForSelector('.chpop.ev', { timeout: 15000 });
   assert.equal(await pg.evaluate(() => !!document.querySelector('.chf-evc')), false, '結果の前に挿絵は消える');
-  assert.match(await pg.textContent('.chpop.ev'), /湧き水[\s\S]*疲れ −15/);
+  assert.match(await pg.textContent('.chpop.ev'), /湧き水[\s\S]*空腹 −15/);
   await talk(pg, 'イベントマスは、止まるたびに');
   assert.equal(await pg.evaluate(() => document.querySelector('.mmtalk').dataset.pres), 'board', '2026-10-04 G2：チュートリアルはボードの大きな会話窓（操作欄の上）');
   await H.finishTalk(pg); await idle(pg);
