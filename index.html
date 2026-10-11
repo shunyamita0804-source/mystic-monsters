@@ -3748,6 +3748,7 @@ main:has(>#app>.ds) h1{display:none}
 <script src="./js/battle/movedex.js"></script>
 <script src="./js/fx/sequence.js"></script>
 <script src="./js/proto/roadfirst-data.js"></script><script src="./js/proto/roadfirst-core.js"></script><script src="./js/proto/roadfirst-play.js"></script><script src="./js/proto/roadfirst-zones.js"></script><script src="./js/proto/roadfirst-world.js"></script><script src="./js/proto/roadfirst-view.js"></script><!-- 2026-10-09：Chapter 1 Pattern A 道路先行の試作（?chapterBoard=roadfirst のときだけ。通常の URL では何もしない） -->
+<script src="./js/chapter/world-driver.js"></script><script src="./js/chapter/world-board.js"></script><!-- 2026-10-11：本編の Chapter 1＝1枚の世界のボード（299地点。進行 MMWD・画面 MMWB） -->
 <script src="./js/prologue/prologue.js"></script>
 <script src="./js/opening/worldmap.js"></script>
 <script>
@@ -4899,9 +4900,11 @@ function board(msg){
  if(m.raise.battle&&!document.getElementById("bt")){const f=MMP8.finishBattle(S,m);save();if(f&&f.interrupted)msg="前回の戦闘は途中で終わったため、もう一度選べます。"}
  {const fx=MMP8.ensureBoardPosition(S,m);if(fx.changed)save();if(fx.rescued)return hall("t","このChapterのマップは準備中のため、ベースキャンプで待機します。")}
  const r=m.raise,trk=bTrackFor(m),n=trk.nodes[r.node],ph=MMP8.boardPhase(m),c=p9Ch(r.ch);
+ if(window.MMWB&&(ph=="tour"||ph=="tour_done"||!MMWB.active(m)))MMWB.release(); // 2026-10-11：1枚の世界のボードの canvas を手放す（大会・ほかの Chapter）
  if(ph=="tour"||ph=="tour_done")return p8TourScr(msg); // 公式ランク大会（総当たりリーグ）の途中・結果
  p9MenuClose();p9Immersive(true);
  bgm("chapter"); // Chapter ごとの BGM（CHAPTER_1〜4。曲の対応は js/audio/audio-registry.js）
+ if(window.MMWB&&MMWB.active(m))return MMWB.board(msg); // 2026-10-11 本編の Chapter 1＝1枚の世界のボード（js/chapter/world-board.js）
  if(window.chfActive&&chfActive(m))return chfBoard(msg); // Chapterフィールドエンジン（js/chapter/）が担当するChapter：フィールドの中を旅する正式画面
  let ctl="",def=r.turnsUsed==0&&ph=="roll"&&c&&c.desc?`<b>${MMP8.chapterName(r.ch)}</b>　${c.desc}`:"サイコロを振って進もう！";
  if(ph=="roll")ctl=`<button class="p9dice" id="brollbtn" onclick="bRoll()" aria-label="サイコロを振る"><span class="dz" id="bdice"><img class="p12dicon" src="${MMP12D.icon("std")}" alt=""></span><span class="t1">サイコロを振る</span><span class="t2">1・2・3のみ</span></button>`;

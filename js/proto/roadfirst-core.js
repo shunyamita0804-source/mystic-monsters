@@ -99,6 +99,22 @@
     if (!st.done && st.moveLeft === 0 && st.turn >= st.limit) { st.timeUp = true; ev.push({ type: 'timeup', at: st.node }); }
     return ev;
   }
+  /** 1地点だけ進める（2026-10-11 本編の Chapter 1：画面が1歩ずつ歩くため。進み方は advance の1回分と同じ）。分岐で選ぶときは o.choose に接続の seg */
+  function stepOnce(D, st, o = {}) {
+    const ev = [], ix = index(D);
+    if (st.moveLeft <= 0 || st.done) return ev;
+    const op = options(D, st);
+    if (!op.length) { ev.push({ type: 'blocked', at: st.node }); st.discarded += st.moveLeft; st.moveLeft = 0; return ev; }
+    let e = op[0];
+    if (op.length > 1) { const hit = o.choose && op.find((x) => x.seg === o.choose); if (!hit) { ev.push({ type: 'choice', at: st.node, options: op.map((x) => x.seg) }); return ev; } e = hit; }
+    const from = st.node; st.node = e.dst; st.moveLeft--; st.trail.push(e.dst);
+    if (st.back && e.dst === ix.parentOf[st.back]) { st.spurDone[st.back] = true; st.exclude = st.back; st.back = null; }
+    else if (!st.back) st.exclude = null;
+    ev.push({ type: 'step', from, to: e.dst, seg: e.seg, left: st.moveLeft });
+    arrive(D, st, e, ev, o);
+    if (!st.done && st.moveLeft === 0 && st.turn >= st.limit) { st.timeUp = true; ev.push({ type: 'timeup', at: st.node }); }
+    return ev;
+  }
   function stopHere(st, ev, why) {
     if (st.moveLeft > 0 && st.stopRule === 'stop') { st.discarded += st.moveLeft; ev.push({ type: 'stop', at: st.node, why, discarded: st.moveLeft }); st.moveLeft = 0; }
   }
@@ -154,6 +170,6 @@
     return st;
   }
 
-  const api = { RAND_OPEN_P, STOP_ROLES, DEAD_ROLES, d6, create, options, needsChoice, roll, advance, playTurn, makePolicy, simulate, index, role, mulberry };
+  const api = { RAND_OPEN_P, STOP_ROLES, DEAD_ROLES, d6, create, options, needsChoice, roll, advance, stepOnce, playTurn, makePolicy, simulate, index, role, mulberry };
   if (typeof module === 'object' && module.exports) module.exports = api; else root.MMRF_CORE = api;
 })(typeof window !== 'undefined' ? window : globalThis);

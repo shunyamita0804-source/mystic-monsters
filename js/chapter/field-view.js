@@ -56,7 +56,7 @@
   const labOf = (k) => { try { return LAB[k] || k; } catch (e) { return k; } };
 
   /** エンジンが担当する Chapter の進行中か */
-  function chfActive(m) { return !!(root.MMCH && m && m.raise && P7().inChapter(m) && MMCH.DRIVER.handles(m.raise.ch) && MMCH.fieldOf(m)); }
+  function chfActive(m) { return !!(root.MMCH && m && m.raise && P7().inChapter(m) && MMCH.DRIVER.handles(m.raise.ch) && MMCH.fieldOf(m) && !(root.MMWD && root.MMWD.active(m))); }
   const P7 = () => root.MMP7, P8 = () => root.MMP8;
   const asset = (cfg, k) => (cfg.assets && cfg.assets[k]) || '';
   const sceneOf = (cfg, id) => cfg.fieldScenes.find((s) => s.id === id);
