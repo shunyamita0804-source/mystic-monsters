@@ -59,6 +59,6 @@ T('UB-B2：画像の上のボタンは従来どおり押せる（牧場の見る
   await pg.evaluate(() => savescr()); await pg.waitForSelector('.svs .card.slot'); await pg.waitForTimeout(450);
   await pg.locator('.svs .card.slot .row2 button').first().click(); await pg.waitForTimeout(400);
   assert.match(await pg.evaluate(() => document.querySelector('.svs #msg').textContent), /スロット1にセーブしました/);
-  assert.match(await pg.evaluate(() => document.querySelector('.svs .card.slot .svpic img')?.getAttribute('src') || ''), /assets\/monsters\/solamo/, 'スロットの四角に連れている子');
+  assert.match(await pg.evaluate(() => document.querySelector('.svs .card.slot .svpic img')?.getAttribute('src') || ''), /assets\/monsters\/2p5d\/solamo\.webp$/, 'スロットの四角に連れている子（2026-10-11：PR #4 から 2.5D の正式画像）');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });

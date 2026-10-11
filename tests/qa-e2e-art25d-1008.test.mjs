@@ -36,7 +36,7 @@ test('A25-B1：通常の URL では今までの絵・演出（2.5D の素材を�
   await pg.evaluate(() => anim(0, 0)); await pg.waitForTimeout(500);
   const r = await pg.evaluate(() => ({ p25: document.querySelectorAll('#bt .p25f, #bt .p25p').length, sw: !!document.querySelector('#bt .p25sw'), on: MM25D.on }));
   assert.deepEqual(r, { p25: 0, sw: false, on: false });
-  assert.equal(L.requests ? L.requests.filter((u) => /2p5d/.test(u)).length : 0, 0, '2.5D の素材を読まない');
+  assert.equal(L.requests ? L.requests.filter((u) => /assets\/battle\/2p5d\//.test(u)).length : 0, 0, '2.5D のバトル素材（比較試遊）を読まない');   // 2026-10-11：正式の立ち絵 assets/monsters/2p5d/（PR #4）は数えない
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
