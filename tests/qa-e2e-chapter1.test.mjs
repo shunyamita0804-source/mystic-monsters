@@ -69,9 +69,9 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     assert.equal(r.objs, r.objsWant, '旧目印（石碑・宝箱・イベントの物）は出さない（2026-10-02：正式マスUIが種別を示す）'); assert.ok(r.tiles === r.tilesWant && r.tiles > 0 && r.ph === 0, `スタート以外のすべてのマス（通常マスを含む）を地面に置く（${r.tiles}/${r.tilesWant}）・仮表示なし（${r.ph}）`); assert.ok(r.normals >= 1 && r.peds === r.tiles, `小型の立体マス（2026-10-06。絵＝円盤 ${r.peds}）・通常マス＝白紙の円盤（${r.normals}）`); assert.deepEqual(r.env, [], '街道の背景に素材は重ねない');
     assert.equal(r.battleObjs, 0, 'バトル地点の石碑は常設しない'); assert.equal(r.fg, 0, '手前を横切る草も置かない（石の街道）'); assert.deepEqual(r.layers, [true, true, true, true, true, true], '遠景・背景・奥・道・手前・効果の層');
     assert.match(r.text, /Chapter\s*1\s*\/ 4/); assert.match(r.text, /Turn\s*1\s*\/ 45/); assert.match(r.text, /空腹\s*0/); assert.match(r.text, /アイテム/); assert.match(r.text, /休む/); assert.match(r.text, /サイコロ/);
-    // 下の操作欄：正式画像（START の状態）。中央＝START（押せる領域は画像の球の上）、左右＝アイテム・休む（疲れ −30）・技設定・ステータス。フィールドは 80〜82%、操作欄は 18〜20%
+    // 下の操作欄：正式画像（START の状態）。中央＝START（押せる領域は画像の球の上）、左右＝アイテム・休む（空腹 −10）・技設定・ステータス。フィールドは 80〜82%、操作欄は 18〜20%
     assert.ok(/START/.test(r.stop.text) && r.stop.w >= 60 && r.stop.h >= 60, JSON.stringify(r.stop)); assert.ok(r.deckImg && /deck_start_hunger\.webp$/.test(r.deckImg), `操作欄の画像（2026-10-12 P2：「疲れ -30」を空欄にした派生） ${r.deckImg}`);
-    assert.deepEqual(r.wings.map((w) => w[0]), ['chwing chwing-img chitem chw-tl', 'chwing chwing-img chrest chw-tr', 'chwing chwing-img chskill chw-bl', 'chwing chwing-img chstatus chw-br'], '4コマンド：アイテム・休む・技設定・ステータス（画像の上の押せる領域）'); assert.match(r.wings[1][1], /休む.*疲れ −30/);
+    assert.deepEqual(r.wings.map((w) => w[0]), ['chwing chwing-img chitem chw-tl', 'chwing chwing-img chrest chw-tr', 'chwing chwing-img chskill chw-bl', 'chwing chwing-img chstatus chw-br'], '4コマンド：アイテム・休む・技設定・ステータス（画像の上の押せる領域）'); assert.match(r.wings[1][1], /休む.*空腹 −10/);
     const deckRatio = r.deckH / r.H; assert.ok(deckRatio >= 0.15 && deckRatio <= 0.215 &&   /* 2026-10-05：操作欄を少し高く（20.6%＋safe-area。START が下に寄りすぎない） */ Math.abs(r.fieldH + r.deckH - r.H) <= 1 && r.dockTopEqFieldBottom, `操作欄 ${r.deckH}px（${(deckRatio * 100).toFixed(1)}%）・フィールド ${r.fieldH}px`);
     assert.equal(r.dice, 0, 'START を押すまでサイコロは画面に出さない');
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
