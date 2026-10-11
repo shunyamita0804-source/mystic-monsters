@@ -160,8 +160,8 @@
 @keyframes wbpopout{to{opacity:0;transform:translate(-50%,-52%) scale(.97)}}
 .wbv .rfw-mon .mon{display:block;position:relative}
 .wbv .rfw-mon .mon>img{display:block;width:100%;height:auto;filter:drop-shadow(0 3px 2px rgba(0,0,0,.45))}
-:is(#rfp,.wbv) .rfw-mon .mon>img.wk{position:absolute;left:50%;bottom:0;width:auto;height:calc(100% * var(--wkh,1));max-width:none;translate:-50% calc(var(--wkf,0) * 100%);opacity:0}
-:is(#rfp,.wbv) .rfw-mon:is(.wk-on,.wk-idle) .mon>img.st{opacity:0}
+:is(#rfp,.wbv) .rfw-mon .mon>img.wk{position:absolute;left:50%;bottom:calc((1 - var(--sth,1)) * 100%);width:auto;height:calc(100% * var(--wkh,1) * var(--sth,1));max-width:none;translate:-50% calc(var(--wkf,0) * 100%);opacity:0;animation:none}
+:is(#rfp,.wbv) .rfw-mon:is(.wk-on,.wk-idle) .mon:has(>img.wk.on)>img.st{opacity:0}
 :is(#rfp,.wbv) .rfw-mon:is(.wk-on,.wk-idle) .mon>img.wk.on{opacity:1}
 .wbv .rfw-mon.wk-flip .mon>img.wk{scale:-1 1}
 .wbv .rfw-mon.bob .mon{animation:wbbob .32s ease-in-out infinite}
@@ -310,6 +310,10 @@
     const box = document.createElement('span'); box.className = 'mon'; el.insertBefore(box, st); box.appendChild(st);
     const P = root.MMP10M, key = P && P.keyOf ? P.keyOf(m.sp) : null, spr = key && cfg().monsterSprites ? cfg().monsterSprites[key] : null;
     SPR.sets = dirSets(spr);
+    // 2026-10-11：歩行のコマの高さ・足は「静止の立ち絵が実際に見えている高さ」に合わせる（横に広い立ち絵＝ガウルは箱より低く、上に寄せて置かれる）。--sth＝立ち絵の高さ ÷ 箱の高さ
+    const fit = () => { const bh = box.offsetHeight, sh = st.offsetHeight; if (bh > 0 && sh > 0) box.style.setProperty('--sth', String(Math.min(1, sh / bh))); };
+    if (st.complete) fit(); else st.addEventListener('load', fit, { once: true });
+    requestAnimationFrame(fit);
     box.insertAdjacentHTML('beforeend', Object.entries(SPR.sets).map(([k, w]) => w.frames.map((src, i) =>
       `<img class="wk" data-s="${k}" data-i="${i}" style="--wkh:${w.h};--wkf:${w.foot}" src="${esc(src)}" alt="" draggable="false" decoding="async">`).join('')).join(''));
     sprIdle();
@@ -330,7 +334,11 @@
   function sprIdle() {
     const el = monEl(); if (!el) return;
     const f = SPR.sets.front; el.classList.toggle('wk-idle', !!f);
-    if (f) sprShow('front', f.idle);
+    if (!f) return;
+    sprShow('front', f.idle);
+    // 2026-10-11：読み込み前のコマには切り替えない（sprShow）＝読み終わったら、まだ止まっていればそのコマを出す（それまでは静止の立ち絵のまま＝:has で消さない）
+    const img = el.querySelector(`img.wk[data-s="front"][data-i="${f.idle}"]`);
+    if (img && !img.complete) img.addEventListener('load', () => { const e2 = monEl(); if (e2 && e2.classList.contains('wk-idle') && !SPR.on) sprShow('front', f.idle); }, { once: true });
   }
   /** 1歩ごと：from → to の向きで見た目を決める（位置は MMRF_WORLD が動かす） */
   function sprWalk(from, to) {

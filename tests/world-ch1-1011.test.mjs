@@ -10,7 +10,7 @@
 //  WC-07 フィナの節目の一言（MMWD.storyEvents）：出発＝40ターン・1〜6 の説明・このセーブで1回（S.npcFlags.story）／この Chapter で1回（field.storySeen）・
 //        条件（止まった地点の結果・通った区間・分かれ道の寄り道・運命のサイコロ）・優先度・pass の区間 ID は原本に実在する・旧ボードの「45ターン」は出さない
 //  WC-08 歩行の向きの切り替え（MMWB.pickDir・dirSets）：上＝back・下＝front・横＝side（右向きの絵は左へ進むと反転）・無いセットは代わり（直前の縦のセット→静止の絵）・
-//        今の素材（ソラモ・ガウル・ジオル＝back、ノビトン＝side）・旧い walk だけの config は back
+//        今の素材（ソラモ・ジオル＝back、ガウル＝2.5D の front・back、ノビトン＝side）・旧い walk だけの config は back
 //  WC-09 レア 10%（2026-10-11）：本物の出発 1200回で最大1マス・候補だけ・保存 → 読み込みで同じ
 // =========================================================
 import test from 'node:test';
@@ -208,7 +208,7 @@ test('WC-08：歩行の向き＝上 back・下 front・横 side（右向きは�
   const side = { side: { face: 'right', frames: F } };
   assert.deepEqual([pickDir(0, -10, side).set, pickDir(0, 10, side).set, pickDir(-10, 0, side).flip], ['side', 'side', true], '横向きだけ＝どの向きも side');
   const S = cfg.monsterSprites, keys = (k) => Object.keys(dirSets(S[k])).join(',');
-  assert.deepEqual(['solamo', 'gauru', 'jiol', 'nobiton'].map(keys), ['back', 'back', 'back', 'side']);
+  assert.deepEqual(['solamo', 'gauru', 'jiol', 'nobiton'].map(keys), ['back', 'back,front', 'back', 'side'], '2026-10-11：ガウルは 2.5D の front・back（walk_25d）');
   assert.deepEqual(dirSets(S.solamo).back.frames, S.solamo.walk.frames, 'use:walk は walk のコマ（旧 Chapter 1 のフィールドと同じ）');
   assert.equal(dirSets(S.nobiton).side.face, 'right');
   assert.deepEqual(Object.keys(dirSets({ walk: { frames: F } })), ['back'], 'dirs の無い古い config は walk を back に');

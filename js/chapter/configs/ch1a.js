@@ -346,7 +346,13 @@
     monsterSprites: {
       // 2026-10-02 正式素材（ZIP mismon_walk_sprites_transparent。assets/monsters/{種族}_walk/README.md）：ガウル 6コマ（後ろ姿）・ノビトン 8コマ（横向き＝右向き）・ジオル 8コマ。
       //  移動の時間は種族で変えない（歩く速さは共通）。コマの速さだけ：ガウルは 6コマなので 9fps（1周 約0.67秒＝8コマの 12fps と同じ）。h は箱に対する高さ（体型の違い）
-      gauru: { walk: { frames: [1, 2, 3, 4, 5, 6].map((i) => `./assets/monsters/gauru_walk/gauru_walk_0${i}.webp`), fps: 9, idle: 0, h: 1.05, noFlip: true }, dirs: { back: { use: 'walk', face: 'none' } } },
+      gauru: { walk: { frames: [1, 2, 3, 4, 5, 6].map((i) => `./assets/monsters/gauru_walk/gauru_walk_0${i}.webp`), fps: 9, idle: 0, h: 1.05, noFlip: true }, dirs: {
+        // 2026-10-11 2.5D の歩行（ZIP MysticMonsters_WalkSprites_5Monsters_80PNG。表示用の派生＝assets/monsters/walk_25d/。各8コマ）：front＝手前へ（正面）・back＝奥へ（後ろ姿）。
+        //  コマの絵は 512×512 の中で体の高さ 463px・下の余白 25px にそろっている＝h 1.106（体の高さを静止の立ち絵と同じに）・foot 0.049（足を合わせる）。
+        //  止まっている姿は front の1コマ目。旧 Chapter 1（field-view）は従来の walk（6コマ）のまま
+        front: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/walk_25d/gauru/gauru_walk_front_0${i}.webp`), fps: 10, idle: 0, h: 1.106, foot: 0.049, face: 'none' },
+        back: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/walk_25d/gauru/gauru_walk_back_0${i}.webp`), fps: 10, idle: 0, h: 1.106, foot: 0.049, face: 'none' },
+      } },
       nobiton: { walk: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/nobiton_walk/nobiton_walk_0${i}.webp`), fps: 12, idle: 0, h: 0.86, noFlip: true }, dirs: { side: { use: 'walk', face: 'right' } } },
       jiol: { walk: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/jiol_walk/jiol_walk_0${i}.webp`), fps: 12, idle: 0, h: 0.95, noFlip: true }, dirs: { back: { use: 'walk', face: 'none' } } },
       solamo: { walk: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/solamo_walk_back/solamo_walk_back_0${i}.webp`), fps: 12, idle: 0, h: 0.9, noFlip: true }, dirs: { back: { use: 'walk', face: 'none' } } },
