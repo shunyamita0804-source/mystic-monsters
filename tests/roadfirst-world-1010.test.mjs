@@ -83,7 +83,15 @@ test('RW-06：ボード素材の試し貼り（&rfArt=1010）＝ファイル・�
   const A = Wd.ART, files = [A.ground.file, A.road.file, A.goal.file, ...A.props.map((q) => q.file)];
   for (const f of files) assert.ok(existsSync(path.join(ROOT, 'assets/proto/board_art_1010', f)), f);
   assert.match(rd('js/proto/roadfirst-view.js'), /const ART = ZWORLD && Q\.get\('rfArt'\) === '1010'/);
-  for (const L of A.landmarks) { assert.ok(existsSync(path.join(ROOT, 'assets/proto/board_art_1010', L.file)), L.file); assert.ok(D.nodes[L.node], L.node); assert.ok(Wd.landmarkAt(D, L)); }
+  for (const L of A.landmarks) {
+    for (const f of [L.file, L.open].filter(Boolean)) assert.ok(existsSync(path.join(ROOT, 'assets/proto/board_art_1010', f)), f);
+    assert.ok(D.nodes[L.node], L.node); const at = Wd.landmarkAt(D, L); assert.ok(at && at[0] > 0 && at[0] < Wd.WORLD.w && at[1] > 0 && at[1] < Wd.WORLD.h, `${L.node} は世界の中`);
+  }
+  assert.equal(new Set(A.landmarks.map((L) => L.node)).size, A.landmarks.length, '1地点に目印1つ');
+  // 第3便：役割ごとの専用マス（view の ART_TILE）と合流マス
+  const vsrc = rd('js/proto/roadfirst-view.js'), tiles = [...vsrc.match(/const ART_TILE = \{([^}]*)\}/)[1].matchAll(/'([a-z_]+\.webp)'/g)].map((m) => m[1]).concat('tile_merge.webp');
+  assert.ok(tiles.length >= 8, tiles.join());
+  for (const f of tiles) assert.ok(existsSync(path.join(ROOT, 'assets/proto/board_art_1010', f)), f);
   assert.ok(existsSync(path.join(ROOT, 'assets/proto/board_art_1010', A.strip.file)));
   assert.ok(Math.abs(A.props.reduce((v, q) => v + q.p, 0) - 1) < 1e-9, '景物の割合の合計 1');
   const o = Object.assign({}, Wd.DEF), a = Wd.scatter(D, o), b = Wd.scatter(D, o);

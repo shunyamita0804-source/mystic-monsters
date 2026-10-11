@@ -59,3 +59,18 @@ URL に `?chapterBoard=roadfirst&rfView=world&rfArt=1010` を付けたときだ�
 | edge_rock.webp | S2_cliff_rock.png | 同上・高さ 240px | 同上 |
 
 前便のままにしたもの：G1／G6（新しい絵は厚い石の台＝ほかの 82 マス（tiles_v2 の薄い円盤）とそろわない）、E01（王家の門は GOAL の大会会場と対になる）、E10（岩棚の見張り台＝Scene21 の「岩棚の小さな見張り台」に近い）、景物4種（前便で割合を決めて並べ済み。新しい低木は花が咲いていて花の景物と区別しにくい）、P1 土・P3 木（道と橋は石）。差し替えなかった絵は置いていない。
+
+## 第3便（2026-10-11・ZIP mystic_monsters_board_16_assets。16枚・すべて本物の透過・欠けなし）
+
+透明な余白を切って縮小（建物 448〜512px・マス 320px）。アルファ 8 以下＝0・240 以上＝255（scratchpad の prep4.py 相当）。
+
+| ファイル | 元 | 置く所（js/proto/roadfirst-world.js の ART.landmarks／roadfirst-view.js の ART_TILE） |
+|---|---|---|
+| lm_lower_gate／lm_upper_gate.webp | E02／E03 | 下門 LOWER_GATE・上門 UPPER_GATE（地点のすぐ奥で道をまたぐ） |
+| lm_seal_gate.webp | E04 | 特殊挑戦 CHALLENGE の奥 |
+| lm_lion.webp | E05 | 石像 STATUE（3本の道の分かれ目の奥の空き地＝off） |
+| lm_moss_tower／lm_forest_altar／lm_cliff_shrine／lm_watch_statue／lm_rainbow_falls.webp | E08／E09／E11／E12／E13 | 宝の行き止まり L_CHEST／L_ALTAR／L_LATE_ALTAR／REWARD5／R_SPECIAL の奥（R_CHEST は第2便の E10） |
+| lm_den_closed／lm_den_open.webp | E14a／E14b | 隠れ家 RANDOM_DEN の奥。その回の開閉（st.randOpen）で入れ替える。2枚は同じ範囲で切り抜いた（位置がずれない） |
+| tile_goal／tile_merge／tile_gate／tile_challenge／tile_den.webp | G2／G3／G4／G5／G7 | GOAL／合流（2本以上が入ってくる地点＝P・R・FINAL・L_MERGE など）／下門・上門／特殊挑戦／隠れ家のマス（仮の文字「G・合・門・挑・隠」の代わり） |
+
+E14a と E14b は門以外の細部も少し描き直されている（画素の約1割が違う）。開閉は旅の初めに決まり、旅の途中で入れ替わらないので見た目の問題は無い。

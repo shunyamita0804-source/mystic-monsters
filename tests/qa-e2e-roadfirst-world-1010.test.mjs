@@ -142,12 +142,23 @@ test('RWB-5：ボード素材の試し貼り（&rfArt=1010）＝絵がすべて�
   const r = await pg.evaluate(async () => {
     const imgs = [...document.querySelectorAll('#rfp .rfw-prop')]; await Promise.all(imgs.map((i) => i.decode().catch(() => null)));
     return { w: MMRF.world(), props: imgs.length, broken: imgs.filter((i) => !i.naturalWidth).map((i) => i.src), lm: document.querySelectorAll('#rfp .rfw-lm').length,
-      start: document.querySelector('#rfp .rfw-tile[data-node="START"] img').getAttribute('src'), reward: document.querySelector('#rfp .rfw-tile[data-node="R_CHEST"] img').getAttribute('src') };
+      start: document.querySelector('#rfp .rfw-tile[data-node="START"] img').getAttribute('src'), reward: document.querySelector('#rfp .rfw-tile[data-node="R_CHEST"] img').getAttribute('src'),
+      tiles: Object.fromEntries(['GOAL', 'LOWER_GATE', 'UPPER_GATE', 'CHALLENGE', 'RANDOM_DEN', 'P', 'FINAL'].map((id) => [id, document.querySelector(`#rfp .rfw-tile[data-node="${id}"] img`).getAttribute('src').split('/').pop()])),
+      den: [...document.querySelectorAll('#rfp .rfw-lm')].map((i) => i.getAttribute('src').split('/').pop()).filter((s) => /den/.test(s)) };
   });
   assert.equal(r.w.art, true, '地面と道の絵'); assert.deepEqual(r.broken, [], '景物の絵が読める'); assert.deepEqual(bad, [], '404 なし');
-  assert.equal(r.lm, 2, 'START の門・R_CHEST の見張り台'); assert.ok(r.props > 100);
+  assert.equal(r.lm, 12, '目印 12（START・下門・上門・封印の門・石像・宝の行き止まり6・隠れ家）'); assert.ok(r.props > 100);
+  assert.deepEqual(r.tiles, { GOAL: 'tile_goal.webp', LOWER_GATE: 'tile_gate.webp', UPPER_GATE: 'tile_gate.webp', CHALLENGE: 'tile_challenge.webp', RANDOM_DEN: 'tile_den.webp', P: 'tile_merge.webp', FINAL: 'tile_merge.webp' });
+  assert.deepEqual(r.den, ['lm_den_closed.webp'], '隠れ家が閉じている回＝閉じた石門');
   await pg.waitForFunction(() => MMRF.world().painted, null, { timeout: 20000 });
   const w2 = await pg.evaluate(() => MMRF.world()); assert.ok(w2.rims && w2.rims.length >= 3 && w2.rims.every((n) => n > 50), `谷のふちの線 ${w2.rims}`);
   assert.match(r.start, /tile_start\.webp$/); assert.match(r.reward, /tile_reward\.webp$/);
   assert.deepEqual(errs, [], 'JS の例外 0');
+  // 隠れ家が開いている回＝開いた石門（同じ大きさの絵の入れ替え）
+  const p2 = await open({ size: [390, 844] }); const g2 = p2.page;
+  await g2.goto(L.url + 'index.html?chapterBoard=roadfirst&rfView=world&rfArt=1010&rfRand=open&rfSeed=31'); await g2.waitForSelector('#rfp .rfw.art', { timeout: 20000 });
+  await g2.waitForFunction(() => [...document.querySelectorAll('#rfp .rfw-lm')].some((i) => /lm_den_open\.webp$/.test(i.getAttribute('src'))), null, { timeout: 10000 });
+  const dn = await g2.evaluate(async () => { const l = [...document.querySelectorAll('#rfp .rfw-lm')].filter((i) => /den/.test(i.getAttribute('src')));
+    await Promise.all(l.map((i) => i.decode().catch(() => null))); return l.map((i) => i.naturalWidth); });
+  assert.equal(dn.length, 1); assert.ok(dn[0] > 0, '開いた石門の絵が読める');
 });

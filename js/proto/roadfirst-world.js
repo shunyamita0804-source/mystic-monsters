@@ -39,8 +39,15 @@
     goal: { file: 'goal_arena.webp', w: 150, dy: 14 },      // GOAL の後ろ（足もと＝GOAL の 14単位手前）
     terrain: { valley: { file: 'ground_valley.webp', tile: 72 }, water: { file: 'ground_water.webp', tile: 80 },   // 谷底は小さく＝遠く深く見せる
       edges: { grass: { file: 'edge_grass.webp', w: 22, shift: 5 }, rock: { file: 'edge_rock.webp', w: 22, shift: 5 } }, depth: 0.32 },   // shift＝崖の帯を谷の側へずらす（岩肌が谷へ垂れる）・depth＝谷の暗さ
-    // 決まった地点の目印（第2便）：START の旅立ちの門（START のすぐ奥で道をまたぐ＝門の前に立つ）・R_CHEST の見張り台（行き止まりの奥）
-    landmarks: [{ node: 'START', file: 'lm_start_gate.webp', w: 40, along: 7, z: -30 }, { node: 'R_CHEST', file: 'lm_watchpost.webp', w: 40, along: 20, z: -30 }],
+    // 決まった地点の目印（第2便・第3便）。along＝進む向きへずらす（行き止まりは奥へ）・side＝進む向きの右へずらす・z＝前後（負＝モンスターより奥）
+    //   off＝地点からの決まったずれ（石像＝3本の道の分かれ目の奥の空き地）。門（START・下門・上門）は地点のすぐ奥で道をまたぐ＝モンスターは門の前に立つ。open＝隠れ家が開いている回の絵（st.randOpen）
+    landmarks: [{ node: 'START', file: 'lm_start_gate.webp', w: 40, along: 7, z: -30 },
+      { node: 'LOWER_GATE', file: 'lm_lower_gate.webp', w: 46, along: 3, z: -30 }, { node: 'UPPER_GATE', file: 'lm_upper_gate.webp', w: 52, along: 3, z: -30 },
+      { node: 'CHALLENGE', file: 'lm_seal_gate.webp', w: 46, along: 14, z: -30 }, { node: 'STATUE', file: 'lm_lion.webp', w: 38, off: [-36, -21], z: -30 },
+      { node: 'L_CHEST', file: 'lm_moss_tower.webp', w: 38, along: 20, z: -30 }, { node: 'R_CHEST', file: 'lm_watchpost.webp', w: 40, along: 20, z: -30 },
+      { node: 'L_ALTAR', file: 'lm_forest_altar.webp', w: 46, along: 22, z: -30 }, { node: 'L_LATE_ALTAR', file: 'lm_cliff_shrine.webp', w: 40, along: 20, z: -30 },
+      { node: 'REWARD5', file: 'lm_watch_statue.webp', w: 42, along: 20, z: -30 }, { node: 'R_SPECIAL', file: 'lm_rainbow_falls.webp', w: 44, along: 22, z: -30 },
+      { node: 'RANDOM_DEN', file: 'lm_den_closed.webp', open: 'lm_den_open.webp', w: 42, along: 20, z: -30 }],
   };
   // 2026-10-11 地形の範囲（設計：68 Scene の表の景観の説明から）。谷＝輪になった道の内側（崩落の谷・中央の崖）＋石橋の下を横切る谷の腕。
   //   loop＝区間を順にたどった多角形（rev＝逆向き）・arms＝谷の腕の中心線と幅・bridges＝谷の上を渡る区間（道のまわりを陸にしない）・water＝谷の中の水（滝の側）
@@ -155,7 +162,7 @@
       const add = (file, x, y, w, z, cls) => { const d = doc.createElement('img'); d.className = 'rfw-prop' + (cls ? ' ' + cls : ''); d.alt = ''; d.draggable = false; d.src = base + file; bb.appendChild(d); props.push({ el: d, x, y, w, z: z || 0 }); };
       for (const q of scatter(D, o)) add(q.file, q.x, q.y, q.w);
       const gn = D.nodes.GOAL; if (gn) add(ART.goal.file, gn[0], gn[1] + ART.goal.dy, ART.goal.w, -40, 'rfw-goal');
-      for (const L of ART.landmarks) { const at = landmarkAt(D, L); if (at) add(L.file, at[0], at[1], L.w, L.z || 0, 'rfw-lm'); }
+      for (const L of ART.landmarks) { const at = landmarkAt(D, L); if (at) { add(L.file, at[0], at[1], L.w, L.z || 0, 'rfw-lm'); props[props.length - 1].L = L; } }
     }
     const S = {
       cam: { tx: WORLD.w / 2, ty: WORLD.h / 2, s: 1, tilt: 0, P: o.persp, ax: 0, ay: 0 }, goal: null, mon: null, monGoal: null,
@@ -247,6 +254,7 @@
         S.goal = followCam(S.view, n[0], n[1], pts); S.lastAhead = info.ahead || [];
         if (instant && !S.intro) S.cam = Object.assign({}, S.goal);
         S.dirty = true;
+        if ('denOpen' in info) for (const p of props) if (p.L && p.L.open) { const f = info.denOpen ? p.L.open : p.L.file; if (p.f !== f) { p.el.src = (o.art.base || './assets/proto/board_art_1010/') + f; p.f = f; } }
         if (info.look) for (const [id, t] of Object.entries(tiles)) {
           const L = info.look(id) || {}; if (L.src && L.src !== t.src) { t.img.src = L.src; t.src = L.src; }
           const m = L.mark || ''; if (m !== t.mk) { t.lab.textContent = m; t.mk = m; }
@@ -427,11 +435,12 @@
   /** 目印の置き場所：地点から、その地点へ入ってくる向きに along 単位（負＝手前） */
   function landmarkAt(D, L) {
     const n = D.nodes[L.node]; if (!n) return null;
+    if (L.off) return [n[0] + L.off[0], n[1] + L.off[1]];
     const e = D.edges.find((x) => x[1] === L.node && x[3] === 'forward') || null, f = D.edges.find((x) => x[0] === L.node && x[3] === 'forward') || null;
     const p = e ? D.nodes[e[0]] : null, q = f ? D.nodes[f[1]] : null;
     let dx = 0, dy = -1;
     if (p) { dx = n[0] - p[0]; dy = n[1] - p[1]; } else if (q) { dx = q[0] - n[0]; dy = q[1] - n[1]; }
-    const k = Math.hypot(dx, dy) || 1; return [n[0] + dx / k * L.along, n[1] + dy / k * L.along];
+    const k = Math.hypot(dx, dy) || 1, a = L.along || 0, sd = L.side || 0; return [n[0] + (dx * a - dy * sd) / k, n[1] + (dy * a + dx * sd) / k];
   }
   /** 道の外に木と岩を散らす（決まった乱数・道とマスから離す・道の近くだけ）。第1便の検証用 */
   function scatter(D, o) {

@@ -35,17 +35,18 @@
   let world = null;
   const TV2 = './assets/fields/ch1a/tiles_v2/';
   const STAT_FILE = { li: 'life', po: 'power', in: 'intelligence', hi: 'accuracy', ev: 'evasion', de: 'toughness' };
+  const ART_TILE = { start: 'tile_start.webp', goal: 'tile_goal.webp', lower_walk_through_gate: 'tile_gate.webp', upper_walk_through_gate: 'tile_gate.webp',
+    challenge_d6_5_6: 'tile_challenge.webp', fixed_reward_dead_end: 'tile_reward.webp', optional_random_unlock_dead_end: 'tile_den.webp' };   // &rfArt=1010 の専用マス
   const ROLE_MARK = { start: 'S', goal: 'G', lower_walk_through_gate: '門', upper_walk_through_gate: '門', challenge_d6_5_6: '挑', fixed_reward_dead_end: '宝', optional_random_unlock_dead_end: '隠' };
   /** その地点に置くマスの絵（既存 tiles_v2）。役割の決まった地点で専用の絵が無い所は白紙＋仮の印（G 群が届いたら差し替える） */
   function worldLook(id) {
     const n = D.nodes[id], role = n ? n[2] : '', out = { src: TV2 + 'tile_blank.webp', mark: '', used: false };
     const fwd = D.edges.filter((e) => e[0] === id && e[3] === 'forward').length, inn = D.edges.filter((e) => e[1] === id && e[3] === 'forward').length;
-    if (ART && role === 'start') out.src = ART + 'tile_start.webp';   // 第2便の G1・G6
-    else if (ART && role === 'fixed_reward_dead_end') out.src = ART + 'tile_reward.webp';
+    if (ART && ART_TILE[role]) out.src = ART + ART_TILE[role];   // 第2便の G1・G6・第3便の G2〜G5・G7
     else if (ROLE_MARK[role]) out.mark = ROLE_MARK[role];
     else if (role === 'mandatory_rival') out.src = TV2 + 'tile_rival.webp';
     else if (fwd > 1) out.src = TV2 + 'tile_branch.webp';
-    else if (inn > 1) out.mark = '合';
+    else if (inn > 1) { if (ART) out.src = ART + 'tile_merge.webp'; else out.mark = '合'; }
     else if (role === 'ordinary_tile' && st.play) {
       const t = st.play.tiles[id];
       if (t) {
@@ -65,7 +66,7 @@
     // 行き止まりに着いたとき（まだ戻り始めていない）：次は枝を戻るので、戻り道を見せる
     let back = vis ? null : st.back;
     if (!back && !vis && C.DEAD_ROLES.includes(C.role(D, node))) { const ix = C.index(D); back = ix.spurs.find((k) => ix.endOf[k] === node) || null; }
-    return { node, ahead: st.done ? [] : root.MMRF_WORLD.lookahead(D, node, back ? null : first, back, 6), look: worldLook };
+    return { node, ahead: st.done ? [] : root.MMRF_WORLD.lookahead(D, node, back ? null : first, back, 6), look: worldLook, denOpen: !!st.randOpen };
   }
   const ZREG = './prototype/p_hub_1010/scene_registry.json', ZBASE = './prototype/p_hub_1010/';
   let zreg = null, zlay = {}, zready = false, zfail = null, zcur = null, zcam = null;   // 区域の表・背景の層・今の区域・今のカメラ
