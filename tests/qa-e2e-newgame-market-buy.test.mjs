@@ -92,7 +92,7 @@ T('QA-BY1：所持金 300G・0体（古いセーブ。2026-10-06 から新しい
   assert.deepEqual(b.notes, ['はじめての1体は、所持金が500Gに満たなくても購入できます（所持金を500Gまで補填）。']);
   assert.equal(await pg.evaluate(() => S.g), 300, '市場を開いただけでは補填しない');
   const sh = await openSheet(pg);
-  assert.deepEqual(sh, { title: 'ソラモを連れて帰りますか？', name: 'ソラモ', max: '8', ok: '連れて帰る（500G）', onclick: 'mkgo(0);p10Close()', img: './assets/monsters/solamo.png',
+  assert.deepEqual(sh, { title: 'ソラモを連れて帰りますか？', name: 'ソラモ', max: '8', ok: '連れて帰る（500G）', onclick: 'mkgo(0);p10Close()', img: './assets/monsters/2p5d/solamo.webp',
     notes: ['はじめての1体のため、所持金を500Gまで補填してから支払います。'] });
   assert.equal(await pg.evaluate(() => S.g), 300, '確認画面を開いただけでは補填しない');
   await confirmBuy(pg, 'ソラ太');
@@ -335,7 +335,7 @@ T('QA-BY10：矢印で端から端へ循環させた後も、確認画面の種�
   b = await buyBox(pg);
   assert.deepEqual([b.center, b.buyKey, b.dis], ['gauru', 'gauru', false]);
   let sh = await openSheet(pg);
-  assert.deepEqual([sh.title, sh.onclick, sh.name, sh.img], ['ガウルを連れて帰りますか？', 'mkgo(1);p10Close()', 'ガウル', './assets/monsters/gauru.png']);
+  assert.deepEqual([sh.title, sh.onclick, sh.name, sh.img], ['ガウルを連れて帰りますか？', 'mkgo(1);p10Close()', 'ガウル', './assets/monsters/2p5d/gauru.webp']);
   await confirmBuy(pg, null);
   let s = await H.getS(pg);
   assert.deepEqual([s.m.sp, s.m.name, s.m.speed, s.g], [1, 'ガウル', 7, 4500]);
@@ -346,7 +346,7 @@ T('QA-BY10：矢印で端から端へ循環させた後も、確認画面の種�
   b = await buyBox(pg);
   assert.deepEqual([b.center, b.buyKey, b.dis], ['solamo', 'solamo', false], '最後→最初：ソラモ');
   sh = await openSheet(pg);
-  assert.deepEqual([sh.title, sh.onclick, sh.name, sh.img], ['ソラモを連れて帰りますか？', 'mkgo(0);p10Close()', 'ソラモ', './assets/monsters/solamo.png']);
+  assert.deepEqual([sh.title, sh.onclick, sh.name, sh.img], ['ソラモを連れて帰りますか？', 'mkgo(0);p10Close()', 'ソラモ', './assets/monsters/2p5d/solamo.webp']);
   await confirmBuy(pg, null);
   s = await H.getS(pg);
   assert.deepEqual([s.box.length, s.box[0].sp, s.box[0].speed, s.g, s.m.sp], [1, 0, 5, 4000, 1]);

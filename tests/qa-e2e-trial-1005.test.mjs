@@ -122,7 +122,7 @@ for (const size of SIZES) {
     await pg.evaluate(() => { window.__mr = Math.random; Math.random = () => 0.1; }); await pg.click('#brollbtn'); await pg.evaluate(() => { Math.random = window.__mr; });
     await pg.waitForSelector('.chf-enc2.t-rival .ce-partner', { timeout: 20000 }); await pg.waitForTimeout(750);
     const r = await pg.evaluate(() => { const g = (q) => { const e = document.querySelector(q), b = e.getBoundingClientRect(); return { l: b.left, t: b.top, r: b.right, b: b.bottom, h: b.height, ok: e.complete === undefined ? true : e.complete && e.naturalWidth > 0, src: e.getAttribute('src') }; }; return { ryu: g('.ce-rival'), reg: g('.ce-partner'), tx: g('.ce-tx'), top: g('.ce-top span'), tx2: document.querySelector('.ce-tx').textContent }; });
-    assert.match(r.ryu.src, /ryu_official_fullbody\.webp$/); assert.match(r.reg.src, /regnas_official\.webp$/); assert.ok(r.ryu.ok && r.reg.ok, '読み込み済み');
+    assert.match(r.ryu.src, /ryu_official_fullbody\.webp$/); assert.match(r.reg.src, /2p5d\/regnas\.webp$/); assert.ok(r.ryu.ok && r.reg.ok, '読み込み済み');
     for (const k of ['ryu', 'reg']) { const b = r[k]; assert.ok(b.l >= 0 && b.r <= size[0] && b.t >= 0 && b.b <= size[1], `${k} は画面の中 ${JSON.stringify(b)}`); }
     assert.ok(r.ryu.h <= size[1] * 0.42, `リュウは大アップにしない（全身） ${r.ryu.h}`); assert.ok(r.reg.h >= 150, 'レグナスは小さすぎない');
     assert.ok(r.ryu.r <= r.reg.l + r.reg.r * 0.25 && r.ryu.l < r.reg.l, 'リュウが左・レグナスが右（並べる）');

@@ -35,7 +35,7 @@ test('RP-01：正式技10個（SK の 20〜29）。威力・命中・クリテ�
   assert.deepEqual(JSON.parse(JSON.stringify(c.EFF[23])), [{ tg: 0, st: 'ev', lv: 1, t: 2 }]);
   assert.ok(c.SPECIAL_MOVES.has(28) && c.SPECIAL_MOVES.has(29) && c.SPECIAL_MOVES.size === 2);
   assert.equal(c.SK.length, 30); assert.equal(c.SP.length, 2, 'SP（プレイヤー・野生の種族）には入れない');
-  assert.equal(c.IMG[4], './assets/monsters/regnas/regnas_official.webp');
+  assert.equal(c.IMG[4], './assets/monsters/2p5d/regnas.webp');   // 2026-10-11：2.5D
   for (const f of [...rd('js/phase10/monsters.js').matchAll(/龍眼/g)]) assert.fail('龍眼 と書かない：' + f);
   assert.doesNotMatch(rd('js/battle/rival-partner.js'), /龍眼/);
   const ms = c.MMP7.getMoveset('regnas');

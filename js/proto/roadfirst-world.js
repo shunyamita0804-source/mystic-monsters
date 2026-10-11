@@ -156,7 +156,7 @@
       bb.appendChild(d); tiles[id] = { el: d, img: d.firstChild, lab: d.lastChild, src: '', mk: '', used: false };
     }
     const rootEl = host.closest ? host.closest('#rfp,.wbv') || wrap : wrap;   // 2026-10-11 本編の Chapter 1（js/chapter/world-board.js の .wbv）でも同じ描画
-    const mon = doc.createElement('div'); mon.className = 'rfw-mon'; mon.innerHTML = `<img alt="" draggable="false" src="${o.monSrc || './assets/monsters/solamo.png'}">`; bb.appendChild(mon);
+    const mon = doc.createElement('div'); mon.className = 'rfw-mon'; mon.innerHTML = `<img alt="" draggable="false" src="${o.monSrc || './assets/monsters/2p5d/solamo.webp'}">`; bb.appendChild(mon);
     // 景物（木・岩）と GOAL の大会会場：立てて置く（第1便の絵があるときだけ）
     const props = [];
     if (o.art) {

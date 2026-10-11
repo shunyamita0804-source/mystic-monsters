@@ -225,7 +225,7 @@ B('QA-TD4：実行時に使う画像（正式モンスター・背景・市場�
   assert.ok(uniq.length >= 56, '実行時の画像パスが集まっている：' + uniq.length);
   assert.equal(uniq.filter((x) => x.startsWith('assets/dice/')).length, 20, 'サイコロ（通常用・分岐用）10コマずつ');
   assert.equal(uniq.filter((x) => x.startsWith('assets/npc/fina/')).length, 30, 'フィナの表情8枚＋アニメ2種×6コマ＋全身10ポーズ（2026-10-03）');
-  for (const k of ['solamo', 'gauru', 'nobiton', 'jiol']) assert.ok(uniq.includes(`assets/monsters/${k}.png`), k + ' の正式画像');
+  for (const k of ['solamo', 'gauru', 'nobiton', 'jiol']) assert.ok(uniq.includes(`assets/monsters/2p5d/${k}.webp`), k + ' の正式画像（2026-10-11 から 2.5D）');
   assert.ok(uniq.includes('assets/title/title_main.jpg'));
   assert.deepEqual(uniq.filter((r) => !existsExact(r)), [], '実在しない（または大文字小文字が違う）画像パス');
   // 実際にブラウザで読み込めること（画像として壊れていない）

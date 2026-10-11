@@ -36,7 +36,7 @@
   const V = { el: null, world: null, key: null, intro: false, path: [] };
   const onBoard = () => !!(V.el && V.el.isConnected);
   const fieldOf = (m) => WD().fieldOf(m);
-  function monSrc(m) { const sp = root.MMP10M && root.MMP10M.byId ? root.MMP10M.byId(m.sp) : null; return sp && sp.image ? sp.image.src : './assets/monsters/solamo.png'; }
+  function monSrc(m) { const sp = root.MMP10M && root.MMP10M.byId ? root.MMP10M.byId(m.sp) : null; return sp && sp.image ? sp.image.src : './assets/monsters/2p5d/solamo.webp'; }
 
   // ---- マスの見た目（全地点）。役割の決まった地点は専用の絵、通常の地点は配置の中身（能力・イベント・休憩・野生・宝箱） ----
   function look(m) {

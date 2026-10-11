@@ -129,7 +129,7 @@ test('PB-08：アイテム管理（ベースキャンプの独立した導線・
 test('PB-09：ライバル遭遇＝リュウの正式立ち絵（市松模様を取り除いた透過 WebP）。竜（相棒）の正式素材は無い＝作らない（config の encounterPartner は null）', () => {
   const C = rd('js/chapter/configs/ch1a.js'), FV = rd('js/chapter/field-view.js');
   assert.match(C, /encounterFigure: 'rival_ryu', encounterPartner: 'rival_regnas', encounter: 'リュウが立ちはだかった！'/, '文面は変えない。2026-10-05：相棒＝レグナス（正式）');
-  assert.match(C, /rival_ryu: '\.\/assets\/npc\/ryu\/ryu_official_fullbody\.webp', rival_regnas: '\.\/assets\/monsters\/regnas\/regnas_official\.webp'/); assert.ok(existsSync(path.join(ROOT, 'assets/npc/ryu/ryu_official_fullbody.webp'))); assert.ok(!existsSync(path.join(ROOT, 'assets/npc/ryu/full_normal.webp')), '旧い絵は使わない');
+  assert.match(C, /rival_ryu: '\.\/assets\/npc\/ryu\/ryu_official_fullbody\.webp', rival_regnas: '\.\/assets\/monsters\/2p5d\/regnas\.webp'/); assert.ok(existsSync(path.join(ROOT, 'assets/npc/ryu/ryu_official_fullbody.webp'))); assert.ok(!existsSync(path.join(ROOT, 'assets/npc/ryu/full_normal.webp')), '旧い絵は使わない');
   assert.match(FV, /\$\{rvFig \? `<img class="ce-rival" src="\$\{esc\(rvFig\)\}"/); assert.match(FV, /\$\{rvPart \? `<img class="ce-partner"/);
   assert.match(C, /figure: null, encounterFigure:/, 'ボードの目印（figure）には立たせない');
 });

@@ -103,7 +103,7 @@
   function persist() { if (broken) return; try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
   function monSrc() {
     try { const S = G('S'), m = S && S.m; const s = m && root.MMP10M && root.MMP10M.byId(m.sp); if (s && s.image) return s.image.src; } catch (e) {}
-    return './assets/monsters/solamo.png';
+    return './assets/monsters/2p5d/solamo.webp';
   }
   const placeOf = (id) => PLACE[id] || (D.nodes[id] && D.nodes[id][3] ? `${D.nodes[id][3]}` : id);
 

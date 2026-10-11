@@ -62,7 +62,7 @@
         learnset: fz({ initial: fz([1, 2, 3, 4]), po: fz([5]), in: fz([6]), hi: fz([7]), ev: fz([8]), de: fz([9, 10]), deRule: 'first_random_then_remaining' }),
         rivalLoadout: fz([1, 2, 3, 4]) }),
       growth: null, playerAvailable: false,
-      image: fz({ src: './assets/monsters/regnas/regnas_official.webp', w: 663, h: 900 }) }),
+      image: fz({ src: './assets/monsters/2p5d/regnas.webp', w: 720, h: 699 }) }),   // 2026-10-11：2.5D 正式原本の表示用（assets/monsters/2p5d/README.md）。旧 regnas_official.webp はファイルだけ残す
   ]);
   const rivalMonster = (key) => RIVAL_MONSTERS.find((x) => x.key === key) || null;
 
@@ -159,19 +159,19 @@
     fz({ id: 0, key: 'solamo', name: 'ソラモ', en: 'SORAMO', kind: '獣種', personality: null, formerNames: fz([]),
       base: fz({ li: 100, po: 100, in: 100, hi: 100, ev: 100, de: 100 }), speed: 5, uniqueSkill: 'unique_solamo', tagline: 'バランス型',
       growth: G6('C', 'C', 'C', 'C', 'C', 'C'),
-      image: fz({ src: './assets/monsters/solamo.png', w: 720, h: 664 }), }),
+      image: fz({ src: './assets/monsters/2p5d/solamo.webp', w: 720, h: 688 }), }),   // 2026-10-11：2.5D 正式原本の表示用。旧 2D は assets/monsters/solamo.png（ファイルだけ残す）
     fz({ id: 1, key: 'gauru', name: 'ガウル', en: 'GAURU', kind: '鳥種', personality: null, formerNames: fz(['ハヤテ']),
       base: fz({ li: 80, po: 110, in: 110, hi: 90, ev: 90, de: 60 }), speed: 7, uniqueSkill: 'unique_gauru', tagline: '攻撃に特化したアタッカー',
       growth: G6('D', 'B', 'B', 'C', 'B', 'E'),
-      image: fz({ src: './assets/monsters/gauru.png', w: 720, h: 647 }), }),
+      image: fz({ src: './assets/monsters/2p5d/gauru.webp', w: 720, h: 663 }), }),
     fz({ id: 2, key: 'nobiton', name: 'ノビトン', en: 'NOBITON', kind: '獣種', personality: null, formerNames: fz([]),
       base: fz({ li: 120, po: 80, in: 80, hi: 80, ev: 50, de: 100 }), speed: 2, uniqueSkill: 'unique_nobiton', growth: G6('B', 'D', 'D', 'D', 'E', 'C'), tagline: 'のびる・たれる・くっつく。不思議な鼻（くち）を持つ、マイペースなモンスター。',
-      image: fz({ src: './assets/monsters/nobiton.png', w: 720, h: 658 }),
-      silhouette: fz({ src: './assets/monsters/nobiton_silhouette.png', w: 720, h: 658 }) }),
+      image: fz({ src: './assets/monsters/2p5d/nobiton.webp', w: 720, h: 657 }),
+      silhouette: fz({ src: './assets/monsters/2p5d/nobiton_silhouette.webp', w: 720, h: 657 }) }),
     // ジオル：英字表記は正式仕様に未記載のため null（推測で決めない）
     fz({ id: 3, key: 'jiol', name: 'ジオル', en: null, kind: '岩石種', personality: 'のんびり・おとなしい', formerNames: fz([]),
       base: fz({ li: 90, po: 120, in: 40, hi: 50, ev: 30, de: 150 }), speed: 1, uniqueSkill: 'unique_jiol', tagline: null, growth: G6('C', 'A', 'E', 'D', 'E', 'A'),   // 成長適性（2026-10-02 正式）
-      image: fz({ src: './assets/monsters/jiol.png', w: 720, h: 531 }), }),
+      image: fz({ src: './assets/monsters/2p5d/jiol.webp', w: 720, h: 667 }), }),
   ]);
   // ---- 種族IDの役割（二重管理にしない：1つの種族レコードが両方を持つ） ----
   //  id（0〜3の番号）…既存互換用。セーブの m.sp・旧SP表・fight() などの既存コードは番号のまま使う（変更・削除しない）。

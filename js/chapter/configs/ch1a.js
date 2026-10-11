@@ -279,7 +279,7 @@
       stat_hi: A + 'nodes/stat_accuracy.webp', stat_ev: A + 'nodes/stat_evasion.webp', stat_de: A + 'nodes/stat_toughness.webp',
       event_normal: A + 'nodes/event_normal.webp', event_rare: A + 'nodes/event_rare.webp', event_special: A + 'nodes/event_special.webp',
       treasure_normal: A + 'nodes/treasure_normal.webp', treasure_rare: A + 'nodes/treasure_rare.webp', treasure_special: A + 'nodes/treasure_special.webp',
-      battle_wild: A + 'nodes/battle_wild.webp', battle_rival: A + 'nodes/battle_rival.webp', rival_ryu: './assets/npc/ryu/ryu_official_fullbody.webp', rival_regnas: './assets/monsters/regnas/regnas_official.webp',
+      battle_wild: A + 'nodes/battle_wild.webp', battle_rival: A + 'nodes/battle_rival.webp', rival_ryu: './assets/npc/ryu/ryu_official_fullbody.webp', rival_regnas: './assets/monsters/2p5d/regnas.webp',
       grass_front: A + 'env/grass_flower_border.webp',
       // 演出（2026-10-02。ZIP mystic-monsters-board-ui-assets-2026-10-01-v2 の 03_board_effects を透過化。assets/fields/ch1a/effects/README.md）
       fx_battle_encounter: A + 'effects/effect_battle_encounter.webp', fx_stat_up: A + 'effects/frame_stat_up.webp', fx_turn_warning: A + 'effects/ui_turn_warning.webp',
