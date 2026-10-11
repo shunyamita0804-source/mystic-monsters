@@ -4156,7 +4156,7 @@ const OPEN_TALK={
  originA:[{npc:"fina",expression:"happy",text:"リベルナ！ アステリア地方の西のほうにある街だよね。"}],
  originB:[{npc:"fina",expression:"happy",text:"リベルナかぁ。アステリア地方の西のほうにある街だよね。"}],
  mistoria:[{npc:"fina",expression:"guide",text:"ここがミストリア。"},{npc:"fina",expression:"guide",text:"聖獣士管理局のほかにも、研究所や牧場、闘技場なんかが集まってる街だよ。"},{npc:"fina",expression:"smile",text:"一人前の聖獣士を目指すなら、これから何度もお世話になると思う。"}],
- support:n=>[{npc:"serge",text:`${n}さんのような新人の聖獣士には、管理局から支援をお渡ししています。`},{npc:"serge",text:"新人聖獣士支援制度です。まずは、旅立ちの準備金をお受け取りください。"},{npc:"serge",text:"それから、こちらもお持ちください。"},{note:{rows:[{icon:"gold",text:"1000G"},{img:ITEM_ICON.herb,text:"薬草を手に入れた"}],se:"GOLD_GET"}},{npc:"serge",text:"薬草は、聖獣の疲れを30回復できる道具です。旅の途中で疲れが溜まったら使ってください。"}],
+ support:n=>[{npc:"serge",text:`${n}さんのような新人の聖獣士には、管理局から支援をお渡ししています。`},{npc:"serge",text:"新人聖獣士支援制度です。まずは、旅立ちの準備金をお受け取りください。"},{npc:"serge",text:"それから、こちらもお持ちください。"},{note:{rows:[{icon:"gold",text:"1000G"},{img:ITEM_ICON.herb,text:SUPPORT_TO=="vault"?"薬草を手に入れた（バッグがいっぱいなので保管庫へ）":"薬草を手に入れた"}],se:"GOLD_GET"}},{npc:"serge",text:"薬草は、聖獣の疲れを30回復できる道具です。旅の途中で疲れが溜まったら使ってください。"}],
  unlock:n=>[{npc:"serge",text:"世界地図は、この管理局でいつでもご覧いただけます。"},{npc:"fina",expression:"guide",text:`それじゃあ${n}さん、まずは市場で最初の相棒を迎えに行こう！`}]};
 // リュウとの出会い（2026-10-07 正式の導線。台本＝ライバルらしく前向きで少し自信家。S ランクを先にクリアしてレジェンドに挑むと宣言し、先に「はじまりの草原」へ）
 // 2026-10-08：リュウの正式の表情5種（台詞は変えない）＝驚き → 自信 → 柔らかい笑み → 真剣 → 自信
@@ -4231,7 +4231,8 @@ function itemIc(id,cls){const u=ITEM_ICON[id&&id.id||id];return u?`<img class="i
 /** 新人支援（2026-10-06 正式）：聖獣士登録のあと1回だけ 1000G と薬草×1。記録は S.npcFlags.support（v6 の任意項目）。
  *  受け取りの記録・所持金・薬草（バッグ。いっぱいなら保管庫）を同時に確定してから保存する＝再読み込み・再訪・再起動で二重に受け取らない。受け取ったら true */
 const SUPPORT=Object.freeze({gold:1000,item:"herb"});
-function grantSupport(){const f=finaFlags();if(f.support)return false;f.support=1;S.g=(S.g||0)+SUPPORT.gold;if(!MMP7.bagAdd(S,SUPPORT.item).ok)MMP7.vaultAdd(S,SUPPORT.item,1);save();return true}
+let SUPPORT_TO="bag";   // 2026-10-11：新人支援の品の送り先（バッグに入らないときは保管庫＝帯に「保管庫へ」と出す）
+function grantSupport(){const f=finaFlags();if(f.support)return false;f.support=1;S.g=(S.g||0)+SUPPORT.gold;SUPPORT_TO="bag";if(!MMP7.bagAdd(S,SUPPORT.item).ok){MMP7.vaultAdd(S,SUPPORT.item,1);SUPPORT_TO="vault"}save();return true}
 /** 聖獣士管理局の「世界地図」（序盤の会話を見たら出身地の印も） */
 function bureauMap(){if(window.MMMAP)MMMAP.viewer({origin:!!finaFlags().worldMap})}
 // ---- Phase 11：プレイヤー名（新規ゲームの最初に決める。空欄なら「アルト」） ----

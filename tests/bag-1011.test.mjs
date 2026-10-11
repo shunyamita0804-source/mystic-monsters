@@ -268,3 +268,23 @@ test('BAG-11：Chapter のアイテム（薬草）は1個ずつ減る・画面�
   assert.match(HTML, /バッグが\$\{d\.bagCap\.to\}枠に拡張された！/);
   assert.doesNotMatch(HTML, /バッグが6枠に拡張/, '旧の固定文言（S 初回だけ）は使わない');
 });
+
+test('BAG-12：バッグに入らない新しい取得は保管庫へ送り、送り先を表示する（品目・数を失わない・二重に受け取らない）', () => {
+  const M = load(), { P7 } = M;
+  const S = town(M); S.inv.bag = [{ id: 'a' }, { id: 'b' }];   // 2枠とも埋まっている
+  // 冒険リアクションの品（js/chapter/reactions.js の resolve と同じ処理）
+  const w = { MMP7: P7 }; new Function('window', rd('js/chapter/reactions.js'))(w);
+  const R = w.MMREACT, ev = R.EVENTS.find((e) => (e.choices || []).some((c) => c.fx && c.fx.item));
+  assert.ok(ev, '品をもらえる冒険リアクションがある');
+  const ci = ev.choices.findIndex((c) => c.fx && c.fx.item), item = ev.choices[ci].fx.item;
+  const m = { sp: 0, raise: { field: {} } };
+  const r = R.apply(S, m, ev, ci);
+  assert.equal(r.kind, 'item'); assert.equal(r.to, 'vault', '送り先＝保管庫');
+  assert.equal(P7.itemCount(S, item, 'vault'), 1, '保管庫に1個');
+  assert.equal(R.apply(S, m, ev, ci).kind === 'item', false, '同じ Chapter で二重に受け取らない（rxItem）');
+  assert.equal(P7.itemCount(S, item), 1);
+  for (const f of ['js/chapter/world-board.js', 'js/chapter/field-view.js']) assert.match(rd(f), /\$\{res\.to === 'vault' \? '（バッグがいっぱいなので保管庫へ）' : ''\}/, f);
+  // 新人支援：1回だけ・入らなければ保管庫・帯に送り先
+  assert.match(HTML, /function grantSupport\(\)\{const f=finaFlags\(\);if\(f\.support\)return false;f\.support=1;S\.g=\(S\.g\|\|0\)\+SUPPORT\.gold;SUPPORT_TO="bag";if\(!MMP7\.bagAdd\(S,SUPPORT\.item\)\.ok\)\{MMP7\.vaultAdd\(S,SUPPORT\.item,1\);SUPPORT_TO="vault"\}save\(\);return true\}/);
+  assert.match(HTML, /SUPPORT_TO=="vault"\?"薬草を手に入れた（バッグがいっぱいなので保管庫へ）"/);
+});

@@ -1336,7 +1336,7 @@
       else if (res.kind === 'fatigue' && res.fatigue < 0) monReact('rest');
       else if (res.kind === 'item') monReact('treasure');
       else R.play(w, ev.sp === 4 ? 'lookAway' : ev.sp === 3 ? 'stoneReaction' : 'happy');
-      const eff = res.kind === 'stat' ? `${labOf(res.key)} +${res.amount}` : res.kind === 'fatigue' ? `疲れ ${res.fatigue < 0 ? '−' : '+'}${Math.abs(res.fatigue)}` : res.kind === 'item' ? `${nm(res.item)} を見つけた！` : '';
+      const eff = res.kind === 'stat' ? `${labOf(res.key)} +${res.amount}` : res.kind === 'fatigue' ? `疲れ ${res.fatigue < 0 ? '−' : '+'}${Math.abs(res.fatigue)}` : res.kind === 'item' ? `${nm(res.item)} を見つけた！${res.to === 'vault' ? '（バッグがいっぱいなので保管庫へ）' : ''}` : '';
       const head = esc(res.text || ev.title);
       setMsg(eff ? `${head}　${esc(eff)}` : head);
       await popup(eff ? `<small>${head}</small><b>${esc(eff)}</b>` : `<small>${esc(ev.title)}</small><b>${head}</b>`, 'ev ev-normal rx', holdOf(2, 1000), null, async () => { if (f1 !== f0) await fatigueHud(f0, f1); });

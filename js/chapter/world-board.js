@@ -380,7 +380,7 @@
     const nm = (k) => { const d = root.MMP7 && root.MMP7.getItemDef(k); return d ? d.name : k; };
     if (res.kind === 'fatigue' && res.fatigue < 0) feel('rest.recover');
     R.play(el, res.kind === 'none' ? (ev.sp === 3 ? 'stoneReaction' : 'happy') : 'happy');
-    const eff = res.kind === 'stat' ? `${labOf(res.key)} +${res.amount}` : res.kind === 'fatigue' ? `疲れ ${res.fatigue < 0 ? '−' : '+'}${Math.abs(res.fatigue)}` : res.kind === 'item' ? `${nm(res.item)} を見つけた！` : '';
+    const eff = res.kind === 'stat' ? `${labOf(res.key)} +${res.amount}` : res.kind === 'fatigue' ? `疲れ ${res.fatigue < 0 ? '−' : '+'}${Math.abs(res.fatigue)}` : res.kind === 'item' ? `${nm(res.item)} を見つけた！${res.to === 'vault' ? '（バッグがいっぱいなので保管庫へ）' : ''}` : '';
     paint(m); lock();
     await popup(eff ? `<small>${esc(res.text || ev.title)}</small><b>${esc(eff)}</b>` : `<small>${esc(ev.title)}</small><b>${esc(res.text || '')}</b>`, 1300);
     return eff ? `${res.text || ev.title}　${eff}` : (res.text || ev.title || '');
