@@ -1,7 +1,7 @@
 // =========================================================
 // アイテム38種の表示用画像（本体透過・2026-10-12）
 //  ITB-01 assets/items/body_1012/01〜38.webp＝256×256・透過・四辺は透明。README に38行の対応表（番号・安定ID・正式名・元ファイル・sha256）。
-//         未解消の一覧（20・10/16/25/31・34・05）と「検収が必要」・P2 の6種は 22（18 ではない）。原本（PNG）は置かない。このブランチではゲームにつながない（index.html・js から参照しない）。正式名の 38＝ラグナスの闘魂（旧名は使わない）
+//         未解消の一覧（20・10/16/25/31・34・05）と「検収が必要」・P2 の6種は 22（18 ではない）。原本（PNG）は置かない。ゲームから参照してよいのは P2 の食事6種（01・02・03・07・11・22＝P2 の別 PR の js/items/food.js）だけ。正式名の 38＝ラグナスの闘魂（旧名は使わない）
 // =========================================================
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -35,9 +35,16 @@ test('ITB-01：アイテム38種の表示用画像（256×256・透過）・READ
   assert.doesNotMatch(rm, /\| 18 \|[^\n]*\| P2の6種 \|/, '18 は P2 の6種に入れない（22 を使う）');
   assert.match(rm, /検収が必要（完全修正済みではない）/);
   for (const k of ['20 幸運の羽根', '10・16・25・31', '34 フィナの導き', '05 忍びの香']) assert.match(rm, new RegExp(`\\| ${k} \\|`), `未解消の一覧：${k}`);
-  // このブランチではゲームにつながない（P2 の承認のあとにつなぐ）
+  // ゲームから使ってよいのは P2 の食事6種（01・02・03・07・11・22）だけ＝js/items/food.js（P2 の別 PR）。残り32種はつながない。
+  // （このブランチだけなら参照は0。P2 と両方を main へ入れたときも、6枚の外を参照していなければ通る＝同じファイルなので重複しない）
+  const P2SIX = ['01', '02', '03', '07', '11', '22'];
   const html = readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-  assert.ok(!html.includes('body_1012'), 'index.html から参照しない');
   const js = (d) => readdirSync(path.join(ROOT, d), { withFileTypes: true }).flatMap((e) => e.isDirectory() ? js(path.join(d, e.name)) : e.name.endsWith('.js') ? [path.join(d, e.name)] : []);
-  for (const f of js('js')) assert.ok(!readFileSync(path.join(ROOT, f), 'utf8').includes('body_1012'), `${f} から参照しない`);
+  const used = [...html.matchAll(/body_1012\/(\d\d)\.webp/g)].map((x) => x[1]);
+  for (const f of js('js')) {
+    const src = readFileSync(path.join(ROOT, f), 'utf8');
+    if (f.split(path.sep).join('/') === 'js/items/food.js') { used.push(...[...src.matchAll(/\['(\d\d)', '[a-z_]+'/g)].map((x) => x[1])); continue; }
+    assert.ok(!src.includes('body_1012'), `${f} から参照しない（使ってよいのは js/items/food.js だけ）`);
+  }
+  assert.deepEqual([...new Set(used)].filter((n) => !P2SIX.includes(n)), [], 'P2 の6種のほかはゲームから参照しない');
 });
