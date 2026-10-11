@@ -5,6 +5,7 @@
 //  RW-03 lookahead：START から6マス先・分かれ目のあとは3マスずつ・枝を戻る途中は逆向き・原本の接続だけ
 //  RW-04 レア（ユーザー決定）：1つの Chapter に1マス・Z1 右の本道と Z2 石像の尾根の通常マスだけ・野生の隣に置かない・同じ seed＝同じ
 //  RW-05 フラグ：&rfView=world のときだけ・保存の鍵は同じ・index.html の読み込み順・world は保存／通信をしない
+//  RW-07 地形（2026-10-11）：谷の多角形は原本の区間だけでできる・石橋の区間がある・谷の中／道のまわり（陸）／谷の外を正しく分ける・景物は谷に置かない
 //  RW-06 ボード素材の試し貼り（&rfArt=1010・第1便＋第2便）：ファイルがそろう・景物は道とマスに重ならない・同じ配置・GOAL のまわりに置かない
 // =========================================================
 import test from 'node:test';
@@ -91,4 +92,17 @@ test('RW-06：ボード素材の試し貼り（&rfArt=1010）＝ファイル・�
     assert.ok(q.y >= 150, 'GOAL の会場のまわりに置かない');
     for (const n of Object.values(D.nodes)) assert.ok(Math.hypot(n[0] - q.x, n[1] - q.y) >= o.roadW / 2 + 9, `マスに近すぎる (${q.x | 0},${q.y | 0})`);
   }
+});
+
+test('RW-07：地形＝谷は原本の区間から・石橋・谷の中と道のまわりの陸・景物は谷に置かない', () => {
+  for (const T of Wd.TERRAIN) {
+    for (const [id] of T.loop) assert.ok(D.segments[id], `区間 ${id}`);
+    for (const id of T.bridges) assert.ok(D.segments[id], `石橋 ${id}`);
+    const P = Wd.loopPoly(D, T); assert.ok(P.length > 20, `${T.id} の多角形`);
+    assert.ok(Math.hypot(P[0][0] - P.at(-1)[0], P[0][1] - P.at(-1)[1]) < 1, `${T.id} は閉じた輪`);
+  }
+  assert.equal(Wd.inValley(D, 512, 1150), 'collapse', '崩落の谷の中'); assert.equal(Wd.inValley(D, 512, 760), 'central', '中央の崖の中');
+  for (const id of ['J0', 'P', 'Q', 'R', 'EL1', 'ER3', 'START', 'GOAL']) assert.equal(Wd.inValley(D, D.nodes[id][0], D.nodes[id][1]), null, `${id} は陸`);
+  assert.equal(Wd.inValley(D, 512, 1400), null, 'START の道のまわりは谷ではない');
+  for (const q of Wd.scatter(D, Object.assign({}, Wd.DEF))) assert.equal(Wd.inValley(D, q.x, q.y), null, `景物 (${q.x | 0},${q.y | 0}) は谷の外`);
 });

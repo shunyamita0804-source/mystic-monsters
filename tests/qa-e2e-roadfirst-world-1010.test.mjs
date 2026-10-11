@@ -6,7 +6,7 @@
 //  RWB-2 再読み込みで同じ地点・俯瞰は出ない・連打しても1ターン・「最初から」でまた俯瞰
 //  RWB-3 重さ：CPU を4倍遅くして移動中のフレームの間隔を測る（iPhone 実機ではない＝目安）
 //  RWB-4 フラグなし（?chapterBoard=roadfirst だけ）は世界ビューを作らない
-//  RWB-5 ボード素材の試し貼り（&rfArt=1010）：絵がすべて読める（404 なし）・道は直線の石の道を並べる・START／固定報酬の専用マス・目印・JS の例外 0
+//  RWB-5 ボード素材の試し貼り（&rfArt=1010）：絵がすべて読める（404 なし）・道は直線の石の道を並べる・START／固定報酬の専用マス・目印・谷のふちの線・区画を描き終える・JS の例外 0
 //  QA_E2E=1 のときだけ。スクリーンショットは RF_SHOT_DIR があるときだけ
 // =========================================================
 import test from 'node:test';
@@ -146,6 +146,8 @@ test('RWB-5：ボード素材の試し貼り（&rfArt=1010）＝絵がすべて�
   });
   assert.equal(r.w.art, true, '地面と道の絵'); assert.deepEqual(r.broken, [], '景物の絵が読める'); assert.deepEqual(bad, [], '404 なし');
   assert.equal(r.lm, 2, 'START の門・R_CHEST の見張り台'); assert.ok(r.props > 100);
+  await pg.waitForFunction(() => MMRF.world().painted, null, { timeout: 20000 });
+  const w2 = await pg.evaluate(() => MMRF.world()); assert.ok(w2.rims && w2.rims.length >= 3 && w2.rims.every((n) => n > 50), `谷のふちの線 ${w2.rims}`);
   assert.match(r.start, /tile_start\.webp$/); assert.match(r.reward, /tile_reward\.webp$/);
   assert.deepEqual(errs, [], 'JS の例外 0');
 });
