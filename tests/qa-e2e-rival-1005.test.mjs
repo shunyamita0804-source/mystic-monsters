@@ -34,7 +34,7 @@ for (const size of [[390, 844], [375, 667]]) {
     await toBattle(pg, 'rival');
     const r = await pg.evaluate(() => ({ name: BPL[1].name, sp: BPL[1].sp, eq: BPL[1].eq, st: [BPL[1].li, BPL[1].po, BPL[1].de], rk: MMRIVAL.rankFor(S.m), src: document.querySelector('#bt #m1 img').getAttribute('src'), hud: document.querySelector('#hp1 .hn1 b').textContent, wrapped: !!MMBattle.__rp, spn: SP.length }));
     assert.equal(r.name, 'レグナス'); assert.equal(r.hud, 'レグナス'); assert.equal(r.sp, 4); assert.equal(r.spn, 2);
-    assert.match(r.src, /assets\/monsters\/regnas\/regnas_official\.webp$/);
+    assert.match(r.src, /assets\/monsters\/2p5d\/regnas\.webp$/);
     assert.deepEqual(r.eq, [20, 21, 22, 23, -1, -1]);
     const RV = [70, 90, 120, 160, 220, 300]; assert.deepEqual(r.st, [RV[r.rk], RV[r.rk], RV[r.rk]], '強さは従来のランクの値のまま');
     assert.equal(r.wrapped, true, '固有スキルはこのバトルの間だけ');
@@ -89,7 +89,7 @@ T('RV-B3（2026-10-06）：ライバル戦の遭遇 → 導入（VS）→ 実戦
   const s1 = await pg.evaluate(() => window.__seen);
   // 自分の子（#m0・HUD の自分）を除いて、相手側にガウルが出ていない
   const foe = await pg.evaluate(() => ({ m1: document.querySelector('#bt #m1 img').getAttribute('src'), hud: document.querySelector('#hp1 .hn1 b').textContent, intro: [...document.querySelectorAll('#bt .ipn.p1 img')].map((i) => i.getAttribute('src')) }));
-  assert.match(foe.m1, /regnas_official/); assert.equal(foe.hud, 'レグナス'); assert.ok(foe.intro.every((s) => !/gauru/.test(s)));
+  assert.match(foe.m1, /2p5d\/regnas/); assert.equal(foe.hud, 'レグナス'); assert.ok(foe.intro.every((s) => !/gauru/.test(s)));
   assert.ok(s1.regnas > 0, '遭遇・バトルにレグナス');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
@@ -102,7 +102,7 @@ T('RV-B4（2026-10-06）：ライバル戦の途中で再読み込み → もう
   await pg.waitForSelector('.chbat', { timeout: 30000 });
   await pg.evaluate(() => bBattleGo()); await pg.waitForSelector('#bt #m1 img');
   const r = await pg.evaluate(() => [BPL[1].name, document.querySelector('#bt #m1 img').getAttribute('src')]);
-  assert.equal(r[0], 'レグナス'); assert.match(r[1], /regnas_official/);
+  assert.equal(r[0], 'レグナス'); assert.match(r[1], /2p5d\/regnas/);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
@@ -116,7 +116,7 @@ T('RV-B5（2026-10-06）：Chapter 2 のライバル（sa_2）も遭遇の画面
   await pg.evaluate(() => { const r = S.m.raise; r.node = 'sa_2'; r.pend = { roll: 1, left: 0, stage: 'resolve' }; save(); board(); });
   await pg.waitForSelector('.chf-enc2 .ce-partner', { timeout: 20000 });
   const enc = await pg.evaluate(() => [document.querySelector('.chf-enc2 .ce-rival').getAttribute('src'), document.querySelector('.chf-enc2 .ce-partner').getAttribute('src')]);
-  assert.match(enc[0], /ryu_official_fullbody/); assert.match(enc[1], /regnas_official/);
+  assert.match(enc[0], /ryu_official_fullbody/); assert.match(enc[1], /2p5d\/regnas/);
   await pg.waitForSelector('.chbat', { timeout: 20000 });
   await pg.evaluate(() => bBattleGo()); await pg.waitForSelector('#bt #m1 img');
   assert.equal(await pg.evaluate(() => BPL[1].name), 'レグナス');

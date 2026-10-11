@@ -349,7 +349,7 @@ test('QA-C1：原種4体の種族ID・番号・名前・種族・6能力・素�
   M.SPECIES.forEach((s, i) => {
     const [key, id, name, kind, stats, speed] = TABLE[i];
     assert.deepEqual([s.key, s.id, s.name, s.kind, M.STAT_KEYS.map((k) => s.base[k]), s.speed], [key, id, name, kind, stats, speed], key);
-    assert.equal(s.image.src, `./assets/monsters/${key}.png`); assert.ok(existsSync(path.join(ROOT, s.image.src)), s.image.src);
+    assert.equal(s.image.src, `./assets/monsters/2p5d/${key}.webp`);   // 2026-10-11：2.5D 正式原本の表示用 assert.ok(existsSync(path.join(ROOT, s.image.src)), s.image.src);
   });
   assert.deepEqual([M.SPEED_MIN, M.SPEED_MAX, M.isValidSpeed(0), M.isValidSpeed(11), M.isValidSpeed(10)], [1, 10, false, false, true]);
   // 旧来の個体生成（mk）で生まれる個体の能力・素早さも表と同じ

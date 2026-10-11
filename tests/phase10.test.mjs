@@ -144,6 +144,9 @@ test('M2-4：素早さを保存しても、現在のPhase 6バトル（fight()�
 // ---------------------------------------------------------
 // Step 3：種族の文字ID・正式画像アセット・市場データ（正式値）
 // ---------------------------------------------------------
+const webpInfo = (p) => { const b = readFileSync(path.join(ROOT, p)); const sig = b.slice(8, 12).toString(), ch = b.slice(12, 16).toString(); let w = 0, h = 0, alpha = false;
+  if (ch === 'VP8X') { alpha = !!(b[20] & 0x10); w = 1 + b.readUIntLE(24, 3); h = 1 + b.readUIntLE(27, 3); } else if (ch === 'VP8L') { const v = b.readUInt32LE(21); w = 1 + (v & 0x3fff); h = 1 + ((v >> 14) & 0x3fff); alpha = !!((v >> 28) & 1); } else if (ch === 'VP8 ') { w = b.readUInt16LE(26) & 0x3fff; h = b.readUInt16LE(28) & 0x3fff; }
+  return { sig, w, h, alpha }; };
 const pngInfo = (p) => { const b = readFileSync(path.join(ROOT, p)); return { sig: b.slice(1, 4).toString(), w: b.readUInt32BE(16), h: b.readUInt32BE(20), colorType: b[25] }; };
 const OLD_IMG_FINGERPRINTS = ["MQKBJI5jioUSnoN57IEf6rnpk3pmclybRtVsWr+aWq2Okk47e9kSUaRloVXo", "tfjcIghOwAFeBCuCR5EDHfHk6sAYzkv4cArUAmdSEBFRiDLaSOZ8NtppPjCT", "UgiEQYhTZ+dx5KzFXe/8GYRRA5968POYP3cO27bP4p53vAuzs7uwNPcizj37"];   // 旧 IMG（旧ソラモ・旧ガウル・前肢が余分な旧ノビトン）の base64 の一部
 
@@ -158,18 +161,20 @@ test('M3-1：種族の文字ID（solamo・gauru・nobiton・jiol）と既存の�
   assert.deepEqual(Object.keys(M.UNIQUE_SKILLS), ['unique_solamo', 'unique_gauru', 'unique_nobiton', 'unique_jiol']);
 });
 
-test('M3-2：4原種の正式画像は assets/monsters/<文字ID>.png（透過PNG）で、画面は正式マスターから画像を取る', () => {
+test('M3-2：4原種の正式画像は 2.5D の表示用（assets/monsters/2p5d/<文字ID>.webp・透過）で、画面は正式マスターから画像を取る', () => {
+  // 2026-10-11：2.5D 正式原本（v2_Fixed）へ切り替え。原本はリポジトリに置かず、余白を切り詰めて長辺 720px にした透過 WebP（README に原本の sha256）
   const { M } = load();
   for (const s of M.SPECIES) {
-    assert.equal(s.image.src, `./assets/monsters/${s.key}.png`);
+    assert.equal(s.image.src, `./assets/monsters/2p5d/${s.key}.webp`);
     assert.ok(existsSync(path.join(ROOT, s.image.src)), s.key);
-    const i = pngInfo(s.image.src); assert.equal(i.sig, 'PNG'); assert.equal(i.colorType, 6, `${s.key}：透過（RGBA）`); assert.deepEqual([i.w, i.h], [s.image.w, s.image.h]);
+    const i = webpInfo(s.image.src); assert.equal(i.sig, 'WEBP'); assert.ok(i.alpha, `${s.key}：透過`); assert.deepEqual([i.w, i.h], [s.image.w, s.image.h]); assert.equal(Math.max(i.w, i.h), 720, '長辺 720px');
   }
-  const sil = M.silhouetteOf('nobiton'); assert.deepEqual([sil.src, pngInfo(sil.src).colorType], ['./assets/monsters/nobiton_silhouette.png', 6]);
+  const sil = M.silhouetteOf('nobiton'); assert.equal(sil.src, './assets/monsters/2p5d/nobiton_silhouette.webp'); assert.ok(webpInfo(sil.src).alpha); assert.deepEqual([sil.w, sil.h], [M.byKey('nobiton').image.w, M.byKey('nobiton').image.h]);
   for (const k of ['solamo', 'gauru', 'jiol']) assert.equal(M.silhouetteOf(k), null);
   assert.match(HTML, /const IMG=MMP10M\.SPECIES\.map\(s=>s\.image\.src\);/, '画像の対応表は正式マスターから作る');
-  const readme = rd('assets/monsters/README.md');
-  for (const f of ['04AF002A', 'B5CDD0D8', 'BD621188', '983DE6AE']) assert.ok(readme.includes(f), `出どころの記録：${f}`);
+  const readme = rd('assets/monsters/2p5d/README.md');
+  for (const f of ['74c159104acc1ac1', '4218e977288779b9', 'bb00f0e6ce979d02', '3b02fb21b8bd154f', 'a169fd3410e8fcc8', '01_soramo_2.5D.png', '04_giol_2.5D.png']) assert.ok(readme.includes(f), `出どころの記録：${f}`);
+  for (const k of ['solamo', 'gauru', 'nobiton', 'jiol']) assert.ok(existsSync(path.join(ROOT, `assets/monsters/${k}.png`)), `旧 2D の ${k}.png はファイルだけ残す`);
 });
 
 test('M3-3：旧画像（前肢が余分な旧ノビトンなど）はどこからも参照しない。assets/monsters/ 直下は正式画像だけ（旧土台の soramo/・gauru/ フォルダは残すが、ゲームは使わない）', () => {

@@ -25,7 +25,9 @@
     calmSegments: Object.freeze(['S01', 'EL01', 'ER01']),   // 序盤（スタートの階段と J0 のすぐ先）には野生・休憩・宝箱を置かない
     // レアモンスターマス（2026-10-10 ユーザー決定）：1つの Chapter に1マス・候補は Z1 右の本道と Z2 石像の尾根の通常マスだけ
     //（行き止まりの終点とその枝・分かれ目・合流・門・ライバル・特殊挑戦は候補にしない）。開始時に配置と一緒に決めて保存。旧：野生マスごと 10%
-    rare: Object.freeze({ count: 1, zones: Object.freeze({
+    // 2026-10-11 ユーザー決定（ChatGPT 経由の正式指定）：育成開始時に 1回だけ 10% で判定 → 当たった育成だけ候補から1マス・外れれば 0マス（旧：毎回必ず1マス）。
+    //  判定と場所は配置と一緒に保存（再読み込みで引き直さない・旧セーブの配置もそのまま）。
+    rare: Object.freeze({ chance: 0.1, count: 1, zones: Object.freeze({
       Z1: Object.freeze(['ER02_01', 'ER02_02', 'ER02_03', 'ER02_04', 'ER02_05', 'ER02_06', 'ER02_07', 'ER03_01', 'ER03_02', 'ER03_03', 'ER03_04',
         'ER04_01', 'ER04_02', 'ER04_03', 'ER04_04', 'ER04_05', 'ER04_06', 'ER04_07', 'ER04_08', 'ER04_09']),
       Z2: Object.freeze(['LATE_R2_01', 'LATE_R2_02', 'LATE_R2_03', 'LATE_R2_04', 'LATE_R2_05', 'LATE_R2_06', 'LATE_R2_07', 'LATE_R3_01', 'LATE_R3_02',
@@ -101,12 +103,13 @@
         prev = tile;
       }
     }
-    // レアモンスターマス：候補（Z1・Z2 の通常マス）から count 個をこの seed で選ぶ（別の乱数＝ほかのマスの抽選は変えない）
+    // レアモンスターマス：chance で当たったときだけ、候補（Z1・Z2 の通常マス）から count 個をこの seed で選ぶ（別の乱数＝ほかのマスの抽選は変えない）
     const rr = mulberry((seed ^ 0x5EA7A3E) >>> 0);
     const nb = {}; for (const s of Object.values(D.segments)) for (let i = 0; i < s[3].length; i++) (nb[s[3][i]] = nb[s[3][i]] || []).push(s[3][i - 1], s[3][i + 1]);
     const wildNear = (id) => (nb[id] || []).some((x) => x && tiles[x] && tiles[x].t === 'wild');   // バトルのマスを続けない（野生の隣には置かない）
     const cand = Object.values(TUNING.rare.zones).flat().filter((id) => D.nodes[id] && D.nodes[id][2] === 'ordinary_tile' && !wildNear(id));
-    for (let i = 0; i < TUNING.rare.count && cand.length; i++) { const id = cand.splice(Math.floor(rr() * cand.length), 1)[0]; tiles[id] = { t: 'wild', rare: true }; }
+    const hit = rr() < (TUNING.rare.chance == null ? 1 : TUNING.rare.chance);   // 育成ごとに1回の判定（当たり＝この育成にレアが出る）
+    for (let i = 0; hit && i < TUNING.rare.count && cand.length; i++) { const id = cand.splice(Math.floor(rr() * cand.length), 1)[0]; tiles[id] = { t: 'wild', rare: true }; }
     return tiles;
   }
 

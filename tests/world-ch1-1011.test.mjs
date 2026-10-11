@@ -9,6 +9,9 @@
 //  WC-06 index.html：読み込み順・board() の切り替え・field-view は新ボードを担当しない・テストの既定（MM_QA_OLD_CH1）
 //  WC-07 フィナの節目の一言（MMWD.storyEvents）：出発＝40ターン・1〜6 の説明・このセーブで1回（S.npcFlags.story）／この Chapter で1回（field.storySeen）・
 //        条件（止まった地点の結果・通った区間・分かれ道の寄り道・運命のサイコロ）・優先度・pass の区間 ID は原本に実在する・旧ボードの「45ターン」は出さない
+//  WC-08 歩行の向きの切り替え（MMWB.pickDir・dirSets）：上＝back・下＝front・横＝side（右向きの絵は左へ進むと反転）・無いセットは代わり（直前の縦のセット→静止の絵）・
+//        今の素材（ソラモ・ガウル・ジオル＝back、ノビトン＝side）・旧い walk だけの config は back
+//  WC-09 レア 10%（2026-10-11）：本物の出発 1200回で最大1マス・候補だけ・保存 → 読み込みで同じ
 // =========================================================
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -185,4 +188,46 @@ test('WC-07：フィナの節目の一言（MMWD.storyEvents）＝出発の説�
   const ids = WD.STORY.map((e) => e.id); assert.equal(new Set(ids).size, ids.length);
   for (const e of WD.STORY) for (const x of (e.when && e.when.pass) || []) assert.ok(d.nodes[x] || d.segments[x], `${e.id} の pass ${x} は原本にある`);
   assert.equal(WD.segOf(d.segments.EL01[3][1]), 'EL01'); assert.equal(WD.segOf('J0'), null);
+});
+
+test('WC-08：歩行の向き＝上 back・下 front・横 side（右向きは左で反転）・無いセットの代わり・今の素材の割り当て', () => {
+  const w = load(); new Function('window', rd('js/chapter/world-board.js'))(w);
+  const { pickDir, dirSets } = w.MMWB, cfg = w.MMCH.getConfig(1), F = ['a.webp'];
+  const all = { back: { face: 'right', frames: F }, front: { face: 'right', frames: F }, side: { face: 'right', frames: F } };
+  assert.deepEqual([pickDir(0, -10, all).set, pickDir(0, 10, all).set, pickDir(10, 0, all).set], ['back', 'front', 'side']);
+  assert.equal(pickDir(10, 0, all).flip, false); assert.equal(pickDir(-10, 0, all).flip, true, '右向きの絵は左へ進むと反転');
+  assert.equal(pickDir(-10, -12, all).flip, true, '3/4 の後ろ姿も左上へは反転');
+  assert.equal(pickDir(10, 3, all).set, 'side', '縦の動きは傾き（cos40°）で縮む＝横寄りは side');
+  assert.equal(pickDir(10, 4.8, all, { set: 'side', lat: true }).set, 'side', '続けて横なら少し広く side（ちらつかない）');
+  assert.equal(pickDir(10, 4.8, all).set, 'front');
+  assert.equal(pickDir(0.5, -20, all, { set: 'back', flip: true }).flip, true, 'ほぼ真上へは直前の左右のまま');
+  const back = { back: { face: 'none', frames: F } };
+  assert.deepEqual([pickDir(0, -10, back).set, pickDir(0, 10, back).set, pickDir(10, 0, back).set], ['back', null, null], '後ろ姿だけ＝手前・横は静止の絵（弾む）');
+  assert.equal(pickDir(10, 0, back, { set: 'back' }).set, 'back', '横の1歩は直前の縦のセットのまま');
+  assert.equal(pickDir(0, -10, back).flip, false, '真後ろの絵は反転しない');
+  const side = { side: { face: 'right', frames: F } };
+  assert.deepEqual([pickDir(0, -10, side).set, pickDir(0, 10, side).set, pickDir(-10, 0, side).flip], ['side', 'side', true], '横向きだけ＝どの向きも side');
+  const S = cfg.monsterSprites, keys = (k) => Object.keys(dirSets(S[k])).join(',');
+  assert.deepEqual(['solamo', 'gauru', 'jiol', 'nobiton'].map(keys), ['back', 'back', 'back', 'side']);
+  assert.deepEqual(dirSets(S.solamo).back.frames, S.solamo.walk.frames, 'use:walk は walk のコマ（旧 Chapter 1 のフィールドと同じ）');
+  assert.equal(dirSets(S.nobiton).side.face, 'right');
+  assert.deepEqual(Object.keys(dirSets({ walk: { frames: F } })), ['back'], 'dirs の無い古い config は walk を back に');
+  assert.deepEqual(dirSets({ dirs: { front: { frames: [] } } }), {}, 'コマの無いセットは使わない');
+  assert.doesNotMatch(rd('js/chapter/world-board.js'), /SIDE_VIEW/, '種族名の特別扱いは無い（config の dirs で決まる）');
+  assert.match(rd('js/proto/roadfirst-world.js'), /S\.monAh \|\| 0\.92/, '足の位置は立ち絵の実際の縦横比');
+});
+
+test('WC-09：レア 10%（本物の出発 1200回）＝1回の育成で最大1マス・Z1／Z2 の候補だけ・保存 → 読み込みで同じ地点・同じ有無（引き直さない）', () => {
+  const w = load(), zones = new Set(Object.values(w.MMRF_PLAY.TUNING.rare.zones).flat());
+  let hits = 0; const N = 1200;
+  for (let seed = 1; seed <= N; seed++) {
+    const S = setup(w, seed * 7919), f = S.m.raise.field, r = Object.keys(f.tiles).filter((k) => f.tiles[k].rare);
+    assert.ok(r.length <= 1, `${seed}：最大1マス`);
+    if (r.length) { hits++; assert.ok(zones.has(r[0]), `${seed}：${r[0]} は候補`); }
+    if (seed % 40 === 0 || r.length) {
+      const S2 = reload(w, S), r2 = Object.keys(S2.m.raise.field.tiles).filter((k) => S2.m.raise.field.tiles[k].rare);
+      assert.deepEqual(r2, r, `${seed}：読み込み後も同じ`);
+    }
+  }
+  assert.ok(hits / N > 0.075 && hits / N < 0.125, `出現率 ${(hits / N * 100).toFixed(1)}%`);
 });

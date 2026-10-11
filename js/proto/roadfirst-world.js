@@ -156,7 +156,7 @@
       bb.appendChild(d); tiles[id] = { el: d, img: d.firstChild, lab: d.lastChild, src: '', mk: '', used: false };
     }
     const rootEl = host.closest ? host.closest('#rfp,.wbv') || wrap : wrap;   // 2026-10-11 本編の Chapter 1（js/chapter/world-board.js の .wbv）でも同じ描画
-    const mon = doc.createElement('div'); mon.className = 'rfw-mon'; mon.innerHTML = `<img alt="" draggable="false" src="${o.monSrc || './assets/monsters/solamo.png'}">`; bb.appendChild(mon);
+    const mon = doc.createElement('div'); mon.className = 'rfw-mon'; mon.innerHTML = `<img alt="" draggable="false" src="${o.monSrc || './assets/monsters/2p5d/solamo.webp'}">`; bb.appendChild(mon);
     // 景物（木・岩）と GOAL の大会会場：立てて置く（第1便の絵があるときだけ）
     const props = [];
     if (o.art) {
@@ -186,6 +186,8 @@
       cam: { tx: WORLD.w / 2, ty: WORLD.h / 2, s: 1, tilt: 0, P: o.persp, ax: 0, ay: 0 }, goal: null, mon: null, monGoal: null,
       raf: 0, last: 0, intro: null, view: null, frames: [], dead: false,
     };
+    // 2026-10-11：モンスターの足を地点に合わせる＝静止の立ち絵の実際の縦横比で上へずらす（旧：一律 0.92＝縦長・横長の絵で浮く・沈む）。読み込み前は 0.92
+    { const mi = mon.firstChild, fit = () => { if (mi.naturalWidth) { S.monAh = (mi.naturalHeight / mi.naturalWidth) * (o.monFoot || 0.97); S.dirty = true; } }; if (mi.complete) fit(); else mi.addEventListener('load', fit, { once: true }); }
     function viewRect() { const v = o.view ? o.view() : null; const r = host.getBoundingClientRect(); return v || { W: r.width, H: r.height, top: 0, bottom: r.height, right: r.width }; }
     /** 俯瞰のカメラ（傾けない・世界全体が画面に入る） */
     function overviewCam(v) {
@@ -222,7 +224,7 @@
         t.el.style.zIndex = String(Math.round(q.y));
       }
       for (const p of props) {
-        const q = project(c, p.x, p.y), w = p.w * c.s * q.k;
+        const q = project(c, p.x, p.y), w = Math.min(p.max || 1e9, Math.max(p.min || 0, p.w * c.s * q.k));
         const vis = q.x > -w && q.x < Wd + w && q.y > -10 && q.y < Hd + w * 1.2 && w > 1.5;
         if (!vis) { if (!p.hid) { p.el.style.display = 'none'; p.hid = true; } continue; }
         if (p.hid) { p.el.style.display = ''; p.hid = false; }
@@ -231,7 +233,7 @@
       }
       if (S.mon) {
         const q = project(c, S.mon[0], S.mon[1]), w = Math.max(c.s < 1 ? 14 : 40, Math.min(100, 24 * c.s * q.k));
-        mon.style.transform = `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * 0.92).toFixed(1)}px)`; mon.style.width = w.toFixed(1) + 'px'; mon.style.zIndex = String(Math.round(q.y) + 2);
+        mon.style.transform = `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * (S.monAh || 0.92)).toFixed(1)}px)`; mon.style.width = w.toFixed(1) + 'px'; mon.style.zIndex = String(Math.round(q.y) + 2);
       }
     }
     const lerp = (a, b, t) => a + (b - a) * t;
@@ -290,6 +292,16 @@
       },
       skipIntro() { if (S.intro) { const d = S.intro.done; S.intro = null; wrap.classList.remove('intro'); rootEl.classList.remove('rfw-intro'); title.style.opacity = '0'; if (S.goal) S.cam = Object.assign({}, S.goal); if (d) d(); } },
       inIntro: () => !!S.intro,
+      /** 2026-10-11：地点の上に浮かぶ目印（レアの紋章など）。w＝世界の幅・min／max＝画面の画素の下限・上限（全景でも見える大きさ）。地面・道は描き直さない */
+      marker(id, src, opt = {}) {
+        const n = D.nodes[id]; if (!n) return null;
+        let p = props.find((x) => x.mark === id);
+        if (!p) { const d = doc.createElement('img'); d.className = 'rfw-prop rfw-mark' + (opt.cls ? ' ' + opt.cls : ''); d.alt = ''; d.draggable = false; d.decoding = 'async'; bb.appendChild(d); p = { el: d, x: n[0], y: n[1], mark: id }; props.push(p); }
+        p.el.src = src; p.w = opt.w || 46; p.min = opt.min || 0; p.max = opt.max || 0; p.ah = opt.ah || 1.6; p.z = opt.z == null ? 60 : opt.z; p.el.dataset.node = id;
+        S.dirty = true; return p.el;
+      },
+      markerDim(id, dim) { const p = props.find((x) => x.mark === id); if (p) p.el.classList.toggle('dim', !!dim); },
+      markerOff(id) { const i = props.findIndex((x) => x.mark === id); if (i >= 0) { props[i].el.remove(); props.splice(i, 1); } },
       state: () => ({ cam: Object.assign({}, S.cam), goal: S.goal && Object.assign({}, S.goal), mon: S.mon && S.mon.slice(), view: S.view, intro: !!S.intro, ahead: S.lastAhead || [],
         tiles: Object.keys(tiles).length, chunks: chunks.length, painted, res: o.res, tilt: o.tilt, props: props.length, art: !!(art.ground || art.road), rims: art.terrain ? art.terrain.rims.filter((r) => r.kind === 'valley').map((r) => r.pts.length) : null,
         rimKinds: art.terrain ? art.terrain.rims.reduce((a, r) => { a[r.kind] = (a[r.kind] || 0) + 1; return a; }, {}) : null }),
@@ -550,6 +562,8 @@
 :is(#rfp,.wbv) .rfw-tile.cur img{filter:drop-shadow(0 0 5px #fff6c0)}
 :is(#rfp,.wbv) .rfw-apron{position:absolute;pointer-events:none}
 :is(#rfp,.wbv) .rfw-prop{position:absolute;left:0;top:0;will-change:transform;pointer-events:none;user-select:none;-webkit-user-drag:none}
+:is(#rfp,.wbv) .rfw-mark{filter:drop-shadow(0 0 6px rgba(190,110,255,.85));transition:opacity .5s,filter .5s}
+:is(#rfp,.wbv) .rfw-mark.dim{opacity:.32;filter:none}
 :is(#rfp,.wbv) .rfw.art{background:#7aa84c}
 :is(#rfp,.wbv) .rfw-mon{position:absolute;left:0;top:0;will-change:transform}
 :is(#rfp,.wbv) .rfw-mon img{display:block;width:100%;height:auto;filter:drop-shadow(0 3px 2px rgba(0,0,0,.45))}

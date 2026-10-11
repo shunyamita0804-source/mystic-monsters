@@ -54,20 +54,27 @@ test('RW-03：lookahead＝6マス先・分かれ目のあとは3マスずつ・�
   assert.ok(fwd.has('START>S01_01'));
 });
 
-test('RW-04：レアは1つの Chapter に1マス・Z1／Z2 の通常マスだけ・野生の隣に置かない', () => {
+test('RW-04：レアは育成開始時に1回だけ 10%（当たれば1マス・外れれば0マス）・Z1／Z2 の行き止まりでない通常マスだけ・野生の隣に置かない（2026-10-11）', () => {
   const zones = new Set(Object.values(P.TUNING.rare.zones).flat());
-  assert.equal(P.TUNING.rare.count, 1); assert.equal(zones.size, 38);
+  assert.deepEqual([P.TUNING.rare.chance, P.TUNING.rare.count, zones.size], [0.1, 1, 38]);
   const nb = {}; for (const s of Object.values(D.segments)) for (let i = 0; i < s[3].length; i++) (nb[s[3][i]] = nb[s[3][i]] || []).push(s[3][i - 1], s[3][i + 1]);
-  const seen = new Set();
-  for (let seed = 1; seed <= 600; seed++) {
+  // 行き止まりでない＝その地点から前へ進む道で GOAL に着ける
+  const out = {}; for (const e of D.edges) if (e[3] === 'forward') (out[e[0]] = out[e[0]] || []).push(e[1]);
+  const reach = (id) => { const seen = new Set([id]), q = [id]; while (q.length) { const x = q.shift(); if (x === 'GOAL') return true; for (const y of out[x] || []) if (!seen.has(y)) { seen.add(y); q.push(y); } } return false; };
+  for (const id of zones) assert.ok(reach(id), `${id} は GOAL へ進める（行き止まりではない）`);
+  const N = 3000, seen = new Set(); let hits = 0;
+  for (let seed = 1; seed <= N; seed++) {
     const t = P.layout(D, seed), r = Object.keys(t).filter((k) => t[k].rare);
-    assert.equal(r.length, 1, `${seed}：レアは1マス`);
+    assert.ok(r.length <= 1, `${seed}：1回の育成で最大1マス`);
+    if (!r.length) continue;
+    hits++;
     assert.ok(zones.has(r[0]) && D.nodes[r[0]][2] === 'ordinary_tile', `${seed}：${r[0]} はゾーンの通常マス`);
     assert.ok(!(nb[r[0]] || []).some((x) => x && t[x] && t[x].t === 'wild' && !t[x].rare), `${seed}：野生の隣ではない`);
     seen.add(r[0].startsWith('ER') ? 'Z1' : 'Z2');
   }
+  assert.ok(hits / N > 0.085 && hits / N < 0.115, `出現率はおよそ 10%（${(hits / N * 100).toFixed(1)}%）`);
   assert.deepEqual([...seen].sort(), ['Z1', 'Z2']);
-  assert.deepEqual(P.layout(D, 5), P.layout(D, 5));
+  assert.deepEqual(P.layout(D, 5), P.layout(D, 5), '同じ seed は同じ配置');
 });
 
 test('RW-05：&rfView=world のときだけ・保存の鍵は同じ・読み込み順・world は保存／通信をしない', () => {

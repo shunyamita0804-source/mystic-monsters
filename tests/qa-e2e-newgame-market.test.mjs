@@ -325,9 +325,9 @@ T('QA-MK1：街の市場ボタンで市場を開く：ソラモ・ガウル・�
   }));
   assert.equal(t.fina, 0, '市場にはフィナを出さない（登場は指定の3か所だけ）');
   assert.deepEqual(t.slides, [
-    ['solamo', false, './assets/monsters/solamo.png', true, 'ソラモ 500G'],
-    ['gauru', false, './assets/monsters/gauru.png', true, 'ガウル 500G'],
-    ['nobiton', true, './assets/monsters/nobiton_silhouette.png', true, 'ノビトン 入荷待ち'],
+    ['solamo', false, './assets/monsters/2p5d/solamo.webp', true, 'ソラモ 500G'],
+    ['gauru', false, './assets/monsters/2p5d/gauru.webp', true, 'ガウル 500G'],
+    ['nobiton', true, './assets/monsters/2p5d/nobiton_silhouette.webp', true, 'ノビトン 入荷待ち'],
   ], '販売中の2体は正式画像と500G、ノビトンは影絵で入荷待ち');
   assert.deepEqual(t.dots, ['ソラモ', 'ガウル', 'ノビトン']);
   assert.doesNotMatch(t.html, /ジオル|jiol/, 'ジオルは市場に出さない');

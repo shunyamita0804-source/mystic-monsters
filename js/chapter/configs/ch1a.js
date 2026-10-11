@@ -279,7 +279,7 @@
       stat_hi: A + 'nodes/stat_accuracy.webp', stat_ev: A + 'nodes/stat_evasion.webp', stat_de: A + 'nodes/stat_toughness.webp',
       event_normal: A + 'nodes/event_normal.webp', event_rare: A + 'nodes/event_rare.webp', event_special: A + 'nodes/event_special.webp',
       treasure_normal: A + 'nodes/treasure_normal.webp', treasure_rare: A + 'nodes/treasure_rare.webp', treasure_special: A + 'nodes/treasure_special.webp',
-      battle_wild: A + 'nodes/battle_wild.webp', battle_rival: A + 'nodes/battle_rival.webp', rival_ryu: './assets/npc/ryu/ryu_official_fullbody.webp', rival_regnas: './assets/monsters/regnas/regnas_official.webp',
+      battle_wild: A + 'nodes/battle_wild.webp', battle_rival: A + 'nodes/battle_rival.webp', rival_ryu: './assets/npc/ryu/ryu_official_fullbody.webp', rival_regnas: './assets/monsters/2p5d/regnas.webp',
       grass_front: A + 'env/grass_flower_border.webp',
       // 演出（2026-10-02。ZIP mystic-monsters-board-ui-assets-2026-10-01-v2 の 03_board_effects を透過化。assets/fields/ch1a/effects/README.md）
       fx_battle_encounter: A + 'effects/effect_battle_encounter.webp', fx_stat_up: A + 'effects/frame_stat_up.webp', fx_turn_warning: A + 'effects/ui_turn_warning.webp',
@@ -346,11 +346,15 @@
     monsterSprites: {
       // 2026-10-02 正式素材（ZIP mismon_walk_sprites_transparent。assets/monsters/{種族}_walk/README.md）：ガウル 6コマ（後ろ姿）・ノビトン 8コマ（横向き＝右向き）・ジオル 8コマ。
       //  移動の時間は種族で変えない（歩く速さは共通）。コマの速さだけ：ガウルは 6コマなので 9fps（1周 約0.67秒＝8コマの 12fps と同じ）。h は箱に対する高さ（体型の違い）
-      gauru: { walk: { frames: [1, 2, 3, 4, 5, 6].map((i) => `./assets/monsters/gauru_walk/gauru_walk_0${i}.webp`), fps: 9, idle: 0, h: 1.05, noFlip: true } },
-      nobiton: { walk: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/nobiton_walk/nobiton_walk_0${i}.webp`), fps: 12, idle: 0, h: 0.86, noFlip: true } },
-      jiol: { walk: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/jiol_walk/jiol_walk_0${i}.webp`), fps: 12, idle: 0, h: 0.95, noFlip: true } },
-      solamo: { walk: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/solamo_walk_back/solamo_walk_back_0${i}.webp`), fps: 12, idle: 0, h: 0.9, noFlip: true } },
+      gauru: { walk: { frames: [1, 2, 3, 4, 5, 6].map((i) => `./assets/monsters/gauru_walk/gauru_walk_0${i}.webp`), fps: 9, idle: 0, h: 1.05, noFlip: true }, dirs: { back: { use: 'walk', face: 'none' } } },
+      nobiton: { walk: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/nobiton_walk/nobiton_walk_0${i}.webp`), fps: 12, idle: 0, h: 0.86, noFlip: true }, dirs: { side: { use: 'walk', face: 'right' } } },
+      jiol: { walk: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/jiol_walk/jiol_walk_0${i}.webp`), fps: 12, idle: 0, h: 0.95, noFlip: true }, dirs: { back: { use: 'walk', face: 'none' } } },
+      solamo: { walk: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/solamo_walk_back/solamo_walk_back_0${i}.webp`), fps: 12, idle: 0, h: 0.9, noFlip: true }, dirs: { back: { use: 'walk', face: 'none' } } },
     },
+    // 2026-10-11 向きの切り替え（本編 Chapter 1 の1枚の世界のボード＝js/chapter/world-board.js の pickDir）：dirs＝{ back（奥へ）, front（手前へ）, side（横へ） }。
+    //  各セットは { frames, fps, idle, h（静止の立ち絵の高さに対する高さ）, foot（絵の下の透明な余白＝高さに対する割合・足を合わせる）, face（'none'＝真後ろ・真正面／'right'・'left'＝その向きの絵。進む向きで左右反転） }。
+    //  { use:'walk' } は上の walk をそのまま使う（旧 Chapter 1 のフィールド＝field-view は walk だけを読む）。新しい歩行の絵が届いたら front などを足すだけ
+    //  （例：front: { frames: [...8コマ], fps: 12, idle: 0, h: 1, foot: 0.06, face: 'right' }）。止まっている姿は front の idle のコマ（無ければ 2.5D の立ち絵）。
     monster: { h: 180, w: 150 },   // w＝体の幅（道の安全域の計算に使う。画像の見た目の幅）
     landmarks, foreground, branchOverlays: {},
   };
