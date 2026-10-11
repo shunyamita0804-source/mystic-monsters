@@ -1,7 +1,7 @@
 // =========================================================
 // 実ブラウザ：追加修正（2026-10-06）
-//  EC-B1 新しいゲーム：登録の新人支援で 1000G・薬草×1 → 市場で 500G の1体 → 500G 残る（補填の通知は出さない）
-//  HB-B1 薬草：Chapter のアイテム（サイコロを振る前）で使うと疲れ −30・バッグから消える・保存される
+//  EC-B1 新しいゲーム：登録の新人支援で 1000G・ジャガイモ×10（2026-10-12 P2。旧：薬草×1）→ 市場で 500G の1体 → 500G 残る（補填の通知は出さない）
+//  HB-B1 薬草（旧セーブの持ち物）：Chapter のアイテム（サイコロを振る前）で使うと空腹（内部は疲れ）−30・バッグから消える・保存される
 //  TT-B1 TEST 大会：街の小さなボタン → 大会受付へ直接。大会の間は保存しない。やめる（メニュー）・辞退で街へ戻り、セーブも画面の状態も始める前のまま
 //  TL-B1 会話：タップで全文 → すぐのタップでは進まない（読む間）→ 次のセリフ。Chapter のフィナの吹き出しは自動で進まない
 //  QA_E2E=1 のときだけ実行（tests/e2e/harness.mjs）
@@ -18,10 +18,10 @@ async function open(opt = {}) { for (const q of opened) await q.ctx.close().catc
 const stored = (pg) => pg.evaluate(() => localStorage.getItem(MMP8.SAVE_KEY));
 const idle = (pg) => pg.waitForFunction(() => !bBusy && !MMCHD.isLocked() && !document.querySelector('.chpop,.chdz,.chf-fina'), null, { timeout: 30000 }).then(() => pg.waitForTimeout(200));
 
-test('EC-B1：新しいゲーム＝登録の新人支援で 1000G・薬草×1 → 市場で 500G の1体 → 500G 残る。「所持金を500Gまで補填」の通知は出さない', { skip: SKIP }, async () => {
+test('EC-B1：新しいゲーム＝登録の新人支援で 1000G・ジャガイモ×10 → 市場で 500G の1体 → 500G 残る。「所持金を500Gまで補填」の通知は出さない', { skip: SKIP }, async () => {
   const p = await open(); const pg = p.page;
   await H.newGame(pg, 'テスト');
-  assert.deepEqual(await pg.evaluate(() => [S.g, S.inv.bag.map((i) => i.id), finaFlags().support]), [1000, ['herb'], 1]);
+  assert.deepEqual(await pg.evaluate(() => [S.g, S.inv.bag.map((i) => i.id), finaFlags().support]), [1000, ['potato'], 1]);
   await pg.evaluate(() => market()); await pg.waitForSelector('#p10car .p10sl.on'); await pg.waitForTimeout(600);
   await H.marketDetail(pg);
   assert.doesNotMatch(await pg.evaluate(() => document.querySelector('.p10mk').innerText), /補填/, '詳細に補填の案内は出ない');
@@ -33,14 +33,14 @@ test('EC-B1：新しいゲーム＝登録の新人支援で 1000G・薬草×1 �
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
-test('HB-B1：薬草（疲れ −30）：Chapter のアイテムで使うと疲れが30下がり、バッグから消えて保存される（ターンは使わない）', { skip: SKIP }, async () => {
+test('HB-B1：薬草（旧セーブの持ち物・空腹 −30）：Chapter のアイテムで使うと空腹が30下がり、バッグから消えて保存される（ターンは使わない）', { skip: SKIP }, async () => {
   const p = await open(); const pg = p.page;
   await H.newGame(pg, 'テスト');
-  await pg.evaluate(() => { finaFlags().story = ['tut_turns']; const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); m.raise.fatigue = 50; save(); board(); });
+  await pg.evaluate(() => { finaFlags().story = ['tut_turns']; S.inv.bag = [{ id: 'herb' }]; const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); m.raise.fatigue = 50; save(); board(); });
   await pg.waitForSelector('#chf .chf-bg'); await idle(pg);
   const t0 = await pg.evaluate(() => S.m.raise.turnsUsed);
   await pg.evaluate(() => chfItems()); await pg.waitForSelector('#chitems');
-  assert.match(await pg.evaluate(() => document.querySelector('#chitems').innerText), /薬草[\s\S]*疲れ −30/);
+  assert.match(await pg.evaluate(() => document.querySelector('#chitems').innerText), /薬草[\s\S]*空腹 −30/);
   await pg.click('#chitems button[onclick^="chfItemUse"]'); await pg.waitForTimeout(500);
   assert.deepEqual(await pg.evaluate(() => [S.m.raise.fatigue, S.inv.bag.length, S.m.raise.turnsUsed]), [20, 0, t0]);
   const sv = JSON.parse(await stored(pg)); assert.deepEqual([sv.m.raise.fatigue, sv.inv.bag.length], [20, 0], '保存された');

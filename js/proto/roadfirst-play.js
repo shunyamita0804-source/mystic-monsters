@@ -35,7 +35,7 @@
     }) }),
     fatigueByDie: Object.freeze({ 1: 2, 2: 3, 3: 4, 4: 5, 5: 6, 6: 7 }),   // 移動のサイコロの出目ごとの疲れ（旧 1〜3＝+3/+5/+7 は流用していない）
     fatigueMax: 100,
-    restAmount: 30,                              // 「休む」：疲れ −30・1ターン・移動なし（既存のゲームの休むと同じ考え方）
+    restAmount: 10,                              // 「休む」：空腹 −10・1ターン・移動なし（2026-10-12 P2 の正式決定。旧 −30。内部の値は疲れのまま）
     wildFatigue: 5,                              // 野生の出会い（バトルは未実装）の疲れ
     treasure: Object.freeze([{ w: 4, gold: 50, tier: 'normal' }, { w: 1, gold: 150, tier: 'rare' }]),   // 道中の宝箱（ch1a の treasurePool と同じ比率）
     rewards: Object.freeze({                     // 6つの固定報酬＋隠れ家（中身は未定＝試作の仮）

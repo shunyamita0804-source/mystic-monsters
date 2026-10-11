@@ -15,7 +15,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import vm from 'node:vm';
-import { loadEngine, lcg } from './chapter-sim.mjs';
+import { loadEngine, lcg, eatIfHungry } from './chapter-sim.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const rd = (p) => readFileSync(path.join(ROOT, p), 'utf8');
@@ -120,15 +120,18 @@ test('SF-04：能力マスの成長量＝全 Chapter 共通の1つの表（A25 B
   const K = ['li', 'po', 'in', 'hi', 'ev', 'de'], gainsA = [], gainsE = [];
   const play = (S, m, rnd) => { for (let g = 0; g < 5000; g++) { const ph = P8.boardPhase(m);
     if (['goal', 'timeup', 'tour', 'tour_done'].includes(ph)) return ph;
-    if (ph === 'roll') { if (P8.canRoll(m) && !(CH.fatigue(m) >= 86)) P8.roll(S, m, rnd); else if (P8.canRest(m)) P8.rest(S, m); else P8.roll(S, m, rnd); continue; }
+    if (ph === 'roll') { eatIfHungry(E, S, m); if (P8.canRoll(m) && !(CH.fatigue(m) >= 86)) P8.roll(S, m, rnd); else if (P8.canRest(m)) P8.rest(S, m); else P8.roll(S, m, rnd); continue; }
     if (ph === 'move') { P8.step(S, m); continue; }
     if (ph === 'branch') { const o = m.raise.pend.opts; P8.chooseBranch(S, m, o[Math.floor(rnd() * o.length)]); continue; }
     if (ph === 'resolve') { let r = P8.resolveLanding(S, m, rnd); if (r.fx && r.fx.kind === 'choice') r = P8.resolveChoice(S, m, r.fx.options[0].id, rnd); continue; }
     if (ph === 'battle') { P8.beginBattle(S, m, { kind: 'practice', rank: 0 }); P8.markBattleDone(S); P8.finishBattle(S, m, rnd); continue; } } throw new Error('guard'); };
+  // 2026-10-12 P2（休む＝空腹 −10）：新人支援の 1000G（市場で 500G 使った残り）とジャガイモ10個。出発の前にバッグをジャガイモで満たせるだけ買う（アイテム屋）
+  const restock = (S) => { for (let k = 0; k < 60 && P7.bagRoomFor(S, 'potato') > 0; k++) { if (!P7.shopBuy(S, 'potato').ok) break; const vi = S.inv.vault.findIndex((it) => it.id === 'potato'); P7.moveVaultToBag(S, vi, 1); } };
   for (let i = 0; i < 300; i++) {
     const rnd = lcg(4000 + i * 977), S = P8.newSave(); S.m = P8.initIndividual(S, mon(w, 3)); P7.ensureProg(S.m); const m = S.m, b = Object.fromEntries(K.map((k) => [k, m[k]]));
+    S.g = 500; P7.bagAdd(S, 'potato', 10);
     for (let g = 0; g < 30; g++) { const st = m.raise.state;
-      if (st === 'none' || st === 'farm') { if (!P8.canDepart(S, m).ok) { P8.finishWithoutFinal(S, m); break; } P8.depart(S, m, rnd); continue; }
+      if (st === 'none' || st === 'farm') { if (!P8.canDepart(S, m).ok) { P8.finishWithoutFinal(S, m); break; } restock(S); P8.depart(S, m, rnd); continue; }
       if (st !== 'board') break;
       if (play(S, m, rnd) === 'goal') { const el = P8.eligibleRanks(m, m.raise.ch); P8.startTournament(S, m, el[el.length - 1], 11); playTour(P8, S, m, true);
         if (P8.canStartFinalTournament(S, m).ok) { P8.startFinalTournament(S, m, 12); playTour(P8, S, m, true); } }

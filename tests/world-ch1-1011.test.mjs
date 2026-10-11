@@ -128,14 +128,14 @@ test('WC-04：旧い Chapter 1 の途中のセーブ＝能力・所持金・疲�
   assert.equal(S2.m.raise.node, 'GOAL'); assert.ok(S2.m.raise.tour, '大会はそのまま'); assert.equal(w.MMP8.boardPhase(S2.m), 'tour');
 });
 
-test('WC-05：40ターン切れ → 大会なしでベースキャンプ（Chapter 2 の前）・疲れは −50 を持ち越す・配置は消える', () => {
+test('WC-05：40ターン切れ → 大会なしでベースキャンプ（Chapter 2 の前）・疲れ（空腹）は −50 を持ち越す・配置は消える（休む＝−10）', () => {
   const w = load(), { MMP8: P8 } = w, S = setup(w, 8), m = S.m;
-  m.raise.turnsUsed = 39; m.raise.field.core.turn = 39; m.raise.fatigue = 70;
+  m.raise.turnsUsed = 39; m.raise.field.core.turn = 39; m.raise.fatigue = 90;
   const r = P8.rest(S, m); assert.equal(r.ok, true); assert.equal(r.timeUp, true);
   assert.equal(P8.boardPhase(m), 'timeup');
   const e = P8.endChapter(S, m); assert.equal(e.ok, true); assert.equal(e.entry.reachedGoal, false); assert.equal(e.entry.tour, null);
   assert.deepEqual([m.raise.state, m.raise.ch, m.raise.field], ['farm', 2, null]);
-  assert.equal(P8.depart(S, m, lcg(1)).ok, true); assert.equal(m.raise.fatigue, 0, '疲れ 40 → 次の Chapter は max(0, 40−50)');
+  assert.equal(P8.depart(S, m, lcg(1)).ok, true); assert.equal(m.raise.fatigue, 30, '休んで 80 → 次の Chapter は max(0, 80−50)');
   assert.equal(m.raise.field.world, undefined, 'Chapter 2 はこれまでのエンジンの配置');
 });
 

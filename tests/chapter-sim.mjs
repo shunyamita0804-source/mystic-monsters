@@ -4,6 +4,7 @@
 //  出発 → サイコロ（または休む）→ 1地点ずつ移動 → 分岐の選択 → 停止地点の効果 → バトル（勝ち負けは問わず最後まで）→ ゴール／30ターン切れ
 //  を繰り返して、到達ターン・分岐ごとの平均・停止地点の回数・疲れを数える。
 //  使い方：node tests/chapter-sim.mjs [回数] [休む方針（forced|cautious）] [Chapter 番号（既定 1。2＝潮風の海岸）]
+//  2026-10-12 P2：休む＝空腹 −10。新人支援のジャガイモ10個をバッグに入れて始め、空腹 80 以上でこのターンにまだ食べていなければ1個食べる（eatIfHungry）
 // =========================================================
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -15,15 +16,24 @@ export function loadEngine() {
   for (const f of ['js/phase7/progression.js', 'js/phase8/league.js', 'js/phase8/raising.js', 'js/phase10/monsters.js', 'js/phase9/chapters.js', 'js/chapter/engine.js', 'js/chapter/configs/ch1a.js', 'js/chapter/configs/ch2a.js'])
     new Function('window', readFileSync(path.join(ROOT, f), 'utf8'))(w);
   for (const c of w.MMP9C.CHAPTERS) w.MMP7.registerChapterBoard(c.no, c.track, { provisional: false });   // index.html と同じ登録（Chapter 1 はエンジンが担当）
+  new Function('window', readFileSync(path.join(ROOT, 'js/items/food.js'), 'utf8'))(w); w.MMFOOD.install(w.MMP7, w.MMCH);   // 2026-10-12 P2：食事6種（index.html と同じ登録）
   return { P7: w.MMP7, P8: w.MMP8, CH: w.MMCH, w };
 }
 export function lcg(seed) { let s = seed >>> 0; return () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; }
 
+/** 2026-10-12 P2：空腹が th 以上で、このターンにまだ食べていなければ、バッグの食べ物（空腹の減りが大きい順）を1個食べる（サイコロの前・ターンは使わない）。食べたら true */
+export function eatIfHungry(E, S, m, th = 80) {
+  const { CH } = E; if (CH.fatigue(m) < th || !CH.itemUseState(m).ok) return false;
+  const bag = S.inv.bag; let best = -1, amt = 0;
+  bag.forEach((it, i) => { const e = CH.fatigueItemEffect(it.id); if (e && (e.amount || 0) > amt) { best = i; amt = e.amount || 0; } });
+  return best >= 0 && CH.useFatigueItem(S, m, best).ok;
+}
 /** 1回の Chapter 1（Pattern A）。policy：forced＝疲れ100のときだけ休む／cautious＝疲れ86以上なら休む（次の出目で100に届くおそれ） */
-export function runOnce(E, seed, policy = 'cautious', branchPick = null, chapter = 1) {
+export function runOnce(E, seed, policy = 'cautious', branchPick = null, chapter = 1, food = 10) {
   const { P7, P8, CH } = E, rnd = lcg(seed);
   const S = P8.newSave(); S.m = P8.initIndividual(S, { sp: 0, name: 'シム', age: 0, span: 30, h: 0, rk: 0, fa: 0, st: 0, last: null, li: 100, po: 100, in: 100, hi: 100, ev: 100, de: 100, sk: [0, 1, 2, 3], eq: [0, 1, 2, 3, -1, -1] });
   P7.ensureProg(S.m); const m = S.m;
+  if (food > 0) P7.bagAdd(S, 'potato', food);   // 2026-10-12 P2：新人支援のジャガイモ10個（0＝食べ物なしで比べる）
   if (chapter > 1) Object.assign(m.raise, { state: 'farm', ch: chapter, log: Array.from({ length: chapter - 1 }, (_, i) => ({ ch: i + 1, reachedGoal: true })) });   // Chapter 2 以降：前の Chapter を終えた状態から出発
   const d = P8.depart(S, m, rnd); if (!d.ok) throw new Error('depart ' + d.reason);
   const st = { turns: 0, goal: false, branch: null, stat: 0, event: 0, battle: 0, treasure: 0, rests: 0, forcedRests: 0, fatigueSum: 0, fatigueN: 0, hit100: 0, maxFatigue: 0, statOutcome: { ok: 0, great: 0, fail: 0 } };
@@ -32,6 +42,7 @@ export function runOnce(E, seed, policy = 'cautious', branchPick = null, chapter
     const ph = P8.boardPhase(m);
     if (ph === 'goal' || ph === 'timeup') break;
     if (ph === 'roll') {
+      if (eatIfHungry(E, S, m)) st.ate = (st.ate || 0) + 1;
       const f = CH.fatigue(m);
       st.fatigueSum += f; st.fatigueN++;
       if (!P8.canRoll(m)) { st.forcedRests++; st.rests++; P8.rest(S, m); continue; }
@@ -59,8 +70,8 @@ export function runOnce(E, seed, policy = 'cautious', branchPick = null, chapter
   st.turns = m.raise.turnsUsed; st.goal = !!m.raise.goal; st.branch = (st.picks || []).find((b) => b === 'forest' || b === 'bridge') || (m.raise.field && m.raise.field.branch) || null;   // 2026-10-06：分岐が複数ある Chapter は森／大橋（背景が分かれる分岐）で数える st.endFatigue = CH.fatigue(m);
   return st;
 }
-export function simulate(E, n = 1000, policy = 'cautious', seed0 = 20260930, chapter = 1, branchPick = null) {
-  const runs = []; for (let i = 0; i < n; i++) runs.push(runOnce(E, seed0 + i * 101, policy, branchPick, chapter));
+export function simulate(E, n = 1000, policy = 'cautious', seed0 = 20260930, chapter = 1, branchPick = null, food = 10) {
+  const runs = []; for (let i = 0; i < n; i++) runs.push(runOnce(E, seed0 + i * 101, policy, branchPick, chapter, food));
   const avg = (xs) => xs.reduce((a, b) => a + b, 0) / Math.max(1, xs.length), med = (xs) => { const a = [...xs].sort((x, y) => x - y); return a.length ? a[Math.floor(a.length / 2)] : 0; };
   const reached = runs.filter((r) => r.goal), by = (b) => reached.filter((r) => r.branch === b).map((r) => r.turns);
   return {
@@ -76,6 +87,7 @@ export function simulate(E, n = 1000, policy = 'cautious', seed0 = 20260930, cha
     minTurns: Math.min(...reached.map((r) => r.turns)), maxTurns: Math.max(...reached.map((r) => r.turns)),
     p90Turns: (() => { const a = reached.map((r) => r.turns).sort((x, y) => x - y); return a.length ? a[Math.floor(a.length * 0.9)] : 0; })(),
     avgNormalStops: +avg(runs.map((r) => r.normalStops || 0)).toFixed(2), avgRestStops: +avg(runs.map((r) => r.restStops || 0)).toFixed(2),
+    avgAte: +avg(runs.map((r) => r.ate || 0)).toFixed(2),
   };
 }
 if (process.argv[1] && process.argv[1].endsWith('chapter-sim.mjs')) {

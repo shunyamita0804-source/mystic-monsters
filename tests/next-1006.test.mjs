@@ -27,17 +27,18 @@ test('N6-01：Chapter 1 のマス（2026-10-08 正式ボード）＝背景ごと
   assert.equal(g.field, 14); assert.ok(goal[1] >= 0.62 && goal[1] <= 0.69 && Math.abs(goal[0] - 0.5) < 0.02, `ゴール（${goal}）＝広場の中央・会場の石段の前`);
 });
 
-test('N6-02：新人支援＝聖獣士登録のあと1回だけ 1000G＋薬草×1（受け取りの記録と同時に確定して保存）。新しいゲームは 0G・市場は 500G のまま', () => {
+test('N6-02：新人支援＝聖獣士登録のあと1回だけ 1000G＋ジャガイモ×10（2026-10-12 P2。旧：薬草×1。受け取りの記録と同時に確定して保存）。新しいゲームは 0G・市場は 500G のまま', () => {
   const M = load('js/phase10/monsters.js', 'MMP10M');
   assert.deepEqual({ ...M.ECONOMY }, { initialGold: 0, marketPrice: 500 });
-  assert.match(HTML, /const SUPPORT=Object\.freeze\(\{gold:1000,item:"herb"\}\);/);
+  assert.match(HTML, /const SUPPORT=window\.MMFOOD\?MMFOOD\.SUPPORT:Object\.freeze\(\{gold:1000,item:"herb",n:1\}\);/);
+  const F = load('js/items/food.js', 'MMFOOD'); assert.deepEqual({ ...F.SUPPORT }, { gold: 1000, item: 'potato', n: 10 });
   const g = fnOf('grantSupport'); assert.ok(g.indexOf('f.support=1') < g.indexOf('save()'), '記録・所持金・薬草を確定してから保存');
   const S = { g: 0, inv: { bag: [], vault: [] }, npcFlags: {} }; let saves = 0;
-  const run = new Function('S', 'finaFlags', 'MMP7', 'save', 'SUPPORT', `${g}\nreturn grantSupport;`)(S, () => S.npcFlags, { bagAdd: (s, id) => { s.inv.bag.push({ id }); return { ok: true }; } }, () => saves++, { gold: 1000, item: 'herb' });
+  const run = new Function('S', 'finaFlags', 'MMP7', 'save', 'SUPPORT', `${g}\nreturn grantSupport;`)(S, () => S.npcFlags, { bagAdd: (s, id, n) => { s.inv.bag.push({ id, n }); return { ok: true }; } }, () => saves++, { gold: 1000, item: 'potato', n: 10 });
   assert.equal(run(), true); assert.equal(run(), false, '2回目は受け取らない'); assert.equal(run(), false);
-  assert.deepEqual([S.g, S.inv.bag.map((i) => i.id), S.npcFlags.support, saves], [1000, ['herb'], 1, 1]);
+  assert.deepEqual([S.g, S.inv.bag, S.npcFlags.support, saves], [1000, [{ id: 'potato', n: 10 }], 1, 1]);
   assert.match(fnOf('opAfterReg'), /if\(grantSupport\(\)\)await talkSeq\(OPEN_TALK\.support\(n\)/, '登録の直後（セルジュ）。受け取り済みなら会話も出さない。2026-10-05 PHASE B：受け取りの知らせはシステム通知の帯（talkSeq の note）');
-  assert.match(HTML, /MMP7\.registerItem\(\{id:"herb",name:"薬草"\}\);if\(window\.MMCH\)MMCH\.registerFatigueItem\("herb",\{amount:30\}\);/, '薬草＝疲れ −30');
+  assert.match(HTML, /MMP7\.registerItem\(\{id:"herb",name:"薬草"\}\);if\(window\.MMCH\)MMCH\.registerFatigueItem\("herb",\{amount:30\}\);if\(window\.MMFOOD\)MMFOOD\.install\(\);/, '旧セーブの薬草＝空腹（内部は疲れ）−30 のまま・食事6種を登録');
 });
 
 test('N6-03：TEST 大会＝TEST_MODE の1か所で入口ごと消せる。大会の間は保存しない。終わり・辞退・中断・放棄・メニューで始める前のセーブへ戻す', () => {

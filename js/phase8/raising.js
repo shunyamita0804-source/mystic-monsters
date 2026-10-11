@@ -312,6 +312,7 @@
     const drv = driverFor(c.key);
     Object.assign(m.raise, { state: c.key === FINAL ? RAISE.FINAL : RAISE.BOARD, ch: c.key, node: null, turnsUsed: 0,
       turnLimit: drv ? drv.turnLimit(c.key) : chapterRule(c.key).turnLimit, pend: null, goal: false, tour: null, battle: null });
+    delete m.raise.ate;   // 2026-10-12 P2：そのターンに食べた印（js/chapter/engine.js の useFatigueItem）は出発で消す
     if (drv) drv.onDepart(S, m, c.key, rnd, fresh);                                          // Pattern の選択・配置の確定・疲れの繰り越し
     else { if (DRIVER && DRIVER.onDepartOther) DRIVER.onDepartOther(S, m, c.key, fresh); else m.raise.fatigue = 0; }
     m.raise.node = boardOf(m).start;
@@ -378,7 +379,7 @@
     const d = driverFor(r.ch); if (d) Object.assign(r.pend, d.onRoll(S, m, value));   // エンジン：出目が決まった時点で疲れを加算（停止地点では加算後の疲れで判定）
     return { ok: true, value };
   }
-  /** 休む（エンジンの Chapter だけ）：1ターン消費・移動なし・疲れ −30。サイコロと同じく、ターンの途中・ゴール後・大会中・戦闘中は不可 */
+  /** 休む（エンジンの Chapter だけ）：1ターン消費・移動なし・空腹（内部は疲れ）−10（2026-10-12 P2）。サイコロと同じく、ターンの途中・ゴール後・大会中・戦闘中は不可 */
   function canRest(m) {
     if (!m || !P7.inChapter(m)) return false;
     const r = m.raise, d = driverFor(r.ch);

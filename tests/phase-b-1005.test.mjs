@@ -94,7 +94,7 @@ test('PB-06：正式の会話窓（event_dialogue_window）はイベント・大
   assert.match(HTML, /\.mmtalk\.mmtalk-big \.mmtalk-name::before,\.mmtalk\.mmtalk-big \.mmtalk-name::after\{content:"";position:absolute;z-index:-1;clip-path:polygon/);
   const no = rd('js/feel/notice.js'); assert.doesNotMatch(no.replace(/\/\/.*$/gm, '').replace(/\/\*\*[^*]*\*\//g, ''), /MMNPC|\.name\b|face|mmtalk|dnm/, '顔・名前は出さない（コメントを除いたコード）'); assert.match(HTML, /<script src="\.\/js\/feel\/notice\.js"><\/script>/);
   assert.match(HTML, /\.mmnote-layer\{position:fixed;[^}]*z-index:2300;/);
-  assert.match(HTML, /\{note:\{rows:\[\{icon:"gold",text:"1000G"\},\{img:ITEM_ICON\.herb,text:SUPPORT_TO=="vault"\?"薬草を手に入れた（バッグがいっぱいなので保管庫へ）":"薬草を手に入れた"\}\],se:"GOLD_GET"\}\}/, '2026-10-07 試遊：1000G と薬草は1つの短い帯（薬草は正式アイコン）');
+  assert.match(HTML, /\{note:\{rows:\[\{icon:"gold",text:"1000G"\},\{img:ITEM_ICON\.potato,text:SUPPORT_TO=="vault"\?"ジャガイモ×10を手に入れた（バッグがいっぱいなので保管庫へ）":"ジャガイモ×10を手に入れた"\}\],se:"GOLD_GET"\}\}/, '2026-10-07 試遊：1000G と支援の品は1つの短い帯（2026-10-12 P2：ジャガイモ×10・正式画像）');
   assert.match(fnOf('talkSeq'), /if\(x&&x\.note\)\{await flush\(\);await MMNOTE\.show\(x\.note\)\}/);
   assert.match(fnOf('opAfterReg'), /MMNOTE\.show\(\{img:"\.\/assets\/ui\/worldmap_icon\/worldmap_unlock\.png",cmd:true,small:true,title:"世界地図が使えるようになった"/, '機能の解放（2026-10-07 試遊：短い知らせ）');
   assert.match(fnOf('adopt'), /if\(typeof MMNOTE=="object"&&MMNOTE\)\{const sp=MMP10M\.byId\(x\.sp\),im=sp&&sp\.image&&sp\.image\.src;MMNOTE\.show\(\{\.\.\.\(im\?\{img:im\}:\{icon:"gold"\}\),title:x\.name\+"をつれて帰った！"\+pk,\.\.\.\(rs\?\{sub:rs\}:\{\}\)\}\);return undefined\}/, '購入の知らせ（救済も通常も）は帯だけ＝街の通知は出さない（2026-10-05 試遊）');
@@ -106,9 +106,9 @@ test('PB-06：正式の会話窓（event_dialogue_window）はイベント・大
   w.MMNOTE.show({ title: '<b>x</b>', sub: 'a&b' }); assert.deepEqual(w.MMNOTE.log(), [{ icon: 'gold', title: '<b>x</b>', sub: 'a&b' }]);
 });
 
-test('PB-07：薬草の正式アイコン（バッグ・保管庫・Chapter のアイテム・アイテム管理・図鑑・帯）。効果（疲れ −30・ターンは使わない）と記録はそのまま', () => {
+test('PB-07：薬草の正式アイコン（バッグ・保管庫・Chapter のアイテム・アイテム管理・図鑑・帯）。効果（内部は疲れ −30・ターンは使わない）と記録はそのまま。2026-10-12 P2：食事6種の画像も同じ表', () => {
   assert.ok(existsSync(path.join(ROOT, 'assets/items/herb.webp')) && statSync(path.join(ROOT, 'assets/items/herb.webp')).size < 60000);
-  assert.match(HTML, /const ITEM_ICON=Object\.freeze\(\{herb:"\.\/assets\/items\/herb\.webp"\}\);window\.MM_ITEM_ICON=ITEM_ICON;/);
+  assert.match(HTML, /const ITEM_ICON=Object\.freeze\(\{herb:"\.\/assets\/items\/herb\.webp",\.\.\.\(window\.MMFOOD\?MMFOOD\.icons\(\):\{\}\)\}\);[^\n]*\nwindow\.MM_ITEM_ICON=ITEM_ICON;/);
   assert.match(HTML, /MMP7\.registerItem\(\{id:"herb",name:"薬草"\}\);if\(window\.MMCH\)MMCH\.registerFatigueItem\("herb",\{amount:30\}\);/);
   assert.match(fnOf('bagSlotsHtml'), /\$\{itemIc\(it\)\}/); assert.match(fnOf('prepScr'), /bagSlotsHtml\(/); assert.match(rd('js/chapter/field-view.js'), /root\.MM_ITEM_ICON\[x\.it\.id\]/);
 });

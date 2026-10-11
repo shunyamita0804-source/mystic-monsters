@@ -253,12 +253,13 @@ test('BAG-11：Chapter のアイテム（薬草）は1個ずつ減る・画面�
   const E = loadEngine(), CH = E.MMCH || E.CH || globalThis.MMCH;
   assert.ok(CH && CH.useFatigueItem, 'MMCH');
   CH.registerFatigueItem('herb', { amount: 30 });
-  const S = { inv: { bag: [{ id: 'herb', n: 3 }], vault: [] } }, m = { raise: { fatigue: 90 } };
+  const S = { inv: { bag: [{ id: 'herb', n: 3 }], vault: [] } }, m = { raise: { fatigue: 90, ch: 1, turnsUsed: 0 } };
   assert.equal(CH.useFatigueItem(S, m, 0).left, 2);
   assert.deepEqual(S.inv.bag, [{ id: 'herb', n: 2 }]);
-  CH.useFatigueItem(S, m, 0);
+  assert.equal(CH.useFatigueItem(S, m, 0).reason, 'ate', '2026-10-12 P2：1ターンに1個まで');
+  m.raise.turnsUsed++; m.raise.fatigue = 90; CH.useFatigueItem(S, m, 0);
   assert.deepEqual(S.inv.bag, [{ id: 'herb' }], '1個の枠は { id }');
-  CH.useFatigueItem(S, m, 0);
+  m.raise.turnsUsed++; m.raise.fatigue = 90; CH.useFatigueItem(S, m, 0);
   assert.deepEqual(S.inv.bag, []);
   // 画面：出発準備・アイテム管理は共通の枠（未解放の枠は鍵と条件）・保管庫は個数
   assert.match(HTML, /function bagSlotsHtml\(onItem,onEmpty\)/);
@@ -285,6 +286,6 @@ test('BAG-12：バッグに入らない新しい取得は保管庫へ送り、�
   assert.equal(P7.itemCount(S, item), 1);
   for (const f of ['js/chapter/world-board.js', 'js/chapter/field-view.js']) assert.match(rd(f), /\$\{res\.to === 'vault' \? '（バッグがいっぱいなので保管庫へ）' : ''\}/, f);
   // 新人支援：1回だけ・入らなければ保管庫・帯に送り先
-  assert.match(HTML, /function grantSupport\(\)\{const f=finaFlags\(\);if\(f\.support\)return false;f\.support=1;S\.g=\(S\.g\|\|0\)\+SUPPORT\.gold;SUPPORT_TO="bag";if\(!MMP7\.bagAdd\(S,SUPPORT\.item\)\.ok\)\{MMP7\.vaultAdd\(S,SUPPORT\.item,1\);SUPPORT_TO="vault"\}save\(\);return true\}/);
-  assert.match(HTML, /SUPPORT_TO=="vault"\?"薬草を手に入れた（バッグがいっぱいなので保管庫へ）"/);
+  assert.match(HTML, /function grantSupport\(\)\{const f=finaFlags\(\);if\(f\.support\)return false;f\.support=1;S\.g=\(S\.g\|\|0\)\+SUPPORT\.gold;SUPPORT_TO="bag";const sn=SUPPORT\.n\|\|1;if\(!MMP7\.bagAdd\(S,SUPPORT\.item,sn\)\.ok\)\{MMP7\.vaultAdd\(S,SUPPORT\.item,sn\);SUPPORT_TO="vault"\}save\(\);return true\}/);
+  assert.match(HTML, /SUPPORT_TO=="vault"\?"ジャガイモ×10を手に入れた（バッグがいっぱいなので保管庫へ）"/, '2026-10-12 P2：新人支援はジャガイモ×10');
 });
