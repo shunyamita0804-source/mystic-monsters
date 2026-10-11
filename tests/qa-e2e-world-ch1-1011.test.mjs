@@ -29,6 +29,15 @@ async function toBoard(pg, over = {}) {
   await pg.waitForSelector('#wbw #brollbtn'); await idle(pg);
 }
 const place = (pg, node, extra = {}) => pg.evaluate(([node, extra]) => { const r = S.m.raise, c = r.field.core; r.node = node; c.node = node; c.trail.push(node); c.moveLeft = 0; c.back = null; c.exclude = null; r.pend = null; Object.assign(r, extra); save(); board(); }, [node, extra]);
+/** 会話が開いていれば最後まで（選択肢が出たら最初の候補を選ぶ）。出来事の2択・冒険リアクションは止まった地点しだいで出る */
+async function drain(pg) {
+  for (let i = 0; i < 8; i++) {
+    const s = await pg.evaluate(() => (document.querySelector('.mmtalk:not(.mmtalk-out)') && window.MMNPC ? MMNPC.state() : null));
+    if (!s) return;
+    if (s.choices && s.choices.length) await H.chooseTalk(pg, s.choices[0].id); else await H.finishTalk(pg).catch(async (e) => { if (!/選択肢/.test(e.message)) throw e; });
+    await pg.waitForTimeout(400);
+  }
+}
 async function rollAs(pg, v) { await pg.evaluate((v) => { window.__mr = Math.random; Math.random = () => (v - 0.5) / 6; }, v); await pg.click('#brollbtn'); await pg.evaluate(() => { Math.random = window.__mr; }); }
 
 for (const size of [H.SIZES.base, H.SIZES.se]) {
@@ -151,8 +160,8 @@ test('WB-7：チュートリアル（40ターン・1〜6）→ 分かれ道 → 
   assert.ok(t1, '会話が出た');
   // 歩行アニメ：歩いている間に .wk-on（奥へ）か .bob（手前へ）が付き、止まると外れる
   await pg.evaluate(() => { window.__wk = { on: 0, bob: 0 }; const el = document.querySelector('.rfw-mon'); new MutationObserver(() => { if (el.classList.contains('wk-on')) __wk.on++; if (el.classList.contains('bob')) __wk.bob++; }).observe(el, { attributes: true, attributeFilter: ['class'] }); });
-  await rollAs(pg, 3); await idle(pg).catch(() => {});
-  if (await pg.evaluate(() => !!document.querySelector('.mmtalk'))) await H.finishTalk(pg);
+  await rollAs(pg, 3);
+  for (let i = 0; i < 4; i++) { await idle(pg).catch(() => {}); await drain(pg); if (await pg.evaluate(() => !!document.querySelector('.chbat'))) await pg.click('.chbat .p9btn2'); }
   await idle(pg);
   const wk = await pg.evaluate(() => ({ ...__wk, now: document.querySelector('.rfw-mon').className, frames: document.querySelectorAll('.rfw-mon img.wk').length }));
   assert.ok(wk.frames >= 6, `歩行の絵を重ねて置く（${wk.frames}）`);
@@ -164,11 +173,10 @@ test('WB-7：チュートリアル（40ターン・1〜6）→ 分かれ道 → 
   await rollAs(pg, 3);
   await pg.waitForSelector('.wbbr .chroute');
   await pg.waitForSelector('.mmtalk:not(.mmtalk-out)', { timeout: 10000 });
-  assert.match(await pg.evaluate(() => MMNPC.state().text || document.querySelector('.mmtalk').textContent), /分かれ道/);
+  assert.match(await pg.evaluate(() => document.querySelector('.mmtalk').textContent), /分かれ道/);
   await H.finishTalk(pg); await idle(pg);
-  await pg.click('.wbbr .chroute'); await idle(pg).catch(() => {});
-  if (await pg.evaluate(() => !!document.querySelector('.mmtalk'))) await H.finishTalk(pg);
-  if (await pg.evaluate(() => !!document.querySelector('.chbat'))) { await pg.click('.chbat .p9btn2'); }
+  await pg.click('.wbbr .chroute');
+  for (let i = 0; i < 4; i++) { await idle(pg).catch(() => {}); await drain(pg); if (await pg.evaluate(() => !!document.querySelector('.chbat'))) await pg.click('.chbat .p9btn2'); }
   await idle(pg);
   // 能力マス：1つ手前の地点から 1 を出す → 道具と特訓の動き → 能力マスのチュートリアル
   const tgt = await pg.evaluate(() => {
