@@ -4,7 +4,7 @@
 //  ・Chapter登録／ファーム帰還状態
 //  ・修行（15マス一本道ボード）／修行チケット
 //  ・種族ごとの10技（初期4・ちから1・かしこさ1・命中1・回避1・丈夫さ2）登録構造
-//  ・ランククリア実績（Bランク→丈夫さ修行解放、Sランク初回→バッグ6枠）
+//  ・ランククリア実績（Cランク→丈夫さ修行解放。バッグの枠はプレイヤー全体の最高優勝で 2／3／4／6）
 //  ・通常合体の技継承（初期4＋親の追加技から1つ）
 //  ・バッグ／保管庫／アイテム屋の基盤
 //  ・（Phase 8）個体の育成状態 m.raise の読み取り。修行・保管庫の可否は「個体」の状態で判定する
@@ -35,9 +35,14 @@
   const TOUGH_UNLOCK_RANK = RANK_C;
   const RANK_S = 5;
 
-  // ---------- バッグ ----------
-  const BAG_BASE_CAP = 5;
-  const BAG_UNLOCKED_CAP = 6;    // Sランク初回クリアで永久解放。これ以上は増えない
+  // ---------- バッグ（2026-10-11 正式） ----------
+  // 使える枠＝プレイヤー全体の最高優勝実績（S.rankRec.cleared。育成中の個体ではない）：未優勝 2／E・D 3／C・B 4／A・S 6。最大6枠。
+  //  旧 S.inv.bagCapUnlocked（S 初回クリアの記録）は意味を変えずに残し、立っていれば S と同じ扱い（6枠）。
+  const BAG_BASE_CAP = 2;        // 未優勝（新しいゲーム）の枠
+  const BAG_UNLOCKED_CAP = 6;    // 最大の枠（A・S の優勝）
+  const BAG_CAP_BY_WIN = Object.freeze([3, 3, 4, 4, 6, 6]);   // 最高優勝ランク（E〜S）→ 枠
+  const STACK_MAX = 10;          // 同じアイテムは1枠に10個まで（違う ID は別の枠）。保管庫は1種類1行・個数の上限なし
+  const S_GRADE_LIMIT = 1;       // 等級 S のアイテムは種類を問わずバッグに合計1個まで（今は等級 S のアイテムが登録されていない）
 
   // ---------- 修行 ----------
   const TRAIN_KINDS = Object.freeze(['po', 'in', 'hi', 'ev', 'de']);
@@ -210,7 +215,7 @@
       // --- ランク実績（セーブ全体）：旧 S.br は「勝ったことのある最高ランク」 ---
       const br = Number.isInteger(S.br) ? S.br : -1;
       d.rankRec.cleared = Array.from({ length: RANK_COUNT }, (_, i) => i <= br);
-      // --- バッグ6枠：旧セーブでSランク大会に勝っていれば解放済みとする ---
+      // --- 旧 bagCapUnlocked：旧セーブでSランク大会に勝っていれば立てる（枠は S.rankRec から決まる） ---
       d.inv.bagCapUnlocked = br >= RANK_S;
       Object.assign(S, d);
       if (stuckOnUnmappedChapter) {
@@ -273,15 +278,18 @@
   function hasClearedRank(m, rank) { ensureProg(m); return !!m.prog.rankClr[rank]; }
   /** 指定ランク以上のどれかをクリアしているか */
   function hasClearedRankAtLeast(m, rank) { ensureProg(m); return m.prog.rankClr.some((v, i) => v && i >= rank); }
-  /** ランク大会に勝利したときに呼ぶ。Sランク初回ならバッグを6枠へ永久拡張する */
+  /** ランク大会に勝利したときに呼ぶ。実績（S.rankRec）を付け、バッグの枠が増えたら bagCap:{from,to}（Sランク初回は旧 bagCapUnlocked も立てる） */
   function recordRankClear(S, m, rank) {
     if (!Number.isInteger(rank) || rank < 0 || rank >= RANK_COUNT) throw new Error(`ランクが不正です：${rank}`);
     // Phase 8：上位ランクをクリアしたら、それ以下のランクもクリア扱い（飛ばした下位ランクの初回報酬は呼び出し側で付与しない）
     if (m) { ensureProg(m); for (let i = 0; i <= rank; i++) m.prog.rankClr[i] = true; }
+    const cap0 = bagCap(S);
     for (let i = 0; i <= rank; i++) S.rankRec.cleared[i] = true;
     let bagUnlocked = false;
     if (rank === RANK_S && !S.inv.bagCapUnlocked) { S.inv.bagCapUnlocked = true; bagUnlocked = true; }
-    return { bagUnlocked };
+    // バッグの枠（2026-10-11）：プレイヤー全体の最高優勝で増えたときだけ { from, to }（同じ段階の優勝・再優勝では増えない）
+    const cap1 = bagCap(S);
+    return { bagUnlocked, bagCap: cap1 > cap0 ? { from: cap0, to: cap1 } : null };
   }
 
   // =========================================================
@@ -425,12 +433,49 @@
   // =========================================================
   // バッグ／保管庫／アイテム屋
   // =========================================================
-  function bagCap(S) { return S.inv.bagCapUnlocked ? BAG_UNLOCKED_CAP : BAG_BASE_CAP; }
+  // アイテム1つ＝{ id, n }（n＝個数。2個以上のときだけ n を持つ＝1個は旧形式と同じ { id }。旧セーブはそのまま1個として読める）。0個の枠は持たない（空き枠）
+  const qty = (it) => (it && Number.isInteger(it.n) && it.n >= 1 ? it.n : 1);
+  const setN = (it, n) => { if (n > 1) it.n = n; else delete it.n; return it; };
+  const mkItem = (id, n = 1) => setN({ id }, n);
+  const plain = (it) => isObj(it) && typeof it.id === 'string' && it.id && Object.keys(it).every((k) => k === 'id' || k === 'n');
+  /** プレイヤー全体の最高優勝ランク（-1＝未優勝）。S.rankRec.cleared を見る（上位の優勝で下位も true になる）。旧 bagCapUnlocked は S */
+  function bestWinRank(S) {
+    const c = S && isObj(S.rankRec) && Array.isArray(S.rankRec.cleared) ? S.rankRec.cleared : [];
+    let r = -1; for (let i = 0; i < RANK_COUNT; i++) if (c[i] === true) r = i;
+    if (S && isObj(S.inv) && S.inv.bagCapUnlocked === true) r = RANK_S;
+    return r;
+  }
+  const bagCapForRank = (r) => (Number.isInteger(r) && r >= 0 ? BAG_CAP_BY_WIN[Math.min(r, RANK_COUNT - 1)] : BAG_BASE_CAP);
+  function bagCap(S) { return bagCapForRank(bestWinRank(S)); }
   function bagFree(S) { return Math.max(0, bagCap(S) - S.inv.bag.length); }
   function vaultHasRoom(S) { return S.inv.vaultCap === null || S.inv.vault.length < S.inv.vaultCap; }
   /** 保管庫・アイテム屋を使えるのは、連れている個体がChapter進行中・修行中でない間だけ（Phase 8：個体の状態で判定） */
   function canAccessVault(S) { const m = S.m; return !(m && (inChapter(m) || trainRunOf(m))); }
-  const mkItem = (id) => ({ id });
+  const itemGrade = (id) => (itemDefs[id] && itemDefs[id].grade) || null;
+  const countIn = (list, id) => (Array.isArray(list) ? list.reduce((a, it) => a + (it && it.id === id ? qty(it) : 0), 0) : 0);
+  /** 所持数：where＝'bag'｜'vault'｜省略（両方） */
+  function itemCount(S, id, where) { const inv = S && S.inv; if (!inv) return 0; return (where === 'vault' ? 0 : countIn(inv.bag, id)) + (where === 'bag' ? 0 : countIn(inv.vault, id)); }
+  const sGradeInBag = (S) => S.inv.bag.reduce((a, it) => a + (it && itemGrade(it.id) === 'S' ? qty(it) : 0), 0);
+  /** そのアイテムを今バッグにあと何個入れられるか（同じアイテムの枠の残り＋空き枠×10。等級 S は合計1個まで） */
+  function bagRoomFor(S, id) {
+    let room = bagFree(S) * STACK_MAX;
+    for (const it of S.inv.bag) if (it && it.id === id && qty(it) < STACK_MAX) room += STACK_MAX - qty(it);
+    if (itemGrade(id) === 'S') room = Math.min(room, Math.max(0, S_GRADE_LIMIT - sGradeInBag(S)));
+    return room;
+  }
+  // 入る分だけ入れる（同じアイテムの枠から埋めて、残りは新しい枠）。呼ぶ前に bagRoomFor で数を確かめる
+  function bagPut(S, id, n) {
+    for (const it of S.inv.bag) { if (!n) break; if (it && it.id === id && qty(it) < STACK_MAX) { const k = Math.min(n, STACK_MAX - qty(it)); setN(it, qty(it) + k); n -= k; } }
+    while (n > 0) { const k = Math.min(n, STACK_MAX); S.inv.bag.push(mkItem(id, k)); n -= k; }
+  }
+  /** 保管庫へ入れる（同じアイテムの行にまとめる。個数の上限なし） */
+  function vaultAdd(S, id, n = 1) {
+    if (typeof id !== 'string' || !id || !Number.isInteger(n) || n < 1) return { ok: false, reason: 'bad_item' };
+    const it = S.inv.vault.find((x) => plain(x) && x.id === id);
+    if (it) { setN(it, qty(it) + n); return { ok: true }; }
+    if (!vaultHasRoom(S)) return { ok: false, reason: 'vault_full' };
+    S.inv.vault.push(mkItem(id, n)); return { ok: true };
+  }
 
   // ---- バッグ満杯時の扱い：【未確定】 ----
   // 満杯のバッグへアイテムを取得しようとしたときの正式な処理（取得不可／入れ替え／捨てる／保管庫へ送る 等）は
@@ -439,59 +484,110 @@
   let bagFullHandler = null;
   function setBagFullHandler(fn) { bagFullHandler = typeof fn === 'function' ? fn : null; }
   /**
-   * バッグへ1個入れる（1枠1個・スタック不可・容量は bagCap）。空きがあれば入れる。
-   * 満杯時は bagFullHandler に委ねる（未設定なら reason:'full', policy:'undecided' を返すのみ）。
+   * バッグへ n 個入れる（同じアイテムは1枠10個まで・容量は bagCap）。全部入るときだけ入れる（一部だけ入れることはしない）。
+   * 入らないときは bagFullHandler に委ねる（未設定なら reason:'full'｜'s_limit', policy:'undecided' を返すのみ＝状態は変えない）。
    */
-  function bagAdd(S, itemId) {
-    if (bagFree(S) >= 1) { S.inv.bag.push(mkItem(itemId)); return { ok: true }; }
-    if (bagFullHandler) return bagFullHandler(S, mkItem(itemId));
-    return { ok: false, reason: 'full', policy: 'undecided' };
+  function bagAdd(S, itemId, n = 1) {
+    if (typeof itemId !== 'string' || !itemId || !Number.isInteger(n) || n < 1) return { ok: false, reason: 'bad_item' };
+    if (bagRoomFor(S, itemId) >= n) { bagPut(S, itemId, n); return { ok: true }; }
+    if (bagFullHandler) return bagFullHandler(S, mkItem(itemId, n));
+    return { ok: false, reason: itemGrade(itemId) === 'S' && sGradeInBag(S) >= S_GRADE_LIMIT ? 's_limit' : 'full', policy: 'undecided' };
   }
-  function moveVaultToBag(S, vaultIndex) {
+  /** バッグの枠から k 個使う・減らす（0個になったら枠を空ける）。Chapter のアイテムの使用など */
+  function bagTake(S, bagIndex, k = 1) {
+    const it = S.inv.bag[bagIndex];
+    if (!it || !Number.isInteger(k) || k < 1 || qty(it) < k) return { ok: false, reason: 'bad_index' };
+    const left = qty(it) - k; if (left > 0) setN(it, left); else S.inv.bag.splice(bagIndex, 1);
+    return { ok: true, itemId: it.id, left };
+  }
+  /** 保管庫の行からバッグへ。k 省略＝入るだけ（1回に最大10個＝1枠分）。戻り値 moved＝移した数 */
+  function moveVaultToBag(S, vaultIndex, k) {
     if (!canAccessVault(S)) return { ok: false, reason: 'vault_locked' };
     if (!(vaultIndex >= 0 && vaultIndex < S.inv.vault.length)) return { ok: false, reason: 'bad_index' };
-    if (bagFree(S) < 1) return { ok: false, reason: 'full' };
-    const [it] = S.inv.vault.splice(vaultIndex, 1);
-    S.inv.bag.push(it);
-    return { ok: true };
+    const it = S.inv.vault[vaultIndex], id = it && it.id;
+    if (typeof id !== 'string' || !id) return { ok: false, reason: 'bad_index' };
+    const room = bagRoomFor(S, id);
+    if (room < 1) return { ok: false, reason: itemGrade(id) === 'S' && sGradeInBag(S) >= S_GRADE_LIMIT ? 's_limit' : 'full' };
+    const want = Number.isInteger(k) && k >= 1 ? k : STACK_MAX;
+    const take = Math.min(want, room, qty(it));
+    bagPut(S, id, take);
+    const left = qty(it) - take; if (left > 0) setN(it, left); else S.inv.vault.splice(vaultIndex, 1);
+    return { ok: true, moved: take };
   }
+  /** バッグの枠を丸ごと保管庫へ（同じアイテムの行にまとめる） */
   function moveBagToVault(S, bagIndex) {
     if (!canAccessVault(S)) return { ok: false, reason: 'vault_locked' };
     if (!(bagIndex >= 0 && bagIndex < S.inv.bag.length)) return { ok: false, reason: 'bad_index' };
+    const it = S.inv.bag[bagIndex];
+    if (plain(it)) { const k = qty(it), r = vaultAdd(S, it.id, k); if (!r.ok) return r; S.inv.bag.splice(bagIndex, 1); return { ok: true, moved: k }; }
     if (!vaultHasRoom(S)) return { ok: false, reason: 'vault_full' };
-    const [it] = S.inv.bag.splice(bagIndex, 1);
-    S.inv.vault.push(it);
-    return { ok: true };
+    S.inv.bag.splice(bagIndex, 1); S.inv.vault.push(it);
+    return { ok: true, moved: qty(it) };
+  }
+  /**
+   * 持ち物の整理（読み込み・帰還のたびに呼んでよい。何度呼んでも数は増えも減りもしない）。
+   *  ①個数の形をそろえる（1個＝{ id }・2個以上＝{ id, n }。旧形式の { id } は1個のまま）。n===0 の枠は空き枠として外す（ID の無い壊れた形は触らない）
+   *  ②保管庫は1種類1行にまとめる　③バッグは同じアイテムを10個ずつの枠にまとめ直す（元の並びの順）
+   *  ④Chapter 進行中・特訓中でなければ、枠数（bagCap）を超えた分と等級 S の2個目以降を保管庫へ（数・種類は失わない）。
+   *    Chapter 進行中はバッグの物を消さず・動かさずに残す（帰還のあとに整理）
+   *  戻り値 { changed, moved（保管庫へ移した個数）, held（Chapter 中で保留した超過の枠数） }
+   */
+  function tidyInventory(S) {
+    if (!S || !isObj(S.inv) || !Array.isArray(S.inv.bag) || !Array.isArray(S.inv.vault)) return { changed: false, moved: 0, held: 0 };
+    const inv = S.inv, before = JSON.stringify([inv.bag, inv.vault]);
+    const norm = (list) => list.filter((it) => !(isObj(it) && it.n === 0)).map((it) => (plain(it) ? mkItem(it.id, qty(it)) : it));
+    // 保管庫：同じアイテムを1行に
+    const vault = [];
+    for (const it of norm(inv.vault)) { const e = plain(it) && vault.find((x) => plain(x) && x.id === it.id); if (e) setN(e, qty(e) + qty(it)); else vault.push(it); }
+    // バッグ：同じアイテムを10個ずつの枠に（最初に出てきた順）
+    const order = [], tot = {}, odd = [];
+    for (const it of norm(inv.bag)) { if (!plain(it)) { odd.push(it); continue; } if (!(it.id in tot)) { order.push(it.id); tot[it.id] = 0; } tot[it.id] += qty(it); }
+    let bag = [];
+    for (const id of order) for (let n = tot[id]; n > 0; n -= STACK_MAX) bag.push(mkItem(id, Math.min(n, STACK_MAX)));
+    bag = bag.concat(odd);
+    inv.vault = vault; inv.bag = bag;
+    let moved = 0, held = 0;
+    const toVault = (it) => { if (plain(it)) vaultAdd(S, it.id, qty(it)); else inv.vault.push(it); moved += qty(it); };
+    if (canAccessVault(S)) {
+      // 等級 S は合計1個まで（2個目以降は保管庫）
+      let sLeft = S_GRADE_LIMIT;
+      inv.bag = inv.bag.filter((it) => { if (!(plain(it) && itemGrade(it.id) === 'S')) return true; const n = qty(it), keep = Math.min(sLeft, n); sLeft -= keep; if (n > keep) { toVault(mkItem(it.id, n - keep)); setN(it, keep); } return keep > 0; });
+      const cap = bagCap(S);
+      if (inv.bag.length > cap) inv.bag.splice(cap).forEach(toVault);
+    } else held = Math.max(0, inv.bag.length - bagCap(S));
+    return { changed: JSON.stringify([inv.bag, inv.vault]) !== before, moved, held };
   }
 
   function registerItem(def) {
     if (!isObj(def) || typeof def.id !== 'string' || !def.id) throw new Error('アイテムIDが不正です');
-    itemDefs[def.id] = Object.freeze({ id: def.id, name: def.name || def.id, price: def.price ?? null, sellPrice: def.sellPrice ?? null });
+    // grade：アイテムの等級（'S' のときバッグに合計1個まで）。正式な等級データは未登録＝今はどのアイテムにも無い
+    itemDefs[def.id] = Object.freeze({ id: def.id, name: def.name || def.id, price: def.price ?? null, sellPrice: def.sellPrice ?? null, grade: def.grade ?? null });
   }
   function getItemDef(id) { return itemDefs[id] || null; }
   /** 登録済みのアイテムの定義（登録順。2026-10-05 PHASE B：アイテム図鑑＝既存のデータを見るだけ） */
   function listItemDefs() { return Object.values(itemDefs); }
   function setShopCatalog(ids) { shopCatalog = Array.isArray(ids) ? [...ids] : []; }
   function getShopCatalog() { return shopCatalog.filter((id) => itemDefs[id]); }
-  /** 購入品は保管庫へ入る（アイテム屋はバッグを直接操作しない） */
+  /** 購入品は保管庫へ入る（同じアイテムの行にまとめる。アイテム屋はバッグを直接操作しない） */
   function shopBuy(S, itemId) {
     if (!canAccessVault(S)) return { ok: false, reason: 'not_at_farm' };
     const d = itemDefs[itemId];
     if (!d || !shopCatalog.includes(itemId)) return { ok: false, reason: 'not_sold' };
     if (!Number.isInteger(d.price) || d.price < 0) return { ok: false, reason: 'no_price' };
     if ((S.g || 0) < d.price) return { ok: false, reason: 'no_money' };
-    if (!vaultHasRoom(S)) return { ok: false, reason: 'vault_full' };
+    if (!S.inv.vault.some((x) => plain(x) && x.id === itemId) && !vaultHasRoom(S)) return { ok: false, reason: 'vault_full' };
     S.g -= d.price;
-    S.inv.vault.push(mkItem(itemId));
+    vaultAdd(S, itemId, 1);
     return { ok: true };
   }
+  /** 保管庫の行から1個売る（0個になったら行を消す） */
   function shopSell(S, vaultIndex) {
     if (!canAccessVault(S)) return { ok: false, reason: 'not_at_farm' };
     const it = S.inv.vault[vaultIndex];
     if (!it) return { ok: false, reason: 'bad_index' };
     const d = itemDefs[it.id];
     if (!d || !Number.isInteger(d.sellPrice) || d.sellPrice < 0) return { ok: false, reason: 'no_price' };
-    S.inv.vault.splice(vaultIndex, 1);
+    if (qty(it) > 1) setN(it, qty(it) - 1); else S.inv.vault.splice(vaultIndex, 1);
     S.g = (S.g || 0) + d.sellPrice;
     return { ok: true };
   }
@@ -510,6 +606,7 @@
     rollDice, rollDie, trainSquare, canStartTraining, startTraining, advanceTraining, finishTraining,
     addFusionSpeciesResolver, resolveFusionSpecies, fusionInheritCandidates, pickFusionInherit,
     bagCap, bagFree, vaultHasRoom, canAccessVault, bagAdd, setBagFullHandler, moveVaultToBag, moveBagToVault,
+    STACK_MAX, S_GRADE_LIMIT, BAG_CAP_BY_WIN, bestWinRank, bagCapForRank, qty, itemCount, bagRoomFor, bagTake, vaultAdd, tidyInventory,
     registerItem, getItemDef, setShopCatalog, getShopCatalog, shopBuy, shopSell, listItemDefs,
   });
 })(typeof window !== 'undefined' ? window : globalThis);

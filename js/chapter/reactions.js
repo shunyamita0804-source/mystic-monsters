@@ -183,7 +183,7 @@
       if (!f || f.rxItem) return flavor();
       const P = root.MMP7; let ok = false;
       try { ok = !!(P && P.bagAdd && P.bagAdd(S, fx.item).ok); } catch (e) {}
-      if (!ok && S && S.inv && Array.isArray(S.inv.vault)) { S.inv.vault.push({ id: fx.item }); ok = true; }
+      if (!ok && S && S.inv && Array.isArray(S.inv.vault)) { try { ok = !!(P && P.vaultAdd && P.vaultAdd(S, fx.item, 1).ok); } catch (e) {} if (!ok) { S.inv.vault.push({ id: fx.item }); ok = true; } }
       if (!ok) return flavor();
       f.rxItem = 1; return { kind: 'item', item: fx.item, text: c.reply || '' };
     }

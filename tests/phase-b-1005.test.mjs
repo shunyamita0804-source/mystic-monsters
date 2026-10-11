@@ -110,7 +110,7 @@ test('PB-07：薬草の正式アイコン（バッグ・保管庫・Chapter の�
   assert.ok(existsSync(path.join(ROOT, 'assets/items/herb.webp')) && statSync(path.join(ROOT, 'assets/items/herb.webp')).size < 60000);
   assert.match(HTML, /const ITEM_ICON=Object\.freeze\(\{herb:"\.\/assets\/items\/herb\.webp"\}\);window\.MM_ITEM_ICON=ITEM_ICON;/);
   assert.match(HTML, /MMP7\.registerItem\(\{id:"herb",name:"薬草"\}\);if\(window\.MMCH\)MMCH\.registerFatigueItem\("herb",\{amount:30\}\);/);
-  assert.match(fnOf('prepScr'), /\$\{itemIc\(bag\[i\]\)\}/); assert.match(rd('js/chapter/field-view.js'), /root\.MM_ITEM_ICON\[x\.it\.id\]/);
+  assert.match(fnOf('bagSlotsHtml'), /\$\{itemIc\(it\)\}/); assert.match(fnOf('prepScr'), /bagSlotsHtml\(/); assert.match(rd('js/chapter/field-view.js'), /root\.MM_ITEM_ICON\[x\.it\.id\]/);
 });
 
 test('PB-08：アイテム管理（ベースキャンプの独立した導線・正式アイコン）は確認と整理だけ（購入・売却なし）。アイテム補給所＝購入／売却／アイテム図鑑（正式アイコン・処理と価格は従来どおり）', () => {

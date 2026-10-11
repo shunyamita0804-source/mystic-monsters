@@ -3081,9 +3081,9 @@ main:has(>#app>.pp) h1{display:none}#app:has(>.pp){overflow:hidden}
 .ppmsg{margin:0}
 .ppbag{display:grid;grid-template-columns:1fr 64px;gap:8px;align-items:stretch;padding:8px 10px 10px;border-radius:12px;background:linear-gradient(rgba(70,44,22,.94),rgba(40,24,10,.96));border:1.5px solid #c9a24d;box-shadow:inset 0 0 0 2px rgba(20,12,4,.8),0 6px 14px rgba(0,0,0,.4)}
 .ppbagh{grid-column:1/-1;display:flex;align-items:baseline;gap:8px}.ppbagh b{font-family:var(--mm-font-head);font-size:14px;letter-spacing:.1em;color:#ffe6a8}.ppbagh small{font-size:11px;color:#e8dfc8}
-.ppslots{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.ppslots{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
 .ppsl{aspect-ratio:1;min-width:0;padding:2px;border-radius:50%;display:grid;place-items:center;color:#ffe6a8;font:inherit;background:radial-gradient(circle at 50% 40%,#2e1c0c,#140b03);border:2px solid #c9a24d;box-shadow:inset 0 0 0 2px rgba(20,12,4,.9)}
-.ppsl span{color:#8a7250;font-weight:800}.ppsl.on{background:radial-gradient(circle at 50% 40%,#5b3d1a,#2a1708)}.ppsl b{font-size:9.5px;line-height:1.15;text-align:center;overflow:hidden;max-height:2.4em}
+.ppsl{position:relative}.ppsl .ppq{position:absolute;right:-2px;bottom:-2px;min-width:22px;padding:1px 4px;border-radius:9px;background:#13203f;border:1px solid #c9a24d;color:#ffe6a8;font:800 10.5px/1.25 'Noto Sans JP',sans-serif;font-style:normal;text-align:center}.ppsl.lock{opacity:.62;background:radial-gradient(circle at 50% 40%,#1c1a22,#0d0c12);border-style:dashed;align-content:center;gap:0}.ppsl.lock span{font-size:13px;line-height:1}.ppsl.lock small{font-size:10px;line-height:1.1;color:#e6d3a6;text-align:center;font-weight:800;white-space:nowrap;letter-spacing:-.02em}.ppsl.over{border-color:#e08a5a}.itn{color:#ffd77a;font-weight:800}.ppsl span{color:#8a7250;font-weight:800}.ppsl.on{background:radial-gradient(circle at 50% 40%,#5b3d1a,#2a1708)}.ppsl b{font-size:9.5px;line-height:1.15;text-align:center;overflow:hidden;max-height:2.4em}
 .ppvault{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px;border-radius:10px;color:#ffe6a8;font:inherit;background:linear-gradient(#5b3d1a,#2a1708);border:1.5px solid #c9a24d}
 .ppvault b{font-size:12px}.ppvault small{font-size:10px;color:#e8dfc8}
 .ppcard{flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center}
@@ -4231,7 +4231,7 @@ function itemIc(id,cls){const u=ITEM_ICON[id&&id.id||id];return u?`<img class="i
 /** 新人支援（2026-10-06 正式）：聖獣士登録のあと1回だけ 1000G と薬草×1。記録は S.npcFlags.support（v6 の任意項目）。
  *  受け取りの記録・所持金・薬草（バッグ。いっぱいなら保管庫）を同時に確定してから保存する＝再読み込み・再訪・再起動で二重に受け取らない。受け取ったら true */
 const SUPPORT=Object.freeze({gold:1000,item:"herb"});
-function grantSupport(){const f=finaFlags();if(f.support)return false;f.support=1;S.g=(S.g||0)+SUPPORT.gold;if(!MMP7.bagAdd(S,SUPPORT.item).ok)S.inv.vault.push({id:SUPPORT.item});save();return true}
+function grantSupport(){const f=finaFlags();if(f.support)return false;f.support=1;S.g=(S.g||0)+SUPPORT.gold;if(!MMP7.bagAdd(S,SUPPORT.item).ok)MMP7.vaultAdd(S,SUPPORT.item,1);save();return true}
 /** 聖獣士管理局の「世界地図」（序盤の会話を見たら出身地の印も） */
 function bureauMap(){if(window.MMMAP)MMMAP.viewer({origin:!!finaFlags().worldMap})}
 // ---- Phase 11：プレイヤー名（新規ゲームの最初に決める。空欄なら「アルト」） ----
@@ -5216,7 +5216,7 @@ function p9TourResult(msg){const m=S.m,t=m.raise.tour,lg=t.league,rs=t.result,w=
  ${rs.won?`<div class="p9win"><div class="cf">${cf}</div>${P9_TROPHY}<b class="big">優勝！</b><div class="sub">ランク${RN[t.rank]}大会を制した！（${st[0].w}勝${st[0].l}敗）</div>${t.rank===5?`<div class="p9newroad"><b>S ランク制覇！</b></div>`:""}</div>`
   :`<div class="p9lose"><div class="plc">${rs.place}<small>位</small></div><div class="sub">大会終了。優勝（1位）できなかったため、報酬はありません。</div></div>`}
  ${cedricOn()?"":p9Ced(rs.won?CEDRIC_TALK.won:CEDRIC_TALK.lost,rs.won?"victory":"host")}
- ${w?`<section class="p9board2 p9rw${w.firstClear?" fc":""}"><h3>${w.firstClear?"初回優勝の報酬":"再優勝の報酬"}</h3>${w.firstClear?`<div class="it">${GCOIN} 賞金 <b>${w.prize}G</b></div><div class="it">${MMP9ART.ticketIcon(24)} 特訓チケット <b>×${w.tickets}</b></div>`:`<div class="it dim">クリア済みランクのため、報酬はありません</div>`}${w.bonus.length?`<div class="it">⬆ ステータスボーナス <b>${w.bonus.map(b=>`${LAB[b.key]}+${b.amount}`).join("　")}</b></div>`:""}${w.bagUnlocked?`<div class="it">🎒 バッグが6枠に拡張された！</div>`:""}</section>`:""}
+ ${w?`<section class="p9board2 p9rw${w.firstClear?" fc":""}"><h3>${w.firstClear?"初回優勝の報酬":"再優勝の報酬"}</h3>${w.firstClear?`<div class="it">${GCOIN} 賞金 <b>${w.prize}G</b></div><div class="it">${MMP9ART.ticketIcon(24)} 特訓チケット <b>×${w.tickets}</b></div>`:`<div class="it dim">クリア済みランクのため、報酬はありません</div>`}${w.bonus.length?`<div class="it">⬆ ステータスボーナス <b>${w.bonus.map(b=>`${LAB[b.key]}+${b.amount}`).join("　")}</b></div>`:""}${w.bagCap?`<div class="it">🎒 バッグが${w.bagCap.to}枠に拡張された！</div>`:""}</section>`:""}
  ${msg?`<div class="p9msg p9tmsg">${msg}</div>`:""}${p9Standings(lg,st,true)}${p9Matrix(lg)}
  ${MMP8.canStartFinalTournament(S,m).ok?`<button class="p9btn p9final p9endbtn"${dis} onclick="p9FinalTour(this)">最終公式大会へ挑戦する<small>同じ子のまま 公式ランクS大会へ</small></button>`:""}
  <button class="p9btn p9endbtn"${dis} onclick="${MMP8.canStartFinalTournament(S,m).ok?"p9FinalSkip()":"p8EndChapter()"}">Chapterを終えてベースキャンプへ</button></div>`;try{window.scrollTo(0,0)}catch(e){}
@@ -5277,8 +5277,8 @@ MMP8.registerTourEndHook("legendUnlock",()=>{p9EndMark("legendUnlock");legendEve
 MMP8.registerTourEndHook("next",()=>{p9EndMark("next");const f=P9_END_AFTER;P9_END_AFTER=null;if(f)setTimeout(f,cedricOn()?300:1100)});
 
 // 大会の終わりの段階の差し込み口（2026-10-06）：初回クリアの報酬＝従来の音と帯（REWARD・UNLOCK・MMNOTE）。ランクアップの演出・セドリックの締めの正式 UI は素材待ち（何も出さない）
-MMP8.registerTourEndHook("firstReward",async d=>{const m=S.m;p9EndMark("firstReward");MMAUDIO.se("REWARD",{delay:.5});if(d.bagUnlocked)MMAUDIO.se("UNLOCK",{delay:1.2});if(typeof MMNOTE=="object"&&MMNOTE){MMNOTE.show({icon:"reward",title:`賞金 ${d.prize}G を手に入れた！`,sub:`初回優勝の報酬・特訓チケット ×${d.tickets}`});if(d.bagUnlocked)MMNOTE.show({icon:"unlock",title:"バッグが6枠に拡張された！"})}if(p9EndHere(m))await p9EndWait(d.bagUnlocked?3600:2700)});   // 帯（約2.6秒）を見せてからランクアップ・締めへ
-function p8RewardText(w){return (w.bonus.length?`<br>ステータスボーナス：${w.bonus.map(b=>`${LAB[b.key]}+${b.amount}`).join("・")}`:"")+(w.firstClear?`<br>初回優勝：賞金 ${w.prize}G・🎫特訓チケット×${w.tickets}`+(w.bagUnlocked?"・バッグが6枠に拡張！":""):"<br>（クリア済みのランクのため、報酬はありません）")}
+MMP8.registerTourEndHook("firstReward",async d=>{const m=S.m;p9EndMark("firstReward");MMAUDIO.se("REWARD",{delay:.5});if(d.bagCap)MMAUDIO.se("UNLOCK",{delay:1.2});if(typeof MMNOTE=="object"&&MMNOTE){MMNOTE.show({icon:"reward",title:`賞金 ${d.prize}G を手に入れた！`,sub:`初回優勝の報酬・特訓チケット ×${d.tickets}`});if(d.bagCap)MMNOTE.show({icon:"unlock",title:`バッグが${d.bagCap.to}枠に拡張された！`,sub:`${d.bagCap.from}枠 → ${d.bagCap.to}枠（同じアイテムは1枠に10個まで）`})}if(p9EndHere(m))await p9EndWait(d.bagCap?3600:2700)});   // 帯（約2.6秒）を見せてからランクアップ・締めへ
+function p8RewardText(w){return (w.bonus.length?`<br>ステータスボーナス：${w.bonus.map(b=>`${LAB[b.key]}+${b.amount}`).join("・")}`:"")+(w.firstClear?`<br>初回優勝：賞金 ${w.prize}G・🎫特訓チケット×${w.tickets}`+(w.bagCap?`・バッグが${w.bagCap.to}枠に拡張！`:""):"<br>（クリア済みのランクのため、報酬はありません）")}
 // 2026-10-03（試遊で「対戦前の画面が多く遅い」）：大会は VS 画面（相手の発表＋能力比較＝1枚）から直接 fight() へ。Battle 開始前の導入（p9PreBattle）は練習試合だけ
 function p8TourFight(){const m=S.m,t=m&&m.raise.tour;if(bBusy||!t||t.status!="league")return board();if(!MMP8.beginBattle(S,m,{kind:"league",rank:t.rank}).ok)return board();save();try{const pm=MMP8.tourNext(m),ev=pm&&MMP8L.entrantView(t.league,pm.opp);battleDress({rank:t.rank,name:ev&&ev.name});if(ev)battleFoeOnce(ev.sp)}catch(e){}fight(t.rank);battleDressDom()} // 2026-10-07：実際の相手の種族＝対戦表・大会2・VS の相手の種族（fight() は変えず、最初の乱数の1回だけ）
 // ---- Battle 開始前の導入（表示だけ）：バトルの背景（fight() と同じ BTB）の上に両者が登場 → 個性スキル → 主要パラメーター → 「BATTLE START」→ go()（beginBattle と fight()）
@@ -5393,7 +5393,7 @@ function bcMenu(){p9MenuClose();const m=S.m,st=m?MMP7.raiseState(m):"none",d=doc
 /** ベースキャンプの下のコマンド（1列5つ）。ステータス画面（2026-10-05）でも同じ並び */
 function bcCmds(st){return [["hall('s')","train","特訓",""],["shopScr()","item","アイテム",""],["hall('st')","status","ステータス",""],["hall('w')","moves","技管理",""],
   st=="farm"?["p8Suspend()","pause","中断",""]:["lobby()","town","街へ戻る",""]]}
-function fmScr(msg){const m=S.m;if(!m)return lobby();p9MenuClose();if(window.MMP8&&MMP8.legendStage&&MMP8.legendStage(S)===MMP8.LEGEND_PENDING)setTimeout(legendEvent,700); /* 2026-10-08：S 優勝のあとの解禁イベントが残っていたら */
+function fmScr(msg){const m=S.m;if(!m)return lobby();p9MenuClose();bagSettle();if(window.MMP8&&MMP8.legendStage&&MMP8.legendStage(S)===MMP8.LEGEND_PENDING)setTimeout(legendEvent,700); /* 2026-10-08：S 優勝のあとの解禁イベントが残っていたら */
  const st=MMP7.raiseState(m),r=m.raise||{},k=MMP8.nextChapterKey(m),fin=k==MMP8.FINAL,last=(r.log||[]).slice(-1)[0],sp=MMP10M.byId(m.sp),done=st=="done",can=done?{ok:true}:MMP8.canDepart(S,m);
  bgm("farm");p9Immersive(true);npcWarm("dan");ht="t";try{if(k!=null&&k!=MMP8.FINAL)MMAUDIO.prefetchBgm("CHAPTER_"+Math.max(1,Math.min(4,k|0)))}catch(e){}/* 2026-10-05 試遊：次の Chapter の曲を先にデコードしておく（フィールドで最初から AudioBuffer で鳴らす） */setTimeout(()=>{if(S.m!==m||!document.querySelector(".fm"))return;if(st=="none")npcFirst("farm");else if(st=="farm")farmReturn(m)},0); // 2026-10-04：初回訪問（ダン ↔ フィナ）・Chapter の帰還イベント（ダン＋フィナ。Chapter ごとに1回）
  const chNm=c=>c==MMP8.FINAL?"最終ルート":`Chapter ${c}`,chSub=c=>c==MMP8.FINAL||c==null?"":MMP8.chapterName(c);
@@ -5484,10 +5484,10 @@ function p7Shell(ic,title,sub,body,msg,back,o){o=o||{};return `<div class="ds${o
 const PP_ART={1:"assets/fields/ch1a/intro/ch1_intro_overview.webp",2:"assets/fields/ch2a/intro/ch2_intro_overview_v2.webp"}; // 出発準備の Chapter カードの絵（正式の俯瞰図。無い Chapter は絵なし）
 // 出発準備（2026-10-04 第二段階。デザイン参考 07）：上＝育成中モンスター（正式画像）と Chapter の札、中＝バッグの5スロット（空き＝空枠・所持＝名前。タップ＝保管庫へ／空きのタップ＝保管庫から選ぶ）、その下＝次の Chapter のカード、下＝「出発する」。
 //  バッグ・保管庫の処理（MMP7.moveBagToVault／moveVaultToBag）・出発の判定（MMP8.canDepart）・フィナの確認（p7Depart）は従来どおり
-function prepScr(msg){if(!S.m)return lobby();if(!MMP7.canAccessVault(S))return hall("t","Chapter中はバッグの準備ができません。");bgm("farm");p9Immersive(true);
+function prepScr(msg){if(!S.m)return lobby();if(!MMP7.canAccessVault(S))return hall("t","Chapter中はバッグの準備ができません。");bgm("farm");p9Immersive(true);bagSettle();
  const m=S.m,cap=MMP7.bagCap(S),bag=S.inv.bag,vt=S.inv.vault,c=MMP8.canDepart(S,m),nx=MMP8.nextChapterKey(m),sp=MMP10M.byId(m.sp);
- const slots=[...Array(cap)].map((_,i)=>bag[i]?`<button class="ppsl on" onclick="p7ToVault(${i})" aria-label="${p11Esc(p7ItemName(bag[i]))}（保管庫へ）">${itemIc(bag[i])}<b>${p11Esc(p7ItemName(bag[i]))}</b></button>`:`<button class="ppsl" onclick="ppVault()" aria-label="空きスロット（保管庫から選ぶ）"><span>—</span></button>`).join("");
- const vtRows=vt.length?vt.map((it,i)=>`<div class="p7it">${itemIc(it)}<span>${p7ItemName(it)}</span><button ${bag.length>=cap?"disabled":""} onclick="p7ToBag(${i})">バッグへ</button></div>`).join(""):`<div class="p7it emp"><span>保管庫は空です</span></div>`;
+ const slots=bagSlotsHtml("p7ToVault","ppVault()");
+ const vtRows=vt.length?vt.map((it,i)=>`<div class="p7it">${itemIc(it)}<span>${p11Esc(p7ItemName(it))}${itemQty(it)}</span><button ${MMP7.bagRoomFor(S,it.id)<1?"disabled":""} onclick="p7ToBag(${i})">バッグへ</button></div>`).join(""):`<div class="p7it emp"><span>保管庫は空です</span></div>`;
  const chName=nx==null?"":nx==MMP8.FINAL?"最終ルート":MMP8.chapterName(nx),chNo=nx==null?"":nx==MMP8.FINAL?"FINAL":`CHAPTER ${nx}`,art=nx!=null&&PP_ART[nx]?`<div class="ppart" style="background-image:url(${PP_ART[nx]})"></div>`:`<div class="ppart none"></div>`;
  const note=nx==null?`<p class="ppnote">出発できるChapterはありません（育成完了）</p>`:c.reason=="rank_gate"?`<p class="ppnote">${p8GateNote(nx,c.need)}</p>`:(nx==MMP8.FINAL&&!MMP8.isPlayable(MMP8.FINAL))?`<p class="ppnote">最終ルートはまだ準備中です。ここで育成を完了して街へ戻れます（大会の結果・賞金・育成の記録はそのまま）。</p>`:"";
  const go=nx==null?"":(c.reason=="rank_gate"||(nx==MMP8.FINAL&&!MMP8.isPlayable(MMP8.FINAL)))?`<button class="ppgobtn fin" onclick="pfixFinishNoFinal(this)"><b>育成を完了して街へ戻る</b></button>`:`<button class="ppgobtn" ${c.ok?"":"disabled"} onclick="p7Depart(this)"><b>出発する</b><small>${c.ok?`${p8ChLabel(nx)}へ${MMP7.raiseState(m)=="none"?"（育成開始）":""}`:(P7_ERR[c.reason]||"")}</small></button>`;
@@ -5495,14 +5495,25 @@ function prepScr(msg){if(!S.m)return lobby();if(!MMP7.canAccessVault(S))return h
  <header class="pphd"><button class="ppback" data-nav="back" onclick="hall('t')">◀ 拠点</button><div class="ppgold">${GCOIN} ${S.g}G</div></header>
  <section class="pptop"><div class="ppmon"><div class="mon">${msv(m)}</div></div><div class="ppname"><small>育成中モンスター</small><b>${p11Esc(m.name)}</b><em>${sp?sp.kind:""}</em></div>${nx!=null?`<div class="ppch"><small>${chNo}</small><b>${chName}</b></div>`:""}</section>
  ${msg?`<div class="dmsg ppmsg"><span>${msg}</span></div>`:""}
- <section class="ppbag"><div class="ppbagh"><b>バッグ</b><small>${bag.length} / ${cap}</small></div><div class="ppslots">${slots}</div><button class="ppvault" onclick="ppVault()"><b>保管庫</b><small>${vt.length}個</small></button></section>
+ <section class="ppbag"><div class="ppbagh"><b>バッグ</b><small>${bag.length} / ${cap}枠</small></div><div class="ppslots">${slots}</div><button class="ppvault" onclick="ppVault()"><b>保管庫</b><small>${vaultTotal()}個</small></button></section>
  <section class="ppcard"><div class="ppcin"><small>${chNo}</small><b>${chName||"ー"}</b>${art}${note}</div></section>
  <div class="ppgo">${go}</div>
- <div class="ppsheet" id="ppvault" hidden><div class="ppsh"><b>保管庫</b><small>タップでバッグへ（${bag.length} / ${cap}）</small><button class="ppclose" data-se="UI_CANCEL" onclick="ppVault(false)">閉じる</button></div><div class="ppvl">${vtRows}<small class="p7note">保管庫はベースキャンプにいる間だけ使えます。Chapter中は入れ替えできません。</small></div></div></div>`;try{window.scrollTo(0,0)}catch(e){}}
+ <div class="ppsheet" id="ppvault" hidden><div class="ppsh"><b>保管庫</b><small>タップでバッグへ（${bag.length} / ${cap}枠・1枠に10個まで）</small><button class="ppclose" data-se="UI_CANCEL" onclick="ppVault(false)">閉じる</button></div><div class="ppvl">${vtRows}<small class="p7note">保管庫はベースキャンプにいる間だけ使えます。Chapter中は入れ替えできません。</small></div></div></div>`;try{window.scrollTo(0,0)}catch(e){}}
 /** 保管庫のシートを開く／閉じる（出発準備の中。画面は移らない） */
 function ppVault(on){const d=$("#ppvault");if(!d)return;d.hidden=on===false?true:on===true?false:!d.hidden;const p=$(".pp");if(p)p.classList.toggle("vault",!d.hidden)}
 
-const P7_ERR={finished:"育成は完了しています。",no_monster:"モンスターがいません。",full:"バッグがいっぱいです。",vault_full:"保管庫がいっぱいです。",vault_locked:"いまは保管庫を使えません。",not_next:"そのChapterにはまだ行けません。",no_map:"このChapterのマップは準備中です。",not_at_farm:"いまは出発できません。",rank_gate:"次のChapterの解放条件（公式ランク大会のクリア）に届いていません。",training:"特訓中です。",no_money:"お金が足りません。",no_price:"価格が設定されていません。",not_sold:"その商品はありません。"};
+const P7_ERR={finished:"育成は完了しています。",no_monster:"モンスターがいません。",full:"バッグがいっぱいです。",s_limit:"等級Sのアイテムは、バッグに1個までです。",bad_item:"そのアイテムは扱えません。",vault_full:"保管庫がいっぱいです。",vault_locked:"いまは保管庫を使えません。",not_next:"そのChapterにはまだ行けません。",no_map:"このChapterのマップは準備中です。",not_at_farm:"いまは出発できません。",rank_gate:"次のChapterの解放条件（公式ランク大会のクリア）に届いていません。",training:"特訓中です。",no_money:"お金が足りません。",no_price:"価格が設定されていません。",not_sold:"その商品はありません。"};
+// ---- バッグ（2026-10-11 正式）：枠はプレイヤー全体の最高優勝（未優勝 2／E・D 3／C・B 4／A・S 6）。同じアイテムは1枠10個まで。保管庫は1種類1行・個数の上限なし ----
+//  未解放の枠は 🔒 と解放の条件（技一覧の未習得と同じ鍵の印）。Chapter 中に保留した超過の枠（旧セーブ）は帰還のあとに bagSettle が保管庫へ移す
+const BAG_LOCK_NOTE=i=>i<3?"E・D優勝":i<4?"C・B優勝":"A・S優勝";
+function itemQty(it){const n=MMP7.qty(it);return n>1?` <b class="itn">×${n}</b>`:""}
+function vaultTotal(){return S.inv.vault.reduce((a,it)=>a+MMP7.qty(it),0)}
+function bagSlotsHtml(onItem,onEmpty){const cap=MMP7.bagCap(S),bag=S.inv.bag,n=Math.max(MMP7.BAG_UNLOCKED_CAP,bag.length);
+ return [...Array(n)].map((_,i)=>{const it=bag[i];if(it){const nm=p11Esc(p7ItemName(it)),q=MMP7.qty(it),over=i>=cap;return `<button class="ppsl on${over?" over":""}" onclick="${onItem}(${i})" aria-label="${nm}${q>1?` ${q}個`:""}（保管庫へ）">${itemIc(it)}<b>${nm}</b>${q>1?`<i class="ppq">×${q}</i>`:""}</button>`}
+  if(i<cap)return onEmpty?`<button class="ppsl" onclick="${onEmpty}" aria-label="空きスロット（保管庫から選ぶ）"><span>—</span></button>`:`<div class="ppsl" aria-label="空きスロット"><span>—</span></div>`;
+  return `<div class="ppsl lock" aria-label="未解放の枠（${BAG_LOCK_NOTE(i)}で解放）"><span aria-hidden="true">🔒</span><small aria-hidden="true">${BAG_LOCK_NOTE(i).replace("優勝","")}</small></div>`}).join("")}
+/** 帰還のあと（ベースキャンプ・出発準備・アイテム管理・アイテム屋）：Chapter 中に保留した超過の枠などを整理して保存（数・種類は失わない＝保管庫へ） */
+function bagSettle(){try{if(!MMP7.canAccessVault(S))return;const r=MMP7.tidyInventory(S);if(r.changed)save()}catch(e){}}
 function p7ToBag(i){const r=MMP7.moveVaultToBag(S,i);if(r.ok)save();prepScr(r.ok?"":P7_ERR[r.reason])}
 function p7ToVault(i){const r=MMP7.moveBagToVault(S,i);if(r.ok)save();prepScr(r.ok?"":P7_ERR[r.reason])}
 // ---- フィナの登場（正式に指定された3か所だけ）：名前登録後の初回あいさつ／育成開始の確認（初回だけ説明つき）／育成完了。会話は共通会話 MMNPC ----
@@ -5554,7 +5565,7 @@ const npcScene=fac=>({ranch:RANCH_BG,lab:LAB_BG,arena:TOWN_BG,farm:BC_BG,shop:SH
 /** 再訪の一言の材料（進行状態）。last＝その施設で直前に出した一言の id（ページの中だけの記憶。セーブには入れない＝保存とメモリの食い違いを作らない） */
 const NPC_LAST={};
 function npcCtx(fac){const m=S.m,f=finaFlags(),box=S.box.length,st=m?MMP7.raiseState(m):"none",can=m&&st=="farm"?MMP8.canDepart(S,m):{ok:false},inv=S.inv||{};
- return {hasMon:!!m,box,full:box+(m?1:0)>=MMP10M.OWN_LIMIT,gold:S.g|0,raiseDone:MMP8.raiseDoneCount(S),rank:(S.br??-1),fatigue:m&&m.raise?(m.raise.fatigue|0):0,tickets:S.trainTix|0,items:((inv.bag||[]).length+(inv.vault||[]).length),bag:(inv.bag||[]).length,state:st,canDepart:!!can.ok,gateBlocked:can.reason=="rank_gate",canFuse:MMP10M.fusionAvailable(S)&&(box+(m?1:0))>=2,last:NPC_LAST[fac]}}
+ return {hasMon:!!m,box,full:box+(m?1:0)>=MMP10M.OWN_LIMIT,gold:S.g|0,raiseDone:MMP8.raiseDoneCount(S),rank:(S.br??-1),fatigue:m&&m.raise?(m.raise.fatigue|0):0,tickets:S.trainTix|0,items:(inv.bag||[]).concat(inv.vault||[]).reduce((a,it)=>a+MMP7.qty(it),0),bag:(inv.bag||[]).length,state:st,canDepart:!!can.ok,gateBlocked:can.reason=="rank_gate",canFuse:MMP10M.fusionAvailable(S)&&(box+(m?1:0))>=2,last:NPC_LAST[fac]}}
 /** 再訪の一言（文字だけ）。MMNPCE が無い・出ないときは fallback（従来の配列からランダム）。出した id は NPC_LAST に残す（直前と同じ文を避ける） */
 function npcLine(fac,fallback){const l=npcLineX(fac,fallback);return l?l.text:null}
 // 2026-10-04（追加アセット）：表情つきの再訪の一言（{ text, expression }。expression は MMNPCE のデータ側。無ければ ex）。表情の画像は MMNPC（js/npc/npc.js の EXPR）
@@ -5599,7 +5610,7 @@ const SHOP_ICON=Object.freeze({buy:"./assets/item_ui/shop_purchase.webp",sell:".
 /** アイテム屋の画面の器（2026-10-05 試遊：施設の画面として作り直し。名札「アイテム屋」・戻る・所持金／ベルナ（全身）／中身／下の3つの導線。tab＝今開いている導線） */
 function shopShell(tab,body,msg,ex){const T={buy:"購入",sell:"売却",book:"アイテム図鑑"},ent=(k,t,sub)=>`<button class="shent${tab==k?" on":""}" onclick="shopScr('',false,'${k}')"${tab==k?' aria-current="page"':""}><img src="${SHOP_ICON[k]}" alt="" decoding="async"><span class="shent-tx"><b>${t}</b><small>${sub}</small></span><i class="shent-go" aria-hidden="true"></i></button>`;
  return `<div class="ds shop shopf${tab?" tab":""}">${shopLook(ex).bg}<header class="isphd"><button class="dback isp-back" data-nav="back" onclick="${tab?"shopScr()":"hall('t')"}" aria-label="${tab?"アイテム屋の入口にもどる":"ベースキャンプにもどる"}">←</button><div class="isp-plq"><b>アイテム屋</b>${tab?`<small>${T[tab]}</small>`:""}</div><span class="isp-gold"><i aria-hidden="true"></i><b>${S.g}</b> G</span></header>${msg?`<div class="dmsg"><span>${msg}</span></div>`:""}<div class="dbody">${body}</div><nav class="shmenu" aria-label="アイテム屋のコマンド">${ent("buy","購入","道具を買う")}${ent("sell","売却","保管庫のアイテムを売る")}${ent("book","アイテム図鑑","見つけた道具を確認")}</nav></div>`}
-function shopScr(msg,bought,tab){if(!S.m)return lobby();if(!MMP7.canAccessVault(S))return hall("t","Chapter中はアイテム屋に行けません。");bgm("farm");npcWarm("shop",["fullbody"]);
+function shopScr(msg,bought,tab){if(!S.m)return lobby();if(!MMP7.canAccessVault(S))return hall("t","Chapter中はアイテム屋に行けません。");bgm("farm");bagSettle();npcWarm("shop",["fullbody"]);
  let sl=bought&&window.MMNPCE?{...MMNPCE.REVISIT.shop.buy}:window.MMNPCE&&!msg&&!tab?MMNPCE.revisit("shop",npcCtx("shop")):null;
  if(!bought&&!tab){if(sl&&NPC_LAST.shop===sl.id)sl=null;NPC_LAST.shop=sl?sl.id:null}   // 同じ一言を続けて出さない（来るたびに話さない）
  const sex=sl?sl.expression:"normal";
@@ -5607,9 +5618,9 @@ function shopScr(msg,bought,tab){if(!S.m)return lobby();if(!MMP7.canAccessVault(
  const cat=MMP7.getShopCatalog(),vt=S.inv.vault;
  if(tab=="buy"){const buy=cat.length?cat.map(id=>{const d=MMP7.getItemDef(id),pr=Number.isInteger(d.price);return `<button class="t" ${pr&&S.g>=d.price?"":"disabled"} onclick="p7Buy('${id}')">${itemIc(id)}${d.name}<small>${pr?d.price+"G":"価格未設定"}</small></button>`}).join(""):`<div class="p7it emp"><span>商品は準備中です</span></div>`;
   $("#app").innerHTML=shopShell("buy",`${shopSay(sl)}<div class="dcard"><div class="dh">購入 <small>買ったアイテムは保管庫へ</small></div>${buy}</div>`,msg,sex);try{window.scrollTo(0,0)}catch(e){}return}
- if(tab=="sell"){const sell=vt.length?vt.map((it,i)=>{const d=MMP7.getItemDef(it.id),ok=!!d&&Number.isInteger(d.sellPrice);return `<div class="p7it">${itemIc(it)}<span>${p7ItemName(it)}</span><button ${ok?"":"disabled"} onclick="p7Sell(${i})">${ok?"売る "+d.sellPrice+"G":"売れない"}</button></div>`}).join(""):`<div class="p7it emp"><span>保管庫は空です</span></div>`;
+ if(tab=="sell"){const sell=vt.length?vt.map((it,i)=>{const d=MMP7.getItemDef(it.id),ok=!!d&&Number.isInteger(d.sellPrice);return `<div class="p7it">${itemIc(it)}<span>${p11Esc(p7ItemName(it))}${itemQty(it)}</span><button ${ok?"":"disabled"} onclick="p7Sell(${i})">${ok?"売る "+d.sellPrice+"G":"売れない"}</button></div>`}).join(""):`<div class="p7it emp"><span>保管庫は空です</span></div>`;
   $("#app").innerHTML=shopShell("sell",`<div class="dcard"><div class="dh">売却 <small>保管庫のアイテム</small></div>${sell}</div>`,msg,sex);try{window.scrollTo(0,0)}catch(e){}return}
- if(tab=="book"){const own=id=>S.inv.bag.concat(S.inv.vault).filter(x=>x&&x.id===id).length,defs=MMP7.listItemDefs();
+ if(tab=="book"){const own=id=>MMP7.itemCount(S,id),defs=MMP7.listItemDefs();
   const rows=defs.length?defs.map(d=>{const e=window.MMCH&&MMCH.fatigueItemEffect?MMCH.fatigueItemEffect(d.id):null;return `<div class="shbk">${itemIc(d.id,"big")||'<i class="shbk-noic" aria-hidden="true"></i>'}<div class="shbk-tx"><b>${p11Esc(d.name)}</b><small>${e?(e.full?"疲れを全回復":`疲れを${e.amount}回復`)+"（Chapter のアイテムで使う・ターンは使わない）":"効果は未登録"}</small><small>${Number.isInteger(d.price)?`価格 ${d.price}G`:"非売品"}・所持 ${own(d.id)}</small></div></div>`}).join(""):`<div class="p7it emp"><span>まだ記録がありません</span></div>`;
   $("#app").innerHTML=shopShell("book",`<div class="dcard shbook"><div class="dh">アイテム図鑑</div>${rows}</div>`,msg,sex);try{window.scrollTo(0,0)}catch(e){}return}
  $("#app").innerHTML=shopShell("",shopSay(sl),msg,sex);try{window.scrollTo(0,0)}catch(e){}}
@@ -5618,12 +5629,12 @@ function p7Sell(i){const r=MMP7.shopSell(S,i);if(r.ok)save();shopScr(r.ok?"売�
 /** 2026-10-05 PHASE B：ベースキャンプの「アイテム管理」（正式アイコン item_management）。持ち物の確認・バッグと保管庫の整理だけ（店ではない＝購入・売却は置かない）。
  *  バッグ・保管庫のデータと移動の処理は従来どおり（MMP7.moveBagToVault／moveVaultToBag）。新しい効果・装備は無い */
 const ITEM_MGMT_ICON="./assets/item_ui/item_management.webp";
-function itemScr(msg){if(!S.m)return lobby();if(!MMP7.canAccessVault(S))return hall("t","Chapter中はアイテム管理を開けません。");bgm("farm");p9Immersive(true);
+function itemScr(msg){if(!S.m)return lobby();if(!MMP7.canAccessVault(S))return hall("t","Chapter中はアイテム管理を開けません。");bgm("farm");p9Immersive(true);bagSettle();
  const cap=MMP7.bagCap(S),bag=S.inv.bag,vt=S.inv.vault,ids=[...new Set(bag.concat(vt).map(x=>x.id))];
- const own=ids.length?ids.map(id=>{const n=bag.filter(x=>x.id===id).length,v=vt.filter(x=>x.id===id).length;return `<div class="p7it">${itemIc(id)}<span>${p11Esc(p7ItemName({id}))}</span><em class="imcnt">バッグ ${n}・保管庫 ${v}</em></div>`}).join(""):`<div class="p7it emp"><span>アイテムを持っていません</span></div>`;
- const slots=[...Array(cap)].map((_,i)=>bag[i]?`<button class="ppsl on" onclick="imToVault(${i})" aria-label="${p11Esc(p7ItemName(bag[i]))}（保管庫へ）">${itemIc(bag[i])}<b>${p11Esc(p7ItemName(bag[i]))}</b></button>`:`<div class="ppsl" aria-label="空きスロット"><span>—</span></div>`).join("");
- const vtRows=vt.length?vt.map((it,i)=>`<div class="p7it">${itemIc(it)}<span>${p11Esc(p7ItemName(it))}</span><button ${bag.length>=cap?"disabled":""} onclick="imToBag(${i})">バッグへ</button></div>`).join(""):`<div class="p7it emp"><span>保管庫は空です</span></div>`;
- $("#app").innerHTML=p7Shell(`<img class="shtic" src="${ITEM_MGMT_ICON}" alt="">`,"アイテム管理","持ち物の確認・バッグと保管庫の整理",`<div class="dcard"><div class="dh">所持アイテム</div>${own}</div><div class="dcard"><div class="dh">バッグ <small>${bag.length}/${cap}・タップで保管庫へ</small></div><div class="ppslots imslots">${slots}</div></div><div class="dcard"><div class="dh">保管庫 <small>${vt.length}個</small></div>${vtRows}</div>`,msg,null,{cls:"itemmg"});try{window.scrollTo(0,0)}catch(e){}}
+ const own=ids.length?ids.map(id=>{const n=MMP7.itemCount(S,id,"bag"),v=MMP7.itemCount(S,id,"vault");return `<div class="p7it">${itemIc(id)}<span>${p11Esc(p7ItemName({id}))}</span><em class="imcnt">バッグ ${n}・保管庫 ${v}</em></div>`}).join(""):`<div class="p7it emp"><span>アイテムを持っていません</span></div>`;
+ const slots=bagSlotsHtml("imToVault",null);
+ const vtRows=vt.length?vt.map((it,i)=>`<div class="p7it">${itemIc(it)}<span>${p11Esc(p7ItemName(it))}${itemQty(it)}</span><button ${MMP7.bagRoomFor(S,it.id)<1?"disabled":""} onclick="imToBag(${i})">バッグへ</button></div>`).join(""):`<div class="p7it emp"><span>保管庫は空です</span></div>`;
+ $("#app").innerHTML=p7Shell(`<img class="shtic" src="${ITEM_MGMT_ICON}" alt="">`,"アイテム管理","持ち物の確認・バッグと保管庫の整理",`<div class="dcard"><div class="dh">所持アイテム</div>${own}</div><div class="dcard"><div class="dh">バッグ <small>${bag.length}/${cap}枠・1枠に10個まで・タップで保管庫へ</small></div><div class="ppslots imslots">${slots}</div></div><div class="dcard"><div class="dh">保管庫 <small>${vaultTotal()}個</small></div>${vtRows}</div>`,msg,null,{cls:"itemmg"});try{window.scrollTo(0,0)}catch(e){}}
 function imToBag(i){const r=MMP7.moveVaultToBag(S,i);if(r.ok)save();itemScr(r.ok?"":P7_ERR[r.reason])}
 function imToVault(i){const r=MMP7.moveBagToVault(S,i);if(r.ok)save();itemScr(r.ok?"":P7_ERR[r.reason])}
 

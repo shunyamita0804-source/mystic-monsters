@@ -175,7 +175,7 @@
     if (!isObj(S.inv)) S.inv = { bag: [], bagCapUnlocked: false, vault: [], vaultCap: null };
     if (!Array.isArray(S.inv.bag)) S.inv.bag = [];
     if (!Array.isArray(S.inv.vault)) S.inv.vault = [];
-    if (!S.inv.bag.every(isObj)) S.inv.bag = S.inv.bag.filter(isObj);         // アイテムは { id } の形だけ（null・数値などの壊れた要素は外す）
+    if (!S.inv.bag.every(isObj)) S.inv.bag = S.inv.bag.filter(isObj);         // アイテムは { id, n } の形だけ（null・数値などの壊れた要素は外す。旧 { id } は1個）
     if (!S.inv.vault.every(isObj)) S.inv.vault = S.inv.vault.filter(isObj);
     if (typeof S.inv.bagCapUnlocked !== 'boolean') S.inv.bagCapUnlocked = false;
     if (!('vaultCap' in S.inv) || !(S.inv.vaultCap === null || (Number.isInteger(S.inv.vaultCap) && S.inv.vaultCap >= 0))) S.inv.vaultCap = null;
@@ -193,6 +193,8 @@
       if (!(S.m && P7.isRaising(S.m))) { const t = boxRaising[0]; S.box = S.box.filter((x) => x !== t); if (S.m) S.box.push(S.m); S.m = t; }
       S.box.forEach((x) => { if (P7.isRaising(x)) resetRaise(x); });
     }
+    // 持ち物（2026-10-11）：旧形式 { id } → { id, n }・同じアイテムをまとめる・枠を超えた分は保管庫へ（Chapter 進行中は消さずに残す＝帰還のあとに整理）
+    P7.tidyInventory(S);
     S.v = SAVE_VERSION;
     return runSaveNormalizers(S, false);
   }
@@ -615,7 +617,9 @@
       reward.prize = PRIZE[rank]; reward.tickets = FIRST_CLEAR_TICKETS[rank];
       S.g = (S.g || 0) + reward.prize;
       S.trainTix = (S.trainTix || 0) + reward.tickets;
-      reward.bagUnlocked = P7.recordRankClear(S, m, rank).bagUnlocked;   // 実績（下位ランクもクリア扱い）
+      const rc = P7.recordRankClear(S, m, rank);   // 実績（下位ランクもクリア扱い）
+      reward.bagUnlocked = rc.bagUnlocked;           // 旧：S 初回クリアの記録（互換のため残す）
+      reward.bagCap = rc.bagCap;                     // バッグの枠が増えたとき { from, to }（プレイヤー全体の最高優勝で決まる）
     }
     if (firstClear) {
       const pool = [...BONUS_STATS], [lo, hi] = WIN_BONUS_RANGE[rank];
@@ -717,7 +721,7 @@
     if (!result) return [];
     const rw = result.reward, out = [{ step: 'final', place: result.place }];
     if (result.won) out.push({ step: 'champion', rank: result.rank });
-    if (rw && rw.firstClear) out.push({ step: 'firstReward', prize: rw.prize, tickets: rw.tickets, bonus: rw.bonus, bagUnlocked: rw.bagUnlocked });
+    if (rw && rw.firstClear) out.push({ step: 'firstReward', prize: rw.prize, tickets: rw.tickets, bonus: rw.bonus, bagUnlocked: rw.bagUnlocked, bagCap: rw.bagCap || null });
     if (rw && rw.rankUp) out.push({ step: 'rankUp', ...rw.rankUp });
     out.push({ step: 'cedricEnd', won: !!result.won });
     if (result.won && result.rank === RANK_S) out.push({ step: 'legendUnlock' });   // 解禁済みなら差し込み口の側で何もしない

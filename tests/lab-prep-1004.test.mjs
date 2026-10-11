@@ -56,11 +56,11 @@ test('LP-04：合体は研究所から（selm → museum("fuse")・牧場の内�
 
 test('LP-05：出発準備：上＝育成中モンスター（正式画像 msv）と Chapter の札、中＝バッグの5スロット（空き＝空枠・タップで保管庫から選ぶ／所持＝タップで保管庫へ）、その下＝Chapter のカード（正式の俯瞰図）、下＝「出発する」（p7Depart）。処理は従来の関数のまま', () => {
   const pp = fnOf('prepScr');
-  for (const t of ['msv(m)', 'MMP7.bagCap(S)', 'onclick="p7ToVault(${i})"', 'onclick="ppVault()"', 'onclick="p7ToBag(${i})"', 'onclick="p7Depart(this)"', '<b>出発する</b>', 'MMP8.canDepart(S,m)', 'pfixFinishNoFinal(this)', 'p8GateNote(nx,c.need)', 'class="dmsg ppmsg"']) assert.ok(pp.includes(t), t);
+  for (const t of ['msv(m)', 'MMP7.bagCap(S)', 'bagSlotsHtml("p7ToVault","ppVault()")', 'onclick="ppVault()"', 'onclick="p7ToBag(${i})"', 'onclick="p7Depart(this)"', '<b>出発する</b>', 'MMP8.canDepart(S,m)', 'pfixFinishNoFinal(this)', 'p8GateNote(nx,c.need)', 'class="dmsg ppmsg"']) assert.ok(pp.includes(t), t);
   assert.match(pp, /\(nx==MMP8\.FINAL&&!MMP8\.isPlayable\(MMP8\.FINAL\)\)\?`[^`]*最終ルートはまだ準備中です/, '最終ルート未登録の案内は従来どおり');
   assert.doesNotMatch(pp, /（空き）|p7Shell\(/, '旧い「1.（空き）」のリストと茶色のカードは廃止');
   const art = new Function(`${line('const PP_ART=')}\nreturn PP_ART;`)(); for (const f of Object.values(art)) assert.ok(existsSync(path.join(ROOT, f)), f);
-  assert.match(HTML, /\.ppslots\{display:grid;grid-template-columns:repeat\(5,1fr\)/); assert.match(HTML, /\.pp\{position:relative;margin:-16px;height:100dvh;/); assert.match(HTML, /main:has\(>#app>\.pp\) h1\{display:none\}#app:has\(>\.pp\)\{overflow:hidden\}/);
+  assert.match(HTML, /\.ppslots\{display:grid;grid-template-columns:repeat\(6,1fr\)/); assert.match(HTML, /\.pp\{position:relative;margin:-16px;height:100dvh;/); assert.match(HTML, /main:has\(>#app>\.pp\) h1\{display:none\}#app:has\(>\.pp\)\{overflow:hidden\}/);
   assert.match(fnOf('ppVault'), /d\.hidden=/);
 });
 

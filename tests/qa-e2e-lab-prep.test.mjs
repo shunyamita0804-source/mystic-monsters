@@ -1,7 +1,7 @@
 // =========================================================
 // QA（実ブラウザ）：第二段階 PHASE C（2026-10-04）：研究所（図鑑・合体・配合表）と出発準備
 //  LP-B1：研究所 → 図鑑（2列・近日公開）→ 詳細（ゲージ）→ 配合表 → 合体。390×844・375×667 で横にはみ出さず、ページは伸びない
-//  LP-B2：出発準備：5スロット・保管庫のシート・Chapter のカード・「出発する」→ フィナの確認（従来の出発）
+//  LP-B2：出発準備：6つの枠（2026-10-11：未優勝は2枠＋🔒）・保管庫のシート・Chapter のカード・「出発する」→ フィナの確認（従来の出発）
 //  Playwright / Chromium が無い環境では省略（skip）する。
 // =========================================================
 import test from 'node:test';
@@ -33,7 +33,7 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     await pg.click('.labnav .labc:nth-child(1)'); await pg.waitForSelector('.lbk .lbgrid');
     const cards = await pg.evaluate(() => [...document.querySelectorAll('.lbgrid .lbc')].map((c) => ({ no: c.querySelector('.lbno').textContent, nm: c.querySelector('.lbnm').textContent, img: c.querySelector('img') ? c.querySelector('img').getAttribute('src') : null, lk: c.classList.contains('lk'), w: c.getBoundingClientRect().width, x: c.getBoundingClientRect().left })));
     assert.deepEqual(cards.map((c) => [c.no, c.nm, c.lk]), [['No.001', 'ソラモ', false], ['No.002', 'ガウル', false], ['No.003', 'ノビトン', true]]);
-    assert.match(cards[0].img, /assets\/monsters\/solamo\.png$/); assert.match(cards[1].img, /assets\/monsters\/gauru\.png$/); assert.equal(cards[2].img, null);
+    assert.match(cards[0].img, /assets\/monsters\/2p5d\/solamo\.webp$/); assert.match(cards[1].img, /assets\/monsters\/2p5d\/gauru\.webp$/); assert.equal(cards[2].img, null);
     assert.ok(Math.abs(cards[0].w - cards[1].w) < 1 && cards[1].x > cards[0].x + cards[0].w - 1, '2列');
     assert.match(await pg.textContent('.labplq'), /発見 2 \/ 3/);
     f = await fit(pg); assert.ok(f.sw <= f.W + 1 && f.sh <= f.H + 1, `図鑑：ページは伸びない ${JSON.stringify(f)}`);
@@ -59,8 +59,8 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     await H.newGame(pg, 'テスト');
     await pg.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; S.inv.vault.push({ id: 'qa_item' }); S.inv.bag = []; save(); prepScr(); });   // 2026-10-06：新人支援の薬草（バッグ）は外して空のバッグで確かめる
     await pg.waitForSelector('.pp .ppslots');
-    const r = await pg.evaluate(() => ({ slots: document.querySelectorAll('.ppsl').length, on: document.querySelectorAll('.ppsl.on').length, name: document.querySelector('.ppname b').textContent, img: document.querySelector('.ppmon img').getAttribute('src'), ch: document.querySelector('.ppch').textContent.replace(/\s+/g, ''), card: document.querySelector('.ppcin').textContent.replace(/\s+/g, ''), art: getComputedStyle(document.querySelector('.ppart')).backgroundImage, go: document.querySelector('.ppgobtn').textContent.replace(/\s+/g, ''), goOn: !document.querySelector('.ppgobtn').disabled, sheet: document.querySelector('#ppvault').hidden }));
-    assert.equal(r.slots, 5); assert.equal(r.on, 0); assert.equal(r.name, 'ソラ'); assert.match(r.img, /assets\/monsters\/solamo\.png$/);
+    const r = await pg.evaluate(() => ({ slots: document.querySelectorAll('.ppsl').length, lock: document.querySelectorAll('.ppsl.lock').length, on: document.querySelectorAll('.ppsl.on').length, name: document.querySelector('.ppname b').textContent, img: document.querySelector('.ppmon img').getAttribute('src'), ch: document.querySelector('.ppch').textContent.replace(/\s+/g, ''), card: document.querySelector('.ppcin').textContent.replace(/\s+/g, ''), art: getComputedStyle(document.querySelector('.ppart')).backgroundImage, go: document.querySelector('.ppgobtn').textContent.replace(/\s+/g, ''), goOn: !document.querySelector('.ppgobtn').disabled, sheet: document.querySelector('#ppvault').hidden }));
+    assert.equal(r.slots, 6, '2026-10-11：6つの枠（未優勝は2枠＋🔒の4枠）'); assert.equal(r.lock, 4); assert.equal(r.on, 0); assert.equal(r.name, 'ソラ'); assert.match(r.img, /assets\/monsters\/2p5d\/solamo\.webp$/);
     assert.match(r.ch, /CHAPTER1はじまりの草原/); assert.match(r.card, /^CHAPTER1はじまりの草原/); assert.match(r.art, /ch1_intro_overview\.webp/); assert.match(r.go, /^出発する/); assert.equal(r.goOn, true); assert.equal(r.sheet, true);
     let f = await fit(pg); assert.ok(f.sw <= f.W + 1 && f.sh <= f.H + 1, `はみ出さない ${JSON.stringify(f)}`);
     await pg.screenshot({ path: path.join(SHOT, `${size[0]}_prep.png`) });

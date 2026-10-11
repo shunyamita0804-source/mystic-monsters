@@ -20,7 +20,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 | index.html | 画面・CSS・ゲーム本体（旧Artifact版から続く部分を含む）。旧来の画像が base64 で多数埋め込まれ、非常に長い行がある。grep の出力やエディタでの扱いに注意 |
 | js/battle-bridge.js、js/integration/adapter.js、js/systems/ | バトルエンジン（Phase 6 保護対象） |
 | legacy/index.original.html | 旧版の原本（保護対象・変更禁止） |
-| js/phase7/progression.js | 育成の共通処理（特訓・アイテム・ランク記録など）。`MMP7` |
+| js/phase7/progression.js | 育成の共通処理（特訓・アイテム・ランク記録など）。`MMP7`。**バッグ（2026-10-11）＝枠は最高優勝で 2／3／4／6・同じアイテム1枠10個・tidyInventory（§3「バッグ」）** |
 | js/phase8/league.js | 大会の総当たりリーグ。`MMP8L` |
 | js/phase8/raising.js | 育成進行・Chapter・大会・セーブv6・育成完了回数・最終ルートの代替処理。`MMP8` |
 | js/phase9/chapters.js、js/phase9/board-art.js | Chapter 1〜4 の正式マップ（ノード・分岐・マス）と描画。`MMP9C` |
@@ -123,6 +123,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 
 - セーブ version 6、localStorage キー `mr4v6`。旧 v5（キー `mr4`）からは読み込み時に自動移行し、バックアップを残す。
 - セーブversion・localStorageキー・checkpoint形式は変更禁止。既存セーブとの互換を必ず保つ。
+- **持ち物の形（2026-10-11）**：アイテム＝`{ id, n }`（n＝個数。**2個以上のときだけ n を持つ**＝1個は旧形式と同じ `{ id }`＝旧セーブは変えずに1個として読める）。バッグは同じアイテム1枠10個まで、保管庫は1種類1行（個数の上限なし）。読み込み（MMP8 の normalizeV6）で MMP7.tidyInventory＝同じアイテムをまとめ・枠を超えた分を保管庫へ（Chapter 進行中は消さず・動かさず、帰還のあと＝ベースキャンプ・出発準備・アイテム管理・アイテム屋の bagSettle で整理）。何度読み込んでも数は変わらない。§3「バッグ（2026-10-11 正式）」
 - v6 に後から加えた任意項目（**2026-10-04 PHASE H：`S.fuseCnt`＝合体回数（聖獣士証）。それ以前の合体は数えられない**）：`S.raiseRec`（育成完了回数）、`S.npcFlags`（フィナの会話の表示済み記録）、個体の `m.raise.startStats`／`m.raise.endStats`（売却額の計算用）、`m.raise.field.introSeen`（その Chapter の導入演出を見たか。配置と一緒に消える）、`m.raise.field.arrivalSeen`（大会会場への到着の会話を見たか。2026-10-02。配置と一緒に消える）。**2026-10-04（第二段階）**：`S.npcFlags.story`（セーブ単位のチュートリアルの見た記録＝config.story の scope 'save'）、`S.npcFlags.first`（施設の初回訪問 { market, ranch, lab, arena, farm }。2026-10-04 追加アセットで train（特訓＝ゲンシン）・shop（アイテム屋）も）、`m.raise.evSeen`（帰還イベント 'retN'・噂 'rumor'。育成のあいだ残る）、`m.raise.pend.fx.kind === 'choice'`（2択の出来事を選ぶ前の途中状態。stage は 'resolve' のまま）。 **2026-10-05（次期総合改修）**：`S.npcFlags.op`（序盤の導線 'guide'＝フィナの声かけ済み・管理局へ案内中／'map'＝登録済み・出身地と世界地図の会話の前／'done'＝完了）、`S.npcFlags.worldMap`（世界地図の会話を見た＝管理局の地図に出身地の印）、`S.npcFlags.moment`（短いイベントの見た記録 { partner, sp0〜sp3, move, tour, tourEnd }）。**2026-10-06**：`S.npcFlags.support`（新人支援 1000G＋薬草を受け取った＝1回だけ）。薬草はバッグ（S.inv.bag の { id:'herb' }。いっぱいなら保管庫）。登録の判定は従来どおり `S.playerNamePending`（新しいゲームだけにある）＝登録済みの古いセーブは序盤の導線を出さない。 **2026-10-04（PHASE D）**：`S.npcFlags.chapter5`（S ランク優勝＝Chapter 5 の解放フラグ。画面は未実装）。
 
 ### テスト
@@ -664,6 +665,17 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - 切り替えは js/phase10/monsters.js の image の1か所（SPECIES[].image・silhouette・RIVAL_MONSTERS[].image）と ch1a／ch2a の rival_regnas。市場・牧場・ステータス・ベースキャンプ・研究所・出発準備・特訓・育成完了・セーブスロット・大会結果の肖像・購入の知らせ・Chapter の盤上・遭遇の演出がまとめて 2.5D になる
 - 変えていない：バトル待機の立ち絵（assets/battle/idle/。arena.js は静止の絵が IMG[sp] のときに重ねる＝IMG が 2.5D でも従来どおり出る）・バトルの技のコマ（旧 2D・Phase 6）・VS の勝負絵・優勝の絵・対戦表の顔アイコン（新しい顔アイコンが届くまで変えない）・歩行のコマ
 - テスト：tests/phase10.test.mjs の M3-2（派生の大きさ・透過・README の sha256・旧ファイルが残る）・QA-C1・RP-01・PB-09、実ブラウザの市場・ライバル・技術の各テスト
+
+### バッグ（2026-10-11 正式。基準 12edeaa への差分）
+
+- **枠＝プレイヤー全体の最高優勝実績**（S.rankRec.cleared。育成中の個体ではない）：未優勝 2／E・D 優勝 3／C・B 優勝 4／A・S 優勝 6（最大6）。D を先に優勝して E をあとから＝3のまま、B を先に＝4、A の優勝で 4 → 6 を一度に。同じ段階・再優勝・別の個体の同じランクの初回優勝では増えない（js/phase7/progression.js の BAG_CAP_BY_WIN・bagCap・recordRankClear の bagCap:{from,to}）。旧 `S.inv.bagCapUnlocked`（S 初回クリアの記録）の意味は変えず、立っていれば 6 として読む（旧：初期5・S 初回で6）
+- **スタック**：同じアイテムは1枠10個まで（STACK_MAX）。11個目は新しい枠。違う ID は別の枠。0個の枠は持たない。保管庫は1種類1行・個数の上限なし（vaultAdd）。バッグ⇄保管庫は moveVaultToBag（省略時は1回に最大10個＝1枠分）／moveBagToVault（枠を丸ごと）。購入は保管庫の行にまとまる・売却は1個ずつ。Chapter のアイテム（薬草）は1個ずつ減る（engine の useFatigueItem）
+- **bagAdd は全部入るときだけ入れる**（一部だけ入れない）。入らないときの正式な処理は未決のまま（setBagFullHandler・policy 'undecided'）＝呼び出し側の従来どおり保管庫へ（新人支援 grantSupport・冒険リアクション）。報酬を消す処理は作っていない
+- **等級 S のアイテムは種類を問わずバッグに合計1個**（S_GRADE_LIMIT・registerItem の grade）。**正式なアイテムの等級データは無い＝どのアイテムにも grade を付けていない**（判断待ち）
+- **旧セーブの移行**：上の「持ち物の形」。Chapter 外のセーブで旧バッグが新しい枠を超えていたら、超えた枠を保管庫へ（数・種類は失わない）。Chapter 進行中のセーブはその場で消さない・保管庫へ動かさない（同じアイテムをまとめるだけ）＝帰還のあとに整理。何度読み込んでも同じ（BAG-05〜07）
+- **画面**：出発準備・アイテム管理は6つの枠（index.html の bagSlotsHtml）＝使える枠／未解放の枠は 🔒 と解放の条件（E・D／C・B／A・S。読み上げは「E・D優勝で解放」）・個数は ×N の札・見出しは「N / 枠数枠」・保管庫は合計の個数。Chapter のアイテムの一覧に ×N。初回優勝の報酬・帯は「バッグが N枠に拡張された！」（枠が増えたときだけ。旧の「6枠」固定の文は使わない）
+- 変えていない：セーブ version 6・キー mr4v6・checkpoint、アイテムの効果・価格、新人支援の中身（P2＝別工程）
+- テスト：tests/bag-1011.test.mjs（BAG-01〜11。BAG-10＝ランダムな操作 12,000回で総数が保たれる）・実ブラウザ tests/qa-e2e-bag-1011.test.mjs（BG-B1〜B3）。tests/phase7.test.mjs の P7-22〜37・LP-05・PB-07・AF-05・qa-e2e-lab-prep（6つの枠・2.5D の立ち絵のパス＝PR #4 以降の古い期待値も直した）を書き直し
 
 ### 本編 Chapter 1＝1枚の世界のボード（2026-10-11。いまの正式。基準 a6731b3 への差分）
 

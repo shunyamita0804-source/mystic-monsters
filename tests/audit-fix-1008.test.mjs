@@ -131,7 +131,7 @@ test('AF-05：M-01 大会の終わりの正式の順＝最終順位 → 優勝�
   const css = HTML.slice(0, HTML.indexOf('</style>'));
   assert.match(css, /\.p9tour\.p9end:not\(\.e-final\) \.p9lose,\.p9tour\.p9end:not\(\.e-champion\) \.p9win,\.p9tour\.p9end:not\(\.e-champion\) \.p9rw,\.p9tour\.p9end:not\(\.e-firstReward\) \.p9rw\.fc\{display:none\}/);
   for (const st of ['final', 'champion', 'firstReward', 'rankUp', 'cedricEnd', 'legendUnlock', 'next']) assert.match(HTML, new RegExp(`registerTourEndHook\\("${st}",[^\\n]*p9EndMark\\("${st}"\\)`), st);
-  assert.match(HTML, /registerTourEndHook\("firstReward",async d=>\{[^\n]*if\(p9EndHere\(m\)\)await p9EndWait\(d\.bagUnlocked\?3600:2700\)\}\);/, '帯を見せてからランクアップへ');
+  assert.match(HTML, /registerTourEndHook\("firstReward",async d=>\{[^\n]*if\(p9EndHere\(m\)\)await p9EndWait\(d\.bagCap\?3600:2700\)\}\);/, '帯を見せてからランクアップへ');
   assert.match(HTML, /CEDRIC_EV\.close\(rs,rs\.reward&&rs\.reward\.rankUp,m&&m\.name\)/, '締めの文はデータから（再読み込みでも同じ）');
   assert.doesNotMatch(HTML.match(/registerTourEndHook\("rankUp"[^\n]*\n[^\n]*\n[^\n]*/)[0], /setTimeout\(r,2600\)/, '固定の 2.6 秒待ちはやめた（前の段階が待つ）');
 });
