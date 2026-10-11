@@ -567,12 +567,17 @@
   /** 登録済みのアイテムの定義（登録順。2026-10-05 PHASE B：アイテム図鑑＝既存のデータを見るだけ） */
   function listItemDefs() { return Object.values(itemDefs); }
   function setShopCatalog(ids) { shopCatalog = Array.isArray(ids) ? [...ids] : []; }
+  /** 入荷の条件（2026-10-12 P2）：fn(S, id) が false の商品は並ぶが買えない（js/items/food.js が登録。登録が無ければ全部買える＝従来どおり） */
+  let shopGate = null;
+  function setShopGate(fn) { shopGate = typeof fn === 'function' ? fn : null; }
+  function shopUnlocked(S, id) { try { return !shopGate || !!shopGate(S, id); } catch (e) { return false; } }
   function getShopCatalog() { return shopCatalog.filter((id) => itemDefs[id]); }
   /** 購入品は保管庫へ入る（同じアイテムの行にまとめる。アイテム屋はバッグを直接操作しない） */
   function shopBuy(S, itemId) {
     if (!canAccessVault(S)) return { ok: false, reason: 'not_at_farm' };
     const d = itemDefs[itemId];
     if (!d || !shopCatalog.includes(itemId)) return { ok: false, reason: 'not_sold' };
+    if (!shopUnlocked(S, itemId)) return { ok: false, reason: 'locked' };
     if (!Number.isInteger(d.price) || d.price < 0) return { ok: false, reason: 'no_price' };
     if ((S.g || 0) < d.price) return { ok: false, reason: 'no_money' };
     if (!S.inv.vault.some((x) => plain(x) && x.id === itemId) && !vaultHasRoom(S)) return { ok: false, reason: 'vault_full' };
@@ -606,7 +611,7 @@
     rollDice, rollDie, trainSquare, canStartTraining, startTraining, advanceTraining, finishTraining,
     addFusionSpeciesResolver, resolveFusionSpecies, fusionInheritCandidates, pickFusionInherit,
     bagCap, bagFree, vaultHasRoom, canAccessVault, bagAdd, setBagFullHandler, moveVaultToBag, moveBagToVault,
-    STACK_MAX, S_GRADE_LIMIT, BAG_CAP_BY_WIN, bestWinRank, bagCapForRank, qty, itemCount, bagRoomFor, bagTake, vaultAdd, tidyInventory,
+    STACK_MAX, S_GRADE_LIMIT, BAG_CAP_BY_WIN, setShopGate, shopUnlocked, bestWinRank, bagCapForRank, qty, itemCount, bagRoomFor, bagTake, vaultAdd, tidyInventory,
     registerItem, getItemDef, setShopCatalog, getShopCatalog, shopBuy, shopSell, listItemDefs,
   });
 })(typeof window !== 'undefined' ? window : globalThis);

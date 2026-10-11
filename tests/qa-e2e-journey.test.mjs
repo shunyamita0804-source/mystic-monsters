@@ -63,7 +63,7 @@ test('JR-3：操作欄の4コマンド（アイテム・休む・技設定・ス
   await toField(pg);
   await pg.evaluate(() => { S.g = 1234; board(); }); await idle(pg);
   const r = await pg.evaluate(() => ({ cmds: [...document.querySelectorAll('.chwing')].map((w) => [w.className.replace(/chwing |chw-\w+/g, '').trim(), w.textContent.replace(/\s+/g, ' ').trim(), w.disabled]), gold: document.querySelector('#chgold').textContent.replace(/\s+/g, ''), stop: !document.querySelector('#brollbtn').disabled }));
-  assert.deepEqual(r.cmds, [['chwing-img chitem', 'アイテム', false], ['chwing-img chrest', '休む疲れ −30', false], ['chwing-img chskill', '技設定', false], ['chwing-img chstatus', 'ステータス', false]]);
+  assert.deepEqual(r.cmds, [['chwing-img chitem', 'アイテム', false], ['chwing-img chrest', '休む空腹 −10', false], ['chwing-img chskill', '技設定', false], ['chwing-img chstatus', 'ステータス', false]]);
   assert.match(r.gold, /^1234$/, '2026-10-03：所持金は硬貨の印＋数値'); assert.equal(r.stop, true);
   await rollAs(pg, 2); await pg.waitForFunction(() => bBusy || MMCHD.isLocked());
   assert.deepEqual(await pg.evaluate(() => [...document.querySelectorAll('.chwing')].map((w) => w.disabled)), [true, true, true, true], '演出・移動中は4コマンドを押せない');

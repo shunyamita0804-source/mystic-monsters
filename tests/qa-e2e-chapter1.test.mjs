@@ -68,10 +68,10 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     assert.deepEqual(r.broken, []); assert.deepEqual(r.filt, [], '正式モンスター画像に色のフィルタをかけない');
     assert.equal(r.objs, r.objsWant, '旧目印（石碑・宝箱・イベントの物）は出さない（2026-10-02：正式マスUIが種別を示す）'); assert.ok(r.tiles === r.tilesWant && r.tiles > 0 && r.ph === 0, `スタート以外のすべてのマス（通常マスを含む）を地面に置く（${r.tiles}/${r.tilesWant}）・仮表示なし（${r.ph}）`); assert.ok(r.normals >= 1 && r.peds === r.tiles, `小型の立体マス（2026-10-06。絵＝円盤 ${r.peds}）・通常マス＝白紙の円盤（${r.normals}）`); assert.deepEqual(r.env, [], '街道の背景に素材は重ねない');
     assert.equal(r.battleObjs, 0, 'バトル地点の石碑は常設しない'); assert.equal(r.fg, 0, '手前を横切る草も置かない（石の街道）'); assert.deepEqual(r.layers, [true, true, true, true, true, true], '遠景・背景・奥・道・手前・効果の層');
-    assert.match(r.text, /Chapter\s*1\s*\/ 4/); assert.match(r.text, /Turn\s*1\s*\/ 45/); assert.match(r.text, /疲れ\s*0/); assert.match(r.text, /アイテム/); assert.match(r.text, /休む/); assert.match(r.text, /サイコロ/);
-    // 下の操作欄：正式画像（START の状態）。中央＝START（押せる領域は画像の球の上）、左右＝アイテム・休む（疲れ −30）・技設定・ステータス。フィールドは 80〜82%、操作欄は 18〜20%
-    assert.ok(/START/.test(r.stop.text) && r.stop.w >= 60 && r.stop.h >= 60, JSON.stringify(r.stop)); assert.ok(r.deckImg && /deck_start\.webp$/.test(r.deckImg), `操作欄の画像 ${r.deckImg}`);
-    assert.deepEqual(r.wings.map((w) => w[0]), ['chwing chwing-img chitem chw-tl', 'chwing chwing-img chrest chw-tr', 'chwing chwing-img chskill chw-bl', 'chwing chwing-img chstatus chw-br'], '4コマンド：アイテム・休む・技設定・ステータス（画像の上の押せる領域）'); assert.match(r.wings[1][1], /休む.*疲れ −30/);
+    assert.match(r.text, /Chapter\s*1\s*\/ 4/); assert.match(r.text, /Turn\s*1\s*\/ 45/); assert.match(r.text, /空腹\s*0/); assert.match(r.text, /アイテム/); assert.match(r.text, /休む/); assert.match(r.text, /サイコロ/);
+    // 下の操作欄：正式画像（START の状態）。中央＝START（押せる領域は画像の球の上）、左右＝アイテム・休む（空腹 −10）・技設定・ステータス。フィールドは 80〜82%、操作欄は 18〜20%
+    assert.ok(/START/.test(r.stop.text) && r.stop.w >= 60 && r.stop.h >= 60, JSON.stringify(r.stop)); assert.ok(r.deckImg && /deck_start_hunger\.webp$/.test(r.deckImg), `操作欄の画像（2026-10-12 P2：「疲れ -30」を空欄にした派生） ${r.deckImg}`);
+    assert.deepEqual(r.wings.map((w) => w[0]), ['chwing chwing-img chitem chw-tl', 'chwing chwing-img chrest chw-tr', 'chwing chwing-img chskill chw-bl', 'chwing chwing-img chstatus chw-br'], '4コマンド：アイテム・休む・技設定・ステータス（画像の上の押せる領域）'); assert.match(r.wings[1][1], /休む.*空腹 −10/);
     const deckRatio = r.deckH / r.H; assert.ok(deckRatio >= 0.15 && deckRatio <= 0.215 &&   /* 2026-10-05：操作欄を少し高く（20.6%＋safe-area。START が下に寄りすぎない） */ Math.abs(r.fieldH + r.deckH - r.H) <= 1 && r.dockTopEqFieldBottom, `操作欄 ${r.deckH}px（${(deckRatio * 100).toFixed(1)}%）・フィールド ${r.fieldH}px`);
     assert.equal(r.dice, 0, 'START を押すまでサイコロは画面に出さない');
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
@@ -96,14 +96,14 @@ test('CH1-B2：サイコロ：START の1タップで正式サイコロ（既存�
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
-test('CH1-B3：休む（1ターン・疲れ −30・移動なし）。疲れ100ならサイコロは押せず、休むが強調される', { skip: SKIP }, async () => {
+test('CH1-B3：休む（1ターン・空腹 −10（2026-10-12 P2）・移動なし）。疲れ100ならサイコロは押せず、休むが強調される', { skip: SKIP }, async () => {
   const p = await L.open(); const pg = p.page;
   await start(p);
   await place(pg, 'p1_2', { fatigue: 40, turnsUsed: 6 }); await idle(pg);
   await pg.click('.chrest'); await idle(pg);
-  assert.deepEqual((({ node, turns, f, hudFat }) => ({ node, turns, f, hudFat }))(await st(pg)), { node: 'p1_2', turns: 7, f: 10, hudFat: '10' });
+  assert.deepEqual((({ node, turns, f, hudFat }) => ({ node, turns, f, hudFat }))(await st(pg)), { node: 'p1_2', turns: 7, f: 30, hudFat: '30' });
   await place(pg, 'p1_2', { fatigue: 100 }); await idle(pg);
-  assert.deepEqual(await pg.evaluate(() => [document.querySelector('#brollbtn').disabled, document.querySelector('.chrest').classList.contains('must'), document.querySelector('#bmsg').textContent]), [true, true, '疲れがたまって動けない…休もう。']);
+  assert.deepEqual(await pg.evaluate(() => [document.querySelector('#brollbtn').disabled, document.querySelector('.chrest').classList.contains('must'), document.querySelector('#bmsg').textContent]), [true, true, 'お腹がすいて動けない…食べさせるか、休もう。']);
   await pg.evaluate(() => chfRoll()); assert.equal((await st(pg)).turns, 7, '疲れ100ではサイコロを振れない');
   assert.deepEqual(p.errors, []);
 });
@@ -327,7 +327,7 @@ test('CH1-B15：1タップ：START を押すまでサイコロは画面に無い
   const p = await L.open(); const pg = p.page;
   await start(p);
   const before = await pg.evaluate(() => ({ dice: document.querySelectorAll('.chdz, .chdf, .chdz-img, img[src*="dice_"]').length, stop: document.querySelectorAll('.chstop.spinning, img[src*="deck_stop"]').length, text: document.querySelector('#brollbtn').textContent.trim(), on: !document.querySelector('#brollbtn').disabled, img: document.querySelector('.chdeck-bg').getAttribute('src') }));
-  assert.deepEqual(before, { dice: 0, stop: 0, text: 'START', on: true, img: './assets/fields/ch1a/ui/deck_start.webp' }, 'START を押すまでサイコロは出さない。STOP の画像・状態は無い');
+  assert.deepEqual(before, { dice: 0, stop: 0, text: 'START', on: true, img: './assets/fields/ch1a/ui/deck_start_hunger.webp' }, 'START を押すまでサイコロは出さない。STOP の画像・状態は無い');
   await pg.evaluate(() => { window.__res = null; window.__faceAt = null; window.__goneAt = null; window.__moveAt = null; window.__t0 = null;
     new MutationObserver(() => { const dz = document.querySelector('.chdz'); if (dz && !window.__t0) window.__t0 = performance.now(); const stop = document.querySelector('.chdz[data-phase="lock"] .chdz-img'), img = document.querySelector('.chdz-img'), rot = document.querySelector('.chdz-rot');   // 2026-10-04 G5：傾きは面をまとめた箱 .chdz-rot
       if (stop && img && rot && dz && dz.dataset.phase === 'lock' && !window.__res) { const m = (getComputedStyle(rot).transform.match(/matrix\(([-\d.e]+), ([-\d.e]+)/) || [0, 1, 0]); window.__faceAt = performance.now(); window.__res = { a: +m[1], b: +m[2], src: stop.getAttribute('src'), roll: img.getAttribute('src'), ring: getComputedStyle(document.querySelector('.chdz-res')).display, phase: MMCHD.phase() }; }
@@ -339,7 +339,7 @@ test('CH1-B15：1タップ：START を押すまでサイコロは画面に無い
   // 4コマンドは操作だけ不可で、見た目（不透明度・色・画像・装飾）は START を押す前と同じ（暗くしない）
   const look = () => pg.evaluate(() => [...document.querySelectorAll('.chwing')].map((w) => { const c = getComputedStyle(w); return { op: c.opacity, bg: c.backgroundColor, filter: c.filter, img: c.backgroundImage, border: c.borderWidth, shadow: c.boxShadow, deck: document.querySelector('.chdeck-bg').getAttribute('src') }; }));
   const during = await look(); assert.deepEqual(during.map((x) => [x.op, x.bg, x.filter]), [['1', 'rgba(0, 0, 0, 0)', 'none'], ['1', 'rgba(0, 0, 0, 0)', 'none'], ['1', 'rgba(0, 0, 0, 0)', 'none'], ['1', 'rgba(0, 0, 0, 0)', 'none']], 'サイコロ処理中も4コマンドは暗くならない（半透明の覆い・opacity・filter なし）');
-  const wingLook0 = during; assert.match(sp.img, /deck_start\.webp$/, '操作欄は START の画像のまま（STOP の画像は使わない）'); assert.deepEqual(sp.wings, [true, true, true, true]); assert.deepEqual(sp.btn, [[true, '2']], '中央のボタンは押せない（移動中）');
+  const wingLook0 = during; assert.match(sp.img, /deck_start_hunger\.webp$/, '操作欄は START の画像のまま（STOP の画像は使わない）'); assert.deepEqual(sp.wings, [true, true, true, true]); assert.deepEqual(sp.btn, [[true, '2']], '中央のボタンは押せない（移動中）');
   assert.ok(sp.imgs.length >= 1 && sp.imgs.length <= 16 && sp.imgs.every((s) => /dice_(blank|rolling|stop_[1-6])\.webp$|assets\/dice\/std\/(0[1-9]|10)\.webp$/.test(s)), `正式サイコロ（既存の10コマ＋停止面）だけ：${sp.imgs}`);
   assert.deepEqual([sp.pend.roll, sp.pend.stage, sp.saved.roll], [2, 'move', 2], '出目は START の時点で確定・保存（自動停止のタイミングで変わらない）');
   const t0 = await st(pg); await pg.evaluate(() => { chfRoll(); chfRoll(); chfRest(); }); assert.deepEqual(await st(pg), t0, '演出中の START・休むの連打は無視');

@@ -145,11 +145,11 @@ test('CH1-05：移動疲れ：出目1 +3・出目2 +5・出目3 +7（出目が�
   }
 });
 
-test('CH1-06：休む：1ターン消費・疲れ −30・移動なし（ライフは回復しない）', () => {
+test('CH1-06：休む：1ターン消費・空腹（内部は疲れ）−10（2026-10-12 P2。旧 −30）・移動なし（ライフは回復しない）', () => {
   const E = onCh1(); const { P8, S, m, CH } = E; m.raise.fatigue = 70; const li = m.li, node = m.raise.node;
   const r = P8.rest(S, m); assert.equal(r.ok, true);
-  assert.deepEqual([m.raise.turnsUsed, CH.fatigue(m), m.raise.node, m.li], [1, 40, node, li]);
-  m.raise.fatigue = 10; P8.rest(S, m); assert.equal(CH.fatigue(m), 0, '0未満にならない');
+  assert.deepEqual([m.raise.turnsUsed, CH.fatigue(m), m.raise.node, m.li], [1, 60, node, li]);
+  m.raise.fatigue = 4; P8.rest(S, m); assert.equal(CH.fatigue(m), 0, '0未満にならない');
   m.raise.pend = { roll: 1, left: 1, stage: 'move' }; assert.equal(P8.rest(S, m).ok, false, 'ターンの途中は休めない');
 });
 

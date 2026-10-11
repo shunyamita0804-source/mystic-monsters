@@ -66,7 +66,7 @@
       { id: 'f_face', expression: 'proud', text: '少しずつだが、顔つきが変わってきた。' },
       { id: 'f_pace', text: '無理はさせない。この子のペースで育てよう。' },
       { id: 'f_watch', text: 'この子のことは、ちゃんと見ておく。' },
-      { id: 'f_tired', when: (c) => c.fatigue >= 60, expression: 'caution', text: 'だいぶ疲れてるな。無理はさせるな。' },
+      { id: 'f_tired', when: (c) => c.fatigue >= 60, expression: 'caution', text: 'だいぶ腹をすかせてるな。何か食わせてやれ。' },
       { id: 'f_tix', when: (c) => c.tickets > 0 && c.state === 'farm', text: '特訓チケットがあるなら、出発前に使っておくのも手だ。' },
       { id: 'f_items', when: (c) => c.items > 0 && c.state !== 'done', text: '持ち物は確かめたか。使えるものは持っていけ。' },
       { id: 'f_gate', when: (c) => c.gateBlocked, expression: 'caution', text: '次へ進むには、大会で結果を出す必要があるな。' },
@@ -75,7 +75,7 @@
     ] },
     // 2026-10-04（追加アセット）：アイテム屋（おばあちゃん）。毎回は話さない（ふつうの一言は無し＝条件のときだけ）。購入成立の一言は buy（画面側が購入のあとに出す）
     shop: { npc: 'shop', expression: 'normal', chance: 0, lines: [
-      { id: 's_tired', when: (c) => c.fatigue >= 60, expression: 'worry', text: '少し疲れているみたいね。無理をする前に、休ませてあげなさい。' },
+      { id: 's_tired', when: (c) => c.fatigue >= 60, expression: 'worry', text: '少しお腹がすいているみたいね。何か食べさせてあげなさい。' },
       { id: 's_bag', when: (c) => c.fatigue < 60 && c.bag <= 1, expression: 'normal', text: '備えがあるだけで、旅はずいぶん楽になるものよ。' },
     ], buy: { id: 's_buy', expression: 'recommend', text: 'はい、これで大丈夫。気をつけて行ってらっしゃい。' } },
   });

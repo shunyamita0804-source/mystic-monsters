@@ -103,7 +103,7 @@ test('RP-B2：2択の出来事：選ぶ前に再読み込み → 同じ選択肢
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
-test('RP-B3：疲れ 100：主ボタンが「休む」→ 1ターン・移動なし・疲れ −30', { skip: SKIP, timeout: 120000 }, async () => {
+test('RP-B3：疲れ 100：主ボタンが「休む」→ 1ターン・移動なし・疲れ −10（2026-10-12 P2：休む −10）', { skip: SKIP, timeout: 120000 }, async () => {
   const p = await open({ size: [375, 667] }); const pg = p.page;
   await registered(pg); await pg.goto(L.url + 'index.html' + RF + '&rfSeed=8'); await pg.waitForSelector('#rfp .rf-go');
   await pg.evaluate(() => MMRF.reset({ seed: 8 }));
@@ -116,11 +116,11 @@ test('RP-B3：疲れ 100：主ボタンが「休む」→ 1ターン・移動な
   const s0 = await pg.evaluate(() => MMRF.state());
   await pg.click('#rfp .rf-go');
   const s1 = await pg.evaluate(() => MMRF.state());
-  assert.equal(s1.play.fat, 70); assert.equal(s1.turn, s0.turn + 1); assert.equal(s1.node, s0.node);
+  assert.equal(s1.play.fat, 90); assert.equal(s1.turn, s0.turn + 1); assert.equal(s1.node, s0.node);
   assert.match(await pg.$eval('#rfp .rf-msg', (e) => e.innerText), /休んだ/);
   await pg.click('#rfp .rf-go'); assert.equal(await pg.$eval('#rfp .rf-go', (b) => b.textContent), 'サイコロを振る');
   // 休むボタン（疲れがあるとき）
-  await pg.click('#rfp .rf-rest'); const s2 = await pg.evaluate(() => MMRF.state()); assert.equal(s2.play.fat, 40); assert.equal(s2.turn, s1.turn + 1);
+  await pg.click('#rfp .rf-rest'); const s2 = await pg.evaluate(() => MMRF.state()); assert.equal(s2.play.fat, 80); assert.equal(s2.turn, s1.turn + 1);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 

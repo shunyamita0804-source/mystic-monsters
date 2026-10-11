@@ -169,7 +169,8 @@
       patterns: { A: { overview: I + 'ch1_intro_overview.webp', camera: { from: { x: 0.5, y: 0.5, zoom: 1 }, to: { x: 0.5, y: 0.93, zoom: 2.3 } } } } },
 
     // ---- 操作欄：START の正式画像（STOP は使わない） ----
-    deck: { start: U + 'deck_start.webp', aspect: 1100 / 353,
+    // 2026-10-12 P2：「休む」の下に焼き込まれた「疲れ -30」だけを空欄にした派生（tools/p2/blank_deck_rest.py。原本 deck_start.webp はそのまま）。空欄に HTML で「空腹 −10」（.chwlbl）
+    deck: { start: U + 'deck_start_hunger.webp', aspect: 1100 / 353,
       hit: { center: { x: 0.385, y: 0.03, w: 0.23, h: 0.94 }, tl: { x: 0.012, y: 0.05, w: 0.37, h: 0.42 }, tr: { x: 0.618, y: 0.05, w: 0.37, h: 0.42 }, bl: { x: 0.012, y: 0.53, w: 0.37, h: 0.42 }, br: { x: 0.618, y: 0.53, w: 0.37, h: 0.42 } } },
 
     // ---- 配置の規則（2026-10-02 の60マス再設計：固定配置）。マスの種類は BACKGROUNDS[].nodes の3番目のとおり（ランダムに並べ替えない）。
@@ -184,10 +185,10 @@
 
     // ---- イベント（値は旧Chapterの暫定イベントと同じ【暫定】。疲れ回復は正式仕様）。目印は tier の祠を石板の脇に小さく置く（街道の上に木・岩は置かない） ----
     eventPool: [
-      { id: 'shade', tier: 'normal', recovery: true, weight: 4, handler: 'fatigue', params: { amount: 10 }, text: '石板の木陰でひと休みした。', look: { h: 104 } },
-      { id: 'break', tier: 'normal', recovery: true, weight: 3, handler: 'fatigue', params: { amount: 20 }, text: '街道のそばで小休憩をとった。', look: { h: 104 } },
-      { id: 'spring', tier: 'rare', recovery: true, weight: 2, handler: 'fatigue', params: { amount: 30 }, text: '澄んだ泉で体を休めた。', look: { h: 118 } },
-      { id: 'holy_spring', tier: 'special', recovery: true, weight: 1, handler: 'fatigue', params: { full: true }, text: '不思議な泉の力で、疲れがすっかり取れた！', look: { h: 132 } },
+      { id: 'shade', tier: 'normal', recovery: true, weight: 4, handler: 'fatigue', params: { amount: 10 }, text: '石板の木陰でひと休みして、持っていた木の実を少しかじった。', look: { h: 104 } },
+      { id: 'break', tier: 'normal', recovery: true, weight: 3, handler: 'fatigue', params: { amount: 20 }, text: '街道のそばで小休憩をとって、軽く腹ごしらえをした。', look: { h: 104 } },
+      { id: 'spring', tier: 'rare', recovery: true, weight: 2, handler: 'fatigue', params: { amount: 30 }, text: '澄んだ泉で水を飲み、ほとりの果実を少し食べた。', look: { h: 118 } },
+      { id: 'holy_spring', tier: 'special', recovery: true, weight: 1, handler: 'fatigue', params: { full: true }, text: '不思議な泉の水を飲むと、空腹がすっかりおさまった！', look: { h: 132 } },
       { id: 'herb', tier: 'normal', weight: 3, handler: 'stat_random', params: { amount: 6 }, text: '珍しい草を見つけた！', look: { h: 104 } },
       { id: 'trip', tier: 'normal', weight: 2, handler: 'stat_random', params: { amount: -4 }, text: '石につまずいて転んでしまった…', look: { h: 104 } },
       { id: 'coin', tier: 'normal', weight: 3, handler: 'gold', params: { amount: 50 }, text: '道端でお金を見つけた！', look: { h: 104 } },
@@ -200,35 +201,35 @@
       //  止まると：背景を少し暗く → 挿絵（横長）→ イベント名 → フィナの会話（共通会話の小さな窓）→（2択なら選ぶ）→ 挿絵が消える → 能力UP・疲れの演出。id・重複しない仕組みは従来どおり ----
       { id: 'tailwind', title: '草原の追い風', image: './assets/events/ch1/01_tailwind.webp', tier: 'normal', weight: 3, handler: 'stat_random', params: { amount: 5, keys: ['ev'] }, text: '草原の追い風に乗って、軽やかに動けた。',
         lines: [{ expression: 'happy', text: 'わっ、いい風！' }, { expression: 'guide', text: 'こういう時は、力を抜いて風に合わせると動きやすいよ。' }] },
-      { id: 'spring_water', title: '澄んだ湧き水', image: './assets/events/ch1/02_spring_water.webp', tier: 'normal', weight: 3, handler: 'fatigue', params: { amount: 15 }, text: '澄んだ湧き水でひと息ついた。',
-        lines: [{ expression: 'smile', text: 'すごく澄んでる。少し休んでいこうか。' }, { expression: 'happy', text: 'うん、これならまた歩けそう。' }] },
+      { id: 'spring_water', title: '澄んだ湧き水', image: './assets/events/ch1/02_spring_water.webp', tier: 'normal', weight: 3, handler: 'fatigue', params: { amount: 15 }, text: '澄んだ湧き水を飲んで、お腹が少し落ち着いた。',
+        lines: [{ expression: 'smile', text: 'すごく澄んでる。少し飲んでいこうか。' }, { expression: 'happy', text: 'うん、お腹も少し落ち着いたみたい。' }] },
       { id: 'stone_tablet', title: '風化した石碑', image: './assets/events/ch1/04_stone_tablet.webp', tier: 'normal', weight: 3, handler: 'stat_random', params: { amount: 5, keys: ['in'] }, text: '風化した石碑をじっくり眺めた。',
         lines: [{ expression: 'normal', text: 'かなり古い石碑だね。文字はほとんど消えてるけど……' }, { expression: 'guide', text: '昔の旅人が道の目印にしてたのかも。' }] },
-      { id: 'break_with_fina', title: 'フィナとの休憩', image: './assets/events/ch1/06_break_with_fina.webp', tier: 'normal', weight: 3, handler: 'fatigue', params: { amount: 15 }, text: 'フィナと一緒に少し休んだ。',
-        lines: [{ expression: 'smile', text: 'ちょっと休憩しよう。急いでも、いい育成にはならないからね。' }, { expression: 'happy', text: '……よし。そろそろ行こっか。' }] },
+      { id: 'break_with_fina', title: 'フィナとの休憩', image: './assets/events/ch1/06_break_with_fina.webp', tier: 'normal', weight: 3, handler: 'fatigue', params: { amount: 15 }, text: 'フィナと一緒に休んで、おやつを少し分けあった。',
+        lines: [{ expression: 'smile', text: 'ちょっと休憩しよう。おやつ、少し分けてあげるね。' }, { expression: 'happy', text: '……よし。お腹も落ち着いたし、そろそろ行こっか。' }] },
       { id: 'sudden_rain', title: '突然の通り雨', image: './assets/events/ch1/07_sudden_rain.webp', tier: 'normal', weight: 2, text: '突然の通り雨に降られた。',
         lines: [{ expression: 'surprised', text: 'うわ、降ってきた！' }, { expression: 'troubled', text: 'すぐ止みそうだけど……どうする？' }],
-        choices: [{ id: 'shelter', label: '雨宿りする', desc: '疲れ−10', handler: 'fatigue', params: { amount: 10 }, text: '木の下で雨宿りをした。' },
-          { id: 'go', label: 'このまま進む', desc: '丈夫さ＋5・疲れ＋5', handler: 'stat_tired', params: { amount: 5, keys: ['de'], fatigue: 5 }, text: '雨の中をそのまま進んだ。' }] },
+        choices: [{ id: 'shelter', label: '雨宿りする', desc: '空腹−10', handler: 'fatigue', params: { amount: 10 }, text: '木の下で雨宿りをして、そのあいだに軽く腹ごしらえをした。' },
+          { id: 'go', label: 'このまま進む', desc: '丈夫さ＋5・空腹＋5', handler: 'stat_tired', params: { amount: 5, keys: ['de'], fatigue: 5 }, text: '雨の中をそのまま進んだ。' }] },
       { id: 'beast_tracks', title: '獣の足跡', image: './assets/events/ch1/08_beast_tracks.webp', tier: 'normal', weight: 3, handler: 'stat_random', params: { amount: 5, keys: ['hi'] }, text: '獣の足跡に気をつけながら進んだ。',
         lines: [{ expression: 'serious', text: '見て、この足跡。まだ新しい。' }, { expression: 'guide', text: '周りをよく見ながら進もう。' }] },
       { id: 'distant_cry', title: '風に乗る鳴き声', image: './assets/events/ch1/09_distant_cry.webp', tier: 'normal', weight: 2, handler: 'stat_random', params: { amount: 5, keys: ['in'] }, text: '風に乗る鳴き声に耳を澄ませた。',
         lines: [{ expression: 'surprised', text: '……今、何か聞こえなかった？' }, { expression: 'normal', text: '近くに珍しいモンスターがいるのかも。' }] },
       { id: 'wild_flowers', title: '野花の群生', image: './assets/events/ch1/10_wild_flowers.webp', tier: 'normal', weight: 3, handler: 'stat_random', params: { amount: 5, keys: ['li'] }, text: '野花の群生のそばで元気をもらった。',
         lines: [{ expression: 'happy', text: 'きれい……。こういう景色を見ると、ちょっと元気出るね。' }, { expression: 'smile', text: 'この子も、少し調子が良さそう。' }] },
-      { id: 'traveler_trace', title: '古い旅人の痕跡', image: './assets/events/ch1/11_traveler_trace.webp', tier: 'normal', weight: 3, handler: 'fatigue', params: { amount: 10 }, text: '古い旅人の休んだ跡で、少し休んだ。',
-        lines: [{ expression: 'normal', text: '誰かがここで休んだ跡だね。' }, { expression: 'smile', text: '火は完全に消えてる。私たちも少しだけ休んでいこうか。' }] },
+      { id: 'traveler_trace', title: '古い旅人の痕跡', image: './assets/events/ch1/11_traveler_trace.webp', tier: 'normal', weight: 3, handler: 'fatigue', params: { amount: 10 }, text: '古い旅人の休んだ跡で、近くの木の実を少し食べた。',
+        lines: [{ expression: 'normal', text: '誰かがここで休んだ跡だね。' }, { expression: 'smile', text: '火は完全に消えてる。近くに木の実もあるし、少し食べていこうか。' }] },
       { id: 'small_animal', title: '小さな生き物に導かれる', image: './assets/events/ch1/12_small_animal.webp', tier: 'normal', weight: 3, handler: 'stat_random', params: { amount: 5, keys: ['ev'] }, text: '小さな生き物について、足元に気をつけて進んだ。',
         lines: [{ expression: 'surprised', text: 'あ、こっちを気にしてる。' }, { expression: 'guide', text: 'ついて来てって言ってるみたい。足元に気をつけて行こう。' }] },
       { id: 'remember_dan', tier: 'normal', weight: 2, handler: 'stat_random', params: { amount: 5, keys: ['de', 'li'] }, text: 'ダンの言葉を思い出した。', lines: [{ expression: 'normal', text: 'ダンが言ってたよね。「無理をするより、整えてから進め」って。' }, { expression: 'smile', text: '落ち着いて歩いたら、この子の足取りもしっかりしてきた。' }] },
       { id: 'wind_cry', tier: 'normal', weight: 2, handler: 'none', text: '風に乗って鳴き声が聞こえた。', lines: [{ expression: 'surprised', text: '風に乗って、鳴き声が聞こえる。…この子が返事してる！' }, { expression: 'smile', text: '仲間を呼んでるのかな。それとも、挨拶？' }] },
       { id: 'old_grounds', title: '古い訓練跡', image: './assets/events/ch1/03_old_grounds.webp', tier: 'normal', weight: 3, text: '古い訓練跡を見つけた。',
         lines: [{ expression: 'guide', text: 'ここ、昔の訓練場みたい。' }, { expression: 'normal', text: '少し使ってみる？ それとも動きを確かめるだけにする？' }],
-        choices: [{ id: 'train', label: '少し鍛える', desc: 'ちから＋5・疲れ＋5', handler: 'stat_tired', params: { amount: 5, keys: ['po'], fatigue: 5 }, text: '古い訓練跡で少し鍛えた。' },
+        choices: [{ id: 'train', label: '少し鍛える', desc: 'ちから＋5・空腹＋5', handler: 'stat_tired', params: { amount: 5, keys: ['po'], fatigue: 5 }, text: '古い訓練跡で少し鍛えた。' },
           { id: 'check', label: '動きを確かめる', desc: '命中＋5', handler: 'stat_random', params: { amount: 5, keys: ['hi'] }, text: '訓練跡で動きを確かめた。' }] },
       // 小さな祠（2026-10-04 追加アセット）：2択をやめて、短い休憩イベント（宗教・信仰の設定は足さない）
-      { id: 'small_shrine', title: '小さな祠', image: './assets/events/ch1/05_small_shrine.webp', tier: 'normal', weight: 2, handler: 'fatigue', params: { amount: 10 }, text: '小さな祠のそばで、少し落ち着いた。',
-        lines: [{ expression: 'normal', text: '小さな祠だね。旅人が立ち寄ってたのかな。' }, { expression: 'smile', text: '少しだけ、ここで落ち着いていこう。' }] },
+      { id: 'small_shrine', title: '小さな祠', image: './assets/events/ch1/05_small_shrine.webp', tier: 'normal', weight: 2, handler: 'fatigue', params: { amount: 10 }, text: '小さな祠のそばの湧き水を飲んで、お腹が少し落ち着いた。',
+        lines: [{ expression: 'normal', text: '小さな祠だね。そばに湧き水があるよ。' }, { expression: 'smile', text: '少しだけ、ここで落ち着いていこう。' }] },
     ],
     treasurePool: { tierWeights: { normal: 70, rare: 25, special: 5 }, contents: { handler: 'gold_table', params: { table: [{ w: 4, gold: 50 }, { w: 1, gold: 150 }] } } },
     battleTypes: {
@@ -248,9 +249,9 @@
       { id: 'tut_turns', trigger: 'start', scope: 'save', priority: 70, presentation: 'talk', lines: [{ expression: 'guide', text: '出発の前に、ひとつだけ。この旅は45ターンだよ。サイコロを1回振るか、「休む」を1回使うと、1ターン進むよ。' }, { expression: 'normal', text: '45ターンのうちに大会会場に着けば、公式大会に挑戦できるんだ。' }, { expression: 'smile', text: '間に合わなくても失敗じゃないよ。育った能力は、そのまま次へ持っていけるからね。' }] },
       { id: 'tut_stat', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { kind: 'chstat' }, lines: [{ expression: 'guide', text: '能力マスだよ。止まると、この子の得意に合わせて能力が伸びるんだ。' }, { expression: 'smile', text: '伸び方は子ごとに違うから、ステータスで確かめてみてね。' }] },
       { id: 'tut_event', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { hasEvent: true }, lines: [{ expression: 'guide', text: 'イベントマスは、止まるたびに違う出来事が起きるよ。' }, { expression: 'happy', text: '何が起きるかは、その時のお楽しみ！' }] },
-      { id: 'tut_rest', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { recovery: true }, lines: [{ expression: 'guide', text: '休憩マスだね。疲れが減ったよ。' }, { expression: 'normal', text: '疲れが100になるとサイコロが振れなくなるから、操作欄の「休む」も使ってね。' }] },
+      { id: 'tut_rest', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { recovery: true }, lines: [{ expression: 'guide', text: '休憩マスだね。空腹が少しおさまったよ。' }, { expression: 'normal', text: '空腹が100になるとサイコロが振れなくなるから、アイテムで食べさせるか、操作欄の「休む」を使ってね。' }] },
       { id: 'tut_treasure', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { kind: 'treasure' }, lines: [{ expression: 'happy', text: '宝箱だ！ 中身はその時によって違うよ。' }, { expression: 'guide', text: '珍しい宝箱ほど、いいものが入ってるみたい。' }] },
-      { id: 'tut_wild', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { fx: 'battle', battleType: 'wild' }, lines: [{ expression: 'surprised', text: '野生のモンスターだ！ ここでバトルするか、やめておくか選べるよ。' }, { expression: 'guide', text: '勝っても賞金は無いけど、いい練習になる。バトルのあとは少し疲れるから気をつけてね。' }] },
+      { id: 'tut_wild', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { fx: 'battle', battleType: 'wild' }, lines: [{ expression: 'surprised', text: '野生のモンスターだ！ ここでバトルするか、やめておくか選べるよ。' }, { expression: 'guide', text: '勝っても賞金は無いけど、いい練習になる。バトルのあとは少しお腹がすくから気をつけてね。' }] },
       { id: 'tut_rival', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { fx: 'battle', battleType: 'rival' }, lines: [{ expression: 'surprised', text: 'あっ、リュウ！ やっぱり先に来てたんだね。' }, { speaker: 'ryu', text: 'おっ、もう追いついてきたのか。ちょうどいい、オレの相棒の力を見せてやるよ！' }, { expression: 'guide', text: '街で会ったときより強くなってるはず。でも、私たちだって負けないよ！' }] },   // 2026-10-07：街で先に会っている（登録のあと・市場の前）＝後追いの説明「同じように旅をしてるリュウ」は使わない
       { id: 'tut_branch', trigger: 'branch', scope: 'save', priority: 50, presentation: 'talk', lines: [{ expression: 'guide', text: '分かれ道だよ。どっちの道を通るかは、自分で決められるんだ。' }, { expression: 'smile', text: '道によって出来事や相手が少し変わるみたい。好きなほうを選んでね。' }] },
       { id: 'tut_goal', trigger: 'land', scope: 'save', priority: 60, presentation: 'talk', when: { goal: true }, lines: [{ expression: 'happy', text: 'ゴールだ！ ここから公式大会に挑戦できるよ。' }, { expression: 'guide', text: '大会はランクE〜S。今のこの子に合うランクを選ぼう。参加しない選択もできるよ。' }] },
@@ -265,7 +266,7 @@
       { id: 'ch1_castle', trigger: 'land', priority: 11, when: { field: [13] }, lines: [{ expression: 'happy', text: 'お城が見えてきた！ あそこが大会会場だよ。' }] },
       { id: 'ch1_rival_before', trigger: 'land', priority: 20, when: { field: [5] }, lines: [{ expression: 'serious', text: 'この先に誰かいる…。もしかして、リュウ？' }] },
       { id: 'ch1_special_event', trigger: 'land', priority: 25, when: { tier: 'special' }, lines: [{ expression: 'surprised', text: 'すごい…！ 今のは、めったに起きないことだよ！' }] },
-      { id: 'ch1_tired', trigger: 'land', priority: 5, when: { fatigueMin: 80 }, lines: [{ expression: 'worried', text: 'だいぶ疲れてきたみたい。無理しないで、休もうね。' }] },
+      { id: 'ch1_tired', trigger: 'land', priority: 5, when: { fatigueMin: 80 }, lines: [{ expression: 'worried', text: 'だいぶお腹がすいてきたみたい。何か食べさせるか、休もうね。' }] },
     ],
     // 同行者（フィナ）のリアクション：本文は未決（空＝何も出さない）。例：gold: ['50G拾ったよ。ラッキーだね。']。key は MMCH.REACTION_KEYS
     companion: { npc: 'fina', reactions: {} },

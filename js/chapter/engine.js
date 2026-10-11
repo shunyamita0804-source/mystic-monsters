@@ -42,7 +42,7 @@
     diceSides: 3,                 // サイコロの面の数（1〜diceSides を等確率）。次期Chapterは config の rules.diceSides: 6
     onTimeUp: 'end',              // ターンを使い切った時：'end'＝大会なしで Chapter 終了（現行）／'tournament'＝最後のターンの停止処理のあと大会へ（次期Chapter）
     dice: fz({ min: 1, max: 3 }),
-    fatigueRules: fz({ max: 100, roll: fz({ 1: 3, 2: 5, 3: 7 }), battle: 5, rest: 30, carry: 50 }),
+    fatigueRules: fz({ max: 100, roll: fz({ 1: 3, 2: 5, 3: 7 }), battle: 5, rest: 10, carry: 50 }),   // 2026-10-12 P2：休む＝空腹 −10（旧 −30）
     fatigueItems: fz({ small: fz({ amount: 10 }), medium: fz({ amount: 30 }), large: fz({ full: true }) }),
   });
 
@@ -513,13 +513,29 @@
   const FATIGUE_ITEMS = {};
   function registerFatigueItem(itemId, eff) { const e = typeof eff === 'string' ? DEFAULT_RULES.fatigueItems[eff] : eff; if (typeof itemId !== 'string' || !isObj(e)) throw new Error('MMCH：アイテムの登録が不正です'); FATIGUE_ITEMS[itemId] = fz({ ...e }); }
   const fatigueItemEffect = (itemId) => FATIGUE_ITEMS[itemId] || null;
-  /** サイコロを振る前に使う（ターンは消費しない）。bag の中の登録済みアイテムだけ */
+  /** そのターンの印（Chapter と使ったターン数）。1ターンに食べられる・使えるアイテムは合計1個（2026-10-12 P2）＝m.raise.ate に印を保存
+   *  （v6 の任意項目。ターンを使う＝サイコロ・休むで印が変わる。再読み込み・再起動は保存した印のまま＝抜け道なし。出発で消す＝MMP8.depart） */
+  const turnKey = (m) => `${m.raise.ch}:${m.raise.turnsUsed | 0}`;
+  /** 今アイテムを使えるか：{ ok, reason }。reason＝'busy'（移動・出来事・バトル・大会の途中）／'ate'（このターンはもう使った）／'full'（空腹 0＝満腹。むだに食べない） */
+  function itemUseState(m) {
+    if (!m || !m.raise || m.raise.pend || m.raise.goal || m.raise.tour || m.raise.battle) return { ok: false, reason: 'busy' };
+    if (m.raise.ate === turnKey(m)) return { ok: false, reason: 'ate' };
+    if (fatigue(m) <= 0) return { ok: false, reason: 'full' };
+    return { ok: true };
+  }
+  /** 使えない理由の文（画面の言葉は「空腹」。field-view・world-board の「アイテム」で共通） */
+  const ITEM_WHY = fz({ ate: 'このターンはもう食べた。（1ターンに1個まで）', full: 'お腹はいっぱい。今は食べなくていい。', busy: '今は使えない。', bad_item: 'そのアイテムは使えない。' });
+  /** 画面の言葉：空腹の減る量 */
+  const itemEffectText = (eff) => (eff && eff.full ? '空腹 すっかり' : `空腹 −${(eff && eff.amount) || 0}`);
+  /** サイコロを振る前に使う（ターンは消費しない）。bag の中の登録済みアイテムだけ（保管庫からは使えない）。1ターンに合計1個・空腹 0 では使わない */
   function useFatigueItem(S, m, bagIndex) {
     const it = S && S.inv && Array.isArray(S.inv.bag) ? S.inv.bag[bagIndex] : null, eff = it && fatigueItemEffect(it.id);
-    if (!eff || !m || !m.raise || m.raise.pend || m.raise.goal || m.raise.tour || m.raise.battle) return { ok: false };
+    if (!eff) return { ok: false, reason: 'bad_item' };
+    const st = itemUseState(m); if (!st.ok) return st;
     // 1個使う（同じアイテムを積んだ枠は個数が減るだけ。0個になったら枠を空ける）。2026-10-11：{ id, n }（n は2個以上のときだけ）・{ id } は1個
     const n = Number.isInteger(it.n) && it.n >= 1 ? it.n : 1;
     if (n > 2) it.n = n - 1; else if (n === 2) delete it.n; else S.inv.bag.splice(bagIndex, 1);
+    m.raise.ate = turnKey(m);
     return { ok: true, itemId: it.id, recovered: recover(m, eff), fatigue: fatigue(m), left: n - 1 };
   }
 
@@ -748,7 +764,7 @@
   root.MMCH = fz({ STATS, SPECIAL, TIERS, BATTLE_TYPES, NODE_TYPES, REACTION_KEYS, DEFAULT_RULES, rng, newSeed, foeSpecies, registerConfig, getConfig, patterns, handles, selectPattern,
     SKELETON, tileCensus, censusErrors, buildGraph, trackOf, alongPersp, smoothCurve, measure, pointAt, routeBetween, depthOf, roadAt, clampToRoad, stepsToMerge, sceneNodes, nextFields, sceneOrder, progressOf, routeLengths,
     validateLayout, generateLayout, initRun, fieldOf, configFor, graphFor, validField, sanitize, typeAt, nodeTypeName, assignOfType, turnInfo,
-    fatigue, addFatigue, rollFatigue, canRoll, recover, carryFatigue, registerFatigueItem, fatigueItemEffect, useFatigueItem,
+    fatigue, addFatigue, rollFatigue, canRoll, recover, carryFatigue, registerFatigueItem, fatigueItemEffect, useFatigueItem, itemUseState, ITEM_WHY, itemEffectText,
     statGain, isWaypoint, storyEvents, markStory, STORY_CONDS: fz(Object.keys(STORY_CONDS)), registerEventHandler, registerPassHandler, onPass, resolve, resolveChoice, pickDistinct, reactionKeyOf, registerReactionResolver, companionReaction, DRIVER, attach, rulesOf });
   attach();
 })(typeof window !== 'undefined' ? window : globalThis);
