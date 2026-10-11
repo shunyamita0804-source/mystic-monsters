@@ -584,35 +584,44 @@ test('P7-21c：合体の子の種族は拡張ポイント経由（本番は未�
 // ---------------------------------------------------------
 // バッグ／保管庫
 // ---------------------------------------------------------
-test('P7-22/23：バッグ初期容量5・1枠1個（スタック不可）・容量を超えない（満杯時の扱いは未確定）', () => {
+test('P7-22/23：バッグ初期容量2（2026-10-11 正式）・同じアイテムは1枠10個まで・違うIDは別枠・容量を超えない（満杯時の扱いは未確定）', () => {
   const P = loadP7();
   const S = P.newSave();
-  assert.equal(P.bagCap(S), 5);
-  for (let i = 0; i < 5; i++) assert.equal(P.bagAdd(S, 'same').ok, true);
-  assert.equal(S.inv.bag.length, 5, '同じアイテムでも1個1枠');
-  assert.ok(S.inv.bag.every((x) => x.id === 'same' && Object.keys(x).length === 1), '個数フィールドを持たない');
+  assert.equal(P.bagCap(S), 2);
+  for (let i = 0; i < 10; i++) assert.equal(P.bagAdd(S, 'same').ok, true);
+  assert.deepEqual(S.inv.bag, [{ id: 'same', n: 10 }], '同じアイテムは1枠に10個まで積む');
+  assert.equal(P.bagAdd(S, 'same').ok, true, '11個目は新しい枠');
+  assert.deepEqual(S.inv.bag, [{ id: 'same', n: 10 }, { id: 'same' }], '1個の枠は { id }（旧形式と同じ）');
   // 満杯時の正式処理は未確定：方針未決定を返すだけで状態を変えない（容量を超えて入らないことだけを確認）
+  for (let i = 0; i < 9; i++) P.bagAdd(S, 'same');
   const before = JSON.stringify(S);
+  assert.deepEqual(P.bagAdd(S, 'other'), { ok: false, reason: 'full', policy: 'undecided' });
   assert.deepEqual(P.bagAdd(S, 'same'), { ok: false, reason: 'full', policy: 'undecided' });
   assert.equal(JSON.stringify(S), before);
-  assert.equal(S.inv.bag.length, 5, '容量を超えない');
+  assert.equal(S.inv.bag.length, 2, '容量を超えない');
+  assert.equal(P.itemCount(S, 'same'), 20);
 });
 
-test('P7-24/25/26：Sランク初回クリアで6枠。再クリアでも7以上にならず、別個体でも維持される', () => {
+test('P7-24/25/26：バッグの枠はプレイヤー全体の最高優勝（未優勝2・E/D 3・C/B 4・A/S 6）。再優勝で増えず、別個体でも維持される', () => {
   const P = loadP7();
   const S = farmSave(P);
-  P.recordRankClear(S, S.m, 4);
-  assert.equal(P.bagCap(S), 5, 'Aクリアでは増えない');
+  assert.equal(P.bagCap(S), 2);
+  assert.deepEqual(P.recordRankClear(S, S.m, 0).bagCap, { from: 2, to: 3 }, 'E 優勝で3枠');
+  assert.equal(P.recordRankClear(S, S.m, 1).bagCap, null, 'D は同じ段階＝増えない');
+  assert.deepEqual(P.recordRankClear(S, S.m, 3).bagCap, { from: 3, to: 4 }, 'B 優勝で4枠');
+  const r = P.recordRankClear(S, S.m, 4);
+  assert.deepEqual(r.bagCap, { from: 4, to: 6 }, 'A 優勝で4枠から6枠へ一度に');
+  assert.equal(r.bagUnlocked, false, '旧 bagUnlocked は S 初回クリアの意味のまま');
   assert.equal(P.recordRankClear(S, S.m, 5).bagUnlocked, true);
-  assert.equal(P.bagCap(S), 6);
   assert.equal(P.recordRankClear(S, S.m, 5).bagUnlocked, false, '2回目は解放扱いにならない');
-  for (let i = 0; i < 5; i++) P.recordRankClear(S, S.m, 5);
+  for (let i = 0; i < 5; i++) assert.equal(P.recordRankClear(S, S.m, 5).bagCap, null);
   assert.equal(P.bagCap(S), 6, '何度クリアしても6のまま');
   S.box.push(S.m); S.m = monster(P, { sp: 1 }); // 別個体を育成
   assert.equal(P.bagCap(S), 6);
   const reloaded = P.migrateSave(JSON.parse(JSON.stringify(S)));
   assert.equal(P.bagCap(reloaded), 6, 'セーブ／ロード後も6');
   assert.equal(P.BAG_UNLOCKED_CAP, 6);
+  assert.equal(P.BAG_BASE_CAP, 2);
 });
 
 test('P7-27：保管庫（ファームでのみ入れ替え・容量は未設定で将来設定可能）', () => {
@@ -624,7 +633,10 @@ test('P7-27：保管庫（ファームでのみ入れ替え・容量は未設定
   assert.deepEqual(S.inv.bag, [{ id: 'a' }]);
   assert.equal(P.moveBagToVault(S, 0).ok, true);
   assert.deepEqual(S.inv.vault.map((x) => x.id), ['b', 'a']);
-  S.inv.vaultCap = 2; // 将来容量が決まった場合
+  S.inv.vaultCap = 2; // 将来容量が決まった場合（同じアイテムの行にはまとまる＝行は増えない）
+  S.inv.bag.push({ id: 'a' });
+  assert.equal(P.moveBagToVault(S, 0).ok, true);
+  assert.deepEqual(S.inv.vault, [{ id: 'b' }, { id: 'a', n: 2 }]);
   S.inv.bag.push({ id: 'c' });
   assert.deepEqual(P.moveBagToVault(S, 0), { ok: false, reason: 'vault_full' });
 });
@@ -651,13 +663,14 @@ test('P7-29：出発準備（ファーム滞在中）でバッグを編集でき
   for (let i = 0; i < 7; i++) S.inv.vault.push({ id: 'i' + i });
   let moved = 0;
   while (P.moveVaultToBag(S, 0).ok) moved++;
-  assert.equal(moved, 5);
+  assert.equal(moved, 2, '未優勝は2枠');
   assert.equal(P.moveVaultToBag(S, 0).reason, 'full');
-  assert.equal(S.inv.bag.length, 5);
-  assert.equal(S.inv.vault.length, 2);
-  S.inv.bagCapUnlocked = true;
-  assert.equal(P.moveVaultToBag(S, 0).ok, true);
+  assert.equal(S.inv.bag.length, 2);
+  assert.equal(S.inv.vault.length, 5);
+  S.inv.bagCapUnlocked = true;   // 旧 S 初回クリアの記録＝6枠
+  while (P.moveVaultToBag(S, 0).ok) moved++;
   assert.equal(S.inv.bag.length, 6);
+  assert.equal(S.inv.vault.length, 1);
 });
 
 test('P7-30：アイテム屋の基盤（購入品は保管庫へ・価格未設定は売買不可・本番は商品なし）', () => {
@@ -793,13 +806,13 @@ test('P7-36：修行回数は個体単位（別個体・合体で生まれた個
 test('P7-37：バッグ満杯時の処理は固定されていない（将来ハンドラを差し込める）', () => {
   const P = loadP7();
   const S = P.newSave();
-  for (let i = 0; i < 5; i++) P.bagAdd(S, 'i' + i);
+  for (let i = 0; i < P.bagCap(S); i++) P.bagAdd(S, 'i' + i);
   assert.equal(P.bagAdd(S, 'x').policy, 'undecided', '本番は方針未決定');
   // 将来、正式な処理（例：保管庫へ送る）を差し込めることの確認（テスト専用のハンドラ）
   P.setBagFullHandler((S2, item) => { S2.inv.vault.push(item); return { ok: true, sentTo: 'vault' }; });
   assert.deepEqual(P.bagAdd(S, 'x'), { ok: true, sentTo: 'vault' });
   assert.deepEqual(S.inv.vault, [{ id: 'x' }]);
-  assert.equal(S.inv.bag.length, 5);
+  assert.equal(S.inv.bag.length, 2);
   P.setBagFullHandler(null);
   assert.equal(P.bagAdd(S, 'y').policy, 'undecided');
   assert.doesNotMatch(HTML, /MMP7\.setBagFullHandler\(/, '本番では満杯時処理を接続していない');

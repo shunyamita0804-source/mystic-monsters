@@ -181,11 +181,12 @@
     if (fx.stat) { const b = m[fx.stat] || 0; m[fx.stat] = Math.min(999, b + fx.amount); const a = m[fx.stat] - b; return a ? { kind: 'stat', key: fx.stat, amount: a, text: c.reply || '' } : flavor(); }
     if (fx.item) {
       if (!f || f.rxItem) return flavor();
-      const P = root.MMP7; let ok = false;
+      const P = root.MMP7; let ok = false, to = 'bag';
       try { ok = !!(P && P.bagAdd && P.bagAdd(S, fx.item).ok); } catch (e) {}
-      if (!ok && S && S.inv && Array.isArray(S.inv.vault)) { S.inv.vault.push({ id: fx.item }); ok = true; }
+      if (!ok && S && S.inv && Array.isArray(S.inv.vault)) { to = 'vault'; try { ok = !!(P && P.vaultAdd && P.vaultAdd(S, fx.item, 1).ok); } catch (e) {} if (!ok) { S.inv.vault.push({ id: fx.item }); ok = true; } }
       if (!ok) return flavor();
-      f.rxItem = 1; return { kind: 'item', item: fx.item, text: c.reply || '' };
+      // to＝送り先（2026-10-11：バッグに入らないときは保管庫へ＝画面に「保管庫へ」と出す）
+      f.rxItem = 1; return { kind: 'item', item: fx.item, to, text: c.reply || '' };
     }
     return flavor();
   }

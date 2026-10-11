@@ -517,8 +517,10 @@
   function useFatigueItem(S, m, bagIndex) {
     const it = S && S.inv && Array.isArray(S.inv.bag) ? S.inv.bag[bagIndex] : null, eff = it && fatigueItemEffect(it.id);
     if (!eff || !m || !m.raise || m.raise.pend || m.raise.goal || m.raise.tour || m.raise.battle) return { ok: false };
-    S.inv.bag.splice(bagIndex, 1);
-    return { ok: true, itemId: it.id, recovered: recover(m, eff), fatigue: fatigue(m) };
+    // 1個使う（同じアイテムを積んだ枠は個数が減るだけ。0個になったら枠を空ける）。2026-10-11：{ id, n }（n は2個以上のときだけ）・{ id } は1個
+    const n = Number.isInteger(it.n) && it.n >= 1 ? it.n : 1;
+    if (n > 2) it.n = n - 1; else if (n === 2) delete it.n; else S.inv.bag.splice(bagIndex, 1);
+    return { ok: true, itemId: it.id, recovered: recover(m, eff), fatigue: fatigue(m), left: n - 1 };
   }
 
   // ---------------------------------------------------------

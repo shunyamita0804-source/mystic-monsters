@@ -1336,7 +1336,7 @@
       else if (res.kind === 'fatigue' && res.fatigue < 0) monReact('rest');
       else if (res.kind === 'item') monReact('treasure');
       else R.play(w, ev.sp === 4 ? 'lookAway' : ev.sp === 3 ? 'stoneReaction' : 'happy');
-      const eff = res.kind === 'stat' ? `${labOf(res.key)} +${res.amount}` : res.kind === 'fatigue' ? `疲れ ${res.fatigue < 0 ? '−' : '+'}${Math.abs(res.fatigue)}` : res.kind === 'item' ? `${nm(res.item)} を見つけた！` : '';
+      const eff = res.kind === 'stat' ? `${labOf(res.key)} +${res.amount}` : res.kind === 'fatigue' ? `疲れ ${res.fatigue < 0 ? '−' : '+'}${Math.abs(res.fatigue)}` : res.kind === 'item' ? `${nm(res.item)} を見つけた！${res.to === 'vault' ? '（バッグがいっぱいなので保管庫へ）' : ''}` : '';
       const head = esc(res.text || ev.title);
       setMsg(eff ? `${head}　${esc(eff)}` : head);
       await popup(eff ? `<small>${head}</small><b>${esc(eff)}</b>` : `<small>${esc(ev.title)}</small><b>${head}</b>`, 'ev ev-normal rx', holdOf(2, 1000), null, async () => { if (f1 !== f0) await fatigueHud(f0, f1); });
@@ -1354,7 +1354,7 @@
     const bag = (gS().inv && gS().inv.bag) || [], list = bag.map((it, i) => ({ it, i, eff: MMCH.fatigueItemEffect(it.id) })).filter((x) => x.eff);
     const ui = $('#chf-ui'); if (!ui) return; chfItemsClose();
     const nm = (id) => { const d = root.MMP7 && root.MMP7.getItemDef(id); return d ? d.name : id; };   // 2026-10-06：p7ItemName は index.html の const（window には無い）＝アイテムの名前は MMP7 の登録から
-    ui.insertAdjacentHTML('beforeend', `<div class="chsheet chitems" id="chitems"><h3>アイテム</h3>${list.length ? list.map((x) => `<button class="p9btn2" onclick="chfItemUse(${x.i})">${root.MM_ITEM_ICON && root.MM_ITEM_ICON[x.it.id] ? `<img class="itic" src="${esc(root.MM_ITEM_ICON[x.it.id])}" alt="" decoding="async">` : ''}${esc(nm(x.it.id))}<small>${x.eff.full ? '疲れ 全回復' : `疲れ −${x.eff.amount}`}</small></button>`).join('') : '<p class="p9s">疲れを回復できるアイテムを持っていません。</p>'}<button class="p9btn2" onclick="chfItemsClose()">閉じる</button></div>`);
+    ui.insertAdjacentHTML('beforeend', `<div class="chsheet chitems" id="chitems"><h3>アイテム</h3>${list.length ? list.map((x) => `<button class="p9btn2" onclick="chfItemUse(${x.i})">${root.MM_ITEM_ICON && root.MM_ITEM_ICON[x.it.id] ? `<img class="itic" src="${esc(root.MM_ITEM_ICON[x.it.id])}" alt="" decoding="async">` : ''}${esc(nm(x.it.id))}${(x.it.n | 0) > 1 ? ` <b class="itn">×${x.it.n | 0}</b>` : ''}<small>${x.eff.full ? '疲れ 全回復' : `疲れ −${x.eff.amount}`}</small></button>`).join('') : '<p class="p9s">疲れを回復できるアイテムを持っていません。</p>'}<button class="p9btn2" onclick="chfItemsClose()">閉じる</button></div>`);
   }
   function chfItemsClose() { const d = $('#chitems'); if (d) d.remove(); }
   function chfItemUse(i) { const m = gS() && gS().m; if (!chfActive(m) || busyGet()) return; const r = MMCH.useFatigueItem(gS(), m, i); if (!r.ok) return chfItemsClose(); doSave(); chfBoard(`疲れ −${r.recovered}`); }
