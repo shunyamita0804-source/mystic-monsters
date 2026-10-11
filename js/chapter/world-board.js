@@ -9,7 +9,7 @@
 //  バトル：野生・レア・ライバルは index.html の bBattleGo（本物の fight()）。大会：ゴール → 会場のロビー → フィナの会話（1回）→ 既存の大会受付（p9ReceptionHtml）。
 //  index.html の board() から：MMWB.active(m) なら MMWB.board(msg)。大会・ほかの Chapter では MMWB.release()（canvas を手放す）。
 //  2026-10-11（次の作業）：フィナの節目の一言・チュートリアル（MMWD.storyEvents）・冒険リアクション（js/chapter/reactions.js の MMREACT＝通常の地点に止まったとき）・
-//    歩行アニメ（ch1a.js の monsterSprites。後ろ姿の種族は奥へ進むときだけ・横向きは向きを左右に）・能力マスの特訓の動き（field-view の TRAIN_ACT と道具の絵）。
+//    歩行アニメ（ch1a.js の monsterSprites。2026-10-11 から向きの切り替え＝back・front・side のセット・pickDir）・能力マスの特訓の動き（field-view の TRAIN_ACT と道具の絵）。
 //    自動テストでは一言・リアクションを出さない（MM_QA_NO_STORY）。
 // =========================================================
 (function (root) {
@@ -152,9 +152,9 @@
 @keyframes wbpopout{to{opacity:0;transform:translate(-50%,-52%) scale(.97)}}
 .wbv .rfw-mon .mon{display:block;position:relative}
 .wbv .rfw-mon .mon>img{display:block;width:100%;height:auto;filter:drop-shadow(0 3px 2px rgba(0,0,0,.45))}
-.wbv .rfw-mon .mon>img.wk{position:absolute;left:50%;bottom:0;width:calc(100% * var(--wkh,1));translate:-50% 0;opacity:0}
-.wbv .rfw-mon.wk-on .mon>img.st{opacity:0}
-.wbv .rfw-mon.wk-on .mon>img.wk.on{opacity:1}
+:is(#rfp,.wbv) .rfw-mon .mon>img.wk{position:absolute;left:50%;bottom:0;width:auto;height:calc(100% * var(--wkh,1));max-width:none;translate:-50% calc(var(--wkf,0) * 100%);opacity:0}
+:is(#rfp,.wbv) .rfw-mon:is(.wk-on,.wk-idle) .mon>img.st{opacity:0}
+:is(#rfp,.wbv) .rfw-mon:is(.wk-on,.wk-idle) .mon>img.wk.on{opacity:1}
 .wbv .rfw-mon.wk-flip .mon>img.wk{scale:-1 1}
 .wbv .rfw-mon.bob .mon{animation:wbbob .32s ease-in-out infinite}
 .wbw .chf-tact,.wbw .chf-tact-tx{z-index:9}
@@ -201,48 +201,89 @@
   }
 
   // ---- 歩行アニメ（ch1a.js の monsterSprites＝その場歩行の絵。全コマを重ねて置き、見せるコマだけ切り替える＝src を差し替えない）。
-  //  後ろ姿の種族（ソラモ・ガウル・ジオル）は奥（画面の上）へ進むときだけ歩行の絵・手前へ戻るときは正面の絵で小さく弾む。横向き（ノビトン）は進む向きで左右を反転 ----
-  const SIDE_VIEW = ['nobiton'];
-  const SPR = { set: null, side: false, raf: 0, phase: 0, last: 0, frame: -1, on: false };
+  //  2026-10-11 向きの切り替え：種族ごとに back（奥へ）・front（手前へ）・side（横へ）の3つのセット（monsterSprites[種族].dirs）。
+  //  1歩の向きは画面の上の向き（盤の傾き 40° で縦は cos40° に縮む）から決める＝横の動き（縦が横の 0.35 倍未満・続けて横なら 0.45 倍）は side、
+  //  上へは back・下へは front。セットの絵が右向き（face 'right'）・左向き（'left'）なら進む向きで左右反転（3/4 の絵は1組で左右を兼ねる）。
+  //  無いセットは代わり（back・front が無ければ side、side が無ければ直前の縦のセット、どれも無ければ静止の絵で小さく弾む＝.bob）。
+  //  止まったら front の絵があればその idle のコマ、無ければ静止の立ち絵（2.5D の正式画像）。----
+  const TILT_COS = Math.cos(40 * Math.PI / 180), DIRS = ['back', 'front', 'side'];
+  const SPR = { sets: {}, cur: null, flip: false, lat: false, raf: 0, phase: 0, last: 0, frame: '', on: false };
   const monEl = () => (V.el ? V.el.querySelector('.rfw-mon') : null);
+  /** 種族の歩行セット：dirs の { use:'walk', …上書き } を解決する。dirs が無い古い config は walk を back として使う */
+  function dirSets(spr) {
+    const out = {}; if (!spr) return out;
+    const ok = (w) => w && Array.isArray(w.frames) && w.frames.length;
+    const dirs = spr.dirs || (ok(spr.walk) ? { back: { use: 'walk' } } : {});
+    for (const k of DIRS) {
+      const e = dirs[k]; if (!e) continue;
+      const base = typeof e.use === 'string' ? spr[e.use] : null, w = base ? Object.assign({}, base, e) : e;
+      if (ok(w)) out[k] = { frames: w.frames, fps: w.fps || 12, idle: w.idle || 0, h: w.h || 0.9, foot: w.foot || 0, face: w.face || 'none' };
+    }
+    return out;
+  }
+  /** 1歩の向き → 使うセットと左右反転（純粋な関数。dx・dy は世界の座標の差。prev は直前の結果） */
+  function pickDir(dx, dy, sets, prev) {
+    prev = prev || {}; sets = sets || {};
+    const sy = dy * TILT_COS, ax = Math.abs(dx), ay = Math.abs(sy);
+    if (!ax && !ay) return { set: prev.set || null, flip: !!prev.flip, lat: !!prev.lat };
+    const lat = ay < ax * (prev.lat ? 0.45 : 0.35);
+    let set;
+    if (lat && sets.side) set = 'side';
+    else if (lat && prev.set && prev.set !== 'side' && sets[prev.set]) set = prev.set;   // 横の1歩は直前の縦のセットのまま（ちらつかない）
+    else if (sy < 0) set = sets.back ? 'back' : sets.side ? 'side' : null;
+    else set = sets.front ? 'front' : sets.side ? 'side' : null;
+    const face = set ? sets[set].face : 'none';
+    let flip = false;
+    if (face === 'right' || face === 'left') flip = (ax < 0.15 * Math.hypot(dx, sy) && prev.set === set) ? !!prev.flip : (face === 'right' ? dx < 0 : dx > 0);
+    return { set, flip, lat };
+  }
   function sprSetup(m) {
-    sprStop(); SPR.set = null;
+    sprStop(); SPR.sets = {}; SPR.cur = null; SPR.flip = false; SPR.lat = false; SPR.frame = '';
     const el = monEl(); if (!el) return;
     const st = el.querySelector('img'); if (!st) return;
     st.classList.add('st');
     const box = document.createElement('span'); box.className = 'mon'; el.insertBefore(box, st); box.appendChild(st);
-    const P = root.MMP10M, key = P && P.keyOf ? P.keyOf(m.sp) : null, set = key && cfg().monsterSprites ? cfg().monsterSprites[key] : null, w = set && set.walk;
-    if (!w || !Array.isArray(w.frames) || !w.frames.length) return;
-    SPR.set = w; SPR.side = SIDE_VIEW.includes(key);
-    el.style.setProperty('--wkh', String(w.h || 0.9));
-    box.insertAdjacentHTML('beforeend', w.frames.map((src, i) => `<img class="wk${i === (w.idle || 0) ? ' on' : ''}" data-i="${i}" src="${esc(src)}" alt="" draggable="false" decoding="async">`).join(''));
+    const P = root.MMP10M, key = P && P.keyOf ? P.keyOf(m.sp) : null, spr = key && cfg().monsterSprites ? cfg().monsterSprites[key] : null;
+    SPR.sets = dirSets(spr);
+    box.insertAdjacentHTML('beforeend', Object.entries(SPR.sets).map(([k, w]) => w.frames.map((src, i) =>
+      `<img class="wk" data-s="${k}" data-i="${i}" style="--wkh:${w.h};--wkf:${w.foot}" src="${esc(src)}" alt="" draggable="false" decoding="async">`).join('')).join(''));
+    sprIdle();
   }
-  function sprShow(i) {
-    const el = monEl(); if (!el || i === SPR.frame) return;
-    const next = el.querySelector(`img.wk[data-i="${i}"]`); if (!next || !next.complete) return;   // 読み込み前のコマには切り替えない
+  function sprShow(k, i) {
+    const el = monEl(), id = k + ':' + i; if (!el || id === SPR.frame) return;
+    const next = el.querySelector(`img.wk[data-s="${k}"][data-i="${i}"]`); if (!next || !next.complete) return;   // 読み込み前のコマには切り替えない
     const cur = el.querySelector('img.wk.on'); if (cur) cur.classList.remove('on');
-    next.classList.add('on'); SPR.frame = i;
+    next.classList.add('on'); SPR.frame = id;
   }
   function sprTick(now) {
-    if (!SPR.on || !SPR.set) { SPR.raf = 0; return; }
+    const w = SPR.on && SPR.sets[SPR.cur]; if (!w) { SPR.raf = 0; return; }
     const dt = Math.min(100, now - (SPR.last || now)); SPR.last = now;
-    SPR.phase += (dt / 1000) * (SPR.set.fps || 12); sprShow(Math.floor(SPR.phase) % SPR.set.frames.length);
+    SPR.phase += (dt / 1000) * w.fps; sprShow(SPR.cur, Math.floor(SPR.phase) % w.frames.length);
     SPR.raf = requestAnimationFrame(sprTick);
+  }
+  /** 止まっている姿：front の idle のコマ（あれば）・無ければ静止の立ち絵 */
+  function sprIdle() {
+    const el = monEl(); if (!el) return;
+    const f = SPR.sets.front; el.classList.toggle('wk-idle', !!f);
+    if (f) sprShow('front', f.idle);
   }
   /** 1歩ごと：from → to の向きで見た目を決める（位置は MMRF_WORLD が動かす） */
   function sprWalk(from, to) {
     const el = monEl(), d = D(), a = d.nodes[from], b = d.nodes[to]; if (!el || !a || !b || calm()) return;
-    const dx = b[0] - a[0], dy = b[1] - a[1], useWalk = !!SPR.set && (SPR.side || dy < -Math.abs(dx) * 0.25);
-    el.classList.toggle('wk-on', useWalk); el.classList.toggle('bob', !useWalk);
-    el.classList.toggle('wk-flip', useWalk && SPR.side && dx < 0);
-    if (useWalk && !SPR.on) { SPR.on = true; SPR.last = 0; if (!SPR.raf) SPR.raf = requestAnimationFrame(sprTick); }
-    else if (!useWalk) SPR.on = false;
+    const r = pickDir(b[0] - a[0], b[1] - a[1], SPR.sets, { set: SPR.cur, flip: SPR.flip, lat: SPR.lat }), w = r.set ? SPR.sets[r.set] : null;
+    if (r.set !== SPR.cur) SPR.phase = 0;
+    SPR.cur = r.set; SPR.flip = r.flip; SPR.lat = r.lat;
+    el.classList.remove('wk-idle'); el.classList.toggle('wk-on', !!w); el.classList.toggle('bob', !w); el.classList.toggle('wk-flip', !!w && r.flip);
+    el.dataset.dir = r.set || '';
+    if (w) { sprShow(r.set, Math.floor(SPR.phase) % w.frames.length); if (!SPR.on) { SPR.on = true; SPR.last = 0; if (!SPR.raf) SPR.raf = requestAnimationFrame(sprTick); } }
+    else SPR.on = false;
   }
   function sprStop() {
-    SPR.on = false; if (SPR.raf && root.cancelAnimationFrame) cancelAnimationFrame(SPR.raf); SPR.raf = 0; SPR.phase = 0; SPR.last = 0;
-    const el = monEl(); if (el) el.classList.remove('wk-on', 'bob', 'wk-flip');
-    if (SPR.set) sprShow(SPR.set.idle || 0);
+    SPR.on = false; if (SPR.raf && root.cancelAnimationFrame) cancelAnimationFrame(SPR.raf); SPR.raf = 0; SPR.phase = 0; SPR.last = 0; SPR.cur = null; SPR.flip = false; SPR.lat = false;
+    const el = monEl(); if (el) { el.classList.remove('wk-on', 'bob', 'wk-flip'); el.dataset.dir = ''; }
+    sprIdle();
   }
+
 
   // ---- フィナの節目の一言・チュートリアル（MMWD.storyEvents）。見たら記録してから出す（途中で閉じても二度出ない） ----
   async function storyAt(m, trigger, ctx = {}) {
@@ -488,5 +529,5 @@
   }
 
   const active = (m) => !!(WD() && WD().active(m));
-  root.MMWB = Object.freeze({ STEP_MS, active, board, release, roll, pick, rest, open, items, itemsClose, useItem, state: () => ({ key: V.key, intro: V.intro, world: V.world ? V.world.state() : null }), world: () => V.world });
+  root.MMWB = Object.freeze({ STEP_MS, pickDir, dirSets, active, board, release, roll, pick, rest, open, items, itemsClose, useItem, state: () => ({ key: V.key, intro: V.intro, world: V.world ? V.world.state() : null }), world: () => V.world });
 })(typeof window !== 'undefined' ? window : globalThis);

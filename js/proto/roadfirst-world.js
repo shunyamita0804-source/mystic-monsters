@@ -186,6 +186,8 @@
       cam: { tx: WORLD.w / 2, ty: WORLD.h / 2, s: 1, tilt: 0, P: o.persp, ax: 0, ay: 0 }, goal: null, mon: null, monGoal: null,
       raf: 0, last: 0, intro: null, view: null, frames: [], dead: false,
     };
+    // 2026-10-11：モンスターの足を地点に合わせる＝静止の立ち絵の実際の縦横比で上へずらす（旧：一律 0.92＝縦長・横長の絵で浮く・沈む）。読み込み前は 0.92
+    { const mi = mon.firstChild, fit = () => { if (mi.naturalWidth) { S.monAh = (mi.naturalHeight / mi.naturalWidth) * (o.monFoot || 0.97); S.dirty = true; } }; if (mi.complete) fit(); else mi.addEventListener('load', fit, { once: true }); }
     function viewRect() { const v = o.view ? o.view() : null; const r = host.getBoundingClientRect(); return v || { W: r.width, H: r.height, top: 0, bottom: r.height, right: r.width }; }
     /** 俯瞰のカメラ（傾けない・世界全体が画面に入る） */
     function overviewCam(v) {
@@ -231,7 +233,7 @@
       }
       if (S.mon) {
         const q = project(c, S.mon[0], S.mon[1]), w = Math.max(c.s < 1 ? 14 : 40, Math.min(100, 24 * c.s * q.k));
-        mon.style.transform = `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * 0.92).toFixed(1)}px)`; mon.style.width = w.toFixed(1) + 'px'; mon.style.zIndex = String(Math.round(q.y) + 2);
+        mon.style.transform = `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * (S.monAh || 0.92)).toFixed(1)}px)`; mon.style.width = w.toFixed(1) + 'px'; mon.style.zIndex = String(Math.round(q.y) + 2);
       }
     }
     const lerp = (a, b, t) => a + (b - a) * t;
