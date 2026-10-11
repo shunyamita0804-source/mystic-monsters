@@ -11,6 +11,7 @@
 //        条件（止まった地点の結果・通った区間・分かれ道の寄り道・運命のサイコロ）・優先度・pass の区間 ID は原本に実在する・旧ボードの「45ターン」は出さない
 //  WC-08 歩行の向きの切り替え（MMWB.pickDir・dirSets）：上＝back・下＝front・横＝side（右向きの絵は左へ進むと反転）・無いセットは代わり（直前の縦のセット→静止の絵）・
 //        今の素材（ソラモ・ガウル・ジオル＝back、ノビトン＝side）・旧い walk だけの config は back
+//  WC-09 レア 10%（2026-10-11）：本物の出発 1200回で最大1マス・候補だけ・保存 → 読み込みで同じ
 // =========================================================
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -214,4 +215,19 @@ test('WC-08：歩行の向き＝上 back・下 front・横 side（右向きは�
   assert.deepEqual(dirSets({ dirs: { front: { frames: [] } } }), {}, 'コマの無いセットは使わない');
   assert.doesNotMatch(rd('js/chapter/world-board.js'), /SIDE_VIEW/, '種族名の特別扱いは無い（config の dirs で決まる）');
   assert.match(rd('js/proto/roadfirst-world.js'), /S\.monAh \|\| 0\.92/, '足の位置は立ち絵の実際の縦横比');
+});
+
+test('WC-09：レア 10%（本物の出発 1200回）＝1回の育成で最大1マス・Z1／Z2 の候補だけ・保存 → 読み込みで同じ地点・同じ有無（引き直さない）', () => {
+  const w = load(), zones = new Set(Object.values(w.MMRF_PLAY.TUNING.rare.zones).flat());
+  let hits = 0; const N = 1200;
+  for (let seed = 1; seed <= N; seed++) {
+    const S = setup(w, seed * 7919), f = S.m.raise.field, r = Object.keys(f.tiles).filter((k) => f.tiles[k].rare);
+    assert.ok(r.length <= 1, `${seed}：最大1マス`);
+    if (r.length) { hits++; assert.ok(zones.has(r[0]), `${seed}：${r[0]} は候補`); }
+    if (seed % 40 === 0 || r.length) {
+      const S2 = reload(w, S), r2 = Object.keys(S2.m.raise.field.tiles).filter((k) => S2.m.raise.field.tiles[k].rare);
+      assert.deepEqual(r2, r, `${seed}：読み込み後も同じ`);
+    }
+  }
+  assert.ok(hits / N > 0.075 && hits / N < 0.125, `出現率 ${(hits / N * 100).toFixed(1)}%`);
 });

@@ -16,6 +16,14 @@
   'use strict';
   const ART = './assets/proto/board_art_1010/', TV2 = './assets/fields/ch1a/tiles_v2/';
   const STEP_MS = 240;
+  // 2026-10-11 画像演出（ZIP MysticMonsters_Ch1_21Images_FX_Handoff_20261011 の派生＝assets/chapter/fx_1011/。tools/fx1011/derive.py）
+  const FX = './assets/chapter/fx_1011/', FXF = { rivalBg: FX + 'ev01_rival_title.webp', rare: FX + 'ev04_rare_marker.webp', gold: FX + 'ev05_gold_burst.webp', clash: FX + 'ev06_rival_clash.webp',
+    hg: { 10: FX + 'ev07_hourglass_10.webp', 5: FX + 'ev08_hourglass_5.webp', 1: FX + 'ev09_hourglass_1.webp' } };
+  const GOLD_BIG = 150;            // これ以上の G を得たときだけ金貨の演出（100G 以下は従来の小さな表示）
+  const TURN_WARN = [10, 5, 1];    // 残りターンの砂時計（各1回・記録は m.raise.field.tw）
+  // マスの上面の試作（TOP01 ライフ・TOP07 野生の2種だけ。検収前＝URL に ?tileTop=1011 を付けたときだけ。既定は従来の tiles_v2）
+  const topPreview = () => { try { return !!root.MM_TILETOP_1011 || new URLSearchParams(root.location ? root.location.search : '').get('tileTop') === '1011'; } catch (e) { return false; } };
+  const TOP_NEW = { stat_li: './assets/fields/ch1a/tiles_top_1011/tile_stat_life.webp', wild: './assets/fields/ch1a/tiles_top_1011/tile_wild_monster.webp' };
   const STAT_FILE = { li: 'life', po: 'power', in: 'intelligence', hi: 'accuracy', ev: 'evasion', de: 'toughness' };
   const ART_TILE = { start: 'tile_start.webp', goal: 'tile_goal.webp', lower_walk_through_gate: 'tile_gate.webp', upper_walk_through_gate: 'tile_gate.webp',
     challenge_d6_5_6: 'tile_challenge.webp', fixed_reward_dead_end: 'tile_reward.webp', optional_random_unlock_dead_end: 'tile_den.webp' };
@@ -52,10 +60,10 @@
         const t = f.tiles[id];
         if (t) {
           out.used = f.used[id] != null;
-          if (t.t === 'stat') out.src = TV2 + 'tile_stat_' + STAT_FILE[t.k] + '.webp';
+          if (t.t === 'stat') out.src = (topPreview() && TOP_NEW['stat_' + t.k]) || TV2 + 'tile_stat_' + STAT_FILE[t.k] + '.webp';
           else if (t.t === 'event') out.src = TV2 + 'tile_event.webp';
           else if (t.t === 'rest') out.src = TV2 + 'tile_rest.webp';
-          else if (t.t === 'wild') out.src = TV2 + (t.rare ? 'tile_rare_monster.webp' : 'tile_wild_monster.webp');
+          else if (t.t === 'wild') out.src = t.rare ? TV2 + 'tile_rare_monster.webp' : (topPreview() && TOP_NEW.wild) || TV2 + 'tile_wild_monster.webp';
           else if (t.t === 'treasure') out.src = TV2 + (t.tier === 'rare' ? 'tile_treasure_2.webp' : 'tile_treasure_1.webp');
         }
       }
@@ -159,7 +167,62 @@
 .wbv .rfw-mon.bob .mon{animation:wbbob .32s ease-in-out infinite}
 .wbw .chf-tact,.wbw .chf-tact-tx{z-index:9}
 @keyframes wbbob{50%{translate:0 -6%}}
-@media (prefers-reduced-motion:reduce){.wbw .wb-pop,.wbw .wb-pop.out,.wbv .rfw-mon .mon{animation:none!important}}`
+.wbw .wbx{z-index:22}
+.wbw #wb-ui:has(.wbx) .chsheet{visibility:hidden}
+.wbw .wbx-veil{position:absolute;inset:0;background:radial-gradient(ellipse 85% 60% at 50% 44%,rgba(6,12,30,.25) 20%,rgba(4,8,22,.78) 72%,rgba(3,6,16,.9));animation:cefade .3s ease-out both}
+.wbw .wbx-w.rare .wbx-veil{background:radial-gradient(ellipse 85% 60% at 50% 44%,rgba(40,8,60,.3) 20%,rgba(18,4,30,.8) 72%,rgba(10,2,18,.92))}
+.wbw .wbx-stage{position:absolute;left:50%;top:42%;width:min(74vw,310px);height:min(74vw,310px);transform:translate(-50%,-50%)}
+.wbw .wbx-glow{position:absolute;left:50%;bottom:4%;width:92%;height:26%;transform:translateX(-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(255,228,150,.55),rgba(255,200,110,.18) 60%,rgba(0,0,0,0));animation:wbxglow .6s ease-out both}
+.wbw .wbx-w.rare .wbx-glow{background:radial-gradient(closest-side,rgba(214,150,255,.7),rgba(150,70,230,.25) 60%,rgba(0,0,0,0));box-shadow:0 0 30px 8px rgba(170,90,255,.25)}
+.wbw .wbx-mon{position:absolute;left:50%;bottom:12%;height:76%;width:auto;max-width:100%;object-fit:contain;transform:translateX(-50%);filter:drop-shadow(0 8px 12px rgba(0,0,0,.6));animation:wbxmon .55s .05s cubic-bezier(.2,.8,.3,1) both}
+.wbw .wbx-w.sil .wbx-mon{visibility:hidden}
+.wbw .wbx-sil{position:absolute;left:0;right:0;bottom:12%;height:76%;background:#05070d;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center bottom;mask-position:center bottom;-webkit-mask-size:contain;mask-size:contain;filter:drop-shadow(0 0 10px rgba(255,236,190,.55));animation:wbxmon .55s .05s cubic-bezier(.2,.8,.3,1) both}
+.wbw .wbx-card{position:absolute;left:50%;bottom:calc(var(--chdeck,150px) + 18px);transform:translateX(-50%);width:min(88vw,360px);padding:9px 14px 11px;border-radius:12px;background:linear-gradient(180deg,rgba(14,26,62,.96),rgba(8,16,40,.96));border:1.5px solid #d9b45c;box-shadow:inset 0 0 0 3px rgba(9,18,44,.95),inset 0 0 0 4px rgba(217,180,92,.55),0 8px 22px rgba(0,0,0,.5);color:#fff;text-align:center;animation:wbxcard .4s .12s cubic-bezier(.2,.8,.3,1) both}
+.wbw .wbx-card small{display:block;font:700 12.5px/1.4 "Noto Sans JP",sans-serif;color:#f1d68e;letter-spacing:.04em}
+.wbw .wbx-nm{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:3px}
+.wbw .wbx-nm b{font:700 20px/1.25 "Shippori Mincho",serif;letter-spacing:.06em}
+.wbw .wbx-nm em{font:700 11.5px/1 "Noto Sans JP",sans-serif;font-style:normal;padding:3px 8px;border-radius:99px;color:#fff3c8;background:linear-gradient(180deg,#8a3ccf,#5a1e98);border:1px solid #e3c06a}
+.wbw .wbx-r{background:#05060f}
+.wbw .wbx-rbg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;animation:wbxrbg .35s ease-out both;transition:opacity .4s,transform .9s ease-out}
+.wbw .wbx-r.p2 .wbx-rbg{opacity:.42;transform:scale(1.08)}
+.wbw .wbx-rstage{position:absolute;left:50%;bottom:calc(var(--chdeck,150px) + 70px);width:min(92vw,380px);height:min(64dvh,520px);transform:translateX(-50%);opacity:0;transition:opacity .35s}
+.wbw .wbx-r.p2 .wbx-rstage{opacity:1}
+.wbw .wbx-ryu{position:absolute;left:4%;bottom:0;height:100%;width:auto;max-width:62%;object-fit:contain;object-position:bottom;filter:drop-shadow(0 0 14px rgba(255,90,70,.45)) drop-shadow(0 10px 14px rgba(0,0,0,.6));translate:0 8%;transition:translate .6s cubic-bezier(.2,.8,.3,1)}
+.wbw .wbx-partner{position:absolute;right:0;bottom:6%;height:58%;width:auto;max-width:56%;object-fit:contain;object-position:bottom;filter:drop-shadow(0 0 12px rgba(120,190,255,.5));translate:10% 0;transition:translate .7s .1s cubic-bezier(.2,.8,.3,1)}
+.wbw .wbx-r.p2 .wbx-ryu,.wbw .wbx-r.p2 .wbx-partner{translate:0 0}
+.wbw .wbx-card.r{opacity:0;animation:none;transition:opacity .3s .2s;border-color:#e0705a;box-shadow:inset 0 0 0 3px rgba(30,6,10,.95),inset 0 0 0 4px rgba(224,112,90,.55),0 8px 22px rgba(0,0,0,.5);background:linear-gradient(180deg,rgba(54,10,16,.96),rgba(26,6,12,.96))}
+.wbw .wbx-card.r small{letter-spacing:.42em;color:#ffc9a8}
+.wbw .wbx-r.p2 .wbx-card.r{opacity:1}
+.wbw .wbx-clash{position:absolute;left:50%;top:44%;width:min(118vw,520px);transform:translate(-50%,-50%) scale(.55);opacity:0;pointer-events:none}
+.wbw .wbx-r.p3 .wbx-clash{animation:wbxclash .34s ease-out both}
+.wbw .wbx-r.p3 .wbx-rstage{animation:wbxshake .3s linear both}
+.wbw .wbx-gold{position:absolute;inset:0;z-index:23;pointer-events:none;display:flex;align-items:center;justify-content:center;flex-direction:column;transition:opacity .22s}
+.wbw .wbx-gold.out,.wbw .wbx-hg.out{opacity:0}
+.wbw .wbx-gb{width:min(92vw,380px);height:auto;animation:wbxgb 1.1s cubic-bezier(.2,.8,.3,1) both}
+.wbw .wbx-gold b{position:absolute;top:calc(50% + min(26vw,110px));display:flex;align-items:center;gap:6px;padding:6px 16px;border-radius:99px;font:800 26px/1 "Noto Sans JP",sans-serif;color:#fff2b8;text-shadow:0 2px 0 #7a4a00,0 0 12px rgba(255,200,80,.9);background:rgba(20,14,4,.55);border:1.5px solid #e8c062;animation:wbxcard .4s .15s cubic-bezier(.2,.8,.3,1) both}
+.wbw .wbx-gold b img{width:26px;height:26px}
+.wbw .wbx-hg{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 96px);transform:translateX(-50%);z-index:20;pointer-events:none;display:flex;align-items:center;gap:2px;padding:0 14px 0 0;border-radius:99px;background:linear-gradient(90deg,rgba(8,16,40,.0),rgba(8,16,40,.86) 22%,rgba(8,16,40,.86) 80%,rgba(8,16,40,0));transition:opacity .25s;animation:wbxhg .45s cubic-bezier(.2,.8,.3,1) both}
+.wbw .wbx-hg img{width:96px;height:auto;margin:-14px -10px}
+.wbw .wbx-hg b{font:700 15px/1 "Noto Sans JP",sans-serif;color:#f4e2b2;white-space:nowrap}
+.wbw .wbx-hg b em{font-style:normal;font-size:22px;color:#ffe08a}
+.wbw .wbx-hg.mid img{width:120px}
+.wbw .wbx-hg.mid b em{color:#ffb35c}
+.wbw .wbx-hg.hi img{width:136px}
+.wbw .wbx-hg.hi b{font-size:17px}
+.wbw .wbx-hg.hi b em{color:#ff6b5c;font-size:26px}
+.wbw .wbx-hg.hi{animation:wbxhg .45s cubic-bezier(.2,.8,.3,1) both,wbxpulse .7s .45s ease-in-out 2}
+:is(#rfp,.wbv) .rfw-mark{animation:rfwmk 2.4s ease-in-out infinite}
+@keyframes rfwmk{50%{translate:0 -7%}}
+@keyframes wbxglow{from{opacity:0;transform:translateX(-50%) scale(.6)}}
+@keyframes wbxmon{from{opacity:0;translate:0 10%;scale:.86}}
+@keyframes wbxcard{from{opacity:0;translate:0 12px}}
+@keyframes wbxrbg{from{opacity:0;transform:scale(1.04)}}
+@keyframes wbxclash{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}35%{opacity:1;transform:translate(-50%,-50%) scale(1.04)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.16)}}
+@keyframes wbxshake{25%{translate:-6px 2px}50%{translate:5px -2px}75%{translate:-3px 1px}}
+@keyframes wbxgb{0%{opacity:0;transform:scale(.4)}40%{opacity:1;transform:scale(1.04)}100%{opacity:.85;transform:scale(1.12)}}
+@keyframes wbxhg{from{opacity:0;translate:0 -10px}}
+@keyframes wbxpulse{50%{scale:1.06}}
+@media (prefers-reduced-motion:reduce){.wbw .wb-pop,.wbw .wb-pop.out,.wbv .rfw-mon .mon,.wbw .wbx *,.wbw .wbx-gold *,.wbw .wbx-hg,:is(#rfp,.wbv) .rfw-mark{animation:none!important}}`
     + (root.MMREACT ? Object.entries(root.MMREACT.MOTIONS).map(([k, v]) => `.wbv .rfw-mon.mrx-${k} .mon{animation:mrx-${k} ${v.ms}ms cubic-bezier(.4,0,.3,1)}`).join('') : '');
     document.head.appendChild(s);
   }
@@ -187,6 +250,8 @@
     try { for (const e of [$('#app'), document.querySelector('main'), document.scrollingElement]) if (e && e.scrollTop) e.scrollTop = 0; } catch (e) {}
     if (ph === 'goal') { paint(m, msg, null, fresh); arrive(m, fresh); return true; }
     paint(m, msg, null, fresh);
+    rareMark(m); fxPreload();
+    if (ph === 'roll') setTimeout(() => turnWarn(m), 600);
     if (fresh && ph === 'roll' && r.turnsUsed === 0 && r.node === 'START' && !f.introSeen && V.world && !root.MM_QA_NO_INTRO) intro(m);
     else if (ph === 'roll' && r.turnsUsed === 0 && !V.intro) setTimeout(() => { if (onBoard() && active(m) && P8().boardPhase(m) === 'roll' && !busyGet()) storyAt(m, 'start').then((shown) => { if (shown && onBoard()) paint(m); }); }, 350);
     if (ph === 'branch') setTimeout(() => { if (onBoard() && active(m) && P8().boardPhase(m) === 'branch' && !busyGet()) storyAt(m, 'branch', { segs: (m.raise.pend && m.raise.pend.segs) || [] }); }, 350);
@@ -444,17 +509,62 @@
     const ui = $('#wb-ui'), B = (cfg().battleTypes || {})[bt] || {}, text = B.encounter || '', rival = bt === 'rival', cue = rival ? 'rival.appear' : bt === 'rare' ? 'rare.alert' : 'wild.alert';
     if (!ui || calm() || !text) { feel(cue, { battleType: bt }); await wait(calm() ? 300 : 500); return; }
     await wait(380);
+    if (rival) return rivalCut(ui, B, text, cue);
+    // 2026-10-11 野生・レアの遭遇（EV03 の構図＝大きな相手＋下の札。参考画像の仮の名前・Lv は使わない＝実際の種族から作る。Lv は無い）
     let foe = null;
-    if (!rival && root.MMP10M && root.MMCH && root.MMCH.foeSpecies && typeof root.battleFoeCount === 'function') { const sp = root.MMP10M.byId(root.MMCH.foeSpecies(m, root.battleFoeCount())); if (sp && sp.image) foe = { src: sp.image.src, name: sp.name }; }
-    const A = cfg().assets || {}, fig = rival && B.encounterFigure ? A[B.encounterFigure] : null, part = rival && B.encounterPartner ? A[B.encounterPartner] : null;
-    const sil = bt === 'wild' && !!foe, label = rival ? 'RIVAL' : 'ENCOUNTER';
-    const motes = Array.from({ length: rival ? 14 : 10 }, (_, i) => `<i class="ce-mote" style="--x:${(10 + ((i * 41) % 80)).toFixed(0)}%;--dl:${(i * 0.09).toFixed(2)}s;--s:${(3 + (i % 3) * 2)}px"></i>`).join('');
-    ui.insertAdjacentHTML('beforeend', `<div class="chf-enc chf-enc2 t-${esc(B.tone || bt)}${B.aura ? ' aura' : ''}${sil ? ' sil' : ''}" role="status" aria-label="${esc(text)}"><i class="ce-veil"></i>${rival ? `<div class="ce-top"><span>✦ ${label} ✦</span></div>` : ''}
-      <div class="ce-stage">${B.aura ? '<i class="ce-halo"></i>' : ''}<i class="ce-circle"></i><i class="ce-circle in"></i>${motes}${foe ? `<img class="ce-mon" src="${esc(foe.src)}" alt="${sil ? '？？？' : esc(foe.name)}" draggable="false">` : ''}${sil ? `<i class="ce-sil" aria-hidden="true" style="-webkit-mask-image:url('${esc(foe.src)}');mask-image:url('${esc(foe.src)}')"></i>` : ''}${fig ? `<img class="ce-rival" src="${esc(fig)}" alt="${esc(B.name || 'ライバル')}" draggable="false">` : ''}${part ? `<img class="ce-partner" src="${esc(part)}" alt="" draggable="false">` : ''}</div>
-      ${rival ? '' : `<div class="ce-band"><span>${label}</span></div>`}${B.badge ? `<em class="ce-badge">${esc(B.badge)}</em>` : ''}<b class="ce-tx">${esc(text)}</b></div>`);
-    const el = ui.querySelector('.chf-enc2:last-child'); feel(cue, { battleType: bt });
-    await wait(rival ? 1350 : 1500);
-    if (el) { el.classList.add('out'); await wait(220); el.remove(); }
+    if (root.MMP10M && root.MMCH && root.MMCH.foeSpecies && typeof root.battleFoeCount === 'function') { const sp = root.MMP10M.byId(root.MMCH.foeSpecies(m, root.battleFoeCount())); if (sp && sp.image) foe = { src: sp.image.src, name: sp.name }; }
+    const sil = bt === 'wild' && !!foe, rare = bt === 'rare';
+    ui.insertAdjacentHTML('beforeend', `<div class="chf-enc chf-enc2 wbx wbx-w${rare ? ' rare' : ''}${sil ? ' sil' : ''}" role="status" aria-label="${esc(text)}"><i class="wbx-veil"></i>
+      <div class="wbx-stage"><i class="wbx-glow"></i>${foe ? `<img class="wbx-mon" src="${esc(foe.src)}" alt="${sil ? '？？？' : esc(foe.name)}" draggable="false">` : ''}${sil ? `<i class="wbx-sil" aria-hidden="true" style="-webkit-mask-image:url('${esc(foe.src)}');mask-image:url('${esc(foe.src)}')"></i>` : ''}</div>
+      <div class="wbx-card"><small>${esc(text)}</small><div class="wbx-nm"><b>${sil || !foe ? '？？？' : esc(foe.name)}</b>${rare ? '<em>★ レア</em>' : ''}</div></div></div>`);
+    const el = ui.querySelector('.wbx-w:last-child'); feel(cue, { battleType: bt });
+    await wait(1650);
+    if (el) { el.classList.add('out'); await wait(240); el.remove(); }
+  }
+  /** ライバル（リュウ）：EV01 の「RIVAL」の幕 → 正式のリュウ（＋相棒のレグナス）→ 最後の約0.3秒に赤と青の X（EV06＝既存 bc05 の派生）を1回 */
+  async function rivalCut(ui, B, text, cue) {
+    const A = cfg().assets || {}, fig = B.encounterFigure ? A[B.encounterFigure] : null, part = B.encounterPartner ? A[B.encounterPartner] : null;
+    ui.insertAdjacentHTML('beforeend', `<div class="chf-enc chf-enc2 wbx wbx-r" role="status" aria-label="${esc(text)}"><img class="wbx-rbg" src="${esc(FXF.rivalBg)}" alt="" draggable="false">
+      <div class="wbx-rstage">${part ? `<img class="wbx-partner" src="${esc(part)}" alt="" draggable="false">` : ''}${fig ? `<img class="wbx-ryu" src="${esc(fig)}" alt="${esc(B.name || 'リュウ')}" draggable="false">` : ''}</div>
+      <div class="wbx-card r"><small>RIVAL</small><div class="wbx-nm"><b>${esc(text)}</b></div></div><img class="wbx-clash" src="${esc(FXF.clash)}" alt="" draggable="false"></div>`);
+    const el = ui.querySelector('.wbx-r:last-child'); feel(cue, { battleType: 'rival' });
+    await wait(900); if (el) el.classList.add('p2');
+    await wait(1250); if (el) el.classList.add('p3');      // X の衝突（0.32秒）
+    await wait(380);
+    if (el) { el.classList.add('out'); await wait(240); el.remove(); }
+  }
+  /** 高額の G（GOLD_BIG 以上）：金貨の飛散（EV05）＋「+NG」（正式の G のアイコン）。1回の取得で1回・所持金の処理はしない（もう加算済み） */
+  async function goldBurst(amount) {
+    const ui = $('#wb-ui'); if (!ui || !(amount >= GOLD_BIG) || calm()) return;
+    const coin = G('GCOIN_SRC') || './assets/ui/gold/coin.png';
+    ui.insertAdjacentHTML('beforeend', `<div class="wbx-gold" role="status" aria-label="${amount}G"><img class="wbx-gb" src="${esc(FXF.gold)}" alt="" draggable="false"><b><img src="${esc(coin)}" alt="" draggable="false">+${amount}G</b></div>`);
+    const el = ui.querySelector('.wbx-gold:last-child'); feel('gold.get', { amount });
+    await wait(1250); if (el) { el.classList.add('out'); await wait(220); el.remove(); }
+  }
+  /** 残り10・5・1ターンの砂時計（上の HUD の下・操作の邪魔をしない＝押せない層）。会話・演出・バトル中は待ってから。各1回（m.raise.field.tw に記録＝再読み込みで出ない） */
+  function turnWarn(m, tries = 0) {
+    const f = fieldOf(m), r = m.raise; if (!f || !onBoard() || !active(m) || P8().boardPhase(m) !== 'roll' || r.goal) return;
+    const left = (r.turnLimit || 40) - (r.turnsUsed || 0); if (!TURN_WARN.includes(left)) return;
+    f.tw = isObjv(f.tw) ? f.tw : {}; if (f.tw[left]) return;
+    if (busyGet() || V.intro || document.querySelector('.mmtalk,.wb-pop,.chf-enc2,.wbx-gold,.wbx-hg')) { if (tries < 30) setTimeout(() => turnWarn(m, tries + 1), 400); return; }
+    f.tw[left] = 1; doSave();                                    // 先に記録（途中で閉じても二度出ない）
+    const ui = $('#wb-ui'); if (!ui || calm() && left !== 1) return;
+    const lv = left === 1 ? 'hi' : left === 5 ? 'mid' : 'lo';
+    ui.insertAdjacentHTML('beforeend', `<div class="wbx-hg ${lv}" role="status" aria-label="残り${left}ターン"><img src="${esc(FXF.hg[left])}" alt="" draggable="false"><b>残り <em>${left}</em> ターン</b></div>`);
+    const el = ui.querySelector('.wbx-hg:last-child'); feel('turn.warn', { left });
+    setTimeout(() => { if (el) { el.classList.add('out'); setTimeout(() => el.remove(), 260); } }, left === 1 ? 2400 : left === 5 ? 2000 : 1600);
+  }
+  /** レアのマス（この育成で出たときだけ）：その地点の上に紫の紋章（全景でも見える大きさ）。訪れたら弱くする */
+  function rareMark(m) {
+    const f = fieldOf(m); if (!f || !V.world || !V.world.marker) return;
+    const id = Object.keys(f.tiles || {}).find((k) => f.tiles[k] && f.tiles[k].rare); if (!id) return;
+    V.world.marker(id, FXF.rare, { w: 40, min: 46, max: 110, ah: 1.55 });
+    V.world.markerDim(id, f.used[id] != null);
+  }
+  function fxPreload() {
+    if (V.pre) return; V.pre = true;
+    const go = () => { for (const u of [FXF.rivalBg, FXF.clash, FXF.gold, FXF.hg[10], FXF.hg[5], FXF.hg[1]]) { const im = new root.Image(); im.decoding = 'async'; im.src = u; } };
+    if (root.requestIdleCallback) root.requestIdleCallback(go, { timeout: 4000 }); else setTimeout(go, 1500);
   }
   const DIE_TEXT = {
     Q: (e) => `運命のサイコロ：${e.die}（${e.die % 2 ? '奇数＝左の道' : '偶数＝右の道'}へ）`,
@@ -485,14 +595,17 @@
         await popup(`<small>${esc(labOf(fx.key))}のマス</small><b>${esc(labOf(fx.key))} +${fx.amount}</b>`, 1300); tail = `${labOf(fx.key)} +${fx.amount}`;
       } else if (fx.kind === 'treasure') {
         feel(['normal', 'rare', 'special'].includes(fx.tier) ? `chest.open.${fx.tier}` : 'chest.open', { tier: fx.tier });
+        await goldBurst(fx.gold);
         await popup(`<small>${fx.tier === 'rare' ? '珍しい宝箱' : '宝箱'}を見つけた！</small>${rowsHtml(fx)}`, 1300); tail = plainOf(fx);
       } else if (fx.kind === 'reward') {
         feel('chest.open.special', { tier: 'special' });
+        await goldBurst(fx.gold);
         await popup(`<small>${fx.den ? '隠れ家' : '宝の行き止まり'}</small><b>${esc(fx.title || '')}</b>${rowsHtml(fx)}`, 1800); tail = `${fx.title || ''}　${plainOf(fx)}`.trim();
       } else if (fx.kind === 'event') {
         const e = evDef(fx.ev) || {};
         if (fx.recovery) feel('rest.recover'); else feel('event', { ev: fx.ev });
         await talkLines(fx.choice ? [] : fx.lines);
+        await goldBurst(fx.gold);
         await popup(`${e.image ? `<img class="art" src="${esc(e.image)}" alt="" decoding="async">` : ''}<b>${esc(fx.title || '')}</b>${fx.text ? `<p>${esc(fx.text)}</p>` : ''}${rowsHtml(fx)}`, e.image ? 2000 : 1500);
         tail = plainOf(fx) || fx.title || '';
       } else if (fx.kind === 'battle') await encounter(m, fx.battleType);
