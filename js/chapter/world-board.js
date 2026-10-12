@@ -95,15 +95,31 @@
   // ---- 画面の部品 ----
   const COIN = '<img class="chh-ic" src="./assets/ui/gold/coin.png" alt="" aria-hidden="true" draggable="false">';
   function placeName(id) { const W = WD(), d = D(); return (W.PLACE && W.PLACE[id]) || (d.nodes[id] && d.nodes[id][2] === 'fixed_reward_dead_end' ? '宝の行き止まり' : ''); }
+  // 2026-10-12 開発21（試遊 No.003・004＝D-4）：進行ラインの位置＝GOAL までの最短の地点数（接続を GOAL から逆にたどる・条件は見ない＝道として通れる最短。1回だけ計算）。
+  //  P＝(D0 − Dcur) ÷ D0（D0＝START から、Dcur＝今の地点から）を 0〜1 に収める。寄り道・行き止まりで GOAL から遠ざかれば戻る。経過ターンでも最高到達でもない＝「ゴールへの進み具合の目安」
+  let DIST = null;
+  function goalDist() {
+    if (DIST) return DIST; const d = D(), rev = {}; for (const e of d.edges) (rev[e[1]] = rev[e[1]] || []).push(e[0]);
+    const out = { GOAL: 0 }, q = ['GOAL']; while (q.length) { const n = q.shift(); for (const p of rev[n] || []) if (out[p] == null) { out[p] = out[n] + 1; q.push(p); } }
+    return (DIST = out);
+  }
+  function progressAt(node) { const g = goalDist(), d0 = g.START || 0, dc = g[node]; if (node === 'GOAL') return 1; if (!d0 || dc == null) return 0; return Math.max(0, Math.min(1, (d0 - dc) / d0)); }
+  function faceSrc(m) { const f = root.MMARENA && root.MMARENA.faceSrc ? root.MMARENA.faceSrc(m.sp) : null; return f || monSrc(m); }
+  /** 歩いている間は線の上の丸顔だけ動かす（HUD を描き直さない） */
+  function progSet(node) { const pc = Math.round(progressAt(node) * 1000) / 10, f = $('#chface'), b = document.querySelector('.wbh .chh-fill'), l = document.querySelector('.wbh .chh-line');
+    if (f) f.style.left = pc + '%'; if (b) b.style.width = pc + '%'; if (l) l.setAttribute('aria-label', `ゴールまでの進み具合 ${Math.round(pc)}%`); }
+  // 特訓チケットの小さな印（2026-10-12 D-5・仮の線画＝正式の絵ではない。正式アイコンが届いたら差し替える）
+  const TIX = '<svg class="chh-tk" viewBox="0 0 24 16" aria-hidden="true"><path d="M2 3h20v3a2 2 0 0 0 0 4v3H2v-3a2 2 0 0 0 0-4z" fill="#e6bf62" stroke="#8a6420" stroke-width="1.2"/><path d="M15 3.5v9" stroke="#8a6420" stroke-width="1" stroke-dasharray="1.4 1.4"/><path d="M8.5 5.3l.9 1.8 2 .3-1.4 1.4.3 2-1.8-1-1.8 1 .3-2-1.4-1.4 2-.3z" fill="#fff6d6"/></svg>';
   function hudHtml(m) {
-    const r = m.raise, fat = Math.round(r.fatigue || 0), lv = fat >= 80 ? 'hi' : fat >= 50 ? 'mid' : 'lo', S = gS() || {};
-    const ph = P8().boardPhase(m), pl = placeName(r.node);
-    return `<header class="chh wbh"><div class="chh-top"><div class="chh-l chh-prog"><div class="chh-cap"><small>Chapter <b>1</b> / ${root.MMP7 ? root.MMP7.CHAPTER_COUNT : 4}</small><b class="chh-nm">はじまりの草原</b><span class="chh-fd" id="chfd">${esc(pl)}</span></div></div>
+    const r = m.raise, fat = Math.round(r.fatigue || 0), lv = fat > 80 ? 'hi' : fat >= 50 ? 'mid' : 'lo', S = gS() || {};   // 2026-10-12 D-2：81 以上で赤（80 までは通常）
+    const ph = P8().boardPhase(m), pl = placeName(r.node), pc = Math.round(progressAt(r.node) * 1000) / 10, fs = faceSrc(m);
+    return `<header class="chh wbh"><div class="chh-top"><div class="chh-l chh-prog"><div class="chh-cap"><small>Chapter <b>1</b> / ${root.MMP7 ? root.MMP7.CHAPTER_COUNT : 4}</small><b class="chh-nm">はじまりの草原</b><span class="chh-fd" id="chfd">${esc(pl)}</span></div>
+      <div class="chh-line" role="img" aria-label="ゴールまでの進み具合 ${Math.round(pc)}%"><span class="chh-se">START</span><div class="chh-track"><i class="chh-fill" style="width:${pc}%"></i><span class="chh-face" id="chface" style="left:${pc}%">${fs ? `<img src="${esc(fs)}" alt="" decoding="async">` : ''}</span></div><span class="chh-se g">GOAL</span></div></div>
       <button class="p9mbtn chh-menu" onclick="p9Menu()" aria-label="メニュー">☰</button></div>
       <div class="chh-r chh-chips"><div class="chh-turn chip">Turn <b id="chturn">${Math.min(r.turnsUsed + (ph === 'roll' ? 1 : 0), r.turnLimit)}</b><small> / ${r.turnLimit}</small></div>
       <div class="chh-fat chip f-${lv}" id="chfat"><span>空腹</span><b>${fat}</b><i style="--f:${fat}%"></i></div>
       <div class="chh-gold chip" id="chgold">${COIN}<b>${S.g | 0}</b></div>
-      <div class="chh-tix chip" id="chtix" title="特訓チケット"><span>特訓チケット</span><b>×${S.trainTix | 0}</b></div></div></header>`;
+      <div class="chh-tix chip" id="chtix" title="特訓チケット" aria-label="特訓チケット ${S.trainTix | 0}枚">${TIX}<span>特訓</span><b>×${S.trainTix | 0}</b></div></div></header>`;
   }
   const CMDS = [
     { k: 'item', cls: 'chitem', pos: 'tl', on: 'MMWB.items()', label: 'アイテム' },
@@ -122,7 +138,8 @@
       ? `<div class="chstopw chstopw-img${canRoll ? ' on' : ''}" ${box('center')}><button class="chstop chstop-img" id="brollbtn" data-nsfx="1" onclick="MMWB.roll()"${canRoll && !V.intro && !V.cover ? '' : ' disabled'} aria-label="START（サイコロを振る）"><b>START</b></button></div>`
       : `<div class="chstopw chstopw-img" ${box('center')}><button class="chstop chstop-img wait" disabled aria-label="移動中"><b>${(ph === 'move' || ph === 'resolve') && r.pend ? r.pend.roll : '…'}</b></button></div>`;
     const wing = (c) => { const on = (c.k === 'rest' ? canRest : ph === 'roll') && !V.intro && !V.cover; return `<button class="chwing chwing-img ${c.cls} chw-${c.pos}${c.k === 'rest' && tired ? ' must' : ''}" ${box(c.pos)} onclick="${c.on}"${on ? '' : ' disabled'}><b>${c.label}</b>${c.k === 'rest' ? `<i class="chwlbl">空腹 −${root.MMRF_PLAY ? root.MMRF_PLAY.TUNING.restAmount : 10}</i>` : ''}</button>`; };
-    return `<div class="chdeck chdeck-img" id="chdock"><p class="chmsg" id="bmsg">${msg || def}</p><div class="chcmd chcmd-img" style="--deckar:${Dk.aspect || 3.116}">${Dk.start ? `<img class="chdeck-bg" src="${esc(Dk.start)}" alt="" draggable="false">` : ''}${CMDS.map(wing).join('')}${center}</div></div>`;
+    // 2026-10-12 D-6：案内欄にフィナの小さな丸顔・2行まで読める（欄を上へ少し広げる）
+    return `<div class="chdeck chdeck-img" id="chdock"><div class="wbmsg"><img class="wbmsg-f" src="./assets/npc/fina/closeup/smile.webp" alt="" aria-hidden="true" decoding="async" draggable="false"><p class="chmsg" id="bmsg">${msg || def}</p></div><div class="chcmd chcmd-img" style="--deckar:${Dk.aspect || 3.116}">${Dk.start ? `<img class="chdeck-bg" src="${esc(Dk.start)}" alt="" draggable="false">` : ''}${CMDS.map(wing).join('')}${center}</div></div>`;
   }
   function sheetHtml(m, ph) {
     const r = m.raise;
@@ -150,6 +167,23 @@
 .wbw .chf-ui{z-index:5}
 .wbw.wb-intro .chf-ui>*{opacity:0;pointer-events:none;transition:opacity .35s}
 .wbw .wbh .chh-fd:empty{display:none}
+.wbw .wbh .chh-line .chh-se{display:block;position:absolute;top:12px;font:800 8px/1 "Noto Sans JP",sans-serif;letter-spacing:.06em;color:#dfe6f8;text-shadow:0 1px 2px rgba(0,0,0,.8)}
+.wbw .wbh .chh-line .chh-se:first-child{left:-2px}.wbw .wbh .chh-line .chh-se.g{right:-4px;color:#f3d98e}
+.wbw .wbh .chh .chip,.wbw .wbh.chh .chip{height:27px;background:rgba(4,10,30,.9);border-color:rgba(240,232,212,.7)}
+.wbw .wbh .chh-turn{font-size:11.5px;font-weight:700;color:#f0dda8}
+.wbw .wbh .chh-turn b,.wbw .wbh .chh-fat b,.wbw .wbh .chh-gold b{font-size:15.5px;color:#fff}
+.wbw .wbh .chh-turn small{font-size:11px;color:#dfe6f8}
+.wbw .wbh .chh-fat span{font-size:11.5px;font-weight:700;color:#dfe6f8}
+.wbw .wbh .chh-fat.f-hi b{color:#ff5c4d}
+.wbw .wbh .chh-tix{gap:3px}.wbw .wbh .chh-tix .chh-tk{width:19px;height:13px;flex:none}
+.wbw .wbh .chh-tix span{font-size:10.5px;font-weight:700;color:#dfe6f8;letter-spacing:0}
+.wbw .wbh .chh-tix b{font-size:14px}
+#app>.chfw.wbw{--chdeck:calc(clamp(136px,20.6dvh,180px) + 26px + env(safe-area-inset-bottom,0px))}
+.wbw .wbmsg{display:flex;align-items:center;gap:7px;margin:0 6px 2px;min-height:38px;padding:3px 10px 3px 4px;border-radius:12px;background:rgba(4,10,30,.62);border:1px solid rgba(217,180,101,.4)}
+.wbw .wbmsg:has(.chmsg:empty){display:none}
+.wbw .wbmsg .wbmsg-f{flex:none;width:32px;height:32px;border-radius:50%;object-fit:cover;object-position:50% 12%;background:#1d3266;border:1.5px solid #e6bf62}
+.wbw .wbmsg .chmsg{flex:1;min-width:0;padding:0;text-align:left;font-size:12.5px;line-height:1.4;-webkit-line-clamp:2}
+#app>.chfw.wbw:has(.chbat) .wbmsg{visibility:hidden}
 .wbw .wbbr .chroute.spur{border-style:dashed}
 .wbw .wb-pop{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);width:min(86%,330px);box-sizing:border-box;padding:12px 14px;border-radius:16px;background:linear-gradient(180deg,rgba(20,36,82,.97),rgba(8,18,46,.97));border:1.5px solid #d9b465;color:#fff;text-align:center;box-shadow:0 8px 22px rgba(0,0,0,.5);pointer-events:auto;animation:wbpop .26s ease-out both;z-index:8}
 .wbw .wb-pop.out{animation:wbpopout .2s ease-in forwards}
@@ -489,7 +523,7 @@
         if (!onBoard()) break;
         const before = m.raise.node, s = P8().step(S, m); doSave();
         if (m.raise.node !== before) V.path.push(m.raise.node);
-        if (m.raise.node !== before && V.world) { sprWalk(before, m.raise.node); V.world.update(info(m, m.raise.node)); const c = $('#chfd'); if (c) c.textContent = placeName(m.raise.node); await wait(calm() ? 60 : STEP_MS); }
+        if (m.raise.node !== before && V.world) { sprWalk(before, m.raise.node); V.world.update(info(m, m.raise.node)); progSet(m.raise.node); const c = $('#chfd'); if (c) c.textContent = placeName(m.raise.node); await wait(calm() ? 60 : STEP_MS); }
         if (s && s.stage === 'branch') break;
       }
     } finally { sprStop(); busySet(false); }
@@ -697,5 +731,5 @@
   }
 
   const active = (m) => !!(WD() && WD().active(m));
-  root.MMWB = Object.freeze({ STEP_MS, pickDir, dirSets, active, board, release, roll, pick, rest, open, items, itemsClose, useItem, state: () => ({ key: V.key, intro: V.intro, world: V.world ? V.world.state() : null }), world: () => V.world });
+  root.MMWB = Object.freeze({ STEP_MS, pickDir, dirSets, progressAt, active, board, release, roll, pick, rest, open, items, itemsClose, useItem, state: () => ({ key: V.key, intro: V.intro, world: V.world ? V.world.state() : null }), world: () => V.world });
 })(typeof window !== 'undefined' ? window : globalThis);
