@@ -20,6 +20,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const rd = (p) => readFileSync(path.join(ROOT, p), 'utf8');
 const HTML = rd('index.html');
 const tick = (ms = 0) => new Promise((ok) => setTimeout(ok, ms));
+/** 条件が成り立つまで待つ（偽の XHR・デコードは非同期。負荷が高くても待てるように最大2秒） */
+const until = async (fn, ms = 2000) => { const t0 = Date.now(); while (!fn() && Date.now() - t0 < ms) await tick(5); return fn(); };
 const onDisk = (src) => path.join(ROOT, src.replace(/^\.\//, ''));
 
 function loadRegistry() {
@@ -75,7 +77,7 @@ test('DV-01：registry＝観客の声 6本（OGG／M4A の対）・ボイス 13�
 test('DV-02：ボイス＝専用の GainNode・ON/OFF と音量はボイスだけ（mmaudio は変えない）・1本だけ・止める・OFF／ミュート／無効は鳴らない', async () => {
   const { A, log, store, doc } = env();
   new Function('window', rd('js/audio/audio-registry.js'))(Object.assign({}, { MMAUDIO: A }));
-  A.unlock(); await tick(20);
+  A.unlock(); await until(() => Object.values(A.voiceStatus()).every((v) => v !== 'loading'));
   assert.equal(A.voiceStatus().fina_yes, 'ready'); assert.equal(A.voiceStatus().elliot_hello_OPTIONAL, 'disabled');
   assert.equal(A.voice('fina_yes'), true); assert.equal(A.voiceNow(), 'fina_yes');
   const p1 = A.playLog().filter((x) => x.kind === 'voice'); assert.equal(p1.length, 1); assert.match(p1[0].src, /fina_yes\.ogg$/); assert.equal(p1[0].ctx, 'running'); assert.equal(p1[0].gain, 1.32);
@@ -104,7 +106,7 @@ test('DV-02b：読み込みが間に合わない声は短い待ち（既定 0.4�
   assert.equal(A.voiceLog().slice(-1)[0].result, 'drop'); assert.equal(A.playLog().length, 0);
   // 間に合う待ちなら鳴る
   const e2 = env({ decodeDelay: 50 }); e2.A.registerVoice('v', ['./a.ogg']); e2.A.unlock();
-  e2.A.voice('v', { maxWaitMs: 400 }); await tick(120);
+  e2.A.voice('v', { maxWaitMs: 400 }); await until(() => e2.A.playLog().length === 1, 380);
   assert.equal(e2.A.voiceLog().slice(-1)[0].result, 'play'); assert.equal(e2.A.playLog().length, 1);
   // 待っている間に止めた（会話を閉じた・画面を移った）＝鳴らない
   const e3 = env({ decodeDelay: 50 }); e3.A.registerVoice('v', ['./a.ogg']); e3.A.unlock();
@@ -113,12 +115,12 @@ test('DV-02b：読み込みが間に合わない声は短い待ち（既定 0.4�
 });
 
 test('DV-03：OGG が読めない（404）・デコードできない → M4A を1回だけ。どれも駄目なら鳴らさない（投げない）。playLog は start したものだけ', async () => {
-  const a = env({ fail: /\.ogg$/ }); a.A.registerSe('CROWD_HIT', ['./c.ogg', './c.m4a'], { gain: 0.55 }); a.A.unlock(); await tick(30);
+  const a = env({ fail: /\.ogg$/ }); a.A.registerSe('CROWD_HIT', ['./c.ogg', './c.m4a'], { gain: 0.55 }); a.A.unlock(); await until(() => a.A.status().se.CROWD_HIT === 'ready');
   assert.equal(a.A.status().se.CROWD_HIT, 'ready'); assert.equal(a.A.se('CROWD_HIT'), true);
   assert.match(a.A.playLog()[0].src, /c\.m4a$/); assert.deepEqual(a.log.xhr, ['./c.ogg', './c.m4a'], 'OGG のあと M4A を1回だけ');
-  const b = env({ decodeFail: /\.ogg$/ }); b.A.registerVoice('v', ['./v.ogg', './v.m4a']); b.A.unlock(); await tick(30);
+  const b = env({ decodeFail: /\.ogg$/ }); b.A.registerVoice('v', ['./v.ogg', './v.m4a']); b.A.unlock(); await until(() => b.A.voiceStatus().v === 'ready');
   assert.equal(b.A.voiceStatus().v, 'ready'); assert.equal(b.A.voice('v'), true); assert.match(b.A.playLog()[0].src, /v\.m4a$/);
-  const c = env({ fail: /./ }); c.A.registerSe('CROWD_MISS', ['./x.ogg', './x.m4a']); c.A.registerVoice('w', ['./w.ogg', './w.m4a']); c.A.unlock(); await tick(30);
+  const c = env({ fail: /./ }); c.A.registerSe('CROWD_MISS', ['./x.ogg', './x.m4a']); c.A.registerVoice('w', ['./w.ogg', './w.m4a']); c.A.unlock(); await until(() => c.A.status().se.CROWD_MISS === 'failed' && c.A.voiceStatus().w === 'failed');
   assert.equal(c.A.status().se.CROWD_MISS, 'failed'); assert.doesNotThrow(() => c.A.se('CROWD_MISS'));
   assert.equal(c.A.voice('w'), false); assert.equal(c.A.playLog().length, 0, '鳴っていない音は記録しない（seLog は「頼まれた」だけ）');
   assert.ok(c.A.seLog().includes('CROWD_MISS'));

@@ -194,7 +194,19 @@ try {
 
   // 2026-10-13 開発24：公式大会（E）の実戦（上の Chapter 1 の出発のあと）：新しい画面・技の発動中の表示・観客の声（命中・ルーレットの MISS・かわされた）
   {
-    await page.evaluate(() => { Object.assign(S.m.raise, { goal: true, pend: null }); const r = MMP8.startTournament(S, S.m, 0, 7); if (!r || !r.ok) throw new Error('startTournament ' + JSON.stringify(r)); save(); window.__cine = []; p8TourFight(); });
+    await page.evaluate(() => { if (window.MMNPC) MMNPC.close(); Object.assign(S.m.raise, { goal: true, pend: null }); const r = MMP8.startTournament(S, S.m, 0, 7); if (!r || !r.ok) throw new Error('startTournament ' + JSON.stringify(r)); save(); window.__cine = []; board(); });
+    // 実際の画面の流れ：フィナの一言 → 対戦表「対戦する」→ 対戦前比較「対戦開始」（2度押し）→ VS → バトル
+    const flow = [];
+    for (let k = 0; k < 120 && !(await page.evaluate(() => !!document.querySelector('#bt #m0 .mon .mma-idle'))); k++) {
+      const st = await page.evaluate(() => ({ talk: !!document.querySelector('.mmtalk:not(.mmtalk-out)'), ch: !!document.querySelector('.mmtalk-choice'), tb: !!document.querySelector('.tb1 .tbgo'), cmp: !!document.querySelector('.pcgo'), yn: !!document.querySelector('#p9conf .p9conf-yes, #ynm .ynm-y'), vs: !!document.getElementById('tvs') }));
+      if (st.talk) { flow.push('talk'); if (st.ch) { await sleep(450); await page.click('.mmtalk-choice').catch(() => {}); } else await page.click('.mmtalk:not(.mmtalk-out)', { force: true }).catch(() => {}); await sleep(350); continue; }
+      if (st.yn) { flow.push('yn'); await sleep(450); await page.click('#p9conf .p9conf-yes, #ynm .ynm-y').catch(() => {}); await sleep(300); continue; }
+      if (st.vs) { if (flow[flow.length - 1] !== 'vs') flow.push('vs'); await sleep(400); continue; }
+      if (st.cmp) { flow.push('compare'); await sleep(500); await page.click('.pcgo').catch(() => {}); await sleep(650); await page.click('.pcgo').catch(() => {}); await sleep(500); continue; }
+      if (st.tb) { flow.push('board'); await sleep(400); await page.click('.tb1 .tbgo').catch(() => {}); await sleep(500); continue; }
+      await sleep(500);
+    }
+    rec('開発24：公式大会の実際の流れ（対戦表 → 対戦前比較 → VS → バトル）', await page.evaluate(() => !!document.getElementById('bt')), flow.join('→'));
     await page.waitForSelector('#bt #m0 .mon .mma-idle', { timeout: 30000 });
     await page.evaluate(() => { const bt = document.getElementById('bt'); new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => { if (n.classList && n.classList.contains('skb3')) setTimeout(() => window.__cine.push({ on: bt.classList.contains('mma-cine'), hpr: getComputedStyle(bt.querySelector('.hpr')).visibility, bui: getComputedStyle(bt.querySelector('.bui')).visibility }), 300); }))).observe(bt, { childList: true });
       const B = window.MMBattle; let n = 0; window.MMBattle = Object.freeze(Object.assign({}, B, { resolveAction(o) { if (o && o.attackerSide === 'A' && (n++ % 2 === 0)) o = Object.assign({}, o, { rng: Object.assign({}, o.rng || {}, { hitRng: () => 0.999 }) }); return B.resolveAction(o); } })); });   // 確認のためだけ：自分の攻撃を1回おきに外れ側へ（かわされる場面を作る。保存されるのはこの試合の結果だけ）
