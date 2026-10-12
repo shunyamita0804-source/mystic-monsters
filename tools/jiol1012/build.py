@@ -26,7 +26,7 @@ MOVES = [
   (8, 'ロックアッパー', '08_ロックアッパー', ['self', 'lunge', 'contact', 'back'], 3, {3: 'tgt', 4: 'tgt'}),
   (9, 'ジオインパクト', '09_ジオインパクト', ['self', 'self', 'self', 'lunge', 'move', 'contact', 'contact', 'contact', 'back', 'back', 'back', 'back'], 6,
    {6: 'tgt', 7: 'tgt', 8: 'tgt', 9: 'tgt', 10: 'tgt', 11: 'self', 12: 'self'}),
-  (10, 'クリスタルノヴァ', '10_クリスタルノヴァ', ['self', 'self', 'self', 'self'], 3, {2: 'ray', 3: 'ray', 4: 'tgt'}),
+  (10, 'クリスタルノヴァ', '10_クリスタルノヴァ', ['self', 'self', 'self', 'self'], 3, {4: 'tgt'}),   # 2・3 は本体の層にも光線が描かれている＝同じ切り出しで重ねる（光線が二重にならない）
 ]
 def bbox(al, thr=4):
     ys, xs = np.nonzero(al > thr); return (xs.min(), ys.min(), xs.max() + 1, ys.max() + 1) if len(xs) else None
@@ -35,6 +35,8 @@ def body_box(al):
     q = lambda v, p: int(np.percentile(v, p))
     return [q(xs, 0.4), q(ys, 0.4), q(xs, 99.6) + 1, q(ys, 99.6) + 1]
 def save(im, of):
+    # REUSE=1：すでにある WebP はそのまま使う（作り直す技のファイルだけ消してから実行）
+    if os.environ.get('REUSE') == '1' and os.path.exists(os.path.join(OUT, of)): return Image.open(os.path.join(OUT, of))
     out = im.resize((max(1, round(im.size[0] * SC)), max(1, round(im.size[1] * SC))), Image.LANCZOS)
     out.save(os.path.join(OUT, of), 'WEBP', quality=86, method=6); return out
 LAYER = re.compile(r'_(キャラ|エフェクト)(\d+)コマ目_')
