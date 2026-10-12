@@ -754,6 +754,16 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - **19 ガウルの技アニメ**：§2 の表。ソラモの46コマは変えていない。ノビトンは対象外。stage.js はコマで見せる技に専用の飾り（フェザーストームの嵐・聖なる炎の加護）を重ねない。比較試遊（?battleArt=2p5d）のガウルの技のコマは使わなくなった（待機の立ち絵の切り替えは従来どおり）
 - テスト：tests/gauru-moves-1012.test.mjs（GA-01〜04）・実ブラウザ tests/qa-e2e-gauru-moves-1012.test.mjs（GM-B1 2サイズ・GM-B2）。BV-B1／B3（地面の幕なし）・SM-B2・A25-B3／B4（比較試遊のガウルの技は対象なし）・FX-03・QU-05・TN-03b・PB-06・AS8-07・QA-G4-2 を書き直し
 
+### 試遊修正・7点（2026-10-12 夜・3。いまの正式。基準 d2a155c への差分）
+
+- **1・6 ボード**：モンスターがマスの上に立たず右下へずれていた原因＝index.html の共通の `.mon{width:96px;height:96px}` がボードのモンスターの箱にも効き、絵が箱（マスの幅×1.2）より大きく描かれていた → js/chapter/world-board.js で `.wbv .rfw-mon .mon{width:100%;height:auto}`（大きさは従来の指示どおりマスの1.2倍）。手前の景物（木・門など）が見えているマス・モンスターに重なるときは、その景物だけ半透明（js/proto/roadfirst-world.js の xray・.rfw-prop.thru 0.32。本編の Chapter 1 だけ・試作の既定は従来どおり）
+- **2 状態異常・能力の上げ下げの札**：HP の枠の名前の横に小さく1行（js/battle/arena.js の setupChips＝#st0／#st1 を名前の行の .mmchips へ移す・js/battle/rules.js の #mmail もそこへ）。左＝名前の右・右＝名前の左。行の高さ 20px 固定＝札が出てもライフのバーは動かない。名前が長いときは名前が省略される（札は最大 74%）。fight()・Phase 6 は変えない
+- **3**：野生・レア・ライバルのバトルのあとの文は「野生モンスターに負けた…」「レアモンスターに勝った！」「リュウに負けた…」（index.html の p8AfterBattle・MM_LAST_BT）。種類が分からないときだけ従来の「練習試合…」
+- **4・7 挿絵カード**（js/chapter/world-board.js の cardOpen／statCard・CARD_ART）：能力アップ＝挿絵にモンスターを大きく中央 → 道具と特訓の動き（TRAIN_ACT）→ 能力のバー（正式のバー B-26〜B-31・999 が最大）が前の値から伸びて数字が増える →「かしこさ +18」。出来事（2択を含む）＝挿絵カードを出したまま会話・選択肢 → 結果もカードの中。冒険リアクション＝挿絵カードにモンスターを大きく → 同じ動き → 会話・選択肢 → 結果。カードの間はフィナの立ち絵を出さない（会話の窓と名前の札は出す）。**正式の挿絵は未着＝仮に Chapter 1 の正式背景（formal_1008 の scene_01〜03）を使う**。挿絵の無い出来事 12種（shade・break・spring・holy_spring・herb・trip・coin・sage・charm・legend_spring・remember_dan・wind_cry）も仮の背景＋モンスター。届いたら CARD_ART／ch1a.js の eventPool の image に1行
+- **5 野生・レア・ライバルのバトルの背景**＝Chapter ごとの野外（js/battle/arena.js の FIELD_BG・fieldSrc。#bt の data-mmch）。VS の演出も同じ背景。**正式の野外のバトル背景は未着＝仮に Chapter 1＝ch1a_scene_01・Chapter 2＝ch2_field_01**。Chapter 3・4 は従来の venue。公式ランク戦・セドリックは変えていない
+- 画像生成の依頼（24枚・プロンプトと参考画像）はユーザーへ ZIP で渡した（リポジトリには置かない）
+- テスト：BE-4（野生・ライバルの背景）・P7-38・QU-05 を書き直し
+
 ### 新マス12種・食事のマス・正式 SE・特訓チケット・ノビトン（2026-10-12 夜・2。ZIP「試遊修正_新マス12種_SE_チケット」＋ノビトン 59枚）
 
 - **マスの上面・正式12種**（assets/fields/ch1a/tiles_top_1012/・tools/fx1011/tops_1012.py＝試作 tiles_top_1011 と同じ方法）：能力6種・野生・宝箱（tier normal だけ。**珍しい宝箱は従来の tile_treasure_2＝段階の違いを消さない**）・食事・ライバル・出来事・レアを既存の円盤 tiles_v2/tile_blank の上面へ。試作の ?tileTop=1011 は外した（ファイルは残す）

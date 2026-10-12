@@ -43,6 +43,7 @@
       '#bt .mma-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%;z-index:0}',
       // 2026-10-12 開発21（E-5）：正式背景は床の始まりが画像の約55%（従来の会場より下）＝モンスターが壁の前に浮いて見えた → 下を軸に 1.12倍にして床をモンスターの足もとへ（絵は描き直さない・空が少し切れるだけ）
       '#bt .mma-bg.ofc{transform-origin:50% 100%;transform:scale(1.12)}',
+      '#bt .mma-bg.fld{object-position:center 58%}',
       '#bt .bgs.mma-on::after{background:linear-gradient(rgba(6,10,26,.15),transparent 18%,transparent 52%,rgba(6,10,26,.55) 74%,rgba(4,7,18,.9))}',
       '#bt .mon.mma-on>img:not(.mma-idle){opacity:0}',
       '#bt .mon .mma-idle{position:absolute;left:50%;bottom:0;height:118%;width:auto;max-width:none;transform:translateX(-50%);pointer-events:none;filter:drop-shadow(0 8px 6px rgba(0,0,0,.45))}',
@@ -79,6 +80,13 @@
       '#bt .hpr .hpn{background:none!important;border:0!important;box-shadow:none!important;border-radius:0!important;padding:0 2px!important;animation:none!important}',
       '#bt .hpn .hpb{display:flex;flex-wrap:wrap;align-items:center;column-gap:5px;row-gap:1px}',
       '#bt .hpn .hn1{order:0;flex:0 1 auto;min-width:0;max-width:100%;font-size:.9rem;color:#fff;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.85)}',
+      '#bt .hpn .hpb{flex-wrap:wrap!important}#bt .hpn .hn1{flex:0 1 auto;min-width:2.5em;height:20px;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+      '#bt .hpn .mmchips{order:1;flex:0 0 auto;max-width:74%;min-width:0;height:20px;display:flex;flex-wrap:nowrap;align-items:center;gap:3px;overflow:hidden}',
+      '#bt .hpn.s1 .mmchips{order:-1;justify-content:flex-end}#bt .hpn.s1 .hn1{order:0}',
+      '#bt .hpn .mmchips .sts,#bt .hpn .mmchips .mmail{display:flex!important;flex-wrap:nowrap!important;flex:none;gap:3px;margin:0!important;min-height:0}',
+      '#bt .hpn .mmchips .sts:empty,#bt .hpn .mmchips .mmail:empty{display:none!important}',
+      '#bt .hpn .mmchips .stb,#bt .hpn .mmchips .mmail span{display:inline-flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:center!important;width:auto!important;min-width:0!important;height:16px!important;box-sizing:border-box;flex:none;padding:0 4px 0 3px!important;gap:1px!important;font:800 9px/14px "Noto Sans JP",sans-serif!important;border-width:1px!important;white-space:nowrap;animation:none!important}',
+      '#bt .hpn .mmchips .stb i{font-size:9px!important}#bt .hpn .mmchips .stb b,#bt .hpn .mmchips .mmail span b{display:inline-block!important;min-width:0!important;width:auto!important;height:auto!important;margin-left:1px!important;padding:0 2px;line-height:12px!important;font-size:8px!important;border-radius:6px!important}',
       '#bt .hpn .mmail{order:1;margin:0}#bt .hpn #b0,#bt .hpn #b1{order:2;flex:1 0 100%}#bt .hpn .sts{order:3;flex:1 0 100%}',
       '#bt .hpn.s1 .hpb{justify-content:flex-end}#bt .hpn.s1 small{text-align:right}',
       '#bt .hpn .eg2{height:14px;margin:2px 0 1px;border:1.5px solid rgba(255,236,190,.9);border-radius:8px;background:rgba(8,14,30,.72);box-shadow:0 1px 4px rgba(0,0,0,.6)}',
@@ -100,10 +108,14 @@
   }
 
   // ---- 背景 ----
+  // 2026-10-12 試遊：野生・レア・ライバル（Chapter の道中のバトル）は Chapter ごとの野外の背景（会場 venue ではない）。正式の野外のバトル背景が届いたらここを差し替える（assets/battle/field_1012/ch1〜4 の予定）。
+  //  今は各 Chapter の正式のフィールド背景を仮に使う（Chapter 1＝はじまりの草原・Chapter 2＝潮風の海岸）。無い Chapter（3・4）は従来の venue
+  const FIELD_BG = { 1: './assets/fields/ch1a/formal_1008/ch1a_scene_01.webp', 2: './assets/fields/ch2a/field/ch2_field_01.webp' };
+  const fieldSrc = (ch) => FIELD_BG[Number(ch)] || null;
   function setupBg(bt) {
-    const prac = !!(bt.dataset && bt.dataset.mmprac === '1'), src = arenaSrc(rankOf(bt), prac), bgs = $('.bgs', bt);
+    const prac = !!(bt.dataset && bt.dataset.mmprac === '1'), fld = prac ? fieldSrc(bt.dataset.mmch) : null, src = fld || arenaSrc(rankOf(bt), prac), bgs = $('.bgs', bt);
     if (!src || !bgs || $('.mma-bg', bgs)) return;
-    const im = new Image(); im.className = 'mma-bg' + (prac ? '' : ' ofc'); im.alt = ''; im.decoding = 'async'; im.src = src;   // ofc＝公式ランク戦の正式背景
+    const im = new Image(); im.className = 'mma-bg' + (prac ? (fld ? ' fld' : '') : ' ofc'); im.alt = ''; im.decoding = 'async'; im.src = src;   // ofc＝公式ランク戦の正式背景
     bgs.appendChild(im); bgs.classList.add('mma-on');
   }
 
@@ -268,8 +280,17 @@
     im.onload = () => mon.classList.add('mma-won'); im.onerror = () => im.remove();
     mon.appendChild(im);
   }
+  // 2026-10-12 試遊：状態異常（#mmail）・能力の上げ下げ（#st0／#st1）の札は名前の横に小さく1行（左＝名前の右・右＝名前の左）。行の高さは固定＝札が出てもライフのバーは動かない
+  function setupChips(bt) {
+    [0, 1].forEach((i) => {
+      const hb = bt.querySelector('#hp' + i + ' .hpb'), st = bt.querySelector('#st' + i); if (!hb || !st || hb.querySelector('.mmchips')) return;
+      const w = document.createElement('div'); w.className = 'mmchips'; w.id = 'mmchips' + i;
+      const nm = hb.querySelector('.hn1'); hb.insertBefore(w, nm ? nm.nextSibling : hb.firstChild); w.appendChild(st);
+    });
+  }
   function setup(bt) {
     style();
+    try { setupChips(bt); } catch (e) { /* 見た目だけ */ }
     try { setupText(bt); } catch (e) { /* 見た目だけ */ }
     try { setupBg(bt); } catch (e) { /* 見た目だけ */ }
     try { setupIdle(bt); } catch (e) { /* 見た目だけ */ }
@@ -280,7 +301,7 @@
     new MutationObserver((muts) => { for (const mu of muts) for (const n of mu.addedNodes) if (n && n.id === 'bt') setup(n); }).observe(document.body, { childList: true });
   }
   if (typeof document !== 'undefined') { if (document.body) watch(); else document.addEventListener('DOMContentLoaded', watch); }
-  root.MMARENA = Object.freeze({ R, IDLE, FACE, rankOf, arenaSrc, idleSrc, flipOf, setup, faceSrc: (sp) => (IDLE[sp] ? `./assets/tournament/faces_25d/face_${IDLE[sp].slice(5)}.webp` : null),
+  root.MMARENA = Object.freeze({ R, IDLE, FACE, rankOf, arenaSrc, fieldSrc, FIELD_BG, idleSrc, flipOf, setup, faceSrc: (sp) => (IDLE[sp] ? `./assets/tournament/faces_25d/face_${IDLE[sp].slice(5)}.webp` : null),
     // 2026-10-11：対戦表の顔＝2.5D の横顔（faces_25d）。読めなかったときは従来の丸い顔（faces）へ（index.html の tbIcon の onerror）
     faceOldSrc: (sp) => (IDLE[sp] ? `./assets/tournament/faces/face_${IDLE[sp].slice(5)}.webp` : null) });
 })(typeof window !== 'undefined' ? window : globalThis);

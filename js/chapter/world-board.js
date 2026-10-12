@@ -186,6 +186,35 @@
 .wbw .wbbr .chroute.spur{border-style:dashed}
 .wbw .wb-pop{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);width:min(86%,330px);box-sizing:border-box;padding:12px 14px;border-radius:16px;background:linear-gradient(180deg,rgba(20,36,82,.97),rgba(8,18,46,.97));border:1.5px solid #d9b465;color:#fff;text-align:center;box-shadow:0 8px 22px rgba(0,0,0,.5);pointer-events:auto;animation:wbpop .26s ease-out both;z-index:8}
 .wbw .wb-pop.out{animation:wbpopout .2s ease-in forwards}
+.wbw .wbcard-dim{position:absolute;inset:0;z-index:9;background:rgba(4,10,28,.58);animation:wbcfade .22s ease-out both;pointer-events:auto}
+.wbw .wbcard{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 92px);transform:translateX(-50%);width:min(92%,384px);z-index:10;color:#fff;text-align:center;animation:wbcin .3s cubic-bezier(.2,.8,.3,1) both;pointer-events:auto}
+.wbw .wbcard.out,.wbw .wbcard-dim.out{animation:wbcout .22s ease-in forwards}
+@keyframes wbcin{from{opacity:0;transform:translate(-50%,10px) scale(.96)}}@keyframes wbcout{to{opacity:0}}@keyframes wbcfade{from{opacity:0}}
+.wbw .wbcard figure{position:relative;margin:0;width:100%;aspect-ratio:3/2;border-radius:14px;overflow:hidden;border:2px solid #d9b465;box-shadow:0 10px 26px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,240,200,.35);background:#20385e}
+.wbw .wbcard figure .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.wbw .wbcard figure.ph .bg{object-position:50% 62%}
+.wbw .wbcard figure.ph::after{content:"";position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse 60% 55% at 50% 66%,rgba(255,244,200,.38),transparent 70%),linear-gradient(rgba(8,16,40,.08),rgba(8,16,40,.34))}
+.wbw .wbcard figure .mon{position:absolute;left:50%;bottom:5%;height:68%;width:auto;max-width:70%;object-fit:contain;translate:-50% 0;z-index:3;filter:drop-shadow(0 6px 5px rgba(0,0,0,.45))}
+.wbw .wbcard figure .tool{position:absolute;z-index:4;height:34%;width:auto;filter:drop-shadow(0 3px 3px rgba(0,0,0,.4))}
+.wbw .wbcard figure .tool.back{z-index:2}
+.wbw .wbcard .cap{margin:-14px auto 0;position:relative;z-index:4;display:inline-block;max-width:92%;padding:5px 18px 6px;border-radius:999px;background:linear-gradient(#1c3373,#0d1a45);border:1.5px solid #e0b861;font:800 15px/1.3 var(--mm-font-title,serif);box-shadow:0 4px 10px rgba(0,0,0,.45)}
+.wbw .wbcard .res{margin:8px auto 0;padding:9px 12px 10px;border-radius:12px;background:linear-gradient(180deg,rgba(20,36,82,.96),rgba(8,18,46,.96));border:1.5px solid #d9b465;box-shadow:0 6px 16px rgba(0,0,0,.45)}
+.wbw .wbcard .res:empty{display:none}
+.wbw .wbcard .res p{margin:0 0 4px;font-size:13px;line-height:1.5}
+.wbw .wbcard .res .rows{display:flex;flex-wrap:wrap;gap:4px 10px;justify-content:center;font-weight:800;font-size:15px}
+.wbw .wbcard .res .rows .dn{color:#ffb0a0}
+.wbw .wbcard .sbar{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:6px 8px;text-align:left}
+.wbw .wbcard .sbar .nm{font:800 15px/1 var(--mm-font-title,serif);color:var(--c,#ffe08a);text-shadow:0 1px 2px #000}
+.wbw .wbcard .sbar .tr{position:relative;height:16px;border-radius:9px;border:1.5px solid rgba(255,236,190,.9);background:rgba(4,10,26,.8);overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.6)}
+.wbw .wbcard .sbar .tr i{position:absolute;left:0;top:0;bottom:0}
+.wbw .wbcard .sbar .tr i.old{background:rgba(255,255,255,.2);z-index:1}
+.wbw .wbcard .sbar .tr i.new{z-index:2;width:var(--w0,0%);background:var(--fill) left center/100% 100% no-repeat;transition:width 1s cubic-bezier(.25,.8,.3,1)}
+.wbw .wbcard .sbar.on .tr i.new{width:var(--w1,0%)}
+.wbw .wbcard .sbar .v{font:800 16px/1 var(--mm-font-body,sans-serif);min-width:3.2em;text-align:right}
+.wbw .wbcard .sbar .up{grid-column:1/-1;text-align:center;font:900 20px/1.1 var(--mm-font-title,serif);color:var(--c,#ffe08a);text-shadow:0 2px 4px #000,0 0 10px rgba(255,230,150,.5);opacity:0;transform:scale(.6);transition:opacity .25s,transform .35s cubic-bezier(.3,1.6,.5,1)}
+.wbw .wbcard .sbar.on .up{opacity:1;transform:none}
+html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カードの間はフィナの立ち絵を出さない（挿絵を隠さない・名前の札と会話の窓は出す） */
+@media (prefers-reduced-motion:reduce){.wbw .wbcard,.wbw .wbcard-dim{animation:none}.wbw .wbcard .sbar .tr i{transition:none}}
 .wbw .wb-pop img.art{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:10px;margin:0 0 8px}
 .wbw .wb-pop .wbmeal{position:relative;width:100%;aspect-ratio:3/2;border-radius:10px;overflow:hidden;margin:0 0 8px}.wbw .wb-pop .wbmeal .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .wbw .wb-pop .wbmeal .mon{position:absolute;right:4%;bottom:3%;height:52%;width:auto;filter:drop-shadow(0 4px 4px rgba(0,0,0,.35));animation:wbmeal 1.1s ease-in-out infinite alternate}@keyframes wbmeal{to{transform:translateY(-3%)}}
@@ -200,7 +229,7 @@
 .wbw .wb-arr.on{opacity:1}
 @keyframes wbpop{from{opacity:0;transform:translate(-50%,-46%) scale(.94)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 @keyframes wbpopout{to{opacity:0;transform:translate(-50%,-52%) scale(.97)}}
-.wbv .rfw-mon .mon{display:block;position:relative}
+.wbv .rfw-mon .mon{display:block;position:relative;width:100%!important;height:auto!important}   /* 2026-10-12 試遊：index.html の共通の .mon{width:96px;height:96px} が効いて、絵が箱より大きく右下へずれていた（マスの上に立たない） */
 .wbv .rfw-mon .mon>img{display:block;width:100%;height:auto;filter:drop-shadow(0 3px 2px rgba(0,0,0,.45))}
 :is(#rfp,.wbv) .rfw-mon .mon>img.wk{position:absolute;left:50%;bottom:calc((1 - var(--sth,1)) * 100%);width:auto;height:calc(100% * var(--wkh,1) * var(--sth,1));max-width:none;translate:-50% calc(var(--wkf,0) * 100%);opacity:0;animation:none}
 :is(#rfp,.wbv) .rfw-mon:is(.wk-on,.wk-idle) .mon:has(>img.wk.on)>img.st{opacity:0}
@@ -278,7 +307,7 @@
 @keyframes wbrspin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.wbw .wbrelay{transition-duration:.2s}.wbw .wbrelay .wbr-load i{animation:none}}
 @media (prefers-reduced-motion:reduce){.wbw .wb-pop,.wbw .wb-pop.out,.wbv .rfw-mon .mon,.wbw .wbx *,.wbw .wbx-gold *,.wbw .wbx-hg,:is(#rfp,.wbv) .rfw-mark{animation:none!important}}`
-    + (root.MMREACT ? Object.entries(root.MMREACT.MOTIONS).map(([k, v]) => `.wbv .rfw-mon.mrx-${k} .mon{animation:mrx-${k} ${v.ms}ms cubic-bezier(.4,0,.3,1)}`).join('') : '');
+    + (root.MMREACT ? Object.entries(root.MMREACT.MOTIONS).map(([k, v]) => `.wbv .rfw-mon.mrx-${k} .mon,.wbw .wbcard figure.mrx-${k} .mon{animation:mrx-${k} ${v.ms}ms cubic-bezier(.4,0,.3,1)}`).join('') : '');
     document.head.appendChild(s);
   }
   function release() { sprStop(); if (V.intro || V.cover) busySet(false); if (V.cover) { V.cover.remove(); V.cover = null; } if (V.world) { try { V.world.destroy(); } catch (e) {} } V.world = null; V.el = null; V.key = null; V.intro = false; }
@@ -289,7 +318,7 @@
     app.innerHTML = '<div class="chfw wbw" id="wbw"><div class="wbv" id="wbv"></div><div class="chf-ui" id="wb-ui"></div></div>';
     V.el = $('#wbw'); V.key = key;
     if (root.MMRF_WORLD) V.world = root.MMRF_WORLD.create(V.el.querySelector('.wbv'), D(), root.MMRF_PLAY, { view: viewRect, monSrc: monSrc(m), art: { base: ART, road: 'strip' },
-      focus: true, veil: false, ahead: CAM.ahead, sMin: CAM.sMin, sMax: CAM.sMax, tilePx: CAM.tilePx, monRatio: CAM.monRatio, zoomTau: CAM.zoomTau });
+      focus: true, veil: false, xray: true, ahead: CAM.ahead, sMin: CAM.sMin, sMax: CAM.sMax, tilePx: CAM.tilePx, monRatio: CAM.monRatio, zoomTau: CAM.zoomTau });
     sprSetup(m);
     return true;
   }
@@ -465,6 +494,9 @@
     R.mark(m, ev.id); doSave();
     const el = monEl(); await wait(calm() ? 0 : 200);
     const ms = R.play(el, ev.motion); await wait(calm() ? 0 : Math.min(ms, 900));
+    // 2026-10-12 試遊：挿絵カード（共通の挿絵が届くまでは仮の背景）にモンスターを大きく → 同じ動き → 会話と選択肢 → 結果もカードの中
+    const card = cardOpen({ art: CARD_ART.react, ph: PH.react, mon: monSrc(m), title: ev.title || '' });
+    if (card && !calm()) R.play(card.querySelector('figure'), ev.motion);
     let id = null;
     try { id = await root.MMNPC.talk([{ npc: 'fina', expression: ev.expression, text: ev.line, choices: ev.choices.map((c, i) => ({ id: String(i), label: c.label })) }], { kind: 'fina', presentation: 'compact' }); } catch (e) {}
     const res = R.apply(gS(), m, ev, id == null ? 0 : +id); doSave();
@@ -473,7 +505,10 @@
     R.play(el, res.kind === 'none' ? (ev.sp === 3 ? 'stoneReaction' : 'happy') : 'happy');
     const eff = res.kind === 'stat' ? `${labOf(res.key)} +${res.amount}` : res.kind === 'fatigue' ? `空腹 ${res.fatigue < 0 ? '−' : '+'}${Math.abs(res.fatigue)}` : res.kind === 'item' ? `${nm(res.item)} を見つけた！${res.to === 'vault' ? '（バッグがいっぱいなので保管庫へ）' : ''}` : '';
     paint(m); lock();
-    await popup(eff ? `<small>${esc(res.text || ev.title)}</small><b>${esc(eff)}</b>` : `<small>${esc(ev.title)}</small><b>${esc(res.text || '')}</b>`, 1300);
+    if (card && card.isConnected) {
+      cardRes(card, `${res.text ? `<p>${esc(res.text)}</p>` : ''}${eff ? `<div class="rows"><span>${esc(eff)}</span></div>` : ''}`);
+      await cardHold(card, 300, 1500); await cardClose(card);
+    } else await popup(eff ? `<small>${esc(res.text || ev.title)}</small><b>${esc(eff)}</b>` : `<small>${esc(ev.title)}</small><b>${esc(res.text || '')}</b>`, 1300);
     return eff ? `${res.text || ev.title}　${eff}` : (res.text || ev.title || '');
   }
 
@@ -562,6 +597,72 @@
   function useItem(i) { const S = gS(), m = S && S.m; if (!active(m) || busyGet()) return; const r = root.MMCH.useFatigueItem(S, m, i); if (!r.ok) { itemsClose(); return board(root.MMCH.ITEM_WHY[r.reason] || ''); } doSave(); board(`空腹 −${r.recovered}`); }
 
   // ---- 止まった地点の結果 ----
+  // ---- 2026-10-12 試遊：能力アップ・出来事・冒険リアクションの挿絵カード（盤の上に会話の窓・選択肢だけが出る見え方をやめる）。
+  //  正式の挿絵が届いたら CARD_ART に1行足すだけ（今は Chapter 1 の正式背景から作った仮の絵＋モンスターを大きく中央）。ファイルの無い所は読みに行かない（404 を出さない）
+  const CARD_ART = {
+    stat: {},    // 能力アップの挿絵（予定の置き場＝assets/chapter/stat_art_1012 の stat_li など。li・po・in・hi・ev・de＝ライフ・ちから・かしこさ・命中・回避・丈夫さ）
+    react: '',   // 冒険リアクションの共通の挿絵（予定の置き場＝assets/chapter/event_art_1012 の reaction）
+    event: '',   // 挿絵の無い出来事の共通の挿絵（予定の置き場＝assets/chapter/event_art_1012 の event）
+  };
+  const PH = { stat: './assets/fields/ch1a/formal_1008/ch1a_scene_01.webp', react: './assets/fields/ch1a/formal_1008/ch1a_scene_02.webp', event: './assets/fields/ch1a/formal_1008/ch1a_scene_03.webp' };
+  const BAR_FILL = { li: 'b31_ability_bar_fill_yellow', po: 'b30_ability_bar_fill_red', in: 'b29_ability_bar_fill_green', hi: 'b28_ability_bar_fill_pink', ev: 'b26_ability_bar_fill_lightblue', de: 'b27_ability_bar_fill_darkblue' };
+  const evCardOpt = (m, fx, e) => ({ art: e.image || CARD_ART.event, ph: PH.event, mon: e.image ? '' : monSrc(m), title: fx.title || e.title || '' });
+  /** 挿絵カード：{ art（挿絵）, ph（挿絵が無いときの仮の背景）, mon（モンスターを大きく中央に）, title } → カードの要素（.res に結果を入れる） */
+  function cardOpen(o) {
+    const ui = $('#wb-ui'); if (!ui) return null;
+    cardClose(null, true);
+    const dim = document.createElement('div'); dim.className = 'wbcard-dim'; ui.appendChild(dim);
+    const d = document.createElement('div'); d.className = 'wbcard'; d.setAttribute('role', 'status');
+    const bg = o.art || o.ph || '';
+    d.innerHTML = `<figure class="${o.art ? 'art' : 'ph'}">${bg ? `<img class="bg" src="${esc(bg)}" alt="" decoding="async">` : ''}${o.mon ? `<img class="mon" src="${esc(o.mon)}" alt="" draggable="false" decoding="async">` : ''}</figure>${o.title ? `<div class="cap">${esc(o.title)}</div>` : ''}<div class="res"></div>`;
+    ui.appendChild(d); d._dim = dim;
+    return d;
+  }
+  function cardRes(d, html) { const r = d && d.querySelector('.res'); if (r) r.innerHTML = html || ''; }
+  function cardClose(d, now) {
+    const all = d ? [d, d._dim] : [...document.querySelectorAll('#wb-ui .wbcard,#wb-ui .wbcard-dim')];
+    if (now || calm()) { all.forEach((x) => x && x.remove()); return wait(0); }
+    all.forEach((x) => x && x.classList.add('out'));
+    return wait(220).then(() => all.forEach((x) => x && x.remove()));
+  }
+  /** タップで先へ（最短 min ms は見せる・最長 max ms で自動） */
+  function cardHold(d, min, max) {
+    return new Promise((ok) => {
+      if (!d) return ok(); const t0 = Date.now(); let done = false;
+      const fin = () => { if (done) return; done = true; ok(); };
+      const tap = () => { if (Date.now() - t0 >= min) fin(); };
+      d.addEventListener('click', tap); if (d._dim) d._dim.addEventListener('click', tap);
+      setTimeout(fin, calm() ? Math.min(max, 900) : max);
+    });
+  }
+  /** 能力アップ：挿絵（無ければ仮の背景）にモンスターを大きく → 道具と特訓の動き（field-view の TRAIN_ACT）→ 能力のバーが前の値から伸びる（999 が最大・正式のバーの色）→「かしこさ +18」 */
+  async function statCard(m, key, amount) {
+    const CV = root.MMCHV, A = CV && CV.TRAIN_ACT ? CV.TRAIN_ACT[key] : null, tsrc = CV && CV.resultFxSrc ? CV.resultFxSrc('tool', key) : null;
+    const col = (G('STAT_COLOR') || {})[key] || '#ffe08a', lab = labOf(key), to = Number(m[key]) || 0, from = Math.max(0, to - (amount || 0));
+    const d = cardOpen({ art: CARD_ART.stat[key], ph: PH.stat, mon: monSrc(m), title: `${lab}のマス` }); if (!d) return;
+    feel('train.item', { key });
+    const fig = d.querySelector('figure'), mon = fig.querySelector('.mon');
+    let tool = null;
+    if (tsrc && A) {
+      tool = document.createElement('img'); tool.className = 'tool chf-tact' + (A.tool.back ? ' back' : ''); tool.src = tsrc; tool.alt = ''; tool.decoding = 'async';
+      tool.style.left = `${(50 + A.tool.dx * 40).toFixed(1)}%`; tool.style.bottom = `${Math.max(4, 5 - A.tool.dy * 36).toFixed(1)}%`; tool.style.translate = '-50% 0'; fig.appendChild(tool);
+    }
+    const pct = (v) => `${Math.max(0, Math.min(100, (v / 999) * 100)).toFixed(1)}%`;
+    cardRes(d, `<div class="sbar" data-k="${esc(key)}" style="--c:${col};--fill:url(./assets/ui/b_group/${BAR_FILL[key] || 'b29_ability_bar_fill_green'}.png);--w0:${pct(from)};--w1:${pct(to)}"><span class="nm">${esc(lab)}</span><span class="tr"><i class="old" style="width:${pct(from)}"></i><i class="new"></i></span><b class="v">${from}</b><span class="up">${esc(lab)} +${amount}</span></div>`);
+    const bar = d.querySelector('.sbar'), num = d.querySelector('.sbar .v');
+    if (!calm() && A && mon && mon.animate) { try { mon.animate(A.mon, { duration: A.ms, easing: 'ease-in-out' }); if (tool && tool.animate) tool.animate(A.tk, { duration: A.ms, easing: 'ease-in-out', fill: 'forwards' }); } catch (e) { /* 動きは飾り */ } }
+    await wait(calm() ? 0 : Math.min(700, A ? A.ms * 0.55 : 500));
+    void bar.offsetWidth; bar.classList.add('on'); feel('stat.up', { key, amount });
+    if (calm()) num.textContent = String(to);
+    else {
+      const t0 = performance.now();
+      await new Promise((ok) => { const step = (t) => { const k = Math.min(1, (t - t0) / 950), e = 1 - Math.pow(1 - k, 3); num.textContent = String(Math.round(from + (to - from) * e)); if (k < 1) requestAnimationFrame(step); else ok(); }; requestAnimationFrame(step); setTimeout(ok, 1400); });
+      num.textContent = String(to);
+    }
+    await cardHold(d, 300, 1100);
+    await cardClose(d);
+  }
+
   function rowsHtml(fx) {
     const out = [];
     for (const g of fx.gains || []) if (g.amount) out.push(`<span class="${g.amount < 0 ? 'dn' : ''}">${esc(labOf(g.key))} ${g.amount > 0 ? '+' : ''}${g.amount}</span>`);
@@ -665,7 +766,7 @@
   async function resolve() {
     const S = gS(), m = S && S.m; if (!active(m) || busyGet() || !onBoard() || !m.raise.pend || m.raise.pend.stage !== 'resolve') return;
     busySet(true); lock();
-    let tail = '';
+    let tail = '', card = null;
     try {
       const r = P8().resolveLanding(S, m); doSave();
       let fx = r.fx || {};
@@ -677,14 +778,14 @@
       }
       if (fx.kind === 'choice') {
         feel('event', { ev: fx.ev });
+        card = cardOpen(evCardOpt(m, fx, evDef(fx.ev) || {}));   // 2026-10-12 試遊：2択も挿絵を出したまま選ぶ
         const id = await choose(fx);
         let r2 = P8().resolveChoice(S, m, id); if (!r2.ok) r2 = P8().resolveChoice(S, m, (fx.options[0] || {}).id); doSave();
         if (r2.ok) { Object.assign(r, r2); fx = r2.fx || {}; }
       }
       paint(m, tail); lock();
       if (fx.kind === 'stat') {
-        await wait(calm() ? 0 : 160); await trainAct(fx.key, `${labOf(fx.key)} +${fx.amount}`); feel('stat.up', { key: fx.key, amount: fx.amount });
-        await popup(`<small>${esc(labOf(fx.key))}のマス</small><b>${esc(labOf(fx.key))} +${fx.amount}</b>`, 1300); tail = `${labOf(fx.key)} +${fx.amount}`;
+        await wait(calm() ? 0 : 160); await statCard(m, fx.key, fx.amount); tail = `${labOf(fx.key)} +${fx.amount}`;   // 2026-10-12 試遊：挿絵カード＋能力のバー（旧 trainAct＋小さな窓）
       } else if (fx.kind === 'treasure') {
         feel(['normal', 'rare', 'special'].includes(fx.tier) ? `chest.open.${fx.tier}` : 'chest.open', { tier: fx.tier });
         await goldBurst(fx.gold);
@@ -702,17 +803,20 @@
         tail = plainOf(fx) || fx.title || '';
       } else if (fx.kind === 'event') {
         const e = evDef(fx.ev) || {};
-        if (fx.recovery) feel('rest.recover'); else feel('event', { ev: fx.ev });
+        if (fx.recovery) feel('rest.recover'); else if (!card) feel('event', { ev: fx.ev });
+        // 2026-10-12 試遊：出来事は挿絵カード（挿絵が無ければ仮の背景にモンスターを大きく）を出したまま会話 → 結果もカードの中
+        if (!card) card = cardOpen(evCardOpt(m, fx, e));
         await talkLines(fx.choice ? [] : fx.lines);
         await goldBurst(fx.gold);
-        await popup(`${e.image ? `<img class="art" src="${esc(e.image)}" alt="" decoding="async">` : ''}<b>${esc(fx.title || '')}</b>${fx.text ? `<p>${esc(fx.text)}</p>` : ''}${rowsHtml(fx)}`, e.image ? 2000 : 1500);
+        const body = `${fx.text ? `<p>${esc(fx.text)}</p>` : ''}${rowsHtml(fx)}`;
+        cardRes(card, body); await cardHold(card, 300, body ? 1900 : 900); await cardClose(card); card = null;
         tail = plainOf(fx) || fx.title || '';
       } else if (fx.kind === 'battle') await encounter(m, fx.battleType);
       else if (fx.note === 'claimed') tail = `${fx.title || '宝'}はもう手に入れている。`;
       const told = await storyAt(m, 'land', { fx, goal: !!r.goal });
       if (!told && fx.kind === 'none' && fx.note === 'normal' && !r.goal && !r.timeUp) tail = (await reactionAt(m)) || tail;
       if (r.goal) tail = `${tail}　大会会場に着いた！`.trim(); else if (r.timeUp) tail = `${tail}　ターンを使い切った…`.trim();
-    } finally { busySet(false); }
+    } finally { if (card) cardClose(card, true); busySet(false); }
     if (onBoard()) board(tail || undefined);
   }
 

@@ -858,7 +858,8 @@ test('P7-38：（Phase 8で改訂）練習試合に勝っても賞金・ラン�
   assert.equal(S.g, 700); assert.equal(S.wins, 0); assert.equal('br' in S, false); assert.equal(S.m.rk, 0);
   assert.deepEqual(S.m.prog.rankClr, [false, false, false, false, false, false], '実績（ランククリア）も付かない');
   assert.equal(S.m.raise.pend, null, 'バトルマスの処理が終わりターン終了');
-  assert.match(lineOf(HTML, 'function p8AfterBattle('), /練習試合のため/, '練習試合であることを画面に表示');
+  assert.match(lineOf(HTML, 'function p8AfterBattle('), /練習試合のため/, '種類が分からないときは練習試合であることを画面に表示');
+  assert.match(lineOf(HTML, 'function p8AfterBattle('), /who=\{wild:"野生モンスター",rare:"レアモンスター",rival:"リュウ"\}\[bt\]/, '2026-10-12 試遊：野生・レア・ライバルは「野生モンスターに負けた…」など（練習試合と出さない）');
 });
 
 test('P7-39：（Phase 8で改訂）練習試合に負けても何も失わない・何も付かない', () => {
