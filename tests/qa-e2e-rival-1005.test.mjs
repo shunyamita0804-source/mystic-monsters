@@ -50,20 +50,22 @@ T('RV-B1b：野生のバトルは従来どおり（レグナスにならない�
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
-T('RV-B2：10技の演出（ポーズ＋FX）が出て 1.5秒以内に片付く・画像の 404 なし・視差を減らす設定でも出る', async () => {
+T('RV-B2：10技の演出（2026-10-12 から正式の48コマ＝js/battle/regnas-moves-data.js）が出て片付く・画像の 404 なし・視差を減らす設定でも出る。コマが読めないときの従来の静止ポーズ（MMRP.anim）も残る', async () => {
   const p = await openPage({ size: [390, 844] }); const pg = p.page;
   await toBattle(pg, 'rival');
   for (let k = 20; k <= 29; k++) {
-    const t0 = await pg.evaluate((k) => { anim(k, 1); return { n: document.querySelectorAll('#bt .rp-l img').length, hid: document.getElementById('m1').classList.contains('rp-on') }; }, k);
-    assert.ok(t0.n >= 2, `技 ${k}：ポーズと FX（${t0.n}）`); assert.equal(t0.hid, true);
+    const t0 = await pg.evaluate((k) => { anim(k, 1); return { n: document.querySelectorAll('#bt .p25f').length, cut: (document.querySelector('#bt .p25f') || {}).dataset?.cut || '' }; }, k);
+    assert.ok(t0.n >= 4, `技 ${k}：コマ（${t0.n}）`); assert.match(t0.cut, new RegExp('^R' + k + '_'));
     await pg.waitForTimeout(250);
-    const loaded = await pg.evaluate(() => [...document.querySelectorAll('#bt .rp-l img')].every((i) => !i.complete || i.naturalWidth > 0));
+    const loaded = await pg.evaluate(() => [...document.querySelectorAll('#bt .p25f')].every((i) => !i.complete || i.naturalWidth > 0));
     assert.ok(loaded, `技 ${k}：画像が読める`);
-    await pg.waitForFunction(() => !document.querySelector('#bt .rp-l'), null, { timeout: 1600 });
-    assert.equal(await pg.evaluate(() => document.getElementById('m1').classList.contains('rp-on')), false);
+    await pg.waitForFunction(() => !document.querySelector('#bt .p25f'), null, { timeout: 4000 });
   }
   await pg.emulateMedia({ reducedMotion: 'reduce' });
-  assert.ok(await pg.evaluate(() => { anim(28, 1); return document.querySelectorAll('#bt .rp-l img').length > 0; }));
+  assert.ok(await pg.evaluate(() => { anim(28, 1); return document.querySelectorAll('#bt .p25f').length > 0; }));
+  await pg.waitForFunction(() => !document.querySelector('#bt .p25f'), null, { timeout: 4000 });
+  // 従来の静止ポーズ（読めないコマがある技の代わり）
+  assert.ok(await pg.evaluate(() => { MM25D.failed.add(MMREMV_DATA[24].dir + MMREMV_DATA[24].cuts[0].f); anim(24, 1); return document.querySelectorAll('#bt .rp-l img').length >= 2 && document.getElementById('m1').classList.contains('rp-on'); }));
   await pg.waitForFunction(() => !document.querySelector('#bt .rp-l'), null, { timeout: 1600 });
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
