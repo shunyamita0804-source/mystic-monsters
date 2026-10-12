@@ -82,7 +82,7 @@ const SCRIPTS = [
   'js/phase10/monsters.js', 'js/phase11/player.js', 'js/phase12/scenes.js', 'js/phase12/dice.js', 'js/phase13/field.js',
   'js/phase9/chapters.js', 'js/phase9/board-art.js', 'js/npc/npc.js', 'js/npc/npc-events.js', 'js/audio/audio-manager.js', 'js/audio/audio-registry.js', 'js/feel/game-feel.js', 'js/feel/notice.js',   // 2026-10-02：Audio Manager・Audio Registry（BGM・SE の対応表）・Game Feel の共通基盤
   'js/chapter/engine.js', 'js/items/food.js', 'js/chapter/events.js',   // 2026-10-12 P2：食事6種（js/items/food.js）
-  'js/chapter/configs/ch1a.js', 'js/chapter/configs/ch2a.js', 'js/chapter/dice-renderer.js', 'js/chapter/reactions.js', 'js/chapter/field-view.js', 'js/chapter/intro.js',   // 2026-09-30：Chapterフィールドエンジン
+  'js/chapter/configs/ch1a.js', 'js/chapter/configs/ch2a.js', 'js/chapter/dice-renderer.js', 'js/chapter/dice-cube.js', 'js/chapter/reactions.js', 'js/chapter/field-view.js', 'js/chapter/intro.js',   // 2026-09-30：Chapterフィールドエンジン
   'js/battle/fit.js',   // 2026-09-30：バトル画面の表示だけの補正（fight()・.bt 系 CSS は変えない）
   'js/battle/fx.js',    // 2026-10-03：バトル共通演出の正式素材（fight()・.bt 系 CSS は変えない。外から見て重ねる）
   'js/battle/rival-partner.js', 'js/battle/official-moves.js', 'js/battle/rules.js', 'js/monsters/reaction-art.data.js', 'js/monsters/reaction-art.js', 'js/battle/arena.js', 'js/battle/stage.js', 'js/battle/art25d-data.js', 'js/battle/soramo-moves-data.js', 'js/battle/gauru-moves-data.js', 'js/battle/nobiton-moves-data.js', 'js/battle/regnas-moves-data.js', 'js/battle/jiol-moves-data.js', 'js/battle/art25d.js', 'js/battle/movedex.js', // 2026-10-08：ソラモ・ガウルの 2.5D バトル素材の比較試遊（?battleArt=2p5d のときだけ）。2026-10-06：正式技（ソラモ・ガウルの SK を実行時に入れ替え）・バトルの共通演出・技辞典。2026-10-05：ライバルの相棒（レグナス）の正式技・固有スキル・技の演出（fight() は変えない＝外から差し込む）

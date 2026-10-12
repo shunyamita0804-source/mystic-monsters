@@ -54,10 +54,10 @@ test('DC-02：時間（0.93秒版＝全体 約1.7秒・1.30秒版＝全体 約2.
   assert.match(src, /fx = bx \+ 360 \* nx, fy = by \+ 360 \* ny/, '最後の向き＝出目の向き＋周回');
 });
 
-test('DC-03：比較試作はゲーム本体から読み込まない・デモの素材と SE がそろっている', () => {
+test('DC-03：本編は dice-cube.js を読み込む（2026-10-12 正式採用）・デモの素材と SE がそろっている', () => {
   const html = read('index.html');
-  assert.doesNotMatch(html, /dice-cube\.js/, 'index.html は dice-cube.js を読み込まない（正式採用前）');
-  assert.doesNotMatch(html, /prototype\/dice_1012/);
+  assert.ok(html.indexOf('js/chapter/dice-renderer.js') < html.indexOf('js/chapter/dice-cube.js') && html.indexOf('js/chapter/dice-cube.js') < html.indexOf('js/chapter/world-board.js'), 'dice-renderer → dice-cube → world-board の順');
+  assert.doesNotMatch(html, /prototype\/dice_1012/, '本編はデモの SE を参照しない');
   const demo = read('prototype/dice_1012/index.html');
   for (const p of ['js/chapter/dice-cube.js', 'js/chapter/dice-renderer.js', 'assets/audio/se/mystic_monsters_official/01_dice_large_full.ogg', 'assets/fields/ch1a/dice/dice_blank.webp', 'assets/dice/std/10.webp']) assert.ok(fs.existsSync(path.join(ROOT, p)), p);
   // B4 版（今回の候補）と旧B2 版（不採用候補・比べるためだけ）。原音の MP3 は置かない（Pixabay の原音単体の再配布の禁止）
@@ -71,5 +71,22 @@ test('DC-03：比較試作はゲーム本体から読み込まない・デモの
   assert.equal(fs.readFileSync(path.join(ROOT, 'prototype/dice_1012/se/dice_magic_b4.ogg')).subarray(0, 4).toString(), 'OggS');
   assert.equal(fs.readdirSync(path.join(ROOT, 'prototype/dice_1012'), { recursive: true }).filter((f) => /\.mp3$/i.test(f)).length, 0); assert.match(demo, /dice-cube\.js/);
   const reg = read('js/audio/audio-registry.js');
-  assert.doesNotMatch(reg, /dice_magic|dice_1012/, '正式の SE の登録は変えていない');
+  assert.match(reg, /DICE_THROW:\s*\{ src: MMO \+ '01_dice_large_full\.ogg'/, '旧サイコロ（Chapter 2・旧ボード・特訓）の SE はそのまま');
+  assert.match(reg, /DICE_CUBE:\s*\{ src: SE_DIR \+ 'dice_1012\/dice_magic_b4_long_tap\.ogg', gain: 0\.9 \}/, '立体サイコロの SE＝採用の1本');
+  assert.doesNotMatch(reg, /prototype\//);
+});
+
+test('DC-04：本編の組み込み（Chapter 1 の世界のボード）＝tempo long・SE は dice.cube の1本・出目は渡した値のまま・本編の SE はデモの1本と同じファイル', () => {
+  const wb = read('js/chapter/world-board.js');
+  assert.match(wb, /root\.MMDICE3D\.play\(v, \{ host: V\.el, from: from \|\| undefined, land, top: vr\.top, tempo: 'long', throwEvent: 'dice\.cube' \}\)/);
+  assert.match(wb, /root\.MMDICE3D && root\.MMDICE3D\.isLocked\(\)/, '止まるまで START・コマンドを受け付けない');
+  assert.match(read('js/feel/game-feel.js'), /'dice\.cube': \{ level: 1, se: 'DICE_CUBE'/);
+  assert.match(read('js/audio/audio-manager.js'), /'DICE_CUBE'\]\);/);
+  const a = fs.readFileSync(path.join(ROOT, 'assets/audio/se/dice_1012/dice_magic_b4_long_tap.ogg')), b = fs.readFileSync(path.join(ROOT, 'prototype/dice_1012/se/dice_magic_b4_long_tap.ogg'));
+  assert.ok(a.equals(b), '採用した1本（デモの b4_long_tap）と同じ');
+  assert.deepEqual(fs.readdirSync(path.join(ROOT, 'assets/audio/se/dice_1012')).sort(), ['README.md', 'dice_magic_b4_long_tap.ogg'], '原音の MP3・別形式は置かない');
+  // 出目は play に渡した値（MMDICE3D は乱数を使って出目を決めない＝回り方の向きだけ）
+  const src = read('js/chapter/dice-cube.js');
+  assert.match(src, /feel\(opts\.throwEvent \|\| 'dice\.throw'/);
+  assert.doesNotMatch(src, /v:\s*[^,]*Math\.random/);
 });

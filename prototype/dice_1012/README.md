@@ -1,8 +1,8 @@
 # サイコロ演出の比較試作（2026-10-12 開発23 B）
 
-**採用決定（2026-10-12・ユーザーが iPhone で確認）＝新（立体）・1.30秒（トンッ、ト、トン）・SE「B4＋着地音（足音・仮）」（dice_magic_b4_long_tap）・1個／2個。本編への組み込みはまだ（正式実装はユーザーの別の指示のあと）。**
+**採用決定・本編に組み込み済み（2026-10-12）**＝新（立体）・1.30秒（トンッ、ト、トン）・SE「B4＋着地音（足音・仮）」（dice_magic_b4_long_tap）。本編の Chapter 1 の世界のボード（js/chapter/world-board.js の playDie）が `js/chapter/dice-cube.js`（MMDICE3D・tempo 'long'）で振り、SE は `assets/audio/se/dice_1012/dice_magic_b4_long_tap.ogg`（registry の DICE_CUBE・このフォルダの同名の OGG と同じファイル）。Chapter 2・旧ボード・特訓は従来の MMCHD のまま。
 
-**ここまでは比較試作。** ゲーム本体（index.html）のサイコロは従来の `js/chapter/dice-renderer.js`（MMCHD）と正式 SE `01_dice_large_full.ogg` のまま。このフォルダと `js/chapter/dice-cube.js` は比較のためだけにある（index.html から読み込まない＝tests/dice-cube-1012.test.mjs の DC-03 で監視）。
+**このフォルダは比較用に残す**（旧／新・0.93秒／1.30秒・SE の聞き比べ）。本編はこのフォルダのファイルを参照しない。
 
 ## 開き方
 

@@ -38,7 +38,8 @@
   const feel = (n, d) => { try { if (root.MMFEEL) root.MMFEEL.emit(n, d); } catch (e) {} };
   const labOf = (k) => { const L = G('LAB'); return (L && L[k]) || k; };
   // bBusy は index.html の let（field-view.js と同じく、別のスクリプトからも同じ名前で読み書きできる）
-  const busyGet = () => { try { return !!bBusy || !!(root.MMCHD && root.MMCHD.isLocked()); } catch (e) { return !!(root.MMCHD && root.MMCHD.isLocked()); } };
+  const diceBusy = () => !!((root.MMDICE3D && root.MMDICE3D.isLocked()) || (root.MMCHD && root.MMCHD.isLocked()));
+  const busyGet = () => { try { return !!bBusy || diceBusy(); } catch (e) { return diceBusy(); } };
   const busySet = (v) => { try { bBusy = v; } catch (e) {} };
   const V = { el: null, world: null, key: null, intro: false, path: [] };
   const onBoard = () => !!(V.el && V.el.isConnected);
@@ -331,7 +332,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
   function board(msg) {
     const S = gS(), m = S && S.m; if (!active(m)) return false;
     const fresh = ensureView(m), r = m.raise, f = fieldOf(m), ph = P8().boardPhase(m);
-    if (root.MMCHD && V.dice !== 6) { const dc = cfg().dice || {}; root.MMCHD.configure({ ...dc, sides: 6 }); V.dice = 6; root.MMCHD.preload(); }
+    if (!root.MMDICE3D && root.MMCHD && V.dice !== 6) { const dc = cfg().dice || {}; root.MMCHD.configure({ ...dc, sides: 6 }); V.dice = 6; root.MMCHD.preload(); }
     try { for (const e of [$('#app'), document.querySelector('main'), document.scrollingElement]) if (e && e.scrollTop) e.scrollTop = 0; } catch (e) {}
     if (ph === 'goal') { paint(m, msg, null, fresh); arrive(m, fresh); return true; }
     paint(m, msg, null, fresh);
@@ -535,10 +536,15 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
   // ---- 操作 ----
   function lock() { document.querySelectorAll('#wb-ui button').forEach((b) => { b.disabled = true; }); }
   function pressPoint(sel) { const host = V.el, b = host && host.querySelector(sel); if (!host || !b) return null; const hr = host.getBoundingClientRect(), r = b.getBoundingClientRect(); return { x: r.left + r.width / 2 - hr.left, y: r.top + r.height / 2 - hr.top }; }
+  // 2026-10-12 開発23 B 正式採用：立体サイコロ MMDICE3D（1.30秒で止まる・トンッ、ト、トン・SE は DICE_CUBE の1本）。出目は渡した値（見せるだけ）。読めないときだけ従来の MMCHD
   async function playDie(v, from) {
-    if (!root.MMCHD || !V.el) return;
+    if (!V.el || (!root.MMDICE3D && !root.MMCHD)) return;
     const hr = V.el.getBoundingClientRect(), vr = viewRect() || { W: hr.width, top: 80, bottom: hr.height - 170 };
-    try { await root.MMCHD.play(v, { host: V.el, from, land: { x: vr.W / 2, y: vr.top + (vr.bottom - vr.top) * 0.36 } }); } catch (e) {}
+    const land = { x: vr.W / 2, y: vr.top + (vr.bottom - vr.top) * 0.36 };
+    try {
+      if (root.MMDICE3D) await root.MMDICE3D.play(v, { host: V.el, from: from || undefined, land, top: vr.top, tempo: 'long', throwEvent: 'dice.cube' });
+      else await root.MMCHD.play(v, { host: V.el, from, land });
+    } catch (e) {}
   }
   async function roll() {
     const S = gS(), m = S && S.m; if (!active(m) || busyGet() || V.intro || !P8().canRoll(m)) return;

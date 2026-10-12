@@ -1,7 +1,8 @@
 // =========================================================
-// 立体サイコロ（比較試作・2026-10-12 開発23 B）`MMDICE3D`
-//  **正式採用ではない**：index.html からは読み込まない（ゲームのサイコロは従来の js/chapter/dice-renderer.js のまま）。
-//  比較デモ prototype/dice_1012/index.html だけが使う。採用が決まったら MMCHD.play と同じ形（play(出目, { host, from, land })）で差し替えられる。
+// 立体サイコロ（2026-10-12 開発23 B）`MMDICE3D`
+//  **正式採用（2026-10-12 ユーザー決定）＝Chapter 1 の世界のボード（js/chapter/world-board.js の playDie）**：tempo 'long'（1.30秒で止まる・トンッ、ト、トン）・
+//   SE は出来事 'dice.cube'（opts.throwEvent）→ DICE_CUBE（assets/audio/se/dice_1012/dice_magic_b4_long_tap.ogg）。Chapter 2 以降・旧ボード・特訓は従来の MMCHD のまま。
+//  比較デモ prototype/dice_1012/index.html も同じファイルを使う（既定の throwEvent 'dice.throw'）。
 //
 //  見せ方（約1.0秒で出目が決まる＋0.6秒見せる。opts.tempo:'long' は約1.3秒で決まる比較版）：START の位置から軽く浮く → 前へ弧を描きながら大きく（×1.35）→ X・Y 軸で回って面が次々に見える
 //   → 落ちて小さく弾む → 最後の約0.25秒で出目の面へ減速して止まる → 止まった瞬間に光と粒（dice.stop）→ 出目の札 → 消える。
@@ -171,7 +172,7 @@
   }
 
   /**
-   * 投げて止める。values＝出目（1〜6）か [出目, 出目]（2個）。opts＝{ host, from:{x,y}, land:{x,y}, size }
+   * 投げて止める。values＝出目（1〜6）か [出目, 出目]（2個）。opts＝{ host, from:{x,y}, land:{x,y}, size, top, tempo:'short'|'long', calm, throwEvent, onLock }
    * 戻り値の Promise は消えたあとに解決。出目の面は止まった瞬間（lock）に正面・そのあと何も変えない
    */
   async function play(values, opts = {}) {
@@ -198,7 +199,7 @@
     const ra = res.animate([{ opacity: 0, transform: 'translate(-50%,6px) scale(.8)', offset: 0 }, { opacity: 0, transform: 'translate(-50%,6px) scale(.8)', offset: Math.max(0, (L + 60) / D - 0.001), easing: 'cubic-bezier(.3,1.5,.5,1)' }, { opacity: 1, transform: 'translate(-50%,0) scale(1)', offset: Math.min(1, (L + 220) / D) }, { opacity: 1, transform: 'translate(-50%,0) scale(1)', offset: 1 }], { duration: D, fill: 'forwards' });
     // 全体を最後に薄くする（動きの時間軸と同じ）
     const fa = ov.animate([{ opacity: 1, offset: 0 }, { opacity: 1, offset: (D - T.fade) / D }, { opacity: 0, offset: 1 }], { duration: D, fill: 'forwards' });
-    feel('dice.throw', { values: vs.slice() });
+    feel(opts.throwEvent || 'dice.throw', { values: vs.slice() });   // 投げ始めに SE を1回（本編は 'dice.cube'＝DICE_CUBE）
     try {
       await wait(L);
       last.lock = now() - t0; ov.dataset.final = vs.join(',');

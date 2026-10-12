@@ -26,9 +26,9 @@ ZIP の README・LICENSE の原文は、受け取った ZIP の中にある（�
 
 置き換えて外した旧い曲（記録は下の表に残す）：PGS「Battle Music 1」（旧 WILD_BATTLE）・「Battle Music 2」（旧 TOURNAMENT_BATTLE_LOW）・alkakrab「Battle of the Skies」（旧 RIVAL_BATTLE）・「Clash of Arcane Titans」（旧 TOURNAMENT_BATTLE_HIGH）。不採用（ユーザー指示）：「いざ出発！」「冒険への誘い」。
 
-## 2026-10-12 比較試作（PR #20・未採用）：サイコロの SE（prototype/dice_1012/se/）
+## 2026-10-12 正式採用：立体サイコロの SE（assets/audio/se/dice_1012/）＋比較試作（prototype/dice_1012/se/）
 
-**正式採用ではない**（ゲームの DICE_THROW は従来の 01_dice_large_full.ogg のまま）。比較デモ prototype/dice_1012/ だけが鳴らす。原音（Pixabay の MP3）は編集・合成した1本にだけ使い、原音そのものはリポジトリ・公開サイトに置かない（Pixabay Content License は原音単体の再配布を禁止）。切り出し・音量は prototype/dice_1012/README.md。出典の確認日 2026-10-12（ユーザーの確認記録）。
+**正式採用（2026-10-12 ユーザー決定）**：assets/audio/se/dice_1012/dice_magic_b4_long_tap.ogg＝SE_REGISTRY の DICE_CUBE（gain 0.9）。Chapter 1 の世界のボードの立体サイコロ（MMDICE3D・1.30秒で止まる）だけが鳴らす。中身は比較デモの dice_magic_b4_long_tap.ogg と同じファイル（sha256 1872dcff07de6d1e81e99bed7cbc57400932173dca518dca89116bd76151da39）。A1・B4・C1（Pixabay）を編集・合成し、着地の「トンッ、ト、トン」は既存の正式 SE 05_small_monster_entry_steps_4step.ogg（ゲームの所有素材）の足音を切り出して重ねた。旧サイコロの DICE_THROW（01_dice_large_full.ogg）は Chapter 2・旧ボード・特訓のまま。原音（Pixabay の MP3）は編集・合成した1本にだけ使い、原音そのものはリポジトリ・公開サイトに置かない（Pixabay の規約：原音単体の再配布の禁止）。ゲームには OGG だけ（assets/audio の約束＝同じ音の別形式を置かない）。M4A は比較デモにだけ残す。
 
 | ファイル | 使った原音 / 作者 | 出典 | ライセンス |
 |---|---|---|---|
