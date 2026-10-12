@@ -692,6 +692,12 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - シミュレーション（tests/chapter-sim.mjs の eatIfHungry＝ジャガイモ10個・空腹 80 以上で1個）：旧ボード Chapter 1 は 1000回で到達 100%・平均 32.7ターン・食べた回数 平均 6.5。SF-04（育成を最後まで）はアイテム屋でジャガイモを買い足す前提
 - テスト：tests/p2-hunger-1012.test.mjs（P2-01〜08）・実ブラウザ tests/qa-e2e-p2-1012.test.mjs（P2B-1〜3）。CH1-06・WC-05・BAG-11／12・N6-02・PB-06／07・SF-04・QA-S1・EC-B1・HB-B1 を新しい規則に書き直し
 
+### 公式ランク戦の BGM（2026-10-12。基準 90b0e1f への差分）
+
+- **TOURNAMENT_BATTLE_LOW（E〜S の公式ランク戦の実戦の間だけ。HIGH は fallback で同じ曲）**＝ユーザー納品「公式ランク.mp3」（291.32秒）を OGG Vorbis q5 に変換しただけの assets/audio/bgm/licensed_20261012/official_rank_battle.ogg（-17.0 LUFS・gain 0.89・頭の無音なし・289.8秒から終わりのフェード＝loopEnd 289.6・頭へ 0.6秒のクロスフェード）。原本 MP3 は置かない（sha256 は AUDIO_CREDITS.md）。**曲名・作曲者・ライセンスは要確認**（納品物に記載なし）
+- 変えていない：対戦表（TOURNAMENT_LOBBY_LOW／HIGH）・対戦前比較（TOURNAMENT_MATCHUP）・セドリック（CEDRIC）・結果（RESULT）・野生・レア・ライバル。**SPECIAL_BATTLE（入口なし）は旧「戦いの旅路を征く」を直接指す**（差し替えに巻き込まない。旧ファイルは残す）
+- テスト：AUDIO-37・GF-03・実ブラウザ tests/qa-e2e-bgm-1012.test.mjs（BG-B1＝E の5試合：対戦表 → 実戦 → 対戦表 → … → 結果で常に1本、BG-B2＝S）
+
 ### バッグ（2026-10-11 正式。基準 12edeaa への差分）
 
 - **枠＝プレイヤー全体の最高優勝実績**（S.rankRec.cleared。育成中の個体ではない）：未優勝 2／E・D 優勝 3／C・B 優勝 4／A・S 優勝 6（最大6）。D を先に優勝して E をあとから＝3のまま、B を先に＝4、A の優勝で 4 → 6 を一度に。同じ段階・再優勝・別の個体の同じランクの初回優勝では増えない（js/phase7/progression.js の BAG_CAP_BY_WIN・bagCap・recordRankClear の bagCap:{from,to}）。旧 `S.inv.bagCapUnlocked`（S 初回クリアの記録）の意味は変えず、立っていれば 6 として読む（旧：初期5・S 初回で6）

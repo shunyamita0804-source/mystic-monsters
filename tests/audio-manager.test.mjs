@@ -410,7 +410,7 @@ test('AUDIO-24：2026-10-03 第5弾の仮採用（HydroGene 16-bit・CC0）：�
   // 受付 → 実戦 → 結果：<audio> は同時に1本だけ（二重再生しない）
   const { A } = env(); A.registerAll({ bgm: got.bgm, se: got.se });
   A.scene('TOURNAMENT_ENTRY'); await tick(5); assert.equal(active(A).length, 1); assert.match(active(A)[0].src, /03_royal_castle/);
-  A.stopBgm({ fade: 'quick' }); A.scene('TOURNAMENT_BATTLE_LOW'); await tick(800); assert.equal(active(A).length, 1); assert.match(active(A)[0].src, /14_official_rank_battle/);
+  A.stopBgm({ fade: 'quick' }); A.scene('TOURNAMENT_BATTLE_LOW'); await tick(800); assert.equal(active(A).length, 1); assert.match(active(A)[0].src, /licensed_20261012\/official_rank_battle/);
   A.scene('RESULT'); await tick(800); assert.equal(active(A).length, 1, '二重再生しない'); assert.match(active(A)[0].src, /03_royal_castle/);
 });
 
@@ -524,7 +524,7 @@ test('AUDIO-29：2026-10-06 重大修正（iOS）：アラームなどで AudioC
 
 test('AUDIO-30：2026-10-07 正式採用の BGM 14曲：プロローグ6場面・セドリック・対戦表（17秒から）・対戦前比較のジングル・ライバル・闘技場・野生・レア・公式ランク戦。ファイルは OGG・実在・場面ごとに1曲（誤った戦闘曲にしない）', async () => {
   const { got } = loadRegistry(), L = './assets/audio/bgm/licensed_20261007/';
-  const want = { PROLOGUE_1: '01_prologue_peace', PROLOGUE_2: '02_prologue_calamity', PROLOGUE_3: '03_prologue_hopeful', PROLOGUE_4: '04_prologue_legend_battle', PROLOGUE_5: '05_prologue_tournament', PROLOGUE_6: '06_prologue_departure', CEDRIC: '07_cedric_pre_tournament', TOURNAMENT_LOBBY_LOW: '08_tournament_table_start17s', TOURNAMENT_MATCHUP: '09_prebattle_compare_jingle', RIVAL_BATTLE: '10_rival_battle', ARENA: '11_arena_swords_at_midnight_loop', WILD_BATTLE: '12_wild_battle', RARE_WILD_BATTLE: '13_rare_monster_battle', TOURNAMENT_BATTLE_LOW: '14_official_rank_battle' };
+  const want = { PROLOGUE_1: '01_prologue_peace', PROLOGUE_2: '02_prologue_calamity', PROLOGUE_3: '03_prologue_hopeful', PROLOGUE_4: '04_prologue_legend_battle', PROLOGUE_5: '05_prologue_tournament', PROLOGUE_6: '06_prologue_departure', CEDRIC: '07_cedric_pre_tournament', TOURNAMENT_LOBBY_LOW: '08_tournament_table_start17s', TOURNAMENT_MATCHUP: '09_prebattle_compare_jingle', RIVAL_BATTLE: '10_rival_battle', ARENA: '11_arena_swords_at_midnight_loop', WILD_BATTLE: '12_wild_battle', RARE_WILD_BATTLE: '13_rare_monster_battle', SPECIAL_BATTLE: '14_official_rank_battle' };   // 2026-10-12：公式ランク戦（TOURNAMENT_BATTLE_LOW）は licensed_20261012＝AUDIO-37。旧曲は SPECIAL_BATTLE だけ
   for (const [k, f] of Object.entries(want)) { assert.equal(srcsOf(got.bgm[k])[0], L + f + '.ogg', k); assert.ok(existsSync(path.join(ROOT, L, f + '.ogg')), f); assert.ok(got.bgm[k].gain > 0 && got.bgm[k].gain <= 1.2, `${k} gain`); }
   assert.deepEqual([got.bgm.TOURNAMENT_LOBBY_HIGH, got.bgm.TOURNAMENT_BATTLE_HIGH], [{ fallback: 'TOURNAMENT_LOBBY_LOW' }, { fallback: 'TOURNAMENT_BATTLE_LOW' }], 'B〜S も同じ曲');
   assert.equal(got.bgm.TOURNAMENT_LOBBY_LOW.start, 17, '対戦表は17〜31秒の落ち着いた部分から（2026-10-09 ユーザー確認）'); assert.equal(got.bgm.TOURNAMENT_LOBBY_LOW.loopStart, 17);
@@ -613,4 +613,25 @@ test('AUDIO-36：2026-10-09：開始位置（start）は #t= を無視するブ�
   el.currentTime = 0; (el.ls.loadedmetadata || []).forEach((f) => f());
   assert.equal(el.currentTime, 17, '頭から始まっていたら 17秒へ');
   el.currentTime = 40; (el.ls.loadedmetadata || []).forEach((f) => f()); assert.equal(el.currentTime, 40, '先にいるときは動かさない');
+});
+
+test('AUDIO-37：2026-10-12 公式ランク戦（E〜S の実戦の間だけ）＝ユーザー納品「公式ランク.mp3」の OGG。291.3秒・ループ終端は終わりのフェードの手前（旧曲の 233.4秒を流用しない）。対戦表・対戦前比較・セドリック・結果・野生・レア・ライバルは変えない。SPECIAL_BATTLE は旧曲のまま', async () => {
+  const { got } = loadRegistry(), b = got.bgm, L = './assets/audio/bgm/licensed_20261007/';
+  assert.equal(srcsOf(b.TOURNAMENT_BATTLE_LOW)[0], './assets/audio/bgm/licensed_20261012/official_rank_battle.ogg');
+  assert.ok(existsSync(path.join(ROOT, 'assets/audio/bgm/licensed_20261012/official_rank_battle.ogg')));
+  assert.deepEqual([b.TOURNAMENT_BATTLE_LOW.loopStart, b.TOURNAMENT_BATTLE_LOW.loopEnd], [0, 289.6]);
+  assert.ok(b.TOURNAMENT_BATTLE_LOW.loopEnd > 280 && b.TOURNAMENT_BATTLE_LOW.loopEnd < 291.3, '曲の長さ 291.3秒の中・終わりのフェードの手前');
+  assert.ok(b.TOURNAMENT_BATTLE_LOW.gain > 0 && b.TOURNAMENT_BATTLE_LOW.gain <= 1.2);
+  assert.deepEqual(b.TOURNAMENT_BATTLE_HIGH, { fallback: 'TOURNAMENT_BATTLE_LOW' }, 'B〜S も同じ曲');
+  assert.equal(srcsOf(b.SPECIAL_BATTLE)[0], L + '14_official_rank_battle.ogg', '入口の無い特殊戦は巻き込まない');
+  const keep = { TOURNAMENT_LOBBY_LOW: '08_tournament_table_start17s', TOURNAMENT_MATCHUP: '09_prebattle_compare_jingle', CEDRIC: '07_cedric_pre_tournament', WILD_BATTLE: '12_wild_battle', RARE_WILD_BATTLE: '13_rare_monster_battle', RIVAL_BATTLE: '10_rival_battle' };
+  for (const [k, f] of Object.entries(keep)) assert.equal(srcsOf(b[k])[0], L + f + '.ogg', k);
+  assert.deepEqual(b.RESULT, { fallback: 'TOURNAMENT_ENTRY' });
+  // 対戦前比較 → 実戦（E・S）→ 結果：<audio> は同時に1本
+  const { A } = env(); A.registerAll({ bgm: got.bgm, se: got.se });
+  for (const sc of ['TOURNAMENT_BATTLE_LOW', 'TOURNAMENT_BATTLE_HIGH']) {
+    A.scene('TOURNAMENT_MATCHUP'); await tick(800); A.stopBgm({ fade: 'quick' }); A.scene(sc); await tick(800);
+    assert.equal(active(A).length, 1, sc); assert.match(active(A)[0].src, /licensed_20261012\/official_rank_battle/, sc);
+    A.scene('RESULT'); await tick(800); assert.equal(active(A).length, 1, '二重再生しない'); assert.match(active(A)[0].src, /03_royal_castle/);
+  }
 });

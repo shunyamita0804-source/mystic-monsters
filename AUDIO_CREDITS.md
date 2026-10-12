@@ -26,6 +26,19 @@ ZIP の README・LICENSE の原文は、受け取った ZIP の中にある（�
 
 置き換えて外した旧い曲（記録は下の表に残す）：PGS「Battle Music 1」（旧 WILD_BATTLE）・「Battle Music 2」（旧 TOURNAMENT_BATTLE_LOW）・alkakrab「Battle of the Skies」（旧 RIVAL_BATTLE）・「Clash of Arcane Titans」（旧 TOURNAMENT_BATTLE_HIGH）。不採用（ユーザー指示）：「いざ出発！」「冒険への誘い」。
 
+## 2026-10-12 正式採用：公式ランク戦の曲（assets/audio/bgm/licensed_20261012/）
+
+ユーザー納品の MP3「公式ランク.mp3」（ZIP「Claude納品_公式ランク戦BGM」の 公式ランク戦BGM/。291.32秒・44.1kHz ステレオ・Final Cut Pro の書き出し。sha256 `cf02619bf0620055b71b1278159f3c121c626a1b9bffabd80f40a034a1eceaf0`）を OGG Vorbis（q5）に変換しただけ（曲の切り出し・加工はしない。メタデータは外した）。原本の MP3 はリポジトリに置かない（ユーザーが保管）。
+
+- 曲名・作曲者・配布元・ライセンス：**要確認**（ZIP・指示書に記載が無い。ユーザーの「正式採用音源」という指示だけ。作り話はしない）
+- 解析：-17.0 LUFS・真のピーク -1.7 dBFS・頭の無音なし・289.8秒から終わりのフェード（291.3秒で終わる）
+
+| 場面（registry） | ファイル | 曲名 | 長さ | 元の音量 | gain | ループ |
+|---|---|---|---|---|---|---|
+| TOURNAMENT_BATTLE_LOW／HIGH（公式ランク戦 E〜S の実戦の間） | official_rank_battle.ogg | 公式ランク（要確認） | 291.3秒 | -17.0 LUFS | 0.89（約 -18） | 0〜289.6秒・頭へ 0.6秒のクロスフェード |
+
+置き換えた曲：「戦いの旅路を征く / MATSU」（14_official_rank_battle.ogg）。ファイルは残し、入口の無い SPECIAL_BATTLE だけが使う（公式ランク戦の差し替えに巻き込まないため）。
+
 ## 2026-10-08 正式採用：街の曲（assets/audio/bgm/licensed_20261008/）
 
 ユーザー提供の MP3「冒険への誘い(2).mp3」（ZIP Mismon_NextBatch_PART2_Market_Ryu_WorldMap_TownBGM_20261008 の town_bgm/。sha256 `b86897fa6a540ffc…`）を OGG Vorbis（q5）に変換しただけ（曲の切り出し・加工はしない）。（10-07 の一覧では不採用だった曲。2026-10-08 にユーザーが街の曲として正式採用）。

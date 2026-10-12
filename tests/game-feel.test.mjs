@@ -52,9 +52,9 @@ test('GF-03：Audio Registry（js/audio/audio-registry.js）：BGM・SE の対�
   assert.ok(R && R.bgm && R.se);
   const s = A.status(); assert.ok(s.files.bgm.includes('MARKET') && s.files.bgm.includes('WILD_BATTLE') && s.files.se.includes('STAT_UP'));
   assert.ok(s.files.bgm.includes('CHAPTER_1') && s.silent.se.includes('STEP') && s.silent.se.includes('UI_CONFIRM'), '合う音が無い・試遊で NG の出来事は silent（Chapter 1 は第5弾で曲を仮採用）');
-  assert.ok(s.inherits.includes('TOURNAMENT_BATTLE_HIGH') && s.inherits.includes('SPECIAL_BATTLE'), '専用曲が無い場面は fallback で曲を引き継ぐ（registry に明記）');
+  assert.ok(s.inherits.includes('TOURNAMENT_BATTLE_HIGH') && !s.inherits.includes('SPECIAL_BATTLE'), '専用曲が無い場面は fallback で曲を引き継ぐ（registry に明記）。2026-10-12：SPECIAL_BATTLE は公式ランク戦の差し替えに巻き込まない＝従来の曲を直接');
   assert.equal(A.resolveBgm('RARE_WILD_BATTLE').key, 'RARE_WILD_BATTLE', '2026-10-07：レアは専用曲');
-  assert.equal(A.resolveBgm('SPECIAL_BATTLE').key, 'TOURNAMENT_BATTLE_LOW'); assert.equal(A.resolveBgm('TOURNAMENT_LOBBY_HIGH').key, 'TOURNAMENT_LOBBY_LOW', '2026-10-07：B〜S の対戦表も同じ曲');
+  assert.equal(A.resolveBgm('SPECIAL_BATTLE').key, 'SPECIAL_BATTLE'); assert.match(String(A.resolveBgm('SPECIAL_BATTLE').srcs), /14_official_rank_battle/); assert.equal(A.resolveBgm('TOURNAMENT_LOBBY_HIGH').key, 'TOURNAMENT_LOBBY_LOW', '2026-10-07：B〜S の対戦表も同じ曲');
   assert.ok(Object.values(R.bgm).every((v) => typeof v === 'object'), '値は { src, gain, loop, fallback }');
   assert.deepEqual(JSON.parse(w.localStorage.getItem('mmaudio') || 'null'), null, '読み込んだだけでは何も保存しない');
 });

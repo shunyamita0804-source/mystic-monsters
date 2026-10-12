@@ -22,7 +22,8 @@
   const HG = BGM_DIR + 'hydrogene_16bit_rpg/';         // HydroGene「High Quality 16-bit RPG Music」（CC0。AUDIO_CREDITS.md）
   const MMO = SE_DIR + 'mystic_monsters_official/';   // ミスティックモンスターズの正式素材（ユーザー提供・2026-10-04。AUDIO_CREDITS.md）
   const LIC = BGM_DIR + 'licensed_20261007/';        // 2026-10-07 正式採用の BGM 14曲（DOVA-SYNDROME・Pixabay・itch.io。ユーザー提供の MP3／WAV を OGG Vorbis q5 に変換しただけ・曲の切り出しはしない。作者・出典は AUDIO_CREDITS.md）
-  const LIC8 = BGM_DIR + 'licensed_20261008/';       // 2026-10-08 正式採用：街の曲「冒険への誘い」（ユーザー提供の MP3 を OGG Vorbis q5 に変換しただけ。AUDIO_CREDITS.md）
+  const LIC8 = BGM_DIR + 'licensed_20261008/';
+  const LIC12 = BGM_DIR + 'licensed_20261012/';      // 2026-10-12 正式採用：公式ランク戦の曲（ユーザー納品「公式ランク.mp3」を OGG Vorbis q5 に変換しただけ。作曲者・出典は AUDIO_CREDITS.md＝要確認）       // 2026-10-08 正式採用：街の曲「冒険への誘い」（ユーザー提供の MP3 を OGG Vorbis q5 に変換しただけ。AUDIO_CREDITS.md）
   const MMB = BGM_DIR + 'mystic_monsters_official/';  // 同じく正式の BGM（2026-10-06：タイトル・プロローグ。ユーザー提供・ゲームの所有素材。AUDIO_CREDITS.md）
 
   // 書き方：{ src, gain, loopStart, loopEnd, loopXfade } ＝ファイルで鳴らす（loopEnd を書くと、曲の終わりのフェードアウトの前で loopStart へクロスフェードで戻る。秒）／{ fallback: '場面' } ＝ほかの場面の曲を使う／{ silent: true } ＝鳴らさない（合成音にも落とさない。試遊で「合わない」となった音の一時的な置き場）／行が無い ＝合成音
@@ -65,9 +66,9 @@
     WILD_BATTLE:            { src: LIC + '12_wild_battle.ogg', gain: 0.43, loopStart: 0, loopEnd: 108, loopXfade: 0.5 },   // 2026-10-07 正式：通常戦闘曲 - α / lei（-10.7。108.2秒からの無音の前で戻す）
     RARE_WILD_BATTLE:       { src: LIC + '13_rare_monster_battle.ogg', gain: 0.29 },   // 2026-10-07 正式：中ボスくらいの戦闘風 / Motoyuki（-7.2）
     RIVAL_BATTLE:           { src: LIC + '10_rival_battle.ogg', gain: 0.37, loopStart: 0, loopEnd: 202, loopXfade: 0.5 },   // 2026-10-07 正式：To The Death / Junipersona（-9.4。202.3秒からの無音の前で戻す）
-    TOURNAMENT_BATTLE_LOW:  { src: LIC + '14_official_rank_battle.ogg', gain: 0.61, loopStart: 0, loopEnd: 233.4, loopXfade: 0.5 },   // 2026-10-07 正式：公式ランク戦（E〜S 共通）＝戦いの旅路を征く / MATSU（-13.7。233.6秒からの無音の前で戻す）
+    TOURNAMENT_BATTLE_LOW:  { src: LIC12 + 'official_rank_battle.ogg', gain: 0.89, loopStart: 0, loopEnd: 289.6, loopXfade: 0.6 },   // 2026-10-12 正式：公式ランク戦（E〜S 共通・実戦の間だけ）＝ユーザー納品「公式ランク.mp3」（291.3秒・-17.0 LUFS・頭の無音なし・289.8秒から終わりのフェード＝その前で頭へ 0.6秒のクロスフェード）。旧「戦いの旅路を征く」は SPECIAL_BATTLE に残す
     TOURNAMENT_BATTLE_HIGH: { fallback: 'TOURNAMENT_BATTLE_LOW' },   // 2026-10-07 正式：B〜S も同じ公式ランク戦の曲
-    SPECIAL_BATTLE:         { fallback: 'TOURNAMENT_BATTLE_LOW' },            // 入口が無い（旧「師匠との特訓」）。将来の特殊戦は上位の曲を仮に使う
+    SPECIAL_BATTLE:         { src: LIC + '14_official_rank_battle.ogg', gain: 0.61, loopStart: 0, loopEnd: 233.4, loopXfade: 0.5 },   // 入口が無い（旧「師匠との特訓」）。2026-10-12：公式ランク戦の曲の差し替えに巻き込まないよう、従来の曲（戦いの旅路を征く / MATSU）を直接指す            // 入口が無い（旧「師匠との特訓」）。将来の特殊戦は上位の曲を仮に使う
   };
 
   const SE_REGISTRY = {
