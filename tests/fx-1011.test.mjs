@@ -40,8 +40,11 @@ test('FX-02：マスの上面の試作 2種＝tiles_v2 と同じ大きさ・既�
   for (const f of ['tile_stat_life.webp', 'tile_wild_monster.webp']) { const i = webp(T + f); assert.deepEqual([i.w, i.h, i.alpha], [320, 246, true], f); }
   for (const f of ['src/top01_life_yellow.webp', 'src/top07_wild_claws.webp']) assert.equal(webp(T + f).alpha, true, f);
   const wb = rd('js/chapter/world-board.js');
-  assert.match(wb, /get\('tileTop'\) === '1011'/, 'URL の ?tileTop=1011 のときだけ');
-  assert.match(wb, /TV2 \+ 'tile_stat_' \+ STAT_FILE\[t\.k\] \+ '\.webp'/, '既定は従来の tiles_v2');
+  // 2026-10-12：正式の12種（tiles_top_1012）が既定になった＝試作の ?tileTop=1011 の切り替えは外した（試作の2枚はファイルだけ残す）
+  assert.match(wb, /TOP \+ 'tile_stat_' \+ STAT_FILE\[t\.k\] \+ '\.webp'/, '既定は正式の上面12種');
+  const T2 = 'assets/fields/ch1a/tiles_top_1012/';
+  for (const f of ['tile_stat_life', 'tile_stat_power', 'tile_stat_intelligence', 'tile_stat_accuracy', 'tile_stat_evasion', 'tile_stat_toughness', 'tile_wild_monster', 'tile_treasure', 'tile_meal', 'tile_rival', 'tile_event', 'tile_rare_monster']) { const i = webp(T2 + f + '.webp'); assert.deepEqual([i.w, i.h, i.alpha], [320, 246, true], f); }
+  assert.match(wb, /t\.tier === 'rare' \? TV2 \+ 'tile_treasure_2\.webp'/, '珍しい宝箱は従来の絵（段階の違いを消さない）');
   // 既存の tiles_v2 は上書きしていない（このコミットの前と同じ大きさ）
   for (const [f, h] of [['tile_stat_life.webp', 262], ['tile_wild_monster.webp', 246], ['tile_blank.webp', 246]]) assert.deepEqual([webp('assets/fields/ch1a/tiles_v2/' + f).w, webp('assets/fields/ch1a/tiles_v2/' + f).h], [320, h], f);
 });

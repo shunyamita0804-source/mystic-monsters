@@ -103,10 +103,8 @@ test('FXB-4：レアの紋章（ある育成だけ・全景でも見える・訪
   // レアの無い育成：紋章なし
   await pg.evaluate(() => { const f = S.m.raise.field; delete f.tiles.ER03_02; save(); MMWB.release(); board(); }); await idle(pg);
   assert.equal(await pg.evaluate(() => document.querySelectorAll('.rfw-mark').length), 0, 'レアが無い育成では出ない');
-  // 上面の試作：既定は tiles_v2・フラグのときだけ tiles_top_1011
+  // 2026-10-12：マスの上面は正式の12種（tiles_top_1012）
   await pg.evaluate(() => { const f = S.m.raise.field, id = MMRF_DATA.segments.S01[3][1]; f.tiles[id] = { t: 'stat', k: 'li' }; save(); MMWB.release(); board(); }); await idle(pg);
   const src0 = await pg.evaluate(() => document.querySelector(`.rfw-tile[data-node="${MMRF_DATA.segments.S01[3][1]}"] img`).getAttribute('src'));
-  await pg.evaluate(() => { window.MM_TILETOP_1011 = true; MMWB.release(); board(); }); await idle(pg);
-  const src1 = await pg.evaluate(() => document.querySelector(`.rfw-tile[data-node="${MMRF_DATA.segments.S01[3][1]}"] img`).getAttribute('src'));
-  assert.match(src0, /tiles_v2\/tile_stat_life\.webp/); assert.match(src1, /tiles_top_1011\/tile_stat_life\.webp/);
+  assert.match(src0, /tiles_top_1012\/tile_stat_life\.webp/);
 });
