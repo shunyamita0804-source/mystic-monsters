@@ -1,6 +1,7 @@
 // =========================================================
 // 2026-10-08：2.5D バトル素材の比較試遊（実ブラウザ）
 //  A25-B1：通常の URL＝今までの立ち絵・技の演出（新しい絵を1枚も読まない・切り替えの札なし）
+//  2026-10-12：ソラモの技は正式の46コマ（tests/qa-e2e-soramo-moves-1012.test.mjs）＝B2〜B4 はガウルだけ。B1 は「ソラモは正式のコマ・比較試遊の素材は読まない」
 //  A25-B2：?battleArt=2p5d（3サイズ）＝ソラモ・ガウルの立ち絵が 2.5D・技のコマが出て消える（DOM を残さない）・札で旧へ戻せる・相手は今まで
 //  A25-B3（2026-10-09 完全版）：3サイズ × ソラモ／ガウル × 自分側／相手側で全10技の全コマを止めて確かめる
 //    ＝各コマが順に出る・本体（顔・耳・翼・尾）が画面の中・HUD に入らない・相手側は左右反転
@@ -33,15 +34,16 @@ test('A25-B1：通常の URL では今までの絵・演出（2.5D の素材を�
   const p = await openPage({ size: H.SIZES.base }); const pg = p.page;
   await toBattle(pg, 0);
   assert.match(await idleSrc(pg, 0), /assets\/battle\/idle\/idle_soramo\.webp$/);
+  // 2026-10-12：ソラモの技は正式の46コマ（assets/battle/soramo_moves_1012/）＝比較試遊の素材・光の粒・札は出さない（tests/qa-e2e-soramo-moves-1012.test.mjs）
   await pg.evaluate(() => anim(0, 0)); await pg.waitForTimeout(500);
-  const r = await pg.evaluate(() => ({ p25: document.querySelectorAll('#bt .p25f, #bt .p25p').length, sw: !!document.querySelector('#bt .p25sw'), on: MM25D.on }));
-  assert.deepEqual(r, { p25: 0, sw: false, on: false });
+  const r = await pg.evaluate(() => ({ off: [...document.querySelectorAll('#bt .p25f')].every((i) => /soramo_moves_1012\//.test(i.src)) && document.querySelectorAll('#bt .p25f').length > 0, p25p: document.querySelectorAll('#bt .p25p').length, sw: !!document.querySelector('#bt .p25sw'), on: MM25D.on }));
+  assert.deepEqual(r, { off: true, p25p: 0, sw: false, on: false });
   assert.equal(L.requests ? L.requests.filter((u) => /assets\/battle\/2p5d\//.test(u)).length : 0, 0, '2.5D のバトル素材（比較試遊）を読まない');   // 2026-10-11：正式の立ち絵 assets/monsters/2p5d/（PR #4）は数えない
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
 for (const size of [H.SIZES.base, H.SIZES.se, [430, 932]]) {
-  for (const sp of [0, 1]) {
+  for (const sp of [1]) {   // 2026-10-12：ソラモは正式の46コマ（比較試遊のコマは使わない）＝ガウルだけ
     test(`A25-B2（${size.join('×')}・${sp ? 'ガウル' : 'ソラモ'}）：?battleArt=2p5d の立ち絵・技のコマ・切り替え`, { skip: SKIP, timeout: 120000 }, async () => {
       const p = await openPage({ size, query: '?battleArt=2p5d' }); const pg = p.page;
       await toBattle(pg, sp);
@@ -115,7 +117,7 @@ async function measureMove(pg, k, s) {
 const TOL = 2; // 揺れの演出（.vs の拡大）の分
 const SIZES3 = [[375, 667], [390, 844], [430, 932]];
 for (const size of SIZES3) {
-  for (const sp of [0, 1]) {
+  for (const sp of [1]) {   // 2026-10-12：ソラモは正式の46コマ＝ガウルだけ
     for (const side of [0, 1]) {
       test(`A25-B3（${size.join('×')}・${sp ? 'ガウル' : 'ソラモ'}・${side ? '相手側' : '自分側'}）：全10技の全コマ`, { skip: SKIP, timeout: 240000 }, async () => {
         const p = await openPage({ size, query: '?battleArt=2p5d', stage: true }); const pg = p.page;
@@ -165,7 +167,7 @@ test('A25-B4①：ガウルの顔（頭・嘴・頭頂の羽）が切れない�
 
 test('A25-B4②：ビーム・風・炎の先が相手に届く（ソラモビーム・ウィンド・ファイアボール・フレアレイ。両側・3サイズ）', { skip: SKIP, timeout: 300000 }, async () => {
   const MOVES = [[0, 5], [1, 12], [1, 15], [1, 16]];
-  for (const size of SIZES3) for (const side of [0, 1]) for (const sp of [0, 1]) {
+  for (const size of SIZES3) for (const side of [0, 1]) for (const sp of [1]) {   // 2026-10-12：ソラモビームは正式の46コマ（SM-B のテスト）
     const list = MOVES.filter((x) => x[0] === sp); if (!list.length) continue;
     const p = await openPage({ size, query: '?battleArt=2p5d', stage: true }); const pg = p.page;
     await toBattleVs(pg, side ? 1 - sp : sp, side ? sp : 1 - sp);
@@ -185,7 +187,7 @@ test('A25-B4②：ビーム・風・炎の先が相手に届く（ソラモビ�
 
 test('A25-B4③：必殺の爆発が消えない（スタークラッシュ s08b・スターフォール s10b・フレアレイ g08b。両側）', { skip: SKIP, timeout: 300000 }, async () => {
   const MUST = { 4: ['s08_1', 's08_2', 's08_3', 's08_4', 's08b_1', 's08b_2', 's08b_3', 's08b_4'], 9: ['s10_1', 's10_2', 's10_3', 's10_4', 's10b_1', 's10b_2', 's10b_3', 's10b_4'], 16: ['g08_1', 'g08_2', 'g08_3', 'g08b_1', 'g08b_2', 'g08b_3'] };
-  for (const size of SIZES3) for (const side of [0, 1]) for (const sp of [0, 1]) {
+  for (const size of SIZES3) for (const side of [0, 1]) for (const sp of [1]) {   // 2026-10-12：ソラモは正式の46コマ
     const p = await openPage({ size, query: '?battleArt=2p5d', stage: true }); const pg = p.page;
     await toBattleVs(pg, side ? 1 - sp : sp, side ? sp : 1 - sp);
     for (const k of sp ? [16] : [4, 9]) {
