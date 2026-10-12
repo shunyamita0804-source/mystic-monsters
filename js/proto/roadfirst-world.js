@@ -31,6 +31,7 @@
     veil: true,          // focus のとき地面の薄い幕も描くか（2026-10-12 試遊：本編は false＝地面の絵は暗くしない・マスの薄さだけで道筋を示す）
     monRatio: 0,         // >0＝モンスターの幅をその地点のマスの幅 × この倍率に（0＝従来の 24単位）
     zoomTau: 170,        // 追従の倍率を寄せる速さ（ms。大きいほどゆっくり）
+    xray: false,         // 2026-10-12 試遊：true＝手前の景物（木・門など）が見えているマス・モンスターに重なるとき、その景物を半透明に（本編の Chapter 1 だけ）
   };
   // 第1便の絵（assets/proto/board_art_1010/README.md）。大きさは世界の単位
   const ART = {
@@ -238,7 +239,9 @@
       // 平面：注視点を原点に移して → 倍率 → 傾き → 画面の位置へ（project と同じ式。perspective-origin＝注視点の画面位置）
       wrap.style.perspective = c.P + 'px'; wrap.style.perspectiveOrigin = `${c.ax}px ${c.ay}px`;
       plane.style.transform = `translate(${c.ax}px,${c.ay}px) rotateX(${c.tilt}deg) scale(${c.s}) translate(${-c.tx}px,${-c.ty}px)`;
-      const v = S.view, Wd = v ? v.W : 400, Hd = v ? v.H : 800;
+      const v = S.view, Wd = v ? v.W : 400, Hd = v ? v.H : 800, xr = [];
+      if (o.xray && S.mon) { const q = project(c, S.mon[0], S.mon[1]), w = o.monRatio > 0 ? Math.max(c.s < 1 ? 14 : 30, Math.max(c.s < 1 ? 2 : o.tilePx[0], Math.min(o.tilePx[1], o.tileW * c.s * q.k)) * o.monRatio) : Math.max(c.s < 1 ? 14 : 40, Math.min(100, 24 * c.s * q.k)), h = w * (S.monAh || 0.92);
+        xr.push([q.x - w / 2, q.y - h, q.x + w / 2, q.y, q.y + 2, w * h * 0.5]); }   // モンスターの箱（重なりの判定は半分で＝少しでも隠れたら）
       for (const [id, t] of Object.entries(tiles)) {
         const n = D.nodes[id], q = project(c, n[0], n[1]);
         const w = Math.max(c.s < 1 ? 2 : o.tilePx[0], Math.min(o.tilePx[1], o.tileW * c.s * q.k));
@@ -247,6 +250,7 @@
         if (t.hid) { t.el.style.display = ''; t.hid = false; }
         t.el.style.transform = `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * 0.62).toFixed(1)}px)`; t.el.style.width = w.toFixed(1) + 'px';
         t.el.style.zIndex = String(Math.round(q.y));
+        if (o.xray) xr.push([q.x - w / 2, q.y - w * 0.62, q.x + w / 2, q.y + w * 0.14, q.y, w * w * 0.76]);
       }
       for (const p of props) {
         const q = project(c, p.x, p.y), w = Math.min(p.max || 1e9, Math.max(p.min || 0, p.w * c.s * q.k));
@@ -255,6 +259,12 @@
         if (p.hid) { p.el.style.display = ''; p.hid = false; }
         p.el.style.transform = `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * (p.ah || 0.92)).toFixed(1)}px)`; p.el.style.width = w.toFixed(1) + 'px';
         p.el.style.zIndex = String(Math.round(q.y) + (p.z || 0));
+        if (o.xray && !p.mark) {   // 手前の景物がマス・モンスターを隠す＝その景物だけ半透明（重なった面積がマス・モンスターの 22% 以上）
+          const pz = Math.round(q.y) + (p.z || 0), x0 = q.x - w / 2, x1 = q.x + w / 2, y0 = q.y - w * (p.ah || 0.92), y1 = q.y;
+          let thru = false;
+          if (c.s >= 1) for (const r of xr) { if (r[4] >= pz) continue; const ow = Math.min(x1, r[2]) - Math.max(x0, r[0]), oh = Math.min(y1, r[3]) - Math.max(y0, r[1]); if (ow > 0 && oh > 0 && ow * oh > r[5] * 0.22) { thru = true; break; } }
+          if (thru !== !!p.thru) { p.thru = thru; p.el.classList.toggle('thru', thru); }
+        }
       }
       if (S.mon) {
         const q = project(c, S.mon[0], S.mon[1]);
@@ -607,6 +617,7 @@
 :is(#rfp,.wbv) .rfw.intro .rfw-veil{opacity:0}
 :is(#rfp,.wbv) .rfw-apron{position:absolute;pointer-events:none}
 :is(#rfp,.wbv) .rfw-prop{position:absolute;left:0;top:0;will-change:transform;pointer-events:none;user-select:none;-webkit-user-drag:none}
+:is(#rfp,.wbv) .rfw-prop{transition:opacity .25s}:is(#rfp,.wbv) .rfw-prop.thru{opacity:.32}
 :is(#rfp,.wbv) .rfw-mark{filter:drop-shadow(0 0 6px rgba(190,110,255,.85));transition:opacity .5s,filter .5s}
 :is(#rfp,.wbv) .rfw-mark.dim{opacity:.32;filter:none}
 :is(#rfp,.wbv) .rfw.art{background:#7aa84c}

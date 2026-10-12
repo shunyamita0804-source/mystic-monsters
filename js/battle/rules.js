@@ -277,7 +277,7 @@
     [0, 1].forEach((i) => {
       const hp = document.getElementById('hp' + i), host = hp && hp.querySelector && hp.querySelector('.hpb'); if (!host) return;
       let box = document.getElementById('mmail' + i);
-      if (!box) { box = document.createElement('div'); box.id = 'mmail' + i; box.className = 'mmail'; host.appendChild(box); }
+      if (!box) { box = document.createElement('div'); box.id = 'mmail' + i; box.className = 'mmail'; (host.querySelector('.mmchips') || host).appendChild(box); }   // 名前の横の札の行（js/battle/arena.js の setupChips）があればそこへ
       const a = st.ail[sideOf(i)];
       box.innerHTML = Object.keys(a).filter((k) => a[k] > 0).map((k) => `<span class="mmail-${k}">${AILMENTS[k].label}<b>${a[k]}</b></span>`).join('');
     });

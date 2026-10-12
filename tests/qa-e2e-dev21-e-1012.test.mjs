@@ -4,7 +4,7 @@
 //         読み込める・バトルではモンスターの足もとが床（床の始まり＝画像の約55% を下を軸に 1.12倍）・HUD とモンスターが画面の中
 //  BE-2（3サイズ）：対戦前比較＝立ち絵・名前の札・固有スキル・6能力の表・ボタンが重ならない・「対戦開始」は下から離れた
 //  BE-3：VS の斜めの光は左上 → 右下（素材を左右反転）・モンスターの向きは従来どおり（自分＝右向き・相手＝反転）
-//  BE-4：野生・ライバルの練習試合は従来の会場（venue_X）のまま・足もとが床・正式背景の拡大はしない
+//  BE-4：野生・ライバルの練習試合は Chapter の野外の背景（2026-10-12 試遊。Chapter 1＝はじまりの草原。無い Chapter は venue）・足もとが床・正式背景の拡大はしない
 //  BE-5（3サイズ）：状態異常の札（まひ・ねむり）が HP の枠の中に見える（画面の中・ほかの物に隠れない）→ 治ると消える。性能は変えない
 //  Playwright / Chromium が無い環境では省略（skip）する。
 // =========================================================
@@ -84,7 +84,7 @@ test('BE-3：VS の斜めの光は左上 → 右下・モンスターの向き�
   assert.deepEqual(p.errors, []);
 });
 
-test('BE-4：野生・ライバルの練習試合は従来の会場（venue）のまま・正式背景の拡大はしない', { skip: SKIP, timeout: 150000 }, async () => {
+test('BE-4：野生・ライバルの練習試合は Chapter の野外の背景・正式背景の拡大はしない', { skip: SKIP, timeout: 150000 }, async () => {
   for (const kind of ['wild', 'rival']) {
     const p = await openPage({ stage: true }); const pg = p.page;
     await H.newGame(pg, 'テスト');
@@ -94,7 +94,7 @@ test('BE-4：野生・ライバルの練習試合は従来の会場（venue）�
     await pg.waitForSelector('.chbat', { timeout: 20000 }); await pg.evaluate(() => bBattleGo());
     await pg.waitForSelector('#bt .mma-bg', { timeout: 20000 }); await pg.waitForTimeout(4000);
     const b = await pg.evaluate(() => { const bg = document.querySelector('#bt .mma-bg'); return { src: bg.getAttribute('src'), ofc: bg.classList.contains('ofc'), tf: getComputedStyle(bg).transform, feet: document.querySelector('#bt #m0 .mma-idle').getBoundingClientRect().bottom, H: innerHeight, r: bg.getBoundingClientRect() }; });
-    assert.match(b.src, /assets\/tournament\/venues\/venue_[EDCBAS]\.webp$/, `${kind}：従来の会場`); assert.equal(b.ofc, false); assert.equal(b.tf, 'none');
+    assert.match(b.src, /assets\/fields\/ch1a\/formal_1008\/ch1a_scene_01\.webp$/, `${kind}：Chapter 1 の野外（仮＝正式のフィールド背景）`); assert.equal(b.ofc, false); assert.equal(b.tf, 'none');
     const floor = b.r.top + b.r.height * 0.45; assert.ok(b.feet >= floor - b.H * 0.03, `${kind}：足もとが床（足 ${b.feet}・床の始まり ${floor}）`);
     await shot(pg, `be4_${kind}`);
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
