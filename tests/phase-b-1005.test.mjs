@@ -60,7 +60,7 @@ test('PB-03：プロローグの「見た」＝最後まで見た／スキップ
   assert.match(src, /root\.addEventListener\('pagehide', onHide\); root\.addEventListener\('pageshow', onShow\);/);
   assert.match(src, /document\.addEventListener\('freeze', onHide\); document\.addEventListener\('resume', onShow\);/);
   assert.match(src, /skip\.disabled = true;/); assert.match(src, /skip\.disabled = false;\n/);
-  for (const f of ['opPrologue']) assert.match(fnOf(f), /proPlay\(cv\)\.then\(ok=>\{cv\.remove\(\);if\(ok\)\{finaFlags\(\)\.prologue=1;save\(\)\}\}\)/, '見た記録は ok（最後まで／スキップ確定）のときだけ');
+  for (const f of ['opPrologue']) assert.match(fnOf(f), /proPlay\(cv\)\.then\(ok=>\{if\(ok\)\{finaFlags\(\)\.prologue=1;save\(\)\}\}\)/, '見た記録は ok（最後まで／スキップ確定）のときだけ');
 });
 
 test('PB-04：新しいゲームの確認（「最初からやり直す」のあとの開始画面で開始ボタンを押したとき）。後ろは押せない・確認しました＝従来の開始・戻る＝つづきからの開始画面', () => {
@@ -96,7 +96,8 @@ test('PB-06：正式の会話窓（event_dialogue_window）はイベント・大
   assert.match(HTML, /\.mmnote-layer\{position:fixed;[^}]*z-index:2300;/);
   assert.match(HTML, /\{note:\{rows:\[\{icon:"gold",text:"1000G"\},\{img:ITEM_ICON\.potato,text:SUPPORT_TO=="vault"\?"ジャガイモ×10を手に入れた（バッグがいっぱいなので保管庫へ）":"ジャガイモ×10を手に入れた"\}\],se:"GOLD_GET"\}\}/, '2026-10-07 試遊：1000G と支援の品は1つの短い帯（2026-10-12 P2：ジャガイモ×10・正式画像）');
   assert.match(fnOf('talkSeq'), /if\(x&&x\.note\)\{await flush\(\);await MMNOTE\.show\(x\.note\)\}/);
-  assert.match(fnOf('opAfterReg'), /MMNOTE\.show\(\{img:"\.\/assets\/ui\/worldmap_icon\/worldmap_unlock\.png",cmd:true,small:true,title:"世界地図が使えるようになった"/, '機能の解放（2026-10-07 試遊：短い知らせ）');
+  assert.match(HTML, /mapNote:\{img:"\.\/assets\/ui\/worldmap_icon\/worldmap_unlock\.png",cmd:true,small:true,title:"世界地図が使えるようになった",se:"UNLOCK"\}/, '機能の解放（2026-10-07 試遊：短い知らせ）');
+  assert.match(fnOf('opTownMap'), /await MMNOTE\.show\(OPEN_TALK\.mapNote\)/, '2026-10-12：解放の帯は町で（会話の枠なし）');
   assert.match(fnOf('adopt'), /if\(typeof MMNOTE=="object"&&MMNOTE\)\{const sp=MMP10M\.byId\(x\.sp\),im=sp&&sp\.image&&sp\.image\.src;MMNOTE\.show\(\{\.\.\.\(im\?\{img:im\}:\{icon:"gold"\}\),title:x\.name\+"をつれて帰った！"\+pk,\.\.\.\(rs\?\{sub:rs\}:\{\}\)\}\);return undefined\}/, '購入の知らせ（救済も通常も）は帯だけ＝街の通知は出さない（2026-10-05 試遊）');
   assert.match(fnOf('p9TourResult'), /MMP8\.runTourEnd\(rs,\{persist:\(\)=>save\(\)\}\)/, '大会の報酬（2026-10-06：大会の終わりの順の firstReward の段階で帯を出す）');
   assert.match(HTML, /MMP8\.registerTourEndHook\("firstReward",async d=>\{[^\n]*MMNOTE\.show\(\{icon:"reward",title:`賞金 \$\{d\.prize\}G を手に入れた！`/, '大会の報酬');
@@ -154,7 +155,7 @@ test('PB-10：大会ランク選択の正式 UI：参加可能＝赤（ワイン
 
 test('PB-11：2026-10-05 試遊：新人支援の帯に SE（帯が出た瞬間に1回・帯は1つずつ＝重ならない）。1000G＝GOLD_GET（既存の所持金の入手の音）・薬草＝REWARD・世界地図の解放＝UNLOCK（REWARD と同じファイル）。新しい音源は足していない', () => {
   const no = rd('js/feel/notice.js'); assert.match(no, /if \(n\.se\) \{ try \{ if \(root\.MMAUDIO\) root\.MMAUDIO\.se\(n\.se\); \} catch \(e\) \{\} \}/);
-  assert.match(fnOf('opAfterReg'), /title:"世界地図が使えるようになった",se:"UNLOCK"/);
+  assert.match(HTML, /title:"世界地図が使えるようになった",se:"UNLOCK"\}/); assert.match(fnOf('opTownMap'), /MMNOTE\.show\(OPEN_TALK\.mapNote\)/);
   const R = {}; new Function('window', rd('js/audio/audio-registry.js'))({ MMAUDIO: { registerAll: (r) => Object.assign(R, r) } }); const se = R.se || R.SE;
   assert.equal(se.REWARD.src, se.UNLOCK.src, '薬草と世界地図は同じ音'); assert.match(se.GOLD_GET.src, /ivokard\/bell\.ogg$/);
   // 帯に se を渡すと、帯が出たときに1回だけ鳴る

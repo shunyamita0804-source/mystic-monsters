@@ -35,7 +35,7 @@ test('PT-02：チラつき対策＝黒い幕（会話の下 z 899）と、会話
   const npc = rd('js/npc/npc.js');
   assert.match(npc, /if \(typeof opts\.onClose === 'function' && !ov\.__instant\) \{ try \{ opts\.onClose\(choice == null \? null : choice\); \} catch \(e\) \{\} \}/);
   assert.match(CSS, /\.opcur\{position:fixed;inset:0;z-index:899;/);
-  assert.match(fnOf('opPrologue'), /\.then\(\(\)=>\{opCurtain\(\);lobby\(msg\);if\(!OP_TALKING\)opCurtainOff\(\)\}\)/, 'プロローグのあと、フィナの会話が出るまで黒い幕');
+  assert.match(fnOf('opPrologue'), /\.then\(cut=>\{opCurtain\(\);if\(cut\)document\.body\.appendChild\(cut\.el\);lobby\(msg\);if\(!OP_TALKING\)opCurtainOff\(\)/, 'プロローグのあと、フィナの会話が出るまで黒い幕');
   assert.match(fnOf('opTownTalk'), /opCurtainOff\(\);t\.then\(/); assert.match(fnOf('opTownTalk'), /\},cur\?0:350\)\}/);
   const ryu = fnOf('opRyu');
   assert.match(ryu, /opCurtain\(true\);/); assert.match(ryu, /onClose:\(\)=>\{OP_TALKING=false;RYU_NOW=false;after\(\)\}/); assert.doesNotMatch(ryu, /setTimeout\(r,450\)/, '街を一瞬見せてから会話を出さない');

@@ -3544,6 +3544,20 @@ main:has(>#app>.ds) h1{display:none}
 .opcur.fin{animation:opcurIn .22s ease-out both}
 @keyframes opcurIn{from{opacity:0}}
 .opcur.off{opacity:0;pointer-events:none}
+/* 2026-10-12 開発21：プロローグのあとの「ミストリア到着」のカット（町の背景＋題字。文字は HTML） */
+.oparr{position:fixed;inset:0;z-index:899;background:#02040c;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity .26s ease}
+.oparr.gone{opacity:0;pointer-events:none}
+.opblk{position:fixed;inset:0;z-index:898;background:transparent}
+.oparr-bg{position:absolute;inset:0;background:var(--arr-bg) center bottom/cover no-repeat;animation:oparrBg var(--arr-in) ease-out both}
+.oparr-t{position:absolute;left:0;right:0;top:34%;display:flex;flex-direction:column;align-items:center;gap:6px;color:#fff;text-shadow:0 2px 12px rgba(2,6,24,.9),0 0 2px rgba(2,6,24,.9);animation:oparrT .5s ease-out calc(var(--arr-in) * .6) both;transition:opacity var(--arr-out) ease,transform var(--arr-out) ease}
+.oparr-t small{font:600 13px/1 "Shippori Mincho",serif;letter-spacing:.32em;color:#f3dfa6}
+.oparr-t b{font:700 clamp(28px,8.6vw,38px)/1.15 "Shippori Mincho",serif;letter-spacing:.12em}
+.oparr-t i{display:block;width:min(62vw,250px);height:2px;margin-top:6px;background:linear-gradient(90deg,transparent,#e8c66e,transparent)}
+.oparr.tout .oparr-t{opacity:0;transform:translateY(-6px)}
+@keyframes oparrBg{from{opacity:0;transform:scale(1.05)}to{opacity:1;transform:none}}
+@keyframes oparrT{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.oparr-bg,.oparr-t{animation-duration:.2s}.oparr-bg{animation-name:oparrFade}}
+@keyframes oparrFade{from{opacity:0}to{opacity:1}}
 /* 6・7：会話の2択は縦（はいが上・いいえが下）。12：長い選択肢は文字を少し小さくして1行 */
 .mmtalk-big .mmtalk-choices:has(>.mmtalk-choice:nth-child(2):last-child){flex-direction:column;gap:8px}
 .mmtalk-big .mmtalk-choices:has(>.mmtalk-choice:nth-child(2):last-child)>.mmtalk-choice{flex:none;width:100%}
@@ -4130,7 +4144,8 @@ function confScr(){if(p8Blocked())return;$("#app").innerHTML=`<div class="ds pfd
 function gameScroller(){const a=document.getElementById("app");if(!a)return null;return [a.querySelector(":scope>.ds>.dbody"),a.querySelector(":scope>.ds,:scope>.mk2,:scope>.p9tour,:scope>.p9vs,:scope>.rn"),a].find(e=>e&&e.scrollHeight>e.clientHeight+1)||a}
 function lobby(msg,open){if(p8Blocked())return;if(S.playerNamePending&&!opOn())return p11NameScr(msg); // Phase 11：新規ゲームは最初にプレイヤー名を決める（自動テストの既定＝MM_QA_NO_OPENING は従来の名前登録の画面）
  if(opOn()&&!finaFlags().prologue&&window.MMPRO&&!window.MM_QA_NO_PROLOGUE&&!P11_PRO.has(S))return opPrologue(msg); // 2026-10-05：正式の序盤導線＝プロローグ → 街（フィナ）→ 聖獣士管理局（セルジュの登録）→ 世界地図
- if(!S.playerNamePending&&finaFlags().op=="map"&&!window.MM_QA_NO_OPENING)return opAfterReg(); // 登録のあと、世界地図の会話の途中で閉じた＝続きから
+ if(!S.playerNamePending&&finaFlags().op=="map"&&!window.MM_QA_NO_OPENING)return opAfterReg(); // 登録のあと、管理局の支援・フィナの説明の途中で閉じた＝続きから（支援は二重に受け取らない）
+ if(!S.playerNamePending&&finaFlags().op=="town"&&!MAP_NOW&&!window.MM_QA_NO_OPENING)return opTownMap(); // 2026-10-12：管理局を出たあと、町の世界地図の会話（または解放の帯）の途中で閉じた＝続きから
  if(!S.playerNamePending&&finaFlags().ryuMet===0&&!RYU_NOW&&!window.MM_QA_NO_OPENING)return opRyu(); // 2026-10-07：リュウとの出会いの途中で閉じた＝続きから
  const h1=$("h1");if(h1)h1.style.display="";bgm("town");const m=S.m; // 街では見出し（h1）を CSS で隠す（main:has(>#app>.map.town)）。ほかの画面へ移れば元どおり
  townPreload();$("#app").innerHTML=`<div class="map town" style="--town-bg:url(${TOWN_BG})"><div class="tbg" aria-hidden="true"></div>${TOWN_SVG}<button class="tround tnews${opLock()?" oplk":""}" ${opLock()?"disabled":""} onclick="newsScr()" aria-label="お知らせ" title="お知らせ"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#tic-news"/></svg></button><div class="tcity" aria-label="現在地：ミストリア"><img class="tcity-img" src="${TOWN_NAMEPLATE}" alt="ミストリア" decoding="async" draggable="false"></div>${TEST_MODE&&!S.playerNamePending?`<button class="ttest" onclick="testTour()" aria-label="TEST 大会（試遊用）">TEST 大会</button>`:""}<button class="tround tconf" onclick="confScr()" aria-label="設定" title="設定"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#tic-conf"/></svg></button>${townPins(m).map(c=>{const g=opGuide(c,m),lk=g=="lk";return `<button class="hz tpin ${c[4]=="ok"?"":c[4]}${lk?" oplk":g=="go"?" opgo":""}" style="--x:${c[6][0]};--y:${c[6][1]}" ${c[4]=="dis"||lk?"disabled":""}${c[4]=="lock"?' data-nsfx="1"':""} onclick="${c[3]}" aria-label="${c[0]}${c[4]=="lock"?"（未開放）":""}" title="${c[1]}"><span>${c[4]=="lock"?TPIN_LOCK:""}${c[0]}</span><i></i>${g=="go"?'<em class="opmk" aria-hidden="true">タップ</em>':""}</button>`}).join("")}</div><nav class="tcmds tbar" aria-label="街のコマンド">${townBar(m).map((c,i)=>`<button class="hz tcmd ${c[4]=="ok"?"":c[4]}${i==0?" tsub tfarm":i==1?" tsub tprof":" tsub tsave svb"}${opLock()?" oplk":""}" ${c[4]=="dis"||opLock()?"disabled":""} onclick="${c[3]}" aria-label="${c[0]}" title="${c[1]}"><span class="ti">${townIcon(c[2])}</span><b>${c[5]||c[0]}</b></button>`).join("")}</nav>
@@ -4140,7 +4155,8 @@ function lobby(msg,open){if(p8Blocked())return;if(S.playerNamePending&&!opOn())r
 //  プロローグ → 街（ミストリア）でフィナが声をかける（2択：はい／いいえ。どちらでも管理局へ。2026-10-06：「ちがいます」→「いいえ」）→ 街の「聖獣士管理局」だけを光らせる（ほかの施設・下のバーは押せない＝導入が崩れない）
 //  → プレイヤーが管理局をタップ → セルジュ（登録の担当）→ 聖獣士登録（プレイヤー名）→ 名前の確認（2択）→ 登録完了 → フィナが初めて名前を呼ぶ → 出身地の会話（世界地図：
 //  世界 → フェルナ地方 → アステリア地方 → リベルナ → ミストリア）→ ミストリアの説明 → 世界地図の機能を解放（管理局の「世界地図」）→ 最初の相棒（市場）へ。
-//  状態：未登録＝S.playerNamePending（従来の項目）・S.npcFlags.op（'guide'＝フィナの声かけ済み／'map'＝登録済み・地図の会話の前／'done'）・S.npcFlags.worldMap（地図の会話を見た＝出身地の印）。
+//  2026-10-12 開発21：プロローグ → 「ミストリア到着」のカット → フィナ → 管理局（登録・新人支援の帯）→ フィナの説明（ジャガイモと空腹）→ 町へ → 町で世界地図と出身地（2択）→ 解放の帯 → リュウ（3択）→ 市場へ。
+//  状態：未登録＝S.playerNamePending（従来の項目）・S.npcFlags.op（'guide'＝フィナの声かけ済み／'map'＝登録済み・管理局の支援と説明の前／'town'＝管理局を出た・町の地図の前（2026-10-12）／'done'）・S.npcFlags.worldMap（地図の会話を見た＝出身地の印）。
 //  登録済みのセーブ（playerNamePending が無い）では起きない。自動テストの既定（MM_QA_NO_OPENING）は従来の名前登録の画面（tests/e2e/harness.mjs の open({ opening:true }) で出す）
 const opOn=()=>!window.MM_QA_NO_OPENING&&!!window.MMNPC;
 /** 街の操作の制限（登録前の導入のときだけ）。2026-10-06：以前は opOn()（導入の仕組みが使えるか＝実機ではいつも true）で下のバー・お知らせを止めていたため、登録のあとも押せなかった */
@@ -4156,20 +4172,28 @@ const OPEN_TALK={
  confirm:n=>[{npc:"serge",text:`「${n}」さん、ですね。このお名前で登録してよろしいですか？`,choices:[{id:"ok",label:"はい"},{id:"fix",label:"いいえ"}]}],
  fix:[{npc:"serge",text:"かしこまりました。もう一度ご記入ください。"}],
  done:n=>[{npc:"serge",text:`登録が完了しました。${n}さん、本日から正式な聖獣士です。`},{npc:"serge",text:"聖獣士証は、この管理局でいつでも確認できます。"}],
+ // 2026-10-12 開発21（試遊 No.001・005）：支援の品と空腹の説明はフィナ（セルジュは受付の台詞だけ）。説明が終わったら管理局を出て町へ → 町で世界地図と出身地 → 地図の解放（帯だけ）→ リュウ
  finaName:n=>[{npc:"fina",expression:"happy",text:`${n}さん、っていうんだね。あらためて、よろしくね！`}],
- origin:n=>[{npc:"fina",expression:"smile",text:"そういえば、私はフェルナ地方の出身なんだ。"},{npc:"fina",expression:"normal",text:`${n}さんは？`,choices:[{id:"a",label:"アステリア地方の、リベルナから"},{id:"b",label:"西のほうの街、リベルナだよ"}]}],
- originA:[{npc:"fina",expression:"happy",text:"リベルナ！ アステリア地方の西のほうにある街だよね。"}],
- originB:[{npc:"fina",expression:"happy",text:"リベルナかぁ。アステリア地方の西のほうにある街だよね。"}],
- mistoria:[{npc:"fina",expression:"guide",text:"ここがミストリア。"},{npc:"fina",expression:"guide",text:"聖獣士管理局のほかにも、研究所や牧場、闘技場なんかが集まってる街だよ。"},{npc:"fina",expression:"smile",text:"一人前の聖獣士を目指すなら、これから何度もお世話になると思う。"}],
- support:n=>[{npc:"serge",text:`${n}さんのような新人の聖獣士には、管理局から支援をお渡ししています。`},{npc:"serge",text:"新人聖獣士支援制度です。まずは、旅立ちの準備金をお受け取りください。"},{npc:"serge",text:"それから、こちらもお持ちください。"},{note:{rows:[{icon:"gold",text:"1000G"},{img:ITEM_ICON.potato,text:SUPPORT_TO=="vault"?"ジャガイモ×10を手に入れた（バッグがいっぱいなので保管庫へ）":"ジャガイモ×10を手に入れた"}],se:"GOLD_GET"}},{npc:"serge",text:"旅のあいだ、聖獣はお腹がすいていきます。ジャガイモを食べさせると、空腹が少しおさまりますよ。"},{npc:"serge",text:"食べさせるのはサイコロを振る前、1ターンに1個までです。足りなくなったら、アイテム屋で買い足してください。"}],
- unlock:n=>[{npc:"serge",text:"世界地図は、この管理局でいつでもご覧いただけます。"},{npc:"fina",expression:"guide",text:`それじゃあ${n}さん、まずは市場で最初の相棒を迎えに行こう！`}]};
+ food:n=>[{npc:"fina",expression:"smile",text:"ジャガイモももらえたね！"},{npc:"fina",expression:"guide",text:"旅のあいだ、聖獣はだんだんお腹がすいていくの。"},{npc:"fina",expression:"guide",text:"サイコロを振る前にジャガイモを食べさせると、空腹が少しおさまるよ。1ターンに1個までね。"},{npc:"fina",expression:"smile",text:"足りなくなったら、アイテム屋で買い足せるよ。"},{npc:"fina",expression:"happy",text:"それじゃあ、町に出よう！"}],
+ origin:n=>[{npc:"fina",expression:"guide",text:`${n}さん、せっかくだから世界地図を見てみよう！`},{npc:"fina",expression:"smile",text:"私はね、ここ……フェルナ地方の出身なんだ。"},{npc:"fina",expression:"normal",text:`${n}さんは、たしかリベルナから来たんだよね？`,choices:[{id:"a",label:"うん、リベルナから来たよ"},{id:"b",label:"ミストリアは初めてで少し緊張してる"}]}],
+ originA:[{npc:"fina",expression:"happy",text:"やっぱり！ リベルナは、アステリア地方の西のほうにある街だよね。"}],
+ originB:[{npc:"fina",expression:"smile",text:"ふふ、大丈夫。私も初めて来たときはドキドキしたよ。"}],
+ mistoria:[{npc:"fina",expression:"guide",text:"そしてここがミストリア。"},{npc:"fina",expression:"guide",text:"聖獣士管理局のほかにも、研究所や牧場、闘技場なんかが集まってる街だよ。"},{npc:"fina",expression:"smile",text:"一人前の聖獣士を目指すなら、これから何度もお世話になると思う。"},{npc:"fina",expression:"guide",text:"世界地図は、聖獣士管理局でいつでも見られるよ。"}],
+ support:n=>[{npc:"serge",text:`${n}さんのような新人の聖獣士には、管理局から旅立ちの支援をお渡ししています。`},{note:{rows:[{icon:"gold",text:"1000G"},{img:ITEM_ICON.potato,text:SUPPORT_TO=="vault"?"ジャガイモ×10を手に入れた（バッグがいっぱいなので保管庫へ）":"ジャガイモ×10を手に入れた"}],se:"GOLD_GET"}}],
+ mapNote:{img:"./assets/ui/worldmap_icon/worldmap_unlock.png",cmd:true,small:true,title:"世界地図が使えるようになった",se:"UNLOCK"}};
 // リュウとの出会い（2026-10-07 正式の導線。台本＝ライバルらしく前向きで少し自信家。S ランクを先にクリアしてレジェンドに挑むと宣言し、先に「はじまりの草原」へ）
 // 2026-10-08：リュウの正式の表情5種（台詞は変えない）＝驚き → 自信 → 柔らかい笑み → 真剣 → 自信
+// 2026-10-12 開発21（試遊 No.005・F 案＝試遊用の仮の台詞・最終確定ではない）：少し生意気で自信家・軽く煽るが嫌味すぎない。旧知の掛け合い（フィナと同じ町の出身）は残して重複をなくす。
+//  返答3択はリュウの一言だけが分かれて共通の会話へ戻る（報酬・セーブの進行に差はない）。最後の「先に『はじまりの草原』へ」は Chapter 1 のライバル戦（tut_rival）へつながる
 OPEN_TALK.ryu=n=>[{npc:"ryu",expression:"surprise",text:"あれ？ フィナじゃないか！"},{npc:"fina",expression:"surprised",text:"リュウ！？ どうしてミストリアにいるの？"},
- {npc:"ryu",expression:"confident",text:"決まってるだろ。聖獣士になりに来たんだよ。……で、そっちは？"},{npc:"fina",expression:"smile",text:`こちらは${n}さん。今日、聖獣士登録をしたばかりなんだ。`},
- {npc:"fina",expression:"guide",text:`${n}さん、この人はリュウ。私と同じ町の出身で、小さい頃からの知り合いなの。`},{npc:"ryu",expression:"soft_smile",text:`へえ、新人か。よろしくな、${n}。`},
- {npc:"ryu",expression:"serious",text:`先に言っとくぜ。オレは${n}より先にSランクをクリアして、レジェンドに挑んでやる。`},{npc:"fina",expression:"troubled",text:"もう、リュウは相変わらずなんだから……。"},
- {npc:"ryu",expression:"confident",text:"オレは先に『はじまりの草原』へ行ってる。追いつけるもんなら、追いついてみな！"},{npc:"fina",expression:"smile",text:`行っちゃった……。${n}さん、私たちも負けてられないね！`}];
+ {npc:"ryu",expression:"confident",text:"へえ、君が今日登録した新人？ ちゃんと大会まで来られるのか？"},{npc:"fina",expression:"troubled",text:"リュウ！ 初対面からそんな言い方しないの。"},
+ {npc:"fina",expression:"guide",text:`${n}さん、この人はリュウ。私と同じ町の出身で、小さい頃からの知り合いなの。`},
+ {npc:"ryu",expression:"soft_smile",text:"俺はリュウ。相棒はレグナス。ま、顔くらい覚えておいてよ。",choices:[{id:"a",label:"絶対に追いついてみせる！"},{id:"b",label:"勝負はやってみないと分からないよ"},{id:"c",label:"ずいぶん自信があるんだね"}]}];
+OPEN_TALK.ryuReply={a:[{npc:"ryu",expression:"confident",text:"へえ、言うじゃん！ その言葉、覚えとくよ。"}],b:[{npc:"ryu",expression:"soft_smile",text:"いいね、その度胸。ちょっとは楽しめそうだ。"}],c:[{npc:"ryu",expression:"serious",text:"自信じゃないさ。勝つつもりでいるだけだよ。"}]};
+OPEN_TALK.ryuEnd=n=>[{npc:"ryu",expression:"serious",text:"俺は先にSランクまで駆け上がって、その先のレジェンドにも挑戦する。"},{npc:"ryu",expression:"confident",text:"先に『はじまりの草原』へ行ってる。次に会うときは、もう少し歯ごたえがあるといいな。じゃあな！"},
+ {npc:"fina",expression:"troubled",text:"もう、リュウったら……。昔からああなの。でも、実力は本物なんだよ。"},{npc:"fina",expression:"smile",text:"私たちも負けてられないね！"}];
+/** リュウの会話の分岐（3択それぞれ＝リュウの一言 → 共通の会話） */
+OPEN_TALK.ryuBranches=n=>Object.fromEntries(Object.entries(OPEN_TALK.ryuReply).map(([k,v])=>[k,v.concat(OPEN_TALK.ryuEnd(n))]));
 /** プロローグ（新しいゲームの最初に1回。見た記録は S.npcFlags.prologue）→ 街 */
 /** 2026-10-06：プロローグ（固定尺のオープニング）と正式のプロローグ BGM を同じ時間軸で鳴らす。
  *  開始画面の曲をフェードアウト → 背景の読み込みを待つ（その間は BGM を鳴らさない）→ Scene 1 を出す瞬間に PROLOGUE（0.000秒・フェードなし）→ 実際に鳴り始めた位置から映像の時計を始める
@@ -4182,7 +4206,17 @@ function proPlay(cv){const A=window.MMAUDIO;if(A)A.stopBgm({fade:"normal"});
  return Promise.all([MMPRO.readyOrTimeout(6000),new Promise(r=>setTimeout(r,A?750:0))]).then(()=>MMPRO.play({cover:cv,onScene:si=>{if(A&&si===0){A.scene("PROLOGUE_1",{fade:"quick"});proWarm(2)}},audioLeadMs:PRO_AUDIO_LEAD,onSceneAudio:si=>{if(A)A.scene("PROLOGUE_"+(si+1),{fade:"normal"});proWarm(si+2)}})) /* 2026-10-07 試遊：Scene 2〜6 の曲は切り替えの 0.5秒前から約0.7秒のクロスフェードで始める（次の曲のファイルは1つ前の Scene のあいだに先に取っておく）＝切り替えの直後に無音にならない。映像の時刻表は変えない */ /* 2026-10-07：Scene ごとの正式 BGM（PROLOGUE_1〜6・各曲の頭から・場面の切り替えで短いクロスフェード）。時刻表（固定尺）・本文・スキップは従来どおり（2026-10-06 の1曲の BGM は削除のまま） */
   .then(ok=>{if(A&&/^PROLOGUE/.test(A.status().scene||""))A.stopBgm({fade:"normal"});return ok})}
 function opPrologue(msg){P11_PRO.add(S);$("#app").innerHTML="";const cv=document.createElement("div");cv.className="p11cover";document.body.appendChild(cv);
- proPlay(cv).then(ok=>{cv.remove();if(ok){finaFlags().prologue=1;save()}}).catch(()=>cv.remove()).then(()=>{opCurtain();lobby(msg);if(!OP_TALKING)opCurtainOff()})}
+ proPlay(cv).then(ok=>{if(ok){finaFlags().prologue=1;save()}}).catch(()=>{}).then(()=>opArrive(cv)).then(cut=>{opCurtain();if(cut)document.body.appendChild(cut.el);lobby(msg);if(!OP_TALKING)opCurtainOff();if(cut)setTimeout(()=>cut.done(),60)})}
+/** 2026-10-12 開発21（試遊 No.001）：プロローグのあと（スキップしても）、フィナが出る前に短い「ミストリア到着」のカット（既存の町の背景＋文字だけ。新しい素材なし）。
+ *  黒 → 町の背景と題字 → 題字が消える → 同じ背景のままフィナの会話（会話の後ろも町の背景）→ カットを外す。タップで先へ（題字が消えるところまで）。視差を減らす設定では短く */
+const ARRIVE_MS={inMs:520,hold:1500,out:380};
+function opArrive(cv){if(cv)cv.remove();if(!$("#app"))return Promise.resolve(null);
+ const calm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches),T=calm?{inMs:200,hold:900,out:200}:ARRIVE_MS;
+ const el=document.createElement("div");el.className="oparr";el.setAttribute("role","img");el.setAttribute("aria-label","ミストリアに到着");el.style.setProperty("--arr-bg",`url(${TOWN_BG})`);el.style.setProperty("--arr-in",T.inMs+"ms");el.style.setProperty("--arr-out",T.out+"ms");
+ el.innerHTML=`<div class="oparr-bg" aria-hidden="true"></div><div class="oparr-t" aria-hidden="true"><small>聖獣都市</small><b>ミストリア到着</b><i></i></div>`;document.body.appendChild(el);
+ const cut={el,done(){el.classList.add("gone");setTimeout(()=>el.remove(),260)}};
+ return new Promise(r=>{let fin=false,t1=null;const end=()=>{if(fin)return;fin=true;clearTimeout(t1);el.classList.add("tout");setTimeout(()=>r(cut),T.out)};
+  const t0=Date.now();el.addEventListener("pointerdown",()=>{if(Date.now()-t0>350)end()});t1=setTimeout(end,T.inMs+T.hold)})}
 /** 2026-10-07 試遊（プロローグ → フィナ・街 → リュウで一瞬チカチカ）：次の会話が出るまで黒い幕で下の画面を覆う（z 899＝会話 900 の下）。会話が出たら消す */
 function opCurtain(fade){let c=$("#opcur");if(!c){c=document.createElement("div");c.id="opcur";c.className="opcur"+(fade?" fin":"");document.body.appendChild(c)}return c}
 function opCurtainOff(){const c=$("#opcur");if(!c||c.dataset.off)return;c.dataset.off=1;c.classList.add("off");setTimeout(()=>c.remove(),380)}
@@ -4205,26 +4239,39 @@ function opConfirm(v){const n=MMP11P.sanitize(v);opShell();let reg=false;
  MMNPC.talk(OPEN_TALK.confirm(n),{kind:"event",presentation:"standard",big:true,scene:BUREAU_BG,branches:{ok:OPEN_TALK.done(n),fix:OPEN_TALK.fix},onLine:(i,st)=>{if(st&&st.choice==="ok")register()}}).then(c=>{
   if(c==="ok"){register();return opAfterReg()}
   if(S.playerNamePending){p11NameScr();const e=$("#p11nm");if(e)e.value=v}})}
-/** 登録のあと：フィナ（名前を呼ぶ）→ 出身地の会話＋世界地図 → ミストリア → 世界地図の解放（セルジュ）→ 最初の相棒（市場）へ */
+/** 登録のあと（管理局）：セルジュの新人支援（1000G・ジャガイモ×10＝会話の枠なしの帯）→ フィナが名前を呼んで、ジャガイモと空腹を説明 → 管理局を出て町へ（op 'town'）。
+ *  2026-10-12 開発21（試遊 No.001・005）：世界地図の会話は管理局の中ではなく町で（opTownMap）。受け取りは会話の前に確定して保存（grantSupport＝二重に受け取らない）。
+ *  途中で閉じたら（op 'map' のまま）次は支援を飛ばしてフィナの説明から */
 async function opAfterReg(){const f=finaFlags(),n=S.playerName||MMP11P.DEFAULT_NAME;if(OP_TALKING)return;OP_TALKING=true;bgm("bureau");p9Immersive(true);
  if(!$(".opbu"))opShell();
  try{
-  if(grantSupport())await talkSeq(OPEN_TALK.support(n),{kind:"event",presentation:"standard",big:true,scene:BUREAU_BG}); // 2026-10-06：登録完了のすぐあと（セルジュ）＝新人支援 1000G＋薬草×1（先に受け取りを確定して保存＝再読み込みで二重に受け取らない）
-  await MMNPC.talk(OPEN_TALK.finaName(n),{kind:"fina",presentation:"standard",big:true,scene:BUREAU_BG});
-  const map=window.MMMAP?MMMAP.open():null,T=[],later=(fn,ms)=>T.push(setTimeout(fn,ms));
-  const act={0:()=>{if(map)later(()=>map.focus("ferna"),650)},2:()=>{if(map){map.focus("asteria");later(()=>map.focus("liberna",true),1150)}},3:()=>{if(map)map.focus("mistoria",true)}};
-  await MMNPC.talk(OPEN_TALK.origin(n).concat([]),{kind:"fina",presentation:"compact",branches:{a:OPEN_TALK.originA.concat(OPEN_TALK.mistoria),b:OPEN_TALK.originB.concat(OPEN_TALK.mistoria)},onLine:i=>{const a=act[i];if(a)a()}});
-  T.forEach(clearTimeout);if(map)await map.close();
-  f.worldMap=1;save();
-  await MMNOTE.show({img:"./assets/ui/worldmap_icon/worldmap_unlock.png",cmd:true,small:true,title:"世界地図が使えるようになった",se:"UNLOCK"}); /* 2026-10-08 正式：世界地図の解放アイコン（assets/ui/worldmap_icon/＝ユーザーが添付し直した透過 PNG を余白を切り詰めて 256px に） */ /* 2026-10-07 試遊：短い知らせ・印は聖獣士管理局の正式のコマンドの絵（世界地図）。専用の地図アイコンは素材待ち */ // 2026-10-05 試遊：SE は帯と同時（1000G＝GOLD_GET・薬草＝REWARD・世界地図＝UNLOCK。REWARD と UNLOCK は同じファイル）
-  await MMNPC.talk(OPEN_TALK.unlock(n),{kind:"event",presentation:"standard",big:true,scene:BUREAU_BG});
+  if(grantSupport())await talkSeq(OPEN_TALK.support(n),{kind:"event",presentation:"standard",big:true,scene:BUREAU_BG});
+  await MMNPC.talk(OPEN_TALK.finaName(n).concat(OPEN_TALK.food(n)),{kind:"fina",presentation:"standard",big:true,scene:BUREAU_BG,onClose:()=>opCurtain(true)});
  }finally{OP_TALKING=false}
+ if(f.op=="map"){f.op="town";save()}
+ opCurtain(true);await new Promise(r=>setTimeout(r,200));opTownMap()}
+/** 町：フィナが世界地図を案内（出身地の2択）→ 世界地図の解放（地図の印と文字だけの帯）→ リュウ。
+ *  記録：地図の会話を見た＝S.npcFlags.worldMap（従来の項目）→ 帯 → op 'done'・ryuMet 0（リュウはこれから）。帯の前に閉じたら、次は帯から（解放の記録は1回だけ） */
+let MAP_NOW=false;
+async function opTownMap(){const f=finaFlags(),n=S.playerName||MMP11P.DEFAULT_NAME;if(OP_TALKING||MAP_NOW)return;MAP_NOW=true;OP_TALKING=true;
+ try{
+  opCurtain();lobby();opCurtainOff();
+  if(!f.worldMap){
+   let map=null;const T=[],later=(fn,ms)=>T.push(setTimeout(fn,ms)),opn=()=>{if(!map&&window.MMMAP)map=MMMAP.open();return map}; // 1行目は町を見せたまま → 少しして地図が開く
+   const act={0:()=>later(opn,450),1:()=>{if(opn())later(()=>map.focus("ferna"),650)},2:()=>{if(opn()){map.focus("asteria");later(()=>map.focus("liberna",true),1150)}},4:()=>{if(opn())map.focus("mistoria",true)}};
+   await MMNPC.talk(OPEN_TALK.origin(n),{kind:"fina",presentation:"compact",branches:{a:OPEN_TALK.originA.concat(OPEN_TALK.mistoria),b:OPEN_TALK.originB.concat(OPEN_TALK.mistoria)},onLine:i=>{const a=act[i];if(a)a()}});
+   T.forEach(clearTimeout);if(map)await map.close();
+   f.worldMap=1;save();
+  }
+  const blk=document.createElement("div");blk.className="opblk";document.body.appendChild(blk); // 帯のあいだ町の札を押させない（次はリュウ）
+  try{await MMNOTE.show(OPEN_TALK.mapNote)}finally{blk.remove()} /* 2026-10-08 正式：世界地図の解放アイコン（assets/ui/worldmap_icon/）。会話の枠は使わない（SE は帯と同時＝UNLOCK） */
+ }finally{OP_TALKING=false;MAP_NOW=false}
  f.op="done";f.finaIntro=1;f.ryuMet=0;save();opRyu()}
-// 2026-10-07：リュウとの初めての出会い（登録のあと・管理局を出て市場へ行く前の街）。リュウはフィナと同じ町の出身。先に「はじまりの草原」へ向かう。1回だけ（S.npcFlags.ryuMet：0＝これから・1＝見た）
+// 2026-10-07：リュウとの初めての出会い（町で世界地図が使えるようになったあと・市場へ行く前）。リュウはフィナと同じ町の出身。先に「はじまりの草原」へ向かう。1回だけ（S.npcFlags.ryuMet：0＝これから・1＝見た）
 let RYU_NOW=false;
 async function opRyu(){const f=finaFlags(),n=S.playerName||MMP11P.DEFAULT_NAME;if(OP_TALKING||RYU_NOW)return;RYU_NOW=true;OP_TALKING=true;
  let drawn=false;const after=()=>{if(drawn)return;drawn=true;f.ryuMet=1;save();lobby(finaMsg(`${p11Esc(n)}さん、まずは市場で最初の相棒を迎えよう！`))};
- try{opCurtain(true);await new Promise(r=>setTimeout(r,240));const t=MMNPC.talk(OPEN_TALK.ryu(n),{kind:"event",presentation:"standard",big:true,scene:TOWN_BG,onClose:()=>{OP_TALKING=false;RYU_NOW=false;after()}});lobby();opCurtainOff();await t}catch(e){} /* 2026-10-07 試遊：街を一瞬見せてから会話を出していた（450ms）→ 前の画面から黒へ短くフェード → リュウの会話（街の背景）。会話の後ろで街を描き、閉じ始めに案内つきの街へ */
+ try{opCurtain(true);await new Promise(r=>setTimeout(r,240));const t=MMNPC.talk(OPEN_TALK.ryu(n),{kind:"event",presentation:"standard",big:true,scene:TOWN_BG,branches:OPEN_TALK.ryuBranches(n),onClose:()=>{OP_TALKING=false;RYU_NOW=false;after()}});lobby();opCurtainOff();await t}catch(e){} /* 2026-10-07 試遊：前の画面から黒へ短くフェード → リュウの会話（街の背景）。会話の後ろで街を描き、閉じ始めに案内つきの街へ */
  finally{OP_TALKING=false;RYU_NOW=false;opCurtainOff()}
  after()}
 /** 2026-10-05 PHASE B：会話とシステム通知の帯を順に出す。seq の { note:{…} } はシステム通知の帯（MMNOTE・顔と名前なし＝会話とは別の層）、それ以外は会話の行（続く行はまとめて1つの会話） */

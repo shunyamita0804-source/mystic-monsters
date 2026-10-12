@@ -27,7 +27,7 @@ test('TW-1：街の背景は TOWN_BG の1か所だけで参照し、ファイル
   const bg = line('const TOWN_BG=');
   assert.equal(bg, 'const TOWN_BG="assets/town/mistria_main.webp",TOWN_IMG={w:768,h:1360,top:26};');
   assert.ok(existsSync(path.join(ROOT, 'assets/town/mistria_main.webp'))); assert.ok(existsSync(path.join(ROOT, 'assets/town/town_main.jpg')), '旧背景は消さない');
-  assert.equal((HTML.match(/\$\{TOWN_BG\}/g) || []).length, 1, 'lobby() から1回だけ使う');
+  assert.equal((HTML.match(/\$\{TOWN_BG\}/g) || []).length, 2, 'lobby() と、プロローグのあとの「ミストリア到着」のカット（opArrive・2026-10-12）だけ');
   assert.doesNotMatch(HTML, /MAPIMG/);
   assert.match(HTML, /\.tbg\{[^}]*top:calc\(var\(--tva\) - var\(--tih\) \* var\(--ts\)\)[^}]*background:var\(--town-bg\) center\/100% 100% no-repeat/, '下寄せ：画像の下端を街の枠（バーの上端）にそろえる');
   assert.match(HTML, /--tiw:768;--tih:1360;--ttop:26;--ts:max\(min\(max\(100cqw \/ var\(--tiw\),var\(--tva\) \/ var\(--tih\)\),\(var\(--tva\) - 4px\) \/ \(var\(--tih\) - var\(--ttop\)\)\),var\(--tva\) \/ var\(--tih\)\)/, '幅いっぱいが基本。闘技場の上端（y=26）が画面の上端で切れるときは縮める');

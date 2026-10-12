@@ -63,8 +63,13 @@ test('PT-B3a：プロローグ → フィナの声かけで、会話の外に街
   await pg.evaluate(() => { S = p10NewSave(); S.playerName = MMP11P.DEFAULT_NAME; S.playerNamePending = true; save(); lobby(); });
   await pg.waitForSelector('.mmpro-skip:not([disabled])', { timeout: 20000 });
   await watchFrames(pg, '#app .map.town');
+  await pg.evaluate(() => { window.__arr = null; new MutationObserver(() => { const e = document.querySelector('.oparr'); if (e && !window.__arr) window.__arr = { t: e.innerText, talk: !!document.querySelector('.mmtalk') }; }).observe(document.body, { childList: true }); });
   await pg.click('.mmpro-skip'); await pg.waitForTimeout(350); await pg.click('.mmpro-skip');
+  await pg.waitForSelector('.oparr', { timeout: 20000 });
   await pg.waitForSelector('.mmtalk:not(.mmtalk-out)', { timeout: 20000 }); await pg.waitForTimeout(500);
+  const arr = await pg.evaluate(() => window.__arr);
+  assert.ok(arr && /ミストリア到着/.test(arr.t) && !arr.talk, `2026-10-12：スキップしても、フィナより先に「ミストリア到着」のカット ${JSON.stringify(arr)}`);
+  assert.equal(await pg.$('.oparr'), null, '会話が出たらカットは片付く');
   const r = await pg.evaluate(() => { window.__stop = true; return { bad: window.__bad, frames: window.__frames, cur: !!document.getElementById('opcur') }; });
   assert.equal(r.bad, 0, `街が見えたフレーム ${JSON.stringify(r)}`); assert.ok(r.frames > 10); assert.equal(r.cur, false, '会話が出たら幕は消える');
   assert.deepEqual([p.errors, p.bad], [[], []]);
@@ -79,7 +84,7 @@ test('PT-B3b：街 → リュウの出会いで、会話の前に街が見えな
   await pg.waitForSelector('.mmtalk:not(.mmtalk-out)', { timeout: 20000 }); await pg.waitForTimeout(300);
   const r = await pg.evaluate(() => { window.__stop = true; return { bad: window.__bad, frames: window.__frames }; });
   assert.equal(r.bad, 0, `会話の前に街が見えた ${JSON.stringify(r)}`);
-  await H.finishTalk(pg); await pg.waitForSelector('#app .map.town');
+  assert.equal(await H.chooseTalk(pg, 'b'), true, '2026-10-12：リュウへの返答の3択'); await H.finishTalk(pg); await pg.waitForSelector('#app .map.town');
   assert.equal(await pg.evaluate(() => finaFlags().ryuMet), 1);
   assert.deepEqual([p.errors, p.bad], [[], []]);
 });
