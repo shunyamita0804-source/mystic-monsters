@@ -82,7 +82,9 @@ test('BV-B3：開始の俯瞰の間は幕・薄いマスを出さない → 追�
   const p = await openPage({ size: H.SIZES.base, intro: true }); const pg = p.page;
   await H.newGame(pg, 'テスト');
   await pg.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); save(); board(); });
-  await pg.waitForSelector('.wbv .rfw.intro', { timeout: 20000 }); await pg.waitForTimeout(400);
+  await pg.waitForSelector('.wbv .rfw.intro', { timeout: 20000 });
+  await pg.waitForFunction(() => getComputedStyle(document.querySelector('.wbv .rfw-veil')).opacity === '0', null, { timeout: 3000 }).catch(() => {});   // 2026-10-12 開発21：中継カットのあとに全景へ入る＝幕が消える途中（transition）を測らない
+  await pg.waitForTimeout(200);
   const a = await pg.evaluate(() => ({ veil: getComputedStyle(document.querySelector('.wbv .rfw-veil')).opacity, far: [...document.querySelectorAll('.wbv .rfw-tile.far')].map((e) => getComputedStyle(e).opacity) }));
   assert.equal(a.veil, '0', '俯瞰の間は幕なし'); assert.ok(a.far.length > 0 && a.far.every((o) => o === '1'), '俯瞰の間は全部のマスが見える');
   await pg.waitForSelector('.wbv .rfw:not(.intro)', { timeout: 20000 }); await pg.waitForTimeout(900);
