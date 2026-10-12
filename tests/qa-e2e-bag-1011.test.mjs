@@ -32,7 +32,7 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     const slots = await pg.evaluate(() => [...document.querySelectorAll('.pp .ppslots .ppsl')].map((e) => ({ lock: e.classList.contains('lock'), on: e.classList.contains('on'), t: e.textContent.trim(), aria: e.getAttribute('aria-label') })));
     assert.equal(slots.length, 6, '6つの枠');
     assert.deepEqual(slots.map((s) => s.lock), [false, false, true, true, true, true], '未優勝は2枠');
-    assert.deepEqual(slots.slice(2).map((s) => s.t.replace('🔒', '')), ['E・D', 'C・B', 'A・S', 'A・S']);
+    assert.deepEqual(slots.slice(2).map((s) => s.t), ['🔒', '🔒', '🔒', '🔒'], '2026-10-12 開発21（C-2）：未解放の枠は鍵だけ（「E・D」などの文字は出さない・読み上げの解放条件は残す）');
     assert.match(slots[2].aria, /E・D優勝で解放/);
     assert.match(await pg.textContent('.ppbagh'), /0 \/ 2枠/);
     assert.match(await pg.textContent('.ppvault'), /13個/);

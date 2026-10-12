@@ -94,7 +94,9 @@ test('TR-08：リュウ（正式の全身）＋レグナス（正式の相棒）
 
 test('TR-09：購入の知らせ「〇〇をつれて帰った！」はシステム通知の帯（MMNOTE＝自動で消える・タップで消える）だけ。街の案内欄（lobby の msg）には出さない・セーブに入れない', () => {
   const a = fnOf('adopt');
-  assert.match(a, /lobby\(\(\(\)=>\{[\s\S]*?if\(typeof MMNOTE=="object"&&MMNOTE\)\{[^}]*MMNOTE\.show\(\{\.\.\.\(im\?\{img:im\}:\{icon:"gold"\}\),title:x\.name\+"をつれて帰った！"\+pk,\.\.\.\(rs\?\{sub:rs\}:\{\}\)\}\);return undefined\}/, '帯があれば街の通知は undefined（出さない）');
+  // 2026-10-12 開発21：帯の代わりに「〔名前〕を手に入れた！」の演出（gotShow）→ カレンのお礼 → 街（街の案内欄には出さない＝lobby() に文を渡さない）
+  assert.match(a, /gotShow\(x,pk,rs\)\.then\(\(\)=>thanks\(\)\)/, '演出があれば街の通知は出さない');
+  assert.doesNotMatch(a.replace(/\/\*[\s\S]*?\*\//g, ''), /つれて帰った/, '旧「〇〇をつれて帰った！」は出さない（コメントを除く）');
   assert.doesNotMatch(a, /S\.(msg|note|lastMsg)\s*=/, 'セーブ（S）に一時的な知らせを入れない');
   const no = rd('js/feel/notice.js'); assert.match(no, /const MS = 2600;/); assert.match(no, /el\.addEventListener\('click', \(e\) => \{ e\.stopPropagation\(\); if \(Date\.now\(\) - shownAt > 350\) close\(\); \}\);/);
   assert.doesNotMatch(no, /localStorage|save\(/, '帯は保存しない（再読み込みで出ない）');

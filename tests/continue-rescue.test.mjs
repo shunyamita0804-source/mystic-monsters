@@ -159,7 +159,7 @@ test('R7：二度押し・再読込で補填・購入が二重にならない（
   const adopt = adoptOf(P7, P8, M, S, log);
   adopt(0, 'ソラモ'); adopt(0, 'ソラモ');   // 同じ確定ボタンを2回押したのと同じ
   assert.deepEqual([S.g, owned(S), S.cnt], [0, 2, 1], '1体だけ購入・補填も1回');
-  assert.match(log[1][1], /をつれて帰った！（牧場に預けました）（育成を続けるため、不足分50Gを補填して購入しました）/);
+  assert.match(log[1][1], /を手に入れた！（牧場に預けました）（育成を続けるため、不足分50Gを補填して購入しました）/);
   assert.deepEqual(log.at(-1), ['market', 'お金が足りません。', 'solamo'], '2回目は未育成個体がいるため救済されず、購入されない');
   S = P8.migrateSave(j(S));   // 再読込
   assert.deepEqual([S.g, owned(S), S.box[0].raise.state], [0, 2, 'none']);

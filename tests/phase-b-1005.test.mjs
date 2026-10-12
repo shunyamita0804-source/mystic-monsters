@@ -98,7 +98,7 @@ test('PB-06：正式の会話窓（event_dialogue_window）はイベント・大
   assert.match(fnOf('talkSeq'), /if\(x&&x\.note\)\{await flush\(\);await MMNOTE\.show\(x\.note\)\}/);
   assert.match(HTML, /mapNote:\{img:"\.\/assets\/ui\/worldmap_icon\/worldmap_unlock\.png",cmd:true,small:true,title:"世界地図が使えるようになった",se:"UNLOCK"\}/, '機能の解放（2026-10-07 試遊：短い知らせ）');
   assert.match(fnOf('opTownMap'), /await MMNOTE\.show\(OPEN_TALK\.mapNote\)/, '2026-10-12：解放の帯は町で（会話の枠なし）');
-  assert.match(fnOf('adopt'), /if\(typeof MMNOTE=="object"&&MMNOTE\)\{const sp=MMP10M\.byId\(x\.sp\),im=sp&&sp\.image&&sp\.image\.src;MMNOTE\.show\(\{\.\.\.\(im\?\{img:im\}:\{icon:"gold"\}\),title:x\.name\+"をつれて帰った！"\+pk,\.\.\.\(rs\?\{sub:rs\}:\{\}\)\}\);return undefined\}/, '購入の知らせ（救済も通常も）は帯だけ＝街の通知は出さない（2026-10-05 試遊）');
+  assert.match(fnOf('adopt'), /gotShow\(x,pk,rs\)/, '購入の知らせ（救済も通常も）は入手の演出だけ＝街の通知は出さない（2026-10-12 開発21：旧 帯「〇〇をつれて帰った！」）');
   assert.match(fnOf('p9TourResult'), /MMP8\.runTourEnd\(rs,\{persist:\(\)=>save\(\)\}\)/, '大会の報酬（2026-10-06：大会の終わりの順の firstReward の段階で帯を出す）');
   assert.match(HTML, /MMP8\.registerTourEndHook\("firstReward",async d=>\{[^\n]*MMNOTE\.show\(\{icon:"reward",title:`賞金 \$\{d\.prize\}G を手に入れた！`/, '大会の報酬');
   // 帯は文字として表示（HTML として解釈しない）

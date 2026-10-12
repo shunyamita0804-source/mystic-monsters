@@ -89,7 +89,8 @@ test('QA-G4-2：モンスター名を画面に出すところ（fight()・バト
   const ALLOW = [
     /MMNOTE\.show\(\{icon:"gold",title:x\.name\+/g,   // 2026-10-05 PHASE B：システム通知の帯（js/feel/notice.js が文字として表示＝esc）
     /MMNOTE\.show\(\{\.\.\.\(im\?\{img:im\}:\{icon:"gold"\}\),title:x\.name\+/g,   // 2026-10-05 試遊：購入の知らせ（帯は文字として表示）
-    /npcMoment\("partner",x\.name\)/g, /\(MMP10M\.byId\(m\.sp\)\|\|\{\}\)\.name/g,   // 2026-10-05：短いイベントの会話（共通会話は textContent で表示＝HTML として解釈しない）・種族の正式データ
+    /npcMoment\("partner",x\.name\)/g, /GOT_LOG\.push\(\{title:x\.name\+/g,   // 2026-10-12：入手の演出の記録（ページの中だけ・表示は p11Esc）
+    /\(MMP10M\.byId\(m\.sp\)\|\|\{\}\)\.name/g,   // 2026-10-05：短いイベントの会話（共通会話は textContent で表示＝HTML として解釈しない）・種族の正式データ
     /p11Esc\(m\.name\)!==s\.name/g,   // ステータス画面の比較（表示するのは種族名 s.name）。p11Esc の許可より先に
     /p11Esc\((?:[A-Za-z_$][\w$]*\.)+name\)/g,                     // 文字として表示（m.name・x.name・S.m.name・d.m.name など）
     /\$\{s\.name\}/g, /MMP10M\.byKey\(c\.key\)\.name/g, /\(MMP10M\.byId\(x\.sp\)\|\|\{\}\)\.name/g,   // 種族の正式データ（MMP10M）
@@ -135,7 +136,7 @@ test('QA-G4-4：購入（実物の adopt()）：街のメッセージの名前�
     adopt(0, n);
     const nn = MMP11P.monsterName(n, 0);
     assert.equal(S.m.name, nn, '保存する名前は正規化（HTML の記号は全角）'); assert.doesNotMatch(S.m.name, /[<>&"'`\\]/); assert.equal(S.g, 0, '初回救済・代金は従来どおり');
-    assert.deepEqual(log, ['save', ['lobby', `${esc(nn)}をつれて帰った！（はじめての1体のため、所持金を500Gまで補填しました）`]]);
+    assert.deepEqual(log, ['save', ['lobby', `${esc(nn)}を手に入れた！（はじめての1体のため、所持金を500Gまで補填しました）`]]);
   }
 });
 
@@ -181,14 +182,14 @@ test('QA-G4-B1：実ブラウザ：新規開始→市場で「<!--」「<b>X</b>
   await buy(pg, CM);
   let S = await H.getS(pg); assert.equal(S.m.name, NN(CM), '名前は正規化して保存（2026-10-08 監査 H-05）'); assert.equal(S.g, 500, '2026-10-06：新人支援の 1000G − 500G（補填なし）');
   assert.equal(await count(pg, '#app .svb'), 1, '街の「セーブ・ロード」が残る');
-  assert.equal(await pg.evaluate(() => MMNOTE.log().slice(-1)[0].title), `${NN(CM)}をつれて帰った！`);   // 2026-10-05 試遊：購入の知らせはシステム通知の帯（文字として表示）
+  assert.equal(await pg.evaluate(() => MM_GOT_LOG.slice(-1)[0].title), `${NN(CM)}を手に入れた！`);   // 2026-10-05 試遊：購入の知らせはシステム通知の帯（文字として表示）
   assert.equal(await count(pg, '#app .map ~ .tlow .card'), 0, '街にはモンスターカードを出さない（2026-09-30。名前は牧場・ファームで文字のまま出ることを下で確かめる）');
   await pg.evaluate(() => { S.g = 5000; save(); lobby(); });
   await buy(pg, BOLD);
-  assert.equal(await pg.evaluate(() => MMNOTE.log().slice(-1)[0].title), `${NN(BOLD)}をつれて帰った！（牧場に預けました）`); assert.equal(await count(pg, '#msg b, .mmnote-tx b b'), 0, '名前のタグは効かない');
+  assert.equal(await pg.evaluate(() => MM_GOT_LOG.slice(-1)[0].title), `${NN(BOLD)}を手に入れた！（牧場に預けました）`); assert.equal(await count(pg, '#msg b, .mmnote-tx b b'), 0, '名前のタグは効かない');
   await buy(pg, XSS);
   S = await H.getS(pg); assert.deepEqual(S.box.map((x) => x.name), [NN(BOLD), NN(XSS8)], '購入シートは従来どおり8文字まで・記号は全角');
-  assert.equal(await pg.evaluate(() => MMNOTE.log().slice(-1)[0].title), `${NN(XSS8)}をつれて帰った！（牧場に預けました）`); assert.equal(await count(pg, '#app .svb'), 1);
+  assert.equal(await pg.evaluate(() => MM_GOT_LOG.slice(-1)[0].title), `${NN(XSS8)}を手に入れた！（牧場に預けました）`); assert.equal(await count(pg, '#app .svb'), 1);
   await noInjected(p);
   // 牧場：預ける・受け取る・合体・売る
   await pg.click('.hz[onclick="farm()"]'); await pg.waitForSelector('#app .rn2 .rnact');
