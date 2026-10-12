@@ -598,11 +598,12 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
 
   // ---- 止まった地点の結果 ----
   // ---- 2026-10-12 試遊：能力アップ・出来事・冒険リアクションの挿絵カード（盤の上に会話の窓・選択肢だけが出る見え方をやめる）。
-  //  正式の挿絵が届いたら CARD_ART に1行足すだけ（今は Chapter 1 の正式背景から作った仮の絵＋モンスターを大きく中央）。ファイルの無い所は読みに行かない（404 を出さない）
+  //  2026-10-12 開発23：CARD_ART＝正式の挿絵（モンスターを大きく中央に重ねる）。PH は挿絵が無いときの仮の背景（Chapter 1 の正式背景）
   const CARD_ART = {
-    stat: {},    // 能力アップの挿絵（予定の置き場＝assets/chapter/stat_art_1012 の stat_li など。li・po・in・hi・ev・de＝ライフ・ちから・かしこさ・命中・回避・丈夫さ）
-    react: '',   // 冒険リアクションの共通の挿絵（予定の置き場＝assets/chapter/event_art_1012 の reaction）
-    event: '',   // 挿絵の無い出来事の共通の挿絵（予定の置き場＝assets/chapter/event_art_1012 の event）
+    // 2026-10-12 開発23：正式画像（ユーザー納品の24枚のうち8枚）。li・po・in・hi・ev・de＝ライフ・ちから・かしこさ・命中・回避・丈夫さ
+    stat: Object.fromEntries(['li', 'po', 'in', 'hi', 'ev', 'de'].map((k) => [k, `./assets/chapter/stat_art_1012/stat_${k}.webp`])),
+    react: './assets/chapter/event_art_1012/reaction.webp',   // 冒険リアクションの共通の挿絵
+    event: './assets/chapter/event_art_1012/event.webp',      // 挿絵の無い出来事の共通の挿絵
   };
   const PH = { stat: './assets/fields/ch1a/formal_1008/ch1a_scene_01.webp', react: './assets/fields/ch1a/formal_1008/ch1a_scene_02.webp', event: './assets/fields/ch1a/formal_1008/ch1a_scene_03.webp' };
   const BAR_FILL = { li: 'b31_ability_bar_fill_yellow', po: 'b30_ability_bar_fill_red', in: 'b29_ability_bar_fill_green', hi: 'b28_ability_bar_fill_pink', ev: 'b26_ability_bar_fill_lightblue', de: 'b27_ability_bar_fill_darkblue' };

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>リアクション30枚</title>
+<!--
+  【確認ページ】正式モンスター5体のリアクション 30枚（2026-10-12）。ゲーム本体とは別の1ページ（消しても本体に影響なし）。
+   データは js/monsters/reaction-art.js（MMRXART）。喜ぶ・驚く・しょんぼり・食べる＝どの出来事に出すか未決（ここで見るだけ）。
+   被弾・回避＝バトルで待機立ち絵を一瞬だけ差し替える（js/battle/arena.js の react）。「試す」で同じ長さ・同じ置き方を再現する。
+-->
+<style>
+:root{color-scheme:dark;--navy:#0b1636;--panel:#13214d;--line:#3a4f8f;--gold:#e0b861;--ink:#f3f0e6;--sub:#b9c3e3;--ok:#7fd49a;--ng:#ff7b6b}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+html,body{margin:0;background:var(--navy);color:var(--ink);font-family:"Noto Sans JP",system-ui,sans-serif}
+main{max-width:960px;margin:0 auto;padding:max(12px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom))}
+h1{font-size:17px;margin:0 0 4px;color:#ffe9b0;letter-spacing:.04em}
+p.note{font-size:12px;color:var(--sub);margin:0 0 10px;line-height:1.55}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+.seg{display:flex;border:1.5px solid var(--gold);border-radius:999px;overflow:hidden}
+.seg button{appearance:none;border:0;background:transparent;color:var(--ink);font:700 12.5px/1 inherit;padding:7px 11px}
+.seg button.on{background:linear-gradient(#e7c472,#b98a2c);color:#1a1300}
+.sp{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;margin:0 0 12px}
+.sp h2{font-size:14px;margin:0 0 8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sp h2 small{font-weight:400;color:var(--sub);font-size:11.5px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media (min-width:640px){.grid{grid-template-columns:repeat(6,minmax(0,1fr))}}
+figure{margin:0;display:flex;flex-direction:column;gap:4px;min-width:0}
+.cell{position:relative;aspect-ratio:1/1;border-radius:9px;overflow:hidden;background:var(--bgc,#2a3b74)}
+.cell img{position:absolute;left:50%;bottom:4%;width:auto;max-width:none;transform:translateX(-50%);filter:drop-shadow(0 6px 5px rgba(0,0,0,.4))}
+.fl .cell img{transform:translateX(-50%) scaleX(-1)}
+figcaption{font-size:11.5px;color:var(--sub);display:flex;justify-content:space-between;gap:4px}
+figcaption b{color:var(--ink);font-weight:700}
+.st.ok{color:var(--ok)}.st.ng{color:var(--ng)}
+.try{display:flex;gap:6px;flex-wrap:wrap}
+.try button{appearance:none;border:1.5px solid var(--gold);background:#1b2c63;color:var(--ink);border-radius:999px;font:700 12px/1 inherit;padding:7px 10px}
+.stage{position:relative;height:150px;margin:8px 0 0;border-radius:9px;background:linear-gradient(#3f6aa8,#5f8c58 62%,#3c5e36);overflow:hidden}
+.stage .mon{position:absolute;left:50%;bottom:12px;width:110px;height:110px;transform:translateX(-50%)}
+.stage .mon img{position:absolute;left:50%;bottom:0;width:auto;max-width:none;transform:translateX(-50%);filter:drop-shadow(0 8px 6px rgba(0,0,0,.45))}
+.fl .stage .mon img{transform:translateX(-50%) scaleX(-1)}
+.stage .mon .idle{height:118%}
+.stage .mon .rx{height:calc(118% * var(--rh,1))}
+.stage .mon.rxon .idle{visibility:hidden}
+.stage .tag{position:absolute;left:8px;top:6px;font-size:11px;color:#fff;background:rgba(0,0,0,.4);padding:2px 6px;border-radius:6px}
+</style></head><body>
+<main>
+  <h1>リアクション30枚</h1>
+  <p class="note">ソラモ・ガウル・ノビトン・ジオル・レグナス × 喜ぶ・驚く・しょんぼり・食べる・被弾・回避。大きさはバトルの待機立ち絵にそろえた倍率（体の面積が同じ）。「試す」は、バトルで攻撃を受けた瞬間と同じ長さ（被弾 0.56秒・回避 0.52秒）で待機立ち絵を差し替えて戻します。</p>
+  <div class="bar">
+    <div class="seg" id="side"><button data-v="0" class="on">自分側（そのまま）</button><button data-v="1">相手側（左右反転）</button></div>
+    <div class="seg" id="bg"><button data-v="#2a3b74" class="on">濃紺</button><button data-v="#e9e4d4">白</button><button data-v="#4b8a4a">緑</button></div>
+  </div>
+  <div id="list"></div>
+</main>
+<script src="../../js/monsters/reaction-art.data.js"></script>
+<script src="../../js/monsters/reaction-art.js"></script>
+<script>
+(function () {
+  'use strict';
+  const B = '../../', X = window.MMRXART, $ = (s, e) => (e || document).querySelector(s);
+  const RX_MS = { hit: 560, dodge: 520 };
+  const status = (window.MM_RX_STATUS = {});
+  const list = $('#list');
+  list.innerHTML = X.SPECIES.map((sp, n) => `<section class="sp" data-sp="${sp}"><h2>${X.NAME[sp]}<small>種族 ${n}</small><span class="try"><button data-k="hit">被弾を試す</button><button data-k="dodge">回避を試す</button></span></h2>
+    <div class="grid">${X.KINDS.map((k, i) => { const f = X.info(sp, k); return `<figure data-k="${k}"><div class="cell"><img alt="${X.NAME[sp]} ${X.LABEL[k]}" src="${B}${f.src.slice(2)}" style="height:${(86 * f.hRel).toFixed(1)}%"></div><figcaption><b>${String(i + 1).padStart(2, '0')} ${X.LABEL[k]}</b><span class="st">…</span></figcaption></figure>`; }).join('')}</div>
+    <div class="stage"><span class="tag">バトルの差し替え</span><div class="mon"><img class="idle" alt="" src="${B}assets/battle/idle/idle_${sp}.webp"></div></div></section>`).join('');
+  // 読み込みの結果（読めた／読めない）
+  list.querySelectorAll('figure img').forEach((im) => {
+    const sp = im.closest('.sp').dataset.sp, k = im.closest('figure').dataset.k, st = im.closest('figure').querySelector('.st');
+    const done = (ok) => { status[`${sp}/${k}`] = ok ? { w: im.naturalWidth, h: im.naturalHeight } : null; st.textContent = ok ? `${im.naturalWidth}×${im.naturalHeight}` : '読めない'; st.className = 'st ' + (ok ? 'ok' : 'ng'); };
+    if (im.complete && im.naturalWidth) done(true); else { im.addEventListener('load', () => done(true)); im.addEventListener('error', () => done(false)); }
+  });
+  const seg = (id, fn) => $(id).addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; $(id).querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b)); fn(b.dataset.v); });
+  seg('#side', (v) => document.body.classList.toggle('fl', v === '1'));
+  seg('#bg', (v) => document.body.style.setProperty('--bgc', v));
+  // 試す：バトルと同じ置き方（待機立ち絵の高さ × hRel・足もと・中央）で一瞬だけ差し替えて戻す
+  list.addEventListener('click', (e) => {
+    const b = e.target.closest('.try button'); if (!b) return;
+    const sec = b.closest('.sp'), sp = sec.dataset.sp, k = b.dataset.k, f = X.info(sp, k), mon = $('.stage .mon', sec);
+    let im = $('.rx', mon); if (!im) { im = new Image(); im.className = 'rx'; im.alt = ''; mon.appendChild(im); }
+    im.src = B + f.src.slice(2); im.style.setProperty('--rh', f.hRel); mon.classList.add('rxon');
+    clearTimeout(mon.__t); mon.__t = setTimeout(() => { mon.classList.remove('rxon'); im.remove(); }, RX_MS[k]);
+  });
+})();
+</script>
+</body></html>
