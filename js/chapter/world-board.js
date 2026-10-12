@@ -300,7 +300,7 @@
       if (!ok || V.cover !== el || V.world !== world) return;
       setTimeout(() => root.requestAnimationFrame(() => root.requestAnimationFrame(() => {
         if (V.cover !== el) return; clearTimeout(slow); V.cover = null;
-        if (withIntro) intro(m); else { busySet(false); const S = gS(), mm = S && S.m; if (active(mm) && onBoard()) paint(mm); }
+        if (withIntro) intro(m); else { busySet(false); const S = gS(), mm = S && S.m; if (active(mm) && onBoard()) board(); }   // 覆いのあと＝途中の移動・分かれ道・出発の一言をここから（board() の続きの処理）
         el.classList.add('out'); setTimeout(() => el.remove(), RELAY.fade + 60);
       })), withIntro ? Math.max(0, RELAY.min - (Date.now() - t0)) : 0);
     });

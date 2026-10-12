@@ -93,7 +93,7 @@ test('FXB-4：レアの紋章（ある育成だけ・全景でも見える・訪
   const p = await openPage({ intro: true }); const pg = p.page;
   await H.newGame(pg, 'テスト');
   await pg.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); const f = S.m.raise.field; for (const k of Object.keys(f.tiles)) if (f.tiles[k].rare) delete f.tiles[k]; f.tiles.ER03_02 = { t: 'wild', rare: true }; save(); board(); });
-  await pg.waitForTimeout(1100);
+  await pg.waitForFunction(() => MMWB.state().intro, null, { timeout: 20000 }); await pg.waitForTimeout(300);   // 2026-10-12 開発21：絵がそろうまで中継カット → 全景
   const o = await pg.evaluate(() => { const e = document.querySelector('.rfw-mark'); const r = e && e.getBoundingClientRect(); return e ? { node: e.dataset.node, w: r.width, vis: getComputedStyle(e).display !== 'none', intro: MMWB.state().intro } : null; });
   assert.ok(o && o.intro && o.node === 'ER03_02' && o.vis && o.w >= 40, `全景で紋章が見える（${JSON.stringify(o)}）`);
   await pg.waitForFunction(() => !MMWB.state().intro, null, { timeout: 20000 }); await idle(pg);

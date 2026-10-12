@@ -108,10 +108,10 @@ try {
   const cf = await drain(); if (cf === 'choice') { await sleep(450); await page.click('.mmtalk-choice[data-choice="ok"]'); await sleep(1200); }
   let cg = 'none'; for (let k = 0; k < 30 && cg !== 'choice'; k++) { cg = await drain(); if (cg !== 'choice') await sleep(700); }   // 2026-10-05 PHASE B：新人支援の会話の間にシステム通知の帯（会話ではない）が入る
   if (cg === 'choice') { await sleep(1500); await page.screenshot({ path: `${OUT}/worldmap_390.png` }); await page.click('.mmtalk-choice[data-choice="a"]'); await sleep(400); }
-  let d1 = 'open'; for (let k = 0; k < 40; k++) { if (await page.evaluate(() => !!document.querySelector('.map.town') && !document.querySelector('.mmtalk') && S.npcFlags.op === 'done')) { d1 = 'none'; break; } d1 = await drain(); await sleep(700); }   // 会話と会話の間（フェード）を待ちながら送る
+  let d1 = 'open', ryu = false; for (let k = 0; k < 40; k++) { if (await page.evaluate(() => !!document.querySelector('.map.town') && !document.querySelector('.mmtalk') && S.npcFlags.op === 'done' && S.npcFlags.ryuMet === 1)) { d1 = 'none'; break; } d1 = await drain(); if (d1 === 'choice') { ryu = true; await sleep(450); await page.click('.mmtalk-choice[data-choice="a"]').catch(() => {}); await sleep(400); } await sleep(700); }   // 2026-10-12 開発21：町で世界地図 → 解放の帯 → リュウ（返答の3択）   // 会話と会話の間（フェード）を待ちながら送る
   await sleep(600);
   const town = await page.evaluate(() => !!document.querySelector('.map.town [onclick*="market()"]') && S.playerName === 'テスト' && !S.playerNamePending && S.npcFlags.op === 'done' && S.npcFlags.worldMap === 1);
-  rec('名前の確認 → 登録 → フィナが名前を呼ぶ → 出身地と世界地図 → 街', cf === 'choice' && cg === 'choice' && d1 === 'none' && town, `確認:${cf} 出身:${cg} 会話:${d1} 街:${town}`);
+  rec('名前の確認 → 登録 → 支援 → フィナの説明 → 町で出身地と世界地図 → 解放 → リュウ（3択）→ 街', cf === 'choice' && cg === 'choice' && ryu && d1 === 'none' && town, `確認:${cf} 出身:${cg} リュウ:${ryu} 会話:${d1} 街:${town}`);
   await page.screenshot({ path: `${OUT}/town_390.png` });
 
   await page.evaluate(() => market()); await sleep(1000);
@@ -120,7 +120,7 @@ try {
   await page.click('#p10info .p10buy'); await sleep(500);
   await page.fill('#p10ov #mnm', 'ソラ'); await sleep(600);
   await page.click('.p10ok'); await sleep(1000);
-  const d3 = await drain(); await sleep(800);
+  let d3 = 'open'; for (let k = 0; k < 20; k++) { await sleep(600); if (await page.evaluate(() => !!document.querySelector('.map.town') && !document.querySelector('.mmtalk,.mkgot'))) { d3 = 'none'; break; } d3 = await drain(); }   // 2026-10-12 開発21：入手の演出 → カレンのお礼 → 街
   const bought = await page.evaluate(() => ({ m: !!S.m, name: S.m && S.m.name }));
   rec('市場で購入→街', d2 === 'none' && d3 === 'none' && bought.m, JSON.stringify(bought));
 
