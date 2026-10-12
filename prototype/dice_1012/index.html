@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>サイコロ演出の比較</title>
+<!--
+  【比較試作】サイコロ演出と魔法系 SE（2026-10-12 開発23 B）。ゲーム本体とは完全に独立した1ページ（消しても本体に影響なし）。
+   旧＝今のゲームのサイコロ（js/chapter/dice-renderer.js・SE は正式 SE 01_dice_large_full）
+   新＝立体サイコロの試作（js/chapter/dice-cube.js・SE は A1 Magical Whoosh → B4 Slow Whoosh → C1 Magic Spell 02（控えめ）を短く編集した1本）
+   旧B2＝前の比較版（B2 Spin Whoosh 1。回転に対して速すぎる＝不採用候補・比べるためだけに残す）
+   出目はこのページが決めて両方に同じ値を渡す（演出は値を変えない）。正式採用はユーザーの確認のあと。
+-->
+<style>
+:root{color-scheme:dark;--gold:#e0b861;--navy:#0b1636}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--navy);color:#fff;font-family:"Noto Sans JP",system-ui,sans-serif}
+#stage{position:fixed;inset:0;overflow:hidden;background:#0b1636}
+#stage .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.9}
+#stage::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(6,12,32,.25),rgba(6,12,32,.05) 40%,rgba(6,12,32,.55))}
+#host{position:absolute;inset:0;z-index:5}
+.top{position:absolute;left:0;right:0;top:0;z-index:20;padding:max(10px,env(safe-area-inset-top)) 12px 8px;background:linear-gradient(rgba(8,16,44,.94),rgba(8,16,44,.78));border-bottom:1.5px solid var(--gold)}
+.top h1{margin:0 0 6px;font-size:15px;letter-spacing:.04em;color:#ffe9b0}
+/* 振っている間は操作パネルを上へたたむ（題字の行だけ残す）＝ゲームの上の帯と同じくらいの空間でサイコロを見る（小さい画面でも弾む高さが出る） */
+.top{transition:transform .24s ease}
+html.rolling .top{transform:translateY(calc(-100% + 36px + env(safe-area-inset-top)))}
+.top h1 small{font-size:11px;color:#c9d4f3;font-weight:400;margin-left:6px}
+.row{display:flex;gap:6px;align-items:center;margin:5px 0;flex-wrap:wrap}
+.row>span{font-size:11.5px;color:#c9d4f3;min-width:3.6em}
+.seg{display:flex;border:1.5px solid var(--gold);border-radius:999px;overflow:hidden}
+.seg button{appearance:none;border:0;background:transparent;color:#fff;font:700 13px/1 inherit;padding:7px 11px;min-width:40px}
+.seg button.on{background:linear-gradient(#e7c472,#b98a2c);color:#1a1300}
+.seg button:disabled{opacity:.35}
+.note{font-size:11px;color:#c9d4f3;margin:4px 0 0;line-height:1.45}
+.deck{position:absolute;left:0;right:0;bottom:0;z-index:20;height:calc(150px + env(safe-area-inset-bottom));background:linear-gradient(rgba(10,20,56,.0),rgba(10,20,56,.95) 26%);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+#start{width:118px;height:118px;border-radius:50%;border:4px solid var(--gold);background:radial-gradient(circle at 40% 30%,#ff6b5a,#b3121c 60%,#6d0710);color:#fff3d6;font:900 26px/1 "Shippori Mincho",serif;letter-spacing:.03em;box-shadow:0 6px 18px rgba(0,0,0,.55),inset 0 2px 6px rgba(255,255,255,.35)}
+#start:disabled{filter:grayscale(.5) brightness(.75)}
+#start:active{transform:scale(.97)}
+.info{position:absolute;left:12px;right:12px;bottom:calc(156px + env(safe-area-inset-bottom));z-index:20;font-size:12px;color:#e8eeff;text-align:center;text-shadow:0 1px 3px #000;min-height:1.4em}
+.info b{color:#ffe08a}
+/* 旧のサイコロ（index.html の .chdz の規則の写し＝比較のため同じ見え方にする） */
+.chdz-img.spin{animation:chdzspin .9s linear infinite}
+@keyframes chdzspin{to{transform:rotate(360deg)}}
+.chdz{position:absolute;inset:0;z-index:30;pointer-events:none}
+.chdz-mv{position:absolute;width:88px;height:88px;transform:translate(-50%,-50%);will-change:transform}
+.chdz-img{display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35));transition:opacity .16s}
+.chdz-img.off{opacity:0}
+/* 既存の正式10コマ（assets/dice/std。投げる → 着地。2026-10-03）：サイコロ本体の位置・大きさは停止面と揃える（frameBox から JS が寸法を入れる） */
+.chdz-fr{position:absolute;display:block;max-width:none;pointer-events:none;user-select:none;-webkit-user-select:none;transition:opacity .1s}
+.chdz-fr.off{opacity:0}
+.chdz-stop{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35));opacity:0;transition:opacity .16s}
+.chdz-stop.on{opacity:1}
+.chdz-img.chdz-stop.locked{position:relative;inset:auto;opacity:1;transition:none} /* LOCK 後の停止面＝転がっていた絵そのもの（2026-10-03：差し替え・弾みなし） */
+/* 2026-10-04 G5：面は最初に全部置いてデコードしておき、表示（visibility）だけで切り替える（src を変えない＝iPhone で止まったあとに絵が遅れて変わらない）。傾きは .chdz-rot にかける */
+.chdz-rot{position:absolute;inset:0}
+.chdz-rot.spin{animation:chdzspin .9s linear infinite}
+.chdz-rot>img,.chdz-rf>img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35));transition:none}
+.chdz-rf>img{visibility:hidden}.chdz-rf>img.on{visibility:visible}
+.chdz-rot .hid{visibility:hidden}
+.chdz-rot .chdz-img,.chdz-rot .chdz-img.chdz-stop,.chdz-rot .chdz-img.chdz-stop.locked{position:absolute;inset:0;opacity:1;transition:none}
+.chdz-stop.pop{animation:chdzpop .34s var(--mm-ease-snap,ease-out)}@keyframes chdzpop{0%{scale:1.22}100%{scale:1}}
+.chdz-glow{position:absolute;left:50%;top:50%;width:130%;height:130%;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(255,228,150,.0) 55%,rgba(255,220,130,.55) 72%,rgba(255,214,110,0));animation:chdzglow .5s ease-out forwards} /* 2026-10-04：転がっている間（SETTLE）に出し終える（LOCK のあとは動かない） */@keyframes chdzglow{0%{opacity:0;scale:.6}40%{opacity:1}100%{opacity:0;scale:1.25}}
+.chdz.landed .chdz-sh{opacity:.6}
+.chdz-glow.wa{animation:none} /* 2026-10-04 PHASE H：光も Web Animations の時間軸で（CSS のアニメーションは使わない） */
+@media (prefers-reduced-motion:reduce){.chdz-stop.pop,.chdz-glow{animation:none}.chdz-glow{display:none}}
+.chdz-sh{position:absolute;width:80px;height:16px;margin-top:40px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.45),rgba(0,0,0,0));transform:translate(-50%,-50%)}
+.chdz-res{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:baseline;justify-content:center;width:88px;height:88px;animation:chdzres .32s cubic-bezier(.2,1.5,.4,1)}
+.chdz-res b{position:relative;z-index:1;margin-top:12px;font:900 44px/1 var(--mm-font-head);color:#fff5d0;text-shadow:0 0 6px rgba(255,200,80,.9),0 2px 0 #7a4a10,0 3px 8px rgba(0,0,0,.5)}
+.chdz-res i{position:relative;z-index:1;font:900 26px/1 var(--mm-font-head);font-style:normal;color:#fff5d0;text-shadow:0 2px 0 #7a4a10}
+.chdz-ring{position:absolute;inset:0;border-radius:50%;border:3px solid rgba(255,214,106,.95);box-shadow:0 0 14px rgba(255,214,106,.8),inset 0 0 12px rgba(255,214,106,.55);background:radial-gradient(closest-side,rgba(255,226,140,.35),rgba(255,226,140,0))}
+.chdz-res[hidden]{display:none}
+.chdz.out{opacity:0;transition:opacity .16s}
+@keyframes chdzres{from{opacity:0;transform:translate(-50%,-50%) scale(.7)}}
+
+</style></head>
+<body>
+<div id="stage">
+  <img class="bg" src="../../assets/fields/ch1a/formal_1008/ch1a_scene_03.webp" alt="">
+  <div id="host"></div>
+  <div class="top">
+    <h1>サイコロ演出の比較<small>試作・正式採用ではない</small></h1>
+    <div class="row"><span>演出</span><div class="seg" id="mode"><button data-v="old">旧（今のゲーム）</button><button data-v="new" class="on">新（立体・試作）</button></div></div>
+    <div class="row"><span>止まる</span><div class="seg" id="tempo"><button data-v="short">0.93秒（前の版）</button><button data-v="long" class="on">1.30秒（新・トンッ、ト、トン）</button></div></div>
+    <div class="row"><span>個数</span><div class="seg" id="count"><button data-v="1" class="on">1個</button><button data-v="2">2個</button></div>
+      <span style="min-width:0;margin-left:6px">SE</span><div class="seg" id="se"><button data-v="b4" class="on">B4（新）</button><button data-v="b4t">B4＋着地音（足音・仮）</button><button data-v="b2">旧B2・不採用候補</button><button data-v="off">なし</button></div></div>
+    <div class="row"><span>出目</span><div class="seg" id="val"><button data-v="0" class="on">ランダム</button><button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button><button data-v="4">4</button><button data-v="5">5</button><button data-v="6">6</button></div></div>
+    <div class="row"><span>連続</span><div class="seg" id="rep"><button data-v="1" class="on">1回</button><button data-v="10">10回</button></div>
+      <span style="min-width:0;margin-left:6px">動き</span><div class="seg" id="calm"><button data-v="0" class="on">ふつう</button><button data-v="1">減らす</button></div></div>
+    <p class="note" id="note">旧は1個だけ（今のゲームにダブルダイスの演出はありません）。SE は最初のタップから鳴ります（iPhone はマナーモードを解除）。</p>
+  </div>
+  <div class="info" id="info">START を押してください</div>
+  <div class="deck"><button id="start" type="button">START</button></div>
+</div>
+<script>window.MM_DEMO_BASE = '../../';</script>
+<script src="../../js/chapter/dice-renderer.js"></script>
+<script src="../../js/chapter/dice-cube.js"></script>
+<script>
+(function () {
+  'use strict';
+  const B = window.MM_DEMO_BASE, $ = (s) => document.querySelector(s), host = $('#host');
+  const st = { mode: 'new', tempo: 'long', count: 1, se: 'b4', val: 0, rep: 1, calm: 0, busy: false };
+  // ---- SE（Web Audio。最初のタップで用意）----
+  const SE = { old: [B + 'assets/audio/se/mystic_monsters_official/01_dice_large_full.ogg', 0.95], b4: [B + 'prototype/dice_1012/se/dice_magic_b4', 0.9], b2: [B + 'prototype/dice_1012/se/dice_magic_b2_old', 0.9], b4l: [B + 'prototype/dice_1012/se/dice_magic_b4_long', 0.9], b4t: [B + 'prototype/dice_1012/se/dice_magic_b4_long_tap', 0.9] };
+  let ctx = null; const buf = {};
+  // OGG が鳴らない古い iPhone は M4A へ。読み込みは1回だけ（同時に呼ばれても同じ読み込みを待つ）
+  function load(k) {
+    if (!buf[k]) buf[k] = (async () => {
+      const [src, gain] = SE[k]; const urls = /\.ogg$/.test(src) ? [src] : [src + '.ogg', src + '.m4a'];
+      for (const u of urls) { try { const r = await fetch(u); if (!r.ok) throw new Error(r.status); const ab = await r.arrayBuffer(); return { b: await ctx.decodeAudioData(ab), gain, u }; } catch (e) { /* 次の形式 */ } }
+      return null;
+    })();
+    return buf[k];
+  }
+  function unlock() { if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) ctx = new AC(); } if (ctx && ctx.state !== 'running') ctx.resume().catch(() => {}); if (ctx) ['old', 'b4', 'b2', 'b4l', 'b4t'].forEach((k) => load(k)); }
+  async function playSe(k) {
+    if (!ctx || st.se === 'off') return; const x = await load(k); if (!x) return;
+    const s = ctx.createBufferSource(), g = ctx.createGain(); g.gain.value = x.gain; s.buffer = x.b; s.connect(g).connect(ctx.destination); s.start();
+    (window.MM_SE_LOG = window.MM_SE_LOG || []).push({ k, u: x.u, t: performance.now(), dur: x.b.duration });   // 確認用（何を鳴らしたか）
+  }
+  // 両方のサイコロが MMFEEL.emit('dice.throw') を呼ぶ＝投げ始めに SE を1回（ゲームと同じ形）
+  // 完全に止まった瞬間（dice.stop）も覚える＝旧・新を同じ物差しで比べる
+  window.MMFEEL = { emit(n) { if (n === 'dice.stop') { if (st.stopT == null) st.stopT = performance.now(); return; } if (n !== 'dice.throw') return; playSe(st.mode === 'old' ? 'old' : st.se === 'b4' && st.tempo === 'long' ? 'b4l' : st.se); } };   // B4 は止まる時刻に合わせた版（0.93秒＝b4・1.30秒＝b4l）
+  // ---- 旧のサイコロの設定（js/chapter/configs/ch1a.js の dice と同じ素材）----
+  // 絵の場所は絶対の URL にする（dice-renderer の「先読み済みか」の判定は src の末尾で比べる＝../../ のままだと一致しない）
+  const U = (p) => new URL(p, location.href).href, D = U(B + 'assets/fields/ch1a/dice/');
+  MMCHD.configure({ throwFrames: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => U(`${B}assets/dice/std/${String(i).padStart(2, '0')}.webp`)), rollingSprite: D + 'dice_blank.webp',
+    resultSprites: Object.fromEntries([1, 2, 3, 4, 5, 6].map((v) => [v, D + `dice_stop_${v}.webp`])), sides: 6 });
+  MMCHD.preload();
+  // ---- 操作 ----
+  const segs = { mode: '#mode', tempo: '#tempo', count: '#count', se: '#se', val: '#val', rep: '#rep', calm: '#calm' };
+  Object.entries(segs).forEach(([k, sel]) => $(sel).addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b || b.disabled || st.busy) return;
+    st[k] = k === 'mode' || k === 'se' || k === 'tempo' ? b.dataset.v : +b.dataset.v;
+    $(sel).querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
+    if (k === 'mode') { const two = $('#count button[data-v="2"]'); two.disabled = st.mode === 'old'; if (st.mode === 'old' && st.count === 2) $('#count button[data-v="1"]').click(); $('#tempo').querySelectorAll('button').forEach((x) => { x.disabled = st.mode === 'old'; }); }
+    // 旧B2（不採用候補）は 0.93秒版にだけ合わせて作った音＝1.30秒版では選べない
+    if (k === 'tempo' || k === 'mode') { const b2 = $('#se button[data-v="b2"]'); b2.disabled = st.mode === 'new' && st.tempo === 'long'; if (b2.disabled && st.se === 'b2') $('#se button[data-v="b4"]').click();
+      // 着地音つき（トンッ・ト・トン）は 1.30秒版の着地にだけ合わせた音
+      const bt = $('#se button[data-v="b4t"]'); bt.disabled = !(st.mode === 'new' && st.tempo === 'long'); if (bt.disabled && st.se === 'b4t') $('#se button[data-v="b4"]').click(); }
+  }));
+  $('#se button[data-v="b2"]').disabled = true;   // 最初は 1.30秒版＝旧B2 は選べない
+  const pick = () => (st.val || 1 + Math.floor(Math.random() * 6));
+  const geo = () => { const r = host.getBoundingClientRect(), top = $('.top').getBoundingClientRect().bottom, b = $('#start').getBoundingClientRect(), bottom = r.height - 150;
+    return { top: top - r.top, from: { x: b.left + b.width / 2 - r.left, y: b.top + b.height / 2 - r.top }, land: { x: r.width / 2, y: top + (bottom - top) * 0.42 } }; };
+  async function once() {
+    const g = geo(), vs = st.count === 2 ? [pick(), pick()] : [pick()], t0 = performance.now();
+    $('#info').innerHTML = 'サイコロを振った…';
+    let lockAt = null; st.stopT = null;
+    if (st.mode === 'old') {
+      document.documentElement.classList.toggle('calm', !!st.calm);
+      await MMCHD.play(vs[0], { host, from: g.from, land: g.land });
+      if (st.stopT != null) lockAt = st.stopT - t0;
+    } else {
+      await MMDICE3D.play(vs.length === 2 ? vs : vs[0], { host, from: g.from, land: g.land, top: g.top, calm: !!st.calm, tempo: st.tempo, onLock: () => { lockAt = performance.now() - t0; } });
+    }
+    const tot = performance.now() - t0;
+    $('#info').innerHTML = `出目 <b>${vs.length === 2 ? `${vs[0]} + ${vs[1]} = ${vs[0] + vs[1]}` : vs[0]}</b>　止まるまで ${lockAt != null ? (lockAt / 1000).toFixed(2) + '秒' : '—'}・全体 ${(tot / 1000).toFixed(2)}秒`;
+  }
+  $('#start').addEventListener('click', async () => {
+    unlock(); if (st.busy) return; st.busy = true; $('#start').disabled = true;
+    document.documentElement.classList.add('rolling'); await new Promise((ok) => setTimeout(ok, 260));   // パネルをたたんでから投げる（たたんだ位置で geo を測る）
+    try { for (let i = 0; i < st.rep; i++) { await once(); if (i < st.rep - 1) await new Promise((ok) => setTimeout(ok, 450)); } }
+    finally { st.busy = false; $('#start').disabled = false; document.documentElement.classList.remove('rolling'); }
+  });
+})();
+</script>
+</body></html>

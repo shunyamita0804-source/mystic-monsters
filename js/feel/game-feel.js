@@ -35,7 +35,7 @@
   const EVENTS2 = fz({
     'chest.open.normal': { level: 3, se: 'TREASURE_TIER_1', haptic: 'medium' }, 'chest.open.rare': { level: 3, se: 'TREASURE_TIER_2', haptic: 'medium' }, 'chest.open.special': { level: 3, se: 'TREASURE_TIER_3', haptic: 'heavy' },
     'rare.alert': { level: 4, se: 'RARE_ALERT', haptic: 'heavy' }, 'train.item': { level: 3, se: 'TRAINING_ITEM_SPAWN' }, 'market.buy': { level: 3, se: 'MARKET_PURCHASE', haptic: 'success' },
-    'rest.recover': { level: 2, se: 'REST_RECOVER' }, 'branch.select': { level: 1, se: 'BRANCH_SELECT' }, 'monster.enter': { level: 1, se: 'MONSTER_ENTRY' },
+    'rest.recover': { level: 2, se: 'REST_RECOVER' }, 'dice.cube': { level: 1, se: 'DICE_CUBE', haptic: 'light' }, 'branch.select': { level: 1, se: 'BRANCH_SELECT' }, 'monster.enter': { level: 1, se: 'MONSTER_ENTRY' },
   });
   const LOG = [];
   let haptics = null;

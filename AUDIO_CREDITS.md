@@ -26,6 +26,19 @@ ZIP の README・LICENSE の原文は、受け取った ZIP の中にある（�
 
 置き換えて外した旧い曲（記録は下の表に残す）：PGS「Battle Music 1」（旧 WILD_BATTLE）・「Battle Music 2」（旧 TOURNAMENT_BATTLE_LOW）・alkakrab「Battle of the Skies」（旧 RIVAL_BATTLE）・「Clash of Arcane Titans」（旧 TOURNAMENT_BATTLE_HIGH）。不採用（ユーザー指示）：「いざ出発！」「冒険への誘い」。
 
+## 2026-10-12 正式採用：立体サイコロの SE（assets/audio/se/dice_1012/）＋比較試作（prototype/dice_1012/se/）
+
+**正式採用（2026-10-12 ユーザー決定）**：assets/audio/se/dice_1012/dice_magic_b4_long_tap.ogg＝SE_REGISTRY の DICE_CUBE（gain 0.9）。Chapter 1 の世界のボードの立体サイコロ（MMDICE3D・1.30秒で止まる）だけが鳴らす。中身は比較デモの dice_magic_b4_long_tap.ogg と同じファイル（sha256 1872dcff07de6d1e81e99bed7cbc57400932173dca518dca89116bd76151da39）。A1・B4・C1（Pixabay）を編集・合成し、着地の「トンッ、ト、トン」は既存の正式 SE 05_small_monster_entry_steps_4step.ogg（ゲームの所有素材）の足音を切り出して重ねた。旧サイコロの DICE_THROW（01_dice_large_full.ogg）は Chapter 2・旧ボード・特訓のまま。原音（Pixabay の MP3）は編集・合成した1本にだけ使い、原音そのものはリポジトリ・公開サイトに置かない（Pixabay の規約：原音単体の再配布の禁止）。ゲームには OGG だけ（assets/audio の約束＝同じ音の別形式を置かない）。M4A は比較デモにだけ残す。
+
+| ファイル | 使った原音 / 作者 | 出典 | ライセンス |
+|---|---|---|---|
+| dice_magic_b4.ogg／.m4a（0.93秒版）・dice_magic_b4_long.ogg／.m4a・dice_magic_b4_long_tap.ogg／.m4a（1.30秒版。_tap の着地音は既存の正式 SE 05_small_monster_entry_steps_4step を切り出した仮） | A1 "Magical Whoosh" / u_hyed0v3ux9 | https://pixabay.com/sound-effects/film-special-effects-magical-whoosh-148459/ | Pixabay Content License |
+| 〃 | B4 "Slow Whoosh" / StudioKolomna | https://pixabay.com/sound-effects/film-special-effects-slow-whoosh-118247/ | Pixabay Content License |
+| 〃（dice_magic_b2_old にも） | C1 "Magic Spell 02" / Universfield | https://pixabay.com/sound-effects/film-special-effects-magic-spell-02-250240/ | Pixabay Content License |
+| dice_magic_b2_old.ogg／.m4a（旧回転音・不採用候補） | B2 "Spin Whoosh 1" / floraphonic（＋A1・C1） | https://pixabay.com/sound-effects/film-special-effects-spin-whoosh-1-186596/ | Pixabay Content License |
+
+ライセンスの要約：https://pixabay.com/service/license-summary/ ・規約：https://pixabay.com/service/terms/ （クレジットは任意。権利の申し立てがあれば差し替えられるよう記録を残す）。
+
 ## 2026-10-12 正式採用：公式ランク戦の曲（assets/audio/bgm/licensed_20261012/）
 
 ユーザー納品の MP3「公式ランク.mp3」（ZIP「Claude納品_公式ランク戦BGM」の 公式ランク戦BGM/。291.32秒・44.1kHz ステレオ・Final Cut Pro の書き出し。sha256 `cf02619bf0620055b71b1278159f3c121c626a1b9bffabd80f40a034a1eceaf0`）を OGG Vorbis（q5）に変換しただけ（曲の切り出し・加工はしない。メタデータは外した）。原本の MP3 はリポジトリに置かない（ユーザーが保管）。
