@@ -1,6 +1,8 @@
 # サイコロ演出の比較試作（2026-10-12 開発23 B）
 
-**正式採用ではない。** ゲーム本体（index.html）のサイコロは従来の `js/chapter/dice-renderer.js`（MMCHD）と正式 SE `01_dice_large_full.ogg` のまま。このフォルダと `js/chapter/dice-cube.js` は比較のためだけにある（index.html から読み込まない＝tests/dice-cube-1012.test.mjs の DC-03 で監視）。
+**採用決定（2026-10-12・ユーザーが iPhone で確認）＝新（立体）・1.30秒（トンッ、ト、トン）・SE「B4＋着地音（足音・仮）」（dice_magic_b4_long_tap）・1個／2個。本編への組み込みはまだ（正式実装はユーザーの別の指示のあと）。**
+
+**ここまでは比較試作。** ゲーム本体（index.html）のサイコロは従来の `js/chapter/dice-renderer.js`（MMCHD）と正式 SE `01_dice_large_full.ogg` のまま。このフォルダと `js/chapter/dice-cube.js` は比較のためだけにある（index.html から読み込まない＝tests/dice-cube-1012.test.mjs の DC-03 で監視）。
 
 ## 開き方
 
