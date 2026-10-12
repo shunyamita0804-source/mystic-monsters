@@ -30,7 +30,7 @@ for (const size of [[375, 667], [390, 844], [430, 932]]) {
     const p = await openPage({ size }); const pg = p.page;
     await toBoard(pg, 3);
     const r = await pg.evaluate(() => { const fs = (q) => parseFloat(getComputedStyle(document.querySelector(q)).fontSize); const m = document.querySelector('#bmsg'), f = document.querySelector('.wbmsg-f');
-      return { chips: [...document.querySelectorAll('.wbh .chip')].map((e) => e.getBoundingClientRect().right), W: innerWidth, turn: fs('#chturn'), fat: fs('#chfat b'), tix: document.querySelector('#chtix').innerText.replace(/\s/g, ''), tk: !!document.querySelector('#chtix svg.chh-tk'),
+      return { chips: [...document.querySelectorAll('.wbh .chip')].map((e) => e.getBoundingClientRect().right), W: innerWidth, turn: fs('#chturn'), fat: fs('#chfat b'), tix: document.querySelector('#chtix').innerText.replace(/\s/g, ''), tk: !!document.querySelector('#chtix .chh-tk'),   /* 2026-10-12 夜・2：正式画像（img）。旧：仮の線画（svg） */
         clip: m.scrollHeight - m.clientHeight, lines: Math.round(m.clientHeight / parseFloat(getComputedStyle(m).lineHeight)), face: !!f && f.complete && f.naturalWidth > 0 }; });
     assert.ok(r.chips.every((x) => x <= r.W - 4), `チップは画面の中 ${JSON.stringify(r)}`); assert.ok(r.turn >= 15 && r.fat >= 15, '数字は大きく');
     assert.equal(r.tix, '特訓×3'); assert.ok(r.tk, '小さな印'); assert.ok(r.face, 'フィナの丸顔');
