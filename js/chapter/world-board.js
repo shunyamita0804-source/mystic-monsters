@@ -77,8 +77,14 @@
     const first = st.done || node ? null : c.options(d, st).map((e) => e.dst);
     let back = node ? null : st.back;
     if (!back && !node && c.DEAD_ROLES.includes(c.role(d, at))) { const ix = c.index(d); back = ix.spurs.find((k) => ix.endOf[k] === at) || null; }
-    return { node: at, ahead: st.done ? [] : root.MMRF_WORLD.lookahead(d, at, back ? null : first, back, 6), look: look(m), denOpen: !!st.randOpen };
+    const la = (n, per) => (st.done ? [] : root.MMRF_WORLD.lookahead(d, at, back ? null : first, back, n, per));
+    const ahead = la(CAM.fit, CAM.fitPer), near = la(CAM.ahead, CAM.per);   // カメラが入れる地点（先の4・分かれ道の手前は各2）／明るく残す地点（先の5・各3）
+    // 道筋＝直前の数地点・今の地点・先の地点（ここ以外のマスは薄く、地面は薄い幕＝選ばなかった道・遠くの道と見分ける）。表示だけ（ルート・セーブは変えない）
+    const tr = (st.trail || []).slice(0, node ? Math.max(0, (st.trail || []).lastIndexOf(at)) : undefined).slice(-CAM.behind);
+    return { node: at, ahead, focus: [...new Set(tr.concat([at], near))], look: look(m), denOpen: !!st.randOpen };
   }
+  // 2026-10-12 試遊修正：カメラを近く（今の道で先の4地点・分かれ道の手前は両方の道を2地点ずつが入る倍率。明るく残す道筋は先の5地点・各3）・モンスター＝マスの幅の 1.2倍・道筋の強調
+  const CAM = { fit: 4, fitPer: 2, ahead: 5, per: 3, behind: 3, sMin: 2.2, sMax: 5.6, tilePx: [22, 84], monRatio: 1.2, zoomTau: 320 };
   function viewRect() {
     const w = V.el && V.el.querySelector('.wbv'); if (!w) return null;
     const r = w.getBoundingClientRect(), h = V.el.querySelector('.chh'), dk = V.el.querySelector('#wb-ui .chsheet') || V.el.querySelector('#chdock');   // 分かれ道・バトルのシートが出ている間はシートの上まで（モンスターと道の先をシートより上に）
@@ -233,7 +239,8 @@
     release(); css();
     app.innerHTML = '<div class="chfw wbw" id="wbw"><div class="wbv" id="wbv"></div><div class="chf-ui" id="wb-ui"></div></div>';
     V.el = $('#wbw'); V.key = key;
-    if (root.MMRF_WORLD) V.world = root.MMRF_WORLD.create(V.el.querySelector('.wbv'), D(), root.MMRF_PLAY, { view: viewRect, monSrc: monSrc(m), art: { base: ART, road: 'strip' } });
+    if (root.MMRF_WORLD) V.world = root.MMRF_WORLD.create(V.el.querySelector('.wbv'), D(), root.MMRF_PLAY, { view: viewRect, monSrc: monSrc(m), art: { base: ART, road: 'strip' },
+      focus: true, ahead: CAM.ahead, sMin: CAM.sMin, sMax: CAM.sMax, tilePx: CAM.tilePx, monRatio: CAM.monRatio, zoomTau: CAM.zoomTau });
     sprSetup(m);
     return true;
   }

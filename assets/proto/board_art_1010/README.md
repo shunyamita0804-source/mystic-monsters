@@ -88,3 +88,27 @@ E14a と E14b は門以外の細部も少し描き直されている（画素の
 | prop_peak.webp | F5 | 同上 | 山の岩峰 8つ（ART.peaks・道から 50単位以上離れた所） |
 
 森（forest_s・forest_se・forest_w・forest_sw）＝START の両側の針葉樹林・左の祭壇のまわり・左下の岩棚の森。形は決まった揺らぎで自然な輪郭に（wobble）。雲海と森の中の目印（ライオン石像・森の祭壇など）のまわりは円く抜いて岩棚・空き地にする。
+
+## 2026-10-12 照合：ZIP「Claude納品_Ch1_EG新素材16枚」（1024×1024 の RGBA 透過 PNG）
+
+16枚とも第3便（mystic_monsters_board_16_assets）と**同じ絵**（透明な余白を切って今のファイルの大きさにそろえると、不透明な画素の色の差は平均 5.5〜6.8／255＝WebP の圧縮と縮小の差。透明の差は 1.4〜2.3）。今のファイルを差し替える必要は無い（描き直し・位置の変更なし）。本編の Chapter 1（js/chapter/world-board.js の ART_TILE・look()、js/proto/roadfirst-world.js の ART.landmarks）で正しい地点に出ていることを確認した。
+
+| 納品 | 今のファイル | 置く所 | 種類 |
+|---|---|---|---|
+| E02_lower_gate | lm_lower_gate.webp | LOWER_GATE のすぐ奥（道をまたぐ。along 3） | 目印（マスの上に重ねない＝奥へずらす） |
+| E03_upper_gate | lm_upper_gate.webp | UPPER_GATE のすぐ奥 | 目印 |
+| E04_seal_gate | lm_seal_gate.webp | CHALLENGE の奥（along 14） | 目印 |
+| E05_lion_statue | lm_lion.webp | STATUE の分かれ目の奥の空き地（off） | 目印 |
+| E08_moss_tower | lm_moss_tower.webp | L_CHEST の奥 | 目印 |
+| E09_forest_altar | lm_forest_altar.webp | L_ALTAR の奥 | 目印 |
+| E11_cliff_shrine | lm_cliff_shrine.webp | L_LATE_ALTAR の奥 | 目印 |
+| E12_watch_post | lm_watch_statue.webp | REWARD5 の奥（第3便では「watch_statue」の名前で保存。絵は同じ） | 目印 |
+| E13_rainbow_falls | lm_rainbow_falls.webp | R_SPECIAL の奥 | 目印 |
+| E14a_den_closed／E14b_den_open | lm_den_closed／lm_den_open.webp | RANDOM_DEN の奥（その回の開閉で入れ替え） | 目印 |
+| G2_goal | tile_goal.webp | GOAL のマス | マス |
+| G3_merge | tile_merge.webp | 2本以上が入ってくる地点のマス | マス |
+| G4_gate | tile_gate.webp | LOWER_GATE・UPPER_GATE のマス | マス |
+| G5_challenge | tile_challenge.webp | CHALLENGE のマス | マス |
+| G7_den | tile_den.webp | RANDOM_DEN のマス | マス |
+
+能力6種・イベント・休憩・野生・レア・宝箱・ライバル・分かれ道・通常のマスの新しい上面（共通17種）は**この16枚に含まれない**＝本編は tiles_v2 のまま。新しい上面の試作は TOP01（ライフ）・TOP07（野生）の2種だけ（assets/fields/ch1a/tiles_top_1011/・?tileTop=1011・検収前）＝未着：ちから・かしこさ・命中・回避・丈夫さ・イベント・休憩・レア・宝箱 1／2・ライバル・分かれ道・通常（白紙）・START・宝の行き止まり。
