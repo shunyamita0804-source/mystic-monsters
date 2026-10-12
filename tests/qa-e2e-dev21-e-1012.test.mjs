@@ -116,8 +116,12 @@ for (const size of SIZES) {
     const look = () => pg.evaluate(() => [0, 1].map((i) => { const b = document.querySelector(`#mmail${i} span`); if (!b) return null; const r = b.getBoundingClientRect(), hp = document.getElementById('hp' + i).getBoundingClientRect(), c = getComputedStyle(b);
       const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
       return { tx: b.textContent, w: r.width, h: r.height, inHp: r.left >= hp.left - 1 && r.right <= hp.right + 1 && r.top >= hp.top - 1 && r.bottom <= hp.bottom + 1, inView: r.top >= 0 && r.bottom <= innerHeight, op: +c.opacity, vis: c.visibility, front: !!top && (top === b || b.contains(top)) }; }));
-    const vis = await look();
-    assert.match(vis[0].tx, /^まひ3$/); assert.match(vis[1].tx, /^ねむり2$/);
+    const vis0 = await look();
+    assert.match(vis0[0].tx, /^まひ3$/); assert.match(vis0[1].tx, /^ねむり2$/);
+    // 2026-10-13 開発24：技の発動中は HUD（札を含む）を隠す仕様＝見え方は発動していない間に確かめる（その間に1回分減ることがある）
+    await pg.waitForFunction(() => !document.getElementById('bt').classList.contains('mma-cine'), null, { timeout: 8000 }); await pg.waitForTimeout(250);
+    const vis = (await look()).filter(Boolean);
+    assert.ok(vis.length >= 1 && vis.every((v) => /^(まひ[1-3]|ねむり[12])$/.test(v.tx)), JSON.stringify(vis));
     for (const v of vis) assert.ok(v.w > 20 && v.h >= 12 && v.inHp && v.inView && v.op === 1 && v.vis === 'visible' && v.front, `札が見える ${JSON.stringify(v)}`);
     await shot(pg, `be5_${size.join('x')}`);
     // 継続 → 解除（バトルを進めて、ねむりは2回の機会で起きる＝札が消える。まひは回数が減る）
