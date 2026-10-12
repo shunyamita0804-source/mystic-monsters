@@ -75,6 +75,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--navy);color:#fff
   <div class="top">
     <h1>サイコロ演出の比較<small>試作・正式採用ではない</small></h1>
     <div class="row"><span>演出</span><div class="seg" id="mode"><button data-v="old">旧（今のゲーム）</button><button data-v="new" class="on">新（立体・試作）</button></div></div>
+    <div class="row"><span>止まる</span><div class="seg" id="tempo"><button data-v="short">0.93秒（前の版）</button><button data-v="long" class="on">1.30秒（新）</button></div></div>
     <div class="row"><span>個数</span><div class="seg" id="count"><button data-v="1" class="on">1個</button><button data-v="2">2個</button></div>
       <span style="min-width:0;margin-left:6px">SE</span><div class="seg" id="se"><button data-v="b4" class="on">B4（新）</button><button data-v="b2">旧B2・不採用候補</button><button data-v="off">なし</button></div></div>
     <div class="row"><span>出目</span><div class="seg" id="val"><button data-v="0" class="on">ランダム</button><button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button><button data-v="4">4</button><button data-v="5">5</button><button data-v="6">6</button></div></div>
@@ -92,9 +93,9 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--navy);color:#fff
 (function () {
   'use strict';
   const B = window.MM_DEMO_BASE, $ = (s) => document.querySelector(s), host = $('#host');
-  const st = { mode: 'new', count: 1, se: 'b4', val: 0, rep: 1, calm: 0, busy: false };
+  const st = { mode: 'new', tempo: 'long', count: 1, se: 'b4', val: 0, rep: 1, calm: 0, busy: false };
   // ---- SE（Web Audio。最初のタップで用意）----
-  const SE = { old: [B + 'assets/audio/se/mystic_monsters_official/01_dice_large_full.ogg', 0.95], b4: [B + 'prototype/dice_1012/se/dice_magic_b4', 0.9], b2: [B + 'prototype/dice_1012/se/dice_magic_b2_old', 0.9] };
+  const SE = { old: [B + 'assets/audio/se/mystic_monsters_official/01_dice_large_full.ogg', 0.95], b4: [B + 'prototype/dice_1012/se/dice_magic_b4', 0.9], b2: [B + 'prototype/dice_1012/se/dice_magic_b2_old', 0.9], b4l: [B + 'prototype/dice_1012/se/dice_magic_b4_long', 0.9] };
   let ctx = null; const buf = {};
   // OGG が鳴らない古い iPhone は M4A へ。読み込みは1回だけ（同時に呼ばれても同じ読み込みを待つ）
   function load(k) {
@@ -105,7 +106,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--navy);color:#fff
     })();
     return buf[k];
   }
-  function unlock() { if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) ctx = new AC(); } if (ctx && ctx.state !== 'running') ctx.resume().catch(() => {}); if (ctx) ['old', 'b4', 'b2'].forEach((k) => load(k)); }
+  function unlock() { if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) ctx = new AC(); } if (ctx && ctx.state !== 'running') ctx.resume().catch(() => {}); if (ctx) ['old', 'b4', 'b2', 'b4l'].forEach((k) => load(k)); }
   async function playSe(k) {
     if (!ctx || st.se === 'off') return; const x = await load(k); if (!x) return;
     const s = ctx.createBufferSource(), g = ctx.createGain(); g.gain.value = x.gain; s.buffer = x.b; s.connect(g).connect(ctx.destination); s.start();
@@ -113,7 +114,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--navy);color:#fff
   }
   // 両方のサイコロが MMFEEL.emit('dice.throw') を呼ぶ＝投げ始めに SE を1回（ゲームと同じ形）
   // 完全に止まった瞬間（dice.stop）も覚える＝旧・新を同じ物差しで比べる
-  window.MMFEEL = { emit(n) { if (n === 'dice.stop') { if (st.stopT == null) st.stopT = performance.now(); return; } if (n !== 'dice.throw') return; playSe(st.mode === 'old' ? 'old' : st.se); } };
+  window.MMFEEL = { emit(n) { if (n === 'dice.stop') { if (st.stopT == null) st.stopT = performance.now(); return; } if (n !== 'dice.throw') return; playSe(st.mode === 'old' ? 'old' : st.se === 'b4' && st.tempo === 'long' ? 'b4l' : st.se); } };   // B4 は止まる時刻に合わせた版（0.93秒＝b4・1.30秒＝b4l）
   // ---- 旧のサイコロの設定（js/chapter/configs/ch1a.js の dice と同じ素材）----
   // 絵の場所は絶対の URL にする（dice-renderer の「先読み済みか」の判定は src の末尾で比べる＝../../ のままだと一致しない）
   const U = (p) => new URL(p, location.href).href, D = U(B + 'assets/fields/ch1a/dice/');
@@ -121,13 +122,16 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--navy);color:#fff
     resultSprites: Object.fromEntries([1, 2, 3, 4, 5, 6].map((v) => [v, D + `dice_stop_${v}.webp`])), sides: 6 });
   MMCHD.preload();
   // ---- 操作 ----
-  const segs = { mode: '#mode', count: '#count', se: '#se', val: '#val', rep: '#rep', calm: '#calm' };
+  const segs = { mode: '#mode', tempo: '#tempo', count: '#count', se: '#se', val: '#val', rep: '#rep', calm: '#calm' };
   Object.entries(segs).forEach(([k, sel]) => $(sel).addEventListener('click', (e) => {
     const b = e.target.closest('button'); if (!b || b.disabled || st.busy) return;
-    st[k] = k === 'mode' || k === 'se' ? b.dataset.v : +b.dataset.v;
+    st[k] = k === 'mode' || k === 'se' || k === 'tempo' ? b.dataset.v : +b.dataset.v;
     $(sel).querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
-    if (k === 'mode') { const two = $('#count button[data-v="2"]'); two.disabled = st.mode === 'old'; if (st.mode === 'old' && st.count === 2) $('#count button[data-v="1"]').click(); }
+    if (k === 'mode') { const two = $('#count button[data-v="2"]'); two.disabled = st.mode === 'old'; if (st.mode === 'old' && st.count === 2) $('#count button[data-v="1"]').click(); $('#tempo').querySelectorAll('button').forEach((x) => { x.disabled = st.mode === 'old'; }); }
+    // 旧B2（不採用候補）は 0.93秒版にだけ合わせて作った音＝1.30秒版では選べない
+    if (k === 'tempo' || k === 'mode') { const b2 = $('#se button[data-v="b2"]'); b2.disabled = st.mode === 'new' && st.tempo === 'long'; if (b2.disabled && st.se === 'b2') $('#se button[data-v="b4"]').click(); }
   }));
+  $('#se button[data-v="b2"]').disabled = true;   // 最初は 1.30秒版＝旧B2 は選べない
   const pick = () => (st.val || 1 + Math.floor(Math.random() * 6));
   const geo = () => { const r = host.getBoundingClientRect(), top = $('.top').getBoundingClientRect().bottom, b = $('#start').getBoundingClientRect(), bottom = r.height - 150;
     return { top: top - r.top, from: { x: b.left + b.width / 2 - r.left, y: b.top + b.height / 2 - r.top }, land: { x: r.width / 2, y: top + (bottom - top) * 0.42 } }; };
@@ -140,7 +144,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--navy);color:#fff
       await MMCHD.play(vs[0], { host, from: g.from, land: g.land });
       if (st.stopT != null) lockAt = st.stopT - t0;
     } else {
-      await MMDICE3D.play(vs.length === 2 ? vs : vs[0], { host, from: g.from, land: g.land, top: g.top, calm: !!st.calm, onLock: () => { lockAt = performance.now() - t0; } });
+      await MMDICE3D.play(vs.length === 2 ? vs : vs[0], { host, from: g.from, land: g.land, top: g.top, calm: !!st.calm, tempo: st.tempo, onLock: () => { lockAt = performance.now() - t0; } });
     }
     const tot = performance.now() - t0;
     $('#info').innerHTML = `出目 <b>${vs.length === 2 ? `${vs[0]} + ${vs[1]} = ${vs[0] + vs[1]}` : vs[0]}</b>　止まるまで ${lockAt != null ? (lockAt / 1000).toFixed(2) + '秒' : '—'}・全体 ${(tot / 1000).toFixed(2)}秒`;

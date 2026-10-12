@@ -3,7 +3,7 @@
 //  **正式採用ではない**：index.html からは読み込まない（ゲームのサイコロは従来の js/chapter/dice-renderer.js のまま）。
 //  比較デモ prototype/dice_1012/index.html だけが使う。採用が決まったら MMCHD.play と同じ形（play(出目, { host, from, land })）で差し替えられる。
 //
-//  見せ方（約1.0秒で出目が決まる＋0.6秒見せる）：START の位置から軽く浮く → 前へ弧を描きながら大きく（×1.35）→ X・Y 軸で回って面が次々に見える
+//  見せ方（約1.0秒で出目が決まる＋0.6秒見せる。opts.tempo:'long' は約1.3秒で決まる比較版）：START の位置から軽く浮く → 前へ弧を描きながら大きく（×1.35）→ X・Y 軸で回って面が次々に見える
 //   → 落ちて小さく弾む → 最後の約0.25秒で出目の面へ減速して止まる → 止まった瞬間に光と粒（dice.stop）→ 出目の札 → 消える。
 //  描き方：CSS 3D の立方体（6面＝HTML の目。画像を使わない・新しい依存なし）。動きは Web Animations だけ（iOS の Safari では合成スレッドで進む）。
 //  出目：play に渡した値（1〜6）の面が必ず正面に来る（回る量だけ決めて、止まる向きは値から決める＝再抽選なし・止まったあとは何も変えない）。
@@ -13,6 +13,9 @@
 (function (root) {
   'use strict';
   const T = { lift: 140, air: 640, land: 820, lock: 930, hold: 620, fade: 180, calmLock: 260, calmHold: 520 };
+  // 2026-10-12 比較：回る時間を長くした版（tempo:'long'）。投げ始め（lift）・着地から止まるまで（land→lock 0.11秒）・光・札・消えるまでは同じ。
+  // 空中で回る時間だけ +0.37秒（air・land・lock）・回る量も1周ずつ多く（空中の回る速さは同じくらい＝面が次々に見える）
+  const TEMPO = Object.freeze({ short: Object.freeze({ ...T, peak: 397, turns: 2, airShare: 0.55 }), long: Object.freeze({ ...T, air: 1010, land: 1190, lock: 1300, peak: 560, turns: 3, airShare: 0.6 }) });
   const BASE = { 1: [0, 0], 6: [0, 180], 3: [0, -90], 4: [0, 90], 5: [-90, 0], 2: [90, 0] };   // 正面に出す向き [rotateX, rotateY]（向かい合う面の和は 7）
   const PIPS = { 1: [5], 2: [3, 7], 3: [3, 5, 7], 4: [1, 3, 7, 9], 5: [1, 3, 5, 7, 9], 6: [1, 3, 4, 6, 7, 9] };   // 3×3 の升目の番号（1〜9）
   const FACE = [[1, 'translateZ(var(--h))'], [6, 'rotateY(180deg) translateZ(var(--h))'], [3, 'rotateY(90deg) translateZ(var(--h))'], [4, 'rotateY(-90deg) translateZ(var(--h))'], [5, 'rotateX(90deg) translateZ(var(--h))'], [2, 'rotateX(-90deg) translateZ(var(--h))']];
@@ -58,7 +61,7 @@
     el.innerHTML = `<div class="d3-sc" style="--s:${o.size}px"><i class="d3-glow"></i><div class="d3-pv"><div class="d3-tilt"><div class="d3-cube">${cubeHtml()}</div></div></div></div>`;
     ov.appendChild(el);
     const sc = el.querySelector('.d3-sc'), cube = el.querySelector('.d3-cube'), glow = el.querySelector('.d3-glow');
-    const [bx, by] = BASE[o.v], D = o.D, L = o.lock, at = (ms) => Math.min(1, ms / D);
+    const [bx, by] = BASE[o.v], D = o.D, L = o.lock, at = (ms) => Math.min(1, ms / D), P = o.P || TEMPO.short;
     const anims = [];
     // ease は区切りごとの緩急（keyframe の easing）。アニメーション全体の easing にすると時間軸そのものが歪む（止まる時刻・光の時刻がずれる）ので使わない
     const A = (target, kf, ease) => { if (ease) kf.forEach((k) => { if (!k.easing) k.easing = ease; }); const a = target.animate(kf, { duration: D, fill: 'forwards' }); anims.push(a); return a; };
@@ -68,11 +71,11 @@
       A(sc, [{ opacity: 0, transform: 'scale(.9)', offset: 0 }, { opacity: 1, transform: 'scale(1)', offset: at(L) }, { opacity: 1, transform: 'scale(1)', offset: 1 }]);
     } else {
       // 回る量：X・Y を何周か（ばらつきは周回の数だけ）→ 最後は出目の向き。止まる直前の約0.25秒で強く減速
-      const nx = o.dir * (2 + (o.k % 2)), ny = -o.dir * (2 + ((o.k + 1) % 2)), fx = bx + 360 * nx, fy = by + 360 * ny;
+      const nx = o.dir * (P.turns + (o.k % 2)), ny = -o.dir * (P.turns + ((o.k + 1) % 2)), fx = bx + 360 * nx, fy = by + 360 * ny;
       A(cube, [
         { transform: `rotateX(${bx - 40}deg) rotateY(${by + 30}deg)`, offset: 0 },
-        { transform: `rotateX(${fx * 0.55}deg) rotateY(${fy * 0.5}deg)`, offset: at(T.air * o.sp) },
-        { transform: `rotateX(${fx * 0.93 + bx * 0.07}deg) rotateY(${fy * 0.92 + by * 0.08}deg)`, offset: at(T.land * o.sp) },
+        { transform: `rotateX(${fx * P.airShare}deg) rotateY(${fy * (P.airShare - 0.05)}deg)`, offset: at(P.air * o.sp) },
+        { transform: `rotateX(${fx * 0.93 + bx * 0.07}deg) rotateY(${fy * 0.92 + by * 0.08}deg)`, offset: at(P.land * o.sp) },
         { transform: `rotateX(${fx}deg) rotateY(${fy}deg)`, offset: at(L) },
         { transform: `rotateX(${fx}deg) rotateY(${fy}deg)`, offset: 1 },
       ], 'cubic-bezier(.25,.1,.25,1)');
@@ -80,25 +83,25 @@
       const peak = { x: (o.from.x + o.land.x) / 2 + o.dir * 18 + (o.spread || 0), y: Math.max(o.top + o.size * 0.75, Math.min(o.from.y, o.land.y) - o.size * 0.95) };   // 上の帯（HUD）に隠れない高さまで
       A(el, [
         { transform: `translate(${o.from.x}px,${o.from.y}px)`, offset: 0 },
-        { transform: `translate(${o.from.x}px,${o.from.y - o.size * 0.35}px)`, offset: at(T.lift), easing: 'cubic-bezier(.2,.7,.3,1)' },
-        { transform: `translate(${peak.x}px,${peak.y}px)`, offset: at(T.air * 0.62 * o.sp), easing: 'cubic-bezier(.3,0,.7,1)' },
-        { transform: `translate(${o.land.x}px,${o.land.y}px)`, offset: at(T.land * o.sp), easing: 'cubic-bezier(.4,0,1,1)' },
-        { transform: `translate(${o.land.x}px,${o.land.y - o.size * 0.16}px)`, offset: at(T.land * o.sp + (L - T.land * o.sp) * 0.45), easing: 'cubic-bezier(.2,.8,.4,1)' },
+        { transform: `translate(${o.from.x}px,${o.from.y - o.size * 0.35}px)`, offset: at(P.lift), easing: 'cubic-bezier(.2,.7,.3,1)' },
+        { transform: `translate(${peak.x}px,${peak.y}px)`, offset: at(P.peak * o.sp), easing: 'cubic-bezier(.3,0,.7,1)' },
+        { transform: `translate(${o.land.x}px,${o.land.y}px)`, offset: at(P.land * o.sp), easing: 'cubic-bezier(.4,0,1,1)' },
+        { transform: `translate(${o.land.x}px,${o.land.y - o.size * 0.16}px)`, offset: at(P.land * o.sp + (L - P.land * o.sp) * 0.45), easing: 'cubic-bezier(.2,.8,.4,1)' },
         { transform: `translate(${o.land.x}px,${o.land.y}px)`, offset: at(L) },
         { transform: `translate(${o.land.x}px,${o.land.y}px)`, offset: 1 },
       ]);
       // 大きさ：小さく現れる → 前へ出て大きく（×1.35）→ 着地で少しつぶれる → 1
       A(sc, [
         { opacity: 0, transform: 'scale(.42)', offset: 0 },
-        { opacity: 1, transform: 'scale(.62)', offset: at(T.lift) },
-        { opacity: 1, transform: 'scale(1.35)', offset: at(T.air * 0.62 * o.sp) },
-        { opacity: 1, transform: 'scale(1.06)', offset: at(T.land * o.sp - 20) },
-        { opacity: 1, transform: 'scale(1.1,.9)', offset: at(T.land * o.sp + 30) },
+        { opacity: 1, transform: 'scale(.62)', offset: at(P.lift) },
+        { opacity: 1, transform: 'scale(1.35)', offset: at(P.peak * o.sp) },
+        { opacity: 1, transform: 'scale(1.06)', offset: at(P.land * o.sp - 20) },
+        { opacity: 1, transform: 'scale(1.1,.9)', offset: at(P.land * o.sp + 30) },
         { opacity: 1, transform: 'scale(1)', offset: at(L) },
         { opacity: 1, transform: 'scale(1)', offset: 1 },
       ]);
-      A(sh, [{ opacity: 0, transform: `translate(${o.land.x}px,${o.land.y}px) scale(.4)`, offset: 0 }, { opacity: 0.15, transform: `translate(${o.land.x}px,${o.land.y}px) scale(.6)`, offset: at(T.air * 0.62 * o.sp) },
-        { opacity: 0.7, transform: `translate(${o.land.x}px,${o.land.y}px) scale(1)`, offset: at(T.land * o.sp) }, { opacity: 0.6, transform: `translate(${o.land.x}px,${o.land.y}px) scale(1)`, offset: 1 }]);
+      A(sh, [{ opacity: 0, transform: `translate(${o.land.x}px,${o.land.y}px) scale(.4)`, offset: 0 }, { opacity: 0.15, transform: `translate(${o.land.x}px,${o.land.y}px) scale(.6)`, offset: at(P.peak * o.sp) },
+        { opacity: 0.7, transform: `translate(${o.land.x}px,${o.land.y}px) scale(1)`, offset: at(P.land * o.sp) }, { opacity: 0.6, transform: `translate(${o.land.x}px,${o.land.y}px) scale(1)`, offset: 1 }]);
     }
     // 止まった瞬間の光（強く光ってすぐ弱く）と粒（8つが外へ）
     A(glow, [{ opacity: 0, transform: 'scale(.5)', offset: 0 }, { opacity: 0, transform: 'scale(.5)', offset: Math.max(0, at(L - 20) - 0.001) }, { opacity: 1, transform: 'scale(1.05)', offset: at(L + 60) }, { opacity: 0.5, transform: 'scale(1.15)', offset: at(L + 380) }, { opacity: 0.4, transform: 'scale(1.15)', offset: 1 }], 'ease-out');
@@ -124,12 +127,13 @@
     const hw = host.clientWidth || 390, hh = host.clientHeight || 700;
     const size = opts.size || Math.round(Math.max(72, Math.min(104, hw * 0.24))), top = opts.top != null ? opts.top : 90;
     const from = opts.from || { x: hw / 2, y: hh * 0.9 }, land = opts.land || { x: hw / 2, y: hh * 0.5 };
-    const two = vs.length === 2, L = calm ? T.calmLock : T.lock + (two ? 60 : 0), D = L + (calm ? T.calmHold : T.hold) + T.fade;
+    const P = TEMPO[opts.tempo] || TEMPO.short;
+    const two = vs.length === 2, L = calm ? T.calmLock : P.lock + (two ? 60 : 0), D = L + (calm ? T.calmHold : T.hold) + T.fade;
     const ov = document.createElement('div'); ov.className = 'd3z'; ov.dataset.result = vs.join(',');
     host.appendChild(ov);
     const t0 = now(); last = { start: t0, lock: null, end: null, values: vs.slice() };
     const dice = vs.map((v, i) => die(ov, {
-      v, top, k: i + Math.floor(Math.random() * 4), dir: two ? (i ? 1 : -1) : (Math.random() < 0.5 ? -1 : 1), spread: two ? (i ? 1 : -1) * size * 0.5 : 0, size: two ? Math.round(size * 0.86) : size, calm, D, lock: L - (two && i === 0 ? 50 : 0), sp: two && i === 0 ? 0.94 : 1,
+      v, top, k: i + Math.floor(Math.random() * 4), dir: two ? (i ? 1 : -1) : (Math.random() < 0.5 ? -1 : 1), spread: two ? (i ? 1 : -1) * size * 0.5 : 0, size: two ? Math.round(size * 0.86) : size, calm, D, P, lock: L - (two && i === 0 ? 50 : 0), sp: two && i === 0 ? 0.94 : 1,
       from: { x: from.x + (two ? (i ? 16 : -16) : 0), y: from.y }, land: { x: land.x + (two ? (i ? 1 : -1) * size * 0.62 : 0), y: land.y },
     }));
     // 出目の札（止まったあと）
@@ -152,5 +156,5 @@
     }
     return true;
   }
-  root.MMDICE3D = Object.freeze({ play, isLocked: () => locked, lastTiming: () => (last ? { ...last } : null), T, BASE, PIPS });
+  root.MMDICE3D = Object.freeze({ play, isLocked: () => locked, lastTiming: () => (last ? { ...last } : null), T, TEMPO, BASE, PIPS });
 })(typeof window !== 'undefined' ? window : globalThis);
