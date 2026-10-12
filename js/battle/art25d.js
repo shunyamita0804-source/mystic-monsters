@@ -1,5 +1,6 @@
 // =========================================================
 // ソラモ・ガウルの 2.5D バトル素材の比較試遊（2026-10-08・正式採用ではない）`MM25D`
+//  2026-10-12：ソラモの技（SK の 0〜9）だけは正式の46コマ（js/battle/soramo-moves-data.js）を通常のバトルで見せる（animOff。待機の立ち絵は変えない）
 //
 //  URL に ?battleArt=2p5d を付けたときだけ、バトル画面のソラモ・ガウルの「待機の立ち絵」と「技の演出（コマ）」を新しい 2.5D 素材にする。
 //  通常の URL（?battleArt なし）では何もしない＝今までの絵・演出のまま（旧素材は消していない・上書きしていない）。
@@ -25,10 +26,18 @@
   const IDLE = { 0: { src: A + 'soramo/idle.webp', h: 0.84 }, 1: { src: A + 'gauru/idle.webp', h: 0.9 } };
   const owner = (k) => (k >= 0 && k <= 9 ? 0 : k >= 10 && k <= 19 ? 1 : -1);
   const DATA = () => root.MM25D_DATA || {};
+  // 2026-10-12 正式：ソラモの技（SK の 0〜9）は修正納品の46コマ（assets/battle/soramo_moves_1012/・js/battle/soramo-moves-data.js）を通常のバトルで見せる。
+  //   待機の立ち絵は変えない（2.5D の待機絵は従来どおり ?battleArt=2p5d のときだけ）。?battleArt=old で「旧」を選んでいる間だけ今までの演出（見比べ用）
+  const OA = './assets/battle/soramo_moves_1012/';
+  const OFF = () => root.MMSOMV_DATA || {};
+  const offOn = () => !(offered && !on);
+  const offData = (k, s) => (offOn() && owner(k) === 0 && spOf(s) === 0 ? OFF()[k] || null : null);
+  const OFF_DUR = { 4: 2300, 8: 2300, 9: 2700 };   // 6コマの大技は少し長く（共通演出を通るとき）
 
   function spOf(s) { const pl = G('BPL'); return pl && pl[s] ? pl[s].sp : null; }
   /** この技をこの側が使うとき新しいコマで見せるか */
   function handles(k, s) {
+    if (offData(k, s)) return true;
     if (!on) return false;
     const d = DATA()[k];
     return !!(d && d.cuts && d.cuts.some((c) => c.f) && owner(k) === spOf(s));
@@ -51,7 +60,18 @@
     return { dur, body, step, win, hit };
   }
   const viaStage = () => !!(root.MMSTAGE && root.MMSTAGE.busy > 0);
-  function timing(k, s) { if (!handles(k, s)) return null; const p = plan(k, true); return { hit: p.hit, dur: p.dur }; }
+  function timing(k, s) { if (!handles(k, s)) return null; const p = offData(k, s) ? planOff(k, true) : plan(k, true); return { hit: p.hit, dur: p.dur }; }
+  /** 正式のソラモの技：区切り（steps）ごとの時間。重ねる層は同じ区切りに出す */
+  function planOff(k, viaStage) {
+    const d = OFF()[k], n = d.steps;
+    let dur = OFF_DUR[k] || Math.max(1500, Math.min(2700, 380 + n * 300));
+    if (!viaStage) dur = 1440;
+    const body = dur * 0.88, step = body / n;
+    const win = Array.from({ length: n }, (_, i) => [i * step, (i + 1) * step]);
+    const SK = G('SK'), dmg = !!(SK && SK[k] && SK[k][1] > 0);
+    const hit = d.hit && dmg ? win[d.hit - 1][0] + Math.min(120, step * 0.3) : null;
+    return { dur, body, step, win, hit };
+  }
 
   function style() {
     if (document.getElementById('mm25d-style')) return;
@@ -130,8 +150,8 @@
    *  ・横＝モード（self／lunge／move／contact／back）で攻撃側から相手へ。そのあと本体が画面の外・HUD に出ないように、
    *    その場のコマ（self・lunge・back）は相手の体に重ならないように、コマごとに位置だけを寄せる
    */
-  function layout(k, s, L) {
-    const d = DATA()[k], f = s ? -1 : 1, calm = reduced();
+  function layout(k, s, L, dd) {
+    const d = dd || DATA()[k], f = s ? -1 : 1, calm = reduced();
     const { Ag, Tg, idleW, idleH, xmin, xmax, ytop, tFront } = L;
     const bw = d.cuts.map((c) => c.b[2] - c.b[0]), bh = d.cuts.map((c) => c.b[3] - c.b[1]);
     // 本体の高さ（中央値）と面積（中央値）の2つの見積もりの平均。高さだけだと伏せた姿勢・飛ぶ姿勢で、面積だけだと横に長い姿勢で大きさがずれる
@@ -178,6 +198,7 @@
   /** 技のコマを順に見せる。引き受けたら true */
   function anim(k, s) {
     if (!handles(k, s)) return false;
+    if (offData(k, s)) return animOff(k, s);
     const v = $('.vs'), bt = document.getElementById('bt'), me = document.getElementById('m' + s), op = document.getElementById('m' + (1 - s));
     if (!v || !v.appendChild || !me || !op || !bt) return false;
     const mon = $('.mon', me), tmon = $('.mon', op);
@@ -235,6 +256,93 @@
     return true;
   }
 
+  // ---- 正式のソラモの技（2026-10-12）----
+  /** 攻撃側・相手・画面の位置（anim と同じ測り方） */
+  function geom(s) {
+    const v = $('.vs'), bt = document.getElementById('bt'), me = document.getElementById('m' + s), op = document.getElementById('m' + (1 - s));
+    if (!v || !v.appendChild || !me || !op || !bt) return null;
+    const mon = $('.mon', me), tmon = $('.mon', op); if (!mon || !tmon) return null;
+    const f = s ? -1 : 1, vr = v.getBoundingClientRect(), br = bt.getBoundingClientRect(), ar = mon.getBoundingClientRect(), tr = tmon.getBoundingClientRect();
+    const ii = mon.querySelector('.mma-idle'), ti = tmon.querySelector('.mma-idle');
+    const ir = ii && ii.getBoundingClientRect().height ? ii.getBoundingClientRect() : null;
+    const idleH = ir ? ir.height : ar.height * 1.18, idleW = ir ? ir.width : idleH * 1.1;
+    const trr = ti && ti.getBoundingClientRect().width ? ti.getBoundingClientRect() : tr;
+    const hp = bt.querySelector('.hpr'), hb = hp ? hp.getBoundingClientRect().bottom : br.top + br.height * 0.12;
+    const L = { Ag: { x: ar.left + ar.width / 2 - vr.left, y: ar.bottom - vr.top }, Tg: { x: tr.left + tr.width / 2 - vr.left, y: tr.bottom - vr.top }, idleW, idleH,
+      xmin: br.left - vr.left + 10, xmax: br.right - vr.left - 10, ytop: hb - vr.top + 4, tFront: (f > 0 ? trr.left + trr.width * 0.18 : trr.right - trr.width * 0.18) - vr.left };
+    const T = { x: trr.left + trr.width / 2 - vr.left, cy: trr.top + trr.height * 0.55 - vr.top, top: trr.top - vr.top, w: trr.width, h: trr.height };
+    return { v, bt, me, f, vr, tr, L, T };
+  }
+  // 効果だけの層の置き方（絵の中の合わせる点 ax・ay＝割合、幅＝待機の立ち絵の幅に対する倍率）。相手が左（相手側の技）なら左右反転
+  const FXP = { sky: { ax: 0.5, ay: 0.98, w: 2.5 }, barrage: { ax: 0.82, ay: 0.86, w: 2.3 }, impact: { ax: 0.74, ay: 0.82, w: 2.1 } };
+  function animOff(k, s) {
+    const g = geom(s); if (!g) return false;
+    style();
+    const { v, me, f, L, T } = g, d = OFF()[k], P = planOff(k, viaStage()), D = P.dur, X = 60, e = 0.001, imgs = [];
+    const lay = layout(k, s, L, { cuts: d.cuts });
+    const at = (i) => lay.find((q) => q.c.t[0] <= i && q.c.t[1] >= i);
+    const put = (im, z) => { im.className = 'p25f'; im.alt = ''; im.decoding = 'sync'; if (z) im.style.zIndex = z; v.appendChild(im); imgs.push(im); return im; };
+    // 窓 [w0, w1] の間だけ見せる（前後は X だけ重ねて切り替える）
+    const kfWin = (w0, w1, a, b, first, last) => {
+      const t0 = Math.max(0, w0 - (first ? 0 : X)) / D, t1 = Math.min(D, w1 + (last ? 0 : X)) / D;
+      const k2 = [{ opacity: 0, transform: a, offset: 0 }];
+      if (t0 > e) k2.push({ opacity: 0, transform: a, offset: t0 - e });
+      k2.push({ opacity: 1, transform: a, offset: Math.min(t0 + (first ? 0.02 : X / D), t1 - 2 * e) });
+      k2.push({ opacity: 1, transform: b, offset: Math.max(t0 + 2 * e, t1 - (last ? 0.04 : X / D)) });
+      k2.push({ opacity: 0, transform: b, offset: Math.min(1, t1) });
+      if (t1 < 1) k2.push({ opacity: 0, transform: b, offset: 1 });
+      return k2;
+    };
+    lay.forEach((q) => {
+      const c = q.c, S = q.S, im = document.createElement('img'); im.src = OA + c.f; im.dataset.cut = c.src;
+      im.style.width = c.w * S + 'px'; im.style.height = c.h * S + 'px'; im.style.transformOrigin = '50% 50%'; put(im);
+      const Tf = (p) => `translate(${p.x}px,${p.y}px) scaleX(${f})`;
+      const w0 = P.win[c.t[0]][0], w1 = P.win[c.t[1]][1];
+      im.animate(kfWin(w0, w1, Tf(q.p0), Tf(q.p1), c.t[0] === 0, c.t[1] === d.steps - 1), { duration: D, fill: 'both' }).onfinish = () => im.remove();
+    });
+    (d.fx || []).forEach((c) => {
+      const im = document.createElement('img'); im.src = OA + c.f; im.dataset.cut = c.src; put(im, 8);
+      const w0 = P.win[c.t[0]][0], w1 = P.win[c.t[1]][1], last = c.t[1] === d.steps - 1;
+      if (c.at === 'beam') {
+        // 発射の姿（同じ区切りの本体のコマ）の口から相手の体の中ほどへ伸ばす。絵の左の光の玉が口・右の星が相手
+        const q = at(c.t[0]), b = q.c.b, S = q.S, bw = b[2] - b[0], bh = b[3] - b[1];
+        const mx = f > 0 ? b[2] - bw * 0.08 : q.c.pw - (b[2] - bw * 0.08), my = b[1] + bh * 0.4;
+        // 相手が近くても短くしすぎない（待機の立ち絵の幅の 1.1倍以上）・口の高さと相手の中ほどの間へ・相手の中心の少し先まで
+        const sx = q.p0.x + mx * S, sy = q.p0.y + my * S, ex = T.x + f * T.w * 0.2, ey = sy * 0.45 + T.cy * 0.55;
+        const len = Math.max(Math.hypot(ex - sx, ey - sy), L.idleW * 1.1), ang = Math.atan2(ey - sy, ex - sx) * 180 / Math.PI;
+        const W = len / 0.92, H = Math.max(26, Math.min(L.idleH * 0.42, Math.max(L.idleH * 0.3, W * c.ph / c.pw)));
+        im.style.width = W + 'px'; im.style.height = H + 'px'; im.style.transformOrigin = '4% 50%';
+        const base = `translate(${sx - W * 0.04}px,${sy - H / 2}px) rotate(${ang}deg)`;
+        im.animate(kfWin(w0, w1, base + ' scaleX(0.15)', base + ' scaleX(1)', false, last), { duration: D, fill: 'both' }).onfinish = () => im.remove();
+        return;
+      }
+      // 星群（空の門 → 降り注ぐ星 → 着弾の光）：相手の位置に合わせ、画面の左右の中に収める（端の淡い光を切らない）
+      const p = FXP[c.at] || FXP.impact, ax = f > 0 ? p.ax : 1 - p.ax;
+      let W = L.idleW * p.w;
+      // 合わせる点から左右の端までが画面の中に入る幅
+      const lim = Math.min((T.x - (L.xmin - 10)) / ax, ((L.xmax + 10) - T.x) / (1 - ax));
+      W = Math.max(L.idleW * 1.1, Math.min(W, lim));
+      const H = W * c.ph / c.pw, ay = c.at === 'sky' ? T.top + T.h * 0.5 : c.at === 'barrage' ? T.cy : T.cy + T.h * 0.2;   // 空の門＝星の足が相手の体の中ほどへ届く
+      let x = T.x - W * ax, y = ay - H * p.ay; if (y < L.ytop - H * 0.15) y = L.ytop - H * 0.15;
+      im.style.width = W + 'px'; im.style.height = H + 'px'; im.style.transformOrigin = '50% 50%';
+      const a = `translate(${x}px,${y}px) scaleX(${f}) scale(0.94)`, z = `translate(${x}px,${y}px) scaleX(${f}) scale(1)`;
+      im.animate(kfWin(w0, w1, a, z, false, last), { duration: D, fill: 'both' }).onfinish = () => im.remove();
+    });
+    setTimeout(() => imgs.forEach((im) => { if (im.parentNode) im.remove(); }), D + 400);
+    const end = P.body / D;
+    me.animate([{ opacity: 0, offset: 0 }, { opacity: 0, offset: Math.min(0.99, end - 0.02) }, { opacity: 1, offset: Math.min(1, end + 0.08) }, { opacity: 1, offset: 1 }], { duration: D });
+    const ms = me.parentNode; if (ms && ms.style) { ms.style.zIndex = 7; setTimeout(() => { ms.style.zIndex = ''; }, D + 100); }
+    if (P.hit != null) {
+      const SK = G('SK'), col = (SK && SK[k] && SK[k][3]) || '#ffd36a';
+      setTimeout(() => {
+        try { const burst = G('burst'), knock = G('knock'), shake = G('shake'), flash = G('flash');
+          if (burst) burst(v, T.x, T.cy, col, 14); if (knock) knock('#m' + (1 - s), f); if (shake) shake(v); if (flash) flash(col); } catch (er) { /* 無視 */ }
+      }, P.hit);
+    }
+    return true;
+  }
+  function preloadOff(pl) { if (!pl) return; [0, 1].forEach((s) => (pl[s] && pl[s].eq || []).forEach((k) => { const d = offData(k, s); if (!d) return; d.cuts.concat(d.fx || []).forEach((c) => { const i = new Image(); i.decoding = 'async'; i.src = OA + c.f; }); })); }
+
   // ---- 立ち絵の切り替え・比較の札 ----
   function syncIdle(bt) {
     bt = bt || document.getElementById('bt'); if (!bt) return;
@@ -259,6 +367,7 @@
     }
     syncIdle(bt);
     // 使う技のコマを先に読む（このバトルの2体の装備技だけ）
+    preloadOff(G('BPL'));
     if (on) { const pl = G('BPL'); if (pl) [0, 1].forEach((s) => (pl[s] && pl[s].eq || []).forEach((k) => { if (!handles(k, s)) return; DATA()[k].cuts.forEach((c) => { const i = new Image(); i.decoding = 'async'; i.src = A + c.f; }); })); }
   }
   if (typeof MutationObserver !== 'undefined' && typeof document !== 'undefined') {
@@ -267,5 +376,5 @@
     if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
   }
 
-  root.MM25D = Object.freeze({ anim, handles, timing, layout, idleSrc, idleScale, set, syncIdle, get on() { return on; }, get offered() { return offered; }, owner, plan, IDLE });
+  root.MM25D = Object.freeze({ anim, handles, timing, layout, idleSrc, idleScale, set, syncIdle, get on() { return on; }, get offered() { return offered; }, owner, plan, planOff, offData, IDLE, OFF_ASSET: OA });
 })(typeof window !== 'undefined' ? window : globalThis);

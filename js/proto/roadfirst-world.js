@@ -26,6 +26,10 @@
     anchor: 0.70,        // モンスターを空いている所の上から何割の高さに置くか
     margin: 22,          // 空いている所の内側の余白（px）
     art: null,           // 2026-10-10 第1便の絵の試し貼り（&rfArt=1010）＝{ base }。無ければ仮の色のまま
+    // 2026-10-12 試遊修正（本編の Chapter 1＝js/chapter/world-board.js が渡す。試作の既定は従来どおり）
+    focus: false,        // true＝今の道筋（info.focus＝直前の数地点・今の地点・先の地点）以外のマスを薄くし、地面に道筋のまわりだけを明るく残す薄い幕
+    monRatio: 0,         // >0＝モンスターの幅をその地点のマスの幅 × この倍率に（0＝従来の 24単位）
+    zoomTau: 170,        // 追従の倍率を寄せる速さ（ms。大きいほどゆっくり）
   };
   // 第1便の絵（assets/proto/board_art_1010/README.md）。大きさは世界の単位
   const ART = {
@@ -96,8 +100,8 @@
     return lo;
   }
   /** 今の地点から先の地点（6マス先まで・分かれ目のあとはそれぞれ3マスまで）。first＝最初の一歩の候補（MMRF_CORE.options の dst）。back＝枝を戻る途中の区間 */
-  function lookahead(D, node, first, back, n) {
-    n = n || DEF.ahead;
+  function lookahead(D, node, first, back, n, per) {
+    n = n || DEF.ahead; per = per || 3;
     const fwd = {}; for (const e of D.edges) if (e[3] === 'forward') (fwd[e[0]] = fwd[e[0]] || []).push(e[1]);
     if (back && D.segments[back]) {   // 行き止まりから戻る途中：その枝を逆にたどる
       const list = D.segments[back][3], i = list.indexOf(node);
@@ -107,8 +111,8 @@
     const walk = (id, left, nexts) => {
       if (left <= 0) return;
       const ns = (nexts || fwd[id] || []).filter((x) => !seen.has(x));
-      const per = ns.length > 1 ? Math.min(left, 3) : left;
-      for (const x of ns) { seen.add(x); out.push(x); walk(x, per - 1); }
+      const k = ns.length > 1 ? Math.min(left, per) : left;
+      for (const x of ns) { seen.add(x); out.push(x); walk(x, k - 1); }
     };
     walk(node, n, first && first.length ? first : null);
     return out;
@@ -135,6 +139,24 @@
       c.style.left = (x - 1) / o.res + 'px'; c.style.top = (y - 1) / o.res + 'px'; c.style.width = cw / o.res + 'px'; c.style.height = ch / o.res + 'px';
       plane.appendChild(c); chunks.push(c);
     }
+    // 2026-10-12：道筋のまわりだけを明るく残す薄い幕（地面の区画の上・マスや景物の下。世界の半分の細かさ）。o.focus のときだけ
+    let veil = null, veilSig = '';
+    if (o.focus) { veil = doc.createElement('canvas'); veil.className = 'rfw-veil'; veil.width = WORLD.w / 2; veil.height = WORLD.h / 2;
+      Object.assign(veil.style, { left: '0px', top: '0px', width: WORLD.w + 'px', height: WORLD.h + 'px' }); }
+    function paintVeil(ids) {
+      const sig = ids.join(','); if (!veil || sig === veilSig) return; veilSig = sig;
+      const g = veil.getContext('2d'); g.setTransform(0.5, 0, 0, 0.5, 0, 0); g.globalCompositeOperation = 'source-over';
+      g.clearRect(0, 0, WORLD.w, WORLD.h); g.fillStyle = 'rgba(8,18,30,.46)'; g.fillRect(0, 0, WORLD.w, WORLD.h);
+      const set = new Set(ids), lines = [];
+      for (const e of D.edges) if (set.has(e[0]) && set.has(e[1])) lines.push([D.nodes[e[0]], D.nodes[e[1]]]);
+      g.globalCompositeOperation = 'destination-out'; g.lineCap = 'round'; g.lineJoin = 'round';
+      for (const [w, a] of [[92, 0.22], [72, 0.3], [54, 0.45], [38, 1]]) {   // 外ほど薄く消す＝ふちがやわらかい
+        g.strokeStyle = `rgba(0,0,0,${a})`; g.fillStyle = g.strokeStyle; g.lineWidth = w;
+        for (const [p, q] of lines) { g.beginPath(); g.moveTo(p[0], p[1]); g.lineTo(q[0], q[1]); g.stroke(); }
+        for (const id of ids) { const n = D.nodes[id]; if (n) { g.beginPath(); g.arc(n[0], n[1], w / 2, 0, 7); g.fill(); } }
+      }
+      g.globalCompositeOperation = 'source-over';
+    }
     function paintChunk(c) { const g = c.getContext('2d'); g.setTransform(o.res, 0, 0, o.res, -c._x, -c._y);
       const bx = [c._x / o.res, c._y / o.res, c.width / o.res, c.height / o.res];
       drawGround(g, D, bx[0], bx[1], bx[2], bx[3], art); drawTerrain(g, D, o, art, bx); drawRoads(g, D, o, art, bx); }
@@ -149,6 +171,7 @@
       if (idle) root.requestAnimationFrame(step);
     }
     if (!o.art) paint(true);   // 絵を貼るときは読み込みが終わってから1回だけ描く（失敗したら仮の色で描く）
+    if (veil) plane.appendChild(veil);
     // マス（全地点・立てて置く）とモンスター
     const tiles = {};
     for (const id of Object.keys(D.nodes)) {
@@ -232,7 +255,9 @@
         p.el.style.zIndex = String(Math.round(q.y) + (p.z || 0));
       }
       if (S.mon) {
-        const q = project(c, S.mon[0], S.mon[1]), w = Math.max(c.s < 1 ? 14 : 40, Math.min(100, 24 * c.s * q.k));
+        const q = project(c, S.mon[0], S.mon[1]);
+        const w = o.monRatio > 0 ? Math.max(c.s < 1 ? 14 : 30, Math.max(c.s < 1 ? 2 : o.tilePx[0], Math.min(o.tilePx[1], o.tileW * c.s * q.k)) * o.monRatio)   // 2026-10-12：その地点のマスの幅 × 倍率（マスと同じ式）
+          : Math.max(c.s < 1 ? 14 : 40, Math.min(100, 24 * c.s * q.k));
         mon.style.transform = `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * (S.monAh || 0.92)).toFixed(1)}px)`; mon.style.width = w.toFixed(1) + 'px'; mon.style.zIndex = String(Math.round(q.y) + 2);
       }
     }
@@ -258,7 +283,7 @@
       } else if (S.goal) {
         const f = 1 - Math.exp(-dt / 170), g = S.goal;
         for (const k of ['tx', 'ty', 'ax', 'ay', 'tilt']) S.cam[k] = lerp(S.cam[k], g[k], f);
-        S.cam.s = Math.exp(lerp(Math.log(S.cam.s), Math.log(g.s), f * 0.8));
+        S.cam.s = Math.exp(lerp(Math.log(S.cam.s), Math.log(g.s), (1 - Math.exp(-dt / o.zoomTau)) * 0.8));
       }
       if (S.monGoal) { if (!S.mon) S.mon = S.monGoal.slice(); const f = 1 - Math.exp(-dt / 70); S.mon[0] = lerp(S.mon[0], S.monGoal[0], f); S.mon[1] = lerp(S.mon[1], S.monGoal[1], f); }
       apply();
@@ -276,7 +301,11 @@
         if (instant && !S.intro) S.cam = Object.assign({}, S.goal);
         S.dirty = true;
         if ('denOpen' in info) for (const p of props) if (p.L && p.L.open) { const f = info.denOpen ? p.L.open : p.L.file; if (p.f !== f) { p.el.src = (o.art.base || './assets/proto/board_art_1010/') + f; p.f = f; } }
-        if (info.look) for (const [id, t] of Object.entries(tiles)) {
+        const foc = o.focus ? new Set(info.focus || [info.node].concat(info.ahead || [])) : null;
+        if (foc) paintVeil([...foc]);
+        if (info.look || foc) for (const [id, t] of Object.entries(tiles)) {
+          if (foc) { const far = !foc.has(id); if (far !== t.far) { t.el.classList.toggle('far', far); t.far = far; } }
+          if (!info.look) continue;
           const L = info.look(id) || {}; if (L.src && L.src !== t.src) { t.img.src = L.src; t.src = L.src; }
           const m = L.mark || ''; if (m !== t.mk) { t.lab.textContent = m; t.mk = m; }
           const u = !!L.used; if (u !== t.used) { t.el.classList.toggle('used', u); t.used = u; }
@@ -302,7 +331,7 @@
       },
       markerDim(id, dim) { const p = props.find((x) => x.mark === id); if (p) p.el.classList.toggle('dim', !!dim); },
       markerOff(id) { const i = props.findIndex((x) => x.mark === id); if (i >= 0) { props[i].el.remove(); props.splice(i, 1); } },
-      state: () => ({ cam: Object.assign({}, S.cam), goal: S.goal && Object.assign({}, S.goal), mon: S.mon && S.mon.slice(), view: S.view, intro: !!S.intro, ahead: S.lastAhead || [],
+      state: () => ({ focus: o.focus ? veilSig.split(',').filter(Boolean) : null, cam: Object.assign({}, S.cam), goal: S.goal && Object.assign({}, S.goal), mon: S.mon && S.mon.slice(), view: S.view, intro: !!S.intro, ahead: S.lastAhead || [],
         tiles: Object.keys(tiles).length, chunks: chunks.length, painted, res: o.res, tilt: o.tilt, props: props.length, art: !!(art.ground || art.road), rims: art.terrain ? art.terrain.rims.filter((r) => r.kind === 'valley').map((r) => r.pts.length) : null,
         rimKinds: art.terrain ? art.terrain.rims.reduce((a, r) => { a[r.kind] = (a[r.kind] || 0) + 1; return a; }, {}) : null }),
       project: (x, y) => project(S.cam, x, y),
@@ -560,6 +589,11 @@
 :is(#rfp,.wbv) .rfw-tile span:empty{display:none}
 :is(#rfp,.wbv) .rfw-tile.used img{opacity:.55}
 :is(#rfp,.wbv) .rfw-tile.cur img{filter:drop-shadow(0 0 5px #fff6c0)}
+:is(#rfp,.wbv) .rfw-tile{transition:opacity .35s}
+:is(#rfp,.wbv) .rfw-tile.far{opacity:.22}
+:is(#rfp,.wbv) .rfw-veil{position:absolute;display:block;pointer-events:none;transition:opacity .5s}
+:is(#rfp,.wbv) .rfw.intro .rfw-tile.far{opacity:1}
+:is(#rfp,.wbv) .rfw.intro .rfw-veil{opacity:0}
 :is(#rfp,.wbv) .rfw-apron{position:absolute;pointer-events:none}
 :is(#rfp,.wbv) .rfw-prop{position:absolute;left:0;top:0;will-change:transform;pointer-events:none;user-select:none;-webkit-user-drag:none}
 :is(#rfp,.wbv) .rfw-mark{filter:drop-shadow(0 0 6px rgba(190,110,255,.85));transition:opacity .5s,filter .5s}
