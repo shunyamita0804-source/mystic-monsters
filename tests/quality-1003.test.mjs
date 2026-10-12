@@ -32,7 +32,7 @@ test('QU-01：プロローグ（2026-10-07 正式：6枚・本文はユーザー
   assert.equal(P.T.tapGuard, undefined, '2026-10-06：タップでは何も進まない（固定尺）'); assert.equal(P.POS.y, 0.42, '中央よりやや上');
   const pro = rd('js/prologue/prologue.js'); assert.match(pro, /<span class="mpc" style="--d:\$\{\(k\+\+\) \* T\.chGap\}ms">/, '文字ごとに開始をずらす'); assert.match(pro, /if \(cur\) cur\.classList\.add\('full'\)/, '時刻表のとおりに全部出る（2026-10-06：タップでは全部出さない）'); assert.doesNotMatch(pro, /addEventListener\('click', \(e\) => \{\n\s+if \(e\.target === skip\)/, '画面のタップの受け口は無い'); assert.doesNotMatch(pro, /mmpro-hint/, '「タップで先へ」の表示は無い');
   assert.match(HTML, /\.mmpro-u \.mpc\{display:inline-block;opacity:0;transform:translate3d\(0,var\(--chr,3px\),0\);filter:blur\(var\(--chb,1\.5px\)\);animation:mmproCh var\(--chf,160ms\)/);
-  assert.match(fnOf('opPrologue'), /proPlay\(cv\)\.then\(ok=>\{cv\.remove\(\);if\(ok\)\{finaFlags\(\)\.prologue=1;save\(\)\}\}\)/, '見た記録は最後まで見た・スキップを確定したときだけ');
+  assert.match(fnOf('opPrologue'), /proPlay\(cv\)\.then\(ok=>\{if\(ok\)\{finaFlags\(\)\.prologue=1;save\(\)\}\}\)/, '見た記録は最後まで見た・スキップを確定したときだけ');
   assert.match(rd('tests/e2e/harness.mjs'), /MM_QA_NO_PROLOGUE = true/);
 });
 
