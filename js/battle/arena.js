@@ -108,9 +108,8 @@
   }
 
   // ---- 背景 ----
-  // 2026-10-12 試遊：野生・レア・ライバル（Chapter の道中のバトル）は Chapter ごとの野外の背景（会場 venue ではない）。正式の野外のバトル背景が届いたらここを差し替える（assets/battle/field_1012/ch1〜4 の予定）。
-  //  今は各 Chapter の正式のフィールド背景を仮に使う（Chapter 1＝はじまりの草原・Chapter 2＝潮風の海岸）。無い Chapter（3・4）は従来の venue
-  const FIELD_BG = { 1: './assets/fields/ch1a/formal_1008/ch1a_scene_01.webp', 2: './assets/fields/ch2a/field/ch2_field_01.webp' };
+  // 2026-10-12 試遊：野生・レア・ライバル（Chapter の道中のバトル）は Chapter ごとの野外の背景（会場 venue ではない）。
+  const FIELD_BG = { 1: './assets/battle/field_1012/ch1_meadow.webp', 2: './assets/battle/field_1012/ch2_coast.webp', 3: './assets/battle/field_1012/ch3_sky.webp', 4: './assets/battle/field_1012/ch4_volcano.webp' };   // 2026-10-12 開発23：正式の野外のバトル背景（864×1536）
   const fieldSrc = (ch) => FIELD_BG[Number(ch)] || null;
   function setupBg(bt) {
     const prac = !!(bt.dataset && bt.dataset.mmprac === '1'), fld = prac ? fieldSrc(bt.dataset.mmch) : null, src = fld || arenaSrc(rankOf(bt), prac), bgs = $('.bgs', bt);
