@@ -35,7 +35,7 @@
     }) }),
     fatigueByDie: Object.freeze({ 1: 2, 2: 3, 3: 4, 4: 5, 5: 6, 6: 7 }),   // 移動のサイコロの出目ごとの疲れ（旧 1〜3＝+3/+5/+7 は流用していない）
     fatigueMax: 100,
-    restAmount: 30,                              // 「休む」：疲れ −30・1ターン・移動なし（既存のゲームの休むと同じ考え方）
+    restAmount: 10,                              // 「休む」：空腹 −10・1ターン・移動なし（2026-10-12 P2 試遊用の暫定値。旧 −30。内部の値は疲れのまま）。本編の Chapter 1（world-driver の onRest）と試作（?chapterBoard=roadfirst の rest）の両方がこの値を読む＝試作の休むも −10（画面の言葉は試作のまま「疲れ」）
     wildFatigue: 5,                              // 野生の出会い（バトルは未実装）の疲れ
     treasure: Object.freeze([{ w: 4, gold: 50, tier: 'normal' }, { w: 1, gold: 150, tier: 'rare' }]),   // 道中の宝箱（ch1a の treasurePool と同じ比率）
     rewards: Object.freeze({                     // 6つの固定報酬＋隠れ家（中身は未定＝試作の仮）

@@ -49,17 +49,17 @@ for (const size of [[390, 844], [375, 667]]) {
   });
 }
 
-test('RF-B2（390×844）：休むマス＝焚き火と「疲れ −N」（ライフは変わらない）／ほかの出来事＝共通の結果の紋章と実際の値（G・能力・疲れ）', { skip: SKIP }, async () => {
+test('RF-B2（390×844）：休むマス＝焚き火と「空腹 −N」（ライフは変わらない）／ほかの出来事＝共通の結果の紋章と実際の値（G・能力・疲れ）', { skip: SKIP }, async () => {
   const p = await open(); const pg = p.page; await toField(pg);
   // 休むマス（回復の出来事 'break'＝疲れ −20）
   await pg.evaluate(() => { const f = S.m.raise.field; f.nodeAssignments.p1_1 = { t: 'event', recovery: true, tier: 'normal', ev: 'break' }; f.consumedEvents = []; S.m.raise.fatigue = 60; save(); });
   await place(pg, 'p1_0'); await idle(pg);
   const li0 = await pg.evaluate(() => S.m.li); await watch(pg); await rollAs(pg, 1); await idle(pg);
   let R = await pg.evaluate(() => window.__r); const rest = R.find((x) => /k-rest/.test(x.cls));
-  assert.ok(rest, '休むマスの演出'); assert.ok(rest.src.endsWith('assets/chapter/result_fx/rest.webp')); assert.equal(rest.tx, '疲れ −20'); assert.ok(!/ライフ/.test(rest.tx));
+  assert.ok(rest, '休むマスの演出'); assert.ok(rest.src.endsWith('assets/chapter/result_fx/rest.webp')); assert.equal(rest.tx, '空腹 −20');   // 2026-10-12 P2：画面の言葉は「空腹」（値は同じ） assert.ok(!/ライフ/.test(rest.tx));
   assert.equal(await pg.evaluate(() => S.m.li), li0, 'ライフは回復しない（変わらない）'); assert.ok(!R.some((x) => /k-event/.test(x.cls)), '休むマスに共通の結果は重ねない');
   // ほかの出来事：お金（coin＝+50G）・能力（tailwind＝回避 +5）・疲れ（spring_water＝疲れ −15・ただの出来事のマス）
-  for (const [ev, re] of [['coin', /^\+50G$/], ['tailwind', /^回避 \+5$/], ['spring_water', /^疲れ −15$/]]) {
+  for (const [ev, re] of [['coin', /^\+50G$/], ['tailwind', /^回避 \+5$/], ['spring_water', /^空腹 −15$/]]) {
     await pg.evaluate((ev) => { const f = S.m.raise.field; f.nodeAssignments.p1_1 = { t: 'event', tier: 'normal', ev }; f.consumedEvents = []; S.m.raise.fatigue = 40; save(); }, ev);
     await place(pg, 'p1_0'); await idle(pg); await watch(pg); await rollAs(pg, 1);
     await pg.waitForFunction(() => document.querySelector('.mmtalk,.chf-fina,.chf-rfx'), null, { timeout: 15000 }).catch(() => {});

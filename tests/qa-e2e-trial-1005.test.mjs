@@ -78,7 +78,7 @@ for (const size of SIZES) {
     assert.doesNotMatch(a.txt, /補給所/); assert.equal(a.sw, size[0]);
     const g = await rect(pg, '.isp-gold'), snd = await rect(pg, '#snd'); assert.ok(!snd || snd.w === 0 || g.r <= snd.l + 1, '所持金と音のボタンが重ならない');
     await pg.click('.shent:nth-child(1)'); await pg.waitForSelector('.ds.shop.shopf.tab .dcard');
-    assert.match(await pg.textContent('.ds.shop .dbody'), /商品は準備中です/); assert.match(await pg.textContent('.isp-plq'), /アイテム屋\s*購入/);
+    assert.match(await pg.textContent('.ds.shop .dbody'), /ジャガイモ[\s\S]*20G/, '2026-10-12 P2：購入＝食事6種'); assert.match(await pg.textContent('.isp-plq'), /アイテム屋\s*購入/);
     for (const w of [size[0], 360]) { await pg.setViewportSize({ width: w, height: size[1] }); await pg.waitForTimeout(150); assert.ok(await pg.evaluate(() => [...document.querySelectorAll('.shent,.isp-plq')].every((e) => e.scrollWidth <= e.clientWidth + 1)), `${w}px：導線・名札の文字がはみ出さない`); }
     await pg.setViewportSize({ width: size[0], height: size[1] });
     await pg.click('.shent:nth-child(3)'); await pg.waitForSelector('.shbook'); assert.match(await pg.textContent('.shbook'), /薬草/);

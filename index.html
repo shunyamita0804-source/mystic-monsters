@@ -1357,6 +1357,8 @@ html:has(#app>.chfw),html:has(#app>.chfw) body{background:#0b1636}
 .chdeck-bg{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:contain;pointer-events:none;user-select:none;-webkit-user-select:none;filter:drop-shadow(0 3px 6px rgba(0,0,0,.45))}
 .chwing.chwing-img{position:absolute;max-width:none;height:auto;margin:0;padding:0;border:0;border-radius:10px;background:transparent;box-shadow:none;transform:none;color:transparent;font-size:0;z-index:2}
 .chwing.chwing-img b,.chwing.chwing-img small{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* 2026-10-12 P2：操作欄の「休む」の下＝「空腹 −10」（画像の焼き込み「疲れ -30」は派生 deck_start_hunger.webp で空欄にした。その位置に HTML で重ねる） */
+.chcmd.chcmd-img{container-type:inline-size}.chwing.chwing-img .chwlbl{position:absolute;left:44%;width:27%;top:68%;height:19%;display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:7px;font-size:2cqw;line-height:1;color:#f3ead6;text-shadow:0 1px 1px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.6);white-space:nowrap;letter-spacing:.03em;pointer-events:none}
 .chwing.chwing-img:disabled{opacity:1;filter:none;background:transparent}
 .chwing.chwing-img.must{border:0;box-shadow:inset 0 0 0 2px rgba(255,214,106,.85),0 0 14px rgba(255,214,106,.5);background:rgba(255,214,106,.08)}
 .chstopw.chstopw-img{position:absolute;transform:none;width:auto;height:auto;z-index:3}
@@ -2375,8 +2377,8 @@ button.p10karen img{display:block;width:100%;height:auto;margin-top:2px;transfor
 /* 幅の狭い画面（〜389px）：3つの導線の文字を縮める（「アイテム図鑑」がはみ出さない）。中身を開いているときはアイコンの下に名前 */
 @media (max-width:389px){.ds.shop.shopf .shent-tx b{font-size:15.5px;letter-spacing:0}.ds.shop.shopf.tab .shent{flex-direction:column;gap:2px;padding:5px 2px}.ds.shop.shopf.tab .shent img{width:28px;height:28px}.ds.shop.shopf.tab .shent-tx b{font-size:12.5px}}
 
-/* 2026-10-05 PHASE B：アイテムの正式アイコン（薬草 assets/items/herb.webp）。色は変えない */
-.itic{display:inline-block;width:28px;height:28px;object-fit:contain;vertical-align:middle;flex:0 0 auto}.ppsl .itic{display:block;width:34px;height:34px;margin:0 auto 2px}.p7it .itic{margin-right:8px}.chitems .itic{width:30px;height:30px;margin-right:8px}
+/* 2026-10-05 PHASE B：アイテムの正式アイコン（薬草 assets/items/herb.webp）。色は変えない。2026-10-12 P2：食事6種（assets/items/body_1012）・アイテム屋の空腹の量（.shfx）・未入荷（.shlock）・Chapter のアイテムで食べられない理由（.chit-why） */
+.itic{display:inline-block;width:28px;height:28px;object-fit:contain;vertical-align:middle;flex:0 0 auto}.shop .t .shfx{display:inline-block;margin-left:6px;font-style:normal;font-size:12px;color:#ffd77a}.shop .t.shlock .itic{opacity:.45}.shop .t.shlock small{color:#c9cfe0}.chitems .chit-why{display:block;margin:0 0 6px;font-size:12.5px;color:#ffd77a}.ppsl .itic{display:block;width:34px;height:34px;margin:0 auto 2px}.p7it .itic{margin-right:8px}.chitems .itic{width:30px;height:30px;margin-right:8px}
 /* 2026-10-05 PHASE B：システム通知の帯（js/feel/notice.js・正式デザイン system_notification_banner。NPC の会話とは別の層・顔と名前なし） */
 .mmnote-layer{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 20dvh);z-index:2300;display:flex;flex-direction:column;align-items:center;gap:10px;padding:0 14px;pointer-events:none}
 .mmnote{position:relative;pointer-events:auto;display:flex;align-items:center;gap:12px;width:min(100%,380px);min-height:64px;padding:10px 18px 10px 12px;border-radius:12px;border:2px solid #c9a24f;background:linear-gradient(#1c3170,#122457 55%,#0c1a44);box-shadow:0 0 0 2px rgba(6,11,28,.95),inset 0 0 0 3px rgba(8,15,38,.9),inset 0 0 0 4px rgba(214,178,98,.5),0 10px 24px rgba(0,0,0,.5);animation:mmnoteIn .26s cubic-bezier(.2,.9,.3,1.15) both;cursor:pointer}
@@ -3727,6 +3729,8 @@ main:has(>#app>.ds) h1{display:none}
 <script src="./js/feel/notice.js"></script>
 <!-- Chapterフィールドエンジン（共通エンジン＋Chapterごとの config。Chapter 1 Pattern A から。window.MMCH・MMCHD）と画面（chfBoard） -->
 <script src="./js/chapter/engine.js"></script>
+<!-- 2026-10-12 P2：食事6種（値・価格・入荷は P2 試遊用の暫定値。window.MMFOOD） -->
+<script src="./js/items/food.js"></script>
 <script src="./js/chapter/events.js"></script>
 <script src="./js/chapter/configs/ch1a.js"></script>
 <script src="./js/chapter/configs/ch2a.js"></script>
@@ -4156,7 +4160,7 @@ const OPEN_TALK={
  originA:[{npc:"fina",expression:"happy",text:"リベルナ！ アステリア地方の西のほうにある街だよね。"}],
  originB:[{npc:"fina",expression:"happy",text:"リベルナかぁ。アステリア地方の西のほうにある街だよね。"}],
  mistoria:[{npc:"fina",expression:"guide",text:"ここがミストリア。"},{npc:"fina",expression:"guide",text:"聖獣士管理局のほかにも、研究所や牧場、闘技場なんかが集まってる街だよ。"},{npc:"fina",expression:"smile",text:"一人前の聖獣士を目指すなら、これから何度もお世話になると思う。"}],
- support:n=>[{npc:"serge",text:`${n}さんのような新人の聖獣士には、管理局から支援をお渡ししています。`},{npc:"serge",text:"新人聖獣士支援制度です。まずは、旅立ちの準備金をお受け取りください。"},{npc:"serge",text:"それから、こちらもお持ちください。"},{note:{rows:[{icon:"gold",text:"1000G"},{img:ITEM_ICON.herb,text:SUPPORT_TO=="vault"?"薬草を手に入れた（バッグがいっぱいなので保管庫へ）":"薬草を手に入れた"}],se:"GOLD_GET"}},{npc:"serge",text:"薬草は、聖獣の疲れを30回復できる道具です。旅の途中で疲れが溜まったら使ってください。"}],
+ support:n=>[{npc:"serge",text:`${n}さんのような新人の聖獣士には、管理局から支援をお渡ししています。`},{npc:"serge",text:"新人聖獣士支援制度です。まずは、旅立ちの準備金をお受け取りください。"},{npc:"serge",text:"それから、こちらもお持ちください。"},{note:{rows:[{icon:"gold",text:"1000G"},{img:ITEM_ICON.potato,text:SUPPORT_TO=="vault"?"ジャガイモ×10を手に入れた（バッグがいっぱいなので保管庫へ）":"ジャガイモ×10を手に入れた"}],se:"GOLD_GET"}},{npc:"serge",text:"旅のあいだ、聖獣はお腹がすいていきます。ジャガイモを食べさせると、空腹が少しおさまりますよ。"},{npc:"serge",text:"食べさせるのはサイコロを振る前、1ターンに1個までです。足りなくなったら、アイテム屋で買い足してください。"}],
  unlock:n=>[{npc:"serge",text:"世界地図は、この管理局でいつでもご覧いただけます。"},{npc:"fina",expression:"guide",text:`それじゃあ${n}さん、まずは市場で最初の相棒を迎えに行こう！`}]};
 // リュウとの出会い（2026-10-07 正式の導線。台本＝ライバルらしく前向きで少し自信家。S ランクを先にクリアしてレジェンドに挑むと宣言し、先に「はじまりの草原」へ）
 // 2026-10-08：リュウの正式の表情5種（台詞は変えない）＝驚き → 自信 → 柔らかい笑み → 真剣 → 自信
@@ -4225,14 +4229,15 @@ async function opRyu(){const f=finaFlags(),n=S.playerName||MMP11P.DEFAULT_NAME;i
 /** 2026-10-05 PHASE B：会話とシステム通知の帯を順に出す。seq の { note:{…} } はシステム通知の帯（MMNOTE・顔と名前なし＝会話とは別の層）、それ以外は会話の行（続く行はまとめて1つの会話） */
 async function talkSeq(seq,o){let buf=[];const flush=async()=>{if(buf.length){const b=buf;buf=[];await MMNPC.talk(b,o)}};for(const x of seq){if(x&&x.note){await flush();await MMNOTE.show(x.note)}else buf.push(x)}await flush()}
 /** アイテムの正式アイコン（2026-10-05 PHASE B。無いアイテムは名前の文字だけ） */
-const ITEM_ICON=Object.freeze({herb:"./assets/items/herb.webp"});window.MM_ITEM_ICON=ITEM_ICON;
+const ITEM_ICON=Object.freeze({herb:"./assets/items/herb.webp",...(window.MMFOOD?MMFOOD.icons():{})});   // 2026-10-12 P2：食事6種＝assets/items/body_1012（PR #7 と同じファイル）
+window.MM_ITEM_ICON=ITEM_ICON;
 /** アイテムの正式アイコン（<img>）。無いアイテムは空（名前の文字だけ） */
 function itemIc(id,cls){const u=ITEM_ICON[id&&id.id||id];return u?`<img class="itic${cls?" "+cls:""}" src="${u}" alt="" decoding="async">`:""}
-/** 新人支援（2026-10-06 正式）：聖獣士登録のあと1回だけ 1000G と薬草×1。記録は S.npcFlags.support（v6 の任意項目）。
+/** 新人支援（2026-10-12 P2：1000G とジャガイモ×10。旧 2026-10-06：薬草×1＝旧セーブの薬草はそのまま・追加で配らない）：聖獣士登録のあと1回だけ。記録は S.npcFlags.support（v6 の任意項目）。
  *  受け取りの記録・所持金・薬草（バッグ。いっぱいなら保管庫）を同時に確定してから保存する＝再読み込み・再訪・再起動で二重に受け取らない。受け取ったら true */
-const SUPPORT=Object.freeze({gold:1000,item:"herb"});
+const SUPPORT=window.MMFOOD?MMFOOD.SUPPORT:Object.freeze({gold:1000,item:"herb",n:1});
 let SUPPORT_TO="bag";   // 2026-10-11：新人支援の品の送り先（バッグに入らないときは保管庫＝帯に「保管庫へ」と出す）
-function grantSupport(){const f=finaFlags();if(f.support)return false;f.support=1;S.g=(S.g||0)+SUPPORT.gold;SUPPORT_TO="bag";if(!MMP7.bagAdd(S,SUPPORT.item).ok){MMP7.vaultAdd(S,SUPPORT.item,1);SUPPORT_TO="vault"}save();return true}
+function grantSupport(){const f=finaFlags();if(f.support)return false;f.support=1;S.g=(S.g||0)+SUPPORT.gold;SUPPORT_TO="bag";const sn=SUPPORT.n||1;if(!MMP7.bagAdd(S,SUPPORT.item,sn).ok){MMP7.vaultAdd(S,SUPPORT.item,sn);SUPPORT_TO="vault"}save();return true}
 /** 聖獣士管理局の「世界地図」（序盤の会話を見たら出身地の印も） */
 function bureauMap(){if(window.MMMAP)MMMAP.viewer({origin:!!finaFlags().worldMap})}
 // ---- Phase 11：プレイヤー名（新規ゲームの最初に決める。空欄なら「アルト」） ----
@@ -5480,7 +5485,7 @@ async function trRoll(){if(p7Busy||!S.m||!MMP7.trainRunOf(S.m))return;p7Busy=tru
 // ---- 出発準備（バッグ⇄保管庫・Chapter選択） ----
 const p7ItemName=it=>{const d=MMP7.getItemDef(it.id);return d?d.name:it.id};
 // 2026-10-06：薬草（新人支援で1つ）＝疲れ −30（Chapter のアイテム＝サイコロを振る前に使う。ターンは使わない）。売り物ではない（価格なし）。正式アイコンは未着＝名前の文字だけ
-MMP7.registerItem({id:"herb",name:"薬草"});if(window.MMCH)MMCH.registerFatigueItem("herb",{amount:30});
+MMP7.registerItem({id:"herb",name:"薬草"});if(window.MMCH)MMCH.registerFatigueItem("herb",{amount:30});if(window.MMFOOD)MMFOOD.install();   // 2026-10-12 P2：食事6種（アイテム屋の商品・Chapter で食べる）。薬草は旧セーブの持ち物として従来どおり使える（売り物ではない）
 function p7Shell(ic,title,sub,body,msg,back,o){o=o||{};return `<div class="ds${o.cls?" "+o.cls:""}" style="--dc:#e8b23a">${o.bg||`<div class="dbg" style="background-image:url(${FARM_BG})"></div>`}<div class="dtop"><button class="dback" data-nav="back" onclick="${back||"hall('t')"}">◀ ベースキャンプ</button><div class="dmoney">${GCOIN} ${S.g}G</div></div><div class="dtitle"><div class="mico">${ic}</div><div><b>${title}</b><small>${sub}</small></div></div>${msg?`<div class="dmsg"><span>${msg}</span></div>`:""}<div class="dbody">${body}</div></div>`}
 const PP_ART={1:"assets/fields/ch1a/intro/ch1_intro_overview.webp",2:"assets/fields/ch2a/intro/ch2_intro_overview_v2.webp"}; // 出発準備の Chapter カードの絵（正式の俯瞰図。無い Chapter は絵なし）
 // 出発準備（2026-10-04 第二段階。デザイン参考 07）：上＝育成中モンスター（正式画像）と Chapter の札、中＝バッグの5スロット（空き＝空枠・所持＝名前。タップ＝保管庫へ／空きのタップ＝保管庫から選ぶ）、その下＝次の Chapter のカード、下＝「出発する」。
@@ -5503,7 +5508,7 @@ function prepScr(msg){if(!S.m)return lobby();if(!MMP7.canAccessVault(S))return h
 /** 保管庫のシートを開く／閉じる（出発準備の中。画面は移らない） */
 function ppVault(on){const d=$("#ppvault");if(!d)return;d.hidden=on===false?true:on===true?false:!d.hidden;const p=$(".pp");if(p)p.classList.toggle("vault",!d.hidden)}
 
-const P7_ERR={finished:"育成は完了しています。",no_monster:"モンスターがいません。",full:"バッグがいっぱいです。",s_limit:"等級Sのアイテムは、バッグに1個までです。",bad_item:"そのアイテムは扱えません。",vault_full:"保管庫がいっぱいです。",vault_locked:"いまは保管庫を使えません。",not_next:"そのChapterにはまだ行けません。",no_map:"このChapterのマップは準備中です。",not_at_farm:"いまは出発できません。",rank_gate:"次のChapterの解放条件（公式ランク大会のクリア）に届いていません。",training:"特訓中です。",no_money:"お金が足りません。",no_price:"価格が設定されていません。",not_sold:"その商品はありません。"};
+const P7_ERR={locked:"まだ入荷していません。",finished:"育成は完了しています。",no_monster:"モンスターがいません。",full:"バッグがいっぱいです。",s_limit:"等級Sのアイテムは、バッグに1個までです。",bad_item:"そのアイテムは扱えません。",vault_full:"保管庫がいっぱいです。",vault_locked:"いまは保管庫を使えません。",not_next:"そのChapterにはまだ行けません。",no_map:"このChapterのマップは準備中です。",not_at_farm:"いまは出発できません。",rank_gate:"次のChapterの解放条件（公式ランク大会のクリア）に届いていません。",training:"特訓中です。",no_money:"お金が足りません。",no_price:"価格が設定されていません。",not_sold:"その商品はありません。"};
 // ---- バッグ（2026-10-11 正式）：枠はプレイヤー全体の最高優勝（未優勝 2／E・D 3／C・B 4／A・S 6）。同じアイテムは1枠10個まで。保管庫は1種類1行・個数の上限なし ----
 //  未解放の枠は 🔒 と解放の条件（技一覧の未習得と同じ鍵の印）。Chapter 中に保留した超過の枠（旧セーブ）は帰還のあとに bagSettle が保管庫へ移す
 const BAG_LOCK_NOTE=i=>i<3?"E・D優勝":i<4?"C・B優勝":"A・S優勝";
@@ -5617,12 +5622,12 @@ function shopScr(msg,bought,tab){if(!S.m)return lobby();if(!MMP7.canAccessVault(
  const sex=sl?sl.expression:"normal";
  if(!bought&&!msg&&!tab)setTimeout(()=>{if(document.querySelector(".ds.shop"))npcFirst("shop")},0);   // 初回（フィナ ↔ おばあちゃん）
  const cat=MMP7.getShopCatalog(),vt=S.inv.vault;
- if(tab=="buy"){const buy=cat.length?cat.map(id=>{const d=MMP7.getItemDef(id),pr=Number.isInteger(d.price);return `<button class="t" ${pr&&S.g>=d.price?"":"disabled"} onclick="p7Buy('${id}')">${itemIc(id)}${d.name}<small>${pr?d.price+"G":"価格未設定"}</small></button>`}).join(""):`<div class="p7it emp"><span>商品は準備中です</span></div>`;
+ if(tab=="buy"){const buy=cat.length?cat.map(id=>{const d=MMP7.getItemDef(id),pr=Number.isInteger(d.price),op=MMP7.shopUnlocked(S,id),f=window.MMFOOD&&MMFOOD.byId(id);return `<button class="t${op?"":" shlock"}" ${op&&pr&&S.g>=d.price?"":"disabled"} onclick="p7Buy('${id}')">${itemIc(id)}${p11Esc(d.name)}${f?`<em class="shfx">空腹 −${f.hunger}</em>`:""}<small>${op?(pr?d.price+"G":"価格未設定"):"🔒 "+(window.MMFOOD?MMFOOD.unlockText(id):"未入荷")}</small></button>`}).join(""):`<div class="p7it emp"><span>商品は準備中です</span></div>`;
   $("#app").innerHTML=shopShell("buy",`${shopSay(sl)}<div class="dcard"><div class="dh">購入 <small>買ったアイテムは保管庫へ</small></div>${buy}</div>`,msg,sex);try{window.scrollTo(0,0)}catch(e){}return}
  if(tab=="sell"){const sell=vt.length?vt.map((it,i)=>{const d=MMP7.getItemDef(it.id),ok=!!d&&Number.isInteger(d.sellPrice);return `<div class="p7it">${itemIc(it)}<span>${p11Esc(p7ItemName(it))}${itemQty(it)}</span><button ${ok?"":"disabled"} onclick="p7Sell(${i})">${ok?"売る "+d.sellPrice+"G":"売れない"}</button></div>`}).join(""):`<div class="p7it emp"><span>保管庫は空です</span></div>`;
   $("#app").innerHTML=shopShell("sell",`<div class="dcard"><div class="dh">売却 <small>保管庫のアイテム</small></div>${sell}</div>`,msg,sex);try{window.scrollTo(0,0)}catch(e){}return}
  if(tab=="book"){const own=id=>MMP7.itemCount(S,id),defs=MMP7.listItemDefs();
-  const rows=defs.length?defs.map(d=>{const e=window.MMCH&&MMCH.fatigueItemEffect?MMCH.fatigueItemEffect(d.id):null;return `<div class="shbk">${itemIc(d.id,"big")||'<i class="shbk-noic" aria-hidden="true"></i>'}<div class="shbk-tx"><b>${p11Esc(d.name)}</b><small>${e?(e.full?"疲れを全回復":`疲れを${e.amount}回復`)+"（Chapter のアイテムで使う・ターンは使わない）":"効果は未登録"}</small><small>${Number.isInteger(d.price)?`価格 ${d.price}G`:"非売品"}・所持 ${own(d.id)}</small></div></div>`}).join(""):`<div class="p7it emp"><span>まだ記録がありません</span></div>`;
+  const rows=defs.length?defs.map(d=>{const e=window.MMCH&&MMCH.fatigueItemEffect?MMCH.fatigueItemEffect(d.id):null;return `<div class="shbk">${itemIc(d.id,"big")||'<i class="shbk-noic" aria-hidden="true"></i>'}<div class="shbk-tx"><b>${p11Esc(d.name)}</b><small>${e?(e.full?"空腹がすっかりおさまる":`空腹 −${e.amount}`)+"（Chapter のアイテム＝サイコロの前・1ターンに1個・ターンは使わない）":"効果は未登録"}</small><small>${Number.isInteger(d.price)?`価格 ${d.price}G`:"非売品"}・所持 ${own(d.id)}</small></div></div>`}).join(""):`<div class="p7it emp"><span>まだ記録がありません</span></div>`;
   $("#app").innerHTML=shopShell("book",`<div class="dcard shbook"><div class="dh">アイテム図鑑</div>${rows}</div>`,msg,sex);try{window.scrollTo(0,0)}catch(e){}return}
  $("#app").innerHTML=shopShell("",shopSay(sl),msg,sex);try{window.scrollTo(0,0)}catch(e){}}
 function p7Buy(id){const r=MMP7.shopBuy(S,id);if(r.ok)save();shopScr(r.ok?"保管庫に入れました。":P7_ERR[r.reason],r.ok,"buy")}   // 購入成立＝おばあちゃん「はい、これで大丈夫。」（表情＝満足・おすすめ）

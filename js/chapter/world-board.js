@@ -95,7 +95,7 @@
     return `<header class="chh wbh"><div class="chh-top"><div class="chh-l chh-prog"><div class="chh-cap"><small>Chapter <b>1</b> / ${root.MMP7 ? root.MMP7.CHAPTER_COUNT : 4}</small><b class="chh-nm">はじまりの草原</b><span class="chh-fd" id="chfd">${esc(pl)}</span></div></div>
       <button class="p9mbtn chh-menu" onclick="p9Menu()" aria-label="メニュー">☰</button></div>
       <div class="chh-r chh-chips"><div class="chh-turn chip">Turn <b id="chturn">${Math.min(r.turnsUsed + (ph === 'roll' ? 1 : 0), r.turnLimit)}</b><small> / ${r.turnLimit}</small></div>
-      <div class="chh-fat chip f-${lv}" id="chfat"><span>疲れ</span><b>${fat}</b><i style="--f:${fat}%"></i></div>
+      <div class="chh-fat chip f-${lv}" id="chfat"><span>空腹</span><b>${fat}</b><i style="--f:${fat}%"></i></div>
       <div class="chh-gold chip" id="chgold">${COIN}<b>${S.g | 0}</b></div>
       <div class="chh-tix chip" id="chtix" title="特訓チケット"><span>特訓チケット</span><b>×${S.trainTix | 0}</b></div></div></header>`;
   }
@@ -108,14 +108,14 @@
   function deckHtml(m, ph, msg) {
     const r = m.raise, Dk = cfg().deck || {}, canRoll = P8().canRoll(m), canRest = P8().canRest(m), tired = ph === 'roll' && !canRoll && (r.fatigue || 0) >= 100;
     let def = '';
-    if (ph === 'roll') def = r.turnsUsed === 0 ? '<b>はじまりの草原</b>　大会会場を目指そう。START でサイコロ（1〜6）を振る。' : tired ? '疲れがたまって動けない…休もう。' : 'START でサイコロを振る。休むこともできる。';
+    if (ph === 'roll') def = r.turnsUsed === 0 ? '<b>はじまりの草原</b>　大会会場を目指そう。START でサイコロ（1〜6）を振る。' : tired ? 'お腹がすいて動けない…食べさせるか、休もう。' : 'START でサイコロを振る。休むこともできる。';
     else if (ph === 'move' || ph === 'resolve') def = '移動中…';
     else if (ph === 'branch') def = `分かれ道だ。どちらへ進む？（のこり${r.pend.left}）`;
     const H = Dk.hit || {}, box = (k) => { const h = H[k] || { x: 0, y: 0, w: 0, h: 0 }; return `style="left:${(h.x * 100).toFixed(1)}%;top:${(h.y * 100).toFixed(1)}%;width:${(h.w * 100).toFixed(1)}%;height:${(h.h * 100).toFixed(1)}%"`; };
     const center = ph === 'roll'
       ? `<div class="chstopw chstopw-img${canRoll ? ' on' : ''}" ${box('center')}><button class="chstop chstop-img" id="brollbtn" data-nsfx="1" onclick="MMWB.roll()"${canRoll && !V.intro ? '' : ' disabled'} aria-label="START（サイコロを振る）"><b>START</b></button></div>`
       : `<div class="chstopw chstopw-img" ${box('center')}><button class="chstop chstop-img wait" disabled aria-label="移動中"><b>${(ph === 'move' || ph === 'resolve') && r.pend ? r.pend.roll : '…'}</b></button></div>`;
-    const wing = (c) => { const on = (c.k === 'rest' ? canRest : ph === 'roll') && !V.intro; return `<button class="chwing chwing-img ${c.cls} chw-${c.pos}${c.k === 'rest' && tired ? ' must' : ''}" ${box(c.pos)} onclick="${c.on}"${on ? '' : ' disabled'}><b>${c.label}</b>${c.k === 'rest' ? `<small>疲れ −${root.MMRF_PLAY ? root.MMRF_PLAY.TUNING.restAmount : 30}</small>` : ''}</button>`; };
+    const wing = (c) => { const on = (c.k === 'rest' ? canRest : ph === 'roll') && !V.intro; return `<button class="chwing chwing-img ${c.cls} chw-${c.pos}${c.k === 'rest' && tired ? ' must' : ''}" ${box(c.pos)} onclick="${c.on}"${on ? '' : ' disabled'}><b>${c.label}</b>${c.k === 'rest' ? `<i class="chwlbl">空腹 −${root.MMRF_PLAY ? root.MMRF_PLAY.TUNING.restAmount : 10}</i>` : ''}</button>`; };
     return `<div class="chdeck chdeck-img" id="chdock"><p class="chmsg" id="bmsg">${msg || def}</p><div class="chcmd chcmd-img" style="--deckar:${Dk.aspect || 3.116}">${Dk.start ? `<img class="chdeck-bg" src="${esc(Dk.start)}" alt="" draggable="false">` : ''}${CMDS.map(wing).join('')}${center}</div></div>`;
   }
   function sheetHtml(m, ph) {
@@ -129,7 +129,7 @@
     }
     if (ph === 'battle') {
       const fx = r.pend.fx || {}, bt = (cfg().battleTypes || {})[fx.battleType || 'wild'] || { label: 'モンスター' }, fb = root.MMRF_PLAY ? root.MMRF_PLAY.TUNING.wildFatigue : 5;
-      return `<div class="chsheet chbat"><small class="chbat-kind">${esc(bt.label)}</small><h3>${esc(bt.encounter || bt.label)}</h3>${bt.note ? `<p class="p9s chbat-note">${esc(bt.note)}</p>` : ''}<p class="p9s">バトルの後は疲れ +${fb}。賞金・ランクアップはありません。</p><button class="p9btn" onclick="bBattleGo()">バトルする</button>${fx.battleType === 'rival' ? '' : '<button class="p9btn2" onclick="bBattleSkip()">やめておく</button>'}</div>`;
+      return `<div class="chsheet chbat"><small class="chbat-kind">${esc(bt.label)}</small><h3>${esc(bt.encounter || bt.label)}</h3>${bt.note ? `<p class="p9s chbat-note">${esc(bt.note)}</p>` : ''}<p class="p9s">バトルの後は空腹 +${fb}。賞金・ランクアップはありません。</p><button class="p9btn" onclick="bBattleGo()">バトルする</button>${fx.battleType === 'rival' ? '' : '<button class="p9btn2" onclick="bBattleSkip()">やめておく</button>'}</div>`;
     }
     if (ph === 'timeup') return `<div class="chsheet"><h3>⌛ ターン終了</h3><p class="p9s">ゴールできなかったため、このChapterの公式大会には参加できません。Chapterは終了し、次のChapterへ進めます（育成失敗ではありません）。</p><button class="p9btn" onclick="p8EndChapter()">Chapterを終えてベースキャンプへ</button></div>`;
     return '';
@@ -388,7 +388,7 @@
     const nm = (k) => { const d = root.MMP7 && root.MMP7.getItemDef(k); return d ? d.name : k; };
     if (res.kind === 'fatigue' && res.fatigue < 0) feel('rest.recover');
     R.play(el, res.kind === 'none' ? (ev.sp === 3 ? 'stoneReaction' : 'happy') : 'happy');
-    const eff = res.kind === 'stat' ? `${labOf(res.key)} +${res.amount}` : res.kind === 'fatigue' ? `疲れ ${res.fatigue < 0 ? '−' : '+'}${Math.abs(res.fatigue)}` : res.kind === 'item' ? `${nm(res.item)} を見つけた！${res.to === 'vault' ? '（バッグがいっぱいなので保管庫へ）' : ''}` : '';
+    const eff = res.kind === 'stat' ? `${labOf(res.key)} +${res.amount}` : res.kind === 'fatigue' ? `空腹 ${res.fatigue < 0 ? '−' : '+'}${Math.abs(res.fatigue)}` : res.kind === 'item' ? `${nm(res.item)} を見つけた！${res.to === 'vault' ? '（バッグがいっぱいなので保管庫へ）' : ''}` : '';
     paint(m); lock();
     await popup(eff ? `<small>${esc(res.text || ev.title)}</small><b>${esc(eff)}</b>` : `<small>${esc(ev.title)}</small><b>${esc(res.text || '')}</b>`, 1300);
     return eff ? `${res.text || ev.title}　${eff}` : (res.text || ev.title || '');
@@ -431,7 +431,7 @@
       paint(m, 'サイコロを振った…'); lock();
       await playDie(r.value, from);
       const add = m.raise.pend ? m.raise.pend.fatigueAdded || 0 : 0;
-      paint(m, `出目 <b>${r.value}</b>${add ? `　疲れ +${add}` : ''}`); lock();
+      paint(m, `出目 <b>${r.value}</b>${add ? `　空腹 +${add}` : ''}`); lock();
     } finally { busySet(false); }
     walk();
   }
@@ -462,9 +462,9 @@
   async function rest() {
     const S = gS(), m = S && S.m; if (!active(m) || busyGet() || V.intro || !P8().canRest(m)) return;
     busySet(true); lock(); let res;
-    try { const b = m.raise.fatigue || 0; res = P8().rest(S, m); doSave(); if ((m.raise.fatigue || 0) < b) feel('rest.recover'); paint(m, `ひと休みした。　疲れ −${b - (m.raise.fatigue || 0)}`); lock(); await wait(calm() ? 200 : 700); }
+    try { const b = m.raise.fatigue || 0; res = P8().rest(S, m); doSave(); if ((m.raise.fatigue || 0) < b) feel('rest.recover'); paint(m, `ひと休みした。　空腹 −${b - (m.raise.fatigue || 0)}`); lock(); await wait(calm() ? 200 : 700); }
     finally { busySet(false); }
-    if (onBoard()) board(`ひと休みした。疲れ ${m.raise.fatigue || 0}` + (res && res.timeUp ? '　ターンを使い切った…' : ''));
+    if (onBoard()) board(`ひと休みした。空腹 ${m.raise.fatigue || 0}` + (res && res.timeUp ? '　ターンを使い切った…' : ''));
   }
   function open(id) { const S = gS(), m = S && S.m; if (!active(m) || busyGet() || V.intro || P8().boardPhase(m) !== 'roll') return; try { root.hall(id); } catch (e) {} }
   function items() {
@@ -472,10 +472,11 @@
     const CH = root.MMCH, bag = (S.inv && S.inv.bag) || [], list = bag.map((it, i) => ({ it, i, eff: CH && CH.fatigueItemEffect(it.id) })).filter((x) => x.eff);
     const ui = $('#wb-ui'); if (!ui) return; itemsClose();
     const nm = (id) => { const d = root.MMP7 && root.MMP7.getItemDef(id); return d ? d.name : id; };
-    ui.insertAdjacentHTML('beforeend', `<div class="chsheet chitems" id="chitems"><h3>アイテム</h3>${list.length ? list.map((x) => `<button class="p9btn2" onclick="MMWB.useItem(${x.i})">${root.MM_ITEM_ICON && root.MM_ITEM_ICON[x.it.id] ? `<img class="itic" src="${esc(root.MM_ITEM_ICON[x.it.id])}" alt="" decoding="async">` : ''}${esc(nm(x.it.id))}${(x.it.n | 0) > 1 ? ` <b class="itn">×${x.it.n | 0}</b>` : ''}<small>${x.eff.full ? '疲れ 全回復' : `疲れ −${x.eff.amount}`}</small></button>`).join('') : '<p class="p9s">疲れを回復できるアイテムを持っていない。</p>'}<button class="p9btn2" onclick="MMWB.itemsClose()">閉じる</button></div>`);
+    const st = CH.itemUseState(m), why = st.ok ? '' : `<p class="chit-why">${esc(CH.ITEM_WHY[st.reason] || '')}</p>`;   // 2026-10-12 P2：1ターンに1個・空腹 0 では食べない（バッグの中だけ）
+    ui.insertAdjacentHTML('beforeend', `<div class="chsheet chitems" id="chitems"><h3>アイテム</h3>${list.length ? why + list.map((x) => `<button class="p9btn2" onclick="MMWB.useItem(${x.i})"${st.ok ? '' : ' disabled'}>${root.MM_ITEM_ICON && root.MM_ITEM_ICON[x.it.id] ? `<img class="itic" src="${esc(root.MM_ITEM_ICON[x.it.id])}" alt="" decoding="async">` : ''}${esc(nm(x.it.id))}${(x.it.n | 0) > 1 ? ` <b class="itn">×${x.it.n | 0}</b>` : ''}<small>${CH.itemEffectText(x.eff)}</small></button>`).join('') : '<p class="p9s">バッグに食べられる物がない。</p>'}<button class="p9btn2" onclick="MMWB.itemsClose()">閉じる</button></div>`);
   }
   function itemsClose() { const d = $('#chitems'); if (d) d.remove(); }
-  function useItem(i) { const S = gS(), m = S && S.m; if (!active(m) || busyGet()) return; const r = root.MMCH.useFatigueItem(S, m, i); if (!r.ok) return itemsClose(); doSave(); board(`疲れ −${r.recovered}`); }
+  function useItem(i) { const S = gS(), m = S && S.m; if (!active(m) || busyGet()) return; const r = root.MMCH.useFatigueItem(S, m, i); if (!r.ok) { itemsClose(); return board(root.MMCH.ITEM_WHY[r.reason] || ''); } doSave(); board(`空腹 −${r.recovered}`); }
 
   // ---- 止まった地点の結果 ----
   function rowsHtml(fx) {
@@ -483,14 +484,14 @@
     for (const g of fx.gains || []) if (g.amount) out.push(`<span class="${g.amount < 0 ? 'dn' : ''}">${esc(labOf(g.key))} ${g.amount > 0 ? '+' : ''}${g.amount}</span>`);
     if (fx.kind === 'stat' && fx.amount) out.push(`<span>${esc(labOf(fx.key))} +${fx.amount}</span>`);
     if (fx.gold) out.push(`<span>${COIN.replace('chh-ic', 'chh-ic wbc')}+${fx.gold}G</span>`);
-    if (fx.fatigue) out.push(`<span class="${fx.fatigue > 0 ? 'dn' : ''}">疲れ ${fx.fatigue > 0 ? '+' : '−'}${Math.abs(fx.fatigue)}</span>`);
+    if (fx.fatigue) out.push(`<span class="${fx.fatigue > 0 ? 'dn' : ''}">空腹 ${fx.fatigue > 0 ? '+' : '−'}${Math.abs(fx.fatigue)}</span>`);
     return out.length ? `<div class="rows">${out.join('')}</div>` : '';
   }
   function plainOf(fx) {
     const t = [];
     for (const g of fx.gains || []) if (g.amount) t.push(`${labOf(g.key)} ${g.amount > 0 ? '+' : ''}${g.amount}`);
     if (fx.kind === 'stat' && fx.amount) t.push(`${labOf(fx.key)} +${fx.amount}`);
-    if (fx.gold) t.push(`+${fx.gold}G`); if (fx.fatigue) t.push(`疲れ ${fx.fatigue > 0 ? '+' : '−'}${Math.abs(fx.fatigue)}`);
+    if (fx.gold) t.push(`+${fx.gold}G`); if (fx.fatigue) t.push(`空腹 ${fx.fatigue > 0 ? '+' : '−'}${Math.abs(fx.fatigue)}`);
     return t.join('　');
   }
   function popup(html, ms) {

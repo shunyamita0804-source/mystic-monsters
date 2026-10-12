@@ -117,7 +117,7 @@ test('PB-B5：アイテム管理（薬草の正式アイコン・バッグ ⇄ �
   for (const size of SIZES) {
     const p = await open({ size }); const pg = p.page;
     await H.newGame(pg, 'テスト');
-    await pg.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); hall('t'); });
+    await pg.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; S.inv.bag = [{ id: 'herb' }]; save(); hall('t'); });   // 2026-10-12 P2：新人支援はジャガイモ。薬草は旧セーブの持ち物として確かめる
     await pg.waitForSelector('.bcitem'); const bb = await box(pg, '.bcitem');
     assert.ok(bb.l >= 0 && bb.t >= 0 && bb.h >= 44, 'アイテム管理の導線（押せる大きさ）');
     await pg.click('.bcitem'); await pg.waitForSelector('.ds.itemmg');
@@ -136,20 +136,20 @@ test('PB-B5：アイテム管理（薬草の正式アイコン・バッグ ⇄ �
     const ents = await pg.evaluate(() => [...document.querySelectorAll('.shent')].map((b) => { const r = b.getBoundingClientRect(), i = b.querySelector('img'); return [b.querySelector('b').textContent, i.complete && i.naturalWidth > 0, r.bottom <= innerHeight + 1]; }));
     assert.deepEqual(ents.map((x) => x[0]), ['購入', '売却', 'アイテム図鑑']); assert.ok(ents.every((x) => x[1]), '正式アイコン'); assert.ok(ents.every((x) => x[2]), '3つとも画面の中');
     await pg.click('.shent:nth-child(3)'); await pg.waitForSelector('.shbook');
-    assert.match(await pg.textContent('.shbook'), /薬草[\s\S]*疲れを30回復[\s\S]*非売品・所持 1/);
+    assert.match(await pg.textContent('.shbook'), /薬草[\s\S]*空腹 −30[\s\S]*非売品・所持 1/);
     await pg.click('.dback'); await pg.waitForSelector('.shmenu'); await pg.click('.shent:nth-child(1)'); await pg.waitForSelector('.ds.shop .dcard');
-    assert.match(await pg.textContent('.ds.shop .dbody'), /商品は準備中です/, '購入：商品・価格は従来どおり（未登録）');
+    assert.match(await pg.textContent('.ds.shop .dbody'), /ジャガイモ[\s\S]*20G/, '購入：2026-10-12 P2 の食事6種（js/items/food.js）');
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   }
   // Chapter のアイテムに薬草のアイコン
   const p = await open({}); const pg = p.page;
   await H.newGame(pg, 'テスト');
-  await pg.evaluate(() => { finaFlags().story = ['tut_turns']; const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); m.raise.fatigue = 50; save(); board(); });
+  await pg.evaluate(() => { finaFlags().story = ['tut_turns']; S.inv.bag = [{ id: 'herb' }]; const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); m.raise.fatigue = 50; save(); board(); });
   await pg.waitForSelector('#chf .chf-bg'); await idle(pg);
   await pg.evaluate(() => chfItems()); await pg.waitForSelector('#chitems .itic');
   assert.ok(await pg.evaluate(() => { const i = document.querySelector('#chitems .itic'); return /herb\.webp$/.test(i.getAttribute('src')) && i.complete && i.naturalWidth > 0; }));
   await pg.click('#chitems button[onclick^="chfItemUse"]'); await pg.waitForTimeout(500);
-  assert.deepEqual(await pg.evaluate(() => [S.m.raise.fatigue, S.inv.bag.length]), [20, 0], '効果（疲れ −30）はそのまま');
+  assert.deepEqual(await pg.evaluate(() => [S.m.raise.fatigue, S.inv.bag.length]), [20, 0], '効果（空腹＝内部の疲れ −30）はそのまま');
   assert.deepEqual(p.errors, []);
 });
 
