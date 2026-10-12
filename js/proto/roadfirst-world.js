@@ -161,7 +161,7 @@
       const bx = [c._x / o.res, c._y / o.res, c.width / o.res, c.height / o.res];
       drawGround(g, D, bx[0], bx[1], bx[2], bx[3], art); drawTerrain(g, D, o, art, bx); drawRoads(g, D, o, art, bx); }
     // 区画は数フレームに分けて描く（1回の長い処理で画面を止めない。iPhone で開始の俯瞰が引っかからないように）。今の注視点に近い区画から
-    let queue = [], painted = false; const dead = () => typeof S !== 'undefined' && S.dead;
+    let queue = [], painted = false, artDone = !o.art; const dead = () => typeof S !== 'undefined' && S.dead;   // artDone＝絵の読み込みが終わった（失敗した絵は仮の色で描く＝読み込みは必ず終わる）
     function paint(sync) {
       if (sync || !root.requestAnimationFrame) { queue = []; chunks.forEach(paintChunk); painted = true; return; }
       const c0 = (typeof S !== 'undefined' && S.cam) || { tx: WORLD.w / 2, ty: WORLD.h }; const d = (c) => Math.hypot(c._x / o.res + 128 - c0.tx, c._y / o.res + 128 - c0.ty);
@@ -193,6 +193,7 @@
         if (vi) { art.terrain = terrainMasks(doc, D, o); art.valley = vi; art.water = wi; art.cloud = ci; art.edges = {}; EK.forEach((k, i) => { art.edges[k] = ei[i]; });
           if (art.edges.forest) art.canopy = canopyTile(doc, art.edges.forest); }
         if (gi || ri) { paint(); wrap.classList.add('art'); } else paint();
+        artDone = true;
         // 世界の外（端へ寄ったときに見える所）も同じ草地で続ける：平面の中の安い背景（canvas は世界の中だけ）
         if (gi) { const ap = doc.createElement('div'); ap.className = 'rfw-apron'; const m = APRON;
           Object.assign(ap.style, { left: -m + 'px', top: -m + 'px', width: WORLD.w + 2 * m + 'px', height: WORLD.h + 2 * m + 'px', backgroundImage: `url(${base + ART.ground.file})`,
@@ -321,6 +322,15 @@
       },
       skipIntro() { if (S.intro) { const d = S.intro.done; S.intro = null; wrap.classList.remove('intro'); rootEl.classList.remove('rfw-intro'); title.style.opacity = '0'; if (S.goal) S.cam = Object.assign({}, S.goal); if (d) d(); } },
       inIntro: () => !!S.intro,
+      /** 2026-10-12 開発21（C-3〜6）：描き終わったか＝絵の読み込み・地面と道の全区画・景物とマスの絵のデコードが終わった。Promise は true で解決（壊れたら false） */
+      ready() {
+        const imgs = () => [...bb.querySelectorAll('img')].filter((i) => i.getAttribute('src'));
+        return new Promise((res) => {
+          const chk = () => { if (S.dead) return res(false); if (!artDone || !painted) return root.requestAnimationFrame(chk);
+            Promise.all(imgs().map((i) => (i.complete ? (i.decode ? i.decode().catch(() => {}) : null) : new Promise((r) => { i.addEventListener('load', r, { once: true }); i.addEventListener('error', r, { once: true }); })))).then(() => res(!S.dead)); };
+          chk(); });
+      },
+      isReady: () => artDone && painted,
       /** 2026-10-11：地点の上に浮かぶ目印（レアの紋章など）。w＝世界の幅・min／max＝画面の画素の下限・上限（全景でも見える大きさ）。地面・道は描き直さない */
       marker(id, src, opt = {}) {
         const n = D.nodes[id]; if (!n) return null;
@@ -609,6 +619,15 @@
     doc.head.appendChild(s);
   }
 
-  const api = { DEF, WORLD, ART, TERRAIN, project, fitZoom, lookahead, create, scatter, waterProps, curvePts, landmarkAt, inValley, loopPoly };
+  /** 2026-10-12 開発21：出発の前に盤の絵を先に読み込んでおく（ブラウザの取り置き。描画はしない）。1回だけ */
+  let pre = null;
+  function warmArt(base) {
+    if (pre || !root.Image) return pre; base = base || './assets/proto/board_art_1010/';
+    const T = ART.terrain, files = [ART.ground.file, ART.road.file, ART.strip.file, ART.goal.file, ART.peaks.file, T.valley.file, T.water.file, T.cloud.file, ...Object.values(T.edges).map((e) => e.file),
+      ...ART.props.map((p) => p.file), ...ART.landmarks.map((l) => l.file), ...Object.values(ART.water).filter((w) => w && w.file).map((w) => w.file)];
+    pre = [...new Set(files)].map((f) => { const im = new root.Image(); im.decoding = 'async'; im.src = base + f; return im; });
+    return pre;
+  }
+  const api = { DEF, WORLD, ART, TERRAIN, project, fitZoom, lookahead, create, scatter, waterProps, curvePts, landmarkAt, inValley, loopPoly, warmArt };
   if (typeof module === 'object' && module.exports) module.exports = api; else root.MMRF_WORLD = api;
 })(typeof window !== 'undefined' ? window : globalThis);
