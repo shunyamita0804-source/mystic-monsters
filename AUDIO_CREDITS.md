@@ -241,3 +241,15 @@ Spirits Forest の intro／loop の別ファイルは置かない（full の1本
 | 素材 | 理由 |
 |---|---|
 | RPG Essentials Free（48ファイル・WAV のみ） | WAV は入れない・変換しない方針。ZIP の中にライセンスの記載が無い（表紙の Cover.png だけ）ため、配布元の利用条件を確かめるまで採用しない。候補は AUDIT の完了報告の「明日以降の候補」 |
+
+## 2026-10-12 正式 SE 3種（ユーザー納品「正式SE3種と特訓チケット_納品済.zip」）
+
+置き場：assets/audio/se/mystic_monsters_official_1012/（MP3 を OGG Vorbis q5 に変換しただけ・音は編集していない）。配布元はいずれも Pixabay（Pixabay Content License。公開前に各ページで利用条件を再確認＝納品 README の指示）。
+
+| 用途（registry の鍵） | ファイル | 元ファイル（sha256） | 作者・出典 | gain |
+|---|---|---|---|---|
+| ライバルの登場の瞬間（RIVAL_APPEAR） | rival_appear_epic_whoosh.ogg | 01_ライバル登場_Epic_Whoosh.mp3（39b16caf2a0641f8f97494392dc960fabf89491ad6381f1b949da771a3f8b3f4） | DRAGON-STUDIO「Epic Whoosh」 https://pixabay.com/sound-effects/film-special-effects-epic-whoosh-478371/ | 0.76（-13.6 LUFS） |
+| VS の金色の斜線・ロゴ（MATCHUP） | vs_cinematic_swoosh_impact.ogg | 02_VS登場_Cinematic_Swoosh_Impact.mp3（ad1e275980bc3cccc770908bb8bb3921f9274e4593fd35b0b33385dd247ee778） | Universfield「Cinematic Swoosh Impact」 https://pixabay.com/sound-effects/cinematic-swoosh-impact-454392/ | 0.58（-11.3 LUFS） |
+| 試合開始「FIGHT!」（BATTLE_START） | battle_start_cinematic_impact_boom_05.ogg | 03_試合開始_Cinematic_Impact_Boom_05.mp3（824993119db92d61141199500533294aac3ea01b83e3410396a4c5f65aa54183） | Universfield「Cinematic Impact Boom 05」 https://pixabay.com/sound-effects/film-special-effects-cinematic-impact-boom-05-352465/ | 1.0（-16.6 LUFS） |
+
+置き換えた旧音（「採用した音源だけを置く」の決まりでファイルは外した）：RIVAL_APPEAR＝mystic_monsters_official/08_encounter_rival.ogg、BATTLE_START＝ivokard/bass_thud_electric.ogg、MATCHUP＝無音（2026-10-03 第4弾で NG の Fx 1 は使わない）。

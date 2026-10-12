@@ -1,7 +1,7 @@
 // =========================================================
 // 2026-10-08：2.5D バトル素材の比較試遊（実ブラウザ）
 //  A25-B1：通常の URL＝今までの立ち絵・技の演出（新しい絵を1枚も読まない・切り替えの札なし）
-//  2026-10-12：ソラモの技は正式の46コマ（tests/qa-e2e-soramo-moves-1012.test.mjs）＝B2〜B4 はガウルだけ。B1 は「ソラモは正式のコマ・比較試遊の素材は読まない」
+//  2026-10-12：ソラモの技は正式の46コマ（tests/qa-e2e-soramo-moves-1012.test.mjs）・同日の夜からガウルも正式の95枚（tests/qa-e2e-gauru-moves-1012.test.mjs）＝B3・B4（比較試遊の技のコマ）は対象の種族なし。B2 は立ち絵の切り替え。B1 は「ソラモは正式のコマ・比較試遊の素材は読まない」
 //  A25-B2：?battleArt=2p5d（3サイズ）＝ソラモ・ガウルの立ち絵が 2.5D・技のコマが出て消える（DOM を残さない）・札で旧へ戻せる・相手は今まで
 //  A25-B3（2026-10-09 完全版）：3サイズ × ソラモ／ガウル × 自分側／相手側で全10技の全コマを止めて確かめる
 //    ＝各コマが順に出る・本体（顔・耳・翼・尾）が画面の中・HUD に入らない・相手側は左右反転
@@ -117,7 +117,7 @@ async function measureMove(pg, k, s) {
 const TOL = 2; // 揺れの演出（.vs の拡大）の分
 const SIZES3 = [[375, 667], [390, 844], [430, 932]];
 for (const size of SIZES3) {
-  for (const sp of [1]) {   // 2026-10-12：ソラモは正式の46コマ＝ガウルだけ
+  for (const sp of []) {   // 2026-10-12：ソラモは正式の46コマ・同日の夜からガウルも正式の95枚（tests/qa-e2e-gauru-moves-1012.test.mjs）＝比較試遊の技のコマはどの種族にも使わない
     for (const side of [0, 1]) {
       test(`A25-B3（${size.join('×')}・${sp ? 'ガウル' : 'ソラモ'}・${side ? '相手側' : '自分側'}）：全10技の全コマ`, { skip: SKIP, timeout: 240000 }, async () => {
         const p = await openPage({ size, query: '?battleArt=2p5d', stage: true }); const pg = p.page;
@@ -149,7 +149,7 @@ for (const size of SIZES3) {
 }
 
 test('A25-B4①：ガウルの顔（頭・嘴・頭頂の羽）が切れない（全技・両側・3サイズ）', { skip: SKIP, timeout: 300000 }, async () => {
-  for (const size of SIZES3) for (const side of [0, 1]) {
+  for (const size of []) for (const side of [0, 1]) {   // 2026-10-12：ガウルは正式の95枚（比較試遊のコマは使わない）
     const p = await openPage({ size, query: '?battleArt=2p5d', stage: true }); const pg = p.page;
     await toBattleVs(pg, side ? 0 : 1, side ? 1 : 0);
     for (let k = 10; k < 20; k++) {
@@ -167,7 +167,7 @@ test('A25-B4①：ガウルの顔（頭・嘴・頭頂の羽）が切れない�
 
 test('A25-B4②：ビーム・風・炎の先が相手に届く（ソラモビーム・ウィンド・ファイアボール・フレアレイ。両側・3サイズ）', { skip: SKIP, timeout: 300000 }, async () => {
   const MOVES = [[0, 5], [1, 12], [1, 15], [1, 16]];
-  for (const size of SIZES3) for (const side of [0, 1]) for (const sp of [1]) {   // 2026-10-12：ソラモビームは正式の46コマ（SM-B のテスト）
+  for (const size of SIZES3) for (const side of [0, 1]) for (const sp of []) {   // 2026-10-12：ソラモ・ガウルとも正式のコマ（SM-B・GM-B のテスト）
     const list = MOVES.filter((x) => x[0] === sp); if (!list.length) continue;
     const p = await openPage({ size, query: '?battleArt=2p5d', stage: true }); const pg = p.page;
     await toBattleVs(pg, side ? 1 - sp : sp, side ? sp : 1 - sp);
@@ -187,7 +187,7 @@ test('A25-B4②：ビーム・風・炎の先が相手に届く（ソラモビ�
 
 test('A25-B4③：必殺の爆発が消えない（スタークラッシュ s08b・スターフォール s10b・フレアレイ g08b。両側）', { skip: SKIP, timeout: 300000 }, async () => {
   const MUST = { 4: ['s08_1', 's08_2', 's08_3', 's08_4', 's08b_1', 's08b_2', 's08b_3', 's08b_4'], 9: ['s10_1', 's10_2', 's10_3', 's10_4', 's10b_1', 's10b_2', 's10b_3', 's10b_4'], 16: ['g08_1', 'g08_2', 'g08_3', 'g08b_1', 'g08b_2', 'g08b_3'] };
-  for (const size of SIZES3) for (const side of [0, 1]) for (const sp of [1]) {   // 2026-10-12：ソラモは正式の46コマ
+  for (const size of SIZES3) for (const side of [0, 1]) for (const sp of []) {   // 2026-10-12：ソラモ・ガウルとも正式のコマ
     const p = await openPage({ size, query: '?battleArt=2p5d', stage: true }); const pg = p.page;
     await toBattleVs(pg, side ? 1 - sp : sp, side ? sp : 1 - sp);
     for (const k of sp ? [16] : [4, 9]) {

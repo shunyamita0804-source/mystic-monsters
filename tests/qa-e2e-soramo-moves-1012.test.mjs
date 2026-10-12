@@ -95,7 +95,7 @@ test('SM-B2：相手側のソラモ＝コマは左右反転・相手の技も一
   await pg.waitForTimeout(3000);
   const { mv, D } = await pg.evaluate(() => ({ mv: window.__mv, D: MMSOMV_DATA }));
   checkMoves(mv.filter((r) => r.cuts.length), D, 1, 1);
-  assert.ok(mv.filter((r) => r.s === 0).every((r) => r.cuts.length === 0), '自分（ガウル）の技は今まで');
+  assert.ok(mv.filter((r) => r.s === 0 && r.cuts.length).every((r) => r.cuts.every((c) => /^G\d/.test(c))), '自分（ガウル）の技は 2026-10-12 からガウルの正式のコマ（ソラモのコマは出ない）');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 

@@ -1,7 +1,7 @@
 // =========================================================
 // 実ブラウザ：Chapter 1 の画像演出（2026-10-11。js/chapter/world-board.js）
 //  FXB-1（390×844・375×667）：ライバル＝EV01 の幕 → リュウとレグナス → EV06 の X（各1回）→ バトルの案内（やめておくは無い）
-//  FXB-2：野生（影・？？？・Lv なし）／レア（名前・★レア）→ バトルの案内に「やめておく」・150G 以上だけ金貨の演出（50G では出ない）
+//  FXB-2：野生（影・？？？・Lv なし）／レア（名前・★レア）→ バトルの案内（2026-10-12 から「やめておく」は出さない）・150G 以上だけ金貨の演出（50G では出ない）
 //  FXB-3：残り10・5・1ターンの砂時計＝各1回・記録は field.tw（再読み込みで出ない）・ゴールのあとは出ない
 //  FXB-4：レアのマスがある育成だけ紋章（全景でも見える大きさ）・訪れたら弱く・無い育成では出ない・?tileTop=1011 のときだけ上面の試作
 //  QA_E2E=1 のときだけ実行
@@ -45,7 +45,7 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
   });
 }
 
-test('FXB-2：野生（影・？？？）／レア（名前・★レア）→ やめておくが残る・150G 以上だけ金貨の演出', { skip: SKIP, timeout: 150000 }, async () => {
+test('FXB-2：野生（影・？？？）／レア（名前・★レア）→ 強制バトル（やめておくは出さない）・150G 以上だけ金貨の演出', { skip: SKIP, timeout: 150000 }, async () => {
   const p = await openPage(); const pg = p.page;
   await toBoard(pg);
   await place(pg, 'ER02_03', { t: 'wild', rare: false });
@@ -53,7 +53,7 @@ test('FXB-2：野生（影・？？？）／レア（名前・★レア）→ �
   const w = await pg.evaluate(() => { const e = document.querySelector('.wbx-w'); return { sil: e.classList.contains('sil'), nm: e.querySelector('.wbx-nm').textContent, all: e.textContent, sheet: getComputedStyle(document.querySelector('.chsheet') || document.body).visibility }; });
   assert.equal(w.sil, true); assert.match(w.nm, /？？？/); assert.doesNotMatch(w.all, /Lv|レベル/); assert.equal(w.sheet, 'hidden', '演出の間は案内を隠す');
   await idle(pg);
-  assert.equal(await pg.evaluate(() => !!document.querySelector('.chbat [onclick="bBattleSkip()"]')), true, '野生は「やめておく」が残る');
+  assert.equal(await pg.evaluate(() => !!document.querySelector('.chbat [onclick="bBattleSkip()"]')), false, '2026-10-12 試遊：野生も強制バトル（「やめておく」は出さない。テストは先へ進むために bBattleSkip を直接呼ぶ）');
   await pg.evaluate(() => bBattleSkip()); await idle(pg);
   await place(pg, 'ER03_02', { t: 'wild', rare: true });
   await pg.waitForSelector('.wbx-w.rare');
@@ -103,10 +103,8 @@ test('FXB-4：レアの紋章（ある育成だけ・全景でも見える・訪
   // レアの無い育成：紋章なし
   await pg.evaluate(() => { const f = S.m.raise.field; delete f.tiles.ER03_02; save(); MMWB.release(); board(); }); await idle(pg);
   assert.equal(await pg.evaluate(() => document.querySelectorAll('.rfw-mark').length), 0, 'レアが無い育成では出ない');
-  // 上面の試作：既定は tiles_v2・フラグのときだけ tiles_top_1011
+  // 2026-10-12：マスの上面は正式の12種（tiles_top_1012）
   await pg.evaluate(() => { const f = S.m.raise.field, id = MMRF_DATA.segments.S01[3][1]; f.tiles[id] = { t: 'stat', k: 'li' }; save(); MMWB.release(); board(); }); await idle(pg);
   const src0 = await pg.evaluate(() => document.querySelector(`.rfw-tile[data-node="${MMRF_DATA.segments.S01[3][1]}"] img`).getAttribute('src'));
-  await pg.evaluate(() => { window.MM_TILETOP_1011 = true; MMWB.release(); board(); }); await idle(pg);
-  const src1 = await pg.evaluate(() => document.querySelector(`.rfw-tile[data-node="${MMRF_DATA.segments.S01[3][1]}"] img`).getAttribute('src'));
-  assert.match(src0, /tiles_v2\/tile_stat_life\.webp/); assert.match(src1, /tiles_top_1011\/tile_stat_life\.webp/);
+  assert.match(src0, /tiles_top_1012\/tile_stat_life\.webp/);
 });

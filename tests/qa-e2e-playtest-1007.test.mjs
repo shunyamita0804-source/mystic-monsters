@@ -68,7 +68,7 @@ test('PT-B3a：プロローグ → フィナの声かけで、会話の外に街
   await pg.waitForSelector('.oparr', { timeout: 20000 });
   await pg.waitForSelector('.mmtalk:not(.mmtalk-out)', { timeout: 20000 }); await pg.waitForTimeout(500);
   const arr = await pg.evaluate(() => window.__arr);
-  assert.ok(arr && /ミストリア到着/.test(arr.t) && !arr.talk, `2026-10-12：スキップしても、フィナより先に「ミストリア到着」のカット ${JSON.stringify(arr)}`);
+  assert.ok(arr && /聖獣都市\s*ミストリア/.test(arr.t) && !arr.talk, `2026-10-12：スキップしても、フィナより先に「ミストリア到着」のカット ${JSON.stringify(arr)}`);
   assert.equal(await pg.$('.oparr'), null, '会話が出たらカットは片付く');
   const r = await pg.evaluate(() => { window.__stop = true; return { bad: window.__bad, frames: window.__frames, cur: !!document.getElementById('opcur') }; });
   assert.equal(r.bad, 0, `街が見えたフレーム ${JSON.stringify(r)}`); assert.ok(r.frames > 10); assert.equal(r.cur, false, '会話が出たら幕は消える');

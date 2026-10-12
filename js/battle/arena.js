@@ -73,6 +73,28 @@
       '#bt .bui.mmr-on .mmr{transition:opacity .25s,transform .25s}#bt .bui.anim .mmr{opacity:.35;transform:translateY(14px)}',
       '#bt .gow .mma-stop{position:absolute;left:50%;bottom:6px;width:var(--mms-w);transform:translateX(-50%);pointer-events:none;z-index:1;transition:opacity .2s}',
       '#bt .gow .mma-stop.off{opacity:.45}',
+      // ---- 2026-10-12 試遊：HUD（05）・説明の帯（06）・ターンの表示（07）・勝利（08）。fight()・.bt 系 CSS は変えない（ここから上書き） ----
+      // 05：左右の濃紺の箱をやめる＝名前（横に状態異常の札）→ その下にライフ（既存の正式の光沢のバー B-29 緑・少ないときは B-30 赤）→ 残りの数
+      '#bt .bgs.mma-on::after{background:linear-gradient(rgba(6,10,26,.5),rgba(6,10,26,.18) 14%,transparent 24%,transparent 52%,rgba(6,10,26,.55) 74%,rgba(4,7,18,.9))}',
+      '#bt .hpr .hpn{background:none!important;border:0!important;box-shadow:none!important;border-radius:0!important;padding:0 2px!important;animation:none!important}',
+      '#bt .hpn .hpb{display:flex;flex-wrap:wrap;align-items:center;column-gap:5px;row-gap:1px}',
+      '#bt .hpn .hn1{order:0;flex:0 1 auto;min-width:0;max-width:100%;font-size:.9rem;color:#fff;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.85)}',
+      '#bt .hpn .mmail{order:1;margin:0}#bt .hpn #b0,#bt .hpn #b1{order:2;flex:1 0 100%}#bt .hpn .sts{order:3;flex:1 0 100%}',
+      '#bt .hpn.s1 .hpb{justify-content:flex-end}#bt .hpn.s1 small{text-align:right}',
+      '#bt .hpn .eg2{height:14px;margin:2px 0 1px;border:1.5px solid rgba(255,236,190,.9);border-radius:8px;background:rgba(8,14,30,.72);box-shadow:0 1px 4px rgba(0,0,0,.6)}',
+      '#bt .hpn .eg2 i{background:url(./assets/ui/b_group/b29_ability_bar_fill_green.png) left center/100% 100% no-repeat!important;box-shadow:none!important}',
+      '#bt .hpn .eg2.lo i{background-image:url(./assets/ui/b_group/b30_ability_bar_fill_red.png)!important}',
+      '#bt .hpn small{text-shadow:0 1px 2px #000,0 0 5px rgba(0,0,0,.9)}',
+      // 06・07：下の黒い説明の帯をやめる（文字だけ・同じ位置）。「タイミングよくボタンを押せ！」は出さない。「あなたのターン」「相手のターン」はこの位置（モンスターに重ねない）
+      '#bt .bui #msg{background:none!important;border:0!important;box-shadow:none!important;min-height:1.6em;color:#fff;text-shadow:0 1px 3px #000,0 0 8px rgba(0,0,0,.9)}',
+      '#bt .bui #msg::before,#bt .bui #msg::after{display:none!important}',
+      '#bt .bui #msg.mm-q,#bt.mm-turn .bui #msg{visibility:hidden}',
+      '#bt .ban.sm.mm-low{font-size:2rem;line-height:1.2;margin-top:-1.2rem}',
+      '#bt .vs{translate:0 min(8.5dvh,72px)}',
+      // 08：勝ったときは正式の勝利画像（assets/tournament/victory/）。「WIN!」の演出は残し、下の「勝利！」の文字は出さない
+      '#bt .mon.mma-won>img:not(.mma-win){opacity:0!important}',
+      '#bt .mon .mma-win{position:absolute;left:50%;bottom:-2%;height:132%;width:auto;max-width:none;transform:translateX(-50%);pointer-events:none;filter:drop-shadow(0 8px 6px rgba(0,0,0,.45));animation:mmawin .5s cubic-bezier(.2,1.4,.4,1) both}',
+      '@keyframes mmawin{from{opacity:0;transform:translateX(-50%) translateY(8%) scale(.92)}to{opacity:1;transform:translateX(-50%)}}',
     ].join('\n');
     document.head.appendChild(st);
   }
@@ -218,8 +240,37 @@
     root.MMARENA_LAST = S;   // テスト用（今のルーレットの状態）
   }
 
+  // ---- 2026-10-12 試遊：説明の帯・ターンの表示・勝利の画像（fight() の画面を外から見て直す） ----
+  const HIDE_MSG = /^(タイミングよくボタンを押せ！|勝利！(（判定勝ち）)?)\s*$/;
+  const VICTORY = ['solamo', 'gauru', 'nobiton', 'jiol', 'regnas'];
+  function setupText(bt) {
+    const msg = $('#msg', bt);
+    const sync = () => {
+      if (msg) msg.classList.toggle('mm-q', HIDE_MSG.test(msg.textContent || ''));
+      const ban = bt.querySelector(':scope>#ban');
+      const turn = !!(ban && ban.classList.contains('sm'));
+      bt.classList.toggle('mm-turn', turn);
+      if (turn && !ban.classList.contains('mm-low') && msg) {   // ターンの表示＝下の説明の位置（帯は無い）
+        const r = msg.getBoundingClientRect(), b = bt.getBoundingClientRect();
+        if (r.height || r.top) { ban.style.top = (r.top - b.top + Math.max(r.height, 20) / 2) + 'px'; ban.classList.add('mm-low'); }
+      }
+      if (ban && /^WIN!/.test(ban.textContent || '')) won(bt);
+    };
+    sync();
+    const mo = new MutationObserver(sync);
+    mo.observe(bt, { childList: true });
+    if (msg) mo.observe(msg, { childList: true, characterData: true, subtree: true });
+  }
+  function won(bt) {
+    const pl = G('BPL'), sp = pl && pl[0] ? pl[0].sp : null, mon = $('#m0 .mon', bt);
+    if (!mon || !VICTORY[sp] || mon.querySelector('.mma-win')) return;
+    const im = new Image(); im.className = 'mma-win'; im.alt = ''; im.decoding = 'async'; im.src = `./assets/tournament/victory/${VICTORY[sp]}_victory.webp`;
+    im.onload = () => mon.classList.add('mma-won'); im.onerror = () => im.remove();
+    mon.appendChild(im);
+  }
   function setup(bt) {
     style();
+    try { setupText(bt); } catch (e) { /* 見た目だけ */ }
     try { setupBg(bt); } catch (e) { /* 見た目だけ */ }
     try { setupIdle(bt); } catch (e) { /* 見た目だけ */ }
     try { setupRoulette(bt); } catch (e) { /* 見た目だけ */ }

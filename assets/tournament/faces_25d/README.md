@@ -14,3 +14,9 @@ ZIP 大会対戦表用_2.5D横顔アイコン5体（512×512 の透過 PNG）の
 | nobiton.png | assets/tournament/faces_25d/face_nobiton.webp | 0045386a2ea0563105089c74990fc7e1411410770d6348e6b2ed543b12743f25 |
 | georu.png | assets/tournament/faces_25d/face_jiol.webp | ab0a7f86f336c062ca0d5d59e004b67f5d45cb4b37a5a7ba85da15403e0d572f |
 | regnas.png | assets/tournament/faces_25d/face_regnas.webp | 0ab0bbd62c00e067434eb76d8f4fb7cc9d0f4cc357e5faa2fe3c27176f467f92 |
+
+## 2026-10-12 試遊：目が透けていた（穴の除去）
+
+ソラモの白目など、透過処理で抜けた「まわりを絵に囲まれた小さな透明の穴」が、対戦表の円・市場の入手演出の背景の色で透けていた。
+`tools/walk25d/fill_face_holes.py 600`＝外につながる透明は残し、囲まれた 600 画素以下の穴だけを白で埋めた（描き直していない・形と色はそのまま）。
+埋めた画素：ソラモ 486（両目）・レグナス 44・ガウル 3。ノビトン・ジオルは 0（ノビトンの鼻と体のすき間は大きい＝本来の背景なので埋めない）。

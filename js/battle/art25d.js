@@ -24,15 +24,18 @@
   const SPK = { 0: 'soramo', 1: 'gauru' };
   /** 待機の立ち絵（新）と、今の立ち絵に対する高さの倍率（足元の位置はそのまま） */
   const IDLE = { 0: { src: A + 'soramo/idle.webp', h: 0.84 }, 1: { src: A + 'gauru/idle.webp', h: 0.9 } };
-  const owner = (k) => (k >= 0 && k <= 9 ? 0 : k >= 10 && k <= 19 ? 1 : -1);
+  const owner = (k) => (k >= 0 && k <= 9 ? 0 : k >= 10 && k <= 19 ? 1 : k >= 30 && k <= 39 ? 2 : -1);   // 30〜39＝ノビトン（js/battle/rules.js が実行時に足す技）
   const DATA = () => root.MM25D_DATA || {};
   // 2026-10-12 正式：ソラモの技（SK の 0〜9）は修正納品の46コマ（assets/battle/soramo_moves_1012/・js/battle/soramo-moves-data.js）を通常のバトルで見せる。
   //   待機の立ち絵は変えない（2.5D の待機絵は従来どおり ?battleArt=2p5d のときだけ）。?battleArt=old で「旧」を選んでいる間だけ今までの演出（見比べ用）
   const OA = './assets/battle/soramo_moves_1012/';
   const OFF = () => root.MMSOMV_DATA || {};
   const offOn = () => !(offered && !on);
-  const offData = (k, s) => (offOn() && owner(k) === 0 && spOf(s) === 0 ? OFF()[k] || null : null);
-  const OFF_DUR = { 4: 2300, 8: 2300, 9: 2700 };   // 6コマの大技は少し長く（共通演出を通るとき）
+  // 2026-10-12：ガウルの技（SK の 10〜19）も最終調整版の95枚（assets/battle/gauru_moves_1012/・js/battle/gauru-moves-data.js）。本体と効果は別の層（同じ切り出し＝相対位置はそのまま）
+  const GOFF = () => root.MMGAMV_DATA || {};
+  const NOFF = () => root.MMNOMV_DATA || {};   // 2026-10-12：ノビトンの技（SK 30〜39）＝透過PNG 全59枚（assets/battle/nobiton_moves_1012/）
+  const offData = (k, s) => (!offOn() ? null : owner(k) === 0 && spOf(s) === 0 ? OFF()[k] || null : owner(k) === 1 && spOf(s) === 1 ? GOFF()[k] || null : owner(k) === 2 && spOf(s) === 2 ? NOFF()[k] || null : null);
+  const OFF_DUR = { 4: 2300, 8: 2300, 9: 2700, 17: 2300, 18: 2300, 19: 2500, 34: 2300, 35: 2300, 37: 2300, 39: 2700 };   // 6コマの大技は少し長く（共通演出を通るとき）
 
   function spOf(s) { const pl = G('BPL'); return pl && pl[s] ? pl[s].sp : null; }
   /** この技をこの側が使うとき新しいコマで見せるか */
@@ -60,10 +63,10 @@
     return { dur, body, step, win, hit };
   }
   const viaStage = () => !!(root.MMSTAGE && root.MMSTAGE.busy > 0);
-  function timing(k, s) { if (!handles(k, s)) return null; const p = offData(k, s) ? planOff(k, true) : plan(k, true); return { hit: p.hit, dur: p.dur }; }
+  function timing(k, s) { if (!handles(k, s)) return null; const od = offData(k, s), p = od ? planOff(k, true, od) : plan(k, true); return { hit: p.hit, dur: p.dur }; }
   /** 正式のソラモの技：区切り（steps）ごとの時間。重ねる層は同じ区切りに出す */
-  function planOff(k, viaStage) {
-    const d = OFF()[k], n = d.steps;
+  function planOff(k, viaStage, dd) {
+    const d = dd || OFF()[k] || GOFF()[k] || NOFF()[k], n = d.steps;
     let dur = OFF_DUR[k] || Math.max(1500, Math.min(2700, 380 + n * 300));
     if (!viaStage) dur = 1440;
     const body = dur * 0.88, step = body / n;
@@ -278,7 +281,7 @@
   function animOff(k, s) {
     const g = geom(s); if (!g) return false;
     style();
-    const { v, me, f, L, T } = g, d = OFF()[k], P = planOff(k, viaStage()), D = P.dur, X = 60, e = 0.001, imgs = [];
+    const { v, me, f, L, T } = g, d = offData(k, s), base = d.dir || OA, P = planOff(k, viaStage(), d), D = P.dur, X = 60, e = 0.001, imgs = [];
     const lay = layout(k, s, L, { cuts: d.cuts });
     const at = (i) => lay.find((q) => q.c.t[0] <= i && q.c.t[1] >= i);
     const put = (im, z) => { im.className = 'p25f'; im.alt = ''; im.decoding = 'sync'; if (z) im.style.zIndex = z; v.appendChild(im); imgs.push(im); return im; };
@@ -294,15 +297,33 @@
       return k2;
     };
     lay.forEach((q) => {
-      const c = q.c, S = q.S, im = document.createElement('img'); im.src = OA + c.f; im.dataset.cut = c.src;
-      im.style.width = c.w * S + 'px'; im.style.height = c.h * S + 'px'; im.style.transformOrigin = '50% 50%'; put(im);
-      const Tf = (p) => `translate(${p.x}px,${p.y}px) scaleX(${f})`;
+      const c = q.c, S = q.S, Tf = (p) => `translate(${p.x}px,${p.y}px) scaleX(${f})`;
       const w0 = P.win[c.t[0]][0], w1 = P.win[c.t[1]][1];
-      im.animate(kfWin(w0, w1, Tf(q.p0), Tf(q.p1), c.t[0] === 0, c.t[1] === d.steps - 1), { duration: D, fill: 'both' }).onfinish = () => im.remove();
+      // 本体（と、同じ切り出しの効果の層＝ガウル。本体の上に同じ動きで重ねる）
+      [[c.f, 0], [c.fx, 8]].forEach(([src, z]) => { if (!src) return;
+        const im = document.createElement('img'); im.src = base + src; im.dataset.cut = z ? c.src + '_fx' : c.src;
+        im.style.width = c.w * S + 'px'; im.style.height = c.h * S + 'px'; im.style.transformOrigin = '50% 50%'; put(im, z);
+        im.animate(kfWin(w0, w1, Tf(q.p0), Tf(q.p1), c.t[0] === 0, c.t[1] === d.steps - 1), { duration: D, fill: 'both' }).onfinish = () => im.remove(); });
     });
     (d.fx || []).forEach((c) => {
-      const im = document.createElement('img'); im.src = OA + c.f; im.dataset.cut = c.src; put(im, 8);
+      const im = document.createElement('img'); im.src = base + c.f; im.dataset.cut = c.src; put(im, 8);
       const w0 = P.win[c.t[0]][0], w1 = P.win[c.t[1]][1], last = c.t[1] === d.steps - 1;
+      if (c.at === 'fly') {   // ノビトン：自分の口・鼻の先から相手の体へ飛ぶ効果（はなみず・ノーズウェーブ・ピンポイント突き・ダウナーミスト）
+        const S0 = lay.length ? lay[0].S : 1, W = c.pw * S0 * 0.7, H = c.ph * S0 * 0.7;
+        const sx = L.Ag.x + f * L.idleW * 0.45, sy = L.Ag.y - L.idleH * 0.55, ex = T.x, ey = T.cy;
+        im.style.width = W + 'px'; im.style.height = H + 'px'; im.style.transformOrigin = '50% 50%';
+        im.animate(kfWin(w0, w1, `translate(${sx - W / 2}px,${sy - H / 2}px) scaleX(${f}) scale(0.8)`, `translate(${ex - W / 2}px,${ey - H / 2}px) scaleX(${f}) scale(1)`, false, last), { duration: D, fill: 'both' }).onfinish = () => im.remove();
+        return;
+      }
+      if (c.at === 'tgt' || c.at === 'self') {
+        // ガウル：着弾の効果＝相手の体の中ほど／特殊エフェクト（バフのキラキラ・炎のオーラ）＝自分の上。大きさは本体のコマと同じ倍率（元の絶対の大きさ）
+        const S0 = lay.length ? lay[0].S : 1, W = c.pw * S0, H = c.ph * S0;
+        const cx = c.at === 'tgt' ? T.x : L.Ag.x, cy = c.at === 'tgt' ? T.cy : L.Ag.y - L.idleH * 0.5;
+        im.style.width = W + 'px'; im.style.height = H + 'px'; im.style.transformOrigin = '50% 50%';
+        const a = `translate(${cx - W / 2}px,${cy - H / 2}px) scaleX(${f}) scale(0.92)`, z = `translate(${cx - W / 2}px,${cy - H / 2}px) scaleX(${f}) scale(1)`;
+        im.animate(kfWin(w0, w1, a, z, false, last), { duration: D, fill: 'both' }).onfinish = () => im.remove();
+        return;
+      }
       if (c.at === 'beam') {
         // 発射の姿（同じ区切りの本体のコマ）の口から相手の体の中ほどへ伸ばす。絵の左の光の玉が口・右の星が相手
         const q = at(c.t[0]), b = q.c.b, S = q.S, bw = b[2] - b[0], bh = b[3] - b[1];
@@ -341,7 +362,7 @@
     }
     return true;
   }
-  function preloadOff(pl) { if (!pl) return; [0, 1].forEach((s) => (pl[s] && pl[s].eq || []).forEach((k) => { const d = offData(k, s); if (!d) return; d.cuts.concat(d.fx || []).forEach((c) => { const i = new Image(); i.decoding = 'async'; i.src = OA + c.f; }); })); }
+  function preloadOff(pl) { if (!pl) return; [0, 1].forEach((s) => (pl[s] && pl[s].eq || []).forEach((k) => { const d = offData(k, s); if (!d) return; d.cuts.concat(d.fx || []).forEach((c) => [c.f, c.fx].forEach((f) => { if (!f) return; const i = new Image(); i.decoding = 'async'; i.src = (d.dir || OA) + f; })); })); }
 
   // ---- 立ち絵の切り替え・比較の札 ----
   function syncIdle(bt) {

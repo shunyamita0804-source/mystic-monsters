@@ -94,9 +94,9 @@ test('PB-06：正式の会話窓（event_dialogue_window）はイベント・大
   assert.match(HTML, /\.mmtalk\.mmtalk-big \.mmtalk-name::before,\.mmtalk\.mmtalk-big \.mmtalk-name::after\{content:"";position:absolute;z-index:-1;clip-path:polygon/);
   const no = rd('js/feel/notice.js'); assert.doesNotMatch(no.replace(/\/\/.*$/gm, '').replace(/\/\*\*[^*]*\*\//g, ''), /MMNPC|\.name\b|face|mmtalk|dnm/, '顔・名前は出さない（コメントを除いたコード）'); assert.match(HTML, /<script src="\.\/js\/feel\/notice\.js"><\/script>/);
   assert.match(HTML, /\.mmnote-layer\{position:fixed;[^}]*z-index:2300;/);
-  assert.match(HTML, /\{note:\{rows:\[\{icon:"gold",text:"1000G"\},\{img:ITEM_ICON\.potato,text:SUPPORT_TO=="vault"\?"ジャガイモ×10を手に入れた（バッグがいっぱいなので保管庫へ）":"ジャガイモ×10を手に入れた"\}\],se:"GOLD_GET"\}\}/, '2026-10-07 試遊：1000G と支援の品は1つの短い帯（2026-10-12 P2：ジャガイモ×10・正式画像）');
+  assert.match(HTML, /\{note:\{band:true,rows:\[\{icon:"gold",text:"1000G"\},\{img:ITEM_ICON\.potato,text:SUPPORT_TO=="vault"\?"ジャガイモ×10を手に入れた（バッグがいっぱいなので保管庫へ）":"ジャガイモ×10を手に入れた"\}\],se:"GOLD_GET"\}\}/, '2026-10-07 試遊：1000G と支援の品は1つの短い帯（2026-10-12 P2：ジャガイモ×10・正式画像）');
   assert.match(fnOf('talkSeq'), /if\(x&&x\.note\)\{await flush\(\);await MMNOTE\.show\(x\.note\)\}/);
-  assert.match(HTML, /mapNote:\{img:"\.\/assets\/ui\/worldmap_icon\/worldmap_unlock\.png",cmd:true,small:true,title:"世界地図が使えるようになった",se:"UNLOCK"\}/, '機能の解放（2026-10-07 試遊：短い知らせ）');
+  assert.match(HTML, /mapNote:\{img:"\.\/assets\/ui\/worldmap_icon\/worldmap_unlock\.png",cmd:true,small:true,band:true,title:"世界地図が使えるようになった",se:"UNLOCK"\}/, '機能の解放（2026-10-07 試遊：短い知らせ）');
   assert.match(fnOf('opTownMap'), /await MMNOTE\.show\(OPEN_TALK\.mapNote\)/, '2026-10-12：解放の帯は町で（会話の枠なし）');
   assert.match(fnOf('adopt'), /gotShow\(x,pk,rs\)/, '購入の知らせ（救済も通常も）は入手の演出だけ＝街の通知は出さない（2026-10-12 開発21：旧 帯「〇〇をつれて帰った！」）');
   assert.match(fnOf('p9TourResult'), /MMP8\.runTourEnd\(rs,\{persist:\(\)=>save\(\)\}\)/, '大会の報酬（2026-10-06：大会の終わりの順の firstReward の段階で帯を出す）');

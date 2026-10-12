@@ -21,9 +21,8 @@
     hg: { 10: FX + 'ev07_hourglass_10.webp', 5: FX + 'ev08_hourglass_5.webp', 1: FX + 'ev09_hourglass_1.webp' } };
   const GOLD_BIG = 150;            // これ以上の G を得たときだけ金貨の演出（100G 以下は従来の小さな表示）
   const TURN_WARN = [10, 5, 1];    // 残りターンの砂時計（各1回・記録は m.raise.field.tw）
-  // マスの上面の試作（TOP01 ライフ・TOP07 野生の2種だけ。検収前＝URL に ?tileTop=1011 を付けたときだけ。既定は従来の tiles_v2）
-  const topPreview = () => { try { return !!root.MM_TILETOP_1011 || new URLSearchParams(root.location ? root.location.search : '').get('tileTop') === '1011'; } catch (e) { return false; } };
-  const TOP_NEW = { stat_li: './assets/fields/ch1a/tiles_top_1011/tile_stat_life.webp', wild: './assets/fields/ch1a/tiles_top_1011/tile_wild_monster.webp' };
+  // 2026-10-12 正式：マスの上面12種（assets/fields/ch1a/tiles_top_1012/＝既存の円盤 tiles_v2/tile_blank の上面へ正式の紋章。珍しい宝箱・分かれ道・合流・専用マスは従来）
+  const TOP = './assets/fields/ch1a/tiles_top_1012/';
   const STAT_FILE = { li: 'life', po: 'power', in: 'intelligence', hi: 'accuracy', ev: 'evasion', de: 'toughness' };
   const ART_TILE = { start: 'tile_start.webp', goal: 'tile_goal.webp', lower_walk_through_gate: 'tile_gate.webp', upper_walk_through_gate: 'tile_gate.webp',
     challenge_d6_5_6: 'tile_challenge.webp', fixed_reward_dead_end: 'tile_reward.webp', optional_random_unlock_dead_end: 'tile_den.webp' };
@@ -53,18 +52,18 @@
     return (id) => {
       const n = d.nodes[id], role = n ? n[2] : '', out = { src: TV2 + 'tile_blank.webp', mark: '', used: false };
       if (ART_TILE[role]) out.src = ART + ART_TILE[role];
-      else if (role === 'mandatory_rival') out.src = TV2 + 'tile_rival.webp';
+      else if (role === 'mandatory_rival') out.src = TOP + 'tile_rival.webp';
       else if ((fwdN[id] || 0) > 1) out.src = TV2 + 'tile_branch.webp';
       else if ((inN[id] || 0) > 1) out.src = ART + 'tile_merge.webp';
       else if (role === 'ordinary_tile' && f) {
         const t = f.tiles[id];
         if (t) {
           out.used = f.used[id] != null;
-          if (t.t === 'stat') out.src = (topPreview() && TOP_NEW['stat_' + t.k]) || TV2 + 'tile_stat_' + STAT_FILE[t.k] + '.webp';
-          else if (t.t === 'event') out.src = TV2 + 'tile_event.webp';
-          else if (t.t === 'rest') out.src = TV2 + 'tile_rest.webp';
-          else if (t.t === 'wild') out.src = t.rare ? TV2 + 'tile_rare_monster.webp' : (topPreview() && TOP_NEW.wild) || TV2 + 'tile_wild_monster.webp';
-          else if (t.t === 'treasure') out.src = TV2 + (t.tier === 'rare' ? 'tile_treasure_2.webp' : 'tile_treasure_1.webp');
+          if (t.t === 'stat') out.src = TOP + 'tile_stat_' + STAT_FILE[t.k] + '.webp';
+          else if (t.t === 'event') out.src = TOP + 'tile_event.webp';
+          else if (t.t === 'rest') out.src = TOP + 'tile_meal.webp';   // 食事・焚き火（空腹 −50）
+          else if (t.t === 'wild') out.src = TOP + (t.rare ? 'tile_rare_monster.webp' : 'tile_wild_monster.webp');
+          else if (t.t === 'treasure') out.src = t.tier === 'rare' ? TV2 + 'tile_treasure_2.webp' : TOP + 'tile_treasure.webp';   // 珍しい宝箱は従来の絵（段階の違いを消さない）
         }
       }
       if (f && (role === 'fixed_reward_dead_end' || role === 'optional_random_unlock_dead_end') && f.claimed[id] != null) out.used = true;
@@ -109,7 +108,7 @@
   function progSet(node) { const pc = Math.round(progressAt(node) * 1000) / 10, f = $('#chface'), b = document.querySelector('.wbh .chh-fill'), l = document.querySelector('.wbh .chh-line');
     if (f) f.style.left = pc + '%'; if (b) b.style.width = pc + '%'; if (l) l.setAttribute('aria-label', `ゴールまでの進み具合 ${Math.round(pc)}%`); }
   // 特訓チケットの小さな印（2026-10-12 D-5・仮の線画＝正式の絵ではない。正式アイコンが届いたら差し替える）
-  const TIX = '<svg class="chh-tk" viewBox="0 0 24 16" aria-hidden="true"><path d="M2 3h20v3a2 2 0 0 0 0 4v3H2v-3a2 2 0 0 0 0-4z" fill="#e6bf62" stroke="#8a6420" stroke-width="1.2"/><path d="M15 3.5v9" stroke="#8a6420" stroke-width="1" stroke-dasharray="1.4 1.4"/><path d="M8.5 5.3l.9 1.8 2 .3-1.4 1.4.3 2-1.8-1-1.8 1 .3-2-1.4-1.4 2-.3z" fill="#fff6d6"/></svg>';
+  const TIX = '<img class="chh-tk" src="./assets/ui/ticket/training_ticket.png" alt="" aria-hidden="true" decoding="async">';   // 2026-10-12：特訓チケットの正式画像（拳＋月桂樹・assets/ui/ticket/。旧：仮の線画）
   function hudHtml(m) {
     const r = m.raise, fat = Math.round(r.fatigue || 0), lv = fat > 80 ? 'hi' : fat >= 50 ? 'mid' : 'lo', S = gS() || {};   // 2026-10-12 D-2：81 以上で赤（80 までは通常）
     const ph = P8().boardPhase(m), pl = placeName(r.node), pc = Math.round(progressAt(r.node) * 1000) / 10, fs = faceSrc(m);
@@ -152,7 +151,7 @@
     }
     if (ph === 'battle') {
       const fx = r.pend.fx || {}, bt = (cfg().battleTypes || {})[fx.battleType || 'wild'] || { label: 'モンスター' }, fb = root.MMRF_PLAY ? root.MMRF_PLAY.TUNING.wildFatigue : 5;
-      return `<div class="chsheet chbat"><small class="chbat-kind">${esc(bt.label)}</small><h3>${esc(bt.encounter || bt.label)}</h3>${bt.note ? `<p class="p9s chbat-note">${esc(bt.note)}</p>` : ''}<p class="p9s">バトルの後は空腹 +${fb}。賞金・ランクアップはありません。</p><button class="p9btn" onclick="bBattleGo()">バトルする</button>${fx.battleType === 'rival' ? '' : '<button class="p9btn2" onclick="bBattleSkip()">やめておく</button>'}</div>`;
+      return `<div class="chsheet chbat"><small class="chbat-kind">${esc(bt.label)}</small><h3>${esc(bt.encounter || bt.label)}</h3>${bt.note ? `<p class="p9s chbat-note">${esc(bt.note)}</p>` : ''}<p class="p9s">バトルの後は空腹 +${fb}。賞金・ランクアップはありません。</p><button class="p9btn" onclick="bBattleGo()">バトルする</button></div>`;   // 2026-10-12 試遊：遭遇はすべて強制バトル（「やめておく」は出さない）
     }
     if (ph === 'timeup') return `<div class="chsheet"><h3>⌛ ターン終了</h3><p class="p9s">ゴールできなかったため、このChapterの公式大会には参加できません。Chapterは終了し、次のChapterへ進めます（育成失敗ではありません）。</p><button class="p9btn" onclick="p8EndChapter()">Chapterを終えてベースキャンプへ</button></div>`;
     return '';
@@ -175,7 +174,7 @@
 .wbw .wbh .chh-turn small{font-size:11px;color:#dfe6f8}
 .wbw .wbh .chh-fat span{font-size:11.5px;font-weight:700;color:#dfe6f8}
 .wbw .wbh .chh-fat.f-hi b{color:#ff5c4d}
-.wbw .wbh .chh-tix{gap:3px}.wbw .wbh .chh-tix .chh-tk{width:19px;height:13px;flex:none}
+.wbw .wbh .chh-tix{gap:3px}.wbw .wbh .chh-tix .chh-tk{width:26px;height:18px;flex:none;object-fit:contain}
 .wbw .wbh .chh-tix span{font-size:10.5px;font-weight:700;color:#dfe6f8;letter-spacing:0}
 .wbw .wbh .chh-tix b{font-size:14px}
 #app>.chfw.wbw{--chdeck:calc(clamp(136px,20.6dvh,180px) + 26px + env(safe-area-inset-bottom,0px))}
@@ -188,6 +187,9 @@
 .wbw .wb-pop{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);width:min(86%,330px);box-sizing:border-box;padding:12px 14px;border-radius:16px;background:linear-gradient(180deg,rgba(20,36,82,.97),rgba(8,18,46,.97));border:1.5px solid #d9b465;color:#fff;text-align:center;box-shadow:0 8px 22px rgba(0,0,0,.5);pointer-events:auto;animation:wbpop .26s ease-out both;z-index:8}
 .wbw .wb-pop.out{animation:wbpopout .2s ease-in forwards}
 .wbw .wb-pop img.art{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:10px;margin:0 0 8px}
+.wbw .wb-pop .wbmeal{position:relative;width:100%;aspect-ratio:3/2;border-radius:10px;overflow:hidden;margin:0 0 8px}.wbw .wb-pop .wbmeal .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.wbw .wb-pop .wbmeal .mon{position:absolute;right:4%;bottom:3%;height:52%;width:auto;filter:drop-shadow(0 4px 4px rgba(0,0,0,.35));animation:wbmeal 1.1s ease-in-out infinite alternate}@keyframes wbmeal{to{transform:translateY(-3%)}}
+@media (prefers-reduced-motion:reduce){.wbw .wb-pop .wbmeal .mon{animation:none}}
 .wbw .wb-pop small{display:block;font-size:12px;color:#e8d29a;margin-bottom:3px}
 .wbw .wb-pop b{display:block;font-size:17px;font-family:var(--mm-font-title,serif)}
 .wbw .wb-pop p{margin:6px 0 0;font-size:13px;line-height:1.5}
@@ -252,7 +254,8 @@
 .wbw .wbx-hg.hi b em{color:#ff6b5c;font-size:26px}
 .wbw .wbx-hg.hi{animation:wbxhg .45s cubic-bezier(.2,.8,.3,1) both,wbxpulse .7s .45s ease-in-out 2}
 :is(#rfp,.wbv) .rfw-mark{animation:rfwmk 2.4s ease-in-out infinite}
-@keyframes rfwmk{50%{translate:0 -7%}}
+@keyframes rfwmk{50%{translate:0 -7%;filter:drop-shadow(0 0 13px rgba(190,110,255,.95))}}   /* 2026-10-12：紫の光がゆっくり脈打つ（点滅にしない） */
+:is(#rfp,.wbv) .rfw-mark.dim{animation:none}
 @keyframes wbxglow{from{opacity:0;transform:translateX(-50%) scale(.6)}}
 @keyframes wbxmon{from{opacity:0;translate:0 10%;scale:.86}}
 @keyframes wbxcard{from{opacity:0;translate:0 12px}}
@@ -286,7 +289,7 @@
     app.innerHTML = '<div class="chfw wbw" id="wbw"><div class="wbv" id="wbv"></div><div class="chf-ui" id="wb-ui"></div></div>';
     V.el = $('#wbw'); V.key = key;
     if (root.MMRF_WORLD) V.world = root.MMRF_WORLD.create(V.el.querySelector('.wbv'), D(), root.MMRF_PLAY, { view: viewRect, monSrc: monSrc(m), art: { base: ART, road: 'strip' },
-      focus: true, ahead: CAM.ahead, sMin: CAM.sMin, sMax: CAM.sMax, tilePx: CAM.tilePx, monRatio: CAM.monRatio, zoomTau: CAM.zoomTau });
+      focus: true, veil: false, ahead: CAM.ahead, sMin: CAM.sMin, sMax: CAM.sMax, tilePx: CAM.tilePx, monRatio: CAM.monRatio, zoomTau: CAM.zoomTau });
     sprSetup(m);
     return true;
   }
@@ -690,6 +693,13 @@
         feel('chest.open.special', { tier: 'special' });
         await goldBurst(fx.gold);
         await popup(`<small>${fx.den ? '隠れ家' : '宝の行き止まり'}</small><b>${esc(fx.title || '')}</b>${rowsHtml(fx)}`, 1800); tail = `${fx.title || ''}　${plainOf(fx)}`.trim();
+      } else if (fx.kind === 'meal') {
+        // 2026-10-12 正式：食事・焚き火のマス＝フィナが野外の岩に座る景色（assets/chapter/meal_1012）に、連れている子の正式画像。プレイヤーは台詞で参加を示す（顔の素材は無い＝描かない）
+        feel('rest.recover');
+        const nm = root.S && root.S.playerName ? root.S.playerName : '';
+        await talkLines([{ expression: 'smile', text: 'ちょうどいい場所だね。ここでひと休みして、みんなでごはんにしよう！' }, { expression: 'happy', text: `${nm ? nm + 'さん' : 'みんな'}も、${m.name || 'この子'}も、たくさん食べてね。` }]);
+        await popup(`<div class="wbmeal"><img class="bg" src="./assets/chapter/meal_1012/meal_fina.webp" alt="" decoding="async"><img class="mon" src="${esc(monSrc(m))}" alt="" decoding="async"></div><b>${esc(fx.title || '')}</b>${rowsHtml(fx)}`, 2400);
+        tail = plainOf(fx) || fx.title || '';
       } else if (fx.kind === 'event') {
         const e = evDef(fx.ev) || {};
         if (fx.recovery) feel('rest.recover'); else feel('event', { ev: fx.ev });

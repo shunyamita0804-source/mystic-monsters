@@ -184,7 +184,7 @@
       busy++;
       ensureWrap();
       const me2 = cur = {};
-      const p25 = !!(window.MM25D && MM25D.handles(k, s)), kind = p25 && (SPECIAL[k] === 'guard' || SPECIAL[k] === 'sonic') ? null : SPECIAL[k];   // 比較試遊の 2.5D：補助技もコマで見せる
+      const p25 = !!(window.MM25D && MM25D.handles(k, s)), kind = p25 ? null : SPECIAL[k];   // コマで見せる技（ソラモ・ガウルの正式の技アニメ）は、補助技・聖なる炎・フェザーストームの専用の飾りを重ねない（2026-10-12：ガウルの95枚に嵐・オーラが描かれている）
       // 1 構え：少し沈んで後ろへ（攻撃側を少し大きく）
       const wind = anim(mon, [{ transform: 'none' }, { transform: `translateX(${-8 * f}px) scale(1.05,.94)`, offset: 0.6 }, { transform: `translateX(${-6 * f}px) scale(1.04,.96)` }], { duration: T0.windup, easing: EASE.out, fill: 'forwards' });
       // 背景を攻撃側へ軽く寄せる

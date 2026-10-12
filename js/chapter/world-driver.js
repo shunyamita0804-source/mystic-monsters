@@ -122,6 +122,10 @@
     if (tile.t === 'wild') { f.used[id] = f.core.turn; return { kind: 'battle', battleType: tile.rare ? 'rare' : 'wild', ...base }; }
     if (tile.t === 'stat') { f.used[id] = f.core.turn; const amount = addStat(m, tile.k, growthGain(m, tile.k)); return { kind: 'stat', key: tile.k, amount, grade: gradeOf(m, tile.k), ...base }; }
     if (tile.t === 'treasure') { f.used[id] = f.core.turn; return { kind: 'treasure', tier: tile.tier, ...apply(S, m, [{ gold: tile.gold }]), ...base }; }
+    if (tile.t === 'rest') {   // 2026-10-12 正式：食事・焚き火のマス（TOP09）＝みんなで食事して空腹 −50（そのマスで1回だけ＝使った印）。旧：回復の出来事（eventPool）
+      f.used[id] = f.core.turn;
+      return { kind: 'meal', title: 'みんなでごはん', recovery: true, ...apply(S, m, [{ fat: -(T().mealAmount || 50) }]), ...base };
+    }
     if (tile.t === 'event' || tile.t === 'rest') {
       const e = evById(tile.e); if (!e) { f.used[id] = f.core.turn; return { kind: 'none', note: 'event_missing', ...base }; }
       const info = { ev: e.id, title: e.title || (tile.t === 'rest' ? '休憩' : '出来事'), text: e.text || '', lines: (e.lines || []).slice(), image: e.image || null, recovery: tile.t === 'rest' || !!e.recovery };
@@ -149,10 +153,10 @@
     { id: 'tut_turns_w', trigger: 'start', scope: 'save', priority: 70, presentation: 'talk', lines: [L('guide', `出発の前に、ひとつだけ。この旅は${TURN_LIMIT}ターンだよ。サイコロ（1〜${DICE}）を1回振るか、「休む」を1回使うと、1ターン進むよ。`), L('normal', `${TURN_LIMIT}ターンのうちに大会会場に着けば、公式大会に挑戦できるんだ。`), L('smile', '間に合わなくても失敗じゃないよ。育った能力は、そのまま次へ持っていけるからね。')] },
     { id: 'tut_stat', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { kind: 'stat' }, lines: [L('guide', '能力マスだよ。止まると、この子の得意に合わせて能力が伸びるんだ。'), L('smile', '伸び方は子ごとに違うから、ステータスで確かめてみてね。')] },
     { id: 'tut_event', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { hasEvent: true }, lines: [L('guide', 'イベントマスは、止まるたびに違う出来事が起きるよ。'), L('happy', '何が起きるかは、その時のお楽しみ！')] },
-    { id: 'tut_rest', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { recovery: true }, lines: [L('guide', '休憩マスだね。空腹が少しおさまったよ。'), L('normal', '空腹が100になるとサイコロが振れなくなるから、アイテムで食べさせるか、操作欄の「休む」を使ってね。')] },
+    { id: 'tut_rest', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { recovery: true }, lines: [L('guide', '食事のマスだね。みんなでごはんにすると、空腹がぐっとおさまるよ。'), L('normal', '空腹が100になるとサイコロが振れなくなるから、アイテムで食べさせるか、操作欄の「休む」を使ってね。')] },
     { id: 'tut_treasure', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { kind: 'treasure' }, lines: [L('happy', '宝箱だ！ 中身はその時によって違うよ。'), L('guide', '珍しい宝箱ほど、いいものが入ってるみたい。')] },
-    { id: 'tut_wild', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { kind: 'battle', battleType: 'wild' }, lines: [L('surprised', '野生のモンスターだ！ ここでバトルするか、やめておくか選べるよ。'), L('guide', '勝っても賞金は無いけど、いい練習になる。バトルのあとは少しお腹がすくから気をつけてね。')] },
-    { id: 'tut_rival', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { kind: 'battle', battleType: 'rival' }, lines: [L('surprised', 'あっ、リュウ！ やっぱり先に来てたんだね。'), L('normal', 'おっ、もう追いついてきたのか。ちょうどいい、オレの相棒の力を見せてやるよ！', 'ryu'), L('guide', '街で会ったときより強くなってるはず。でも、私たちだって負けないよ！')] },
+    { id: 'tut_wild', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { kind: 'battle', battleType: 'wild' }, lines: [L('surprised', '野生のモンスターだ！ 出会ったら、バトルで切り抜けよう。'), L('guide', '勝っても賞金は無いけど、いい練習になる。バトルのあとは少しお腹がすくから気をつけてね。')] },
+    { id: 'tut_rival', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { kind: 'battle', battleType: 'rival' }, lines: [L('surprised', 'あっ、リュウ！ やっぱり先に来てたんだね。'), L('normal', 'おっ、もう追いついてきたのか。ちょうどいい、俺の相棒の力を見せてやるよ！', 'ryu'), L('guide', '街で会ったときより強くなってるはず。でも、私たちだって負けないよ！')] },
     { id: 'tut_reward_w', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { kind: 'reward' }, lines: [L('happy', '宝の行き止まりだ！ ここの宝は、一度だけもらえるんだ。'), L('guide', 'ここから先は行き止まり。帰りもサイコロで戻ろうね。')] },
     { id: 'tut_goal', trigger: 'land', scope: 'save', priority: 60, presentation: 'talk', when: { goal: true }, lines: [L('happy', 'ゴールだ！ ここから公式大会に挑戦できるよ。'), L('guide', '大会はランクE〜S。今のこの子に合うランクを選ぼう。参加しない選択もできるよ。')] },
     { id: 'tut_branch', trigger: 'branch', scope: 'save', priority: 50, presentation: 'talk', lines: [L('guide', '分かれ道だよ。どっちの道を通るかは、自分で決められるんだ。'), L('smile', '道によって出来事や相手が少し変わるみたい。好きなほうを選んでね。')] },

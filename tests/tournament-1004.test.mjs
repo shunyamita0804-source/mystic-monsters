@@ -47,7 +47,7 @@ test('TN-03：大会2 対戦前比較（2026-10-07 刷新）：大会名・第N�
 
 test('TN-03b：大会3 VS 演出（正式素材 vs）：背景・VS のロゴ・斜めの光・名前の札・飾り＋待機の立ち絵（相手はこちら向き）→ fight()。fight() の導入（intro）はこの試合だけ出さない（二重の VS にしない）。fight()・intro() の中身は変えない', () => {
   const v = CODE.slice(CODE.indexOf('function tourVsShow('), CODE.indexOf('function tourVsOut('));
-  assert.ok(v.includes('${TB_ARENA('), '2026-10-12 開発21：VS の背景はそのランクの正式のバトル背景（official_rank_1012/rank_E〜S。旧 venue_E〜S）'); for (const f of ['vs/vs_diagonal.png', 'vs/vs_nameplate.png', 'vs/vs_ornament.png', 'vs/vs_logo.png']) { assert.ok(v.includes(f), f); assert.ok(existsSync(path.join(ROOT, 'assets/tournament', f)), f); }
+  assert.ok(v.includes('opt.bg||TB_ARENA('), '2026-10-12 開発21：VS の背景はそのランクの正式のバトル背景（official_rank_1012/rank_E〜S。旧 venue_E〜S）'); for (const f of ['vs/vs_diagonal.png', 'vs/vs_nameplate.png', 'vs/vs_ornament.png', 'vs/vs_logo.png']) { assert.ok(v.includes(f), f); assert.ok(existsSync(path.join(ROOT, 'assets/tournament', f)), f); }
   assert.match(v, /p11Esc\(o\.name\)/); assert.match(v, /p11Esc\(m\.name\)/); assert.match(v, /tbVs\(o,1\)/); assert.match(v, /tbVs\(m,0\)/);   // 2026-10-08：VS は専用勝負絵（tbVs。無い種族は tbIdle）
   assert.match(fnOf('tbVs'), /assets\/tournament\/vs_monsters\/\$\{k\}_vs\.webp/); assert.match(fnOf('tbVs'), /MMARENA\.flipOf\(side,x\.sp\)/); assert.match(fnOf('tbVs'), /:tbIdle\(x,side\)\}$/);
   for (const k of ['solamo', 'gauru', 'nobiton', 'jiol', 'regnas']) assert.ok(existsSync(path.join(ROOT, `assets/tournament/vs_monsters/${k}_vs.webp`)), k);

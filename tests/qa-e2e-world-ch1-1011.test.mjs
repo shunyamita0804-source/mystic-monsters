@@ -162,7 +162,7 @@ test('WB-7：チュートリアル（40ターン・1〜6）→ 分かれ道 → 
   // 歩行アニメ：歩いている間に .wk-on（奥へ）か .bob（手前へ）が付き、止まると外れる
   await pg.evaluate(() => { window.__wk = { on: 0, bob: 0 }; const el = document.querySelector('.rfw-mon'); new MutationObserver(() => { if (el.classList.contains('wk-on')) __wk.on++; if (el.classList.contains('bob')) __wk.bob++; }).observe(el, { attributes: true, attributeFilter: ['class'] }); });
   await rollAs(pg, 3);
-  for (let i = 0; i < 4; i++) { await idle(pg).catch(() => {}); await drain(pg); if (await pg.evaluate(() => !!document.querySelector('.chbat'))) await pg.click('.chbat .p9btn2'); }
+  for (let i = 0; i < 4; i++) { await idle(pg).catch(() => {}); await drain(pg); if (await pg.evaluate(() => !!document.querySelector('.chbat'))) await pg.evaluate(() => bBattleSkip()); /* 2026-10-12：遭遇は強制バトル（やめておくは無い）＝先へ進めるために直接呼ぶ */ }
   await idle(pg);
   const wk = await pg.evaluate(() => ({ ...__wk, now: document.querySelector('.rfw-mon').className, frames: document.querySelectorAll('.rfw-mon img.wk').length }));
   assert.ok(wk.frames >= 6, `歩行の絵を重ねて置く（${wk.frames}）`);
@@ -172,12 +172,14 @@ test('WB-7：チュートリアル（40ターン・1〜6）→ 分かれ道 → 
   const before = await pg.evaluate(() => { const s = MMRF_DATA.segments.S01[3]; return s[s.length - 2]; });
   await place(pg, before); await idle(pg);
   await rollAs(pg, 3);
-  await pg.waitForSelector('.wbbr .chroute');
+  await pg.waitForSelector('.wbbr .chroute', { state: 'attached' });   /* 2026-10-12：フィナの会話の間はシートを隠す（会話のあとに見える） */
   await pg.waitForSelector('.mmtalk:not(.mmtalk-out)', { timeout: 10000 });
   assert.match(await pg.evaluate(() => document.querySelector('.mmtalk').textContent), /分かれ道/);
+  assert.equal(await pg.evaluate(() => getComputedStyle(document.querySelector('.wbbr')).visibility), 'hidden', '会話の間はシートを隠す');
   await H.finishTalk(pg); await idle(pg);
+  assert.equal(await pg.evaluate(() => getComputedStyle(document.querySelector('.wbbr')).visibility), 'visible', '会話のあとはシートが戻る');
   await pg.click('.wbbr .chroute');
-  for (let i = 0; i < 4; i++) { await idle(pg).catch(() => {}); await drain(pg); if (await pg.evaluate(() => !!document.querySelector('.chbat'))) await pg.click('.chbat .p9btn2'); }
+  for (let i = 0; i < 4; i++) { await idle(pg).catch(() => {}); await drain(pg); if (await pg.evaluate(() => !!document.querySelector('.chbat'))) await pg.evaluate(() => bBattleSkip()); /* 2026-10-12：遭遇は強制バトル（やめておくは無い）＝先へ進めるために直接呼ぶ */ }
   await idle(pg);
   // 能力マス：1つ手前の地点から 1 を出す → 道具と特訓の動き → 能力マスのチュートリアル
   const tgt = await pg.evaluate(() => {

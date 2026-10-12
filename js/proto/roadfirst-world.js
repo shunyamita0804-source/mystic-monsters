@@ -28,6 +28,7 @@
     art: null,           // 2026-10-10 第1便の絵の試し貼り（&rfArt=1010）＝{ base }。無ければ仮の色のまま
     // 2026-10-12 試遊修正（本編の Chapter 1＝js/chapter/world-board.js が渡す。試作の既定は従来どおり）
     focus: false,        // true＝今の道筋（info.focus＝直前の数地点・今の地点・先の地点）以外のマスを薄くし、地面に道筋のまわりだけを明るく残す薄い幕
+    veil: true,          // focus のとき地面の薄い幕も描くか（2026-10-12 試遊：本編は false＝地面の絵は暗くしない・マスの薄さだけで道筋を示す）
     monRatio: 0,         // >0＝モンスターの幅をその地点のマスの幅 × この倍率に（0＝従来の 24単位）
     zoomTau: 170,        // 追従の倍率を寄せる速さ（ms。大きいほどゆっくり）
   };
@@ -141,10 +142,10 @@
     }
     // 2026-10-12：道筋のまわりだけを明るく残す薄い幕（地面の区画の上・マスや景物の下。世界の半分の細かさ）。o.focus のときだけ
     let veil = null, veilSig = '';
-    if (o.focus) { veil = doc.createElement('canvas'); veil.className = 'rfw-veil'; veil.width = WORLD.w / 2; veil.height = WORLD.h / 2;
+    if (o.focus && o.veil !== false) { veil = doc.createElement('canvas'); veil.className = 'rfw-veil'; veil.width = WORLD.w / 2; veil.height = WORLD.h / 2;
       Object.assign(veil.style, { left: '0px', top: '0px', width: WORLD.w + 'px', height: WORLD.h + 'px' }); }
     function paintVeil(ids) {
-      const sig = ids.join(','); if (!veil || sig === veilSig) return; veilSig = sig;
+      const sig = ids.join(','); if (sig === veilSig) return; veilSig = sig; if (!veil) return;
       const g = veil.getContext('2d'); g.setTransform(0.5, 0, 0, 0.5, 0, 0); g.globalCompositeOperation = 'source-over';
       g.clearRect(0, 0, WORLD.w, WORLD.h); g.fillStyle = 'rgba(8,18,30,.46)'; g.fillRect(0, 0, WORLD.w, WORLD.h);
       const set = new Set(ids), lines = [];

@@ -107,7 +107,7 @@ for (const size of SIZES) {
     await pg.waitForSelector('#chtix');
     const g = await rect(pg, '#chgold'), t = await rect(pg, '#chtix');
     assert.ok(Math.abs(g.t - t.t) < 2 && t.l >= g.r && t.r <= size[0] - 4, `所持金の右・同じ行 ${JSON.stringify([g, t])}`);
-    assert.match(await pg.textContent('#chtix'), /特訓チケット\s*×12/);
+    assert.match(await pg.textContent('#chtix'), /特訓\s*×12/); assert.equal(await pg.evaluate(() => { const i = document.querySelector('#chtix img.chh-tk'); return !!i && i.complete && i.naturalWidth > 0; }), true, '2026-10-12：特訓チケットの正式画像');
     for (const w of [360]) { await pg.setViewportSize({ width: w, height: size[1] }); await pg.waitForTimeout(200); const g2 = await rect(pg, '#chgold'), t2 = await rect(pg, '#chtix'); assert.ok(Math.abs(g2.t - t2.t) < 2 && t2.r <= w - 2, `${w}px でも1行`); }
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   });

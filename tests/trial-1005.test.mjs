@@ -69,7 +69,7 @@ test('TR-06：Chapter へ入るときの白っぽい一瞬：フィールドの�
 test('TR-07：Chapter の HUD：特訓チケットは所持金の右（既存の S.trainTix・1行に収める）。新しいセーブ項目は作らない', () => {
   const FV = rd('js/chapter/field-view.js');
   assert.match(FV, /tix = \(gS\(\) && gS\(\)\.trainTix\) \| 0/);
-  assert.match(FV, /<div class="chh-gold chip" id="chgold">\$\{COIN_SVG\}<b>[^<]*<\/b><\/div>\s*<div class="chh-tix chip" id="chtix" title="特訓チケット"><span>特訓チケット<\/span><b>×\$\{tix\}<\/b><\/div>/, '所持金のすぐ右');
+  assert.match(FV, /<div class="chh-gold chip" id="chgold">\$\{COIN_SVG\}<b>[^<]*<\/b><\/div>\s*<div class="chh-tix chip" id="chtix" title="特訓チケット"[^>]*><img class="chh-tk" src="\.\/assets\/ui\/ticket\/training_ticket\.png"[^>]*><span>特訓<\/span><b>×\$\{tix\}<\/b><\/div>/, '所持金のすぐ右（2026-10-12：特訓チケットの正式画像＋「特訓」＋数）');
   assert.match(HTML, /\.chh-chips\{flex-wrap:nowrap;min-width:0\}/);
 });
 

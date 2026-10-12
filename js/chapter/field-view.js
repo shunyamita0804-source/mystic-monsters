@@ -612,7 +612,7 @@
       <div class="chh-r chh-chips"><div class="chh-turn chip">Turn <b id="chturn">${Math.min(r.turnsUsed + (P8().boardPhase(m) === 'roll' ? 1 : 0), r.turnLimit)}</b><small> / ${r.turnLimit}</small></div>
       <div class="chh-fat chip f-${lv}" id="chfat"><span>空腹</span><b>${fat}</b><i style="--f:${fat}%"></i></div>
       <div class="chh-gold chip" id="chgold">${COIN_SVG}<b>${(gS() && gS().g) | 0}</b></div>
-      <div class="chh-tix chip" id="chtix" title="特訓チケット"><span>特訓チケット</span><b>×${tix}</b></div></div></header>`;
+      <div class="chh-tix chip" id="chtix" title="特訓チケット" aria-label="特訓チケット ${tix}枚"><img class="chh-tk" src="./assets/ui/ticket/training_ticket.png" alt="" aria-hidden="true" decoding="async"><span>特訓</span><b>×${tix}</b></div></div></header>`;
   }
   function refreshHud(m) { const h = $('#chf-ui .chh'); if (h) h.outerHTML = hudHtml(m); }
   const ICON = {
@@ -674,7 +674,7 @@
     if (ph === 'battle') {
       const fx = r.pend.fx || {}, bt = (cfg.battleTypes || {})[fx.battleType || 'wild'] || { label: 'モンスター' };
       // 2026-10-07 試遊：何が起きたか一瞬で分かるように＝見出しは遭遇の文（「野生のモンスターが現れた！」など）・小さく種類・周りを暗くして下の操作欄より前へ
-      return `<div class="chsheet chbat"><small class="chbat-kind">${esc(bt.label)}</small><h3>${esc(bt.encounter || bt.label)}</h3>${bt.note ? `<p class="p9s chbat-note">${esc(bt.note)}</p>` : ''}<p class="p9s">バトルの後は空腹 +${MMCH.rulesOf(cfg).fatigueRules.battle}。賞金・ランクアップはありません。</p><button class="p9btn" onclick="bBattleGo()">バトルする</button><button class="p9btn2" onclick="bBattleSkip()">やめておく</button></div>`;
+      return `<div class="chsheet chbat"><small class="chbat-kind">${esc(bt.label)}</small><h3>${esc(bt.encounter || bt.label)}</h3>${bt.note ? `<p class="p9s chbat-note">${esc(bt.note)}</p>` : ''}<p class="p9s">バトルの後は空腹 +${MMCH.rulesOf(cfg).fatigueRules.battle}。賞金・ランクアップはありません。</p><button class="p9btn" onclick="bBattleGo()">バトルする</button></div>`;   // 2026-10-12 試遊：遭遇はすべて強制バトル
     }
     if (ph === 'goal') return `<div class="chsheet chgoal">${root.p8GoalHtml ? root.p8GoalHtml(m) : ''}</div>`;
     if (ph === 'timeup') return `<div class="chsheet"><h3>⌛ ターン終了</h3><p class="p9s">ゴールできなかったため、このChapterの公式大会には参加できません。Chapterは終了し、次のChapterへ進めます（育成失敗ではありません）。</p><button class="p9btn" onclick="p8EndChapter()">Chapterを終えてベースキャンプへ</button></div>`;

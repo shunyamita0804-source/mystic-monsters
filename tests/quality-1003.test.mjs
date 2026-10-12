@@ -63,7 +63,9 @@ test('QU-04：研究所＝正式背景（assets/lab/lab_main.webp）・エリオ
 });
 
 test('QU-05：対戦前の画面を1つに：練習試合は BATTLE 画面（p9PreBattle）を出さず fight() の導入（対面＋VS）だけ。大会は順位表の「次の相手」に小さな能力比較＋対戦開始（2度押し）→ fight()。fight()・Phase 6 は変えない', () => {
-  assert.match(fnOf('bBattleGo'), /^function bBattleGo\(\)\{const m=S\.m;if\(bBusy\|\|!m\)return;const bt=[^;]*,rk=bt=="rival"&&window\.MMRIVAL\?MMRIVAL\.rankFor\(m\):MMP8\.practiceRank\(m\);[^\n]*if\(!MMP8\.beginBattle\(S,m,\{kind:"practice",rank:rk\}\)\.ok\)return board\(\);(?:globalThis\.MM_LAST_BT=bt;)?save\(\);battleDress\(\{[^}]*\}\);battleFoeOnce\(fs\);fight\(rk\);battleDressDom\(\)\}/);   // 2026-10-08 M-06・M-07：相手の名前・色・帯を整える
+  assert.match(fnOf('bBattleGo'), /^function bBattleGo\(\)\{const m=S\.m;if\(bBusy\|\|!m\)return;const bt=[^;]*,rk=bt=="rival"&&window\.MMRIVAL\?MMRIVAL\.rankFor\(m\):MMP8\.practiceRank\(m\);/);   // 2026-10-12 試遊：練習試合も正式の VS 演出（tourVsShow）→ bBattleRun
+  assert.match(fnOf('bBattleGo'), /tourVsShow\(m,o,\{bg:TB_VENUE\(rk\)/, '練習試合の VS の背景は練習試合の会場（公式ランク戦の背景は使わない）');
+  assert.match(fnOf('bBattleRun'), /^function bBattleRun\(m,bt,rk,fs\)\{[^\n]*if\(!MMP8\.beginBattle\(S,m,\{kind:"practice",rank:rk\}\)\.ok\)return board\(\);(?:globalThis\.MM_LAST_BT=bt;)?save\(\);battleDress\(\{[^}]*\}\);battleFoeOnce\(fs\);fight\(rk\);battleDressDom\(\)\}/);   // 2026-10-08 M-06・M-07：相手の名前・色・帯を整える
   assert.doesNotMatch(HTML.replace(/function p9PreBattle\(/, ''), /p9PreBattle\(/, 'p9PreBattle はどこからも呼ばない（関数は残す）');
   assert.doesNotMatch(HTML.replace(/function p9VsScr\(/, ''), /p9VsScr\(\)/, 'VS 画面（p9VsScr）は流れから外した（関数は残す）');
   assert.match(fnOf('p8TourScr'), /onclick="p9CompareScr\(\)" aria-label="対戦する"/, '2026-10-06：大会1 対戦表 →「対戦する」→ 大会2'); assert.match(fnOf('p9CompareScr'), /data-nsfx="1" onclick="p9VsGo\(this\)" aria-label="対戦開始"/, '大会2の「対戦開始」（2度押し）→ 大会3 → fight()');
