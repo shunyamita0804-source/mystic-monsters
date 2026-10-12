@@ -163,12 +163,11 @@ test('PB-B6：聖獣士管理局の BGM（入る＝BUREAU のループ・出る�
   assert.deepEqual(await pg.evaluate(() => MMAUDIO.status().slots.filter((x) => x.active).map((x) => x.src)), a.act, '管理局の中で画面を変えても鳴らし直さない');
   await pg.evaluate(() => lobby()); await pg.waitForTimeout(1200);
   assert.equal(await pg.evaluate(() => MMAUDIO.status().scene), 'TOWN', '出たら街の曲');
-  // 古いセーブの救済（0体・300G）＝帯
+  // 古いセーブの救済（0体・300G）＝入手の演出の2行目（2026-10-12 開発21：旧 帯）
   await pg.evaluate(() => { S.m = null; S.box = []; S.g = 300; save(); adopt(0, 'ソラ'); });
-  await pg.waitForSelector('.mmnote');
-  const n = await pg.evaluate(() => ({ tx: document.querySelector('.mmnote').innerText, nm: !!document.querySelector('.mmnote .dnm,.mmnote .mmtalk-name'), msg: (document.querySelector('#msg') || {}).textContent || '' }));
-  assert.match(n.tx, /ソラをつれて帰った！[\s\S]*はじめての1体のため、所持金を500Gまで補填しました/); assert.equal(n.nm, false, '顔・名前なし'); assert.doesNotMatch(n.msg, /補填/, '街の通知と二重にしない');
-  await pg.evaluate(() => MMNOTE.flush());
+  await pg.waitForSelector('.map.town');
+  const n = await pg.evaluate(() => ({ log: MM_GOT_LOG.slice(-1)[0], msg: (document.querySelector('#msg') || {}).textContent || '' }));
+  assert.equal(n.log.title, 'ソラを手に入れた！'); assert.match(n.log.sub, /はじめての1体のため、所持金を500Gまで補填しました/); assert.doesNotMatch(n.msg, /補填/, '街の通知と二重にしない');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   for (const size of [[390, 844], [375, 667], [360, 800], [430, 932]]) {
     const q = await open({ size }); const g = q.page;

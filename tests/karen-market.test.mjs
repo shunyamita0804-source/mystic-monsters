@@ -90,8 +90,9 @@ test('KR-6：市場の入口で初回あいさつ（karenIntro）。購入確認
   assert.match(HTML, /p10Go\(P10_MK,true\);p10Info\(\);try\{window\.scrollTo\(0,0\)\}catch\(e\)\{\}karenIntro\(\)\}/);
   assert.match(HTML, /function karenIntro\(\)\{const f=finaFlags\(\);if\(npcFirst\("market",.*?\)\)return;if\(f\.karenIntro\)return karenRevisit\(\);f\.karenIntro=1;save\(\);karenTalk\("intro"\)\.then\(/, '初回はフィナ ↔ カレンの会話（2026-10-04 MMNPCE）、2回目以降は karenRevisit（進行状態の一言・一定の確率）');
   assert.match(HTML, /<div class="p10sheet" role="dialog" aria-modal="true">\$\{karenLine\("ask"\)\}/);
-  assert.match(HTML, /sel=\[\];save\(\);if\(typeof MMFEEL=="object"&&MMFEEL\)MMFEEL\.emit\("market\.buy"\);\/\*[^*]*\*\/const first=S\.cnt==1,go=\(\)=>\{lobby\(/, '保存してから（購入成立の正式 SE）会話');
-  assert.match(HTML, /const kt=typeof karenTalk=="function"\?karenTalk\("bought"\):null;if\(kt\)kt\.then\(go\);else go\(\)\}/);
+  assert.match(HTML, /sel=\[\];save\(\);if\(typeof MMFEEL=="object"&&MMFEEL\)MMFEEL\.emit\("market\.buy"\);\/\*[^*]*\*\/const first=S\.cnt==1,/, '保存してから（購入成立の正式 SE）演出・会話');
+  assert.match(HTML, /thanks=t=>\{const kt=typeof karenTalk=="function"\?karenTalk\("bought"\):null;if\(kt\)kt\.then\(\(\)=>go\(t\)\);else go\(t\)\}/, '2026-10-12：入手の演出のあとカレンのお礼「ありがとう。大切に育ててあげてね。」（残す）');
+  assert.match(HTML, /bought:\[\{npc:"karen",expression:"happy",text:"ありがとう。大切に育ててあげてね。"\}\]/);
   assert.match(HTML, /function p10KarenTalk\(\)\{if\(P10_ANIM\|\|\$\("#p10ov"\)\)return;/, '切り替え中・購入確認中は話しかけない');
 });
 
@@ -151,7 +152,7 @@ test('KR-B2：購入確認：カレンのアップ画像（normal）と一言。
   const s = await talkState(pg); assert.deepEqual([s.name, s.text], ['カレン', 'ありがとう。大切に育ててあげてね。']); assert.match(s.img, /04_sold\.webp$/);   // 購入成立＝04
   const st = await H.storedSave(pg); assert.deepEqual([st.g, st.cnt, st.m.sp], [500, 1, 0], '会話の前に購入・保存は済んでいる');
   await H.finishTalk(pg); await pg.waitForSelector('.map.town');
-  assert.match(await pg.evaluate(() => MMNOTE.log().slice(-1)[0].title), /をつれて帰った！/, '2026-10-05 試遊：購入の知らせはシステム通知の帯');
+  assert.match(await pg.evaluate(() => MM_GOT_LOG.slice(-1)[0].title), /を手に入れた！/, '2026-10-05 試遊：購入の知らせはシステム通知の帯');
   assert.deepEqual(await pg.evaluate(() => [document.querySelectorAll('.mmtalk').length, document.querySelectorAll('#p10ov').length]), [0, 0]);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });

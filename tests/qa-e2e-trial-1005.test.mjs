@@ -168,27 +168,29 @@ T('TB-8：Chapter のフィールドの BGM＝デコード後は AudioBuffer で
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
-T('TB-9：購入の知らせ＝帯で1回だけ・約2.6秒で自動で消える・タップで早く消える・街の再描画／施設の行き来／再読み込みで出ない・セーブに入らない・別の購入はその名前で1回', async () => {
-  const p = await openPage({}); const pg = p.page;
+T('TB-9（2026-10-12 開発21 で書き直し）：購入の知らせ＝「〔名前〕を手に入れた！」の演出（丸い顔・光の粒）で1回だけ → 街。帯「つれて帰った」は出ない・街の再描画／施設の行き来／再読み込みで出ない・セーブに入らない・別の購入はその名前で1回', async () => {
+  const p = await openPage({ got: true }); const pg = p.page;
   await H.newGame(pg, 'ユウ');
-  const notes = () => pg.evaluate(() => MMNOTE.log().filter((x) => /つれて帰った/.test(x.title)).map((x) => x.title));
-  const town = () => pg.evaluate(() => ({ msg: (document.querySelector('#msg') || {}).textContent || '', on: !!document.querySelector('#app>.map ~ .tlow.on, .tlow.on'), band: [...document.querySelectorAll('.mmnote')].map((e) => e.innerText) }));
+  const got = () => pg.evaluate(() => MM_GOT_LOG.map((x) => x.title + (x.sub ? `｜${x.sub}` : '')));
+  const town = () => pg.evaluate(() => ({ msg: (document.querySelector('#msg') || {}).textContent || '', on: !!document.querySelector('#app>.map ~ .tlow.on, .tlow.on'), band: [...document.querySelectorAll('.mmnote')].map((e) => e.innerText), got: !!document.querySelector('.mkgot') }));
   await pg.evaluate(() => { S.g = 2000; save(); adopt(0, 'ソラ'); });
-  await pg.waitForSelector('.map.town'); await pg.waitForSelector('.mmnote');
-  let t = await town(); assert.match(t.band.join('|'), /ソラをつれて帰った！/); assert.doesNotMatch(t.msg, /つれて帰った/, '街の案内欄には出さない'); assert.equal(t.on, false);
-  assert.ok(await pg.evaluate(() => { const i = document.querySelector('.mmnote img'); return !!i && /solamo/.test(i.src); }), 'モンスターの正式画像');
-  await pg.waitForFunction(() => !document.querySelector('.mmnote'), null, { timeout: 4000 });   // 自動で消える
-  assert.deepEqual(await notes(), ['ソラをつれて帰った！'], '1回だけ');
-  await pg.evaluate(() => lobby()); await pg.waitForTimeout(400); t = await town(); assert.deepEqual([t.band, /つれて帰った/.test(t.msg)], [[], false], '街の再描画で出ない');
-  await pg.evaluate(() => market()); await pg.waitForTimeout(500); await pg.evaluate(() => lobby()); await pg.waitForTimeout(400); t = await town(); assert.deepEqual([t.band, /つれて帰った/.test(t.msg)], [[], false], '施設の行き来で出ない');
-  assert.doesNotMatch(JSON.stringify(await H.storedSave(pg)), /つれて帰った/, 'セーブに入らない');
+  await pg.waitForSelector('.mkgot');
+  const g = await pg.evaluate(() => { const e = document.querySelector('.mkgot'), i = e.querySelector('.gotf img'); return { tx: e.innerText, src: i && i.getAttribute('src'), sparks: e.querySelectorAll('.gotb>i').length }; });
+  assert.match(g.tx, /ソラを手に入れた！/); assert.match(g.src || '', /faces_25d\/face_soramo\.webp$/, '命名した子の丸い顔（既存の 2.5D の顔）'); assert.equal(g.sparks, 30, '光の粒が3回弾ける');
+  assert.equal(await pg.$('.mmnote'), null, '旧「つれて帰った」の帯は出さない');
+  await pg.waitForSelector('.map.town', { timeout: 6000 }); await pg.waitForFunction(() => !document.querySelector('.mkgot'));
+  let t = await town(); assert.doesNotMatch(t.msg + t.band.join('|'), /つれて帰った|手に入れた/, '街の案内欄・帯には出さない'); assert.equal(t.on, false);
+  assert.deepEqual(await got(), ['ソラを手に入れた！'], '1回だけ');
+  await pg.evaluate(() => lobby()); await pg.waitForTimeout(400); t = await town(); assert.deepEqual([t.band, t.got], [[], false], '街の再描画で出ない');
+  await pg.evaluate(() => market()); await pg.waitForTimeout(500); await pg.evaluate(() => lobby()); await pg.waitForTimeout(400); t = await town(); assert.deepEqual([t.band, t.got], [[], false], '施設の行き来で出ない');
+  assert.doesNotMatch(JSON.stringify(await H.storedSave(pg)), /つれて帰った|手に入れた/, 'セーブに入らない');
   await pg.reload(); await pg.waitForFunction(() => typeof S === 'object' && typeof lobby === 'function'); await pg.evaluate(() => lobby()); await pg.waitForTimeout(600);
-  t = await town(); assert.deepEqual([t.band, /つれて帰った/.test(t.msg)], [[], false], '再読み込みで出ない');
-  // 別のモンスター：その名前で1回・タップで早く消える
-  await pg.evaluate(() => adopt(1, 'ガウ')); await pg.waitForSelector('.mmnote'); await pg.waitForTimeout(450);
-  assert.match((await town()).band.join('|'), /ガウをつれて帰った！（牧場に預けました）/);
-  const t0 = Date.now(); await pg.click('.mmnote'); await pg.waitForFunction(() => !document.querySelector('.mmnote'), null, { timeout: 1500 }); assert.ok(Date.now() - t0 < 1500, 'タップで早く消える');
-  assert.deepEqual(await pg.evaluate(() => MMNOTE.log().filter((x) => /つれて帰った/.test(x.title)).map((x) => x.title)), ['ガウをつれて帰った！（牧場に預けました）'], '再読み込みのあと（ページの中の記録）はガウの1回だけ');
+  t = await town(); assert.deepEqual([t.band, t.got], [[], false], '再読み込みで出ない');
+  // 別のモンスター：その名前で1回・タップで先へ
+  await pg.evaluate(() => adopt(1, 'ガウ')); await pg.waitForSelector('.mkgot'); await pg.waitForTimeout(700);
+  assert.match(await pg.textContent('.mkgot'), /ガウを手に入れた！[\s\S]*牧場に預けました/);
+  const t0 = Date.now(); await pg.click('.mkgot'); await pg.waitForFunction(() => !document.querySelector('.mkgot'), null, { timeout: 1500 }); assert.ok(Date.now() - t0 < 1500, 'タップで先へ');
+  assert.deepEqual(await got(), ['ガウを手に入れた！（牧場に預けました）'], '再読み込みのあと（ページの中の記録）はガウの1回だけ');
   const s = await H.getS(pg); assert.deepEqual([s.m.name, s.box.map((x) => x.name)], ['ソラ', ['ガウ']], '購入・牧場への追加は従来どおり');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });

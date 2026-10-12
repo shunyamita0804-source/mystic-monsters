@@ -74,9 +74,9 @@ async function confirmBuy(pg, name) {
   await pg.click('#p10ov .p10ok');
   await pg.waitForFunction(() => !document.getElementById('p10ov') && !!document.querySelector('.map'), null, { timeout: 15000 });
 }
-const townMsg = (pg) => pg.evaluate(() => { const l = MMNOTE.log().slice(-1)[0]; return l ? l.title : null; });   // 2026-10-05 試遊：購入の知らせはシステム通知の帯（MMNOTE）だけ（街の案内欄には残さない）
+const townMsg = (pg) => pg.evaluate(() => { const l = MM_GOT_LOG.slice(-1)[0]; return l ? l.title : null; });   // 2026-10-12 開発21：購入の知らせは入手の演出だけ（旧 2026-10-05 の帯 MMNOTE）＝その記録
 /** 2026-10-05 PHASE B：古いセーブの救済（補填）の知らせはシステム通知の帯（MMNOTE・顔と名前なし）。帯の1行目＋（2行目） */
-const rescueMsg = (pg) => pg.evaluate(() => { const l = MMNOTE.log().slice(-1)[0]; return l ? l.title + (l.sub ? `（${l.sub}）` : '') : null; });
+const rescueMsg = (pg) => pg.evaluate(() => { const l = MM_GOT_LOG.slice(-1)[0]; return l ? l.title + (l.sub ? `（${l.sub}）` : '') : null; });
 
 // ---------------------------------------------------------
 // 初回購入救済・通常の購入
@@ -96,7 +96,7 @@ T('QA-BY1：所持金 300G・0体（古いセーブ。2026-10-06 から新しい
     notes: ['はじめての1体のため、所持金を500Gまで補填してから支払います。'] });
   assert.equal(await pg.evaluate(() => S.g), 300, '確認画面を開いただけでは補填しない');
   await confirmBuy(pg, 'ソラ太');
-  assert.equal(await rescueMsg(pg), 'ソラ太をつれて帰った！（はじめての1体のため、所持金を500Gまで補填しました）');
+  assert.equal(await rescueMsg(pg), 'ソラ太を手に入れた！（はじめての1体のため、所持金を500Gまで補填しました）');
   const st = await H.storedSave(pg);
   assert.equal(st.g, 0, '300G → 500Gに補填 → 500G支払い → 0G');
   assert.deepEqual([st.m.name, st.m.sp, st.m.speed, st.m.raise.state], ['ソラ太', 0, 5, 'none']);
@@ -164,7 +164,7 @@ T('QA-BY4：500G以上なら補填なしで代金500Gだけ。名前は8文字�
   const sh = await openSheet(pg);
   assert.deepEqual([sh.title, sh.notes, sh.onclick], ['ガウルを連れて帰りますか？', [], 'mkgo(1);p10Close()']);
   await confirmBuy(pg, 'ABCDEFGHIJ');
-  assert.equal(await townMsg(pg), 'ABCDEFGHをつれて帰った！', '補填の文言は出ない');
+  assert.equal(await townMsg(pg), 'ABCDEFGHを手に入れた！', '補填の文言は出ない');
   let s = await H.getS(pg);
   assert.deepEqual([s.g, s.m.name, s.m.sp, s.box.length], [100, 'ABCDEFGH', 1, 0], '600G → 100G、名前は8文字まで');
   // 2体目（ソラモ）：名前を空欄にすると種族名。手持ちがいるので牧場へ
@@ -173,7 +173,7 @@ T('QA-BY4：500G以上なら補填なしで代金500Gだけ。名前は8文字�
   assert.deepEqual([b.dis, b.notes], [false, []]);
   await openSheet(pg);
   await confirmBuy(pg, '');
-  assert.equal(await townMsg(pg), 'ソラモをつれて帰った！（牧場に預けました）');
+  assert.equal(await townMsg(pg), 'ソラモを手に入れた！（牧場に預けました）');
   s = await H.getS(pg);
   assert.deepEqual([s.g, s.m.name, s.box.length, s.box[0].name, s.box[0].sp, s.box[0].raise.state], [4500, 'ハネ', 1, 'ソラモ', 0, 'none']);
   assert.notEqual(s.box[0].uid, s.m.uid, '個体ごとに別の uid');
@@ -225,7 +225,7 @@ T('QA-BY6：継続用救済（現在の実装どおり）：育成完了の個�
   assert.deepEqual(sh.notes, ['育成を続けられるモンスターがいないため、所持金を500Gまで補填してから支払います（購入後の所持金は0Gになります）。']);
   assert.equal(await pg.evaluate(() => S.g), 450, '確認画面を開いても所持金は450Gのまま（確定前は補填しない）');
   await confirmBuy(pg, null);
-  assert.equal(await rescueMsg(pg), 'ソラモをつれて帰った！（牧場に預けました）（育成を続けるため、不足分50Gを補填して購入しました）');
+  assert.equal(await rescueMsg(pg), 'ソラモを手に入れた！（牧場に預けました）（育成を続けるため、不足分50Gを補填して購入しました）');
   let s = await H.getS(pg);
   assert.deepEqual([s.g, owned(s)], [0, 2]);
   // B：未育成の個体がいれば救済なし
@@ -319,7 +319,7 @@ T('QA-BY9：手持ちがいない（牧場に育成完了7体・0G）ときは�
   assert.equal(b.dis, false);
   await openSheet(pg);
   await confirmBuy(pg, 'てもち');
-  assert.equal(await rescueMsg(pg), 'てもちをつれて帰った！（育成を続けるため、不足分500Gを補填して購入しました）');
+  assert.equal(await rescueMsg(pg), 'てもちを手に入れた！（育成を続けるため、不足分500Gを補填して購入しました）');
   const s = await H.getS(pg);
   assert.deepEqual([s.m && s.m.name, s.box.length, owned(s), s.g], ['てもち', 7, 8, 0]);
   noErrors(p);
@@ -393,11 +393,11 @@ T('QA-BY13：購入確認で入れたモンスター名に HTML が含まれて�
   const p = await openMarket({ g: 300 }); const pg = p.page;
   await openSheet(pg);
   await confirmBuy(pg, '<b>x</b>');
-  const t = await pg.evaluate(() => ({ msg: MMNOTE.log().slice(-1)[0].title, msgB: document.querySelectorAll('.mmnote-tx b b, #msg b').length, note: (document.querySelector('.mmnote-tx b') || {}).textContent || null, app: document.body.innerText, svb: !!document.querySelector('.svb') }));
-  assert.ok(t.msg.startsWith('＜b＞x＜/b＞をつれて帰った！'), '知らせ（システム通知の帯）に名前を文字で表示（2026-10-08 監査 H-05：記号は全角で保存）');
-  if (t.note != null) assert.ok(t.note.startsWith('＜b＞x＜/b＞をつれて帰った！'), '帯の画面の文字');
+  const t = await pg.evaluate(() => ({ msg: MM_GOT_LOG.slice(-1)[0].title, msgB: document.querySelectorAll('.mmnote-tx b b, #msg b, .mkgot b b').length, note: (document.querySelector('.mkgot .gott b') || {}).textContent || null, app: document.body.innerText, svb: !!document.querySelector('.svb') }));
+  assert.ok(t.msg.startsWith('＜b＞x＜/b＞を手に入れた！'), '知らせ（システム通知の帯）に名前を文字で表示（2026-10-08 監査 H-05：記号は全角で保存）');
+  if (t.note != null) assert.ok(t.note.startsWith('＜b＞x＜/b＞を手に入れた！'), '帯の画面の文字');
   assert.equal(t.msgB, 0, '案内の中に <b> 要素ができない');
-  assert.ok(t.app.includes('＜b＞x＜/b＞'), 'モンスターの情報欄にも文字で表示');
+  assert.equal((await H.storedSave(pg)).m.name, '＜b＞x＜/b＞', '保存した名前も文字のまま（2026-10-12 開発21：街に入手の帯は出さない＝街の文字ではなく保存で確かめる）');
   assert.equal(t.svb, true);
   noErrors(p);
 });
