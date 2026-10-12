@@ -24,7 +24,7 @@
   const SPK = { 0: 'soramo', 1: 'gauru' };
   /** 待機の立ち絵（新）と、今の立ち絵に対する高さの倍率（足元の位置はそのまま） */
   const IDLE = { 0: { src: A + 'soramo/idle.webp', h: 0.84 }, 1: { src: A + 'gauru/idle.webp', h: 0.9 } };
-  const owner = (k) => (k >= 0 && k <= 9 ? 0 : k >= 10 && k <= 19 ? 1 : -1);
+  const owner = (k) => (k >= 0 && k <= 9 ? 0 : k >= 10 && k <= 19 ? 1 : k >= 30 && k <= 39 ? 2 : -1);   // 30〜39＝ノビトン（js/battle/rules.js が実行時に足す技）
   const DATA = () => root.MM25D_DATA || {};
   // 2026-10-12 正式：ソラモの技（SK の 0〜9）は修正納品の46コマ（assets/battle/soramo_moves_1012/・js/battle/soramo-moves-data.js）を通常のバトルで見せる。
   //   待機の立ち絵は変えない（2.5D の待機絵は従来どおり ?battleArt=2p5d のときだけ）。?battleArt=old で「旧」を選んでいる間だけ今までの演出（見比べ用）
@@ -33,8 +33,9 @@
   const offOn = () => !(offered && !on);
   // 2026-10-12：ガウルの技（SK の 10〜19）も最終調整版の95枚（assets/battle/gauru_moves_1012/・js/battle/gauru-moves-data.js）。本体と効果は別の層（同じ切り出し＝相対位置はそのまま）
   const GOFF = () => root.MMGAMV_DATA || {};
-  const offData = (k, s) => (!offOn() ? null : owner(k) === 0 && spOf(s) === 0 ? OFF()[k] || null : owner(k) === 1 && spOf(s) === 1 ? GOFF()[k] || null : null);
-  const OFF_DUR = { 4: 2300, 8: 2300, 9: 2700, 17: 2300, 18: 2300, 19: 2500 };   // 6コマの大技は少し長く（共通演出を通るとき）
+  const NOFF = () => root.MMNOMV_DATA || {};   // 2026-10-12：ノビトンの技（SK 30〜39）＝透過PNG 全59枚（assets/battle/nobiton_moves_1012/）
+  const offData = (k, s) => (!offOn() ? null : owner(k) === 0 && spOf(s) === 0 ? OFF()[k] || null : owner(k) === 1 && spOf(s) === 1 ? GOFF()[k] || null : owner(k) === 2 && spOf(s) === 2 ? NOFF()[k] || null : null);
+  const OFF_DUR = { 4: 2300, 8: 2300, 9: 2700, 17: 2300, 18: 2300, 19: 2500, 34: 2300, 35: 2300, 37: 2300, 39: 2700 };   // 6コマの大技は少し長く（共通演出を通るとき）
 
   function spOf(s) { const pl = G('BPL'); return pl && pl[s] ? pl[s].sp : null; }
   /** この技をこの側が使うとき新しいコマで見せるか */
@@ -65,7 +66,7 @@
   function timing(k, s) { if (!handles(k, s)) return null; const od = offData(k, s), p = od ? planOff(k, true, od) : plan(k, true); return { hit: p.hit, dur: p.dur }; }
   /** 正式のソラモの技：区切り（steps）ごとの時間。重ねる層は同じ区切りに出す */
   function planOff(k, viaStage, dd) {
-    const d = dd || OFF()[k] || GOFF()[k], n = d.steps;
+    const d = dd || OFF()[k] || GOFF()[k] || NOFF()[k], n = d.steps;
     let dur = OFF_DUR[k] || Math.max(1500, Math.min(2700, 380 + n * 300));
     if (!viaStage) dur = 1440;
     const body = dur * 0.88, step = body / n;
@@ -307,6 +308,13 @@
     (d.fx || []).forEach((c) => {
       const im = document.createElement('img'); im.src = base + c.f; im.dataset.cut = c.src; put(im, 8);
       const w0 = P.win[c.t[0]][0], w1 = P.win[c.t[1]][1], last = c.t[1] === d.steps - 1;
+      if (c.at === 'fly') {   // ノビトン：自分の口・鼻の先から相手の体へ飛ぶ効果（はなみず・ノーズウェーブ・ピンポイント突き・ダウナーミスト）
+        const S0 = lay.length ? lay[0].S : 1, W = c.pw * S0 * 0.7, H = c.ph * S0 * 0.7;
+        const sx = L.Ag.x + f * L.idleW * 0.45, sy = L.Ag.y - L.idleH * 0.55, ex = T.x, ey = T.cy;
+        im.style.width = W + 'px'; im.style.height = H + 'px'; im.style.transformOrigin = '50% 50%';
+        im.animate(kfWin(w0, w1, `translate(${sx - W / 2}px,${sy - H / 2}px) scaleX(${f}) scale(0.8)`, `translate(${ex - W / 2}px,${ey - H / 2}px) scaleX(${f}) scale(1)`, false, last), { duration: D, fill: 'both' }).onfinish = () => im.remove();
+        return;
+      }
       if (c.at === 'tgt' || c.at === 'self') {
         // ガウル：着弾の効果＝相手の体の中ほど／特殊エフェクト（バフのキラキラ・炎のオーラ）＝自分の上。大きさは本体のコマと同じ倍率（元の絶対の大きさ）
         const S0 = lay.length ? lay[0].S : 1, W = c.pw * S0, H = c.ph * S0;

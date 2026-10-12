@@ -754,6 +754,19 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - **19 ガウルの技アニメ**：§2 の表。ソラモの46コマは変えていない。ノビトンは対象外。stage.js はコマで見せる技に専用の飾り（フェザーストームの嵐・聖なる炎の加護）を重ねない。比較試遊（?battleArt=2p5d）のガウルの技のコマは使わなくなった（待機の立ち絵の切り替えは従来どおり）
 - テスト：tests/gauru-moves-1012.test.mjs（GA-01〜04）・実ブラウザ tests/qa-e2e-gauru-moves-1012.test.mjs（GM-B1 2サイズ・GM-B2）。BV-B1／B3（地面の幕なし）・SM-B2・A25-B3／B4（比較試遊のガウルの技は対象なし）・FX-03・QU-05・TN-03b・PB-06・AS8-07・QA-G4-2 を書き直し
 
+### 新マス12種・食事のマス・正式 SE・特訓チケット・ノビトン（2026-10-12 夜・2。ZIP「試遊修正_新マス12種_SE_チケット」＋ノビトン 59枚）
+
+- **マスの上面・正式12種**（assets/fields/ch1a/tiles_top_1012/・tools/fx1011/tops_1012.py＝試作 tiles_top_1011 と同じ方法）：能力6種・野生・宝箱（tier normal だけ。**珍しい宝箱は従来の tile_treasure_2＝段階の違いを消さない**）・食事・ライバル・出来事・レアを既存の円盤 tiles_v2/tile_blank の上面へ。試作の ?tileTop=1011 は外した（ファイルは残す）
+- **食事・焚き火のマス**（旧「休憩マス」・TOP09）：止まると フィナの2行（プレイヤーは台詞で参加＝顔の素材は無い）→ フィナが野外の岩に座る景色（assets/chapter/meal_1012/meal_fina.webp）に連れている子の正式画像 →「みんなでごはん 空腹 −50」（下限0・そのマスで1回だけ＝使った印）。js/chapter/world-driver.js の kind 'meal'・js/proto/roadfirst-play.js の TUNING.mealAmount 50。「休む」の −10 は変えていない。旧ボード（Chapter 2）の休むマスは変えていない
+- **レアの紋章（EV04）**：既存の rareMark（MMRF_WORLD.marker）のまま、紫の光がゆっくり脈打つ（2.4秒・点滅にしない）・訪れたら弱く（動かさない）・レアの無い育成では出ない
+- **正式 SE 3種**（AUDIO_CREDITS.md）：ライバルの登場＝RIVAL_APPEAR・VS の金色の斜線とロゴ＝MATCHUP（ロゴの着地に音の山が重なるよう 0.38秒後）・試合開始「FIGHT!」＝BATTLE_START。旧い音（08_encounter_rival・bass_thud_electric）は外した
+- **特訓チケット**＝正式画像（拳＋月桂樹・assets/ui/ticket/training_ticket.png）＋「特訓」＋×N（本編の Chapter 1 と旧ボードの HUD）。報酬の文の「🎫」は変えていない
+- **リュウ**：「俺はリュウ。ま、名前くらい覚えておいてよ。」（正式採用）。**ミストリア到着**：上に小さく「聖獣都市」・下に大きく「ミストリア」
+- **ノビトンの技アニメ**（js/battle/nobiton-moves-data.js・assets/battle/nobiton_moves_1012/・tools/nobiton1012/build.py）：59枚すべて・技の番号 SK 30〜39（＝30＋番号−1・js/battle/rules.js の NOBI_FIRST）。1枚ずつ独立した構図＝本体のコマは位置のモードで動かし、効果は tgt（相手の体）／self（自分の上）／fly（自分から相手へ）。**食い違い（報告）**：納品のフォルダ 05 は「まきつく」・07 は「ピンポイント突き」、正式の技表は 5 ハンマーノーズ・7 しびれ突き＝名前・効果は技表のまま・番号で接続。**右端に接する3枚**（06_04 衝撃波発生・08_04 本命の鼻攻撃・10_02A 鼻巨大化）は元の絵が画像の端で切れている＝描き足していない（10_02A は鼻の先が切れて見える）。**今のゲームではノビトンはバトルに出ない**（市場は入荷待ち・fight() の相手の表 SP はソラモ・ガウル）＝出るようになったときに見える
+- 固定の報酬地点（B06）：L_CHEST・R_CHEST・L_ALTAR・L_LATE_ALTAR・REWARD5・R_SPECIAL＝景物（第3便 lm_*）・専用マス tile_reward・受け取りの演出（報酬の窓・150G 以上の金貨 EV05・宝箱の段階3の音）は接続済み。「S ランクの宝箱」の正式の絵・演出は Chapter 1 に定義が無い（tiles_v2/tile_treasure_4 と chest_04 は保存だけ）＝未接続
+- 無地マス（B07）：今の配置の割合（能力30%・出来事12%・食事6%・野生8%・宝3%・無地41%）は変えていない（提案のみ）
+- テスト：tests/nobiton-moves-1012.test.mjs（NM-01〜02）・AUDIO-38・FX-02（正式の上面）
+
 ### 公式ランク戦の BGM（2026-10-12。基準 90b0e1f への差分）
 
 - **TOURNAMENT_BATTLE_LOW（E〜S の公式ランク戦の実戦の間だけ。HIGH は fallback で同じ曲）**＝ユーザー納品「公式ランク.mp3」（291.32秒）を OGG Vorbis q5 に変換しただけの assets/audio/bgm/licensed_20261012/official_rank_battle.ogg（-17.0 LUFS・gain 0.89・頭の無音なし・289.8秒から終わりのフェード＝loopEnd 289.6・頭へ 0.6秒のクロスフェード）。原本 MP3 は置かない（sha256 は AUDIO_CREDITS.md）。**曲名・作曲者・ライセンスは要確認**（納品物に記載なし）
