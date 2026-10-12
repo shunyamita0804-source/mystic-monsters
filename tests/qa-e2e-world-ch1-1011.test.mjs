@@ -91,8 +91,9 @@ test('WB-3：野生のマス → 遭遇 → 本物の fight() → 降参 → 新
   await pg.waitForFunction(() => { const g = document.getElementById('go'); return g && !g.disabled; }, null, { timeout: 15000 });
   await pg.click('#sur', { force: true }); await pg.waitForTimeout(300); await pg.click('#sur', { force: true });
   for (let i = 0; i < 80; i++) { if (await pg.evaluate(() => { const g = document.getElementById('go'); return !!g && g.classList.contains('bk'); })) break;
-    if (await pg.evaluate(() => { const g = document.getElementById('go'); return !!g && !g.disabled; })) await pg.click('#go').catch(() => {}); await pg.waitForTimeout(400); }
-  await pg.click('#go');
+    if (await pg.evaluate(() => { const g = document.getElementById('go'); return !!g && !g.disabled; })) await pg.click('#go').catch(() => {}); await pg.waitForTimeout(400);
+    if (await pg.evaluate(() => !document.getElementById('bt'))) break; }   // 降参のあとの「もどる」を先に押していれば、もう盤に戻っている
+  if (await pg.evaluate(() => !!document.getElementById('go'))) await pg.click('#go');
   await pg.waitForFunction(() => !document.getElementById('bt') && !!document.querySelector('#wbw #brollbtn'), null, { timeout: 20000 });
   assert.deepEqual(await pg.evaluate(() => [S.m.raise.battle, S.m.raise.pend, S.m.raise.fatigue, MMP8.boardPhase(S.m)]), [null, null, 25, 'roll'], 'バトルの後は疲れ +5・次のターンへ');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
