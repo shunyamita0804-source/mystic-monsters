@@ -187,7 +187,8 @@ test('D24-B5：施設のボイスは訪問1回に1回・研究所は鳴らない
   await H.newGame(pg, 'テスト');
   await pg.evaluate(() => { const m = mk(0); m.name = 'テスト'; MMP7.ensureProg(m); S.m = m; save(); lobby(); });
   await pg.mouse.click(4, 300); await pg.waitForFunction(() => MMAUDIO.voiceStatus().dan_hello === 'ready', null, { timeout: 15000 });
-  const visit = async (fn) => { const before = await pg.evaluate(() => MMAUDIO.playLog().filter((x) => x.kind === 'voice').length); await pg.evaluate(fn); await pg.waitForTimeout(600); return pg.evaluate((b) => MMAUDIO.playLog().filter((x) => x.kind === 'voice').slice(b).map((x) => x.name), before); };
+  const NOW = [];
+  const visit = async (fn) => { const before = await pg.evaluate(() => MMAUDIO.playLog().filter((x) => x.kind === 'voice').length); await pg.evaluate(fn); await pg.waitForTimeout(150); NOW.push(await pg.evaluate(() => [MMAUDIO.status().scene, MMAUDIO.voiceNow()])); await pg.waitForTimeout(450); return pg.evaluate((b) => MMAUDIO.playLog().filter((x) => x.kind === 'voice').slice(b).map((x) => x.name), before); };
   assert.deepEqual(await visit(() => market()), ['karen_welcome'], '市場＝カレン');
   assert.deepEqual(await visit(() => market()), [], '市場の中で描き直しても繰り返さない');
   assert.deepEqual(await visit(() => lobby()), []);
@@ -196,6 +197,7 @@ test('D24-B5：施設のボイスは訪問1回に1回・研究所は鳴らない
   assert.deepEqual(await visit(() => hall('t')), ['dan_hello'], 'ベースキャンプ＝ダン'); assert.deepEqual(await visit(() => hall('st')), []); assert.deepEqual(await visit(() => hall('t')), [], 'ステータスから戻っても繰り返さない');
   assert.deepEqual(await visit(() => shopScr()), ['berna_welcome'], 'アイテム屋＝ベルナ'); assert.deepEqual(await visit(() => shopScr('', false, 'buy')), []);
   assert.deepEqual(await visit(() => museum()), [], '研究所（エリオット）は既定 OFF');
+  for (const [sc, v] of [['MARKET', 'karen_welcome'], ['RANCH', 'nick_hello'], ['FARM', 'dan_hello'], ['FARM', 'berna_welcome']]) assert.ok(NOW.some((x) => x[0] === sc && x[1] === v), `${v}：施設の BGM に切り替わったあとも鳴り続けている（切り替えで止まらない）${JSON.stringify(NOW)}`);
   const pl = await pg.evaluate(() => MMAUDIO.playLog().filter((x) => x.kind === 'voice'));
   assert.ok(pl.every((x) => x.ctx === 'running' && /voice\/npc_1013\/\w+\.ogg$/.test(x.src)), '実際に再生を始めた（OGG の1本）');
   // OFF・ミュート

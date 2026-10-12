@@ -4136,7 +4136,9 @@ function rnRename(){if(p8Blocked())return;const x=[S.m,...S.box].find(v=>v&&v.ui
 /** 2026-10-13 開発24：施設の入口の声（js/npc/voice-cues.js）。訪問1回につき1回＝同じ施設の中で画面・タブを替えても繰り返さない。fac＝null は街・Chapter へ出た（訪問の記録を消す）。
  *  ベースキャンプ（farm）の中のアイテム屋（shop）は別の施設（ベースキャンプへ戻ったら、次にアイテム屋へ入るときにまた）。声が鳴らなくても画面・進行は変わらない */
 const FAC_GROUP={farm:["farm"],shop:["farm","shop"],ranch:["ranch"],market:["market"],lab:["lab"]};
-function facVoice(fac){try{const V=window.MMVOICE;if(!V)return;if(!fac){V.visitReset();return}V.visitReset(FAC_GROUP[fac]||[fac]);V.enter(fac)}catch(e){}}
+function facVoice(fac){try{const V=window.MMVOICE;if(!V)return;if(!fac){V.visitReset();return}V.visitReset(FAC_GROUP[fac]||[fac]);if(V.visited()[fac])return;const sc=window.MMAUDIO?MMAUDIO.status().scene:null;
+ setTimeout(()=>{try{const now=window.MMAUDIO?MMAUDIO.status().scene:null;if(!V.visited()[fac]&&FAC_SCENE[fac]&&now!==FAC_SCENE[fac])return;V.enter(fac)}catch(e){}},0)}catch(e){}} /* 画面を描き終えてから（その画面の BGM の切り替えのあと＝切り替えで声が止まらない）。その間に別の場面へ移っていたら鳴らさない */
+const FAC_SCENE={farm:"FARM",shop:"FARM",ranch:"RANCH",market:"MARKET",lab:"LABORATORY"};
 function farm(msg,tab){if(p8Blocked())return;p9Immersive(true);bgm("ranch");npcWarm("nick");facVoice("ranch");if(!tab&&!msg)setTimeout(()=>npcFirst("ranch"),0);
  if(tab&&tab!="d")pfSellUid=null;ft=tab||(ft=="c"?"b":ft);if(ft=="c")return museum("fuse"); // 合体は研究所（labFuse）。牧場の内部画面 farm('','c') は互換のため研究所へ送る
  const m=S.m,all=[m,...S.box].filter(Boolean),L=MMP10M.RANCH_LIMIT;if(!all.some(x=>x.uid===rnSel))rnSel=(m||S.box[0]||{}).uid||null; // 2026-10-06：最初は連れている子（＝「預ける」）を選ぶ
