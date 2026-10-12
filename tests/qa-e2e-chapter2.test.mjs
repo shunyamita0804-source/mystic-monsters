@@ -73,7 +73,7 @@ test('CH2-B3：会場前のゴール（大会会場の階段の手前）：出�
   await place(pg, 'sa_0', { fatigue: 0, turnsUsed: 20 }); await idle(pg);
   await rollAs(pg, 3); await pg.waitForSelector('.chbat', { timeout: 20000 });
   assert.deepEqual(await pg.evaluate(() => [S.m.raise.node, S.m.raise.pend.left, document.querySelector('.chbat h3').textContent]), ['sa_2', 0, 'リュウが立ちはだかった！'], 'ライバルで止まり残りは消える（2026-10-08 監査 stale：5e27556 から案内の見出し＝遭遇の文）');
-  await pg.waitForTimeout(450); await pg.click('.chbat .p9btn2'); await idle(pg);
+  await pg.waitForTimeout(450); await pg.evaluate(() => bBattleSkip()); /* 2026-10-12：遭遇は強制バトル（やめておくは無い）＝先へ進めるために直接呼ぶ */ await idle(pg);
   await place(pg, 'sa_3', { fatigue: 10, turnsUsed: 22 }); await idle(pg);
   // 2026-10-04：Chapter 2 のゴールも Chapter 1 と同じランク選択（共通の部品・会場のロビーの背景）
   await rollAs(pg, 3); await pg.waitForSelector('#chrcv.bg .rcv-row', { timeout: 20000 }); await idle(pg);
@@ -105,7 +105,7 @@ test('CH2-B4：分岐（06 の分かれ道）：選ぶ前はどちらの道の�
     for (let k = 0; k < 12; k++) {
       if ((await pg.evaluate(() => S.m.raise.node)).startsWith('s8')) break;
       await pg.evaluate(() => { S.m.raise.fatigue = 0; }); await rollAs(pg, 2); await idle(pg);
-      if (await pg.evaluate(() => !!document.querySelector('.chbat'))) { await pg.waitForTimeout(450); await pg.click('.chbat .p9btn2'); await idle(pg); }
+      if (await pg.evaluate(() => !!document.querySelector('.chbat'))) { await pg.waitForTimeout(450); await pg.evaluate(() => bBattleSkip()); /* 2026-10-12：遭遇は強制バトル（やめておくは無い）＝先へ進めるために直接呼ぶ */ await idle(pg); }
       path.push(await pg.evaluate(() => S.m.raise.node));
       if (k === 0) { await pg.reload(); await pg.waitForFunction(() => typeof MMP8 === 'object'); await pg.click('.p15start'); await pg.waitForSelector('#chf .chf-bg'); await idle(pg); assert.deepEqual(await pg.evaluate(() => [S.m.raise.node, S.m.raise.field.branch]), [path[0], pick.toUpperCase()], '分岐の途中で再読み込みしても道を保つ'); assert.ok((await vis()).every((id) => id.startsWith(pick)), '再読み込み後も、選ばなかった道の物は出さない'); }
     }
