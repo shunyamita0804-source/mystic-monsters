@@ -43,6 +43,8 @@ const RECORD = () => {
 const filesOf = (d) => d.cuts.map((c) => c.src).concat(d.cuts.filter((c) => c.fx).map((c) => c.src + '_fx'), (d.fx || []).map((c) => c.src));
 /** 1つの技を再生して：出たコマ・途中で攻撃側の待機絵が隠れている・終わったら戻る・残らない */
 async function playOne(pg, js, side) {
+  // 自分の番（STOP を押すまで相手は動かない）で再生する＝実戦の技の演出と重ならない
+  await pg.waitForFunction(() => { const g = document.getElementById('go'); return g && !g.disabled && !g.classList.contains('bk') && !document.querySelector('.p25f,#bt .rp-l'); }, null, { timeout: 30000 });
   return pg.evaluate(async ({ js, side }) => {
     const cut = []; const mo = new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => { if (n.nodeType === 1 && n.classList.contains('p25f')) cut.push(n.dataset.cut); })));
     mo.observe(document.body, { childList: true, subtree: true });
