@@ -24,7 +24,7 @@
   const SPK = { 0: 'soramo', 1: 'gauru' };
   /** 待機の立ち絵（新）と、今の立ち絵に対する高さの倍率（足元の位置はそのまま） */
   const IDLE = { 0: { src: A + 'soramo/idle.webp', h: 0.84 }, 1: { src: A + 'gauru/idle.webp', h: 0.9 } };
-  const owner = (k) => (k >= 0 && k <= 9 ? 0 : k >= 10 && k <= 19 ? 1 : k >= 30 && k <= 39 ? 2 : -1);   // 30〜39＝ノビトン（js/battle/rules.js が実行時に足す技）
+  const owner = (k) => (k >= 0 && k <= 9 ? 0 : k >= 10 && k <= 19 ? 1 : k >= 30 && k <= 39 ? 2 : k >= 20 && k <= 29 ? 4 : -1);   // 30〜39＝ノビトン（js/battle/rules.js が実行時に足す技）・20〜29＝レグナス（js/battle/rival-partner.js。IMG の 4）
   const DATA = () => root.MM25D_DATA || {};
   // 2026-10-12 正式：ソラモの技（SK の 0〜9）は修正納品の46コマ（assets/battle/soramo_moves_1012/・js/battle/soramo-moves-data.js）を通常のバトルで見せる。
   //   待機の立ち絵は変えない（2.5D の待機絵は従来どおり ?battleArt=2p5d のときだけ）。?battleArt=old で「旧」を選んでいる間だけ今までの演出（見比べ用）
@@ -34,8 +34,18 @@
   // 2026-10-12：ガウルの技（SK の 10〜19）も最終調整版の95枚（assets/battle/gauru_moves_1012/・js/battle/gauru-moves-data.js）。本体と効果は別の層（同じ切り出し＝相対位置はそのまま）
   const GOFF = () => root.MMGAMV_DATA || {};
   const NOFF = () => root.MMNOMV_DATA || {};   // 2026-10-12：ノビトンの技（SK 30〜39）＝透過PNG 全59枚（assets/battle/nobiton_moves_1012/）
-  const offData = (k, s) => (!offOn() ? null : owner(k) === 0 && spOf(s) === 0 ? OFF()[k] || null : owner(k) === 1 && spOf(s) === 1 ? GOFF()[k] || null : owner(k) === 2 && spOf(s) === 2 ? NOFF()[k] || null : null);
-  const OFF_DUR = { 4: 2300, 8: 2300, 9: 2700, 17: 2300, 18: 2300, 19: 2500, 34: 2300, 35: 2300, 37: 2300, 39: 2700 };   // 6コマの大技は少し長く（共通演出を通るとき）
+  // 2026-10-12：レグナスの技（SK 20〜29＝正式No 1〜10）＝正式補正版 透過PNG 全48枚（assets/battle/regnas_moves_1012/・js/battle/regnas-moves-data.js）。
+  //   1枚に本体と効果が描かれている（別の層は無い）。ライバル戦で使うのは初期の4技（20〜23）だけ。従来の静止ポーズの演出（MMRP.anim）は、読み込めないときの代わり
+  const ROFF = () => root.MMREMV_DATA || {};
+  // 2026-10-12：ジオルの技＝正式採用用・透過補正版 全96枚（assets/battle/jiol_moves_1012/・js/battle/jiol-moves-data.js）。
+  //   ジオルの技の SK の番号・性能は未決（OFFICIAL_MOVES.jiol は名前だけ）＝バトルでは使わない。開発用のプレビュー（MM25D.preview('jiol', 番号, 側)）だけ
+  const JOFF = () => root.MMJIMV_DATA || {};
+  const SRC_OF = { 0: OFF, 1: GOFF, 2: NOFF, 4: ROFF };
+  /** 読み込めなかったコマがある技（その技だけ従来の演出へ戻す）。キー＝dir＋ファイル名 */
+  const failed = new Set();
+  const usable = (d) => !!d && !d.cuts.concat(d.fx || []).some((c) => [c.f, c.fx].some((f) => f && failed.has((d.dir || OA) + f)));
+  const offData = (k, s) => { if (!offOn()) return null; const o = owner(k), src = SRC_OF[o]; if (!src || spOf(s) !== o) return null; const d = src()[k] || null; return usable(d) ? d : null; };
+  const OFF_DUR = { 4: 2300, 8: 2300, 9: 2700, 17: 2300, 18: 2300, 19: 2500, 34: 2300, 35: 2300, 37: 2300, 39: 2700, 28: 2700, 29: 2700 };   // 6コマ以上の大技は少し長く（共通演出を通るとき）
 
   function spOf(s) { const pl = G('BPL'); return pl && pl[s] ? pl[s].sp : null; }
   /** この技をこの側が使うとき新しいコマで見せるか */
@@ -65,13 +75,13 @@
   const viaStage = () => !!(root.MMSTAGE && root.MMSTAGE.busy > 0);
   function timing(k, s) { if (!handles(k, s)) return null; const od = offData(k, s), p = od ? planOff(k, true, od) : plan(k, true); return { hit: p.hit, dur: p.dur }; }
   /** 正式のソラモの技：区切り（steps）ごとの時間。重ねる層は同じ区切りに出す */
-  function planOff(k, viaStage, dd) {
-    const d = dd || OFF()[k] || GOFF()[k] || NOFF()[k], n = d.steps;
+  function planOff(k, viaStage, dd, dmgOver) {
+    const d = dd || OFF()[k] || GOFF()[k] || NOFF()[k] || ROFF()[k], n = d.steps;
     let dur = OFF_DUR[k] || Math.max(1500, Math.min(2700, 380 + n * 300));
     if (!viaStage) dur = 1440;
     const body = dur * 0.88, step = body / n;
     const win = Array.from({ length: n }, (_, i) => [i * step, (i + 1) * step]);
-    const SK = G('SK'), dmg = !!(SK && SK[k] && SK[k][1] > 0);
+    const SK = G('SK'), dmg = dmgOver != null ? !!dmgOver : !!(SK && SK[k] && SK[k][1] > 0);
     const hit = d.hit && dmg ? win[d.hit - 1][0] + Math.min(120, step * 0.3) : null;
     return { dur, body, step, win, hit };
   }
@@ -278,10 +288,10 @@
   }
   // 効果だけの層の置き方（絵の中の合わせる点 ax・ay＝割合、幅＝待機の立ち絵の幅に対する倍率）。相手が左（相手側の技）なら左右反転
   const FXP = { sky: { ax: 0.5, ay: 0.98, w: 2.5 }, barrage: { ax: 0.82, ay: 0.86, w: 2.3 }, impact: { ax: 0.74, ay: 0.82, w: 2.1 } };
-  function animOff(k, s) {
+  function animOff(k, s, dd, opt) {
     const g = geom(s); if (!g) return false;
     style();
-    const { v, me, f, L, T } = g, d = offData(k, s), base = d.dir || OA, P = planOff(k, viaStage(), d), D = P.dur, X = 60, e = 0.001, imgs = [];
+    const { v, me, f, L, T } = g, d = dd || offData(k, s), base = d.dir || OA, P = planOff(k, opt && opt.via != null ? opt.via : viaStage(), d, opt ? opt.dmg : null), D = P.dur, X = 60, e = 0.001, imgs = [];
     const lay = layout(k, s, L, { cuts: d.cuts });
     const at = (i) => lay.find((q) => q.c.t[0] <= i && q.c.t[1] >= i);
     const put = (im, z) => { im.className = 'p25f'; im.alt = ''; im.decoding = 'sync'; if (z) im.style.zIndex = z; v.appendChild(im); imgs.push(im); return im; };
@@ -324,6 +334,16 @@
         im.animate(kfWin(w0, w1, a, z, false, last), { duration: D, fill: 'both' }).onfinish = () => im.remove();
         return;
       }
+      if (c.at === 'ray') {
+        // ジオル：胸の結晶から相手の体の中ほどへ伸ばす光線（クリスタルレイ・クリスタルノヴァ）。絵の左端＝出る所。相手側は左右反転
+        const sx = L.Ag.x + f * L.idleW * 0.18, sy = L.Ag.y - L.idleH * 0.48, ex = T.x, ey = T.cy;
+        const len = Math.max(Math.hypot(ex - sx, ey - sy), L.idleW * 1.1), th = Math.atan2(ey - sy, ex - sx) * 180 / Math.PI;
+        const W = len, H = Math.max(24, Math.min(L.idleH * 0.6, W * c.ph / c.pw));
+        im.style.width = W + 'px'; im.style.height = H + 'px'; im.style.transformOrigin = '0% 50%';
+        const ang = f > 0 ? th : th + 180, b0 = `translate(${sx}px,${sy - H / 2}px) rotate(${ang}deg) scaleX(${f})`;
+        im.animate(kfWin(w0, w1, b0 + ' scale(0.2,1)', b0 + ' scale(1,1)', false, last), { duration: D, fill: 'both' }).onfinish = () => im.remove();
+        return;
+      }
       if (c.at === 'beam') {
         // 発射の姿（同じ区切りの本体のコマ）の口から相手の体の中ほどへ伸ばす。絵の左の光の玉が口・右の星が相手
         const q = at(c.t[0]), b = q.c.b, S = q.S, bw = b[2] - b[0], bh = b[3] - b[1];
@@ -362,7 +382,15 @@
     }
     return true;
   }
-  function preloadOff(pl) { if (!pl) return; [0, 1].forEach((s) => (pl[s] && pl[s].eq || []).forEach((k) => { const d = offData(k, s); if (!d) return; d.cuts.concat(d.fx || []).forEach((c) => [c.f, c.fx].forEach((f) => { if (!f) return; const i = new Image(); i.decoding = 'async'; i.src = (d.dir || OA) + f; })); })); }
+  /** 技のコマを先に読む。読めなかったコマがあれば、その技は従来の演出へ戻す（failed） */
+  function warm(d) { d.cuts.concat(d.fx || []).forEach((c) => [c.f, c.fx].forEach((f) => { if (!f) return; const u = (d.dir || OA) + f, i = new Image(); i.decoding = 'async'; i.onerror = () => failed.add(u); i.src = u; })); }
+  function preloadOff(pl) { if (!pl) return; [0, 1].forEach((s) => (pl[s] && pl[s].eq || []).forEach((k) => { const d = offData(k, s); if (d) warm(d); })); }
+  /** 開発用のプレビュー（バトル画面が出ている間だけ）：kind＝'jiol'（正式No 1〜10）／'regnas'（正式No 1〜10）。性能・番号の決まっていない技も、データのコマを順に見せるだけ（判定・ダメージ・セーブは触らない） */
+  function preview(kind, no, s, opt) {
+    const d = kind === 'jiol' ? JOFF()[no] : kind === 'regnas' ? ROFF()[20 + no - 1] : null;
+    if (!d || !usable(d)) return false;
+    return animOff(-1, s || 0, d, Object.assign({ via: false, dmg: !!d.hit }, opt || {}));
+  }
 
   // ---- 立ち絵の切り替え・比較の札 ----
   function syncIdle(bt) {
@@ -397,5 +425,5 @@
     if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
   }
 
-  root.MM25D = Object.freeze({ anim, handles, timing, layout, idleSrc, idleScale, set, syncIdle, get on() { return on; }, get offered() { return offered; }, owner, plan, planOff, offData, IDLE, OFF_ASSET: OA });
+  root.MM25D = Object.freeze({ anim, handles, timing, layout, idleSrc, idleScale, set, syncIdle, get on() { return on; }, get offered() { return offered; }, owner, plan, planOff, offData, preview, warm, failed, IDLE, OFF_ASSET: OA });
 })(typeof window !== 'undefined' ? window : globalThis);
