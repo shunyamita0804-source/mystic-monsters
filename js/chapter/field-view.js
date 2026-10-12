@@ -604,7 +604,7 @@
   const COIN_SVG = '<img class="chh-ic" src="./assets/ui/gold/coin.png" alt="" aria-hidden="true" draggable="false">';   // 2026-10-08 正式：お金（ゴールド）のアイコン（旧：SVG の硬貨）
   function faceSrc(m) { const sp = root.MMP10M && MMP10M.byId ? MMP10M.byId(m.sp) : null; return sp && sp.image ? sp.image.src : ''; }
   function hudHtml(m) {
-    const r = m.raise, cfg = V.cfg, fat = MMCH.fatigue(m), lv = fat >= 80 ? 'hi' : fat >= 50 ? 'mid' : 'lo';
+    const r = m.raise, cfg = V.cfg, fat = MMCH.fatigue(m), lv = fat > 80 ? 'hi' : fat >= 50 ? 'mid' : 'lo';
     const pr = MMCH.progressOf ? MMCH.progressOf(m) : null, pc = Math.round(clamp(pr ? pr.p : 0, 0, 1) * 1000) / 10, tix = (gS() && gS().trainTix) | 0, fs = faceSrc(m);
     return `<header class="chh" data-p="${pc}"><div class="chh-top"><div class="chh-l chh-prog"><div class="chh-cap"><small>Chapter <b>${cfg.chapterId}</b> / ${P7().CHAPTER_COUNT}</small><b class="chh-nm">${esc(cfg.title)}</b><span class="chh-fd" id="chfd">${esc(V.sc ? V.sc.name : '')}</span></div>
       <div class="chh-line" role="img" aria-label="ゴールまでの進み具合 ${Math.round(pc)}%"><span class="chh-se">START</span><div class="chh-track"><i class="chh-fill" style="width:${pc}%"></i><span class="chh-face" id="chface" style="left:${pc}%">${fs ? `<img src="${fs}" alt="" decoding="async">` : ''}</span></div><span class="chh-se g">GOAL</span></div></div>
@@ -996,7 +996,7 @@
   /** 疲れの HUD：回復・増加を数字の動きで見せる（2026-10-04 第二段階 PHASE E：増減の小さな表示＋チップの色の段階も合わせる） */
   async function fatigueHud(from, to) { const f = $('#chfat'), b = f && f.querySelector('b'); if (!b || from === to) return; fatFly(to - from); bump(f); await countUp(b, from, to, 360); fatLevel(to); }
   /** 疲れのチップの段階（lo／mid／hi）と目盛りを今の値に合わせる */
-  function fatLevel(v) { const f = $('#chfat'); if (!f) return; f.classList.remove('f-lo', 'f-mid', 'f-hi'); f.classList.add(v >= 80 ? 'f-hi' : v >= 50 ? 'f-mid' : 'f-lo'); const i = f.querySelector('i'); if (i) i.style.setProperty('--f', `${v}%`); }
+  function fatLevel(v) { const f = $('#chfat'); if (!f) return; f.classList.remove('f-lo', 'f-mid', 'f-hi'); f.classList.add(v > 80 ? 'f-hi' : v >= 50 ? 'f-mid' : 'f-lo'); const i = f.querySelector('i'); if (i) i.style.setProperty('--f', `${v}%`); }
   /** 疲れの増減（「+5」「−30」）をチップの脇に短く浮かべる（2026-10-04 PHASE E。大きな演出はしない） */
   function fatFly(delta) {
     const ui = $('#chf-ui'), f = $('#chfat'); if (!ui || !f || !delta || V.calm) return;
