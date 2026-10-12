@@ -44,7 +44,7 @@
   function validatePool(pool) { const ids = new Set(), errs = []; for (const e of pool || []) { errs.push(...validateEvent(e)); if (e && ids.has(e.id)) errs.push(`${e.id}：id が重複`); if (e) ids.add(e.id); } return errs; }
 
   // ---- 会話の行をそろえる（フィナの吹き出し・共通会話の両方で使える形） ----
-  const lineOf = (l, npc = 'fina') => (typeof l === 'string' ? { npc, expression: 'normal', text: l } : { npc: l.npc || l.speaker || npc, expression: l.expression || 'normal', text: String(l.text || '') });
+  const lineOf = (l, npc = 'fina') => (typeof l === 'string' ? { npc, expression: 'normal', text: l } : { npc: l.npc || l.speaker || npc, expression: l.expression || 'normal', text: String(l.text || ''), ...(l.voice ? { voice: l.voice } : {}) });   // 2026-10-13：voice＝この行の声（js/npc/voice-cues.js）
   /** 選択肢を共通会話（MMNPC）の行にする：lines の最後の行（無ければ text）に choices を付ける */
   function choiceLines(fx, npc = 'fina') {
     const L = (fx.lines || []).map((l) => lineOf(l, npc));

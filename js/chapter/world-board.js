@@ -481,7 +481,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     WD().markStory(m, ev.id, flags); doSave();
     const was = busyGet(); busySet(true);
     try {
-      const lines = (ev.lines || []).map((l) => ({ npc: l.speaker || 'fina', expression: l.expression || 'normal', text: l.text }));
+      const lines = (ev.lines || []).map((l) => ({ npc: l.speaker || 'fina', expression: l.expression || 'normal', text: l.text, ...(l.voice ? { voice: l.voice } : {}) }));   // 2026-10-13：行の声
       await root.MMNPC.talk(lines, { kind: 'fina', presentation: ev.presentation === 'talk' ? 'board' : 'compact' });
     } catch (e) {} finally { if (!was) busySet(false); }
     return true;
@@ -766,6 +766,8 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     const go = () => { for (const u of [FXF.rivalBg, FXF.clash, FXF.gold, FXF.hg[10], FXF.hg[5], FXF.hg[1]]) { const im = new root.Image(); im.decoding = 'async'; im.src = u; } };
     if (root.requestIdleCallback) root.requestIdleCallback(go, { timeout: 4000 }); else setTimeout(go, 1500);
   }
+  /** 2026-10-13 開発24：フィナの声（js/npc/voice-cues.js の CUES）。自動テストの一言なし（MM_QA_NO_STORY）では鳴らさない */
+  const vcue = (name) => { try { if (!root.MM_QA_NO_STORY && root.MMVOICE) root.MMVOICE.cue(name); } catch (e) {} };
   const DIE_TEXT = {
     Q: (e) => `運命のサイコロ：${e.die}（${e.die % 2 ? '奇数＝左の道' : '偶数＝右の道'}へ）`,
     CHALLENGE: (e) => `封印の遺跡門の挑戦：${e.die} → ${e.die >= 5 ? '成功！ 遺跡の道へ' : '失敗… 遠回りの道へ'}`,
@@ -782,6 +784,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
         const tx = (DIE_TEXT[e.kind] || ((x) => `サイコロ：${x.die}`))(e);
         const b = $('#bmsg'); if (b) b.textContent = tx;
         await playDie(e.die, null); tail = tx;
+        if (e.kind === 'CHALLENGE') vcue(e.die >= 5 ? 'fina.challengeOk' : 'fina.challengeNg');   // 2026-10-13：フィナの声（やったね／うーん）
       }
       if (fx.kind === 'choice') {
         feel('event', { ev: fx.ev });
@@ -795,10 +798,12 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
         await wait(calm() ? 0 : 160); await statCard(m, fx.key, fx.amount); tail = `${labOf(fx.key)} +${fx.amount}`;   // 2026-10-12 試遊：挿絵カード＋能力のバー（旧 trainAct＋小さな窓）
       } else if (fx.kind === 'treasure') {
         feel(['normal', 'rare', 'special'].includes(fx.tier) ? `chest.open.${fx.tier}` : 'chest.open', { tier: fx.tier });
+        vcue('fina.discover');   // 2026-10-13：「見て見て」（同じ声は少しのあいだ繰り返さない）
         await goldBurst(fx.gold);
         await popup(`<small>${fx.tier === 'rare' ? '珍しい宝箱' : '宝箱'}を見つけた！</small>${rowsHtml(fx)}`, 1300); tail = plainOf(fx);
       } else if (fx.kind === 'reward') {
         feel('chest.open.special', { tier: 'special' });
+        vcue('fina.discover');
         await goldBurst(fx.gold);
         await popup(`<small>${fx.den ? '隠れ家' : '宝の行き止まり'}</small><b>${esc(fx.title || '')}</b>${rowsHtml(fx)}`, 1800); tail = `${fx.title || ''}　${plainOf(fx)}`.trim();
       } else if (fx.kind === 'meal') {

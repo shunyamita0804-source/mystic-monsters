@@ -266,3 +266,83 @@ Spirits Forest の intro／loop の別ファイルは置かない（full の1本
 | 試合開始「FIGHT!」（BATTLE_START） | battle_start_cinematic_impact_boom_05.ogg | 03_試合開始_Cinematic_Impact_Boom_05.mp3（824993119db92d61141199500533294aac3ea01b83e3410396a4c5f65aa54183） | Universfield「Cinematic Impact Boom 05」 https://pixabay.com/sound-effects/film-special-effects-cinematic-impact-boom-05-352465/ | 1.0（-16.6 LUFS） |
 
 置き換えた旧音（「採用した音源だけを置く」の決まりでファイルは外した）：RIVAL_APPEAR＝mystic_monsters_official/08_encounter_rival.ogg、BATTLE_START＝ivokard/bass_thud_electric.ogg、MATCHUP＝無音（2026-10-03 第4弾で NG の Fx 1 は使わない）。
+
+## 2026-10-13 開発24：観客の声 3種（assets/audio/se/crowd_1013/）
+
+ユーザー提供の派生ファイル（ZIP「開発24_バトル歓声ボイス_実装公開検証_最終パック」の 02_crowd_se/。元の MP3 から区間を切り出し、25ms のフェードイン・最大140ms のフェードアウト・振幅 ×0.84 をかけて OGG Vorbis q5 と AAC M4A 160kbps にしたもの＝ユーザー側の加工。リポジトリでは無加工）。
+配布元はいずれも Pixabay（Pixabay Content License）。**ライセンスの要約ページ https://pixabay.com/service/license-summary/ は 2026-10-13 に確認**（無料・作者表記は任意・改変可・**素材そのものを単体で売る／配る（standalone）のは禁止**・商標などの制限）。各音源のページ（下の URL）は確認時にアクセスが拒否（403）されたため、作者・区間は納品の LICENSE_AND_SOURCES.txt の記載どおり。
+ゲームの中の音（試合の結果の演出）としてだけ使う。音源パックとして配らない。**公開リポジトリのため、ファイルは個別にダウンロードできる状態**（2026-10-12 の Pixabay の正式 SE 3種と同じ扱い）＝気になる場合は要相談。
+
+| 用途（registry の鍵） | ファイル（OGG／M4A の同じ音。再生できる1つだけを使う） | 元の音源・作者 | 採用区間 | gain | 元の音量 |
+|---|---|---|---|---:|---:|
+| 命中の歓声（CROWD_HIT・既定） | hit_cheer_2p0_2p7_700ms | 「Crowd Cheer and Applause」DRAGON-STUDIO https://pixabay.com/sound-effects/people-crowd-cheer-and-applause-406644/ | 2.0〜2.7秒（0.7秒） | 0.55 | -14.7 LUFS |
+| 同・1秒（CROWD_HIT_LONG・比較用） | hit_cheer_2p0_3p0_1000ms | 同上 | 2.0〜3.0秒（1.0秒） | 0.6 | -15.5 |
+| ルーレットの MISS の落胆（CROWD_MISS・既定） | miss_disappointment_0p5_1p2_700ms | 「Crowd Disappointment Reaction」Universfield https://pixabay.com/sound-effects/people-crowd-disappointment-reaction-352718/ | 0.5〜1.2秒（0.7秒） | 0.55 | -14.9 |
+| 同・1秒（CROWD_MISS_LONG） | miss_disappointment_0p5_1p5_1000ms | 同上 | 0.5〜1.5秒（1.0秒） | 0.53 | -14.5 |
+| 技をかわされたブーイング（CROWD_EVADE・既定） | evade_boo_0p0_0p6_600ms | 「Crowd Booing」DRAGON-STUDIO https://pixabay.com/sound-effects/people-crowd-booing-494319/ | 0.0〜0.6秒（0.6秒） | 0.2 | -8.9 |
+| 同・1秒（CROWD_EVADE_LONG） | evade_boo_0p0_1p0_1000ms | 同上 | 0.0〜1.0秒（1.0秒） | 0.15 | -6.5 |
+
+gain はユーザー指定の初期値（歓声 0.55・落胆 0.55・ブーイング 0.20）から。最終的な長さ・音量の判断は iPhone の試遊のあと（設定の「観客の声」短い／1秒／なし・「観客の音量」標準／控えめで聞き比べ）。
+
+sha256：
+- evade_boo_0p0_0p6_600ms.ogg：4a7da701071483294722c18791bfb2ee03fbeb5e76649f1cdd93675b5365457a
+- evade_boo_0p0_1p0_1000ms.ogg：422b817954849094f4e50b4860318a8c8daeb86b5545d6242a96c27866bf5526
+- hit_cheer_2p0_2p7_700ms.ogg：e2dce079363b0342a815a16a0ad2a4e21ca7a9ec4601917e678d9eaa324b1a4e
+- hit_cheer_2p0_3p0_1000ms.ogg：bcad98e6ecfcc9f5aae550fbd9a347b2326bb4ccd58897770480490e5733d53c
+- miss_disappointment_0p5_1p2_700ms.ogg：2630ba532ff266236d6538aa659dae28b95a68ec105b77328efdc8fb33d9a69a
+- miss_disappointment_0p5_1p5_1000ms.ogg：1321b9f2a8bf38125de3ad454455467fd9554842d1bb2b988c54204701c553cc
+- evade_boo_0p0_0p6_600ms.m4a：4cb4c362875be66af641448c01bf0efc925384e98159f146ffe5aafaaf00197a
+- evade_boo_0p0_1p0_1000ms.m4a：02eb96e7245d75e69d477a13ac816191afecb2823328f23b58929e465cf31139
+- hit_cheer_2p0_2p7_700ms.m4a：947ddb18f8af17c77ded79c00b5b55e588c22cbfc09367bb9540b058dd748ac8
+- hit_cheer_2p0_3p0_1000ms.m4a：3c40fce0d032575b1a1f1fb1a6b54fe8c7db171259745b5b4daff516c898a63a
+- miss_disappointment_0p5_1p2_700ms.m4a：1bb6692963b093ac4bf90b5aafb121867926926c214ce898dd59a23f4bbf7cd2
+- miss_disappointment_0p5_1p5_1000ms.m4a：fa8d8c16e719133853c69426b4e5d3a2bcf1cd453ed18ecc5bf0505ec641f27b
+
+## 2026-10-13 開発24：NPC のボイス（assets/audio/voice/npc_1013/）【試遊採用】
+
+ユーザー提供の音声（ZIP の 03_voices/。元の MP3 から OGG Vorbis／AAC M4A に変換したもの＝ユーザー側の変換。リポジトリでは無加工。新しい台詞の生成・切り貼りはしていない）。
+**音声の生成元（合成音声サービスなど）とその利用規約・声の権利関係は、会話からは特定できていない＝公開前の確認事項**（ユーザーが自作・利用許可を持つ前提で試遊に組み込む）。好みに合わなければ、設定の「ボイス」をオフ、または js/audio/audio-registry.js の VOICE_REGISTRY の enabled／js/npc/voice-cues.js の CUES の on を false にするだけで止められる（ファイルを消すときは VOICE_REGISTRY の行も消す）。
+
+| id | 話者・台詞 | 元ファイル（sha256） | 長さ | 元の音量 | gain | 既定 |
+|---|---|---|---:|---:|---:|---|
+| fina_hello | fina「こんにちは」 | フィナ、こんにちは(2).mp3（be4614955bd5c261f318f588cfd915cdc5285e0256c079f1c396138c7159ec27） | 1.071秒 | -19.9 LUFS | 1.24 | ON |
+| fina_yeah | fina「やったね」 | フィナ、やったね！(1).mp3（1a358eddb1bfd14650250b0da490394e2baa23ebd4a41022930656b3d25bfdae） | 0.993秒 | -19.7 LUFS | 1.22 | ON |
+| fina_hmm | fina「うーん」 | フィナ、うーん(2).mp3（f14e08c7ba54b5b4aaf76792d1de60b1ae18e98f75d1096a868f541cdff4d5ce） | 1.489秒 | -21.7 LUFS | 1.53 | ON |
+| fina_look | fina「見て見て」 | フィナ、見て見て(2).mp3（7e5989722540d36c7eeb27536c53409cde06c7bf246348567c6f4a6580c40b00） | 1.149秒 | -18.4 LUFS | 1.05 | ON |
+| fina_hey | fina「もう」 | フィナ、もう！(2).mp3（5c598602227f68f6cd2b91ce70dc4da77cd973581d8e4a6b6768642735d2818d） | 1.071秒 | -20.9 LUFS | 1.4 | ON |
+| fina_giggle | fina「えへへ」 | フィナ、えへへ(2).mp3（9986ea4c048a7b85c96a2bd6b5e11c6597ca7153dbb92a323ab6fe22fdb59782） | 0.914秒 | -24.6 LUFS | 2.14 | ON |
+| fina_yes | fina「うん」 | フィナ、うん(2).mp3（6b08051b715ad9b6dcd5ee70bb42e16e95a65c12ae394db715ae97b71a78b607） | 0.601秒 | -20.4 LUFS | 1.32 | ON |
+| fina_wonder | fina「なんだろう」 | フィナ、なんだろう？(1).mp3（2d7f4a5a20f217db8187d0935897ab31a524a5a2ab9e4b2cae92cdee9b501595） | 1.149秒 | -24.2 LUFS | 1.91 | ON |
+| dan_hello | dan「やあ」 | ダン、やあ(3).mp3（6333d51e8f8b38a220fa5e2d1f0cfca37ed93401e4f82b1897163561c58cce92） | 0.679秒 | -18.3 LUFS | 1.03 | ON |
+| nick_hello | nick「やあ」 | 牧場、やあ(1).mp3（93ac8f805b3d87c13092f06d4e27ea5b8f0a7caf6bc1f374fd5ac19f5368c2ec） | 0.914秒 | -25.6 LUFS | 2.4 | ON |
+| berna_welcome | berna「いらっしゃい」 | アイテム屋、いらっしゃい(2).mp3（59b71f04d2a99173b8a8f00fcd07eb2b441f7eccdf02e5dc3601d344eac58a4b） | 0.993秒 | -19.3 LUFS | 1.16 | ON |
+| karen_welcome | karen「市場の挨拶」 | 市場ボイス(1).mp3（8913fb3fc498229fe66e94531f7f68cceac70a5eff68ade11f1abac71c3a9c4e） | 0.914秒 | -25.2 LUFS | 2.29 | ON |
+| elliot_hello_OPTIONAL | elliot「やあ（別枠・既定OFF）」 | 研究所、やあ.mp3（61e5821c7b97d7b7c29ea4408e7b27876a2c6e749f3adf666a9cb5626d877e58） | 0.757秒 | -19.3 LUFS | 1.16 | OFF（別枠・今回の対象外） |
+
+変換したファイルの sha256：
+- berna_welcome.ogg：2885eedb01288d031c8c55229ea1aa168d583fd7c19db5d12a9b4f16aa3779be
+- dan_hello.ogg：14f8e2eff84e40ff92ac3e277f7d63e29a63a2d929d0d35c039db1226744c751
+- elliot_hello_OPTIONAL.ogg：60f86182e9e7b9067ac95397cb6398e14e082975fb6cf6a7570d2e77f43fbbd0
+- fina_giggle.ogg：128dd2785d6cddc7b2ce977d872d71e1281c1797ef280ff4705be301fe9faa3e
+- fina_hello.ogg：625d793d2e6816654fdcfa07ad41813ed165e932fe89f9a5c93ab9d7012a75be
+- fina_hey.ogg：0c8dc7bbf060ba246a01ff4a8a851390679e4c05c407cfe7d50efd2e67d33eac
+- fina_hmm.ogg：efbb76da020ba5f92a9d4a914f3f5306fba2387a50b6e5821839ce1f999bd860
+- fina_look.ogg：8173b2160c82cb13b855fcd0afaa9595519ed439ef7035f6f99adfce442d575a
+- fina_wonder.ogg：b5542fec30eb45a501f7974c5662aca6dc643d23acc5855de4ba875b8049566c
+- fina_yeah.ogg：cf8640e2e949f0fa33428d0f6ba48958fd2f1d37b18f6fb6c9a4ff0688b13c42
+- fina_yes.ogg：7a5b1da316c84f5fb893ea05082452654b4abf70512043fcc515f3aa5446689b
+- karen_welcome.ogg：7fdf8167beb7d46165b92e586566c6c749d1d625bb75fa36a39deaf566d63546
+- nick_hello.ogg：48709a946f1d22536c8b4d8b2a336609d385f2f1da17d6a302216176eb9326a7
+- berna_welcome.m4a：46c1556288dd56d1d55104447db157b05c2629cc053183e6fb2813305009c5f9
+- dan_hello.m4a：e69310a3101149a4ea3804516d348b24ef7b43b1ff31626c673d99ba813070d7
+- elliot_hello_OPTIONAL.m4a：ff130c4c3a68834426b6338ff483bd5cc771436502c3babc90f9e85f09963ba7
+- fina_giggle.m4a：eab35ffcf979e3d1308c513a64b117c814d1e7704da2b65c53f98d2b82cae832
+- fina_hello.m4a：2742bddc067ff374cd672a62c09532995d1860b7e8a6f372d3ec89dba47e3a4c
+- fina_hey.m4a：6c54b5286de62e3f8276fbdb0953bde89611bbe598ae4aabcf21c6d98b966b5b
+- fina_hmm.m4a：92104f88f971620f645e8f66a8e69bbcae8ec1fd0826d054f27e0224396d8ecb
+- fina_look.m4a：5c603006a92e9086d4724bf53d3409c465e6eddfeb32212cfab46940ffe37f5e
+- fina_wonder.m4a：dc068539afdef01a6bdd029f56dafeb6a57af66af3e7a405ea2de451880e9f32
+- fina_yeah.m4a：afa692c7cb4ae3ebd238265e67698f9a32ad52c61f9fcc729441baa393b0e9fc
+- fina_yes.m4a：869d4607529e886a17265a1dd7c001e48a34f9664a3c87de74ba05b4e3465db3
+- karen_welcome.m4a：35ff09960c5268795ea10f6d6432d5d042a091efd75cb3eec7ee0a16b9ff0b0e
+- nick_hello.m4a：3a89ce23edf8464ba219f0eaa3e44cafc80a22ace01b6ecd4931d7bdfab0c98f

@@ -12,6 +12,11 @@
 //   ・被弾／回避のリアクション（2026-10-12）：攻撃を受けた側のダメージの数字（pop の span.dmg）が出た瞬間に、待機立ち絵を一瞬だけ
 //     正式のリアクション（js/monsters/reaction-art.js の hit／dodge）へ差し替えて戻す。当たった／かわした は act() が呼ぶ MMBattle.resolveAction の
 //     結果を読むだけ（呼ぶだけ・結果は変えない）。待機立ち絵が出ていない間（技のコマ）・絵が読めていないときは差し替えない＝二重に出ない
+//   ・2026-10-13 開発24（試遊・既定 ON。#bt.mma-v24）：①モンスターを従来の約91%（体格ごとに SCALE）・足もと（下端）をそのまま床へ・戦場を少し下げる
+//     ②ルーレットを縦に約3割詰める（正式の板から空欄の帯を抜いた派生 assets/battle/roulette/compact_1013/・技の絵だけ・中央の板だけ技名を小さく。威力・命中率・クリ率は出さない＝計算は変えない）
+//     ③技が発動している間（技名の帯 .skb3 が出てから .bui.anim が外れるまで）は名前・HP・状態・ルーレット・STOP・説明の文字を opacity／visibility だけで隠す（座標は壊さない）
+//     ④「相手がルーレットを回している…」は出さない（敵の抽選・進行は従来どおり）。⑤観客の声（js/battle/crowd.js）を結果に合わせて1行動1回。
+//     設定の「バトル画面：旧」（localStorage mmbattleui＝'old'）で従来の見た目に戻せる
 // =========================================================
 (function (root) {
   'use strict';
@@ -23,6 +28,17 @@
   const R = Object.freeze({
     slots: 7, lag: 1.5, accelMs: 350, stopMs: 500, overshootPx: 6, lockMs: 280, spacing: 0.235,   // 2026-10-07 ADDENDUM2：起動の加速 約0.35秒・STOP 後の慣性の減速 約0.5秒・行き過ぎ 約6px（そこから中央へ吸着）。巡航の速さは fight() の光の速さ（BASE_STEP_MS 85ms／枠＝約11.8候補／秒・Phase 6）に合わせる＝STOP の時刻と結果の関係を変えない   // spacing＝板の間隔（ルーレットの幅に対する割合）
     scale: [1.15, 0.92, 0.78, 0.64], rot: [0, 10, 19, 26], drop: [0, 0.10, 0.27, 0.46], dim: [1, 0.96, 0.82, 0.62], // drop＝下げる量（板の高さに対する割合）
+  });
+  // ---- 2026-10-13 開発24：新しいバトル画面（既定 ON）----
+  const UI_KEY = 'mmbattleui';
+  const v24 = () => { try { return !(root.localStorage && root.localStorage.getItem(UI_KEY) === 'old'); } catch (e) { return true; } };
+  const setUi = (mode) => { try { if (root.localStorage) root.localStorage.setItem(UI_KEY, mode === 'old' ? 'old' : 'new'); } catch (e) {} return v24() ? 'new' : 'old'; };
+  /** モンスターの大きさ（従来の待機立ち絵に対する比）。ソラモ＝四足・ガウル＝腕2足2翼2・ノビトン＝横に長い・ジオル・レグナス */
+  const SCALE = Object.freeze({ 0: 0.91, 1: 0.92, 2: 0.88, 3: 0.91, 4: 0.91 });
+  /** ルーレットの板の形（%）：icon＝技の絵の窓（ふつうの板 n／選ばれた板 s）・nm＝技名の帯（中央の板だけ）。v24＝compact_1013 の派生（tools/roulette1013/compact.py で測った値） */
+  const GEO = Object.freeze({
+    old: { ar: '229/360', fr: '400/560', n: [13.5, 12.5, 13.5, 51], s: [18.5, 13, 18.5, 34.5], nm: [69, 14, 55.8, 7.2], hk: 360 / 229, pad: 28, frTop: 1 },
+    v24: { ar: '229/256', fr: '400/396', n: [12.5, 13.5, 16.4, 62.9], s: [20.5, 14.5, 21.6, 45.4], nm: [71.3, 11.5, 71.3, 11.5], hk: 256 / 229, pad: 12, frTop: 2 },
   });
   const $ = (s, el) => (el || document).querySelector(s);
   const lerpTab = (tab, x) => { const i = Math.min(tab.length - 2, Math.floor(x)); const t = Math.min(1, x - i); return tab[i] + (tab[i + 1] - tab[i]) * t; };
@@ -68,7 +84,7 @@
       '#bt .mmr .arch{position:absolute;left:50%;width:118%;top:63%;transform:translateX(-50%);opacity:.95}',
       '#bt .mmr .rail{position:absolute;left:50%;width:108%;top:80%;transform:translateX(-50%);opacity:.9;pointer-events:none}',   // ADDENDUM2：レールの土台（透過 RGBA の正式補助素材）
       '#bt .mmr .trk{position:absolute;inset:0;perspective:700px}',
-      '#bt .mmr .pl{position:absolute;left:50%;top:6%;width:var(--mmr-pw);aspect-ratio:229/360;margin-left:calc(var(--mmr-pw)/-2);transform-origin:50% 60%;will-change:transform,opacity}',
+      '#bt .mmr .pl{position:absolute;left:50%;top:6%;width:var(--mmr-pw);aspect-ratio:var(--mmr-ar,229/360);margin-left:calc(var(--mmr-pw)/-2);transform-origin:50% 60%;will-change:transform,opacity}',
       '#bt .mmr .pl img.bgp{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}',
       '#bt .mmr .pl .sel{opacity:0}',
       '#bt .mmr .pl .ic{position:absolute;left:13.5%;right:12.5%;top:13.5%;height:51%;border-radius:6%;overflow:hidden;background:#0d1a38}',
@@ -77,7 +93,7 @@
       '#bt .mmr .pl.ms .ic,#bt .mmr .pl.ms .nm{display:none}',
       '#bt .mmr .pl .st{position:absolute;left:19%;right:15%;top:65%;height:20%;display:flex;flex-direction:column;justify-content:space-around;opacity:0;color:#f3ecd9;font:700 clamp(6px,1.85vw,9px)/1.05 "Noto Sans JP",sans-serif}',
       '#bt .mmr .pl .st div{display:flex;justify-content:space-between}#bt .mmr .pl .st b{color:#ffe7a8;font-size:1.12em}',
-      '#bt .mmr .fr{position:absolute;left:50%;top:1%;width:calc(var(--mmr-pw)*1.3);margin-left:calc(var(--mmr-pw)*-0.65);aspect-ratio:400/560;z-index:60;pointer-events:none}',
+      '#bt .mmr .fr{position:absolute;left:50%;top:var(--mmr-ft,1%);width:calc(var(--mmr-pw)*1.3);margin-left:calc(var(--mmr-pw)*-0.65);aspect-ratio:var(--mmr-far,400/560);z-index:60;pointer-events:none}',
       '#bt .mmr.lock .pl.c{animation:mmrlock .3s ease-out}@keyframes mmrlock{40%{filter:brightness(1.35)}}',
       '#bt .bui.mmr-on .mmr{transition:opacity .25s,transform .25s}#bt .bui.anim .mmr{opacity:.35;transform:translateY(14px)}',
       '#bt .gow .mma-stop{position:absolute;left:50%;bottom:6px;width:var(--mms-w);transform:translateX(-50%);pointer-events:none;z-index:1;transition:opacity .2s}',
@@ -111,6 +127,24 @@
       '#bt .mon.mma-won>img:not(.mma-win){opacity:0!important}',
       '#bt .mon .mma-win{position:absolute;left:50%;bottom:-2%;height:132%;width:auto;max-width:none;transform:translateX(-50%);pointer-events:none;filter:drop-shadow(0 8px 6px rgba(0,0,0,.45));animation:mmawin .5s cubic-bezier(.2,1.4,.4,1) both}',
       '@keyframes mmawin{from{opacity:0;transform:translateX(-50%) translateY(8%) scale(.92)}to{opacity:1;transform:translateX(-50%)}}',
+      // ---- 2026-10-13 開発24（#bt.mma-v24）----
+      // ① 大きさ：待機立ち絵・被弾／回避・勝利の絵を同じ倍率（--mma-k）で。足もと（bottom:0）は動かさない＝床に立ったまま。技のコマ（art25d）は待機立ち絵の大きさから作るので同じだけ小さくなる
+      '#bt.mma-v24 .mon .mma-idle{height:calc(118% * var(--mma-k,1))}',
+      '#bt.mma-v24 .mon .mma-idle.p25{height:calc(118% * var(--p25h,1) * var(--mma-k,1))}',
+      '#bt.mma-v24 .mon .mma-rx{height:calc(118% * var(--rh,1) * var(--mma-k,1))}',
+      '#bt.mma-v24 .mon .mma-win{height:calc(132% * var(--mma-k,1))}',
+      // 接地の影は従来の .mon::after（index.html）をそのまま使う（二重にしない）
+      // 戦場の位置：ルーレットが低くなった分だけ少し下げる（上に大きな空きを作らない）。公式ランク戦の正式背景は床が低い＝少し多め
+      '#bt.mma-v24 .vs{translate:0 min(10.5dvh,90px)}',
+      '#bt.mma-v24[data-mmprac="1"] .vs{translate:0 min(9.5dvh,82px)}',
+      // ② ルーレット：アーチ・レールの位置を低い板に合わせる
+      '#bt.mma-v24 .mmr .arch{top:56%}#bt.mma-v24 .mmr .rail{top:83%}',
+      '#bt.mma-v24 .mmr .pl .nm{font-size:clamp(9px,2.5vw,11px);font-weight:700;color:#fff3d6;letter-spacing:.03em}',
+      // ③ 技の発動中（#bt.mma-cine）：名前・HP・状態・TURN・降参・ルーレット・STOP・説明を見えなくする（opacity／visibility だけ＝レイアウトは変えない）。技名・モンスター・技の絵・被弾／回避・ダメージの数字は残る
+      '#bt.mma-v24 .hpr,#bt.mma-v24 .tm,#bt.mma-v24 button.sur,#bt.mma-v24 .bui{transition:opacity .18s ease-out}',
+      '#bt.mma-v24.mma-cine .hpr,#bt.mma-v24.mma-cine .tm,#bt.mma-v24.mma-cine button.sur,#bt.mma-v24.mma-cine .bui{opacity:0!important;visibility:hidden;pointer-events:none!important;transition:opacity .12s ease-in,visibility 0s linear .12s}',
+      // 技名：上に控えめに（白〜淡い金）
+      '#bt.mma-v24 .skb3{top:calc(env(safe-area-inset-top,0px) + 8.5%);font-size:1.5rem;font-style:normal;font-weight:800;letter-spacing:.06em;color:#fff7e2;text-shadow:0 0 10px rgba(255,214,140,.7),0 0 2px #000,0 2px 4px rgba(0,0,0,.85)}',
     ].join('\n');
     document.head.appendChild(st);
   }
@@ -133,6 +167,7 @@
     [0, 1].forEach((s) => {
       const mon = $(`#m${s} .mon`, bt), sp = pl[s] && pl[s].sp, src = idleSrc(sp);
       if (!mon || !src) return;
+      if (bt.classList.contains('mma-v24') && SCALE[sp]) mon.style.setProperty('--mma-k', String(SCALE[sp]));   // 2026-10-13：体格ごとの大きさ
       const still = () => { const im = mon.querySelector(':scope>img:not(.mma-idle):not(.mma-rx):not(.b2)'); return !!(im && IMG && im.getAttribute('src') === IMG[sp]); };
       const sync = () => {
         let idle = mon.querySelector('.mma-idle');
@@ -153,9 +188,11 @@
     style();
     const W = Math.min(bt.clientWidth || innerWidth, 480);
     const pw = Math.round(Math.min(W * 0.2, 104));
+    const NEW = bt.classList.contains('mma-v24'), Gm = NEW ? GEO.v24 : GEO.old, PL = NEW ? `${A}roulette/compact_1013/` : `${A}roulette/`, SFX = NEW ? '_c' : '';   // 2026-10-13：低い板（派生）
     const box = document.createElement('div'); box.className = 'mmr'; box.setAttribute('aria-hidden', 'true');
-    box.style.setProperty('--mmr-pw', pw + 'px'); box.style.setProperty('--mmr-h', Math.round(pw * 360 / 229 * 1.16 + 28) + 'px');
-    box.innerHTML = `<img class="arch" src="${A}roulette/arch.webp" alt=""><img class="rail" src="${A}roulette/rail_base.png" alt=""><div class="trk"></div><img class="fr" src="${A}roulette/center_frame.webp" alt="">`;
+    box.style.setProperty('--mmr-pw', pw + 'px'); box.style.setProperty('--mmr-h', Math.round(pw * Gm.hk * 1.16 + Gm.pad) + 'px');
+    box.style.setProperty('--mmr-ar', Gm.ar); box.style.setProperty('--mmr-far', Gm.fr); box.style.setProperty('--mmr-ft', Gm.frTop + '%');
+    box.innerHTML = `<img class="arch" src="${A}roulette/arch.webp" alt=""><img class="rail" src="${A}roulette/rail_base.png" alt=""><div class="trk"></div><img class="fr" src="${PL}center_frame${SFX}.webp" alt="">`;
     rl.style.display = 'none';
     bui.insertBefore(box, rl);
     bui.classList.add('mmr-on');
@@ -185,8 +222,8 @@
       S.len = rows.length || 7;
       trk.innerHTML = rows.map((row) => {
         const d = read(row);
-        return `<div class="pl${d.ms ? ' ms' : ''}"><img class="bgp nor" src="${A}roulette/${d.ms ? 'plate_miss' : 'plate_normal'}.webp" alt="">${d.ms ? '' : `<img class="bgp sel" src="${A}roulette/plate_selected.webp" alt="">`}`
-          + (d.ms ? '' : `<div class="ic">${d.src ? `<img src="${d.src}" alt="">` : ''}</div><div class="nm"></div><div class="st"><div>威力<b></b></div><div>命中率<b></b></div><div>クリ率<b></b></div></div>`) + '</div>';
+        return `<div class="pl${d.ms ? ' ms' : ''}"><img class="bgp nor" src="${PL}${d.ms ? 'plate_miss' : 'plate_normal'}${SFX}.webp" alt="">${d.ms ? '' : `<img class="bgp sel" src="${PL}plate_selected${SFX}.webp" alt="">`}`
+          + (d.ms ? '' : `<div class="ic">${d.src ? `<img src="${d.src}" alt="">` : ''}</div><div class="nm"></div>${NEW ? '' : '<div class="st"><div>威力<b></b></div><div>命中率<b></b></div><div>クリ率<b></b></div></div>'}`) + '</div>';   // 2026-10-13：新しい画面は威力・命中率・クリ率を出さない（計算・技のデータは変えない）
       }).join('');
       S.plates = [...trk.children];
       rows.forEach((row, i) => {
@@ -207,6 +244,7 @@
         const t = now(); S.dt = Math.max(40, Math.min(400, (t - S.tn) / Math.max(1, step))); S.tn = t; S.n += step; S.cur = on;
       }
       if (hit >= 0 && S.mode === 'spin') {
+        rouletteHit(rows[hit]);   // 2026-10-13：止まった枠が MISS なら、その番の MISS の数字で観客の落胆（1回）
         if (hit !== S.cur) { let step = (hit - S.cur + S.len) % S.len; S.n += step; S.cur = hit; }
         let dist = S.n - S.vis; while (dist < 0.4) { S.n += S.len; dist += S.len; }
         S.mode = 'stop'; S.stop = { from: S.vis, to: S.n, t0: now(), ms: reduced() ? 160 : R.stopMs };
@@ -232,8 +270,8 @@
         if (st) st.style.opacity = k > 0.6 ? ((k - 0.6) / 0.4).toFixed(2) : '0';
         // 中央（選択中の板）へ近づくほど、技の絵・名前を選択中の板の窓の位置へ（間は補間）
         const ic = el.querySelector('.ic'), f = (u, v) => (u + (v - u) * k).toFixed(2) + '%';
-        if (ic) { ic.style.left = f(13.5, 18.5); ic.style.right = f(12.5, 13); ic.style.top = f(13.5, 18.5); ic.style.height = f(51, 34.5); }
-        if (nm) { nm.style.top = f(69, 55.8); nm.style.height = f(14, 7.2); }
+        if (ic) { ic.style.left = f(Gm.n[0], Gm.s[0]); ic.style.right = f(Gm.n[1], Gm.s[1]); ic.style.top = f(Gm.n[2], Gm.s[2]); ic.style.height = f(Gm.n[3], Gm.s[3]); }
+        if (nm) { nm.style.top = f(Gm.nm[0], Gm.nm[2]); nm.style.height = f(Gm.nm[1], Gm.nm[3]); if (NEW) nm.style.opacity = (k > 0.5 ? (k - 0.5) / 0.5 : 0).toFixed(2); }   // 2026-10-13：技名は中央の板だけ
         el.classList.toggle('c', a < 0.5);
       });
     }
@@ -260,7 +298,7 @@
   }
 
   // ---- 2026-10-12 試遊：説明の帯・ターンの表示・勝利の画像（fight() の画面を外から見て直す） ----
-  const HIDE_MSG = /^(タイミングよくボタンを押せ！|勝利！(（判定勝ち）)?)\s*$/;
+  const HIDE_MSG = /^(タイミングよくボタンを押せ！|相手がルーレットを回している…|勝利！(（判定勝ち）)?)\s*$/;   // 2026-10-13 開発24：相手の番の説明も出さない（敵の抽選・進行は従来どおり）
   const VICTORY = ['solamo', 'gauru', 'nobiton', 'jiol', 'regnas'];
   function setupText(bt) {
     const msg = $('#msg', bt);
@@ -268,6 +306,7 @@
       if (msg) msg.classList.toggle('mm-q', HIDE_MSG.test(msg.textContent || ''));
       const ban = bt.querySelector(':scope>#ban');
       const turn = !!(ban && ban.classList.contains('sm'));
+      if (turn) { const t = (ban.textContent || '').trim(); if (t === 'あなたのターン') turnSide = 0; else if (t === '相手のターン') turnSide = 1; }
       bt.classList.toggle('mm-turn', turn);
       if (turn && !ban.classList.contains('mm-low') && msg) {   // ターンの表示＝下の説明の位置（帯は無い）
         const r = msg.getBoundingClientRect(), b = bt.getBoundingClientRect();
@@ -342,16 +381,46 @@
       for (const mu of muts) for (const n of mu.addedNodes) {
         if (!n || n.tagName !== 'SPAN' || !n.classList.contains('dmg') || n.classList.contains('ef')) continue;
         const p = n.parentNode, side = p && /^f[01]$/.test(p.id || '') ? +p.id.slice(1) : -1;
+        if (side >= 0 && rMiss && n.classList.contains('ms') && rMiss.side === side && now() - rMiss.t < 3000) {   // ルーレットの MISS（自分の番の MISS の数字）＝落胆。動けない行動は rules.js が数字ごと飲み込む＝鳴らさない
+          rMiss = null; const nn = n; setTimeout(() => { if (nn.isConnected) crowd('miss'); }, 0); continue;
+        }
         if (side < 0 || !lastAct || lastAct.target !== side || now() - lastAct.t > 4000) continue;   // 自分の番のミス（ルーレットの MISS・動けない）は攻撃を受けた側ではない＝出さない
         const act = lastAct; lastAct = null;   // 1回の行動につき1回だけ
         if (root.MMRULES && root.MMRULES.swallow && root.MMRULES.swallow(n)) continue;   // まひ・ねむりで動けない行動の MISS（js/battle/rules.js）
+        if (!n.isConnected) continue;   // 2026-10-13：ほかの見張り（fx.js）が先に飲み込んだ MISS（動けない行動）も同じく扱う
         const ms = n.classList.contains('ms');
-        if (ms === !act.hit) { try { react(side, ms ? 'dodge' : 'hit'); } catch (e) { /* 見た目だけ */ } }
+        if (ms === !act.hit) { try { react(side, ms ? 'dodge' : 'hit'); } catch (e) { /* 見た目だけ */ } crowd(ms ? 'evade' : 'hit'); }
       }
     }).observe(bt, { childList: true, subtree: true });
   }
+  // ---- 2026-10-13 開発24：観客の声・技の発動中の表示 ----
+  let turnSide = -1, rMiss = null;
+  const crowdLog = [];
+  function crowd(kind) { try { const ok = root.MMCROWD ? root.MMCROWD.react(kind, document.getElementById('bt')) : false; crowdLog.push({ kind, ok, side: turnSide }); if (crowdLog.length > 40) crowdLog.shift(); } catch (e) { /* 音だけ */ } }
+  /** ルーレットが止まった（fight() の #rl の .hit）：MISS の枠なら、その番の MISS の数字を待つ */
+  function rouletteHit(row) { rMiss = row && row.classList.contains('ms') && turnSide >= 0 ? { side: turnSide, t: now() } : null; }
+  /** 技の発動中：技名の帯（skb＝技が出たときだけ。動けない行動では出ない）が出てから、fight() が .bui.anim を外すまで。決着・中断でも必ず戻す */
+  function setupCine(bt) {
+    const bui = $('.bui', bt); if (!bui || !bt.classList.contains('mma-v24')) return;
+    let on = false, t = 0;
+    const off = () => { clearTimeout(t); if (on) { on = false; bt.classList.remove('mma-cine'); } };
+    const start = () => { if (on || !bui.classList.contains('anim')) return; on = true; bt.classList.add('mma-cine'); clearTimeout(t); t = setTimeout(off, 4200); };   // 万一 .anim が外れなくても約4秒で戻す
+    new MutationObserver(() => { if (!bui.classList.contains('anim')) off(); }).observe(bui, { attributes: true, attributeFilter: ['class'] });
+    new MutationObserver((ms) => {
+      for (const m of ms) for (const n of m.addedNodes) {
+        if (!n || n.nodeType !== 1) continue;
+        if (n.classList && n.classList.contains('skb3')) start();
+        if (n.id === 'ban' && /^(K\.O\.!|TIME UP|降参|WIN!|LOSE)/.test((n.textContent || '').trim())) off();
+      }
+    }).observe(bt, { childList: true });
+    const go = $('#go', bt); if (go) new MutationObserver(() => { if (go.classList.contains('bk')) off(); }).observe(go, { attributes: true, attributeFilter: ['class'] });
+  }
   function setup(bt) {
     style();
+    turnSide = -1; rMiss = null;
+    if (v24()) bt.classList.add('mma-v24');
+    try { if (root.MMCROWD) root.MMCROWD.prefetch(bt); } catch (e) { /* 音だけ */ }
+    try { setupCine(bt); } catch (e) { /* 見た目だけ */ }
     try { lastAct = null; rxWrap(); rxPreload(); rxWatch(bt); } catch (e) { /* 見た目だけ */ }
     try { setupChips(bt); } catch (e) { /* 見た目だけ */ }
     try { setupText(bt); } catch (e) { /* 見た目だけ */ }
@@ -364,7 +433,7 @@
     new MutationObserver((muts) => { for (const mu of muts) for (const n of mu.addedNodes) if (n && n.id === 'bt') setup(n); }).observe(document.body, { childList: true });
   }
   if (typeof document !== 'undefined') { if (document.body) watch(); else document.addEventListener('DOMContentLoaded', watch); }
-  root.MMARENA = Object.freeze({ R, IDLE, FACE, rankOf, arenaSrc, fieldSrc, FIELD_BG, idleSrc, flipOf, setup, react, RX_MS, rxLog: () => rxLog.slice(), faceSrc: (sp) => (IDLE[sp] ? `./assets/tournament/faces_25d/face_${IDLE[sp].slice(5)}.webp` : null),
+  root.MMARENA = Object.freeze({ R, IDLE, FACE, SCALE, GEO, UI_KEY, v24, setUi, crowdLog: () => crowdLog.slice(), rankOf, arenaSrc, fieldSrc, FIELD_BG, idleSrc, flipOf, setup, react, RX_MS, rxLog: () => rxLog.slice(), faceSrc: (sp) => (IDLE[sp] ? `./assets/tournament/faces_25d/face_${IDLE[sp].slice(5)}.webp` : null),
     // 2026-10-11：対戦表の顔＝2.5D の横顔（faces_25d）。読めなかったときは従来の丸い顔（faces）へ（index.html の tbIcon の onerror）
     faceOldSrc: (sp) => (IDLE[sp] ? `./assets/tournament/faces/face_${IDLE[sp].slice(5)}.webp` : null) });
 })(typeof window !== 'undefined' ? window : globalThis);

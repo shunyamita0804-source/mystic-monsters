@@ -66,7 +66,9 @@ test('GF-04：index.html の音：画面の bgm("…") は画面の鍵 → 場�
   assert.match(HTML, /function auBus\(\)\{if\(AU\.ctx\)return true;const c=MMAUDIO\.context\(\);/, 'AudioContext は MMAUDIO の1つだけ');
   assert.match(HTML, /lm\.connect\(MMAUDIO\.legacyInput\(\)\|\|c\.destination\);/, '合成音の出口は MMAUDIO の Master（ミュートが共通）');
   assert.match(HTML, /function sndToggle\(\)\{.*?MMAUDIO\.setMuted\(!AU\.on\)/, '音のボタンは MMAUDIO のミュートへ');
-  assert.doesNotMatch(HTML, /document\.addEventListener\("visibilitychange"/, '表裏の suspend／resume は MMAUDIO が1か所で行う');
+  { const b = HTML.indexOf('const MM_BUILD='), e = HTML.indexOf('title();', b), build = HTML.slice(b, e);   // 2026-10-13 開発24：最新の版への読み込み直し（音には触れない）だけは表に戻ったときを見る
+    assert.doesNotMatch(build, /MMAUDIO|AU\.|suspend|resume/, '版の確かめは音に触れない');
+    assert.doesNotMatch(HTML.slice(0, b) + HTML.slice(e), /document\.addEventListener\("visibilitychange"/, '表裏の suspend／resume は MMAUDIO が1か所で行う'); }
   const S = new Function(HTML.match(/const LEGACY_SE=\{[^}]*\};/)[0] + 'return LEGACY_SE;')();
   for (const k of ['STEP', 'TILE_STOP', 'CHAPTER_START', 'CHAPTER_CLEAR', 'TOURNAMENT_START']) assert.equal(S[k], undefined, `${k} は合成音では鳴らさない（正式な SE は registry）`);
   assert.doesNotMatch(HTML, /new Audio\(|\.mp3|\.ogg|\.wav/, 'index.html に音源ファイルを書かない');

@@ -165,7 +165,7 @@
     { id: 'tut_qdie_w', trigger: 'die', scope: 'save', priority: 50, presentation: 'talk', when: { dieKind: 'Q' }, lines: [L('guide', 'ここは運命の分かれ道。どっちへ進むかは、サイコロの目で決まるんだ。'), L('normal', '奇数なら左の道、偶数なら右の道だよ。')] },
     { id: 'ch1_start', trigger: 'start', lines: [L('happy', 'いよいよ出発だね！ 大会会場まで、一緒にがんばろう。')] },
     { id: 'ch1_first_wild', trigger: 'land', priority: 30, when: { kind: 'battle', battleType: 'wild' }, lines: [L('surprised', '野生のモンスターだ！ 気をつけて！')] },
-    { id: 'ch1_first_rare', trigger: 'land', priority: 31, when: { kind: 'battle', battleType: 'rare' }, lines: [L('surprised', 'あの子、見たことない色…！ めずらしいモンスターかも！')] },
+    { id: 'ch1_first_rare', trigger: 'land', priority: 31, when: { kind: 'battle', battleType: 'rare' }, lines: [{ ...L('surprised', 'あの子、見たことない色…！ めずらしいモンスターかも！'), voice: 'fina_wonder' }] },   // 2026-10-13：「なんだろう？」
     { id: 'w_left', trigger: 'land', priority: 12, when: { pass: ['EL01'] }, lines: [L('surprised', '崩れた谷が見えるね…。足元に気をつけて進もう。')] },
     { id: 'w_right', trigger: 'land', priority: 12, when: { pass: ['ER01'] }, lines: [L('happy', '滝の音が聞こえる！ 水しぶきが気持ちいいね。')] },
     { id: 'w_merge', trigger: 'land', priority: 11, when: { pass: ['P', 'C01'] }, lines: [L('smile', '道がひとつに戻ったね。この先に大きな門があるよ。')] },
