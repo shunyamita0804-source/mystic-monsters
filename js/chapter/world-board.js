@@ -119,9 +119,9 @@
     else if (ph === 'branch') def = `分かれ道だ。どちらへ進む？（のこり${r.pend.left}）`;
     const H = Dk.hit || {}, box = (k) => { const h = H[k] || { x: 0, y: 0, w: 0, h: 0 }; return `style="left:${(h.x * 100).toFixed(1)}%;top:${(h.y * 100).toFixed(1)}%;width:${(h.w * 100).toFixed(1)}%;height:${(h.h * 100).toFixed(1)}%"`; };
     const center = ph === 'roll'
-      ? `<div class="chstopw chstopw-img${canRoll ? ' on' : ''}" ${box('center')}><button class="chstop chstop-img" id="brollbtn" data-nsfx="1" onclick="MMWB.roll()"${canRoll && !V.intro ? '' : ' disabled'} aria-label="START（サイコロを振る）"><b>START</b></button></div>`
+      ? `<div class="chstopw chstopw-img${canRoll ? ' on' : ''}" ${box('center')}><button class="chstop chstop-img" id="brollbtn" data-nsfx="1" onclick="MMWB.roll()"${canRoll && !V.intro && !V.cover ? '' : ' disabled'} aria-label="START（サイコロを振る）"><b>START</b></button></div>`
       : `<div class="chstopw chstopw-img" ${box('center')}><button class="chstop chstop-img wait" disabled aria-label="移動中"><b>${(ph === 'move' || ph === 'resolve') && r.pend ? r.pend.roll : '…'}</b></button></div>`;
-    const wing = (c) => { const on = (c.k === 'rest' ? canRest : ph === 'roll') && !V.intro; return `<button class="chwing chwing-img ${c.cls} chw-${c.pos}${c.k === 'rest' && tired ? ' must' : ''}" ${box(c.pos)} onclick="${c.on}"${on ? '' : ' disabled'}><b>${c.label}</b>${c.k === 'rest' ? `<i class="chwlbl">空腹 −${root.MMRF_PLAY ? root.MMRF_PLAY.TUNING.restAmount : 10}</i>` : ''}</button>`; };
+    const wing = (c) => { const on = (c.k === 'rest' ? canRest : ph === 'roll') && !V.intro && !V.cover; return `<button class="chwing chwing-img ${c.cls} chw-${c.pos}${c.k === 'rest' && tired ? ' must' : ''}" ${box(c.pos)} onclick="${c.on}"${on ? '' : ' disabled'}><b>${c.label}</b>${c.k === 'rest' ? `<i class="chwlbl">空腹 −${root.MMRF_PLAY ? root.MMRF_PLAY.TUNING.restAmount : 10}</i>` : ''}</button>`; };
     return `<div class="chdeck chdeck-img" id="chdock"><p class="chmsg" id="bmsg">${msg || def}</p><div class="chcmd chcmd-img" style="--deckar:${Dk.aspect || 3.116}">${Dk.start ? `<img class="chdeck-bg" src="${esc(Dk.start)}" alt="" draggable="false">` : ''}${CMDS.map(wing).join('')}${center}</div></div>`;
   }
   function sheetHtml(m, ph) {
@@ -228,11 +228,23 @@
 @keyframes wbxgb{0%{opacity:0;transform:scale(.4)}40%{opacity:1;transform:scale(1.04)}100%{opacity:.85;transform:scale(1.12)}}
 @keyframes wbxhg{from{opacity:0;translate:0 -10px}}
 @keyframes wbxpulse{50%{scale:1.06}}
+.wbw .wbrelay{position:absolute;inset:0;z-index:9;background:#0b1636;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity .56s ease;pointer-events:auto}
+.wbw .wbrelay.out{opacity:0;pointer-events:none}
+.wbw .wbrelay .wbr-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.wbw .wbrelay .wbr-t{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 18px);text-align:center;color:#fff;font:800 26px/1.2 "Shippori Mincho",serif;text-shadow:0 2px 10px rgba(2,6,24,.9)}
+.wbw .wbrelay .wbr-t small{display:block;font:700 12px/1.6 "Noto Sans JP",sans-serif;letter-spacing:.25em}
+.wbw .wbrelay .wbr-load{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 28px);transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;background:rgba(8,15,34,.72);border:1px solid rgba(217,180,101,.6);color:#f3e7c4;font-size:12.5px;font-weight:700}
+.wbw .wbrelay .wbr-load i{width:12px;height:12px;border-radius:50%;border:2px solid rgba(243,231,196,.35);border-top-color:#e8c66e;animation:wbrspin .9s linear infinite}
+.wbw .wbrelay .wbr-err{display:none;position:relative;flex-direction:column;align-items:center;gap:8px;padding:14px 16px;margin:0 16px;border-radius:14px;background:rgba(8,15,34,.9);border:1.5px solid #d9b465;color:#fff;text-align:center}
+.wbw .wbrelay .wbr-err p{margin:0 0 4px;font-size:13.5px}
+.wbw .wbrelay.slow .wbr-err{display:flex}
+@keyframes wbrspin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.wbw .wbrelay{transition-duration:.2s}.wbw .wbrelay .wbr-load i{animation:none}}
 @media (prefers-reduced-motion:reduce){.wbw .wb-pop,.wbw .wb-pop.out,.wbv .rfw-mon .mon,.wbw .wbx *,.wbw .wbx-gold *,.wbw .wbx-hg,:is(#rfp,.wbv) .rfw-mark{animation:none!important}}`
     + (root.MMREACT ? Object.entries(root.MMREACT.MOTIONS).map(([k, v]) => `.wbv .rfw-mon.mrx-${k} .mon{animation:mrx-${k} ${v.ms}ms cubic-bezier(.4,0,.3,1)}`).join('') : '');
     document.head.appendChild(s);
   }
-  function release() { sprStop(); if (V.intro) busySet(false); if (V.world) { try { V.world.destroy(); } catch (e) {} } V.world = null; V.el = null; V.key = null; V.intro = false; }
+  function release() { sprStop(); if (V.intro || V.cover) busySet(false); if (V.cover) { V.cover.remove(); V.cover = null; } if (V.world) { try { V.world.destroy(); } catch (e) {} } V.world = null; V.el = null; V.key = null; V.intro = false; }
   function ensureView(m) {
     const f = fieldOf(m), key = `${m.uid}:${f.layoutSeed}`, app = $('#app');
     if (V.el && V.key === key) { if (!V.el.isConnected) { app.innerHTML = ''; app.appendChild(V.el); } return false; }
@@ -259,12 +271,39 @@
     paint(m, msg, null, fresh);
     rareMark(m); fxPreload();
     if (ph === 'roll') setTimeout(() => turnWarn(m), 600);
-    if (fresh && ph === 'roll' && r.turnsUsed === 0 && r.node === 'START' && !f.introSeen && V.world && !root.MM_QA_NO_INTRO) intro(m);
-    else if (ph === 'roll' && r.turnsUsed === 0 && !V.intro) setTimeout(() => { if (onBoard() && active(m) && P8().boardPhase(m) === 'roll' && !busyGet()) storyAt(m, 'start').then((shown) => { if (shown && onBoard()) paint(m); }); }, 350);
+    const wantIntro = fresh && ph === 'roll' && r.turnsUsed === 0 && r.node === 'START' && !f.introSeen && V.world && !root.MM_QA_NO_INTRO;
+    if (fresh && V.world && V.world.ready) cover(m, wantIntro);   // 2026-10-12 開発21：描き終わるまで盤を見せない（出発の全景は中継カットから）
+    else if (wantIntro) intro(m);
+    else if (ph === 'roll' && r.turnsUsed === 0 && !V.intro && !V.cover) setTimeout(() => { if (onBoard() && active(m) && P8().boardPhase(m) === 'roll' && !busyGet()) storyAt(m, 'start').then((shown) => { if (shown && onBoard()) paint(m); }); }, 350);
     if (ph === 'branch') setTimeout(() => { if (onBoard() && active(m) && P8().boardPhase(m) === 'branch' && !busyGet()) storyAt(m, 'branch', { segs: (m.raise.pend && m.raise.pend.segs) || [] }); }, 350);
     if (ph === 'move') setTimeout(() => { if (onBoard()) walk(); }, 300);
     else if (ph === 'resolve') setTimeout(() => { if (onBoard()) resolve(); }, 300);
     return true;
+  }
+  // ---- 2026-10-12 開発21（試遊 No.002・006：C-3〜6）：盤の絵がそろうまで中継カットで覆う ----
+  //  出発（開始の俯瞰がある回）＝既存の「はじまりの草原」の全景（ch1_intro_overview.webp・出発準備のカードと同じ絵）＋題字＋小さな「読み込み中…」。
+  //  途中から再開した回＝暗い幕と「読み込み中…」だけ。描き終わったら（絵の読み込み・全区画・景物とマスのデコード＝MMRF_WORLD の ready）2フレーム待って
+  //  実際の盤の全景へクロスフェード → 全景を短く見せる → START へ寄る（intro）。9秒たっても終わらなければ「もう一度読み込む」「タイトルへ戻る」（出発は保存済み＝つづきから同じ所）。
+  //  覆っている間は操作できない（START・コマンドは押せない＝二重に出発・二重に進まない）
+  const RELAY = { src: './assets/fields/ch1a/intro/ch1_intro_overview.webp', min: 700, slow: 9000, fade: 560 };
+  function cover(m, withIntro) {
+    if (V.cover) V.cover.remove();
+    const el = document.createElement('div'); el.className = 'wbrelay' + (withIntro ? ' art' : ''); el.setAttribute('role', 'status');
+    el.innerHTML = (withIntro ? `<img class="wbr-img" src="${RELAY.src}" alt="" draggable="false" decoding="async"><div class="wbr-t"><small>CHAPTER 1</small><b>はじまりの草原</b></div>` : '')
+      + '<div class="wbr-load"><i aria-hidden="true"></i><span>読み込み中…</span></div><div class="wbr-err"><p>読み込みに時間がかかっています。</p><button class="p9btn" data-act="retry">もう一度読み込む</button><button class="p9btn2" data-act="back">タイトルへ戻る</button></div>';
+    V.el.appendChild(el); V.cover = el; busySet(true); paint(m);   // 覆っている間は START・コマンドを押せない形で描き直す
+    const t0 = Date.now(), world = V.world, slow = setTimeout(() => { if (V.cover === el) el.classList.add('slow'); }, RELAY.slow);
+    el.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('button[data-act]'); if (!b || V.cover !== el) return;
+      clearTimeout(slow); V.cover = null; busySet(false);
+      if (b.dataset.act === 'retry') { release(); board(); } else { try { root.p8Suspend(); } catch (x) {} } });
+    world.ready().then((ok) => {
+      if (!ok || V.cover !== el || V.world !== world) return;
+      setTimeout(() => root.requestAnimationFrame(() => root.requestAnimationFrame(() => {
+        if (V.cover !== el) return; clearTimeout(slow); V.cover = null;
+        if (withIntro) intro(m); else { busySet(false); const S = gS(), mm = S && S.m; if (active(mm) && onBoard()) board(); }   // 覆いのあと＝途中の移動・分かれ道・出発の一言をここから（board() の続きの処理）
+        el.classList.add('out'); setTimeout(() => el.remove(), RELAY.fade + 60);
+      })), withIntro ? Math.max(0, RELAY.min - (Date.now() - t0)) : 0);
+    });
   }
   function intro(m) {
     const f = fieldOf(m); f.introSeen = true; doSave();   // 先に「見た」を保存（途中で再読み込みしても二度出ない）

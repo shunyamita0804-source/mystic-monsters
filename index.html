@@ -5675,7 +5675,7 @@ const finaScene=k=>k=="intro"?TOWN_BG:k=="done"||k=="raiseFirst"||k=="raiseAgain
 const FINA_BIG=new Set(["intro","done"]); // 2026-10-04 G2：大型の会話窓（街の案内・育成完了＝イベント） // branches：選択肢ごとの続きの行（同じ会話ウィンドウで続ける）。選んだ id で解決
 /** 名前登録の直後に1度だけ：先に「表示済み」を保存してから会話を出す（再読込しても二度出ない） */
 function finaIntro(){const f=finaFlags();if(f.finaIntro)return;f.finaIntro=1;save();finaTalk("intro")}
-function p7Depart(b){const m=S.m;if(!m)return lobby();
+function p7Depart(b){const m=S.m;if(!m)return lobby();try{if(window.MMWB&&window.MMRF_WORLD&&(m.raise&&m.raise.ch||0)<=1){MMRF_WORLD.warmArt();new Image().src=PP_ART[1]}}catch(e){} // 2026-10-12 開発21（C-5）：出発を押したら Chapter 1 の盤の絵を先に読み込む（会話の間に）
  // 育成開始（未育成→Chapter 1）：フィナがプレイヤーへ確認（選択肢「始める／まだやめておく」。初回だけ「途中で街へ戻れない」説明つき）。選択肢が確認を兼ねるので2度押しは求めない
  //  「始める」を選んだときだけ、同じ会話でフィナ→ダンの掛け合い → 会話のあと従来の出発処理（引数なしの p7Depart() ＝ 下の出発処理そのもの）。「まだやめておく」・選ばずに閉じたときは何もしない
  if(MMP7.raiseState(m)=="none"&&b&&window.MMNPC){if(b.dataset.fina)return;b.dataset.fina="1";const f=finaFlags(),first=!f.raiseIntro;if(first){f.raiseIntro=1;save()}
