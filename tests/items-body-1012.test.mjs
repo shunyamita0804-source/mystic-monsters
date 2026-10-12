@@ -2,6 +2,7 @@
 // アイテム38種の表示用画像（本体透過・2026-10-12）
 //  ITB-01 assets/items/body_1012/01〜38.webp＝256×256・透過・四辺は透明。README に38行の対応表（番号・安定ID・正式名・元ファイル・sha256）。
 //         未解消の一覧（20・10/16/25/31・34・05）と「検収が必要」・P2 の6種は 22（18 ではない）。原本（PNG）は置かない。ゲームから参照してよいのは P2 の食事6種（01・02・03・07・11・22＝P2 の別 PR の js/items/food.js）だけ。正式名の 38＝ラグナスの闘魂（旧名は使わない）
+//  ITB-02（2026-10-12 main 統合）：未検収の8点（05・10・14・16・20・25・31・34）はゲームの画面から参照しない（index.html・js/ のどこにも）。README に統合の方針
 // =========================================================
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -47,4 +48,18 @@ test('ITB-01：アイテム38種の表示用画像（256×256・透過）・READ
     assert.ok(!src.includes('body_1012'), `${f} から参照しない（使ってよいのは js/items/food.js だけ）`);
   }
   assert.deepEqual([...new Set(used)].filter((n) => !P2SIX.includes(n)), [], 'P2 の6種のほかはゲームから参照しない');
+});
+
+test('ITB-02：未検収の8点（05・10・14・16・20・25・31・34）はゲームの画面につながない・README に統合の方針', () => {
+  const UNVERIFIED = ['05', '10', '14', '16', '20', '25', '31', '34'];
+  const html = readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const js = (d) => readdirSync(path.join(ROOT, d), { withFileTypes: true }).flatMap((e) => e.isDirectory() ? js(path.join(d, e.name)) : e.name.endsWith('.js') ? [path.join(d, e.name)] : []);
+  const srcs = [['index.html', html], ...js('js').map((f) => [f, readFileSync(path.join(ROOT, f), 'utf8')])];
+  for (const n of UNVERIFIED) for (const [f, src] of srcs) {
+    assert.ok(!src.includes(`body_1012/${n}.webp`), `${f} は未検収の ${n} を参照しない`);
+    if (f.split(path.sep).join('/') === 'js/items/food.js') assert.ok(!new RegExp(`\\['${n}', '[a-z_]+'`).test(src), `食事の一覧に未検収の ${n} を入れない`);
+  }
+  const rm = readFileSync(path.join(ROOT, DIR, 'README.md'), 'utf8');
+  assert.match(rm, /未検収の8点（05・10・14・16・20・25・31・34）はゲームの画面につながない/);
+  assert.match(rm, /P2 の食事6種（01・02・03・07・11・22）だけ/);
 });
