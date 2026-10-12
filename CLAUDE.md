@@ -88,6 +88,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 | assets/worldmap/ | 世界地図の正式画像 world_map.webp（2026-10-05。ZIP next-phase-assets の world map を WebP 品質86 に） |
 | assets/prologue/ | **2026-10-07 正式6枚＝v2/prologue_01_peace・02_calamity・03_culture・04_legends・05_tournament・06_departure.webp（v2/README.md）**。旧 4 枚（prologue_01_coexistence 〜 04_arrival_mistoria）・旧 A〜E はファイルだけ残す（参照しない） |
 | assets/legends/ | **三人のレジェンドと相棒（2026-10-07 正式）**：astrad・leona・ragnas の full／closeup、zelvarn・griffel・dragnol の monster。データは js/prologue/prologue.js の LEGENDS（アストラッド＋ゼルヴァーン・レオナ＋グリフェル・ラグナス＋ドラグノル）。今は表示する場面なし（将来のレジェンド挑戦）。README.md |
+| assets/battle/official_rank_1012/ | **公式ランク戦の正式バトル背景 E〜S（2026-10-12 開発21）**：rank_E〜S.webp（ユーザーの原本を WebP にしただけ・README.md に原本の sha256）。対戦表・対戦前比較・VS・バトル・勝利演出（index.html の TB_ARENA・js/battle/arena.js の arenaSrc）。セドリックの会話・練習試合は venue のまま。§3「公式ランク戦の正式バトル背景」 |
 | assets/tournament/victory・vs_monsters・rankup_final/、assets/ui/market_wood・worldmap_icon/、assets/npc/ryu/expr/、assets/audio/bgm/licensed_20261008/ | **2026-10-08 正式素材の統合・次便**：勝利演出5体・VS 専用勝負絵5体・ランク昇格 Final・市場の木製UI・世界地図の解放アイコン・リュウの表情5種・街の BGM。各 README.md（§3「正式素材の統合・次便」） |
 | assets/battle/arena・idle・roulette/、assets/tournament/faces/ | **2026-10-07**：会場の背景 E〜S・待機立ち絵5体・横型ルーレットの部品（arch・center_frame・stop・plate_normal／selected／miss）・大会の顔アイコン5体（対戦表）。各 README.md |
 | assets/ui/cmd/、assets/ui/market/ | **2026-10-07**：研究所（図鑑・合体・配合表）・聖獣士管理局（聖獣士証・功績一覧・世界地図）・牧場（見る・名前変更・預ける／受け取る・売る）のコマンドの正式画像（data-cmd で CSS の背景）、市場の左右の矢印・会話欄。README.md |
@@ -723,6 +724,16 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - **特訓チケット**：小さな印（仮の線画の SVG＝正式の絵ではない・正式アイコンが届いたら差し替える）＋「特訓」＋「×N」（読み上げは「特訓チケット N枚」）
 - **案内欄**：フィナの小さな丸顔（assets/npc/fina/closeup/smile.webp）＋2行まで読める（操作欄を 26px 高くした＝上へ広げる。START・コマンド・safe-area は隠さない）
 - テスト：実ブラウザ tests/qa-e2e-dev21-d-1012.test.mjs（HD-1＝3サイズ：チップが画面の中・数字の大きさ・印・フィナの丸顔・2行が切れない・START とコマンドに重ならない、HD-2＝80／81／80、HD-3＝START・GOAL・丸顔・最短距離の位置・行き止まりで戻る・歩く間に動く）
+
+### 公式ランク戦の正式バトル背景・対戦前比較・VS・接地（2026-10-12 開発21 ⑤。いまの正式。基準 3133dde への差分）
+
+- **正式バトル背景 E〜S**（assets/battle/official_rank_1012/rank_E〜S.webp＝ユーザーが再提示した採用済みの元デザインを WebP 品質90 にしただけ。原本の JPEG は置かない・README.md に原本の sha256＝納品の SHA256SUMS と一致）：公式ランク大会の**対戦表・対戦前比較・VS・実際のバトル・優勝の勝利演出**で同じランクの会場（index.html の TB_ARENA・js/battle/arena.js の arenaSrc）。E＝白い石造・青い旗（旧：曇天・土の venue_E が「正式 E の実戦背景」になっていた）。**旧 arena_C と arena_D は中身が入れ替わっていた**（ファイルだけ残す）。**変えていない所**：セドリックの会話の背景（cedricBg＝venue）・野生／レア／ライバルの練習試合（#bt の data-mmprac＝venue）
+- **接地**：正式背景は床の始まりが画像の約55%（venue より下）＝モンスターが壁の前に浮いて見えた → バトルだけ下を軸に 1.12倍（#bt .mma-bg.ofc。絵は描き直さない・空が少し切れる）。野生・ライバルの venue は従来のまま（足もとが床＝測って問題なし）
+- **対戦前比較**：「対戦開始」を少し上へ（下の余白 min(9dvh,76px)）・立ち絵を流れの中に置く（absolute をやめる＝名前の札・固有スキル・6能力の表に重ならない）・左右の説明の間をあける。立ち絵の比率・形は変えない
+- **VS**：斜めの光（vs_diagonal.png）を左右反転＝左上 → 右下（相手＝上・自分＝下の2体の間）。モンスターの向きは従来どおり。ガウルの勝負絵は画像の四角い端で翼が切れている（素材そのもの）＝表示だけ端をやわらかく消す（#tvs .tbvs の mask。素材は変えない）
+- **状態異常の札**（まひ・ねむり）：発生 → 継続（回数が減る）→ 解除（札が消える）が HP の枠の中に見えることを3サイズで確認＝変更なし（性能・確率・ターンは変えない）
+- **ライバル登場の SE（E-7）**：保留。今は 08_encounter_rival.ogg（正式 SE・0.82秒）。権利確認済みの既存素材から比べて聞く候補＝Ivokard「bass_thud_electric」（CC0・1.7秒の重い一撃・今は BATTLE_START）／alkakrab「Fx 2」（商用可・2秒のふくらむ音・今は CHAPTER_START）／正式 SE「07_encounter_rare」（1.05秒・今は RARE_ALERT）。どれも別の場面で使用中＝使い回すかはユーザーの判断（新しい音源はダウンロード・生成していない）
+- テスト：実ブラウザ tests/qa-e2e-dev21-e-1012.test.mjs（BE-1＝E〜S の6ランク×3サイズを順に：対戦表・比較・VS・バトルの背景・足もと、BE-2＝3サイズ：比較の重なり・ボタンの位置、BE-3＝VS の斜線と向き、BE-4＝野生・ライバルは venue、BE-5＝3サイズ：状態異常の札）
 
 ### 公式ランク戦の BGM（2026-10-12。基準 90b0e1f への差分）
 

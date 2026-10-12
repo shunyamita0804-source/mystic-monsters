@@ -93,7 +93,7 @@ test('PR-B1：本番の設定で大会を最後まで（到着 → 確認 → �
   for (const b of seen.battles) {
     assert.equal(b.name, b.want, '相手の名前＝対戦表の参加者名');
     assert.deepEqual([b.h, b.s2], [0, null], '色相回転・重ね絵なし（正式画像の色）');
-    assert.equal(b.tm, 'ランクD大会'); assert.equal(b.rank, 'D'); assert.match(b.bg, /venue_D\.webp$/);
+    assert.equal(b.tm, 'ランクD大会'); assert.equal(b.rank, 'D'); assert.match(b.bg, /official_rank_1012\/rank_D\.webp$/, '2026-10-12 開発21：公式ランク戦は正式のバトル背景');
     if (b.bandLines) assert.equal(b.bandLines, 1, '「ランクD大会」の帯は1行');
   }
   assert.ok(seen.arena.length >= 5, 'ルーレットを止めた回数 ' + seen.arena.length);
