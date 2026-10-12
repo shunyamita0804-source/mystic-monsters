@@ -3552,7 +3552,7 @@ main:has(>#app>.ds) h1{display:none}
 .oparr-bg{position:absolute;inset:0;background:var(--arr-bg) center bottom/cover no-repeat;animation:oparrBg var(--arr-in) ease-out both}
 .oparr-t{position:absolute;left:0;right:0;top:34%;display:flex;flex-direction:column;align-items:center;gap:6px;color:#fff;text-shadow:0 2px 12px rgba(2,6,24,.9),0 0 2px rgba(2,6,24,.9);animation:oparrT .5s ease-out calc(var(--arr-in) * .6) both;transition:opacity var(--arr-out) ease,transform var(--arr-out) ease}
 .oparr-t small{font:600 13px/1 "Shippori Mincho",serif;letter-spacing:.32em;color:#f3dfa6}
-.oparr-t b{font:700 clamp(28px,8.6vw,38px)/1.15 "Shippori Mincho",serif;letter-spacing:.12em}
+.oparr-t b{font:700 clamp(36px,11vw,48px)/1.15 "Shippori Mincho",serif;letter-spacing:.12em}
 .oparr-t i{display:block;width:min(62vw,250px);height:2px;margin-top:6px;background:linear-gradient(90deg,transparent,#e8c66e,transparent)}
 .oparr.tout .oparr-t{opacity:0;transform:translateY(-6px)}
 @keyframes oparrBg{from{opacity:0;transform:scale(1.05)}to{opacity:1;transform:none}}
@@ -4265,7 +4265,7 @@ const OPEN_TALK={
 OPEN_TALK.ryu=n=>[{npc:"ryu",expression:"surprise",text:"あれ？ フィナじゃないか！"},{npc:"fina",expression:"surprised",text:"リュウ！？ どうしてミストリアにいるの？"},
  {npc:"ryu",expression:"confident",text:"へえ、君が今日登録した新人？ ちゃんと大会まで来られるのか？"},{npc:"fina",expression:"troubled",text:"リュウ！ 初対面からそんな言い方しないの。"},
  {npc:"fina",expression:"guide",text:`${n}さん、この人はリュウ。私と同じ町の出身で、小さい頃からの知り合いなの。`},
- {npc:"ryu",expression:"soft_smile",text:"俺はリュウ。ま、顔くらい覚えておいてよ。",choices:[{id:"a",label:"絶対に追いついてみせる！"},{id:"b",label:"勝負はやってみないと分からないよ"},{id:"c",label:"ずいぶん自信があるんだね"}]}];
+ {npc:"ryu",expression:"soft_smile",text:"俺はリュウ。ま、名前くらい覚えておいてよ。",choices:[{id:"a",label:"絶対に追いついてみせる！"},{id:"b",label:"勝負はやってみないと分からないよ"},{id:"c",label:"ずいぶん自信があるんだね"}]}];
 OPEN_TALK.ryuReply={a:[{npc:"ryu",expression:"confident",text:"へえ、言うじゃん！ その言葉、覚えとくよ。"}],b:[{npc:"ryu",expression:"soft_smile",text:"いいね、その度胸。ちょっとは楽しめそうだ。"}],c:[{npc:"ryu",expression:"serious",text:"自信じゃないさ。勝つつもりでいるだけだよ。"}]};
 OPEN_TALK.ryuEnd=n=>[{npc:"ryu",expression:"serious",text:"俺は先にSランクまで駆け上がって、その先のレジェンドにも挑戦する。"},{npc:"ryu",expression:"confident",text:"先に『はじまりの草原』へ行ってる。次に会うときは、もう少し歯ごたえがあるといいな。じゃあな！"},
  {npc:"fina",expression:"troubled",text:"もう、リュウったら……。昔からああなの。でも、実力は本物なんだよ。"},{npc:"fina",expression:"smile",text:"私たちも負けてられないね！"}];
@@ -4290,7 +4290,7 @@ const ARRIVE_MS={inMs:520,hold:1500,out:380};
 function opArrive(cv){if(cv)cv.remove();if(!$("#app"))return Promise.resolve(null);
  const calm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches),T=calm?{inMs:200,hold:900,out:200}:ARRIVE_MS;
  const el=document.createElement("div");el.className="oparr";el.setAttribute("role","img");el.setAttribute("aria-label","ミストリアに到着");el.style.setProperty("--arr-bg",`url(${TOWN_BG})`);el.style.setProperty("--arr-in",T.inMs+"ms");el.style.setProperty("--arr-out",T.out+"ms");
- el.innerHTML=`<div class="oparr-bg" aria-hidden="true"></div><div class="oparr-t" aria-hidden="true"><small>聖獣都市</small><b>ミストリア到着</b><i></i></div>`;document.body.appendChild(el);
+ el.innerHTML=`<div class="oparr-bg" aria-hidden="true"></div><div class="oparr-t" aria-hidden="true"><small>聖獣都市</small><b>ミストリア</b><i></i></div>`;document.body.appendChild(el);
  const cut={el,done(){el.classList.add("gone");setTimeout(()=>el.remove(),260)}};
  return new Promise(r=>{let fin=false,t1=null;const end=()=>{if(fin)return;fin=true;clearTimeout(t1);el.classList.add("tout");setTimeout(()=>r(cut),T.out)};
   const t0=Date.now();el.addEventListener("pointerdown",()=>{if(Date.now()-t0>350)end()});t1=setTimeout(end,T.inMs+T.hold)})}

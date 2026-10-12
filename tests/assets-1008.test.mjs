@@ -52,7 +52,7 @@ test('AS8-05：リュウの表情5種（closeup）。全身は従来の正式の
   const r = HTML.slice(HTML.indexOf('OPEN_TALK.ryu=n=>['), HTML.indexOf('\n/** プロローグ'));
   // 2026-10-12 開発21：F 案（試遊用の仮の台詞）＝導入 → 3択の返答（リュウの一言だけ分岐）→ 共通
   assert.deepEqual([...r.matchAll(/npc:"ryu",expression:"(\w+)"/g)].map((m) => m[1]), ['surprise', 'confident', 'soft_smile', 'confident', 'soft_smile', 'serious', 'serious', 'confident']);
-  for (const t of ['あれ？ フィナじゃないか！', 'へえ、君が今日登録した新人？ ちゃんと大会まで来られるのか？', '俺はリュウ。ま、顔くらい覚えておいてよ。', '先に『はじまりの草原』へ行ってる。']) assert.ok(r.includes(t), t);
+  for (const t of ['あれ？ フィナじゃないか！', 'へえ、君が今日登録した新人？ ちゃんと大会まで来られるのか？', '俺はリュウ。ま、名前くらい覚えておいてよ。', '先に『はじまりの草原』へ行ってる。']) assert.ok(r.includes(t), t);
 });
 
 test('AS8-06：モンスターの勝利演出＝種族ごとの正式の勝利画像（透過）を会場の上に。大会の終わりの順（final → champion → firstReward → rankUp → cedricEnd）は変えない', () => {
