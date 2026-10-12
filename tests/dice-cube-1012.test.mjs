@@ -44,6 +44,9 @@ test('DC-02：時間（0.93秒版＝全体 約1.7秒・1.30秒版＝全体 約2.
   assert.equal(Lg.lift, S.lift, '投げ始めは同じ'); assert.equal(Lg.lock - Lg.land, S.lock - S.land, '着地から止まるまでは同じ');
   assert.equal(Lg.turns, S.turns + 1, '回る量は1周多い');
   const total = Lg.lock + Lg.hold + Lg.fade; assert.ok(total >= 2100 && total <= 2200, `全体 ${total}`);
+  // 2026-10-12 第4便：1.30秒版の着地＝トンッ（止まる 0.40秒前）・ト（0.16秒前）・トン（止まる時刻）。2回目の弾みは1回目より低い
+  const Bn = Lg.bounce; assert.ok(Bn && Bn.i1 > Bn.i2 && Bn.i2 > 0 && Bn.h1 > Bn.h2 && Bn.h2 > 0, JSON.stringify(Bn));
+  assert.equal(Lg.lock - Bn.i1, 900); assert.equal(Lg.lock - Bn.i2, 1140); assert.equal(S.bounce, undefined, '0.93秒版は従来どおり');
   const src = read('js/chapter/dice-cube.js');
   // 乱数は回る周回の数と向き（見た目のばらつき）だけ。止まる向きは BASE[出目]＋360°の倍数＝出目を引き直さない
   const lines = src.split('\n').filter((l) => /Math\.random/.test(l));
@@ -58,12 +61,12 @@ test('DC-03：比較試作はゲーム本体から読み込まない・デモの
   const demo = read('prototype/dice_1012/index.html');
   for (const p of ['js/chapter/dice-cube.js', 'js/chapter/dice-renderer.js', 'assets/audio/se/mystic_monsters_official/01_dice_large_full.ogg', 'assets/fields/ch1a/dice/dice_blank.webp', 'assets/dice/std/10.webp']) assert.ok(fs.existsSync(path.join(ROOT, p)), p);
   // B4 版（今回の候補）と旧B2 版（不採用候補・比べるためだけ）。原音の MP3 は置かない（Pixabay の原音単体の再配布の禁止）
-  assert.deepEqual(fs.readdirSync(path.join(ROOT, 'prototype/dice_1012/se')).sort(), ['dice_magic_b2_old.m4a', 'dice_magic_b2_old.ogg', 'dice_magic_b4.m4a', 'dice_magic_b4.ogg', 'dice_magic_b4_long.m4a', 'dice_magic_b4_long.ogg']);
-  for (const k of ['b4', 'b2_old', 'b4_long']) for (const ext of ['ogg', 'm4a']) {
+  assert.deepEqual(fs.readdirSync(path.join(ROOT, 'prototype/dice_1012/se')).sort(), ['dice_magic_b2_old.m4a', 'dice_magic_b2_old.ogg', 'dice_magic_b4.m4a', 'dice_magic_b4.ogg', 'dice_magic_b4_long.m4a', 'dice_magic_b4_long.ogg', 'dice_magic_b4_long_tap.m4a', 'dice_magic_b4_long_tap.ogg']);
+  for (const k of ['b4', 'b2_old', 'b4_long', 'b4_long_tap']) for (const ext of ['ogg', 'm4a']) {
     const f = path.join(ROOT, `prototype/dice_1012/se/dice_magic_${k}.${ext}`);
     assert.ok(fs.existsSync(f), f); const n = fs.statSync(f).size; assert.ok(n > 10000 && n < 80000, `${f} ${n}`);
   }
-  assert.match(demo, /data-v="b4" class="on">B4（新）/, '既定は B4 版'); assert.match(demo, /旧B2・不採用候補/); assert.match(demo, /data-v="long" class="on">1\.30秒（新）/, '既定は 1.30秒版'); assert.match(demo, /0\.93秒（前の版）/);
+  assert.match(demo, /data-v="b4" class="on">B4（新）/, '既定は B4 版'); assert.match(demo, /旧B2・不採用候補/); assert.match(demo, /data-v="long" class="on">1\.30秒（新・トンッ、ト、トン）/, '既定は 1.30秒版'); assert.match(demo, /0\.93秒（前の版）/); assert.match(demo, /data-v="b4t">B4＋着地音（足音・仮）/);
   assert.match(fs.readFileSync(path.join(ROOT, 'prototype/dice_1012/se/dice_magic_b4.m4a')).subarray(4, 8).toString(), /ftyp/);
   assert.equal(fs.readFileSync(path.join(ROOT, 'prototype/dice_1012/se/dice_magic_b4.ogg')).subarray(0, 4).toString(), 'OggS');
   assert.equal(fs.readdirSync(path.join(ROOT, 'prototype/dice_1012'), { recursive: true }).filter((f) => /\.mp3$/i.test(f)).length, 0); assert.match(demo, /dice-cube\.js/);

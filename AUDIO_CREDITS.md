@@ -32,7 +32,7 @@ ZIP の README・LICENSE の原文は、受け取った ZIP の中にある（�
 
 | ファイル | 使った原音 / 作者 | 出典 | ライセンス |
 |---|---|---|---|
-| dice_magic_b4.ogg／.m4a（0.93秒版）・dice_magic_b4_long.ogg／.m4a（1.30秒版・第3便） | A1 "Magical Whoosh" / u_hyed0v3ux9 | https://pixabay.com/sound-effects/film-special-effects-magical-whoosh-148459/ | Pixabay Content License |
+| dice_magic_b4.ogg／.m4a（0.93秒版）・dice_magic_b4_long.ogg／.m4a・dice_magic_b4_long_tap.ogg／.m4a（1.30秒版。_tap の着地音は既存の正式 SE 05_small_monster_entry_steps_4step を切り出した仮） | A1 "Magical Whoosh" / u_hyed0v3ux9 | https://pixabay.com/sound-effects/film-special-effects-magical-whoosh-148459/ | Pixabay Content License |
 | 〃 | B4 "Slow Whoosh" / StudioKolomna | https://pixabay.com/sound-effects/film-special-effects-slow-whoosh-118247/ | Pixabay Content License |
 | 〃（dice_magic_b2_old にも） | C1 "Magic Spell 02" / Universfield | https://pixabay.com/sound-effects/film-special-effects-magic-spell-02-250240/ | Pixabay Content License |
 | dice_magic_b2_old.ogg／.m4a（旧回転音・不採用候補） | B2 "Spin Whoosh 1" / floraphonic（＋A1・C1） | https://pixabay.com/sound-effects/film-special-effects-spin-whoosh-1-186596/ | Pixabay Content License |

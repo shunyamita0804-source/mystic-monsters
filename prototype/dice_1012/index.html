@@ -19,6 +19,9 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--navy);color:#fff
 #host{position:absolute;inset:0;z-index:5}
 .top{position:absolute;left:0;right:0;top:0;z-index:20;padding:max(10px,env(safe-area-inset-top)) 12px 8px;background:linear-gradient(rgba(8,16,44,.94),rgba(8,16,44,.78));border-bottom:1.5px solid var(--gold)}
 .top h1{margin:0 0 6px;font-size:15px;letter-spacing:.04em;color:#ffe9b0}
+/* 振っている間は操作パネルを上へたたむ（題字の行だけ残す）＝ゲームの上の帯と同じくらいの空間でサイコロを見る（小さい画面でも弾む高さが出る） */
+.top{transition:transform .24s ease}
+html.rolling .top{transform:translateY(calc(-100% + 36px + env(safe-area-inset-top)))}
 .top h1 small{font-size:11px;color:#c9d4f3;font-weight:400;margin-left:6px}
 .row{display:flex;gap:6px;align-items:center;margin:5px 0;flex-wrap:wrap}
 .row>span{font-size:11.5px;color:#c9d4f3;min-width:3.6em}
@@ -75,9 +78,9 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--navy);color:#fff
   <div class="top">
     <h1>サイコロ演出の比較<small>試作・正式採用ではない</small></h1>
     <div class="row"><span>演出</span><div class="seg" id="mode"><button data-v="old">旧（今のゲーム）</button><button data-v="new" class="on">新（立体・試作）</button></div></div>
-    <div class="row"><span>止まる</span><div class="seg" id="tempo"><button data-v="short">0.93秒（前の版）</button><button data-v="long" class="on">1.30秒（新）</button></div></div>
+    <div class="row"><span>止まる</span><div class="seg" id="tempo"><button data-v="short">0.93秒（前の版）</button><button data-v="long" class="on">1.30秒（新・トンッ、ト、トン）</button></div></div>
     <div class="row"><span>個数</span><div class="seg" id="count"><button data-v="1" class="on">1個</button><button data-v="2">2個</button></div>
-      <span style="min-width:0;margin-left:6px">SE</span><div class="seg" id="se"><button data-v="b4" class="on">B4（新）</button><button data-v="b2">旧B2・不採用候補</button><button data-v="off">なし</button></div></div>
+      <span style="min-width:0;margin-left:6px">SE</span><div class="seg" id="se"><button data-v="b4" class="on">B4（新）</button><button data-v="b4t">B4＋着地音（足音・仮）</button><button data-v="b2">旧B2・不採用候補</button><button data-v="off">なし</button></div></div>
     <div class="row"><span>出目</span><div class="seg" id="val"><button data-v="0" class="on">ランダム</button><button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button><button data-v="4">4</button><button data-v="5">5</button><button data-v="6">6</button></div></div>
     <div class="row"><span>連続</span><div class="seg" id="rep"><button data-v="1" class="on">1回</button><button data-v="10">10回</button></div>
       <span style="min-width:0;margin-left:6px">動き</span><div class="seg" id="calm"><button data-v="0" class="on">ふつう</button><button data-v="1">減らす</button></div></div>
@@ -95,7 +98,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--navy);color:#fff
   const B = window.MM_DEMO_BASE, $ = (s) => document.querySelector(s), host = $('#host');
   const st = { mode: 'new', tempo: 'long', count: 1, se: 'b4', val: 0, rep: 1, calm: 0, busy: false };
   // ---- SE（Web Audio。最初のタップで用意）----
-  const SE = { old: [B + 'assets/audio/se/mystic_monsters_official/01_dice_large_full.ogg', 0.95], b4: [B + 'prototype/dice_1012/se/dice_magic_b4', 0.9], b2: [B + 'prototype/dice_1012/se/dice_magic_b2_old', 0.9], b4l: [B + 'prototype/dice_1012/se/dice_magic_b4_long', 0.9] };
+  const SE = { old: [B + 'assets/audio/se/mystic_monsters_official/01_dice_large_full.ogg', 0.95], b4: [B + 'prototype/dice_1012/se/dice_magic_b4', 0.9], b2: [B + 'prototype/dice_1012/se/dice_magic_b2_old', 0.9], b4l: [B + 'prototype/dice_1012/se/dice_magic_b4_long', 0.9], b4t: [B + 'prototype/dice_1012/se/dice_magic_b4_long_tap', 0.9] };
   let ctx = null; const buf = {};
   // OGG が鳴らない古い iPhone は M4A へ。読み込みは1回だけ（同時に呼ばれても同じ読み込みを待つ）
   function load(k) {
@@ -106,7 +109,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--navy);color:#fff
     })();
     return buf[k];
   }
-  function unlock() { if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) ctx = new AC(); } if (ctx && ctx.state !== 'running') ctx.resume().catch(() => {}); if (ctx) ['old', 'b4', 'b2', 'b4l'].forEach((k) => load(k)); }
+  function unlock() { if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) ctx = new AC(); } if (ctx && ctx.state !== 'running') ctx.resume().catch(() => {}); if (ctx) ['old', 'b4', 'b2', 'b4l', 'b4t'].forEach((k) => load(k)); }
   async function playSe(k) {
     if (!ctx || st.se === 'off') return; const x = await load(k); if (!x) return;
     const s = ctx.createBufferSource(), g = ctx.createGain(); g.gain.value = x.gain; s.buffer = x.b; s.connect(g).connect(ctx.destination); s.start();
@@ -129,7 +132,9 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--navy);color:#fff
     $(sel).querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
     if (k === 'mode') { const two = $('#count button[data-v="2"]'); two.disabled = st.mode === 'old'; if (st.mode === 'old' && st.count === 2) $('#count button[data-v="1"]').click(); $('#tempo').querySelectorAll('button').forEach((x) => { x.disabled = st.mode === 'old'; }); }
     // 旧B2（不採用候補）は 0.93秒版にだけ合わせて作った音＝1.30秒版では選べない
-    if (k === 'tempo' || k === 'mode') { const b2 = $('#se button[data-v="b2"]'); b2.disabled = st.mode === 'new' && st.tempo === 'long'; if (b2.disabled && st.se === 'b2') $('#se button[data-v="b4"]').click(); }
+    if (k === 'tempo' || k === 'mode') { const b2 = $('#se button[data-v="b2"]'); b2.disabled = st.mode === 'new' && st.tempo === 'long'; if (b2.disabled && st.se === 'b2') $('#se button[data-v="b4"]').click();
+      // 着地音つき（トンッ・ト・トン）は 1.30秒版の着地にだけ合わせた音
+      const bt = $('#se button[data-v="b4t"]'); bt.disabled = !(st.mode === 'new' && st.tempo === 'long'); if (bt.disabled && st.se === 'b4t') $('#se button[data-v="b4"]').click(); }
   }));
   $('#se button[data-v="b2"]').disabled = true;   // 最初は 1.30秒版＝旧B2 は選べない
   const pick = () => (st.val || 1 + Math.floor(Math.random() * 6));
@@ -151,8 +156,9 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--navy);color:#fff
   }
   $('#start').addEventListener('click', async () => {
     unlock(); if (st.busy) return; st.busy = true; $('#start').disabled = true;
+    document.documentElement.classList.add('rolling'); await new Promise((ok) => setTimeout(ok, 260));   // パネルをたたんでから投げる（たたんだ位置で geo を測る）
     try { for (let i = 0; i < st.rep; i++) { await once(); if (i < st.rep - 1) await new Promise((ok) => setTimeout(ok, 450)); } }
-    finally { st.busy = false; $('#start').disabled = false; }
+    finally { st.busy = false; $('#start').disabled = false; document.documentElement.classList.remove('rolling'); }
   });
 })();
 </script>

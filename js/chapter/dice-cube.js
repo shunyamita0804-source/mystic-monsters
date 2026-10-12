@@ -15,7 +15,9 @@
   const T = { lift: 140, air: 640, land: 820, lock: 930, hold: 620, fade: 180, calmLock: 260, calmHold: 520 };
   // 2026-10-12 比較：回る時間を長くした版（tempo:'long'）。投げ始め（lift）・着地から止まるまで（land→lock 0.11秒）・光・札・消えるまでは同じ。
   // 空中で回る時間だけ +0.37秒（air・land・lock）・回る量も1周ずつ多く（空中の回る速さは同じくらい＝面が次々に見える）
-  const TEMPO = Object.freeze({ short: Object.freeze({ ...T, peak: 397, turns: 2, airShare: 0.55 }), long: Object.freeze({ ...T, air: 1010, land: 1190, lock: 1300, peak: 560, turns: 3, airShare: 0.6 }) });
+  const TEMPO = Object.freeze({ short: Object.freeze({ ...T, peak: 397, turns: 2, airShare: 0.55 }), long: Object.freeze({ ...T, air: 1010, land: 1190, lock: 1300, peak: 560, turns: 3, airShare: 0.6,
+    // 2026-10-12 第4便：着地を「トンッ、ト、トン」に（参考動画）。止まる時刻の 0.40秒前に強く着地（大きく弾む・1面ぶん転がる）→ 0.16秒前に小さく着地 → 止まる時刻にトンと止まる
+    bounce: Object.freeze({ i1: 400, i2: 160, h1: 0.42, h2: 0.13, tumble: 90, dx1: 0.10, dx2: 0.03 }) }) });
   const BASE = { 1: [0, 0], 6: [0, 180], 3: [0, -90], 4: [0, 90], 5: [-90, 0], 2: [90, 0] };   // 正面に出す向き [rotateX, rotateY]（向かい合う面の和は 7）
   const PIPS = { 1: [5], 2: [3, 7], 3: [3, 5, 7], 4: [1, 3, 7, 9], 5: [1, 3, 5, 7, 9], 6: [1, 3, 4, 6, 7, 9] };   // 3×3 の升目の番号（1〜9）
   const FACE = [[1, 'translateZ(var(--h))'], [6, 'rotateY(180deg) translateZ(var(--h))'], [3, 'rotateY(90deg) translateZ(var(--h))'], [4, 'rotateY(-90deg) translateZ(var(--h))'], [5, 'rotateX(90deg) translateZ(var(--h))'], [2, 'rotateX(-90deg) translateZ(var(--h))']];
@@ -54,6 +56,58 @@
   function cubeHtml() {
     return FACE.map(([v, tf]) => `<div class="d3-f" data-v="${v}" style="transform:${tf}">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((c) => (PIPS[v].includes(c) ? `<i style="grid-area:${Math.ceil(c / 3)}/${((c - 1) % 3) + 1}"></i>` : '')).join('')}</div>`).join('');
   }
+  /**
+   * 着地を「トンッ、ト、トン」にする動き（TEMPO.long.bounce）。止まる時刻 L・出目の向き（fx・fy）は同じ＝出目は変わらない。
+   *  投げ上げ → 弧 → I1（L−0.40秒）で強く着地（つぶれる・1面ぶん手前の向き）→ 大きく弾みながら1面転がる → I2（L−0.16秒）で小さく着地 → ごく小さく弾む → L でトンと止まる（光・札は従来どおり L）
+   */
+  function bounceDie(o, k) {
+    const { A, at, cube, el, sc, sh, bx, by, fx, fy, L, P } = k, B = P.bounce, s = o.size, d = o.dir < 0 ? -1 : 1;
+    const I1 = L - B.i1, I2 = L - B.i2, m1 = (I1 + I2) / 2, m2 = (I2 + L) / 2, pk = P.peak * o.sp;
+    const dx1 = d * s * B.dx1, dx2 = d * s * B.dx2, x0 = o.land.x - dx1 - dx2, y = o.land.y, tx = d * B.tumble;
+    // 弾む高さ：上の帯（HUD）にかからない範囲まで（着地点の上の余白が狭い画面では低く）。2回目は1回目の約3分の1
+    const h1 = Math.max(s * 0.06, Math.min(s * B.h1, y - o.top - s * 1.1)), h2 = Math.min(s * B.h2, h1 * 0.34);
+    const peak = { x: (o.from.x + x0) / 2 + d * 18 + (o.spread || 0), y: Math.max(o.top + s * 0.75, Math.min(o.from.y, y) - s * 0.95) };
+    // 向き：空中で回る → I1 で「出目の1面手前」→ 大きな弾みの間に1面転がる → I2 でほぼ出目（12°だけ残す）→ L で出目
+    A(cube, [
+      { transform: `rotateX(${bx - 40}deg) rotateY(${by + 30}deg)`, offset: 0, easing: 'cubic-bezier(.25,.1,.25,1)' },
+      { transform: `rotateX(${(fx - tx) * 0.5}deg) rotateY(${fy * 0.45}deg)`, offset: at(pk), easing: 'cubic-bezier(.3,.2,.55,1)' },
+      { transform: `rotateX(${fx - tx}deg) rotateY(${fy}deg)`, offset: at(I1), easing: 'cubic-bezier(.25,.6,.4,1)' },
+      { transform: `rotateX(${fx - tx * 0.13}deg) rotateY(${fy}deg)`, offset: at(I2), easing: 'cubic-bezier(.25,.6,.4,1)' },
+      { transform: `rotateX(${fx}deg) rotateY(${fy}deg)`, offset: at(L) },
+      { transform: `rotateX(${fx}deg) rotateY(${fy}deg)`, offset: 1 },
+    ]);
+    // 位置：START から浮く → 弧 → 落ちて I1（トンッ）→ 大きく弾む → I2（ト）→ 小さく弾む → L（トン）
+    const up = 'cubic-bezier(.2,.7,.4,1)', down = 'cubic-bezier(.6,0,.9,.45)';
+    A(el, [
+      { transform: `translate(${o.from.x}px,${o.from.y}px)`, offset: 0 },
+      { transform: `translate(${o.from.x}px,${o.from.y - s * 0.35}px)`, offset: at(P.lift), easing: 'cubic-bezier(.2,.7,.3,1)' },
+      { transform: `translate(${peak.x}px,${peak.y}px)`, offset: at(pk), easing: 'cubic-bezier(.5,0,.95,.6)' },
+      { transform: `translate(${x0}px,${y}px)`, offset: at(I1), easing: up },
+      { transform: `translate(${x0 + dx1 / 2}px,${y - h1}px)`, offset: at(m1), easing: down },
+      { transform: `translate(${x0 + dx1}px,${y}px)`, offset: at(I2), easing: up },
+      { transform: `translate(${x0 + dx1 + dx2 / 2}px,${y - h2}px)`, offset: at(m2), easing: down },
+      { transform: `translate(${o.land.x}px,${y}px)`, offset: at(L) },
+      { transform: `translate(${o.land.x}px,${y}px)`, offset: 1 },
+    ]);
+    // 大きさ：前へ出て大きく → 着地のたびにつぶれる（強・中・弱）→ 1
+    A(sc, [
+      { opacity: 0, transform: 'scale(.42)', offset: 0 },
+      { opacity: 1, transform: 'scale(.62)', offset: at(P.lift) },
+      { opacity: 1, transform: 'scale(1.35)', offset: at(pk) },
+      { opacity: 1, transform: 'scale(1.06)', offset: at(I1 - 30) },
+      { opacity: 1, transform: 'scale(1.15,.85)', offset: at(I1 + 20) },
+      { opacity: 1, transform: 'scale(1.03)', offset: at(m1) },
+      { opacity: 1, transform: 'scale(1.08,.92)', offset: at(I2 + 15) },
+      { opacity: 1, transform: 'scale(1)', offset: at(m2) },
+      { opacity: 1, transform: 'scale(1.05,.95)', offset: at(L + 10) },
+      { opacity: 1, transform: 'scale(1)', offset: at(L + 90) },
+      { opacity: 1, transform: 'scale(1)', offset: 1 },
+    ]);
+    // 影：着地で濃く・弾むと薄く小さく
+    const S = (op, x, sc2, t) => ({ opacity: op, transform: `translate(${x}px,${y}px) scale(${sc2})`, offset: at(t) });
+    A(sh, [{ opacity: 0, transform: `translate(${x0}px,${y}px) scale(.4)`, offset: 0 }, S(0.15, x0, 0.6, pk), S(0.72, x0, 1, I1), S(0.42, x0 + dx1 / 2, 0.8, m1), S(0.7, x0 + dx1, 1, I2), S(0.58, x0 + dx1 + dx2 / 2, 0.93, m2), S(0.7, o.land.x, 1, L), { opacity: 0.6, transform: `translate(${o.land.x}px,${y}px) scale(1)`, offset: 1 }]);
+    o.impacts = [I1, I2, L];
+  }
   /** 1個分の動き（Web Animations）を作る。止まる向き＝出目の面 */
   function die(ov, o) {
     const el = document.createElement('div'); el.className = 'd3-mv'; el.dataset.v = String(o.v);
@@ -72,6 +126,7 @@
     } else {
       // 回る量：X・Y を何周か（ばらつきは周回の数だけ）→ 最後は出目の向き。止まる直前の約0.25秒で強く減速
       const nx = o.dir * (P.turns + (o.k % 2)), ny = -o.dir * (P.turns + ((o.k + 1) % 2)), fx = bx + 360 * nx, fy = by + 360 * ny;
+      if (P.bounce) bounceDie(o, { A, at, cube, el, sc, sh, bx, by, fx, fy, L, P }); else {
       A(cube, [
         { transform: `rotateX(${bx - 40}deg) rotateY(${by + 30}deg)`, offset: 0 },
         { transform: `rotateX(${fx * P.airShare}deg) rotateY(${fy * (P.airShare - 0.05)}deg)`, offset: at(P.air * o.sp) },
@@ -102,6 +157,7 @@
       ]);
       A(sh, [{ opacity: 0, transform: `translate(${o.land.x}px,${o.land.y}px) scale(.4)`, offset: 0 }, { opacity: 0.15, transform: `translate(${o.land.x}px,${o.land.y}px) scale(.6)`, offset: at(P.peak * o.sp) },
         { opacity: 0.7, transform: `translate(${o.land.x}px,${o.land.y}px) scale(1)`, offset: at(P.land * o.sp) }, { opacity: 0.6, transform: `translate(${o.land.x}px,${o.land.y}px) scale(1)`, offset: 1 }]);
+      }
     }
     // 止まった瞬間の光（強く光ってすぐ弱く）と粒（8つが外へ）
     A(glow, [{ opacity: 0, transform: 'scale(.5)', offset: 0 }, { opacity: 0, transform: 'scale(.5)', offset: Math.max(0, at(L - 20) - 0.001) }, { opacity: 1, transform: 'scale(1.05)', offset: at(L + 60) }, { opacity: 0.5, transform: 'scale(1.15)', offset: at(L + 380) }, { opacity: 0.4, transform: 'scale(1.15)', offset: 1 }], 'ease-out');
