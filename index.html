@@ -3752,9 +3752,10 @@ main:has(>#app>.ds) h1{display:none}
 .sts .stgold i{background:url(./assets/ui/gold/coin.png) center/contain no-repeat;box-shadow:none;border-radius:0}
 .svs .card.slot.svauto::after{content:"";position:absolute;left:87.4%;top:35.5%;width:11.2%;aspect-ratio:1;transform:translate(-50%,-50%);background:url(./assets/ui/gold/coin.png) center/contain no-repeat;pointer-events:none}
 
-/* 2026-10-12 試遊（14・15）：新人支援の 1000G＋ジャガイモ・世界地図の解放＝獲得・解放の帯（会話の窓のような額・角飾り・丸い印の枠を使わない）。アイコンは既存の正式素材（G＝coin.png・ジャガイモ＝items/body_1012/01・地図＝worldmap_unlock） */
-.mmnote.band{width:calc(100% + 28px);max-width:none;margin:0 -14px;min-height:0;justify-content:center;padding:12px 44px;border:0;border-radius:0;box-shadow:none;background:linear-gradient(90deg,transparent,#e2c27a 22%,#e2c27a 78%,transparent) top/100% 1.5px no-repeat,linear-gradient(90deg,transparent,#e2c27a 22%,#e2c27a 78%,transparent) bottom/100% 1.5px no-repeat,linear-gradient(90deg,transparent,rgba(10,22,58,.92) 16%,rgba(10,22,58,.92) 84%,transparent)}
+/* 2026-10-12 試遊（14・15）：新人支援の 1000G＋ジャガイモ・世界地図の解放＝アイコンと文字だけ（帯・額・角飾り・丸い印の枠を使わない。文字は影で読めるように）。アイコンは既存の正式素材（G＝coin.png・ジャガイモ＝items/body_1012/01・地図＝worldmap_unlock） */
+.mmnote.band{width:auto;max-width:min(100%,380px);margin:0 auto;min-height:0;justify-content:center;padding:6px 8px;border:0;border-radius:0;box-shadow:none;background:none;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.95),0 0 12px rgba(0,0,0,.8)}
 .mmnote.band .mmnote-cn{display:none}
+.mmnote.band .mmnote-row b,.mmnote.band .mmnote-tx b{font-size:18px;color:#fff6dc;text-shadow:inherit}
 .mmnote.band .mmnote-ic.img,.mmnote.band .mmnote-ic.item{width:auto;height:auto;border:0;border-radius:0;background:none!important;box-shadow:none}
 .mmnote.band .mmnote-ic.img img{width:40px;height:40px}
 .mmnote.band .mmnote-ic.sm.img img{width:34px;height:34px}.mmnote.band .mmnote-ic.gold.sm{width:30px;height:30px}
