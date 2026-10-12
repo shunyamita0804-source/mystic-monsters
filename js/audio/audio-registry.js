@@ -20,7 +20,8 @@
   const AK = BGM_DIR + 'alkakrab_fantasy_rpg_vol3/';  // alkakrab「Free 25 Fantasy RPG Game Tracks Vol.3」（商用利用可・クレジット任意。AUDIO_CREDITS.md）
   const AKSE = SE_DIR + 'alkakrab_fantasy_rpg_vol3/'; // 同じパックの Fx（短い効果音）
   const HG = BGM_DIR + 'hydrogene_16bit_rpg/';         // HydroGene「High Quality 16-bit RPG Music」（CC0。AUDIO_CREDITS.md）
-  const MMO = SE_DIR + 'mystic_monsters_official/';   // ミスティックモンスターズの正式素材（ユーザー提供・2026-10-04。AUDIO_CREDITS.md）
+  const MMO = SE_DIR + 'mystic_monsters_official/';
+  const MMO12 = SE_DIR + 'mystic_monsters_official_1012/';   // 2026-10-12 正式 SE 3種（ユーザー納品・Pixabay。MP3 を OGG Vorbis q5 に変換しただけ。AUDIO_CREDITS.md）   // ミスティックモンスターズの正式素材（ユーザー提供・2026-10-04。AUDIO_CREDITS.md）
   const LIC = BGM_DIR + 'licensed_20261007/';        // 2026-10-07 正式採用の BGM 14曲（DOVA-SYNDROME・Pixabay・itch.io。ユーザー提供の MP3／WAV を OGG Vorbis q5 に変換しただけ・曲の切り出しはしない。作者・出典は AUDIO_CREDITS.md）
   const LIC8 = BGM_DIR + 'licensed_20261008/';
   const LIC12 = BGM_DIR + 'licensed_20261012/';      // 2026-10-12 正式採用：公式ランク戦の曲（ユーザー納品「公式ランク.mp3」を OGG Vorbis q5 に変換しただけ。作曲者・出典は AUDIO_CREDITS.md＝要確認）       // 2026-10-08 正式採用：街の曲「冒険への誘い」（ユーザー提供の MP3 を OGG Vorbis q5 に変換しただけ。AUDIO_CREDITS.md）
@@ -92,7 +93,7 @@
     GOLD_GET:   { src: IV + 'bell.ogg', gain: 7.0 },                  // 元が小さい（-36 LUFS）
     CHEST_OPEN: { src: UI + 'confirm_style_6_001.ogg', gain: 0.85 },   // 段階の分からない宝箱だけ（Chapter の宝箱は 2026-10-06 から TREASURE_TIER_1〜3 のどれか1つ）
     EVENT:      { src: IV + 'ping.ogg', gain: 5.0 },   // 旧：出来事の結果。Chapter の出来事は 2026-10-06 から EVENT_TRIGGER（出来事が起きた瞬間）
-    RIVAL_APPEAR: { src: MMO + '08_encounter_rival.ogg', gain: 1.0 },   // 2026-10-06 正式：ライバル（リュウ）／固定の強敵の遭遇
+    RIVAL_APPEAR: { src: MMO12 + 'rival_appear_epic_whoosh.ogg', gain: 0.76 },   // 2026-10-12 正式：ライバル（リュウ）の登場の瞬間だけ＝DRAGON-STUDIO「Epic Whoosh」（-13.6 LUFS → 約 -16）。旧：08_encounter_rival（ファイルは外した）   // 2026-10-06 正式：ライバル（リュウ）／固定の強敵の遭遇
     WILD_ALERT: { src: MMO + '06_encounter_wild.ogg', gain: 1.05 },   // 2026-10-06 正式：通常の野生の遭遇（旧：alkakrab Fx 3）
     RARE_ALERT: { src: MMO + '07_encounter_rare.ogg', gain: 0.74 },   // 2026-10-06 正式：レアの遭遇（野生の音を使い回さない）
     TOURNAMENT_ARRIVAL: { silent: true },   // 大会会場への到着：2026-10-03 第4弾の試遊で NG → 無音（代わりの音は選ばない）（ほかの Fx を使い回さない）
@@ -109,8 +110,8 @@
     EVENT_TRIGGER:       { src: MMO + '14_event_trigger.ogg', gain: 1.0 },          // 出来事のマスで出来事が始まった瞬間（休むマスの回復は REST_RECOVER）
     BRANCH_SELECT:       { src: MMO + '15_branch_select.ogg', gain: 1.05 },         // 分かれ道で道を選んだ瞬間
     // ---- 大会・バトル ----
-    MATCHUP:       { silent: true },   // 対戦相手の発表（大会の対戦前の画面）：2026-10-03 第4弾の試遊で NG → 無音（代わりの音は選ばない）。旧：alkakrab Fx 1
-    BATTLE_START:  { src: IV + 'bass_thud_electric.ogg', gain: 1.5 }, // 実戦の開始（「FIGHT!」）→ 0.45秒後に戦闘の BGM【要試聴】
+    MATCHUP:       { src: MMO12 + 'vs_cinematic_swoosh_impact.ogg', gain: 0.58 },   // 2026-10-12 正式：VS の金色の斜線・VS のロゴが出る瞬間（tourVsShow の battle.matchup）＝Universfield「Cinematic Swoosh Impact」（-11.3 LUFS → 約 -16）。旧：2026-10-03 第4弾で NG の Fx 1 → 無音
+    BATTLE_START:  { src: MMO12 + 'battle_start_cinematic_impact_boom_05.ogg', gain: 1.0 }, // 2026-10-12 正式：試合開始（「FIGHT!」）＝Universfield「Cinematic Impact Boom 05」（-16.6 LUFS）→ 0.45秒後に戦闘の BGM。旧：Ivokard bass_thud_electric（ファイルは外した）
     ROULETTE_STOP: { src: UI + 'confirm_style_2_004.ogg', gain: 0.45 },  // 技ルーレットの STOP（旧：攻撃の音 attack_1 が鳴っていた）【要試聴】
     BATTLE_ATTACK: { src: IV + 'attack_1.ogg', gain: 2.8 },
     BATTLE_HIT:    { src: IV + 'hit_1.ogg', gain: 3.3 },

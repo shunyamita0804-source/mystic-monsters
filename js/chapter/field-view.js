@@ -612,7 +612,7 @@
       <div class="chh-r chh-chips"><div class="chh-turn chip">Turn <b id="chturn">${Math.min(r.turnsUsed + (P8().boardPhase(m) === 'roll' ? 1 : 0), r.turnLimit)}</b><small> / ${r.turnLimit}</small></div>
       <div class="chh-fat chip f-${lv}" id="chfat"><span>空腹</span><b>${fat}</b><i style="--f:${fat}%"></i></div>
       <div class="chh-gold chip" id="chgold">${COIN_SVG}<b>${(gS() && gS().g) | 0}</b></div>
-      <div class="chh-tix chip" id="chtix" title="特訓チケット"><span>特訓チケット</span><b>×${tix}</b></div></div></header>`;
+      <div class="chh-tix chip" id="chtix" title="特訓チケット" aria-label="特訓チケット ${tix}枚"><img class="chh-tk" src="./assets/ui/ticket/training_ticket.png" alt="" aria-hidden="true" decoding="async"><span>特訓</span><b>×${tix}</b></div></div></header>`;
   }
   function refreshHud(m) { const h = $('#chf-ui .chh'); if (h) h.outerHTML = hudHtml(m); }
   const ICON = {

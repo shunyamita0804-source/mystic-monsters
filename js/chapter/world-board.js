@@ -109,7 +109,7 @@
   function progSet(node) { const pc = Math.round(progressAt(node) * 1000) / 10, f = $('#chface'), b = document.querySelector('.wbh .chh-fill'), l = document.querySelector('.wbh .chh-line');
     if (f) f.style.left = pc + '%'; if (b) b.style.width = pc + '%'; if (l) l.setAttribute('aria-label', `ゴールまでの進み具合 ${Math.round(pc)}%`); }
   // 特訓チケットの小さな印（2026-10-12 D-5・仮の線画＝正式の絵ではない。正式アイコンが届いたら差し替える）
-  const TIX = '<svg class="chh-tk" viewBox="0 0 24 16" aria-hidden="true"><path d="M2 3h20v3a2 2 0 0 0 0 4v3H2v-3a2 2 0 0 0 0-4z" fill="#e6bf62" stroke="#8a6420" stroke-width="1.2"/><path d="M15 3.5v9" stroke="#8a6420" stroke-width="1" stroke-dasharray="1.4 1.4"/><path d="M8.5 5.3l.9 1.8 2 .3-1.4 1.4.3 2-1.8-1-1.8 1 .3-2-1.4-1.4 2-.3z" fill="#fff6d6"/></svg>';
+  const TIX = '<img class="chh-tk" src="./assets/ui/ticket/training_ticket.png" alt="" aria-hidden="true" decoding="async">';   // 2026-10-12：特訓チケットの正式画像（拳＋月桂樹・assets/ui/ticket/。旧：仮の線画）
   function hudHtml(m) {
     const r = m.raise, fat = Math.round(r.fatigue || 0), lv = fat > 80 ? 'hi' : fat >= 50 ? 'mid' : 'lo', S = gS() || {};   // 2026-10-12 D-2：81 以上で赤（80 までは通常）
     const ph = P8().boardPhase(m), pl = placeName(r.node), pc = Math.round(progressAt(r.node) * 1000) / 10, fs = faceSrc(m);
@@ -175,7 +175,7 @@
 .wbw .wbh .chh-turn small{font-size:11px;color:#dfe6f8}
 .wbw .wbh .chh-fat span{font-size:11.5px;font-weight:700;color:#dfe6f8}
 .wbw .wbh .chh-fat.f-hi b{color:#ff5c4d}
-.wbw .wbh .chh-tix{gap:3px}.wbw .wbh .chh-tix .chh-tk{width:19px;height:13px;flex:none}
+.wbw .wbh .chh-tix{gap:3px}.wbw .wbh .chh-tix .chh-tk{width:26px;height:18px;flex:none;object-fit:contain}
 .wbw .wbh .chh-tix span{font-size:10.5px;font-weight:700;color:#dfe6f8;letter-spacing:0}
 .wbw .wbh .chh-tix b{font-size:14px}
 #app>.chfw.wbw{--chdeck:calc(clamp(136px,20.6dvh,180px) + 26px + env(safe-area-inset-bottom,0px))}

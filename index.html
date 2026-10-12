@@ -1302,6 +1302,7 @@ html:has(#app>.chfw),html:has(#app>.chfw) body{background:#0b1636}
 .chh-tix span{font-size:10px;color:#cfd8f0}.chh-tix b{font:800 13px/1 var(--mm-font-head);color:#fff}
 /* 2026-10-05 試遊：特訓チケットは所持金の右に（1行に収める＝折り返さない。幅の狭い画面ではチップの余白と文字を少し詰める）。値は既存の S.trainTix */
 .chh-chips{flex-wrap:nowrap;min-width:0}.chh-tix{flex:0 1 auto;min-width:0}
+.chh-tix .chh-tk{width:24px;height:17px;flex:none;object-fit:contain} /* 2026-10-12：特訓チケットの正式画像（assets/ui/ticket/） */
 @media (max-width:389px){.chh-chips{gap:4px}.chh .chip{padding:0 7px;gap:4px}.chh-tix span{font-size:9.5px;letter-spacing:-.02em}.chh-turn b,.chh-fat b,.chh-gold b{font-size:13px}}
 @media (max-width:365px){.chh .chip{padding:0 6px;gap:3px}.chh-tix span{font-size:9px;letter-spacing:-.04em}}
 /* 出目の小さな表示（右上・HUD の下）。サイコロの停止面が主で、文字は補助 */
@@ -5359,10 +5360,11 @@ function tourVsShow(m,o,opt){opt=opt||{};return new Promise(res=>{const calm=!!(
  d.innerHTML=`<div class="tvsbg" style="background-image:url(${opt.bg||TB_ARENA(S.m&&S.m.raise&&S.m.raise.tour?S.m.raise.tour.rank:0)})"></div><img class="tvsline" src="${TB_UI}vs/vs_diagonal.png" alt=""><b class="tvshd">${p11Esc(opt.head||"マッチアップ")}</b><div class="tvsm op"><span class="mon">${tbVs(o,1)}</span></div><div class="tvsm me"><span class="mon">${tbVs(m,0)}</span></div>
  <div class="tvsnp op"><img src="${TB_UI}vs/vs_nameplate.png" alt=""><b>${p11Esc(o.name)}</b><img class="tvsorn" src="${TB_UI}vs/vs_ornament.png" alt=""></div><div class="tvsnp me"><img src="${TB_UI}vs/vs_nameplate.png" alt=""><b>${p11Esc(m.name)}</b><img class="tvsorn" src="${TB_UI}vs/vs_ornament.png" alt=""></div>
  <img class="tvslogo" src="${TB_UI}vs/vs_logo.png" alt="VS"><i class="tvsfl"></i>`;
- document.body.appendChild(d);try{MMFEEL.emit("battle.matchup")}catch(e){}
+ document.body.appendChild(d);
  let done=false;const T=[];const fin=()=>{if(done)return;done=true;T.forEach(clearTimeout);res(d)};
  d.onclick=()=>{if(!d.classList.contains("go"))return;d.classList.add("fast");fin()};
- requestAnimationFrame(()=>d.classList.add("in"));T.push(setTimeout(()=>d.classList.add("go"),500),setTimeout(fin,calm?900:2500))})}
+ requestAnimationFrame(()=>d.classList.add("in"));const se=()=>{try{MMFEEL.emit("battle.matchup")}catch(e){}};if(calm)se();else T.push(setTimeout(se,380)); // 2026-10-12 正式 SE（Cinematic Swoosh Impact）：音の山（0.4秒）が VS のロゴの着地（約0.8秒）に重なるよう、金色の斜線が出始める頃に鳴らす
+ T.push(setTimeout(()=>d.classList.add("go"),500),setTimeout(fin,calm?900:2500))})}
 function tourVsOut(d){if(!d)return;d.classList.add("out");setTimeout(()=>d.remove(),420)}
 
 function p9TourResult(msg){const m=S.m,t=m.raise.tour,lg=t.league,rs=t.result,w=rs.reward,st=MMP8L.standings(lg);

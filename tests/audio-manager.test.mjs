@@ -387,7 +387,7 @@ test('AUDIO-23：2026-10-03 第4弾の試遊で NG の音は無音（silent＝�
   const { got } = loadRegistry();
   // BGM の TOWN・FARM・大会（受付〜結果）は第4弾で無音 → 第5弾で別の曲（HydroGene）を仮採用（AUDIO-24）。NG の曲そのものは使わない（下）
   assert.deepEqual(got.se.TITLE_START, { src: './assets/audio/se/mystic_monsters_official/title_start.ogg', gain: 0.8 }, '2026-10-04：開始の音は正式素材（ユーザー提供）');
-  for (const k of ['UI_CONFIRM', 'DICE_LAND', 'DICE_ROLL', 'DICE_STOP', 'TILE_STOP', 'TOURNAMENT_ARRIVAL', 'MATCHUP']) assert.deepEqual(got.se[k], { silent: true }, `SE ${k}`);   // DICE_THROW は 2026-10-06 から正式の完成 SE（AUDIO-27。LAND／ROLL／STOP は鳴らさないまま）
+  for (const k of ['UI_CONFIRM', 'DICE_LAND', 'DICE_ROLL', 'DICE_STOP', 'TILE_STOP', 'TOURNAMENT_ARRIVAL']) assert.deepEqual(got.se[k], { silent: true }, `SE ${k}`);   // MATCHUP は 2026-10-12 から正式 SE（AUDIO-38）   // DICE_THROW は 2026-10-06 から正式の完成 SE（AUDIO-27。LAND／ROLL／STOP は鳴らさないまま）
   assert.match(srcsOf(got.se.CHAPTER_START)[0], /fx_2\.ogg$/, 'Chapter 開始の音は OK（そのまま）'); assert.match(srcsOf(got.bgm.MARKET)[0], /town_village_theme_2\.ogg$/, '市場の曲は OK（そのまま）');
   const all = JSON.stringify(got);
   for (const f of ['ambient_4_tranquil_radiance', 'ambient_3_lost_river', 'event_music_4', 'event_music_3', 'town_village_theme_1', 'dungeon_exploration', 'confirm_style_1_004', 'confirm_style_5_001', 'pluck_3', 'pluck_5', 'fx_1.ogg']) assert.ok(!all.includes(f), `NG の音 ${f} を別の場面へ使い回さない`);
@@ -448,7 +448,7 @@ test('AUDIO-27：2026-10-06 正式音源（ユーザー提供・ゲームの所�
   assert.deepEqual(got.bgm.PROLOGUE, { silent: true }, '2026-10-06 重大修正：プロローグ BGM は削除（プツプツ鳴る）');
   assert.deepEqual(got.se.TITLE_START, { src: MMO + 'title_start.ogg', gain: 0.8 }, '開始の音はそのまま');
   const want = { DICE_THROW: '01_dice_large_full', TRAINING_ITEM_SPAWN: '02_training_item_spawn', MARKET_PURCHASE: '03_market_purchase_confirm', TRAINING_SUCCESS: '04_training_success', MONSTER_ENTRY: '05_small_monster_entry_steps_4step',
-    WILD_ALERT: '06_encounter_wild', RARE_ALERT: '07_encounter_rare', RIVAL_APPEAR: '08_encounter_rival', TREASURE_TIER_1: '09_treasure_open_tier1', TREASURE_TIER_2: '10_treasure_open_tier2', TREASURE_TIER_3: '11_treasure_open_tier3', TREASURE_TIER_4: '12_treasure_open_tier4',
+    WILD_ALERT: '06_encounter_wild', RARE_ALERT: '07_encounter_rare', TREASURE_TIER_1: '09_treasure_open_tier1', TREASURE_TIER_2: '10_treasure_open_tier2', TREASURE_TIER_3: '11_treasure_open_tier3', TREASURE_TIER_4: '12_treasure_open_tier4',
     REST_RECOVER: '13_rest_recover', EVENT_TRIGGER: '14_event_trigger', BRANCH_SELECT: '15_branch_select' };
   for (const [k, f] of Object.entries(want)) { assert.equal(srcsOf(got.se[k])[0], MMO + f + '.ogg', k); assert.ok(got.se[k].gain > 0.5 && got.se[k].gain <= 1.2, `${k} の gain`); assert.ok(existsSync(path.join(ROOT, MMO, f + '.ogg')), f); }
   assert.ok(existsSync(path.join(ROOT, MMB, 'mystic_monsters_bureau_bgm_official.ogg'))); assert.ok(!existsSync(path.join(ROOT, MMB, 'mystic_monsters_prologue_bgm_official.ogg')), '2026-10-06：プロローグ BGM のファイルは置かない');
@@ -634,4 +634,15 @@ test('AUDIO-37：2026-10-12 公式ランク戦（E〜S の実戦の間だけ）�
     assert.equal(active(A).length, 1, sc); assert.match(active(A)[0].src, /licensed_20261012\/official_rank_battle/, sc);
     A.scene('RESULT'); await tick(800); assert.equal(active(A).length, 1, '二重再生しない'); assert.match(active(A)[0].src, /03_royal_castle/);
   }
+});
+
+test('AUDIO-38：2026-10-12 正式 SE 3種（ライバルの登場・VS・試合開始）＝用途どおり・旧い音を重ねない・VS は斜線が出始める頃（ロゴの着地に音の山）', () => {
+  const { got } = loadRegistry();
+  assert.match(srcsOf(got.se.RIVAL_APPEAR)[0], /mystic_monsters_official_1012\/rival_appear_epic_whoosh\.ogg$/);
+  assert.match(srcsOf(got.se.MATCHUP)[0], /mystic_monsters_official_1012\/vs_cinematic_swoosh_impact\.ogg$/);
+  assert.match(srcsOf(got.se.BATTLE_START)[0], /mystic_monsters_official_1012\/battle_start_cinematic_impact_boom_05\.ogg$/);
+  for (const f of ['rival_appear_epic_whoosh', 'vs_cinematic_swoosh_impact', 'battle_start_cinematic_impact_boom_05']) assert.ok(existsSync(path.join(ROOT, `assets/audio/se/mystic_monsters_official_1012/${f}.ogg`)), f);
+  assert.ok(!existsSync(path.join(ROOT, 'assets/audio/se/ivokard/bass_thud_electric.ogg')) && !existsSync(path.join(ROOT, 'assets/audio/se/mystic_monsters_official/08_encounter_rival.ogg')), '旧い音は置かない');
+  const html = readFileSync(path.join(ROOT, 'index.html'), 'utf8'), vs = html.slice(html.indexOf('function tourVsShow('), html.indexOf('function tourVsOut('));
+  assert.equal((vs.match(/MMFEEL\.emit\("battle\.matchup"\)/g) || []).length, 1, 'VS の音は1回だけ'); assert.match(vs, /setTimeout\(se,380\)/);
 });
