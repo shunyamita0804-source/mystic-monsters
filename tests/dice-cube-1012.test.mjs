@@ -50,11 +50,16 @@ test('DC-03：比較試作はゲーム本体から読み込まない・デモの
   assert.doesNotMatch(html, /prototype\/dice_1012/);
   const demo = read('prototype/dice_1012/index.html');
   for (const p of ['js/chapter/dice-cube.js', 'js/chapter/dice-renderer.js', 'assets/audio/se/mystic_monsters_official/01_dice_large_full.ogg', 'assets/fields/ch1a/dice/dice_blank.webp', 'assets/dice/std/10.webp']) assert.ok(fs.existsSync(path.join(ROOT, p)), p);
-  for (const k of ['std', 'soft']) for (const ext of ['ogg', 'm4a']) {
+  // B4 版（今回の候補）と旧B2 版（不採用候補・比べるためだけ）。原音の MP3 は置かない（Pixabay の原音単体の再配布の禁止）
+  assert.deepEqual(fs.readdirSync(path.join(ROOT, 'prototype/dice_1012/se')).sort(), ['dice_magic_b2_old.m4a', 'dice_magic_b2_old.ogg', 'dice_magic_b4.m4a', 'dice_magic_b4.ogg']);
+  for (const k of ['b4', 'b2_old']) for (const ext of ['ogg', 'm4a']) {
     const f = path.join(ROOT, `prototype/dice_1012/se/dice_magic_${k}.${ext}`);
     assert.ok(fs.existsSync(f), f); const n = fs.statSync(f).size; assert.ok(n > 10000 && n < 80000, `${f} ${n}`);
   }
-  assert.match(demo, /dice_magic_std/); assert.match(demo, /dice-cube\.js/);
+  assert.match(demo, /data-v="b4" class="on">B4（新）/, '既定は B4 版'); assert.match(demo, /旧B2・不採用候補/);
+  assert.match(fs.readFileSync(path.join(ROOT, 'prototype/dice_1012/se/dice_magic_b4.m4a')).subarray(4, 8).toString(), /ftyp/);
+  assert.equal(fs.readFileSync(path.join(ROOT, 'prototype/dice_1012/se/dice_magic_b4.ogg')).subarray(0, 4).toString(), 'OggS');
+  assert.equal(fs.readdirSync(path.join(ROOT, 'prototype/dice_1012'), { recursive: true }).filter((f) => /\.mp3$/i.test(f)).length, 0); assert.match(demo, /dice-cube\.js/);
   const reg = read('js/audio/audio-registry.js');
   assert.doesNotMatch(reg, /dice_magic|dice_1012/, '正式の SE の登録は変えていない');
 });

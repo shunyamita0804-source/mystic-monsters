@@ -5,7 +5,8 @@
 <!--
   【比較試作】サイコロ演出と魔法系 SE（2026-10-12 開発23 B）。ゲーム本体とは完全に独立した1ページ（消しても本体に影響なし）。
    旧＝今のゲームのサイコロ（js/chapter/dice-renderer.js・SE は正式 SE 01_dice_large_full）
-   新＝立体サイコロの試作（js/chapter/dice-cube.js・SE は A1 Magical Whoosh → B2 Spin Whoosh 1 → C1 Magic Spell 02 を短く編集した1本）
+   新＝立体サイコロの試作（js/chapter/dice-cube.js・SE は A1 Magical Whoosh → B4 Slow Whoosh → C1 Magic Spell 02（控えめ）を短く編集した1本）
+   旧B2＝前の比較版（B2 Spin Whoosh 1。回転に対して速すぎる＝不採用候補・比べるためだけに残す）
    出目はこのページが決めて両方に同じ値を渡す（演出は値を変えない）。正式採用はユーザーの確認のあと。
 -->
 <style>
@@ -75,7 +76,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--navy);color:#fff
     <h1>サイコロ演出の比較<small>試作・正式採用ではない</small></h1>
     <div class="row"><span>演出</span><div class="seg" id="mode"><button data-v="old">旧（今のゲーム）</button><button data-v="new" class="on">新（立体・試作）</button></div></div>
     <div class="row"><span>個数</span><div class="seg" id="count"><button data-v="1" class="on">1個</button><button data-v="2">2個</button></div>
-      <span style="min-width:0;margin-left:6px">SE</span><div class="seg" id="se"><button data-v="std" class="on">標準</button><button data-v="soft">C1控えめ</button><button data-v="off">なし</button></div></div>
+      <span style="min-width:0;margin-left:6px">SE</span><div class="seg" id="se"><button data-v="b4" class="on">B4（新）</button><button data-v="b2">旧B2・不採用候補</button><button data-v="off">なし</button></div></div>
     <div class="row"><span>出目</span><div class="seg" id="val"><button data-v="0" class="on">ランダム</button><button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button><button data-v="4">4</button><button data-v="5">5</button><button data-v="6">6</button></div></div>
     <div class="row"><span>連続</span><div class="seg" id="rep"><button data-v="1" class="on">1回</button><button data-v="10">10回</button></div>
       <span style="min-width:0;margin-left:6px">動き</span><div class="seg" id="calm"><button data-v="0" class="on">ふつう</button><button data-v="1">減らす</button></div></div>
@@ -91,20 +92,24 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--navy);color:#fff
 (function () {
   'use strict';
   const B = window.MM_DEMO_BASE, $ = (s) => document.querySelector(s), host = $('#host');
-  const st = { mode: 'new', count: 1, se: 'std', val: 0, rep: 1, calm: 0, busy: false };
+  const st = { mode: 'new', count: 1, se: 'b4', val: 0, rep: 1, calm: 0, busy: false };
   // ---- SE（Web Audio。最初のタップで用意）----
-  const SE = { old: [B + 'assets/audio/se/mystic_monsters_official/01_dice_large_full.ogg', 0.95], std: [B + 'prototype/dice_1012/se/dice_magic_std', 0.9], soft: [B + 'prototype/dice_1012/se/dice_magic_soft', 0.9] };
+  const SE = { old: [B + 'assets/audio/se/mystic_monsters_official/01_dice_large_full.ogg', 0.95], b4: [B + 'prototype/dice_1012/se/dice_magic_b4', 0.9], b2: [B + 'prototype/dice_1012/se/dice_magic_b2_old', 0.9] };
   let ctx = null; const buf = {};
-  async function load(k) {
-    if (buf[k] !== undefined) return buf[k];
-    const [src, gain] = SE[k]; const urls = /\.ogg$/.test(src) ? [src] : [src + '.ogg', src + '.m4a'];
-    for (const u of urls) { try { const r = await fetch(u); const ab = await r.arrayBuffer(); buf[k] = { b: await ctx.decodeAudioData(ab), gain, u }; return buf[k]; } catch (e) { /* 次の形式 */ } }
-    buf[k] = null; return null;
+  // OGG が鳴らない古い iPhone は M4A へ。読み込みは1回だけ（同時に呼ばれても同じ読み込みを待つ）
+  function load(k) {
+    if (!buf[k]) buf[k] = (async () => {
+      const [src, gain] = SE[k]; const urls = /\.ogg$/.test(src) ? [src] : [src + '.ogg', src + '.m4a'];
+      for (const u of urls) { try { const r = await fetch(u); if (!r.ok) throw new Error(r.status); const ab = await r.arrayBuffer(); return { b: await ctx.decodeAudioData(ab), gain, u }; } catch (e) { /* 次の形式 */ } }
+      return null;
+    })();
+    return buf[k];
   }
-  function unlock() { if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) ctx = new AC(); } if (ctx && ctx.state !== 'running') ctx.resume().catch(() => {}); if (ctx) ['old', 'std', 'soft'].forEach((k) => load(k)); }
+  function unlock() { if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) ctx = new AC(); } if (ctx && ctx.state !== 'running') ctx.resume().catch(() => {}); if (ctx) ['old', 'b4', 'b2'].forEach((k) => load(k)); }
   async function playSe(k) {
     if (!ctx || st.se === 'off') return; const x = await load(k); if (!x) return;
     const s = ctx.createBufferSource(), g = ctx.createGain(); g.gain.value = x.gain; s.buffer = x.b; s.connect(g).connect(ctx.destination); s.start();
+    (window.MM_SE_LOG = window.MM_SE_LOG || []).push({ k, u: x.u, t: performance.now(), dur: x.b.duration });   // 確認用（何を鳴らしたか）
   }
   // 両方のサイコロが MMFEEL.emit('dice.throw') を呼ぶ＝投げ始めに SE を1回（ゲームと同じ形）
   // 完全に止まった瞬間（dice.stop）も覚える＝旧・新を同じ物差しで比べる

@@ -26,6 +26,19 @@ ZIP の README・LICENSE の原文は、受け取った ZIP の中にある（�
 
 置き換えて外した旧い曲（記録は下の表に残す）：PGS「Battle Music 1」（旧 WILD_BATTLE）・「Battle Music 2」（旧 TOURNAMENT_BATTLE_LOW）・alkakrab「Battle of the Skies」（旧 RIVAL_BATTLE）・「Clash of Arcane Titans」（旧 TOURNAMENT_BATTLE_HIGH）。不採用（ユーザー指示）：「いざ出発！」「冒険への誘い」。
 
+## 2026-10-12 比較試作（PR #20・未採用）：サイコロの SE（prototype/dice_1012/se/）
+
+**正式採用ではない**（ゲームの DICE_THROW は従来の 01_dice_large_full.ogg のまま）。比較デモ prototype/dice_1012/ だけが鳴らす。原音（Pixabay の MP3）は編集・合成した1本にだけ使い、原音そのものはリポジトリ・公開サイトに置かない（Pixabay Content License は原音単体の再配布を禁止）。切り出し・音量は prototype/dice_1012/README.md。出典の確認日 2026-10-12（ユーザーの確認記録）。
+
+| ファイル | 使った原音 / 作者 | 出典 | ライセンス |
+|---|---|---|---|
+| dice_magic_b4.ogg／.m4a（今回の候補） | A1 "Magical Whoosh" / u_hyed0v3ux9 | https://pixabay.com/sound-effects/film-special-effects-magical-whoosh-148459/ | Pixabay Content License |
+| 〃 | B4 "Slow Whoosh" / StudioKolomna | https://pixabay.com/sound-effects/film-special-effects-slow-whoosh-118247/ | Pixabay Content License |
+| 〃（dice_magic_b2_old にも） | C1 "Magic Spell 02" / Universfield | https://pixabay.com/sound-effects/film-special-effects-magic-spell-02-250240/ | Pixabay Content License |
+| dice_magic_b2_old.ogg／.m4a（旧回転音・不採用候補） | B2 "Spin Whoosh 1" / floraphonic（＋A1・C1） | https://pixabay.com/sound-effects/film-special-effects-spin-whoosh-1-186596/ | Pixabay Content License |
+
+ライセンスの要約：https://pixabay.com/service/license-summary/ ・規約：https://pixabay.com/service/terms/ （クレジットは任意。権利の申し立てがあれば差し替えられるよう記録を残す）。
+
 ## 2026-10-12 正式採用：公式ランク戦の曲（assets/audio/bgm/licensed_20261012/）
 
 ユーザー納品の MP3「公式ランク.mp3」（ZIP「Claude納品_公式ランク戦BGM」の 公式ランク戦BGM/。291.32秒・44.1kHz ステレオ・Final Cut Pro の書き出し。sha256 `cf02619bf0620055b71b1278159f3c121c626a1b9bffabd80f40a034a1eceaf0`）を OGG Vorbis（q5）に変換しただけ（曲の切り出し・加工はしない。メタデータは外した）。原本の MP3 はリポジトリに置かない（ユーザーが保管）。
