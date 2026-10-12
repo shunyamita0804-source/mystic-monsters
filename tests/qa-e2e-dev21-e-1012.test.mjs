@@ -94,7 +94,7 @@ test('BE-4：野生・ライバルの練習試合は Chapter の野外の背景�
     await pg.waitForSelector('.chbat', { timeout: 20000 }); await pg.evaluate(() => bBattleGo());
     await pg.waitForSelector('#bt .mma-bg', { timeout: 20000 }); await pg.waitForTimeout(4000);
     const b = await pg.evaluate(() => { const bg = document.querySelector('#bt .mma-bg'); return { src: bg.getAttribute('src'), ofc: bg.classList.contains('ofc'), tf: getComputedStyle(bg).transform, feet: document.querySelector('#bt #m0 .mma-idle').getBoundingClientRect().bottom, H: innerHeight, r: bg.getBoundingClientRect() }; });
-    assert.match(b.src, /assets\/fields\/ch1a\/formal_1008\/ch1a_scene_01\.webp$/, `${kind}：Chapter 1 の野外（仮＝正式のフィールド背景）`); assert.equal(b.ofc, false); assert.equal(b.tf, 'none');
+    assert.match(b.src, /assets\/battle\/field_1012\/ch1_meadow\.webp$/, `${kind}：Chapter 1 の野外（2026-10-12 開発23：正式の野外のバトル背景）`); assert.equal(b.ofc, false); assert.equal(b.tf, 'none');
     const floor = b.r.top + b.r.height * 0.45; assert.ok(b.feet >= floor - b.H * 0.03, `${kind}：足もとが床（足 ${b.feet}・床の始まり ${floor}）`);
     await shot(pg, `be4_${kind}`);
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);

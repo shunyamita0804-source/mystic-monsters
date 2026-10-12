@@ -50,6 +50,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 | js/battle/art25d.js、js/battle/art25d-data.js、assets/battle/2p5d/、tools/battle25d/ | **ソラモ・ガウルの 2.5D バトル素材の比較試遊 `MM25D`（2026-10-08・正式採用ではない。**2026-10-09 技アニメを完全版へ差し替え＝ソラモ10技12シート・ガウル10技11シートの全97コマ（除外0・_1→_2 は1つの技）・技ごとに1つの倍率・各コマの本体を画面の中と HUD の下へ・相手側は反転。待機の立ち絵は変えていない。tests の A25-B3／B4。assets/battle/2p5d/README.md に元シート → コマ → 出力の表。**2026-10-09 四角い枠をなくした＝切れた辺だけ不規則な波で薄くする（tools/battle25d/soften.py）＋その辺の外へ同じ色の光の粒（星・火の粉・光の筋・羽根・砂。data の ex）。新しい絵は描いていない**）**：URL に `?battleArt=2p5d` を付けたときだけ、バトル画面のソラモ・ガウルの待機の立ち絵と技の演出（技シートから切り出したコマ）を新しい素材にする。`?battleArt=old` は旧の絵から始めて切り替えの札だけ出す。通常の URL では何もしない（旧素材・旧演出はそのまま・消していない）。差し込み口＝index.html の animRaw の先頭（MM25D.anim）・arena.js の待機立ち絵（MM25D.syncIdle）・stage.js の rawTiming／補助技（MM25D.timing／handles）。技の性能・判定・fight()・Phase 6・セーブは変えない。コマの使い方と使わなかった理由は assets/battle/2p5d/README.md。テスト tests/art25d-1008.test.mjs・tests/qa-e2e-art25d-1008.test.mjs。やめるときは index.html の2行（script）と animRaw の先頭の1文を消すだけ |
 | js/battle/soramo-moves-data.js、assets/battle/soramo_moves_1012/、tools/soramo1012/ | **ソラモの正式の技アニメ（2026-10-12・修正納品の46コマ）**：通常のバトルでソラモが技 0〜9 を使うとき js/battle/art25d.js の animOff が見せる（待機の立ち絵は変えない）。データ MMSOMV_DATA（tools/soramo1012/build.py が作る）・確認 tools/soramo1012/qa.mjs。§3「ソラモの技アニメ（2026-10-12）」 |
 | js/battle/gauru-moves-data.js、assets/battle/gauru_moves_1012/、tools/gauru1012/ | **ガウルの正式の技アニメ（2026-10-12 夜・最終余白調整版の95枚＝本体46・効果46・特殊3）**：通常のバトルでガウルが技 10〜19 を使うとき js/battle/art25d.js の animOff が見せる（ソラモの46コマと同じ経路・本体と効果は別の層＝同じ切り出し・着弾は相手の体）。データ MMGAMV_DATA（tools/gauru1012/build.py が作る）。§3「試遊修正一括（2026-10-12 夜）」 |
+| assets/chapter/stat_art_1012/、assets/chapter/event_art_1012/、assets/battle/field_1012/、assets/events/ch1/13〜24 | **正式画像24枚（2026-10-12 開発23・ユーザー納品をそのまま＝縮小・再圧縮なし）**：能力アップの挿絵6枚・冒険リアクション／共通の出来事2枚（js/chapter/world-board.js の CARD_ART）、Chapter 1 の出来事12枚（ch1a.js の eventPool の image＝挿絵の無かった shade〜wind_cry）、野外のバトル背景4枚（js/battle/arena.js の FIELD_BG＝Chapter 1〜4）。§3「正式画像24枚（2026-10-12 開発23）」。各 README.md に sha256 |
 | js/battle/regnas-moves-data.js、assets/battle/regnas_moves_1012/、tools/regnas1012/ | **レグナスの正式の技アニメ（2026-10-12・正式補正版 48枚）**：レグナス（IMG の 4）が技 20〜29 を使うとき js/battle/art25d.js の animOff が見せる（従来の静止ポーズ MMRP.anim は、コマが読めないときの代わり）。ライバル戦で使うのは初期の4技（20〜23）だけ＝変えていない。データ MMREMV_DATA。§3「レグナス・ジオルの技アニメ（2026-10-12）」 |
 | js/battle/jiol-moves-data.js、assets/battle/jiol_moves_1012/、tools/jiol1012/ | **ジオルの正式の技アニメ（2026-10-12・透過補正版 96枚＝本体48・効果48）**：データ MMJIMV_DATA（正式の技表の番号 1〜10）。**ジオルの技の SK の番号・性能は未決＝通常のバトルでは使わない**。開発用のプレビュー `MM25D.preview('jiol', 番号, 側)`（バトル画面が出ている間だけ）。§3「レグナス・ジオルの技アニメ（2026-10-12）」 |
 | js/battle/movedex.js | **技辞典 `MMMOVEDEX`（2026-10-06）**：技アニメーションの正式資料（assets/moves/）と技の性能を見る画面。技管理の技の詳細・技の一覧・研究所の図鑑の詳細から開く。表示だけ |
@@ -761,8 +762,8 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - **1・6 ボード**：モンスターがマスの上に立たず右下へずれていた原因＝index.html の共通の `.mon{width:96px;height:96px}` がボードのモンスターの箱にも効き、絵が箱（マスの幅×1.2）より大きく描かれていた → js/chapter/world-board.js で `.wbv .rfw-mon .mon{width:100%;height:auto}`（大きさは従来の指示どおりマスの1.2倍）。手前の景物（木・門など）が見えているマス・モンスターに重なるときは、その景物だけ半透明（js/proto/roadfirst-world.js の xray・.rfw-prop.thru 0.32。本編の Chapter 1 だけ・試作の既定は従来どおり）
 - **2 状態異常・能力の上げ下げの札**：HP の枠の名前の横に小さく1行（js/battle/arena.js の setupChips＝#st0／#st1 を名前の行の .mmchips へ移す・js/battle/rules.js の #mmail もそこへ）。左＝名前の右・右＝名前の左。行の高さ 20px 固定＝札が出てもライフのバーは動かない。名前が長いときは名前が省略される（札は最大 74%）。fight()・Phase 6 は変えない
 - **3**：野生・レア・ライバルのバトルのあとの文は「野生モンスターに負けた…」「レアモンスターに勝った！」「リュウに負けた…」（index.html の p8AfterBattle・MM_LAST_BT）。種類が分からないときだけ従来の「練習試合…」
-- **4・7 挿絵カード**（js/chapter/world-board.js の cardOpen／statCard・CARD_ART）：能力アップ＝挿絵にモンスターを大きく中央 → 道具と特訓の動き（TRAIN_ACT）→ 能力のバー（正式のバー B-26〜B-31・999 が最大）が前の値から伸びて数字が増える →「かしこさ +18」。出来事（2択を含む）＝挿絵カードを出したまま会話・選択肢 → 結果もカードの中。冒険リアクション＝挿絵カードにモンスターを大きく → 同じ動き → 会話・選択肢 → 結果。カードの間はフィナの立ち絵を出さない（会話の窓と名前の札は出す）。**正式の挿絵は未着＝仮に Chapter 1 の正式背景（formal_1008 の scene_01〜03）を使う**。挿絵の無い出来事 12種（shade・break・spring・holy_spring・herb・trip・coin・sage・charm・legend_spring・remember_dan・wind_cry）も仮の背景＋モンスター。届いたら CARD_ART／ch1a.js の eventPool の image に1行
-- **5 野生・レア・ライバルのバトルの背景**＝Chapter ごとの野外（js/battle/arena.js の FIELD_BG・fieldSrc。#bt の data-mmch）。VS の演出も同じ背景。**正式の野外のバトル背景は未着＝仮に Chapter 1＝ch1a_scene_01・Chapter 2＝ch2_field_01**。Chapter 3・4 は従来の venue。公式ランク戦・セドリックは変えていない
+- **4・7 挿絵カード**（js/chapter/world-board.js の cardOpen／statCard・CARD_ART）：能力アップ＝挿絵にモンスターを大きく中央 → 道具と特訓の動き（TRAIN_ACT）→ 能力のバー（正式のバー B-26〜B-31・999 が最大）が前の値から伸びて数字が増える →「かしこさ +18」。出来事（2択を含む）＝挿絵カードを出したまま会話・選択肢 → 結果もカードの中。冒険リアクション＝挿絵カードにモンスターを大きく → 同じ動き → 会話・選択肢 → 結果。カードの間はフィナの立ち絵を出さない（会話の窓と名前の札は出す）。**2026-10-12 開発23 で正式の挿絵に差し替えた（§3「正式画像24枚」）**
+- **5 野生・レア・ライバルのバトルの背景**＝Chapter ごとの野外（js/battle/arena.js の FIELD_BG・fieldSrc。#bt の data-mmch）。VS の演出も同じ背景。**2026-10-12 開発23 で正式の野外の背景（assets/battle/field_1012/ ch1〜ch4）に差し替えた**。公式ランク戦・セドリックは変えていない
 - 画像生成の依頼（24枚・プロンプトと参考画像）はユーザーへ ZIP で渡した（リポジトリには置かない）
 - テスト：BE-4（野生・ライバルの背景）・P7-38・QU-05 を書き直し
 
@@ -792,6 +793,15 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - **道筋の強調**（options.focus）：直前の3地点・今の地点・先の5地点（分かれ道の手前は各3）以外のマスは薄く（.rfw-tile.far・不透明度 0.22）、地面には道筋のまわりだけを明るく残す薄い幕（.rfw-veil・世界の半分の細かさの canvas・道筋が変わったときだけ描き直す）。開始の俯瞰の間は出さない。ルート・分岐の選択・セーブは変えない
 - **モンスターの大きさ**（options.monRatio 1.2）：その地点のマスの幅 × 1.2（旧：マスの約1.85倍）。足の合わせ・歩行のコマ・2.5D の立ち絵は従来どおり
 - テスト：実ブラウザ tests/qa-e2e-board-1012.test.mjs（BV-B1＝375×667・390×844・430×932 の12地点：大きさの比 1.1〜1.3・先の地点がすべて見える・分かれ道の手前は両方の道が明るい・選んだあとは反対側が薄い、BV-B2＝歩く間に倍率が急に変わらない、BV-B3＝俯瞰の間は幕なし）
+
+### 正式画像24枚（2026-10-12 開発23 A。基準 cae79b2 への差分。仮の絵の差し替えだけ）
+
+- 納品：ZIP「開発23」の 01_正式画像24枚（WebP 24枚。sha256 は納品の一覧と全部一致）。**受け取ったファイルをそのまま置いた**（縮小・再圧縮・色の加工なし＝依頼の「勝手なリサイズ禁止」）。各フォルダの README.md に sha256
+- 能力アップ6枚（assets/chapter/stat_art_1012/stat_li〜de）・冒険リアクション（event_art_1012/reaction）・共通の出来事（event_art_1012/event）＝js/chapter/world-board.js の CARD_ART（旧：Chapter 1 の正式背景から作った仮の絵 PH。PH は残す＝絵が無いときの代わり）。モンスターを中央に重ねる見え方は従来どおり
+- Chapter 1 の出来事12枚（assets/events/ch1/13_shade〜24_wind_cry）＝ch1a.js の eventPool の image（挿絵の無かった shade・break・spring・holy_spring・herb・trip・coin・sage・charm・legend_spring・remember_dan・wind_cry）。**24種すべてに専用の挿絵**＝共通の event.webp は今は使われる場面が無い。題名（title）は納品に無いので付けていない（カードの見出しは従来どおり「出来事」など）。出来事の効果・重み・条件は変えていない
+- 野外のバトル背景4枚（assets/battle/field_1012/ch1_meadow・ch2_coast・ch3_sky・ch4_volcano）＝js/battle/arena.js の FIELD_BG（野生・レア・ライバルの練習試合とその VS の背景。旧：Chapter 1・2 は正式のフィールド背景の仮・Chapter 3・4 は venue）。公式ランク戦・セドリックは変えていない
+- 気づいた点：挿絵は初めて出すとき読み込み（約0.3〜0.5MB）の間だけ枠の地の色が見え、そのあと絵が出る（先読みはしていない＝通信量を増やさないため）
+- テスト：実ブラウザ tests/qa-e2e-art24-1012.test.mjs（AR-B1＝3サイズ：能力アップの挿絵、AR-B2＝出来事、AR-B3＝冒険リアクション、AR-B4＝野外のバトル背景 Chapter 1〜4）。AS-01（挿絵 24枚）・BE-4（野外の背景）を書き直し
 
 ### レグナス・ジオルの技アニメ（2026-10-12。基準 23aaea7 への差分。技の性能・解禁・ライバルの技構成は変えていない）
 

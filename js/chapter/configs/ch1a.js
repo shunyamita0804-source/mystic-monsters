@@ -185,16 +185,16 @@
 
     // ---- イベント（値は旧Chapterの暫定イベントと同じ【暫定】。疲れ回復は正式仕様）。目印は tier の祠を石板の脇に小さく置く（街道の上に木・岩は置かない） ----
     eventPool: [
-      { id: 'shade', tier: 'normal', recovery: true, weight: 4, handler: 'fatigue', params: { amount: 10 }, text: '石板の木陰でひと休みして、持っていた木の実を少しかじった。', look: { h: 104 } },
-      { id: 'break', tier: 'normal', recovery: true, weight: 3, handler: 'fatigue', params: { amount: 20 }, text: '街道のそばで小休憩をとって、軽く腹ごしらえをした。', look: { h: 104 } },
-      { id: 'spring', tier: 'rare', recovery: true, weight: 2, handler: 'fatigue', params: { amount: 30 }, text: '澄んだ泉で水を飲み、ほとりの果実を少し食べた。', look: { h: 118 } },
-      { id: 'holy_spring', tier: 'special', recovery: true, weight: 1, handler: 'fatigue', params: { full: true }, text: '不思議な泉の水を飲むと、空腹がすっかりおさまった！', look: { h: 132 } },
-      { id: 'herb', tier: 'normal', weight: 3, handler: 'stat_random', params: { amount: 6 }, text: '珍しい草を見つけた！', look: { h: 104 } },
-      { id: 'trip', tier: 'normal', weight: 2, handler: 'stat_random', params: { amount: -4 }, text: '石につまずいて転んでしまった…', look: { h: 104 } },
-      { id: 'coin', tier: 'normal', weight: 3, handler: 'gold', params: { amount: 50 }, text: '道端でお金を見つけた！', look: { h: 104 } },
-      { id: 'sage', tier: 'rare', weight: 2, handler: 'stat_random', params: { amount: 20 }, text: '旅の賢者に教えを受けた！', look: { h: 118 } },
-      { id: 'charm', tier: 'rare', weight: 2, handler: 'gold', params: { amount: 150 }, text: '幸運のお守りを見つけた！', look: { h: 118 } },
-      { id: 'legend_spring', tier: 'special', weight: 1, handler: 'stat_all', params: { amount: 8 }, text: '伝説の泉の力で、ライフ以外の能力がそれぞれ上がった！', look: { h: 132 } },
+      { id: 'shade', image: './assets/events/ch1/13_shade.webp', tier: 'normal', recovery: true, weight: 4, handler: 'fatigue', params: { amount: 10 }, text: '石板の木陰でひと休みして、持っていた木の実を少しかじった。', look: { h: 104 } },
+      { id: 'break', image: './assets/events/ch1/14_break.webp', tier: 'normal', recovery: true, weight: 3, handler: 'fatigue', params: { amount: 20 }, text: '街道のそばで小休憩をとって、軽く腹ごしらえをした。', look: { h: 104 } },
+      { id: 'spring', image: './assets/events/ch1/15_spring.webp', tier: 'rare', recovery: true, weight: 2, handler: 'fatigue', params: { amount: 30 }, text: '澄んだ泉で水を飲み、ほとりの果実を少し食べた。', look: { h: 118 } },
+      { id: 'holy_spring', image: './assets/events/ch1/16_holy_spring.webp', tier: 'special', recovery: true, weight: 1, handler: 'fatigue', params: { full: true }, text: '不思議な泉の水を飲むと、空腹がすっかりおさまった！', look: { h: 132 } },
+      { id: 'herb', image: './assets/events/ch1/17_herb.webp', tier: 'normal', weight: 3, handler: 'stat_random', params: { amount: 6 }, text: '珍しい草を見つけた！', look: { h: 104 } },
+      { id: 'trip', image: './assets/events/ch1/18_trip.webp', tier: 'normal', weight: 2, handler: 'stat_random', params: { amount: -4 }, text: '石につまずいて転んでしまった…', look: { h: 104 } },
+      { id: 'coin', image: './assets/events/ch1/19_coin.webp', tier: 'normal', weight: 3, handler: 'gold', params: { amount: 50 }, text: '道端でお金を見つけた！', look: { h: 104 } },
+      { id: 'sage', image: './assets/events/ch1/20_sage.webp', tier: 'rare', weight: 2, handler: 'stat_random', params: { amount: 20 }, text: '旅の賢者に教えを受けた！', look: { h: 118 } },
+      { id: 'charm', image: './assets/events/ch1/21_charm.webp', tier: 'rare', weight: 2, handler: 'gold', params: { amount: 150 }, text: '幸運のお守りを見つけた！', look: { h: 118 } },
+      { id: 'legend_spring', image: './assets/events/ch1/22_legend_spring.webp', tier: 'special', weight: 1, handler: 'stat_all', params: { amount: 8 }, text: '伝説の泉の力で、ライフ以外の能力がそれぞれ上がった！', look: { h: 132 } },
       // ---- 2026-10-04（第二段階）：Chapter 1 の短いランダムイベント（フィナの2〜3行＋小さな結果。lines＝会話（フィナの吹き出し）、効果は既存の仕組みの中で安全なものだけ）。
       //  同じ Chapter では同じイベントを重複して割り当てない（engine の pickDistinct）。choices＝2択（選んでから効果。選ぶまで使った印を付けない）。文面は【暫定】 ----
       // ---- 2026-10-04（第二段階・追加アセット）：12種に正式の挿絵（assets/events/ch1/。title＝挿絵の上のイベント名・image＝挿絵）と正式の会話・効果。
@@ -221,8 +221,8 @@
         lines: [{ expression: 'normal', text: '誰かがここで休んだ跡だね。' }, { expression: 'smile', text: '火は完全に消えてる。近くに木の実もあるし、少し食べていこうか。' }] },
       { id: 'small_animal', title: '小さな生き物に導かれる', image: './assets/events/ch1/12_small_animal.webp', tier: 'normal', weight: 3, handler: 'stat_random', params: { amount: 5, keys: ['ev'] }, text: '小さな生き物について、足元に気をつけて進んだ。',
         lines: [{ expression: 'surprised', text: 'あ、こっちを気にしてる。' }, { expression: 'guide', text: 'ついて来てって言ってるみたい。足元に気をつけて行こう。' }] },
-      { id: 'remember_dan', tier: 'normal', weight: 2, handler: 'stat_random', params: { amount: 5, keys: ['de', 'li'] }, text: 'ダンの言葉を思い出した。', lines: [{ expression: 'normal', text: 'ダンが言ってたよね。「無理をするより、整えてから進め」って。' }, { expression: 'smile', text: '落ち着いて歩いたら、この子の足取りもしっかりしてきた。' }] },
-      { id: 'wind_cry', tier: 'normal', weight: 2, handler: 'none', text: '風に乗って鳴き声が聞こえた。', lines: [{ expression: 'surprised', text: '風に乗って、鳴き声が聞こえる。…この子が返事してる！' }, { expression: 'smile', text: '仲間を呼んでるのかな。それとも、挨拶？' }] },
+      { id: 'remember_dan', image: './assets/events/ch1/23_remember_dan.webp', tier: 'normal', weight: 2, handler: 'stat_random', params: { amount: 5, keys: ['de', 'li'] }, text: 'ダンの言葉を思い出した。', lines: [{ expression: 'normal', text: 'ダンが言ってたよね。「無理をするより、整えてから進め」って。' }, { expression: 'smile', text: '落ち着いて歩いたら、この子の足取りもしっかりしてきた。' }] },
+      { id: 'wind_cry', image: './assets/events/ch1/24_wind_cry.webp', tier: 'normal', weight: 2, handler: 'none', text: '風に乗って鳴き声が聞こえた。', lines: [{ expression: 'surprised', text: '風に乗って、鳴き声が聞こえる。…この子が返事してる！' }, { expression: 'smile', text: '仲間を呼んでるのかな。それとも、挨拶？' }] },
       { id: 'old_grounds', title: '古い訓練跡', image: './assets/events/ch1/03_old_grounds.webp', tier: 'normal', weight: 3, text: '古い訓練跡を見つけた。',
         lines: [{ expression: 'guide', text: 'ここ、昔の訓練場みたい。' }, { expression: 'normal', text: '少し使ってみる？ それとも動きを確かめるだけにする？' }],
         choices: [{ id: 'train', label: '少し鍛える', desc: 'ちから＋5・空腹＋5', handler: 'stat_tired', params: { amount: 5, keys: ['po'], fatigue: 5 }, text: '古い訓練跡で少し鍛えた。' },

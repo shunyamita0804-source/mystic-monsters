@@ -20,4 +20,23 @@
 | 12_small_animal.webp | small_animal | 12_小さな生き物に導かれる.jpg | `b010c70daa67c8a9…` | 293KB |
 
 - 1枚＝1イベント（使い回さない）。id の対応はユーザー指定。
-- remember_dan・wind_cry など挿絵の無いイベントは従来どおり（フィナの吹き出し → 結果）。
+- （旧）remember_dan・wind_cry など挿絵の無いイベントは従来どおり（フィナの吹き出し → 結果）。→ 2026-10-12 開発23 で下の12枚を追加＝24種すべてに挿絵
+
+## 2026-10-12 開発23：追加の12枚（13〜24）
+
+ユーザー納品の正式画像（1080×720 の WebP）を**そのまま**置いた（縮小・再圧縮なし。sha256 は納品の一覧と一致）。config の eventPool[].image に1行ずつ（題名 title は納品に無いので付けていない＝カードの見出しは従来どおり「出来事」など）。
+
+| ファイル | イベント id | バイト | sha256 |
+|---|---|---|---|
+| 13_shade.webp | shade | 439276 | `ac2501fb4bcac9c8b19b9c285226017eac6a90b4a9d69138d66fa75b20ff3e20` |
+| 14_break.webp | break | 442618 | `46728d79129853767ea3bb5dd0d8ede7c69d3d6a8a56af54bdae4545950a1899` |
+| 15_spring.webp | spring | 483564 | `0ddb79cfe9b9385ac328c84879bc1b2de0348b4428e5dc4b1e42653beea95675` |
+| 16_holy_spring.webp | holy_spring | 456280 | `f14aa6b4f6b7ca50db58c0e6dc2079a600de3f0814d97e496eedac753cce6d22` |
+| 17_herb.webp | herb | 429214 | `af5948c362c8f508841d437ef35daa915df301a2daa1d702bf8376025b5ce8a0` |
+| 18_trip.webp | trip | 435364 | `6934fc31104ca93f8600b6f82cb9fe9424b382e4014bed9bdf809ef71260ce43` |
+| 19_coin.webp | coin | 406064 | `088ef2910b26c8eaa02951d03129569dc9dc4fcbbec068be2a5b5d1e07b75408` |
+| 20_sage.webp | sage | 447644 | `95c7bd2d31c7c369c8c27b24ca482feed2630537acfa1a73d53d959d0c3d282d` |
+| 21_charm.webp | charm | 371558 | `29aebe9e3c60083b2cc2e0c0c18c1c09aa05fa7067ab38ab95d325ef3e3eb3ed` |
+| 22_legend_spring.webp | legend_spring | 406142 | `3eed147419e4124cead5aee89eaf8f62df798549d54dd209249cc46d402a6be5` |
+| 23_remember_dan.webp | remember_dan | 417760 | `5556739e3b45cc34ecdd6c6d2815b262a761abbc9f4ddb011527e2f7c59df573` |
+| 24_wind_cry.webp | wind_cry | 406672 | `dd36f4e9fd73280d35b1489108cdd4b4e7036594eaa4449e1c884579eec06ad5` |

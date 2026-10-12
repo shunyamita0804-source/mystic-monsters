@@ -62,7 +62,8 @@ test('AS-01：イベント挿絵 12枚：ファイルがあり（1080×720 の W
   const { CH, EV } = load(), pool = CH.getConfig(1).eventPool, byId = Object.fromEntries(pool.map((e) => [e.id, e]));
   assert.equal(pool.length, 24, 'eventPool の件数は追加前と同じ（24）'); assert.deepEqual(EV.validatePool(pool), []);
   const used = pool.filter((e) => e.image).map((e) => e.image);
-  assert.equal(used.length, 12); assert.equal(new Set(used).size, 12, '1枚を複数のイベントに使わない');
+  // 2026-10-12 開発23：挿絵の無かった12種にも正式の挿絵（13_shade〜24_wind_cry）＝24枚・使い回しなし
+  assert.equal(used.length, 24); assert.equal(new Set(used).size, 24, '1枚を複数のイベントに使わない');
   for (const [file, id, title] of MAP) {
     const p = `assets/events/ch1/${file}.webp`, e = byId[id];
     assert.ok(e, `${id}：既存の id`); assert.equal(e.image, `./${p}`, `${id} → ${file}`); assert.equal(e.title, title);
@@ -71,7 +72,8 @@ test('AS-01：イベント挿絵 12枚：ファイルがあり（1080×720 の W
     assert.ok(Array.isArray(e.lines) && e.lines.length === 2, `${id}：フィナの2行`); for (const l of e.lines) assert.ok(l.text && l.expression, id);
   }
   for (const id of ['remember_dan', 'wind_cry', 'shade', 'break', 'spring', 'holy_spring', 'herb', 'coin']) assert.ok(byId[id], `${id} は残す`);
-  assert.ok(!byId.remember_dan.image && !byId.wind_cry.image, '挿絵の無いイベントは従来どおり');
+  const NEW12 = ['shade', 'break', 'spring', 'holy_spring', 'herb', 'trip', 'coin', 'sage', 'charm', 'legend_spring', 'remember_dan', 'wind_cry'];
+  NEW12.forEach((id, i) => { const p = `assets/events/ch1/${13 + i}_${id}.webp`; assert.equal(byId[id].image, `./${p}`, id); assert.ok(existsSync(path.join(ROOT, p)), p); const w = webpInfo(p); assert.deepEqual([w.w, w.h], [1080, 720], p); });
   assert.match(rd('assets/events/ch1/README.md'), /01_tailwind\.webp \| tailwind/);
 });
 
