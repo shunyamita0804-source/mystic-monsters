@@ -30,7 +30,8 @@
   /** 上の帯の文字（「ランクX大会」）から会場のランク（E〜S）。読めなければ null */
   function rankOf(bt) { if (bt && bt.dataset && /^[EDCBAS]$/.test(bt.dataset.mmrank || '')) return bt.dataset.mmrank;   // 2026-10-08 監査 M-06：練習試合は帯を「野生のモンスター」などにするので、会場のランクは index.html の battleDressDom が入れる
     const t = (($('.tm small', bt) || {}).textContent || ''); const m = /ランク([EDCBAS])大会/.exec(t); return m ? m[1] : null; }
-  const arenaSrc = (r) => (r && RANKS.includes(r) ? `./assets/tournament/venues/venue_${r}.webp` : null);   // 2026-10-07 追補便：正式の大会会場 venue_E〜S（旧 arena_E〜S はファイルだけ残す）
+  // 2026-10-12 開発21（E-4）：公式ランク戦＝正式のバトル背景（assets/battle/official_rank_1012/rank_E〜S）。練習試合（野生・レア・ライバル＝#bt の data-mmprac）は従来の venue_E〜S（変えない）
+  const arenaSrc = (r, practice) => (r && RANKS.includes(r) ? (practice ? `./assets/tournament/venues/venue_${r}.webp` : `./assets/battle/official_rank_1012/rank_${r}.webp`) : null);   // 2026-10-07 追補便：正式の大会会場 venue_E〜S（旧 arena_E〜S はファイルだけ残す）
   const idleSrc = (sp) => (IDLE[sp] ? `${A}idle/${IDLE[sp]}.webp` : null);
   /** 立ち絵を左右反転するか（プレイヤー＝右向き・相手＝左向き） */
   const flipOf = (side, sp) => (FACE[sp] === 'L') === (side === 0);
@@ -40,6 +41,8 @@
     const st = document.createElement('style'); st.id = 'mma-style';
     st.textContent = [
       '#bt .mma-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%;z-index:0}',
+      // 2026-10-12 開発21（E-5）：正式背景は床の始まりが画像の約55%（従来の会場より下）＝モンスターが壁の前に浮いて見えた → 下を軸に 1.12倍にして床をモンスターの足もとへ（絵は描き直さない・空が少し切れるだけ）
+      '#bt .mma-bg.ofc{transform-origin:50% 100%;transform:scale(1.12)}',
       '#bt .bgs.mma-on::after{background:linear-gradient(rgba(6,10,26,.15),transparent 18%,transparent 52%,rgba(6,10,26,.55) 74%,rgba(4,7,18,.9))}',
       '#bt .mon.mma-on>img:not(.mma-idle){opacity:0}',
       '#bt .mon .mma-idle{position:absolute;left:50%;bottom:0;height:118%;width:auto;max-width:none;transform:translateX(-50%);pointer-events:none;filter:drop-shadow(0 8px 6px rgba(0,0,0,.45))}',
@@ -76,9 +79,9 @@
 
   // ---- 背景 ----
   function setupBg(bt) {
-    const src = arenaSrc(rankOf(bt)), bgs = $('.bgs', bt);
+    const prac = !!(bt.dataset && bt.dataset.mmprac === '1'), src = arenaSrc(rankOf(bt), prac), bgs = $('.bgs', bt);
     if (!src || !bgs || $('.mma-bg', bgs)) return;
-    const im = new Image(); im.className = 'mma-bg'; im.alt = ''; im.decoding = 'async'; im.src = src;
+    const im = new Image(); im.className = 'mma-bg' + (prac ? '' : ' ofc'); im.alt = ''; im.decoding = 'async'; im.src = src;   // ofc＝公式ランク戦の正式背景
     bgs.appendChild(im); bgs.classList.add('mma-on');
   }
 

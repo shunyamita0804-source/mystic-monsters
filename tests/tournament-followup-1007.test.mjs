@@ -12,8 +12,10 @@ test('TF-01：セドリック（opening／booth）・会場 venue・ランク開
   for (const n of ['A1', 'A2', 'A3', 'A4', 'A5', 'A6']) assert.ok(existsSync(path.join(ROOT, `assets/tournament/rank_start/${n}.webp`)), n);
   for (const n of ['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7']) assert.ok(existsSync(path.join(ROOT, `assets/tournament/rank_up/${n}.webp`)), n);
   assert.ok(HTML.includes('scene:CED_SCENE(k,"booth"),noFig:true'), '開会＝実況席（2026-10-08 ユーザー指示：booth。旧 standing＝opening はファイルだけ残す）'); assert.ok(HTML.includes('scene:CED_SCENE(rs.rank,"booth"),noFig:true'), '締め＝booth');
-  assert.ok(HTML.includes('tbbg" style="background-image:url(${TB_VENUE(t.rank)})"')); assert.ok(HTML.includes('<div class="pcbg" style="background-image:url(${TB_VENUE(t.rank)})">'));
-  assert.match(rd('js/battle/arena.js'), /assets\/tournament\/venues\/venue_\$\{r\}\.webp/, 'バトルの会場');
+  // 2026-10-12 開発21：対戦表・対戦前比較・VS・公式ランク戦のバトルは正式のバトル背景（official_rank_1012）。venue は練習試合とセドリックの会話の背景に残す
+  assert.ok(HTML.includes('tbbg" style="background-image:url(${TB_ARENA(t.rank)})"')); assert.ok(HTML.includes('<div class="pcbg" style="background-image:url(${TB_ARENA(t.rank)})">'));
+  assert.match(rd('js/battle/arena.js'), /practice \? `\.\/assets\/tournament\/venues\/venue_\$\{r\}\.webp` : `\.\/assets\/battle\/official_rank_1012\/rank_\$\{r\}\.webp`/, 'バトルの会場（練習試合は venue）');
+  assert.match(HTML, /const cedricBg=k=>TB_VENUE\(k\)\|\|P9_LOBBY_BG;/, 'セドリックの会話の背景は venue のまま');
   assert.match(rd('js/npc/npc.js'), /if \(scene && opts\.noFig\) ov\.classList\.add\('mmtalk-nofig'\)/);
   assert.match(HTML, /function p9TourIntro\(k,noCed\)\{if\(k===0\)return p9Frames\(RANK_START_FX,RANK_START_MS,"p9rs"\);/, 'E は正式カット');
 });
