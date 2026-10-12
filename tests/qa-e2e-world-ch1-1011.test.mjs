@@ -172,10 +172,12 @@ test('WB-7：チュートリアル（40ターン・1〜6）→ 分かれ道 → 
   const before = await pg.evaluate(() => { const s = MMRF_DATA.segments.S01[3]; return s[s.length - 2]; });
   await place(pg, before); await idle(pg);
   await rollAs(pg, 3);
-  await pg.waitForSelector('.wbbr .chroute');
+  await pg.waitForSelector('.wbbr .chroute', { state: 'attached' });   /* 2026-10-12：フィナの会話の間はシートを隠す（会話のあとに見える） */
   await pg.waitForSelector('.mmtalk:not(.mmtalk-out)', { timeout: 10000 });
   assert.match(await pg.evaluate(() => document.querySelector('.mmtalk').textContent), /分かれ道/);
+  assert.equal(await pg.evaluate(() => getComputedStyle(document.querySelector('.wbbr')).visibility), 'hidden', '会話の間はシートを隠す');
   await H.finishTalk(pg); await idle(pg);
+  assert.equal(await pg.evaluate(() => getComputedStyle(document.querySelector('.wbbr')).visibility), 'visible', '会話のあとはシートが戻る');
   await pg.click('.wbbr .chroute');
   for (let i = 0; i < 4; i++) { await idle(pg).catch(() => {}); await drain(pg); if (await pg.evaluate(() => !!document.querySelector('.chbat'))) await pg.evaluate(() => bBattleSkip()); /* 2026-10-12：遭遇は強制バトル（やめておくは無い）＝先へ進めるために直接呼ぶ */ }
   await idle(pg);
