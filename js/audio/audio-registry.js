@@ -25,6 +25,8 @@
   const LIC = BGM_DIR + 'licensed_20261007/';        // 2026-10-07 正式採用の BGM 14曲（DOVA-SYNDROME・Pixabay・itch.io。ユーザー提供の MP3／WAV を OGG Vorbis q5 に変換しただけ・曲の切り出しはしない。作者・出典は AUDIO_CREDITS.md）
   const LIC8 = BGM_DIR + 'licensed_20261008/';
   const LIC12 = BGM_DIR + 'licensed_20261012/';      // 2026-10-12 正式採用：公式ランク戦の曲（ユーザー納品「公式ランク.mp3」を OGG Vorbis q5 に変換しただけ。作曲者・出典は AUDIO_CREDITS.md＝要確認）       // 2026-10-08 正式採用：街の曲「冒険への誘い」（ユーザー提供の MP3 を OGG Vorbis q5 に変換しただけ。AUDIO_CREDITS.md）
+  const CR = SE_DIR + 'crowd_1013/';                    // 2026-10-13 開発24：観客の声（Pixabay：DRAGON-STUDIO・Universfield。区間の切り出しはユーザー提供。AUDIO_CREDITS.md）
+  const VO = './assets/audio/voice/npc_1013/';          // 2026-10-13 開発24：NPC のボイス（ユーザー提供の試遊素材）
   const MMB = BGM_DIR + 'mystic_monsters_official/';  // 同じく正式の BGM（2026-10-06：タイトル・プロローグ。ユーザー提供・ゲームの所有素材。AUDIO_CREDITS.md）
 
   // 書き方：{ src, gain, loopStart, loopEnd, loopXfade } ＝ファイルで鳴らす（loopEnd を書くと、曲の終わりのフェードアウトの前で loopStart へクロスフェードで戻る。秒）／{ fallback: '場面' } ＝ほかの場面の曲を使う／{ silent: true } ＝鳴らさない（合成音にも落とさない。試遊で「合わない」となった音の一時的な置き場）／行が無い ＝合成音
@@ -124,8 +126,35 @@
     TOURNAMENT_START: { src: UI + 'confirm_style_1_001.ogg', gain: 0.65 },
     UNLOCK:           { src: UI + 'confirm_style_6_002.ogg', gain: 1.3 },
     REWARD:           { src: UI + 'confirm_style_6_002.ogg', gain: 1.3 },
+    // ---- 2026-10-13 開発24：観客の声（公式大会の会場だけ・js/battle/crowd.js。ユーザー提供の派生＝Pixabay の3音源の区間を切り出し OGG／M4A にしたもの。AUDIO_CREDITS.md）----
+    //  src は [OGG, M4A]＝そのブラウザで再生できる形式を1つだけ選ぶ（同じ音を二重に鳴らさない）。gain はユーザー指定の初期値（歓声 0.55・落胆 0.55・ブーイング 0.20）から。ブーイングは素材が約6dB大きい
+    CROWD_HIT:        { src: [CR + 'hit_cheer_2p0_2p7_700ms.ogg', CR + 'hit_cheer_2p0_2p7_700ms.m4a'], gain: 0.55 },                       // 命中（-14.7 LUFS → 約 -20）
+    CROWD_HIT_LONG:   { src: [CR + 'hit_cheer_2p0_3p0_1000ms.ogg', CR + 'hit_cheer_2p0_3p0_1000ms.m4a'], gain: 0.6 },                       // 同・1.0秒の版（比較用）
+    CROWD_MISS:       { src: [CR + 'miss_disappointment_0p5_1p2_700ms.ogg', CR + 'miss_disappointment_0p5_1p2_700ms.m4a'], gain: 0.55 },   // ルーレットの MISS（技が出ない）
+    CROWD_MISS_LONG:  { src: [CR + 'miss_disappointment_0p5_1p5_1000ms.ogg', CR + 'miss_disappointment_0p5_1p5_1000ms.m4a'], gain: 0.53 },
+    CROWD_EVADE:      { src: [CR + 'evade_boo_0p0_0p6_600ms.ogg', CR + 'evade_boo_0p0_0p6_600ms.m4a'], gain: 0.2 },                         // 技を相手がかわした（-8.9 LUFS → 約 -23）
+    CROWD_EVADE_LONG: { src: [CR + 'evade_boo_0p0_1p0_1000ms.ogg', CR + 'evade_boo_0p0_1p0_1000ms.m4a'], gain: 0.15 },                      // 同・1.0秒の版（-6.5 LUFS）
   };
 
-  root.MMAUDIO_REGISTRY = Object.freeze({ bgm: BGM_REGISTRY, se: SE_REGISTRY });
+  // ---- 2026-10-13 開発24：NPC のボイス（ユーザー提供の試遊素材。MP3 から OGG／M4A に変換したもの。AUDIO_CREDITS.md）----
+  //  enabled:false にすれば、その声だけ鳴らさない（どこで鳴らすかは js/npc/voice-cues.js の CUES）。gain＝素材の音量の差をそろえる（約 -18 LUFS）。
+  //  ボイスは SE・BGM とは別の音量・ON/OFF（MMAUDIO.setVoice。設定は localStorage mmvoice＝セーブとは別）
+  const VOICE_REGISTRY = {
+    fina_hello:  { src: [VO + 'fina_hello.ogg', VO + 'fina_hello.m4a'], npc: 'fina', gain: 1.24 },     // こんにちは（-19.9）
+    fina_yeah:   { src: [VO + 'fina_yeah.ogg', VO + 'fina_yeah.m4a'], npc: 'fina', gain: 1.22 },       // やったね（-19.7）
+    fina_hmm:    { src: [VO + 'fina_hmm.ogg', VO + 'fina_hmm.m4a'], npc: 'fina', gain: 1.53 },         // うーん（-21.7）
+    fina_look:   { src: [VO + 'fina_look.ogg', VO + 'fina_look.m4a'], npc: 'fina', gain: 1.05 },       // 見て見て（-18.4）
+    fina_hey:    { src: [VO + 'fina_hey.ogg', VO + 'fina_hey.m4a'], npc: 'fina', gain: 1.4 },          // もう（-20.9）
+    fina_giggle: { src: [VO + 'fina_giggle.ogg', VO + 'fina_giggle.m4a'], npc: 'fina', gain: 2.14 },   // えへへ（-24.6）
+    fina_yes:    { src: [VO + 'fina_yes.ogg', VO + 'fina_yes.m4a'], npc: 'fina', gain: 1.32 },         // うん（-20.4）
+    fina_wonder: { src: [VO + 'fina_wonder.ogg', VO + 'fina_wonder.m4a'], npc: 'fina', gain: 1.91 },   // なんだろう？（-24.2）
+    dan_hello:     { src: [VO + 'dan_hello.ogg', VO + 'dan_hello.m4a'], npc: 'dan', gain: 1.03 },           // ダン（ベースキャンプ）：やあ（-18.3）
+    nick_hello:    { src: [VO + 'nick_hello.ogg', VO + 'nick_hello.m4a'], npc: 'nick', gain: 2.4 },         // ニック（牧場）：やあ（-25.6）
+    berna_welcome: { src: [VO + 'berna_welcome.ogg', VO + 'berna_welcome.m4a'], npc: 'shop', gain: 1.16 },  // ベルナ（アイテム屋）：いらっしゃい（-19.3）
+    karen_welcome: { src: [VO + 'karen_welcome.ogg', VO + 'karen_welcome.m4a'], npc: 'karen', gain: 2.29 }, // カレン（市場）（-25.2）
+    elliot_hello_OPTIONAL: { src: [VO + 'elliot_hello_OPTIONAL.ogg', VO + 'elliot_hello_OPTIONAL.m4a'], npc: 'elliot', gain: 1.16, enabled: false },   // 研究所（別枠・既定OFF＝今回の対象外。勝手に使わない）
+  };
+
+  root.MMAUDIO_REGISTRY = Object.freeze({ bgm: BGM_REGISTRY, se: SE_REGISTRY, voice: VOICE_REGISTRY });
   try { if (root.MMAUDIO && typeof root.MMAUDIO.registerAll === 'function') root.MMAUDIO.registerAll(root.MMAUDIO_REGISTRY); } catch (e) { /* 登録に失敗してもゲームは止めない（合成音で動く） */ }
 })(typeof window !== 'undefined' ? window : globalThis);

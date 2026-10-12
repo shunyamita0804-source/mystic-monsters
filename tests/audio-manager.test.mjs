@@ -215,7 +215,7 @@ test('AUDIO-12：Web Audio が使えない環境でも止まらない（<audio> 
 
 /** registry（js/audio/audio-registry.js）を読む：MMAUDIO の偽物に登録させて中身を取り出す */
 function loadRegistry() {
-  const got = { bgm: {}, se: {} }, w = { MMAUDIO: { registerAll: (r) => { Object.assign(got.bgm, r.bgm); Object.assign(got.se, r.se); } } };
+  const got = { bgm: {}, se: {}, voice: {} }, w = { MMAUDIO: { registerAll: (r) => { Object.assign(got.bgm, r.bgm); Object.assign(got.se, r.se); Object.assign(got.voice, r.voice || {}); } } };
   new Function('window', rd('js/audio/audio-registry.js'))(w);
   return { got, REG: w.MMAUDIO_REGISTRY };
 }
@@ -258,9 +258,12 @@ test('AUDIO-15：assets/audio に同じ曲の別形式（ogg／mp3／wav…）�
   const audio = files.filter((f) => !/README\.md$/.test(f));
   for (const f of audio) assert.match(f, /\.(ogg|m4a|mp3)$/, `音源の形式：${f}`);
   const stems = {}; for (const f of audio) { const k = f.replace(/\.[a-z0-9]+$/i, ''); (stems[k] = stems[k] || []).push(f); }
-  for (const [k, v] of Object.entries(stems)) assert.equal(v.length, 1, `同じ曲の別形式：${v}`);
+  const { got } = loadRegistry();
+  // 2026-10-13 開発24：同じ音の OGG と M4A は、同じ登録の src の配列（そのブラウザで再生できる1つだけを選ぶ＝二重に鳴らない）のときだけ置いてよい
+  const pairs = new Set([...Object.values(got.se), ...Object.values(got.voice)].map(srcsOf).filter((a) => a.length === 2 && /\.ogg$/.test(a[0]) && /\.m4a$/.test(a[1]) && a[0].replace(/\.ogg$/, '') === a[1].replace(/\.m4a$/, '')).map((a) => onDisk(a[0]).replace(/\.ogg$/, '')));
+  for (const [k, v] of Object.entries(stems)) assert.equal(v.length, pairs.has(k) ? 2 : 1, `同じ曲の別形式：${v}`);
   for (const f of files) assert.doesNotMatch(f, /\.(zip|wav|tmp|bak|DS_Store)$/i, f);
-  const { got } = loadRegistry(); const ref = new Set([...Object.values(got.bgm), ...Object.values(got.se)].flatMap(srcsOf).map(onDisk));
+  const ref = new Set([...Object.values(got.bgm), ...Object.values(got.se), ...Object.values(got.voice)].flatMap(srcsOf).map(onDisk));
   for (const f of audio) assert.ok(ref.has(f), `registry から参照されていないファイル：${path.relative(ROOT, f)}`);
   assert.ok(existsSync(path.join(ROOT, 'AUDIO_CREDITS.md')) && existsSync(path.join(ROOT, 'assets/audio/README.md')));
   const credits = rd('AUDIO_CREDITS.md'); for (const n of ['JP Soundworks', 'CC BY 4.0', 'Interface SFX Pack 1', 'Ivokard', 'CC0', 'alkakrab', 'Free 25 Fantasy RPG Game Tracks Vol.3', 'HydroGene']) assert.ok(credits.includes(n), n);

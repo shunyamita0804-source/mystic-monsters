@@ -166,6 +166,24 @@ try {
       await page.screenshot({ path: `${OUT}/${nm}_${w}x${hh}.png` });
     }
   }
+  // 2026-10-13 開発24：公開 URL（デバッグ用のパラメータなし）で、新しい素材が正しい形式で返る・施設の声が実際に鳴り始めた・公式大会の新しいバトル画面と観客の声
+  {
+    const want = { 'js/battle/crowd.js': /javascript/, 'js/npc/voice-cues.js': /javascript/, 'version.json': /json/,
+      'assets/battle/roulette/compact_1013/plate_normal_c.webp': /image\/webp/, 'assets/battle/roulette/compact_1013/plate_selected_c.webp': /image\/webp/, 'assets/battle/roulette/compact_1013/plate_miss_c.webp': /image\/webp/, 'assets/battle/roulette/compact_1013/center_frame_c.webp': /image\/webp/,
+      'assets/audio/se/crowd_1013/hit_cheer_2p0_2p7_700ms.ogg': /audio\/ogg/, 'assets/audio/se/crowd_1013/hit_cheer_2p0_2p7_700ms.m4a': /audio\/(mp4|x-m4a|m4a)/, 'assets/audio/se/crowd_1013/miss_disappointment_0p5_1p2_700ms.ogg': /audio\/ogg/, 'assets/audio/se/crowd_1013/evade_boo_0p0_0p6_600ms.ogg': /audio\/ogg/, 'assets/audio/se/crowd_1013/evade_boo_0p0_0p6_600ms.m4a': /audio\/(mp4|x-m4a|m4a)/,
+      'assets/audio/voice/npc_1013/fina_hello.ogg': /audio\/ogg/, 'assets/audio/voice/npc_1013/karen_welcome.ogg': /audio\/ogg/, 'assets/audio/voice/npc_1013/karen_welcome.m4a': /audio\/(mp4|x-m4a|m4a)/, 'assets/audio/voice/npc_1013/dan_hello.ogg': /audio\/ogg/, 'assets/audio/voice/npc_1013/nick_hello.ogg': /audio\/ogg/, 'assets/audio/voice/npc_1013/berna_welcome.ogg': /audio\/ogg/ };
+    const res = [];
+    for (const [f, re] of Object.entries(want)) { try { const r = await fetch(URL + f + '?cb=' + Date.now()); const ct = r.headers.get('content-type') || ''; const n = (await r.arrayBuffer()).byteLength; res.push([f, r.status, ct, n, r.status === 200 && re.test(ct) && n > 0]); } catch (e) { res.push([f, 'ERR', String(e).slice(0, 80), 0, false]); } }
+    rec('開発24：新しいスクリプト・画像・音源が 200・正しい MIME で返る', res.every((x) => x[4]), res.filter((x) => !x[4]).map((x) => x.slice(0, 3).join(' ')).join(' / ') || `${res.length}件`);
+    const ver = await page.evaluate(() => ({ build: typeof MM_BUILD !== 'undefined' ? MM_BUILD : null, crowd: !!window.MMCROWD, voice: !!(window.MMVOICE && MMAUDIO.voice), v24: !!(window.MMARENA && MMARENA.v24 && MMARENA.v24()) }));
+    const vj = await fetch(URL + 'version.json?cb=' + Date.now()).then((r) => r.json()).catch(() => ({}));
+    rec('開発24：最新の実装が読み込まれている（MM_BUILD＝version.json・MMCROWD・MMVOICE・新しいバトル画面が既定）', ver.build && ver.build === vj.build && ver.crowd && ver.voice && ver.v24, JSON.stringify({ ...ver, json: vj.build }));
+    // 施設の声：上の流れ（市場・牧場・ベースキャンプ）で実際に再生を始めた声。アイテム屋（ベルナ）は今ここで入る
+    await page.evaluate(() => shopScr()); await sleep(1200); await drain(); await sleep(300);
+    const vo = await page.evaluate(() => ({ play: MMAUDIO.playLog().filter((x) => x.kind === 'voice').map((x) => [x.name, x.ctx, x.src.split('/').pop()]), settings: MMAUDIO.voiceSettings(), ctx: MMAUDIO.status().context }));
+    const names = vo.play.map((x) => x[0]);
+    rec('開発24：施設の声が鳴り始めた（市場＝カレン・牧場＝ニック・ベースキャンプ＝ダン・アイテム屋＝ベルナ／既定 ON）', ['karen_welcome', 'nick_hello', 'dan_hello', 'berna_welcome'].every((n) => names.includes(n)) && vo.play.every((x) => x[1] === 'running') && vo.settings.on, JSON.stringify(vo));
+  }
   // 2026-10-11：本編の Chapter 1＝1枚の世界のボード（js/chapter/world-board.js）。出発すると新ボード（299地点・サイコロ 1〜6・40ターン）
   await page.setViewportSize({ width: 390, height: 844 }); await sleep(300);
   await page.evaluate(() => { MMP8.depart(S, S.m); S.m.raise.field.introSeen = true; save(); board(); });
@@ -173,6 +191,50 @@ try {
   const wb = await page.evaluate(() => ({ on: !!document.querySelector('#wbw #brollbtn'), old: !!document.querySelector('#chf'), lim: S.m.raise.turnLimit, sides: MMP8.diceSides(S.m), w: window.MMWB && MMWB.state().world }));
   await page.screenshot({ path: `${OUT}/world_ch1_390.png` });
   rec('Chapter 1：1枚の世界のボード（40ターン・1〜6・絵が読める）', wb.on && !wb.old && wb.lim === 40 && wb.sides === 6 && !!wb.w && wb.w.art && wb.w.tiles === 299, JSON.stringify({ ...wb, w: wb.w && { art: wb.w.art, tiles: wb.w.tiles, painted: wb.w.painted } }));
+
+  // 2026-10-13 開発24：公式大会（E）の実戦（上の Chapter 1 の出発のあと）：新しい画面・技の発動中の表示・観客の声（命中・ルーレットの MISS・かわされた）
+  {
+    await page.evaluate(() => { if (window.MMNPC) MMNPC.close(); Object.assign(S.m.raise, { goal: true, pend: null }); const r = MMP8.startTournament(S, S.m, 0, 7); if (!r || !r.ok) throw new Error('startTournament ' + JSON.stringify(r)); save(); window.__cine = []; board(); });
+    // 実際の画面の流れ：フィナの一言 → 対戦表「対戦する」→ 対戦前比較「対戦開始」（2度押し）→ VS → バトル
+    const flow = [];
+    for (let k = 0; k < 120 && !(await page.evaluate(() => !!document.querySelector('#bt #m0 .mon .mma-idle'))); k++) {
+      const st = await page.evaluate(() => ({ talk: !!document.querySelector('.mmtalk:not(.mmtalk-out)'), ch: !!document.querySelector('.mmtalk-choice'), tb: !!document.querySelector('.tb1 .tbgo'), cmp: !!document.querySelector('.pcgo'), yn: !!document.querySelector('#p9conf .p9conf-yes, #ynm .ynm-y'), vs: !!document.getElementById('tvs') }));
+      if (st.talk) { flow.push('talk'); if (st.ch) { await sleep(450); await page.click('.mmtalk-choice').catch(() => {}); } else await page.click('.mmtalk:not(.mmtalk-out)', { force: true }).catch(() => {}); await sleep(350); continue; }
+      if (st.yn) { flow.push('yn'); await sleep(450); await page.click('#p9conf .p9conf-yes, #ynm .ynm-y').catch(() => {}); await sleep(300); continue; }
+      if (st.vs) { if (flow[flow.length - 1] !== 'vs') flow.push('vs'); await sleep(400); continue; }
+      if (st.cmp) { flow.push('compare'); await sleep(500); await page.click('.pcgo').catch(() => {}); await sleep(650); await page.click('.pcgo').catch(() => {}); await sleep(500); continue; }
+      if (st.tb) { flow.push('board'); await sleep(400); await page.click('.tb1 .tbgo').catch(() => {}); await sleep(500); continue; }
+      await sleep(500);
+    }
+    rec('開発24：公式大会の実際の流れ（対戦表 → 対戦前比較 → VS → バトル）', await page.evaluate(() => !!document.getElementById('bt')), flow.join('→'));
+    await page.waitForSelector('#bt #m0 .mon .mma-idle', { timeout: 30000 });
+    await page.evaluate(() => { const bt = document.getElementById('bt'); new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => { if (n.classList && n.classList.contains('skb3')) setTimeout(() => window.__cine.push({ on: bt.classList.contains('mma-cine'), hpr: getComputedStyle(bt.querySelector('.hpr')).visibility, bui: getComputedStyle(bt.querySelector('.bui')).visibility }), 300); }))).observe(bt, { childList: true });
+      const B = window.MMBattle; let n = 0; window.MMBattle = Object.freeze(Object.assign({}, B, { resolveAction(o) { if (o && o.attackerSide === 'A' && (n++ % 2 === 0)) o = Object.assign({}, o, { rng: Object.assign({}, o.rng || {}, { hitRng: () => 0.999 }) }); return B.resolveAction(o); } })); });   // 確認のためだけ：自分の攻撃を1回おきに外れ側へ（かわされる場面を作る。保存されるのはこの試合の結果だけ）
+    await sleep(800);
+    const ui = await page.evaluate(() => { const bt = document.getElementById('bt'), m = bt.querySelector('.mmr').getBoundingClientRect(), g = bt.querySelector('#go').getBoundingClientRect(); return { v24: bt.classList.contains('mma-v24'), st: bt.querySelectorAll('.mmr .pl .st').length, mmrH: Math.round(m.height), goW: Math.round(g.width), goBottom: Math.round(g.bottom), ih: innerHeight }; });
+    await page.screenshot({ path: `${OUT}/dev24_battle_390.png` });
+    let turn = 0; const tb = Date.now();
+    while (Date.now() - tb < 200000) {
+      const st = await page.evaluate(() => { const g = document.getElementById('go'); return { bt: !!document.getElementById('bt'), back: !!g && g.classList.contains('bk'), can: !!g && !g.disabled && !g.classList.contains('bk') }; });
+      if (!st.bt || st.back) break;
+      if (st.can) { const w = turn++ % 3 === 1; await page.waitForFunction((w) => { const on = document.querySelector('#rl .rw.on'); return on && on.classList.contains('ms') === w; }, w, { timeout: 4000, polling: 5 }).catch(() => {}); await page.click('#go').catch(() => {}); if (turn === 2) { await sleep(1300); await page.screenshot({ path: `${OUT}/dev24_cine_390.png` }); } }
+      await sleep(150);
+    }
+    const bt2 = await page.evaluate(() => ({ cine: window.__cine, crowd: MMCROWD.log().map((x) => [x.kind, x.result]), play: MMAUDIO.playLog().filter((x) => /^CROWD/.test(x.name)).map((x) => [x.name, x.ctx, x.src.split('/').pop()]), back: !!document.querySelector('#go.bk') }));
+    await page.screenshot({ path: `${OUT}/dev24_end_390.png` });
+    rec('開発24：公式大会の新しいバトル画面（低いルーレット・数値なし・STOP は画面の中）', ui.v24 && ui.st === 0 && ui.mmrH < 130 && ui.goBottom <= ui.ih, JSON.stringify(ui));
+    rec('開発24：技の発動中は HUD・ルーレット・STOP を隠す', bt2.cine.length > 0 && bt2.cine.every((c) => c.on && c.hpr === 'hidden' && c.bui === 'hidden'), JSON.stringify(bt2.cine.slice(0, 4)));
+    const pk = new Set(bt2.play.map((x) => x[0]));
+    rec('開発24：観客の声が鳴り始めた（命中＝歓声・ルーレットの MISS＝落胆・かわされた＝ブーイング・短い版・OGG）', ['CROWD_HIT', 'CROWD_MISS', 'CROWD_EVADE'].every((n) => pk.has(n)) && bt2.play.every((x) => x[1] === 'running') && bt2.play.length === bt2.crowd.length, JSON.stringify({ crowd: bt2.crowd.slice(0, 12), play: bt2.play.slice(0, 6), n: bt2.play.length }));
+    if (bt2.back) { await page.click('#go').catch(() => {}); await sleep(1500); }
+    for (let k = 0; k < 10; k++) { const c = await drain(); if (c === 'choice') await page.click('.mmtalk-choice').catch(() => {}); await sleep(500); }
+    // 再起動（ホーム画面のアイコンから開き直す相当）：セーブは残る・つづきから
+    const before = await page.evaluate(() => ({ name: S.m && S.m.name, g: S.g, key: !!localStorage.getItem('mr4v6') }));
+    await page.reload({ waitUntil: 'load', timeout: 120000 }); await sleep(2500);
+    const after = await page.evaluate(() => ({ name: S.m && S.m.name, g: S.g, key: !!localStorage.getItem('mr4v6'), title: !!document.querySelector('[onclick*="startGame"]'), build: MM_BUILD }));
+    rec('開発24：開き直してもセーブはそのまま（つづきから）', before.key && after.key && after.name === before.name && after.title, JSON.stringify({ before, after }));
+    await page.click('[onclick*="startGame"]').catch(() => {}); await sleep(1500); await drain();
+  }
 
 } catch (e) {
   rec('確認の途中で例外', false, String(e).slice(0, 400));

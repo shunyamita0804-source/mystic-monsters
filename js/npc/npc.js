@@ -137,7 +137,7 @@
       const img = npc ? imageOf(npc, view, expr) : null, anim = l.anim && npc ? animOf(npc, view, l.anim) : null;   // アニメーションは行ごとの指定（引き継がない）
       const side = l.side === 'right' || l.side === 'left' ? l.side : sideOf[npc] || 'left'; sideOf[npc] = side;   // 話者ごとに左右を覚える
       const choices = Array.isArray(l.choices) ? l.choices.filter((c) => c && typeof c.id === 'string' && c.id && typeof c.label === 'string').map((c) => ({ id: c.id, label: c.label })) : [];
-      return { npc, view, expr, side, name: l.name != null ? String(l.name) : (n ? n.name : ''), text: String(l.text == null ? '' : l.text), img, anim, choices: choices.length ? choices : null };
+      return { npc, view, expr, side, name: l.name != null ? String(l.name) : (n ? n.name : ''), text: String(l.text == null ? '' : l.text), img, anim, choices: choices.length ? choices : null, voice: typeof l.voice === 'string' && l.voice ? l.voice : null };   // 2026-10-13：voice＝この行が出た瞬間に鳴らす声（js/npc/voice-cues.js）
     });
   }
   /**
@@ -154,7 +154,7 @@
     const stop = () => { if (st.timer != null) { cancel(st.timer); st.timer = null; } };
     const snap = () => { const l = L[st.idx] || {}; return { idx: st.idx, total: L.length, npc: l.npc || null, side: l.side || 'left', name: l.name || '', view: l.img ? l.img.view : l.view || null, expr: l.img ? l.img.expr : l.expr || null,
       img: l.img ? l.img.src : null, fallback: !!(l.img && l.img.fallback), anim: l.anim ? l.anim.name : null, frames: l.anim ? l.anim.frames : null, fps: l.anim ? l.anim.fps : 0, loop: l.anim ? l.anim.loop : false, text: st.chars.slice(0, st.shown).join(''), shown: st.shown, full: l.text || '', hasChoices: !!(l.choices && l.choices.length), nChoices: l.choices ? l.choices.length : 0, typing: st.typing, ended: st.ended, timer: st.timer != null,
-      choices: waiting() ? l.choices.map((c) => ({ ...c })) : null, choice: st.choice }; };
+      choices: waiting() ? l.choices.map((c) => ({ ...c })) : null, choice: st.choice, voice: l.voice || null }; };
     const emit = () => { if (opts.onUpdate) opts.onUpdate(snap()); };
     function tick(tok) {
       if (tok !== st.token || st.ended) return;   // 前の行・終了後のタイマーは何もしない
@@ -257,13 +257,15 @@
       fig.appendChild(img); { const orn = h('i', 'mmtalk-orn'); orn.setAttribute('aria-hidden', 'true'); win.append(orn); } win.append(nm, tx, ch, nx); stage.append(fig, win); ov.appendChild(stage); document.body.appendChild(ov);
       const onKey = (e) => { if (e.key === 'Enter' || e.key === ' ') { if (e.target && e.target.closest && e.target.closest('.mmtalk-choices')) return;   // 選択肢のボタン上ではボタンの操作に任せる
         e.preventDefault(); c.tap(); } };
-      let lineIdx = -1, txLine = -1, txFull = null, txShown = 0, txChars = [];
+      let lineIdx = -1, txLine = -1, txFull = null, txShown = 0, txChars = [], voiced = false;
       let keyT = null;   // keydown を受け付け始めるタイマー（会話を開いたキー操作そのものは会話に届けない）
       const c = createTalk(lines, {
         openGuardMs: OPEN_GUARD_MS,   // ダブルタップの2打目（会話を開いたタップの続き）などで、1行目の文字送りを飛ばさない
         onUpdate(s) {
           if (s.ended) return;
-          if (s.idx !== lineIdx) { lineIdx = s.idx; if (typeof opts.onLine === 'function') { try { opts.onLine(s.idx, s); } catch (e) {} } }   // 2026-10-05：行が変わったとき（世界地図のカメラを会話に合わせて動かす等）
+          if (s.idx !== lineIdx) { lineIdx = s.idx; if (typeof opts.onLine === 'function') { try { opts.onLine(s.idx, s); } catch (e) {} }
+            // 2026-10-13 開発24：この行に声があれば、行が出た瞬間に1回（声が無い行へ進んだら前の声は止める＝会話とずれない）
+            try { const V = root.MMVOICE; if (V) { if (s.voice) { if (V.line(s.voice)) voiced = true; } else if (voiced) { V.stop(90); voiced = false; } } } catch (e) {} }   // 2026-10-05：行が変わったとき（世界地図のカメラを会話に合わせて動かす等）
           ov.dataset.npc = s.npc || ''; stage.dataset.side = s.side || 'left'; const stand = !s.frames && s.img ? standOf(s.npc, s.view || 'closeup', s.expr) : null; fig.className = 'mmtalk-fig ' + (s.view || 'closeup') + (stand ? ' stand' : ''); fig.hidden = !(s.img || s.frames);   // アニメーションだけのNPCでも立ち絵を隠さない
           const key = s.frames ? `${s.idx}:${s.anim}` : '';
           if (key !== ANIM.key) { stopAnim(); if (s.frames) { ANIM.key = key; ANIM.name = s.anim; ANIM.pre = s.frames.map((f) => { const p = new Image(); p.src = f; return p; });   // 先読みした絵を持っておく（2026-10-03：読み込み途中のコマへは切り替えない＝途中で画面を移っても読み込みを打ち切らない）
@@ -287,7 +289,7 @@
             if (s.choices) for (const x of s.choices) { const bt = h('button', 'mmtalk-choice'); bt.type = 'button'; bt.textContent = x.label; bt.dataset.choice = x.id; if (Array.from(x.label).length >= 13) bt.classList.add('long');   /* 2026-10-07 試遊：長い選択肢（13字以上）は文字を少し小さくして1行に収める */
               bt.addEventListener('click', (e) => { e.stopPropagation(); bt.classList.add('on'); c.choose(x.id); });   /* 2026-10-06：押した選択肢を金の枠で光らせる（.on） */ ch.appendChild(bt); } }
         },
-        onEnd(choice) { stopAnim(); clearTimeout(keyT); document.removeEventListener('keydown', onKey); if (scene) { const d = docEl(); if (d) d.removeAttribute('data-mmscene'); } if (typeof opts.onClose === 'function' && !ov.__instant) { try { opts.onClose(choice == null ? null : choice); } catch (e) {} }   /* 2026-10-07 試遊：opts.onClose＝閉じ始め（フェードの前）に次の画面を下に描く＝会話のフェードの間に前の画面が一瞬見えない */ if (ov.animate && ov.classList && !ov.__instant) { ov.classList.add('mmtalk-out'); const a = ov.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, easing: 'ease-in', fill: 'forwards' }); const done = () => { ov.remove(); try { a.cancel(); } catch (e) {} tx.textContent = ''; txChars = []; evOff(); resolve(choice == null ? null : choice); }; a.finished.then(done, done); } else { ov.remove(); tx.textContent = ''; txChars = []; evOff(); resolve(choice == null ? null : choice); } if (CUR && CUR.c === c) CUR = null;   /* 2026-10-05 PHASE B：閉じたら本文の文字の要素（1文字ずつの span）を片付ける＝閉じた会話の DOM を残さない */ },   // 退場：短くフェード（急に消さない）。Promise はフェードが終わって DOM を消してから解決する（次の画面が会話の上に出ない・会話の要素が残らない）。220ms 後に DOM から外す
+        onEnd(choice) { stopAnim(); clearTimeout(keyT); if (voiced) { voiced = false; try { if (root.MMVOICE) root.MMVOICE.stop(90); } catch (e) {} }   /* 2026-10-13：会話を閉じた・飛ばしたら声も止める */ document.removeEventListener('keydown', onKey); if (scene) { const d = docEl(); if (d) d.removeAttribute('data-mmscene'); } if (typeof opts.onClose === 'function' && !ov.__instant) { try { opts.onClose(choice == null ? null : choice); } catch (e) {} }   /* 2026-10-07 試遊：opts.onClose＝閉じ始め（フェードの前）に次の画面を下に描く＝会話のフェードの間に前の画面が一瞬見えない */ if (ov.animate && ov.classList && !ov.__instant) { ov.classList.add('mmtalk-out'); const a = ov.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, easing: 'ease-in', fill: 'forwards' }); const done = () => { ov.remove(); try { a.cancel(); } catch (e) {} tx.textContent = ''; txChars = []; evOff(); resolve(choice == null ? null : choice); }; a.finished.then(done, done); } else { ov.remove(); tx.textContent = ''; txChars = []; evOff(); resolve(choice == null ? null : choice); } if (CUR && CUR.c === c) CUR = null;   /* 2026-10-05 PHASE B：閉じたら本文の文字の要素（1文字ずつの span）を片付ける＝閉じた会話の DOM を残さない */ },   // 退場：短くフェード（急に消さない）。Promise はフェードが終わって DOM を消してから解決する（次の画面が会話の上に出ない・会話の要素が残らない）。220ms 後に DOM から外す
         branches: pres === 'major' && opts.branches ? Object.fromEntries(Object.entries(opts.branches).map(([k, v]) => [k, preferFullbody(v)])) : opts.branches,
       });
       ov.addEventListener('click', (e) => { e.stopPropagation(); c.tap(); });
