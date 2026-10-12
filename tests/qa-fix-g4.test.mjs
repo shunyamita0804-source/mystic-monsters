@@ -97,6 +97,7 @@ test('QA-G4-2：モンスター名を画面に出すところ（fight()・バト
     /\$\{sk\.name\}/g,   // 固有スキルの定義（UNIQUE_SKILL）・ステータス画面の比較（表示は種族名）
     /\$\{T\.name\}/g, /d\?d\.name:it\.id/g, /\$\{d\.name\}<small>/g,   // 修行場・アイテムの定義
     /if\(o\.name\)e\.name=String\(o\.name\)\.replace\(\/\[<>&"'`\\\\\]\/g,""\)\|\|e\.name;/g, /name:ev&&ev\.name/g,   // 2026-10-08 M-06：バトルの相手の名前（大会の参加者名・HTML の記号を除いてから fight() の写しへ）
+    /name:rv\?rv\.name:"ライバルの相棒"/g,   // 2026-10-12：練習試合の VS の相手（ライバルの相棒の正式データ MMP10M.rivalMonster。表示は tourVsShow の p11Esc）
     /if\(x\.name=="ハヤテ"\)x\.name="ガウル"/g,                       // 旧セーブの名前の移行（表示ではない）
     /x\.name=v;save\(\);farm\(`\$\{on\}の名前を/g,   // 2026-10-04 PHASE H3：牧場の名前変更（保存する名前はそのまま。表示は p11Esc 済みの on）
     /if\(nm\)x\.name=MMP11P\.monsterName\(nm,x\.sp\);/g, /c\.name=MMP11P\.monsterName\(cname\(a,b\),c\.sp\);/g, /a\.name\.slice\(0,2\)\+b\.name\.slice\(-2\)/g,   // 名前を付ける（保存する名前はそのまま）

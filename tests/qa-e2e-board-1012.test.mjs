@@ -51,7 +51,7 @@ for (const size of [[375, 667], [390, 844], [430, 932]]) {
       assert.ok(r.ratio >= 1.1 && r.ratio <= 1.3, `${r.node}：モンスターの幅 ÷ マスの幅 = ${r.ratio.toFixed(2)}`);
       assert.equal(r.fitVis, r.fit, `${r.node}：カメラが入れる先の地点 ${r.fitVis}/${r.fit}`);
       assert.ok(r.fit >= Math.min(4, r.fit), r.node); assert.ok(r.monIn, `${r.node}：モンスターは HUD と操作欄の間`);
-      assert.equal(r.curFar, false, `${r.node}：今の地点は明るい`); assert.ok(r.veil && r.focus >= 4, `${r.node}：道筋の幕`);
+      assert.equal(r.curFar, false, `${r.node}：今の地点は明るい`); assert.ok(!r.veil && r.focus >= 4, `${r.node}：道筋（2026-10-12 試遊：地面の幕は出さない＝地面の絵を暗くしない・マスの薄さだけ）`);
     }
     const byNode = Object.fromEntries(out.map((r) => [r.node, r]));
     assert.deepEqual([byNode.J0.farOf.EL01_01, byNode.J0.farOf.ER01_01], [false, false], '分かれ道の手前＝両方の道は明るい');
@@ -83,12 +83,12 @@ test('BV-B3：開始の俯瞰の間は幕・薄いマスを出さない → 追�
   await H.newGame(pg, 'テスト');
   await pg.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); save(); board(); });
   await pg.waitForSelector('.wbv .rfw.intro', { timeout: 20000 });
-  await pg.waitForFunction(() => getComputedStyle(document.querySelector('.wbv .rfw-veil')).opacity === '0', null, { timeout: 3000 }).catch(() => {});   // 2026-10-12 開発21：中継カットのあとに全景へ入る＝幕が消える途中（transition）を測らない
+  await pg.waitForTimeout(600);   // 2026-10-12 開発21：中継カットのあとに全景へ入る＝幕が消える途中（transition）を測らない
   await pg.waitForTimeout(200);
-  const a = await pg.evaluate(() => ({ veil: getComputedStyle(document.querySelector('.wbv .rfw-veil')).opacity, far: [...document.querySelectorAll('.wbv .rfw-tile.far')].map((e) => getComputedStyle(e).opacity) }));
+  const a = await pg.evaluate(() => ({ veil: document.querySelector('.wbv .rfw-veil') ? 'x' : '0', far: [...document.querySelectorAll('.wbv .rfw-tile.far')].map((e) => getComputedStyle(e).opacity) }));
   assert.equal(a.veil, '0', '俯瞰の間は幕なし'); assert.ok(a.far.length > 0 && a.far.every((o) => o === '1'), '俯瞰の間は全部のマスが見える');
   await pg.waitForSelector('.wbv .rfw:not(.intro)', { timeout: 20000 }); await pg.waitForTimeout(900);
-  const b = await pg.evaluate(() => ({ veil: +getComputedStyle(document.querySelector('.wbv .rfw-veil')).opacity, far: getComputedStyle(document.querySelector('.wbv .rfw-tile.far')).opacity }));
-  assert.ok(b.veil > 0.9, '追従では幕'); assert.ok(+b.far < 0.5, '道筋の外のマスは薄い');
+  const b = await pg.evaluate(() => ({ veil: document.querySelector('.wbv .rfw-veil') ? 1 : 0, far: getComputedStyle(document.querySelector('.wbv .rfw-tile.far')).opacity }));
+  assert.equal(b.veil, 0, '追従でも地面の幕は出さない（2026-10-12 試遊）'); assert.ok(+b.far < 0.5, '道筋の外のマスは薄い');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });

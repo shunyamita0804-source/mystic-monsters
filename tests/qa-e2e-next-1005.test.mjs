@@ -140,7 +140,7 @@ for (const [si, size] of [...SIZES, [430, 932]].entries()) {   // 2026-10-12：3
     const ry = await readTalk(pg);
     assert.ok(ry.some((x) => x.npc === 'ryu' && x.name === 'リュウ') && ry.some((x) => x.npc === 'fina'), 'リュウとフィナの会話');
     assert.deepEqual(ry[ry.length - 1].choices, ['a', 'b', 'c'], '返答の3択');
-    assert.match(ry.map((x) => x.full).join('|'), /あれ？ フィナじゃないか.*君が今日登録した新人.*初対面からそんな言い方しないの.*同じ町の出身.*相棒はレグナス/);
+    assert.match(ry.map((x) => x.full).join('|'), /あれ？ フィナじゃないか.*君が今日登録した新人.*初対面からそんな言い方しないの.*同じ町の出身.*俺はリュウ。ま、顔くらい/);
     await choose(pg, si ? 'c' : 'a');
     const ry2 = await readTalk(pg);
     const rj = ry2.map((x) => x.full).join('|');

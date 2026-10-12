@@ -21,7 +21,7 @@
     if (cur || !Q.length || typeof document === 'undefined' || !document.body) return;
     const n = Q.shift(), el = document.createElement('div');
     const icOf = (o, cls) => (o.img ? `<i class="mmnote-ic img${cls}${o.cmd ? ' cmd' : ''}"><img src="${esc(o.img)}" alt="" decoding="async"></i>` : `<i class="mmnote-ic ${esc(o.icon || 'gold')}${cls}" aria-hidden="true"></i>`);
-    el.className = 'mmnote' + (n.small ? ' small' : '') + (n.rows ? ' rows' : ''); el.setAttribute('role', 'status');
+    el.className = 'mmnote' + (n.small ? ' small' : '') + (n.rows ? ' rows' : '') + (n.band ? ' band' : '');   // 2026-10-12 試遊：band＝獲得・解放の帯（会話の枠のような額・丸い印の枠を使わない） el.setAttribute('role', 'status');
     // 2026-10-07 試遊：rows＝1つの帯に複数の入手を短く並べる（[{ icon|img, text }]）。small＝短い知らせ（小さめの帯）。cmd＝正式のコマンドの絵を四角のまま印にする
     const body = n.rows ? `<div class="mmnote-rows">${n.rows.map((r) => `<div class="mmnote-row">${icOf(r, ' sm')}<b>${esc(r.text)}</b></div>`).join('')}</div>`
       : `${icOf(n, '')}<div class="mmnote-tx"><b>${esc(n.title)}</b>${n.sub ? `<small>${esc(n.sub)}</small>` : ''}</div>`;

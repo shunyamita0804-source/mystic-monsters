@@ -58,5 +58,5 @@ test('FX-03：world-board の演出（RIVAL・野生／レア・高額 G・砂�
   assert.match(wb, /await goldBurst\(fx\.gold\)/);
   assert.match(rw, /marker\(id, src, opt = \{\}\)/, 'MMRF_WORLD.marker（地点の上に浮かぶ目印）');
   assert.match(wb, /V\.world\.markerDim\(id, f\.used\[id\] != null\)/, '訪れたら弱くする');
-  assert.match(wb, /bBattleSkip\(\)/, '野生・レアは「やめておく」を残す（ライバルは強制）');
+  assert.doesNotMatch(wb, /bBattleSkip\(\)/, '2026-10-12 試遊：野生・レア・ライバルの遭遇はすべて強制バトル（「やめておく」は出さない）');
 });
