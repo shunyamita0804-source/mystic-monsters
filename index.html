@@ -3753,13 +3753,15 @@ main:has(>#app>.ds) h1{display:none}
 .svs .card.slot.svauto::after{content:"";position:absolute;left:87.4%;top:35.5%;width:11.2%;aspect-ratio:1;transform:translate(-50%,-50%);background:url(./assets/ui/gold/coin.png) center/contain no-repeat;pointer-events:none}
 
 /* 2026-10-12 試遊（14・15）：新人支援の 1000G＋ジャガイモ・世界地図の解放＝アイコンと文字だけ（帯・額・角飾り・丸い印の枠を使わない。文字は影で読めるように）。アイコンは既存の正式素材（G＝coin.png・ジャガイモ＝items/body_1012/01・地図＝worldmap_unlock） */
-.mmnote.band{width:auto;max-width:min(100%,380px);margin:0 auto;min-height:0;justify-content:center;padding:6px 8px;border:0;border-radius:0;box-shadow:none;background:none;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.95),0 0 12px rgba(0,0,0,.8)}
+.mmnote.band{width:auto;max-width:min(100%,380px);margin:0 auto;min-height:0;justify-content:center;padding:6px 8px;border:0;border-radius:0;box-shadow:none;background:none;text-shadow:0 1px 2px #000,0 0 4px rgba(0,0,0,.9)}
 .mmnote.band .mmnote-cn{display:none}
-.mmnote.band .mmnote-row b,.mmnote.band .mmnote-tx b{font-size:18px;color:#fff6dc;text-shadow:inherit}
+.mmnote.band .mmnote-row b,.mmnote.band .mmnote-tx b{font-size:clamp(15px,4.5vw,18px);color:#fff6dc;text-shadow:inherit;white-space:nowrap}
+.mmnote.band{gap:10px}
 .mmnote.band .mmnote-ic.img,.mmnote.band .mmnote-ic.item{width:auto;height:auto;border:0;border-radius:0;background:none!important;box-shadow:none}
 .mmnote.band .mmnote-ic.img img{width:40px;height:40px}
 .mmnote.band .mmnote-ic.sm.img img{width:34px;height:34px}.mmnote.band .mmnote-ic.gold.sm{width:30px;height:30px}
-.mmnote.band .mmnote-ic.cmd{width:44px;height:44px}
+.mmnote.band .mmnote-ic.cmd{width:58px;height:60px;background:radial-gradient(closest-side,rgba(4,8,20,.6),rgba(4,8,20,0))!important}
+.mmnote.band .mmnote-ic.cmd img{width:100%;height:100%;object-fit:contain}
 /* 2026-10-12 試遊（13）：聖獣士登録＝名前の欄を主役に（大きく・ペンの印・タップで変更できると分かる文）・下の説明の札は出さない・「登録する」は名前の欄のすぐ下へ・あいさつの札は控えめに */
 .p11reg .p11card{margin:auto 0 0}
 .p11reg .p11s{width:min(78%,280px)}
