@@ -118,7 +118,7 @@ test('PR-B2：野生の練習試合の帯・札・相手名・会場（M-06・M-
   assert.deepEqual([f.h, f.s2], [0, null]);
   assert.equal(f.tm, '野生のモンスター', '上の札に「ランクX大会」と出さない');
   const rk = await pg.evaluate(() => RN[MMP8.practiceRank(S.m)]);
-  assert.equal(f.rank, rk); assert.match(f.bg, new RegExp(`venue_${rk}\\.webp$`), '会場の絵は従来どおり練習試合のランク');
+  assert.equal(f.rank, rk); assert.match(f.bg, /field_1012\/ch[1-4]_\w+\.webp$/, '2026-10-12 夜・3：野生・レア・ライバルの背景は Chapter ごとの野外（js/battle/arena.js の FIELD_BG）');
   await pg.waitForFunction(() => (document.getElementById('ban') || {}).textContent === '野生のモンスター', null, { timeout: 8000 });
   f = await foeInfo(pg); assert.equal(f.banLines, 1, '帯は1行');
   assert.equal(await pg.evaluate(() => /ランク.大会|ランク.の対戦相手/.test(document.getElementById('bt').innerText)), false);

@@ -9,6 +9,9 @@
 //     旧ルーレットは見えなくするだけ（処理・結果・重み・STOP の判定は従来どおり）。STOP は旧ボタン（#go）を透明にして正式の STOP の絵の上に重ねる＝押す所・押せない状態は従来のまま。
 //     動き：起動 → 短い加速 → 一定の速さで巡航（旧ルーレットの光の移動を連続の位置に直して LAG 枚ぶん後ろを映す）→ STOP（結果は fight() が確定）→
 //     慣性で減速 → ごく小さな行き過ぎ → 中央へ吸着 → 中央の板を一瞬強調。結果の技は旧ルーレットと同じ（見た目だけ）
+//   ・被弾／回避のリアクション（2026-10-12）：攻撃を受けた側のダメージの数字（pop の span.dmg）が出た瞬間に、待機立ち絵を一瞬だけ
+//     正式のリアクション（js/monsters/reaction-art.js の hit／dodge）へ差し替えて戻す。当たった／かわした は act() が呼ぶ MMBattle.resolveAction の
+//     結果を読むだけ（呼ぶだけ・結果は変えない）。待機立ち絵が出ていない間（技のコマ）・絵が読めていないときは差し替えない＝二重に出ない
 // =========================================================
 (function (root) {
   'use strict';
@@ -45,10 +48,15 @@
       '#bt .mma-bg.ofc{transform-origin:50% 100%;transform:scale(1.12)}',
       '#bt .mma-bg.fld{object-position:center 58%}',
       '#bt .bgs.mma-on::after{background:linear-gradient(rgba(6,10,26,.15),transparent 18%,transparent 52%,rgba(6,10,26,.55) 74%,rgba(4,7,18,.9))}',
-      '#bt .mon.mma-on>img:not(.mma-idle){opacity:0}',
+      '#bt .mon.mma-on>img:not(.mma-idle):not(.mma-rx){opacity:0}',
       '#bt .mon .mma-idle{position:absolute;left:50%;bottom:0;height:118%;width:auto;max-width:none;transform:translateX(-50%);pointer-events:none;filter:drop-shadow(0 8px 6px rgba(0,0,0,.45))}',
       '#bt .mon .mma-idle.fl{transform:translateX(-50%) scaleX(-1)}',
       '#bt .mon:not(.mma-on) .mma-idle{display:none}',
+      // 被弾／回避のリアクション：待機立ち絵と同じ置き方（足もと・中央・反転）。高さ＝待機立ち絵 × --rh（体の大きさがそろう倍率）
+      '#bt .mon .mma-rx{position:absolute;left:50%;bottom:0;height:calc(118% * var(--rh,1));width:auto;max-width:none;transform:translateX(-50%);pointer-events:none;filter:drop-shadow(0 8px 6px rgba(0,0,0,.45))}',
+      '#bt .mon .mma-rx.fl{transform:translateX(-50%) scaleX(-1)}',
+      '#bt .mon.mma-rxon>.mma-idle{visibility:hidden}',
+      '#bt .mon:not(.mma-on) .mma-rx{display:none}',
       // HUD（名前・HP）：濃紺＋細い金の縁
       '#bt .hpn{background:linear-gradient(rgba(10,18,44,.92),rgba(6,12,32,.9));border:1.5px solid rgba(214,178,98,.85);border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.45)}',
       // ADDENDUM2：HUD に顔アイコンを常設しない・ライフゲージを約1.3倍の太さ・長い名前でも HUD の幅を広げない
@@ -125,7 +133,7 @@
     [0, 1].forEach((s) => {
       const mon = $(`#m${s} .mon`, bt), sp = pl[s] && pl[s].sp, src = idleSrc(sp);
       if (!mon || !src) return;
-      const still = () => { const im = mon.querySelector(':scope>img:not(.mma-idle):not(.b2)'); return !!(im && IMG && im.getAttribute('src') === IMG[sp]); };
+      const still = () => { const im = mon.querySelector(':scope>img:not(.mma-idle):not(.mma-rx):not(.b2)'); return !!(im && IMG && im.getAttribute('src') === IMG[sp]); };
       const sync = () => {
         let idle = mon.querySelector('.mma-idle');
         if (still()) {
@@ -287,8 +295,64 @@
       const nm = hb.querySelector('.hn1'); hb.insertBefore(w, nm ? nm.nextSibling : hb.firstChild); w.appendChild(st);
     });
   }
+  // ---- 被弾／回避のリアクション（2026-10-12）----
+  const RX_MS = { hit: 560, dodge: 520 }, RX_CALM_MS = 420;
+  const rxLog = [];   // 確認用（最大30件）：{ side, kind, sp }
+  let lastAct = null;
+  /** 両側の被弾・回避の絵を先に読んでデコードしておく（側ごとに別の要素＝同じ種族どうしでも重ならない）。読み終わっていない絵には差し替えない */
+  const rxImg = {};
+  function rxPreload() {
+    const pl = G('BPL'), X = root.MMRXART; if (!pl || !X) return;
+    [0, 1].forEach((s) => ['hit', 'dodge'].forEach((k) => {
+      const i = pl[s] && X.info(pl[s].sp, k), key = `${s}:${k}`;
+      if (!i || (rxImg[key] && rxImg[key].dataset.src === i.src)) return;
+      const im = new Image(); im.alt = ''; im.decoding = 'sync'; im.dataset.src = i.src; im.dataset.ok = '';
+      im.onload = () => { const ok = () => { im.dataset.ok = '1'; }; if (im.decode) im.decode().then(ok, ok); else ok(); };
+      im.src = i.src; rxImg[key] = im;
+    }));
+  }
+  /** 攻撃を受けた側（side）の待機立ち絵を一瞬だけ kind（'hit'｜'dodge'）へ。差し替えたら true */
+  function react(side, kind) {
+    const bt = document.getElementById('bt'), pl = G('BPL'), X = root.MMRXART;
+    if (!bt || !pl || !X || !pl[side]) return false;
+    const mon = $(`#m${side} .mon`, bt), sp = pl[side].sp, inf = X.info(sp, kind);
+    if (!mon || !inf || !mon.classList.contains('mma-on') || !mon.querySelector('.mma-idle')) return false;   // 技のコマが出ている間は差し替えない
+    const im = rxImg[`${side}:${kind}`];
+    if (!im || im.dataset.src !== inf.src || im.dataset.ok !== '1' || !im.naturalWidth) return false;   // 読めていない（読み込み中・404）＝待機立ち絵のまま
+    const old = mon.querySelector(':scope>.mma-rx'); if (old && old !== im) old.remove();
+    im.className = 'mma-rx' + (flipOf(side, sp) ? ' fl' : ''); im.dataset.kind = kind; im.style.setProperty('--rh', String(inf.hRel));
+    if (im.parentNode !== mon) mon.appendChild(im);   // デコード済みの絵をそのまま置く＝差し替えた最初のフレームから描ける（空白が出ない）
+    mon.classList.add('mma-rxon');
+    clearTimeout(mon.__rxT);
+    mon.__rxT = setTimeout(() => { mon.classList.remove('mma-rxon'); im.remove(); }, reduced() ? RX_CALM_MS : RX_MS[kind]);
+    rxLog.push({ side, kind, sp }); if (rxLog.length > 30) rxLog.shift();
+    return true;
+  }
+  /** act() の結果（当たった／かわした・攻撃を受けた側）を覚える。resolveAction は呼ぶだけ */
+  function rxWrap() {
+    const B = root.MMBattle;
+    if (!B || B.__rx || typeof B.resolveAction !== 'function') return;
+    const W = Object.assign({}, B); W.__rx = true;
+    W.resolveAction = function (o) { const r = B.resolveAction(o); try { if (r && o && (o.attackerSide === 'A' || o.attackerSide === 'B')) lastAct = o.move && o.move.power > 0 ? { target: o.attackerSide === 'A' ? 1 : 0, hit: !!r.hit, t: now() } : null; /* 補助技（威力なし）は数字が出ない＝覚えない */ } catch (e) { /* 見た目だけ */ } return r; };
+    root.MMBattle = Object.freeze(W);
+  }
+  /** ダメージの数字（#f0／#f1 の span.dmg）が出た瞬間：受けた側が当たった＝被弾・MISS＝回避 */
+  function rxWatch(bt) {
+    new MutationObserver((muts) => {
+      for (const mu of muts) for (const n of mu.addedNodes) {
+        if (!n || n.tagName !== 'SPAN' || !n.classList.contains('dmg') || n.classList.contains('ef')) continue;
+        const p = n.parentNode, side = p && /^f[01]$/.test(p.id || '') ? +p.id.slice(1) : -1;
+        if (side < 0 || !lastAct || lastAct.target !== side || now() - lastAct.t > 4000) continue;   // 自分の番のミス（ルーレットの MISS・動けない）は攻撃を受けた側ではない＝出さない
+        const act = lastAct; lastAct = null;   // 1回の行動につき1回だけ
+        if (root.MMRULES && root.MMRULES.swallow && root.MMRULES.swallow(n)) continue;   // まひ・ねむりで動けない行動の MISS（js/battle/rules.js）
+        const ms = n.classList.contains('ms');
+        if (ms === !act.hit) { try { react(side, ms ? 'dodge' : 'hit'); } catch (e) { /* 見た目だけ */ } }
+      }
+    }).observe(bt, { childList: true, subtree: true });
+  }
   function setup(bt) {
     style();
+    try { lastAct = null; rxWrap(); rxPreload(); rxWatch(bt); } catch (e) { /* 見た目だけ */ }
     try { setupChips(bt); } catch (e) { /* 見た目だけ */ }
     try { setupText(bt); } catch (e) { /* 見た目だけ */ }
     try { setupBg(bt); } catch (e) { /* 見た目だけ */ }
@@ -300,7 +364,7 @@
     new MutationObserver((muts) => { for (const mu of muts) for (const n of mu.addedNodes) if (n && n.id === 'bt') setup(n); }).observe(document.body, { childList: true });
   }
   if (typeof document !== 'undefined') { if (document.body) watch(); else document.addEventListener('DOMContentLoaded', watch); }
-  root.MMARENA = Object.freeze({ R, IDLE, FACE, rankOf, arenaSrc, fieldSrc, FIELD_BG, idleSrc, flipOf, setup, faceSrc: (sp) => (IDLE[sp] ? `./assets/tournament/faces_25d/face_${IDLE[sp].slice(5)}.webp` : null),
+  root.MMARENA = Object.freeze({ R, IDLE, FACE, rankOf, arenaSrc, fieldSrc, FIELD_BG, idleSrc, flipOf, setup, react, RX_MS, rxLog: () => rxLog.slice(), faceSrc: (sp) => (IDLE[sp] ? `./assets/tournament/faces_25d/face_${IDLE[sp].slice(5)}.webp` : null),
     // 2026-10-11：対戦表の顔＝2.5D の横顔（faces_25d）。読めなかったときは従来の丸い顔（faces）へ（index.html の tbIcon の onerror）
     faceOldSrc: (sp) => (IDLE[sp] ? `./assets/tournament/faces/face_${IDLE[sp].slice(5)}.webp` : null) });
 })(typeof window !== 'undefined' ? window : globalThis);
