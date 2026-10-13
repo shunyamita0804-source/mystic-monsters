@@ -399,3 +399,46 @@ sha256：
 | TITLE_CANDIDATE（title_candidate.ogg・d032ae4f001caad1338fd8e1e29e32f443f9ee18736273e76bb9b88172afba25） | Top画面BGM.mp3（00c152d2f41d24950a44177ee4b01a8e0aee4b07791b70336cc999010d193df1） | 230.9秒（頭に約0.56秒・終わりに約1.7秒の無音） | -7.1 LUFS | 0.29 | TITLE＝silent（開始画面は無音） |
 | ARENA_CANDIDATE（arena_candidate.ogg・db1bbbd34c5b4774a282ad9cfc36eadd7befb17ce1f3fdf7eadb3d362157ec31） | 闘技場BGM.mp3（55fe44454bf329fc2402c23b6a4f96f64cc61d10b9321ff00f3577ec0823e611） | 185.7秒 | -9.7 LUFS | 0.39 | ARENA＝Swords At Midnight Loop（闘技場の画面は未実装） |
 | LEGEND_BATTLE_CANDIDATE（legend_battle_candidate.ogg・28f56e01360c7887c7d92df0291af1de7c98ab3324a84456b44e3a27d060f542） | レジェンド戦BGM.mp3（47d9dfa4b86572bdb1f357a976f91b91183779b57b6ddf337e7ce7bf96b87a18） | 271.6秒（終わりに約1.3秒の無音） | -8.9 LUFS | 0.35 | 三伝説との対戦は未実装（公式大会・野生・レア・ライバルの曲は変えていない） |
+
+## 2026-10-13 開発26：確定ボイス 15本（ユーザー提供 ZIP「ミスモン開発26_確定ボイス15本_PR24最小差分」）【試遊・ユーザー承認待ち＝main 未統合】
+
+ZIP の同梱の OGG／M4A をそのまま置いた（リポジトリの側では変換・加工していない。ZIP の manifest_voice15.json によると、新しい13本は loudnorm I=-19 LUFS・TP=-2 dBTP で OGG q5／AAC 128k に変換したもの、アストラッドの2本は以前に検証済みの公式補足パックの派生）。元の MP3（original_MP3/）はリポジトリに置かない（ユーザーが保管）。sha256・長さは manifest と全部一致し、30ファイルとも最後までデコードできることを確認した。
+同じ id のファイルは中身だけ差し替えた（フィナ8本・ダン・ニック・ベルナ・レオナ2本＝出しどころ・登録 id は変えていない）。上の開発24・開発25 追加便の表の元ファイル・sha256・音量は差し替え前の記録。gain＝約 -18 LUFS にそろえる従来の計算（10^((-18.04−LUFS)/20)。LUFS は manifest の OGG の値）。
+**声の生成元・利用規約・商用利用の条件は、ZIP に記載が無く未確認＝公開前の確認事項**（確認済みとはしていない）。
+
+| id（ファイル） | 話者・台詞 | 元ファイル（sha256） | 長さ | 音量 | gain | 既定 |
+|---|---|---|---:|---:|---:|---|
+| fina_hello（fina_hello_new） | フィナ「こんにちは！」 | フィナ、こんにちは確定版.mp3（138baa8677fa636402f7152f636f116e0f26fe09b7217440ca3d6c2c25eb6d7c） | 1.071秒 | -19.03 LUFS | 1.12 | ON・従来の場面のまま |
+| fina_yeah | フィナ「やったね！」 | フィナ、やったね！確定版.mp3（b8c8a5af315b8059dc763ef3bb24bfb873eb5a50e844ff6b75f6d36265bd7e49） | 0.993秒 | -19.07 LUFS | 1.13 | ON・従来の場面のまま |
+| fina_hmm | フィナ「うーん……」 | フィナ、うーん、、確定版.mp3（3745ed6a066924fc8e38869725131f9cb217843bd7e75d11a1137084cea58a78） | 1.646秒 | -18.94 LUFS | 1.11 | ON・従来の場面のまま |
+| fina_look | フィナ「見て見て！」 | フィナ、見て見て！確定版.mp3（37b9ea61dd7489e050b5d4f4cc5a3bfa8ea5cf2635d77c49f0a75a171df9b498） | 0.993秒 | -19.04 LUFS | 1.12 | ON・従来の場面のまま |
+| fina_hey | フィナ「もう！」 | フィナ、もう！確定版.mp3（8164f8aee112f14f59ad2cb642d219243c4a43c9ece3e8face382f569b3ae06e） | 1.228秒 | -19.1 LUFS | 1.13 | ON・従来の場面のまま |
+| fina_giggle | フィナ「えへへっ」 | フィナ、えへへっ確定版.mp3（c8e1ec7038ac8fd5d565fd6a017d98895f5ef400dda6864d1e18c0138969c8de） | 0.914秒 | -19.04 LUFS | 1.12 | ON・従来の場面のまま |
+| fina_yes | フィナ「うん！」 | フィナ、うん！確定版.mp3（f9a1596748e8781b9d6a7bec65c8250807bc4ddaa154ae3b3dae77f989922bf4） | 0.679秒 | -18.99 LUFS | 1.12 | ON・従来の場面のまま |
+| fina_wonder | フィナ「なんだろう？」 | フィナ、なんだろう？確定版.mp3（8b18f46f924d8bf6235e769db064fba374940e20accb9f1bbaf3e82893a2f73f） | 1.071秒 | -18.99 LUFS | 1.12 | ON・従来の場面のまま |
+| berna_welcome | ベルナ「いらっしゃい」 | ベルナ、いらっしゃい確定版.mp3（80fa83329146c8cd81e8a3bfd6fae9693831c1d42dc3148b51cbf43708597c24） | 0.993秒 | -18.97 LUFS | 1.11 | ON・従来の場面のまま |
+| nick_hello | ニック「今日も元気そうだな」 | ニック、今日も元気そうだな確定版.mp3（1fc2679a0c552c121e8edbaf1c2d9cdb69818926a87ac4fdf9eb97ad353b170f） | 1.802秒 | -19.06 LUFS | 1.12 | ON・従来の場面のまま |
+| dan_hello | ダン「よう、準備はできたか？」 | ダン、よう準備はできたか？確定版.mp3（3e92502950bcd8a73b440bcb43dd8c29729bfafa2842c49fdf71257243a7d018） | 2.038秒 | -19.02 LUFS | 1.12 | ON・従来の場面のまま |
+| leona_greet | レオナ「よく来ましたね」 | レオナ、よく来ましたね確定版.mp3（0564a6ff38bb379de90794d88ff460eff23f9a560e73101f0b13952cd65a20fa） | 1.489秒 | -19.1 LUFS | 1.13 | 登録のみ（enabled:false） |
+| leona_prebattle | レオナ「あなたの信念が本物なら、その力を私に示してみなさい」 | レオナ、バトル導入前確定版.mp3（340fa01910eb90701ca2eed214be0c9511766a2d23a65ae399e1c4ec0d1b15c1） | 5.0秒 | -18.5 LUFS | 1.05 | 登録のみ（enabled:false） |
+| astrad_greet | アストラッド「待っていた」 | 追補ZIP/astrad_greet.mp3（583cd34c927407d052dd161734252ff68e74f6a9fad49c76dc84ff1e1c8a9603） | 1.411秒 | -19.26 LUFS | 1.15 | 登録のみ（enabled:false・新規） |
+| astrad_prebattle | アストラッド「全力でこい！」 | 追補ZIP/astrad_prebattle.mp3（9b6f8a5361ecbccf2101475d39c1339d6600de51709856dbefbdb114484430ea） | 1.228秒 | -19.24 LUFS | 1.15 | 登録のみ（enabled:false・新規） |
+
+アストラッドの2本は、使用禁止の旧音源（「来たか」d3ad7bda…・「お前の力、見せてみろ！」3f485d20…）とは別の新しい声（元の sha256 が違う）。旧音源は今回も取り込んでいない。
+
+ファイルの sha256（OGG／M4A）：
+- fina_hello_new：766fb3b74d9fa69871e498787de015529ff4493d5b13723216393342187ed113／a4f4b0c11975b598fff7c318d7265ce543c63638cc00150d1d9702e69e84e66b
+- fina_yeah：1588f55ca9945f99fd639a15f0fe0b5230c7f5223af8cacf33a564891fcb1403／d1cdf170b6d3c1b197fffc11bf87a1b4ee325aa3c8d7f8ad71d8426f286b39da
+- fina_hmm：fbb79971622541a38392dab047b375df5fa02636e879a3dbf93f37f2c8d39d40／bafbbb352fe839739d03754ddacc988a55b7daec038b12dea52bc9d58ebefe84
+- fina_look：19a3864a9c130a6f1ddf604dab6e8ef2b26594ae075a54394495fdedcee2cdeb／20d8da368049933907615be0231a8649b84d0813839d976da7d50e762a629f48
+- fina_hey：2a1d20e887cf68a78ab425cc6984cb394a1714d5ba6e906783e04046a7a6ebb6／e0509dd462ef8c7572974298a348f1176ad97eb8b9539fddb89f92f33edfa813
+- fina_giggle：d708489636186b98369af6ee191a628ac3ee086b2da79349a1e19533c9582ace／b490c598a9849c0e7210e2347263a2c7f0c2f00619fb5f636ba57827d19f1249
+- fina_yes：6f0874ef1b55c01ff03205000a3c92614efba0124a3954b13ed0b3ad0650bcbc／0fb45e27f8436ef7218cd0d62fd482a68dc428cbad7c51dd886e6c8ab6eb1bd0
+- fina_wonder：e7b67b0c707766a20e9f57778c5b52f52807903aaeb32f61ec98ffde5cbb6276／55c9f37e040ab6d359a330f2b378f666f159cec06742030253d5dcce27268580
+- berna_welcome：2545dcfad61cfd62057c6719a403534ae5053ce537790265f038d95461686c92／e81d256fd352f5cad3a47d6e9208979cb6a80e6f341ba8d9bc8dac240022c2fb
+- nick_hello：1fc591ed4cd5ccfc4846331113b3dab480bbd8383877d09f6e2ed152104ae6b3／4115afffb8222e2624ca481116deee9e54c34f1da16092c19052c541f39966fa
+- dan_hello：64d5ec0274572363c8da363a4c50bb85a172fac8455036c701f2d71b3d7c57b5／132b2660ec75ffff09ba4fd592202a84e7207c46dfd210acfbb46222d4c3c9ff
+- leona_greet：d9d26c74f737c4ee55719b1ec8b84b05d9ca925302cd316d4bd3fef80f2ae00c／d5b156ec443599348395a2dd148c15ed3a790441f9e1e067b6cc1722426b2a40
+- leona_prebattle：0883100e02021d852aa0e740ebb794febf57c47ca151bb870d7f41390f279960／7ea5e41520d98a22a6fa5a83e1a1d9bd1483e981bd24fbb11070450d42d64d5a
+- astrad_greet：24385b57ddc04ce19bb5fc5801b1ffbf34251c03df81b0ee76427fe9a7f9341b／b44d5ea8293d90762fb778a8fb80d52081e1f6140bd087c5c3d9e3be5d9f70d7
+- astrad_prebattle：478645adf4ca4775ffcac4c45bd3f57bd53ad5a2ce39e42913d4f243aaa1fca8／e459fbb2ba5830159fdc713ed7c3a9f0e242041cdc95b84270624e818a284977

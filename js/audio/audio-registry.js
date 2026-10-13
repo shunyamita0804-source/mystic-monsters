@@ -141,17 +141,17 @@
   //  enabled:false にすれば、その声だけ鳴らさない（どこで鳴らすかは js/npc/voice-cues.js の CUES）。gain＝素材の音量の差をそろえる（約 -18 LUFS）。
   //  ボイスは SE・BGM とは別の音量・ON/OFF（MMAUDIO.setVoice。設定は localStorage mmvoice＝セーブとは別）
   const VOICE_REGISTRY = {
-    fina_hello:  { src: [VO + 'fina_hello_new.ogg', VO + 'fina_hello_new.m4a'], npc: 'fina', gain: 0.88 },   // こんにちは（2026-10-13 開発25 追加便：ユーザー指定の新しい「こんにちは」（フィナ、こんにちはNew.mp3・-16.9）へ参照先だけ差し替え。旧 fina_hello.ogg／m4a（-19.9・gain 1.24）はファイルだけ残す）
-    fina_yeah:   { src: [VO + 'fina_yeah.ogg', VO + 'fina_yeah.m4a'], npc: 'fina', gain: 1.22 },       // やったね（-19.7）
-    fina_hmm:    { src: [VO + 'fina_hmm.ogg', VO + 'fina_hmm.m4a'], npc: 'fina', gain: 1.53 },         // うーん（-21.7）
-    fina_look:   { src: [VO + 'fina_look.ogg', VO + 'fina_look.m4a'], npc: 'fina', gain: 1.05 },       // 見て見て（-18.4）
-    fina_hey:    { src: [VO + 'fina_hey.ogg', VO + 'fina_hey.m4a'], npc: 'fina', gain: 1.4 },          // もう（-20.9）
-    fina_giggle: { src: [VO + 'fina_giggle.ogg', VO + 'fina_giggle.m4a'], npc: 'fina', gain: 2.14 },   // えへへ（-24.6）
-    fina_yes:    { src: [VO + 'fina_yes.ogg', VO + 'fina_yes.m4a'], npc: 'fina', gain: 1.32 },         // うん（-20.4）
-    fina_wonder: { src: [VO + 'fina_wonder.ogg', VO + 'fina_wonder.m4a'], npc: 'fina', gain: 1.91 },   // なんだろう？（-24.2）
-    dan_hello:     { src: [VO + 'dan_hello.ogg', VO + 'dan_hello.m4a'], npc: 'dan', gain: 1.03 },           // ダン（ベースキャンプ）：やあ（-18.3）
-    nick_hello:    { src: [VO + 'nick_hello.ogg', VO + 'nick_hello.m4a'], npc: 'nick', gain: 2.4 },         // ニック（牧場）：やあ（-25.6）
-    berna_welcome: { src: [VO + 'berna_welcome.ogg', VO + 'berna_welcome.m4a'], npc: 'shop', gain: 1.16 },  // ベルナ（アイテム屋）：いらっしゃい（-19.3）
+    fina_hello:  { src: [VO + 'fina_hello_new.ogg', VO + 'fina_hello_new.m4a'], npc: 'fina', gain: 1.12 },   // こんにちは（2026-10-13 開発25 追加便：参照先を fina_hello_new へ。開発26：中身を確定版（-19.0）に差し替え。旧 fina_hello.ogg／m4a（-19.9・gain 1.24）はファイルだけ残す）
+    fina_yeah:   { src: [VO + 'fina_yeah.ogg', VO + 'fina_yeah.m4a'], npc: 'fina', gain: 1.13 },       // やったね（開発26 確定版・-19.1）
+    fina_hmm:    { src: [VO + 'fina_hmm.ogg', VO + 'fina_hmm.m4a'], npc: 'fina', gain: 1.11 },         // うーん（開発26 確定版・-18.9）
+    fina_look:   { src: [VO + 'fina_look.ogg', VO + 'fina_look.m4a'], npc: 'fina', gain: 1.12 },       // 見て見て（開発26 確定版・-19.0）
+    fina_hey:    { src: [VO + 'fina_hey.ogg', VO + 'fina_hey.m4a'], npc: 'fina', gain: 1.13 },          // もう（開発26 確定版・-19.1）
+    fina_giggle: { src: [VO + 'fina_giggle.ogg', VO + 'fina_giggle.m4a'], npc: 'fina', gain: 1.12 },   // えへへ（開発26 確定版・-19.0）
+    fina_yes:    { src: [VO + 'fina_yes.ogg', VO + 'fina_yes.m4a'], npc: 'fina', gain: 1.12 },         // うん（開発26 確定版・-19.0）
+    fina_wonder: { src: [VO + 'fina_wonder.ogg', VO + 'fina_wonder.m4a'], npc: 'fina', gain: 1.12 },   // なんだろう？（開発26 確定版・-19.0）
+    dan_hello:     { src: [VO + 'dan_hello.ogg', VO + 'dan_hello.m4a'], npc: 'dan', gain: 1.12 },           // ダン（ベースキャンプ）：よう、準備はできたか？（開発26 確定版・-19.0）
+    nick_hello:    { src: [VO + 'nick_hello.ogg', VO + 'nick_hello.m4a'], npc: 'nick', gain: 1.12 },         // ニック（牧場）：今日も元気そうだな（開発26 確定版・-19.1）
+    berna_welcome: { src: [VO + 'berna_welcome.ogg', VO + 'berna_welcome.m4a'], npc: 'shop', gain: 1.11 },  // ベルナ（アイテム屋）：いらっしゃい（開発26 確定版・-19.0）
     karen_welcome: { src: [VO + 'karen_welcome.ogg', VO + 'karen_welcome.m4a'], npc: 'karen', gain: 2.29 }, // カレン（市場）（-25.2）
     elliot_hello_OPTIONAL: { src: [VO + 'elliot_hello_OPTIONAL.ogg', VO + 'elliot_hello_OPTIONAL.m4a'], npc: 'elliot', gain: 1.16 },   // エリオット（研究所）：やあ（-19.3）。2026-10-13 開発25：ユーザーが正式に提供（同じ元ファイル・sha256 61e5821c…）＝再訪の挨拶に採用（id は開発24 のまま）
     // ---- 2026-10-13 開発25 追加便：NPC のボイス（ユーザー提供 ZIP「全NPCボイス15本_BGM3本」の MP3 を OGG Vorbis q4／AAC 128k に変換しただけ。AUDIO_CREDITS.md）----
@@ -163,11 +163,14 @@
     ryu_hello:      { src: [VO + 'ryu_hello.ogg', VO + 'ryu_hello.m4a'], npc: 'ryu', gain: 1.16 },                // リュウ「よっ！」（-19.3）＝道中でリュウが現れた瞬間（ライバルの遭遇の演出）
     ryu_chuckle:    { src: [VO + 'ryu_chuckle.ogg', VO + 'ryu_chuckle.m4a'], npc: 'ryu', gain: 2.08 },            // リュウ「へへっ」（-24.4）＝ライバル戦でプレイヤーが負けたとき（リュウの勝ち）
     ryu_praise:     { src: [VO + 'ryu_praise.ogg', VO + 'ryu_praise.m4a'], npc: 'ryu', gain: 0.95 },              // リュウ「やるじゃん」（-17.6）＝ライバル戦でプレイヤーが勝ったとき
-    leona_greet:      { src: [VO + 'leona_greet.ogg', VO + 'leona_greet.m4a'], npc: 'leona', gain: 0.9, enabled: false },          // レオナ「よく来ましたね」（-17.1）【登録のみ】三伝説の再訪の場面が未実装
-    leona_prebattle:  { src: [VO + 'leona_prebattle.ogg', VO + 'leona_prebattle.m4a'], npc: 'leona', gain: 0.81, enabled: false },  // レオナ「さあ始めましょう」（-16.2）【登録のみ】三伝説との対戦が未実装
+    leona_greet:      { src: [VO + 'leona_greet.ogg', VO + 'leona_greet.m4a'], npc: 'leona', gain: 1.13, enabled: false },          // レオナ「よく来ましたね」（開発26 確定版・-19.1）【登録のみ】三伝説の再訪の場面が未実装
+    leona_prebattle:  { src: [VO + 'leona_prebattle.ogg', VO + 'leona_prebattle.m4a'], npc: 'leona', gain: 1.05, enabled: false },  // レオナ「あなたの信念が本物なら、その力を私に示してみなさい」（開発26 確定版・-18.5）【登録のみ】三伝説との対戦が未実装
     ragnas_greet:     { src: [VO + 'ragnas_greet.ogg', VO + 'ragnas_greet.m4a'], npc: 'ragnas', gain: 0.96, enabled: false },     // ラグナス（人。リュウの相棒のレグナスとは別）「来たか」（-17.7）【登録のみ】
     ragnas_prebattle: { src: [VO + 'ragnas_prebattle.ogg', VO + 'ragnas_prebattle.m4a'], npc: 'ragnas', gain: 0.6, enabled: false }, // ラグナス「お前の力見せてみろ！」（-13.6）【登録のみ】
-    //  アストラッドの声は無い：受け取った ZIP のアストラッドの2本（「来たか」「お前の力、見せてみろ！」）は使用禁止の旧音源＝取り込んでいない。新しい「待っていた」「全力でこい！」は未着
+    // ---- 2026-10-13 開発26：アストラッド（ZIP「開発26_確定ボイス15本」。OGG／M4A は ZIP の同梱のまま）【登録のみ】三伝説の再会・対戦の場面が未実装（enabled:false＝読み込みもしない）----
+    //  旧音源の「来たか」「お前の力、見せてみろ！」は使用禁止＝取り込んでいない（下の2本は別の新しい声）
+    astrad_greet:     { src: [VO + 'astrad_greet.ogg', VO + 'astrad_greet.m4a'], npc: 'astrad', gain: 1.15, enabled: false },          // アストラッド「待っていた」（-19.3）【登録のみ】
+    astrad_prebattle: { src: [VO + 'astrad_prebattle.ogg', VO + 'astrad_prebattle.m4a'], npc: 'astrad', gain: 1.15, enabled: false },  // アストラッド「全力でこい！」（-19.2）【登録のみ】
     //  エリオット（研究所）「やあ」は ZIP の「研究所、やあ(1).mp3」と上の elliot_hello_OPTIONAL が同じ元音源（sha256 61e5821c…）＝二重に登録しない
   };
 

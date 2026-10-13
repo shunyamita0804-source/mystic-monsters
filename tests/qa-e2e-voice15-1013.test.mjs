@@ -167,7 +167,7 @@ test('VB-5：フィナ「こんにちは」は新しい音・ボイス OFF で�
   await pg.evaluate(() => { MMNPC.talk(OPEN_TALK.first); });
   await pg.waitForFunction(() => MMAUDIO.voiceNow() === 'fina_hello', null, { timeout: 4000 });
   const pl = await pg.evaluate(() => MMAUDIO.playLog().filter((x) => x.kind === 'voice').slice(-1)[0]);
-  assert.match(pl.src, /voice\/npc_1013\/fina_hello_new\.ogg$/, '新しい「こんにちは」'); assert.ok(pl.dur >= 1100 && pl.dur <= 1200, `長さ ${pl.dur}ms（1.149秒）`);
+  assert.match(pl.src, /voice\/npc_1013\/fina_hello_new\.ogg$/, '新しい「こんにちは」'); assert.ok(pl.dur >= 1020 && pl.dur <= 1120, `長さ ${pl.dur}ms（1.071秒＝2026-10-13 開発26 の確定版）`);
   await pg.evaluate(() => MMNPC.close()); assert.equal(await pg.evaluate(() => MMAUDIO.voiceNow()), null, '会話を閉じたら止まる');
   // ボイス OFF：開幕・受付・再訪・特訓・ヴァルガス のどれも鳴らない
   await pg.evaluate(() => MMAUDIO.setVoice({ on: false }));
@@ -191,12 +191,12 @@ test('VB-6：音源の HTTP 200・試聴ページで BGM の候補が読み込�
   const p = await openPage({ size: H.SIZES.base }); const pg = p.page;
   await base(pg);
   const st = await pg.evaluate(() => MMAUDIO.voiceStatus());
-  for (const k of ['leona_greet', 'leona_prebattle', 'ragnas_greet', 'ragnas_prebattle']) assert.equal(st[k], 'disabled', `${k} は登録のみ（読み込まない）`);
-  const files = ['fina_hello_new', 'cedric_opening', 'serge_welcome', 'genshin_ack', 'vargas_ack', 'ryu_hello', 'ryu_chuckle', 'ryu_praise', 'leona_greet', 'leona_prebattle', 'ragnas_greet', 'ragnas_prebattle'].flatMap((k) => [`assets/audio/voice/npc_1013/${k}.ogg`, `assets/audio/voice/npc_1013/${k}.m4a`])
+  for (const k of ['leona_greet', 'leona_prebattle', 'ragnas_greet', 'ragnas_prebattle', 'astrad_greet', 'astrad_prebattle']) assert.equal(st[k], 'disabled', `${k} は登録のみ（読み込まない）`);
+  const files = ['fina_hello_new', 'cedric_opening', 'serge_welcome', 'genshin_ack', 'vargas_ack', 'ryu_hello', 'ryu_chuckle', 'ryu_praise', 'leona_greet', 'leona_prebattle', 'ragnas_greet', 'ragnas_prebattle', 'astrad_greet', 'astrad_prebattle'].flatMap((k) => [`assets/audio/voice/npc_1013/${k}.ogg`, `assets/audio/voice/npc_1013/${k}.m4a`])
     .concat(['title_candidate', 'arena_candidate', 'legend_battle_candidate'].map((k) => `assets/audio/bgm/candidates_1013/${k}.ogg`));
   const res = await pg.evaluate(async (fs) => Promise.all(fs.map(async (f) => { const r = await fetch('./' + f); const n = (await r.arrayBuffer()).byteLength; return [f, r.status, r.headers.get('content-type') || '', n]; })), files);
   for (const [f, s, , n] of res) { assert.equal(s, 200, f); assert.ok(n > 5000, `${f} ${n}バイト`); }
-  assert.equal(res.length, 27);
+  assert.equal(res.length, 31);
   // 試聴ページ
   const url = new URL('prototype/audio_candidates_1013/index.html', pg.url()).href;
   await pg.goto(url); await pg.waitForFunction(() => window.__previewReady === true);

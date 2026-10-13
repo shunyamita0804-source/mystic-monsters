@@ -68,9 +68,9 @@ test('DV-01：registry＝観客の声 6本（OGG／M4A の対）・ボイス 13�
   assert.match(got.se.CROWD_EVADE.src[0], /evade_boo_0p0_0p6_600ms/); assert.match(got.se.CROWD_EVADE_LONG.src[0], /evade_boo_0p0_1p0_1000ms/);
   const ids = Object.keys(got.voice);
   // 2026-10-13 開発25 追加便：セドリック・セルジュ・ゲンシン・ヴァルガス・リュウ3種（ON）＋三伝説4種（レオナ・ラグナス＝登録のみ・enabled:false）。アストラッドは未着の新音源待ち（旧音源は取り込まない）
-  assert.deepEqual(ids.sort(), ['berna_welcome', 'cedric_opening', 'dan_hello', 'elliot_hello_OPTIONAL', 'fina_giggle', 'fina_hello', 'fina_hey', 'fina_hmm', 'fina_look', 'fina_wonder', 'fina_yeah', 'fina_yes', 'genshin_ack', 'karen_welcome', 'leona_greet', 'leona_prebattle', 'nick_hello', 'ragnas_greet', 'ragnas_prebattle', 'ryu_chuckle', 'ryu_hello', 'ryu_praise', 'serge_welcome', 'vargas_ack']);
+  assert.deepEqual(ids.sort(), ['astrad_greet', 'astrad_prebattle', 'berna_welcome', 'cedric_opening', 'dan_hello', 'elliot_hello_OPTIONAL', 'fina_giggle', 'fina_hello', 'fina_hey', 'fina_hmm', 'fina_look', 'fina_wonder', 'fina_yeah', 'fina_yes', 'genshin_ack', 'karen_welcome', 'leona_greet', 'leona_prebattle', 'nick_hello', 'ragnas_greet', 'ragnas_prebattle', 'ryu_chuckle', 'ryu_hello', 'ryu_praise', 'serge_welcome', 'vargas_ack']);
   assert.equal(ids.filter((k) => got.voice[k].enabled !== false).length, 20);
-  assert.deepEqual(ids.filter((k) => got.voice[k].enabled === false).sort(), ['leona_greet', 'leona_prebattle', 'ragnas_greet', 'ragnas_prebattle'], '三伝説の声は登録のみ（場面が未実装）');
+  assert.deepEqual(ids.filter((k) => got.voice[k].enabled === false).sort(), ['astrad_greet', 'astrad_prebattle', 'leona_greet', 'leona_prebattle', 'ragnas_greet', 'ragnas_prebattle'], '三伝説の声は登録のみ（場面が未実装。アストラッドは 2026-10-13 開発26）');
   assert.notEqual(got.voice.elliot_hello_OPTIONAL.enabled, false, '開発25：研究所（エリオット）の「やあ」はユーザーが正式に提供＝既定 ON（再訪だけ）');
   for (const v of Object.values(got.voice)) { assert.equal(v.src.length, 2); for (const s of v.src) assert.ok(existsSync(onDisk(s)), s); assert.ok(v.gain > 0 && v.gain <= 3); }
   const CR = rd('AUDIO_CREDITS.md'); for (const t of ['観客の声 3種', 'DRAGON-STUDIO', 'Universfield', 'pixabay.com/service/license-summary/', 'NPC のボイス', '利用規約・声の権利関係は、会話からは特定できていない']) assert.ok(CR.includes(t), `AUDIO_CREDITS.md：${t}`);
@@ -82,7 +82,7 @@ test('DV-02：ボイス＝専用の GainNode・ON/OFF と音量はボイスだ�
   A.unlock(); await until(() => Object.values(A.voiceStatus()).every((v) => v !== 'loading'));
   assert.equal(A.voiceStatus().fina_yes, 'ready'); assert.equal(A.voiceStatus().elliot_hello_OPTIONAL, 'ready');
   assert.equal(A.voice('fina_yes'), true); assert.equal(A.voiceNow(), 'fina_yes');
-  const p1 = A.playLog().filter((x) => x.kind === 'voice'); assert.equal(p1.length, 1); assert.match(p1[0].src, /fina_yes\.ogg$/); assert.equal(p1[0].ctx, 'running'); assert.equal(p1[0].gain, 1.32);
+  const p1 = A.playLog().filter((x) => x.kind === 'voice'); assert.equal(p1.length, 1); assert.match(p1[0].src, /fina_yes\.ogg$/); assert.equal(p1[0].ctx, 'running'); assert.equal(p1[0].gain, 1.12);
   const s1 = log.starts[log.starts.length - 1];
   assert.equal(A.voice('dan_hello'), true); assert.ok(s1.stopped, '新しい声は前の声を止める（二重に鳴らない）'); assert.equal(A.voiceNow(), 'dan_hello');
   A.stopVoice(); assert.equal(A.voiceNow(), null);
