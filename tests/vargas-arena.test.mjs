@@ -54,7 +54,9 @@ test('VAR-4：闘技場はロック表示のまま。押すと案内文（シス
   assert.match(lineOf('function townArena('), /^function townArena\(\)\{townLock\("闘技場は、まだ利用できません。"\);if\(!npcFirst\("arena"\)\)vgSay\(\)\}/, '案内文（townLock＝システム表示）とヴァルガスの一言を背景の上に出す（2026-09-30：街は1画面で固定）');
   const vg = lineOf('function vgSay(');
   assert.doesNotThrow(() => new Function(vg), 'vgSay は構文として正しい');
-  assert.ok(vg.endsWith('</div>`)(npcLineX("arena",VARGAS_TALK.locked,"normal"))}</div>`);try{document.getElementById("vgsay").scrollIntoView({block:"nearest"})}catch(e){}}'), '出したら画面内へ（小さい画面で案内欄の下に隠れないように）');
+  assert.ok(vg.includes('</div>`)(npcLineX("arena",VARGAS_TALK.locked,"normal"))}</div>`);try{document.getElementById("vgsay").scrollIntoView({block:"nearest"})}catch(e){}'), '出したら画面内へ（小さい画面で案内欄の下に隠れないように）');
+  // 2026-10-13 開発25 追加便：ランクを認める一言（a_rank）のときだけヴァルガス「うむ」（声の出しどころは js/npc/voice-cues.js の vargas.ack）。ほかの一言では鳴らさない
+  assert.ok(vg.endsWith('if(NPC_LAST.arena==="a_rank")try{window.MMVOICE&&MMVOICE.cue("vargas.ack")}catch(e){}}'), '認める一言のときだけ声');
   assert.ok(vg.includes('<div class="vgsay nst" id="vgsay" onclick="townMsgClose(this)">${(l=>`<img class="nstf" ${npcStand("vargas",l.expression)} alt="" decoding="async"><div class="tx"><b>ヴァルガス</b>${l.text}</div>`)(npcLineX("arena",VARGAS_TALK.locked,"normal"))}</div>'), '2026-10-03：半身の立ち絵と会話窓。2026-10-04：一言と表情（威厳・不敵な笑み・厳しい・認める）は MMNPCE の再訪');
   assert.ok(vg.includes('const o=document.getElementById("vgsay");if(o)o.remove();'), '押すたびに増えない');
   assert.doesNotMatch(vg, /save\(|lobby\(|fight\(|MMP8\.|S\./, '画面遷移・セーブ・バトル・状態の変更をしない');

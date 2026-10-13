@@ -766,7 +766,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
       <div class="wbx-rstage">${part ? `<img class="wbx-partner" src="${esc(part)}" alt="" draggable="false">` : ''}${fig ? `<img class="wbx-ryu" src="${esc(fig)}" alt="${esc(B.name || 'リュウ')}" draggable="false">` : ''}</div>
       <div class="wbx-card r"><small>RIVAL</small><div class="wbx-nm"><b>${esc(text)}</b></div></div><img class="wbx-clash" src="${esc(FXF.clash)}" alt="" draggable="false"></div>`);
     const el = ui.querySelector('.wbx-r:last-child'); feel(cue, { battleType: 'rival' });
-    await wait(900); if (el) el.classList.add('p2');
+    await wait(900); if (el) { el.classList.add('p2'); try { if (root.MMVOICE && fig) root.MMVOICE.cue('ryu.appear'); } catch (e) { /* 声が無くても進行は変わらない */ } }   // 2026-10-13 開発25 追加便：リュウの姿が出た瞬間に「よっ！」（遭遇1回に1回）
     await wait(1250); if (el) el.classList.add('p3');      // X の衝突（0.32秒）
     await wait(380);
     if (el) { el.classList.add('out'); await wait(240); el.remove(); }

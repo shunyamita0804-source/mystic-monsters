@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>音源の試聴（開発25 追加便）</title>
+<style>
+:root{--bg:#0b1636;--fg:#f4ead2;--mut:#b9b29e;--line:#c9a24a55;--card:#13214a}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 "Noto Sans JP",system-ui,sans-serif}
+main{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:18px;margin:4px 0 6px}h2{font-size:15px;margin:22px 0 8px;color:#e8c26a}
+p.note{color:var(--mut);font-size:13px;margin:4px 0 12px}
+.row{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0}
+.row b{display:block}.row small{display:block;color:var(--mut);font-size:12px;margin:2px 0 6px;word-break:break-all}
+.row audio{width:100%}.tag{display:inline-block;font-size:11px;padding:0 6px;border-radius:6px;margin-left:6px;background:#2e7d4f}.tag.off{background:#6b3a3a}
+</style>
+</head>
+<body>
+<main>
+<h1>音源の試聴（開発25 追加便・開発用）</h1>
+<p class="note">本編のゲームからはつながない確認用のページ。音量は registry の gain を掛けて再生（ゲームの中の聞こえ方に近い）。BGM の候補はどの場面にも登録していない（採用はユーザーの判断待ち）。</p>
+<h2>BGM の候補（3曲）</h2><div id="bgm"></div>
+<h2>NPC のボイス（今回追加・差し替え分）</h2><div id="voice"></div>
+</main>
+<script src="../../js/audio/audio-registry.js"></script>
+<script>
+(function(){
+  const R = window.MMAUDIO_REGISTRY || {}, fix = (s) => '../../' + String(s).replace(/^\.\//, '');
+  const NEW = ['fina_hello','cedric_opening','serge_welcome','genshin_ack','vargas_ack','ryu_hello','ryu_chuckle','ryu_praise','leona_greet','leona_prebattle','ragnas_greet','ragnas_prebattle'];
+  const row = (title, sub, srcs, gain, tag) => {
+    const d = document.createElement('div'); d.className = 'row';
+    d.innerHTML = '<b></b><small></small><audio controls preload="none"></audio>';
+    d.querySelector('b').textContent = title; if (tag) d.querySelector('b').insertAdjacentHTML('beforeend', tag);
+    d.querySelector('small').textContent = sub;
+    const a = d.querySelector('audio'); for (const s of srcs) { const e = document.createElement('source'); e.src = fix(s); e.type = /\.m4a$/.test(s) ? 'audio/mp4' : 'audio/ogg'; a.appendChild(e); }
+    a.dataset.gain = gain; a.addEventListener('play', () => { a.volume = Math.max(0, Math.min(1, Number(gain) || 1)); for (const o of document.querySelectorAll('audio')) if (o !== a) o.pause(); });
+    return d;
+  };
+  const bgm = document.getElementById('bgm');
+  for (const [k, v] of Object.entries(R.bgmCandidates || {})) bgm.appendChild(row(k, (v.note || '') + '（gain ' + v.gain + '）', [v.src], v.gain));
+  const vo = document.getElementById('voice');
+  for (const k of NEW) { const v = (R.voice || {})[k]; if (!v) continue; const on = v.enabled !== false;
+    vo.appendChild(row(k, (v.npc || '') + '・gain ' + v.gain + '・' + v.src.map((s) => s.split('/').pop()).join(' / '), v.src, Math.min(1, v.gain), '<span class="tag' + (on ? '' : ' off') + '">' + (on ? 'ゲームで ON' : '登録のみ') + '</span>')); }
+  window.__previewReady = true;
+})();
+</script>
+</body>
+</html>

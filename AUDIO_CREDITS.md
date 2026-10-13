@@ -353,3 +353,49 @@ sha256：
 - fina_yes.m4a：869d4607529e886a17265a1dd7c001e48a34f9664a3c87de74ba05b4e3465db3
 - karen_welcome.m4a：35ff09960c5268795ea10f6d6432d5d042a091efd75cb3eec7ee0a16b9ff0b0e
 - nick_hello.m4a：3a89ce23edf8464ba219f0eaa3e44cafc80a22ace01b6ecd4931d7bdfab0c98f
+
+## 2026-10-13 開発25 追加便：NPC のボイス 12本・BGM の候補 3曲（ユーザー提供 ZIP「全NPCボイス15本_BGM3本」）【試遊・ユーザー承認待ち＝main 未統合】
+
+ユーザー提供の MP3（元のファイル名・データのまま。sha256 は ZIP の 02_音源一覧とSHA256.csv と全部一致）を、リポジトリの側で **OGG Vorbis（-q:a 4・44.1kHz ステレオ）と AAC M4A（128k）に変換しただけ**（ffmpeg。EQ・音量・長さ・ピッチは変えていない・メタデータは外した）。元の MP3 はリポジトリに置かない。音量の差は registry の `gain`（約 -18 LUFS にそろえる。測り方は既存のボイスと同じ ffmpeg ebur128＝既存の fina_hello.ogg が -19.9 で一致）。
+**音声・曲の生成元（合成音声サービス・作曲者など）とその利用規約・商用利用の条件は、ZIP に記載が無く未確認＝公開前の確認事項**（ZIP の 00_必ず読む.txt も「各音源の商用利用に必要な生成元の規約等は別途確認」）。
+
+| id | 話者・台詞 | 元ファイル（sha256） | 長さ | 元の音量 | gain | 既定・出しどころ |
+|---|---|---|---:|---:|---:|---|
+| fina_hello（参照先＝fina_hello_new） | フィナ「こんにちは」（新） | フィナ、こんにちはNew.mp3（1f34af0fdc3ef7326a6044de0ab2af26d306add3e30aed91fb6b2abf51642d4e） | 1.149秒 | -16.9 LUFS | 0.88 | ON・従来の fina_hello の場面のまま（旧 fina_hello.ogg／m4a はファイルだけ残す） |
+| cedric_opening | セドリック「さあ！いよいよ開幕です！」 | セドリック、さあ！いよいよ開幕です！.mp3（a42def5298b746d9ca660b8e8769a4711bbc294563dc37d857cbaf45fba77cc3） | 2.194秒 | -21.6 LUFS | 1.51 | ON・公式大会の開幕の会話の1行目 |
+| serge_welcome | セルジュ「ようこそ」 | セルジュ、ようこそ.mp3（5c90e34ce74e947ef52b28c7a7b7b27ea2014313d822c2b079ca1a6a54f89598） | 0.993秒 | -19.4 LUFS | 1.17 | ON・聖獣士登録の受付の1行目・聖獣士管理局の再訪 |
+| genshin_ack | ゲンシン「うむ」 | ゲンシン、うむ.mp3（7ebe1ae8f0713d86cd0e4aa839f37b652d17ea7757a37f1619462874adaa0f91） | 0.757秒 | -23.8 LUFS | 1.94 | ON・特訓をやり終えたとき |
+| vargas_ack | ヴァルガス「うむ」 | ヴァルガス、うむ.mp3（20ff1775940ce0d18de15994bbb0218ab986d5078f7351818dba1d6e260c3ba6） | 0.679秒 | -25.6 LUFS | 2.39 | ON・闘技場（ロック中）でランクを認める一言のときだけ |
+| ryu_hello | リュウ「よっ！」 | リュウ、よっ！.mp3（200a11c6aa24455a90fdddf22601fde64f13d712193ab5ed625e6b9e86521dfc） | 0.914秒 | -19.3 LUFS | 1.16 | ON・道中のライバルの遭遇でリュウが現れた瞬間 |
+| ryu_chuckle | リュウ「へへっ」 | リュウ、へへっ.mp3（70cf3ff438b586941c574bccda73db1a02f628e345a5210ba3b5d64773eccdb3） | 0.836秒 | -24.4 LUFS | 2.08 | ON・ライバル戦でプレイヤーが負けた決着 |
+| ryu_praise | リュウ「やるじゃん」 | リュウ、やるじゃん.mp3（e09131b2d8725487205d7d428b0c22b30fd6a127521f9df0137650bdb5d1f650） | 1.071秒 | -17.6 LUFS | 0.95 | ON・ライバル戦でプレイヤーが勝った決着 |
+| leona_greet | レオナ「よく来ましたね」 | レオナ、よく来ましたね.mp3（53a04493029b0ef9d7750218193ffd2f98a33b7955b21816d962c73f52ca0a44） | 1.306秒 | -17.1 LUFS | 0.9 | 登録のみ（enabled:false・場面が未実装） |
+| leona_prebattle | レオナ「さあ始めましょう」 | レオナ、さあ始めましょう.mp3（9ea9a186a1b2fc22878d39cf27581c2a42e65b11e23f35431892ff30acfa1764） | 1.802秒 | -16.2 LUFS | 0.81 | 登録のみ |
+| ragnas_greet | ラグナス「来たか」 | ラグナス、来たか.mp3（dc6ca36410a14acb5548a209894b87df9a514c00408844ec6df271e76b056830） | 0.993秒 | -17.7 LUFS | 0.96 | 登録のみ |
+| ragnas_prebattle | ラグナス「お前の力見せてみろ！」 | ラグナス、お前の力見せてみろ！.mp3（dd38fd192c8522a925787b7f20ef8fd1e8984c7bd43a6685b93b8c79aac14d46） | 2.351秒 | -13.6 LUFS | 0.6 | 登録のみ |
+
+取り込んでいないもの：
+- **アストラッド「来たか」（d3ad7bda81895d2c9dcbe5a32ced1abfa6dde42509d719c4343a95dbfd1ec552）・「お前の力、見せてみろ！」（3f485d20eb83871cba3fbcb0d0071f410e238b1cca4a62f617793e25ea1938f5）＝使用禁止の旧音源**（2026-10-13 の実装指示）。新しい「待っていた」「全力でこい！」は受け取った ZIP に無い＝未着（アストラッドの声は登録していない）。
+- 研究所「やあ」（研究所、やあ(1).mp3・61e5821c7b97d7b7c29ea4408e7b27876a2c6e749f3adf666a9cb5626d877e58）＝開発24 の elliot_hello_OPTIONAL と同じ元音源＝二重に登録しない。
+
+変換したファイルの sha256（OGG／M4A）：
+- fina_hello_new：f7ee69d402c9a14fd145770765c0ae4fc40d21ddd0a19799b9eef3d60f852cb7／a7e11053d81fdbc9d01851f574e7b4dd682754f1d7a2c97915440e0eef45fddf
+- cedric_opening：5427f8ff9f9f39bafeb88af00b6b6577115aecc4e68ee3a5152be34ff267a379／b6c16c3db98fed4be6f0594041f920b95a0a4a0cc66ad811d81684a3f3e01cad
+- serge_welcome：7bf6ab448dbd05a0062c1217c9c96505aa201c8c32e0443d96765790cefbbfa7／192fb36c64b148cd74fc83d0d25f5c257d261ff71f1a555461b6e408b4bcb90a
+- genshin_ack：09c5b0e462ced7d12e5a405f73ff77b92d742637c462a3a7aa3b5827957ab39a／9ba82d6b20c5f9c7819e9ae881f914c24cf7b66134c442e2532dc34247748fbd
+- vargas_ack：16f17e474d306024ccbade8312bcc316140606b6d94153f8de8db5f04f07a197／411b947caf98485c058576915d7b527a3a58ebafbc389934314554999f5e2f31
+- ryu_hello：79f00c519e18ada9992a2fb51478f6a75adbeea986d642205e40e45831c480fa／cd212d1626c71fb697b40ae20970d36dd3b89b577dd04b89f5272c2be5ba825a
+- ryu_chuckle：81a8fe1cf1c6eac1f7ccf11275b61a520083e9d71d9532628176c79302c0efa3／5a0adf55b51f6944390e6a4bb32b7d6cd44cc8d9cab881c6eecb604528929af0
+- ryu_praise：e6d314206f9b5f0b2785c7951cd8e156a8c36f0a8552feec4eff0275fd8926a4／d41c126f094597d60da364c653bad8192529fb58c97c29b15d6d60f924829d36
+- leona_greet：bf6f0a80d2ab81dac99d0acd103670afa44a5af2f5c816df84e1ff833522e79c／ab8b741acea99a36231505d9d1fb2421fedc87220eeffec7c081bbeed71d4d86
+- leona_prebattle：5385274790b791133b69662911fcd73d576036091f87cb7d0b79951ad8befab2／f78bd4989eea385566126f38428db21bf96724866feb07176ee5ef61dfeaaeab
+- ragnas_greet：bcb50fafb456ec8ee784b5ef5f2b614238b67af7a2eb456feb19c06e96421b60／a37dcd25589ef211d957f2cb14b22e60ddd28fa954b846eaef9711fff46ea4ac
+- ragnas_prebattle：02d8c86637b4d03bebee03c0bfddb1a0e56838d14f59272f8cfce79bda81d350／08023fa1f06e982478327e4bbbc9defe882f86d643d8478f22d5b3360410def6
+
+**BGM の候補 3曲（assets/audio/bgm/candidates_1013/・OGG Vorbis q5）＝試聴だけ・どの場面からも鳴らない**（js/audio/audio-registry.js の BGM_CANDIDATES＝MMAUDIO に登録しない。採用する場所と鳴らし始めは未決＝ユーザーの判断待ち）：
+
+| 候補 | 元ファイル（sha256） | 長さ | 元の音量 | gain（目安） | 今の正式（変えていない） |
+|---|---|---:|---:|---:|---|
+| TITLE_CANDIDATE（title_candidate.ogg・d032ae4f001caad1338fd8e1e29e32f443f9ee18736273e76bb9b88172afba25） | Top画面BGM.mp3（00c152d2f41d24950a44177ee4b01a8e0aee4b07791b70336cc999010d193df1） | 230.9秒（頭に約0.56秒・終わりに約1.7秒の無音） | -7.1 LUFS | 0.29 | TITLE＝silent（開始画面は無音） |
+| ARENA_CANDIDATE（arena_candidate.ogg・db1bbbd34c5b4774a282ad9cfc36eadd7befb17ce1f3fdf7eadb3d362157ec31） | 闘技場BGM.mp3（55fe44454bf329fc2402c23b6a4f96f64cc61d10b9321ff00f3577ec0823e611） | 185.7秒 | -9.7 LUFS | 0.39 | ARENA＝Swords At Midnight Loop（闘技場の画面は未実装） |
+| LEGEND_BATTLE_CANDIDATE（legend_battle_candidate.ogg・28f56e01360c7887c7d92df0291af1de7c98ab3324a84456b44e3a27d060f542） | レジェンド戦BGM.mp3（47d9dfa4b86572bdb1f357a976f91b91183779b57b6ddf337e7ce7bf96b87a18） | 271.6秒（終わりに約1.3秒の無音） | -8.9 LUFS | 0.35 | 三伝説との対戦は未実装（公式大会・野生・レア・ライバルの曲は変えていない） |

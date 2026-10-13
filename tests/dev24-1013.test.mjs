@@ -67,8 +67,10 @@ test('DV-01：registry＝観客の声 6本（OGG／M4A の対）・ボイス 13�
   assert.match(got.se.CROWD_MISS.src[0], /miss_disappointment_0p5_1p2_700ms/); assert.match(got.se.CROWD_MISS_LONG.src[0], /miss_disappointment_0p5_1p5_1000ms/);
   assert.match(got.se.CROWD_EVADE.src[0], /evade_boo_0p0_0p6_600ms/); assert.match(got.se.CROWD_EVADE_LONG.src[0], /evade_boo_0p0_1p0_1000ms/);
   const ids = Object.keys(got.voice);
-  assert.deepEqual(ids.sort(), ['berna_welcome', 'dan_hello', 'elliot_hello_OPTIONAL', 'fina_giggle', 'fina_hello', 'fina_hey', 'fina_hmm', 'fina_look', 'fina_wonder', 'fina_yeah', 'fina_yes', 'karen_welcome', 'nick_hello']);
-  assert.equal(ids.filter((k) => got.voice[k].enabled !== false).length, 13);
+  // 2026-10-13 開発25 追加便：セドリック・セルジュ・ゲンシン・ヴァルガス・リュウ3種（ON）＋三伝説4種（レオナ・ラグナス＝登録のみ・enabled:false）。アストラッドは未着の新音源待ち（旧音源は取り込まない）
+  assert.deepEqual(ids.sort(), ['berna_welcome', 'cedric_opening', 'dan_hello', 'elliot_hello_OPTIONAL', 'fina_giggle', 'fina_hello', 'fina_hey', 'fina_hmm', 'fina_look', 'fina_wonder', 'fina_yeah', 'fina_yes', 'genshin_ack', 'karen_welcome', 'leona_greet', 'leona_prebattle', 'nick_hello', 'ragnas_greet', 'ragnas_prebattle', 'ryu_chuckle', 'ryu_hello', 'ryu_praise', 'serge_welcome', 'vargas_ack']);
+  assert.equal(ids.filter((k) => got.voice[k].enabled !== false).length, 20);
+  assert.deepEqual(ids.filter((k) => got.voice[k].enabled === false).sort(), ['leona_greet', 'leona_prebattle', 'ragnas_greet', 'ragnas_prebattle'], '三伝説の声は登録のみ（場面が未実装）');
   assert.notEqual(got.voice.elliot_hello_OPTIONAL.enabled, false, '開発25：研究所（エリオット）の「やあ」はユーザーが正式に提供＝既定 ON（再訪だけ）');
   for (const v of Object.values(got.voice)) { assert.equal(v.src.length, 2); for (const s of v.src) assert.ok(existsSync(onDisk(s)), s); assert.ok(v.gain > 0 && v.gain <= 3); }
   const CR = rd('AUDIO_CREDITS.md'); for (const t of ['観客の声 3種', 'DRAGON-STUDIO', 'Universfield', 'pixabay.com/service/license-summary/', 'NPC のボイス', '利用規約・声の権利関係は、会話からは特定できていない']) assert.ok(CR.includes(t), `AUDIO_CREDITS.md：${t}`);
@@ -149,14 +151,14 @@ test('DV-05：出しどころ＝施設は訪問1回に1回・CUES／LINE_VOICE �
   new Function('window', rd('js/npc/voice-cues.js'))(w);
   const V = w.MMVOICE;
   assert.deepEqual(Object.fromEntries(Object.entries(V.CUES).filter(([k]) => /^facility/.test(k)).map(([k, v]) => [k, [v.voice, v.on]])),
-    { 'facility.farm': ['dan_hello', true], 'facility.ranch': ['nick_hello', true], 'facility.shop': ['berna_welcome', true], 'facility.market': ['karen_welcome', true], 'facility.lab': ['elliot_hello_OPTIONAL', true] }, '施設と声の対応（市場＝カレン・アイテム屋＝ベルナ・牧場＝ニック・ベースキャンプ＝ダン）');
+    { 'facility.farm': ['dan_hello', true], 'facility.ranch': ['nick_hello', true], 'facility.shop': ['berna_welcome', true], 'facility.market': ['karen_welcome', true], 'facility.lab': ['elliot_hello_OPTIONAL', true], 'facility.bureau': ['serge_welcome', true] }, '施設と声の対応（市場＝カレン・アイテム屋＝ベルナ・牧場＝ニック・ベースキャンプ＝ダン）');
   assert.equal(V.enter('market'), true); assert.equal(V.enter('market'), false, '同じ訪問の中では繰り返さない'); V.visitReset(); assert.equal(V.enter('market'), true, '街へ出て入り直したらまた');
   assert.equal(V.enter('lab'), true, '開発25：エリオットも再訪で鳴る'); assert.deepEqual(played, ['karen_welcome', 'karen_welcome', 'elliot_hello_OPTIONAL']);
   // 開発25 F：初回の案内の訪問は skip（鳴らさずに「この訪問は済み」）→ 同じ訪問では鳴らない・次の訪問で鳴る
   V.visitReset(); assert.equal(V.skip('ranch', 'first-visit'), true); assert.equal(V.enter('ranch'), false, '初回の案内の訪問は鳴らない'); V.visitReset(); assert.equal(V.enter('ranch'), true, '再訪で鳴る');
   // index.html：施設のグループ（ベースキャンプの中のアイテム屋は別の施設・ベースキャンプへ戻ってもダンは繰り返さない）
-  assert.match(HTML, /const FAC_GROUP=\{farm:\["farm"\],shop:\["farm","shop"\],ranch:\["ranch"\],market:\["market"\],lab:\["lab"\]\};/);
-  for (const [fn, fac] of [['function farm(msg,tab){', 'ranch'], ['function market(msg,focus){', 'market'], ['function fmScr(msg){', 'farm'], ['function shopScr(msg,bought,tab){', 'shop'], ['function museum(tab){', 'lab']]) {
+  assert.match(HTML, /const FAC_GROUP=\{farm:\["farm"\],shop:\["farm","shop"\],ranch:\["ranch"\],market:\["market"\],lab:\["lab"\],bureau:\["bureau"\]\};/);
+  for (const [fn, fac] of [['function farm(msg,tab){', 'ranch'], ['function market(msg,focus){', 'market'], ['function fmScr(msg){', 'farm'], ['function shopScr(msg,bought,tab){', 'shop'], ['function museum(tab){', 'lab'], ['function bureauScr(tab){', 'bureau']]) {
     const line = HTML.slice(HTML.indexOf(fn), HTML.indexOf('\n', HTML.indexOf(fn))); assert.ok(line.includes(`facVoice("${fac}",`), `${fn} → ${fac}（開発25：初回の案内の訪問かを渡す）`);
   }
   // 会話の行の voice（意味の合う行だけ・フィナの8種）
@@ -167,7 +169,11 @@ test('DV-05：出しどころ＝施設は訪問1回に1回・CUES／LINE_VOICE �
   const START = { fina_yes: /^うん/, fina_look: /^見て/, fina_hey: /^もう/ };
   for (const [id, t] of lines) if (START[id]) assert.match(t, START[id], `${id} の行の始まり：${t}`);
   assert.ok(lines.length >= 10, `声の付いた行 ${lines.length}`);
-  assert.ok(Object.values(V.LINE_VOICE).every(Boolean) && Object.keys(V.LINE_VOICE).length === 8);
+  // 2026-10-13 開発25 追加便：フィナの8種＋セドリック（開幕の1行目）・セルジュ（受付の1行目）＝台詞の頭と声が同じ行だけ
+  assert.ok(Object.values(V.LINE_VOICE).every(Boolean) && Object.keys(V.LINE_VOICE).length === 10);
+  const NPCL = [...SRC.matchAll(/\{npc:"(cedric|serge)",(?:expression:"\w+",)?voice:"(\w+)",text:["`]([^"`]*)/g)].map((m) => [m[2], m[3]]);
+  assert.deepEqual(NPCL.map((x) => x[0]).sort(), ['cedric_opening', 'serge_welcome'], '声の付いた NPC の行は2つだけ');
+  for (const [id, t] of NPCL) assert.match(t, id === 'cedric_opening' ? /^さあ、いよいよ/ : /^ようこそ/, `${id} の行の始まり：${t}`);
 });
 
 test('DV-06：バトル画面＝新しい画面は既定・「旧」で戻せる・低い板の派生（元の4枚は変えない）・数値を出さない・相手の番の説明を出さない', () => {
