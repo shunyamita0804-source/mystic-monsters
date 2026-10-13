@@ -11,7 +11,7 @@ tools/dice1013/faces.py で正面向きの正方形に直しただけ（新し�
 
 | ファイル | 元 | sha256 |
 |---|---|---|
-| face_1.webp | dice_blank（地）＋dice_stop_1（紋章） | 48f1ee171bb38c9b39842f7b87892ea2d1439aec48643709ea4c6386c09ec583 |
+| face_1.webp | dice_blank（地）＋dice_stop_1（紋章。2026-10-13 開発27（16）：紋章の外形を円に＝縦に約12%長かった） | 30f938aade639554a3fe82d18b4cae93d831bf53592f29eebbdc719f401415ec |
 | face_2.webp | dice_blank（地）＋dice_stop_5 の目 | 4fc5c07bfe74d499079774e258abb243e7f7f419dcc25aa7b2f443e36b5bda1d |
 | face_3.webp | dice_blank（地）＋dice_stop_5 の目 | f185394e0b843aa40503b61222586f6862026479e03cc58fc7bb95289bfdfcdc |
 | face_4.webp | dice_blank（地）＋dice_stop_5 の目 | 6c3eaada13b00c01cd74c3b975dbb7a2682854c3618d7992f01e124d9dc1c485 |

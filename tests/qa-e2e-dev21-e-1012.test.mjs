@@ -43,7 +43,7 @@ for (let rank = 0; rank < 6; rank++) {
     assert.match(await bgOf(pg, '.tb1 .tbbg'), new RegExp(want), '対戦表');
     await pg.click('.tb1 .tbgo'); await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(500);
     assert.match(await bgOf(pg, '.p9cmps .pcbg'), new RegExp(want), '対戦前比較'); await shot(pg, `be1_cmp_${RN[rank]}_${size.join('x')}`);
-    await pg.click('.pcgo'); await pg.waitForTimeout(450); await pg.click('.pcgo');
+    await pg.click('.pcgo');   // 2026-10-13 開発27（29）：1回の押下
     await pg.waitForSelector('#tvs .tvsbg', { timeout: 10000 });
     assert.match(await bgOf(pg, '#tvs .tvsbg'), new RegExp(want), 'VS'); await pg.waitForTimeout(1500); await shot(pg, `be1_vs_${RN[rank]}_${size.join('x')}`);
     await pg.waitForSelector('#bt .mma-bg', { timeout: 20000 }); await pg.waitForSelector('#bt #m0 .mma-idle', { timeout: 20000 }); await pg.waitForTimeout(4200);
@@ -77,7 +77,7 @@ for (const size of SIZES) {
 test('BE-3：VS の斜めの光は左上 → 右下・モンスターの向きは従来どおり', { skip: SKIP, timeout: 120000 }, async () => {
   const p = await openPage({ tourvs: true }); const pg = p.page;
   await toTour(pg, 0);
-  await pg.click('.tb1 .tbgo'); await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(500); await pg.click('.pcgo'); await pg.waitForTimeout(450); await pg.click('.pcgo');
+  await pg.click('.tb1 .tbgo'); await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(500); await pg.click('.pcgo');
   await pg.waitForSelector('#tvs .tvsline'); await pg.waitForTimeout(1300);
   const v = await pg.evaluate(() => ({ line: getComputedStyle(document.querySelector('#tvs .tvsline')).scale, me: document.querySelector('#tvs .tvsm.me .tbvs').className, op: document.querySelector('#tvs .tvsm.op .tbvs').className,
     meY: document.querySelector('#tvs .tvsm.me').getBoundingClientRect().top, opY: document.querySelector('#tvs .tvsm.op').getBoundingClientRect().top }));

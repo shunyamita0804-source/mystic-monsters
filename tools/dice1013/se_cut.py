@@ -1,4 +1,5 @@
 """2026-10-13 開発25 E：立体サイコロの SE を「投げる音 → 回る間は無音 → 着地の音」にした派生（原本は変えない）。
+2026-10-13 開発27（17）：投げる音・止まる光（魔法的な「ヒュイン」）を外し、着地の足音だけにした（下の main）。
 材料（どちらも repo の中・同じ時間軸 1.595秒）：
   A＝assets/audio/se/dice_1012/dice_magic_b4_long_tap.ogg（正式採用＝A1 投げる・B4 回る・着地「トンッ 0.88／ト 1.115／トン 1.275」・C1 止まる光）
   B＝prototype/dice_1012/se/dice_magic_b4_long.ogg（同じ合成の着地音なし版）
@@ -29,11 +30,10 @@ def ramp(t, a, b, up=True):
 def main():
     a, b = load(A), load(B); n = min(len(a), len(b)); a, b = a[:n], b[:n]
     t = np.arange(n) / SR
-    g_throw = ramp(t, 0.34, 0.46, up=False)
-    g_tap1 = ramp(t, 0.855, 0.87) * ramp(t, 1.085, 1.10, up=False)
-    g_land = ramp(t, 1.095, 1.11)
-    out = a * g_throw[:, None] + (a - b) * g_tap1[:, None] + a * g_land[:, None]
-    out[(t > 0.46) & (t < 0.855)] = 0.0
+    # 2026-10-13 開発27（17）：魔法的な「ヒュイン」（投げる風 A1・止まる光 C1）を外し、好評の着地の足音「トンッ、ト、トン」だけ＝A−B（B は同じ合成の足音なし版＝足音以外はちょうど 0）。
+    #  足音の音量・時刻は元のまま（0.855秒〜。サイコロの動き 1.30秒とのずれも従来どおり）。旧：投げる音＋着地（0〜0.46秒は A1・1.10秒〜は C1 が入っていた）
+    out = a - b
+    out[t < 0.85] = 0.0
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     p = subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'f32le', '-ar', str(SR), '-ac', '2', '-i', '-', '-c:a', 'libvorbis', '-q:a', '5', '-map_metadata', '-1', OUT], input=out.astype(np.float32).tobytes(), check=True)
     print('wrote', OUT)

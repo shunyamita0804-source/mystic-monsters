@@ -151,6 +151,7 @@
         return `<button class="chroute${o.spur ? ' spur' : ''}" data-id="${esc(o.id)}" onclick="MMWB.pick('${esc(o.id)}')"><b>${esc(o.name)}</b>${desc ? `<small>${esc(desc)}</small>` : ''}</button>`; }).join('')}</div>`;
     }
     if (ph === 'battle') {
+      if (V.rivalAuto && (r.pend.fx || {}).battleType === 'rival') return '';   // 2026-10-13 開発27（21）：ライバルは演出からそのままバトルへ（案内のシートを出さない。途中で閉じて読み込み直したときだけ従来のシート）
       const fx = r.pend.fx || {}, bt = (cfg().battleTypes || {})[fx.battleType || 'wild'] || { label: 'モンスター' }, fb = root.MMRF_PLAY ? root.MMRF_PLAY.TUNING.wildFatigue : 5;
       return `<div class="chsheet chbat"><small class="chbat-kind">${esc(bt.label)}</small><h3>${esc(bt.encounter || bt.label)}</h3>${bt.note ? `<p class="p9s chbat-note">${esc(bt.note)}</p>` : ''}<p class="p9s">バトルの後は空腹 +${fb}。賞金・ランクアップはありません。</p><button class="p9btn" onclick="bBattleGo()">バトルする</button></div>`;   // 2026-10-12 試遊：遭遇はすべて強制バトル（「やめておく」は出さない）
     }
@@ -237,10 +238,19 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
 :is(#rfp,.wbv) .rfw-mon:is(.wk-on,.wk-idle) .mon>img.wk.on{opacity:1}
 .wbv .rfw-mon.wk-flip .mon>img.wk{scale:-1 1}
 .wbv .rfw-mon.bob .mon{animation:wbbob .32s ease-in-out infinite}
+.wbv .rfw-mon.st-flip .mon img.st{scale:-1 1}   /* 2026-10-13 開発27（13）：横の1歩（横向きの歩行の絵が無い種族）は静止の立ち絵を進む向きへ */
 .wbw .chf-tact,.wbw .chf-tact-tx{z-index:9}
 @keyframes wbbob{50%{translate:0 -6%}}
 .wbw .wbx{z-index:22}
 .wbw #wb-ui:has(.wbx) .chsheet{visibility:hidden}
+/* 2026-10-13 開発27（18）：イベントのサイコロの案内（「サイコロを振る」）と、サイコロの後ろの帯（盤の上・サイコロ（z30）より奥・HUD と操作欄より下） */
+.wbw .wbdask{text-align:center}.wbw .wbdask h3{margin:0 0 4px}.wbw .wbdask .p9s{margin:0 0 10px;line-height:1.55}
+.wbw .wbdask .wbdgo{display:block;width:min(100%,260px);margin:0 auto;padding:11px 0;border-radius:999px;border:1.5px solid #e8c66e;background:linear-gradient(#b8283a,#6e0f1e);color:#fff;font:800 16px/1.2 var(--mm-font-head);letter-spacing:.06em;box-shadow:0 3px 10px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25)}
+.wbv .wbdband{position:absolute;left:0;right:0;z-index:29;height:clamp(120px,24dvh,190px);transform:translateY(-50%);pointer-events:none;background:linear-gradient(180deg,rgba(8,16,44,0),rgba(8,16,44,.78) 18%,rgba(12,26,66,.86) 50%,rgba(8,16,44,.78) 82%,rgba(8,16,44,0));animation:wbdbIn .26s ease-out both}
+.wbv .wbdband::before,.wbv .wbdband::after{content:"";position:absolute;left:0;right:0;height:1.5px;background:linear-gradient(90deg,rgba(232,198,110,0),#e8c66e 20%,#fff1c4 50%,#e8c66e 80%,rgba(232,198,110,0))}
+.wbv .wbdband::before{top:16%}.wbv .wbdband::after{bottom:16%}
+.wbv .wbdband.out{opacity:0;transition:opacity .24s}
+@keyframes wbdbIn{from{opacity:0;transform:translateY(-50%) scaleY(.4)}to{opacity:1;transform:translateY(-50%)}}
 .wbw .wbx-veil{position:absolute;inset:0;background:radial-gradient(ellipse 85% 60% at 50% 44%,rgba(6,12,30,.25) 20%,rgba(4,8,22,.78) 72%,rgba(3,6,16,.9));animation:cefade .3s ease-out both}
 .wbw .wbx-w.rare .wbx-veil{background:radial-gradient(ellipse 85% 60% at 50% 44%,rgba(40,8,60,.3) 20%,rgba(18,4,30,.8) 72%,rgba(10,2,18,.92))}
 .wbw .wbx-stage{position:absolute;left:50%;top:42%;width:min(74vw,310px);height:min(74vw,310px);transform:translate(-50%,-50%)}
@@ -329,7 +339,8 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     app.innerHTML = '<div class="chfw wbw" id="wbw"><div class="wbv" id="wbv"></div><div class="chf-ui" id="wb-ui"></div></div>';
     V.el = $('#wbw'); V.key = key;
     if (root.MMRF_WORLD) V.world = root.MMRF_WORLD.create(V.el.querySelector('.wbv'), D(), root.MMRF_PLAY, { view: viewRect, monSrc: monSrc(m), art: { base: ART, road: 'strip' },
-      focus: true, veil: false, xray: true, ahead: CAM.ahead, sMin: CAM.sMin, sMax: CAM.sMax, tilePx: CAM.tilePx, monRatio: CAM.monRatio, zoomTau: CAM.zoomTau });
+      focus: true, veil: false, xray: true, hideLm: ['START', 'LOWER_GATE', 'UPPER_GATE'], ahead: CAM.ahead,   // 2026-10-13 開発27（11・15）：開始地点の門・中央の門2か所（下門・上門）の飾りの絵は出さない（マス・道・判定はそのまま）
+      sMin: CAM.sMin, sMax: CAM.sMax, tilePx: CAM.tilePx, monRatio: CAM.monRatio, zoomTau: CAM.zoomTau });
     V.el.querySelectorAll('.rfw-title').forEach((e) => e.remove());   // 2026-10-13 開発25 H：全景の地図の上に大きな題字を出さない（題字は中継カットの間だけ＝cover）。HUD の Chapter 表示は別（残す）
     sprSetup(m);
     return true;
@@ -423,7 +434,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
   //  無いセットは代わり（back・front が無ければ side、side が無ければ直前の縦のセット、どれも無ければ静止の絵で小さく弾む＝.bob）。
   //  止まったら front の絵があればその idle のコマ、無ければ静止の立ち絵（2.5D の正式画像）。----
   const TILT_COS = Math.cos(40 * Math.PI / 180), DIRS = ['back', 'front', 'side'];
-  const SPR = { sets: {}, cur: null, flip: false, lat: false, raf: 0, phase: 0, last: 0, frame: '', on: false };
+  const SPR = { sets: {}, stand: 'none', cur: null, flip: false, lat: false, raf: 0, phase: 0, last: 0, frame: '', on: false };
   const monEl = () => (V.el ? V.el.querySelector('.rfw-mon') : null);
   /** 種族の歩行セット：dirs の { use:'walk', …上書き } を解決する。dirs が無い古い config は walk を back として使う */
   function dirSets(spr) {
@@ -438,17 +449,17 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     return out;
   }
   /** 1歩の向き → 使うセットと左右反転（純粋な関数。dx・dy は世界の座標の差。prev は直前の結果） */
-  function pickDir(dx, dy, sets, prev) {
+  function pickDir(dx, dy, sets, prev, stand) {
     prev = prev || {}; sets = sets || {};
     const sy = dy * TILT_COS, ax = Math.abs(dx), ay = Math.abs(sy);
     if (!ax && !ay) return { set: prev.set || null, flip: !!prev.flip, lat: !!prev.lat };
     const lat = ay < ax * (prev.lat ? 0.45 : 0.35);
     let set;
     if (lat && sets.side) set = 'side';
-    else if (lat && prev.set && prev.set !== 'side' && sets[prev.set]) set = prev.set;   // 横の1歩は直前の縦のセットのまま（ちらつかない）
+    else if (lat) set = null;   // 2026-10-13 開発27（13）：横向きの歩行の絵が無い種族の横の1歩は、静止の立ち絵（2.5D）を進む向きに向けて小さく弾む（旧：直前の後ろ姿のまま横へ進み、道と向きが合わなかった）
     else if (sy < 0) set = sets.back ? 'back' : sets.side ? 'side' : null;
     else set = sets.front ? 'front' : sets.side ? 'side' : null;
-    const face = set ? sets[set].face : 'none';
+    const face = set ? sets[set].face : (stand || 'none');   // 静止の立ち絵の向き（monsterSprites[種族].standFace）
     let flip = false;
     if (face === 'right' || face === 'left') flip = (ax < 0.15 * Math.hypot(dx, sy) && prev.set === set) ? !!prev.flip : (face === 'right' ? dx < 0 : dx > 0);
     return { set, flip, lat };
@@ -460,7 +471,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     st.classList.add('st');
     const box = document.createElement('span'); box.className = 'mon'; el.insertBefore(box, st); box.appendChild(st);
     const P = root.MMP10M, key = P && P.keyOf ? P.keyOf(m.sp) : null, spr = key && cfg().monsterSprites ? cfg().monsterSprites[key] : null;
-    SPR.sets = dirSets(spr);
+    SPR.sets = dirSets(spr); SPR.stand = (spr && spr.standFace) || 'none';
     // 2026-10-11：歩行のコマの高さ・足は「静止の立ち絵が実際に見えている高さ」に合わせる（横に広い立ち絵＝ガウルは箱より低く、上に寄せて置かれる）。--sth＝立ち絵の高さ ÷ 箱の高さ
     const fit = () => { const bh = box.offsetHeight, sh = st.offsetHeight; if (bh > 0 && sh > 0) box.style.setProperty('--sth', String(Math.min(1, sh / bh))); };
     if (st.complete) fit(); else st.addEventListener('load', fit, { once: true });
@@ -494,17 +505,17 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
   /** 1歩ごと：from → to の向きで見た目を決める（位置は MMRF_WORLD が動かす） */
   function sprWalk(from, to) {
     const el = monEl(), d = D(), a = d.nodes[from], b = d.nodes[to]; if (!el || !a || !b || calm()) return;
-    const r = pickDir(b[0] - a[0], b[1] - a[1], SPR.sets, { set: SPR.cur, flip: SPR.flip, lat: SPR.lat }), w = r.set ? SPR.sets[r.set] : null;
+    const r = pickDir(b[0] - a[0], b[1] - a[1], SPR.sets, { set: SPR.cur, flip: SPR.flip, lat: SPR.lat }, SPR.stand), w = r.set ? SPR.sets[r.set] : null;
     if (r.set !== SPR.cur) SPR.phase = 0;
     SPR.cur = r.set; SPR.flip = r.flip; SPR.lat = r.lat;
-    el.classList.remove('wk-idle'); el.classList.toggle('wk-on', !!w); el.classList.toggle('bob', !w); el.classList.toggle('wk-flip', !!w && r.flip);
+    el.classList.remove('wk-idle'); el.classList.toggle('wk-on', !!w); el.classList.toggle('bob', !w); el.classList.toggle('wk-flip', !!w && r.flip); el.classList.toggle('st-flip', !w && r.flip);
     el.dataset.dir = r.set || '';
     if (w) { sprShow(r.set, Math.floor(SPR.phase) % w.frames.length); if (!SPR.on) { SPR.on = true; SPR.last = 0; if (!SPR.raf) SPR.raf = requestAnimationFrame(sprTick); } }
     else SPR.on = false;
   }
   function sprStop() {
     SPR.on = false; if (SPR.raf && root.cancelAnimationFrame) cancelAnimationFrame(SPR.raf); SPR.raf = 0; SPR.phase = 0; SPR.last = 0; SPR.cur = null; SPR.flip = false; SPR.lat = false;
-    const el = monEl(); if (el) { el.classList.remove('wk-on', 'bob', 'wk-flip'); el.dataset.dir = ''; }
+    const el = monEl(); if (el) { el.classList.remove('wk-on', 'bob', 'wk-flip', 'st-flip'); el.dataset.dir = ''; }
     sprIdle();
   }
 
@@ -765,8 +776,8 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     ui.insertAdjacentHTML('beforeend', `<div class="chf-enc chf-enc2 wbx wbx-r" role="status" aria-label="${esc(text)}"><img class="wbx-rbg" src="${esc(FXF.rivalBg)}" alt="" draggable="false">
       <div class="wbx-rstage">${part ? `<img class="wbx-partner" src="${esc(part)}" alt="" draggable="false">` : ''}${fig ? `<img class="wbx-ryu" src="${esc(fig)}" alt="${esc(B.name || 'リュウ')}" draggable="false">` : ''}</div>
       <div class="wbx-card r"><small>RIVAL</small><div class="wbx-nm"><b>${esc(text)}</b></div></div><img class="wbx-clash" src="${esc(FXF.clash)}" alt="" draggable="false"></div>`);
-    const el = ui.querySelector('.wbx-r:last-child'); feel(cue, { battleType: 'rival' });
-    await wait(900); if (el) { el.classList.add('p2'); try { if (root.MMVOICE && fig) root.MMVOICE.cue('ryu.appear'); } catch (e) { /* 声が無くても進行は変わらない */ } }   // 2026-10-13 開発25 追加便：リュウの姿が出た瞬間に「よっ！」（遭遇1回に1回）
+    const el = ui.querySelector('.wbx-r:last-child');
+    await wait(900); if (el) el.classList.add('p2'); feel(cue, { battleType: 'rival' });   // 2026-10-13 開発27（19）：ライバルの登場の SE（RIVAL_APPEAR・従来の正式素材）は、リュウとレグナスが現れた瞬間に1回（旧：その前の幕の出始め）   /* 2026-10-13 開発27（20）：登場の「よっ！」（ryu.appear）は鳴らさない（不採用）。声のファイル・登録は残す */   // 2026-10-13 開発25 追加便：リュウの姿が出た瞬間に「よっ！」（遭遇1回に1回）
     await wait(1250); if (el) el.classList.add('p3');      // X の衝突（0.32秒）
     await wait(380);
     if (el) { el.classList.add('out'); await wait(240); el.remove(); }
@@ -810,18 +821,44 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     Q: (e) => `運命のサイコロ：${e.die}（${e.die % 2 ? '奇数＝左の道' : '偶数＝右の道'}へ）`,
     CHALLENGE: (e) => `封印の遺跡門の挑戦：${e.die} → ${e.die >= 5 ? '成功！ 遺跡の道へ' : '失敗… 遠回りの道へ'}`,
   };
+  /** 2026-10-13 開発27（18）：イベントのサイコロ（Q の左右・特殊挑戦）は、案内を出してプレイヤーが「サイコロを振る」を押してから1回だけ振る。
+   *  出目・判定（奇数／偶数・5／6 で成功）は resolveLanding で決まって保存済み＝ここは見せ方だけ。自動テストの一言なし（MM_QA_NO_STORY）では待たない */
+  const DIE_ASK = {
+    Q: { h: '運命のサイコロ', p: 'サイコロを振って進む道を決めよう。奇数なら左の道、偶数なら右の道へ。' },
+    CHALLENGE: { h: '封印の遺跡門の挑戦', p: 'サイコロを振って、5か6が出れば成功！ 遺跡の道へ進める。それ以外は遠回りの道へ。' },
+  };
+  function dieAsk(e) {
+    const ui = $('#wb-ui'), A = DIE_ASK[e.kind] || { h: 'イベントのサイコロ', p: 'サイコロを振ろう。' };
+    if (!ui || root.MM_QA_NO_STORY) return Promise.resolve();
+    const b0 = $('#bmsg'); if (b0) b0.textContent = A.h;
+    return new Promise((done) => {
+      ui.insertAdjacentHTML('beforeend', `<div class="chsheet wbdask" role="dialog" aria-label="${esc(A.h)}"><h3>🎲 ${esc(A.h)}</h3><p class="p9s">${esc(A.p)}</p><button type="button" class="p9btn wbdgo">サイコロを振る</button></div>`);
+      const el = ui.querySelector('.wbdask:last-child'), b = el && el.querySelector('.wbdgo'), t0 = Date.now();
+      if (!b) { if (el) el.remove(); return done(); }
+      const go = (ev) => { if (ev) ev.stopPropagation(); if (b.disabled || Date.now() - t0 < 350) return; b.disabled = true; el.remove(); done(); };   // 1回だけ（連打・表示直後の押下は無視）
+      b.addEventListener('click', go);
+    });
+  }
+  async function dieBand(e, play) {
+    const host = V.el; if (!host || calm()) return play();
+    const vr = viewRect(), y = vr ? vr.top + (vr.bottom - vr.top) * 0.36 : host.getBoundingClientRect().height * 0.4;
+    host.insertAdjacentHTML('beforeend', `<div class="wbdband" aria-hidden="true" style="top:${Math.round(y)}px"><i></i></div>`);
+    const el = host.querySelector('.wbdband:last-child');
+    try { await play(); } finally { if (el) { el.classList.add('out'); setTimeout(() => el.remove(), 260); } }
+  }
   async function resolve() {
     const S = gS(), m = S && S.m; if (!active(m) || busyGet() || !onBoard() || !m.raise.pend || m.raise.pend.stage !== 'resolve') return;
     busySet(true); lock();
-    let tail = '', card = null;
+    let tail = '', card = null, rivalGo = false;
     try {
       const r = P8().resolveLanding(S, m); doSave();
       let fx = r.fx || {};
+      if (fx.kind === 'battle' && fx.battleType === 'rival') V.rivalAuto = true;
       if ((fx.dice || []).length) await storyAt(m, 'die', { dice: fx.dice });
       for (const e of fx.dice || []) {   // イベントのサイコロ（Q の左右・特殊挑戦）：出目はもう決まっている（見せるだけ）
         const tx = (DIE_TEXT[e.kind] || ((x) => `サイコロ：${x.die}`))(e);
         const b = $('#bmsg'); if (b) b.textContent = tx;
-        await playDie(e.die, null); tail = tx;
+        await dieAsk(e); await dieBand(e, () => playDie(e.die, null)); tail = tx;   // 2026-10-13 開発27（18）：案内 → プレイヤーが「サイコロを振る」→ 1回だけ振る（出目はもう決まっている＝見せるだけ）。後ろに帯
         if (e.kind === 'CHALLENGE') vcue(e.die >= 5 ? 'fina.challengeOk' : 'fina.challengeNg');   // 2026-10-13：フィナの声（やったね／うーん）
       }
       if (fx.kind === 'choice') {
@@ -861,12 +898,14 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
         const body = `${fx.text ? `<p>${esc(fx.text)}</p>` : ''}${rowsHtml(fx)}`;
         cardRes(card, body); await cardHold(card, 300, body ? 1900 : 900); await cardClose(card); card = null;
         tail = plainOf(fx) || fx.title || '';
-      } else if (fx.kind === 'battle') await encounter(m, fx.battleType);
+      } else if (fx.kind === 'battle') { if (fx.battleType === 'rival') V.rivalAuto = rivalGo = true; await encounter(m, fx.battleType); }   // 2026-10-13 開発27（21）：ライバルは演出のあとバトルの案内（説明・「バトルする」）を出さずにそのままバトルへ
       else if (fx.note === 'claimed') tail = `${fx.title || '宝'}はもう手に入れている。`;
       const told = await storyAt(m, 'land', { fx, goal: !!r.goal });
       if (!told && fx.kind === 'none' && fx.note === 'normal' && !r.goal && !r.timeUp) tail = (await reactionAt(m)) || tail;
       if (r.goal) tail = `${tail}　大会会場に着いた！`.trim(); else if (r.timeUp) tail = `${tail}　ターンを使い切った…`.trim();
     } finally { if (card) cardClose(card, true); busySet(false); }
+    if (rivalGo && onBoard() && P8().boardPhase(m) === 'battle' && typeof root.bBattleGo === 'function') { root.bBattleGo(); V.rivalAuto = false; if (!root.document.getElementById('bt')) board(tail || undefined); return; }
+    V.rivalAuto = false;   // 強制戦闘・戻り先・バトルの種類・報酬なしは従来の bBattleGo のまま
     if (onBoard()) board(tail || undefined);
   }
 

@@ -59,7 +59,7 @@ test('SF-B1：Chapter 4 の A 優勝 → 最終公式大会（S・8体7試合）
   assert.deepEqual([t.rank, t.final, t.n, t.rows, t.saved], [5, true, 8, 8, 5], 'S の大会＝8体（対戦表 8行）・保存済み');
   // 1試合目は画面の操作（対戦する → 比較 → 対戦開始の2度押し）で fight() まで
   await pg.click('.tb1 .tbgo'); await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(500);
-  await pg.click('.pcgo'); await pg.waitForTimeout(600); await pg.click('.pcgo');
+  await pg.click('.pcgo');   // 2026-10-13 開発27（29）：1回の押下
   await pg.waitForSelector('#bt', { timeout: 20000 });
   for (let i = 0; i < 600; i++) { if (await pg.evaluate(() => { const g = document.getElementById('go'); return !!g && g.classList.contains('bk'); })) break; await pressStop(pg); await pg.waitForTimeout(400); }
   assert.match(await pg.evaluate(() => document.getElementById('msg').textContent), /^勝利/);

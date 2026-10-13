@@ -105,7 +105,7 @@
       s.currentLife.A = after;
       if (s.totalDamage) s.totalDamage.B += actual;
       r.damage = total; r.targetLifeAfter = after; r.ko = after <= 0; r.counter = true;
-      setTimeout(() => badge(), 720); // fight() がダメージを出す時刻（act の 0.72秒後）にそろえる
+      setTimeout(() => { if (!(window.MMRULES && window.MMRULES.skillCut && window.MMRULES.skillCut(1, 'regnas'))) badge(); }, 720); // fight() がダメージを出す時刻（act の 0.72秒後）にそろえる。2026-10-13 開発27（30）：固有スキルの発動の演出（js/battle/rules.js の skillCut）・使えないときだけ旧の札
     }
   }
 

@@ -203,7 +203,8 @@ test('WC-08：歩行の向き＝上 back・下 front・横 side（右向きは�
   assert.equal(pickDir(0.5, -20, all, { set: 'back', flip: true }).flip, true, 'ほぼ真上へは直前の左右のまま');
   const back = { back: { face: 'none', frames: F } };
   assert.deepEqual([pickDir(0, -10, back).set, pickDir(0, 10, back).set, pickDir(10, 0, back).set], ['back', null, null], '後ろ姿だけ＝手前・横は静止の絵（弾む）');
-  assert.equal(pickDir(10, 0, back, { set: 'back' }).set, 'back', '横の1歩は直前の縦のセットのまま');
+  assert.equal(pickDir(10, 0, back, { set: 'back' }).set, null, '2026-10-13 開発27（13）：横の1歩は静止の立ち絵（後ろ姿のまま横へ進まない）');
+  assert.deepEqual([pickDir(10, 0, back, { set: 'back' }, 'left').flip, pickDir(-10, 0, back, { set: 'back' }, 'left').flip, pickDir(-10, 0, back, {}, 'right').flip], [true, false, true], '静止の立ち絵は進む向きへ（standFace）');
   assert.equal(pickDir(0, -10, back).flip, false, '真後ろの絵は反転しない');
   const side = { side: { face: 'right', frames: F } };
   assert.deepEqual([pickDir(0, -10, side).set, pickDir(0, 10, side).set, pickDir(-10, 0, side).flip], ['side', 'side', true], '横向きだけ＝どの向きも side');

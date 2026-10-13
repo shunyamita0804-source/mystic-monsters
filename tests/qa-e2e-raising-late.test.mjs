@@ -412,7 +412,7 @@ T('QA-RL4：Chapter 3（旧ボード）のゴール → ランク選択（クリ
   assert.ok(opp.includes(nx), `次の相手の行＝次の対戦相手（${nx} / ${opp}）`);
   await pg.click('.tb1 .tbgo'); await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(SETTLE);   // 2026-10-04（PHASE D）：大会進行 → パラメーター比較（6能力のゲージ）
   assert.equal(await pg.evaluate(() => document.querySelectorAll('.pcgs .pcg').length), 6);
-  await pg.click('.pcgo'); await pg.waitForTimeout(100); assert.equal(await pg.evaluate(() => S.m.raise.battle), null, '1回目では試合は始まらない');
+  assert.equal(await pg.evaluate(() => S.m.raise.battle), null, '比較の画面ではまだ試合は始まっていない（2026-10-13 開発27（29）：「対戦開始」は1回の押下で始まる＝ここでは押さない）');
   const raw = await rawSave(pg);
   await reloadAndStart(pg, '.p9tour');
   assert.equal(await rawSave(pg), raw);

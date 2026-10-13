@@ -130,6 +130,10 @@
     const anims = [];
     // ease は区切りごとの緩急（keyframe の easing）。アニメーション全体の easing にすると時間軸そのものが歪む（止まる時刻・光の時刻がずれる）ので使わない
     const A = (target, kf, ease) => { if (ease) kf.forEach((k) => { if (!k.easing) k.easing = ease; }); const a = target.animate(kf, { duration: D, fill: 'forwards' }); anims.push(a); return a; };
+    // 2026-10-13 開発27（14）：回っている間は斜め（.d3-tilt の -17°／21°）、止まる約0.4秒前から真正面（横の傾き 0・前へ 6°）へ戻して止める＝出目の数字がまっすぐ読める。出目・止まる時刻は変えない
+    const tilt = el.querySelector('.d3-tilt'), FRONT = 'rotateX(-6deg) rotateY(0deg)';
+    if (o.calm) tilt.style.transform = FRONT;
+    else A(tilt, [{ transform: 'rotateX(-17deg) rotateY(21deg)', offset: 0 }, { transform: 'rotateX(-17deg) rotateY(21deg)', offset: at(Math.max(0, L - 420)), easing: 'cubic-bezier(.3,.6,.35,1)' }, { transform: FRONT, offset: at(L) }, { transform: FRONT, offset: 1 }]);
     if (o.calm) {
       el.style.transform = `translate(${o.land.x}px,${o.land.y}px)`;
       cube.style.transform = `rotateX(${bx}deg) rotateY(${by}deg)`;

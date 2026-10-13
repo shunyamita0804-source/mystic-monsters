@@ -25,9 +25,9 @@
     // レアモンスターの「なんだろう？」は、初めてのレアのフィナの一言（world-driver.js の ch1_first_rare の行の voice）だけ（遭遇の演出・強制バトルは変えない）
     // ---- 2026-10-13 開発25 追加便 ----
     'facility.bureau': { voice: 'serge_welcome', on: true },   // 聖獣士管理局＝セルジュ「ようこそ」（再訪の入口。初めての登録の受付は会話の1行目＝OPEN_TALK.serge の voice）
-    'ryu.appear':  { voice: 'ryu_hello', on: true },     // リュウ「よっ！」＝道中のライバルの遭遇の演出でリュウの姿が出た瞬間（Chapter 1 の世界のボード・Chapter 2 のフィールド）
+    'ryu.appear':  { voice: 'ryu_hello', on: false },    // リュウ「よっ！」＝2026-10-13 開発27（20）で不採用（登場の演出から呼ばない・この場面も止める）。声のファイル・VOICE_REGISTRY の登録は残す
     'ryu.won':     { voice: 'ryu_chuckle', on: true },   // リュウ「へへっ」＝ライバル戦の決着でプレイヤーが負けた（リュウの勝ち）
-    'ryu.lost':    { voice: 'ryu_praise', on: true },    // リュウ「やるじゃん」＝ライバル戦の決着でプレイヤーが勝った
+    'ryu.lost':    { voice: 'ryu_praise', on: true },    // リュウ「やるじゃん」＝2026-10-13 開発27（24）からバトルの決着では鳴らさない（ボードへ戻ってからの会話の行の声＝LINE_VOICE の ryu_praise）。この場面の登録だけ残す
     'genshin.ack': { voice: 'genshin_ack', on: true },   // ゲンシン「うむ」＝特訓をやり終えた（「よくやった。…」の一言と同時）
     'vargas.ack':  { voice: 'vargas_ack', on: true, cooldown: 30000 },   // ヴァルガス「うむ」＝闘技場（ロック中）でランクを上げた子を認める一言のときだけ（押すたびに鳴らない）
     // 三伝説（登録のみ・場面が未実装）：再会の挨拶・対戦の直前。VOICE_REGISTRY も enabled:false。アストラッドの新しい声は未着＝無い
@@ -38,7 +38,8 @@
   });
   /** 会話の行に付ける声（データ側で { voice: 'fina_yes' } のように書く）。ここで false にした声は会話でも鳴らさない */
   const LINE_VOICE = Object.freeze({ fina_hello: true, fina_yeah: true, fina_hmm: true, fina_look: true, fina_hey: true, fina_giggle: true, fina_yes: true, fina_wonder: true,
-    cedric_opening: true, serge_welcome: true });   // 2026-10-13 開発25 追加便：セドリックの開幕の1行目・セルジュの受付の1行目（台詞の頭と声が同じ）
+    cedric_opening: true, serge_welcome: true,
+    ryu_praise: true });   // 2026-10-13 開発27（24）：ライバル戦に勝ったあと、ボードでのリュウの会話の行（「やるじゃん！ …」）と同時に1回   // 2026-10-13 開発25 追加便：セドリックの開幕の1行目・セルジュの受付の1行目（台詞の頭と声が同じ）
   const CUE_COOLDOWN_MS = 0;
   const last = {}, visit = {}, log = [];
   const A = () => root.MMAUDIO;

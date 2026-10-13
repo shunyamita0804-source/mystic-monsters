@@ -40,7 +40,7 @@ test('D25-A：対戦前比較の棒は 999＝100%（0 は空）・「対戦表�
     assert.equal(r.px[0][0], 0, '0 は空の棒');
     assert.ok(Math.abs(r.px[3][0] - r.px[3][1]) <= 3, `999 は棒いっぱい ${r.px[3]}`);
     assert.ok(Math.abs(r.px[1][0] / r.px[3][0] - 70 / 999) < 0.03, `70 は約7% ${r.px[1]}`);
-    await pg.click('.p9cmps .pcgo'); await pg.waitForTimeout(500); await pg.click('.p9cmps .pcgo').catch(() => {});
+    await pg.click('.p9cmps .pcgo');   // 2026-10-13 開発27（29）：1回の押下
     await pg.waitForFunction(() => !!document.getElementById('tvs') || !!document.getElementById('bt'), null, { timeout: 15000 });
   }
 });

@@ -174,7 +174,7 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     const pre = await pg.evaluate(() => { const st = [...document.querySelectorAll('.pcgs .pcg')].map((r) => [...r.querySelectorAll('.pcb i')].map((x) => parseFloat(x.style.width))); const go = document.querySelector('.pcgo').getBoundingClientRect(); return { battle: S.m.raise.battle, bt: !!document.querySelector('#bt'), st, digits: /\d/.test(document.querySelector('.pcgs').textContent), opp: MMP8L.PROVISIONAL_OPPONENT_STAT[0], go: [go.top, go.bottom] }; });
     assert.equal(pre.battle, null, '対戦開始までは試合を始めない'); assert.equal(pre.bt, false, 'fight() は動いていない');
     const mx = Math.max(100, pre.opp, 100) * 1.08, pc = (v) => Math.round(v / mx * 100); assert.deepEqual(pre.st, Array(6).fill([pc(100), pc(pre.opp)]), '能力の比較（2026-10-07 刷新：数値と棒。自分の6能力と、fight() が作る相手と同じ値 MMP8L.PROVISIONAL_OPPONENT_STAT）'); assert.equal(pre.digits, true, '2026-10-07：能力の数値を出す');
-    await pg.click('.pcgo'); await pg.waitForTimeout(600); await pg.click('.pcgo');
+    await pg.click('.pcgo');   // 2026-10-13 開発27（29）：1回の押下
     await pg.waitForSelector('#bt'); await pg.waitForTimeout(600);
     const after = await pg.evaluate(() => ({ kind: S.m.raise.battle && S.m.raise.battle.kind, pbt: !!document.querySelector('#pbt'), vs: !!document.querySelector('.p9vs'), bt: !!document.querySelector('#bt') }));
     assert.deepEqual(after, { kind: 'league', pbt: false, vs: false, bt: true }, '対戦開始で、間の画面なしに従来の fight() が始まる');

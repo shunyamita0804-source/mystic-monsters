@@ -47,8 +47,8 @@ for (const size of [H.SIZES.base, H.SIZES.se, H.SIZES.android, [414, 896]]) {
     assert.ok(b2.sw <= b2.W + 1 && b2.bottom <= b2.H + 1, `大会2：はみ出さない ${JSON.stringify(b2)}`);
     await pg.evaluate(() => p8TourScr()); await pg.waitForSelector('.tb1 .tbgo'); await pg.waitForTimeout(500);
     await pg.click('.tb1 .tbgo'); await pg.waitForSelector('.tb2 .pcgo'); await pg.waitForTimeout(500);
-    await pg.click('.pcgo'); await pg.waitForTimeout(150); assert.equal(await pg.evaluate(() => !!document.getElementById('tvs')), false, '1回目では始まらない（2度押し）');
-    await pg.waitForTimeout(450); await pg.click('.pcgo');
+    assert.equal(await pg.evaluate(() => !!document.getElementById('tvs')), false, '押す前は始まっていない');
+    await pg.click('.pcgo');   // 2026-10-13 開発27（29）：1回の押下で始まる
     await pg.waitForSelector('#tvs'); await pg.waitForTimeout(1100);
     const b3 = await pg.evaluate(() => ({ names: [...document.querySelectorAll('#tvs .tvsnp b')].map((b) => b.textContent), logo: !!document.querySelector('#tvs .tvslogo'), battle: S.m.raise.battle }));
     assert.equal(b3.names[1], 'ソラ'); assert.ok(b3.logo); assert.equal(b3.battle, null, '大会3の間はまだバトルを始めない');

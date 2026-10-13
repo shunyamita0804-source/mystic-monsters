@@ -347,7 +347,7 @@
     monsterSprites: {
       // 2026-10-02 正式素材（ZIP mismon_walk_sprites_transparent。assets/monsters/{種族}_walk/README.md）：ガウル 6コマ（後ろ姿）・ノビトン 8コマ（横向き＝右向き）・ジオル 8コマ。
       //  移動の時間は種族で変えない（歩く速さは共通）。コマの速さだけ：ガウルは 6コマなので 9fps（1周 約0.67秒＝8コマの 12fps と同じ）。h は箱に対する高さ（体型の違い）
-      gauru: { walk: { frames: [1, 2, 3, 4, 5, 6].map((i) => `./assets/monsters/gauru_walk/gauru_walk_0${i}.webp`), fps: 9, idle: 0, h: 1.05, noFlip: true }, dirs: {
+      gauru: { walk: { frames: [1, 2, 3, 4, 5, 6].map((i) => `./assets/monsters/gauru_walk/gauru_walk_0${i}.webp`), fps: 9, idle: 0, h: 1.05, noFlip: true }, standFace: 'right', dirs: {
         // 2026-10-11 2.5D の歩行（ZIP MysticMonsters_WalkSprites_5Monsters_80PNG。表示用の派生＝assets/monsters/walk_25d/。各8コマ）：front＝手前へ（正面）・back＝奥へ（後ろ姿）。
         //  コマの絵は 512×512 の中で体の高さ 463px・下の余白 25px にそろっている＝h 1.106（体の高さを静止の立ち絵と同じに）・foot 0.049（足を合わせる）。
         //  止まっている姿は front の1コマ目。旧 Chapter 1（field-view）は従来の walk（6コマ）のまま
@@ -356,7 +356,8 @@
       } },
       nobiton: { walk: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/nobiton_walk/nobiton_walk_0${i}.webp`), fps: 12, idle: 0, h: 0.86, noFlip: true }, dirs: { side: { use: 'walk', face: 'right' } } },
       jiol: { walk: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/jiol_walk/jiol_walk_0${i}.webp`), fps: 12, idle: 0, h: 0.95, noFlip: true }, dirs: { back: { use: 'walk', face: 'none' } } },
-      solamo: { walk: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/solamo_walk_back/solamo_walk_back_0${i}.webp`), fps: 12, idle: 0, h: 0.9, noFlip: true }, dirs: { back: { use: 'walk', face: 'none' } } },
+      // 2026-10-13 開発27（13）：standFace＝静止の立ち絵（assets/monsters/2p5d/）の向き。横向きの歩行の絵が無い種族の横の1歩は、この絵を進む向きへ（左右反転）
+      solamo: { walk: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/solamo_walk_back/solamo_walk_back_0${i}.webp`), fps: 12, idle: 0, h: 0.9, noFlip: true }, standFace: 'left', dirs: { back: { use: 'walk', face: 'none' } } },
     },
     // 2026-10-11 向きの切り替え（本編 Chapter 1 の1枚の世界のボード＝js/chapter/world-board.js の pickDir）：dirs＝{ back（奥へ）, front（手前へ）, side（横へ） }。
     //  各セットは { frames, fps, idle, h（静止の立ち絵の高さに対する高さ）, foot（絵の下の透明な余白＝高さに対する割合・足を合わせる）, face（'none'＝真後ろ・真正面／'right'・'left'＝その向きの絵。進む向きで左右反転） }。
