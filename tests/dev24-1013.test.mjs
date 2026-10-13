@@ -54,7 +54,7 @@ function env(o = {}) {
   return { A: w.MMAUDIO, log, w, doc, store, lastUrl };
 }
 
-test('DV-01：registry＝観客の声 6本（OGG／M4A の対）・ボイス 13本（12本 ON・エリオット OFF）・SE の名前の一覧に登録', () => {
+test('DV-01：registry＝観客の声 6本（OGG／M4A の対）・ボイス 13本（2026-10-13 開発25 から13本とも ON＝エリオットは再訪の挨拶）・SE の名前の一覧に登録', () => {
   const got = loadRegistry(), { A } = env();
   const want = { CROWD_HIT: 0.55, CROWD_MISS: 0.55, CROWD_EVADE: 0.2, CROWD_HIT_LONG: 0.6, CROWD_MISS_LONG: 0.53, CROWD_EVADE_LONG: 0.15 };
   for (const [k, g] of Object.entries(want)) {
@@ -68,8 +68,8 @@ test('DV-01：registry＝観客の声 6本（OGG／M4A の対）・ボイス 13�
   assert.match(got.se.CROWD_EVADE.src[0], /evade_boo_0p0_0p6_600ms/); assert.match(got.se.CROWD_EVADE_LONG.src[0], /evade_boo_0p0_1p0_1000ms/);
   const ids = Object.keys(got.voice);
   assert.deepEqual(ids.sort(), ['berna_welcome', 'dan_hello', 'elliot_hello_OPTIONAL', 'fina_giggle', 'fina_hello', 'fina_hey', 'fina_hmm', 'fina_look', 'fina_wonder', 'fina_yeah', 'fina_yes', 'karen_welcome', 'nick_hello']);
-  assert.equal(ids.filter((k) => got.voice[k].enabled !== false).length, 12);
-  assert.equal(got.voice.elliot_hello_OPTIONAL.enabled, false, '研究所（エリオット）は同梱だけ・既定 OFF');
+  assert.equal(ids.filter((k) => got.voice[k].enabled !== false).length, 13);
+  assert.notEqual(got.voice.elliot_hello_OPTIONAL.enabled, false, '開発25：研究所（エリオット）の「やあ」はユーザーが正式に提供＝既定 ON（再訪だけ）');
   for (const v of Object.values(got.voice)) { assert.equal(v.src.length, 2); for (const s of v.src) assert.ok(existsSync(onDisk(s)), s); assert.ok(v.gain > 0 && v.gain <= 3); }
   const CR = rd('AUDIO_CREDITS.md'); for (const t of ['観客の声 3種', 'DRAGON-STUDIO', 'Universfield', 'pixabay.com/service/license-summary/', 'NPC のボイス', '利用規約・声の権利関係は、会話からは特定できていない']) assert.ok(CR.includes(t), `AUDIO_CREDITS.md：${t}`);
 });
@@ -78,13 +78,13 @@ test('DV-02：ボイス＝専用の GainNode・ON/OFF と音量はボイスだ�
   const { A, log, store, doc } = env();
   new Function('window', rd('js/audio/audio-registry.js'))(Object.assign({}, { MMAUDIO: A }));
   A.unlock(); await until(() => Object.values(A.voiceStatus()).every((v) => v !== 'loading'));
-  assert.equal(A.voiceStatus().fina_yes, 'ready'); assert.equal(A.voiceStatus().elliot_hello_OPTIONAL, 'disabled');
+  assert.equal(A.voiceStatus().fina_yes, 'ready'); assert.equal(A.voiceStatus().elliot_hello_OPTIONAL, 'ready');
   assert.equal(A.voice('fina_yes'), true); assert.equal(A.voiceNow(), 'fina_yes');
   const p1 = A.playLog().filter((x) => x.kind === 'voice'); assert.equal(p1.length, 1); assert.match(p1[0].src, /fina_yes\.ogg$/); assert.equal(p1[0].ctx, 'running'); assert.equal(p1[0].gain, 1.32);
   const s1 = log.starts[log.starts.length - 1];
   assert.equal(A.voice('dan_hello'), true); assert.ok(s1.stopped, '新しい声は前の声を止める（二重に鳴らない）'); assert.equal(A.voiceNow(), 'dan_hello');
   A.stopVoice(); assert.equal(A.voiceNow(), null);
-  assert.equal(A.voice('elliot_hello_OPTIONAL'), false); assert.equal(A.voiceLog().slice(-1)[0].result, 'disabled');
+  A.registerVoice('x_disabled', ['./x.ogg'], { enabled: false }); assert.equal(A.voice('x_disabled'), false); assert.equal(A.voiceLog().slice(-1)[0].result, 'disabled');
   assert.equal(A.voice('nope'), false); assert.equal(A.voiceLog().slice(-1)[0].result, 'unknown');
   A.setVoice({ on: false }); assert.equal(A.voice('fina_yes'), false); assert.equal(A.voiceLog().slice(-1)[0].result, 'off');
   assert.deepEqual(JSON.parse(store.getItem('mmvoice')), { on: false, vol: 0.85 }); assert.equal(store.getItem('mmaudio'), null, 'BGM・SE の設定（mmaudio）は変えない');
@@ -149,13 +149,15 @@ test('DV-05：出しどころ＝施設は訪問1回に1回・CUES／LINE_VOICE �
   new Function('window', rd('js/npc/voice-cues.js'))(w);
   const V = w.MMVOICE;
   assert.deepEqual(Object.fromEntries(Object.entries(V.CUES).filter(([k]) => /^facility/.test(k)).map(([k, v]) => [k, [v.voice, v.on]])),
-    { 'facility.farm': ['dan_hello', true], 'facility.ranch': ['nick_hello', true], 'facility.shop': ['berna_welcome', true], 'facility.market': ['karen_welcome', true], 'facility.lab': ['elliot_hello_OPTIONAL', false] }, '施設と声の対応（市場＝カレン・アイテム屋＝ベルナ・牧場＝ニック・ベースキャンプ＝ダン）');
+    { 'facility.farm': ['dan_hello', true], 'facility.ranch': ['nick_hello', true], 'facility.shop': ['berna_welcome', true], 'facility.market': ['karen_welcome', true], 'facility.lab': ['elliot_hello_OPTIONAL', true] }, '施設と声の対応（市場＝カレン・アイテム屋＝ベルナ・牧場＝ニック・ベースキャンプ＝ダン）');
   assert.equal(V.enter('market'), true); assert.equal(V.enter('market'), false, '同じ訪問の中では繰り返さない'); V.visitReset(); assert.equal(V.enter('market'), true, '街へ出て入り直したらまた');
-  assert.equal(V.enter('lab'), false, 'エリオットは既定 OFF'); assert.deepEqual(played, ['karen_welcome', 'karen_welcome']);
+  assert.equal(V.enter('lab'), true, '開発25：エリオットも再訪で鳴る'); assert.deepEqual(played, ['karen_welcome', 'karen_welcome', 'elliot_hello_OPTIONAL']);
+  // 開発25 F：初回の案内の訪問は skip（鳴らさずに「この訪問は済み」）→ 同じ訪問では鳴らない・次の訪問で鳴る
+  V.visitReset(); assert.equal(V.skip('ranch', 'first-visit'), true); assert.equal(V.enter('ranch'), false, '初回の案内の訪問は鳴らない'); V.visitReset(); assert.equal(V.enter('ranch'), true, '再訪で鳴る');
   // index.html：施設のグループ（ベースキャンプの中のアイテム屋は別の施設・ベースキャンプへ戻ってもダンは繰り返さない）
   assert.match(HTML, /const FAC_GROUP=\{farm:\["farm"\],shop:\["farm","shop"\],ranch:\["ranch"\],market:\["market"\],lab:\["lab"\]\};/);
   for (const [fn, fac] of [['function farm(msg,tab){', 'ranch'], ['function market(msg,focus){', 'market'], ['function fmScr(msg){', 'farm'], ['function shopScr(msg,bought,tab){', 'shop'], ['function museum(tab){', 'lab']]) {
-    const line = HTML.slice(HTML.indexOf(fn), HTML.indexOf('\n', HTML.indexOf(fn))); assert.ok(line.includes(`facVoice("${fac}")`), `${fn} → ${fac}`);
+    const line = HTML.slice(HTML.indexOf(fn), HTML.indexOf('\n', HTML.indexOf(fn))); assert.ok(line.includes(`facVoice("${fac}",`), `${fn} → ${fac}（開発25：初回の案内の訪問かを渡す）`);
   }
   // 会話の行の voice（意味の合う行だけ・フィナの8種）
   const SRC = HTML + rd('js/npc/npc-events.js') + rd('js/chapter/configs/ch1a.js') + rd('js/chapter/world-driver.js');

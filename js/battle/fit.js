@@ -15,7 +15,10 @@
     const bt = $('#bt'); if (!bt) return null;
     const rect = (e) => (e ? e.getBoundingClientRect() : null);
     const vs = rect($('.vs', bt)), hp = [rect($('#hp0', bt)), rect($('#hp1', bt))].filter(Boolean), tpl = rect($('.tpl', bt)), tm = rect($('.tm', bt));
-    const bui = rect($('.bui', bt)), cap = rect($('#msg', bt)), rl = rect($('#rl', bt)), sides = [rect($('.mside.s0', bt)), rect($('.mside.s1', bt))];
+    // 2026-10-13 開発25 B：新しいバトル画面（#bt.mma-v24）は技UIの箱（.bui）の上の部分が透明＝実際に見える板（.mmr .pl）の上端を技UIの上端にする（足もとを床の上へ下げられる）
+    const pl = bt.classList.contains('mma-v24') ? [...bt.querySelectorAll('.mmr .pl')].map(rect).filter((r) => r && r.height > 0) : [];
+    const plTop = pl.length ? Math.min(...pl.map((r) => r.top)) : null;
+    const bui = plTop != null ? { top: plTop - C.margin } : rect($('.bui', bt)), cap = rect($('#msg', bt)), rl = rect($('#rl', bt)), sides = [rect($('.mside.s0', bt)), rect($('.mside.s1', bt))];
     if (!vs || !sides[0] || !sides[1]) return null;
     const top = Math.max(tm ? tm.bottom : 0, tpl ? tpl.bottom : 0, ...hp.map((r) => r.bottom));
     const bottoms = [vs.bottom, bui && bui.top > top ? bui.top : Infinity, cap && cap.top > top ? cap.top : Infinity, rl && rl.top > top ? rl.top : Infinity];

@@ -42,10 +42,10 @@ for (const size of [H.SIZES.base, H.SIZES.se, H.SIZES.android, [414, 896]]) {
       return { sw: document.documentElement.scrollWidth, W: innerWidth, bottom: last.bottom, H: innerHeight, bars: [...document.querySelectorAll('.tb2 .pcg')].map((g) => [g.querySelector('.pcl').textContent, ...[...g.querySelectorAll('.pcb i')].map((i) => parseFloat(i.style.width))]),
         names: [...document.querySelectorAll('.tb2 .pcs b')].map((b) => b.textContent), skills: [...document.querySelectorAll('.tb2 .tbskp .tbskn')].map((b) => b.textContent.replace(/^スキル/, '')), descs: [...document.querySelectorAll('.tb2 .tbskp .tbskd')].map((b) => b.textContent), vals: [...document.querySelectorAll('.tb2 .pcg .pcv')].map((b) => b.textContent), hd: !!document.querySelector('.tb2 .pchd'),
         btns: document.querySelectorAll('.p9cmps button').length }; });
-    assert.equal(b2.hd, false, 'ADDENDUM2：比較画面に試合数は出さない'); assert.equal(b2.names[0], 'ソラ'); assert.equal(b2.skills[0], '逆境のひと踏ん張り'); assert.equal(b2.btns, 2);
+    assert.equal(b2.hd, false, 'ADDENDUM2：比較画面に試合数は出さない'); assert.equal(b2.names[0], 'ソラ'); assert.equal(b2.skills[0], '逆境のひと踏ん張り'); assert.equal(b2.btns, 1, '開発25 A：「対戦開始」だけ（「対戦表にもどる」は無い）');
     assert.deepEqual(b2.bars.map((r) => r[0]), ['ライフ', 'ちから', 'かしこさ', '命中', '回避', '丈夫さ']); assert.ok(b2.bars.every((r) => r[1] > 0 && r[1] <= 100 && r[2] > 0 && r[2] <= 100), '棒の長さ'); assert.equal(b2.vals[0], '100', '2026-10-07：能力の数値を出す'); assert.ok(b2.descs[0].length > 4, '固有スキルの説明');
     assert.ok(b2.sw <= b2.W + 1 && b2.bottom <= b2.H + 1, `大会2：はみ出さない ${JSON.stringify(b2)}`);
-    await pg.click('.pcback'); await pg.waitForSelector('.tb1 .tbgo'); await pg.waitForTimeout(500);
+    await pg.evaluate(() => p8TourScr()); await pg.waitForSelector('.tb1 .tbgo'); await pg.waitForTimeout(500);
     await pg.click('.tb1 .tbgo'); await pg.waitForSelector('.tb2 .pcgo'); await pg.waitForTimeout(500);
     await pg.click('.pcgo'); await pg.waitForTimeout(150); assert.equal(await pg.evaluate(() => !!document.getElementById('tvs')), false, '1回目では始まらない（2度押し）');
     await pg.waitForTimeout(450); await pg.click('.pcgo');

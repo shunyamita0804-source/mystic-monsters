@@ -35,13 +35,14 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     await pg.screenshot({ path: path.join(SHOT, `${size[0]}_progress.png`) });
     await pg.click('.p9next .p9go'); await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(600);
     const c = await pg.evaluate(() => ({ g: [...document.querySelectorAll('.pcgs .pcg')].map((r) => [r.querySelector('.pcl').textContent, ...[...r.querySelectorAll('.pcb i')].map((x) => parseFloat(x.style.width))]), digits: /\d/.test(document.querySelector('.pcgs').textContent), hd: !!document.querySelector('.pchd'), names: [...document.querySelectorAll('.pcs b')].map((b) => b.textContent), imgs: [...document.querySelectorAll('.pcs .tbmon img')].map((i) => i.getAttribute('src')), battle: S.m.raise.battle }));
-    // 2026-10-07 刷新：能力は数値と棒（左右で比べる＝棒は2体のうち大きいほう（最低100）の 1.08倍を満タンにした長さ）・左右に待機の立ち絵
-    const opp = await pg.evaluate(() => MMP8L.PROVISIONAL_OPPONENT_STAT[0]), mx = Math.max(100, opp, 100) * 1.08, pc = (v) => Math.round(v / mx * 100);
+    // 2026-10-07 刷新：能力は数値と棒・左右に待機の立ち絵。2026-10-13 開発25 A：棒は 999 を 100% とした長さ（相手との比較ではない）
+    const opp = await pg.evaluate(() => MMP8L.PROVISIONAL_OPPONENT_STAT[0]), pc = (v) => +(v / 999 * 100).toFixed(2);
     assert.deepEqual(c.g, [['ライフ', pc(100), pc(opp)], ['ちから', pc(100), pc(opp)], ['かしこさ', pc(100), pc(opp)], ['命中', pc(100), pc(opp)], ['回避', pc(100), pc(opp)], ['丈夫さ', pc(100), pc(opp)]], '棒の長さ');
     assert.equal(c.digits, true, '数値を出す'); assert.equal(c.hd, false, '試合数は出さない'); assert.equal(c.names[0], 'ソラ'); assert.match(c.imgs[0], /assets\/battle\/idle\/idle_soramo\.webp$/); assert.equal(c.battle, null);
     f = await fit(pg); assert.ok(f.sw <= f.W + 1 && f.sh <= f.H + 1, `比較：はみ出さない・ページは伸びない ${JSON.stringify(f)}`);
     await pg.screenshot({ path: path.join(SHOT, `${size[0]}_compare.png`) });
-    await pg.click('.pcback'); await pg.waitForSelector('.p9tour.tp2 .p9next .p9go'); await pg.waitForTimeout(400);
+    assert.equal(await pg.$('.pcback'), null, '開発25 A：「対戦表にもどる」は無い');
+    await pg.evaluate(() => p8TourScr()); await pg.waitForSelector('.p9tour.tp2 .p9next .p9go'); await pg.waitForTimeout(400);
     await pg.click('.p9next .p9go'); await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(500);
     await pg.click('.pcgo'); await pg.waitForTimeout(120); assert.equal(await pg.evaluate(() => S.m.raise.battle), null, '1回目では始まらない（2度押し）');
     await pg.waitForTimeout(500); await pg.click('.pcgo');

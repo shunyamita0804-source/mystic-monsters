@@ -298,6 +298,13 @@ sha256：
 - miss_disappointment_0p5_1p2_700ms.m4a：1bb6692963b093ac4bf90b5aafb121867926926c214ce898dd59a23f4bbf7cd2
 - miss_disappointment_0p5_1p5_1000ms.m4a：fa8d8c16e719133853c69426b4e5d3a2bcf1cd453ed18ecc5bf0505ec641f27b
 
+## 2026-10-13 開発25：立体サイコロの SE の中間を無音に（assets/audio/se/dice_1013/）【試遊・ユーザー承認待ち】
+
+指示＝「投げる音 → 回っている間は無音 → 着地音」・重複なし。新しい音源は足していない（既存の2本から作った派生）。
+- 元：A＝assets/audio/se/dice_1012/dice_magic_b4_long_tap.ogg（2026-10-12 正式採用。sha256 1872dcff07de6d1e81e99bed7cbc57400932173dca518dca89116bd76151da39）、B＝prototype/dice_1012/se/dice_magic_b4_long.ogg（同じ回転音で着地の打音なし。sha256 faac8bf30c6536a59ac41065623df51472613408b0f2d075fcaf41cb4c116bc3）。原音の出典は上の 2026-10-12 の表（Pixabay Content License）と既存の正式 SE 05_small_monster_entry_steps_4step
+- 作り方（tools/dice1013/se_cut.py）：0〜0.46秒＝A の投げる音（0.34〜0.46秒でフェードアウト）／0.46〜0.855秒＝無音／0.855〜1.10秒＝A−B（1回目の着地の打音だけ）／1.10秒〜＝A（2回目・最後の着地「ト、トン」）。サイコロの動き（I1 0.90・I2 1.14・L 1.30秒）は変えていない
+- 出力：dice_cube_throw_land.ogg（1.595秒・48kHz・Vorbis q5・-17.6 LUFS・ピーク -4.5 dBFS・sha256 3b31b4e75b1a6a53ca0f0d0c8123017131216e18222087e93767b65ea2d4b710）＝SE_REGISTRY の DICE_CUBE（gain 0.9 のまま）。A のファイルは残す（ほかから参照しない・戻すときは registry の1行）
+
 ## 2026-10-13 開発24：NPC のボイス（assets/audio/voice/npc_1013/）【試遊採用】
 
 ユーザー提供の音声（ZIP の 03_voices/。元の MP3 から OGG Vorbis／AAC M4A に変換したもの＝ユーザー側の変換。リポジトリでは無加工。新しい台詞の生成・切り貼りはしていない）。
@@ -317,7 +324,7 @@ sha256：
 | nick_hello | nick「やあ」 | 牧場、やあ(1).mp3（93ac8f805b3d87c13092f06d4e27ea5b8f0a7caf6bc1f374fd5ac19f5368c2ec） | 0.914秒 | -25.6 LUFS | 2.4 | ON |
 | berna_welcome | berna「いらっしゃい」 | アイテム屋、いらっしゃい(2).mp3（59b71f04d2a99173b8a8f00fcd07eb2b441f7eccdf02e5dc3601d344eac58a4b） | 0.993秒 | -19.3 LUFS | 1.16 | ON |
 | karen_welcome | karen「市場の挨拶」 | 市場ボイス(1).mp3（8913fb3fc498229fe66e94531f7f68cceac70a5eff68ade11f1abac71c3a9c4e） | 0.914秒 | -25.2 LUFS | 2.29 | ON |
-| elliot_hello_OPTIONAL | elliot「やあ（別枠・既定OFF）」 | 研究所、やあ.mp3（61e5821c7b97d7b7c29ea4408e7b27876a2c6e749f3adf666a9cb5626d877e58） | 0.757秒 | -19.3 LUFS | 1.16 | OFF（別枠・今回の対象外） |
+| elliot_hello_OPTIONAL | elliot「やあ」 | 研究所、やあ.mp3（61e5821c7b97d7b7c29ea4408e7b27876a2c6e749f3adf666a9cb5626d877e58） | 0.757秒 | -19.3 LUFS | 1.16 | ON（2026-10-13 開発25：ユーザーが開発25 の ZIP で同じ MP3（sha256 一致）を研究所の再訪の挨拶として提供＝既存の OGG／M4A をそのまま有効化。id 名は互換のため OPTIONAL のまま） |
 
 変換したファイルの sha256：
 - berna_welcome.ogg：2885eedb01288d031c8c55229ea1aa168d583fd7c19db5d12a9b4f16aa3779be

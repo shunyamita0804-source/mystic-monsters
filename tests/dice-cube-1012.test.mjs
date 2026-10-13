@@ -72,18 +72,18 @@ test('DC-03：本編は dice-cube.js を読み込む（2026-10-12 正式採用�
   assert.equal(fs.readdirSync(path.join(ROOT, 'prototype/dice_1012'), { recursive: true }).filter((f) => /\.mp3$/i.test(f)).length, 0); assert.match(demo, /dice-cube\.js/);
   const reg = read('js/audio/audio-registry.js');
   assert.match(reg, /DICE_THROW:\s*\{ src: MMO \+ '01_dice_large_full\.ogg'/, '旧サイコロ（Chapter 2・旧ボード・特訓）の SE はそのまま');
-  assert.match(reg, /DICE_CUBE:\s*\{ src: SE_DIR \+ 'dice_1012\/dice_magic_b4_long_tap\.ogg', gain: 0\.9 \}/, '立体サイコロの SE＝採用の1本');
+  assert.match(reg, /DICE_CUBE:\s*\{ src: SE_DIR \+ 'dice_1013\/dice_cube_throw_land\.ogg', gain: 0\.9 \}/, '立体サイコロの SE＝2026-10-13 開発25 E：投げる音 → 回る間は無音 → 着地（1012 版の派生）');
   assert.doesNotMatch(reg, /prototype\//);
 });
 
 test('DC-04：本編の組み込み（Chapter 1 の世界のボード）＝tempo long・SE は dice.cube の1本・出目は渡した値のまま・本編の SE はデモの1本と同じファイル', () => {
   const wb = read('js/chapter/world-board.js');
-  assert.match(wb, /root\.MMDICE3D\.play\(v, \{ host: V\.el, from: from \|\| undefined, land, top: vr\.top, tempo: 'long', throwEvent: 'dice\.cube' \}\)/);
+  assert.match(wb, /root\.MMDICE3D\.play\(v, \{ host: V\.el, from: from \|\| undefined, land, top: vr\.top, tempo: 'long', throwEvent: 'dice\.cube', skin: 'official' \}\)/, '開発25 E：正式サイコロの絵（skin official）');
   assert.match(wb, /root\.MMDICE3D && root\.MMDICE3D\.isLocked\(\)/, '止まるまで START・コマンドを受け付けない');
   assert.match(read('js/feel/game-feel.js'), /'dice\.cube': \{ level: 1, se: 'DICE_CUBE'/);
   assert.match(read('js/audio/audio-manager.js'), /'DICE_CUBE'\]\);/);
   const a = fs.readFileSync(path.join(ROOT, 'assets/audio/se/dice_1012/dice_magic_b4_long_tap.ogg')), b = fs.readFileSync(path.join(ROOT, 'prototype/dice_1012/se/dice_magic_b4_long_tap.ogg'));
-  assert.ok(a.equals(b), '採用した1本（デモの b4_long_tap）と同じ');
+  assert.ok(a.equals(b), '2026-10-12 の採用の1本（デモの b4_long_tap）と同じ＝開発25 の新しい音の材料として残す（上書きしない）');
   assert.deepEqual(fs.readdirSync(path.join(ROOT, 'assets/audio/se/dice_1012')).sort(), ['README.md', 'dice_magic_b4_long_tap.ogg'], '原音の MP3・別形式は置かない');
   // 出目は play に渡した値（MMDICE3D は乱数を使って出目を決めない＝回り方の向きだけ）
   const src = read('js/chapter/dice-cube.js');

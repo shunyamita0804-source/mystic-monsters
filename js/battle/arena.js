@@ -136,6 +136,33 @@
       // 接地の影は従来の .mon::after（index.html）をそのまま使う（二重にしない）
       // 戦場の位置：ルーレットが低くなった分だけ少し下げる（上に大きな空きを作らない）。公式ランク戦の正式背景は床が低い＝少し多め
       '#bt.mma-v24 .vs{translate:0 min(10.5dvh,90px)}',
+      // 2026-10-13 開発25 B：公式ランク戦（正式の会場＝床の始まりが絵の約56%・円形の床の奥の縁が約60%）は足もとを円形の床の上（絵の約64%）へ。旧 10.5dvh では奥の縁（壁の前）に立って浮いて見えた
+      '#bt.mma-v24:not([data-mmprac="1"]) .vs{translate:0 min(16dvh,160px)}',
+      // 低い画面（375×667 など）は足もとの下に説明の文字があり足もとを下げきれない＝背景を下を軸に少しだけ大きく（床の円が上がって足もとに来る。絵は描き直さない・左右が少し切れる）
+      '@media (max-height:720px){#bt.mma-v24:not([data-mmprac="1"]) .mma-bg.ofc{transform:scale(1.19)}}',
+      // 2026-10-13 開発25 C：勝ち／負けの画面（mma-end）。帯は画面の下 40%（モンスターの足もとより下・技UIの箱 z6 より奥＝もどるを暗くしない）・文字・一言・もどるを帯の中に
+      '#bt.mma-v24 .mma-endband{position:absolute;left:0;right:0;bottom:0;height:40%;z-index:5;pointer-events:none;opacity:0;animation:mmaend .5s ease-out .15s forwards}',
+      '#bt.mma-v24.mma-res-win .mma-endband{background:linear-gradient(rgba(40,26,4,0),rgba(40,26,4,.55) 22%,rgba(22,14,4,.86) 60%,rgba(14,9,3,.94))}',
+      '#bt.mma-v24.mma-res-lose .mma-endband{background:linear-gradient(rgba(8,14,34,0),rgba(8,14,34,.6) 22%,rgba(6,10,26,.88) 60%,rgba(4,7,18,.95))}',
+      '#bt.mma-v24 .mma-endln{position:absolute;left:12%;right:12%;top:20%;height:1.5px;background:linear-gradient(90deg,rgba(232,198,110,0),#e8c66e 30%,#f6e3a6 50%,#e8c66e 70%,rgba(232,198,110,0))}',
+      '#bt.mma-v24.mma-res-lose .mma-endln{background:linear-gradient(90deg,rgba(150,170,210,0),#8fa3cc 30%,#c4d0ea 50%,#8fa3cc 70%,rgba(150,170,210,0))}',
+      '#bt.mma-v24 .mma-endsub{position:absolute;left:0;right:0;top:52%;text-align:center;font:700 15px/1.3 "Noto Sans JP",sans-serif;letter-spacing:.12em;color:#f6e7bf;text-shadow:0 1px 3px rgba(0,0,0,.8)}',
+      '#bt.mma-v24.mma-res-lose .mma-endsub{color:#c9d3ea}',
+      '@keyframes mmaend{to{opacity:1}}',
+      '#bt.mma-v24.mma-end #msg{visibility:hidden!important}',
+      // 決着のポーズ（fight() が .mon の .spa に差し込む img.spi）も足もと＝箱の下にそろえる（旧：top:0 が当たって箱の上に寄り、浮いて見えた）
+      '#bt.mma-v24 .spa>img.spi{position:absolute!important;left:50%;top:auto!important;bottom:0!important}',
+      // 勝ち負けの文字：帯の上の線の少し上（モンスターの足もとより下）
+      '#bt.mma-v24.mma-end>#ban{top:auto!important;bottom:calc(40% * .6);font-size:clamp(3.2rem,15vw,4.4rem);letter-spacing:.04em;line-height:1}',
+      '#bt.mma-v24.mma-res-lose>#ban{color:#e4ebf8;text-shadow:0 0 14px rgba(110,140,200,.75),0 0 30px rgba(60,90,160,.5),3px 3px 0 #0a1230}',
+      '#bt.mma-v24.mma-res-win>#ban{color:#fff6d6;text-shadow:0 0 16px rgba(255,200,90,.85),0 0 36px rgba(255,170,40,.55),3px 3px 0 #3a2404}',
+      // もどる：光る丸ではなく帯に収まる横長のボタン（押す所・処理は #go のまま）
+      '#bt.mma-v24.mma-end .gow{z-index:12}',
+      '#bt.mma-v24.mma-end button.go.bk{width:min(56vw,220px)!important;height:50px!important;aspect-ratio:auto;border-radius:999px!important;top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 10%);transform:translateX(-50%);animation:none;background:linear-gradient(#24387f,#0f1c4d);border:2px solid #e0b861;box-shadow:0 4px 14px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.18)}',
+      '#bt.mma-v24.mma-res-lose button.go.bk{border-color:#a9b8d8}',
+      '#bt.mma-v24.mma-end button.go.bk:active{transform:translateX(-50%) scale(.96)}',
+      '#bt.mma-v24.mma-end button.go.bk .gtx{font:800 17px/1 "Noto Sans JP",sans-serif;letter-spacing:.2em;color:#fff3d0;-webkit-text-fill-color:#fff3d0;text-shadow:0 1px 2px rgba(0,0,0,.6)}',
+      '@media (prefers-reduced-motion:reduce){#bt.mma-v24 .mma-endband{animation:none;opacity:1}}',
       '#bt.mma-v24[data-mmprac="1"] .vs{translate:0 min(9.5dvh,82px)}',
       // ② ルーレット：アーチ・レールの位置を低い板に合わせる
       '#bt.mma-v24 .mmr .arch{top:56%}#bt.mma-v24 .mmr .rail{top:83%}',
@@ -427,13 +454,40 @@
     try { setupBg(bt); } catch (e) { /* 見た目だけ */ }
     try { setupIdle(bt); } catch (e) { /* 見た目だけ */ }
     try { setupRoulette(bt); } catch (e) { /* 見た目だけ */ }
+    try { setupEnd(bt); } catch (e) { /* 見た目だけ */ }
   }
+  // ---- 2026-10-13 開発25 C：勝ち／負けの画面（新しいバトル画面だけ）。決着で「もどる」になったら #bt に mma-end と mma-res-win／lose。
+  //  勝ち負けの文字（#ban＝fight() のまま）はモンスターの下へ、その下に結果の一言（#msg の文＝勝利！／敗北…／判定勝ちなど）と「もどる」（#go のまま・押す処理は従来どおり）を
+  //  落ち着いた結果の帯（勝ち＝明るい金・負け＝静かな紺）にまとめる。正式の勝利の絵・リアクションはそのまま主役。戻り先・報酬・大会の進行は変えない
+  function setupEnd(bt) {
+    if (!bt.classList.contains('mma-v24')) return;
+    const go = $('#go', bt); if (!go) return;
+    let done = false;
+    const sync = () => {
+      if (done || !go.classList.contains('bk') || !bt.isConnected) return;
+      done = true;
+      const ban = bt.querySelector(':scope>#ban'), msg = $('#msg', bt), t = ((ban && ban.textContent) || '').trim();
+      const win = /^WIN/.test(t) || (!/^LOSE/.test(t) && /勝/.test((msg && msg.textContent) || ''));
+      bt.classList.add('mma-end', win ? 'mma-res-win' : 'mma-res-lose');
+      const band = document.createElement('div'); band.className = 'mma-endband'; band.setAttribute('aria-hidden', 'true');
+      band.innerHTML = `<i class="mma-endln"></i><span class="mma-endsub"></span>`;
+      const subEl = band.querySelector('.mma-endsub');
+      // 一言は #msg の文（大会では賞金・ランクアップの部分を rules.js があとから消す＝変わるたびに写す）。「勝利！」だけのときは出さない（開発24 の HIDE_MSG と同じ）
+      const copy = () => { const tx = ((msg && msg.textContent) || '').trim(); subEl.textContent = HIDE_MSG.test(tx) ? '' : tx; rec.sub = subEl.textContent; };
+      const rec = { win, ban: t, sub: '' }; copy(); endLog.push(rec);
+      if (msg) new MutationObserver(copy).observe(msg, { childList: true, characterData: true, subtree: true });
+      bt.appendChild(band);
+    };
+    new MutationObserver(sync).observe(go, { attributes: true, attributeFilter: ['class'] });
+    sync();
+  }
+  const endLog = [];
   function watch() {
     if (typeof MutationObserver === 'undefined' || !document.body) return;
     new MutationObserver((muts) => { for (const mu of muts) for (const n of mu.addedNodes) if (n && n.id === 'bt') setup(n); }).observe(document.body, { childList: true });
   }
   if (typeof document !== 'undefined') { if (document.body) watch(); else document.addEventListener('DOMContentLoaded', watch); }
-  root.MMARENA = Object.freeze({ R, IDLE, FACE, SCALE, GEO, UI_KEY, v24, setUi, crowdLog: () => crowdLog.slice(), rankOf, arenaSrc, fieldSrc, FIELD_BG, idleSrc, flipOf, setup, react, RX_MS, rxLog: () => rxLog.slice(), faceSrc: (sp) => (IDLE[sp] ? `./assets/tournament/faces_25d/face_${IDLE[sp].slice(5)}.webp` : null),
+  root.MMARENA = Object.freeze({ R, IDLE, FACE, SCALE, GEO, UI_KEY, v24, setUi, crowdLog: () => crowdLog.slice(), endLog: () => endLog.slice(), rankOf, arenaSrc, fieldSrc, FIELD_BG, idleSrc, flipOf, setup, react, RX_MS, rxLog: () => rxLog.slice(), faceSrc: (sp) => (IDLE[sp] ? `./assets/tournament/faces_25d/face_${IDLE[sp].slice(5)}.webp` : null),
     // 2026-10-11：対戦表の顔＝2.5D の横顔（faces_25d）。読めなかったときは従来の丸い顔（faces）へ（index.html の tbIcon の onerror）
     faceOldSrc: (sp) => (IDLE[sp] ? `./assets/tournament/faces/face_${IDLE[sp].slice(5)}.webp` : null) });
 })(typeof window !== 'undefined' ? window : globalThis);
