@@ -180,17 +180,21 @@ try {
     rec('開発24：最新の実装が読み込まれている（MM_BUILD＝version.json・MMCROWD・MMVOICE・新しいバトル画面が既定）', ver.build && ver.build === vj.build && ver.crowd && ver.voice && ver.v24, JSON.stringify({ ...ver, json: vj.build }));
     // 施設の声：上の流れ（市場・牧場・ベースキャンプ）で実際に再生を始めた声。アイテム屋（ベルナ）は今ここで入る
     await page.evaluate(() => shopScr()); await sleep(1200); await drain(); await sleep(300);
+    // 2026-10-13 開発25 F：初回の案内が出る訪問は入口の声を出さない（説明と重ねない）＝2回目の訪問で鳴る。市場・アイテム屋・研究所（エリオット）は街へ出てから入り直す
+    for (const go of ['market()', 'museum()', 'museum()', 'fmScr();shopScr()']) { await page.evaluate((g) => { lobby(); eval(g); }, go); await sleep(1400); await drain(); await sleep(300); }
+    await page.evaluate(() => lobby()); await sleep(400);
     const vo = await page.evaluate(() => ({ play: MMAUDIO.playLog().filter((x) => x.kind === 'voice').map((x) => [x.name, x.ctx, x.src.split('/').pop()]), settings: MMAUDIO.voiceSettings(), ctx: MMAUDIO.status().context }));
     const names = vo.play.map((x) => x[0]);
-    rec('開発24：施設の声が鳴り始めた（市場＝カレン・牧場＝ニック・ベースキャンプ＝ダン・アイテム屋＝ベルナ／既定 ON）', ['karen_welcome', 'nick_hello', 'dan_hello', 'berna_welcome'].every((n) => names.includes(n)) && vo.play.every((x) => x[1] === 'running') && vo.settings.on, JSON.stringify(vo));
+    rec('開発24・25：施設の声が鳴り始めた（市場＝カレン・牧場＝ニック・ベースキャンプ＝ダン・アイテム屋＝ベルナ・研究所＝エリオット／既定 ON・初回の案内の訪問では鳴らさない）', ['karen_welcome', 'nick_hello', 'dan_hello', 'berna_welcome', 'elliot_hello_OPTIONAL'].every((n) => names.includes(n)) && vo.play.every((x) => x[1] === 'running') && vo.settings.on, JSON.stringify(vo));
   }
   // 2026-10-11：本編の Chapter 1＝1枚の世界のボード（js/chapter/world-board.js）。出発すると新ボード（299地点・サイコロ 1〜6・40ターン）
   await page.setViewportSize({ width: 390, height: 844 }); await sleep(300);
   await page.evaluate(() => { MMP8.depart(S, S.m); S.m.raise.field.introSeen = true; save(); board(); });
   await page.waitForSelector('#wbw #brollbtn', { timeout: 20000 }).catch(() => {}); await sleep(2500);
+  await page.waitForFunction(() => { const w = window.MMWB && MMWB.state().world; return !!(w && w.painted); }, null, { timeout: 45000 }).catch(() => {}); await sleep(800);   // 2026-10-13：公開版は絵の読み込みに時間がかかる＝描き終わってから撮る
   const wb = await page.evaluate(() => ({ on: !!document.querySelector('#wbw #brollbtn'), old: !!document.querySelector('#chf'), lim: S.m.raise.turnLimit, sides: MMP8.diceSides(S.m), w: window.MMWB && MMWB.state().world }));
   await page.screenshot({ path: `${OUT}/world_ch1_390.png` });
-  rec('Chapter 1：1枚の世界のボード（40ターン・1〜6・絵が読める）', wb.on && !wb.old && wb.lim === 40 && wb.sides === 6 && !!wb.w && wb.w.art && wb.w.tiles === 299, JSON.stringify({ ...wb, w: wb.w && { art: wb.w.art, tiles: wb.w.tiles, painted: wb.w.painted } }));
+  rec('Chapter 1：1枚の世界のボード（40ターン・1〜6・絵が読める・描き終わる）', wb.on && !wb.old && wb.lim === 40 && wb.sides === 6 && !!wb.w && wb.w.art && wb.w.tiles === 299 && wb.w.painted, JSON.stringify({ ...wb, w: wb.w && { art: wb.w.art, tiles: wb.w.tiles, painted: wb.w.painted } }));
 
   // 2026-10-13 開発24：公式大会（E）の実戦（上の Chapter 1 の出発のあと）：新しい画面・技の発動中の表示・観客の声（命中・ルーレットの MISS・かわされた）
   {
@@ -202,11 +206,14 @@ try {
       if (st.talk) { flow.push('talk'); if (st.ch) { await sleep(450); await page.click('.mmtalk-choice').catch(() => {}); } else await page.click('.mmtalk:not(.mmtalk-out)', { force: true }).catch(() => {}); await sleep(350); continue; }
       if (st.yn) { flow.push('yn'); await sleep(450); await page.click('#p9conf .p9conf-yes, #ynm .ynm-y').catch(() => {}); await sleep(300); continue; }
       if (st.vs) { if (flow[flow.length - 1] !== 'vs') flow.push('vs'); await sleep(400); continue; }
+      if (st.cmp && !flow.includes('compare')) { await sleep(700); await page.screenshot({ path: `${OUT}/dev25_compare_390.png` }); globalThis.__cmp = await page.evaluate(() => ({ back: !!document.querySelector('.pcback'), max: typeof TB_CMP_MAX !== 'undefined' ? TB_CMP_MAX : null })); }
+      if (st.tb && !flow.includes('board')) { await sleep(500); await page.screenshot({ path: `${OUT}/dev25_board_390.png` }); }
       if (st.cmp) { flow.push('compare'); await sleep(500); await page.click('.pcgo').catch(() => {}); await sleep(650); await page.click('.pcgo').catch(() => {}); await sleep(500); continue; }
       if (st.tb) { flow.push('board'); await sleep(400); await page.click('.tb1 .tbgo').catch(() => {}); await sleep(500); continue; }
       await sleep(500);
     }
     rec('開発24：公式大会の実際の流れ（対戦表 → 対戦前比較 → VS → バトル）', await page.evaluate(() => !!document.getElementById('bt')), flow.join('→'));
+    rec('開発25：対戦前比較（能力の棒は 999 基準・「対戦表にもどる」なし）', !!globalThis.__cmp && globalThis.__cmp.max === 999 && !globalThis.__cmp.back, JSON.stringify(globalThis.__cmp || null));
     await page.waitForSelector('#bt #m0 .mon .mma-idle', { timeout: 30000 });
     await page.evaluate(() => { const bt = document.getElementById('bt'); new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => { if (n.classList && n.classList.contains('skb3')) setTimeout(() => window.__cine.push({ on: bt.classList.contains('mma-cine'), hpr: getComputedStyle(bt.querySelector('.hpr')).visibility, bui: getComputedStyle(bt.querySelector('.bui')).visibility }), 300); }))).observe(bt, { childList: true });
       const B = window.MMBattle; let n = 0; window.MMBattle = Object.freeze(Object.assign({}, B, { resolveAction(o) { if (o && o.attackerSide === 'A' && (n++ % 2 === 0)) o = Object.assign({}, o, { rng: Object.assign({}, o.rng || {}, { hitRng: () => 0.999 }) }); return B.resolveAction(o); } })); });   // 確認のためだけ：自分の攻撃を1回おきに外れ側へ（かわされる場面を作る。保存されるのはこの試合の結果だけ）
