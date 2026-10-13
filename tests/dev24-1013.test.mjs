@@ -134,10 +134,11 @@ test('DV-04：観客の声＝公式大会だけ・練習試合／修行は鳴ら
   const w = { localStorage: store, MMAUDIO: { se: (n, o) => { calls.push([n, o.volume, o.delay]); return true; }, prefetchSe: () => {} }, MMARENA: { rankOf: (b) => b.dataset.mmrank || null } };
   new Function('window', rd('js/battle/crowd.js'))(w);
   const C = w.MMCROWD;
-  assert.deepEqual(C.settings(), { mode: 'short', level: 'std' }, '既定＝短い・標準');
-  assert.equal(C.react('hit', bt(false, 'E')), true); assert.deepEqual(calls.pop(), ['CROWD_HIT', 1, 0.06]);
-  assert.equal(C.react('miss', bt(false, 'S')), true); assert.equal(calls.pop()[0], 'CROWD_MISS');
-  assert.equal(C.react('evade', bt(false, 'C')), true); assert.equal(calls.pop()[0], 'CROWD_EVADE');
+  assert.deepEqual(C.settings(), { mode: 'long', level: 'std' }, '既定＝通常（1.0秒）・標準（2026-10-13 開発28：0.7秒は短すぎるとの試遊の判断。元の音源が無く再カットできないので今ある最長の 1.0秒を既定に）');
+  assert.equal(C.react('hit', bt(false, 'E')), true); assert.deepEqual(calls.pop(), ['CROWD_HIT_LONG', 1, 0.06]);
+  assert.equal(C.react('miss', bt(false, 'S')), true); assert.equal(calls.pop()[0], 'CROWD_MISS_LONG');
+  assert.equal(C.react('evade', bt(false, 'C')), true); assert.equal(calls.pop()[0], 'CROWD_EVADE_LONG');
+  C.set({ mode: 'short' }); assert.equal(C.react('hit', bt(false, 'E')), true); assert.equal(calls.pop()[0], 'CROWD_HIT', '短い（0.7秒）の版も選べる'); C.set({ mode: 'long' });
   assert.equal(C.react('hit', bt(true, 'E')), false, '野生・レア・ライバル（練習試合）は観客なし'); assert.equal(C.log().slice(-1)[0].result, 'no-audience');
   assert.equal(C.react('hit', bt(false, '')), false, '修行など会場のランクが無い'); assert.equal(calls.length, 0);
   C.set({ mode: 'long', level: 'soft' }); assert.deepEqual(JSON.parse(store.getItem('mmcrowd')), { mode: 'long', level: 'soft' });

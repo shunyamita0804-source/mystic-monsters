@@ -298,6 +298,21 @@ sha256：
 - miss_disappointment_0p5_1p2_700ms.m4a：1bb6692963b093ac4bf90b5aafb121867926926c214ce898dd59a23f4bbf7cd2
 - miss_disappointment_0p5_1p5_1000ms.m4a：fa8d8c16e719133853c69426b4e5d3a2bcf1cd453ed18ecc5bf0505ec641f27b
 
+## 2026-10-13 開発28：バトルの決着の短い曲（assets/audio/se/result_1013/）・開始画面の BGM・観客の声の既定
+
+**決着の曲**（js/audio/audio-registry.js の BATTLE_WIN／BATTLE_LOSE。WIN!／LOSE の帯と同時に1回・そのとき戦闘の BGM は止める。野生・レア・ライバル・大会・修行で共通）：
+
+| 用途 | ファイル | 元・作者・配布元 | ライセンス | 長さ | 元の音量 | gain |
+|---|---|---|---|---|---|---|
+| 勝ち（BATTLE_WIN） | win_fanfare12_4s.ogg／.m4a | 「ファンファーレ12」/ red bears https://www.nakano-sound.com/free/fn.html （先頭 4.00秒。ユーザー提供の完成ファイルをそのまま＝sha256 は assets/audio/se/result_1013/README.md） | 規約 https://www.nakano-sound.com/free/kiyaku.html ＝商用 OK・改変 OK・クレジット任意。音源そのものの二次配布・直接リンク禁止 | 4.000秒 | -9.1 LUFS（OGG）／-9.5（M4A） | 0.5 |
+| 負け・降参（BATTLE_LOSE） | lose_gameover2_5s.ogg／.m4a | 「【効果音】ゲームオーバー＃２」/ ポケットサウンド https://pocket-se.info/archives/754/ （公式ページの「ダウンロード」から取得した gameover2.mp3・8.80秒・sha256 7028d3577d00d4e429e22e99a5a8e6504887d12895a054582d8c769271f9d761 の先頭 5.00秒。末尾 60ms のフェードだけ・48kHz） | 規約 https://pocket-se.info/rules/ ・FAQ https://pocket-se.info/faq/ ＝商用・ゲーム OK・加工 OK。**無料利用の条件＝クレジット表記またはリンク：「効果音：ポケットサウンド — https://pocket-se.info/」（この表と README に記載。公開ページにも載せる）**。直リンク・音素材そのものの二次配布・転売は禁止（ゲームに必要な5秒だけを組み込む・元のフル尺は置かない） | 5.000秒 | -11.1 LUFS | 0.63 |
+
+旧 VICTORY（ObsydianX confirm_style_6_004）は登録だけ残し、バトルの勝利では鳴らさない（CHAPTER_CLEAR などのほかの場面は従来どおり）。
+
+**開始画面の BGM（TITLE）**：ユーザー決定「タイトルに BGM を追加」（2026-10-05 PHASE B の無音を上書き）。候補「Top画面BGM」（assets/audio/bgm/candidates_1013/title_candidate.ogg＝BGM_CANDIDATES.TITLE_CANDIDATE）は作者・出典が納品物に無く未確認のため正式採用を**保留**。それまでの暫定＝権利確認済みの既存曲のうち候補にいちばん近い質感（テンポ 73.8 bpm → 80.7・明るさの重心 1733 Hz → 1774・静かな導入）の「Hopeful / Fukagawa」（DOVA-SYNDROME https://dova-s.jp/bgm/detail/19898 ・licensed_20261007/03_prologue_hopeful.ogg＝プロローグ Scene 3 と同じファイル・gain 0.44）。曲の減衰（84.0秒〜）の手前 83.8秒で頭（0.2秒）へ 1.2秒のクロスフェード（ファイルは加工しない）。候補の権利が確認できたら registry の TITLE の1行を替えるだけ。
+
+**観客の声の既定**：短い 0.7秒 → 通常 1.0秒（CROWD_*_LONG）。iPhone の試遊「短すぎる」の判断。元の音源（Pixabay の3音源）は手元に無く、1.3〜1.8秒の再カットはできない（線形の伸長は不自然になるため行わない）＝今ある最長の 1.0秒を既定に。利用者が選んだ設定（localStorage mmcrowd）はそのまま。音源・gain は変えていない。
+
 ## 2026-10-13 開発27（17）：立体サイコロの SE＝着地の足音だけ（assets/audio/se/dice_1013/）
 
 iPhone の試遊：投げ・回転・結果で重なる魔法的な「ヒュイン」だけを外す（好評の着地音は残す）。新しい音源は足していない。

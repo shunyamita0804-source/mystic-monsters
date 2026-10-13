@@ -34,6 +34,8 @@
     // 2026-10-12 開発23 B：立体サイコロ（Chapter 1 の世界のボード）の1本の SE（投げる → 回る → トンッ、ト、トン）
     // 2026-10-13 開発24：観客の声（公式大会の会場だけ。js/battle/crowd.js）＝命中の歓声・ルーレットの MISS の落胆・攻撃をかわされたブーイング。短い版（既定）と1秒の版
     'CROWD_HIT', 'CROWD_HIT_LONG', 'CROWD_MISS', 'CROWD_MISS_LONG', 'CROWD_EVADE', 'CROWD_EVADE_LONG',
+    // 2026-10-13 開発28：バトルの決着の短い曲（勝ち＝WIN の帯・負け＝LOSE の帯で1回だけ。js/audio/audio-registry.js の BATTLE_WIN／BATTLE_LOSE）
+    'BATTLE_WIN', 'BATTLE_LOSE', 'SKILL_ACTIVATE',
     'DICE_CUBE']);
   /** フェードの長さ（ms）。通常の切り替えと、遭遇などの急な切り替え */
   const FADE = fz({ normal: 700, quick: 220, none: 0 });

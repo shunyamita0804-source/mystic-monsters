@@ -64,7 +64,7 @@
       '#bt .mma-bg.ofc{transform-origin:50% 100%;transform:scale(1.12)}',
       '#bt .mma-bg.fld{object-position:center 58%}',
       '#bt .bgs.mma-on::after{background:linear-gradient(rgba(6,10,26,.15),transparent 18%,transparent 52%,rgba(6,10,26,.55) 74%,rgba(4,7,18,.9))}',
-      '#bt .mon.mma-on>img:not(.mma-idle):not(.mma-rx){opacity:0}',
+      '#bt .mon.mma-on>img:not(.mma-idle):not(.mma-rx):not(.mma-win){opacity:0}',   // 2026-10-13 開発28 B：技のあとに fight() が静止の絵へ戻す瞬間（mma-on）も正式の勝利の絵（mma-win）は消さない＝WIN のあと主役が約1秒消えていた
       '#bt .mon .mma-idle{position:absolute;left:50%;bottom:0;height:118%;width:auto;max-width:none;transform:translateX(-50%);pointer-events:none;filter:drop-shadow(0 8px 6px rgba(0,0,0,.45))}',
       '#bt .mon .mma-idle.fl{transform:translateX(-50%) scaleX(-1)}',
       '#bt .mon:not(.mma-on) .mma-idle{display:none}',
@@ -363,12 +363,29 @@
     mo.observe(bt, { childList: true });
     if (msg) mo.observe(msg, { childList: true, characterData: true, subtree: true });
   }
+  // 2026-10-13 開発28 B（監査）：WIN のあと fight() が決着のポーズを描き直す（#m0 .mon の子を入れ替える）と、足した勝利の絵も一緒に消え、次の帯の描き直しまで約0.6〜1.2秒 主役が空白だった
+  //  → 勝利の絵はバトルごとに1枚だけ作って持ち、消されたら同じ絵（読み込み済み）をすぐ戻す（登場の動きはくり返さない）。fight()・判定・結果は変えない
+  const WIN_IMG = new WeakMap();   // #bt → { im, loaded, failed, mo }
   function won(bt) {
-    const pl = G('BPL'), sp = pl && pl[0] ? pl[0].sp : null, mon = $('#m0 .mon', bt);
-    if (!mon || !VICTORY[sp] || mon.querySelector('.mma-win')) return;
-    const im = new Image(); im.className = 'mma-win'; im.alt = ''; im.decoding = 'async'; im.src = `./assets/tournament/victory/${VICTORY[sp]}_victory.webp`;
-    im.onload = () => mon.classList.add('mma-won'); im.onerror = () => im.remove();
-    mon.appendChild(im);
+    const pl = G('BPL'), sp = pl && pl[0] ? pl[0].sp : null;
+    if (!VICTORY[sp] || !$('#m0 .mon', bt)) return;
+    let w = WIN_IMG.get(bt);
+    if (!w) {
+      const im = new Image(); im.className = 'mma-win'; im.alt = ''; im.decoding = 'async';
+      w = { im, loaded: false, failed: false, mo: null }; WIN_IMG.set(bt, w);
+      im.onload = () => { w.loaded = true; const m = $('#m0 .mon', bt); if (m && im.parentNode === m) m.classList.add('mma-won'); };
+      im.onerror = () => { w.failed = true; im.remove(); };
+      im.src = `./assets/tournament/victory/${VICTORY[sp]}_victory.webp`;
+      const side = $('#m0', bt);
+      if (side) { w.mo = new MutationObserver(() => { if (!bt.isConnected) { w.mo.disconnect(); return; } placeWin(bt, w, true); }); w.mo.observe(side, { childList: true, subtree: true }); }
+    }
+    placeWin(bt, w, false);
+  }
+  function placeWin(bt, w, re) {
+    if (w.failed) return;
+    const mon = $('#m0 .mon', bt); if (!mon || mon.querySelector('.mma-win')) return;
+    if (re) w.im.style.animation = 'none';
+    mon.appendChild(w.im); if (w.loaded) mon.classList.add('mma-won');
   }
   // 2026-10-12 試遊：状態異常（#mmail）・能力の上げ下げ（#st0／#st1）の札は名前の横に小さく1行（左＝名前の右・右＝名前の左）。行の高さは固定＝札が出てもライフのバーは動かない
   function setupChips(bt) {

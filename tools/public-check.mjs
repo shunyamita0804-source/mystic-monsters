@@ -178,8 +178,11 @@ try {
     const ver = await page.evaluate(() => ({ build: typeof MM_BUILD !== 'undefined' ? MM_BUILD : null, crowd: !!window.MMCROWD, voice: !!(window.MMVOICE && MMAUDIO.voice), v24: !!(window.MMARENA && MMARENA.v24 && MMARENA.v24()) }));
     const vj = await fetch(URL + 'version.json?cb=' + Date.now()).then((r) => r.json()).catch(() => ({}));
     rec('開発24：最新の実装が読み込まれている（MM_BUILD＝version.json・MMCROWD・MMVOICE・新しいバトル画面が既定）', ver.build && ver.build === vj.build && ver.crowd && ver.voice && ver.v24, JSON.stringify({ ...ver, json: vj.build }));
-    // 施設の声：上の流れ（市場・牧場・ベースキャンプ）で実際に再生を始めた声。アイテム屋（ベルナ）は今ここで入る
-    await page.evaluate(() => shopScr()); await sleep(1200); await drain(); await sleep(300);
+    // 施設の声：2026-10-13 開発25 F＝初回の説明（MMNPCE の FIRST・カレンの初回）が出る訪問は入口の声を出さない → 説明のあとの再訪で1回。
+    //  上の流れ（市場の購入・牧場・ベースキャンプ）は初回＝声なし。牧場・ベースキャンプは「ほかの画面サイズ」の再訪で鳴っている。市場・アイテム屋はここで初回の説明を送ってから、もう一度入る（再訪）
+    await page.evaluate(() => shopScr()); await sleep(1200); await drain(); await sleep(300);   // アイテム屋の初回（フィナ ↔ ベルナ）
+    await page.evaluate(() => lobby()); await sleep(500); await page.evaluate(() => market()); await sleep(1400); await drain(); await sleep(300);   // 市場の再訪（カレンの来店の一言＋声）
+    await page.evaluate(() => lobby()); await sleep(500); await page.evaluate(() => hall('t')); await sleep(900); await drain(); await page.evaluate(() => shopScr()); await sleep(1400); await drain(); await sleep(300);   // アイテム屋の再訪（ベルナ「いらっしゃい」＋声）
     const vo = await page.evaluate(() => ({ play: MMAUDIO.playLog().filter((x) => x.kind === 'voice').map((x) => [x.name, x.ctx, x.src.split('/').pop()]), settings: MMAUDIO.voiceSettings(), ctx: MMAUDIO.status().context }));
     const names = vo.play.map((x) => x[0]);
     rec('開発24：施設の声が鳴り始めた（市場＝カレン・牧場＝ニック・ベースキャンプ＝ダン・アイテム屋＝ベルナ／既定 ON）', ['karen_welcome', 'nick_hello', 'dan_hello', 'berna_welcome'].every((n) => names.includes(n)) && vo.play.every((x) => x[1] === 'running') && vo.settings.on, JSON.stringify(vo));

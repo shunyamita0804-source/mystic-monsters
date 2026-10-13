@@ -98,7 +98,7 @@ test('VC-03：BGM の候補は MMAUDIO に登録しない・今の正式の BGM 
   for (const [k, h] of Object.entries(H)) assert.equal(sha(onDisk(C[k].src)), h, k);
   for (const k of Object.keys(C)) assert.ok(!(k in got.bgm), `${k} は BGM の場面に登録しない`);
   const bgmSrc = JSON.stringify(got.bgm); assert.doesNotMatch(bgmSrc, /candidates_1013/, 'どの場面も候補の曲を指さない');
-  assert.deepEqual(got.bgm.TITLE, { silent: true }, 'TITLE は無音のまま');
+  assert.ok(got.bgm.TITLE.src && !/candidates_1013/.test(got.bgm.TITLE.src), '2026-10-13 開発28：TITLE に BGM（候補の title_candidate は権利の確認待ち＝直接は使わない）');
   assert.match(got.bgm.ARENA.src, /11_arena_swords_at_midnight_loop\.ogg$/);
   assert.match(got.bgm.TOURNAMENT_BATTLE_LOW.src, /licensed_20261012\/official_rank_battle\.ogg$/);
   for (const k of ['WILD_BATTLE', 'RARE_WILD_BATTLE', 'RIVAL_BATTLE', 'SPECIAL_BATTLE', 'CEDRIC']) assert.doesNotMatch(JSON.stringify(got.bgm[k]), /candidates|legend/i, k);

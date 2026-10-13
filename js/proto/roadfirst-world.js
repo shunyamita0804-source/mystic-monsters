@@ -176,13 +176,19 @@
     if (!o.art) paint(true);   // 絵を貼るときは読み込みが終わってから1回だけ描く（失敗したら仮の色で描く）
     if (veil) plane.appendChild(veil);
     // マス（全地点・立てて置く）とモンスター
+    // 2026-10-13 開発28（全景 → START へ寄るカメラのカクつき）：マス・景物・モンスターの大きさは、毎フレーム width を書き換えるのではなく
+    //  決まった幅（base）に置いて transform の scale で見せる（width の変更＝レイアウト・再描画・ラスタが要素の数（約600）ぶん毎フレーム起きていた＝66〜91ms の Commit）。
+    //  前後の順（zIndex）も画面の y ではなく世界の y で1回だけ決める（画面の y は世界の y に対して単調＝並びは同じ。毎フレームの zIndex の書き換えをなくす）
+    const TB = o.tilePx[1], zOf = (y, dz) => Math.round(y * 4) + (dz || 0);
     const tiles = {};
     for (const id of Object.keys(D.nodes)) {
       const d = doc.createElement('div'); d.className = 'rfw-tile'; d.dataset.node = id; d.innerHTML = '<img alt="" draggable="false"><span></span>';
+      d.style.width = TB + 'px'; d.style.zIndex = String(zOf(D.nodes[id][1]));
       bb.appendChild(d); tiles[id] = { el: d, img: d.firstChild, lab: d.lastChild, src: '', mk: '', used: false };
     }
     const rootEl = host.closest ? host.closest('#rfp,.wbv') || wrap : wrap;   // 2026-10-11 本編の Chapter 1（js/chapter/world-board.js の .wbv）でも同じ描画
     const mon = doc.createElement('div'); mon.className = 'rfw-mon'; mon.innerHTML = `<img alt="" draggable="false" src="${o.monSrc || './assets/monsters/2p5d/solamo.webp'}">`; bb.appendChild(mon);
+    const MB = Math.round(TB * Math.max(1, o.monRatio || 1)); mon.style.width = MB + 'px';   // モンスターの決まった幅（マスの幅 × 倍率。見せる大きさは scale）
     // 景物（木・岩）と GOAL の大会会場：立てて置く（第1便の絵があるときだけ）
     const props = [];
     if (o.art) {
@@ -232,6 +238,13 @@
       cam.s = fitZoom(cam, pts.concat([[mx, my]]), rect, o.sMin, o.sMax);
       return cam;
     }
+    /** 景物の決まった幅（px）：いちばん寄ったときの大きさ（世界の幅 × 最大の倍率 × 手前の遠近）まで。絵の実際の幅より大きくしない（それ以上はぼやけるだけ） */
+    function propBase(p) {
+      const nat = p.el.naturalWidth || 0, want = Math.min(p.max || 1e9, Math.max(p.min || 0, p.w * o.sMax * 1.3));
+      p.base = Math.max(8, Math.round(nat ? Math.min(nat, want) : Math.min(1024, want))); p.el.style.width = p.base + 'px';
+      if (!nat) p.el.addEventListener('load', () => { p.base = 0; S.dirty = true; }, { once: true });   // 絵が読めたら実際の幅で決め直す（1回）
+    }
+    { const gn = D.nodes.GOAL; S.goalZ = gn ? zOf(gn[1]) : null; }
     function apply() {
       const c = S.cam;
       // カメラもモンスターも動いていなければ描き直さない（止まっている間は何もしない）
@@ -249,8 +262,7 @@
         const vis = q.x > -w && q.x < Wd + w && q.y > -w && q.y < Hd + w;
         if (!vis) { if (!t.hid) { t.el.style.display = 'none'; t.hid = true; } continue; }
         if (t.hid) { t.el.style.display = ''; t.hid = false; }
-        t.el.style.transform = `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * 0.62).toFixed(1)}px)`; t.el.style.width = w.toFixed(1) + 'px';
-        t.el.style.zIndex = String(Math.round(q.y)); if (id === 'GOAL') S.goalZ = Math.round(q.y);
+        t.el.style.transform = `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * 0.62).toFixed(1)}px) scale(${(w / TB).toFixed(4)})`;   // 幅は決まった base（TB）＝scale だけで大きさを変える（レイアウトなし）
         if (o.xray) xr.push([q.x - w / 2, q.y - w * 0.62, q.x + w / 2, q.y + w * 0.14, q.y, w * w * 0.76]);
       }
       for (const p of props) {
@@ -258,8 +270,9 @@
         const vis = q.x > -w && q.x < Wd + w && q.y > -10 && q.y < Hd + w * 1.2 && w > 1.5;
         if (!vis) { if (!p.hid) { p.el.style.display = 'none'; p.hid = true; } continue; }
         if (p.hid) { p.el.style.display = ''; p.hid = false; }
-        p.el.style.transform = `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * (p.ah || 0.92)).toFixed(1)}px)`; p.el.style.width = w.toFixed(1) + 'px';
-        p.el.style.zIndex = String(p.solid && S.goalZ != null ? Math.min(Math.round(q.y) + (p.z || 0), S.goalZ - 1) : Math.round(q.y) + (p.z || 0));   // 2026-10-13 開発27（26）：半透明にしない大会会場は GOAL のマスより奥（マスを隠さない）
+        if (!p.base) propBase(p);
+        p.el.style.transform = `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * (p.ah || 0.92)).toFixed(1)}px) scale(${(w / p.base).toFixed(4)})`;
+        if (p.zi == null) { p.zi = p.solid && S.goalZ != null ? Math.min(zOf(p.y, p.z), S.goalZ - 1) : zOf(p.y, p.z); p.el.style.zIndex = String(p.zi); }   // 2026-10-13 開発27（26）：半透明にしない大会会場は GOAL のマスより奥（マスを隠さない）。順は世界の y で1回だけ
         if (o.xray && !p.mark && !p.solid) {   // 手前の景物がマス・モンスターを隠す＝その景物だけ半透明（重なった面積がマス・モンスターの 22% 以上）
           const pz = Math.round(q.y) + (p.z || 0), x0 = q.x - w / 2, x1 = q.x + w / 2, y0 = q.y - w * (p.ah || 0.92), y1 = q.y;
           let thru = false;
@@ -271,10 +284,57 @@
         const q = project(c, S.mon[0], S.mon[1]);
         const w = o.monRatio > 0 ? Math.max(c.s < 1 ? 14 : 30, Math.max(c.s < 1 ? 2 : o.tilePx[0], Math.min(o.tilePx[1], o.tileW * c.s * q.k)) * o.monRatio)   // 2026-10-12：その地点のマスの幅 × 倍率（マスと同じ式）
           : Math.max(c.s < 1 ? 14 : 40, Math.min(100, 24 * c.s * q.k));
-        mon.style.transform = `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * (S.monAh || 0.92)).toFixed(1)}px)`; mon.style.width = w.toFixed(1) + 'px'; mon.style.zIndex = String(Math.round(q.y) + 2);
+        mon.style.transform = `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * (S.monAh || 0.92)).toFixed(1)}px) scale(${(w / MB).toFixed(4)})`;
+        const mz = zOf(S.mon[1], 2); if (mz !== S.monZ) { S.monZ = mz; mon.style.zIndex = String(mz); }
       }
     }
     const lerp = (a, b, t) => a + (b - a) * t;
+    const INTRO_SAMPLES = 24;   // 道筋の刻み（緩急は刻みに織り込む＝アニメーション自体は linear）
+    const easeInOut = (u) => (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
+    /** 全景 → 到着地の道筋を全要素ぶん一度に作り、同じ時間軸で動かす（合成スレッド）。動けない環境（animate が無い）では旧来どおり最後の姿へ */
+    function startIntroAnims(it, now) {
+      const to = it.to(), from = it.from, v = S.view || viewRect(), Wd = v.W, Hd = v.H, dur = Math.max(1, it.dur);
+      const cams = []; for (let i = 0; i <= INTRO_SAMPLES; i++) { const e = easeInOut(i / INTRO_SAMPLES), c = { P: o.persp, ax: to.ax, ay: to.ay };
+        for (const k of ['tx', 'ty', 'tilt']) c[k] = lerp(from[k], to[k], e); c.s = Math.exp(lerp(Math.log(from.s), Math.log(to.s), e)); cams.push(c); }
+      const anims = [], can = typeof plane.animate === 'function';
+      const run = (el, kf) => { if (!can) return; try { anims.push(el.animate(kf, { duration: dur, easing: 'linear', fill: 'forwards' })); } catch (e) { /* 動かせない要素は最後の姿へ */ } };
+      wrap.style.perspective = o.persp + 'px'; wrap.style.perspectiveOrigin = `${to.ax}px ${to.ay}px`;
+      run(plane, cams.map((c, i) => ({ transform: `translate(${c.ax}px,${c.ay}px) rotateX(${c.tilt}deg) scale(${c.s}) translate(${-c.tx}px,${-c.ty}px)`, offset: i / INTRO_SAMPLES })));
+      const tileW = (c, q) => Math.max(c.s < 1 ? 2 : o.tilePx[0], Math.min(o.tilePx[1], o.tileW * c.s * q.k));
+      const onScreen = (q, w) => q.x > -w && q.x < Wd + w && q.y > -w && q.y < Hd + w;
+      for (const [id, t] of Object.entries(tiles)) {
+        const n = D.nodes[id]; let any = false;
+        const kf = cams.map((c, i) => { const q = project(c, n[0], n[1]), w = tileW(c, q); if (onScreen(q, w)) any = true; return { transform: `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * 0.62).toFixed(1)}px) scale(${(w / TB).toFixed(4)})`, offset: i / INTRO_SAMPLES }; });
+        if (!any) { if (!t.hid) { t.el.style.display = 'none'; t.hid = true; } continue; }
+        if (t.hid) { t.el.style.display = ''; t.hid = false; }
+        run(t.el, kf);
+      }
+      for (const p of props) {
+        if (!p.base) propBase(p); let any = false;
+        const kf = cams.map((c, i) => { const q = project(c, p.x, p.y), w = Math.min(p.max || 1e9, Math.max(p.min || 0, p.w * c.s * q.k)); if (q.x > -w && q.x < Wd + w && q.y > -10 && q.y < Hd + w * 1.2 && w > 1.5) any = true;
+          return { transform: `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * (p.ah || 0.92)).toFixed(1)}px) scale(${(w / p.base).toFixed(4)})`, offset: i / INTRO_SAMPLES }; });
+        if (!any) { if (!p.hid) { p.el.style.display = 'none'; p.hid = true; } continue; }
+        if (p.hid) { p.el.style.display = ''; p.hid = false; }
+        if (p.zi == null) { p.zi = p.solid && S.goalZ != null ? Math.min(zOf(p.y, p.z), S.goalZ - 1) : zOf(p.y, p.z); p.el.style.zIndex = String(p.zi); }
+        run(p.el, kf);
+      }
+      if (S.mon) {
+        const kf = cams.map((c, i) => { const q = project(c, S.mon[0], S.mon[1]), w = o.monRatio > 0 ? Math.max(c.s < 1 ? 14 : 30, tileW(c, q) * o.monRatio) : Math.max(c.s < 1 ? 14 : 40, Math.min(100, 24 * c.s * q.k));
+          return { transform: `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * (S.monAh || 0.92)).toFixed(1)}px) scale(${(w / MB).toFixed(4)})`, offset: i / INTRO_SAMPLES }; });
+        run(mon, kf);
+      }
+      run(title, [{ opacity: 1, offset: 0 }, { opacity: 0, offset: 0.45 }, { opacity: 0, offset: 1 }]);
+      it.anims = anims; it.end = now + (can ? dur : 0); S.introAnims = anims.length;
+    }
+    /** 寄り終わり：最後の姿を通常の描画で置いてからアニメーションを外す（1フレームも飛ばない） */
+    function finishIntro(it) {
+      const done = it.done; S.intro = null;
+      S.cam = Object.assign({}, it.to()); S.cam.P = o.persp; S.sig = ''; S.dirty = true; title.style.opacity = '0';
+      apply();
+      for (const a of it.anims || []) { try { a.cancel(); } catch (e) {} }
+      wrap.classList.remove('intro'); rootEl.classList.remove('rfw-intro');
+      if (done) done();
+    }
     function tick(now) {
       if (S.dead) return;
       if (!wrap.isConnected) { S.last = 0; S.raf = root.requestAnimationFrame(tick); return; }   // 2026-10-11：本編で別の画面へ移っている間（要素は残して戻ったら付け直す）は何もしない
@@ -282,17 +342,14 @@
       if (S.frames.length < 600) S.frames.push(dt);
       S.view = viewRect();
       if (S.intro) {
-        const it = S.intro, t = Math.min(1, (now - it.t0) / it.dur);
+        // 2026-10-13 開発28（全景 → START へ寄るカメラのカクつき）：寄る動きは Web Animations（合成スレッド）で1回だけ作る。
+        //  旧：毎フレーム JS でカメラを進めて約600要素の transform を書き換えていた＝倍率が2倍ごとに変わるたびに全要素と地面の区画をラスタし直す波（66〜91ms のフレーム）。
+        //  新：止めて見せる（hold）→ 全要素の道筋（keyframe）を一度に作って同じ時間軸で動かす → 終わったら通常の追従へ（計算は同じ project＝同じ道筋・同じ緩急）
+        const it = S.intro;
         if (!painted && o.art && now - it.t0 < 3000) it.hold = now + it.holdMs;   // 区画を描き終えるまで俯瞰を止めておく（最大3秒）
         if (now < it.hold) { S.cam = Object.assign({}, it.from); }
-        else {
-          const u = Math.min(1, (now - it.hold) / it.dur), e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
-          const to = it.to(); for (const k of ['tx', 'ty', 'tilt', 'ax', 'ay']) S.cam[k] = lerp(it.from[k], to[k], e);
-          S.cam.s = Math.exp(lerp(Math.log(it.from.s), Math.log(to.s), e)); S.cam.P = o.persp;
-          title.style.opacity = String(Math.max(0, 1 - u * 2.2));
-          if (u >= 1) { const done = it.done; S.intro = null; title.style.opacity = '0'; wrap.classList.remove('intro'); rootEl.classList.remove('rfw-intro'); if (done) done(); }
-        }
-        void t;
+        else if (!it.anims) startIntroAnims(it, now);
+        if (it.anims) { if (now >= it.end) finishIntro(it); else { S.raf = root.requestAnimationFrame(tick); return; } }   // 動いている間は合成スレッドに任せる（描き直さない）
       } else if (S.goal) {
         const f = 1 - Math.exp(-dt / 170), g = S.goal;
         for (const k of ['tx', 'ty', 'ax', 'ay', 'tilt']) S.cam[k] = lerp(S.cam[k], g[k], f);
@@ -327,12 +384,14 @@
       },
       /** 開始の俯瞰 → START へ寄りながら傾ける。終わったら done */
       intro(done, opt) {
-        const v = viewRect(); S.view = v; const from = overviewCam(v); S.cam = Object.assign({}, from);
+        const v = viewRect(); S.view = v; const from = overviewCam(v);
+        if (S.goal) { const g = S.goal; from.tx += (g.ax - from.ax) / from.s; from.ty += (g.ay - from.ay) / from.s; from.ax = g.ax; from.ay = g.ay; }   // 注視点の画面の位置は最初から到着地のもの（傾き 0 の全景では見え方は同じ）＝寄る間に perspective-origin を変えない
+        S.cam = Object.assign({}, from);
         const now = root.performance.now(), hold = (opt && opt.hold) ?? 1500, dur = (opt && opt.dur) ?? 1600;
         wrap.classList.add('intro'); rootEl.classList.add('rfw-intro'); title.style.opacity = '1';
-        S.intro = { from, to: () => S.goal || from, t0: now, hold: now + hold, holdMs: hold, dur, done };
+        S.intro = { from, to: () => S.goal || from, t0: now, hold: now + hold, holdMs: hold, dur, done, anims: null, end: 0 };
       },
-      skipIntro() { if (S.intro) { const d = S.intro.done; S.intro = null; wrap.classList.remove('intro'); rootEl.classList.remove('rfw-intro'); title.style.opacity = '0'; if (S.goal) S.cam = Object.assign({}, S.goal); if (d) d(); } },
+      skipIntro() { if (S.intro) { const it = S.intro; if (it.anims) finishIntro(it); else { const d = it.done; S.intro = null; wrap.classList.remove('intro'); rootEl.classList.remove('rfw-intro'); title.style.opacity = '0'; if (S.goal) S.cam = Object.assign({}, S.goal); if (d) d(); } } },
       inIntro: () => !!S.intro,
       /** 2026-10-12 開発21（C-3〜6）：描き終わったか＝絵の読み込み・地面と道の全区画・景物とマスの絵のデコードが終わった。Promise は true で解決（壊れたら false） */
       ready() {
@@ -349,11 +408,12 @@
         let p = props.find((x) => x.mark === id);
         if (!p) { const d = doc.createElement('img'); d.className = 'rfw-prop rfw-mark' + (opt.cls ? ' ' + opt.cls : ''); d.alt = ''; d.draggable = false; d.decoding = 'async'; bb.appendChild(d); p = { el: d, x: n[0], y: n[1], mark: id }; props.push(p); }
         p.el.src = src; p.w = opt.w || 46; p.min = opt.min || 0; p.max = opt.max || 0; p.ah = opt.ah || 1.6; p.z = opt.z == null ? 60 : opt.z; p.el.dataset.node = id;
+        p.base = 0; p.zi = null;   // 2026-10-13 開発28：決まった幅と前後の順は次の描画で決め直す（絵・大きさ・z が変わる）
         S.dirty = true; return p.el;
       },
       markerDim(id, dim) { const p = props.find((x) => x.mark === id); if (p) p.el.classList.toggle('dim', !!dim); },
       markerOff(id) { const i = props.findIndex((x) => x.mark === id); if (i >= 0) { props[i].el.remove(); props.splice(i, 1); } },
-      state: () => ({ focus: o.focus ? veilSig.split(',').filter(Boolean) : null, cam: Object.assign({}, S.cam), goal: S.goal && Object.assign({}, S.goal), mon: S.mon && S.mon.slice(), view: S.view, intro: !!S.intro, ahead: S.lastAhead || [],
+      state: () => ({ focus: o.focus ? veilSig.split(',').filter(Boolean) : null, cam: Object.assign({}, S.cam), goal: S.goal && Object.assign({}, S.goal), mon: S.mon && S.mon.slice(), view: S.view, intro: !!S.intro, introAnims: S.introAnims || 0, ahead: S.lastAhead || [],
         tiles: Object.keys(tiles).length, chunks: chunks.length, painted, res: o.res, tilt: o.tilt, props: props.length, art: !!(art.ground || art.road), rims: art.terrain ? art.terrain.rims.filter((r) => r.kind === 'valley').map((r) => r.pts.length) : null,
         rimKinds: art.terrain ? art.terrain.rims.reduce((a, r) => { a[r.kind] = (a[r.kind] || 0) + 1; return a; }, {}) : null }),
       project: (x, y) => project(S.cam, x, y),
@@ -605,7 +665,7 @@
 :is(#rfp,.wbv) .rfw-plane{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
 :is(#rfp,.wbv) .rfw-chunk{position:absolute;display:block}
 :is(#rfp,.wbv) .rfw-bb{position:absolute;inset:0;pointer-events:none}
-:is(#rfp,.wbv) .rfw-tile{position:absolute;left:0;top:0;will-change:transform}
+:is(#rfp,.wbv) .rfw-tile{position:absolute;left:0;top:0;will-change:transform;transform-origin:0 0}
 :is(#rfp,.wbv) .rfw-tile img{display:block;width:100%;height:auto}
 :is(#rfp,.wbv) .rfw-tile span{position:absolute;left:0;right:0;top:30%;text-align:center;font:800 11px/1 "Noto Sans JP",sans-serif;color:#13233a;text-shadow:0 0 3px #fff,0 0 3px #fff}
 :is(#rfp,.wbv) .rfw-tile span:empty{display:none}
@@ -617,12 +677,12 @@
 :is(#rfp,.wbv) .rfw.intro .rfw-tile.far{opacity:1}
 :is(#rfp,.wbv) .rfw.intro .rfw-veil{opacity:0}
 :is(#rfp,.wbv) .rfw-apron{position:absolute;pointer-events:none}
-:is(#rfp,.wbv) .rfw-prop{position:absolute;left:0;top:0;will-change:transform;pointer-events:none;user-select:none;-webkit-user-drag:none}
+:is(#rfp,.wbv) .rfw-prop{position:absolute;left:0;top:0;will-change:transform;transform-origin:0 0;pointer-events:none;user-select:none;-webkit-user-drag:none}
 :is(#rfp,.wbv) .rfw-prop{transition:opacity .25s}:is(#rfp,.wbv) .rfw-prop.thru{opacity:.32}
 :is(#rfp,.wbv) .rfw-mark{filter:drop-shadow(0 0 6px rgba(190,110,255,.85));transition:opacity .5s,filter .5s}
 :is(#rfp,.wbv) .rfw-mark.dim{opacity:.32;filter:none}
 :is(#rfp,.wbv) .rfw.art{background:#7aa84c}
-:is(#rfp,.wbv) .rfw-mon{position:absolute;left:0;top:0;will-change:transform}
+:is(#rfp,.wbv) .rfw-mon{position:absolute;left:0;top:0;will-change:transform;transform-origin:0 0}
 :is(#rfp,.wbv) .rfw-mon img{display:block;width:100%;height:auto;filter:drop-shadow(0 3px 2px rgba(0,0,0,.45))}
 :is(#rfp,.wbv) .rfw-title{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 18px);text-align:center;font-family:"Shippori Mincho",serif;font-weight:800;font-size:26px;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.6);opacity:0;pointer-events:none;z-index:3}
 :is(#rfp,.wbv) .rfw-title small{display:block;font-size:12px;letter-spacing:.25em;font-family:"Noto Sans JP",sans-serif}
