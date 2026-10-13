@@ -123,18 +123,18 @@ async function fightToEnd(pg, maxMs = 200000) {
   throw new Error('バトルが終わらない');
 }
 
-test('VB-4：リュウ＝道中の遭遇で「よっ！」・ライバル戦に勝てば「やるじゃん」・負け（降参）で「へへっ」・野生では鳴らない', { skip: SKIP, timeout: 360000 }, async () => {
+test('VB-4：リュウ＝（2026-10-13 開発27：遭遇の「よっ！」なし・勝ちの「やるじゃん」はボードの会話）・負け（降参）で「へへっ」・野生では鳴らない', { skip: SKIP, timeout: 360000 }, async () => {
   // 勝ち
   const p = await openPage({ size: H.SIZES.base }); const pg = p.page;
   let n = await rivalBattle(pg, { li: 999, po: 999, in: 999, hi: 999, ev: 500, de: 999 });
-  assert.deepEqual(await voices(pg, n), ['ryu_hello'], '遭遇の演出でリュウが現れて「よっ！」（1回）');
+  assert.deepEqual(await voices(pg, n), [], '2026-10-13 開発27（20）：遭遇の演出の「よっ！」は鳴らさない');
   await shot(pg, 'vb4_rival_encounter');
   n = await vcount(pg);
   await pg.evaluate(() => bBattleGo()); await pg.waitForSelector('#bt #m0 .mon', { timeout: 20000 });
   await fightToEnd(pg); await pg.waitForTimeout(1300);
   const ban = await pg.evaluate(() => (document.getElementById('ban') || {}).textContent || '');
   assert.match(ban, /^WIN/, 'この能力ならリュウに勝つ');
-  assert.deepEqual(await voices(pg, n), ['ryu_praise'], '勝ち＝「やるじゃん」だけ（「へへっ」は鳴らない）');
+  assert.deepEqual(await voices(pg, n), [], '2026-10-13 開発27（24）：勝ちの「やるじゃん」はバトルの裏では鳴らさない（ボードへ戻ってからのリュウの会話＝tests/qa-e2e-dev27-1013 の D27-21）・「へへっ」も鳴らない');
   await shot(pg, 'vb4_rival_win');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   // 負け（降参）

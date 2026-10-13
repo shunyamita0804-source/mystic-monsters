@@ -35,12 +35,12 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     const a = await pg.evaluate(() => { const r = document.querySelector('.wbx-r'); return { bg: r.querySelector('.wbx-rbg').getAttribute('src'), ryu: r.querySelector('.wbx-ryu').getAttribute('src'), part: r.querySelector('.wbx-partner').getAttribute('src'), clash: r.querySelector('.wbx-clash').getAttribute('src'), tx: r.querySelector('.wbx-card').textContent }; });
     assert.match(a.bg, /fx_1011\/ev01_rival_title\.webp/); assert.match(a.ryu, /npc\/ryu\/ryu_official_fullbody\.webp/); assert.match(a.part, /2p5d\/regnas\.webp/); assert.match(a.clash, /ev06_rival_clash/);
     assert.match(a.tx, /リュウが立ちはだかった/);
-    await pg.waitForSelector('.wbx-r.p3'); await idle(pg);
+    await pg.waitForSelector('.wbx-r.p3'); await pg.waitForSelector('#bt', { timeout: 20000 });   // 2026-10-13 開発27（21）：演出のあとそのままバトル
     const cls = await pg.evaluate(() => __fx.join('|'));
     assert.equal((cls.match(/p3/g) || []).length >= 1 && !/p3[^|]*\|.*wbx-r(?![^|]*p3)/.test(cls), true, `幕 → リュウ → X の順（${cls}）`);
     assert.equal(await pg.evaluate(() => document.querySelectorAll('.wbx-r').length), 0, '終わったら消える');
-    const g = await pg.evaluate(() => ({ go: !!document.querySelector('.chbat [onclick="bBattleGo()"]'), skip: !!document.querySelector('.chbat [onclick="bBattleSkip()"]') }));
-    assert.deepEqual(g, { go: true, skip: false }, 'ライバルは強制');
+    // 2026-10-13 開発27（21）：ライバルは演出のあと案内のシート（バトルする）を出さずにそのままバトル（強制）
+    assert.equal(await pg.evaluate(() => !!document.querySelector('.chbat')), false, 'ライバルは強制・案内のシートなし');
     assert.equal(await pg.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   });
 }
