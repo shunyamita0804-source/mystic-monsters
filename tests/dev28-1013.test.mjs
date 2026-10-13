@@ -3,7 +3,7 @@
 //  D28-01 決着の曲＝registry の BATTLE_WIN／BATTLE_LOSE（OGG／M4A の対・gain）・ファイルの長さ（OGG のページと M4A の mvhd から 4.00秒／5.00秒）・sha256 は README のとおり・原本（フル尺・MP3）は置かない
 //  D28-02 鳴らし方＝fight() の勝利の sfx(3) → BATTLE_WIN（旧 VICTORY は鳴らさない）・WIN!／LOSE の帯で resultJingle（戦闘の BGM を止める・LOSE は BATTLE_LOSE・1回だけ）・決着の曲は実戦の前に先読み・SE の名前の一覧
 //  D28-03 クレジット＝ポケットサウンドの表記（必須）・red bears の規約・AUDIO_CREDITS.md と README
-//  D28-04 開始画面の BGM＝TITLE は無音ではない（暫定 Hopeful＝権利確認済み）・候補「Top画面BGM」は保留（registry に入れない）・開始ボタンでは鳴らさない（titlePress）・startGame で止める・「♪ タップで音楽」の印は title() の画面の作りを変えない
+//  D28-04 開始画面の BGM＝TITLE は正式「Top画面BGM」の 7秒カット版（title_1013・OGG／M4A の対・長さ＝全尺の候補 −7.000秒・sha256・gain・ループ区間）・暫定の Hopeful は外した・全尺の候補は場面に使わない・開始ボタンでは鳴らさない（titlePress）・startGame で止める・「♪ タップで音楽」の印は title() の画面の作りを変えない
 //  D28-05 観客の声の既定＝通常（1.0秒）。短い（0.7秒）は選べる
 //  D28-06 立体サイコロ＝12本の辺の面取り・8つの角の飾り（8つの八分儀に1つずつ）・正式の面だけ（旧の無地には付けない）・止まったあと少し斜め・出目の向き（BASE）と乱数は変えない
 //  D28-07 全景 → 盤＝Web Animations（合成スレッド）で動かす・毎フレームの幅／zIndex の書き換えなし・transform-origin 0 0
@@ -107,15 +107,33 @@ test('D28-03：クレジット＝ポケットサウンドの表記（無料利�
   assert.doesNotMatch(readme, /\.mp3\)/);
 });
 
-test('D28-04：開始画面の BGM＝TITLE は無音ではない（暫定＝権利確認済みの Hopeful・ループ区間）・候補「Top画面BGM」は保留（registry に入れない）・開始ボタンでは鳴らさない・startGame で止める・印は title() の画面の作りを変えない', () => {
+test('D28-04：開始画面の BGM＝TITLE は正式「Top画面BGM」の 7秒カット版（2026-10-13 追記）＝OGG／M4A の対・長さは全尺の候補 −7.000秒・sha256 は README のとおり・gain 0.29・末尾の無音の手前でループ・暫定の Hopeful は外した・全尺の候補は場面に使わない・開始ボタンでは鳴らさない・startGame で止める・「♪ タップで音楽」', () => {
   const { bgm, raw } = loadRegistry();
-  const T = bgm.TITLE;
-  assert.ok(T && !T.silent && /03_prologue_hopeful\.ogg$/.test(T.src), `TITLE は暫定の曲（${JSON.stringify(T)}）`);
-  assert.ok(T.loopStart >= 0 && T.loopEnd > 60 && T.loopXfade > 0, 'ループ区間');
-  assert.ok(!Object.values(bgm).some((e) => e && /candidates_1013/.test(String(e.src))), '候補の曲（作者・出典が未確認）はどの場面にも登録しない＝保留');
+  const T = bgm.TITLE, dir = 'assets/audio/bgm/title_1013';
+  assert.ok(T && !T.silent, `TITLE は無音ではない（${JSON.stringify(T)}）`);
+  assert.deepEqual(J(T.src), [`./${dir}/title_official_from7s.ogg`, `./${dir}/title_official_from7s.m4a`], 'OGG と iPhone 用 M4A の対（再生できる1つだけ）');
+  assert.equal(T.gain, 0.29, '-7.0 LUFS → 約 -17.8');
+  assert.deepEqual([T.loopStart, T.loopEnd, T.loopXfade], [0, 220.8, 1.2], 'ループ＝頭（原曲 7.000秒）から 220.8秒（221.8秒からの無音の手前）へ');
+  const ogg = readFileSync(path.join(ROOT, dir, 'title_official_from7s.ogg')), m4a = readFileSync(path.join(ROOT, dir, 'title_official_from7s.m4a'));
+  assert.equal(ogg.subarray(0, 4).toString(), 'OggS'); assert.match(m4a.subarray(4, 8).toString('latin1'), /ftyp/);
+  const dOgg = oggSeconds(ogg), dM4a = m4aSeconds(m4a), dFull = oggSeconds(readFileSync(path.join(ROOT, 'assets/audio/bgm/candidates_1013/title_candidate.ogg')));
+  assert.ok(Math.abs(dOgg - 223.95) < 0.06 && Math.abs(dM4a - 223.95) < 0.06, `長さ 223.95秒（OGG ${dOgg.toFixed(3)}・M4A ${dM4a.toFixed(3)}）`);
+  assert.ok(Math.abs(dFull - dOgg - 7.0) < 0.06, `全尺の候補（${dFull.toFixed(3)}秒）の 7.000秒地点から＝冒頭 7秒は流さない`);
+  assert.ok(T.loopEnd < dOgg - 2 && T.loopEnd > dOgg - 4, 'loopEnd は末尾の無音（約2.1秒）の手前');
+  const readme = rd(`${dir}/README.md`);
+  assert.equal(sha(`${dir}/title_official_from7s.ogg`), '4c2f24c5909da09ea55e9647a0606f2ab094ed8313ddedd87aaf262699e24be4', 'ZIP の OGG をそのまま');
+  assert.equal(sha(`${dir}/title_official_from7s.m4a`), '3d8e5dd52cba278a9a189e66522b1b38c672014dbc1cd78a9ba68a4c55d81a53', 'ZIP の M4A をそのまま');
+  for (const f of ['title_official_from7s.ogg', 'title_official_from7s.m4a']) assert.ok(readme.includes(sha(`${dir}/${f}`)), `${f} の sha256 が README に`);
+  assert.ok(readme.includes('7.000秒') && readme.includes('Top画面BGM(1).mp3'), 'README＝原曲の 7.000秒地点から');
+  assert.ok(!readdirSync(path.join(ROOT, dir)).some((f) => /\.mp3$/i.test(f)), '原本の MP3 は置かない');
+  assert.ok(!/hopeful/.test(String(T.src)) && /03_prologue_hopeful\.ogg$/.test(String(bgm.PROLOGUE_3.src)), '暫定の Hopeful は TITLE から外し、PROLOGUE_3 はそのまま');
+  assert.ok(!Object.values(bgm).some((e) => e && /candidates_1013/.test(String(e.src))), '全尺の候補はどの場面にも登録しない（試聴ページ用に残すだけ）');
   const reg = rd('js/audio/audio-registry.js');
   assert.match(reg, /BGM_CANDIDATES/, '候補は試聴用の表（BGM_CANDIDATES）に残す');
   assert.ok(existsSync(path.join(ROOT, 'assets/audio/bgm/candidates_1013/title_candidate.ogg')));
+  const credits = rd('AUDIO_CREDITS.md');
+  assert.ok(credits.includes('開発28 追記：開始画面の BGM') && credits.includes('7.000秒') && credits.includes('title_official_from7s'), 'AUDIO_CREDITS.md に記録');
+  assert.ok(!/title_1013[^\n]*(CC0|CC BY|DOVA|作者：[^未])/.test(credits), '作者・ライセンス文を作らない（納品物に無い）');
   // 開始ボタン（pointerdown）＝保留中の TITLE を始めない。startGame＝BGM を止める（開始の音 TITLE_START と重ねない）
   assert.match(lineOf(/^function titlePress\(/), /if\(on\)try\{const A=window\.MMAUDIO,st=A\.status\(\);if\(st\.pendingScene==="TITLE"\)A\.stopBgm\(\{fade:"none"\}\)\}catch\(x\)\{\}/);
   assert.match(lineOf(/^function startGame\(/), /unlock\(\);try\{MMAUDIO\.stopBgm\(\{fade:"quick"\}\)\}catch\(e\)\{\}/);

@@ -34,12 +34,12 @@
   //  【2026-10-03 実機試遊（iPhone）の結果】で NG になった音は silent にした（追加の音源パックで選び直す。行の横の「待ち」）
   const BGM_REGISTRY = {
     // ---- 開始画面・街・施設 ----
-    // 2026-10-13 開発28（ユーザー決定「タイトルに BGM を追加」。2026-10-05 PHASE B の「開始画面は無音」を上書き）：
-    //  候補の「Top画面BGM」（BGM_CANDIDATES.TITLE_CANDIDATE）は作者・出典が未確認のため正式採用を保留（04_音源商用利用の指示）。それまでの暫定＝権利確認済みの既存の曲のうち、
-    //  候補にいちばん近い質感（テンポ 73.8 → 80.7 bpm・明るさの重心 1733 → 1774 Hz・静かな導入）の「Hopeful / Fukagawa」（DOVA-SYNDROME・プロローグ Scene 3 と同じファイル）。
-    //  曲の終わり（84.0秒から減衰）の手前 83.8秒で頭（0.2秒）へ 1.2秒のクロスフェードで戻す（ファイルは加工しない）。候補の権利が確認できたら、この1行を title_candidate.ogg（gain 0.29・loopEnd 228.5）に替えるだけ。
-    //  鳴り方：開始画面は最初の操作まで音を出せない（ブラウザの制約）＝開始ボタン以外の場所を1回タップすると鳴り始める（index.html の title の「タップで音楽」の印）。開始ボタンを押したときは鳴らさずに次へ（開始の音 TITLE_START と重ねない）
-    TITLE:      { src: LIC + '03_prologue_hopeful.ogg', gain: 0.44, loopStart: 0.2, loopEnd: 83.8, loopXfade: 1.2 },
+    // 2026-10-13 開発28 追記（ZIP「missmon_title_7sec_addon_claude」＝ユーザー確認済みの確定音源「Top画面BGM(1).mp3」）：
+    //  開始画面の BGM は正式に Top画面BGM。再生区間＝原曲の 7.000秒地点から最後まで（冒頭 7秒は流さない）＝ZIP に同梱の 7秒カット済み OGG（＋iPhone 用 M4A）を加工せずに置いた（assets/audio/bgm/title_1013/README.md）。
+    //  src は [OGG, M4A]＝そのブラウザで再生できる1つだけ（Ogg Vorbis が再生できない iPhone の版は M4A）。gain 0.29（-7.0 LUFS → 約 -17.8）。末尾は約219秒から減衰して 221.8秒から無音＝loopEnd 220.8 の手前 1.2秒で頭（0秒＝原曲の 7.000秒）へクロスフェードで戻す（ファイルは加工しない・7秒の開始位置は不変）。
+    //  それまでの暫定（権利確認済みの Hopeful＝プロローグ Scene 3 と共用）はやめた。候補の全尺（BGM_CANDIDATES.TITLE_CANDIDATE）は試聴ページ用に残すだけ＝場面には使わない。
+    //  鳴り方：開始画面は最初の操作まで音を出せない（ブラウザの制約）＝開始ボタン以外の場所を1回タップすると鳴り始める（index.html の title の「タップで音楽」の印）。開始ボタンを押したときは鳴らさずに次へ（開始の音 TITLE_START だけ・startGame で止める＝二重再生なし）。
+    TITLE:      { src: [BGM_DIR + 'title_1013/title_official_from7s.ogg', BGM_DIR + 'title_1013/title_official_from7s.m4a'], gain: 0.29, loopStart: 0, loopEnd: 220.8, loopXfade: 1.2 },
     PROLOGUE:   { silent: true },   // 2026-10-06 重大修正：プロローグの音がプツプツ鳴る＝プロローグ BGM は一旦削除（鳴らさない・合成音にも落とさない。ファイルも置かない）。プロローグの時刻表・本文・スキップは変えない
                                      //  旧 54.2秒版と同じファイル名なので ?v=v6 で端末のキャッシュ（旧い曲）を使わない
     // 2026-10-07 正式：プロローグは Scene ごとに1曲（各曲の頭から・loop なし＝Scene は約7.8〜9.7秒。2026-10-08 に延長）。index.html の proPlay が Scene の切り替えで PROLOGUE_1〜6 へ（短いクロスフェード）
@@ -189,7 +189,7 @@
   //  採用する場所と鳴らし始めの最終決定はユーザー待ち＝ここは MMAUDIO に登録しない（registerAll は bgm・se・voice しか読まない＝どの場面からも鳴らない）。
   //  試聴は開発用の試聴ページ（audio_candidates_1013・本編からはつながない）。採用が決まったら、その場面の BGM_REGISTRY の1行をこのファイルに書き換える（TITLE の silent・ARENA・公式戦の曲は今は変えていない）
   const BGM_CANDIDATES = {
-    TITLE_CANDIDATE:         { src: BGM_DIR + 'candidates_1013/title_candidate.ogg', gain: 0.29, for: 'TITLE', note: 'Top画面BGM.mp3（230.9秒・-7.1 LUFS）。2026-10-13 開発28：作者・出典が未確認のため保留（TITLE は暫定で Hopeful）。確認が取れたら TITLE の1行をこの src に（loopStart 0.56・loopEnd 228.5・loopXfade 1.2 の目安）' },
+    TITLE_CANDIDATE:         { src: BGM_DIR + 'candidates_1013/title_candidate.ogg', gain: 0.29, for: 'TITLE', note: 'Top画面BGM.mp3（230.9秒・-7.1 LUFS）。2026-10-13 開発28 追記：採用済み＝TITLE は同じ曲の 7秒カット済みの正式ファイル（title_1013/）。この全尺の候補は試聴ページ用に残すだけ（場面には使わない）' },
     ARENA_CANDIDATE:         { src: BGM_DIR + 'candidates_1013/arena_candidate.ogg', gain: 0.39, for: 'ARENA', note: '闘技場BGM.mp3（185.7秒・-9.7 LUFS）。今の ARENA（Swords At Midnight Loop）は変えない・闘技場の画面は未実装' },
     LEGEND_BATTLE_CANDIDATE: { src: BGM_DIR + 'candidates_1013/legend_battle_candidate.ogg', gain: 0.35, for: 'LEGEND_BATTLE', note: 'レジェンド戦BGM.mp3（271.6秒・-8.9 LUFS）。三伝説との対戦は未実装＝公式大会・野生・レア・ライバルの曲には使わない' },
   };

@@ -235,7 +235,7 @@ test('AUDIO-13：registry の BGM：場面の名前が正しく、ファイル�
   assert.doesNotThrow(() => A.registerAll(REG));
   // 同じ曲を多数の場面へ使い回していない（1曲＝1場面。fallback は別）
   const used = {}; for (const [k, v] of Object.entries(got.bgm)) for (const s of srcsOf(v)) { used[s] = used[s] || []; used[s].push(k); }
-  const SHARED = { './assets/audio/bgm/licensed_20261007/03_prologue_hopeful.ogg': ['PROLOGUE_3', 'TITLE'] };   // 2026-10-13 開発28：開始画面の BGM は候補曲の権利が確認できるまでの暫定で Hopeful（プロローグ Scene 3）と共用
+  const SHARED = {};   // 2026-10-13 開発28 追記：開始画面の BGM は正式の Top画面BGM（title_1013）＝Hopeful（プロローグ Scene 3）との共用はやめた＝1曲＝1場面に戻る   // 2026-10-13 開発28：開始画面の BGM は候補曲の権利が確認できるまでの暫定で Hopeful（プロローグ Scene 3）と共用
   for (const [s, ks] of Object.entries(used)) assert.deepEqual(SHARED[s] ? ks.slice().sort() : ks.length, SHARED[s] || 1, `${s} は1場面だけ：${ks}`);
   assert.match(HTML, /<script src="\.\/js\/audio\/audio-manager\.js"><\/script>\n<script src="\.\/js\/audio\/audio-registry\.js"><\/script>/, 'registry は Audio Manager の直後に読む');
   assert.doesNotMatch(rd('js/audio/audio-registry.js'), /\bfetch\s*\(|^\s*import\s|^\s*export\s/m);
@@ -260,8 +260,8 @@ test('AUDIO-15：assets/audio に同じ曲の別形式（ogg／mp3／wav…）�
   for (const f of audio) assert.match(f, /\.(ogg|m4a|mp3)$/, `音源の形式：${f}`);
   const stems = {}; for (const f of audio) { const k = f.replace(/\.[a-z0-9]+$/i, ''); (stems[k] = stems[k] || []).push(f); }
   const { got } = loadRegistry();
-  // 2026-10-13 開発24：同じ音の OGG と M4A は、同じ登録の src の配列（そのブラウザで再生できる1つだけを選ぶ＝二重に鳴らない）のときだけ置いてよい
-  const pairs = new Set([...Object.values(got.se), ...Object.values(got.voice)].map(srcsOf).filter((a) => a.length === 2 && /\.ogg$/.test(a[0]) && /\.m4a$/.test(a[1]) && a[0].replace(/\.ogg$/, '') === a[1].replace(/\.m4a$/, '')).map((a) => onDisk(a[0]).replace(/\.ogg$/, '')));
+  // 2026-10-13 開発24：同じ音の OGG と M4A は、同じ登録の src の配列（そのブラウザで再生できる1つだけを選ぶ＝二重に鳴らない）のときだけ置いてよい（2026-10-13 開発28 追記：BGM の TITLE＝iPhone 用の M4A の対も同じ規則）
+  const pairs = new Set([...Object.values(got.bgm), ...Object.values(got.se), ...Object.values(got.voice)].map(srcsOf).filter((a) => a.length === 2 && /\.ogg$/.test(a[0]) && /\.m4a$/.test(a[1]) && a[0].replace(/\.ogg$/, '') === a[1].replace(/\.m4a$/, '')).map((a) => onDisk(a[0]).replace(/\.ogg$/, '')));
   pairs.add(path.join(ROOT, 'assets/audio/voice/npc_1013/fina_hello'));   // 2026-10-13：旧フィナ「こんにちは」の対（参照先を差し替えて残したもの・下の KEEP）
   for (const [k, v] of Object.entries(stems)) assert.equal(v.length, pairs.has(k) ? 2 : 1, `同じ曲の別形式：${v}`);
   for (const f of files) assert.doesNotMatch(f, /\.(zip|wav|tmp|bak|DS_Store)$/i, f);
