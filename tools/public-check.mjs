@@ -228,7 +228,7 @@ try {
     rec('開発24：公式大会の新しいバトル画面（低いルーレット・数値なし・STOP は画面の中）', ui.v24 && ui.st === 0 && ui.mmrH < 130 && ui.goBottom <= ui.ih, JSON.stringify(ui));
     rec('開発24：技の発動中は HUD・ルーレット・STOP を隠す', bt2.cine.length > 0 && bt2.cine.every((c) => c.on && c.hpr === 'hidden' && c.bui === 'hidden'), JSON.stringify(bt2.cine.slice(0, 4)));
     const pk = new Set(bt2.play.map((x) => x[0]));
-    rec('開発24：観客の声が鳴り始めた（命中＝歓声・ルーレットの MISS＝落胆・かわされた＝ブーイング・短い版・OGG）', ['CROWD_HIT', 'CROWD_MISS', 'CROWD_EVADE'].every((n) => pk.has(n)) && bt2.play.every((x) => x[1] === 'running') && bt2.play.length === bt2.crowd.length, JSON.stringify({ crowd: bt2.crowd.slice(0, 12), play: bt2.play.slice(0, 6), n: bt2.play.length }));
+    rec('開発24：観客の声が鳴り始めた（命中＝歓声・ルーレットの MISS＝落胆・かわされた＝ブーイング・2026-10-13 開発28 の既定＝通常 1.0秒の版・OGG）', ['CROWD_HIT_LONG', 'CROWD_MISS_LONG', 'CROWD_EVADE_LONG'].every((n) => pk.has(n)) && bt2.play.every((x) => x[1] === 'running') && bt2.play.length === bt2.crowd.length, JSON.stringify({ crowd: bt2.crowd.slice(0, 12), play: bt2.play.slice(0, 6), n: bt2.play.length }));
     if (bt2.back) { await page.click('#go').catch(() => {}); await sleep(1500); }
     for (let k = 0; k < 10; k++) { const c = await drain(); if (c === 'choice') await page.click('.mmtalk-choice').catch(() => {}); await sleep(500); }
     // 再起動（ホーム画面のアイコンから開き直す相当）：セーブは残る・つづきから
