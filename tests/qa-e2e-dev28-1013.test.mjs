@@ -172,15 +172,15 @@ test('D28-B3：ガウル「紅翼の猛攻」＝ゴングの直後・最初の�
 const CUT_PEAK = 620;   // 寄りきった頃（in 330ms ＋ 少し）
 
 test('D28-B4：ソラモ「逆境のひと踏ん張り」＝ライフ 20% 以下になった瞬間（実戦）・1バトル1回／レグナス「蒼銀の反撃」＝構えの成立（回避）の瞬間・構え中の再回避では出ない', { skip: SKIP, timeout: 400000 }, async () => {
-  // ソラモ：自分（li 100・回避 1＝相手の攻撃が当たる・丈夫さ 999＝少しずつ減る）。ライフを 21 にしてから相手の攻撃で 20 以下へ
+  // ソラモ：自分（li 999・回避 1＝相手の攻撃が当たる・丈夫さ 1＝1発で 11 以上減る）。ライフを 210（21%）にしてから相手の攻撃で 20% 以下へ（0 にはならない）
   const p = await openPage({ stage: true, worldCh1: true }); const pg = p.page;
-  await battle(pg, 0, { li: 100, po: 1, in: 1, hi: 999, ev: 1, de: 999 }, 'wild', 1);
+  await battle(pg, 0, { li: 999, po: 1, in: 1, hi: 999, ev: 1, de: 1 }, 'wild', 1);
   await pg.waitForFunction(() => !!MMRULES.current(), null, { timeout: 15000 });
   await pg.waitForFunction(() => MMRULES.cutLog().length >= 1, null, { timeout: 15000 });   // 相手のガウルのゴング
   await pg.waitForFunction(() => !document.getElementById('bt').classList.contains('mmsk-cut'), null, { timeout: 8000 });
-  await pg.evaluate(() => { MMRULES.current().currentLife.A = 21; });
-  let got = null;
-  for (let i = 0; i < 80 && !got; i++) { await pressStop(pg); await pg.waitForTimeout(400); got = await pg.evaluate(() => MMRULES.cutLog().find((x) => x.key === 'solamo') || null); if (await pg.evaluate(() => !document.getElementById('bt') || document.getElementById('go').classList.contains('bk'))) break; }
+  await pg.evaluate(() => { MMRULES.current().currentLife.A = 210; });
+  let got = null; const tS = Date.now();
+  while (Date.now() - tS < 90000 && !got) { await pressStop(pg); await pg.waitForTimeout(400); got = await pg.evaluate(() => MMRULES.cutLog().find((x) => x.key === 'solamo') || null); if (await pg.evaluate(() => !document.getElementById('bt') || document.getElementById('go').classList.contains('bk'))) break; }
   assert.ok(got, 'ソラモの演出が出た'); assert.equal(got.side, 0);
   const st = await pg.evaluate(() => ({ armed: MMRULES.stateOf(MMRULES.current()).armed.A, life: MMRULES.current().currentLife.A, max: MMRULES.current().participants.A.maxLife, card: (document.querySelector('.mmskc-card') || {}).innerText || null, cut: document.getElementById('bt').classList.contains('mmsk-cut') }));
   assert.ok(st.life <= st.max * 0.2 && st.life > 0, `20% 以下の成立 ${st.life}/${st.max}`); assert.equal(st.armed, true, '構えた瞬間');
@@ -193,11 +193,14 @@ test('D28-B4：ソラモ「逆境のひと踏ん張り」＝ライフ 20% 以下
   const q = await openPage({ stage: true, worldCh1: true }); const qg = q.page;
   await battle(qg, 0, { li: 999, po: 1, in: 1, hi: 1, ev: 999, de: 999 }, 'rival', -1, [0, 1, 2, 0, 1, 2]);
   await qg.waitForFunction(() => !!MMRULES.current(), null, { timeout: 15000 });
-  let rg = null;
-  for (let i = 0; i < 60 && !rg; i++) { await pressStop(qg); await qg.waitForTimeout(400); rg = await qg.evaluate(() => MMRULES.cutLog().find((x) => x.key === 'regnas') || null); }
+  // こちらの攻撃を必ず外す（resolveAction の中の乱数だけ 0.999＝命中の判定を外れ側へ。ルーレット・相手の行動の乱数は従来どおり）
+  await qg.evaluate(() => { const R = Math.random; window.__rand = R; Math.random = function () { return new Error().stack.includes('resolveAction') ? 0.999 : R.apply(this, arguments); }; });
+  let rg = null; const tR = Date.now();
+  while (Date.now() - tR < 90000 && !rg) { await pressStop(qg); await qg.waitForTimeout(400); rg = await qg.evaluate(() => MMRULES.cutLog().find((x) => x.key === 'regnas') || null); }
   assert.ok(rg, 'レグナスの演出が出た'); assert.deepEqual([rg.side, rg.name], [1, '蒼銀の反撃']);
   const misses0 = await qg.evaluate(() => MMRULES.cutLog().filter((x) => x.key === 'regnas').length);
-  for (let i = 0; i < 14; i++) { await pressStop(qg); await qg.waitForTimeout(400); }
+  const tR2 = Date.now(); while (Date.now() - tR2 < 12000) { await pressStop(qg); await qg.waitForTimeout(400); }   // 構えたまま、さらに外し続ける
+  await qg.evaluate(() => { Math.random = window.__rand; });
   assert.equal(await qg.evaluate(() => MMRULES.cutLog().filter((x) => x.key === 'regnas').length), misses0, '構え中の再回避では出ない（1回）');
   assert.equal(misses0, 1);
   assert.deepEqual(q.errors, []); assert.deepEqual(q.bad, []);
