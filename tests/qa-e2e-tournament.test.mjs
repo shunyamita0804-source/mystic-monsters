@@ -44,8 +44,8 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     assert.equal(await pg.$('.pcback'), null, '開発25 A：「対戦表にもどる」は無い');
     await pg.evaluate(() => p8TourScr()); await pg.waitForSelector('.p9tour.tp2 .p9next .p9go'); await pg.waitForTimeout(400);
     await pg.click('.p9next .p9go'); await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(500);
-    await pg.click('.pcgo'); await pg.waitForTimeout(120); assert.equal(await pg.evaluate(() => S.m.raise.battle), null, '1回目では始まらない（2度押し）');
-    await pg.waitForTimeout(500); await pg.click('.pcgo');
+    assert.equal(await pg.evaluate(() => S.m.raise.battle), null, '押す前は始まっていない');
+    await pg.click('.pcgo');   // 2026-10-13 開発27（29）：1回の押下で始まる
     await pg.waitForSelector('#bt', { timeout: 15000 }); await pg.waitForTimeout(500);
     assert.deepEqual(await pg.evaluate(() => ({ kind: S.m.raise.battle && S.m.raise.battle.kind, intro: !!document.querySelector('#bt .intro'), labels: [...document.querySelectorAll('#bt .intro .inm small')].map((s) => s.textContent) })), { kind: 'league', intro: true, labels: ['YOUR MONSTER', 'CHALLENGER'] }, 'fight() の導入（VS）が自動で始まる');
     await pg.screenshot({ path: path.join(SHOT, `${size[0]}_vs.png`) });

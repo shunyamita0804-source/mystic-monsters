@@ -73,7 +73,7 @@ test('PR-B1：本番の設定で大会を最後まで（到着 → 確認 → �
     if (s.talk) { seen.talks++; if (s.choices) { const ids = await pg.evaluate(() => MMNPC.state().choices.map((c) => c.id)); await H.chooseTalk(pg, ids[0]); } else await pg.click('.mmtalk:not(.mmtalk-out)', { force: true }).catch(() => {}); await pg.waitForTimeout(40); continue; }
     if (s.yn) { seen.confirm++; await pg.waitForTimeout(420); await pg.click('#p9conf .p9conf-yes, #ynm .ynm-y').catch(() => {}); await pg.waitForTimeout(200); continue; }
     if (s.vs) { seen.vs++; await pg.waitForTimeout(400); continue; }
-    if (s.cmp) { seen.compare++; await pg.waitForTimeout(450); await pg.click('.pcgo').catch(() => {}); await pg.waitForTimeout(600); await pg.click('.pcgo').catch(() => {}); await pg.waitForTimeout(400); continue; }
+    if (s.cmp) { seen.compare++; await pg.waitForTimeout(450); await pg.click('.pcgo').catch(() => {}); await pg.waitForTimeout(400); continue; }   // 2026-10-13 開発27（29）：1回の押下
     if (s.tb && s.status === 'league') { phase = 'board'; await pg.waitForTimeout(300); await pg.click('.tb1 .tbgo').catch(() => {}); await pg.waitForTimeout(400); continue; }
     if (s.rcv && !s.status) {
       const ok = await pg.$('button.rcv-row[data-rank="1"]');

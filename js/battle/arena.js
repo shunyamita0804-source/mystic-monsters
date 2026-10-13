@@ -112,6 +112,10 @@
       '#bt .hpn .mmchips .stb,#bt .hpn .mmchips .mmail span{display:inline-flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:center!important;width:auto!important;min-width:0!important;height:16px!important;box-sizing:border-box;flex:none;padding:0 4px 0 3px!important;gap:1px!important;font:800 9px/14px "Noto Sans JP",sans-serif!important;border-width:1px!important;white-space:nowrap;animation:none!important}',
       '#bt .hpn .mmchips .stb i{font-size:9px!important}#bt .hpn .mmchips .stb b,#bt .hpn .mmchips .mmail span b{display:inline-block!important;min-width:0!important;width:auto!important;height:auto!important;margin-left:1px!important;padding:0 2px;line-height:12px!important;font-size:8px!important;border-radius:6px!important}',
       '#bt .hpn .mmail{order:1;margin:0}#bt .hpn #b0,#bt .hpn #b1{order:2;flex:1 0 100%}#bt .hpn .sts{order:3;flex:1 0 100%}',
+      // 2026-10-13 開発27（22）：左右とも上から「名前 → ライフのバー → 残りの数 → 状態異常・能力の上げ下げの札」の4段。札の段は高さ固定（札が出ても・増えても名前とライフは動かない）・はみ出す分は札を小さく／隠す（バーに重ねない）
+      '#bt .hpn .hn1{order:0;flex:1 1 100%;max-width:100%}#bt .hpn.s1 .hn1{text-align:right}#bt .hpn #b0,#bt .hpn #b1{order:2}#bt .hpn .mmchips,#bt .hpn.s1 .mmchips{order:3;flex:0 0 100%;max-width:100%;height:18px;margin-top:1px;justify-content:flex-start}#bt .hpn.s1 .mmchips{justify-content:flex-end}',
+      '#bt .hpn .mmchips .stb,#bt .hpn .mmchips .mmail span{height:15px!important;font-size:8px!important;line-height:13px!important;padding:0 3px 0 2px!important;letter-spacing:-.02em}#bt .hpn .mmchips .sts,#bt .hpn .mmchips .mmail{gap:2px!important}#bt .hpn .mmchips{gap:2px}',
+      '#bt .hpn.s1 .hn1{display:flex;justify-content:flex-end}',
       '#bt .hpn.s1 .hpb{justify-content:flex-end}#bt .hpn.s1 small{text-align:right}',
       '#bt .hpn .eg2{height:14px;margin:2px 0 1px;border:1.5px solid rgba(255,236,190,.9);border-radius:8px;background:rgba(8,14,30,.72);box-shadow:0 1px 4px rgba(0,0,0,.6)}',
       '#bt .hpn .eg2 i{background:url(./assets/ui/b_group/b29_ability_bar_fill_green.png) left center/100% 100% no-repeat!important;box-shadow:none!important}',
@@ -162,6 +166,19 @@
       '#bt.mma-v24.mma-res-lose button.go.bk{border-color:#a9b8d8}',
       '#bt.mma-v24.mma-end button.go.bk:active{transform:translateX(-50%) scale(.96)}',
       '#bt.mma-v24.mma-end button.go.bk .gtx{font:800 17px/1 "Noto Sans JP",sans-serif;letter-spacing:.2em;color:#fff3d0;-webkit-text-fill-color:#fff3d0;text-shadow:0 1px 2px rgba(0,0,0,.6)}',
+      '@media (prefers-reduced-motion:reduce){#bt.mma-v24 .mma-endband{animation:none;opacity:1}}',
+      // 2026-10-13 開発27（23）：勝ち／負けの画面を横帯に統一（全バトル共通・判定は変えない）。勝ち＝金〜暖色の横帯に大きく WIN／負け＝落ち着いた寒色の横帯に LOSE。
+      //  旧描画層：勝ったとき fight() が差し込む決着のポーズ（.sp／.spa の img.spi＝旧 2D）が正式の勝利の絵の後ろに残っていた → 正式の勝利の絵（mma-win）がある間は旧のポーズの層を出さない（1体だけ）
+      '#bt .mon.mma-won>:not(.mma-win){visibility:hidden!important;opacity:0!important}',
+      '#bt.mma-v24 .mma-endband{top:auto;bottom:calc(40% * .6 - 4.6%);height:clamp(92px,15%,130px);transform-origin:50% 50%;animation:mmaendb .42s cubic-bezier(.2,1.1,.4,1) .1s both}',
+      '#bt.mma-v24.mma-res-win .mma-endband{background:linear-gradient(90deg,rgba(120,56,0,0),rgba(176,96,12,.78) 14%,rgba(232,156,40,.9) 38%,rgba(250,196,84,.94) 50%,rgba(232,156,40,.9) 62%,rgba(176,96,12,.78) 86%,rgba(120,56,0,0))}',
+      '#bt.mma-v24.mma-res-lose .mma-endband{background:linear-gradient(90deg,rgba(10,22,58,0),rgba(22,44,96,.82) 14%,rgba(42,74,140,.9) 40%,rgba(58,92,162,.92) 50%,rgba(42,74,140,.9) 60%,rgba(22,44,96,.82) 86%,rgba(10,22,58,0))}',
+      '#bt.mma-v24 .mma-endln{top:0;left:6%;right:6%}#bt.mma-v24 .mma-endband::after{content:"";position:absolute;left:6%;right:6%;bottom:0;height:1.5px;background:inherit;background:linear-gradient(90deg,rgba(232,198,110,0),#e8c66e 30%,#f6e3a6 50%,#e8c66e 70%,rgba(232,198,110,0))}',
+      '#bt.mma-v24.mma-res-lose .mma-endband::after{background:linear-gradient(90deg,rgba(150,170,210,0),#8fa3cc 30%,#c4d0ea 50%,#8fa3cc 70%,rgba(150,170,210,0))}',
+      '#bt.mma-v24 .mma-endsub{top:calc(100% + 8px)}',
+      '#bt.mma-v24.mma-end>#ban{font-size:clamp(3.6rem,17vw,5rem)}',
+      '#bt.mma-v24.mma-res-win>#ban{color:#fffaf0;text-shadow:0 2px 0 #7a3a00,0 0 18px rgba(255,236,170,.9),3px 4px 0 #4a2200}',
+      '@keyframes mmaendb{from{opacity:0;transform:scaleY(.2)}to{opacity:1;transform:none}}',
       '@media (prefers-reduced-motion:reduce){#bt.mma-v24 .mma-endband{animation:none;opacity:1}}',
       '#bt.mma-v24[data-mmprac="1"] .vs{translate:0 min(9.5dvh,82px)}',
       // ② ルーレット：アーチ・レールの位置を低い板に合わせる

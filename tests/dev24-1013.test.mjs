@@ -170,7 +170,8 @@ test('DV-05：出しどころ＝施設は訪問1回に1回・CUES／LINE_VOICE �
   for (const [id, t] of lines) if (START[id]) assert.match(t, START[id], `${id} の行の始まり：${t}`);
   assert.ok(lines.length >= 10, `声の付いた行 ${lines.length}`);
   // 2026-10-13 開発25 追加便：フィナの8種＋セドリック（開幕の1行目）・セルジュ（受付の1行目）＝台詞の頭と声が同じ行だけ
-  assert.ok(Object.values(V.LINE_VOICE).every(Boolean) && Object.keys(V.LINE_VOICE).length === 10);
+  assert.ok(Object.values(V.LINE_VOICE).every(Boolean) && Object.keys(V.LINE_VOICE).length === 11, '2026-10-13 開発27（24）：リュウ「やるじゃん」（ライバル戦の勝利のあとのボードの会話の行）を足して11');
+  assert.match(HTML, /const RYU_WIN_TALK=\{1:\[\{npc:"ryu",expression:"soft_smile",text:"やるじゃん！/, 'ryu_praise の行は「やるじゃん！」で始まる');
   const NPCL = [...SRC.matchAll(/\{npc:"(cedric|serge)",(?:expression:"\w+",)?voice:"(\w+)",text:["`]([^"`]*)/g)].map((m) => [m[2], m[3]]);
   assert.deepEqual(NPCL.map((x) => x[0]).sort(), ['cedric_opening', 'serge_welcome'], '声の付いた NPC の行は2つだけ');
   for (const [id, t] of NPCL) assert.match(t, id === 'cedric_opening' ? /^さあ、いよいよ/ : /^ようこそ/, `${id} の行の始まり：${t}`);

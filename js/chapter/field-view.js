@@ -1143,7 +1143,7 @@
       ${rival ? '' : `<div class="ce-band"><span>${label}</span></div>`}${BT.badge ? `<em class="ce-badge">${esc(BT.badge)}</em>` : ''}<b class="ce-tx">${esc(text)}</b></div>`);
     const el = ui.querySelector('.chf-enc2:last-child');   // 旧い名前 chf-enc も持つ（待ち合わせ・監査のテストが使う。見た目は .chf-enc2 だけ）
     feel(cue, { battleType: bt });   // 絵と文が出た瞬間
-    if (rival && rvFig) { try { if (root.MMVOICE) root.MMVOICE.cue('ryu.appear', { delay: 0.45 }); } catch (e) { /* 声が無くても進行は変わらない */ } }   // 2026-10-13 開発25 追加便：リュウ「よっ！」（登場の音のあと・遭遇1回に1回）
+    // 2026-10-13 開発27（20）：登場の「よっ！」（ryu.appear）は不採用＝鳴らさない（声のファイル・登録は残す）
     await wait(rival ? 1350 : 1500);   // 読める間（文＋絵）
     if (el) { el.classList.add('out'); await wait(220); el.remove(); }
   }

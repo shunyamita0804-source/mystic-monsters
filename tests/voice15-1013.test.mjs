@@ -112,7 +112,7 @@ test('VC-03：BGM の候補は MMAUDIO に登録しない・今の正式の BGM 
 test('VC-04：出しどころ＝既存の場面に1回・三伝説は on:false', () => {
   const w = {}; new Function('window', rd('js/npc/voice-cues.js'))(w); const V = w.MMVOICE;
   const C = Object.fromEntries(Object.entries(V.CUES).map(([k, v]) => [k, [v.voice, v.on]]));
-  for (const [k, v] of Object.entries({ 'facility.bureau': ['serge_welcome', true], 'ryu.appear': ['ryu_hello', true], 'ryu.won': ['ryu_chuckle', true], 'ryu.lost': ['ryu_praise', true], 'genshin.ack': ['genshin_ack', true], 'vargas.ack': ['vargas_ack', true],
+  for (const [k, v] of Object.entries({ 'facility.bureau': ['serge_welcome', true], 'ryu.appear': ['ryu_hello', false], 'ryu.won': ['ryu_chuckle', true], 'ryu.lost': ['ryu_praise', true], 'genshin.ack': ['genshin_ack', true], 'vargas.ack': ['vargas_ack', true],
     'legend.leona.greet': ['leona_greet', false], 'legend.leona.battle': ['leona_prebattle', false], 'legend.ragnas.greet': ['ragnas_greet', false], 'legend.ragnas.battle': ['ragnas_prebattle', false] })) assert.deepEqual(C[k], v, k);
   assert.equal(V.CUES['vargas.ack'].cooldown, 30000, 'ヴァルガスは押すたびに鳴らない');
   assert.ok(V.LINE_VOICE.cedric_opening && V.LINE_VOICE.serge_welcome);
@@ -125,12 +125,13 @@ test('VC-04：出しどころ＝既存の場面に1回・三伝説は on:false',
   // ゲンシン：特訓のゴールの1回（trScr の done）
   assert.match(HTML, /bgm\("train"\);p9Immersive\(true\);if\(done\)try\{window\.MMVOICE&&MMVOICE\.cue\("genshin\.ack",\{delay:\.35\}\)\}catch\(e\)\{\}/);
   // リュウ：ライバル戦の決着（fight() の WIN!／LOSE＝ban）だけ。勝ち→やるじゃん・負け→へへっ。大会・野生・レアでは鳴らない（BATTLE_DRESS のラベル）
-  assert.match(HTML, /if\(\(t==="WIN!"\|\|t==="LOSE"\)&&D&&D\.pl&&D\.pl===BPL&&D\.label===PRACTICE_LABEL\.rival\)try\{window\.MMVOICE&&MMVOICE\.cue\(t==="WIN!"\?"ryu\.lost":"ryu\.won",\{delay:\.55\}\)\}catch\(e\)\{\}/);
+  // 2026-10-13 開発27（24）：決着で鳴らすのは負け（へへっ）だけ。勝ちの「やるじゃん」はボードへ戻ってからのリュウの会話の行（rivalWinTalk・LINE_VOICE の ryu_praise）
+  assert.match(HTML, /if\(t==="LOSE"&&D&&D\.pl&&D\.pl===BPL&&D\.label===PRACTICE_LABEL\.rival\)try\{window\.MMVOICE&&MMVOICE\.cue\("ryu\.won",\{delay:\.55\}\)\}catch\(e\)\{\}/);
+  assert.match(HTML, /if\(bt=="rival"&&f\.won&&!f\.interrupted\)rivalWinTalk\(S\.m\);/); assert.ok(V.LINE_VOICE.ryu_praise);
   const fight = HTML.slice(HTML.indexOf('async function fight('), HTML.indexOf('\n$("#snd").textContent'));
   assert.doesNotMatch(fight, /MMVOICE|ryu\.|genshin|vargas_ack|cedric_opening/, 'fight()（Phase 6）には入れない');
-  // リュウの登場：世界のボードとフィールドのライバルの遭遇の演出
-  assert.match(rd('js/chapter/world-board.js'), /el\.classList\.add\('p2'\); try \{ if \(root\.MMVOICE && fig\) root\.MMVOICE\.cue\('ryu\.appear'\);/);
-  assert.match(rd('js/chapter/field-view.js'), /if \(rival && rvFig\) \{ try \{ if \(root\.MMVOICE\) root\.MMVOICE\.cue\('ryu\.appear', \{ delay: 0\.45 \}\);/);
+  // 2026-10-13 開発27（20）：リュウの登場の「よっ！」は不採用＝どの演出からも呼ばない（声のファイル・登録は残す）
+  for (const src of [HTML, rd('js/chapter/world-board.js'), rd('js/chapter/field-view.js')]) assert.doesNotMatch(src, /cue\('ryu\.appear'|cue\("ryu\.appear"/);
   // 三伝説の場面は呼ばれない
   for (const src of [HTML, rd('js/chapter/world-board.js'), rd('js/chapter/field-view.js'), rd('js/npc/npc.js')]) assert.doesNotMatch(src, /legend\.(leona|ragnas)|leona_|ragnas_/);
 });

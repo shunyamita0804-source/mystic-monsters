@@ -176,7 +176,7 @@ T('TB-9（2026-10-12 開発21 で書き直し）：購入の知らせ＝「〔�
   await pg.evaluate(() => { S.g = 2000; save(); adopt(0, 'ソラ'); });
   await pg.waitForSelector('.mkgot');
   const g = await pg.evaluate(() => { const e = document.querySelector('.mkgot'), i = e.querySelector('.gotf img'); return { tx: e.innerText, src: i && i.getAttribute('src'), sparks: e.querySelectorAll('.gotb>i').length }; });
-  assert.match(g.tx, /ソラを手に入れた！/); assert.match(g.src || '', /faces_25d\/face_soramo\.webp$/, '命名した子の丸い顔（既存の 2.5D の顔）'); assert.equal(g.sparks, 30, '光の粒が3回弾ける');
+  assert.match(g.tx, /ソラを手に入れた！/); assert.match(g.src || '', /monsters\/2p5d\/solamo\.webp$/, '2026-10-13 開発27（03）：命名した子の正式 2.5D の全身の立ち絵'); assert.equal(g.sparks, 30, '光の粒が3回弾ける');
   assert.equal(await pg.$('.mmnote'), null, '旧「つれて帰った」の帯は出さない');
   await pg.waitForSelector('.map.town', { timeout: 6000 }); await pg.waitForFunction(() => !document.querySelector('.mkgot'));
   let t = await town(); assert.doesNotMatch(t.msg + t.band.join('|'), /つれて帰った|手に入れた/, '街の案内欄・帯には出さない'); assert.equal(t.on, false);

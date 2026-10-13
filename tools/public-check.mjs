@@ -202,7 +202,7 @@ try {
       if (st.talk) { flow.push('talk'); if (st.ch) { await sleep(450); await page.click('.mmtalk-choice').catch(() => {}); } else await page.click('.mmtalk:not(.mmtalk-out)', { force: true }).catch(() => {}); await sleep(350); continue; }
       if (st.yn) { flow.push('yn'); await sleep(450); await page.click('#p9conf .p9conf-yes, #ynm .ynm-y').catch(() => {}); await sleep(300); continue; }
       if (st.vs) { if (flow[flow.length - 1] !== 'vs') flow.push('vs'); await sleep(400); continue; }
-      if (st.cmp) { flow.push('compare'); await sleep(500); await page.click('.pcgo').catch(() => {}); await sleep(650); await page.click('.pcgo').catch(() => {}); await sleep(500); continue; }
+      if (st.cmp) { flow.push('compare'); await sleep(500); await page.click('.pcgo').catch(() => {}); await sleep(500); continue; }   // 2026-10-13 開発27（29）：「対戦開始」は1回の押下
       if (st.tb) { flow.push('board'); await sleep(400); await page.click('.tb1 .tbgo').catch(() => {}); await sleep(500); continue; }
       await sleep(500);
     }

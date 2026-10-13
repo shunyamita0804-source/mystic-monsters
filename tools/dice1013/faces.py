@@ -4,7 +4,7 @@
 ・目＝dice_stop_5 の上の面の真ん中の目を1粒取り出し（正式の絵の目）、普通のサイコロの並び（2〜6）に置く（正式の絵では目が斜めの並び＝立方体の面ではそのまま使えない）
 ・1＝dice_stop_1 の上の面の紋章（金色の部分）。向きは元の絵と同じ（上の頂点＝上）に戻す
 出力：assets/fields/ch1a/dice/cube_1013/face_1〜6.webp（256×256）
-使い方：python3 -I tools/dice1013/faces.py
+使い方：python3 -I tools/dice1013/faces.py（2026-10-13 開発27（16）：1 の紋章の外形を円に）
 """
 import os, sys
 import numpy as np
@@ -50,6 +50,11 @@ def main():
         out = base.copy()
         if v == 1:
             lay = pip_layer(unwarp(os.path.join(SRC, 'dice_stop_1.webp')), 122).rotate(-45, resample=Image.BICUBIC)
+            # 2026-10-13 開発27（16）：紋章は斜めの絵から戻したため縦に約12%長い（156×175）→ 外形を円に（幅と高さの平均の正方形へ縮め、面の中央へ）。絵は描き直さない
+            bb = lay.getchannel('A').point(lambda v: 255 if v > 24 else 0).getbbox()
+            em = lay.crop(bb); d = round((em.width + em.height) / 2)
+            em = em.resize((d, d), Image.LANCZOS)
+            lay = Image.new('RGBA', (N, N), (0, 0, 0, 0)); lay.alpha_composite(em, ((N - d) // 2, (N - d) // 2))
             out.alpha_composite(lay)
         else:
             for gx, gy in POS[v]:

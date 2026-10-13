@@ -68,5 +68,5 @@ test('WK-03：盤の歩行コマ＝横は旧 .wk のアニメーションを受�
   assert.match(src, /img\.addEventListener\('load', \(\) => \{ const e2 = monEl\(\); if \(e2 && e2\.classList\.contains\('wk-idle'\) && !SPR\.on\) sprShow\('front', f\.idle\); \}, \{ once: true \}\)/);
   const w = load(), ds = w.MMWB.dirSets(w.MMCH.getConfig(1).monsterSprites.gauru);
   assert.deepEqual([w.MMWB.pickDir(0, -10, ds), w.MMWB.pickDir(0, 10, ds)].map((r) => [r.set, r.flip]), [['back', false], ['front', false]], 'ムーンウォークしない');
-  assert.equal(w.MMWB.pickDir(10, 0, ds, { set: 'front' }).set, 'front', '横の1歩は直前の縦のセット（横向きの絵は無い・作らない）');
+  assert.equal(w.MMWB.pickDir(10, 0, ds, { set: 'front' }).set, null, '2026-10-13 開発27（13）：横の1歩は静止の立ち絵を進む向きへ（横向きの絵は無い・作らない）');
 });

@@ -103,8 +103,8 @@ test('EV-04：チュートリアル（config.story の scope "save"）：止ま�
 test('EV-05：施設の NPC イベント（MMNPCE）：初回訪問は5施設（市場・牧場・研究所・闘技場・ファーム）でフィナ ↔ NPC。カレンは「〜わよ」「〜だわ」を使わない。再訪は進行状態に合う一言が優先、ふつうの一言は確率、直前と同じ文は避ける', () => {
   const { NE } = load();
   assert.deepEqual(NE.FACILITIES, ['market', 'ranch', 'lab', 'arena', 'train', 'shop', 'farm'], '2026-10-04（追加アセット）：特訓（ゲンシン）・アイテム屋（おばあちゃん）の初回を追加');
-  for (const f of NE.FACILITIES) { const L = NE.first(f); assert.ok(L.length >= 2 && L.length <= 4, f); assert.ok(L.some((l) => l.npc === 'fina') && L.some((l) => l.npc !== 'fina'), `${f}：フィナと NPC`); for (const l of L) assert.ok(l.expression && l.text && l.side, `${f}：行の形`); }
-  assert.deepEqual(NE.first('market').map((l) => l.npc), ['fina', 'karen', 'fina', 'karen']); assert.deepEqual(NE.first('farm').map((l) => l.npc), ['dan', 'fina']);
+  for (const f of NE.FACILITIES) { const L = NE.first(f); assert.ok(L.length >= 2 && L.length <= (f === 'farm' ? 8 : 4), f);   /* 2026-10-13 開発27（08）：ベースキャンプの初回はダン ↔ フィナの2〜4往復 */ assert.ok(L.some((l) => l.npc === 'fina') && L.some((l) => l.npc !== 'fina'), `${f}：フィナと NPC`); for (const l of L) assert.ok(l.expression && l.text && l.side, `${f}：行の形`); }
+  assert.deepEqual(NE.first('market').map((l) => l.npc), ['fina', 'karen', 'fina', 'karen']); assert.deepEqual(NE.first('farm').map((l) => l.npc), ['fina', 'dan', 'dan', 'fina', 'dan', 'fina']);   // 2026-10-13 開発27（08）：ダン ↔ フィナの2〜3往復
   const karen = [...NE.first('market').filter((l) => l.npc === 'karen').map((l) => l.text), ...NE.REVISIT.market.lines.map((l) => l.text)];
   for (const t of karen) assert.doesNotMatch(t, /わよ|だわ/, t);
   assert.ok(!NE.first('lab').some((l) => /特殊復元/.test(l.text)), '特殊復元を説明しない');

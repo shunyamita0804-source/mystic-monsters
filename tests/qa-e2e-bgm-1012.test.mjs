@@ -34,7 +34,7 @@ async function waitBgm(pg, re, ms = 12000) {
 /** 今の試合を勝って対戦表（または結果）へ戻る。戦闘中の曲を返す */
 async function winFight(pg) {
   await pg.click('.tb1 .tbgo'); await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(450);
-  await pg.click('.pcgo'); await pg.waitForTimeout(450); await pg.click('.pcgo');
+  await pg.click('.pcgo');   // 2026-10-13 開発27（29）：1回の押下
   await pg.waitForSelector('#bt', { timeout: 10000 });
   const inBattle = await waitBgm(pg, /official_rank_battle/);
   for (let i = 0; i < 200; i++) {

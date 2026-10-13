@@ -142,6 +142,13 @@
     //  （ライバル戦の外側の包みで後から足すと、上乗せで初めて20%以下になったソラモの構えが1行動遅れ、ジオルの耐えも打ち消される）
     try { const rp = root.MMRP; if (rp && typeof rp.counter === 'function') rp.counter(opts, r); } catch (e) { /* 演出の失敗でバトルを止めない */ }
     const notes = [];
+    // 2026-10-13 開発27（30）：ガウル「紅翼の猛攻」・ノビトン「ふしぎな嗅覚」は能力の倍率が実際にこの行動の計算に入ったとき（各バトルの各側で最初の1回だけ）演出の印を付ける（効果・判定は上の statMul のまま）
+    st.cut = st.cut || { A: {}, B: {} };
+    ['A', 'B'].forEach((s) => {
+      const key = SPECIES[spOf(pl, s)]; if ((key !== 'gauru' && key !== 'nobiton') || st.cut[s][key]) return;
+      const m = statMul(st, s, spOf(pl, s), sess.turn || 1), used = s === atk ? (m.power > 1 || m.wisdom > 1) : (key === 'nobiton' && m.toughness > 1 && r.hit && r.damage > 0);
+      if (used) { st.cut[s][key] = true; notes.push({ skill: key, side: s, text: '' }); }
+    });
     // ソラモ「逆境のひと踏ん張り」：構えていれば、この攻撃のダメージを1度だけ ×1.25
     if (SPECIES[spOf(pl, atk)] === 'solamo' && st.armed[atk] && r.hit && r.damage > 0) {
       st.armed[atk] = false;
@@ -245,9 +252,9 @@
   function show(r, side) {
     const pl = cur && cur.pl, rules = r && r.rules; if (!rules) return;
     if (rules.blocked) { mute.pop = mute.sfx = now() + 1800; return; }
-    const tx = rules.notes.map((n) => n.text).join(' '), nm = nameOf(pl, side);
+    const tx = rules.notes.map((n) => n.text).filter(Boolean).join(' '), nm = nameOf(pl, side);
     if (tx) { if (pending && pending.name === nm && pending.mode === 'append') { pending.text += ' ' + tx; pending.at = now(); } else pending = { name: nm, mode: 'append', text: tx, at: now() }; }
-    rules.notes.forEach((n) => { if (n.skill) setTimeout(() => badge(n.side, n.skill === 'solamo' ? '逆境のひと踏ん張り' : '大地の守り'), 720); });
+    rules.notes.forEach((n) => { if (n.skill) setTimeout(() => skillCut(idx(n.side), n.skill), 720); });   // 2026-10-13 開発27（30）：固有スキルの発動の短い演出（旧：小さな札だけ）
     if (rules.notes.some((n) => n.heal)) setTimeout(() => healBar(r.actor), 720);
     setTimeout(drawAil, 760);
   }
@@ -288,6 +295,35 @@
     badge(sideOf(i), kind === 'sleep' ? 'ねむり' : 'まひ');
   }
 
+  /** 2026-10-13 開発27（30）：固有スキルが実際に発動した瞬間だけの短い演出（約1.4秒）。①ルーレット・STOP・説明の文を一時的に隠す → ②発動したモンスターへ軽く寄る
+   *  → ③短い SE（既存の TRAINING_SUCCESS）とオーラ（モンスターに重ねる淡い光の輪＝絵そのものの色は変えない）→ ④スキル名と正式の説明（MMP10M の UNIQUE_SKILLS）→ ⑤元に戻す。判定・HP・ターンの進行は変えない（見た目だけ・待たない）。
+   *  同じ演出が重ならない（出ている間の次の発動は待たずに終わらせてから）。i＝0 自分・1 相手、key＝solamo・gauru・nobiton・jiol・regnas */
+  const CUT_MS = 1400;
+  let cutEl = null, cutT = 0;
+  function skillInfo(key) {
+    const M = root.MMP10M; if (!M) return null;
+    if (key === 'regnas') { const r = M.rivalMonster && M.rivalMonster('regnas'); const u = r && r.uniqueSkill; return u ? { name: u.name, desc: u.desc } : null; }
+    const sp = M.idOf ? M.idOf(key) : Object.keys(SPECIES).find((k) => SPECIES[k] === key);
+    return M.skillText ? M.skillText(+sp) : null;
+  }
+  function skillCut(i, key) {
+    const bt = document.getElementById('bt'), mw = document.getElementById('m' + i), info = skillInfo(key); if (!bt || !info) return false;
+    style();
+    if (cutEl) { clearTimeout(cutT); endCut(); }
+    const br = bt.getBoundingClientRect(), r = mw ? mw.getBoundingClientRect() : { left: br.left + br.width / 2, width: 0, top: br.top + br.height / 2, height: 0 };
+    const cx = r.left - br.left + r.width / 2, cy = r.top - br.top + r.height / 2;
+    bt.classList.add('mmsk-cut'); bt.style.setProperty('--mmsk-ox', cx + 'px'); bt.style.setProperty('--mmsk-oy', cy + 'px');
+    const d = document.createElement('div'); d.className = 'mmskc' + (i ? ' r' : ''); d.setAttribute('role', 'status');
+    d.innerHTML = `<i class="mmskc-aura" style="left:${cx}px;top:${cy}px"></i><div class="mmskc-card"><small>${i ? '相手の固有スキル' : '固有スキル'}</small><b></b><p></p></div>`;
+    d.querySelector('b').textContent = info.name; d.querySelector('p').textContent = info.desc || '';
+    bt.appendChild(d); cutEl = d;
+    try { if (root.MMAUDIO) root.MMAUDIO.se('TRAINING_SUCCESS'); } catch (e) { /* 音が無くても進行は変わらない */ }
+    cutLog.push({ side: i, key, name: info.name });
+    cutT = setTimeout(endCut, CUT_MS);
+    return true;
+  }
+  function endCut() { const bt = document.getElementById('bt'); if (bt) bt.classList.remove('mmsk-cut'); if (cutEl) { const e = cutEl; cutEl = null; e.classList.add('out'); setTimeout(() => e.remove(), 220); } }
+  const cutLog = [];
   function style() {
     if (document.getElementById('mmrl-style')) return;
     const st = document.createElement('style'); st.id = 'mmrl-style';
@@ -295,7 +331,22 @@
       + '#bt .mmail span{display:inline-flex;align-items:center;gap:2px;padding:0 6px;border-radius:999px;font:700 10px/16px "Noto Sans JP",sans-serif;color:#fff;border:1px solid rgba(255,255,255,.6)}'
       + '#bt .mmail span b{font-size:9px;opacity:.9}#bt .mmail .mmail-paralysis{background:#b88a16}#bt .mmail .mmail-sleep{background:#5b4fa8}'
       + '#bt .mmsk{position:absolute;z-index:12;pointer-events:none;padding:4px 11px;border-radius:999px;font:900 14px "Noto Sans JP",sans-serif;color:#fff;letter-spacing:.05em;'
-      + 'background:linear-gradient(180deg,#7a5a1a,#3e2a08);border:2px solid #ffe2a0;box-shadow:0 0 12px rgba(255,210,120,.7);white-space:nowrap;transform:translate(-50%,-50%)}';
+      + 'background:linear-gradient(180deg,#7a5a1a,#3e2a08);border:2px solid #ffe2a0;box-shadow:0 0 12px rgba(255,210,120,.7);white-space:nowrap;transform:translate(-50%,-50%)}'
+      // 2026-10-13 開発27（30）：固有スキルの発動の演出（ルーレット・STOP・説明を一時的に隠す・発動したモンスターへ軽く寄る・オーラ・スキル名と説明）。display:none は使わない（座標を壊さない）
+      + '#bt.mmsk-cut .bui,#bt.mmsk-cut #msg,#bt.mmsk-cut .gow{opacity:0!important;visibility:hidden!important;transition:opacity .12s}'
+      + '#bt.mmsk-cut .vs{transform-origin:var(--mmsk-ox,50%) var(--mmsk-oy,50%);animation:mmskZoom 1.4s ease-in-out both}'
+      + '@keyframes mmskZoom{0%{transform:none}22%,78%{transform:scale(1.07)}100%{transform:none}}'
+      + '#bt .mmskc{position:absolute;inset:0;z-index:13;pointer-events:none;animation:mmskIn .18s ease-out both}#bt .mmskc.out{opacity:0;transition:opacity .2s}'
+      + '#bt .mmskc-aura{position:absolute;width:min(56vw,230px);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,236,170,.55),rgba(255,196,80,.28) 40%,rgba(255,170,40,0) 68%);animation:mmskAura 1.4s ease-out both}'
+      + '#bt .mmskc.r .mmskc-aura{background:radial-gradient(circle,rgba(190,220,255,.55),rgba(110,160,255,.28) 40%,rgba(80,130,255,0) 68%)}'
+      + '#bt .mmskc-card{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 22%);width:min(88vw,360px);transform:translateX(-50%);box-sizing:border-box;padding:10px 16px 12px;border-radius:14px;text-align:center;color:#fff;'
+      + 'background:linear-gradient(rgba(14,24,60,.92),rgba(8,14,38,.94));border:1.5px solid #e6c46e;box-shadow:0 6px 18px rgba(0,0,0,.5),0 0 16px rgba(255,210,120,.35);animation:mmskCard .32s cubic-bezier(.2,1.2,.4,1) both}'
+      + '#bt .mmskc-card small{display:block;font:700 11px/1.2 "Noto Sans JP",sans-serif;letter-spacing:.12em;color:#f3d996}'
+      + '#bt .mmskc-card b{display:block;margin:3px 0 4px;font:900 clamp(20px,6.4vw,26px)/1.2 "Shippori Mincho",serif;letter-spacing:.06em;color:#fff6dc;text-shadow:0 0 10px rgba(255,210,120,.75)}'
+      + '#bt .mmskc-card p{margin:0;font:600 13.5px/1.5 "Noto Sans JP",sans-serif;color:#e8ecf8;line-break:strict}'
+      + '@keyframes mmskIn{from{opacity:0}to{opacity:1}}@keyframes mmskCard{from{opacity:0;transform:translateX(-50%) translateY(10px) scale(.94)}to{opacity:1;transform:translateX(-50%)}}'
+      + '@keyframes mmskAura{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}30%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.25)}}'
+      + '@media (prefers-reduced-motion:reduce){#bt.mmsk-cut .vs{animation:none}#bt .mmskc-aura{animation:none;opacity:.6}#bt .mmskc-card{animation:none}}';
     document.head.appendChild(st);
   }
 
@@ -385,7 +436,7 @@
   const surrendered = () => surrenderPl != null && surrenderPl === G('BPL');
 
   wrapBattle();
-  root.MMRULES = Object.freeze({ AILMENTS, NOBI_FIRST, install, wrapBattle, swallow, cleanResult, battleStats, surrendered, refreshSameEffects, withSpeed, speedOfUnit, current: () => (cur && cur.pl === G('BPL') ? cur.sess : null), drawAil, behavior: (k) => BEHAVIOR[k] || null,
+  root.MMRULES = Object.freeze({ AILMENTS, NOBI_FIRST, install, wrapBattle, swallow, cleanResult, battleStats, surrendered, refreshSameEffects, withSpeed, speedOfUnit, current: () => (cur && cur.pl === G('BPL') ? cur.sess : null), drawAil, skillCut, cutLog: () => cutLog.slice(), behavior: (k) => BEHAVIOR[k] || null,
     // テスト用の純粋な処理
     newState, applyAilment, opportunity, cureAll, hasAilment, statMul, resolveWith, stateOf });
 })(typeof window !== 'undefined' ? window : globalThis);

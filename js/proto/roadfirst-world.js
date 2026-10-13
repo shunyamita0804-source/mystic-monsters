@@ -32,6 +32,7 @@
     monRatio: 0,         // >0＝モンスターの幅をその地点のマスの幅 × この倍率に（0＝従来の 24単位）
     zoomTau: 170,        // 追従の倍率を寄せる速さ（ms。大きいほどゆっくり）
     xray: false,         // 2026-10-12 試遊：true＝手前の景物（木・門など）が見えているマス・モンスターに重なるとき、その景物を半透明に（本編の Chapter 1 だけ）
+    hideLm: null,        // 2026-10-13 開発27（11・15）：出さない目印の地点（例 ['START','LOWER_GATE','UPPER_GATE']＝門の飾りの絵だけを出さない。地点・道・門のマス・判定・イベントはそのまま。本編の Chapter 1 だけ）
   };
   // 第1便の絵（assets/proto/board_art_1010/README.md）。大きさは世界の単位
   const ART = {
@@ -203,8 +204,8 @@
           plane.insertBefore(ap, plane.firstChild); } });
       const add = (file, x, y, w, z, cls) => { const d = doc.createElement('img'); d.className = 'rfw-prop' + (cls ? ' ' + cls : ''); d.alt = ''; d.draggable = false; d.src = base + file; bb.appendChild(d); props.push({ el: d, x, y, w, z: z || 0 }); };
       for (const q of scatter(D, o)) add(q.file, q.x, q.y, q.w);
-      const gn = D.nodes.GOAL; if (gn) add(ART.goal.file, gn[0], gn[1] + ART.goal.dy, ART.goal.w, -40, 'rfw-goal');
-      for (const L of ART.landmarks) { const at = landmarkAt(D, L); if (at) { add(L.file, at[0], at[1], L.w, L.z || 0, 'rfw-lm'); props[props.length - 1].L = L; } }
+      const gn = D.nodes.GOAL; if (gn) { add(ART.goal.file, gn[0], gn[1] + ART.goal.dy, ART.goal.w, -40, 'rfw-goal'); props[props.length - 1].solid = true; }   // 2026-10-13 開発27（26）：大会会場（建物・門）は半透明にしない（xray で草地が透けて見えていた）
+      for (const L of ART.landmarks) { if (o.hideLm && o.hideLm.includes(L.node)) continue; const at = landmarkAt(D, L); if (at) { add(L.file, at[0], at[1], L.w, L.z || 0, 'rfw-lm'); props[props.length - 1].L = L; } }
       for (const q of waterProps(D)) add(q.file, q.x, q.y, q.w, q.z || 0, 'rfw-wp');   // 第4便：川の景物
       for (const [x, y, w] of ART.peaks.at) add(ART.peaks.file, x, y, w, -20, 'rfw-peak');   // 第4便：山の岩峰
     }
@@ -249,7 +250,7 @@
         if (!vis) { if (!t.hid) { t.el.style.display = 'none'; t.hid = true; } continue; }
         if (t.hid) { t.el.style.display = ''; t.hid = false; }
         t.el.style.transform = `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * 0.62).toFixed(1)}px)`; t.el.style.width = w.toFixed(1) + 'px';
-        t.el.style.zIndex = String(Math.round(q.y));
+        t.el.style.zIndex = String(Math.round(q.y)); if (id === 'GOAL') S.goalZ = Math.round(q.y);
         if (o.xray) xr.push([q.x - w / 2, q.y - w * 0.62, q.x + w / 2, q.y + w * 0.14, q.y, w * w * 0.76]);
       }
       for (const p of props) {
@@ -258,8 +259,8 @@
         if (!vis) { if (!p.hid) { p.el.style.display = 'none'; p.hid = true; } continue; }
         if (p.hid) { p.el.style.display = ''; p.hid = false; }
         p.el.style.transform = `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * (p.ah || 0.92)).toFixed(1)}px)`; p.el.style.width = w.toFixed(1) + 'px';
-        p.el.style.zIndex = String(Math.round(q.y) + (p.z || 0));
-        if (o.xray && !p.mark) {   // 手前の景物がマス・モンスターを隠す＝その景物だけ半透明（重なった面積がマス・モンスターの 22% 以上）
+        p.el.style.zIndex = String(p.solid && S.goalZ != null ? Math.min(Math.round(q.y) + (p.z || 0), S.goalZ - 1) : Math.round(q.y) + (p.z || 0));   // 2026-10-13 開発27（26）：半透明にしない大会会場は GOAL のマスより奥（マスを隠さない）
+        if (o.xray && !p.mark && !p.solid) {   // 手前の景物がマス・モンスターを隠す＝その景物だけ半透明（重なった面積がマス・モンスターの 22% 以上）
           const pz = Math.round(q.y) + (p.z || 0), x0 = q.x - w / 2, x1 = q.x + w / 2, y0 = q.y - w * (p.ah || 0.92), y1 = q.y;
           let thru = false;
           if (c.s >= 1) for (const r of xr) { if (r[4] >= pz) continue; const ow = Math.min(x1, r[2]) - Math.max(x0, r[0]), oh = Math.min(y1, r[3]) - Math.max(y0, r[1]); if (ow > 0 && oh > 0 && ow * oh > r[5] * 0.22) { thru = true; break; } }

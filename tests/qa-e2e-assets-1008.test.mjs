@@ -49,7 +49,7 @@ test('AS8-B2：大会3 VS＝専用勝負絵（自分は右向き・相手は反�
   await toReception(pg, 1);
   await pg.evaluate(() => { MMP8.startTournament(S, S.m, 0, 7); save(); board(); });
   await pg.waitForSelector('.tb1 .tbgo'); await pg.click('.tb1 .tbgo');
-  await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(500); await pg.click('.pcgo'); await pg.waitForTimeout(600); await pg.click('.pcgo');
+  await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(500); await pg.click('.pcgo');
   await pg.waitForSelector('#tvs .tvsm.me img'); await pg.waitForTimeout(600);
   const v = await pg.evaluate(() => { const g = (s) => document.querySelector(s); const op = g('#tvs .tvsm.op img'), me = g('#tvs .tvsm.me img'); const o = MMP8L.entrantView(S.m.raise.tour.league, MMP8.tourNext(S.m).opp);
     return { me: me.getAttribute('src'), meFl: me.classList.contains('fl'), meOk: me.complete && me.naturalWidth > 0, op: op.getAttribute('src'), opFl: op.classList.contains('fl'), opOk: op.complete && op.naturalWidth > 0, want: ['solamo', 'gauru', 'nobiton', 'jiol', 'regnas'][o.sp], bgFl: getComputedStyle(g('#tvs .tvsbg')).transform };
