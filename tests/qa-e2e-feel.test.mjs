@@ -107,7 +107,15 @@ test('FE-5：フィナの節目の一言（config.story）：Chapter に入っ�
   assert.equal(await pg.evaluate(() => !!document.querySelector('.chf-fina')), false, '再読み込みでは出さない');
   await rollAs(pg, 1);
   // 2026-10-13 開発28：通常マスに止まると冒険リアクション（2026-10-07 MMREACT＝確率 0.4・フィナの会話窓・選択肢）が出ることがある＝節目の一言（config.story）ではない。出たら送ってから（記録 storySeen は増えない）
-  for (let k = 0; k < 12 && await pg.$('.mmtalk:not(.mmtalk-out)'); k++) { if (await pg.$('.mmtalk-choice')) { await pg.waitForTimeout(450); await (await pg.$('.mmtalk-choice')).click(); await pg.waitForTimeout(400); } else await H.finishTalk(pg); }
+  //  リアクションは止まってから約1秒あと（間＋モーション）に出るので、落ち着くまで（会話・選択肢・結果の窓が無く bBusy も解けた状態が続く）送り続ける
+  const tD = Date.now(); let calm = 0;
+  while (Date.now() - tD < 25000) {
+    const st = await pg.evaluate(() => ({ choice: !!document.querySelector('.mmtalk-choice'), talk: !!document.querySelector('.mmtalk:not(.mmtalk-out)'), busy: !!(bBusy || MMCHD.isLocked()) || !!document.querySelector('.chpop,.chdz,.chf-fina') }));
+    if (st.choice) { await pg.waitForTimeout(450); const c = await pg.$('.mmtalk-choice'); if (c) await c.click().catch(() => {}); await pg.waitForTimeout(400); calm = 0; continue; }
+    if (st.talk) { await H.finishTalk(pg).catch(() => {}); calm = 0; continue; }
+    if (!st.busy) { if (++calm >= 3) break; } else calm = 0;
+    await pg.waitForTimeout(250);
+  }
   await idle(pg); assert.equal(await pg.evaluate(() => S.m.raise.node), 'p1_1');
   assert.deepEqual(await pg.evaluate(() => S.m.raise.field.storySeen), ['ch1_start'], '通常マスでは話さない');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);

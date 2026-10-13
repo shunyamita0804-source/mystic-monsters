@@ -211,7 +211,7 @@ try {
     }
     rec('開発24：公式大会の実際の流れ（対戦表 → 対戦前比較 → VS → バトル）', await page.evaluate(() => !!document.getElementById('bt')), flow.join('→'));
     await page.waitForSelector('#bt #m0 .mon .mma-idle', { timeout: 30000 });
-    await page.evaluate(() => { const bt = document.getElementById('bt'); new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => { if (n.classList && n.classList.contains('skb3')) setTimeout(() => window.__cine.push({ on: bt.classList.contains('mma-cine'), hpr: getComputedStyle(bt.querySelector('.hpr')).visibility, bui: getComputedStyle(bt.querySelector('.bui')).visibility }), 300); }))).observe(bt, { childList: true });
+    await page.evaluate(() => { const bt = document.getElementById('bt'); new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => { if (n.classList && n.classList.contains('skb3')) { const c = { on: false, hpr: 'visible', bui: 'visible' }; window.__cine.push(c); const smp = (k) => { const on = bt.classList.contains('mma-cine'), h = getComputedStyle(bt.querySelector('.hpr')).visibility, b = getComputedStyle(bt.querySelector('.bui')).visibility; c.on = c.on || on; if (h === 'hidden' && b === 'hidden') { c.hpr = h; c.bui = b; } c['t' + k] = [on, h, b].join('/'); }; setTimeout(() => smp(600), 600); setTimeout(() => smp(900), 900); } }))).observe(bt, { childList: true });
       const B = window.MMBattle; let n = 0; window.MMBattle = Object.freeze(Object.assign({}, B, { resolveAction(o) { if (o && o.attackerSide === 'A' && (n++ % 2 === 0)) o = Object.assign({}, o, { rng: Object.assign({}, o.rng || {}, { hitRng: () => 0.999 }) }); return B.resolveAction(o); } })); });   // 確認のためだけ：自分の攻撃を1回おきに外れ側へ（かわされる場面を作る。保存されるのはこの試合の結果だけ）
     await sleep(800);
     const ui = await page.evaluate(() => { const bt = document.getElementById('bt'), m = bt.querySelector('.mmr').getBoundingClientRect(), g = bt.querySelector('#go').getBoundingClientRect(); return { v24: bt.classList.contains('mma-v24'), st: bt.querySelectorAll('.mmr .pl .st').length, mmrH: Math.round(m.height), goW: Math.round(g.width), goBottom: Math.round(g.bottom), ih: innerHeight }; });
@@ -228,7 +228,7 @@ try {
     rec('開発24：公式大会の新しいバトル画面（低いルーレット・数値なし・STOP は画面の中）', ui.v24 && ui.st === 0 && ui.mmrH < 130 && ui.goBottom <= ui.ih, JSON.stringify(ui));
     rec('開発24：技の発動中は HUD・ルーレット・STOP を隠す', bt2.cine.length > 0 && bt2.cine.every((c) => c.on && c.hpr === 'hidden' && c.bui === 'hidden'), JSON.stringify(bt2.cine.slice(0, 4)));
     const pk = new Set(bt2.play.map((x) => x[0]));
-    rec('開発24：観客の声が鳴り始めた（命中＝歓声・ルーレットの MISS＝落胆・かわされた＝ブーイング・短い版・OGG）', ['CROWD_HIT', 'CROWD_MISS', 'CROWD_EVADE'].every((n) => pk.has(n)) && bt2.play.every((x) => x[1] === 'running') && bt2.play.length === bt2.crowd.length, JSON.stringify({ crowd: bt2.crowd.slice(0, 12), play: bt2.play.slice(0, 6), n: bt2.play.length }));
+    rec('開発24：観客の声が鳴り始めた（命中＝歓声・ルーレットの MISS＝落胆・かわされた＝ブーイング・2026-10-13 開発28 の既定＝通常 1.0秒の版・OGG）', ['CROWD_HIT_LONG', 'CROWD_MISS_LONG', 'CROWD_EVADE_LONG'].every((n) => pk.has(n)) && bt2.play.every((x) => x[1] === 'running') && bt2.play.length === bt2.crowd.length, JSON.stringify({ crowd: bt2.crowd.slice(0, 12), play: bt2.play.slice(0, 6), n: bt2.play.length }));
     if (bt2.back) { await page.click('#go').catch(() => {}); await sleep(1500); }
     for (let k = 0; k < 10; k++) { const c = await drain(); if (c === 'choice') await page.click('.mmtalk-choice').catch(() => {}); await sleep(500); }
     // 再起動（ホーム画面のアイコンから開き直す相当）：セーブは残る・つづきから

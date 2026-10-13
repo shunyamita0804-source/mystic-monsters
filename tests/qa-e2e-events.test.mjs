@@ -45,7 +45,7 @@ const talk = (pg, re) => pg.waitForFunction((src) => { const t = document.queryS
 /** 会話を送って選択肢まで進める（選択肢は最後の行の全文表示のあと） */
 async function toChoice(pg) { for (let i = 0; i < 20 && !(await pg.$('.mmtalk-choice')); i++) { await pg.click('.mmtalk:not(.mmtalk-out)', { force: true }).catch(() => {}); await pg.waitForTimeout(120); } await pg.waitForSelector('.mmtalk-choice', { timeout: 15000 }); }
 
-T('EV-B1：イベントマス（挿絵つき・澄んだ湧き水）：背景を暗く → 挿絵とイベント名 → フィナの会話（小さな会話窓・タップで進む）→ 挿絵が消える → 結果（疲れ −15 が HUD へ）→ 初めてのイベントのチュートリアル（会話窓）。2回目のイベント（挿絵なし）ではチュートリアルは出ない。記録は S.npcFlags.story', async () => {
+T('EV-B1：イベントマス（挿絵つき・澄んだ湧き水）：背景を暗く → 挿絵とイベント名 → フィナの会話（小さな会話窓・タップで進む）→ 挿絵が消える → 結果（疲れ −15 が HUD へ）→ 初めてのイベントのチュートリアル（会話窓）。2回目のイベント（挿絵あり＝2026-10-12 開発23 で全24種に挿絵）ではチュートリアルは出ない。記録は S.npcFlags.story', async () => {
   const p = await openPage({ story: true }); const pg = p.page;
   await start(pg);
   await pg.evaluate(() => { S.m.raise.fatigue = 30; save(); });
@@ -64,12 +64,14 @@ T('EV-B1：イベントマス（挿絵つき・澄んだ湧き水）：背景を
   const s1 = await pg.evaluate(() => ({ fat: S.m.raise.fatigue, used: S.m.raise.field.consumedEvents, story: S.npcFlags.story, pend: S.m.raise.pend, hud: document.querySelector('#chfat b').textContent }));
   assert.equal(s1.fat, 15); assert.ok(s1.used.includes(id)); assert.deepEqual(s1.story, ['tut_turns', 'tut_event'], '2026-10-05：出発の「30ターン」の説明（tut_turns）のあとに初めてのイベント'); assert.equal(s1.pend, null); assert.equal(s1.hud, '15');
   assert.deepEqual((await H.storedSave(pg)).npcFlags.story, ['tut_turns', 'tut_event'], 'セーブに残る');
-  // 2回目：挿絵の無い出来事（ダンの言葉）＝フィナの吹き出しと結果だけ（チュートリアル無し）
+  // 2回目：ダンの言葉（2026-10-12 開発23 で全24種に正式の挿絵＝この出来事も挿絵カード＋小さな会話窓）＝結果だけ（チュートリアル無し）
   await landOn(pg, 'remember_dan');
-  await fina(pg, 'ダンが言ってた'); await clearFina(pg);
+  await pg.waitForSelector('.chf-evc.on[data-ev="remember_dan"]', { timeout: 15000 });
+  await talk(pg, 'ダンが言ってた'); assert.equal(await pg.evaluate(() => document.querySelector('.mmtalk').dataset.pres), 'compact');
+  await H.finishTalk(pg);
   await pg.waitForSelector('.chpop.ev', { timeout: 15000 }); await pg.waitForFunction(() => !document.querySelector('.chpop'), null, { timeout: 15000 });
   await pg.waitForTimeout(1200);
-  assert.equal(await pg.evaluate(() => !!document.querySelector('.mmtalk,.chf-evc')), false, '2回目はチュートリアルを出さない・挿絵の無い出来事にカードは出ない');
+  assert.equal(await pg.evaluate(() => !!document.querySelector('.mmtalk,.chf-evc')), false, '2回目はチュートリアルを出さない・結果のあとにカードは残らない');
   await idle(pg);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
@@ -131,10 +133,18 @@ T('EV-B4：施設の初回訪問：市場（フィナ ↔ カレン）・牧場�
   await pg.evaluate(() => lobby()); await pg.waitForSelector('.tpin[onclick="townArena()"]'); await pg.click('.tpin[onclick="townArena()"]'); await talk(pg, 'そのまま結果になる'); await H.finishTalk(pg);
   assert.match(await pg.textContent('#msg'), /闘技場は、まだ利用できません/);
   await pg.evaluate(() => { const m = mk(0); MMP7.ensureProg(m); S.m = m; save(); lobby(); }); await pg.waitForSelector('.tbar button[onclick="hall()"]');
-  await pg.click('.tbar button[onclick="hall()"]'); await talk(pg, '出発前の準備は'); await H.finishTalk(pg); await pg.waitForSelector('.fm .fmgo');
+  await pg.click('.tbar button[onclick="hall()"]'); await talk(pg, 'ダン、来たよ'); /* 2026-10-13 開発27（08）：ベースキャンプの初回＝フィナ ↔ ダンの3往復（1行目はフィナ） */ await H.finishTalk(pg); await pg.waitForSelector('.fm .fmgo');
   f = (await H.storedSave(pg)).npcFlags; assert.deepEqual(f.first, { market: 1, ranch: 1, lab: 1, arena: 1, farm: 1 });
   await pg.reload(); await pg.waitForFunction(() => typeof window.MMP8 === 'object'); await pg.click('.p15start'); await pg.waitForSelector('.tpin[onclick="market()"]');
-  for (const sel of ['.tpin[onclick="farm()"]', '.tpin[onclick="museum()"]', '.tpin[onclick="townArena()"]', '.tbar button[onclick="hall()"]']) { await pg.click(sel); await pg.waitForTimeout(700); assert.equal(await pg.evaluate(() => !!document.querySelector('.mmtalk')), false, `${sel}：再読み込み後の再訪で初回の会話を出さない`); await pg.evaluate(() => lobby()); await pg.waitForSelector('.tpin[onclick="market()"]'); }
+  // 2026-10-13 開発27（04・06・07）：2回目以降の訪問は施設の入口で NPC の一言（牧場＝ニック・研究所＝エリオット・ベースキャンプ＝ダン。1行）が出る＝初回の案内（フィナ ↔ NPC）ではない。闘技場は入口の画面が無い（ヴァルガスの一言＝.vgsay）
+  const ENTRY = { '.tpin[onclick="farm()"]': '今日も元気そうだな', '.tpin[onclick="museum()"]': 'やあ', '.tbar button[onclick="hall()"]': 'よう、準備はできたか' };
+  for (const sel of ['.tpin[onclick="farm()"]', '.tpin[onclick="museum()"]', '.tpin[onclick="townArena()"]', '.tbar button[onclick="hall()"]']) {
+    await pg.click(sel); await pg.waitForTimeout(900);
+    const t = await pg.evaluate(() => { const e = document.querySelector('.mmtalk:not(.mmtalk-out)'); return e ? e.textContent : null; });
+    if (ENTRY[sel]) { assert.ok(t && t.includes(ENTRY[sel]) && !/ここが市場|育成を終えた子たちは|図鑑に残ります|ダン、来たよ/.test(t), `${sel}：再読み込み後の再訪は入口の一言だけ（初回の会話は出さない）：${t}`); await H.finishTalk(pg); }
+    else assert.equal(t, null, `${sel}：再読み込み後の再訪で初回の会話を出さない`);
+    await pg.evaluate(() => { if (window.MMNPC) MMNPC.close(); lobby(); }); await pg.waitForSelector('.tpin[onclick="market()"]');
+  }
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
@@ -150,7 +160,14 @@ T('EV-B5：Chapter 1 を終えてファームへ戻ると帰還イベント（�
   await H.finishTalk(pg);
   await pg.waitForFunction(() => !document.querySelector('.mmtalk'), null, { timeout: 15000 });
   const sv = await H.storedSave(pg); assert.deepEqual(sv.m.raise.evSeen, ['ret1', 'rumor'], '帰還と噂を見た記録');
-  await pg.reload(); await pg.waitForFunction(() => typeof window.MMP8 === 'object'); await pg.click('.p15start'); await pg.waitForSelector('.fm .fmgo', { timeout: 20000 }); await pg.waitForTimeout(900);
-  assert.equal(await pg.evaluate(() => !!document.querySelector('.mmtalk')), false, '再読み込みでは出ない');
+  await pg.reload(); await pg.waitForFunction(() => typeof window.MMP8 === 'object'); await pg.click('.p15start');
+  // 入口の一言（施設の背景つきの会話＝html[data-mmscene] で #app を隠す）か「出発する」のどちらかが出るまで待つ
+  await pg.waitForFunction(() => !!document.querySelector('.mmtalk:not(.mmtalk-out)') || (document.querySelector('.fm .fmgo') && document.querySelector('.fm .fmgo').getBoundingClientRect().height > 0), null, { timeout: 20000 }); await pg.waitForTimeout(600);
+  // 2026-10-13 開発27（04）：2回目以降のベースキャンプは入口でダンの一言（1行）が出て、その間は「出発する」を隠す＝帰還イベント（戻ったよ、ダン）ではない
+  const t2 = await pg.evaluate(() => { const e = document.querySelector('.mmtalk:not(.mmtalk-out)'); return e ? e.textContent : null; });
+  assert.ok(t2 == null || (t2.includes('よう、準備はできたか') && !t2.includes('戻ったよ')), `再読み込みでは帰還イベントを出さない（入口の一言だけ）：${t2}`);
+  if (t2) await H.finishTalk(pg);
+  await pg.waitForSelector('.fm .fmgo', { timeout: 20000 });
+  assert.equal(await pg.evaluate(() => !!document.querySelector('.mmtalk:not(.mmtalk-out)')), false, '再読み込みでは出ない');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });

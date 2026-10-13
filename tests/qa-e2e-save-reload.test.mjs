@@ -193,7 +193,7 @@ T('QA-SR5：大会の試合中に再読み込み → その試合は無かった
   await pg.waitForTimeout(600);
   const pre = await H.getS(pg);
   assert.equal(pre.m.raise.battle, null);
-  await pg.click('.p9go'); await pg.waitForTimeout(700); await pg.click('.p9go');
+  await pg.click('.p9go');   // 2026-10-13 開発27（29）：「対戦開始」は1回の押下で始まる（旧：2度押し）。2回目を押そうとすると画面が変わったあとで見つからない
   // 2026-10-03：大会は VS から直接 fight()（Battle 開始前の導入は練習試合だけ）
   // 戦闘が始まり、戦闘前の状態（checkpoint）が保存されるまで待つ
   await pg.waitForFunction(() => { const s = JSON.parse(localStorage.getItem('mr4v6')); return !!(s.m.raise.battle && document.getElementById('bt')); }, null, { timeout: 10000 });
