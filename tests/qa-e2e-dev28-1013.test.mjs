@@ -269,20 +269,25 @@ test('D28-B7：全景 → 盤のズーム＝地面の板の Web Animations・マ
     await pg.waitForFunction(() => document.getAnimations().some((a) => a.effect && a.effect.target && a.effect.target.classList.contains('rfw-plane') && a.playState === 'running'), null, { timeout: 30000 });
     r = await measure();
     if (gapOf(r.s).g <= 250) break;
-    if (attempt === 0) { await settle(pg); await pg.evaluate(() => { S.m.raise.field.introSeen = false; save(); board(); }); await pg.waitForSelector('#wbw .rfw-plane', { timeout: 30000 }); }   // もう一度（開始の俯瞰から）
+    if (attempt === 0) {   // もう一度（読み込み直して開始の俯瞰から）
+      await settle(pg); await pg.evaluate(() => { S.m.raise.field.introSeen = false; save(); });
+      await pg.reload(); await pg.waitForFunction(() => typeof S === 'object' && !!S.m, null, { timeout: 60000 });
+      await pg.evaluate(() => { MMRF_WORLD.warmArt(); board(); }); await pg.waitForSelector('#wbw .rfw-plane', { timeout: 30000 });
+    }
   }
   assert.ok(r.tiles > 200 && r.s.length > 20, `${r.tiles} マス・${r.s.length} フレーム`);
   // 動いている間はマスの style を書き換えない（Web Animations だけ）。終わったとき（finishIntro）に最後の姿を1回ずつ入れる
   const during = r.writes.filter((w) => w[0] < r.lastRun - 20).reduce((a, w) => a + w[1], 0), total = r.writes.reduce((a, w) => a + w[1], 0);
   assert.ok(during <= 2, `ズームの間の書き換えは毎フレームではない（${during} 回。${JSON.stringify(r.writes.filter((w) => w[0] < r.lastRun - 20).slice(0, 4))} … 終わり ${r.lastRun}ms）`);   // 見える範囲に入ったマスの display の切り替え（最大数回）は毎フレームの幅・zIndex の書き換えではない
   assert.ok(total <= r.tiles, `終わりの1回だけ（${total} ≤ ${r.tiles}）`);
-  let nonMono = 0; for (let i = 1; i < r.s.length; i++) { if (r.s[i][1] < r.s[i - 1][1] - 1e-6) nonMono++; }
+  const dec = []; for (let i = 1; i < r.s.length; i++) { if (r.s[i][1] < r.s[i - 1][1] - 1e-6) dec.push([i, r.s[i - 2], r.s[i - 1], r.s[i], r.s[i + 1]]); }
   const gap = gapOf(r.s);
-  assert.equal(nonMono, 0, '倍率は単調に増える'); assert.ok(gap.g <= 250, `途切れない（最大の刻み ${gap.g}ms・${gap.at}ms の所・${r.s.length} フレーム）`);
+  assert.equal(dec.length, 0, `倍率は単調に増える（逆行 ${JSON.stringify(dec)}・${r.s.length} フレーム・終わり ${r.lastRun}ms）`); assert.ok(gap.g <= 250, `途切れない（最大の刻み ${gap.g}ms・${gap.at}ms の所・${r.s.length} フレーム）`);
   assert.ok(r.s[r.s.length - 1][1] > r.s[0][1] * 2, `全景 → START へ寄る（${r.s[0][1]} → ${r.s[r.s.length - 1][1]}）`);
   await settle(pg);
-  const after = await pg.evaluate(() => ({ anims: document.getAnimations().filter((a) => a.effect && a.effect.target && a.effect.target.closest && a.effect.target.closest('#wbw')).length, intro: MMWB.state().intro }));
-  assert.equal(after.intro, false); assert.equal(after.anims, 0, 'アニメーションが残らない');
+  // 残るのは盤の常時のアニメーション（レアの紋章の脈動・START の光など）だけ＝寄りの道筋（地面の板・マス・景物・モンスター・題字）のアニメーションは残らない
+  const after = await pg.evaluate(() => ({ anims: document.getAnimations().filter((a) => { const e = a.effect && a.effect.target; return !!(e && e.classList && /(^|\s)rfw-(plane|tile|prop|mon|title)(\s|$)/.test(e.className.toString())); }).map((a) => a.effect.target.className.toString().slice(0, 20)), intro: MMWB.state().intro }));
+  assert.equal(after.intro, false); assert.deepEqual(after.anims, [], '寄りのアニメーションが残らない');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 

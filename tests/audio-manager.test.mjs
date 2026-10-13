@@ -656,3 +656,15 @@ test('AUDIO-38：2026-10-12 正式 SE 3種（ライバルの登場・VS・試合
   const html = readFileSync(path.join(ROOT, 'index.html'), 'utf8'), vs = html.slice(html.indexOf('function tourVsShow('), html.indexOf('function tourVsOut('));
   assert.equal((vs.match(/MMFEEL\.emit\("battle\.matchup"\)/g) || []).length, 1, 'VS の音は1回だけ'); assert.match(vs, /setTimeout\(se,380\)/);
 });
+
+test('AUDIO-39：自動再生の制約で保留した場面（開始画面の TITLE）は、別の場面へ移ったら捨てる＝そのあとの最初の操作で前の曲が割り込まない（2026-10-13 開発28）', async () => {
+  const opt = { rejectPlay: true }; const e = env(opt); const A = e.A; legacySpy(A);
+  BGM(A, 'TITLE', './bgm/title.ogg'); BGM(A, 'TOWN', './bgm/town.ogg');
+  A.scene('TITLE'); await tick(10);
+  assert.equal(A.status().pendingScene, 'TITLE', '開始画面＝最初の操作まで保留');
+  A.scene('TOWN'); await tick(10);
+  assert.notEqual(A.status().pendingScene, 'TITLE', '別の場面へ移ったら TITLE の保留は捨てる'); assert.equal(A.status().scene, 'TOWN');
+  opt.rejectPlay = false; A.unlock(); await tick(30);
+  assert.equal(A.status().scene, 'TOWN', '最初の操作で TITLE が割り込まない（今の場面のまま）'); assert.equal(A.status().pendingScene, null);
+  assert.equal(A.status().slots.filter((x) => x.active).length, 1, 'BGM は1本');
+});

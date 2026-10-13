@@ -324,12 +324,12 @@
         run(mon, kf);
       }
       run(title, [{ opacity: 1, offset: 0 }, { opacity: 0, offset: 0.45 }, { opacity: 0, offset: 1 }]);
-      it.anims = anims; it.end = now + (can ? dur : 0); S.introAnims = anims.length;
+      it.anims = anims; it.end = now + (can ? dur : 0); S.introAnims = anims.length; it.final = Object.assign({}, cams[INTRO_SAMPLES]);   // 道筋の終点（寄り終わりはここから通常の追従へ＝途中で注視点が変わっても飛ばない）
     }
     /** 寄り終わり：最後の姿を通常の描画で置いてからアニメーションを外す（1フレームも飛ばない） */
     function finishIntro(it) {
       const done = it.done; S.intro = null;
-      S.cam = Object.assign({}, it.to()); S.cam.P = o.persp; S.sig = ''; S.dirty = true; title.style.opacity = '0';
+      S.cam = Object.assign({}, it.final || it.to()); S.cam.P = o.persp; S.sig = ''; S.dirty = true; title.style.opacity = '0';   // 2026-10-13 開発28：keyframe の終点そのもの（動いている間に目標＝fitZoom が少し変わっていても、ここで飛ばず通常の追従で寄る）
       apply();
       for (const a of it.anims || []) { try { a.cancel(); } catch (e) {} }
       wrap.classList.remove('intro'); rootEl.classList.remove('rfw-intro');
@@ -349,7 +349,11 @@
         if (!painted && o.art && now - it.t0 < 3000) it.hold = now + it.holdMs;   // 区画を描き終えるまで俯瞰を止めておく（最大3秒）
         if (now < it.hold) { S.cam = Object.assign({}, it.from); }
         else if (!it.anims) startIntroAnims(it, now);
-        if (it.anims) { if (now >= it.end) finishIntro(it); else { S.raf = root.requestAnimationFrame(tick); return; } }   // 動いている間は合成スレッドに任せる（描き直さない）
+        if (it.anims) {   // 動いている間は合成スレッドに任せる（描き直さない）
+          // 2026-10-13 開発28：終わりはアニメーションそのもので見る（約300個を作る間に開始時刻が1〜数フレーム遅れる＝時計で切ると終点の手前で止めて最後の姿へ飛んでいた）。時計は保険（+600ms）
+          const a0 = it.anims[0], ct = a0 && a0.currentTime, over = !a0 || a0.playState === 'finished' || a0.playState === 'idle' || (typeof ct === 'number' && ct >= it.dur - 0.5) || now >= it.end + 600;
+          if (over) finishIntro(it); else { S.raf = root.requestAnimationFrame(tick); return; }
+        }
       } else if (S.goal) {
         const f = 1 - Math.exp(-dt / 170), g = S.goal;
         for (const k of ['tx', 'ty', 'ax', 'ay', 'tilt']) S.cam[k] = lerp(S.cam[k], g[k], f);

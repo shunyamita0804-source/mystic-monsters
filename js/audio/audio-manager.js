@@ -361,6 +361,7 @@
     if (vs.cur || vs.wantId) stopVoice(120);   // 2026-10-13：場面（施設・バトル）が変わったら前の声を止める＝次の画面で遅れて鳴らない
     const ms = FADE[opts.fade || 'normal'] != null ? FADE[opts.fade || 'normal'] : FADE.normal;
     st.scene = key; st.plays++;
+    if (st.pendingScene && st.pendingScene !== key) st.pendingScene = null;   // 2026-10-13 開発28：別の場面へ移ったら、自動再生の制約で保留していた前の場面（開始画面の TITLE など）は捨てる＝次の操作で前の曲が割り込まない
     try {
       const entry = resolveBgm(key);
       if (entry && entry.silent) { stopFiles(ms); legacyStop(); st.source = 'silent'; st.pendingScene = null; return true; }   // 無音の場面：ファイルも合成音も止める
