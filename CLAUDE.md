@@ -841,6 +841,16 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
   - テスト：qa-e2e-dev25-1013 に D25-A2（3サイズ×ソラモ／ガウル）・D25-B2（3サイズ×6体／8体・実際の勝ち／負け）。NT-6（MMNPC.phraseGroups）・TN-03（tbPhrase）を書き直し
   - 回帰の実行で見つかったテスト側の揺れ（ゲームは変えていない）：SF-B2（qa-e2e-spec-1008）・PR-B2（qa-e2e-prod-1008）＝①降参ボタンを決まった時刻に押していた（開発24 から技の発動中は降参ボタンを隠す＝押せない）→ 見えて押せるのを待って押す（pressSur）②STOP を「確かめる」と「押す」に分けていた（その間に試合が終わると同じボタンの「もどる」を押して画面を出る）→ ページの中で一度に
 
+### 開発25 追加便：NPC のボイス 12本・BGM の候補 3曲（2026-10-13。**ユーザー承認待ち＝main へ未マージ・未公開**。基準 a681c37 への差分）
+
+- 素材：ZIP「全NPCボイス15本_BGM3本」（voice 15・bgm 3。sha256 は納品の一覧と全部一致）。MP3 → OGG Vorbis q4／AAC 128k（ボイス）・OGG q5（BGM）に変換しただけ（元の MP3 は置かない）。AUDIO_CREDITS.md の「開発25 追加便」
+- **フィナ「こんにちは」**：registry の fina_hello の参照先だけ新しい音（fina_hello_new・gain 0.88）へ。場面（序盤の声かけ・旧フィナの紹介）は変えない。ほかのフィナ7種は不変。旧 fina_hello.ogg／m4a はファイルだけ残す（AUDIO-15 の KEEP）
+- **既存の場面に1回ずつ**（js/npc/voice-cues.js の CUES・LINE_VOICE）：セドリック「さあ！いよいよ開幕です！」＝公式大会の開幕の会話の1行目（CEDRIC_EV.open・BGM CEDRIC のまま・対戦表は顔なしのまま）／セルジュ「ようこそ」＝聖獣士登録の受付の1行目（OPEN_TALK.serge）と聖獣士管理局の再訪の入口（facVoice("bureau")・登録の前＝S.playerNamePending の間は鳴らさない）／ゲンシン「うむ」＝特訓のゴール（trScr の done・0.35秒あと）／ヴァルガス「うむ」＝闘技場（ロック中）でランクを認める一言（a_rank）のときだけ・30秒は繰り返さない／リュウ「よっ！」＝道中のライバルの遭遇でリュウの姿が出た瞬間（world-board の rivalCut・field-view の encounterShow）／リュウ「やるじゃん」「へへっ」＝ライバル戦の決着（fight() が呼ぶ ban の WIN!／LOSE を読むだけ・BATTLE_DRESS のラベルがライバル戦のときだけ・0.55秒あと）。fight()・Phase 6・勝敗の判定は変えていない
+- **登録のみ**（enabled:false・CUES の on:false＝読み込みもしない）：レオナ2種・ラグナス（人）2種＝三伝説の再会・対戦の場面が未実装。**アストラッド**：新しい「待っていた」（astrad_greet）・「全力でこい！」（astrad_prebattle）は 2026-10-13 開発26 で受領済み＝登録のみ（enabled:false・場面なし）。旧音源の2本（「来たか」「お前の力、見せてみろ！」）は使用禁止＝取り込まない。エリオット「やあ」は開発24 の elliot_hello_OPTIONAL と同じ元音源＝二重に登録しない
+- **BGM の候補**（assets/audio/bgm/candidates_1013/・registry の BGM_CANDIDATES＝MMAUDIO に登録しない＝どの場面からも鳴らない）：Top画面・闘技場・レジェンド戦。TITLE の無音・ARENA・公式戦／野生／レア／ライバルの曲は変えていない。試聴は prototype/audio_candidates_1013/（本編からつながない）。採用する場所と鳴らし始めはユーザーの判断待ち
+- MM_BUILD／version.json＝2026-10-13-voice15
+- テスト：tests/voice15-1013.test.mjs（VC-01〜05）・実ブラウザ tests/qa-e2e-voice15-1013.test.mjs（VB-1＝3サイズ・VB-2〜6）。DV-01／05・AUDIO-15・PH-05・VAR-4 を書き直し（声の一覧・管理局の入口・候補の曲・音声のファイル名・ヴァルガスの一言の後ろに声）
+
 ### 開発24：バトル画面・観客の声・NPC のボイス（2026-10-13。いまの正式＝試遊採用・既定 ON。基準 d356155 への差分）
 
 - **ユーザー承認（2026-10-13・ZIP「開発24_バトル歓声ボイス_実装公開検証_最終パック」）**：目標デザインは 04_references/approved_battle_mockup.png。実装 → テスト → main → GitHub Pages の公開 URL での確認まで一括（今回の対象に限って旧「Draft のみ」を上書き）。PR #20（立体サイコロ）・#21（リアクション）は統合済み＝再実装しない

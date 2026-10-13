@@ -6,6 +6,7 @@
 //  ・フィナ：台詞の意味が声と合う行だけ（会話の行の voice。npc.js が行の表示に合わせて鳴らし、会話を閉じたら止める）と、Chapter 1 の世界のボードの限られた出来事（見つけた・挑戦の成否・レア）。
 //    毎マス・全操作では鳴らさない（同じ出来事の声は CUE_COOLDOWN_MS のあいだ繰り返さない）。
 //  エリオット（研究所）の「やあ」は 2026-10-13 開発25 から再訪の挨拶（既定 ON）。
+//  2026-10-13 開発25 追加便：セドリック（大会の開幕）・セルジュ（受付・管理局の再訪）・リュウ（道中の登場・ライバル戦の決着）・ゲンシン（特訓の終わり）・ヴァルガス（ランクを認める一言）。三伝説は登録のみ。
 //  2026-10-13 開発25：施設の入口の声は【2回目以降の訪問】だけ。初回の案内（npcFirst・市場のカレンの初回）が出る訪問は skip で「この訪問は済み」にして鳴らさない（index.html の facVoice）。
 // =========================================================
 (function (root) {
@@ -22,9 +23,22 @@
     'fina.challengeOk':  { voice: 'fina_yeah', on: true },                 // 封印の遺跡門の挑戦に成功
     'fina.challengeNg':  { voice: 'fina_hmm', on: true },                  // 同・失敗
     // レアモンスターの「なんだろう？」は、初めてのレアのフィナの一言（world-driver.js の ch1_first_rare の行の voice）だけ（遭遇の演出・強制バトルは変えない）
+    // ---- 2026-10-13 開発25 追加便 ----
+    'facility.bureau': { voice: 'serge_welcome', on: true },   // 聖獣士管理局＝セルジュ「ようこそ」（再訪の入口。初めての登録の受付は会話の1行目＝OPEN_TALK.serge の voice）
+    'ryu.appear':  { voice: 'ryu_hello', on: true },     // リュウ「よっ！」＝道中のライバルの遭遇の演出でリュウの姿が出た瞬間（Chapter 1 の世界のボード・Chapter 2 のフィールド）
+    'ryu.won':     { voice: 'ryu_chuckle', on: true },   // リュウ「へへっ」＝ライバル戦の決着でプレイヤーが負けた（リュウの勝ち）
+    'ryu.lost':    { voice: 'ryu_praise', on: true },    // リュウ「やるじゃん」＝ライバル戦の決着でプレイヤーが勝った
+    'genshin.ack': { voice: 'genshin_ack', on: true },   // ゲンシン「うむ」＝特訓をやり終えた（「よくやった。…」の一言と同時）
+    'vargas.ack':  { voice: 'vargas_ack', on: true, cooldown: 30000 },   // ヴァルガス「うむ」＝闘技場（ロック中）でランクを上げた子を認める一言のときだけ（押すたびに鳴らない）
+    // 三伝説（登録のみ・場面が未実装）：再会の挨拶・対戦の直前。VOICE_REGISTRY も enabled:false。アストラッドの新しい声は未着＝無い
+    'legend.leona.greet':   { voice: 'leona_greet', on: false },
+    'legend.leona.battle':  { voice: 'leona_prebattle', on: false },
+    'legend.ragnas.greet':  { voice: 'ragnas_greet', on: false },
+    'legend.ragnas.battle': { voice: 'ragnas_prebattle', on: false },
   });
   /** 会話の行に付ける声（データ側で { voice: 'fina_yes' } のように書く）。ここで false にした声は会話でも鳴らさない */
-  const LINE_VOICE = Object.freeze({ fina_hello: true, fina_yeah: true, fina_hmm: true, fina_look: true, fina_hey: true, fina_giggle: true, fina_yes: true, fina_wonder: true });
+  const LINE_VOICE = Object.freeze({ fina_hello: true, fina_yeah: true, fina_hmm: true, fina_look: true, fina_hey: true, fina_giggle: true, fina_yes: true, fina_wonder: true,
+    cedric_opening: true, serge_welcome: true });   // 2026-10-13 開発25 追加便：セドリックの開幕の1行目・セルジュの受付の1行目（台詞の頭と声が同じ）
   const CUE_COOLDOWN_MS = 0;
   const last = {}, visit = {}, log = [];
   const A = () => root.MMAUDIO;

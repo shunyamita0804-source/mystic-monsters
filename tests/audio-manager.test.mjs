@@ -261,11 +261,14 @@ test('AUDIO-15：assets/audio に同じ曲の別形式（ogg／mp3／wav…）�
   const { got } = loadRegistry();
   // 2026-10-13 開発24：同じ音の OGG と M4A は、同じ登録の src の配列（そのブラウザで再生できる1つだけを選ぶ＝二重に鳴らない）のときだけ置いてよい
   const pairs = new Set([...Object.values(got.se), ...Object.values(got.voice)].map(srcsOf).filter((a) => a.length === 2 && /\.ogg$/.test(a[0]) && /\.m4a$/.test(a[1]) && a[0].replace(/\.ogg$/, '') === a[1].replace(/\.m4a$/, '')).map((a) => onDisk(a[0]).replace(/\.ogg$/, '')));
+  pairs.add(path.join(ROOT, 'assets/audio/voice/npc_1013/fina_hello'));   // 2026-10-13：旧フィナ「こんにちは」の対（参照先を差し替えて残したもの・下の KEEP）
   for (const [k, v] of Object.entries(stems)) assert.equal(v.length, pairs.has(k) ? 2 : 1, `同じ曲の別形式：${v}`);
   for (const f of files) assert.doesNotMatch(f, /\.(zip|wav|tmp|bak|DS_Store)$/i, f);
-  const ref = new Set([...Object.values(got.bgm), ...Object.values(got.se), ...Object.values(got.voice)].flatMap(srcsOf).map(onDisk));
+  const { REG } = loadRegistry();   // 2026-10-13 開発25 追加便：BGM の候補（bgmCandidates＝MMAUDIO には登録しない・どの場面からも鳴らない）も registry の参照に数える
+  const ref = new Set([...Object.values(got.bgm), ...Object.values(got.se), ...Object.values(got.voice), ...Object.values(REG.bgmCandidates || {})].flatMap(srcsOf).map(onDisk));
   // 2026-10-13 開発25 E：旧 DICE_CUBE（2026-10-12 の採用の1本）は上書き・削除しない＝新しい音（dice_1013）の材料・比較用に残す（tools/dice1013/se_cut.py）
-  const KEEP = new Set(['assets/audio/se/dice_1012/dice_magic_b4_long_tap.ogg'].map((p) => path.join(ROOT, p)));
+  // 2026-10-13 開発25 追加便：旧フィナ「こんにちは」（fina_hello.ogg／m4a）は参照先を新しい音（fina_hello_new）へ差し替えただけ＝ファイルは残す（戻すときは registry の1行）
+  const KEEP = new Set(['assets/audio/se/dice_1012/dice_magic_b4_long_tap.ogg', 'assets/audio/voice/npc_1013/fina_hello.ogg', 'assets/audio/voice/npc_1013/fina_hello.m4a'].map((p) => path.join(ROOT, p)));
   for (const f of audio) assert.ok(ref.has(f) || KEEP.has(f), `registry から参照されていないファイル：${path.relative(ROOT, f)}`);
   assert.ok(existsSync(path.join(ROOT, 'AUDIO_CREDITS.md')) && existsSync(path.join(ROOT, 'assets/audio/README.md')));
   const credits = rd('AUDIO_CREDITS.md'); for (const n of ['JP Soundworks', 'CC BY 4.0', 'Interface SFX Pack 1', 'Ivokard', 'CC0', 'alkakrab', 'Free 25 Fantasy RPG Game Tracks Vol.3', 'HydroGene']) assert.ok(credits.includes(n), n);

@@ -353,3 +353,92 @@ sha256：
 - fina_yes.m4a：869d4607529e886a17265a1dd7c001e48a34f9664a3c87de74ba05b4e3465db3
 - karen_welcome.m4a：35ff09960c5268795ea10f6d6432d5d042a091efd75cb3eec7ee0a16b9ff0b0e
 - nick_hello.m4a：3a89ce23edf8464ba219f0eaa3e44cafc80a22ace01b6ecd4931d7bdfab0c98f
+
+## 2026-10-13 開発25 追加便：NPC のボイス 12本・BGM の候補 3曲（ユーザー提供 ZIP「全NPCボイス15本_BGM3本」）【試遊・ユーザー承認待ち＝main 未統合】
+
+ユーザー提供の MP3（元のファイル名・データのまま。sha256 は ZIP の 02_音源一覧とSHA256.csv と全部一致）を、リポジトリの側で **OGG Vorbis（-q:a 4・44.1kHz ステレオ）と AAC M4A（128k）に変換しただけ**（ffmpeg。EQ・音量・長さ・ピッチは変えていない・メタデータは外した）。元の MP3 はリポジトリに置かない。音量の差は registry の `gain`（約 -18 LUFS にそろえる。測り方は既存のボイスと同じ ffmpeg ebur128＝既存の fina_hello.ogg が -19.9 で一致）。
+**音声・曲の生成元（合成音声サービス・作曲者など）とその利用規約・商用利用の条件は、ZIP に記載が無く未確認＝公開前の確認事項**（ZIP の 00_必ず読む.txt も「各音源の商用利用に必要な生成元の規約等は別途確認」）。
+
+| id | 話者・台詞 | 元ファイル（sha256） | 長さ | 元の音量 | gain | 既定・出しどころ |
+|---|---|---|---:|---:|---:|---|
+| fina_hello（参照先＝fina_hello_new） | フィナ「こんにちは」（新） | フィナ、こんにちはNew.mp3（1f34af0fdc3ef7326a6044de0ab2af26d306add3e30aed91fb6b2abf51642d4e） | 1.149秒 | -16.9 LUFS | 0.88 | ON・従来の fina_hello の場面のまま（旧 fina_hello.ogg／m4a はファイルだけ残す） |
+| cedric_opening | セドリック「さあ！いよいよ開幕です！」 | セドリック、さあ！いよいよ開幕です！.mp3（a42def5298b746d9ca660b8e8769a4711bbc294563dc37d857cbaf45fba77cc3） | 2.194秒 | -21.6 LUFS | 1.51 | ON・公式大会の開幕の会話の1行目 |
+| serge_welcome | セルジュ「ようこそ」 | セルジュ、ようこそ.mp3（5c90e34ce74e947ef52b28c7a7b7b27ea2014313d822c2b079ca1a6a54f89598） | 0.993秒 | -19.4 LUFS | 1.17 | ON・聖獣士登録の受付の1行目・聖獣士管理局の再訪 |
+| genshin_ack | ゲンシン「うむ」 | ゲンシン、うむ.mp3（7ebe1ae8f0713d86cd0e4aa839f37b652d17ea7757a37f1619462874adaa0f91） | 0.757秒 | -23.8 LUFS | 1.94 | ON・特訓をやり終えたとき |
+| vargas_ack | ヴァルガス「うむ」 | ヴァルガス、うむ.mp3（20ff1775940ce0d18de15994bbb0218ab986d5078f7351818dba1d6e260c3ba6） | 0.679秒 | -25.6 LUFS | 2.39 | ON・闘技場（ロック中）でランクを認める一言のときだけ |
+| ryu_hello | リュウ「よっ！」 | リュウ、よっ！.mp3（200a11c6aa24455a90fdddf22601fde64f13d712193ab5ed625e6b9e86521dfc） | 0.914秒 | -19.3 LUFS | 1.16 | ON・道中のライバルの遭遇でリュウが現れた瞬間 |
+| ryu_chuckle | リュウ「へへっ」 | リュウ、へへっ.mp3（70cf3ff438b586941c574bccda73db1a02f628e345a5210ba3b5d64773eccdb3） | 0.836秒 | -24.4 LUFS | 2.08 | ON・ライバル戦でプレイヤーが負けた決着 |
+| ryu_praise | リュウ「やるじゃん」 | リュウ、やるじゃん.mp3（e09131b2d8725487205d7d428b0c22b30fd6a127521f9df0137650bdb5d1f650） | 1.071秒 | -17.6 LUFS | 0.95 | ON・ライバル戦でプレイヤーが勝った決着 |
+| leona_greet | レオナ「よく来ましたね」 | レオナ、よく来ましたね.mp3（53a04493029b0ef9d7750218193ffd2f98a33b7955b21816d962c73f52ca0a44） | 1.306秒 | -17.1 LUFS | 0.9 | 登録のみ（enabled:false・場面が未実装） |
+| leona_prebattle | レオナ「さあ始めましょう」 | レオナ、さあ始めましょう.mp3（9ea9a186a1b2fc22878d39cf27581c2a42e65b11e23f35431892ff30acfa1764） | 1.802秒 | -16.2 LUFS | 0.81 | 登録のみ |
+| ragnas_greet | ラグナス「来たか」 | ラグナス、来たか.mp3（dc6ca36410a14acb5548a209894b87df9a514c00408844ec6df271e76b056830） | 0.993秒 | -17.7 LUFS | 0.96 | 登録のみ |
+| ragnas_prebattle | ラグナス「お前の力見せてみろ！」 | ラグナス、お前の力見せてみろ！.mp3（dd38fd192c8522a925787b7f20ef8fd1e8984c7bd43a6685b93b8c79aac14d46） | 2.351秒 | -13.6 LUFS | 0.6 | 登録のみ |
+
+取り込んでいないもの：
+- **アストラッド「来たか」（d3ad7bda81895d2c9dcbe5a32ced1abfa6dde42509d719c4343a95dbfd1ec552）・「お前の力、見せてみろ！」（3f485d20eb83871cba3fbcb0d0071f410e238b1cca4a62f617793e25ea1938f5）＝使用禁止の旧音源**（2026-10-13 の実装指示）。新しい「待っていた」「全力でこい！」は受け取った ZIP に無い＝未着（アストラッドの声は登録していない）。
+- 研究所「やあ」（研究所、やあ(1).mp3・61e5821c7b97d7b7c29ea4408e7b27876a2c6e749f3adf666a9cb5626d877e58）＝開発24 の elliot_hello_OPTIONAL と同じ元音源＝二重に登録しない。
+
+変換したファイルの sha256（OGG／M4A）：
+- fina_hello_new：f7ee69d402c9a14fd145770765c0ae4fc40d21ddd0a19799b9eef3d60f852cb7／a7e11053d81fdbc9d01851f574e7b4dd682754f1d7a2c97915440e0eef45fddf
+- cedric_opening：5427f8ff9f9f39bafeb88af00b6b6577115aecc4e68ee3a5152be34ff267a379／b6c16c3db98fed4be6f0594041f920b95a0a4a0cc66ad811d81684a3f3e01cad
+- serge_welcome：7bf6ab448dbd05a0062c1217c9c96505aa201c8c32e0443d96765790cefbbfa7／192fb36c64b148cd74fc83d0d25f5c257d261ff71f1a555461b6e408b4bcb90a
+- genshin_ack：09c5b0e462ced7d12e5a405f73ff77b92d742637c462a3a7aa3b5827957ab39a／9ba82d6b20c5f9c7819e9ae881f914c24cf7b66134c442e2532dc34247748fbd
+- vargas_ack：16f17e474d306024ccbade8312bcc316140606b6d94153f8de8db5f04f07a197／411b947caf98485c058576915d7b527a3a58ebafbc389934314554999f5e2f31
+- ryu_hello：79f00c519e18ada9992a2fb51478f6a75adbeea986d642205e40e45831c480fa／cd212d1626c71fb697b40ae20970d36dd3b89b577dd04b89f5272c2be5ba825a
+- ryu_chuckle：81a8fe1cf1c6eac1f7ccf11275b61a520083e9d71d9532628176c79302c0efa3／5a0adf55b51f6944390e6a4bb32b7d6cd44cc8d9cab881c6eecb604528929af0
+- ryu_praise：e6d314206f9b5f0b2785c7951cd8e156a8c36f0a8552feec4eff0275fd8926a4／d41c126f094597d60da364c653bad8192529fb58c97c29b15d6d60f924829d36
+- leona_greet：bf6f0a80d2ab81dac99d0acd103670afa44a5af2f5c816df84e1ff833522e79c／ab8b741acea99a36231505d9d1fb2421fedc87220eeffec7c081bbeed71d4d86
+- leona_prebattle：5385274790b791133b69662911fcd73d576036091f87cb7d0b79951ad8befab2／f78bd4989eea385566126f38428db21bf96724866feb07176ee5ef61dfeaaeab
+- ragnas_greet：bcb50fafb456ec8ee784b5ef5f2b614238b67af7a2eb456feb19c06e96421b60／a37dcd25589ef211d957f2cb14b22e60ddd28fa954b846eaef9711fff46ea4ac
+- ragnas_prebattle：02d8c86637b4d03bebee03c0bfddb1a0e56838d14f59272f8cfce79bda81d350／08023fa1f06e982478327e4bbbc9defe882f86d643d8478f22d5b3360410def6
+
+**BGM の候補 3曲（assets/audio/bgm/candidates_1013/・OGG Vorbis q5）＝試聴だけ・どの場面からも鳴らない**（js/audio/audio-registry.js の BGM_CANDIDATES＝MMAUDIO に登録しない。採用する場所と鳴らし始めは未決＝ユーザーの判断待ち）：
+
+| 候補 | 元ファイル（sha256） | 長さ | 元の音量 | gain（目安） | 今の正式（変えていない） |
+|---|---|---:|---:|---:|---|
+| TITLE_CANDIDATE（title_candidate.ogg・d032ae4f001caad1338fd8e1e29e32f443f9ee18736273e76bb9b88172afba25） | Top画面BGM.mp3（00c152d2f41d24950a44177ee4b01a8e0aee4b07791b70336cc999010d193df1） | 230.9秒（頭に約0.56秒・終わりに約1.7秒の無音） | -7.1 LUFS | 0.29 | TITLE＝silent（開始画面は無音） |
+| ARENA_CANDIDATE（arena_candidate.ogg・db1bbbd34c5b4774a282ad9cfc36eadd7befb17ce1f3fdf7eadb3d362157ec31） | 闘技場BGM.mp3（55fe44454bf329fc2402c23b6a4f96f64cc61d10b9321ff00f3577ec0823e611） | 185.7秒 | -9.7 LUFS | 0.39 | ARENA＝Swords At Midnight Loop（闘技場の画面は未実装） |
+| LEGEND_BATTLE_CANDIDATE（legend_battle_candidate.ogg・28f56e01360c7887c7d92df0291af1de7c98ab3324a84456b44e3a27d060f542） | レジェンド戦BGM.mp3（47d9dfa4b86572bdb1f357a976f91b91183779b57b6ddf337e7ce7bf96b87a18） | 271.6秒（終わりに約1.3秒の無音） | -8.9 LUFS | 0.35 | 三伝説との対戦は未実装（公式大会・野生・レア・ライバルの曲は変えていない） |
+
+## 2026-10-13 開発26：確定ボイス 15本（ユーザー提供 ZIP「ミスモン開発26_確定ボイス15本_PR24最小差分」）【試遊・ユーザー承認待ち＝main 未統合】
+
+ZIP の同梱の OGG／M4A をそのまま置いた（リポジトリの側では変換・加工していない。ZIP の manifest_voice15.json によると、新しい13本は loudnorm I=-19 LUFS・TP=-2 dBTP で OGG q5／AAC 128k に変換したもの、アストラッドの2本は以前に検証済みの公式補足パックの派生）。元の MP3（original_MP3/）はリポジトリに置かない（ユーザーが保管）。sha256・長さは manifest と全部一致し、30ファイルとも最後までデコードできることを確認した。
+同じ id のファイルは中身だけ差し替えた（フィナ8本・ダン・ニック・ベルナ・レオナ2本＝出しどころ・登録 id は変えていない）。上の開発24・開発25 追加便の表の元ファイル・sha256・音量は差し替え前の記録。gain＝約 -18 LUFS にそろえる従来の計算（10^((-18.04−LUFS)/20)。LUFS は manifest の OGG の値）。
+**声の生成元・利用規約・商用利用の条件は、ZIP に記載が無く未確認＝公開前の確認事項**（確認済みとはしていない）。
+
+| id（ファイル） | 話者・台詞 | 元ファイル（sha256） | 長さ | 音量 | gain | 既定 |
+|---|---|---|---:|---:|---:|---|
+| fina_hello（fina_hello_new） | フィナ「こんにちは！」 | フィナ、こんにちは確定版.mp3（138baa8677fa636402f7152f636f116e0f26fe09b7217440ca3d6c2c25eb6d7c） | 1.071秒 | -19.03 LUFS | 1.12 | ON・従来の場面のまま |
+| fina_yeah | フィナ「やったね！」 | フィナ、やったね！確定版.mp3（b8c8a5af315b8059dc763ef3bb24bfb873eb5a50e844ff6b75f6d36265bd7e49） | 0.993秒 | -19.07 LUFS | 1.13 | ON・従来の場面のまま |
+| fina_hmm | フィナ「うーん……」 | フィナ、うーん、、確定版.mp3（3745ed6a066924fc8e38869725131f9cb217843bd7e75d11a1137084cea58a78） | 1.646秒 | -18.94 LUFS | 1.11 | ON・従来の場面のまま |
+| fina_look | フィナ「見て見て！」 | フィナ、見て見て！確定版.mp3（37b9ea61dd7489e050b5d4f4cc5a3bfa8ea5cf2635d77c49f0a75a171df9b498） | 0.993秒 | -19.04 LUFS | 1.12 | ON・従来の場面のまま |
+| fina_hey | フィナ「もう！」 | フィナ、もう！確定版.mp3（8164f8aee112f14f59ad2cb642d219243c4a43c9ece3e8face382f569b3ae06e） | 1.228秒 | -19.1 LUFS | 1.13 | ON・従来の場面のまま |
+| fina_giggle | フィナ「えへへっ」 | フィナ、えへへっ確定版.mp3（c8e1ec7038ac8fd5d565fd6a017d98895f5ef400dda6864d1e18c0138969c8de） | 0.914秒 | -19.04 LUFS | 1.12 | ON・従来の場面のまま |
+| fina_yes | フィナ「うん！」 | フィナ、うん！確定版.mp3（f9a1596748e8781b9d6a7bec65c8250807bc4ddaa154ae3b3dae77f989922bf4） | 0.679秒 | -18.99 LUFS | 1.12 | ON・従来の場面のまま |
+| fina_wonder | フィナ「なんだろう？」 | フィナ、なんだろう？確定版.mp3（8b18f46f924d8bf6235e769db064fba374940e20accb9f1bbaf3e82893a2f73f） | 1.071秒 | -18.99 LUFS | 1.12 | ON・従来の場面のまま |
+| berna_welcome | ベルナ「いらっしゃい」 | ベルナ、いらっしゃい確定版.mp3（80fa83329146c8cd81e8a3bfd6fae9693831c1d42dc3148b51cbf43708597c24） | 0.993秒 | -18.97 LUFS | 1.11 | ON・従来の場面のまま |
+| nick_hello | ニック「今日も元気そうだな」 | ニック、今日も元気そうだな確定版.mp3（1fc2679a0c552c121e8edbaf1c2d9cdb69818926a87ac4fdf9eb97ad353b170f） | 1.802秒 | -19.06 LUFS | 1.12 | ON・従来の場面のまま |
+| dan_hello | ダン「よう、準備はできたか？」 | ダン、よう準備はできたか？確定版.mp3（3e92502950bcd8a73b440bcb43dd8c29729bfafa2842c49fdf71257243a7d018） | 2.038秒 | -19.02 LUFS | 1.12 | ON・従来の場面のまま |
+| leona_greet | レオナ「よく来ましたね」 | レオナ、よく来ましたね確定版.mp3（0564a6ff38bb379de90794d88ff460eff23f9a560e73101f0b13952cd65a20fa） | 1.489秒 | -19.1 LUFS | 1.13 | 登録のみ（enabled:false） |
+| leona_prebattle | レオナ「あなたの信念が本物なら、その力を私に示してみなさい」 | レオナ、バトル導入前確定版.mp3（340fa01910eb90701ca2eed214be0c9511766a2d23a65ae399e1c4ec0d1b15c1） | 5.0秒 | -18.5 LUFS | 1.05 | 登録のみ（enabled:false） |
+| astrad_greet | アストラッド「待っていた」 | 追補ZIP/astrad_greet.mp3（583cd34c927407d052dd161734252ff68e74f6a9fad49c76dc84ff1e1c8a9603） | 1.411秒 | -19.26 LUFS | 1.15 | 登録のみ（enabled:false・新規） |
+| astrad_prebattle | アストラッド「全力でこい！」 | 追補ZIP/astrad_prebattle.mp3（9b6f8a5361ecbccf2101475d39c1339d6600de51709856dbefbdb114484430ea） | 1.228秒 | -19.24 LUFS | 1.15 | 登録のみ（enabled:false・新規） |
+
+アストラッドの2本は、使用禁止の旧音源（「来たか」d3ad7bda…・「お前の力、見せてみろ！」3f485d20…）とは別の新しい声（元の sha256 が違う）。旧音源は今回も取り込んでいない。
+
+ファイルの sha256（OGG／M4A）：
+- fina_hello_new：766fb3b74d9fa69871e498787de015529ff4493d5b13723216393342187ed113／a4f4b0c11975b598fff7c318d7265ce543c63638cc00150d1d9702e69e84e66b
+- fina_yeah：1588f55ca9945f99fd639a15f0fe0b5230c7f5223af8cacf33a564891fcb1403／d1cdf170b6d3c1b197fffc11bf87a1b4ee325aa3c8d7f8ad71d8426f286b39da
+- fina_hmm：fbb79971622541a38392dab047b375df5fa02636e879a3dbf93f37f2c8d39d40／bafbbb352fe839739d03754ddacc988a55b7daec038b12dea52bc9d58ebefe84
+- fina_look：19a3864a9c130a6f1ddf604dab6e8ef2b26594ae075a54394495fdedcee2cdeb／20d8da368049933907615be0231a8649b84d0813839d976da7d50e762a629f48
+- fina_hey：2a1d20e887cf68a78ab425cc6984cb394a1714d5ba6e906783e04046a7a6ebb6／e0509dd462ef8c7572974298a348f1176ad97eb8b9539fddb89f92f33edfa813
+- fina_giggle：d708489636186b98369af6ee191a628ac3ee086b2da79349a1e19533c9582ace／b490c598a9849c0e7210e2347263a2c7f0c2f00619fb5f636ba57827d19f1249
+- fina_yes：6f0874ef1b55c01ff03205000a3c92614efba0124a3954b13ed0b3ad0650bcbc／0fb45e27f8436ef7218cd0d62fd482a68dc428cbad7c51dd886e6c8ab6eb1bd0
+- fina_wonder：e7b67b0c707766a20e9f57778c5b52f52807903aaeb32f61ec98ffde5cbb6276／55c9f37e040ab6d359a330f2b378f666f159cec06742030253d5dcce27268580
+- berna_welcome：2545dcfad61cfd62057c6719a403534ae5053ce537790265f038d95461686c92／e81d256fd352f5cad3a47d6e9208979cb6a80e6f341ba8d9bc8dac240022c2fb
+- nick_hello：1fc591ed4cd5ccfc4846331113b3dab480bbd8383877d09f6e2ed152104ae6b3／4115afffb8222e2624ca481116deee9e54c34f1da16092c19052c541f39966fa
+- dan_hello：64d5ec0274572363c8da363a4c50bb85a172fac8455036c701f2d71b3d7c57b5／132b2660ec75ffff09ba4fd592202a84e7207c46dfd210acfbb46222d4c3c9ff
+- leona_greet：d9d26c74f737c4ee55719b1ec8b84b05d9ca925302cd316d4bd3fef80f2ae00c／d5b156ec443599348395a2dd148c15ed3a790441f9e1e067b6cc1722426b2a40
+- leona_prebattle：0883100e02021d852aa0e740ebb794febf57c47ca151bb870d7f41390f279960／7ea5e41520d98a22a6fa5a83e1a1d9bd1483e981bd24fbb11070450d42d64d5a
+- astrad_greet：24385b57ddc04ce19bb5fc5801b1ffbf34251c03df81b0ee76427fe9a7f9341b／b44d5ea8293d90762fb778a8fb80d52081e1f6140bd087c5c3d9e3be5d9f70d7
+- astrad_prebattle：478645adf4ca4775ffcac4c45bd3f57bd53ad5a2ce39e42913d4f243aaa1fca8／e459fbb2ba5830159fdc713ed7c3a9f0e242041cdc95b84270624e818a284977
