@@ -42,7 +42,7 @@ test('TN-03：大会2 対戦前比較（2026-10-07 刷新・2026-10-13 開発25 
   assert.match(c, /data-nsfx="1" onclick="p9VsGo\(this\)" aria-label="対戦開始"/); assert.doesNotMatch(c, /対戦表にもどる|class="pcback/, '開発25 A：戻るボタンは出さない'); assert.match(HTML, /const TB_CMP_MAX=999;function TB_CMP_W\(x\)\{x=Math\.max\(0,Math\.min\(TB_CMP_MAX,\+x\|\|0\)\);return \+\(x\/TB_CMP_MAX\*100\)\.toFixed\(2\)\}/, '999＝100% の一次の目盛り');
   assert.match(CODE, /function p9VsGo\(b\)\{if\(bBusy\|\|!p9arm\(b,"もう一度押すと試合開始"\)\)return;/, '2度押し → 大会3 → fight()');
   assert.match(fnOf('tbIdle'), /MMARENA\.idleSrc\(x\.sp\)/); assert.match(fnOf('tbIdle'), /MMARENA\.flipOf\(side,x\.sp\)/);
-  assert.match(fnOf('tbSkillDesc'), /MMP10M\.skillText\(x\.sp\)/); assert.match(fnOf('tbSkillDesc'), /p11Esc\(k\.desc\|\|""\)/);
+  assert.match(fnOf('tbSkillDesc'), /MMP10M\.skillText\(x\.sp\)/); assert.match(fnOf('tbSkillDesc'), /tbPhrase\(k\.desc\)/); assert.match(fnOf('tbPhrase'), /p11Esc\(w\)/); assert.match(fnOf('tbPhrase'), /return p11Esc\(t\)/);   // 2026-10-13 開発25 残件A：説明は語のまとまりで折り返す（どの経路も p11Esc を通す）
 });
 
 test('TN-03b：大会3 VS 演出（正式素材 vs）：背景・VS のロゴ・斜めの光・名前の札・飾り＋待機の立ち絵（相手はこちら向き）→ fight()。fight() の導入（intro）はこの試合だけ出さない（二重の VS にしない）。fight()・intro() の中身は変えない', () => {

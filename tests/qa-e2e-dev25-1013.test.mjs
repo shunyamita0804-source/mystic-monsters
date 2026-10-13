@@ -3,6 +3,8 @@
 //  D25-A：対戦前比較の能力の棒＝999 を 100% とした長さ（0 は空）・「対戦表にもどる」は無い・「対戦開始」で始まる（3サイズ）
 //  D25-E：Chapter 1 のサイコロ＝正式の絵（skin 'official'）・止まった正面の目＝出目・1回の START で DICE_CUBE が1回・1.30秒で止まる
 //  D25-F：施設の初回の説明（MMNPCE）がある訪問は入口の声を出さない（説明と声が重ならない）・説明のあとの再訪で1回だけ・研究所＝エリオット
+//  D25-A2（残件A）：対戦前比較の固有スキルの説明は能力の枠に重ならない・全文（切り捨てなし）・語の途中で折り返さない・「対戦開始」の位置は従来どおり（3サイズ×ソラモ／ガウル）
+//  D25-B2（残件B）：対戦表の試合結果の通知は題字の下＝表のマス（名前・○×・次の試合）を隠さない（3サイズ×6体／8体・実際の勝ち／負けは 375×667）
 //  D25-G：中継カットの絵が見えてから題字（CHAPTER 1／はじまりの草原）が中央に1文字ずつ → 題字が消えてから地図の全景 → START。地図の上に題字（.rfw-title）は無い
 // =========================================================
 import test from 'node:test';
@@ -146,5 +148,59 @@ test('D25-G：題字は中継カットの絵が見えてから中央に1文字�
     const bad = rows.slice(firstIntro).filter((r) => r.tOp >= 0.05); assert.ok(!bad.length, `地図の全景の間は題字が見えない ${size} ${calm} ${JSON.stringify(bad.slice(0, 3))} ${JSON.stringify(rows[firstIntro - 1])}`);
     assert.ok(rows.every((r) => r.rfw === 0), '地図の上の大きな題字（.rfw-title）は無い');
     assert.ok(rows.findIndex((r) => r.start) > firstIntro, 'START はそのあと');
+  }
+});
+
+async function toTour(pg, { sp = 0, rank = 1, stats = null } = {}) {
+  await H.newGame(pg, 'テスト');
+  await pg.evaluate(({ sp, rank, stats }) => { const m = mk(sp); m.name = 'テストテスト'; Object.assign(m, stats || { li: 0, po: 70, in: 100, hi: 999, ev: 500, de: 250 }); MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); if (rank >= 2) { m.raise.ch = 2; MMP7.recordRankClear(S, m, rank - 1); } const g = MMCH.graphFor(m); Object.assign(m.raise, { node: g.goal, goal: true, pend: null }); m.raise.field.arrivalSeen = true; save(); if (!MMP8.startTournament(S, m, rank, 7).ok) throw new Error('start'); save(); }, { sp, rank, stats });
+}
+const GO_TOP = { 375: 511, 390: 664, 430: 752 };   // 開発21 ⑤／開発25 A で決めた「対戦開始」の上端（残件A の前と同じ）
+
+test('D25-A2：固有スキルの説明は能力の枠に重ならない・全文・語の途中で折り返さない・「対戦開始」の位置は従来どおり（3サイズ×ソラモ／ガウル）', { skip: SKIP, timeout: 300000 }, async () => {
+  for (const size of SIZES) for (const sp of [0, 1]) {
+    const p = await openPage({ size }); const pg = p.page;
+    await toTour(pg, { sp });
+    await pg.evaluate(() => p9CompareScr()); await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(900);
+    const r = await pg.evaluate(() => {
+      const R = (e) => e.getBoundingClientRect();
+      const st = R(document.querySelector('.tb3 .tbst')), go = R(document.querySelector('.pcgo'));
+      const d = [...document.querySelectorAll('.tb3 .tbskd')];
+      const want = [MMP10M.skillText(S.m.sp).desc];
+      return { stT: st.top, goT: Math.round(go.top), goB: go.bottom, H: innerHeight, W: innerWidth,
+        desc: d.map((e) => ({ b: R(e).bottom, txt: e.textContent, clip: e.scrollHeight > e.clientHeight + 1, words: [...e.querySelectorAll('.tbw')].map((w) => w.getClientRects().length) })), want,
+        vals: [...document.querySelectorAll('.tb3 .pcv')].map((e) => { const b = R(e); return b.left >= 0 && b.right <= innerWidth && b.bottom <= innerHeight; }),
+        bars: [...document.querySelectorAll('.tb3 .pcb:not(.r) i')].map((i) => i.style.width) };
+    });
+    const tag = `${size.join('×')} sp${sp}`;
+    for (const x of r.desc) { assert.ok(x.b <= r.stT - 4, `${tag}：説明（下端 ${x.b}）は能力の枠（上端 ${r.stT}）に重ならない`); assert.equal(x.clip, false, `${tag}：説明は切り捨てない`); assert.ok(x.words.every((n) => n === 1), `${tag}：語の途中で折り返さない ${x.words}`); }
+    assert.equal(r.desc[0].txt, r.want[0], `${tag}：説明は全文・文は変えない`);
+    assert.ok(Math.abs(r.goT - GO_TOP[size[0]]) <= 2, `${tag}：「対戦開始」の位置は従来どおり（${r.goT}）`);
+    assert.ok(r.goB <= r.H && r.vals.every(Boolean), `${tag}：数値・ボタンは画面の中`);
+    assert.equal(r.bars[3], '100%', `${tag}：999 は満タン`);
+    assert.equal(await pg.$('.pcback'), null);
+  }
+});
+
+test('D25-B2：試合結果の通知は表のマスを隠さない（3サイズ×6体／8体）・実際の勝ち／負けの直後（375×667）も観戦の帯と重ならない', { skip: SKIP, timeout: 400000 }, async () => {
+  const cover = () => { const R = (e) => e && e.getBoundingClientRect(); const n = R(document.querySelector('.tb1 .p9tmsg')); if (!n) return null;
+    return { n: [n.top, n.bottom], cells: [...document.querySelectorAll('.tb1g .tbrw, .tb1g .tbh, .tb1g .tbc')].map(R).filter((c) => c.bottom > n.top && c.top < n.bottom && c.right > n.left && c.left < n.right).length,
+      band: (() => { const b = R(document.querySelector('.tbvsx .tvx-c')); return b ? b.top < n.bottom && b.bottom > n.top : false; })(), go: (() => { const g = R(document.querySelector('.tb1 .tbgo')); return g.top >= n.bottom || g.bottom <= n.top; })(),
+      txt: document.querySelector('.tb1 .p9tmsg').textContent, scroll: document.documentElement.scrollHeight <= innerHeight + 1 && document.documentElement.scrollWidth <= innerWidth + 1 }; };
+  for (const size of SIZES) for (const rank of [1, 2]) {
+    const p = await openPage({ size }); const pg = p.page;
+    await toTour(pg, { rank }); await pg.evaluate(() => p8TourScr('第1試合：勝ち！')); await pg.waitForSelector('.tb1 .p9tmsg'); await pg.waitForTimeout(450);
+    const r = await pg.evaluate(cover);
+    assert.equal(r.cells, 0, `${size.join('×')} ${rank === 1 ? '6体' : '8体'}：通知（${r.n}）は表のマスを隠さない`); assert.ok(r.go && r.scroll, '「対戦する」は隠れない・ページは伸びない');
+  }
+  for (const [mode, stats] of [['win', { li: 900, po: 900, in: 900, hi: 900, ev: 300, de: 900 }], ['lose', { li: 30, po: 10, in: 10, hi: 10, ev: 1, de: 1 }]]) {
+    const p = await openPage({ size: [375, 667], tourfx: true }); const pg = p.page;
+    await toTour(pg, { stats }); await pg.evaluate(() => p8TourScr()); await pg.waitForSelector('.tb1 .tbgo'); await pg.mouse.click(4, 4);
+    await pg.evaluate(() => p8TourFight()); await pg.waitForSelector('#bt #go');
+    for (let i = 0; i < 600; i++) { const s = await pg.evaluate(() => { const g = document.getElementById('go'); return !document.getElementById('bt') ? 'gone' : g && g.classList.contains('bk') ? 'bk' : g && !g.disabled ? 'go' : 'w'; }); if (s === 'gone') break; if (s === 'bk') { await pg.waitForTimeout(500); await pg.click('#go').catch(() => {}); } else if (s === 'go') await pg.click('#go').catch(() => {}); await pg.waitForTimeout(150); }
+    await pg.waitForSelector('.tb1 .p9tmsg', { timeout: 30000 }); await pg.waitForTimeout(600);
+    const r = await pg.evaluate(cover);
+    assert.match(r.txt, mode === 'win' ? /第1試合：勝ち/ : /第1試合：負け/, '通知の文は従来どおり');
+    assert.equal(r.cells, 0, `${mode}：通知は表のマスを隠さない`); assert.equal(r.band, false, `${mode}：中央の観戦の帯と重ならない`); assert.ok(r.go, '「対戦する」は隠れない');
   }
 });

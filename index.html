@@ -2916,7 +2916,9 @@ main:has(>#app>.lab) h1{display:none}#app:has(>.lab){overflow:hidden}
 .tbced{width:min(94vw,370px);flex:none}.tbced .p9ced{margin:0;text-align:left}
 .tb1 .tbgo{flex:none;width:min(62vw,240px,12dvh*2.67);aspect-ratio:480/180;padding:0;margin:0;border:0;border-radius:0;background:url(./assets/tournament/ui1/btn_battle.png) center/100% 100% no-repeat;box-shadow:none}
 .tb1 .p9prov{position:relative;z-index:1;margin:6px 0 0;font-size:10px;color:rgba(232,210,154,.75);text-align:center}
-.tb1 .p9tmsg{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + min(14dvh,118px));z-index:4;width:min(88vw,340px);margin:0;transform:translateX(-50%);pointer-events:none;text-align:center;box-shadow:0 6px 16px rgba(0,0,0,.55);animation:tbmsg 3.6s ease forwards} /* 試合結果などの通知は対戦表の上に短く重ねる（押せる部品を隠さない・押しても下に届く） */
+.tb1 .p9tmsg{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + min(14dvh,118px));z-index:4;width:min(88vw,340px);margin:0;transform:translateX(-50%);pointer-events:none;text-align:center;box-shadow:0 6px 16px rgba(0,0,0,.55);animation:tbmsg 3.6s ease forwards}
+/* 2026-10-13 開発25 残件B：試合結果の一時通知は題字のすぐ下（表の上の空き）へ・高さは文に合わせる＝375×667 でも対戦表の名前・○×・次の試合を隠さない（文・表示時間・消え方・中央の観戦の帯は変えない） */
+.tb1 .p9tmsg{top:calc(env(safe-area-inset-top,0px) + 54px);width:auto;max-width:min(88vw,340px);min-height:0;box-sizing:border-box;padding:6px 18px;line-height:1.45;white-space:normal} /* 試合結果などの通知は対戦表の上に短く重ねる（押せる部品を隠さない・押しても下に届く） */
 @keyframes tbmsg{0%{opacity:0;translate:0 -8px}8%{opacity:1;translate:0 0}82%{opacity:1}100%{opacity:0}}
 @media (max-height:760px){.tbced{display:none}.tb1 .p9prov{display:none}.tbttl{width:min(80vw,300px,13dvh*3.24)}.tbsub{width:min(54vw,210px,7.5dvh*3.68)}.tblg{width:min(78vw,300px,8dvh*5)}.tbnx .tbtag{width:min(26vw,92px)}.tb1 .tbgo{width:min(52vw,200px,11dvh*2.67)}}
 /* 2026-10-07（次回便）：技一覧の未習得＝正式の未習得パネル（assets/ui/skill/locked_skill_panel.png）。旧「？」の文字と B-37 の重ね絵は出さない */
@@ -3680,6 +3682,11 @@ main:has(>#app>.ds) h1{display:none}
 .tb3 .tbmon .tbidle{position:static;display:block;margin:0 auto;width:100%;height:100%}
 .tb3 .tbnp,.tb3 .tbskp{position:relative;z-index:2}
 .tb3 .tbskd{padding:0 2px}
+/* 2026-10-13 開発25 残件A：固有スキルの説明を読めるように＝切り捨て（2行の line-clamp）をやめて全文を折り返し・後ろに半透明の濃紺の地（背景の柱・旗の上でも読める）・字を少しだけ大きく。能力の枠との間は余白で分ける（重ねない・隠さない） */
+.tb3 .tbskp .tbskd{display:block;-webkit-line-clamp:unset;overflow:visible;max-width:100%;box-sizing:border-box;margin-top:1px;padding:2px 7px 3px;border-radius:7px;background:rgba(8,15,34,.62);font-size:clamp(9px,2.5vw,10.5px);line-height:1.38;letter-spacing:.01em;text-shadow:0 1px 2px #000;line-break:strict;text-wrap:balance}
+.tb3 .tbskp .tbskd .tbw{display:inline;position:static;white-space:nowrap}
+@media (max-height:720px){.tb3 .tbskp .tbskd{margin-top:0;font-size:8.8px;line-height:1.3;padding:1px 4px 2px}.tb3 .pcs{gap:3px}.tb3 .tbst{margin-top:2px}}
+.tb3 .pcduo{align-items:start}/* 左右で説明の行数が違っても名前の札・スキル名の高さをそろえる（立ち絵の箱は同じ高さ） */
 /* 2026-10-12 開発21（E-3）：VS の斜めの光は左上 → 右下（2体の間を分ける。正式素材を左右反転して置くだけ＝モンスターの向きは変えない） */
 .tvsline{scale:-1 1}
 /* 2026-10-12 開発21（試遊 IMG_5564）：VS の勝負絵は画像の四角い端で翼・体が切れている絵がある（ガウル）＝端が四角い箱に見えていた → 表示だけ端をやわらかく消す（素材は変えない） */
@@ -5434,7 +5441,9 @@ function tbSkill(x){const k=x&&MMP10M.skillText(x.sp);return k?p11Esc(k.name):"�
 const TB_VS=["solamo","gauru","nobiton","jiol","regnas"];
 function tbVs(x,side){const k=x&&TB_VS[x.sp];return k?`<img class="tbidle tbvs${window.MMARENA&&MMARENA.flipOf(side,x.sp)?" fl":""}" src="./assets/tournament/vs_monsters/${k}_vs.webp" alt="">`:tbIdle(x,side)}
 function tbIdle(x,side){const s=window.MMARENA&&x&&MMARENA.idleSrc(x.sp);return s?`<img class="tbidle${MMARENA.flipOf(side,x.sp)?" fl":""}" src="${s}" alt="">`:msv(x)}
-function tbSkillDesc(x){const k=x&&MMP10M.skillText(x.sp);return k?`<small class="tbskn"><i>スキル</i>${p11Esc(k.name)}</small><span class="tbskd">${p11Esc(k.desc||"")}</span>`:`<small class="tbskn"><i>スキル</i>―</small>`}
+// 2026-10-13 開発25 残件A：説明文は語のまとまり（MMNPC.phraseGroups＝会話の窓と同じ）で折り返す＝語の途中・数字と単位の間で切らない（文は変えない）
+function tbPhrase(t){t=String(t||"");let g=null;try{g=window.MMNPC&&MMNPC.phraseGroups?MMNPC.phraseGroups(t).map(a=>a.join("")):null}catch(e){g=null}if(!g)return p11Esc(t);const o=[];for(const w of g){if(o.length&&/^[0-9０-９.．]+$/.test(o[o.length-1]))o[o.length-1]+=w;else o.push(w)}return o.map(w=>`<span class="tbw">${p11Esc(w)}</span>`).join("")}
+function tbSkillDesc(x){const k=x&&MMP10M.skillText(x.sp);return k?`<small class="tbskn"><i>スキル</i>${p11Esc(k.name)}</small><span class="tbskd">${tbPhrase(k.desc)}</span>`:`<small class="tbskn"><i>スキル</i>―</small>`}
 // 2026-10-13 開発25 A：比較のバーは左右とも 999＝100% の一次の目盛り（0＝空・見せかけの最低長なし・数値はそのまま）。「対戦表にもどる」は出さない（対戦開始だけ）
 const TB_CMP_MAX=999;function TB_CMP_W(x){x=Math.max(0,Math.min(TB_CMP_MAX,+x||0));return +(x/TB_CMP_MAX*100).toFixed(2)}
 function p9CompareScr(){const m=S.m,t=m&&m.raise&&m.raise.tour;if(!t||t.status!="league")return board();const lg=t.league,pm=MMP8.tourNext(m);if(!pm)return board();const o=p9Npc(lg,pm.opp);bgm("matchup");p9Immersive(true);p9MenuClose();
