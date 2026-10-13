@@ -3675,7 +3675,7 @@ main:has(>#app>.ds) h1{display:none}
 .tb3 .tbst{margin-top:min(1.6dvh,14px)}
 .tb3 .pcacts{margin-top:auto;margin-bottom:min(5dvh,44px)}
 /* 2026-10-12 開発21（試遊 No.004＝E-1・E-2）：「対戦開始」を少し上へ。立ち絵を流れの中に置き（absolute をやめる）、名前の札・固有スキル・6能力の表に重ならない。左右の説明の間をあける。立ち絵の比率・形は変えない */
-.tb3 .pcacts{margin-bottom:min(9dvh,76px)}
+.tb3 .pcacts{margin-bottom:calc(min(9dvh,76px) + 44px)}/* 2026-10-13 開発25 A：「対戦表にもどる」（約36px＋間 8px）を外した分を足して「対戦開始」は従来の高さのまま */
 .tb3 .pcduo{gap:14px}
 .tb3 .tbmon .tbidle{position:static;display:block;margin:0 auto;width:100%;height:100%}
 .tb3 .tbnp,.tb3 .tbskp{position:relative;z-index:2}
