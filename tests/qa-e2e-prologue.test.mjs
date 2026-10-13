@@ -88,8 +88,10 @@ for (const size of [[390, 844], [375, 667]]) {
     assert.deepEqual(order, ['01', '02', '03', '04', '05', '06'], '背景は 1 平和 → 2 厄災 → 3 文化 → 4 三人のレジェンド → 5 大会 → 6 旅立ちの順（2026-10-07）');
     const all = await pg.evaluate(() => MMPRO.SLIDES.flatMap((sl) => sl.pages.flatMap((pg) => MMPRO.units(pg).map((u) => u.join('')))));
     assert.deepEqual(seen.map((x) => x.text), all, '本文はすべて・順番どおり・変えずに出る');
-    assert.equal(await pg.evaluate(() => MMAUDIO.status().scene), 'TITLE', 'プロローグのあとは PROLOGUE の BGM を残さない（自動テストの既定の名前登録の画面＝開始画面と同じ無音）');
-    assert.equal(await pg.evaluate(() => MMAUDIO.status().slots.filter((x) => x.active).length), 0, 'ファイルの BGM は鳴っていない');
+    assert.equal(await pg.evaluate(() => MMAUDIO.status().scene), 'TITLE', 'プロローグのあとは PROLOGUE の BGM を残さない（自動テストの既定の名前登録の画面＝開始画面と同じ TITLE）');
+    // 2026-10-13 開発28：開始画面・名前登録は正式の TITLE（Top画面BGM・7秒開始）1本だけ＝プロローグの曲は残らない
+    const sl = await pg.evaluate(() => MMAUDIO.status().slots.filter((x) => x.active).map((x) => (x.src || '').split('/').slice(-2).join('/')));
+    assert.ok(sl.length <= 1 && sl.every((x) => /^title_1013\//.test(x)), `ファイルの BGM は TITLE の1本だけ（${sl.join(' ')}）`);
     const last = ev.filter((e) => /^bg/.test(e[0])).pop(), pr = await pg.evaluate(() => [...new Set(performance.getEntriesByType('resource').map((r) => r.name).filter((n) => /mystic_monsters_official\/.*\.ogg/.test(n)))]);
     assert.ok(pr.every((n) => !/title_theme|prologue_bgm/.test(n)), `旧タイトル曲・プロローグ BGM（2026-10-06 削除）は読み込まない（${pr.join(' ')}）`);
     assert.ok(last && last[0] === 'bg06');

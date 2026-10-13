@@ -160,7 +160,9 @@ T('EV-B5：Chapter 1 を終えてファームへ戻ると帰還イベント（�
   await H.finishTalk(pg);
   await pg.waitForFunction(() => !document.querySelector('.mmtalk'), null, { timeout: 15000 });
   const sv = await H.storedSave(pg); assert.deepEqual(sv.m.raise.evSeen, ['ret1', 'rumor'], '帰還と噂を見た記録');
-  await pg.reload(); await pg.waitForFunction(() => typeof window.MMP8 === 'object'); await pg.click('.p15start'); await pg.waitForSelector('.fm', { timeout: 20000 }); await pg.waitForTimeout(1200);
+  await pg.reload(); await pg.waitForFunction(() => typeof window.MMP8 === 'object'); await pg.click('.p15start');
+  // 入口の一言（施設の背景つきの会話＝html[data-mmscene] で #app を隠す）か「出発する」のどちらかが出るまで待つ
+  await pg.waitForFunction(() => !!document.querySelector('.mmtalk:not(.mmtalk-out)') || (document.querySelector('.fm .fmgo') && document.querySelector('.fm .fmgo').getBoundingClientRect().height > 0), null, { timeout: 20000 }); await pg.waitForTimeout(600);
   // 2026-10-13 開発27（04）：2回目以降のベースキャンプは入口でダンの一言（1行）が出て、その間は「出発する」を隠す＝帰還イベント（戻ったよ、ダン）ではない
   const t2 = await pg.evaluate(() => { const e = document.querySelector('.mmtalk:not(.mmtalk-out)'); return e ? e.textContent : null; });
   assert.ok(t2 == null || (t2.includes('よう、準備はできたか') && !t2.includes('戻ったよ')), `再読み込みでは帰還イベントを出さない（入口の一言だけ）：${t2}`);
