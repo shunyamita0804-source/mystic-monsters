@@ -105,7 +105,8 @@ export async function launch() {
     page.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push('console: ' + m.text()); });
     page.on('response', (r) => { if (r.status() >= 400 && r.url().startsWith(srv.url)) bad.push(r.status() + ' ' + r.url().slice(srv.url.length)); });
     // 画面の再読み込み（reload）で途中だった BGM のダウンロードが中断される（net::ERR_ABORTED・media）のは失敗ではない
-    page.on('requestfailed', (r) => { if (r.url().startsWith(srv.url) && !(/^(media|image)$/.test(r.resourceType()) && /ERR_ABORTED/.test((r.failure() || {}).errorText || ''))) bad.push('failed ' + r.url().slice(srv.url.length)); });   // 画像の ERR_ABORTED＝会話の立ち絵などが読み終わる前に次の画面へ移って要素が消えた（読み込みの失敗ではない。404 は応答で別に数える）
+    //  2026-10-13 開発28：声・SE の XHR（assets/audio/）が再読み込みで中断されるのも同じ（開始画面の BGM の読み込みと重なり、再読み込みの時点でまだ途中のことがある。404 などの本当の失敗は従来どおり記録）
+    page.on('requestfailed', (r) => { const u = r.url(), p = u.slice(srv.url.length), aborted = /ERR_ABORTED/.test((r.failure() || {}).errorText || ''); if (u.startsWith(srv.url) && !(aborted && (/^(media|image)$/.test(r.resourceType()) || /^assets\/audio\//.test(p)))) bad.push('failed ' + p); });   // 画像の ERR_ABORTED＝会話の立ち絵などが読み終わる前に次の画面へ移って要素が消えた（読み込みの失敗ではない。404 は応答で別に数える）
     await page.goto(srv.url + 'index.html' + (opt.query || ''));
     await page.waitForFunction(() => typeof window.MMP8 === 'object' && typeof S === 'object', null, { timeout: 120000 });
     const p = { page, ctx, errors, bad };
