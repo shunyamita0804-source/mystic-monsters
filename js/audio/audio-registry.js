@@ -27,13 +27,19 @@
   const LIC12 = BGM_DIR + 'licensed_20261012/';      // 2026-10-12 正式採用：公式ランク戦の曲（ユーザー納品「公式ランク.mp3」を OGG Vorbis q5 に変換しただけ。作曲者・出典は AUDIO_CREDITS.md＝要確認）       // 2026-10-08 正式採用：街の曲「冒険への誘い」（ユーザー提供の MP3 を OGG Vorbis q5 に変換しただけ。AUDIO_CREDITS.md）
   const CR = SE_DIR + 'crowd_1013/';                    // 2026-10-13 開発24：観客の声（Pixabay：DRAGON-STUDIO・Universfield。区間の切り出しはユーザー提供。AUDIO_CREDITS.md）
   const VO = './assets/audio/voice/npc_1013/';          // 2026-10-13 開発24：NPC のボイス（ユーザー提供の試遊素材）
+  const RES = SE_DIR + 'result_1013/';                  // 2026-10-13 開発28：バトルの決着の短い曲（WIN＝red bears「ファンファーレ12」の先頭4.00秒・LOSE＝ポケットサウンド「ゲームオーバー＃2」の先頭5.00秒。AUDIO_CREDITS.md）
   const MMB = BGM_DIR + 'mystic_monsters_official/';  // 同じく正式の BGM（2026-10-06：タイトル・プロローグ。ユーザー提供・ゲームの所有素材。AUDIO_CREDITS.md）
 
   // 書き方：{ src, gain, loopStart, loopEnd, loopXfade } ＝ファイルで鳴らす（loopEnd を書くと、曲の終わりのフェードアウトの前で loopStart へクロスフェードで戻る。秒）／{ fallback: '場面' } ＝ほかの場面の曲を使う／{ silent: true } ＝鳴らさない（合成音にも落とさない。試遊で「合わない」となった音の一時的な置き場）／行が無い ＝合成音
   //  【2026-10-03 実機試遊（iPhone）の結果】で NG になった音は silent にした（追加の音源パックで選び直す。行の横の「待ち」）
   const BGM_REGISTRY = {
     // ---- 開始画面・街・施設 ----
-    TITLE:      { silent: true },   // 2026-10-05 PHASE B 正式：開始画面に BGM は無い（無音で開始画面 → 開始の音 TITLE_START → Scene 1 でプロローグ BGM）。旧タイトル曲（mystic_monsters_title_theme_official.ogg）は廃止・ファイルも置かない
+    // 2026-10-13 開発28 追記（ZIP「missmon_title_7sec_addon_claude」＝ユーザー確認済みの確定音源「Top画面BGM(1).mp3」）：
+    //  開始画面の BGM は正式に Top画面BGM。再生区間＝原曲の 7.000秒地点から最後まで（冒頭 7秒は流さない）＝ZIP に同梱の 7秒カット済み OGG（＋iPhone 用 M4A）を加工せずに置いた（assets/audio/bgm/title_1013/README.md）。
+    //  src は [OGG, M4A]＝そのブラウザで再生できる1つだけ（Ogg Vorbis が再生できない iPhone の版は M4A）。gain 0.29（-7.0 LUFS → 約 -17.8）。末尾は約219秒から減衰して 221.8秒から無音＝loopEnd 220.8 の手前 1.2秒で頭（0秒＝原曲の 7.000秒）へクロスフェードで戻す（ファイルは加工しない・7秒の開始位置は不変）。
+    //  それまでの暫定（権利確認済みの Hopeful＝プロローグ Scene 3 と共用）はやめた。候補の全尺（BGM_CANDIDATES.TITLE_CANDIDATE）は試聴ページ用に残すだけ＝場面には使わない。
+    //  鳴り方：開始画面は最初の操作まで音を出せない（ブラウザの制約）＝開始ボタン以外の場所を1回タップすると鳴り始める（index.html の title の「タップで音楽」の印）。開始ボタンを押したときは鳴らさずに次へ（開始の音 TITLE_START だけ・startGame で止める＝二重再生なし）。
+    TITLE:      { src: [BGM_DIR + 'title_1013/title_official_from7s.ogg', BGM_DIR + 'title_1013/title_official_from7s.m4a'], gain: 0.29, loopStart: 0, loopEnd: 220.8, loopXfade: 1.2 },
     PROLOGUE:   { silent: true },   // 2026-10-06 重大修正：プロローグの音がプツプツ鳴る＝プロローグ BGM は一旦削除（鳴らさない・合成音にも落とさない。ファイルも置かない）。プロローグの時刻表・本文・スキップは変えない
                                      //  旧 54.2秒版と同じファイル名なので ?v=v6 で端末のキャッシュ（旧い曲）を使わない
     // 2026-10-07 正式：プロローグは Scene ごとに1曲（各曲の頭から・loop なし＝Scene は約7.8〜9.7秒。2026-10-08 に延長）。index.html の proPlay が Scene の切り替えで PROLOGUE_1〜6 へ（短いクロスフェード）
@@ -109,7 +115,8 @@
     TREASURE_TIER_1:     { src: MMO + '09_treasure_open_tier1.ogg', gain: 0.98 },   // 宝箱 normal（tier ごとに1つだけ）
     TREASURE_TIER_2:     { src: MMO + '10_treasure_open_tier2.ogg', gain: 1.01 },   // 宝箱 rare
     TREASURE_TIER_3:     { src: MMO + '11_treasure_open_tier3.ogg', gain: 0.88 },   // 宝箱 special
-    TREASURE_TIER_4:     { src: MMO + '12_treasure_open_tier4.ogg', gain: 0.65 },   // 正式素材として登録だけ（ゲームに第4の段階は無い＝どこからも鳴らさない。報酬・段階は作らない）
+    TREASURE_TIER_4:     { src: MMO + '12_treasure_open_tier4.ogg', gain: 0.65 },
+    SKILL_ACTIVATE:      { src: MMO + '12_treasure_open_tier4.ogg', gain: 0.5 },    // 2026-10-13 開発28【暫定】固有スキルの発動（js/battle/rules.js の runCut）。能力UP の TRAINING_SUCCESS と区別できる既存の正式 SE のうち、どの場面でも鳴っていない宝箱の第4段階の音を借りる（専用の SE が届いたらここを替える）   // 正式素材として登録だけ（ゲームに第4の段階は無い＝どこからも鳴らさない。報酬・段階は作らない）
     REST_RECOVER:        { src: MMO + '13_rest_recover.ogg', gain: 1.11 },          // 「休む」・休むマスで疲れの回復が成立した瞬間
     EVENT_TRIGGER:       { src: MMO + '14_event_trigger.ogg', gain: 1.0 },          // 出来事のマスで出来事が始まった瞬間（休むマスの回復は REST_RECOVER）
     BRANCH_SELECT:       { src: MMO + '15_branch_select.ogg', gain: 1.05 },         // 分かれ道で道を選んだ瞬間
@@ -122,7 +129,11 @@
     BATTLE_CRIT:   { src: IV + 'hit_2.ogg', gain: 1.4 },
     // BATTLE_MISS・BATTLE_BLOCK・BUFF・DEBUFF・HEAL・ROULETTE_TICK・BATTLE_INTRO・SWOOSH：合う素材が無い → 合成音
     // ---- 進行 ----
-    VICTORY:          { src: UI + 'confirm_style_6_004.ogg', gain: 0.8 },
+    VICTORY:          { src: UI + 'confirm_style_6_004.ogg', gain: 0.8 },   // 2026-10-13 開発28：バトルの勝利は BATTLE_WIN（下）に替えた＝ここは登録だけ（どこからも鳴らさない）
+    // 2026-10-13 開発28：バトルの決着の短い曲（野生・レア・ライバル・大会・修行で共通。index.html の resultJingle＝WIN!／LOSE の帯と同時に1回だけ・そのとき戦闘の BGM は止める）。
+    //  src は [OGG, M4A]＝そのブラウザで再生できる形式を1つだけ（二重に鳴らさない）。gain＝約 -15 LUFS にそろえる（WIN -9.1 LUFS・LOSE -11.1 LUFS）
+    BATTLE_WIN:       { src: [RES + 'win_fanfare12_4s.ogg', RES + 'win_fanfare12_4s.m4a'], gain: 0.5 },     // red bears「ファンファーレ12」先頭 4.00秒（ユーザー提供の完成ファイル）
+    BATTLE_LOSE:      { src: [RES + 'lose_gameover2_5s.ogg', RES + 'lose_gameover2_5s.m4a'], gain: 0.63 }, // ポケットサウンド「ゲームオーバー＃2」先頭 5.00秒（公式サイトから取得・切り出し。クレジット必須＝AUDIO_CREDITS.md・README）
     CHAPTER_CLEAR:    { src: UI + 'confirm_style_6_004.ogg', gain: 0.8 },
     TOURNAMENT_START: { src: UI + 'confirm_style_1_001.ogg', gain: 0.65 },
     UNLOCK:           { src: UI + 'confirm_style_6_002.ogg', gain: 1.3 },
@@ -178,7 +189,7 @@
   //  採用する場所と鳴らし始めの最終決定はユーザー待ち＝ここは MMAUDIO に登録しない（registerAll は bgm・se・voice しか読まない＝どの場面からも鳴らない）。
   //  試聴は開発用の試聴ページ（audio_candidates_1013・本編からはつながない）。採用が決まったら、その場面の BGM_REGISTRY の1行をこのファイルに書き換える（TITLE の silent・ARENA・公式戦の曲は今は変えていない）
   const BGM_CANDIDATES = {
-    TITLE_CANDIDATE:         { src: BGM_DIR + 'candidates_1013/title_candidate.ogg', gain: 0.29, for: 'TITLE', note: 'Top画面BGM.mp3（230.9秒・-7.1 LUFS）。今の TITLE は silent（開始画面は無音＝正式）＝変えない' },
+    TITLE_CANDIDATE:         { src: BGM_DIR + 'candidates_1013/title_candidate.ogg', gain: 0.29, for: 'TITLE', note: 'Top画面BGM.mp3（230.9秒・-7.1 LUFS）。2026-10-13 開発28 追記：採用済み＝TITLE は同じ曲の 7秒カット済みの正式ファイル（title_1013/）。この全尺の候補は試聴ページ用に残すだけ（場面には使わない）' },
     ARENA_CANDIDATE:         { src: BGM_DIR + 'candidates_1013/arena_candidate.ogg', gain: 0.39, for: 'ARENA', note: '闘技場BGM.mp3（185.7秒・-9.7 LUFS）。今の ARENA（Swords At Midnight Loop）は変えない・闘技場の画面は未実装' },
     LEGEND_BATTLE_CANDIDATE: { src: BGM_DIR + 'candidates_1013/legend_battle_candidate.ogg', gain: 0.35, for: 'LEGEND_BATTLE', note: 'レジェンド戦BGM.mp3（271.6秒・-8.9 LUFS）。三伝説との対戦は未実装＝公式大会・野生・レア・ライバルの曲には使わない' },
   };

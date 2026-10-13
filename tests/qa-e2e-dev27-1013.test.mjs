@@ -6,7 +6,7 @@
 //  D27-21：ライバル＝登場の SE（RIVAL_APPEAR）1回・「よっ」なし・案内のシートなしでバトルへ → 勝ったらボードでリュウの会話（やるじゃん 1回）
 //  D27-22：HP の4段（名前 → バー → 数 → 札）＝札が増えても名前・バー・数は動かない（左右とも）
 //  D27-23：勝ち＝暖色の横帯・正式の勝利の絵だけ（旧のポーズの層は見えない）／負け＝寒色の横帯
-//  D27-14：サイコロは真正面で止まる（横の傾き 0）・止まった目＝出目
+//  D27-14：サイコロはほぼ正面で止まる（2026-10-13 開発28：面取りが見える程度の斜め）・止まった目＝出目
 //  D27-28：対戦表（6体／8体 × 375・390）＝表が画面の中・名前が切れない・顔の枠は四角
 // =========================================================
 import test from 'node:test';
@@ -161,7 +161,7 @@ test('D27-22・23：HP の4段（札が増えても動かない）・勝ち＝�
   assert.deepEqual(p.errors, []); assert.deepEqual(q.errors, []);
 });
 
-test('D27-14：世界のボードのサイコロは真正面で止まる・止まった目＝出目', { skip: SKIP, timeout: 200000 }, async () => {
+test('D27-14：世界のボードのサイコロはほぼ正面で止まる（少し斜め＝面取りが見える）・止まった目＝出目', { skip: SKIP, timeout: 200000 }, async () => {
   const p = await openPage({ worldCh1: true }); const pg = p.page;
   await toWorld(pg); await pg.mouse.click(4, 300);
   for (const v of [1, 6]) {
@@ -171,7 +171,9 @@ test('D27-14：世界のボードのサイコロは真正面で止まる・止�
     const r = await pg.evaluate(() => { const t = document.querySelector('.d3z .d3-tilt'); return { m: getComputedStyle(t).transform, fin: document.querySelector('.d3z').dataset.final }; });
     assert.equal(r.fin, String(v));
     const m = /matrix3d\(([^)]+)\)/.exec(r.m); const n = m ? m[1].split(',').map(Number) : null;
-    assert.ok(n && Math.abs(n[2]) < 0.01 && Math.abs(n[8]) < 0.01, `横の傾き 0（${r.m}）`);
+    // 2026-10-13 開発28：止まったあとは少しだけ斜め（前へ 11°・横へ 9°＝面取りと角の飾りが見える）。出目の面はほぼ正面（法線の z 成分 0.97 以上）＝読める
+    const nz = n ? Math.abs(n[10]) : 0;
+    assert.ok(n && nz >= 0.96 && Math.abs(n[8]) < 0.2 && Math.abs(n[9]) < 0.25, `ほぼ正面で止まる（${r.m}）`);
   }
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });

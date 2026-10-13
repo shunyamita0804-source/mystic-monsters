@@ -13,6 +13,9 @@
 //  2026-10-13 開発25 E：opts.skin 'official'＝正式サイコロ（Phase 12 の assets/fields/ch1a/dice/dice_stop_1〜6・dice_blank）の絵の6面
 //   （assets/fields/ch1a/dice/cube_1013/face_1〜6.webp＝tools/dice1013/faces.py の派生。真珠の地・四隅の金の飾り・橙に光る目・1は金の紋章）。本編の Chapter 1 だけ。
 //   既定（skin なし）は従来の青い立方体（比較デモ）。動き・時間・出目・SE の出し方は変えない
+//  2026-10-13 開発28：「四角すぎる・演出がダサい」（iPhone の試遊）→ 角を落とした立方体＝6面（内側に 10% 寄せる）＋12本の面取り（45°の帯・真珠色の明暗。中心からの距離 (h−c/2)√2＝0.6364 s）＋8つの角の金の飾り（丸い飾りに3本腕の星＝輪郭の角が丸く見える。(h−2c/3)√3＝0.7506 s）。
+//   正式の面の絵（cube_1013）・動き・時間・出目は変えない。止まったあとは少しだけ斜め（前へ 11°・横へ 9°＝面取りと角の飾りが見える。出目の面は正面のまま読める）。
+//   光と粒は控えめに（粒 10 → 7・光を弱く）。CSS 3D の面の数は 6 → 26（親の transform だけが動く＝合成スレッド。新しい依存なし）
 // =========================================================
 (function (root) {
   'use strict';
@@ -55,17 +58,48 @@
       '.d3-res{position:absolute;transform:translate(-50%,0);font:900 22px/1 "Noto Sans JP",sans-serif;color:#fff6d8;padding:6px 14px 7px;border-radius:999px;background:linear-gradient(#22357d,#0f1c4d);border:2px solid #e0b861;box-shadow:0 4px 12px rgba(0,0,0,.45);opacity:0;white-space:nowrap}',
       '.d3-res b{font-size:28px;color:#ffe08a}',
       // 2026-10-13 開発25 E：正式サイコロの面（絵＝6面とも同じ縁と地。目は絵の中）。縁の丸み・光は絵に合わせて控えめ
-      '.d3z.off .d3-f{border-radius:9%;padding:0;background:var(--fi) center/100% 100% no-repeat;box-shadow:inset 0 0 0 1px rgba(255,236,190,.55),inset 0 0 calc(var(--s)*.12) rgba(120,80,20,.28)}',
+      // 2026-10-13 開発28：面は内側へ 13% 寄せ（角を落とした分）、縁に細い金の線と上からの光。面取りの帯（.d3-e）と角の飾り（.d3-c）は下
+      '.d3z.off .d3-f{inset:10%;border-radius:3%;padding:0;background:var(--fi) center/100% 100% no-repeat;box-shadow:inset 0 0 0 1px rgba(214,170,78,.75),inset 0 0 calc(var(--s)*.08) rgba(120,80,20,.22)}',
+      '.d3z.off .d3-f::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(145deg,rgba(255,255,255,.34),rgba(255,255,255,0) 42%,rgba(90,60,20,.10) 100%);pointer-events:none}',
       '.d3z.off .d3-f i{display:none}',
+      // 面取りの帯：真珠色（上＝明るい・縦＝中・下＝暗い）と細い金の縁。translateZ は中心からの距離 (h − c/2)·√2＝0.6364 s（c＝0.10 s）
+      '.d3-e,.d3-c{position:absolute;left:50%;top:50%;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-sizing:border-box}',
+      '.d3-e{width:calc(var(--s)*.8);height:calc(var(--s)*.1414);margin:calc(var(--s)*-.0707) 0 0 calc(var(--s)*-.4);background:linear-gradient(180deg,#faf2e2 0%,#efe2c9 55%,#e2d0b0 100%);box-shadow:inset 0 0 0 1px rgba(205,160,70,.5)}',
+      '.d3-e.t{width:calc(var(--s)*.1414);height:calc(var(--s)*.8);margin:calc(var(--s)*-.4) 0 0 calc(var(--s)*-.0707);background:linear-gradient(90deg,#f6ecd8,#e9d8ba 60%,#dcc8a6)}',
+      '.d3-e.lt{background:linear-gradient(180deg,#fffcf4 0%,#f8efdc 60%,#efe3cc 100%)}.d3-e.dk{background:linear-gradient(180deg,#dccaa8,#c9b38c 70%,#bda67e)}',
+      // 角の金の飾り（丸い飾り＝角の輪郭が丸く見える。3本腕の星は辺の向き）。translateZ は (h − 2c/3)·√3＝0.7506 s
+      '.d3-c{width:calc(var(--s)*.19);height:calc(var(--s)*.19);margin:calc(var(--s)*-.095) 0 0 calc(var(--s)*-.095);border-radius:50%;background:radial-gradient(circle at 38% 34%,#ffefb8 0,#e9c458 26%,#c4922c 55%,#8a5c14 82%,#a97d26 100%);box-shadow:inset 0 0 0 1px rgba(90,55,10,.5),0 0 2px rgba(0,0,0,.22)}',
+      '.d3-c::before{content:"";position:absolute;inset:12%;clip-path:polygon(100% 50%,60% 67.3%,25% 93.3%,30% 50%,25% 6.7%,60% 32.7%);background:linear-gradient(160deg,#fff8dc,#f0cc62 55%,#c99a35)}',
+      '.d3z:not(.off) .d3-e,.d3z:not(.off) .d3-c{display:none}',
       '.d3z.off .d3-glow{background:radial-gradient(rgba(255,250,232,.95),rgba(255,214,130,.55) 32%,rgba(255,190,90,0) 66%)}',
       '.d3z.off .d3-sp{filter:drop-shadow(0 0 4px #ffd27a)}',
     ].join('');
     document.head.appendChild(s);
   }
   const SKIN = Object.freeze({ official: './assets/fields/ch1a/dice/cube_1013/face_' });
+  // 2026-10-13 開発28：角を落とした立方体の部品。面取りの帯 12本＝[縦長か, 向き, 明るさ]（向きは面の法線＝CSS の rotate。translateZ(.615 s) を足す）
+  const EDGES = Object.freeze([
+    [0, 'rotateX(45deg)', 'lt'], [0, 'rotateX(-45deg)', 'dk'], [0, 'rotateX(135deg)', 'lt'], [0, 'rotateX(-135deg)', 'dk'],       // x に平行（上の前・下の前・上の奥・下の奥）
+    [1, 'rotateY(45deg)', ''], [1, 'rotateY(-45deg)', ''], [1, 'rotateY(135deg)', ''], [1, 'rotateY(-135deg)', ''],             // y に平行（縦の4本）
+    [1, 'rotateZ(45deg) rotateX(90deg)', 'lt'], [1, 'rotateZ(-45deg) rotateX(90deg)', 'lt'], [1, 'rotateZ(135deg) rotateX(90deg)', 'dk'], [1, 'rotateZ(-135deg) rotateX(90deg)', 'dk'],   // z に平行（右上・左上・右下・左下）
+  ]);
+  /** 角の飾りの向き：法線 (sx, sy, sz)/√3 へ回し（rotateY(β) rotateX(α)）、飾りの腕の1本が立方体の辺の向き（三角の辺の中点）を向くように rotateZ(γ) */
+  function cornerTransform(sx, sy, sz) {
+    const d2r = Math.PI / 180, b = sx * (sz > 0 ? 45 : 135), a = -sy * 35.264;
+    const cb = Math.cos(b * d2r), sb = Math.sin(b * d2r), ca = Math.cos(a * d2r), sa = Math.sin(a * d2r);
+    const lx = [cb, 0, -sb], ly = [sb * sa, ca, cb * sa], m = [sx, sy, -2 * sz];   // 要素の x・y 軸（世界）と、角の中心から辺の中点への向き
+    const dot = (u, v) => u[0] * v[0] + u[1] * v[1] + u[2] * v[2];
+    const g = Math.atan2(dot(m, ly), dot(m, lx)) / d2r;
+    return `rotateY(${b}deg) rotateX(${a.toFixed(3)}deg) translateZ(calc(var(--s)*.7506)) rotateZ(${g.toFixed(1)}deg)`;
+  }
+  const CORNERS = (() => { const out = []; for (const sz of [1, -1]) for (const sy of [-1, 1]) for (const sx of [-1, 1]) out.push(cornerTransform(sx, sy, sz)); return out; })();
   function cubeHtml(skin) {
     const base = SKIN[skin];
-    return FACE.map(([v, tf]) => `<div class="d3-f" data-v="${v}" style="transform:${tf}${base ? `;--fi:url(${base}${v}.webp)` : ''}">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((c) => (PIPS[v].includes(c) ? `<i style="grid-area:${Math.ceil(c / 3)}/${((c - 1) % 3) + 1}"></i>` : '')).join('')}</div>`).join('');
+    const faces = FACE.map(([v, tf]) => `<div class="d3-f" data-v="${v}" style="transform:${tf}${base ? `;--fi:url(${base}${v}.webp)` : ''}">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((c) => (PIPS[v].includes(c) ? `<i style="grid-area:${Math.ceil(c / 3)}/${((c - 1) % 3) + 1}"></i>` : '')).join('')}</div>`).join('');
+    if (!base) return faces;
+    const edges = EDGES.map(([t, tf, l]) => `<i class="d3-e${t ? ' t' : ''}${l ? ' ' + l : ''}" style="transform:${tf} translateZ(calc(var(--s)*.6364))"></i>`).join('');
+    const corners = CORNERS.map((tf) => `<i class="d3-c" style="transform:${tf}"></i>`).join('');
+    return faces + edges + corners;
   }
   /**
    * 着地を「トンッ、ト、トン」にする動き（TEMPO.long.bounce）。止まる時刻 L・出目の向き（fx・fy）は同じ＝出目は変わらない。
@@ -131,7 +165,7 @@
     // ease は区切りごとの緩急（keyframe の easing）。アニメーション全体の easing にすると時間軸そのものが歪む（止まる時刻・光の時刻がずれる）ので使わない
     const A = (target, kf, ease) => { if (ease) kf.forEach((k) => { if (!k.easing) k.easing = ease; }); const a = target.animate(kf, { duration: D, fill: 'forwards' }); anims.push(a); return a; };
     // 2026-10-13 開発27（14）：回っている間は斜め（.d3-tilt の -17°／21°）、止まる約0.4秒前から真正面（横の傾き 0・前へ 6°）へ戻して止める＝出目の数字がまっすぐ読める。出目・止まる時刻は変えない
-    const tilt = el.querySelector('.d3-tilt'), FRONT = 'rotateX(-6deg) rotateY(0deg)';
+    const tilt = el.querySelector('.d3-tilt'), FRONT = o.skin ? 'rotateX(-11deg) rotateY(-9deg)' : 'rotateX(-6deg) rotateY(0deg)';   // 2026-10-13 開発28：正式の面は止まったあと少しだけ斜め（面取り・角の飾りが見える。出目の面は正面＝読める）
     if (o.calm) tilt.style.transform = FRONT;
     else A(tilt, [{ transform: 'rotateX(-17deg) rotateY(21deg)', offset: 0 }, { transform: 'rotateX(-17deg) rotateY(21deg)', offset: at(Math.max(0, L - 420)), easing: 'cubic-bezier(.3,.6,.35,1)' }, { transform: FRONT, offset: at(L) }, { transform: FRONT, offset: 1 }]);
     if (o.calm) {
@@ -175,10 +209,12 @@
       }
     }
     // 止まった瞬間の光（強く光ってすぐ弱く）と粒（8つが外へ）
-    A(glow, [{ opacity: 0, transform: 'scale(.5)', offset: 0 }, { opacity: 0, transform: 'scale(.5)', offset: Math.max(0, at(L - 20) - 0.001) }, { opacity: 1, transform: 'scale(1.05)', offset: at(L + 60) }, { opacity: 0.5, transform: 'scale(1.15)', offset: at(L + 380) }, { opacity: 0.4, transform: 'scale(1.15)', offset: 1 }], 'ease-out');
-    if (!o.calm) for (let i = 0; i < 10; i++) {
+    const gk = o.skin ? 0.62 : 1;   // 2026-10-13 開発28：正式の面では光を控えめに
+    A(glow, [{ opacity: 0, transform: 'scale(.5)', offset: 0 }, { opacity: 0, transform: 'scale(.5)', offset: Math.max(0, at(L - 20) - 0.001) }, { opacity: 1 * gk, transform: 'scale(1.05)', offset: at(L + 60) }, { opacity: 0.5 * gk, transform: 'scale(1.15)', offset: at(L + 380) }, { opacity: 0.4 * gk, transform: 'scale(1.15)', offset: 1 }], 'ease-out');
+    const NSP = o.skin ? 7 : 10;
+    if (!o.calm) for (let i = 0; i < NSP; i++) {
       const p = document.createElement('i'); p.className = 'd3-sp'; sc.appendChild(p);
-      const ang = (i / 10) * Math.PI * 2 + o.k, r = o.size * (0.85 + (i % 3) * 0.22), x = Math.cos(ang) * r, y = Math.sin(ang) * r * 0.8, d0 = L + (i % 4) * 25;
+      const ang = (i / NSP) * Math.PI * 2 + o.k, r = o.size * (0.85 + (i % 3) * 0.22), x = Math.cos(ang) * r, y = Math.sin(ang) * r * 0.8, d0 = L + (i % 4) * 25;
       A(p, [{ opacity: 0, transform: 'translate(0,0) scale(.3) rotate(0deg)', offset: 0 }, { opacity: 0, transform: 'translate(0,0) scale(.3) rotate(0deg)', offset: Math.max(0, at(d0) - 0.001) },
         { opacity: 1, transform: `translate(${x * 0.55}px,${y * 0.55}px) scale(1.1) rotate(30deg)`, offset: at(d0 + 140) }, { opacity: 0, transform: `translate(${x}px,${y}px) scale(.5) rotate(70deg)`, offset: at(d0 + 520) }, { opacity: 0, transform: `translate(${x}px,${y}px) scale(.5) rotate(70deg)`, offset: 1 }], 'ease-out');
     }
@@ -230,5 +266,5 @@
   }
     /** 正式サイコロの6面を先に読む（出発のとき・本編の Chapter 1）。読めないときは play が絵の無い面になる＝出目の札は出る */
   function warm(skin) { const b = SKIN[skin || 'official']; if (!b || typeof Image === 'undefined') return; for (let v = 1; v <= 6; v++) { const im = new Image(); im.decoding = 'async'; im.src = `${b}${v}.webp`; } }
-  root.MMDICE3D = Object.freeze({ play, warm, isLocked: () => locked, lastTiming: () => (last ? { ...last } : null), T, TEMPO, BASE, PIPS, SKIN });
+  root.MMDICE3D = Object.freeze({ play, warm, isLocked: () => locked, lastTiming: () => (last ? { ...last } : null), T, TEMPO, BASE, PIPS, SKIN, EDGES, CORNERS, cornerTransform, cubeHtml });   // EDGES・CORNERS・cubeHtml＝2026-10-13 開発28（面取りの形の確認用）
 })(typeof window !== 'undefined' ? window : globalThis);

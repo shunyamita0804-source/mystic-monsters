@@ -235,7 +235,8 @@ test('AUDIO-13：registry の BGM：場面の名前が正しく、ファイル�
   assert.doesNotThrow(() => A.registerAll(REG));
   // 同じ曲を多数の場面へ使い回していない（1曲＝1場面。fallback は別）
   const used = {}; for (const [k, v] of Object.entries(got.bgm)) for (const s of srcsOf(v)) { used[s] = used[s] || []; used[s].push(k); }
-  for (const [s, ks] of Object.entries(used)) assert.equal(ks.length, 1, `${s} は1場面だけ：${ks}`);
+  const SHARED = {};   // 2026-10-13 開発28 追記：開始画面の BGM は正式の Top画面BGM（title_1013）＝Hopeful（プロローグ Scene 3）との共用はやめた＝1曲＝1場面に戻る   // 2026-10-13 開発28：開始画面の BGM は候補曲の権利が確認できるまでの暫定で Hopeful（プロローグ Scene 3）と共用
+  for (const [s, ks] of Object.entries(used)) assert.deepEqual(SHARED[s] ? ks.slice().sort() : ks.length, SHARED[s] || 1, `${s} は1場面だけ：${ks}`);
   assert.match(HTML, /<script src="\.\/js\/audio\/audio-manager\.js"><\/script>\n<script src="\.\/js\/audio\/audio-registry\.js"><\/script>/, 'registry は Audio Manager の直後に読む');
   assert.doesNotMatch(rd('js/audio/audio-registry.js'), /\bfetch\s*\(|^\s*import\s|^\s*export\s/m);
 });
@@ -259,8 +260,8 @@ test('AUDIO-15：assets/audio に同じ曲の別形式（ogg／mp3／wav…）�
   for (const f of audio) assert.match(f, /\.(ogg|m4a|mp3)$/, `音源の形式：${f}`);
   const stems = {}; for (const f of audio) { const k = f.replace(/\.[a-z0-9]+$/i, ''); (stems[k] = stems[k] || []).push(f); }
   const { got } = loadRegistry();
-  // 2026-10-13 開発24：同じ音の OGG と M4A は、同じ登録の src の配列（そのブラウザで再生できる1つだけを選ぶ＝二重に鳴らない）のときだけ置いてよい
-  const pairs = new Set([...Object.values(got.se), ...Object.values(got.voice)].map(srcsOf).filter((a) => a.length === 2 && /\.ogg$/.test(a[0]) && /\.m4a$/.test(a[1]) && a[0].replace(/\.ogg$/, '') === a[1].replace(/\.m4a$/, '')).map((a) => onDisk(a[0]).replace(/\.ogg$/, '')));
+  // 2026-10-13 開発24：同じ音の OGG と M4A は、同じ登録の src の配列（そのブラウザで再生できる1つだけを選ぶ＝二重に鳴らない）のときだけ置いてよい（2026-10-13 開発28 追記：BGM の TITLE＝iPhone 用の M4A の対も同じ規則）
+  const pairs = new Set([...Object.values(got.bgm), ...Object.values(got.se), ...Object.values(got.voice)].map(srcsOf).filter((a) => a.length === 2 && /\.ogg$/.test(a[0]) && /\.m4a$/.test(a[1]) && a[0].replace(/\.ogg$/, '') === a[1].replace(/\.m4a$/, '')).map((a) => onDisk(a[0]).replace(/\.ogg$/, '')));
   pairs.add(path.join(ROOT, 'assets/audio/voice/npc_1013/fina_hello'));   // 2026-10-13：旧フィナ「こんにちは」の対（参照先を差し替えて残したもの・下の KEEP）
   for (const [k, v] of Object.entries(stems)) assert.equal(v.length, pairs.has(k) ? 2 : 1, `同じ曲の別形式：${v}`);
   for (const f of files) assert.doesNotMatch(f, /\.(zip|wav|tmp|bak|DS_Store)$/i, f);
@@ -304,7 +305,7 @@ test('AUDIO-18：最初のタップ（AudioContext の resume を頼んだ直後
 });
 
 test('AUDIO-19：index.html：開始のタップは TITLE_START の1音だけ（ファイルが鳴らなければ合成のファンファーレ）。名前登録まで TITLE の曲。VS（対戦相手の発表）・能力比較は TOURNAMENT_MATCHUP、実戦の曲は「FIGHT!」の開始音のあと。ゴールは TOURNAMENT_ENTRY', () => {
-  assert.match(HTML, /unlock\(\);clearInterval\(AU\.tm\);AU\.tm=null;AU\.sc=null;if\(!MMAUDIO\.se\("TITLE_START",\{wait:900\}\)\)fanfare\(\);/, '2026-10-04：正式の開始音。最初のタップでデコード中でも合成音へ落とさず、出来しだい鳴らす');
+  assert.match(HTML, /unlock\(\);try\{MMAUDIO\.stopBgm\(\{fade:"quick"\}\)\}catch\(e\)\{\}[^\n]*?clearInterval\(AU\.tm\);AU\.tm=null;AU\.sc=null;if\(!MMAUDIO\.se\("TITLE_START",\{wait:900\}\)\)fanfare\(\);/, '2026-10-04：正式の開始音。最初のタップでデコード中でも合成音へ落とさず、出来しだい鳴らす（2026-10-13 開発28：開始画面の BGM は開始の音と同時に短く消す）');
   assert.match(HTML, /class="p15start" data-nsfx="1"/, '開始ボタンは UI_CONFIRM を鳴らさない');
   assert.match(HTML, /function p11NameScr\(msg\)\{bgm\(opOn\(\)\?"bureau":"title"\);/, '2026-10-05 PHASE B：正式の序盤導線では登録は管理局＝管理局の曲（BUREAU）。従来の名前登録の画面（自動テストの既定）は開始画面＝無音（TITLE は silent）');
   assert.match(HTML, /bgm\("matchup"\);try\{MMFEEL\.emit\("battle\.matchup"\)\}catch\(e\)\{\}p9Immersive\(true\);/, 'VS は BGM を止めて発表の音');
@@ -327,7 +328,7 @@ test('AUDIO-19：index.html：開始のタップは TITLE_START の1音だけ（
   assert.equal(b.audioSceneFor('battle'), null, 'fight() の最初では曲を始めない'); assert.deepEqual(b.calls, [['stop', 'quick']], 'それまでの曲は短く止める'); assert.equal(b.AU.btScene, 'TOURNAMENT_BATTLE_HIGH');
   assert.equal(b.sfxEventOf(9), 'ROULETTE_STOP'); assert.equal(b.sfxEventOf(7), 'ROULETTE_TICK');
   assert.equal(b.sfxEventOf(3), 'BATTLE_START'); const go = b.timers.find((x) => x[1] === 450); assert.ok(go, '開始音の0.45秒後に実戦の曲');
-  go[0](); assert.deepEqual(b.calls.at(-1), ['scene', 'TOURNAMENT_BATTLE_HIGH']); assert.equal(b.sfxEventOf(3), 'VICTORY');
+  go[0](); assert.deepEqual(b.calls.at(-1), ['scene', 'TOURNAMENT_BATTLE_HIGH']); assert.equal(b.sfxEventOf(3), 'BATTLE_WIN', '2026-10-13 開発28：バトルの2回目の 3＝正式の WIN の曲（旧 VICTORY の決定音は鳴らさない）');
   assert.equal(mk({ battle: { kind: 'league', rank: 1 }, tour: { status: 'league', rank: 1 } }).battleSceneFor(), 'TOURNAMENT_BATTLE_LOW');
   for (const [bt, sc] of [['wild', 'WILD_BATTLE'], ['rare', 'RARE_WILD_BATTLE'], ['rival', 'RIVAL_BATTLE']]) assert.equal(mk({ pend: { fx: { battleType: bt } }, battle: { kind: 'practice', rank: 0 } }).battleSceneFor(), sc);
   assert.equal(mk({}, false).sfxEventOf(9), 'BATTLE_ATTACK', 'バトルの外の 9');
@@ -452,7 +453,8 @@ test('AUDIO-26：2026-10-04 正式の開始音（TITLE_START）：最初のタ�
 
 test('AUDIO-27：2026-10-06 正式音源（ユーザー提供・ゲームの所有素材）：TITLE・PROLOGUE（ループしない）の BGM と正式 SE 15種。サイコロは1ロール1回・宝箱は段階ごとに1つ・野生／レア／ライバルは別の音・旧い音を重ねない', async () => {
   const { got } = loadRegistry(), MMB = './assets/audio/bgm/mystic_monsters_official/', MMO = './assets/audio/se/mystic_monsters_official/';
-  assert.deepEqual(got.bgm.TITLE, { silent: true }, '2026-10-05 PHASE B：開始画面に BGM は無い');
+  // 2026-10-13 開発28：ユーザー決定「タイトルに BGM を追加」＝TITLE は無音ではなくなった（候補曲は権利の確認待ち＝暫定で Hopeful。ループ区間あり）。開始の音 TITLE_START はそのまま
+  assert.ok(got.bgm.TITLE.src && !got.bgm.TITLE.silent && got.bgm.TITLE.loopEnd > 0, '2026-10-13 開発28：開始画面に BGM（ループ区間つき）');
   assert.deepEqual(got.bgm.PROLOGUE, { silent: true }, '2026-10-06 重大修正：プロローグ BGM は削除（プツプツ鳴る）');
   assert.deepEqual(got.se.TITLE_START, { src: MMO + 'title_start.ogg', gain: 0.8 }, '開始の音はそのまま');
   const want = { DICE_THROW: '01_dice_large_full', TRAINING_ITEM_SPAWN: '02_training_item_spawn', MARKET_PURCHASE: '03_market_purchase_confirm', TRAINING_SUCCESS: '04_training_success', MONSTER_ENTRY: '05_small_monster_entry_steps_4step',
@@ -653,4 +655,16 @@ test('AUDIO-38：2026-10-12 正式 SE 3種（ライバルの登場・VS・試合
   assert.ok(!existsSync(path.join(ROOT, 'assets/audio/se/ivokard/bass_thud_electric.ogg')) && !existsSync(path.join(ROOT, 'assets/audio/se/mystic_monsters_official/08_encounter_rival.ogg')), '旧い音は置かない');
   const html = readFileSync(path.join(ROOT, 'index.html'), 'utf8'), vs = html.slice(html.indexOf('function tourVsShow('), html.indexOf('function tourVsOut('));
   assert.equal((vs.match(/MMFEEL\.emit\("battle\.matchup"\)/g) || []).length, 1, 'VS の音は1回だけ'); assert.match(vs, /setTimeout\(se,380\)/);
+});
+
+test('AUDIO-39：自動再生の制約で保留した場面（開始画面の TITLE）は、別の場面へ移ったら捨てる＝そのあとの最初の操作で前の曲が割り込まない（2026-10-13 開発28）', async () => {
+  const opt = { rejectPlay: true }; const e = env(opt); const A = e.A; legacySpy(A);
+  BGM(A, 'TITLE', './bgm/title.ogg'); BGM(A, 'TOWN', './bgm/town.ogg');
+  A.scene('TITLE'); await tick(10);
+  assert.equal(A.status().pendingScene, 'TITLE', '開始画面＝最初の操作まで保留');
+  A.scene('TOWN'); await tick(10);
+  assert.notEqual(A.status().pendingScene, 'TITLE', '別の場面へ移ったら TITLE の保留は捨てる'); assert.equal(A.status().scene, 'TOWN');
+  opt.rejectPlay = false; A.unlock(); await tick(30);
+  assert.equal(A.status().scene, 'TOWN', '最初の操作で TITLE が割り込まない（今の場面のまま）'); assert.equal(A.status().pendingScene, null);
+  assert.equal(A.status().slots.filter((x) => x.active).length, 1, 'BGM は1本');
 });

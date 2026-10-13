@@ -156,7 +156,7 @@
       const after = Math.max(0, r.targetLifeAfter - extra), actual = r.targetLifeAfter - after;
       sess.currentLife[def] = after; if (sess.totalDamage) sess.totalDamage[atk] += actual;
       r.damage = total; r.targetLifeAfter = after; r.ko = r.ko || after <= 0;
-      notes.push({ skill: 'solamo', side: atk, text: '逆境のひと踏ん張り！' });
+      notes.push({ side: atk, text: '逆境のひと踏ん張り！', badge: '逆境のひと踏ん張り！' });   // 2026-10-13 開発28：×1.25 を使った瞬間は小さな札（演出は構えた瞬間＝下）
     }
     // ジオル「大地の守り」：倒れるダメージを受けたとき、10%で1度だけライフ1で耐える
     if (r.ko && SPECIES[spOf(pl, def)] === 'jiol' && !st.used[def].jiol) {
@@ -189,7 +189,7 @@
     ['A', 'B'].forEach((s) => {
       if (SPECIES[spOf(pl, s)] !== 'solamo' || st.used[s].solamo) return;
       const max = sess.participants && sess.participants[s] && sess.participants[s].maxLife, life = sess.currentLife[s];
-      if (max > 0 && life > 0 && life <= max * skillOf('solamo').lifeRatioAtMost) { st.used[s].solamo = true; st.armed[s] = true; notes.push({ side: s, text: `${nameOf(pl, s)}の逆境のひと踏ん張り！ 次の攻撃が強くなる！` }); }
+      if (max > 0 && life > 0 && life <= max * skillOf('solamo').lifeRatioAtMost) { st.used[s].solamo = true; st.armed[s] = true; notes.push({ skill: 'solamo', side: s, text: `${nameOf(pl, s)}の逆境のひと踏ん張り！ 次の攻撃が強くなる！` }); }   // 2026-10-13 開発28：20%以下で個性が成立した瞬間にシネマティック演出（skill）
     });
     r.rules = { blocked: null, notes };
     return r;
@@ -234,7 +234,8 @@
     //  外側で正式の素早さ（個体の speed／種族の正式値）を渡し、差があるときは「速い側が先攻」になる乱数を渡す。
     if (typeof B.createBattleSession === 'function') W.createBattleSession = function (o) {
       try { o = withSpeed(o); } catch (e) { /* 失敗しても従来どおり */ }
-      return B.createBattleSession(o);
+      const sess = B.createBattleSession(o); lastSess = sess;   // 2026-10-13 開発28：開幕のゴング（最初の行動の前）でも状態を持てるように
+      return sess;
     };
     root.MMBattle = Object.freeze(W);
   }
@@ -254,7 +255,7 @@
     if (rules.blocked) { mute.pop = mute.sfx = now() + 1800; return; }
     const tx = rules.notes.map((n) => n.text).filter(Boolean).join(' '), nm = nameOf(pl, side);
     if (tx) { if (pending && pending.name === nm && pending.mode === 'append') { pending.text += ' ' + tx; pending.at = now(); } else pending = { name: nm, mode: 'append', text: tx, at: now() }; }
-    rules.notes.forEach((n) => { if (n.skill) setTimeout(() => skillCut(idx(n.side), n.skill), 720); });   // 2026-10-13 開発27（30）：固有スキルの発動の短い演出（旧：小さな札だけ）
+    rules.notes.forEach((n) => { if (n.skill) setTimeout(() => skillCut(idx(n.side), n.skill), 720); if (n.badge) setTimeout(() => badge(n.side, n.badge), 720); });   // 2026-10-13 開発28：固有スキルの成立＝シネマティック演出（skill）・効果の消費＝小さな札（badge）。どちらもダメージの表示の時刻
     if (rules.notes.some((n) => n.heal)) setTimeout(() => healBar(r.actor), 720);
     setTimeout(drawAil, 760);
   }
@@ -295,35 +296,108 @@
     badge(sideOf(i), kind === 'sleep' ? 'ねむり' : 'まひ');
   }
 
-  /** 2026-10-13 開発27（30）：固有スキルが実際に発動した瞬間だけの短い演出（約1.4秒）。①ルーレット・STOP・説明の文を一時的に隠す → ②発動したモンスターへ軽く寄る
-   *  → ③短い SE（既存の TRAINING_SUCCESS）とオーラ（モンスターに重ねる淡い光の輪＝絵そのものの色は変えない）→ ④スキル名と正式の説明（MMP10M の UNIQUE_SKILLS）→ ⑤元に戻す。判定・HP・ターンの進行は変えない（見た目だけ・待たない）。
-   *  同じ演出が重ならない（出ている間の次の発動は待たずに終わらせてから）。i＝0 自分・1 相手、key＝solamo・gauru・nobiton・jiol・regnas */
-  const CUT_MS = 1400;
-  let cutEl = null, cutT = 0;
+  /** 2026-10-13 開発28：固有スキル発動のシネマティックカメラ（開発27（30）の「全体を 1.07 倍」を置き換え）。
+   *  発動した側のモンスターの実際の描画矩形（待機立ち絵）を測り、その子へカメラがスッと寄る（.vs と .bgs に Web Animations の translate＋scale＝合成スレッド。
+   *  倍率は 1.3 まで・HUD の下〜説明の上の安全域に全身が切れずに入る値へクランプ。背景は遠いので寄りも動きも控えめ＝視差。立ち絵・座標そのものは書き換えない）。
+   *  流れ：ルーレット・STOP・説明・TURN の帯を隠す（opacity／visibility＝見えない STOP は押せない）・相手側を少し暗く → 寄る 0.33秒 → 足元の発光（正式 PNG が届くまでは仮の輪）・スキル名と正式の説明・SE 1回
+   *  → 余韻 0.98秒 → 戻る 0.33秒 → UI を戻す（総尺 約1.64秒＋消える 0.2秒）。重なったら待ち行列（同じ側・同じスキルは1回・最大2つ）。決着・画面の片付けで必ず消す。
+   *  視差を減らす設定：寄らない（発光と説明だけ・1.3秒）。判定・ダメージ・ターン・セーブは変えない（表示だけ・待たない）。
+   *  専用の画像（モンスター1体に1枚・計5枚＝未納）：SKILL_FX[key] にパスを入れると足元に <img> で出る（それまでは仮の輪）。 */
+  const CUT = Object.freeze({ in: 330, hold: 980, out: 330, card: 170, calm: 1300, zMax: 1.3, bgK: 0.5, bgPan: 0.3, se: 'SKILL_ACTIVATE' });
+  const SKILL_FX = { solamo: null, gauru: null, nobiton: null, jiol: null, regnas: null };   // 足元の正式エフェクト（未納＝null＝仮の輪）
+  const FX_RGB = Object.freeze({ solamo: '255,214,120', gauru: '255,86,60', nobiton: '150,232,130', jiol: '160,130,255', regnas: '150,200,255' });
+  let cutEl = null, cutT = 0, cutAnims = [], cutSide = -1, cutKey = '', cutQueue = [];
+  const cutLog = [];
   function skillInfo(key) {
     const M = root.MMP10M; if (!M) return null;
     if (key === 'regnas') { const r = M.rivalMonster && M.rivalMonster('regnas'); const u = r && r.uniqueSkill; return u ? { name: u.name, desc: u.desc } : null; }
     const sp = M.idOf ? M.idOf(key) : Object.keys(SPECIES).find((k) => SPECIES[k] === key);
     return M.skillText ? M.skillText(+sp) : null;
   }
+  const reducedMotion = () => { try { return !!(root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; } };
+  const num = (v) => { const n = parseFloat(v); return Number.isFinite(n) ? n : 0; };
+  /** 要素の個別 translate（CSS の translate プロパティ＝.vs の戦場の位置）の y（px）。transform-origin は動かす前の箱が基準なので差し引く */
+  function ownTranslateY(el) { try { const t = getComputedStyle(el).translate; if (!t || t === 'none') return 0; return num((t.split(' ')[1]) || '0'); } catch (e) { return 0; } }
+  /** カメラの計算（純粋な関数・テスト用）。r＝対象の矩形（#bt 基準）、W・H＝画面、top・bottom＝安全域。戻り値 { k, dx, dy, fx, fy } */
+  function cutCamera(r, W, H, top, bottom, zMax) {
+    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    let k = Math.min(zMax || CUT.zMax, (bottom - top - 8) / r.height, (W - 20) / r.width);
+    k = Math.max(1, Math.min(zMax || CUT.zMax, k));   // 全身が切れない倍率（入らなければ寄らない＝1）
+    const fx = Math.max(r.width * k / 2 + 10, Math.min(W - r.width * k / 2 - 10, W / 2));
+    const fy = Math.max(top + r.height * k / 2, Math.min(bottom - r.height * k / 2, (top + bottom) / 2));
+    return { k, dx: fx - cx, dy: fy - cy, fx, fy, cx, cy };
+  }
   function skillCut(i, key) {
-    const bt = document.getElementById('bt'), mw = document.getElementById('m' + i), info = skillInfo(key); if (!bt || !info) return false;
+    const bt = document.getElementById('bt'), info = skillInfo(key); if (!bt || !info) return false;
+    if (cutEl) {   // 出ている間の発動は待ち行列（同じ側・同じスキルは1回・最大2つ）＝重ねない・飛ばさない
+      if (!(cutSide === i && cutKey === key) && !cutQueue.some((q) => q.i === i && q.key === key) && cutQueue.length < 2) cutQueue.push({ i, key });
+      return true;
+    }
+    return runCut(bt, i, key, info);
+  }
+  function runCut(bt, i, key, info) {
     style();
-    if (cutEl) { clearTimeout(cutT); endCut(); }
-    const br = bt.getBoundingClientRect(), r = mw ? mw.getBoundingClientRect() : { left: br.left + br.width / 2, width: 0, top: br.top + br.height / 2, height: 0 };
-    const cx = r.left - br.left + r.width / 2, cy = r.top - br.top + r.height / 2;
-    bt.classList.add('mmsk-cut'); bt.style.setProperty('--mmsk-ox', cx + 'px'); bt.style.setProperty('--mmsk-oy', cy + 'px');
-    const d = document.createElement('div'); d.className = 'mmskc' + (i ? ' r' : ''); d.setAttribute('role', 'status');
-    d.innerHTML = `<i class="mmskc-aura" style="left:${cx}px;top:${cy}px"></i><div class="mmskc-card"><small>${i ? '相手の固有スキル' : '固有スキル'}</small><b></b><p></p></div>`;
+    const calm = reducedMotion();
+    const br = bt.getBoundingClientRect(), W = br.width || innerWidth, H = br.height || innerHeight;
+    const mw = document.getElementById('m' + i), mon = mw && mw.querySelector('.mon'), img = mon && (mon.querySelector('.mma-idle') || mon.querySelector('img') || mon);
+    let rr = img ? img.getBoundingClientRect() : null; if (!rr || !rr.width || !rr.height) rr = mw ? mw.getBoundingClientRect() : null;
+    const r = rr && rr.width ? { left: rr.left - br.left, top: rr.top - br.top, width: rr.width, height: rr.height } : { left: W / 2 - 40, top: H / 2 - 40, width: 80, height: 80 };
+    const hpr = bt.querySelector('.hpr'), hb = hpr ? hpr.getBoundingClientRect().bottom - br.top : H * 0.16;
+    const cam = cutCamera(r, W, H, Math.max(8, hb + 6), H * 0.6, CUT.zMax);
+    if (calm) { cam.k = 1; cam.dx = 0; cam.dy = 0; cam.fx = cam.cx; cam.fy = cam.cy; }
+    const total = calm ? CUT.calm : CUT.in + CUT.hold + CUT.out;
+    cutAnims = [];
+    const move = (el, tx, ty, kk) => {
+      if (calm || !el || typeof el.animate !== 'function' || (Math.abs(tx) < 0.5 && Math.abs(ty) < 0.5 && Math.abs(kk - 1) < 0.001)) return;
+      const er = el.getBoundingClientRect(), oy = ownTranslateY(el);
+      el.style.transformOrigin = `${(cam.cx - (er.left - br.left)).toFixed(1)}px ${(cam.cy - (er.top - br.top) + oy).toFixed(1)}px`;
+      const t0 = 'translate(0px,0px) scale(1)', t1 = `translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${kk.toFixed(4)})`;
+      try {
+        cutAnims.push(el.animate([{ transform: t0, offset: 0, easing: 'cubic-bezier(.2,.7,.2,1)' }, { transform: t1, offset: CUT.in / total, easing: 'linear' }, { transform: t1, offset: (CUT.in + CUT.hold) / total, easing: 'cubic-bezier(.45,0,.3,1)' }, { transform: t0, offset: 1 }], { duration: total, fill: 'forwards', composite: 'add' }));
+      } catch (e) { /* 動かせない環境＝寄らない（説明と発光だけ） */ }
+    };
+    move(bt.querySelector('.vs'), cam.dx, cam.dy, cam.k);
+    { const kb = 1 + (cam.k - 1) * CUT.bgK, lim = (a, lo, hi) => Math.max(lo, Math.min(hi, a));   // 背景＝遠い＝控えめ（絵の外が見えない範囲に）
+      move(bt.querySelector('.bgs'), lim(cam.dx * CUT.bgPan, -(W - cam.cx) * (kb - 1), cam.cx * (kb - 1)), lim(cam.dy * CUT.bgPan, -(H - cam.cy) * (kb - 1), cam.cy * (kb - 1)), kb); }
+    bt.classList.add('mmsk-cut');
+    const side = mw && mw.closest ? mw.closest('.mside') : null; if (side) side.classList.add('mmsk-tg');
+    const d = document.createElement('div'); d.className = 'mmskc' + (i ? ' r' : '') + (calm ? ' calm' : ''); d.setAttribute('role', 'status'); d.style.setProperty('--fx', FX_RGB[key] || FX_RGB.solamo);
+    const footX = cam.fx, footY = cam.fy + r.height * cam.k / 2 - 2, fw = Math.round(r.width * cam.k * 1.3), src = SKILL_FX[key];
+    d.innerHTML = `<i class="mmskc-vig" style="--vx:${cam.fx.toFixed(0)}px;--vy:${cam.fy.toFixed(0)}px"></i>`
+      + (src ? `<img class="mmskc-img" alt="" draggable="false" style="left:${footX.toFixed(0)}px;top:${footY.toFixed(0)}px;width:${fw}px">` : `<i class="mmskc-ring" style="left:${footX.toFixed(0)}px;top:${footY.toFixed(0)}px;width:${fw}px"></i>`)
+      + `<div class="mmskc-card"><small>${i ? '相手の固有スキル' : '固有スキル'}</small><b></b><p></p></div>`;
+    if (src) d.querySelector('.mmskc-img').src = src;
     d.querySelector('b').textContent = info.name; d.querySelector('p').textContent = info.desc || '';
-    bt.appendChild(d); cutEl = d;
-    try { if (root.MMAUDIO) root.MMAUDIO.se('TRAINING_SUCCESS'); } catch (e) { /* 音が無くても進行は変わらない */ }
-    cutLog.push({ side: i, key, name: info.name });
-    cutT = setTimeout(endCut, CUT_MS);
+    bt.appendChild(d); cutEl = d; cutSide = i; cutKey = key;
+    setTimeout(() => { try { if (cutEl === d && root.MMAUDIO) root.MMAUDIO.se(CUT.se); } catch (e) { /* 音が無くても進行は変わらない */ } }, 110);
+    cutLog.push({ side: i, key, name: info.name, k: +cam.k.toFixed(3), dx: Math.round(cam.dx), dy: Math.round(cam.dy), fx: Math.round(cam.fx), fy: Math.round(cam.fy), calm, total, at: now() });
+    cutT = setTimeout(endCut, total + 40);
     return true;
   }
-  function endCut() { const bt = document.getElementById('bt'); if (bt) bt.classList.remove('mmsk-cut'); if (cutEl) { const e = cutEl; cutEl = null; e.classList.add('out'); setTimeout(() => e.remove(), 220); } }
-  const cutLog = [];
+  /** 演出の終わり（時間切れ・決着・片付け）：UI とカメラを元へ。待ち行列があれば次を */
+  function endCut() {
+    clearTimeout(cutT); cutT = 0;
+    const bt = document.getElementById('bt');
+    if (bt) { bt.classList.remove('mmsk-cut'); bt.querySelectorAll('.mside.mmsk-tg').forEach((e) => e.classList.remove('mmsk-tg')); }
+    for (const a of cutAnims) { try { a.cancel(); } catch (e) {} } cutAnims = [];
+    if (cutEl) { const e = cutEl; cutEl = null; e.classList.add('out'); setTimeout(() => e.remove(), 220); }
+    cutSide = -1; cutKey = '';
+    const nx = cutQueue.shift(); if (nx && bt && bt.isConnected) setTimeout(() => { if (!cutEl && document.getElementById('bt') === bt) skillCut(nx.i, nx.key); }, 140);
+  }
+  function clearCuts() { cutQueue = []; if (cutEl || cutAnims.length) endCut(); }
+  /** 開幕のゴング（fight() の ban('FIGHT!')）：ガウル「紅翼の猛攻」は最初の3ターンの効果＝ゴングの直後・最初の行動の前に1回（両側。相手側も同じ）。効果そのものは statMul のまま */
+  let lastSess = null;
+  function gong() {
+    const pl = G('BPL'); if (!pl) return;
+    const sess = cur && cur.pl === pl ? cur.sess : lastSess; if (!sess) return;
+    if (!cur || cur.pl !== pl) cur = last = { sess, pl };
+    const st = stateOf(sess); st.cut = st.cut || { A: {}, B: {} };
+    ['A', 'B'].forEach((s) => {
+      if (SPECIES[spOf(pl, s)] !== 'gauru' || st.cut[s].gauru) return;
+      st.cut[s].gauru = true;
+      setTimeout(() => { if (G('BPL') === pl && document.getElementById('bt')) skillCut(idx(s), 'gauru'); }, 460);
+    });
+  }
   function style() {
     if (document.getElementById('mmrl-style')) return;
     const st = document.createElement('style'); st.id = 'mmrl-style';
@@ -332,27 +406,35 @@
       + '#bt .mmail span b{font-size:9px;opacity:.9}#bt .mmail .mmail-paralysis{background:#b88a16}#bt .mmail .mmail-sleep{background:#5b4fa8}'
       + '#bt .mmsk{position:absolute;z-index:12;pointer-events:none;padding:4px 11px;border-radius:999px;font:900 14px "Noto Sans JP",sans-serif;color:#fff;letter-spacing:.05em;'
       + 'background:linear-gradient(180deg,#7a5a1a,#3e2a08);border:2px solid #ffe2a0;box-shadow:0 0 12px rgba(255,210,120,.7);white-space:nowrap;transform:translate(-50%,-50%)}'
-      // 2026-10-13 開発27（30）：固有スキルの発動の演出（ルーレット・STOP・説明を一時的に隠す・発動したモンスターへ軽く寄る・オーラ・スキル名と説明）。display:none は使わない（座標を壊さない）
-      + '#bt.mmsk-cut .bui,#bt.mmsk-cut #msg,#bt.mmsk-cut .gow{opacity:0!important;visibility:hidden!important;transition:opacity .12s}'
-      + '#bt.mmsk-cut .vs{transform-origin:var(--mmsk-ox,50%) var(--mmsk-oy,50%);animation:mmskZoom 1.4s ease-in-out both}'
-      + '@keyframes mmskZoom{0%{transform:none}22%,78%{transform:scale(1.07)}100%{transform:none}}'
+      // 2026-10-13 開発28：固有スキル発動のシネマティックカメラ（寄りは Web Animations＝runCut。CSS は UI の隠し・相手側の暗さ・発光・説明）。display:none は使わない（座標を壊さない）
+      + '#bt.mmsk-cut .bui,#bt.mmsk-cut #msg,#bt.mmsk-cut .gow,#bt.mmsk-cut>.ban.sm{opacity:0!important;visibility:hidden!important;transition:opacity .12s}'
+      + '#bt .mside{transition:opacity .25s ease-out}#bt.mmsk-cut .mside:not(.mmsk-tg){opacity:.42}'
       + '#bt .mmskc{position:absolute;inset:0;z-index:13;pointer-events:none;animation:mmskIn .18s ease-out both}#bt .mmskc.out{opacity:0;transition:opacity .2s}'
-      + '#bt .mmskc-aura{position:absolute;width:min(56vw,230px);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,236,170,.55),rgba(255,196,80,.28) 40%,rgba(255,170,40,0) 68%);animation:mmskAura 1.4s ease-out both}'
-      + '#bt .mmskc.r .mmskc-aura{background:radial-gradient(circle,rgba(190,220,255,.55),rgba(110,160,255,.28) 40%,rgba(80,130,255,0) 68%)}'
+      + '#bt .mmskc-vig{position:absolute;inset:0;background:radial-gradient(circle at var(--vx,50%) var(--vy,45%),rgba(0,0,0,0) 24%,rgba(4,8,22,.34) 62%,rgba(4,8,22,.6) 100%);opacity:0;animation:mmskVig .36s ease-out both,mmskVigOut .3s ease-in 1.33s forwards}'
+      + '#bt .mmskc.calm .mmskc-vig{display:none}'
+      + '#bt .mmskc-ring{position:absolute;aspect-ratio:2.7;transform:translate(-50%,-50%);border-radius:50%;opacity:0;background:radial-gradient(ellipse at center,rgba(var(--fx),.5) 0,rgba(var(--fx),.3) 36%,rgba(var(--fx),0) 70%);box-shadow:0 0 0 1.5px rgba(var(--fx),.6),0 0 16px 4px rgba(var(--fx),.35),inset 0 0 12px rgba(var(--fx),.4);animation:mmskRing 1.2s ease-out .24s both}'
+      + '#bt .mmskc-img{position:absolute;transform:translate(-50%,-50%);height:auto;opacity:0;animation:mmskRing 1.2s ease-out .24s both}'
       + '#bt .mmskc-card{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 22%);width:min(88vw,360px);transform:translateX(-50%);box-sizing:border-box;padding:10px 16px 12px;border-radius:14px;text-align:center;color:#fff;'
-      + 'background:linear-gradient(rgba(14,24,60,.92),rgba(8,14,38,.94));border:1.5px solid #e6c46e;box-shadow:0 6px 18px rgba(0,0,0,.5),0 0 16px rgba(255,210,120,.35);animation:mmskCard .32s cubic-bezier(.2,1.2,.4,1) both}'
-      + '#bt .mmskc-card small{display:block;font:700 11px/1.2 "Noto Sans JP",sans-serif;letter-spacing:.12em;color:#f3d996}'
+      + 'background:linear-gradient(rgba(14,24,60,.92),rgba(8,14,38,.94));border:1.5px solid #e6c46e;box-shadow:0 6px 18px rgba(0,0,0,.5),0 0 16px rgba(255,210,120,.35);opacity:0;animation:mmskCard .32s cubic-bezier(.2,1.2,.4,1) .17s both,mmskCardOut .22s ease-in 1.33s forwards}'
+      + '#bt .mmskc.r .mmskc-card{border-color:#9cc4ff;box-shadow:0 6px 18px rgba(0,0,0,.5),0 0 16px rgba(120,170,255,.35)}'
+      + '#bt .mmskc.calm .mmskc-card{animation:mmskCard .32s cubic-bezier(.2,1.2,.4,1) .12s both,mmskCardOut .22s ease-in 1.04s forwards}'
+      + '#bt .mmskc-card small{display:block;font:700 11px/1.2 "Noto Sans JP",sans-serif;letter-spacing:.12em;color:#f3d996}#bt .mmskc.r .mmskc-card small{color:#bcd4ff}'
       + '#bt .mmskc-card b{display:block;margin:3px 0 4px;font:900 clamp(20px,6.4vw,26px)/1.2 "Shippori Mincho",serif;letter-spacing:.06em;color:#fff6dc;text-shadow:0 0 10px rgba(255,210,120,.75)}'
-      + '#bt .mmskc-card p{margin:0;font:600 13.5px/1.5 "Noto Sans JP",sans-serif;color:#e8ecf8;line-break:strict}'
-      + '@keyframes mmskIn{from{opacity:0}to{opacity:1}}@keyframes mmskCard{from{opacity:0;transform:translateX(-50%) translateY(10px) scale(.94)}to{opacity:1;transform:translateX(-50%)}}'
-      + '@keyframes mmskAura{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}30%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.25)}}'
-      + '@media (prefers-reduced-motion:reduce){#bt.mmsk-cut .vs{animation:none}#bt .mmskc-aura{animation:none;opacity:.6}#bt .mmskc-card{animation:none}}';
+      + '#bt .mmskc-card p{margin:0;font:600 13.5px/1.5 "Noto Sans JP",sans-serif;color:#e8ecf8;line-break:strict;text-wrap:balance}'
+      + '@keyframes mmskIn{from{opacity:0}to{opacity:1}}@keyframes mmskCard{from{opacity:0;transform:translateX(-50%) translateY(10px) scale(.94)}to{opacity:1;transform:translateX(-50%)}}@keyframes mmskCardOut{to{opacity:0;transform:translateX(-50%) translateY(6px)}}'
+      + '@keyframes mmskVig{to{opacity:1}}@keyframes mmskVigOut{to{opacity:0}}'
+      + '@keyframes mmskRing{0%{opacity:0;transform:translate(-50%,-50%) scale(.55)}22%{opacity:1;transform:translate(-50%,-50%) scale(1.02)}78%{opacity:.85;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.06)}}'
+      + '@media (prefers-reduced-motion:reduce){#bt .mmskc-ring,#bt .mmskc-img{animation-duration:.9s}#bt .mside{transition:none}}';
     document.head.appendChild(st);
   }
 
   // ---- 行動の機会（ban）・技の演出（anim・skb・skSfx）・音（sfx）を包む ----
   const TURN_TEXT = { 'あなたのターン': 'A', '相手のターン': 'B' };
+  const END_BAN = /^(K\.O\.!|TIME UP|降参|WIN!|LOSE)$/;
   function onBan(t) {
+    const tt = String(t == null ? '' : t).trim();
+    if (END_BAN.test(tt)) { try { clearCuts(); } catch (e) { /* */ } }   // 決着の帯：固有スキルの演出を残さない
+    if (tt === 'FIGHT!') { try { gong(); } catch (e) { /* 演出の失敗でバトルを止めない */ } return; }
     const side = TURN_TEXT[t]; if (!side) return;
     const pl = G('BPL');
     if (!cur || cur.pl !== pl) return;   // このバトルではまだ何も起きていない（状態異常も無い）
@@ -414,7 +496,7 @@
         msgEl = el; pending = null; mute.pop = mute.sfx = 0; wrapBattle();
         msgObs = new MutationObserver(() => fixMsg(el));
         msgObs.observe(el, { childList: true, characterData: true, subtree: true });
-      } else if (!el && msgObs) { msgObs.disconnect(); msgObs = null; msgEl = null; cur = null; }
+      } else if (!el && msgObs) { msgObs.disconnect(); msgObs = null; msgEl = null; cur = null; try { clearCuts(); } catch (e) { /* */ } }
     });
     const start = () => top.observe(document.body, { childList: true });
     if (document.body) start(); else root.addEventListener('DOMContentLoaded', start);
@@ -436,7 +518,7 @@
   const surrendered = () => surrenderPl != null && surrenderPl === G('BPL');
 
   wrapBattle();
-  root.MMRULES = Object.freeze({ AILMENTS, NOBI_FIRST, install, wrapBattle, swallow, cleanResult, battleStats, surrendered, refreshSameEffects, withSpeed, speedOfUnit, current: () => (cur && cur.pl === G('BPL') ? cur.sess : null), drawAil, skillCut, cutLog: () => cutLog.slice(), behavior: (k) => BEHAVIOR[k] || null,
+  root.MMRULES = Object.freeze({ AILMENTS, NOBI_FIRST, install, wrapBattle, swallow, cleanResult, battleStats, surrendered, refreshSameEffects, withSpeed, speedOfUnit, current: () => (cur && cur.pl === G('BPL') ? cur.sess : null), drawAil, skillCut, clearCuts, cutLog: () => cutLog.slice(), cutQueue: () => cutQueue.slice(), cutCamera, CUT, SKILL_FX, cutActive: () => !!cutEl, behavior: (k) => BEHAVIOR[k] || null,
     // テスト用の純粋な処理
     newState, applyAilment, opportunity, cureAll, hasAilment, statMul, resolveWith, stateOf });
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -13,7 +13,7 @@ let L, opened = [];
 test.before(async () => { if (!SKIP) L = await H.launch(); });
 test.after(async () => { if (L) await L.close(); });
 async function open(opt = {}) { for (const q of opened) await q.ctx.close().catch(() => {}); const p = await L.open(opt); opened = [p]; return p; }
-const idle = (pg) => pg.waitForFunction(() => !bBusy && !MMCHD.isLocked() && !document.querySelector('.chpop,.chdz,.chf-fina'), null, { timeout: 30000 }).then(() => pg.waitForTimeout(200));
+const idle = (pg) => pg.waitForFunction(() => !bBusy && !MMCHD.isLocked() && !document.querySelector('.chpop,.chdz,.chf-fina'), null, { timeout: 30000 }).then(() => pg.waitForTimeout(200));   // 冒険リアクションの会話（.mmtalk）は含めない＝出たテストが送る（FE-5）
 async function toField(pg, sp = 0) {
   await H.newGame(pg, 'テスト');
   await pg.evaluate((sp) => { finaFlags().story = ['tut_turns']; const m = mk(0);   /* 2026-10-05：出発の「30ターン」の説明（会話窓・このセーブで1回）は見た状態＝従来の節目の一言を確かめる（説明は qa-e2e-next-1005・polish-g G-M） */ m.sp = sp; m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); save(); board(); }, sp);
@@ -105,7 +105,10 @@ test('FE-5：フィナの節目の一言（config.story）：Chapter に入っ�
   assert.deepEqual(await pg.evaluate(() => S.m.raise.field.storySeen), ['ch1_start']);
   await pg.reload(); await pg.waitForFunction(() => typeof S === 'object' && S.m); await pg.evaluate(() => board()); await pg.waitForSelector('#chf .chf-bg'); await pg.waitForTimeout(1500);
   assert.equal(await pg.evaluate(() => !!document.querySelector('.chf-fina')), false, '再読み込みでは出さない');
-  await rollAs(pg, 1); await idle(pg); assert.equal(await pg.evaluate(() => S.m.raise.node), 'p1_1');
+  await rollAs(pg, 1);
+  // 2026-10-13 開発28：通常マスに止まると冒険リアクション（2026-10-07 MMREACT＝確率 0.4・フィナの会話窓・選択肢）が出ることがある＝節目の一言（config.story）ではない。出たら送ってから（記録 storySeen は増えない）
+  for (let k = 0; k < 12 && await pg.$('.mmtalk:not(.mmtalk-out)'); k++) { if (await pg.$('.mmtalk-choice')) { await pg.waitForTimeout(450); await (await pg.$('.mmtalk-choice')).click(); await pg.waitForTimeout(400); } else await H.finishTalk(pg); }
+  await idle(pg); assert.equal(await pg.evaluate(() => S.m.raise.node), 'p1_1');
   assert.deepEqual(await pg.evaluate(() => S.m.raise.field.storySeen), ['ch1_start'], '通常マスでは話さない');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });

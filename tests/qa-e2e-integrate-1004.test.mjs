@@ -45,7 +45,7 @@ test('IN-B2：開始の音（正式素材）：最初のタップで TITLE_START
     assert.equal(r.ff, 0, '合成のファンファーレは鳴らない'); assert.deepEqual(r.log, ['TITLE_START']); assert.equal(r.st, 'ready');
     assert.ok(r.next >= 480 && r.next < 1500, `約0.5秒で次の画面（${Math.round(r.next)}ms。3秒の余韻を待たない）`);
     await pg.waitForSelector('.mmpro-u', { timeout: 10000 }); await pg.waitForTimeout(400);
-    assert.match(await pg.evaluate(() => document.querySelector('.mmpro-u').textContent), /遥か昔から/, 'プロローグは従来どおり');
+    assert.match(await pg.evaluate(() => document.querySelector('.mmpro-u').textContent), /はるか昔、人と聖獣は/, 'プロローグは従来どおり（2026-10-07 正式6枚の1枚目「はるか昔、人と聖獣は／この大陸で共に暮らしていた。」。旧 4枚の「遥か昔から」は d33105f から出ない＝main でも同じ）');
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []); await p.ctx.close();
   }
 });

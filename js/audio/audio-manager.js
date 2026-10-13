@@ -34,6 +34,8 @@
     // 2026-10-12 開発23 B：立体サイコロ（Chapter 1 の世界のボード）の1本の SE（投げる → 回る → トンッ、ト、トン）
     // 2026-10-13 開発24：観客の声（公式大会の会場だけ。js/battle/crowd.js）＝命中の歓声・ルーレットの MISS の落胆・攻撃をかわされたブーイング。短い版（既定）と1秒の版
     'CROWD_HIT', 'CROWD_HIT_LONG', 'CROWD_MISS', 'CROWD_MISS_LONG', 'CROWD_EVADE', 'CROWD_EVADE_LONG',
+    // 2026-10-13 開発28：バトルの決着の短い曲（勝ち＝WIN の帯・負け＝LOSE の帯で1回だけ。js/audio/audio-registry.js の BATTLE_WIN／BATTLE_LOSE）
+    'BATTLE_WIN', 'BATTLE_LOSE', 'SKILL_ACTIVATE',
     'DICE_CUBE']);
   /** フェードの長さ（ms）。通常の切り替えと、遭遇などの急な切り替え */
   const FADE = fz({ normal: 700, quick: 220, none: 0 });
@@ -359,6 +361,7 @@
     if (vs.cur || vs.wantId) stopVoice(120);   // 2026-10-13：場面（施設・バトル）が変わったら前の声を止める＝次の画面で遅れて鳴らない
     const ms = FADE[opts.fade || 'normal'] != null ? FADE[opts.fade || 'normal'] : FADE.normal;
     st.scene = key; st.plays++;
+    if (st.pendingScene && st.pendingScene !== key) st.pendingScene = null;   // 2026-10-13 開発28：別の場面へ移ったら、自動再生の制約で保留していた前の場面（開始画面の TITLE など）は捨てる＝次の操作で前の曲が割り込まない
     try {
       const entry = resolveBgm(key);
       if (entry && entry.silent) { stopFiles(ms); legacyStop(); st.source = 'silent'; st.pendingScene = null; return true; }   // 無音の場面：ファイルも合成音も止める

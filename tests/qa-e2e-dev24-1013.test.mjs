@@ -155,7 +155,7 @@ test('D24-B3：観客の声＝命中・ルーレットの MISS・かわされた
   assert.ok(r.rx.some((x) => x.side === 0), '相手の攻撃（自分が受けた）にも');
   // 実際に再生を始めた（seLog だけで判断しない）：名前ごとの数・AudioContext running・OGG の1本だけ
   assert.equal(r.play.length, r.crowd.length, '頼んだ数だけ再生を始めた（二重に鳴らない）'); assert.ok(r.play.every((x) => x.ctx === 'running' && /crowd_1013\/.*\.ogg$/.test(x.src)), JSON.stringify(r.play.slice(0, 3)));
-  const G = { CROWD_HIT: 0.55, CROWD_MISS: 0.55, CROWD_EVADE: 0.2 }; assert.ok(r.play.every((x) => Math.abs(x.gain - G[x.name]) < 0.001), '初期の音量（短い版・標準）');
+  const G = { CROWD_HIT_LONG: 0.6, CROWD_MISS_LONG: 0.53, CROWD_EVADE_LONG: 0.15 }; assert.ok(r.play.every((x) => x.name in G && Math.abs(x.gain - G[x.name]) < 0.001), `初期の音量（2026-10-13 開発28 A4：既定は通常＝1.0秒の版・標準）${JSON.stringify(r.play.map((x) => [x.name, x.gain]).slice(0, 3))}`);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
@@ -231,10 +231,10 @@ test('D24-B6：「バトル画面：旧」で従来の見た目に戻る・設�
   await H.newGame(pg, 'テスト');
   const save0 = await pg.evaluate(() => localStorage.getItem('mr4v6'));
   await pg.evaluate(() => confScr());
-  await pg.click('.tseg button:text("旧")'); await pg.click('.tseg button:text("1秒")'); await pg.click('.tseg button:text("控えめ")');
+  await pg.click('.tseg button:text("旧")'); await pg.click('.tseg button:text("短い")'); await pg.click('.tseg button:text("控えめ")');   // 2026-10-13 開発28 A4：既定が通常（1.0秒）になったので、変える先は「短い」
   assert.equal(await pg.evaluate(() => localStorage.getItem('mr4v6')), save0, '設定を変えてもセーブはそのまま');
   await pg.reload(); await pg.waitForFunction(() => typeof S === 'object' && window.MMARENA, null, { timeout: 60000 });
-  assert.deepEqual(await pg.evaluate(() => [MMARENA.v24(), MMCROWD.settings()]), [false, { mode: 'long', level: 'soft' }], '再読み込みでも保たれる');
+  assert.deepEqual(await pg.evaluate(() => [MMARENA.v24(), MMCROWD.settings()]), [false, { mode: 'short', level: 'soft' }], '再読み込みでも保たれる');
   await pg.click('[onclick*="startGame"]'); await pg.waitForTimeout(800); await H.finishTalk(pg);   // つづきから
   await tourSetup(pg);
   await pg.waitForSelector('#bt .mmr .pl img.bgp', { timeout: 20000 });

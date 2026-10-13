@@ -97,7 +97,10 @@
     let st = SKILL.get(s);
     if (!st) { st = { armed: false }; SKILL.set(s, st); }
     const d = data(), mult = (d && d.uniqueSkill.params.damageMultiplier) || SKILL_MULT;
-    if (r.actor === 'A' && r.target === 'B' && !r.hit && opts.move && opts.move.power > 0) { st.armed = true; return; } // 回避＝構える（重複しない）
+    if (r.actor === 'A' && r.target === 'B' && !r.hit && opts.move && opts.move.power > 0) {   // 回避＝構える（重複しない）
+      if (!st.armed) { st.armed = true; setTimeout(() => { try { window.MMRULES && MMRULES.skillCut && MMRULES.skillCut(1, 'regnas'); } catch (e) { /* 演出だけ */ } }, 720); }   // 2026-10-13 開発28：反撃の構えが成立した瞬間（MISS の表示の時刻）にシネマティック演出。構え中の再回避では出さない
+      return;
+    }
     if (r.actor === 'B' && r.hit && r.damage > 0 && st.armed) {
       st.armed = false;
       const total = Math.round(r.damage * mult), extra = total - r.damage;
@@ -105,7 +108,7 @@
       s.currentLife.A = after;
       if (s.totalDamage) s.totalDamage.B += actual;
       r.damage = total; r.targetLifeAfter = after; r.ko = after <= 0; r.counter = true;
-      setTimeout(() => { if (!(window.MMRULES && window.MMRULES.skillCut && window.MMRULES.skillCut(1, 'regnas'))) badge(); }, 720); // fight() がダメージを出す時刻（act の 0.72秒後）にそろえる。2026-10-13 開発27（30）：固有スキルの発動の演出（js/battle/rules.js の skillCut）・使えないときだけ旧の札
+      setTimeout(badge, 720); // fight() がダメージを出す時刻（act の 0.72秒後）にそろえる。2026-10-13 開発28：×1.20 を使った瞬間は小さな札だけ（シネマティック演出は構えた瞬間＝上）
     }
   }
 

@@ -23,13 +23,15 @@ const idle = (pg) => pg.waitForFunction(() => !bBusy && !MMCHD.isLocked() && !do
 const box = (pg, s) => pg.evaluate((s) => { const e = document.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return { l: r.left, t: r.top, r: r.right, b: r.bottom, w: r.width, h: r.height }; }, s);
 
 for (const size of SIZES) {
-  test(`PB-B1（${size.join('×')}）：新しいゲームの確認（後ろは押せない・戻る＝つづきから・確認しました＝新しいゲーム）。開始画面は無音`, { skip: SKIP }, async () => {
+  test(`PB-B1（${size.join('×')}）：新しいゲームの確認（後ろは押せない・戻る＝つづきから・確認しました＝新しいゲーム）。開始画面の BGM＝TITLE（2026-10-13 開発28 A1）`, { skip: SKIP }, async () => {
     const p = await open({ size }); const pg = p.page;
     await H.newGame(pg, 'テスト');
     await pg.evaluate(() => { const m = mk(0); m.name = 'ソラ'; S.m = m; save(); P_NEWGAME = true; title(); });
     await pg.waitForSelector('.p15start'); await pg.waitForTimeout(500);
     const before = await stored(pg);
-    assert.equal(await pg.evaluate(() => MMAUDIO.status().slots.filter((x) => x.active).length), 0, '開始画面は無音');
+    // 2026-10-13 開発28 A1（ユーザー決定「タイトルに BGM を追加」）：開始画面は TITLE の曲（暫定 Hopeful）。旧「無音」（2026-10-05 PHASE B）は上書き
+    assert.equal(await pg.evaluate(() => MMAUDIO.status().scene), 'TITLE', '開始画面の BGM は TITLE');
+    assert.ok(await pg.evaluate(() => MMAUDIO.status().slots.filter((x) => x.active).length) <= 1, 'BGM は1本まで（二重再生なし）');
     await pg.click('.p15start'); await pg.waitForSelector('#ngm .ngm-ok');
     const sb = await box(pg, '.p15start'), mb = await box(pg, '.ngm-p');
     assert.ok(mb.l >= 0 && mb.r <= size[0] && mb.t >= 0 && mb.b <= size[1], '確認の窓は画面に収まる');

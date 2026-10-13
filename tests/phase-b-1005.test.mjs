@@ -20,7 +20,7 @@ const sha = (p) => createHash('sha256').update(readFileSync(path.join(ROOT, p)))
 test('PB-01：開始画面に BGM は無い（TITLE は silent・旧タイトル曲のファイルも置かない）。プロローグは正式 v6・聖獣士管理局は正式 BGM（ループ・会話が聞こえる音量）', () => {
   const w = {}; load('js/audio/audio-manager.js', 'MMAUDIO', w); new Function('window', rd('js/audio/audio-registry.js'))(w);
   const B = w.MMAUDIO.registryOf('bgm');
-  assert.equal(B.TITLE.silent, true); assert.deepEqual(B.TITLE.srcs, []);
+  assert.ok(!B.TITLE.silent && B.TITLE.srcs.length === 2 && /title_1013\/title_official_from7s\.ogg$/.test(B.TITLE.srcs[0]) && B.TITLE.loopRange, '2026-10-13 開発28：開始画面に BGM（ユーザー決定。候補曲は権利の確認待ち＝暫定の既存曲・ループ区間つき）');   // 旧：TITLE は silent（2026-10-05 PHASE B）
   assert.equal(B.PROLOGUE.silent, true, '2026-10-06 重大修正：プロローグ BGM は削除'); assert.deepEqual(B.PROLOGUE.srcs, []);
   assert.ok(!existsSync(path.join(ROOT, 'assets/audio/bgm/mystic_monsters_official/mystic_monsters_prologue_bgm_official.ogg')));
   assert.equal(sha('assets/audio/bgm/mystic_monsters_official/mystic_monsters_bureau_bgm_official.ogg'), '0fd1e1b8f593bdbae8d20414274bde12ba85f25347a5c45f6a004014a761be90', '聖獣士管理局 v6');
