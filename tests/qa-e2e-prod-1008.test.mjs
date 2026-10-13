@@ -14,6 +14,10 @@ import assert from 'node:assert/strict';
 import * as H from './e2e/harness.mjs';
 
 const SKIP = H.skipReason();
+
+/** 降参ボタンを押す（2026-10-13：開発24 から技の発動中は降参ボタンを隠す＝押せない。見えて押せるようになってから押す） */
+const SUR_READY = () => { const b = document.getElementById('sur'), bt = document.getElementById('bt'); if (!b || !bt || bt.classList.contains('mma-cine')) return false; const c = getComputedStyle(b); return c.visibility === 'visible' && c.pointerEvents !== 'none' && +c.opacity > 0.5; };
+async function pressSur(pg) { await pg.waitForFunction(SUR_READY, null, { timeout: 20000 }); await pg.click('#sur', { force: true }); }
 let L = null;
 test.before(async () => { if (!SKIP) L = await H.launch(); });
 test.after(async () => { if (L) await L.close(); });
@@ -124,10 +128,10 @@ test('PR-B2：野生の練習試合の帯・札・相手名・会場（M-06・M-
   assert.equal(await pg.evaluate(() => /ランク.大会|ランク.の対戦相手/.test(document.getElementById('bt').innerText)), false);
   // 降参（2度押し）
   await pg.waitForFunction(() => { const g = document.getElementById('go'); return g && !g.disabled; }, null, { timeout: 15000 });
-  await pg.click('#sur', { force: true }); await pg.waitForTimeout(300); await pg.click('#sur', { force: true });
+  await pressSur(pg); await pg.waitForTimeout(300); await pressSur(pg);
   // 降参はラウンドの区切りで確定する（それまでは STOP を押して進める）
   for (let i = 0; i < 80; i++) { if (await pg.evaluate(() => { const g = document.getElementById('go'); return !!g && g.classList.contains('bk'); })) break;
-    if (await pg.evaluate(() => { const g = document.getElementById('go'); return !!g && !g.disabled; })) await pg.click('#go').catch(() => {}); await pg.waitForTimeout(400); }
+    await pg.evaluate(() => { const g = document.getElementById('go'); if (g && !g.disabled && !g.classList.contains('bk')) g.click(); }).catch(() => {}); await pg.waitForTimeout(400); }   // 2026-10-13：確かめると押すを一度に（「もどる」に変わった直後を押して画面を出ない）
   assert.match(await pg.evaluate(() => document.getElementById('msg').textContent), /降参|敗北|負け/);
   await pg.click('#go');
   await pg.waitForFunction(() => !document.getElementById('bt') && !!document.querySelector('#chf'), null, { timeout: 20000 });
