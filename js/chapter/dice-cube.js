@@ -10,6 +10,9 @@
 //  出目：play に渡した値（1〜6）の面が必ず正面に来る（回る量だけ決めて、止まる向きは値から決める＝再抽選なし・止まったあとは何も変えない）。
 //  2個（ダブルダイス）：play([a, b]) で2個を同時に（少しずらして）投げる。長さは1個と同じ。札は「a + b = 合計」。
 //  視差を減らす設定：回さない（出目の面のまま現れて光る・約0.8秒）。
+//  2026-10-13 開発25 E：opts.skin 'official'＝正式サイコロ（Phase 12 の assets/fields/ch1a/dice/dice_stop_1〜6・dice_blank）の絵の6面
+//   （assets/fields/ch1a/dice/cube_1013/face_1〜6.webp＝tools/dice1013/faces.py の派生。真珠の地・四隅の金の飾り・橙に光る目・1は金の紋章）。本編の Chapter 1 だけ。
+//   既定（skin なし）は従来の青い立方体（比較デモ）。動き・時間・出目・SE の出し方は変えない
 // =========================================================
 (function (root) {
   'use strict';
@@ -51,11 +54,18 @@
       ' -webkit-mask:radial-gradient(circle,#000 0 18%,rgba(0,0,0,.6) 30%,transparent 62%);mask:radial-gradient(circle,#000 0 18%,rgba(0,0,0,.6) 30%,transparent 62%);filter:drop-shadow(0 0 4px #9cc3ff)}',
       '.d3-res{position:absolute;transform:translate(-50%,0);font:900 22px/1 "Noto Sans JP",sans-serif;color:#fff6d8;padding:6px 14px 7px;border-radius:999px;background:linear-gradient(#22357d,#0f1c4d);border:2px solid #e0b861;box-shadow:0 4px 12px rgba(0,0,0,.45);opacity:0;white-space:nowrap}',
       '.d3-res b{font-size:28px;color:#ffe08a}',
+      // 2026-10-13 開発25 E：正式サイコロの面（絵＝6面とも同じ縁と地。目は絵の中）。縁の丸み・光は絵に合わせて控えめ
+      '.d3z.off .d3-f{border-radius:9%;padding:0;background:var(--fi) center/100% 100% no-repeat;box-shadow:inset 0 0 0 1px rgba(255,236,190,.55),inset 0 0 calc(var(--s)*.12) rgba(120,80,20,.28)}',
+      '.d3z.off .d3-f i{display:none}',
+      '.d3z.off .d3-glow{background:radial-gradient(rgba(255,250,232,.95),rgba(255,214,130,.55) 32%,rgba(255,190,90,0) 66%)}',
+      '.d3z.off .d3-sp{filter:drop-shadow(0 0 4px #ffd27a)}',
     ].join('');
     document.head.appendChild(s);
   }
-  function cubeHtml() {
-    return FACE.map(([v, tf]) => `<div class="d3-f" data-v="${v}" style="transform:${tf}">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((c) => (PIPS[v].includes(c) ? `<i style="grid-area:${Math.ceil(c / 3)}/${((c - 1) % 3) + 1}"></i>` : '')).join('')}</div>`).join('');
+  const SKIN = Object.freeze({ official: './assets/fields/ch1a/dice/cube_1013/face_' });
+  function cubeHtml(skin) {
+    const base = SKIN[skin];
+    return FACE.map(([v, tf]) => `<div class="d3-f" data-v="${v}" style="transform:${tf}${base ? `;--fi:url(${base}${v}.webp)` : ''}">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((c) => (PIPS[v].includes(c) ? `<i style="grid-area:${Math.ceil(c / 3)}/${((c - 1) % 3) + 1}"></i>` : '')).join('')}</div>`).join('');
   }
   /**
    * 着地を「トンッ、ト、トン」にする動き（TEMPO.long.bounce）。止まる時刻 L・出目の向き（fx・fy）は同じ＝出目は変わらない。
@@ -113,7 +123,7 @@
   function die(ov, o) {
     const el = document.createElement('div'); el.className = 'd3-mv'; el.dataset.v = String(o.v);
     const sh = document.createElement('div'); sh.className = 'd3-sh'; sh.style.setProperty('--s', `${o.size}px`); ov.appendChild(sh);   // 影は地面（着地点）に置く＝サイコロの動きとは別
-    el.innerHTML = `<div class="d3-sc" style="--s:${o.size}px"><i class="d3-glow"></i><div class="d3-pv"><div class="d3-tilt"><div class="d3-cube">${cubeHtml()}</div></div></div></div>`;
+    el.innerHTML = `<div class="d3-sc" style="--s:${o.size}px"><i class="d3-glow"></i><div class="d3-pv"><div class="d3-tilt"><div class="d3-cube">${cubeHtml(o.skin)}</div></div></div></div>`;
     ov.appendChild(el);
     const sc = el.querySelector('.d3-sc'), cube = el.querySelector('.d3-cube'), glow = el.querySelector('.d3-glow');
     const [bx, by] = BASE[o.v], D = o.D, L = o.lock, at = (ms) => Math.min(1, ms / D), P = o.P || TEMPO.short;
@@ -186,11 +196,12 @@
     const from = opts.from || { x: hw / 2, y: hh * 0.9 }, land = opts.land || { x: hw / 2, y: hh * 0.5 };
     const P = TEMPO[opts.tempo] || TEMPO.short;
     const two = vs.length === 2, L = calm ? T.calmLock : P.lock + (two ? 60 : 0), D = L + (calm ? T.calmHold : T.hold) + T.fade;
-    const ov = document.createElement('div'); ov.className = 'd3z'; ov.dataset.result = vs.join(',');
+    const skin = SKIN[opts.skin] ? opts.skin : '';
+    const ov = document.createElement('div'); ov.className = 'd3z' + (skin ? ' off' : ''); ov.dataset.result = vs.join(','); if (skin) ov.dataset.skin = skin;
     host.appendChild(ov);
     const t0 = now(); last = { start: t0, lock: null, end: null, values: vs.slice() };
     const dice = vs.map((v, i) => die(ov, {
-      v, top, k: i + Math.floor(Math.random() * 4), dir: two ? (i ? 1 : -1) : (Math.random() < 0.5 ? -1 : 1), spread: two ? (i ? 1 : -1) * size * 0.5 : 0, size: two ? Math.round(size * 0.86) : size, calm, D, P, lock: L - (two && i === 0 ? 50 : 0), sp: two && i === 0 ? 0.94 : 1,
+      v, skin, top, k: i + Math.floor(Math.random() * 4), dir: two ? (i ? 1 : -1) : (Math.random() < 0.5 ? -1 : 1), spread: two ? (i ? 1 : -1) * size * 0.5 : 0, size: two ? Math.round(size * 0.86) : size, calm, D, P, lock: L - (two && i === 0 ? 50 : 0), sp: two && i === 0 ? 0.94 : 1,
       from: { x: from.x + (two ? (i ? 16 : -16) : 0), y: from.y }, land: { x: land.x + (two ? (i ? 1 : -1) * size * 0.62 : 0), y: land.y },
     }));
     // 出目の札（止まったあと）
@@ -213,5 +224,7 @@
     }
     return true;
   }
-  root.MMDICE3D = Object.freeze({ play, isLocked: () => locked, lastTiming: () => (last ? { ...last } : null), T, TEMPO, BASE, PIPS });
+    /** 正式サイコロの6面を先に読む（出発のとき・本編の Chapter 1）。読めないときは play が絵の無い面になる＝出目の札は出る */
+  function warm(skin) { const b = SKIN[skin || 'official']; if (!b || typeof Image === 'undefined') return; for (let v = 1; v <= 6; v++) { const im = new Image(); im.decoding = 'async'; im.src = `${b}${v}.webp`; } }
+  root.MMDICE3D = Object.freeze({ play, warm, isLocked: () => locked, lastTiming: () => (last ? { ...last } : null), T, TEMPO, BASE, PIPS, SKIN });
 })(typeof window !== 'undefined' ? window : globalThis);

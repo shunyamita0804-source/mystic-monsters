@@ -2916,7 +2916,9 @@ main:has(>#app>.lab) h1{display:none}#app:has(>.lab){overflow:hidden}
 .tbced{width:min(94vw,370px);flex:none}.tbced .p9ced{margin:0;text-align:left}
 .tb1 .tbgo{flex:none;width:min(62vw,240px,12dvh*2.67);aspect-ratio:480/180;padding:0;margin:0;border:0;border-radius:0;background:url(./assets/tournament/ui1/btn_battle.png) center/100% 100% no-repeat;box-shadow:none}
 .tb1 .p9prov{position:relative;z-index:1;margin:6px 0 0;font-size:10px;color:rgba(232,210,154,.75);text-align:center}
-.tb1 .p9tmsg{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + min(14dvh,118px));z-index:4;width:min(88vw,340px);margin:0;transform:translateX(-50%);pointer-events:none;text-align:center;box-shadow:0 6px 16px rgba(0,0,0,.55);animation:tbmsg 3.6s ease forwards} /* 試合結果などの通知は対戦表の上に短く重ねる（押せる部品を隠さない・押しても下に届く） */
+.tb1 .p9tmsg{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + min(14dvh,118px));z-index:4;width:min(88vw,340px);margin:0;transform:translateX(-50%);pointer-events:none;text-align:center;box-shadow:0 6px 16px rgba(0,0,0,.55);animation:tbmsg 3.6s ease forwards}
+/* 2026-10-13 開発25 残件B：試合結果の一時通知は題字のすぐ下（表の上の空き）へ・高さは文に合わせる＝375×667 でも対戦表の名前・○×・次の試合を隠さない（文・表示時間・消え方・中央の観戦の帯は変えない） */
+.tb1 .p9tmsg{top:calc(env(safe-area-inset-top,0px) + 54px);width:auto;max-width:min(88vw,340px);min-height:0;box-sizing:border-box;padding:6px 18px;line-height:1.45;white-space:normal} /* 試合結果などの通知は対戦表の上に短く重ねる（押せる部品を隠さない・押しても下に届く） */
 @keyframes tbmsg{0%{opacity:0;translate:0 -8px}8%{opacity:1;translate:0 0}82%{opacity:1}100%{opacity:0}}
 @media (max-height:760px){.tbced{display:none}.tb1 .p9prov{display:none}.tbttl{width:min(80vw,300px,13dvh*3.24)}.tbsub{width:min(54vw,210px,7.5dvh*3.68)}.tblg{width:min(78vw,300px,8dvh*5)}.tbnx .tbtag{width:min(26vw,92px)}.tb1 .tbgo{width:min(52vw,200px,11dvh*2.67)}}
 /* 2026-10-07（次回便）：技一覧の未習得＝正式の未習得パネル（assets/ui/skill/locked_skill_panel.png）。旧「？」の文字と B-37 の重ね絵は出さない */
@@ -3638,25 +3640,34 @@ main:has(>#app>.ds) h1{display:none}
 .tb1g.tbv2 .c-self.rnx{background:linear-gradient(to bottom right,transparent calc(50% - .6px),rgba(214,178,98,.75) 50%,transparent calc(50% + .6px)),linear-gradient(rgba(242,200,96,.18),rgba(242,200,96,.08))}
 @keyframes tbrnx{50%{background-color:rgba(242,200,96,.1)}}
 /* 19：ほかの参加者どうしの結果＝ライフのバーが減る → ○／× */
-.tb1g.tbv2 .tbc.fresh .tblf{position:absolute;left:14%;right:14%;bottom:14%;height:4px;border-radius:2px;background:rgba(0,0,0,.55);overflow:hidden;animation:tblfOut .3s ease-in calc(var(--d) + 1100ms) both}
-.tb1g.tbv2 .tbc.fresh .tblf::after{content:"";position:absolute;inset:0;transform-origin:left center;background:linear-gradient(90deg,#3fd47a,#9cf2b4);animation:tblfDrop .7s cubic-bezier(.3,.6,.35,1) var(--d) both}
+.tb1g.tbv2 .tbc.fresh .tblf{position:absolute;left:14%;right:14%;bottom:14%;height:4px;border-radius:2px;background:rgba(0,0,0,.55);overflow:hidden;animation:tblfOut .3s ease-in calc(var(--d) + 2250ms) both}
+.tb1g.tbv2 .tbc.fresh .tblf::after{content:"";position:absolute;inset:0;transform-origin:left center;background:linear-gradient(90deg,#3fd47a,#9cf2b4);animation:tblfDrop 1.6s cubic-bezier(.3,.6,.35,1) calc(var(--d) + 300ms) both}
 .tb1g.tbv2 .tbc.fresh.c-loss .tblf::after{background:linear-gradient(90deg,#e04848,#ff8a7a)}
-.tb1g.tbv2 .tbc.fresh .tbo,.tb1g.tbv2 .tbc.fresh .tbx{animation:tbMark .32s cubic-bezier(.2,.9,.3,1.2) calc(var(--d) + 760ms) both}
+.tb1g.tbv2 .tbc.fresh .tbo,.tb1g.tbv2 .tbc.fresh .tbx{animation:tbMark .32s cubic-bezier(.2,.9,.3,1.2) calc(var(--d) + 2000ms) both}
 @keyframes tblfDrop{from{transform:scaleX(1)}to{transform:scaleX(var(--lf,.5))}}
 @keyframes tblfOut{to{opacity:0}}
 @keyframes tbMark{from{opacity:0;transform:scale(1.7)}}
 .tb1g.tbv2.tbskip .tbc.fresh .tblf{display:none}.tb1g.tbv2.tbskip .tbc.fresh .tbo,.tb1g.tbv2.tbskip .tbc.fresh .tbx{animation:none}
-.tbvsx{position:fixed;z-index:850;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 8dvh);display:flex;justify-content:center;pointer-events:none}
-.tbvsx .tvx-c{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:14px;background:rgba(8,16,40,.86);border:1.5px solid rgba(232,196,110,.9);box-shadow:0 6px 20px rgba(0,0,0,.55);animation:tvxIn .18s ease-out both}
-.tbvsx .tvx-s{display:flex;flex-direction:column;align-items:center;gap:3px;width:96px}.tbvsx .tvx-s .tbic{width:56px;height:56px;border-radius:50%;overflow:hidden;background:#e9eef7;border:2px solid #d9b465;display:grid;place-items:center}
-.tbvsx .tvx-s .tbic img{width:90%;height:90%;object-fit:contain}.tbvsx .tvx-s b{font:800 11px/1.2 "Noto Sans JP",sans-serif;color:#fff6dc;text-align:center;max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tbvsx .tvx-bar{position:relative;display:block;width:84px;height:8px;border-radius:5px;background:rgba(0,0,0,.6);border:1px solid rgba(255,236,190,.8);overflow:hidden}
-.tbvsx .tvx-bar>i{position:absolute;inset:0;transform-origin:left center;background:url(./assets/ui/b_group/b29_ability_bar_fill_green.png) left center/100% 100% no-repeat;animation:tvxDrop .55s cubic-bezier(.3,.6,.35,1) .2s both}
-.tbvsx .tvx-s.l .tvx-bar>i{background-image:url(./assets/ui/b_group/b30_ability_bar_fill_red.png)}
-.tbvsx .tvx-s.w .tbic{animation:tvxWin .3s ease-out .78s both}.tbvsx .tvx-s.l .tbic{animation:tvxLose .3s ease-out .78s both}
-.tbvsx .tvx-vs{font:900 italic 22px/1 "Noto Sans JP",sans-serif;color:#ffd970;text-shadow:0 0 8px #ff9a3c,0 2px 0 #000}
-@keyframes tvxIn{from{opacity:0;transform:scale(.9)}}@keyframes tvxDrop{from{transform:scaleX(1)}to{transform:scaleX(var(--lv,0))}}
-@keyframes tvxWin{to{box-shadow:0 0 14px #ffd970;border-color:#ffe39a}}@keyframes tvxLose{to{opacity:.55}}
+.tbvsx{position:fixed;z-index:850;left:0;right:0;top:50%;transform:translateY(-50%);display:flex;justify-content:center;align-items:center;pointer-events:none}
+/* 2026-10-13 開発25 D：対戦表の真ん中に重ねる観戦のパネル（後ろに半透明の暗い帯・対戦表は透けて見える） */
+.tbvsx .tvx-band{position:absolute;left:0;right:0;top:50%;height:min(230px,30dvh);transform:translateY(-50%);background:linear-gradient(rgba(4,8,22,0),rgba(4,8,22,.72) 18%,rgba(4,8,22,.78) 50%,rgba(4,8,22,.72) 82%,rgba(4,8,22,0));animation:tvxIn .2s ease-out both}
+.tbvsx .tvx-c{position:relative;display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:16px;background:rgba(10,20,48,.82);border:1.5px solid rgba(232,196,110,.9);box-shadow:0 8px 26px rgba(0,0,0,.6);animation:tvxIn .2s ease-out both}
+.tbvsx .tvx-s{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;width:min(34vw,132px)}
+.tbvsx .tvx-s .tbic{width:min(19vw,78px);height:min(19vw,78px);border-radius:50%;overflow:hidden;background:#e9eef7;border:2.5px solid #d9b465;display:grid;place-items:center;transition:box-shadow .3s,border-color .3s,opacity .3s}
+.tbvsx .tvx-s .tbic img{width:90%;height:90%;object-fit:contain}
+.tbvsx .tvx-s b{font:800 13px/1.2 "Noto Sans JP",sans-serif;color:#fff6dc;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tbvsx .tvx-bar{position:relative;display:block;width:100%;height:12px;border-radius:6px;background:rgba(0,0,0,.65);border:1px solid rgba(255,236,190,.85);overflow:hidden}
+.tbvsx .tvx-bar>i{position:absolute;inset:0;transform-origin:left center;transform:scaleX(var(--v,1));background:url(./assets/ui/b_group/b29_ability_bar_fill_green.png) left center/100% 100% no-repeat;transition:transform .42s cubic-bezier(.3,.6,.35,1)}
+.tbvsx .tvx-s.low .tvx-bar>i{background-image:url(./assets/ui/b_group/b30_ability_bar_fill_red.png)}
+.tbvsx .tvx-s.hit .tbic{animation:tvxHit .3s ease-out}
+.tbvsx .tvx-tag{position:absolute;top:-8px;left:50%;transform:translateX(-50%) scale(.6);padding:2px 9px;border-radius:999px;font:900 italic 12px/1.2 "Noto Sans JP",sans-serif;letter-spacing:.06em;opacity:0;transition:opacity .25s,transform .3s cubic-bezier(.2,1.4,.4,1)}
+.tbvsx .tvx-s.w .tvx-tag{background:linear-gradient(#ffe08a,#c88a1e);color:#3a2404}.tbvsx .tvx-s.l .tvx-tag{background:#2a3350;color:#c9d3ea}
+.tbvsx .tvx-c.res .tvx-tag{opacity:1;transform:translateX(-50%) scale(1)}
+.tbvsx .tvx-c.res .tvx-s.w .tbic{box-shadow:0 0 18px #ffd970,0 0 4px #fff;border-color:#ffe39a}
+.tbvsx .tvx-c.res .tvx-s.l .tbic{opacity:.5;border-color:#56607a}
+.tbvsx .tvx-vs{font:900 italic 28px/1 "Noto Sans JP",sans-serif;color:#ffd970;text-shadow:0 0 10px #ff9a3c,0 2px 0 #000}
+@keyframes tvxIn{from{opacity:0;transform:scale(.94)}}
+@keyframes tvxHit{0%{transform:translateX(0)}25%{transform:translateX(-5px);box-shadow:0 0 0 3px rgba(255,120,90,.9),0 0 14px rgba(255,90,60,.8)}55%{transform:translateX(4px)}100%{transform:none}}
 @media (prefers-reduced-motion:reduce){.tb1g.tbv2 .tbc.fresh .tblf{display:none}.tb1g.tbv2 .tbc.fresh .tbo,.tb1g.tbv2 .tbc.fresh .tbx,.tb1g.tbv2 .rnx{animation:none}}
 /* 20：対戦前比較＝モンスターを大きく・名前とスキルは下へ（重ならない）・能力の比較も少し下・「対戦開始」は少し上 */
 .tb3 .tbmon{height:min(29dvh,230px);overflow:visible}
@@ -3666,11 +3677,16 @@ main:has(>#app>.ds) h1{display:none}
 .tb3 .tbst{margin-top:min(1.6dvh,14px)}
 .tb3 .pcacts{margin-top:auto;margin-bottom:min(5dvh,44px)}
 /* 2026-10-12 開発21（試遊 No.004＝E-1・E-2）：「対戦開始」を少し上へ。立ち絵を流れの中に置き（absolute をやめる）、名前の札・固有スキル・6能力の表に重ならない。左右の説明の間をあける。立ち絵の比率・形は変えない */
-.tb3 .pcacts{margin-bottom:min(9dvh,76px)}
+.tb3 .pcacts{margin-bottom:calc(min(9dvh,76px) + 44px)}/* 2026-10-13 開発25 A：「対戦表にもどる」（約36px＋間 8px）を外した分を足して「対戦開始」は従来の高さのまま */
 .tb3 .pcduo{gap:14px}
 .tb3 .tbmon .tbidle{position:static;display:block;margin:0 auto;width:100%;height:100%}
 .tb3 .tbnp,.tb3 .tbskp{position:relative;z-index:2}
 .tb3 .tbskd{padding:0 2px}
+/* 2026-10-13 開発25 残件A：固有スキルの説明を読めるように＝切り捨て（2行の line-clamp）をやめて全文を折り返し・後ろに半透明の濃紺の地（背景の柱・旗の上でも読める）・字を少しだけ大きく。能力の枠との間は余白で分ける（重ねない・隠さない） */
+.tb3 .tbskp .tbskd{display:block;-webkit-line-clamp:unset;overflow:visible;max-width:100%;box-sizing:border-box;margin-top:1px;padding:2px 7px 3px;border-radius:7px;background:rgba(8,15,34,.62);font-size:clamp(9px,2.5vw,10.5px);line-height:1.38;letter-spacing:.01em;text-shadow:0 1px 2px #000;line-break:strict;text-wrap:balance}
+.tb3 .tbskp .tbskd .tbw{display:inline;position:static;white-space:nowrap}
+@media (max-height:720px){.tb3 .tbskp .tbskd{margin-top:0;font-size:8.8px;line-height:1.3;padding:1px 4px 2px}.tb3 .pcs{gap:3px}.tb3 .tbst{margin-top:2px}}
+.tb3 .pcduo{align-items:start}/* 左右で説明の行数が違っても名前の札・スキル名の高さをそろえる（立ち絵の箱は同じ高さ） */
 /* 2026-10-12 開発21（E-3）：VS の斜めの光は左上 → 右下（2体の間を分ける。正式素材を左右反転して置くだけ＝モンスターの向きは変えない） */
 .tvsline{scale:-1 1}
 /* 2026-10-12 開発21（試遊 IMG_5564）：VS の勝負絵は画像の四角い端で翼・体が切れている絵がある（ガウル）＝端が四角い箱に見えていた → 表示だけ端をやわらかく消す（素材は変えない） */
@@ -3790,6 +3806,11 @@ main:has(>#app>.ds) h1{display:none}
 .tb3 .pcg[data-k="ev"]{--fill:url(./assets/ui/b_group/b26_ability_bar_fill_lightblue.png)}.tb3 .pcg[data-k="de"]{--fill:url(./assets/ui/b_group/b27_ability_bar_fill_darkblue.png)}
 /* 2026-10-12 試遊：フィナなどの会話の間は、後ろのイベントのシート（分かれ道・遭遇のバトルの案内など）を隠す（内容はそのまま・会話が終われば戻る） */
 html[data-mmev] #app .chsheet,html[data-mmev] #app .p9sheet{visibility:hidden!important}
+/* 2026-10-13 開発25 A：対戦前比較のバーは 999＝満量の実数。0 は空（旧の最低2px をやめる）。戻るボタンを出さないので「対戦開始」を下へ */
+.tb3 .pcb i{min-width:0!important}
+/* 2026-10-13 開発25 F：牧場は背景が先に出て、ニックの一言は少し遅れて（再訪の「やあ」はこの吹き出しと同じころ＝facVoice の FAC_DELAY） */
+.rn2 .rnnick .rnsay{animation:rnsay25 .32s ease-out .3s both}@keyframes rnsay25{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.rn2 .rnnick .rnsay{animation:none}}
 </style></head><body><main>
 <h1>ミスティックモンスターズ</h1>
 <div id="app"></div>
@@ -4136,10 +4157,15 @@ function rnRename(){if(p8Blocked())return;const x=[S.m,...S.box].find(v=>v&&v.ui
 /** 2026-10-13 開発24：施設の入口の声（js/npc/voice-cues.js）。訪問1回につき1回＝同じ施設の中で画面・タブを替えても繰り返さない。fac＝null は街・Chapter へ出た（訪問の記録を消す）。
  *  ベースキャンプ（farm）の中のアイテム屋（shop）は別の施設（ベースキャンプへ戻ったら、次にアイテム屋へ入るときにまた）。声が鳴らなくても画面・進行は変わらない */
 const FAC_GROUP={farm:["farm"],shop:["farm","shop"],ranch:["ranch"],market:["market"],lab:["lab"]};
-function facVoice(fac){try{const V=window.MMVOICE;if(!V)return;if(!fac){V.visitReset();return}V.visitReset(FAC_GROUP[fac]||[fac]);if(V.visited()[fac])return;const sc=window.MMAUDIO?MMAUDIO.status().scene:null;
- setTimeout(()=>{try{const now=window.MMAUDIO?MMAUDIO.status().scene:null;if(!V.visited()[fac]&&FAC_SCENE[fac]&&now!==FAC_SCENE[fac])return;V.enter(fac)}catch(e){}},0)}catch(e){}} /* 画面を描き終えてから（その画面の BGM の切り替えのあと＝切り替えで声が止まらない）。その間に別の場面へ移っていたら鳴らさない */
+/* 2026-10-13 開発25 F：入口の声は【2回目以降の訪問】だけ。first＝この訪問で初回の案内（npcFirst・市場のカレンの初回）が出る＝声は出さずに「この訪問は済み」（同じ訪問の中で後から鳴らない・次の訪問から鳴る）。
+ *  立ち絵の無い入口（牧場のニック・ベースキャンプのダン）と研究所は、背景と画面が出そろってから（FAC_DELAY）。その間に会話が始まった・別の画面へ移ったら鳴らさない。市場・アイテム屋は従来どおりすぐ */
+const FAC_DELAY={ranch:480,farm:480,lab:420};
+function npcFirstWill(fac){try{return !window.MM_QA_NO_NPC&&!!window.MMNPCE&&!!window.MMNPC&&!npcFlagsFirst()[fac]&&!!MMNPCE.first(fac)}catch(e){return false}}
+function facVoice(fac,first){try{const V=window.MMVOICE;if(!V)return;if(!fac){V.visitReset();return}V.visitReset(FAC_GROUP[fac]||[fac]);if(V.visited()[fac])return;if(first){V.skip&&V.skip(fac,"first-visit");return}
+ const d=FAC_DELAY[fac]||0;
+ setTimeout(()=>{try{const now=window.MMAUDIO?MMAUDIO.status().scene:null;if(!V.visited()[fac]&&FAC_SCENE[fac]&&now!==FAC_SCENE[fac])return;if(d&&document.querySelector(".mmtalk")){V.skip&&V.skip(fac,"talk");return}V.enter(fac)}catch(e){}},d)}catch(e){}} /* 画面を描き終えてから（その画面の BGM の切り替えのあと＝切り替えで声が止まらない）。その間に別の場面へ移っていたら鳴らさない */
 const FAC_SCENE={farm:"FARM",shop:"FARM",ranch:"RANCH",market:"MARKET",lab:"LABORATORY"};
-function farm(msg,tab){if(p8Blocked())return;p9Immersive(true);bgm("ranch");npcWarm("nick");facVoice("ranch");if(!tab&&!msg)setTimeout(()=>npcFirst("ranch"),0);
+function farm(msg,tab){if(p8Blocked())return;p9Immersive(true);bgm("ranch");npcWarm("nick");facVoice("ranch",!tab&&!msg&&npcFirstWill("ranch"));if(!tab&&!msg)setTimeout(()=>npcFirst("ranch"),0);
  if(tab&&tab!="d")pfSellUid=null;ft=tab||(ft=="c"?"b":ft);if(ft=="c")return museum("fuse"); // 合体は研究所（labFuse）。牧場の内部画面 farm('','c') は互換のため研究所へ送る
  const m=S.m,all=[m,...S.box].filter(Boolean),L=MMP10M.RANCH_LIMIT;if(!all.some(x=>x.uid===rnSel))rnSel=(m||S.box[0]||{}).uid||null; // 2026-10-06：最初は連れている子（＝「預ける」）を選ぶ
  const x=all.find(v=>v.uid===rnSel)||null,bi=x?S.box.indexOf(x):-1,busy=!!MMP7.trainRunOf(m);let body="";
@@ -4478,7 +4504,7 @@ ${lantern(60)}${lantern(330)}
 const P10_SIGN=`<svg viewBox="0 0 240 92" width="200" height="77" aria-hidden="true"><path d="M60 0v14M180 0v14" stroke="#3a2618" stroke-width="3"/><rect x="18" y="12" width="204" height="74" rx="10" fill="#7a4a26" stroke="#3e2413" stroke-width="4"/><rect x="26" y="20" width="188" height="58" rx="7" fill="none" stroke="#e8b43a" stroke-opacity=".7" stroke-width="2"/>
 <g transform="translate(120 49)"><path d="M-40 10c-6-14-2-30 10-38M40 10c6-14 2-30-10-38" fill="none" stroke="#e8c26a" stroke-width="3"/>${[-1,1].map(s=>[0,1,2,3].map(i=>`<ellipse cx="${s*(34-i*3)}" cy="${6-i*10}" rx="5" ry="3" transform="rotate(${s*(60-i*12)} ${s*(34-i*3)} ${6-i*10})" fill="#e8c26a"/>`).join("")).join("")}<circle r="20" fill="#e8b43a" stroke="#6b3f08" stroke-width="2"/><circle r="14" fill="none" stroke="#fff3c4" stroke-opacity=".7"/><path d="M-7 5c0-7 14-7 14 0M-9-3a2.6 2.6 0 1 0 .1 0M9-3a2.6 2.6 0 1 0 .1 0M-3-9a2.4 2.4 0 1 0 .1 0M3-9a2.4 2.4 0 1 0 .1 0" fill="#6b3f08"/></g></svg>`;
 function p10Who(){const br=(S.br??-1)>=0?RN[S.br]:"ー";return `<div class="p10who"><span class="p10crest" aria-hidden="true">🐾</span><span class="p10wt"><b>${p11Esc(S.playerName||MMP11P.DEFAULT_NAME)}</b><small>ランク ${br}</small><span class="p10gold">${P10_COIN}<b id="p10g">${Number(S.g||0).toLocaleString()}</b><small>G</small></span></span></div>`}
-function market(msg,focus){if(p8Blocked())return;bgm("market");facVoice("market");p9Immersive(true);const cat=MMP10M.MARKET_CATALOG;
+function market(msg,focus){if(p8Blocked())return;bgm("market");facVoice("market",npcFirstWill("market")||(!finaFlags().karenIntro&&!window.MM_QA_NO_KAREN));p9Immersive(true);const cat=MMP10M.MARKET_CATALOG;
  if(typeof focus=="string"){const i=cat.findIndex(c=>c.key==focus);if(i>=0)P10_MK=i}else if(typeof focus=="number")P10_MK=Math.max(0,Math.min(cat.length-1,focus));
  P10_MK=Math.max(0,Math.min(cat.length-1,P10_MK));
  const MB=window.MMP12S&&MMP12S.MARKET_BG; // 市場の背景候補（台座付き）。無ければ従来の描画背景
@@ -4577,7 +4603,7 @@ function labNav(cur){return `<nav class="labcmd labnav cmdimg" aria-label="研�
 function labShell(cls,back,plq,body,cur){return `<div class="lab ${cls}"><div class="labbg" style="background-image:url(${LAB_BG})"></div><div class="dtop">${back}</div>${plq}${body}${labNav(cur)}</div>`}
 // 研究所（2026-10-04 第二段階）：入口＝エリオット＋機能のカード（図鑑・合体・配合表）。図鑑はデザイン参考 06（濃紺＋金・魔法図鑑・2列・No.・名前・未発見は近日公開）。合体は牧場から移した（処理 fuse・selm・cname はそのまま）。
 //  配合表は既存の規則（MMP7.resolveFusionSpecies＝子は親1の種族・能力60%・名前・技の継承・200G）だけを表示する（データの無い組み合わせは作らない）
-function museum(tab){if(p8Blocked())return;bgm("lab");npcWarm("elliot");facVoice("lab");if(!tab)setTimeout(()=>npcFirst("lab"),0); // 2026-10-04：初回訪問の会話（エリオット ↔ フィナ）
+function museum(tab){if(p8Blocked())return;bgm("lab");npcWarm("elliot");facVoice("lab",!tab&&npcFirstWill("lab"));if(!tab)setTimeout(()=>npcFirst("lab"),0); // 2026-10-04：初回訪問の会話（エリオット ↔ フィナ）
  if(tab=="book")return labBook();if(tab=="fuse")return labFuse();if(tab=="table")return labTable();
  $("#app").innerHTML=labShell("",`<button class="dback" onclick="lobby()">◀ 街にもどる</button>`,`<div class="labplq"><b>モンスター研究所</b><small>図鑑・合体・配合表</small></div>`,`${(l=>`<div class="labnpc nst r"><img class="nstf" ${npcStand("elliot",l?l.expression:"normal")} alt="" decoding="async"><div class="tx"><b>エリオット</b>${l?l.text:""}</div></div>`)(npcLineX("lab",ELLIOT_TALK.lab,"normal"))}`,"");try{window.scrollTo(0,0)}catch(e){}}
 /** 図鑑の一覧：出会える種族（SP＝市場の2種）＋ノビトン（近日公開＝解放条件は従来どおり）。カードは正式画像（p10Img） */
@@ -5033,7 +5059,7 @@ window.addEventListener("unhandledrejection",rescue);
  *  ./version.json（小さな JSON。毎回取り直す）の build がこのページの MM_BUILD と違えば1回だけ reload（同じ版へは15分に1回まで＝読み込み直しを繰り返さない）。
  *  確かめる時：起動したとき・ページがメモリから戻ったとき（pageshow の persisted）・10分以上裏にいて表に戻ったとき。セーブ（mr4v6）には触れない（読み込み直しは iOS がタブを閉じたときと同じ＝つづきから）。
  *  公開するたびに MM_BUILD と version.json の build を同じ値に上げる（tests/dev24-1013.test.mjs で一致を確かめる） */
-const MM_BUILD="2026-10-13-dev24";
+const MM_BUILD="2026-10-13-dev25";
 (function(){const K="mmbuildReload";let hidAt=0;
  const check=()=>{try{const x=new XMLHttpRequest();x.open("GET","./version.json?t="+Date.now(),true);x.timeout=8000;
   x.onload=()=>{try{if(x.status<200||x.status>=300)return;const b=(JSON.parse(x.responseText)||{}).build;if(!b||b===MM_BUILD)return;
@@ -5365,15 +5391,27 @@ const TB_GRID={6:{img:"ui1/grid6.png",ar:"1098/841",cy:[19.44,32.25,45.05,57.86,
 // 専用のモンスターアイコンは未着＝正式画像を丸い枠で切り抜く（顔のあたり。種族の番号 → object-position）。専用アイコンが届いたらここを差し替える
 const TOUR_ICON_POS={0:"58% 22%",1:"55% 18%",2:"58% 28%",3:"50% 25%"};
 function tbIcon(x){const f=window.MMARENA&&x&&MMARENA.faceSrc(x.sp);if(f){const o=MMARENA.faceOldSrc&&MMARENA.faceOldSrc(x.sp);return `<img class="tbface f25" src="${f}" alt=""${o?` onerror="this.onerror=null;this.classList.remove('f25');this.src='${o}'"`:""}>`}const s=x&&MMP10M.byId(x.sp);if(x&&x.s2==null&&!x.h&&s)return `<img src="${s.image.src}" alt="" style="object-position:${TOUR_ICON_POS[x.sp]||"50% 30%"}">`;return `<span class="tbsv">${msv(x)}</span>`}
-const TB_SEEN=new Map();let TB_FRESH=[];const TB_OTHER_MS=1000;
+const TB_SEEN=new Map();let TB_FRESH=[];const TB_OTHER_MS=2600;
 // 2026-10-12 試遊：ほかの参加者どうしの新しい結果は、すぐに○／×を出さず、両者の顔で「A VS B」→ ライフが減る → ○／× を1試合ずつ短く（結果・順位・プレイヤーの試合は変えない）。画面に触れると残りを飛ばす（触れたボタンはそのまま押せる）
+// 2026-10-13 開発25 D：観戦の見せ方を強く＝対戦表の真ん中に重ねる（後ろに半透明の暗い帯・対戦表は透けて見える）・顔と名前とライフを大きく・
+//  ライフは両者が交互に何度か削れて減る（1回 0.42秒・TB_HIT）→ 勝ち負けが決まった瞬間を強調（勝者が光る・敗者は暗く）→ 対戦表の○／×（--d に合わせて同じ時刻）。
+//  残りの量は従来どおり対戦表の記録（MMP8L.matchStats の残りライフ）＝勝ち負け・順位は変えない。1試合 TB_OTHER_MS（2.6秒）
+const TB_HIT={first:300,gap:325,dropMs:420,result:2000};
 function tbOthersShow(lg){const L=TB_FRESH;TB_FRESH=[];const host=document.querySelector(".p9tour.tb1"),g=host&&host.querySelector(".tb1g");if(!g||!L.length)return;
  const calm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);if(calm||window.MM_QA_NO_TOURFX){g.classList.add("tbskip");return}
- const d=document.createElement("div");d.className="tbvsx";d.setAttribute("aria-hidden","true");document.body.appendChild(d); // 画面の器は登場の動き（transform）を持つ＝fixed がずれるので body に置く
- const side=(id,lv,win)=>`<span class="tvx-s${win?" w":" l"}" style="--lv:${lv.toFixed(2)}"><span class="tbic">${tbIcon(p9Npc(lg,id))}</span><b>${p11Esc(p9Short(lg,id))}</b><i class="tvx-bar"><i></i></i></span>`;
- let i=0,done=false,tm=null;const end=()=>{if(done)return;done=true;clearTimeout(tm);d.remove();g.classList.add("tbskip");host.removeEventListener("pointerdown",end,true)};
- const step=()=>{if(done)return;if(!document.body.contains(host))return end();if(i>=L.length){tm=setTimeout(end,250);return}const m=L[i++];
-  d.innerHTML=`<div class="tvx-c">${side(m.a,m.aw?m.la:0,m.aw)}<b class="tvx-vs">VS</b>${side(m.b,m.aw?0:m.lb,!m.aw)}</div>`;tm=setTimeout(step,TB_OTHER_MS)};
+ const d=document.createElement("div");d.className="tbvsx v25";d.setAttribute("aria-hidden","true");document.body.appendChild(d); // 画面の器は登場の動き（transform）を持つ＝fixed がずれるので body に置く
+ const place=()=>{const r=g.getBoundingClientRect();if(r.height)d.style.top=Math.round(r.top+r.height/2)+"px"};place();
+ const side=(id,win)=>`<span class="tvx-s${win?" w":" l"}"><span class="tbic">${tbIcon(p9Npc(lg,id))}</span><b>${p11Esc(p9Short(lg,id))}</b><i class="tvx-bar"><i></i></i><em class="tvx-tag">${win?"WIN":"LOSE"}</em></span>`;
+ let i=0,done=false,tm=null,hits=[];const clr=()=>{hits.forEach(clearTimeout);hits=[]};
+ const end=()=>{if(done)return;done=true;clearTimeout(tm);clr();d.remove();g.classList.add("tbskip");host.removeEventListener("pointerdown",end,true)};
+ const bar=(el,v)=>{const b=el&&el.querySelector(".tvx-bar>i");if(!b)return;b.style.setProperty("--v",v.toFixed(3));el.classList.toggle("low",v<=.3)};
+ const step=()=>{if(done)return;if(!document.body.contains(host))return end();if(i>=L.length){tm=setTimeout(end,350);return}const m=L[i++];clr();place();
+  d.innerHTML=`<div class="tvx-band"></div><div class="tvx-c">${side(m.a,m.aw)}<b class="tvx-vs">VS</b>${side(m.b,!m.aw)}</div>`;
+  const el=[...d.querySelectorAll(".tvx-s")],W=m.aw?el[0]:el[1],Lo=m.aw?el[1]:el[0],lv=Math.max(0,Math.min(1,m.aw?m.la:m.lb)); // 勝者の残り（対戦表の記録）・敗者は 0
+  // 交互に削れる：敗者 3回（1→.66→.33→0）・勝者 2回（1→中間→残り）
+  const seq=[[Lo,.66],[W,(1+lv)/2],[Lo,.33],[W,lv],[Lo,0]];seq.forEach(([e,v],k)=>hits.push(setTimeout(()=>{bar(e,v);e.classList.remove("hit");void e.offsetWidth;e.classList.add("hit")},TB_HIT.first+k*TB_HIT.gap)));
+  hits.push(setTimeout(()=>{d.querySelector(".tvx-c").classList.add("res")},TB_HIT.result));
+  tm=setTimeout(step,TB_OTHER_MS)};
  host.addEventListener("pointerdown",end,true);step()}
 function tbBoardGrid(lg,pm,enter){const E=lg.entrants,n=E.length,nx=pm?pm.opp:-1,me=(E.find(e=>e.player)||{}).id; // 2026-10-07（ADDENDUM2）：最終モックどおり＝左に参加者・右に対戦マトリクス（行と列は同じ順）・勝ち＝赤○・負け＝青×・未対戦は空欄・自分自身は斜線・プレイヤーの行は青く光る・次の相手との交点が光る
  const cls=e=>`${e.player?" me":""}${e.id===nx?" nx":""}`;
@@ -5403,13 +5441,17 @@ function tbSkill(x){const k=x&&MMP10M.skillText(x.sp);return k?p11Esc(k.name):"�
 const TB_VS=["solamo","gauru","nobiton","jiol","regnas"];
 function tbVs(x,side){const k=x&&TB_VS[x.sp];return k?`<img class="tbidle tbvs${window.MMARENA&&MMARENA.flipOf(side,x.sp)?" fl":""}" src="./assets/tournament/vs_monsters/${k}_vs.webp" alt="">`:tbIdle(x,side)}
 function tbIdle(x,side){const s=window.MMARENA&&x&&MMARENA.idleSrc(x.sp);return s?`<img class="tbidle${MMARENA.flipOf(side,x.sp)?" fl":""}" src="${s}" alt="">`:msv(x)}
-function tbSkillDesc(x){const k=x&&MMP10M.skillText(x.sp);return k?`<small class="tbskn"><i>スキル</i>${p11Esc(k.name)}</small><span class="tbskd">${p11Esc(k.desc||"")}</span>`:`<small class="tbskn"><i>スキル</i>―</small>`}
+// 2026-10-13 開発25 残件A：説明文は語のまとまり（MMNPC.phraseGroups＝会話の窓と同じ）で折り返す＝語の途中・数字と単位の間で切らない（文は変えない）
+function tbPhrase(t){t=String(t||"");let g=null;try{g=window.MMNPC&&MMNPC.phraseGroups?MMNPC.phraseGroups(t).map(a=>a.join("")):null}catch(e){g=null}if(!g)return p11Esc(t);const o=[];for(const w of g){if(o.length&&/^[0-9０-９.．]+$/.test(o[o.length-1]))o[o.length-1]+=w;else o.push(w)}return o.map(w=>`<span class="tbw">${p11Esc(w)}</span>`).join("")}
+function tbSkillDesc(x){const k=x&&MMP10M.skillText(x.sp);return k?`<small class="tbskn"><i>スキル</i>${p11Esc(k.name)}</small><span class="tbskd">${tbPhrase(k.desc)}</span>`:`<small class="tbskn"><i>スキル</i>―</small>`}
+// 2026-10-13 開発25 A：比較のバーは左右とも 999＝100% の一次の目盛り（0＝空・見せかけの最低長なし・数値はそのまま）。「対戦表にもどる」は出さない（対戦開始だけ）
+const TB_CMP_MAX=999;function TB_CMP_W(x){x=Math.max(0,Math.min(TB_CMP_MAX,+x||0));return +(x/TB_CMP_MAX*100).toFixed(2)}
 function p9CompareScr(){const m=S.m,t=m&&m.raise&&m.raise.tour;if(!t||t.status!="league")return board();const lg=t.league,pm=MMP8.tourNext(m);if(!pm)return board();const o=p9Npc(lg,pm.opp);bgm("matchup");p9Immersive(true);p9MenuClose();
- const v=x=>Math.max(0,x|0),g=KS.map(k=>{const a=v(m[k]),b=v(o[k]),mx=Math.max(a,b,100)*1.08;return `<div class="pcg" data-k="${k}"><b class="pcv">${a}</b><div class="pcb l" style="--c:${STAT_COLOR[k]}"><i style="width:${Math.round(a/mx*100)}%"></i></div><span class="pcl">${LAB[k]}</span><div class="pcb r" style="--c:${STAT_COLOR[k]}"><i style="width:${Math.round(b/mx*100)}%"></i></div><b class="pcv">${b}</b></div>`}).join("");
+ const v=x=>Math.max(0,x|0),g=KS.map(k=>{const a=v(m[k]),b=v(o[k]);return `<div class="pcg" data-k="${k}"><b class="pcv">${a}</b><div class="pcb l" style="--c:${STAT_COLOR[k]}"><i style="width:${TB_CMP_W(a)}%"></i></div><span class="pcl">${LAB[k]}</span><div class="pcb r" style="--c:${STAT_COLOR[k]}"><i style="width:${TB_CMP_W(b)}%"></i></div><b class="pcv">${b}</b></div>`}).join("");
  $("#app").innerHTML=`<div class="p9cmps tb2 tb3"><div class="pcbg" style="background-image:url(${TB_ARENA(t.rank)})"></div><header class="tbttl"><b>公式ランク${RN[t.rank]}大会</b></header> <div class="pcduo"><div class="pcs me"><span class="tbmon">${tbIdle(m,0)}</span><b class="tbnp">${p11Esc(m.name)}</b><div class="tbskp l">${tbSkillDesc(m)}</div></div>
  <div class="pcs op"><span class="tbmon">${tbIdle(o,1)}</span><b class="tbnp">${p11Esc(p9Short(lg,pm.opp))}</b><div class="tbskp r">${tbSkillDesc(o)}</div></div></div>
  <div class="pcgs tbst" aria-label="能力の比較">${g}</div>
- <div class="pcacts"><button class="p9btn p9go pcgo tbstart" data-nsfx="1" onclick="p9VsGo(this)" aria-label="対戦開始">対戦開始</button><button class="pcback tbback" data-nav="back" onclick="board()" aria-label="対戦表にもどる">対戦表にもどる</button></div></div>`;try{window.scrollTo(0,0)}catch(e){}}
+ <div class="pcacts"><button class="p9btn p9go pcgo tbstart" data-nsfx="1" onclick="p9VsGo(this)" aria-label="対戦開始">対戦開始</button></div></div>`;try{window.scrollTo(0,0)}catch(e){}}
 // 大会3 VS 演出（背景・VS のロゴ・斜めの光・名前の札・飾りは正式素材。モンスターは正式画像）→ バトル。タップで早送り。fight() の導入（intro）はこの試合だけ出さない（二重の VS にしない）
 let TB_SKIP_INTRO=false;
 function tourVsShow(m,o,opt){opt=opt||{};return new Promise(res=>{const calm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
@@ -5608,7 +5650,7 @@ function bcMenu(){p9MenuClose();const m=S.m,st=m?MMP7.raiseState(m):"none",d=doc
 /** ベースキャンプの下のコマンド（1列5つ）。ステータス画面（2026-10-05）でも同じ並び */
 function bcCmds(st){return [["hall('s')","train","特訓",""],["shopScr()","item","アイテム",""],["hall('st')","status","ステータス",""],["hall('w')","moves","技管理",""],
   st=="farm"?["p8Suspend()","pause","中断",""]:["lobby()","town","街へ戻る",""]]}
-function fmScr(msg){const m=S.m;if(!m)return lobby();p9MenuClose();bagSettle();facVoice("farm");if(window.MMP8&&MMP8.legendStage&&MMP8.legendStage(S)===MMP8.LEGEND_PENDING)setTimeout(legendEvent,700); /* 2026-10-08：S 優勝のあとの解禁イベントが残っていたら */
+function fmScr(msg){const m=S.m;if(!m)return lobby();p9MenuClose();bagSettle();facVoice("farm",MMP7.raiseState(m)=="none"&&npcFirstWill("farm"));if(window.MMP8&&MMP8.legendStage&&MMP8.legendStage(S)===MMP8.LEGEND_PENDING)setTimeout(legendEvent,700); /* 2026-10-08：S 優勝のあとの解禁イベントが残っていたら */
  const st=MMP7.raiseState(m),r=m.raise||{},k=MMP8.nextChapterKey(m),fin=k==MMP8.FINAL,last=(r.log||[]).slice(-1)[0],sp=MMP10M.byId(m.sp),done=st=="done",can=done?{ok:true}:MMP8.canDepart(S,m);
  bgm("farm");p9Immersive(true);npcWarm("dan");ht="t";try{if(k!=null&&k!=MMP8.FINAL)MMAUDIO.prefetchBgm("CHAPTER_"+Math.max(1,Math.min(4,k|0)))}catch(e){}/* 2026-10-05 試遊：次の Chapter の曲を先にデコードしておく（フィールドで最初から AudioBuffer で鳴らす） */setTimeout(()=>{if(S.m!==m||!document.querySelector(".fm"))return;if(st=="none")npcFirst("farm");else if(st=="farm")farmReturn(m)},0); // 2026-10-04：初回訪問（ダン ↔ フィナ）・Chapter の帰還イベント（ダン＋フィナ。Chapter ごとに1回）
  const chNm=c=>c==MMP8.FINAL?"最終ルート":`Chapter ${c}`,chSub=c=>c==MMP8.FINAL||c==null?"":MMP8.chapterName(c);
@@ -5803,7 +5845,7 @@ const finaScene=k=>k=="intro"?TOWN_BG:k=="done"||k=="raiseFirst"||k=="raiseAgain
 const FINA_BIG=new Set(["intro","done"]); // 2026-10-04 G2：大型の会話窓（街の案内・育成完了＝イベント） // branches：選択肢ごとの続きの行（同じ会話ウィンドウで続ける）。選んだ id で解決
 /** 名前登録の直後に1度だけ：先に「表示済み」を保存してから会話を出す（再読込しても二度出ない） */
 function finaIntro(){const f=finaFlags();if(f.finaIntro)return;f.finaIntro=1;save();finaTalk("intro")}
-function p7Depart(b){const m=S.m;if(!m)return lobby();try{if(window.MMWB&&window.MMRF_WORLD&&(m.raise&&m.raise.ch||0)<=1){MMRF_WORLD.warmArt();new Image().src=PP_ART[1]}}catch(e){} // 2026-10-12 開発21（C-5）：出発を押したら Chapter 1 の盤の絵を先に読み込む（会話の間に）
+function p7Depart(b){const m=S.m;if(!m)return lobby();try{if(window.MMWB&&window.MMRF_WORLD&&(m.raise&&m.raise.ch||0)<=1){MMRF_WORLD.warmArt();new Image().src=PP_ART[1];if(window.MMDICE3D&&MMDICE3D.warm)MMDICE3D.warm('official')}}catch(e){} // 2026-10-12 開発21（C-5）：出発を押したら Chapter 1 の盤の絵を先に読み込む（会話の間に）
  // 育成開始（未育成→Chapter 1）：フィナがプレイヤーへ確認（選択肢「始める／まだやめておく」。初回だけ「途中で街へ戻れない」説明つき）。選択肢が確認を兼ねるので2度押しは求めない
  //  「始める」を選んだときだけ、同じ会話でフィナ→ダンの掛け合い → 会話のあと従来の出発処理（引数なしの p7Depart() ＝ 下の出発処理そのもの）。「まだやめておく」・選ばずに閉じたときは何もしない
  if(MMP7.raiseState(m)=="none"&&b&&window.MMNPC){if(b.dataset.fina)return;b.dataset.fina="1";const f=finaFlags(),first=!f.raiseIntro;if(first){f.raiseIntro=1;save()}
@@ -5825,7 +5867,7 @@ const SHOP_ICON=Object.freeze({buy:"./assets/item_ui/shop_purchase.webp",sell:".
 /** アイテム屋の画面の器（2026-10-05 試遊：施設の画面として作り直し。名札「アイテム屋」・戻る・所持金／ベルナ（全身）／中身／下の3つの導線。tab＝今開いている導線） */
 function shopShell(tab,body,msg,ex){const T={buy:"購入",sell:"売却",book:"アイテム図鑑"},ent=(k,t,sub)=>`<button class="shent${tab==k?" on":""}" onclick="shopScr('',false,'${k}')"${tab==k?' aria-current="page"':""}><img src="${SHOP_ICON[k]}" alt="" decoding="async"><span class="shent-tx"><b>${t}</b><small>${sub}</small></span><i class="shent-go" aria-hidden="true"></i></button>`;
  return `<div class="ds shop shopf${tab?" tab":""}">${shopLook(ex).bg}<header class="isphd"><button class="dback isp-back" data-nav="back" onclick="${tab?"shopScr()":"hall('t')"}" aria-label="${tab?"アイテム屋の入口にもどる":"ベースキャンプにもどる"}">←</button><div class="isp-plq"><b>アイテム屋</b>${tab?`<small>${T[tab]}</small>`:""}</div><span class="isp-gold"><i aria-hidden="true"></i><b>${S.g}</b> G</span></header>${msg?`<div class="dmsg"><span>${msg}</span></div>`:""}<div class="dbody">${body}</div><nav class="shmenu" aria-label="アイテム屋のコマンド">${ent("buy","購入","道具を買う")}${ent("sell","売却","保管庫のアイテムを売る")}${ent("book","アイテム図鑑","見つけた道具を確認")}</nav></div>`}
-function shopScr(msg,bought,tab){if(!S.m)return lobby();if(!MMP7.canAccessVault(S))return hall("t","Chapter中はアイテム屋に行けません。");bgm("farm");facVoice("shop");bagSettle();npcWarm("shop",["fullbody"]);
+function shopScr(msg,bought,tab){if(!S.m)return lobby();if(!MMP7.canAccessVault(S))return hall("t","Chapter中はアイテム屋に行けません。");bgm("farm");facVoice("shop",!bought&&!msg&&!tab&&npcFirstWill("shop"));bagSettle();npcWarm("shop",["fullbody"]);
  let sl=bought&&window.MMNPCE?{...MMNPCE.REVISIT.shop.buy}:window.MMNPCE&&!msg&&!tab?MMNPCE.revisit("shop",npcCtx("shop")):null;
  if(!bought&&!tab){if(sl&&NPC_LAST.shop===sl.id)sl=null;NPC_LAST.shop=sl?sl.id:null}   // 同じ一言を続けて出さない（来るたびに話さない）
  const sex=sl?sl.expression:"normal";

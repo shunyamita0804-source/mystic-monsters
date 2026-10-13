@@ -86,7 +86,8 @@
     // ---- Chapter ----
     CHAPTER_START: { src: AKSE + 'fx_2.ogg', gain: 3.0 },              // 第3弾試遊候補：alkakrab Fx 2（2秒・低くふくらんで消える音）。元が小さい（-28 LUFS）
     DICE_THROW: { src: MMO + '01_dice_large_full.ogg', gain: 0.95 },   // 2026-10-06 正式：投げる → 着地 → 短く転がる → 停止 を1本にした完成 SE（2.05秒）。投げ始めに1回だけ（1ロール1回）。下の LAND／ROLL／STOP は鳴らさない（同じ音を重ねない）
-    DICE_CUBE:  { src: SE_DIR + 'dice_1012/dice_magic_b4_long_tap.ogg', gain: 0.9 },   // 2026-10-12 開発23 B 正式採用：立体サイコロ（MMDICE3D・tempo long＝1.30秒で止まる）の1本（風 → 回る → トンッ、ト、トン → 止まる光）。Pixabay の A1／B4／C1 と正式 SE 05 の足音を編集・合成（AUDIO_CREDITS.md）。DICE_THROW（旧サイコロ・特訓）とは別＝二重に鳴らない
+    DICE_CUBE:  { src: SE_DIR + 'dice_1013/dice_cube_throw_land.ogg', gain: 0.9 },   // 2026-10-13 開発25 E：投げる音 → 回る間は無音 → 着地「トンッ、ト、トン」＋止まる光（tools/dice1013/se_cut.py＝下の 1012 版と比較用の着地音なし版から作った派生。音の時刻は同じ）。旧 1012 版はファイルを残す
+    // DICE_CUBE（旧・2026-10-12）：2026-10-12 開発23 B 正式採用：立体サイコロ（MMDICE3D・tempo long＝1.30秒で止まる）の1本（風 → 回る → トンッ、ト、トン → 止まる光）。Pixabay の A1／B4／C1 と正式 SE 05 の足音を編集・合成（AUDIO_CREDITS.md）。DICE_THROW（旧サイコロ・特訓）とは別＝二重に鳴らない
     DICE_LAND:  { silent: true },   // 2026-10-06：着地の音は DICE_THROW の完成 SE に含まれる（鳴らさない）。サイコロが地面に最初に触れた：2026-10-03 第4弾の試遊で NG → 無音（代わりの音は選ばない）
     DICE_ROLL:  { silent: true },   // 出目の面を見せ始めた（停止のあと）：2026-10-03 第4弾の試遊で NG → 無音（代わりの音は選ばない）
     DICE_STOP:  { silent: true },   // サイコロが見た目の上で完全に止まったフレーム（dice-renderer の dice.stop）。停止の音を将来入れるならここ（今は無音）
@@ -152,7 +153,7 @@
     nick_hello:    { src: [VO + 'nick_hello.ogg', VO + 'nick_hello.m4a'], npc: 'nick', gain: 2.4 },         // ニック（牧場）：やあ（-25.6）
     berna_welcome: { src: [VO + 'berna_welcome.ogg', VO + 'berna_welcome.m4a'], npc: 'shop', gain: 1.16 },  // ベルナ（アイテム屋）：いらっしゃい（-19.3）
     karen_welcome: { src: [VO + 'karen_welcome.ogg', VO + 'karen_welcome.m4a'], npc: 'karen', gain: 2.29 }, // カレン（市場）（-25.2）
-    elliot_hello_OPTIONAL: { src: [VO + 'elliot_hello_OPTIONAL.ogg', VO + 'elliot_hello_OPTIONAL.m4a'], npc: 'elliot', gain: 1.16, enabled: false },   // 研究所（別枠・既定OFF＝今回の対象外。勝手に使わない）
+    elliot_hello_OPTIONAL: { src: [VO + 'elliot_hello_OPTIONAL.ogg', VO + 'elliot_hello_OPTIONAL.m4a'], npc: 'elliot', gain: 1.16 },   // エリオット（研究所）：やあ（-19.3）。2026-10-13 開発25：ユーザーが正式に提供（同じ元ファイル・sha256 61e5821c…）＝再訪の挨拶に採用（id は開発24 のまま）
   };
 
   root.MMAUDIO_REGISTRY = Object.freeze({ bgm: BGM_REGISTRY, se: SE_REGISTRY, voice: VOICE_REGISTRY });

@@ -298,8 +298,17 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
 .wbw .wbrelay{position:absolute;inset:0;z-index:9;background:#0b1636;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity .56s ease;pointer-events:auto}
 .wbw .wbrelay.out{opacity:0;pointer-events:none}
 .wbw .wbrelay .wbr-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.wbw .wbrelay .wbr-t{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 18px);text-align:center;color:#fff;font:800 26px/1.2 "Shippori Mincho",serif;text-shadow:0 2px 10px rgba(2,6,24,.9)}
-.wbw .wbrelay .wbr-t small{display:block;font:700 12px/1.6 "Noto Sans JP",sans-serif;letter-spacing:.25em}
+.wbw .wbrelay .wbr-t{position:absolute;left:12px;right:12px;top:50%;transform:translateY(calc(-50% - 4dvh));text-align:center;color:#fff6dc;pointer-events:none;padding:18px 0 16px;background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(6,12,30,.66),rgba(6,12,30,0) 76%);transition:opacity .36s ease}
+.wbw .wbrelay .wbr-t i{display:inline-block;font-style:normal;opacity:0;transform:translateX(-14px);filter:blur(2px)}
+.wbw .wbrelay.ton .wbr-t i{opacity:1;transform:none;filter:none;transition:opacity .42s ease var(--d),transform .42s cubic-bezier(.2,.8,.3,1) var(--d),filter .42s ease var(--d)}
+.wbw .wbrelay.tout .wbr-t{opacity:0}
+.wbw .wbrelay .wbr-t small{display:flex;align-items:center;justify-content:center;gap:10px;font:800 16.5px/1.2 "Shippori Mincho",serif;letter-spacing:.3em;color:#ffe9a8;text-shadow:0 1px 0 rgba(40,24,0,.95),0 0 4px rgba(0,0,0,.9),0 0 12px rgba(0,0,0,.75)}
+.wbw .wbrelay .wbr-t b{display:block;margin-top:8px;font:800 clamp(30px,9.6vw,42px)/1.15 "Shippori Mincho",serif;letter-spacing:.06em;color:#fff4d6;text-shadow:0 1px 0 #b98a2e,0 2px 0 #7a5414,0 0 10px rgba(255,214,120,.55),0 3px 14px rgba(0,0,0,.75)}
+.wbw .wbrelay .wbr-ln{display:inline-block;width:min(16vw,64px);height:1.5px;background:linear-gradient(90deg,rgba(232,198,110,0),#e8c66e);position:relative}
+.wbw .wbrelay .wbr-ln.r{background:linear-gradient(90deg,#e8c66e,rgba(232,198,110,0))}
+.wbw .wbrelay .wbr-orn{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;font-size:18px;line-height:1;color:#e8c66e;text-shadow:0 0 6px rgba(255,214,120,.6),0 1px 2px rgba(0,0,0,.7);opacity:0;transition:opacity .6s ease .9s}
+.wbw .wbrelay.ton .wbr-orn{opacity:1}
+.wbw .wbrelay .wbr-orn .wbr-ln{width:min(26vw,104px)}
 .wbw .wbrelay .wbr-load{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 28px);transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;background:rgba(8,15,34,.72);border:1px solid rgba(217,180,101,.6);color:#f3e7c4;font-size:12.5px;font-weight:700}
 .wbw .wbrelay .wbr-load i{width:12px;height:12px;border-radius:50%;border:2px solid rgba(243,231,196,.35);border-top-color:#e8c66e;animation:wbrspin .9s linear infinite}
 .wbw .wbrelay .wbr-err{display:none;position:relative;flex-direction:column;align-items:center;gap:8px;padding:14px 16px;margin:0 16px;border-radius:14px;background:rgba(8,15,34,.9);border:1.5px solid #d9b465;color:#fff;text-align:center}
@@ -307,6 +316,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
 .wbw .wbrelay.slow .wbr-err{display:flex}
 @keyframes wbrspin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.wbw .wbrelay{transition-duration:.2s}.wbw .wbrelay .wbr-load i{animation:none}}
+@media (prefers-reduced-motion:reduce){.wbw .wbrelay .wbr-t i,.wbw .wbrelay .wbr-orn{opacity:1!important;transform:none!important;filter:none!important;transition:none!important}}
 @media (prefers-reduced-motion:reduce){.wbw .wb-pop,.wbw .wb-pop.out,.wbv .rfw-mon .mon,.wbw .wbx *,.wbw .wbx-gold *,.wbw .wbx-hg,:is(#rfp,.wbv) .rfw-mark{animation:none!important}}`
     + (root.MMREACT ? Object.entries(root.MMREACT.MOTIONS).map(([k, v]) => `.wbv .rfw-mon.mrx-${k} .mon,.wbw .wbcard figure.mrx-${k} .mon{animation:mrx-${k} ${v.ms}ms cubic-bezier(.4,0,.3,1)}`).join('') : '');
     document.head.appendChild(s);
@@ -320,6 +330,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     V.el = $('#wbw'); V.key = key;
     if (root.MMRF_WORLD) V.world = root.MMRF_WORLD.create(V.el.querySelector('.wbv'), D(), root.MMRF_PLAY, { view: viewRect, monSrc: monSrc(m), art: { base: ART, road: 'strip' },
       focus: true, veil: false, xray: true, ahead: CAM.ahead, sMin: CAM.sMin, sMax: CAM.sMax, tilePx: CAM.tilePx, monRatio: CAM.monRatio, zoomTau: CAM.zoomTau });
+    V.el.querySelectorAll('.rfw-title').forEach((e) => e.remove());   // 2026-10-13 開発25 H：全景の地図の上に大きな題字を出さない（題字は中継カットの間だけ＝cover）。HUD の Chapter 表示は別（残す）
     sprSetup(m);
     return true;
   }
@@ -332,6 +343,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
   function board(msg) {
     const S = gS(), m = S && S.m; if (!active(m)) return false;
     const fresh = ensureView(m), r = m.raise, f = fieldOf(m), ph = P8().boardPhase(m);
+    if (fresh && root.MMDICE3D && root.MMDICE3D.warm) root.MMDICE3D.warm('official');   // 2026-10-13 開発25 E：正式サイコロの6面を先に読む
     if (!root.MMDICE3D && root.MMCHD && V.dice !== 6) { const dc = cfg().dice || {}; root.MMCHD.configure({ ...dc, sides: 6 }); V.dice = 6; root.MMCHD.preload(); }
     try { for (const e of [$('#app'), document.querySelector('main'), document.scrollingElement]) if (e && e.scrollTop) e.scrollTop = 0; } catch (e) {}
     if (ph === 'goal') { paint(m, msg, null, fresh); arrive(m, fresh); return true; }
@@ -353,23 +365,49 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
   //  実際の盤の全景へクロスフェード → 全景を短く見せる → START へ寄る（intro）。9秒たっても終わらなければ「もう一度読み込む」「タイトルへ戻る」（出発は保存済み＝つづきから同じ所）。
   //  覆っている間は操作できない（START・コマンドは押せない＝二重に出発・二重に進まない）
   const RELAY = { src: './assets/fields/ch1a/intro/ch1_intro_overview.webp', min: 700, slow: 9000, fade: 560 };
+  // 2026-10-13 開発25 G／H：題字（CHAPTER 1／はじまりの草原）は中継カットの画面の中央に、左から1文字ずつすべるように出す（TITLE）。
+  //  順＝導入の絵と題字 → 題字を消す（outMs）→ 地図の全景（クロスフェード）→ START へ寄る。地図の上には題字を残さない（全景の題字 .rfw-title は ensureView で外す）
+  //  視差を減らす設定では動かさない（はじめから全部出す）。題字が出そろうまで（min）は覆いを外さない
+  const TITLE = Object.freeze({ lead: 260, gap: 55, nameGap: 95, inMs: 420, hold: 650, outMs: 360, waitMs: 1500 });
+  const TITLE_CH = 'CHAPTER 1', TITLE_NAME = 'はじまりの草原';
+  const titleDone = () => TITLE.lead + TITLE_CH.length * TITLE.gap + 140 + TITLE_NAME.length * TITLE.nameGap + TITLE.inMs + TITLE.hold;
+  function titleHtml() {
+    const ch = (t, gap, base) => [...t].map((c, i) => `<i style="--d:${base + i * gap}ms">${c === ' ' ? '&nbsp;' : c}</i>`).join('');
+    const a = ch(TITLE_CH, TITLE.gap, TITLE.lead), b = ch(TITLE_NAME, TITLE.nameGap, TITLE.lead + TITLE_CH.length * TITLE.gap + 140);
+    return `<div class="wbr-t" aria-label="CHAPTER 1 はじまりの草原"><small aria-hidden="true"><span class="wbr-ln"></span>${a}<span class="wbr-ln r"></span></small><b aria-hidden="true">${b}</b><span class="wbr-orn" aria-hidden="true"><span class="wbr-ln"></span>⚜<span class="wbr-ln r"></span></span></div>`;
+  }
   function cover(m, withIntro) {
     if (V.cover) V.cover.remove();
     const el = document.createElement('div'); el.className = 'wbrelay' + (withIntro ? ' art' : ''); el.setAttribute('role', 'status');
-    el.innerHTML = (withIntro ? `<img class="wbr-img" src="${RELAY.src}" alt="" draggable="false" decoding="async"><div class="wbr-t"><small>CHAPTER 1</small><b>はじまりの草原</b></div>` : '')
+    el.innerHTML = (withIntro ? `<img class="wbr-img" src="${RELAY.src}" alt="" draggable="false" decoding="async">${titleHtml()}` : '')
       + '<div class="wbr-load"><i aria-hidden="true"></i><span>読み込み中…</span></div><div class="wbr-err"><p>読み込みに時間がかかっています。</p><button class="p9btn" data-act="retry">もう一度読み込む</button><button class="p9btn2" data-act="back">タイトルへ戻る</button></div>';
     V.el.appendChild(el); V.cover = el; busySet(true); paint(m);   // 覆っている間は START・コマンドを押せない形で描き直す
-    const t0 = Date.now(), world = V.world, slow = setTimeout(() => { if (V.cover === el) el.classList.add('slow'); }, RELAY.slow);
+    const calm = !!(root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    // 題字は導入の絵が見えてから出す（濃紺の幕の上に題字だけが先に出ない）。絵が読めない・遅いときは TITLE.waitMs で出す。題字の尺はそこから数える
+    let tStart = Date.now();
+    const titleIn = !withIntro ? Promise.resolve() : new Promise((done) => {
+      const img = el.querySelector('.wbr-img'); let fin = false;
+      const on = () => { if (fin) return; fin = true; clearTimeout(tm); root.requestAnimationFrame(() => { tStart = Date.now(); el.classList.add('ton'); done(); }); };
+      const tm = setTimeout(on, TITLE.waitMs);
+      if (!img || (img.complete && img.naturalWidth)) on();
+      else { img.addEventListener('load', () => { (img.decode ? img.decode().catch(() => {}) : Promise.resolve()).then(on); }, { once: true }); img.addEventListener('error', on, { once: true }); }
+    });
+    const minMs = withIntro ? (calm ? RELAY.min : Math.max(RELAY.min, titleDone())) : 0;
+    const world = V.world, slow = setTimeout(() => { if (V.cover === el) el.classList.add('slow'); }, RELAY.slow);
     el.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('button[data-act]'); if (!b || V.cover !== el) return;
       clearTimeout(slow); V.cover = null; busySet(false);
       if (b.dataset.act === 'retry') { release(); board(); } else { try { root.p8Suspend(); } catch (x) {} } });
-    world.ready().then((ok) => {
+    Promise.all([world.ready(), titleIn]).then(([ok]) => {
       if (!ok || V.cover !== el || V.world !== world) return;
-      setTimeout(() => root.requestAnimationFrame(() => root.requestAnimationFrame(() => {
-        if (V.cover !== el) return; clearTimeout(slow); V.cover = null;
-        if (withIntro) intro(m); else { busySet(false); const S = gS(), mm = S && S.m; if (active(mm) && onBoard()) board(); }   // 覆いのあと＝途中の移動・分かれ道・出発の一言をここから（board() の続きの処理）
-        el.classList.add('out'); setTimeout(() => el.remove(), RELAY.fade + 60);
-      })), withIntro ? Math.max(0, RELAY.min - (Date.now() - t0)) : 0);
+      setTimeout(() => {
+        if (V.cover !== el) return;
+        const go = () => root.requestAnimationFrame(() => root.requestAnimationFrame(() => {
+          if (V.cover !== el) return; clearTimeout(slow); V.cover = null;
+          if (withIntro) intro(m); else { busySet(false); const S = gS(), mm = S && S.m; if (active(mm) && onBoard()) board(); }   // 覆いのあと＝途中の移動・分かれ道・出発の一言をここから（board() の続きの処理）
+          el.classList.add('out'); setTimeout(() => el.remove(), RELAY.fade + 60);
+        }));
+        if (withIntro) { el.classList.add('tout'); setTimeout(go, TITLE.outMs); } else go();   // 題字を先に消してから地図へ（地図の上に題字を残さない。視差を減らす設定でも消える（透明になる）のを待つ＝動きはない）
+      }, Math.max(0, minMs - (Date.now() - tStart)));
     });
   }
   function intro(m) {
@@ -542,7 +580,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     const hr = V.el.getBoundingClientRect(), vr = viewRect() || { W: hr.width, top: 80, bottom: hr.height - 170 };
     const land = { x: vr.W / 2, y: vr.top + (vr.bottom - vr.top) * 0.36 };
     try {
-      if (root.MMDICE3D) await root.MMDICE3D.play(v, { host: V.el, from: from || undefined, land, top: vr.top, tempo: 'long', throwEvent: 'dice.cube' });
+      if (root.MMDICE3D) await root.MMDICE3D.play(v, { host: V.el, from: from || undefined, land, top: vr.top, tempo: 'long', throwEvent: 'dice.cube', skin: 'official' });   // 2026-10-13 開発25 E：正式サイコロの絵（skin 'official'）
       else await root.MMCHD.play(v, { host: V.el, from, land });
     } catch (e) {}
   }

@@ -10,6 +10,10 @@ import assert from 'node:assert/strict';
 import * as H from './e2e/harness.mjs';
 
 const SKIP = H.skipReason();
+
+/** 降参ボタンを押す（2026-10-13：開発24 から技の発動中は降参ボタンを隠す＝押せない。見えて押せるようになってから押す） */
+const SUR_READY = () => { const b = document.getElementById('sur'), bt = document.getElementById('bt'); if (!b || !bt || bt.classList.contains('mma-cine')) return false; const c = getComputedStyle(b); return c.visibility === 'visible' && c.pointerEvents !== 'none' && +c.opacity > 0.5; };
+async function pressSur(pg) { await pg.waitForFunction(SUR_READY, null, { timeout: 20000 }); await pg.click('#sur', { force: true }); }
 let L = null;
 test.before(async () => { if (!SKIP) L = await H.launch(); });
 test.after(async () => { if (L) await L.close(); });
@@ -17,7 +21,8 @@ const OPEN = [];
 const openPage = async (o) => { const p = await L.open(o); OPEN.push(p); return p; };
 test.afterEach(async () => { for (const p of OPEN.splice(0)) await p.ctx.close().catch(() => {}); });
 
-const pressStop = async (pg) => { if (await pg.evaluate(() => { const g = document.getElementById('go'); return !!g && !g.disabled && !g.classList.contains('bk'); })) await pg.click('#go').catch(() => {}); };
+// 2026-10-13：確かめると押すをページの中で一度に（確かめたあとに試合が終わって同じボタンが「もどる」に変わり、それを押して画面を出てしまう競合を避ける）
+const pressStop = (pg) => pg.evaluate(() => { const g = document.getElementById('go'); if (g && !g.disabled && !g.classList.contains('bk')) g.click(); }).catch(() => {});
 /** 今の大会の次の試合を実際の fight() で最後まで（STOP を押し続ける）→ もどる */
 async function fightOnce(pg) {
   await pg.evaluate(() => p8TourFight());
@@ -89,7 +94,7 @@ test('SF-B2：大会で降参した試合（実際の fight() の降参ボタン
   await pg.evaluate(() => p8TourFight()); await pg.waitForSelector('#bt #sur', { timeout: 20000 });
   // 1手だけ進めてから降参（ライフが残っている状態）
   await pg.waitForTimeout(3500); await pressStop(pg); await pg.waitForTimeout(4000);
-  await pg.click('#sur', { force: true }); await pg.waitForTimeout(300); await pg.click('#sur', { force: true });
+  await pressSur(pg); await pg.waitForTimeout(300); await pressSur(pg);
   for (let i = 0; i < 80; i++) { if (await pg.evaluate(() => { const g = document.getElementById('go'); return !!g && g.classList.contains('bk'); })) break; await pressStop(pg); await pg.waitForTimeout(400); }
   assert.match(await pg.evaluate(() => document.getElementById('msg').textContent), /降参した/);
   await pg.click('#go'); await pg.waitForSelector('.tb1 .tbgo', { timeout: 20000 });

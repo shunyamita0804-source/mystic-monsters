@@ -69,7 +69,7 @@ export async function launch() {
   const pages = [];
   async function open(opt = {}) {
     const [w, h] = opt.size || SIZES.base;
-    const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, hasTouch: !!opt.touch, isMobile: !!opt.touch });
+    const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, hasTouch: !!opt.touch, isMobile: !!opt.touch, ...(opt.video ? { recordVideo: { dir: opt.video, size: { width: w, height: h } } } : {}) });   // 2026-10-13 開発25：opt.video＝画面の動画を残すフォルダ（確認の証拠用）
     const errors = [], bad = [];
     await ctx.route(/^https?:\/\/(fonts\.googleapis\.com|fonts\.gstatic\.com)\//, (r) => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
     const seed = {};

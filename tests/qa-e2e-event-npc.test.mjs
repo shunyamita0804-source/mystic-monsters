@@ -153,7 +153,7 @@ T('EN-B3：場面ごとの表情：カレンの購入成功＝04・研究所の�
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
-T('EN-B3b：ファームへの帰還＝ダン 04（誇らしげ）・大会の対戦前（パラメーター比較）＝セドリック 02', async () => {
+T('EN-B3b：ファームへの帰還＝ダン 04（誇らしげ）・大会の対戦表（2026-10-07 以降の正式＝セドリックの顔なし）・対戦前比較（セドリックなし）', async () => {
   const p = await openPage({ npc: true }); const pg = p.page;
   await H.newGame(pg, 'テスト');
   await pg.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; S.npcFlags.first = { farm: 1 }; save(); MMP8.depart(S, m, () => 0.37); const g = MMCH.graphFor(m); Object.assign(m.raise, { node: g.goal, goal: true, pend: null }); MMP8.declineTournament(S, m); save(); hall('t'); });
@@ -164,7 +164,15 @@ T('EN-B3b：ファームへの帰還＝ダン 04（誇らしげ）・大会の�
   await H.newGame(q, 'テスト');
   await q.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); const g = MMCH.graphFor(m); Object.assign(m.raise, { node: g.goal, goal: true, pend: null }); m.raise.field.arrivalSeen = true; save(); MMP8.startTournament(S, S.m, 0, 7); save(); board(); });
   await q.waitForSelector('.p9tour.tp2 .p9next .p9go', { timeout: 15000 });
-  assert.match(await q.evaluate(() => document.querySelector('.p9tour .p9ced img').getAttribute('src')), /cedric\/expr\/face\/01_host\.webp$/, 'セドリック：E ランクの進行＝01 司会');
+  // 2026-10-13 開発25 残件C：2026-10-07（ADDENDUM2）から大会1 対戦表にセドリックの顔・一言は出さない（正式の最終モック）。旧い期待値（セドリック 01 司会の顔）は main 18bf404 でも同じく失敗していた
+  const b1 = await q.evaluate(() => ({ ced: document.querySelectorAll('.p9tour .p9ced').length, ttl: (document.querySelector('.tb1 .tbttl') || {}).textContent || '',
+    rows: document.querySelectorAll('.tb1g .tbnm').length, me: (document.querySelector('.tb1g .tbnm.me b') || {}).textContent || '', nx: ((document.querySelector('.tb1g .tbnm.nx b') || {}).textContent || '').trim().length > 0,
+    next: document.querySelectorAll('.tb1g .tbc.c-next').length, icons: [...document.querySelectorAll('.tb1g .tbrw > .tbic img')].map((i) => i.getAttribute('src')), go: !!document.querySelector('.tb1 .tbgo') }));
+  assert.equal(b1.ced, 0, '対戦表にセドリックの顔・一言は出さない（正式）');
+  assert.match(b1.ttl, /公式ランクE大会/, '題字＝公式ランクE大会');
+  assert.equal(b1.rows, 6, 'E は 6体'); assert.equal(b1.me, 'ソラ', '自分の行'); assert.ok(b1.nx, '次の相手の行'); assert.equal(b1.next, 2, '次の試合の交点が2マス光る');
+  assert.equal(b1.icons.length, 6, '参加者それぞれに顔アイコン'); assert.ok(b1.icons.every((s) => /assets\/tournament\/faces(_25d)?\/face_\w+\.webp$/.test(s)), `顔アイコンは正式の横顔 ${b1.icons}`);
+  assert.ok(b1.go, '「対戦する」');
   await q.waitForTimeout(400); await q.click('.p9next .p9go'); await q.waitForSelector('.p9cmps .pcgo');
   assert.equal(await q.evaluate(() => document.querySelectorAll('.p9cmps .p9ced').length), 0, '2026-10-06：大会2（対戦前比較）は正式デザインどおりセドリックを出さない');
   const fit = await q.evaluate(() => { const a = document.querySelector('.pcacts').getBoundingClientRect(); return [a.bottom <= innerHeight + 1, document.documentElement.scrollWidth <= innerWidth + 1]; });

@@ -1,7 +1,7 @@
 // =========================================================
 // 2026-10-12 開発21 ⑤（実ブラウザ）：公式ランク戦の正式背景 E〜S・対戦前比較・VS・接地・状態異常の札
 //  BE-1（E〜S の6ランク・3サイズを順に）：対戦表・対戦前比較・VS・実際のバトルの背景＝そのランクの正式背景（assets/battle/official_rank_1012/rank_X）・
-//         読み込める・バトルではモンスターの足もとが床（床の始まり＝画像の約55% を下を軸に 1.12倍）・HUD とモンスターが画面の中
+//         読み込める・バトルではモンスターの足もとが床の輪（2026-10-13 開発25 B：絵の高さの約58〜72%。床の始まりは約55%）・HUD とモンスターが画面の中
 //  BE-2（3サイズ）：対戦前比較＝立ち絵・名前の札・固有スキル・6能力の表・ボタンが重ならない・「対戦開始」は下から離れた
 //  BE-3：VS の斜めの光は左上 → 右下（素材を左右反転）・モンスターの向きは従来どおり（自分＝右向き・相手＝反転）
 //  BE-4：野生・ライバルの練習試合は Chapter の野外の背景（2026-10-12 試遊。Chapter 1＝はじまりの草原。無い Chapter は venue）・足もとが床・正式背景の拡大はしない
@@ -48,9 +48,10 @@ for (let rank = 0; rank < 6; rank++) {
     assert.match(await bgOf(pg, '#tvs .tvsbg'), new RegExp(want), 'VS'); await pg.waitForTimeout(1500); await shot(pg, `be1_vs_${RN[rank]}_${size.join('x')}`);
     await pg.waitForSelector('#bt .mma-bg', { timeout: 20000 }); await pg.waitForSelector('#bt #m0 .mma-idle', { timeout: 20000 }); await pg.waitForTimeout(4200);
     const b = await pg.evaluate(() => { const bg = document.querySelector('#bt .mma-bg'), r = bg.getBoundingClientRect(), m = [0, 1].map((i) => document.querySelector(`#bt #m${i} .mma-idle`).getBoundingClientRect()), hp = [0, 1].map((i) => document.getElementById('hp' + i).getBoundingClientRect());
-      return { src: bg.getAttribute('src'), ofc: bg.classList.contains('ofc'), floor: r.top + r.height * 0.555, feet: m.map((x) => x.bottom), mon: m.map((x) => [x.left, x.right, x.top]), hp: hp.map((x) => [x.left, x.right, x.top, x.bottom]), W: innerWidth, H: innerHeight, prac: document.getElementById('bt').dataset.mmprac || '' }; });
+      return { src: bg.getAttribute('src'), ofc: bg.classList.contains('ofc'), floor: r.top + r.height * 0.555, top: r.top, h: r.height, feet: m.map((x) => x.bottom), mon: m.map((x) => [x.left, x.right, x.top]), hp: hp.map((x) => [x.left, x.right, x.top, x.bottom]), W: innerWidth, H: innerHeight, prac: document.getElementById('bt').dataset.mmprac || '' }; });
     assert.equal(b.src, './' + want, 'バトル'); assert.equal(b.ofc, true); assert.equal(b.prac, '');
-    for (const f of b.feet) assert.ok(Math.abs(f - b.floor) <= b.H * 0.06, `足もとが床（足 ${f.toFixed(0)}・床 ${b.floor.toFixed(0)}）`);
+    // 2026-10-13 開発25 B：足もとは床の始まり（絵の約55%）より手前の「床の輪」（絵の高さの約 58〜72%）に立つ
+    for (const f of b.feet) { const k = (f - b.top) / b.h; assert.ok(k >= 0.58 && k <= 0.72, `足もとが床の輪（足 ${f.toFixed(0)}・絵の ${(k * 100).toFixed(1)}%・床の始まり ${b.floor.toFixed(0)}）`); }
     for (const [l, r, t] of b.mon) assert.ok(l >= -40 && r <= b.W + 40 && t >= 0, `モンスターは画面の中 ${JSON.stringify(b.mon)}`);
     for (const [l, r, t, bo] of b.hp) assert.ok(l >= 0 && r <= b.W + 1 && t >= 0 && bo <= b.H, 'HUD は画面の中');
     await shot(pg, `be1_bt_${RN[rank]}_${size.join('x')}`);

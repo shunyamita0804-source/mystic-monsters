@@ -182,7 +182,7 @@ test('D24-B4：練習試合（野外）は観客なし・1秒／控えめ／な�
   assert.ok((await pg.evaluate(() => MMAUDIO.playLog().filter((x) => /^CROWD/.test(x.name)).length)) === n);
 });
 
-test('D24-B5：施設のボイスは訪問1回に1回・研究所は鳴らない・OFF／ミュートで鳴らない・会話を閉じたら止まる・音源 404 でも進行は止まらない', { skip: SKIP, timeout: 180000 }, async () => {
+test('D24-B5：施設のボイスは訪問1回に1回・研究所＝エリオット（開発25）・OFF／ミュートで鳴らない・会話を閉じたら止まる・音源 404 でも進行は止まらない', { skip: SKIP, timeout: 180000 }, async () => {
   const p = await openPage({ size: H.SIZES.base }); const pg = p.page;
   await H.newGame(pg, 'テスト');
   await pg.evaluate(() => { const m = mk(0); m.name = 'テスト'; MMP7.ensureProg(m); S.m = m; save(); lobby(); });
@@ -196,7 +196,7 @@ test('D24-B5：施設のボイスは訪問1回に1回・研究所は鳴らない
   assert.deepEqual(await visit(() => lobby()), []);
   assert.deepEqual(await visit(() => hall('t')), ['dan_hello'], 'ベースキャンプ＝ダン'); assert.deepEqual(await visit(() => hall('st')), []); assert.deepEqual(await visit(() => hall('t')), [], 'ステータスから戻っても繰り返さない');
   assert.deepEqual(await visit(() => shopScr()), ['berna_welcome'], 'アイテム屋＝ベルナ'); assert.deepEqual(await visit(() => shopScr('', false, 'buy')), []);
-  assert.deepEqual(await visit(() => museum()), [], '研究所（エリオット）は既定 OFF');
+  assert.deepEqual(await visit(() => museum()), ['elliot_hello_OPTIONAL'], '研究所＝エリオット（2026-10-13 開発25 F：ユーザー提供の音声を再訪の挨拶に採用）'); assert.deepEqual(await visit(() => museum('book')), [], '研究所の中で機能を替えても繰り返さない');
   for (const [sc, v] of [['MARKET', 'karen_welcome'], ['RANCH', 'nick_hello'], ['FARM', 'dan_hello'], ['FARM', 'berna_welcome']]) assert.ok(NOW.some((x) => x[0] === sc && x[1] === v), `${v}：施設の BGM に切り替わったあとも鳴り続けている（切り替えで止まらない）${JSON.stringify(NOW)}`);
   const pl = await pg.evaluate(() => MMAUDIO.playLog().filter((x) => x.kind === 'voice'));
   assert.ok(pl.every((x) => x.ctx === 'running' && /voice\/npc_1013\/\w+\.ogg$/.test(x.src)), '実際に再生を始めた（OGG の1本）');

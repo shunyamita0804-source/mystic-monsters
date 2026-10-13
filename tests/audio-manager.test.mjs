@@ -264,7 +264,9 @@ test('AUDIO-15：assets/audio に同じ曲の別形式（ogg／mp3／wav…）�
   for (const [k, v] of Object.entries(stems)) assert.equal(v.length, pairs.has(k) ? 2 : 1, `同じ曲の別形式：${v}`);
   for (const f of files) assert.doesNotMatch(f, /\.(zip|wav|tmp|bak|DS_Store)$/i, f);
   const ref = new Set([...Object.values(got.bgm), ...Object.values(got.se), ...Object.values(got.voice)].flatMap(srcsOf).map(onDisk));
-  for (const f of audio) assert.ok(ref.has(f), `registry から参照されていないファイル：${path.relative(ROOT, f)}`);
+  // 2026-10-13 開発25 E：旧 DICE_CUBE（2026-10-12 の採用の1本）は上書き・削除しない＝新しい音（dice_1013）の材料・比較用に残す（tools/dice1013/se_cut.py）
+  const KEEP = new Set(['assets/audio/se/dice_1012/dice_magic_b4_long_tap.ogg'].map((p) => path.join(ROOT, p)));
+  for (const f of audio) assert.ok(ref.has(f) || KEEP.has(f), `registry から参照されていないファイル：${path.relative(ROOT, f)}`);
   assert.ok(existsSync(path.join(ROOT, 'AUDIO_CREDITS.md')) && existsSync(path.join(ROOT, 'assets/audio/README.md')));
   const credits = rd('AUDIO_CREDITS.md'); for (const n of ['JP Soundworks', 'CC BY 4.0', 'Interface SFX Pack 1', 'Ivokard', 'CC0', 'alkakrab', 'Free 25 Fantasy RPG Game Tracks Vol.3', 'HydroGene']) assert.ok(credits.includes(n), n);
 });
