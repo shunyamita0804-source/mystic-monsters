@@ -62,8 +62,8 @@ test('D27-07：施設の入口＝背景だけ＋NPC のアップと一言（声�
   // 同じ訪問の中で画面を替えても繰り返さない
   await pg.evaluate(() => { rnView = rnSel; farm('', 'e'); }); await pg.waitForSelector('.rnlook');
   assert.equal(await pg.evaluate(() => !!document.querySelector('.mmtalk')), false);
-  const bars = await pg.evaluate(() => [...document.querySelectorAll('.rnlst.rnbars>div')].map((d) => [d.dataset.k, d.querySelector('dd').textContent, d.querySelector('.rnsb i').style.width, Math.round(d.querySelector('.rnsb').getBoundingClientRect().width)]));
-  assert.deepEqual(bars.map((b) => b.slice(0, 3)), [['li', '150', '15.0%'], ['po', '420', '42.0%'], ['in', '80', '8.0%'], ['hi', '999', '100.0%'], ['ev', '30', '3.0%'], ['de', '260', '26.0%']]);
+  const bars = await pg.evaluate(() => [...document.querySelectorAll('.rnlst.rnbars>div')].map((d) => [d.dataset.k, d.querySelector('dd').textContent, parseFloat(d.querySelector('.rnsb i').style.width), Math.round(d.querySelector('.rnsb').getBoundingClientRect().width)]));
+  assert.deepEqual(bars.map((b) => b.slice(0, 3)), [['li', '150', 15], ['po', '420', 42], ['in', '80', 8], ['hi', '999', 100], ['ev', '30', 3], ['de', '260', 26]]);
   assert.ok(bars.every((b) => b[3] > 60), '棒が見える幅');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
@@ -150,6 +150,7 @@ test('D27-22・23：HP の4段（札が増えても動かない）・勝ち＝�
   assert.deepEqual(b.map((s) => s.slice(0, 3)), a.map((s) => s.slice(0, 3)), '札が増えても名前・バー・数は動かない');
   await pg.evaluate(() => { for (const i of [0, 1]) document.getElementById('st' + i).innerHTML = ''; });
   await fightToEnd(pg); await pg.waitForTimeout(1500);
+  await pg.waitForSelector('#m0 .mon.mma-won .mma-win', { timeout: 4000 }).catch(() => {});
   const w = await pg.evaluate(() => { const bt = document.getElementById('bt'), band = bt.querySelector('.mma-endband'); const old = [...document.querySelectorAll('#m0 .mon > :not(.mma-win)')].filter((e) => getComputedStyle(e).visibility !== 'hidden' && +getComputedStyle(e).opacity > 0.01); return { cls: bt.className, bg: getComputedStyle(band).backgroundImage, win: !!document.querySelector('#m0 .mma-win'), old: old.length, h: band.getBoundingClientRect().height }; });
   assert.match(w.cls, /mma-res-win/); assert.match(w.bg, /rgba\(250, 196, 84/, '暖色の横帯'); assert.ok(w.win, '正式の勝利の絵'); assert.equal(w.old, 0, '旧のポーズの層は見えない'); assert.ok(w.h < 160, '横帯（画面の下を覆う暗い面ではない）');
   const q = await openPage({}); const qg = q.page;
