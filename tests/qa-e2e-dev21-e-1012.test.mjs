@@ -40,7 +40,7 @@ for (let rank = 0; rank < 6; rank++) {
     await toTour(pg, rank);
     const want = `assets/battle/official_rank_1012/rank_${RN[rank]}.webp`;
     assert.ok(await loaded(pg, './' + want), '正式背景が読める');
-    assert.match(await bgOf(pg, '.tb1 .tbbg'), new RegExp(want), '対戦表');
+    assert.match(await bgOf(pg, '.tb1 .tbbgw'), new RegExp(want), '対戦表（2026-10-13 開発27（27）：引いた構図の絵は .tbbgw）');
     await pg.click('.tb1 .tbgo'); await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(500);
     assert.match(await bgOf(pg, '.p9cmps .pcbg'), new RegExp(want), '対戦前比較'); await shot(pg, `be1_cmp_${RN[rank]}_${size.join('x')}`);
     await pg.click('.pcgo');   // 2026-10-13 開発27（29）：1回の押下
