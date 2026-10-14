@@ -3112,6 +3112,16 @@ main:has(>#app>.pp) h1{display:none}#app:has(>.pp){overflow:hidden}
 .ppart{width:100%;aspect-ratio:16/9;border-radius:6px;background:center/cover no-repeat #2a3f78;border:1px solid #b98a3a;box-shadow:inset 0 0 0 2px rgba(255,248,230,.6)}
 .ppart.none{background:linear-gradient(#20305c,#0b1838)}
 .ppnote{margin:8px 0 0;font-size:12px;line-height:1.5;color:#4a3a2a}
+/* 2026-10-14 Chapter 1 B／C：出発準備の景色の選択（3つ・A が既定・選んだものは金の枠と光） */
+.ppvis{margin-top:8px}.ppvish{display:block;font-size:10.5px;letter-spacing:.08em;color:#6b4a1a;margin-bottom:5px;font-family:var(--mm-font-head)}
+.ppvisr{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.ppvb{position:relative;min-height:60px;padding:6px 4px 5px;border-radius:9px;color:#2a2340;font:inherit;text-align:center;background:linear-gradient(#fff8e6,#efdfb8);border:1.5px solid #b98a3a;box-shadow:0 2px 4px rgba(0,0,0,.18);cursor:pointer}
+.ppvb i{position:absolute;left:5px;top:4px;width:18px;height:18px;border-radius:50%;font:800 11px/18px var(--mm-font-head);font-style:normal;color:#fff3d6;background:#6b4a1a}
+.ppvb b{display:block;font-family:var(--mm-font-head);font-size:12px;letter-spacing:0;line-height:1.25;padding:0 0 0 14px;margin:0;border:0}
+.ppvb span{display:block;font-size:9.5px;line-height:1.3;color:#5a4a3a;margin-top:3px}
+.ppvb.on{background:linear-gradient(#2d4a9a,#132554);color:#ffe6a8;border-color:#ffd25a;box-shadow:0 0 0 2px #ffd25a,0 0 12px rgba(255,210,90,.6)}
+.ppvb.on i{background:#ffd25a;color:#13203f}.ppvb.on span{color:#e8dfc8}
+@media (max-height:700px){.ppvb{min-height:52px;padding:4px 3px}.ppvb span{display:none}.ppvis{margin-top:6px}}
 .ppgo{display:flex;justify-content:center}
 .ppgobtn{width:min(100%,340px);padding:10px 14px;border-radius:14px;color:#ffe6a8;font:inherit;background:linear-gradient(#2d4a9a,#132554);border:2px solid #d9b465;box-shadow:inset 0 0 0 2px rgba(8,15,34,.9),0 0 18px rgba(240,210,130,.35),0 6px 14px rgba(0,0,0,.45)}
 .ppgobtn b{display:block;font-family:var(--mm-font-head);font-size:24px;letter-spacing:.2em}.ppgobtn small{display:block;font-size:11px;color:#e8dfc8;margin-top:2px}
@@ -5178,7 +5188,7 @@ window.addEventListener("unhandledrejection",rescue);
  *  ./version.json（小さな JSON。毎回取り直す）の build がこのページの MM_BUILD と違えば1回だけ reload（同じ版へは15分に1回まで＝読み込み直しを繰り返さない）。
  *  確かめる時：起動したとき・ページがメモリから戻ったとき（pageshow の persisted）・10分以上裏にいて表に戻ったとき。セーブ（mr4v6）には触れない（読み込み直しは iOS がタブを閉じたときと同じ＝つづきから）。
  *  公開するたびに MM_BUILD と version.json の build を同じ値に上げる（tests/dev24-1013.test.mjs で一致を確かめる） */
-const MM_BUILD="2026-10-14-dev30b";
+const MM_BUILD="2026-10-14-ch1bc";
 (function(){const K="mmbuildReload";let hidAt=0;
  const check=()=>{try{const x=new XMLHttpRequest();x.open("GET","./version.json?t="+Date.now(),true);x.timeout=8000;
   x.onload=()=>{try{if(x.status<200||x.status>=300)return;const b=(JSON.parse(x.responseText)||{}).build;if(!b||b===MM_BUILD)return;
@@ -5872,6 +5882,7 @@ function prepScr(msg){if(!S.m)return lobby();if(!MMP7.canAccessVault(S))return h
  const slots=bagSlotsHtml("p7ToVault","ppVault()");
  const vtRows=vt.length?vt.map((it,i)=>`<div class="p7it">${itemIc(it)}<span>${p11Esc(p7ItemName(it))}${itemQty(it)}</span><button ${MMP7.bagRoomFor(S,it.id)<1?"disabled":""} onclick="p7ToBag(${i})">バッグへ</button></div>`).join(""):`<div class="p7it emp"><span>保管庫は空です</span></div>`;
  const chName=nx==null?"":nx==MMP8.FINAL?"最終ルート":MMP8.chapterName(nx),chNo=nx==null?"":nx==MMP8.FINAL?"FINAL":`CHAPTER ${nx}`,art=nx!=null&&PP_ART[nx]?`<div class="ppart" style="background-image:url(${PP_ART[nx]})"></div>`:`<div class="ppart none"></div>`;
+ const vis=ppVisualHtml(nx,c);
  const note=nx==null?`<p class="ppnote">出発できるChapterはありません（育成完了）</p>`:c.reason=="rank_gate"?`<p class="ppnote">${p8GateNote(nx,c.need)}</p>`:(nx==MMP8.FINAL&&!MMP8.isPlayable(MMP8.FINAL))?`<p class="ppnote">最終ルートはまだ準備中です。ここで育成を完了して街へ戻れます（大会の結果・賞金・育成の記録はそのまま）。</p>`:"";
  const go=nx==null?"":(c.reason=="rank_gate"||(nx==MMP8.FINAL&&!MMP8.isPlayable(MMP8.FINAL)))?`<button class="ppgobtn fin" onclick="pfixFinishNoFinal(this)"><b>育成を完了して街へ戻る</b></button>`:`<button class="ppgobtn" ${c.ok?"":"disabled"} onclick="p7Depart(this)"><b>出発する</b><small>${c.ok?`${p8ChLabel(nx)}へ${MMP7.raiseState(m)=="none"?"（育成開始）":""}`:(P7_ERR[c.reason]||"")}</small></button>`;
  $("#app").innerHTML=`<div class="pp" style="--pp-bg:url(${FARM_BG})"><div class="ppbg" aria-hidden="true"></div>
@@ -5879,9 +5890,16 @@ function prepScr(msg){if(!S.m)return lobby();if(!MMP7.canAccessVault(S))return h
  <section class="pptop"><div class="ppmon"><div class="mon">${msv(m)}</div></div><div class="ppname"><small>育成中モンスター</small><b>${p11Esc(m.name)}</b><em>${sp?sp.kind:""}</em></div>${nx!=null?`<div class="ppch"><small>${chNo}</small><b>${chName}</b></div>`:""}</section>
  ${msg?`<div class="dmsg ppmsg"><span>${msg}</span></div>`:""}
  <section class="ppbag"><div class="ppbagh"><b>バッグ</b><small>${bag.length} / ${cap}枠</small></div><div class="ppslots">${slots}</div><button class="ppvault" onclick="ppVault()"><b>保管庫</b><small>${vaultTotal()}個</small></button></section>
- <section class="ppcard"><div class="ppcin"><small>${chNo}</small><b>${chName||"ー"}</b>${art}${note}</div></section>
+ <section class="ppcard"><div class="ppcin"><small>${chNo}</small><b>${chName||"ー"}</b>${art}${vis}${note}</div></section>
  <div class="ppgo">${go}</div>
  <div class="ppsheet" id="ppvault" hidden><div class="ppsh"><b>保管庫</b><small>タップでバッグへ（${bag.length} / ${cap}枠・1枠に10個まで）</small><button class="ppclose" data-se="UI_CANCEL" onclick="ppVault(false)">閉じる</button></div><div class="ppvl">${vtRows}<small class="p7note">保管庫はベースキャンプにいる間だけ使えます。Chapter中は入れ替えできません。</small></div></div></div>`;try{window.scrollTo(0,0)}catch(e){}}
+// ---- 2026-10-14 Chapter 1 B／C：出発準備の景観の選択（A＝既定・B＝花と清流・C＝岩丘と遺跡）。見た目だけ＝道・配置・報酬・成長・サイコロ・空腹は共通。
+//  選んだ値はページの中（PP_VISUAL）と MMWD.setVisual（出発の1回だけ読んで配置 m.raise.field.visualPattern に保存）。出発のあとは変えられない。再読み込みでは A に戻る（選び直せる）。旧セーブ・未指定＝A
+let PP_VISUAL="A";
+function ppVisualHtml(nx,c){if(nx!=1||!window.MMWD||!MMWD.setVisual||!window.MMRF_WORLD||!MMRF_WORLD.VISUAL||window.MM_QA_OLD_CH1||!c||!c.ok)return "";
+ MMWD.setVisual(PP_VISUAL);
+ return `<div class="ppvis" role="radiogroup" aria-label="景色のパターン"><small class="ppvish">景色をえらぶ（道・報酬・成長は同じ）</small><div class="ppvisr">${MMWD.VISUALS.map(k=>{const v=MMRF_WORLD.VISUAL[k];return `<button type="button" class="ppvb${k===PP_VISUAL?" on":""}" data-v="${k}" role="radio" aria-checked="${k===PP_VISUAL}" onclick="ppVisual('${k}')"><i>${k}</i><b>${p11Esc(v.name)}</b><span>${p11Esc(v.desc)}</span></button>`}).join("")}</div></div>`}
+function ppVisual(k){if(!window.MMWD||!MMWD.VISUALS.includes(k))return;PP_VISUAL=k;MMWD.setVisual(k);document.querySelectorAll(".ppvb").forEach(b=>{const on=b.dataset.v===k;b.classList.toggle("on",on);b.setAttribute("aria-checked",on?"true":"false")})}
 /** 保管庫のシートを開く／閉じる（出発準備の中。画面は移らない） */
 function ppVault(on){const d=$("#ppvault");if(!d)return;d.hidden=on===false?true:on===true?false:!d.hidden;const p=$(".pp");if(p)p.classList.toggle("vault",!d.hidden)}
 
