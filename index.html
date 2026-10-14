@@ -1605,7 +1605,7 @@ html:has(#app>.chfw),html:has(#app>.chfw) body{background:#0b1636}
 @media (prefers-reduced-motion:reduce){.mmpro,.mmpro-bg,.mmpro-nar p{animation:none;transition:none}}
 .mmtscr .tcap{padding-left:16px;padding-right:16px;box-sizing:border-box}.tcap .tcancel{display:block;margin:8px auto 0;padding:8px 18px;min-height:40px;border-radius:999px;background:rgba(8,15,34,.85);border:1px solid rgba(240,232,212,.6);color:#f3ecd9;font-size:13px;font-weight:700}
 /* セーブ・ロード：1画面（3スロット＋オートセーブ＋折りたたみのセーブコード＋小さな「最初からやり直す」） */
-#app>.svs{position:relative;box-sizing:border-box;min-height:calc(100% + 32px);margin:-16px;padding:calc(10px + env(safe-area-inset-top,0px)) 12px calc(12px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px;background:radial-gradient(ellipse at 50% -10%,#2c3f76 0,#121f48 45%,#0a1330 100%);color:#fff}
+#app>.svs{position:relative;box-sizing:border-box;min-height:calc(100% + 20px);margin:-16px;padding:calc(10px + env(safe-area-inset-top,0px)) 12px calc(12px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px;background:radial-gradient(ellipse at 50% -10%,#2c3f76 0,#121f48 45%,#0a1330 100%);color:#fff}
 .svs .svhead{display:flex;align-items:center;gap:10px}
 .svs .svhead button.back{margin:0;flex:none}
 .svs h2{margin:0;font:800 18px/1.2 var(--mm-font-head);color:#f3d98e;letter-spacing:.08em}
@@ -2329,6 +2329,7 @@ button.p10karen img{display:block;width:100%;height:auto;margin-top:2px;transfor
 .svs .card.slot .svpic img{max-width:92%;max-height:92%;object-fit:contain}
 .svs .card.slot b{display:flex;align-items:center;gap:6px;font-size:15px}.svs .card.slot small{font-size:12.5px;color:#f3f6ff;text-shadow:0 1px 2px rgba(0,0,0,.7)}
 .svs .card.slot .svsub{grid-column:1;font-size:11px;color:#e8d29a}
+#app:has(>.svs){background:#0a1330} /* 2026-10-14 実機試遊㉞：画面の下に明るい地色の帯が見えていた → 器の後ろも同じ濃紺（器の高さ・スクロールは変えない） */
 /* 2026-10-14 実機試遊 ㉞：保存済みのスロットの所持金が「…」で切れていた → 未クリアの「（ランクー）」は出さない（クリアしたランクだけ小さな札）・3行目は進行（育成中の Chapter）と保存した日時・上書きの確認の文がボタンからはみ出さない */
 .svs .card.slot b{white-space:nowrap}.svs .card.slot .svbadge{flex:none;white-space:nowrap}.svs .card.slot small .gcoin{width:1.05em;height:1.05em;vertical-align:-.17em}.svs .card.slot .svrk{font:800 10px/1 var(--mm-font-body,sans-serif);font-style:normal;margin-left:4px;padding:2px 5px;border-radius:4px;background:#e0b861;color:#2a1806;vertical-align:1px}
 .svs .card.slot:not(.svauto) .row2 button[data-a="1"]{font-size:9.5px;letter-spacing:-.03em;white-space:nowrap}
