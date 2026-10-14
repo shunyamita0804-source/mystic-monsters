@@ -32,7 +32,9 @@
   const G = (n) => { try { return (0, eval)(n); } catch (e) { return undefined; } };   // index.html の let／const（S・LAB・P9_LOBBY_BG・bBusy）
   const gS = () => G('S');
   const doSave = () => { try { root.save(); } catch (e) {} };
-  const P8 = () => root.MMP8, WD = () => root.MMWD, D = () => root.MMRF_DATA, C = () => root.MMRF_CORE;
+  const P8 = () => root.MMP8, WD = () => root.MMWD, C = () => root.MMRF_CORE;
+  // 2026-10-14 B／C 独立ルート：その個体のルートの道のデータ（m を省くと今の個体＝S.m。route の無い配置＝A＝MMRF_DATA）
+  const D = (m) => { const W = WD(), mm = m || (gS() && gS().m); return (W && W.dataOf && mm ? W.dataOf(mm) : null) || root.MMRF_DATA; };
   const cfg = () => (root.MMCH && root.MMCH.getConfig ? root.MMCH.getConfig(1) : null) || {};
   const calm = () => !!(root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const feel = (n, d) => { try { if (root.MMFEEL) root.MMFEEL.emit(n, d); } catch (e) {} };
@@ -48,7 +50,7 @@
 
   // ---- マスの見た目（全地点）。役割の決まった地点は専用の絵、通常の地点は配置の中身（能力・イベント・休憩・野生・宝箱） ----
   function look(m) {
-    const d = D(), f = fieldOf(m), fwdN = {}, inN = {};
+    const d = D(m), f = fieldOf(m), fwdN = {}, inN = {};
     for (const e of d.edges) if (e[3] === 'forward') { fwdN[e[0]] = (fwdN[e[0]] || 0) + 1; inN[e[1]] = (inN[e[1]] || 0) + 1; }
     return (id) => {
       const n = d.nodes[id], role = n ? n[2] : '', out = { src: TV2 + 'tile_blank.webp', mark: '', used: false };
@@ -73,7 +75,7 @@
   }
   /** カメラ：今の地点と、この先の数地点（分かれ道では両方の道・行き止まりでは戻り道） */
   function info(m, node) {
-    const f = fieldOf(m), st = f.core, d = D(), c = C(), at = node || st.node;
+    const f = fieldOf(m), st = f.core, d = D(m), c = C(), at = node || st.node;
     const first = st.done || node ? null : c.options(d, st).map((e) => e.dst);
     // 2026-10-14 開発29（6）：歩いている途中（node を渡す）も、行き止まりから戻る区間の上なら戻る向きで先を見る（旧：途中は前向き＝行き止まりの側を向いてカメラが一瞬逆へ回っていた）
     let back = node ? (st.back && d.segments[st.back] && d.segments[st.back][3].includes(node) ? st.back : null) : st.back;
@@ -97,16 +99,16 @@
 
   // ---- 画面の部品 ----
   const COIN = '<img class="chh-ic" src="./assets/ui/gold/coin.png" alt="" aria-hidden="true" draggable="false">';
-  function placeName(id) { const W = WD(), d = D(); return (W.PLACE && W.PLACE[id]) || (d.nodes[id] && d.nodes[id][2] === 'fixed_reward_dead_end' ? '宝の行き止まり' : ''); }
+  function placeName(id, m) { const W = WD(), d = D(m), mm = m || (gS() && gS().m), pl = W.placeOf ? W.placeOf(id, W.routeOf ? W.routeOf(mm) : 'A') : W.PLACE && W.PLACE[id]; return pl || (d.nodes[id] && d.nodes[id][2] === 'fixed_reward_dead_end' ? '宝の行き止まり' : ''); }
   // 2026-10-12 開発21（試遊 No.003・004＝D-4）：進行ラインの位置＝GOAL までの最短の地点数（接続を GOAL から逆にたどる・条件は見ない＝道として通れる最短。1回だけ計算）。
   //  P＝(D0 − Dcur) ÷ D0（D0＝START から、Dcur＝今の地点から）を 0〜1 に収める。寄り道・行き止まりで GOAL から遠ざかれば戻る。経過ターンでも最高到達でもない＝「ゴールへの進み具合の目安」
-  let DIST = null;
-  function goalDist() {
-    if (DIST) return DIST; const d = D(), rev = {}; for (const e of d.edges) (rev[e[1]] = rev[e[1]] || []).push(e[0]);
+  const DIST = new WeakMap();   // 道のデータ（ルート）ごとに1回
+  function goalDist(m) {
+    const d = D(m); if (DIST.has(d)) return DIST.get(d); const rev = {}; for (const e of d.edges) (rev[e[1]] = rev[e[1]] || []).push(e[0]);
     const out = { GOAL: 0 }, q = ['GOAL']; while (q.length) { const n = q.shift(); for (const p of rev[n] || []) if (out[p] == null) { out[p] = out[n] + 1; q.push(p); } }
-    return (DIST = out);
+    DIST.set(d, out); return out;
   }
-  function progressAt(node) { const g = goalDist(), d0 = g.START || 0, dc = g[node]; if (node === 'GOAL') return 1; if (!d0 || dc == null) return 0; return Math.max(0, Math.min(1, (d0 - dc) / d0)); }
+  function progressAt(node, m) { const g = goalDist(m), d0 = g.START || 0, dc = g[node]; if (node === 'GOAL') return 1; if (!d0 || dc == null) return 0; return Math.max(0, Math.min(1, (d0 - dc) / d0)); }
   function faceSrc(m) { const f = root.MMARENA && root.MMARENA.faceSrc ? root.MMARENA.faceSrc(m.sp) : null; return f || monSrc(m); }
   /** 歩いている間は線の上の丸顔だけ動かす（HUD を描き直さない） */
   function progSet(node) { const pc = Math.round(progressAt(node) * 1000) / 10, f = $('#chface'), b = document.querySelector('.wbh .chh-fill'), l = document.querySelector('.wbh .chh-line');
@@ -115,7 +117,7 @@
   const TIX = '<img class="chh-tk" src="./assets/ui/ticket/training_ticket.png" alt="" aria-hidden="true" decoding="async">';   // 2026-10-12：特訓チケットの正式画像（拳＋月桂樹・assets/ui/ticket/。旧：仮の線画）
   function hudHtml(m) {
     const r = m.raise, fat = Math.round(r.fatigue || 0), lv = fat > 80 ? 'hi' : fat >= 50 ? 'mid' : 'lo', S = gS() || {};   // 2026-10-12 D-2：81 以上で赤（80 までは通常）
-    const ph = P8().boardPhase(m), pl = placeName(r.node), pc = Math.round(progressAt(r.node) * 1000) / 10, fs = faceSrc(m);
+    const ph = P8().boardPhase(m), pl = placeName(r.node, m), pc = Math.round(progressAt(r.node, m) * 1000) / 10, fs = faceSrc(m);
     return `<header class="chh wbh"><div class="chh-top"><div class="chh-l chh-prog"><div class="chh-cap"><small>Chapter <b>1</b> / ${root.MMP7 ? root.MMP7.CHAPTER_COUNT : 4}</small><b class="chh-nm">はじまりの草原</b><span class="chh-fd" id="chfd">${esc(pl)}</span></div>
       <div class="chh-line" role="img" aria-label="ゴールまでの進み具合 ${Math.round(pc)}%"><span class="chh-se">START</span><div class="chh-track"><i class="chh-fill" style="width:${pc}%"></i><span class="chh-face" id="chface" style="left:${pc}%">${fs ? `<img src="${esc(fs)}" alt="" decoding="async">` : ''}</span></div><span class="chh-se g">GOAL</span></div></div>
       <button class="p9mbtn chh-menu" onclick="p9Menu()" aria-label="メニュー">☰</button></div>
@@ -147,7 +149,7 @@
   function sheetHtml(m, ph) {
     const r = m.raise;
     if (ph === 'branch') {
-      const f = fieldOf(m), d = D();
+      const f = fieldOf(m), d = D(m);
       return `<div class="chsheet chbr wbbr"><h3>分かれ道</h3>${WD().branchOptions(m).map((o) => {
         const end = o.seg && d.segments[o.seg] ? d.segments[o.seg][1] : null, got = o.spur && end && f.claimed[end] != null;
         const desc = o.spur ? (got ? '取得済み（行き止まり。帰りもサイコロ）' : '行き止まりの先に宝。帰りもサイコロで戻る') : '';
@@ -336,12 +338,12 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
   }
   function release() { sprStop(); if (V.intro || V.cover) busySet(false); if (V.cover) { V.cover.remove(); V.cover = null; } if (V.world) { try { V.world.destroy(); } catch (e) {} } V.world = null; V.el = null; V.key = null; V.intro = false; }
   function ensureView(m) {
-    const f = fieldOf(m), vis = root.MMWD && root.MMWD.visualOf ? root.MMWD.visualOf(m) : 'A', key = `${m.uid}:${f.layoutSeed}:${vis}`, app = $('#app');   // 2026-10-14 Chapter 1 B／C：景観のパターンも鍵に
+    const f = fieldOf(m), vis = root.MMWD && root.MMWD.visualOf ? root.MMWD.visualOf(m) : 'A', rt = root.MMWD && root.MMWD.routeOf ? root.MMWD.routeOf(m) : 'A', key = `${m.uid}:${f.layoutSeed}:${vis}:${rt}`, app = $('#app');   // 2026-10-14 B／C：ルートも鍵に   // 2026-10-14 Chapter 1 B／C：景観のパターンも鍵に
     if (V.el && V.key === key) { if (!V.el.isConnected) { app.innerHTML = ''; app.appendChild(V.el); } return false; }
     release(); css();
     app.innerHTML = '<div class="chfw wbw" id="wbw"><div class="wbv" id="wbv"></div><div class="chf-ui" id="wb-ui"></div></div>';
     V.el = $('#wbw'); V.key = key;
-    if (root.MMRF_WORLD) V.world = root.MMRF_WORLD.create(V.el.querySelector('.wbv'), D(), root.MMRF_PLAY, { view: viewRect, monSrc: monSrc(m), art: { base: ART, road: 'strip' },
+    if (root.MMRF_WORLD) V.world = root.MMRF_WORLD.create(V.el.querySelector('.wbv'), D(m), root.MMRF_PLAY, { view: viewRect, monSrc: monSrc(m), art: { base: ART, road: 'strip' },
       focus: true, veil: false, xray: true, hideLm: ['START', 'LOWER_GATE', 'UPPER_GATE'], ahead: CAM.ahead,   // 2026-10-13 開発27（11・15）：開始地点の門・中央の門2か所（下門・上門）の飾りの絵は出さない（マス・道・判定はそのまま）
       sMin: CAM.sMin, sMax: CAM.sMax, tilePx: CAM.tilePx, monRatio: CAM.monRatio, zoomTau: CAM.zoomTau, heading: true, visual: vis, skin: skinKey() });   // visual＝景観のパターン（A／B／C。配置の中の visualPattern）   // 2026-10-14 開発29（6）：後ろから追うカメラ（進む向きが画面の上）
     V.el.querySelectorAll('.rfw-title').forEach((e) => e.remove());   // 2026-10-13 開発25 H：全景の地図の上に大きな題字を出さない（題字は中継カットの間だけ＝cover）。HUD の Chapter 表示は別（残す）

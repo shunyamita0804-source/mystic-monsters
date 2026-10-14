@@ -22,8 +22,8 @@ const depart = async (pg, v) => {
   await H.newGame(pg, 'テスト');
   await pg.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); prepScr(); });
   await pg.waitForSelector('.pp .ppgobtn'); await pg.waitForTimeout(300);
-  if (v && v !== 'A') await pg.click(`.ppvis .ppvb[data-v="${v}"]`);
-  await H.startRaising(pg); await idle(pg);
+  await H.startRaising(pg); await idle(pg);   // 2026-10-14 後半：景色の選択ボタンは撤去＝ルート（と景観）は openPage({ route }) で固定
+  if (v) assert.equal(await pg.evaluate(() => S.m.raise.field.visualPattern), v);
   await pg.evaluate(() => MMWB.world().ready());
 };
 const look = (pg) => pg.evaluate(() => {
@@ -68,7 +68,7 @@ test('HQ-B2：新しい絵が読めない（404）→ 従来の絵へ戻る', { 
 });
 
 test('HQ-B3：B／C の絵・地面7点のくり返しのつなぎ目', { skip: SKIP, timeout: 150000 }, async () => {
-  const p = await openPage({ size: [390, 844] }); const pg = p.page;
+  const p = await openPage({ size: [390, 844], route: 'B' }); const pg = p.page;
   await depart(pg, 'B');
   const b = await look(pg);
   assert.deepEqual([b.vis, b.art.ground], ['B', true]);

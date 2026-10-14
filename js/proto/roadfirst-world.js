@@ -120,6 +120,12 @@
     { id: 'forest_w', kind: 'forest', edge: 'forest', wobble: 12, poly: [[0, 872], [300, 872], [452, 948], [248, 1036], [120, 1006], [0, 1010]], arms: [], bridges: [], water: [] },
     { id: 'forest_sw', kind: 'forest', edge: 'forest', wobble: 12, poly: [[0, 1262], [196, 1238], [214, 1330], [120, 1536], [0, 1536]], arms: [], bridges: [], water: [] },
   ];
+  // 2026-10-14 Chapter 1 B／C 独立ルート：道のデータに art（景観の区域 terrain・岩峰 peaks・目印 landmarks）があればそれを使う（js/proto/roadfirst-routes.js の B／C）。
+  //   無ければ A の定義（上の TERRAIN・ART.landmarks・ART.peaks.at）＝A の盤は従来と同じ。目印の file が './' で始まるときはそのままの場所（B／C の目印は assets/fields/ch1a/landmarks_bc_1014/）
+  const terrainOf = (D) => (D && D.art && D.art.terrain) || TERRAIN;
+  const lmOf = (D) => (D && D.art && D.art.landmarks) || ART.landmarks;
+  const peaksBase = (D) => (D && D.art && D.art.peaks) || ART.peaks.at;
+  const artUrl = (base, f) => (/^\.\//.test(f) ? f : base + f);
   const ROAD_LAND = 18;   // 道の中心から谷のふちまで（単位）＝道の両側に残す陸
   const APRON = 640;   // 世界の外に続ける草地の幅（単位）
   const rad = (d) => (d * Math.PI) / 180;
@@ -261,11 +267,11 @@
       const add = (file, x, y, w, z, cls) => { const d = doc.createElement('img'); d.className = 'rfw-prop' + (cls ? ' ' + cls : ''); d.alt = ''; d.draggable = false;
         const sub = SK && SK.props[file], p = { el: d, x, y, w: sub ? w * sub[1] : w, z: z || 0 };
         if (sub) { d.dataset.k = file; d.addEventListener('error', () => { d.src = base + file; p.w = w; p.base = 0; S.dirty = true; }, { once: true }); d.src = SK.base + sub[0]; }   // 読めなければ従来の絵・従来の幅
-        else d.src = base + file;
+        else d.src = artUrl(base, file);
         bb.appendChild(d); props.push(p); };
       for (const q of scatter(D, o)) add(q.file, q.x, q.y, q.w);
       const gn = D.nodes.GOAL; if (gn) { add(ART.goal.file, gn[0], gn[1] + ART.goal.dy, ART.goal.w, -40, 'rfw-goal'); props[props.length - 1].solid = true; }   // 2026-10-13 開発27（26）：大会会場（建物・門）は半透明にしない（xray で草地が透けて見えていた）
-      for (const L of ART.landmarks) { if (o.hideLm && o.hideLm.includes(L.node)) continue; const at = landmarkAt(D, L); if (at) { add(L.file, at[0], at[1], L.w, L.z || 0, 'rfw-lm'); props[props.length - 1].L = L; } }
+      for (const L of lmOf(D)) { if (o.hideLm && o.hideLm.includes(L.node)) continue; const at = landmarkAt(D, L); if (at) { add(L.file, at[0], at[1], L.w, L.z || 0, 'rfw-lm'); props[props.length - 1].L = L; } }
       for (const q of waterProps(D, o)) add(q.file, q.x, q.y, q.w, q.z || 0, 'rfw-wp');   // 第4便：川の景物（B は密に）
       for (const [x, y, w] of peaksOf(D, o)) add(ART.peaks.file, x, y, w, -20, 'rfw-peak');   // 第4便：山の岩峰（C は足す）
     }
@@ -450,7 +456,7 @@
         S.goal = followCam(S.view, n[0], n[1], pts, o.heading ? S.yawGoal : 0); S.lastAhead = info.ahead || [];
         if (instant && !S.intro) S.cam = Object.assign({}, S.goal);
         S.dirty = true;
-        if ('denOpen' in info) for (const p of props) if (p.L && p.L.open) { const f = info.denOpen ? p.L.open : p.L.file; if (p.f !== f) { p.el.src = (o.art.base || './assets/proto/board_art_1010/') + f; p.f = f; } }
+        if ('denOpen' in info) for (const p of props) if (p.L && p.L.open) { const f = info.denOpen ? p.L.open : p.L.file; if (p.f !== f) { p.el.src = artUrl(o.art.base || './assets/proto/board_art_1010/', f); p.f = f; } }
         const foc = o.focus ? new Set(info.focus || [info.node].concat(info.ahead || [])) : null;
         if (foc) paintVeil([...foc]);
         if (info.look || foc) for (const [id, t] of Object.entries(tiles)) {
@@ -533,7 +539,7 @@
     if (rp && art.strip) {   // 直線の石の道を道筋に沿って並べる（分かれ目・合流・行き止まりは敷石の円で覆う）
       if (art.terrain) {   // 谷の上を渡る石橋：下へ落ちる影（高さに見せる）
         g.strokeStyle = 'rgba(10,20,30,.42)'; g.lineWidth = ART.strip.w + 2;
-        for (const id of TERRAIN.flatMap((T) => T.bridges)) { const s = D.segments[id]; if (!s) continue; g.save(); g.translate(0, 10); path(s[3]); g.stroke(); g.restore(); }
+        for (const id of terrainOf(D).flatMap((T) => T.bridges)) { const s = D.segments[id]; if (!s) continue; g.save(); g.translate(0, 10); path(s[3]); g.stroke(); g.restore(); }
       }
       for (const s of segs) stripAlong(g, curvePts(s[3].map((id) => D.nodes[id])), art.strip, ART.strip.w, bx);
       g.fillStyle = '#8f8573'; for (const id of hubs) disc(id, ART.strip.w * 0.62 + 1.5); for (const id of ends) disc(id, ART.strip.w * 0.6 + 1.5);
@@ -566,8 +572,8 @@
   function distLine(line, x, y) { let m = 1e9; for (let i = 0; i < line.length - 1; i++) { const a = line[i], b = line[i + 1], dx = b[0] - a[0], dy = b[1] - a[1], L = dx * dx + dy * dy || 1; const t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / L)); m = Math.min(m, Math.hypot(a[0] + dx * t - x, a[1] + dy * t - y)); } return m; }
   /** その点が谷か（純粋な関数＝景物の置き場所・テスト用。道のまわり ROAD_LAND は陸。石橋の区間のまわりは谷のまま） */
   function inValley(D, x, y) {
-    const segs = Object.entries(D.segments), bridges = new Set(TERRAIN.flatMap((T) => T.bridges));
-    for (const T of TERRAIN) {
+    const TR = terrainOf(D), segs = Object.entries(D.segments), bridges = new Set(TR.flatMap((T) => T.bridges));
+    for (const T of TR) {
       const hit = inPoly(loopPoly(D, T), x, y) || T.arms.some((A) => distLine(A.line, x, y) <= A.w / 2);
       if (!hit) continue;
       const nearRoad = segs.some(([id, s]) => !bridges.has(id) && distLine(s[3].map((n) => D.nodes[n]), x, y) < ROAD_LAND);
@@ -579,22 +585,22 @@
   function terrainMasks(doc, D, o) {
     const mk = () => { const c = doc.createElement('canvas'); c.width = WORLD.w; c.height = WORLD.h; return c; };
     const M = { valley: mk(), cloud: mk(), forest: mk() }, water = mk(), wg = water.getContext('2d');
-    const bridges = new Set(TERRAIN.flatMap((T) => T.bridges));
-    for (const T of TERRAIN) { const g = M[T.kind || 'valley'].getContext('2d'); g.fillStyle = '#fff'; g.strokeStyle = '#fff'; g.lineCap = g.lineJoin = 'round';
+    const TR = terrainOf(D), bridges = new Set(TR.flatMap((T) => T.bridges));
+    for (const T of TR) { const g = M[T.kind || 'valley'].getContext('2d'); g.fillStyle = '#fff'; g.strokeStyle = '#fff'; g.lineCap = g.lineJoin = 'round';
       const P = loopPoly(D, T); g.beginPath(); P.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.closePath(); g.fill();
       for (const A of T.arms) { g.lineWidth = A.w; g.beginPath(); A.line.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.stroke(); } }
     for (const [kind, cv] of Object.entries(M)) {   // 道のまわりは陸（谷だけ石橋の区間は谷の上を渡る）
       const g = cv.getContext('2d'); g.globalCompositeOperation = 'destination-out'; g.lineCap = g.lineJoin = 'round'; g.lineWidth = ROAD_LAND * 2;
       for (const [id, s] of Object.entries(D.segments)) { if (kind === 'valley' && bridges.has(id)) continue; const P = curvePts(s[3].map((n) => D.nodes[n])); g.beginPath(); P.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.stroke(); }
       if (kind !== 'valley') {   // 雲海・森：目印（石像・祭壇など）のまわりは岩棚・空き地にする。森は谷にかからない
-        g.fillStyle = '#000'; for (const L of ART.landmarks) { const at = landmarkAt(D, L); if (at) { g.beginPath(); g.arc(at[0], at[1] - L.w * 0.18, L.w * 0.62, 0, 7); g.fill(); } }
+        g.fillStyle = '#000'; for (const L of lmOf(D)) { const at = landmarkAt(D, L); if (at) { g.beginPath(); g.arc(at[0], at[1] - L.w * 0.18, L.w * 0.62, 0, 7); g.fill(); } }
         if (kind === 'forest') g.drawImage(M.valley, 0, 0);
       }
     }
     wg.strokeStyle = '#fff'; wg.lineCap = wg.lineJoin = 'round';
-    for (const T of TERRAIN) for (const A of T.water || []) { wg.lineWidth = A.w; wg.beginPath(); A.line.forEach((p, i) => (i ? wg.lineTo(p[0], p[1]) : wg.moveTo(p[0], p[1]))); wg.stroke(); }
+    for (const T of TR) for (const A of T.water || []) { wg.lineWidth = A.w; wg.beginPath(); A.line.forEach((p, i) => (i ? wg.lineTo(p[0], p[1]) : wg.moveTo(p[0], p[1]))); wg.stroke(); }
     wg.globalCompositeOperation = 'destination-in'; wg.drawImage(M.valley, 0, 0);
-    const edgeAt = (kind) => (p) => { const T = TERRAIN.filter((t) => (t.kind || 'valley') === kind).find((t) => inPoly(loopPoly(D, t), p[0], p[1]) || t.arms.some((A) => distLine(A.line, p[0], p[1]) < A.w)); return T ? T.edge : kind === 'valley' ? TERRAIN[0].edge : kind; };
+    const edgeAt = (kind) => (p) => { const T = TR.filter((t) => (t.kind || 'valley') === kind).find((t) => inPoly(loopPoly(D, t), p[0], p[1]) || t.arms.some((A) => distLine(A.line, p[0], p[1]) < A.w)); return T ? T.edge : kind === 'valley' ? ((TR.find((t) => (t.kind || 'valley') === 'valley') || TERRAIN[0]).edge) : kind; };
     const rims = [...rimsOf(M.valley, edgeAt('valley'), 'valley'), ...rimsOf(water, () => 'shore', 'water'), ...rimsOf(M.cloud, edgeAt('cloud'), 'cloud'), ...rimsOf(M.forest, edgeAt('forest'), 'forest')];
     return { valley: M.valley, cloud: M.cloud, forest: M.forest, water, rims };
   }
@@ -706,7 +712,7 @@
   function waterProps(D, o) {
     const VW = visualOf(o).water, W = Object.assign({}, ART.water, { every: VW.every }), RE = VW.reedEvery, out = [], segs = Object.values(D.segments).map((s) => s[3].map((n) => D.nodes[n]));
     const nearRoad = (x, y, r) => segs.some((l) => distLine(l, x, y) < r);
-    for (const T of TERRAIN) for (const A of T.water || []) {
+    for (const T of terrainOf(D)) for (const A of T.water || []) {
       const P = alongLine(A.line, W.every).filter((q) => q[1] < WORLD.h - 20 && q[0] < WORLD.w - 10); out.push({ file: W.fall.file, x: A.line[0][0], y: A.line[0][1] + 6, w: W.fall.w, z: -10 });
       P.slice(1).forEach((q, i) => {
         const r = P[Math.min(i + 2, P.length - 1)], dx = r[0] - q[0], dy = r[1] - q[1], L = Math.hypot(dx, dy) || 1, s = i % 2 ? 1 : -1;
@@ -733,7 +739,8 @@
       const px = x + (rnd() - 0.5) * 24, py = y + (rnd() - 0.5) * 24, d = near(px, py), r = rnd(), pick = rnd();
       if (d < gap || d > VIS.far || r > VIS.density || py < 150) continue;   // GOAL の会場のまわり（y<150）には置かない
       if (inValley(D, px, py)) continue;   // 谷の中には置かない
-      if (ART.landmarks.some((L) => { const at = landmarkAt(D, L); return at && Math.hypot(at[0] - px, at[1] - py) < L.w * 0.75; })) continue;   // 目印のまわりにも置かない
+      if (D.art && D.nodes.GOAL && Math.hypot(D.nodes.GOAL[0] - px, D.nodes.GOAL[1] - py + 30) < ART.goal.w * 0.55) continue;   // B／C：大会会場のまわり（A は上の y<150 の規則のまま）
+      if (lmOf(D).some((L) => { const at = landmarkAt(D, L); return at && Math.hypot(at[0] - px, at[1] - py) < L.w * 0.75; })) continue;   // 目印のまわりにも置かない
       if (PK.some(([x0, y0, w0]) => Math.hypot(x0 - px, y0 - py) < w0 * 0.6)) continue;   // 岩峰のまわりにも置かない
       let acc = 0, P = PR[PR.length - 1]; for (const c of PR) { acc += c.p; if (pick < acc) { P = c; break; } }
       out.push({ x: px, y: py, file: P.file, w: P.w * (0.8 + rnd() * 0.45) });
@@ -745,20 +752,20 @@
   /** 山の岩峰の位置 [x, y, w]：ART.peaks.at（全パターン共通）＋ C の追加（道から far 以上・谷／雲海／森の外・目印と岩峰から離れた所・決まった乱数）。1回だけ計算 */
   const PEAK_CACHE = new Map();
   function peaksOf(D, o) {
-    const VIS = visualOf(o), X = VIS.peaks; if (!X) return ART.peaks.at;
-    if (PEAK_CACHE.has(VIS.key)) return PEAK_CACHE.get(VIS.key);
-    const segs = Object.values(D.segments).map((s) => s[3].map((n) => D.nodes[n])), rnd = mulberry(X.seed), out = ART.peaks.at.slice();
+    const VIS = visualOf(o), X = VIS.peaks, B0 = peaksBase(D); if (!X) return B0;
+    const ck = VIS.key + ':' + ((D && D.route) || 'A'); if (PEAK_CACHE.has(ck)) return PEAK_CACHE.get(ck);
+    const segs = Object.values(D.segments).map((s) => s[3].map((n) => D.nodes[n])), rnd = mulberry(X.seed), out = B0.slice();
     const far = (x, y, pts, r) => pts.every((p) => Math.hypot(p[0] - x, p[1] - y) >= r);
-    for (let tries = 0; tries < 4000 && out.length < ART.peaks.at.length + X.n; tries++) {
+    for (let tries = 0; tries < 4000 && out.length < B0.length + X.n; tries++) {
       const x = 40 + rnd() * (WORLD.w - 80), y = 170 + rnd() * (WORLD.h - 210), w = X.w[0] + rnd() * (X.w[1] - X.w[0]);
       if (segs.some((l) => distLine(l, x, y) < X.far)) continue;
-      if (inValley(D, x, y) || TERRAIN.some((T) => inPoly(loopPoly(D, T), x, y))) continue;
+      if (inValley(D, x, y) || terrainOf(D).some((T) => inPoly(loopPoly(D, T), x, y))) continue;
       if (!far(x, y, out, X.gap)) continue;
-      if (ART.landmarks.some((L) => { const at = landmarkAt(D, L); return at && Math.hypot(at[0] - x, at[1] - y) < L.w + w; })) continue;
+      if (lmOf(D).some((L) => { const at = landmarkAt(D, L); return at && Math.hypot(at[0] - x, at[1] - y) < L.w + w; })) continue;
       const gn = D.nodes.GOAL; if (gn && Math.hypot(gn[0] - x, gn[1] - y) < ART.goal.w) continue;
       out.push([Math.round(x), Math.round(y), Math.round(w)]);
     }
-    PEAK_CACHE.set(VIS.key, out); return out;
+    PEAK_CACHE.set(ck, out); return out;
   }
 
   let cssDone = false;

@@ -1,0 +1,863 @@
+{
+ "anchors": {
+  "START": [
+   905,
+   1500
+  ],
+  "Q": [
+   810,
+   1418
+  ],
+  "QL1": [
+   710,
+   1466
+  ],
+  "QL2": [
+   605,
+   1490
+  ],
+  "QL3": [
+   518,
+   1482
+  ],
+  "QR1": [
+   705,
+   1365
+  ],
+  "QR2": [
+   600,
+   1347
+  ],
+  "QR3": [
+   515,
+   1357
+  ],
+  "R": [
+   350,
+   1408
+  ],
+  "LOWER_GATE": [
+   330,
+   1398
+  ],
+  "J0": [
+   285,
+   1372
+  ],
+  "EL1": [
+   300,
+   1185
+  ],
+  "EL2": [
+   470,
+   1160
+  ],
+  "EL3": [
+   580,
+   1150
+  ],
+  "ER1": [
+   420,
+   1305
+  ],
+  "ER2": [
+   590,
+   1290
+  ],
+  "ER3": [
+   695,
+   1275
+  ],
+  "P": [
+   880,
+   1080
+  ],
+  "L_CHEST": [
+   560,
+   1232
+  ],
+  "L_ALTAR": [
+   330,
+   1050
+  ],
+  "R_CHEST": [
+   668,
+   1212
+  ],
+  "UPPER_GATE": [
+   889,
+   1059
+  ],
+  "RIVAL": [
+   898,
+   1038
+  ],
+  "H": [
+   800,
+   860
+  ],
+  "FINAL": [
+   410,
+   800
+  ],
+  "GOAL": [
+   345,
+   772
+  ],
+  "CHALLENGE": [
+   690,
+   948
+  ],
+  "FAIL_L": [
+   600,
+   925
+  ],
+  "SUCCESS_L1": [
+   525,
+   1005
+  ],
+  "SUCCESS_L2": [
+   462,
+   995
+  ],
+  "L_MERGE": [
+   505,
+   935
+  ],
+  "L_LATE_ALTAR": [
+   230,
+   975
+  ],
+  "HR1": [
+   845,
+   690
+  ],
+  "STATUE": [
+   720,
+   590
+  ],
+  "HR3": [
+   590,
+   545
+  ],
+  "RANDOM_DEN": [
+   980,
+   560
+  ],
+  "REWARD5": [
+   760,
+   395
+  ],
+  "R_SPECIAL": [
+   390,
+   330
+  ]
+ },
+ "segs": {
+  "S01": [
+   "START",
+   "Q",
+   5,
+   [
+    [
+     885,
+     1474
+    ]
+   ]
+  ],
+  "Q_L1": [
+   "Q",
+   "QL1",
+   5,
+   [
+    [
+     765,
+     1460
+    ]
+   ]
+  ],
+  "Q_L2": [
+   "QL1",
+   "QL2",
+   5,
+   []
+  ],
+  "Q_L3": [
+   "QL2",
+   "QL3",
+   4,
+   []
+  ],
+  "Q_L4": [
+   "QL3",
+   "R",
+   7,
+   [
+    [
+     425,
+     1470
+    ]
+   ]
+  ],
+  "Q_R1": [
+   "Q",
+   "QR1",
+   5,
+   [
+    [
+     760,
+     1380
+    ]
+   ]
+  ],
+  "Q_R2": [
+   "QR1",
+   "QR2",
+   5,
+   []
+  ],
+  "Q_R3": [
+   "QR2",
+   "QR3",
+   4,
+   []
+  ],
+  "Q_R4": [
+   "QR3",
+   "R",
+   7,
+   [
+    [
+     430,
+     1365
+    ]
+   ]
+  ],
+  "C01": [
+   "R",
+   "LOWER_GATE",
+   1,
+   []
+  ],
+  "C02": [
+   "LOWER_GATE",
+   "J0",
+   2,
+   []
+  ],
+  "EL01": [
+   "J0",
+   "EL1",
+   8,
+   [
+    [
+     240,
+     1270
+    ]
+   ]
+  ],
+  "EL02": [
+   "EL1",
+   "EL2",
+   8,
+   [
+    [
+     380,
+     1165
+    ]
+   ]
+  ],
+  "EL03": [
+   "EL2",
+   "EL3",
+   5,
+   []
+  ],
+  "EL04": [
+   "EL3",
+   "P",
+   13,
+   [
+    [
+     730,
+     1120
+    ]
+   ]
+  ],
+  "ER01": [
+   "J0",
+   "ER1",
+   8,
+   [
+    [
+     340,
+     1345
+    ]
+   ]
+  ],
+  "ER02": [
+   "ER1",
+   "ER2",
+   8,
+   []
+  ],
+  "ER03": [
+   "ER2",
+   "ER3",
+   5,
+   []
+  ],
+  "ER04": [
+   "ER3",
+   "P",
+   14,
+   [
+    [
+     800,
+     1250
+    ],
+    [
+     870,
+     1170
+    ]
+   ]
+  ],
+  "D_LC": [
+   "EL2",
+   "L_CHEST",
+   5,
+   [
+    [
+     510,
+     1205
+    ]
+   ]
+  ],
+  "D_LA": [
+   "EL3",
+   "L_ALTAR",
+   15,
+   [
+    [
+     610,
+     1085
+    ],
+    [
+     470,
+     1060
+    ]
+   ]
+  ],
+  "D_RC": [
+   "ER2",
+   "R_CHEST",
+   5,
+   [
+    [
+     600,
+     1245
+    ]
+   ]
+  ],
+  "C03": [
+   "P",
+   "UPPER_GATE",
+   1,
+   []
+  ],
+  "C04": [
+   "UPPER_GATE",
+   "RIVAL",
+   1,
+   []
+  ],
+  "C05": [
+   "RIVAL",
+   "H",
+   14,
+   [
+    [
+     950,
+     960
+    ],
+    [
+     900,
+     880
+    ]
+   ]
+  ],
+  "LATE_SAFE": [
+   "H",
+   "FINAL",
+   15,
+   [
+    [
+     610,
+     820
+    ]
+   ]
+  ],
+  "LATE_L1": [
+   "H",
+   "CHALLENGE",
+   10,
+   [
+    [
+     770,
+     950
+    ]
+   ]
+  ],
+  "LATE_L_FAIL": [
+   "CHALLENGE",
+   "FAIL_L",
+   4,
+   []
+  ],
+  "LATE_L_FAIL_JOIN": [
+   "FAIL_L",
+   "L_MERGE",
+   4,
+   []
+  ],
+  "LATE_L_SUCCESS1": [
+   "CHALLENGE",
+   "SUCCESS_L1",
+   8,
+   [
+    [
+     620,
+     1005
+    ]
+   ]
+  ],
+  "LATE_L_SUCCESS2": [
+   "SUCCESS_L1",
+   "SUCCESS_L2",
+   3,
+   []
+  ],
+  "LATE_L_SUCCESS_JOIN": [
+   "SUCCESS_L2",
+   "L_MERGE",
+   6,
+   [
+    [
+     430,
+     950
+    ]
+   ]
+  ],
+  "LATE_L_DONE": [
+   "L_MERGE",
+   "FINAL",
+   12,
+   [
+    [
+     470,
+     895
+    ],
+    [
+     375,
+     900
+    ],
+    [
+     360,
+     850
+    ]
+   ]
+  ],
+  "D_LLA": [
+   "SUCCESS_L2",
+   "L_LATE_ALTAR",
+   11,
+   [
+    [
+     350,
+     1010
+    ]
+   ]
+  ],
+  "LATE_R1": [
+   "H",
+   "HR1",
+   9,
+   [
+    [
+     870,
+     780
+    ]
+   ]
+  ],
+  "LATE_R2": [
+   "HR1",
+   "STATUE",
+   8,
+   [
+    [
+     800,
+     610
+    ]
+   ]
+  ],
+  "LATE_R3": [
+   "STATUE",
+   "HR3",
+   6,
+   []
+  ],
+  "LATE_R_DONE": [
+   "HR3",
+   "FINAL",
+   13,
+   [
+    [
+     470,
+     620
+    ]
+   ]
+  ],
+  "D_RAND": [
+   "HR1",
+   "RANDOM_DEN",
+   10,
+   [
+    [
+     930,
+     620
+    ]
+   ]
+  ],
+  "D_R5": [
+   "STATUE",
+   "REWARD5",
+   9,
+   [
+    [
+     720,
+     490
+    ]
+   ]
+  ],
+  "D_RS": [
+   "HR3",
+   "R_SPECIAL",
+   12,
+   [
+    [
+     490,
+     420
+    ]
+   ]
+  ],
+  "S_END": [
+   "FINAL",
+   "GOAL",
+   3,
+   []
+  ]
+ },
+ "key": "B",
+ "name": "花と清流の草原",
+ "visual": "B",
+ "terrain": [
+  {
+   "id": "lake_low",
+   "edge": "grass",
+   "loop": [
+    [
+     "Q_L1"
+    ],
+    [
+     "Q_L2"
+    ],
+    [
+     "Q_L3"
+    ],
+    [
+     "Q_L4"
+    ],
+    [
+     "Q_R4",
+     1
+    ],
+    [
+     "Q_R3",
+     1
+    ],
+    [
+     "Q_R2",
+     1
+    ],
+    [
+     "Q_R1",
+     1
+    ]
+   ],
+   "arms": [],
+   "bridges": [],
+   "water": [
+    {
+     "line": [
+      [
+       770,
+       1418
+      ],
+      [
+       690,
+       1420
+      ],
+      [
+       600,
+       1418
+      ],
+      [
+       500,
+       1420
+      ],
+      [
+       420,
+       1412
+      ]
+     ],
+     "w": 46
+    }
+   ]
+  },
+  {
+   "id": "lake_mid",
+   "edge": "grass",
+   "loop": [
+    [
+     "EL01"
+    ],
+    [
+     "EL02"
+    ],
+    [
+     "EL03"
+    ],
+    [
+     "EL04"
+    ],
+    [
+     "ER04",
+     1
+    ],
+    [
+     "ER03",
+     1
+    ],
+    [
+     "ER02",
+     1
+    ],
+    [
+     "ER01",
+     1
+    ]
+   ],
+   "arms": [],
+   "bridges": [],
+   "water": [
+    {
+     "line": [
+      [
+       350,
+       1290
+      ],
+      [
+       440,
+       1250
+      ],
+      [
+       610,
+       1236
+      ],
+      [
+       760,
+       1196
+      ],
+      [
+       840,
+       1130
+      ]
+     ],
+     "w": 40
+    }
+   ]
+  },
+  {
+   "id": "pond_late",
+   "edge": "grass",
+   "loop": [
+    [
+     "LATE_L1"
+    ],
+    [
+     "LATE_L_FAIL"
+    ],
+    [
+     "LATE_L_FAIL_JOIN"
+    ],
+    [
+     "LATE_L_DONE"
+    ],
+    [
+     "LATE_SAFE",
+     1
+    ]
+   ],
+   "arms": [],
+   "bridges": [],
+   "water": [
+    {
+     "line": [
+      [
+       700,
+       880
+      ],
+      [
+       600,
+       885
+      ],
+      [
+       520,
+       880
+      ]
+     ],
+     "w": 22
+    }
+   ]
+  },
+  {
+   "id": "forest_nw",
+   "kind": "forest",
+   "edge": "forest",
+   "wobble": 12,
+   "poly": [
+    [
+     0,
+     60
+    ],
+    [
+     210,
+     60
+    ],
+    [
+     250,
+     250
+    ],
+    [
+     170,
+     560
+    ],
+    [
+     0,
+     600
+    ]
+   ],
+   "arms": [],
+   "bridges": [],
+   "water": []
+  },
+  {
+   "id": "forest_ne",
+   "kind": "forest",
+   "edge": "forest",
+   "wobble": 12,
+   "poly": [
+    [
+     860,
+     0
+    ],
+    [
+     1024,
+     0
+    ],
+    [
+     1024,
+     420
+    ],
+    [
+     930,
+     440
+    ],
+    [
+     880,
+     220
+    ]
+   ],
+   "arms": [],
+   "bridges": [],
+   "water": []
+  }
+ ],
+ "peaks": [],
+ "landmarks": [
+  {
+   "node": "CHALLENGE",
+   "file": "./assets/fields/ch1a/landmarks_bc_1014/b_challenge.webp",
+   "w": 33,
+   "along": 14,
+   "z": -30
+  },
+  {
+   "node": "STATUE",
+   "file": "./assets/fields/ch1a/landmarks_bc_1014/b_statue.webp",
+   "w": 34,
+   "side": -32,
+   "z": -30
+  },
+  {
+   "node": "L_CHEST",
+   "file": "./assets/fields/ch1a/landmarks_bc_1014/b_l_chest.webp",
+   "w": 25,
+   "along": 20,
+   "z": -30
+  },
+  {
+   "node": "R_CHEST",
+   "file": "./assets/fields/ch1a/landmarks_bc_1014/b_r_chest.webp",
+   "w": 31,
+   "along": 20,
+   "z": -30
+  },
+  {
+   "node": "L_ALTAR",
+   "file": "./assets/fields/ch1a/landmarks_bc_1014/b_l_altar.webp",
+   "w": 29,
+   "along": 22,
+   "z": -30
+  },
+  {
+   "node": "L_LATE_ALTAR",
+   "file": "./assets/fields/ch1a/landmarks_bc_1014/b_l_late_altar.webp",
+   "w": 26,
+   "along": 20,
+   "z": -30
+  },
+  {
+   "node": "REWARD5",
+   "file": "./assets/fields/ch1a/landmarks_bc_1014/b_reward5.webp",
+   "w": 19,
+   "along": 20,
+   "z": -30
+  },
+  {
+   "node": "R_SPECIAL",
+   "file": "./assets/fields/ch1a/landmarks_bc_1014/b_r_special.webp",
+   "w": 33,
+   "along": 22,
+   "z": -30
+  },
+  {
+   "node": "RANDOM_DEN",
+   "file": "./assets/fields/ch1a/landmarks_bc_1014/b_den_closed.webp",
+   "open": "./assets/fields/ch1a/landmarks_bc_1014/b_den_open.webp",
+   "w": 31,
+   "along": 20,
+   "z": -30
+  }
+ ]
+}
