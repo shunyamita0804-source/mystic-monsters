@@ -209,9 +209,8 @@ test('WC-08：歩行の向き＝上 back・下 front・横 side（右向きは�
   const side = { side: { face: 'right', frames: F } };
   assert.deepEqual([pickDir(0, -10, side).set, pickDir(0, 10, side).set, pickDir(-10, 0, side).flip], ['side', 'side', true], '横向きだけ＝どの向きも side');
   const S = cfg.monsterSprites, keys = (k) => Object.keys(dirSets(S[k])).join(',');
-  assert.deepEqual(['solamo', 'gauru', 'jiol', 'nobiton'].map(keys), ['back', 'back,front', 'back', 'side'], '2026-10-11：ガウルは 2.5D の front・back（walk_25d）');
-  assert.deepEqual(dirSets(S.solamo).back.frames, S.solamo.walk.frames, 'use:walk は walk のコマ（旧 Chapter 1 のフィールドと同じ）');
-  assert.equal(dirSets(S.nobiton).side.face, 'right');
+  assert.deepEqual(['solamo', 'gauru', 'jiol', 'nobiton'].map(keys), ['back,front', 'back,front', 'back,front', 'back,front'], '2026-10-14：4体とも 2.5D の front・back（walk_25d）・横は standFace の立ち絵');
+  assert.deepEqual(dirSets({ walk: { frames: F }, dirs: { back: { use: 'walk' } } }).back.frames, F, 'use:walk は walk のコマ（旧 Chapter 1 のフィールドと同じ）');
   assert.deepEqual(Object.keys(dirSets({ walk: { frames: F } })), ['back'], 'dirs の無い古い config は walk を back に');
   assert.deepEqual(dirSets({ dirs: { front: { frames: [] } } }), {}, 'コマの無いセットは使わない');
   assert.doesNotMatch(rd('js/chapter/world-board.js'), /SIDE_VIEW/, '種族名の特別扱いは無い（config の dirs で決まる）');

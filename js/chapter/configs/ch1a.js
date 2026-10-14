@@ -354,10 +354,22 @@
         front: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/walk_25d/gauru/gauru_walk_front_0${i}.webp`), fps: 10, idle: 0, h: 1.106, foot: 0.049, face: 'none' },
         back: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/walk_25d/gauru/gauru_walk_back_0${i}.webp`), fps: 10, idle: 0, h: 1.106, foot: 0.049, face: 'none' },
       } },
-      nobiton: { walk: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/nobiton_walk/nobiton_walk_0${i}.webp`), fps: 12, idle: 0, h: 0.86, noFlip: true }, dirs: { side: { use: 'walk', face: 'right' } } },
-      jiol: { walk: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/jiol_walk/jiol_walk_0${i}.webp`), fps: 12, idle: 0, h: 0.95, noFlip: true }, dirs: { back: { use: 'walk', face: 'none' } } },
+      nobiton: { walk: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/nobiton_walk/nobiton_walk_0${i}.webp`), fps: 12, idle: 0, h: 0.86, noFlip: true }, standFace: 'right', dirs: {
+        // 2026-10-14：2.5D の歩行（front・back 各8コマ・assets/monsters/walk_25d/README.md）。横の1歩は standFace の立ち絵（旧 2D の横向きは使わない）
+        front: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/walk_25d/nobiton/nobiton_walk_front_0${i}.webp`), fps: 12, idle: 0, h: 1.169, foot: 0.066, face: 'none' },
+        back: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/walk_25d/nobiton/nobiton_walk_back_0${i}.webp`), fps: 12, idle: 0, h: 1.169, foot: 0.066, face: 'none' },
+      } },
+      jiol: { walk: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/jiol_walk/jiol_walk_0${i}.webp`), fps: 12, idle: 0, h: 0.95, noFlip: true }, standFace: 'right', dirs: {
+        // 2026-10-14：2.5D の歩行（front・back 各8コマ・assets/monsters/walk_25d/README.md）。横の1歩は standFace の立ち絵（旧 2D の横向きは使わない）
+        front: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/walk_25d/jiol/jiol_walk_front_0${i}.webp`), fps: 12, idle: 0, h: 1.169, foot: 0.066, face: 'none' },
+        back: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/walk_25d/jiol/jiol_walk_back_0${i}.webp`), fps: 12, idle: 0, h: 1.169, foot: 0.066, face: 'none' },
+      } },
       // 2026-10-13 開発27（13）：standFace＝静止の立ち絵（assets/monsters/2p5d/）の向き。横向きの歩行の絵が無い種族の横の1歩は、この絵を進む向きへ（左右反転）
-      solamo: { walk: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/solamo_walk_back/solamo_walk_back_0${i}.webp`), fps: 12, idle: 0, h: 0.9, noFlip: true }, standFace: 'left', dirs: { back: { use: 'walk', face: 'none' } } },
+      solamo: { walk: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/solamo_walk_back/solamo_walk_back_0${i}.webp`), fps: 12, idle: 0, h: 0.9, noFlip: true }, standFace: 'left', dirs: {
+        // 2026-10-14：2.5D の歩行（front・back 各8コマ・assets/monsters/walk_25d/README.md）。横の1歩は standFace の立ち絵（旧 2D の横向きは使わない）
+        front: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/walk_25d/solamo/solamo_walk_front_0${i}.webp`), fps: 12, idle: 0, h: 1.169, foot: 0.066, face: 'none' },
+        back: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/walk_25d/solamo/solamo_walk_back_0${i}.webp`), fps: 12, idle: 0, h: 1.169, foot: 0.066, face: 'none' },
+      } },
     },
     // 2026-10-11 向きの切り替え（本編 Chapter 1 の1枚の世界のボード＝js/chapter/world-board.js の pickDir）：dirs＝{ back（奥へ）, front（手前へ）, side（横へ） }。
     //  各セットは { frames, fps, idle, h（静止の立ち絵の高さに対する高さ）, foot（絵の下の透明な余白＝高さに対する割合・足を合わせる）, face（'none'＝真後ろ・真正面／'right'・'left'＝その向きの絵。進む向きで左右反転） }。

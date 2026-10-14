@@ -79,7 +79,7 @@ test('TR-08：リュウ（正式の全身）＋レグナス（正式の相棒）
   assert.deepEqual(webpSize('assets/npc/ryu/ryu_official_fullbody.webp'), [406, 960]); assert.deepEqual(webpSize('assets/monsters/regnas/regnas_official.webp'), [663, 900]);
   assert.ok(!existsSync(path.join(ROOT, 'assets/npc/ryu/full_normal.webp')), '旧いリュウの絵は使わない');
   const w = {}; new Function('window', rd('js/phase10/monsters.js'))(w); const M = w.MMP10M, r = M.rivalMonster('regnas');
-  assert.deepEqual([r.name, r.en, r.kind, r.personality, r.speed, r.style], ['レグナス', 'REGNAS', '竜種', '誇り高い・負けず嫌い', 8, '俊敏な地上竜＋回避反撃型']);
+  assert.deepEqual([r.name, r.en, r.kind, r.personality, r.speed, r.style], ['レグナス', 'REGNAS', '牙獣種', '誇り高い・負けず嫌い', 8, '俊敏な牙獣種＋回避反撃型']);
   assert.deepEqual({ ...r.base }, { li: 90, po: 115, in: 75, hi: 105, ev: 115, de: 100 });
   assert.equal(r.uniqueSkill.name, '蒼銀の反撃'); assert.equal(r.uniqueSkill.desc, '相手の攻撃を回避すると、次に与えるダメージが一度だけ1.20倍。効果は重複しない。'); assert.equal(r.uniqueSkill.implemented, true, '2026-10-05：ライバル戦だけで発動（js/battle/rival-partner.js）');
   assert.equal(r.moves.list.length, 10, '2026-10-05：正式技10個'); assert.equal(r.playerAvailable, false);
