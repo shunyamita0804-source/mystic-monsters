@@ -67,7 +67,7 @@ test('D25-E：正式サイコロ＝6面とも正式の絵・出目どおり（�
         return { off: z.classList.contains('off'), bi, last: MMDICE3D.lastTiming() };
       });
       assert.ok(r.off, '正式の絵（skin official）');
-      assert.ok(r.bi.every((b) => /cube_1014\/face_[1-6]\.webp/.test(b)), `6面とも正式の面の絵（2026-10-14 開発29：正式デザイン A）${r.bi}`);
+      assert.ok(r.bi.every((b) => /cube_1014s\/face_[1-6]\.webp/.test(b)), `6面とも正式の面の絵（2026-10-14 開発29：正式デザイン A・実機試遊③の対称版 cube_1014s）${r.bi}`);
       assert.deepEqual(r.last.values, [v]);
       assert.ok(r.last.lock > 1250 && r.last.lock < 1420, `1.30秒で止まる ${r.last.lock}`);
       await pg.waitForFunction(() => !document.querySelector('.d3z'), null, { timeout: 8000 });
