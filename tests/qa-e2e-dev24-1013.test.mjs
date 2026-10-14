@@ -101,7 +101,7 @@ for (const size of SIZES) {
     assert.deepEqual(r.k, [0.91, 0.92], '大きさ（ソラモ 0.91・ガウル 0.92）');
     for (const k of ['i0', 'i1']) assert.ok(r[k].t >= r.hpr.b - 4 && r[k].b <= r.mmr.t + 2 && r[k].l >= -2 && r[k].r <= r.iw + 2, `${k} は HUD の下・ルーレットの上・画面の中 ${JSON.stringify(r[k])}`);
     assert.ok(Math.abs(r.i0.b - r.i1.b) < 3, '左右の足もとがそろう');
-    assert.ok(r.i0.t - r.hpr.b < r.ih * 0.25, `上に大きな空きを作らない（${Math.round(r.i0.t - r.hpr.b)}px）`);
+    assert.ok(r.i0.t - r.hpr.b < r.ih * 0.28, `上に大きな空きを作らない（${Math.round(r.i0.t - r.hpr.b)}px）`);   // 2026-10-14 実機試遊⑱：足もとを円形の床の中央へ下げた（公式ランク戦の戦場 min(21.5dvh,210px)）＝背の高い画面では上の空き（会場の客席）が少し増える（430×932 で約26%）
     assert.ok(r.sw <= r.iw + 1, '横はみ出しなし');
     // STOP で止まったら：中央の板＝止まった行（技名はその板だけ）
     await pg.click('#go');
