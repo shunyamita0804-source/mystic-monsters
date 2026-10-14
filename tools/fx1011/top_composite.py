@@ -6,7 +6,14 @@
 import sys
 import numpy as np
 from PIL import Image, ImageFilter
-from scipy import ndimage as ndi
+try:
+    from scipy import ndimage as ndi
+except ImportError:   # 2026-10-14：scipy の無い環境では PIL のぼかしで同じ処理（ガウスのぼかし σ1.2）
+    ndi = None
+def gblur(k, sigma):
+    if ndi is not None: return ndi.gaussian_filter(k, sigma)
+    im = Image.fromarray(np.clip(k * 255, 0, 255).astype(np.uint8), 'L').filter(ImageFilter.GaussianBlur(sigma))
+    return np.asarray(im).astype(np.float32) / 255
 
 BASE = 'assets/fields/ch1a/tiles_v2/tile_blank.webp'
 CX, CY, RX, RY = 160, 107, 116, 74     # tile_blank の上面の内側の金の輪（画素で測った値）
@@ -18,7 +25,7 @@ def emblem(med, rr, sthr):
     rgb = a[..., :3]; mx, mn = rgb.max(2), rgb.min(2); sat = mx - mn
     # 紋章＝色の濃い（彩度の高い）光る部分。石の面（淡い茶色）は使わない
     k = np.clip((sat - sthr) / 40, 0, 1) * np.clip((mx - 90) / 60, 0, 1)
-    k = ndi.gaussian_filter(k, 1.2)
+    k = gblur(k, 1.2)
     k *= np.clip((1 - d) / 0.12, 0, 1)                      # 中央の円の外は使わない（外周の金の縁・ルーン）
     k *= a[..., 3] / 255
     out = np.dstack([rgb, k * 255]).astype(np.uint8)

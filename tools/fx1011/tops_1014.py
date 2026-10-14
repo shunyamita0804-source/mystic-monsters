@@ -6,7 +6,7 @@
 """
 import sys, os, subprocess
 OUT = 'assets/fields/ch1a/tiles_top_1012'
-FIT = '0.90'
+FIT = '0.97'   # 2026-10-14 実機試遊⑳：金の外枠（上面の内側の金の輪＝外枠の内側のふち）の直前まで（旧 0.90）。輪の 0.94〜1.0 で薄くして消す＝枠からはみ出さない
 NAMES = ['tile_stat_life', 'tile_stat_power', 'tile_stat_intelligence', 'tile_stat_accuracy', 'tile_stat_evasion', 'tile_stat_toughness',
          'tile_wild_monster', 'tile_treasure', 'tile_meal', 'tile_rival', 'tile_event', 'tile_rare_monster']
 for name in NAMES:
