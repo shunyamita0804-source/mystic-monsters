@@ -22,7 +22,7 @@ WebP 品質84・元の大きさのまま（画素は変えていない）。元�
 | ノビトン | 2 | nobiton/02_zutsuki.webp | 02_ずつき.png | 1536×1024 | `b5439e1b3cbfc12ef0a3aa2a518061d6ad70e74a865eef7c2fd994c83d852ee4` |
 | ノビトン | 3 | nobiton/03_hanamizu.webp | 03_はなみず.png | 1536×1024 | `5c0d7201ad95742135b4e31bcf0b1a8428a139968925147835b028312eb89b17` |
 | ノビトン | 4 | nobiton/04_hitoyasumi.webp | 04_ひとやすみ.png | 1536×1024 | `44508f536d33c9d84d5541cee2a7f33e11ff5b4e19d30f396a238176bde61ac1` |
-| ノビトン | 5 | nobiton/05_hammer_nose.webp | 05_ハンマーノーズ.png | 1536×1024 | `4e29a14a104ce3a792696c3bb52060597d87fd6d7c7f2c4d06127540be9d8429` |
+| ノビトン | 5 | nobiton/05_hammer_nose.webp（2026-10-14 から技辞典で使わない＝No.5 は正式に「まきつく」・この資料は旧ハンマーノーズ） | 05_ハンマーノーズ.png | 1536×1024 | `4e29a14a104ce3a792696c3bb52060597d87fd6d7c7f2c4d06127540be9d8429` |
 | ノビトン | 6 | nobiton/06_nose_wave.webp | 06_ノーズウェーブ.png | 1536×1024 | `94bbe0b811630eee43fc489f2519b573b77792c1042b13b5d45138805ef3ce05` |
 | ノビトン | 7 | nobiton/07_shibire_tsuki.webp | 07_しびれ突き.png | 1536×1024 | `26578434aa7a8ae4c2047feb8230dfc21f2188cd0154cf1e16b08eb3ae0ef468` |
 | ノビトン | 8 | nobiton/08_mirage_nose.webp | 08_ミラージュノーズ.png | 1536×1024 | `adf4b553083fb377a8835bf0f8de530d741d6b86bab08d4b5c98ef4758e7453f` |

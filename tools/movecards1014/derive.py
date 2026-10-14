@@ -7,7 +7,7 @@ from PIL import Image
 tsv, src, out = sys.argv[1:4]
 files = {os.path.basename(p): p for p in glob.glob(os.path.join(src, '**', '*.png'), recursive=True) if os.path.basename(os.path.dirname(p)).startswith('part') and '背景あり' in os.path.dirname(p)}
 # 対応表の ID の綴りがコードと違うもの（コード側＝js/phase10/monsters.js の OFFICIAL_MOVES を正とする）
-ID_FIX = {('solamo', 'star_crush'): 'star_crash'}
+ID_FIX = {('solamo', 'star_crush'): 'star_crash', ('nobiton', 'hammer_nose'): 'makitsuku'}   # 2026-10-14：ノビトン No.5 は正式に「まきつく」
 rows = list(csv.DictReader(open(tsv, encoding='utf-8-sig'), delimiter='\t'))
 log = []
 for r in rows:

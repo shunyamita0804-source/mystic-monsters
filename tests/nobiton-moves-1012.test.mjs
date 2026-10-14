@@ -30,7 +30,7 @@ test('NM-01：10技・59枚・技の番号・ファイル・sha256', () => {
     for (const c of DATA[k].cuts) assert.ok(c.b[2] > c.b[0] && c.b[3] > c.b[1], c.src);
   }
   const sha = rd('assets/battle/nobiton_moves_1012/sha256.txt').trim().split('\n'); assert.equal(sha.length, 59);
-  assert.match(DATA[34].folder, /まきつく/, '納品のフォルダ名は 05 まきつく（正式の技表は 5 ハンマーノーズ＝食い違いは報告。番号で接続）');
+  assert.match(DATA[34].folder, /まきつく/, '05 まきつく（2026-10-14 から正式の技表も まきつく）');
 });
 
 test('NM-02：ノビトンの技だけ新しいコマ・効果の置き方・旧の比較', () => {

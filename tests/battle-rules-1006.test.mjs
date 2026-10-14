@@ -75,10 +75,18 @@ test('BR-02：動けない行動は何もしない（ダメージ・命中回数
   const E = load(), NF = E.R.NOBI_FIRST;
   // ノビトンの技は SK の 30〜39（実行時に追加）。正式の数値のまま
   const row = (k) => [E.SK[k][0], Math.round(E.SK[k][1] * 100), E.SK[k][8], Math.round(E.SK[k][9] * 100)];
-  assert.deepEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => row(NF + i)), [['はなビンタ', 65, 90, 5], ['ずつき', 80, 75, 10], ['はなみず', 55, 95, 5], ['ひとやすみ', 0, 100, 0], ['ハンマーノーズ', 105, 80, 15],
+  assert.deepEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => row(NF + i)), [['はなビンタ', 65, 90, 5], ['ずつき', 80, 75, 10], ['はなみず', 55, 95, 5], ['ひとやすみ', 0, 100, 0], ['まきつく', 0, 100, 0],
     ['ノーズウェーブ', 90, 90, 10], ['しびれ突き', 75, 100, 10], ['ミラージュノーズ', 100, 90, 30], ['ダウナーミスト', 60, 95, 0], ['ギガントノーズ', 150, 75, 25]]);
   assert.deepEqual(JSON.parse(JSON.stringify(E.EFF[NF + 2])), [{ tg: 1, st: 'de', lv: -1, t: 1 }], 'はなみず：相手の丈夫さ 小DOWN 1ターン');
   assert.deepEqual(JSON.parse(JSON.stringify(E.EFF[NF + 8])), [{ tg: 1, st: 'atk', lv: -2, t: 2 }, { tg: 1, st: 'de', lv: -2, t: 2 }], 'ダウナーミスト：相手の攻撃系・丈夫さ 中DOWN 2ターン');
+  // 2026-10-14：No.5 まきつく（SK 34）＝ダメージなし・相手の攻撃力 小DOWN 2ターン・純補助技（必ず決まる）・掛け直しは足さずに残りを更新
+  assert.deepEqual(JSON.parse(JSON.stringify(E.EFF[NF + 4])), [{ tg: 1, st: 'atk', lv: -1, t: 2 }], 'まきつく：相手の攻撃系 小DOWN 2ターン');
+  assert.equal(E.R.behavior(NF + 4).support, true);
+  { const mb = battle(E, unit('ノビトン', 2, { hi: 1 }), unit('ガウル', 1, { ev: 999 }));
+    const r1 = mb.act('A', NF + 4, undefined, { hitRng: () => 0.999, damageRng: () => 0.5, criticalRng: () => 0.99 });
+    assert.equal(r1.hit, true, '回避がとても高い相手にも決まる'); assert.equal(mb.sess.currentLife.B, 300, 'ダメージなし');
+    const d1 = JSON.parse(JSON.stringify(mb.sess.debuffs.B)); assert.equal(d1.length, 1);
+    mb.act('A', NF + 4); assert.equal(mb.sess.debuffs.B.length, 1, '同じ強さの掛け直しは足さない'); }
   // 動けない行動
   let b = battle(E, unit('ノビトン', 2, {}), unit('ガウル', 1, {}));
   b.st.block = { side: 'A', kind: 'paralysis' };

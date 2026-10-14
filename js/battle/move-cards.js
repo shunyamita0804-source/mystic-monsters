@@ -11,8 +11,7 @@
   const CARDS = {
     solamo: [[1, 'taiatari'], [2, 'hikkaki'], [3, 'shippo_attack'], [4, 'hoeru'], [5, 'star_crash'], [6, 'soramo_beam'], [7, 'sunakake'], [8, 'hoshi_no_mamori'], [9, 'stardust_ray'], [10, 'star_fall']],
     gauru: [[1, 'tsutsuku'], [2, 'wind'], [3, 'spiral_dive'], [4, 'sonic_move'], [5, 'kouyoku_slash'], [6, 'fireball'], [7, 'sky_rush'], [8, 'flare_ray'], [9, 'feather_storm'], [10, 'seinaru_honoo']],
-    // 05＝画像は「まきつく」（NOBITON_05_makitsuku.png）・データは hammer_nose（ハンマーノーズ）＝表記と絵柄の不一致（要確認。データは変えない）
-    nobiton: [[1, 'hana_binta'], [2, 'zutsuki'], [3, 'hanamizu'], [4, 'hitoyasumi'], [5, 'hammer_nose'], [6, 'nose_wave'], [7, 'shibire_tsuki'], [8, 'mirage_nose'], [9, 'downer_mist'], [10, 'gigant_nose']],
+    nobiton: [[1, 'hana_binta'], [2, 'zutsuki'], [3, 'hanamizu'], [4, 'hitoyasumi'], [5, 'makitsuku'], [6, 'nose_wave'], [7, 'shibire_tsuki'], [8, 'mirage_nose'], [9, 'downer_mist'], [10, 'gigant_nose']],
     jiol: [[1, 'punch'], [2, 'kick'], [3, 'chikara_wo_tameru'], [4, 'noshikakari'], [5, 'ground_hammer'], [6, 'crystal_ray'], [7, 'ground_spike'], [8, 'rock_upper'], [9, 'geo_impact'], [10, 'crystal_nova']],
     regnas: [[1, 'kirisaku'], [2, 'shippo_attack'], [3, 'ryugan_lock'], [4, 'zanei_step'], [5, 'dragon_crash'], [6, 'soukou_breath'], [7, 'snipe_fang'], [8, 'genei_claw'], [9, 'soujin_ranbu'], [10, 'tail_cyclone']],
   };

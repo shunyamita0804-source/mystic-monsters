@@ -31,7 +31,7 @@ test('MV-01：正式技のデータ（2026-10-06）。ソラモ・ガウル・�
     ['フェザーストーム', 'wisdom', 145, 70, 20], ['聖なる炎', 'wisdom', 115, 90, 15]]);
   assert.deepEqual(M.movesOf('nobiton').map(row), [
     ['はなビンタ', 'power', 65, 90, 5], ['ずつき', 'power', 80, 75, 10], ['はなみず', 'wisdom', 55, 95, 5], ['ひとやすみ', 'heal', null, null, null],
-    ['ハンマーノーズ', 'power', 105, 80, 15], ['ノーズウェーブ', 'wisdom', 90, 90, 10], ['しびれ突き', 'power', 75, 100, 10], ['ミラージュノーズ', 'power', 100, 90, 30],
+    ['まきつく', 'support', null, null, null], ['ノーズウェーブ', 'wisdom', 90, 90, 10], ['しびれ突き', 'power', 75, 100, 10], ['ミラージュノーズ', 'power', 100, 90, 30],
     ['ダウナーミスト', 'special', 60, 95, 0], ['ギガントノーズ', 'power', 150, 75, 25]]);
   assert.deepEqual(M.movesOf('jiol').map((m) => m.name), ['パンチ', 'キック', '力をためる', 'のしかかり', 'グランドハンマー', 'クリスタルレイ', 'グランドスパイク', 'ロックアッパー', 'ジオインパクト', 'クリスタルノヴァ']);
   assert.ok(M.movesOf('jiol').every((m) => m.power === null && m.accuracy === null), 'ジオルの数値は推測で入れない');
@@ -53,7 +53,7 @@ test('MV-01：正式技のデータ（2026-10-06）。ソラモ・ガウル・�
   for (const old of ['とっしん', 'ドリルアタック', '超スターダストレイ', 'くっつく', 'ピンポイント突き', 'ウイングアタック', 'バードアタック', 'ファイアビーム']) assert.ok(!all.includes(old), old);
   assert.ok(!M.movesOf('gauru').some((m) => m.name === 'ひっかき'), 'ガウルの正式10技に ひっかき は無い');
   // 技辞典の資料（50枚）
-  for (const k of ['solamo', 'gauru', 'nobiton', 'jiol', 'regnas']) { const L = M.movesOf(k); assert.equal(L.length, 10, k); for (const m of L) assert.ok(existsSync(path.join(ROOT, m.sheet)), m.sheet); }
+  for (const k of ['solamo', 'gauru', 'nobiton', 'jiol', 'regnas']) { const L = M.movesOf(k); assert.equal(L.length, 10, k); for (const m of L) { if (k === 'nobiton' && m.id === 'makitsuku') { assert.equal(m.sheet, null, 'まきつくは旧ハンマーノーズの資料を使わない'); continue; } assert.ok(existsSync(path.join(ROOT, m.sheet)), m.sheet); } }
   assert.match(rd('assets/moves/README.md'), /しびれ突き/);
 });
 
