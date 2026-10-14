@@ -58,7 +58,7 @@ test('FXB-2：野生（影・？？？）／レア（名前・★レア）→ �
   await place(pg, 'ER03_02', { t: 'wild', rare: true });
   await pg.waitForSelector('.wbx-w.rare');
   const r = await pg.evaluate(() => { const e = document.querySelector('.wbx-w'); return { nm: e.querySelector('.wbx-nm b').textContent, badge: !!e.querySelector('.wbx-nm em'), img: e.querySelector('.wbx-mon').getAttribute('src'), all: e.textContent }; });
-  assert.notEqual(r.nm, '？？？'); assert.equal(r.badge, true); assert.match(r.img, /2p5d\//); assert.doesNotMatch(r.all, /Lv|レベル/);
+  assert.notEqual(r.nm, '？？？'); assert.equal(r.badge, true); assert.match(r.img, /battle\/idle\/idle_\w+\.webp$/, '2026-10-14 実機試遊㉔：遭遇の相手はこのあと VS・バトルに出る正式の待機立ち絵（レアは色つき・野生は同じ絵の影）'); assert.doesNotMatch(r.all, /Lv|レベル/);
   await H.surrenderBattle(pg); await pg.waitForSelector('#wbw #brollbtn'); await idle(pg);
   // G：50G では出ない・150G で1回
   await pg.evaluate(() => { window.__gb = 0; new MutationObserver((ms) => { for (const m of ms) for (const n of m.addedNodes) if (n.classList && n.classList.contains('wbx-gold')) __gb++; }).observe(document.getElementById('wbw'), { subtree: true, childList: true }); });
