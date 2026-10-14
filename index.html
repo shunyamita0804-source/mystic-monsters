@@ -1163,6 +1163,8 @@ button.mkc b{font-size:.9rem}button.mkc small{font-size:.66rem;color:#ffe9b0}
    重ね順（.chf-cam）：遠景の帯（far）→ 背景 → 奥の環境（back）→ 道（停止地点・モンスター：足元の y で前後）→ 手前の環境（front）→ 効果（fx）。ノード・線・番号は出さない */
 #app>.chfw{position:relative;box-sizing:border-box;height:calc(100% + 32px);margin:-16px;overflow:hidden;background:#0b1636;--chdeck:clamp(128px,19vh,166px);--chcmd:118px;--chstop:88px;--chwing:40px;animation:chfwin .3s ease-out both}
 @keyframes chfwin{from{opacity:0}}
+/* 2026-10-14 実機試遊⑩：遭遇 → 自動でバトルへ移る瞬間の短い白い光（Chapter 2 の盤。眩しすぎない・視差を減らす設定では出さない） */
+.chfw .chf-btflash{position:absolute;inset:0;z-index:60;pointer-events:none;background:radial-gradient(circle at 50% 46%,rgba(255,252,240,.78),rgba(255,246,220,.42) 45%,rgba(255,240,210,.2));animation:chfbtfl .5s ease-out forwards}@keyframes chfbtfl{0%{opacity:0}30%{opacity:.62}100%{opacity:0}}
 #app:has(>.chfw){overflow:hidden;background:#0b1636} /* 2026-10-05 試遊（ベースキャンプ → Chapter で一瞬「スパッ」と白っぽい画面）：原因＝フィールドの器の登場アニメ（chfwin＝不透明度 0→1・0.3秒）の間、後ろのページの明るい地色が透けていた。後ろを器と同じ濃紺にする（アニメ・Chapter 開始の演出はそのまま） */
 html:has(#app>.chfw),html:has(#app>.chfw) body{background:#0b1636}
 @supports (height:1dvh){#app>.chfw{--chdeck:clamp(128px,19dvh,166px)}}
@@ -1559,6 +1561,9 @@ html:has(#app>.chfw),html:has(#app>.chfw) body{background:#0b1636}
 .mmpro-u{position:absolute;left:0;right:0;opacity:0;transform:translate3d(0,-50%,0);will-change:transform,opacity}
 .mmpro-u::before{content:"";position:absolute;left:6%;right:6%;top:-28%;bottom:-28%;z-index:-1;background:radial-gradient(closest-side,rgba(2,6,20,.42),rgba(2,6,20,0));pointer-events:none}
 .mmpro-nar .mmpro-u p{position:static;transform:none;will-change:auto}
+/* 2026-10-14 実機試遊 ㉟：明るい背景（空・草原）の上で字幕が読みにくかった → 文字の縁取り（細い影の重ね）と、文の後ろのやわらかい暗がりを少し濃く広く。文章・時刻・テンポ・スキップは変えていない（Q01 は対象外） */
+.mmpro-u::before{left:-2%;right:-2%;top:-34%;bottom:-34%;background:radial-gradient(closest-side,rgba(2,6,20,.66),rgba(2,6,20,.38) 62%,rgba(2,6,20,0))}
+.mmpro-nar p{text-shadow:0 0 1px #000,0 0 2px rgba(0,0,0,.95),0 1px 3px rgba(0,0,0,.95),0 2px 6px rgba(0,0,0,.75),0 0 18px rgba(0,0,0,.7)}
 .mmpro-skip{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:12px;margin:0;padding:6px 14px;min-height:36px;border-radius:999px;background:rgba(8,15,34,.6);border:1px solid rgba(240,232,212,.5);color:#f3ecd9;font-size:12.5px;font-weight:700;letter-spacing:.06em}.mmpro-skip:disabled{opacity:0;pointer-events:none}.mmpro-skip{transition:opacity .3s}
 
 .mmpro-veil{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .9s ease}
@@ -1600,7 +1605,7 @@ html:has(#app>.chfw),html:has(#app>.chfw) body{background:#0b1636}
 @media (prefers-reduced-motion:reduce){.mmpro,.mmpro-bg,.mmpro-nar p{animation:none;transition:none}}
 .mmtscr .tcap{padding-left:16px;padding-right:16px;box-sizing:border-box}.tcap .tcancel{display:block;margin:8px auto 0;padding:8px 18px;min-height:40px;border-radius:999px;background:rgba(8,15,34,.85);border:1px solid rgba(240,232,212,.6);color:#f3ecd9;font-size:13px;font-weight:700}
 /* セーブ・ロード：1画面（3スロット＋オートセーブ＋折りたたみのセーブコード＋小さな「最初からやり直す」） */
-#app>.svs{position:relative;box-sizing:border-box;min-height:calc(100% + 20px);margin:-16px;padding:calc(10px + env(safe-area-inset-top,0px)) 12px calc(12px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px;background:radial-gradient(ellipse at 50% -10%,#2c3f76 0,#121f48 45%,#0a1330 100%);color:#fff}
+#app>.svs{position:relative;box-sizing:border-box;min-height:calc(100% + 32px);margin:-16px;padding:calc(10px + env(safe-area-inset-top,0px)) 12px calc(12px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px;background:radial-gradient(ellipse at 50% -10%,#2c3f76 0,#121f48 45%,#0a1330 100%);color:#fff}
 .svs .svhead{display:flex;align-items:center;gap:10px}
 .svs .svhead button.back{margin:0;flex:none}
 .svs h2{margin:0;font:800 18px/1.2 var(--mm-font-head);color:#f3d98e;letter-spacing:.08em}
@@ -2149,6 +2154,10 @@ button.tpin{position:absolute;z-index:2;left:calc(50cqw + (var(--x) - var(--tiw)
 .tpin.lock span{color:#dfe4ee;background:linear-gradient(180deg,rgba(40,48,76,.92),rgba(18,24,44,.92));display:flex;align-items:center;justify-content:center;gap:6px}.tpin.lock span svg{width:13px;height:13px;flex:none}
 .tpin:disabled{opacity:1;cursor:default}.tpin:disabled span{color:#c9cfdc;background:linear-gradient(180deg,rgba(40,48,76,.85),rgba(18,24,44,.85))}.tpin:disabled i{background:#8b8f9c;box-shadow:0 0 0 2px rgba(8,18,46,.85)}
 .tpin:active span{background:linear-gradient(180deg,rgba(40,70,140,.95),rgba(14,30,72,.95))}
+/* 2026-10-14 実機試遊 Q03：施設の札＝指で押しやすい高さ（44px）・文字に縁取り・押した瞬間に沈んで金の縁が光る（行き先・位置・背景は変えていない。札どうしの間隔を保つため押せる範囲は札の大きさのまま） */
+.tpin span{min-height:44px;text-shadow:0 1px 2px rgba(0,0,0,.85);transition:transform .08s ease,box-shadow .12s ease}
+button.tpin:not(:disabled):active span{transform:scale(.94);box-shadow:0 0 0 2px #f6dc8c,0 0 14px 3px rgba(255,214,110,.6)}
+@media (max-height:720px){button.tpin span{min-height:42px}}
 @media (max-height:720px){.tpin span{font-size:13.5px;min-height:38px;min-width:72px;padding:8px 11px}}
 /* 2026-10-05 PHASE B：上の中央の名札「ミストリア」（.tcity）の下に札を置く（闘技場の札が名札に隠れない） */
 @media (max-height:720px),(max-width:370px){button.tpin[onclick^="townArena"]{margin-left:-34px}} /* 低い画面：名札の下へ下げた闘技場の札が牧場の札と重ならない */
@@ -2304,6 +2313,8 @@ button.p10karen img{display:block;width:100%;height:auto;margin-top:2px;transfor
 #app .lab nav.labnav .labc::before{display:none}
 #app .lab nav.labnav .labc:nth-child(1){left:8.6%;width:27.1%}#app .lab nav.labnav .labc:nth-child(2){left:36.9%;width:28.8%}#app .lab nav.labnav .labc:nth-child(3){left:66.6%;width:27.7%}
 #app .lab nav.labnav .labc svg{width:20px;height:20px}#app .lab nav.labnav .labc b{font-size:14px}
+#app .lab .labhint{display:grid;grid-template-columns:27.1fr 28.8fr 27.7fr;column-gap:1.3%;margin:0 5.6% 3px 8.6%;font:700 10.5px/1.25 var(--mm-font-body,sans-serif);text-align:center;color:#f6e8c4;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.8);pointer-events:none}
+#app .lab .labhint span{padding:2px 2px;border-radius:6px;background:rgba(6,12,32,.55)}
 #app .lab nav.labnav .labc.on,#app .lab nav.labnav .labc:active{transform:none;box-shadow:inset 0 0 0 2px rgba(242,213,140,.85),0 0 12px rgba(242,213,140,.5)}
 .p10mk .p10arw{width:50px;height:52px;border:0;border-radius:50%;background:url(./assets/ui/b_group/b45_nav_back_medallion.png) center/contain no-repeat;box-shadow:none}
 .p10mk .p10arw.next{background-image:url(./assets/ui/b_group/b44_nav_next_medallion.png)}
@@ -2316,6 +2327,14 @@ button.p10karen img{display:block;width:100%;height:auto;margin-top:2px;transfor
 .svs .card.slot:not(.svauto) .row2 button+button:disabled{aspect-ratio:400/111;background-image:url(./assets/ui/b_group/b06_load_button_disabled.png);opacity:1;color:#f1f1f1}
 .svs .card.slot .svpic{position:absolute;left:78.6%;width:14.8%;top:16%;height:68%;display:flex;align-items:center;justify-content:center;pointer-events:none}
 .svs .card.slot .svpic img{max-width:92%;max-height:92%;object-fit:contain}
+.svs .card.slot b{display:flex;align-items:center;gap:6px;font-size:15px}.svs .card.slot small{font-size:12.5px;color:#f3f6ff;text-shadow:0 1px 2px rgba(0,0,0,.7)}
+.svs .card.slot .svsub{grid-column:1;font-size:11px;color:#e8d29a}
+/* 2026-10-14 実機試遊 ㉞：保存済みのスロットの所持金が「…」で切れていた → 未クリアの「（ランクー）」は出さない（クリアしたランクだけ小さな札）・3行目は進行（育成中の Chapter）と保存した日時・上書きの確認の文がボタンからはみ出さない */
+.svs .card.slot b{white-space:nowrap}.svs .card.slot .svbadge{flex:none;white-space:nowrap}.svs .card.slot small .gcoin{width:1.05em;height:1.05em;vertical-align:-.17em}.svs .card.slot .svrk{font:800 10px/1 var(--mm-font-body,sans-serif);font-style:normal;margin-left:4px;padding:2px 5px;border-radius:4px;background:#e0b861;color:#2a1806;vertical-align:1px}
+.svs .card.slot:not(.svauto) .row2 button[data-a="1"]{font-size:9.5px;letter-spacing:-.03em;white-space:nowrap}
+.svs .card.slot .svbadge{font:800 10px/1 var(--mm-font-body,sans-serif);font-style:normal;padding:3px 7px;border-radius:99px;letter-spacing:.06em;background:#5b6582;color:#e8ecf8}
+.svs .card.slot.on .svbadge{background:linear-gradient(#f2d27a,#c9973b);color:#2a1806;box-shadow:0 0 6px rgba(242,210,122,.6)}
+.svs .card.slot.empty small{color:#b8c0d8}
 #app>.ds.pfprof{overflow-y:auto;overscroll-behavior:contain}
 .pfprof .tplate{margin:8px 0 0;padding:0;background:none;border:0;box-shadow:none}
 .pfprof .tplate>:not(.pfhead):not(.pfrows),.pfprof .tplate::before{display:none}
@@ -2379,6 +2398,20 @@ button.p10karen img{display:block;width:100%;height:auto;margin-top:2px;transfor
 .ds.shop.shopf>.dmsg{z-index:3;margin:8px 0 0;background:linear-gradient(rgba(14,24,56,.94),rgba(8,15,34,.96));color:#f3ecd9;border:1px solid rgba(230,191,98,.7);font-weight:700}
 .ds.shop.shopf .dcard{background:linear-gradient(rgba(14,24,56,.95),rgba(8,15,34,.97));border:1.5px solid #c9a24f;box-shadow:inset 0 0 0 3px rgba(8,15,38,.85),inset 0 0 0 4px rgba(214,178,98,.4),0 6px 16px rgba(0,0,0,.5);border-radius:12px}
 .ds.shop.shopf .dcard .dh{font-family:"Shippori Mincho",var(--mm-font-head,serif);color:#f2d58c}
+/* 2026-10-14 実機試遊 Q07・㉚：購入の一覧＝左にアイコン・名前と効果（空腹 −N）・右に価格（金貨）と所持数／未入荷は解放の条件を1行で。品目の領域を広げる（ベルナは切らない）。価格・入荷・購入の処理は変えていない */
+.ds.shop.shopf .dcard .t.shi{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"ic nm pr" "ic fx own";align-items:center;column-gap:10px;row-gap:2px;min-height:0;padding:9px 12px;text-align:left;margin:0 0 8px;border-radius:10px}
+.ds.shop.shopf .dcard .t.shi>.itic{grid-area:ic;width:34px;height:34px;margin:0}
+.ds.shop.shopf .dcard .t.shi .shnm{grid-area:nm;font:800 15.5px/1.25 var(--mm-font-body);color:#24180a;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ds.shop.shopf .dcard .t.shi .shfx{grid-area:fx;justify-self:start;margin:0;padding:1px 7px;border-radius:99px;background:#7a3a12;color:#fff1d8;font:700 11px/1.5 var(--mm-font-body);font-style:normal}
+.ds.shop.shopf .dcard .t.shi .shpr{grid-area:pr;justify-self:end;font:800 16px/1.2 var(--mm-font-body);color:#3b2608;white-space:nowrap}
+.ds.shop.shopf .dcard .t.shi .shpr .gcoin{width:17px;height:17px;vertical-align:-3px;margin-right:2px}
+.ds.shop.shopf .dcard .t.shi .shown{grid-area:own;justify-self:end;font:700 11px/1.3 var(--mm-font-body);font-style:normal;color:#5a4628;white-space:nowrap}
+.ds.shop.shopf .dcard .t.shi.poor .shown{color:#a3261b}
+.ds.shop.shopf .dcard .t.shi.shlock{grid-template-areas:"ic nm own" "ic fx fx" "ic pr pr"}
+.ds.shop.shopf .dcard .t.shi.shlock .shpr{justify-self:start;font:700 11.5px/1.35 var(--mm-font-body);color:#3f3424;white-space:normal}
+.ds.shop.shopf .dcard .t.shi:disabled{opacity:1}.ds.shop.shopf .dcard .t.shi.shlock{background:linear-gradient(#c9c1b1,#aea493);filter:none}.ds.shop.shopf .dcard .t.shi.shlock>.itic{opacity:.55}
+#app>.ds.shop.shopf.tab>.dbody{max-height:56%}
+@media (max-height:720px){#app>.ds.shop.shopf.tab>.dbody{max-height:58%}.ds.shop.shopf .dcard .t.shi{padding:7px 11px;margin-bottom:6px}}
 .ds.shop.shopf .shmenu{flex:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 -2px;padding:8px 0 calc(12px + env(safe-area-inset-bottom,0px));z-index:3}
 .ds.shop.shopf .shent{flex-direction:column;justify-content:center;gap:2px;min-height:118px;padding:8px 4px 10px;text-align:center}
 .ds.shop.shopf .shent img{width:62px;height:62px}
@@ -2496,6 +2529,10 @@ button.p10karen img{display:block;width:100%;height:auto;margin-top:2px;transfor
 .mmtalk.mmtalk-big .mmtalk-name::after{inset:1px;background:linear-gradient(#22397a,#0f1f4a 60%,#0b1838)}
 .mmtalk.mmtalk-big .mmtalk-text{color:#fbf7ee}
 .mmtalk.mmtalk-big .mmtalk-next{color:#e2c27a}
+/* 2026-10-14 実機試遊 Q02：会話の共通 UI＝次へ進む印をどの窓でも同じ金の▼（少し大きく・光る）、名前の札の文字をはっきり、本文の右の余白を詰めて1行に入る字数を増やす（口調・声の時刻・タップの規則は変えていない） */
+.mmtalk .mmtalk-next{right:18px;bottom:10px;color:#e8c77d;font-size:1rem;text-shadow:0 0 6px rgba(232,199,125,.55)}
+.mmtalk .mmtalk-name{letter-spacing:.08em;text-shadow:0 1px 1px rgba(255,255,255,.35)}
+.mmtalk .mmtalk-text{padding-right:max(10px,calc(env(safe-area-inset-right,0px) + 6px))}
 /* ボード（Chapter）：窓は下の操作欄（--chdeck）の上に置く＝操作欄は見えるが押せない（html[data-mmev]）。立ち絵は窓と一体（窓の上に半身） */
 .mmtalk.mmtalk-board{background:linear-gradient(rgba(4,10,32,0) 30%,rgba(4,10,32,.5) 80%,rgba(4,10,32,.6))}
 .mmtalk.mmtalk-board .mmtalk-stage{margin-bottom:calc(var(--chdeck,clamp(128px,19.7dvh,172px)) + env(safe-area-inset-bottom,0px) - 6px)}
@@ -2777,6 +2814,9 @@ body:has(#app>.bu) #snd{display:none}
 .sts .stnav button.bcb svg{width:26px;height:26px;fill:none;stroke:#e6bf62;stroke-width:1.6}
 .sts .stnav button.bcb.on{color:#ffe9a8;background:radial-gradient(ellipse at 50% 100%,rgba(255,214,110,.32),transparent 70%)}
 .sts .stnav .bctix{position:absolute;top:2px;right:4px;font:700 9px/1.4 var(--mm-font-body);font-style:normal;padding:0 4px;border-radius:4px;background:#e0b861;color:#2a1a05}
+/* 2026-10-14 実機試遊 Q08：主役のモンスターが小さかった（共通の .mon{width:96px;height:96px} が効いていた）→ 正式の 2.5D 立ち絵を全身が切れない大きさで（数値・固有スキルは従来どおり） */
+.sts .sthero{grid-template-columns:1.25fr 1fr}.sts .stmon{min-height:200px}.sts .stmon .mon{width:100%!important;height:auto!important;max-width:240px;aspect-ratio:1;background:none;border:0;box-shadow:none}
+.sts .stmon .mon>img{filter:drop-shadow(0 8px 10px rgba(0,0,0,.45))}
 @media (max-height:720px){.sts .stmon{min-height:130px}.sts .stmon .mon{max-width:150px}.sts .stnm{font-size:25px}.sts .stbody{gap:7px}.sts .stb{gap:5px}.sts .stbars{gap:3px}}
 /* 2026-10-05：聖獣士管理局の「世界地図」（序盤の会話のあと。3つ目のボタン） */
 .bu .bunav:has(.bumap){grid-template-columns:1fr 1fr 1fr;gap:8px}
@@ -2810,6 +2850,10 @@ body:has(#app>.bu) #snd{display:none}
 .rn2 .rnlh2>b{font-family:var(--mm-font-head);font-size:17px;letter-spacing:.12em;color:#f6dc98}
 .rn2 .rncnt{font-size:13px;color:#f3ecd9}.rn2 .rncnt b{font-size:15px;color:#fff}
 .rn2 .rncur{flex:none;display:grid;margin:0 0 8px}
+/* 2026-10-14 実機試遊 Q05：同行中（連れている子）と預かり中（牧場の子）・空き枠を見出しで分ける（上限・データの扱いは変えない） */
+#app>.uiwait{visibility:hidden}
+.rn2 .rnsec{flex:none;margin:2px 0 4px;font:700 11.5px/1.2 var(--mm-font-body,sans-serif);letter-spacing:.06em;color:#e8d29a}.rn2 .rnsec::before{content:"";display:inline-block;width:6px;height:6px;margin:0 6px 1px 2px;border-radius:50%;background:#d9b465}
+.rn2 .rnsec.cur::before{background:#7fd4e8;box-shadow:0 0 6px #7fd4e8}.rn2 .rncnt small{margin-left:4px;font-size:11px;color:#cfc3a3}
 .rn2 .rngrid{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:min-content;gap:8px;padding:2px 2px 4px}
 .rn2 .rngrid .rnempty{grid-column:1/-1}
 .rn2 button.rnc{position:relative;display:flex;align-items:center;gap:8px;width:100%;min-width:0;height:62px;margin:0;padding:5px 8px 5px 5px;text-align:left;border-radius:10px;background:linear-gradient(#17295a,#0e1c42);border:1.5px solid rgba(224,184,97,.55);box-shadow:inset 0 0 0 2px rgba(8,15,34,.8);color:#fff}
@@ -3538,6 +3582,11 @@ main:has(>#app>.ds) h1{display:none}
 .rcv .rcv-join small{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .rcv .rcv-join:disabled{opacity:.5}
 .rcv .rcv-dec{flex:none;align-self:center;width:min(42%,150px);height:auto;aspect-ratio:300/70;min-height:0;padding:0;border:0;border-radius:0;background:url(./assets/ui/recovery_1006/tournament/button_decline.png) center/100% 100% no-repeat;box-shadow:none;font-size:0;color:transparent}
+/* 2026-10-14 実機試遊㉙：ランク選択の参加条件・状態が読みにくい → 状態の札と「参加者・対戦数」の字を大きく、暗い下地で読めるように。ランク・条件・規則は変えない */
+.rcv-stat{left:58.5%;width:26%;top:18%;bottom:8%;gap:3%}
+.rcv-st i{font-size:clamp(9.5px,4.4cqw,15px)}
+.rcv-stat small{padding:1px 5px;border-radius:5px;background:rgba(6,10,28,.62);font-size:clamp(8.5px,3.3cqw,12.5px);line-height:1.3}
+.rcv .rcv-note{font-size:11.5px;line-height:1.4;color:#f3ecd9;text-shadow:0 1px 2px #000}
 .p9conf{position:fixed;inset:0;z-index:960;display:grid;place-items:center;background:rgba(3,7,20,.62);animation:p9confIn .18s ease-out}
 @keyframes p9confIn{from{opacity:0}}
 .p9conf-box{position:relative;width:min(88vw,340px);aspect-ratio:640/434}
@@ -3740,6 +3789,11 @@ main:has(>#app>.ds) h1{display:none}
 .p10mk .p10plate span svg{width:1em;height:1em}
 .p10mk .p10plate .p10wait{padding:0 6px;font-size:9px;line-height:1.5}
 .p10mk .p10sl.on .p10plate::after{position:absolute;left:0;right:0;top:100%;margin-top:3px;text-align:center;text-shadow:0 1px 2px #000,0 0 4px #000}
+/* 2026-10-14 実機試遊 Q04：中央の商品モンスターを主役に＝正式 2.5D の立ち絵だけを足もとを軸に約1.2倍（名札・価格・左右の候補・台座の位置は変えない。購入・価格・販売の規則は変えていない） */
+.p10mk .p10mon{transform-origin:50% 100%;transition:transform .3s ease}
+.p10mk .p10sl.on .p10mon{transform:scale(1.2)}
+@media (max-height:720px){.p10mk .p10sl.on .p10mon{transform:scale(1.12)}}
+@media (prefers-reduced-motion:reduce){.p10mk .p10mon{transition:none}}
 .p10mk .p10arw,.p10mk .p10arw.next{width:52px;height:53px;background:url(./assets/ui/market_wood/arrow_left.png) center/contain no-repeat}
 .p10mk .p10arw.next{background-image:url(./assets/ui/market_wood/arrow_right.png)}
 /* 2026-10-08 正式：ランク昇格 Final（p9RankUpFinal）＝光 → 枠 → 文字 → 解放の札（画像は加工しない・動きと不透明度だけ） */
@@ -3869,6 +3923,16 @@ html[data-mmev] #app .chsheet,html[data-mmev] #app .p9sheet{visibility:hidden!im
 .tb1g.tbv2.n8 .tbrw .tbic{width:min(36%,38px)}
 .tb1g.tbv2 .tbnm b,.tb1g.tbv2.n8 .tbnm b{white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;text-overflow:clip;font-size:clamp(9px,3.3cqw,14px);line-height:1.15}
 .tb1g.tbv2 .tbo,.tb1g.tbv2 .tbx{width:42%}
+/* 2026-10-14 実機試遊㉘・Q14：名前と勝敗の字・印を大きく（勝ち＝赤○・負け＝青×・未対戦＝空・自分の行＝薄い青・次の相手＝金は従来どおり） */
+.tb1g.tbv2{width:min(98vw,440px,64dvh)}.tb1g.tbv2.n8{width:min(98vw,440px,64dvh)}
+.tb1g.tbv2 .tbnm b,.tb1g.tbv2.n8 .tbnm b{font-size:clamp(11px,4cqw,16px);font-weight:800;letter-spacing:.02em}
+.tb1g.tbv2.n8 .tbnm b{font-size:clamp(10px,3.4cqw,14px)}
+.tb1g.tbv2 .tbh b{font-size:clamp(9px,3cqw,13px);font-weight:800}
+.tb1g.tbv2 .tbo,.tb1g.tbv2 .tbx{width:54%}.tb1g.tbv2 .tbo{border-width:3px}.tb1g.tbv2 .tbx::before,.tb1g.tbv2 .tbx::after{height:3px}
+.tb1g.tbv2 .rme .tbnm b{color:#d6ecff}
+/* 2026-10-14 実機試遊㉗：対戦表の上のフィナの会話は、会話窓を画面の下（「対戦する」の上）へ寄せて立ち絵は出さない＝表の行・印を隠さない（会話は消さない） */
+html:has(#app>.p9tour.tb1) .mmtalk .mmtalk-fig{display:none}
+html:has(#app>.p9tour.tb1) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-inset-bottom,0px) + 8px)!important}
 /* 25：ボード（Chapter のフィールド・1枚の世界のボード）の上の会話（フィナの立ち絵＋名前の札＋会話の窓をひとまとまり）は、下の操作欄（アイテム／休む／技設定／ステータス・START）と案内の行より上へ。
  *  操作欄の高さ（--chdeck と同じ式）＋案内の行＋余白で決める（固定 px の決め打ちではない）。操作欄・ボタンの位置は動かさない。大型の窓（到着・重要な会話＝big）と施設の背景つきの会話は従来どおり */
 html:has(#app>.chfw) .mmtalk:not(.mmtalk-big):not(.mmtalk-scene) .mmtalk-stage{margin-bottom:calc(clamp(136px,20.6dvh,180px) + env(safe-area-inset-bottom,0px) + 54px)}
@@ -4279,8 +4343,8 @@ function farm(msg,tab){if(p8Blocked())return;p9Immersive(true);bgm("ranch");npcW
  else if(ft=="n"&&x)body=`<div class="rnsheet rnren"><b>名前変更</b><div class="rnrhd"><span class="rnic mon">${msv(x)}</span><small>いまの名前：${p11Esc(x.name)}</small></div><label class="p10lb">新しい名前（8文字まで）<input id="rnnm" maxlength="8" value="${p11Esc(x.name)}" autocomplete="off" enterkeyhint="done" onkeydown="if(event.key=='Enter'){event.preventDefault();rnRename()}"></label><div class="rnrow2"><button class="t" data-se="UI_CANCEL" onclick="farm('','b')">やめる</button><button class="go" onclick="rnRename()">変更する</button></div></div>`;
  else{if(ft!="b")ft="b";
   const sq=x?MMP10M.canSell(S,x.uid):{ok:false},mv=!x?["","預ける",true]:x===m?["dep()","預ける",busy||S.box.length>=L]:[`wd(${bi})`,"受け取る",busy];
-  body=`<section class="rnlist" aria-label="牧場のモンスター"><header class="rnlh2"><b>牧場のモンスター</b><span class="rncnt"><b>${S.box.length}</b> / ${L}</span></header>
-  ${m?`<div class="rncur">${rnCell(m)}</div>`:""}<div class="rngrid">${S.box.length?S.box.map(rnCell).join(""):`<p class="rnempty">牧場にはまだモンスターがいません。</p>`}</div></section>
+  body=`<section class="rnlist" aria-label="牧場のモンスター"><header class="rnlh2"><b>牧場のモンスター</b><span class="rncnt">預かり中 <b>${S.box.length}</b> / ${L}<small>（空き ${Math.max(0,L-S.box.length)}）</small></span></header>
+  ${m?`<div class="rnsec cur">同行中（連れている子）</div><div class="rncur">${rnCell(m)}</div>`:""}<div class="rnsec box">預かり中（牧場にいる子）</div><div class="rngrid">${S.box.length?S.box.map(rnCell).join(""):`<p class="rnempty">牧場にはまだモンスターがいません。</p>`}</div></section>
   <nav class="rnact" aria-label="牧場のコマンド"><button class="rna" data-cmd="ranch_look" ${x?"":"disabled"} onclick="rnView=rnSel;farm('','e')">${rnIc("look")}<span>見る</span></button><button class="rna" data-cmd="ranch_rename" ${x?"":"disabled"} onclick="farm('','n')">${rnIc("ren")}<span>名前変更</span></button><button class="rna" data-cmd="${x===m?"ranch_deposit":"ranch_take"}" ${mv[2]?"disabled":""} onclick="${mv[0]}">${rnIc(x===m?"dep":"wd")}<span>${mv[1]}</span></button><button class="rna rnsell" data-cmd="ranch_sell" ${sq.ok?"":"disabled"} onclick="pfSellUid=rnSel;farm('','d')">${rnIc("sell")}<span>売る</span></button></nav>`}
  $("#app").innerHTML=`<div class="rn rn2"><header class="rnhd"><button class="back" data-nav="back" onclick="pfSellUid=null;lobby()">◀ 街にもどる</button><div class="rnplq"><b>牧場</b></div><div class="fhud"><span class="rncoin">${GCOIN}</span><b>${S.g}G</b></div></header><div class="rnbg" style="background-image:url(${RANCH_BG})" aria-hidden="true"></div>
  <div class="rnnick">${msg?`<div class="fbub sys">${msg}</div>`:(l=>`<div class="fbub rnsay"><img src="${npcSrc("nick",ft=="d"?"serious":ft=="e"&&x&&MMP7.raiseState(x)=="done"?"impressed":ft=="e"?"gentle":(l?l.expression:"normal"),"face")||NICK_FACE}" alt=""><span><b>ニック</b>${l?l.text:""}</span></div>`)(npcLineX("ranch",NICK_TALK.ranch,"normal"))}</div>
@@ -4362,7 +4426,7 @@ function townGuild(){if(S.playerNamePending&&opOn())return opBureau();bureauScr(
 /** 2026-10-06：プロフィール行（正式素材 B-03）の左の丸に入れる線画（硬貨・ランクの紋章・育成・勝利・トロフィー） */
 const PROFILE_IC=['<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="5.5"/>','<path d="M12 3l8 9-8 9-8-9z"/><path d="M12 7.5l4 4.5-4 4.5-4-4.5z"/>','<path d="M4 20c2-6 6-9 8-15 2 6 6 9 8 15"/><path d="M8 20c1-3 2.5-5 4-7 1.5 2 3 4 4 7"/>','<path d="M5 19L19 5M15 5h4v4M5 5l14 14M9 19H5v-4"/>','<path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 20h8"/>'];
 const PROFILE_ROWS=[["所持金",()=>`${GCOIN}${S.g}<small>G</small>`],["最高到達ランク",()=>(S.br??-1)>=0?RN[S.br]:"ー"],["育成完了",()=>`${MMP8.raiseDoneCount(S)}<small>回</small>`],["大会の勝利",()=>`${S.wins||0}<small>勝</small>`]]; // 2026-10-07 正式UI回収：正式のプロフィールの行は4つ（所持金・最高到達ランク・育成完了・大会の勝利）＝仮の「獲得トロフィー 準備中」は出さない
-function profileScr(){if(p8Blocked())return;bgm("town");$("#app").innerHTML=`<div class="ds pfds pfprof">${TOWN_SVG}<div class="dtop"><button class="dback" data-ui="back-town" onclick="lobby()">◀ 街にもどる</button></div><div class="dtitle" style="--dc:#d9b465"><div class="mico"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#tic-profile"/></svg></div><div><b>プロフィール</b><small>プレイヤーの記録</small></div></div><div class="tplate">${townCorners()}<div class="pfhead"><div class="tav"><svg viewBox="0 0 34 34" aria-hidden="true"><use href="#tic-player"/></svg></div><div class="pfn"><small>プレイヤー</small><b class="p115pn">${p11Esc(S.playerName||MMP11P.DEFAULT_NAME)}</b></div></div><dl class="pfrows">${PROFILE_ROWS.map((r,i)=>{const v=r[1]();return `<div class="pfrow"><i class="pfri" aria-hidden="true"><svg viewBox="0 0 24 24">${PROFILE_IC[i]||""}</svg></i><dt>${r[0]}</dt>${v==null?`<dd class="pfnone">準備中</dd>`:`<dd>${v}</dd>`}</div>`}).join("")}</dl></div></div>`;try{window.scrollTo(0,0)}catch(e){}}
+function profileScr(){if(p8Blocked())return;bgm("town");$("#app").innerHTML=`<div class="ds pfds pfprof">${TOWN_SVG}<div class="dtop"><button class="dback" data-ui="back-town" onclick="lobby()">◀ 街にもどる</button></div><div class="dtitle" style="--dc:#d9b465"><div class="mico"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#tic-profile"/></svg></div><div><b>プロフィール</b><small>プレイヤーの記録</small></div></div><div class="tplate">${townCorners()}<div class="pfhead"><div class="tav"><svg viewBox="0 0 34 34" aria-hidden="true"><use href="#tic-player"/></svg></div><div class="pfn"><small>プレイヤー</small><b class="p115pn">${p11Esc(S.playerName||MMP11P.DEFAULT_NAME)}</b></div></div><dl class="pfrows">${PROFILE_ROWS.map((r,i)=>{const v=r[1]();return `<div class="pfrow"><i class="pfri" aria-hidden="true"><svg viewBox="0 0 24 24">${PROFILE_IC[i]||""}</svg></i><dt>${r[0]}</dt>${v==null?`<dd class="pfnone">準備中</dd>`:`<dd>${v}</dd>`}</div>`}).join("")}</dl></div></div>`;uiReady(document.querySelector("#app>.pfprof"),PROF_PRE);try{window.scrollTo(0,0)}catch(e){}}
 /** お知らせ（仮の画面）：正式なお知らせ機能は未決。配信・データ・セーブは作らず「準備中」だけ */
 function newsScr(){if(p8Blocked())return;$("#app").innerHTML=`<div class="ds pfds tnewsscr">${TOWN_SVG}<div class="dtop"><button class="dback" onclick="lobby()">◀ 街にもどる</button></div><div class="dtitle" style="--dc:#d9b465"><div class="mico"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="#tic-news"/></svg></div><div><b>お知らせ</b><small>ミスティックモンスターズからのお知らせ</small></div></div><div class="tplate">${townCorners()}<p class="pfnote">お知らせは準備中です。</p></div></div>`;try{window.scrollTo(0,0)}catch(e){}}
 /** 設定：今ある設定（BGM・効果音のオン／オフ＝既存の sndToggle と localStorage の mr4a）だけを置く。新しい設定・セーブ項目は作らない。
@@ -4565,7 +4629,11 @@ function finaStandSrc(){const im=window.MMNPC&&MMNPC.imageOf("fina","closeup","g
 /** 施設の背景・立ち絵の先読み（2026-10-03：大きな絵を足した画面へ移ったときの読み込みのちらつきを防ぐ。街を出したとき1回だけ） */
 /* 2026-10-09：ベースキャンプの背景・ボタンの絵も先読み（街 → ベースキャンプのフェードインのあとに絵が遅れて出て、チカッと見えた）。読み込んだ Image はここに持っておく */
 const TOWN_PRE=[],BC_PRE=["./assets/ui/recovery_1006/basecamp/01_tokkun.png","./assets/ui/recovery_1006/basecamp/02_item.png","./assets/ui/recovery_1006/basecamp/03_status.png","./assets/ui/recovery_1006/basecamp/04_wazakanri.png","./assets/ui/recovery_1006/basecamp/05_machie_modoru.png","./assets/ui/a_group/a04_main_button_red.webp","./assets/ui/a_group/a05_currency_panel.webp","./assets/ui/b_group/b01_facility_label_blank.png","./assets/ui/b_group/b09_chapter_ribbon_blank.png"];
-function townPreload(){if(townPreload.done||typeof Image=="undefined")return;townPreload.done=1;setTimeout(()=>{[BC_BG,...BC_PRE,LAB_BG,RANCH_BG,SHOP_BG,FARM_BG,npcSrc("shop","normal","fullbody"),npcSrc("dan","normal"),npcSrc("nick","normal"),npcSrc("elliot","normal"),npcSrc("vargas","normal"),finaStandSrc()].filter(Boolean).forEach(src=>{const im=new Image();im.decoding="async";im.src=src;TOWN_PRE.push(im)})},600)}
+/* 2026-10-14 実機試遊㉛㉞：プロフィール・セーブ／ロードの正式UIの絵（border-image・背景）。初めて開いたとき絵の読み込みが間に合わず、飾りの無い文字だけが一瞬見えた → 街で先に読む＋開くときは絵がそろうまで（最大0.5秒）中身を出さない */
+const PROF_PRE=["back_town","heading","player_card_blank","row_gold","row_raise","row_rank","row_wins"].map(f=>`./assets/ui/recovery_1006/profile/${f}.png`),SAVE_PRE=["./assets/ui/b_group/b04_save_slot_row_blank.png","./assets/ui/b_group/b06_load_button_disabled.png","./assets/ui/b_group/b07_autosave_panel_blank.png","./assets/ui/b_group/b08_backup_button_blank.png","./assets/ui/a_group/a20_button_red_small_plain.png","./assets/ui/a_group/a22_button_blue_large_panel.png"];
+const UI_READY=new Set();
+function uiReady(el,urls,max){if(!el)return;const need=urls.filter(u=>!UI_READY.has(u));if(!need.length)return;el.classList.add("uiwait");let left=need.length,done=false;const fin=()=>{if(done)return;done=true;el.classList.remove("uiwait")};need.forEach(u=>{const im=new Image();const ok=()=>{UI_READY.add(u);if(--left<=0)fin()};im.onload=ok;im.onerror=ok;im.src=u});setTimeout(fin,max||500)}
+function townPreload(){if(townPreload.done||typeof Image=="undefined")return;townPreload.done=1;setTimeout(()=>{[...PROF_PRE,...SAVE_PRE].forEach(u=>{const im=new Image();im.onload=()=>UI_READY.add(u);im.src=u;TOWN_PRE.push(im)});[BC_BG,...BC_PRE,LAB_BG,RANCH_BG,SHOP_BG,FARM_BG,npcSrc("shop","normal","fullbody"),npcSrc("dan","normal"),npcSrc("nick","normal"),npcSrc("elliot","normal"),npcSrc("vargas","normal"),finaStandSrc()].filter(Boolean).forEach(src=>{const im=new Image();im.decoding="async";im.src=src;TOWN_PRE.push(im)})},600)}
 /** 街の案内欄：タップで閉じる（下の施設の札を押せるように。システム通知も同じ） */
 function townMsgClose(d){const w=d&&d.closest(".tlow");if(w)w.classList.remove("on")}
 function finaFaceSrc(){const im=window.MMNPC&&MMNPC.imageOf("fina","closeup","smile");return im?im.src:""}
@@ -4705,7 +4773,7 @@ const LAB_IC={book:'<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 7h9a
  table:'<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M13 5h6M14 5v8L7 25a2 2 0 0 0 2 3h14a2 2 0 0 0 2-3l-7-12V5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 21h12" stroke="currentColor" stroke-width="1.8"/></svg>'};
 /** 研究所の下の機能（図鑑・合体・配合表。2026-10-04 正式。復元の機能は主要メニューに置かない） */
 function labNav(cur){return `<nav class="labcmd labnav cmdimg" aria-label="研究所の機能">${[["book","図鑑"],["fuse","合体"],["table","配合表"]].map(([k,l])=>`<button class="labc${cur==k?" on":""}" data-cmd="lab_${k}" onclick="museum('${k}')" data-se="${cur==k?"UI_TAB":"UI_SELECT"}">${LAB_IC[k]}<b>${l}</b></button>`).join("")}</nav>`} // 2026-10-07：正式のコマンド画像（assets/ui/cmd/lab_*.png）
-function labShell(cls,back,plq,body,cur){return `<div class="lab ${cls}"><div class="labbg" style="background-image:url(${LAB_BG})"></div><div class="dtop">${back}</div>${plq}${body}${labNav(cur)}</div>`}
+function labShell(cls,back,plq,body,cur){return `<div class="lab ${cls}"><div class="labbg" style="background-image:url(${LAB_BG})"></div><div class="dtop">${back}</div>${plq}${body}<div class="labhint" aria-hidden="true"><span>出会った子の記録</span><span>育てた2体から次の世代</span><span>合体の組み合わせ</span></div>${labNav(cur)}</div>`} // 2026-10-14 実機試遊 Q06：3つの機能の違いを一言で（ボタンのすぐ上。未実装の機能・レシピは作らない）
 // 研究所（2026-10-04 第二段階）：入口＝エリオット＋機能のカード（図鑑・合体・配合表）。図鑑はデザイン参考 06（濃紺＋金・魔法図鑑・2列・No.・名前・未発見は近日公開）。合体は牧場から移した（処理 fuse・selm・cname はそのまま）。
 //  配合表は既存の規則（MMP7.resolveFusionSpecies＝子は親1の種族・能力60%・名前・技の継承・200G）だけを表示する（データの無い組み合わせは作らない）
 function museum(tab){if(p8Blocked())return;bgm("lab");npcWarm("elliot");facVoice("lab",!tab&&npcFirstWill("lab"));if(!tab)setTimeout(()=>npcFirst("lab"),0); // 2026-10-04：初回訪問の会話（エリオット ↔ フィナ）
@@ -4743,10 +4811,14 @@ function gotShow(x,pk,rs){GOT_LOG.push({title:x.name+"を手に入れた！"+(pk
 function msave(){let ok=false;try{localStorage.setItem(MMP8.SAVE_KEY,JSON.stringify(S));ok=localStorage.getItem(MMP8.SAVE_KEY)==JSON.stringify(S)}catch(e){}msg0(ok?`セーブしました（${new Date().toLocaleTimeString("ja-JP")}）`:"このブラウザではセーブできません。セーブコードを使ってください。")}
 const nv=typeof navigator!="undefined"?navigator:{};
 const sl=n=>{try{return JSON.parse(localStorage.getItem("mr4s"+n))}catch(e){return null}};
+const slabName=d=>{if(!(d&&d.m))return "モンスターなし";const rk=d.m.prog?MMP8.rankLabel(d.m):RN[d.m.rk||0];return p11Esc(d.m.name)+(rk&&rk!=="ー"&&rk!=="-"?`<em class="svrk">${rk}</em>`:"")};
 const slab=d=>!d?"（空き）":`${d.m?p11Esc(d.m.name)+"（ランク"+(d.m.prog?MMP8.rankLabel(d.m):RN[d.m.rk||0])+"）":"モンスターなし"}　${GCOIN}${d.g}G`;
+/* 2026-10-14 実機試遊㉞：スロットに「保存済み／空き」の札と、進み具合・保存した日時（別の小さな記録 mr4s{n}t＝日時だけ。セーブ本体 mr4s{n}・mr4v6・version 6 は変えない） */
+const slotTime=n=>{try{const t=+localStorage.getItem("mr4s"+n+"t");if(!t)return "";const d=new Date(t),z=x=>String(x).padStart(2,"0");return `${d.getMonth()+1}/${d.getDate()} ${z(d.getHours())}:${z(d.getMinutes())}`}catch(e){return ""}};
+const slotProg=(d,slot)=>{const m=d&&d.m,r=m&&m.raise;if(!m)return "";if(r&&r.state==="board")return `Chapter ${r.ch} 育成中`;if(r&&r.state==="farm")return `Chapter ${r.ch} の前`;if(slot)return "";return MMP8.raiseDoneCount?`育成完了 ${MMP8.raiseDoneCount(d)}回`:""};
 function savescr(msg){if(p8Blocked())return;
  bgm("town");p9Immersive(true);
- $("#app").innerHTML=`<div class="svs"><header class="svhead"><button class="back" onclick="lobby()">◀ 街にもどる</button><h2>セーブ・ロード</h2></header><div class="dbub svmsg" id="msg">${msg||"3つのスロットにセーブできます。進行は自動でも保存されています。"}</div>${[1,2,3].map(n=>{const d=sl(n),mi=d&&d.m&&MMP10M.byId(d.m.sp);return `<div class="card slot"><b>スロット${n}</b><small>${slab(d)}</small><div class="row2"><button onclick="slotSave(${n},this)">セーブ</button><button ${d?"":"disabled"} onclick="slotLoad(${n},this)">ロード</button></div><i class="svpic" aria-hidden="true">${mi?`<img src="${mi.image.src}" alt="">`:""}</i></div>`}).join("")}<div class="card slot svauto">${(()=>{const ai=S.m&&MMP10M.byId(S.m.sp);return `<i class="svpic" aria-hidden="true">${ai?`<img src="${ai.image.src}" alt="">`:""}</i>`})()}<b>いまの進行（オートセーブ）</b><small>${slab(S).replace(/　<img class="gcoin"[^>]*>\d+G$/,"")}</small><span class="svgold">${S.g}G</span></div><details class="sv svmore"><summary>セーブコードで引っこし・バックアップ</summary><p><small>コードを別の端末に貼り付ければ、続きから遊べます。</small></p><div class="row2"><button onclick="exp()">コードを作る（コピー）</button><button onclick="shareCode()">共有</button></div><textarea id="sc" rows="3" placeholder="ここにコードが出ます／貼り付け"></textarea><div class="row2"><button onclick="pasteCode()">貼り付け</button><button onclick="imp()">このコードで読み込む</button></div></details><button class="ghost" onclick="reset(this)">最初からやり直す</button></div>`;tapAt($("#app .ghost"))}
+ $("#app").innerHTML=`<div class="svs"><header class="svhead"><button class="back" onclick="lobby()">◀ 街にもどる</button><h2>セーブ・ロード</h2></header><div class="dbub svmsg" id="msg">${msg||"3つのスロットにセーブできます。進行は自動でも保存されています。"}</div>${[1,2,3].map(n=>{const d=sl(n),mi=d&&d.m&&MMP10M.byId(d.m.sp);return `<div class="card slot${d?" on":" empty"}"><b>スロット${n}<em class="svbadge">${d?"保存済み":"空き"}</em></b><small>${d?`${slabName(d)}　${GCOIN}${d.g}G`:slab(d)}</small>${d?`<small class="svsub">${[slotProg(d,1),slotTime(n)].filter(Boolean).join("・")}</small>`:""}<div class="row2"><button onclick="slotSave(${n},this)">セーブ</button><button ${d?"":"disabled"} onclick="slotLoad(${n},this)">ロード</button></div><i class="svpic" aria-hidden="true">${mi?`<img src="${mi.image.src}" alt="">`:""}</i></div>`}).join("")}<div class="card slot svauto">${(()=>{const ai=S.m&&MMP10M.byId(S.m.sp);return `<i class="svpic" aria-hidden="true">${ai?`<img src="${ai.image.src}" alt="">`:""}</i>`})()}<b>いまの進行（オートセーブ）</b><small>${slab(S).replace(/　<img class="gcoin"[^>]*>\d+G$/,"")}</small><span class="svgold">${S.g}G</span></div><details class="sv svmore"><summary>セーブコードで引っこし・バックアップ</summary><p><small>コードを別の端末に貼り付ければ、続きから遊べます。</small></p><div class="row2"><button onclick="exp()">コードを作る（コピー）</button><button onclick="shareCode()">共有</button></div><textarea id="sc" rows="3" placeholder="ここにコードが出ます／貼り付け"></textarea><div class="row2"><button onclick="pasteCode()">貼り付け</button><button onclick="imp()">このコードで読み込む</button></div></details><button class="ghost" onclick="reset(this)">最初からやり直す</button></div>`;uiReady(document.querySelector("#app>.svs"),SAVE_PRE);tapAt($("#app .ghost"))}
 // 連打・すり抜けタップ対策（1か所で管理）：tapAt(el)＝el が押せるようになった時刻を記録／tapSoon(el,ms)＝その時刻から ms 未満なら true（その押下は受け付けず、そこから数え直す＝連打が続くあいだは確定しない）
 //  ・2度押し確認（arm・p9arm・reset）：確認状態になってから0.4秒未満の押下では確定しない（ダブルタップで確認を飛ばさない）
 //  ・tapHold(box,ms)：画面・シートを出した直後（ms 未満）は box の中のボタンを押せない（前の画面での連打の2打目が、同じ位置に出たボタンに届くのを防ぐ。指定したボタンだけに使う）
@@ -4754,7 +4826,7 @@ function tapAt(el){if(el&&el.dataset)el.dataset.tapt=performance.now();return el
 function tapSoon(el,ms){const t=el&&el.dataset&&el.dataset.tapt,s=!!t&&performance.now()-t<ms;if(s)tapAt(el);return s}
 function tapHold(box,ms){if(!tapAt(box))return;box.addEventListener("click",e=>{if(tapSoon(box,ms))e.stopPropagation()},true)}
 function arm(b,t){if(b.dataset.a!="1"){const o=b.innerHTML;b.dataset.a="1";tapAt(b);b.textContent=t;setTimeout(()=>{b.dataset.a="";b.innerHTML=o},3000);return false}return !tapSoon(b,400)}
-function slotSave(n,b){if(p8Blocked())return;if(sl(n)&&!arm(b,"もう一度押すと上書き"))return;let ok=false;try{const j=JSON.stringify(S);localStorage.setItem("mr4s"+n,j);ok=localStorage.getItem("mr4s"+n)==j}catch(e){}savescr(ok?`スロット${n}にセーブしました！`:"セーブできませんでした。セーブコードを使ってください。")}
+function slotSave(n,b){if(p8Blocked())return;if(sl(n)&&!arm(b,"もう一度押すと上書き"))return;let ok=false;try{const j=JSON.stringify(S);localStorage.setItem("mr4s"+n,j);ok=localStorage.getItem("mr4s"+n)==j;if(ok)try{localStorage.setItem("mr4s"+n+"t",String(Date.now()))}catch(e){}}catch(e){}savescr(ok?`スロット${n}にセーブしました！`:"セーブできませんでした。セーブコードを使ってください。")}
 function slotLoad(n,b){if(p8Blocked())return;let d=null;try{d=MMP8.migrateSave(sl(n))}catch(e){d=null}if(!d)return savescr("このスロットは読み込めません（この版より新しい版のデータ、または壊れたデータです）。");if(!arm(b,"もう一度押すと読み込み"))return;const p=S;S=d;sel=[];try{save();lobby(`スロット${n}をロードしました！`)}catch(e){S=p;sel=[];save();savescr("このスロットは読み込めません（この版より新しい版のデータ、または壊れたデータです）。")}}
 function exp(){const t=$("#sc");t.value=btoa(unescape(encodeURIComponent(JSON.stringify(S))));t.select();const ok=()=>msg0("コードを作って、コピーしました！メモなどに貼って保管してください。"),ng=()=>msg0("コードを作りました。入力欄を長押ししてコピーしてください。");try{nv.clipboard&&nv.clipboard.writeText(t.value).then(ok,ng)||ng()}catch(e){ng()}}
 function shareCode(){exp();if(nv.share)nv.share({title:"ミスティックモンスターズ セーブコード",text:$("#sc").value}).catch(()=>{})}
@@ -5182,7 +5254,7 @@ async function fight(i,teach){if(document.getElementById("bt")||!S.m)return;bgm(
  ban(win?"WIN!":"LOSE",win?"#ffd23f":"#9aa0b5",1);say(res);go.disabled=false;gtx("もどる");go.classList.add("bk");go.onclick=()=>{const b=$("#bt");if(b)b.remove();document.body.style.overflow="";after(res)};
 }
 $("#snd").textContent=AU.on?"🔊":"🔇";
-function rescue(){const b=document.getElementById("bt");if(!b||b.dataset.rs)return;b.dataset.rs=1;const d=document.createElement("div");d.className="rsq";d.innerHTML='<b>エラーでバトルが止まりました</b><small>このバトルの結果は記録されません</small><button onclick="const b=document.getElementById(\'bt\');if(b)b.remove();document.body.style.overflow=\'\';S.m?hall(null,\'エラーでバトルを中断しました。\'):lobby()">ファームにもどる</button>';b.appendChild(d)}
+function rescue(){const b=document.getElementById("bt");if(!b||b.dataset.rs)return;b.dataset.rs=1;const d=document.createElement("div");d.className="rsq";d.innerHTML='<b>エラーでバトルが止まりました</b><small>このバトルの結果は記録されません</small><button onclick="const b=document.getElementById(\'bt\');if(b)b.remove();document.body.style.overflow=\'\';S.m?hall(null,\'エラーでバトルを中断しました。\'):lobby()">ベースキャンプにもどる</button>';b.appendChild(d)}
 window.addEventListener("unhandledrejection",rescue);
 /* 2026-10-13 開発24：ホーム画面のアイコン（Safari のタブ）で、古い版がメモリやキャッシュに残ったまま開いたときに最新の版へ読み込み直す。
  *  ./version.json（小さな JSON。毎回取り直す）の build がこのページの MM_BUILD と違えば1回だけ reload（同じ版へは15分に1回まで＝読み込み直しを繰り返さない）。
@@ -5266,7 +5338,7 @@ function board(msg){facVoice(null);
  if(ph=="roll")ctl=`<button class="p9dice" id="brollbtn" onclick="bRoll()" aria-label="サイコロを振る"><span class="dz" id="bdice"><img class="p12dicon" src="${MMP12D.icon("std")}" alt=""></span><span class="t1">サイコロを振る</span><span class="t2">1・2・3のみ</span></button>`;
  else if(ph=="move"||ph=="resolve"){def="移動中…";ctl=`<button class="p9dice" disabled><span class="dz" id="bdice">${r.pend.roll}</span><span class="t1">移動中</span></button>`}
  else if(ph=="branch"){def=`分かれ道だ！ 光っているマスか、下のルートを選ぼう（のこり${r.pend.left}マス）`;ctl=p9BranchHtml(m)}
- else if(ph=="battle"){def="バトルマス！練習試合だ！";ctl=`<div class="p9sheet"><h3>⚔️ 練習試合</h3><p class="p9s">練習試合では賞金・ランクアップ・実績は発生しません。</p><button class="p9btn" onclick="bBattleGo()">練習試合に挑戦する</button></div>`}
+ else if(ph=="battle"){def="バトルマス！練習試合だ！";ctl=`<div class="p9sheet" role="status"><h3>⚔️ 練習試合</h3><p class="p9s">まもなくバトル！（練習試合では賞金・ランクアップ・実績は発生しません）</p></div>`;setTimeout(()=>p9AutoBattle(m),0)} // 2026-10-14 実機試遊⑩：確認のボタンは出さない＝少し待って自動でバトルへ
  else if(ph=="goal"){const ru=MMP8.chapterRule(r.ch);if(ru&&ru.tournament){$("#app").innerHTML=`<div class="p9rcvw" style="--lobby:url(${P9_LOBBY_BG})">${p9ReceptionHtml(m)}</div>`;return}def="ゴールに到着した！";ctl=`<div class="p9sheet">${p8GoalHtml(m)}</div>`}
  else if(ph=="timeup"){def=`${r.turnLimit}ターンを使い切った…ゴールできなかったため、このChapterの公式大会には参加できません。`;ctl=`<div class="p9sheet"><h3>⌛ ターン終了</h3><p class="p9s">Chapterは終了し、次のChapterへ進めます（育成失敗ではありません）。</p><button class="p9btn" onclick="p8EndChapter()">Chapterを終えてベースキャンプへ</button></div>`}
  const fld=p13Html(m); // 新表示方式（試作）：Chapter 1はフィールドの中を旅する表示。ほかのChapterは従来の地図
@@ -5372,7 +5444,11 @@ function p8FxText(r){const f=r.fx||{},L=k=>LAB[k];let t;
  else t="何も起きなかった。";
  return (t+(r.goal?" ゴールに到着した！":r.timeUp?" ターンを使い切った…":"")).trim()}
 // globalThis.MM_LAST_BT＝直前に始めた道中のバトルの種類（wild／rare／rival。ページの中だけ・セーブしない＝野生の勝利演出 MMCHV.queueWin の判定）
-function bBattleGo(){const m=S.m;if(bBusy||!m)return;const bt=m.raise&&m.raise.pend&&m.raise.pend.fx?m.raise.pend.fx.battleType:null,rk=bt=="rival"&&window.MMRIVAL?MMRIVAL.rankFor(m):MMP8.practiceRank(m);const fs=bt!="rival"&&window.MMCH&&MMCH.foeSpecies&&m.raise&&m.raise.field?MMCH.foeSpecies(m,SP.length):-1;
+/** 2026-10-14 実機試遊⑩：旧ボード（Chapter 3・4）の練習試合＝遭遇の札を見せて約0.9秒後に自動でバトルへ。1つのマス（pend）で1回だけ・会話や別の画面の間は待つ・負けたあとは再戦しない */
+const P9_AUTO_BT=new WeakSet();
+function p9AutoBattle(m){const p=m&&m.raise&&m.raise.pend;if(!p||P9_AUTO_BT.has(p))return;P9_AUTO_BT.add(p);let n=0;const go=()=>{if(S.m!==m||m.raise.pend!==p||MMP8.boardPhase(m)!=="battle")return;if(bBusy||!document.querySelector("#app>.p9board")||document.getElementById("bt")||document.getElementById("tvs")||document.querySelector(".mmtalk")){if(++n<40)setTimeout(go,400);else P9_AUTO_BT.delete(p);return}bBattleGo()};setTimeout(go,900)}
+function bBattleGo(){const m=S.m;if(bBusy||!m||document.getElementById("bt")||document.getElementById("tvs")||MMP8.boardPhase(m)!=="battle")return; // 2026-10-14 実機試遊⑩：遭遇は自動でバトルへ＝同じ遭遇で二重に始めない（自動の開始・古い呼び出しのどちらが先でも1回）
+ const bt=m.raise&&m.raise.pend&&m.raise.pend.fx?m.raise.pend.fx.battleType:null,rk=bt=="rival"&&window.MMRIVAL?MMRIVAL.rankFor(m):MMP8.practiceRank(m);const fs=bt!="rival"&&window.MMCH&&MMCH.foeSpecies&&m.raise&&m.raise.field?MMCH.foeSpecies(m,SP.length):-1;
  // 2026-10-12 試遊：野生・レア・ライバルの開始も大会と同じ正式の VS 演出（背景は練習試合の会場 venue＝公式ランク戦の背景は使わない）→ バトル（fight() の導入は出さない）。自動テストの既定（MM_QA_NO_TOURVS）では出さない
  if(window.MM_QA_NO_TOURVS)return bBattleRun(m,bt,rk,fs);const rv=bt=="rival"&&window.MMP10M&&window.MMRIVAL&&MMP10M.rivalMonster(MMRIVAL.CONFIG.partner),o=bt=="rival"?{sp:4,name:rv?rv.name:"ライバルの相棒"}:{sp:fs>=0?fs:0,name:SP[fs]?SP[fs][0]:"野生のモンスター"};bBusy=true;try{MMAUDIO.stopBgm({fade:"quick"})}catch(e){} // 2026-10-14 実機試遊⑧：VS に入るときボードの曲を止める（実戦の曲は FIGHT! のあと＝battleBgmGo。戻ったら board() の bgm("chapter") で続きから）
  tourVsShow(m,o,{bg:(window.MMARENA&&MMARENA.fieldSrc&&MMARENA.fieldSrc(m.raise&&m.raise.ch))||TB_VENUE(rk),head:PRACTICE_LABEL[bt]||"野生のモンスター"}).then(d=>{bBusy=false;TB_SKIP_INTRO=true;setTimeout(()=>{TB_SKIP_INTRO=false},4000);bBattleRun(m,bt,rk,fs);setTimeout(()=>tourVsOut(d),document.getElementById("bt")?60:0)})}
@@ -5890,7 +5966,7 @@ function prepScr(msg){if(!S.m)return lobby();if(!MMP7.canAccessVault(S))return h
  const note=nx==null?`<p class="ppnote">出発できるChapterはありません（育成完了）</p>`:c.reason=="rank_gate"?`<p class="ppnote">${p8GateNote(nx,c.need)}</p>`:(nx==MMP8.FINAL&&!MMP8.isPlayable(MMP8.FINAL))?`<p class="ppnote">最終ルートはまだ準備中です。ここで育成を完了して街へ戻れます（大会の結果・賞金・育成の記録はそのまま）。</p>`:"";
  const go=nx==null?"":(c.reason=="rank_gate"||(nx==MMP8.FINAL&&!MMP8.isPlayable(MMP8.FINAL)))?`<button class="ppgobtn fin" onclick="pfixFinishNoFinal(this)"><b>育成を完了して街へ戻る</b></button>`:`<button class="ppgobtn" ${c.ok?"":"disabled"} onclick="p7Depart(this)"><b>出発する</b><small>${c.ok?`${p8ChLabel(nx)}へ${MMP7.raiseState(m)=="none"?"（育成開始）":""}`:(P7_ERR[c.reason]||"")}</small></button>`;
  $("#app").innerHTML=`<div class="pp" style="--pp-bg:url(${FARM_BG})"><div class="ppbg" aria-hidden="true"></div>
- <header class="pphd"><button class="ppback" data-nav="back" onclick="hall('t')">◀ 拠点</button><div class="ppgold">${GCOIN} ${S.g}G</div></header>
+ <header class="pphd"><button class="ppback" data-nav="back" onclick="hall('t')">◀ ベースキャンプ</button><div class="ppgold">${GCOIN} ${S.g}G</div></header>
  <section class="pptop"><div class="ppmon"><div class="mon">${msv(m)}</div></div><div class="ppname"><small>育成中モンスター</small><b>${p11Esc(m.name)}</b><em>${sp?sp.kind:""}</em></div>${nx!=null?`<div class="ppch"><small>${chNo}</small><b>${chName}</b></div>`:""}</section>
  ${msg?`<div class="dmsg ppmsg"><span>${msg}</span></div>`:""}
  <section class="ppbag"><div class="ppbagh"><b>バッグ</b><small>${bag.length} / ${cap}枠</small></div><div class="ppslots">${slots}</div><button class="ppvault" onclick="ppVault()"><b>保管庫</b><small>${vaultTotal()}個</small></button></section>
@@ -6017,7 +6093,7 @@ function shopScr(msg,bought,tab){if(!S.m)return lobby();if(!MMP7.canAccessVault(
  const sex=sl?sl.expression:"normal";
  if(!bought&&!msg&&!tab)setTimeout(()=>{if(document.querySelector(".ds.shop"))npcFirst("shop")},0);   // 初回（フィナ ↔ おばあちゃん）
  const cat=MMP7.getShopCatalog(),vt=S.inv.vault;
- if(tab=="buy"){const buy=cat.length?cat.map(id=>{const d=MMP7.getItemDef(id),pr=Number.isInteger(d.price),op=MMP7.shopUnlocked(S,id),f=window.MMFOOD&&MMFOOD.byId(id);return `<button class="t${op?"":" shlock"}" ${op&&pr&&S.g>=d.price?"":"disabled"} onclick="p7Buy('${id}')">${itemIc(id)}${p11Esc(d.name)}${f?`<em class="shfx">空腹 −${f.hunger}</em>`:""}<small>${op?(pr?d.price+"G":"価格未設定"):"🔒 "+(window.MMFOOD?MMFOOD.unlockText(id):"未入荷")}</small></button>`}).join(""):`<div class="p7it emp"><span>商品は準備中です</span></div>`;
+ if(tab=="buy"){const buy=cat.length?cat.map(id=>{const d=MMP7.getItemDef(id),pr=Number.isInteger(d.price),op=MMP7.shopUnlocked(S,id),f=window.MMFOOD&&MMFOOD.byId(id);const own=MMP7.itemCount(S,id),poor=op&&pr&&S.g<d.price;return `<button class="t shi${op?"":" shlock"}${poor?" poor":""}" ${op&&pr&&S.g>=d.price?"":"disabled"} onclick="p7Buy('${id}')">${itemIc(id)}<b class="shnm">${p11Esc(d.name)}</b>${f?`<em class="shfx">空腹 −${f.hunger}</em>`:""}<small class="shpr">${op?(pr?`${GCOIN}${d.price}G`:"価格未設定"):"🔒 "+(window.MMFOOD?MMFOOD.unlockText(id):"未入荷")}</small>${!op&&!own?"":`<i class="shown">${poor?"所持金が足りません":`所持 ${own}`}</i>`}</button>`}).join(""):`<div class="p7it emp"><span>商品は準備中です</span></div>`;
   $("#app").innerHTML=shopShell("buy",`${shopSay(sl)}<div class="dcard"><div class="dh">購入 <small>買ったアイテムは保管庫へ</small></div>${buy}</div>`,msg,sex);try{window.scrollTo(0,0)}catch(e){}return}
  if(tab=="sell"){const sell=vt.length?vt.map((it,i)=>{const d=MMP7.getItemDef(it.id),ok=!!d&&Number.isInteger(d.sellPrice);return `<div class="p7it">${itemIc(it)}<span>${p11Esc(p7ItemName(it))}${itemQty(it)}</span><button ${ok?"":"disabled"} onclick="p7Sell(${i})">${ok?"売る "+d.sellPrice+"G":"売れない"}</button></div>`}).join(""):`<div class="p7it emp"><span>保管庫は空です</span></div>`;
   $("#app").innerHTML=shopShell("sell",`<div class="dcard"><div class="dh">売却 <small>保管庫のアイテム</small></div>${sell}</div>`,msg,sex);try{window.scrollTo(0,0)}catch(e){}return}

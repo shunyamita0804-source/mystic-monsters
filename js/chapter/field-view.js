@@ -674,7 +674,7 @@
     if (ph === 'battle') {
       const fx = r.pend.fx || {}, bt = (cfg.battleTypes || {})[fx.battleType || 'wild'] || { label: 'モンスター' };
       // 2026-10-07 試遊：何が起きたか一瞬で分かるように＝見出しは遭遇の文（「野生のモンスターが現れた！」など）・小さく種類・周りを暗くして下の操作欄より前へ
-      return `<div class="chsheet chbat"><small class="chbat-kind">${esc(bt.label)}</small><h3>${esc(bt.encounter || bt.label)}</h3>${bt.note ? `<p class="p9s chbat-note">${esc(bt.note)}</p>` : ''}<p class="p9s">バトルの後は空腹 +${MMCH.rulesOf(cfg).fatigueRules.battle}。賞金・ランクアップはありません。</p><button class="p9btn" onclick="bBattleGo()">バトルする</button></div>`;   // 2026-10-12 試遊：遭遇はすべて強制バトル
+      return `<div class="chsheet chbat"><small class="chbat-kind">${esc(bt.label)}</small><h3>${esc(bt.encounter || bt.label)}</h3>${bt.note ? `<p class="p9s chbat-note">${esc(bt.note)}</p>` : ''}<p class="p9s">まもなくバトル！（バトルの後は空腹 +${MMCH.rulesOf(cfg).fatigueRules.battle}。賞金・ランクアップはありません）</p></div>`;   // 2026-10-14 実機試遊⑩：「バトルする」の確認は出さない＝少し待って自動でバトルへ（autoBattle。Chapter 1 の世界のボードと同じ）   // 2026-10-12 試遊：遭遇はすべて強制バトル
     }
     if (ph === 'goal') return `<div class="chsheet chgoal">${root.p8GoalHtml ? root.p8GoalHtml(m) : ''}</div>`;
     if (ph === 'timeup') return `<div class="chsheet"><h3>⌛ ターン終了</h3><p class="p9s">ゴールできなかったため、このChapterの公式大会には参加できません。Chapterは終了し、次のChapterへ進めます（育成失敗ではありません）。</p><button class="p9btn" onclick="p8EndChapter()">Chapterを終えてベースキャンプへ</button></div>`;
@@ -684,6 +684,21 @@
   // ---------------------------------------------------------
   // 画面（board() から）
   // ---------------------------------------------------------
+  // 2026-10-14 実機試遊⑩・Q13：遭遇のあと自動でバトルへ（短い白い光 → VS → バトル）。1つの遭遇（pend）で自動の開始は1回だけ。負けたあと（pend が無い）は再戦しない。
+  //  会話・演出・別の画面の間は待つ（最大 16秒。それでも始められなければ次の盤の描き直しでもう一度）
+  const AUTO_BT = new WeakSet();
+  function autoBattle(m, ms) {
+    const p = m.raise.pend; if (!p || AUTO_BT.has(p)) return; AUTO_BT.add(p);
+    let tries = 0;
+    const go = () => {
+      const S = gS(); if (!S || S.m !== m || !chfActive(m) || m.raise.pend !== p || P8().boardPhase(m) !== 'battle') return;
+      const wait = !onField() || busyGet() || document.getElementById('bt') || document.getElementById('tvs') || document.querySelector('.mmtalk,.chintro,.chf-enc2') || typeof root.bBattleGo !== 'function' || (typeof bBusy !== 'undefined' && bBusy);
+      if (wait) { if (++tries < 40) setTimeout(go, 400); else AUTO_BT.delete(p); return; }
+      const w = $('#chfw'); if (w && !V.calm) { w.insertAdjacentHTML('beforeend', '<i class="chf-btflash" aria-hidden="true"></i>'); const fl = w.querySelector('.chf-btflash:last-child'); setTimeout(() => { if (fl) fl.remove(); }, 520); }
+      root.bBattleGo();
+    };
+    setTimeout(go, ms);
+  }
   function chfBoard(msg) {
     const m = gS() && gS().m; if (!chfActive(m)) return false;
     const r = m.raise, ph = P8().boardPhase(m), f = MMCH.fieldOf(m);
@@ -711,6 +726,7 @@
     // 2026-10-04：大会のある Chapter で到着イベントが無いとき（Chapter 2 など）も、ゴールでは Chapter 1 と同じランク選択（index.html の p9ReceptionHtml）を会場のロビーの背景の上に。HUD・操作欄は出さない
     if (ph === 'goal' && root.p9ReceptionHtml && (P8().chapterRule(m.raise.ch) || {}).tournament) { $('#chf-ui').innerHTML = `<div class="chrcv bg" id="chrcv" style="--lobby:url(${root.P9_LOBBY_BG || ''})">${root.p9ReceptionHtml(m)}</div>`; return true; }
     $('#chf-ui').innerHTML = hudHtml(m) + sheetHtml(m, ph) + deckHtml(m, ph, msg);
+    if (ph === 'battle') autoBattle(m, 900);
     if (ph !== 'branch') V.camLoose = 0;
     if (ph === 'branch') branchCamera(m); else if (V.focus && ph === 'roll') camFocus(null);
     if (ph === 'branch') setTimeout(() => { if (onField() && P8().boardPhase(m) === 'branch') storyAt(m, 'branch'); }, 350);   // 2026-10-04：初めての分かれ道（チュートリアル。config.story の trigger 'branch'）
