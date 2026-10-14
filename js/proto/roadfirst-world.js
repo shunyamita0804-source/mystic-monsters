@@ -32,7 +32,10 @@
     monRatio: 0,         // >0＝モンスターの幅をその地点のマスの幅 × この倍率に（0＝従来の 24単位）
     zoomTau: 170,        // 追従の倍率を寄せる速さ（ms。大きいほどゆっくり）
     xray: false,         // 2026-10-12 試遊：true＝手前の景物（木・門など）が見えているマス・モンスターに重なるとき、その景物を半透明に（本編の Chapter 1 だけ）
-    hideLm: null,        // 2026-10-13 開発27（11・15）：出さない目印の地点（例 ['START','LOWER_GATE','UPPER_GATE']＝門の飾りの絵だけを出さない。地点・道・門のマス・判定・イベントはそのまま。本編の Chapter 1 だけ）
+    hideLm: null,
+    // 2026-10-14 開発29（6）：後ろから追うカメラ（本編の Chapter 1 だけ・試作の既定は従来の北が上）。true＝進む向き（今の地点 → 先の数地点）が画面の上になるよう、地面の板を注視点のまわりで回す（yaw）。
+    //   マス・景物・モンスターは立てたまま（project で同じ回転を通して置く）。回る速さ yawTau（ms）＝急に回らない・角を曲がるときもなめらか。止まっている間は最後の向きのまま
+    heading: false, yawTau: 420,        // 2026-10-13 開発27（11・15）：出さない目印の地点（例 ['START','LOWER_GATE','UPPER_GATE']＝門の飾りの絵だけを出さない。地点・道・門のマス・判定・イベントはそのまま。本編の Chapter 1 だけ）
   };
   // 第1便の絵（assets/proto/board_art_1010/README.md）。大きさは世界の単位
   const ART = {
@@ -89,10 +92,16 @@
   // ---- 純粋な関数 ----
   /** 世界の点 (x, y) → 画面の点。cam＝{ tx, ty（注視点）, s, tilt（度）, P, ax, ay（注視点を写す画面の位置） }。k＝遠近の縮み */
   function project(cam, x, y) {
-    const X = (x - cam.tx) * cam.s, Y = (y - cam.ty) * cam.s, th = rad(cam.tilt);
+    let X0 = x - cam.tx, Y0 = y - cam.ty;
+    if (cam.yaw) { const a = rad(cam.yaw), c = Math.cos(a), sn = Math.sin(a), rx = X0 * c - Y0 * sn; Y0 = X0 * sn + Y0 * c; X0 = rx; }   // 2026-10-14 開発29（6）：注視点のまわりで回す（CSS の rotate と同じ向き＝時計回りが正）
+    const X = X0 * cam.s, Y = Y0 * cam.s, th = rad(cam.tilt);
     const z = Y * Math.sin(th), k = cam.P / (cam.P - z);
     return { x: cam.ax + X * k, y: cam.ay + Y * Math.cos(th) * k, k };
   }
+  /** 2026-10-14 開発29（6）：進む向き → 画面の上に向ける回転（度）。dx・dy は世界の座標の差（y は下向き）。北（上）へ進む＝0・東（右）へ＝−90・南（下）へ＝±180 */
+  function headingYaw(dx, dy) { return -Math.atan2(dx, -dy) * 180 / Math.PI; }
+  /** 角度の差（−180〜180） */
+  function angDiff(a, b) { let d = (b - a) % 360; if (d > 180) d -= 360; if (d < -180) d += 360; return d; }
   /** 点がすべて rect（{ l, t, r, b }）の内側に入る最大の倍率（二分探索）。入らなければ sMin */
   function fitZoom(cam, pts, rect, sMin, sMax) {
     const ok = (s) => pts.every((p) => { const q = project(Object.assign({}, cam, { s }), p[0], p[1]); return q.x >= rect.l && q.x <= rect.r && q.y >= rect.t && q.y <= rect.b; });
@@ -216,7 +225,7 @@
       for (const [x, y, w] of ART.peaks.at) add(ART.peaks.file, x, y, w, -20, 'rfw-peak');   // 第4便：山の岩峰
     }
     const S = {
-      cam: { tx: WORLD.w / 2, ty: WORLD.h / 2, s: 1, tilt: 0, P: o.persp, ax: 0, ay: 0 }, goal: null, mon: null, monGoal: null,
+      cam: { tx: WORLD.w / 2, ty: WORLD.h / 2, s: 1, tilt: 0, P: o.persp, ax: 0, ay: 0, yaw: 0 }, goal: null, mon: null, monGoal: null, yawGoal: 0,
       raf: 0, last: 0, intro: null, view: null, frames: [], dead: false,
     };
     // 2026-10-11：モンスターの足を地点に合わせる＝静止の立ち絵の実際の縦横比で上へずらす（旧：一律 0.92＝縦長・横長の絵で浮く・沈む）。読み込み前は 0.92
@@ -230,11 +239,15 @@
       return { tx: (x0 + x1) / 2, ty: (y0 + y1) / 2, s, tilt: 0, P: o.persp, ax: v.W / 2, ay: v.H / 2 + 26 };
     }
     /** 追従のカメラ：モンスター（mx, my）と先の地点 pts が空いている所に入る倍率 */
-    function followCam(v, mx, my, pts) {
+    function followCam(v, mx, my, pts, yaw) {
       const rect = { l: o.margin, r: v.right - o.margin, t: v.top + o.margin, b: v.bottom - o.margin };
       const fh = v.bottom - v.top, ax = (rect.l + rect.r) / 2, ay = v.top + fh * o.anchor;
-      let tx = mx; if (pts.length) { const xs = pts.map((p) => p[0]).concat(mx); tx = (Math.min(...xs) + Math.max(...xs)) / 2 * 0.6 + mx * 0.4; }
-      const cam = { tx, ty: my, s: o.sMax, tilt: o.tilt, P: o.persp, ax, ay };
+      let tx = mx, ty = my;
+      if (pts.length) {   // 画面の横の向き（回したあとの x）で、先の地点の左右の真ん中へ少し寄せる（回していなければ従来と同じ式）
+        const a = rad(yaw || 0), c = Math.cos(a), sn = Math.sin(a), xs = pts.map((p) => (p[0] - mx) * c - (p[1] - my) * sn).concat(0);
+        const mid = (Math.min(...xs) + Math.max(...xs)) / 2 * 0.6; tx = mx + mid * c; ty = my - mid * sn;
+      }
+      const cam = { tx, ty, s: o.sMax, tilt: o.tilt, P: o.persp, ax, ay, yaw: yaw || 0 };
       cam.s = fitZoom(cam, pts.concat([[mx, my]]), rect, o.sMin, o.sMax);
       return cam;
     }
@@ -248,11 +261,11 @@
     function apply() {
       const c = S.cam;
       // カメラもモンスターも動いていなければ描き直さない（止まっている間は何もしない）
-      const sig = [c.tx, c.ty, c.s * 100, c.tilt * 10, c.ax, c.ay, S.mon ? S.mon[0] : 0, S.mon ? S.mon[1] : 0, S.dirty ? 1 : 0].map((x) => Math.round(x * 10)).join(',');
+      const sig = [c.tx, c.ty, c.s * 100, c.tilt * 10, (c.yaw || 0) * 10, c.ax, c.ay, S.mon ? S.mon[0] : 0, S.mon ? S.mon[1] : 0, S.dirty ? 1 : 0].map((x) => Math.round(x * 10)).join(',');
       if (sig === S.sig) return; S.sig = sig; S.dirty = false;
       // 平面：注視点を原点に移して → 倍率 → 傾き → 画面の位置へ（project と同じ式。perspective-origin＝注視点の画面位置）
       wrap.style.perspective = c.P + 'px'; wrap.style.perspectiveOrigin = `${c.ax}px ${c.ay}px`;
-      plane.style.transform = `translate(${c.ax}px,${c.ay}px) rotateX(${c.tilt}deg) scale(${c.s}) translate(${-c.tx}px,${-c.ty}px)`;
+      plane.style.transform = `translate(${c.ax}px,${c.ay}px) rotateX(${c.tilt}deg) scale(${c.s}) rotate(${(c.yaw || 0).toFixed(3)}deg) translate(${-c.tx}px,${-c.ty}px)`;
       const v = S.view, Wd = v ? v.W : 400, Hd = v ? v.H : 800, xr = [];
       if (o.xray && S.mon) { const q = project(c, S.mon[0], S.mon[1]), w = o.monRatio > 0 ? Math.max(c.s < 1 ? 14 : 30, Math.max(c.s < 1 ? 2 : o.tilePx[0], Math.min(o.tilePx[1], o.tileW * c.s * q.k)) * o.monRatio) : Math.max(c.s < 1 ? 14 : 40, Math.min(100, 24 * c.s * q.k)), h = w * (S.monAh || 0.92);
         xr.push([q.x - w / 2, q.y - h, q.x + w / 2, q.y, q.y + 2, w * h * 0.5]); }   // モンスターの箱（重なりの判定は半分で＝少しでも隠れたら）
@@ -295,11 +308,11 @@
     function startIntroAnims(it, now) {
       const to = it.to(), from = it.from, v = S.view || viewRect(), Wd = v.W, Hd = v.H, dur = Math.max(1, it.dur);
       const cams = []; for (let i = 0; i <= INTRO_SAMPLES; i++) { const e = easeInOut(i / INTRO_SAMPLES), c = { P: o.persp, ax: to.ax, ay: to.ay };
-        for (const k of ['tx', 'ty', 'tilt']) c[k] = lerp(from[k], to[k], e); c.s = Math.exp(lerp(Math.log(from.s), Math.log(to.s), e)); cams.push(c); }
+        for (const k of ['tx', 'ty', 'tilt']) c[k] = lerp(from[k], to[k], e); c.s = Math.exp(lerp(Math.log(from.s), Math.log(to.s), e)); c.yaw = (from.yaw || 0) + angDiff(from.yaw || 0, to.yaw || 0) * e; cams.push(c); }
       const anims = [], can = typeof plane.animate === 'function';
       const run = (el, kf) => { if (!can) return; try { anims.push(el.animate(kf, { duration: dur, easing: 'linear', fill: 'forwards' })); } catch (e) { /* 動かせない要素は最後の姿へ */ } };
       wrap.style.perspective = o.persp + 'px'; wrap.style.perspectiveOrigin = `${to.ax}px ${to.ay}px`;
-      run(plane, cams.map((c, i) => ({ transform: `translate(${c.ax}px,${c.ay}px) rotateX(${c.tilt}deg) scale(${c.s}) translate(${-c.tx}px,${-c.ty}px)`, offset: i / INTRO_SAMPLES })));
+      run(plane, cams.map((c, i) => ({ transform: `translate(${c.ax}px,${c.ay}px) rotateX(${c.tilt}deg) scale(${c.s}) rotate(${(c.yaw || 0).toFixed(3)}deg) translate(${-c.tx}px,${-c.ty}px)`, offset: i / INTRO_SAMPLES })));
       const tileW = (c, q) => Math.max(c.s < 1 ? 2 : o.tilePx[0], Math.min(o.tilePx[1], o.tileW * c.s * q.k));
       const onScreen = (q, w) => q.x > -w && q.x < Wd + w && q.y > -w && q.y < Hd + w;
       for (const [id, t] of Object.entries(tiles)) {
@@ -357,6 +370,7 @@
       } else if (S.goal) {
         const f = 1 - Math.exp(-dt / 170), g = S.goal;
         for (const k of ['tx', 'ty', 'ax', 'ay', 'tilt']) S.cam[k] = lerp(S.cam[k], g[k], f);
+        if (o.heading) { const d = angDiff(S.cam.yaw || 0, g.yaw || 0); S.cam.yaw = Math.abs(d) < 0.05 ? (g.yaw || 0) : (S.cam.yaw || 0) + d * (1 - Math.exp(-dt / o.yawTau)); }   // 2026-10-14 開発29（6）：近いほうへなめらかに回る
         S.cam.s = Math.exp(lerp(Math.log(S.cam.s), Math.log(g.s), (1 - Math.exp(-dt / o.zoomTau)) * 0.8));
       }
       if (S.monGoal) { if (!S.mon) S.mon = S.monGoal.slice(); const f = 1 - Math.exp(-dt / 70); S.mon[0] = lerp(S.mon[0], S.monGoal[0], f); S.mon[1] = lerp(S.mon[1], S.monGoal[1], f); }
@@ -371,7 +385,11 @@
         S.monGoal = [n[0], n[1]]; if (instant || !S.mon) S.mon = S.monGoal.slice();
         S.view = viewRect();
         const pts = (info.ahead || []).map((id) => D.nodes[id]).filter(Boolean).map((p) => [p[0], p[1]]);
-        S.goal = followCam(S.view, n[0], n[1], pts); S.lastAhead = info.ahead || [];
+        if (o.heading && pts.length) {   // 2026-10-14 開発29（6）：進む向き＝今の地点 → 先の地点（最大4つ）の重心（分かれ道の手前は両方の道の真ん中・行き止まりから戻る間は戻る向き）
+          const k = pts.slice(0, 4), gx = k.reduce((a, p) => a + p[0], 0) / k.length - n[0], gy = k.reduce((a, p) => a + p[1], 0) / k.length - n[1];
+          if (Math.hypot(gx, gy) > 2) { const y0 = headingYaw(gx, gy); S.yawGoal = (S.yawGoal || 0) + angDiff(S.yawGoal || 0, y0); }
+        }
+        S.goal = followCam(S.view, n[0], n[1], pts, o.heading ? S.yawGoal : 0); S.lastAhead = info.ahead || [];
         if (instant && !S.intro) S.cam = Object.assign({}, S.goal);
         S.dirty = true;
         if ('denOpen' in info) for (const p of props) if (p.L && p.L.open) { const f = info.denOpen ? p.L.open : p.L.file; if (p.f !== f) { p.el.src = (o.art.base || './assets/proto/board_art_1010/') + f; p.f = f; } }
@@ -417,7 +435,8 @@
       },
       markerDim(id, dim) { const p = props.find((x) => x.mark === id); if (p) p.el.classList.toggle('dim', !!dim); },
       markerOff(id) { const i = props.findIndex((x) => x.mark === id); if (i >= 0) { props[i].el.remove(); props.splice(i, 1); } },
-      state: () => ({ focus: o.focus ? veilSig.split(',').filter(Boolean) : null, cam: Object.assign({}, S.cam), goal: S.goal && Object.assign({}, S.goal), mon: S.mon && S.mon.slice(), view: S.view, intro: !!S.intro, introAnims: S.introAnims || 0, ahead: S.lastAhead || [],
+      yawGoal: () => (o.heading ? S.yawGoal || 0 : 0),
+      state: () => ({ yaw: S.cam.yaw || 0, yawGoal: S.yawGoal || 0, heading: !!o.heading, focus: o.focus ? veilSig.split(',').filter(Boolean) : null, cam: Object.assign({}, S.cam), goal: S.goal && Object.assign({}, S.goal), mon: S.mon && S.mon.slice(), view: S.view, intro: !!S.intro, introAnims: S.introAnims || 0, ahead: S.lastAhead || [],
         tiles: Object.keys(tiles).length, chunks: chunks.length, painted, res: o.res, tilt: o.tilt, props: props.length, art: !!(art.ground || art.road), rims: art.terrain ? art.terrain.rims.filter((r) => r.kind === 'valley').map((r) => r.pts.length) : null,
         rimKinds: art.terrain ? art.terrain.rims.reduce((a, r) => { a[r.kind] = (a[r.kind] || 0) + 1; return a; }, {}) : null }),
       project: (x, y) => project(S.cam, x, y),
@@ -705,6 +724,6 @@
     pre = [...new Set(files)].map((f) => { const im = new root.Image(); im.decoding = 'async'; im.src = base + f; return im; });
     return pre;
   }
-  const api = { DEF, WORLD, ART, TERRAIN, project, fitZoom, lookahead, create, scatter, waterProps, curvePts, landmarkAt, inValley, loopPoly, warmArt };
+  const api = { DEF, WORLD, ART, TERRAIN, project, fitZoom, lookahead, headingYaw, angDiff, create, scatter, waterProps, curvePts, landmarkAt, inValley, loopPoly, warmArt };
   if (typeof module === 'object' && module.exports) module.exports = api; else root.MMRF_WORLD = api;
 })(typeof window !== 'undefined' ? window : globalThis);

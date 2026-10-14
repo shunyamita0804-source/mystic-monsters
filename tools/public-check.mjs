@@ -44,6 +44,15 @@ for (;;) {
 }
 rec(`公開版の index.html が HEAD（${head}）と同じ`, got === want, got === want ? `${Math.round((Date.now() - t0) / 1000)}秒で一致` : `15分待っても不一致（${got.slice(0, 16)}）`);
 
+// 1b) 2026-10-14 開発29（10）：公開クレジット（/credits.html が 200・ポケットサウンドの4行が見える・ゲームの設定から1か所）
+try {
+  const r = await fetch(URL + 'credits.html?cb=' + Date.now(), { headers: { 'cache-control': 'no-cache' } }); const h = r.ok ? await r.text() : '';
+  const t = h.replace(/<style[\s\S]*?<\/style>/, '').replace(/<[^>]+>/g, '');
+  const need = ['効果音：ポケットサウンド', 'https://pocket-se.info/', '使用音源：ゲームオーバー＃２', 'https://pocket-se.info/archives/754/'];
+  const ix = await (await fetch(URL + 'index.html?cb=' + Date.now(), { headers: { 'cache-control': 'no-cache' } })).text();
+  rec('開発29：公開クレジット /credits.html（HTTP 200・4行・設定の画面から1か所）', r.status === 200 && need.every((x) => t.includes(x)) && (ix.match(/credits\.html/g) || []).length === 1, `HTTP ${r.status} ${need.filter((x) => !t.includes(x)).join(' / ')}`);
+} catch (e) { rec('開発29：公開クレジット /credits.html', false, String(e).slice(0, 200)); }
+
 // 2) 画面の確認
 let exe;
 for (const p of ['/opt/pw-browsers/chromium', '/opt/pw-browsers/chromium-1194/chrome-linux/chrome']) if (existsSync(p) && !exe) exe = p;

@@ -84,7 +84,7 @@ test('D28-02：鳴らし方＝勝利の sfx(3) は BATTLE_WIN（旧 VICTORY は�
   assert.match(sfx, /if\(AU\.fight3==1\)\{setTimeout\(battleBgmGo,450\);return "BATTLE_START"\}return "BATTLE_WIN"\}/, 'バトル中の2回目の sfx(3)＝勝利＝BATTLE_WIN');
   assert.doesNotMatch(sfx.split('//')[0], /VICTORY/, 'コードの中では旧 VICTORY を返さない');
   const rj = lineOf(/^function resultJingle\(/);
-  assert.match(rj, /^function resultJingle\(win,b\)\{if\(!b\|\|b\.dataset\.rj\)return;b\.dataset\.rj=win\?"win":"lose";try\{MMAUDIO\.stopBgm\(\{fade:"quick"\}\)\}catch\(e\)\{\}clearTimeout\(AU\.btT\);AU\.btT=null;AU\.btScene=null;if\(!win\)try\{MMAUDIO\.se\("BATTLE_LOSE"\)\}catch\(e\)\{\}\}/, '1回だけ（data-rj）・戦闘の BGM を短く止める・保留中の戦闘曲（battleBgmGo の予約）も取り消す・LOSE の曲');
+  assert.match(rj, /^function resultJingle\(win,b\)\{if\(!b\|\|b\.dataset\.rj\)return;b\.dataset\.rj=win\?"win":"lose";(?:try\{rjLock\(win,b\)\}catch\(e\)\{\})?try\{MMAUDIO\.stopBgm\(\{fade:"quick"\}\)\}catch\(e\)\{\}clearTimeout\(AU\.btT\);AU\.btT=null;AU\.btScene=null;if\(!win\)try\{MMAUDIO\.se\("BATTLE_LOSE"\)\}catch\(e\)\{\}\}/, '1回だけ（data-rj）・戦闘の BGM を短く止める・保留中の戦闘曲（battleBgmGo の予約）も取り消す・LOSE の曲');
   const ban = lineOf(/^function ban\(/);
   assert.match(ban, /resultJingle\(/, 'fight() の決着の帯（ban＝Phase 6 の外の関数）から呼ぶ');
   assert.match(ban, /"WIN!"/); assert.match(ban, /"LOSE"/);
@@ -156,7 +156,7 @@ test('D28-05：観客の声の既定＝通常（1.0秒の CROWD_*_LONG）。短�
   for (const k of ['HIT', 'MISS', 'EVADE']) { assert.ok(se['CROWD_' + k] && se['CROWD_' + k + '_LONG'], k); }
 });
 
-test('D28-06：立体サイコロ＝12本の辺の面取り・8つの角の飾り（八分儀に1つずつ・角の中心の向き）・正式の面だけ・止まったあと少し斜め（前 11°・横 9°）・出目の向き（BASE）と乱数は変えない', () => {
+test('D28-06：立体サイコロ＝12本の辺の面取り・8つの角の飾り（部品の定義。2026-10-14 開発29 から正式の面＝A の絵では出さない）・止まったあと少し斜め（前 11°・横 9°）・出目の向き（BASE）と乱数は変えない', () => {
   const ctx = { performance: { now: () => 0 } }; ctx.globalThis = ctx; vm.runInNewContext(rd('js/chapter/dice-cube.js'), ctx);
   const D = ctx.MMDICE3D;
   assert.equal(D.EDGES.length, 12); assert.equal(D.CORNERS.length, 8);
@@ -171,12 +171,13 @@ test('D28-06：立体サイコロ＝12本の辺の面取り・8つの角の飾�
   }
   assert.equal(oct.size, 8, '8つの角にひとつずつ');
   const off = D.cubeHtml('official'), plain = D.cubeHtml();
-  assert.equal((off.match(/class="d3-e/g) || []).length, 12); assert.equal((off.match(/class="d3-c"/g) || []).length, 8);
+  // 2026-10-14 開発29（2）：正式の面は正式デザイン A の絵（面取り・角の飾りは絵の中）＝面取りの帯・角の丸い飾りは出さず、中の金の芯（.d3-k）6枚だけ。EDGES・CORNERS の形（部品の定義）は残す
+  assert.equal((off.match(/class="d3-e/g) || []).length, 0); assert.equal((off.match(/class="d3-c"/g) || []).length, 0); assert.equal((off.match(/class="d3-k"/g) || []).length, 6);
   assert.equal((off.match(/class="d3-f"/g) || []).length, 6);
   assert.equal((plain.match(/class="d3-e|class="d3-c"/g) || []).length, 0, '旧の無地の面には付けない');
   const src = rd('js/chapter/dice-cube.js');
   assert.match(src, /FRONT = o\.skin \? 'rotateX\(-11deg\) rotateY\(-9deg\)' : 'rotateX\(-6deg\) rotateY\(0deg\)'/);
-  assert.match(src, /\.d3z\.off \.d3-f\{inset:10%;border-radius:3%/, '正式の面＝内側へ寄せて角を丸く（面取りの帯の分）');
+  assert.match(src, /\.d3z\[data-skin="official"\] \.d3-f\{inset:0;border-radius:7%/, '正式の面（A）＝面はいっぱい・角は小さく丸く');
   assert.match(src, /\.d3-c\{/); assert.match(src, /\.d3-e\{/);
   // 出目の向きと乱数（DC-01・DC-02 と同じ条件）
   assert.deepEqual(Object.keys(D.BASE).map(Number).sort(), [1, 2, 3, 4, 5, 6]);
@@ -200,13 +201,16 @@ test('D28-07：全景 → 盤のズーム＝Web Animations（linear・刻みに�
   assert.doesNotMatch(apply, /\.style\.fontSize/, '');
 });
 
-test('D28-08：固有スキルのカメラ＝cutCamera（全身が切れない倍率 ≤1.3・入らなければ寄らない・横は中央・縦は安全域）・全体 1.5〜2.1秒・正式エフェクト未納＝仮の輪・発動の条件（ガウル／ソラモ／ノビトン／ジオル／レグナス）', () => {
+test('D28-08：固有スキルのカメラ＝cutCamera（全身が切れない倍率・入らなければ寄らない・横は中央・縦は安全域）・全体 1.5〜2.1秒・足元の正式エフェクト（2026-10-14 開発29）・発動の条件（ガウル／ソラモ／ノビトン／ジオル／レグナス）', () => {
   const E = loadRules();
   const R = E.R, CUT = R.CUT;
   const total = CUT.in + CUT.hold + CUT.out;
   assert.ok(total >= 1500 && total <= 2100, `全体 ${total}ms`); assert.ok(CUT.calm >= 900 && CUT.calm <= 1500, '視差を減らす設定＝短く');
-  assert.equal(CUT.zMax, 1.3); assert.equal(CUT.se, 'SKILL_ACTIVATE');
-  assert.deepEqual(J(R.SKILL_FX), { solamo: null, gauru: null, nobiton: null, jiol: null, regnas: null }, '足元の正式エフェクト（5枚の PNG）は未納＝null＝仮の輪（届いたらここに1行）');
+  assert.equal(CUT.zMax, 1.45); assert.equal(CUT.se, 'SKILL_ACTIVATE');   // 2026-10-14 開発29（3）：1.3 → 1.45・寄りは 0.27秒
+  assert.ok(CUT.in >= 200 && CUT.in <= 350, `寄り ${CUT.in}ms`);
+  // 2026-10-14 開発29（4）：足元の正式エフェクト5枚（assets/battle/skill_fx_1014/）が届いた＝仮の輪ではなく専用の絵
+  assert.deepEqual(Object.keys(R.SKILL_FX).sort(), ['gauru', 'jiol', 'nobiton', 'regnas', 'solamo']);
+  for (const [k, v] of Object.entries(R.SKILL_FX)) { assert.equal(v.src, `./assets/battle/skill_fx_1014/${k}.webp`); assert.ok(v.ax > 0.4 && v.ax < 0.6 && v.ay > 0.6 && v.ay < 0.8 && v.w > 1, k); }
   // (a) 小さな対象＝1.3倍・横は画面の中央・縦は安全域の中央
   let c = R.cutCamera({ left: 20, top: 300, width: 150, height: 180 }, 390, 844, 120, 506, 1.3);
   assert.equal(c.k, 1.3); assert.equal(c.fx, 195); assert.ok(c.fy >= 120 + 180 * 1.3 / 2 && c.fy <= 506 - 180 * 1.3 / 2, `縦 ${c.fy}`);
@@ -256,9 +260,9 @@ test('D28-08：固有スキルのカメラ＝cutCamera（全身が切れない�
   assert.deepEqual(J(R.cutQueue()), []); assert.equal(R.cutActive(), false);
 });
 
-test('D28-09：MM_BUILD と version.json＝2026-10-13-dev28（公開のたびに同じ値へ）', () => {
-  assert.match(HTML, /const MM_BUILD="2026-10-13-dev28";/);
-  assert.deepEqual(JSON.parse(rd('version.json')), { build: '2026-10-13-dev28' });
+test('D28-09：MM_BUILD と version.json は同じ値（公開のたびに上げる。2026-10-14 開発29＝2026-10-14-dev29）', () => {
+  const b = /const MM_BUILD="([^"]+)";/.exec(HTML); assert.ok(b);
+  assert.deepEqual(JSON.parse(rd('version.json')), { build: b[1] }); assert.equal(b[1], '2026-10-14-dev29');
 });
 
 // ---- js/battle/rules.js を Node で動かす（tests/battle-rules-1006.test.mjs と同じ組み立て） ----

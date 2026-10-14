@@ -73,10 +73,19 @@
       '.d3z:not(.off) .d3-e,.d3z:not(.off) .d3-c{display:none}',
       '.d3z.off .d3-glow{background:radial-gradient(rgba(255,250,232,.95),rgba(255,214,130,.55) 32%,rgba(255,190,90,0) 66%)}',
       '.d3z.off .d3-sp{filter:drop-shadow(0 0 4px #ffd27a)}',
+      // 2026-10-14 開発29（2）：正式デザイン A の面（data-skin="official"）＝面はいっぱい（縁の光・角の金の飾りは絵の中）・角の丸みは小さく・上からの白い光の重ねは無し（絵の光のまま）
+      '.d3z[data-skin="official"] .d3-f{inset:0;border-radius:7%;box-shadow:none}',
+      '.d3z[data-skin="official"] .d3-f::after{content:none;display:none}',
+      '.d3z[data-skin="official"] .d3-e,.d3z[data-skin="official"] .d3-c{display:none}',
+      '.d3-k{position:absolute;inset:4%;border-radius:12%;background:radial-gradient(circle at 40% 35%,#ffe7a0,#d6a443 55%,#9a6a1c);backface-visibility:hidden;-webkit-backface-visibility:hidden}',
     ].join('');
     document.head.appendChild(s);
   }
-  const SKIN = Object.freeze({ official: './assets/fields/ch1a/dice/cube_1013/face_' });
+  // 2026-10-14 開発29（2）：正式の面＝ユーザー指定の正式デザイン画像 A（真珠の地・金の角の飾り・金の目・天面の紋章）から作った6面（assets/fields/ch1a/dice/cube_1014/。tools/dice1014/faces_from_a.py）。
+  //   面の絵に縁の光と角の金の飾りが入っている＝面は内側へ寄せない（旧 cube_1013 の面取りの帯 .d3-e・角の丸い飾り .d3-c は出さない）。角の小さなすき間は中の金の芯（.d3-k）でふさぐ。
+  //   動き・1.30秒・出目・乱数・着地の SE は変えていない（絵だけ）。旧 cube_1013 はファイルだけ残す
+  const SKIN = Object.freeze({ official: './assets/fields/ch1a/dice/cube_1014/face_' });
+  const CORE = Object.freeze(['translateZ(calc(var(--h)*.9))', 'rotateY(180deg) translateZ(calc(var(--h)*.9))', 'rotateY(90deg) translateZ(calc(var(--h)*.9))', 'rotateY(-90deg) translateZ(calc(var(--h)*.9))', 'rotateX(90deg) translateZ(calc(var(--h)*.9))', 'rotateX(-90deg) translateZ(calc(var(--h)*.9))']);
   // 2026-10-13 開発28：角を落とした立方体の部品。面取りの帯 12本＝[縦長か, 向き, 明るさ]（向きは面の法線＝CSS の rotate。translateZ(.615 s) を足す）
   const EDGES = Object.freeze([
     [0, 'rotateX(45deg)', 'lt'], [0, 'rotateX(-45deg)', 'dk'], [0, 'rotateX(135deg)', 'lt'], [0, 'rotateX(-135deg)', 'dk'],       // x に平行（上の前・下の前・上の奥・下の奥）
@@ -97,6 +106,7 @@
     const base = SKIN[skin];
     const faces = FACE.map(([v, tf]) => `<div class="d3-f" data-v="${v}" style="transform:${tf}${base ? `;--fi:url(${base}${v}.webp)` : ''}">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((c) => (PIPS[v].includes(c) ? `<i style="grid-area:${Math.ceil(c / 3)}/${((c - 1) % 3) + 1}"></i>` : '')).join('')}</div>`).join('');
     if (!base) return faces;
+    if (skin === 'official') return CORE.map((tf) => `<i class="d3-k" style="transform:${tf}"></i>`).join('') + faces;   // 2026-10-14 開発29：正式デザイン A の面（面取り・角の飾りは絵の中）
     const edges = EDGES.map(([t, tf, l]) => `<i class="d3-e${t ? ' t' : ''}${l ? ' ' + l : ''}" style="transform:${tf} translateZ(calc(var(--s)*.6364))"></i>`).join('');
     const corners = CORNERS.map((tf) => `<i class="d3-c" style="transform:${tf}"></i>`).join('');
     return faces + edges + corners;
@@ -266,5 +276,5 @@
   }
     /** 正式サイコロの6面を先に読む（出発のとき・本編の Chapter 1）。読めないときは play が絵の無い面になる＝出目の札は出る */
   function warm(skin) { const b = SKIN[skin || 'official']; if (!b || typeof Image === 'undefined') return; for (let v = 1; v <= 6; v++) { const im = new Image(); im.decoding = 'async'; im.src = `${b}${v}.webp`; } }
-  root.MMDICE3D = Object.freeze({ play, warm, isLocked: () => locked, lastTiming: () => (last ? { ...last } : null), T, TEMPO, BASE, PIPS, SKIN, EDGES, CORNERS, cornerTransform, cubeHtml });   // EDGES・CORNERS・cubeHtml＝2026-10-13 開発28（面取りの形の確認用）
+  root.MMDICE3D = Object.freeze({ play, warm, isLocked: () => locked, lastTiming: () => (last ? { ...last } : null), T, TEMPO, BASE, PIPS, SKIN, EDGES, CORNERS, CORE, cornerTransform, cubeHtml });   // EDGES・CORNERS・cubeHtml＝2026-10-13 開発28（面取りの形の確認用）
 })(typeof window !== 'undefined' ? window : globalThis);
