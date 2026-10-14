@@ -77,3 +77,30 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   });
 }
+
+// 2026-10-14 実機試遊 Q06：3つの機能の一言（.labhint）が実際に見える（研究所の背景 .labbg＝absolute の下に隠れていた＝play47b で修正）
+for (const size of [H.SIZES.base, H.SIZES.se, H.SIZES.max]) {
+  test(`LP-B3（${size.join('×')}）：研究所の3つの機能の一言が見える（背景の下に隠れない・会話窓と下のボタンに重ならない・画面の中）`, { skip: SKIP }, async () => {
+    const p = await openPage({ size }); const pg = p.page;
+    await H.newGame(pg, 'テスト');
+    await pg.evaluate(() => { const m = mk(1); MMP7.ensureProg(m); S.m = m; save(); museum(); });
+    await pg.waitForSelector('.lab .labhint span'); await pg.waitForTimeout(900);
+    const r = await pg.evaluate(() => {
+      const R = (e) => { const b = e.getBoundingClientRect(); return { t: b.top, b: b.bottom, l: b.left, r: b.right }; };
+      const spans = [...document.querySelectorAll('.lab .labhint span')];
+      const hint = document.querySelector('.lab .labhint'), pe = hint.style.pointerEvents; hint.style.pointerEvents = 'auto';   // 押せない札（pointer-events:none）でも、いちばん上に描かれているかを確かめる
+      const top = spans.map((s) => { const b = s.getBoundingClientRect(), e = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return !!(e && (e === s || s.contains(e))); });
+      hint.style.pointerEvents = pe;
+      const lines = spans.map((s) => Math.round(s.getBoundingClientRect().height / parseFloat(getComputedStyle(s).lineHeight)));
+      const nav = document.querySelector('.lab .labnav'), nst = document.querySelector('.lab .nst .nstw') || document.querySelector('.lab .nst');
+      return { text: spans.map((s) => s.textContent), top, lines, hint: R(document.querySelector('.lab .labhint')), nav: R(nav), talk: nst ? R(nst) : null, W: innerWidth, H: innerHeight };
+    });
+    assert.deepEqual(r.text, ['出会った子の記録', '育てた2体を合体', '合体の組み合わせ']);
+    assert.deepEqual(r.top, [true, true, true], `一言がいちばん上に見える ${JSON.stringify(r)}`);
+    assert.ok(r.lines.every((n) => n <= 1), `一言は1行（語の途中で折り返さない） ${JSON.stringify(r)}`);
+    assert.ok(r.hint.b <= r.nav.t + 0.5, `下のボタンに重ならない ${JSON.stringify(r)}`);
+    if (r.talk) assert.ok(r.talk.b <= r.hint.t + 0.5, `会話窓に重ならない ${JSON.stringify(r)}`);
+    assert.ok(r.hint.t >= 0 && r.hint.b <= r.H && r.hint.l >= 0 && r.hint.r <= r.W + 0.5, `画面の中 ${JSON.stringify(r)}`);
+    assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+  });
+}
