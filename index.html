@@ -3585,7 +3585,7 @@ main:has(>#app>.ds) h1{display:none}
 .rcv-stat{left:58.5%;width:26%;top:18%;bottom:8%;gap:3%}
 .rcv-st i{font-size:clamp(9.5px,4.4cqw,15px)}
 .rcv-stat small{padding:1px 5px;border-radius:5px;background:rgba(6,10,28,.62);font-size:clamp(8.5px,3.3cqw,12.5px);line-height:1.3}
-.rcv .rcv-note{font-size:11.5px;line-height:1.4;color:#f3ecd9;text-shadow:0 1px 2px #000}
+.rcv .rcv-note{color:#f3ecd9;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.8)}   /* 注記は字の大きさ・行の高さを従来どおり（大きくすると6段が1画面に入らない）＝色と影だけで読みやすく */
 .p9conf{position:fixed;inset:0;z-index:960;display:grid;place-items:center;background:rgba(3,7,20,.62);animation:p9confIn .18s ease-out}
 @keyframes p9confIn{from{opacity:0}}
 .p9conf-box{position:relative;width:min(88vw,340px);aspect-ratio:640/434}
