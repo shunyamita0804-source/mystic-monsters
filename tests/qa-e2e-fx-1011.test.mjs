@@ -61,12 +61,13 @@ test('FXB-2：野生（影・？？？）／レア（名前・★レア）→ �
   assert.notEqual(r.nm, '？？？'); assert.equal(r.badge, true); assert.match(r.img, /battle\/idle\/idle_\w+\.webp$/, '2026-10-14 実機試遊㉔：遭遇の相手はこのあと VS・バトルに出る正式の待機立ち絵（レアは色つき・野生は同じ絵の影）'); assert.doesNotMatch(r.all, /Lv|レベル/);
   await H.surrenderBattle(pg); await pg.waitForSelector('#wbw #brollbtn'); await idle(pg);
   // G：50G では出ない・150G で1回
-  await pg.evaluate(() => { window.__gb = 0; new MutationObserver((ms) => { for (const m of ms) for (const n of m.addedNodes) if (n.classList && n.classList.contains('wbx-gold')) __gb++; }).observe(document.getElementById('wbw'), { subtree: true, childList: true }); });
+  await pg.evaluate(() => { window.__gb = 0; new MutationObserver((ms) => { for (const m of ms) for (const n of m.addedNodes) if (n.classList && (n.classList.contains('wbx-gold') || (n.classList.contains('wbtr') && n.querySelector('.wbtr-gold')))) __gb++; }).observe(document.getElementById('wbw'), { subtree: true, childList: true }); });
   const g0 = await pg.evaluate(() => S.g);
   await place(pg, 'ER02_04', { t: 'treasure', gold: 50, tier: 'normal' }); await idle(pg);
   assert.equal(await pg.evaluate(() => __gb), 0, '50G は従来の小さな表示だけ');
-  await place(pg, 'ER02_05', { t: 'treasure', gold: 150, tier: 'rare' }); await pg.waitForSelector('.wbx-gold');
-  assert.match(await pg.evaluate(() => document.querySelector('.wbx-gold b').textContent), /\+150G/);
+  // 2026-10-14 実機試遊④：宝箱は開封のカットイン（.wbtr）の中に金貨（EV05）と中身（+150G）を出す＝別の金貨の演出（.wbx-gold）は重ねない
+  await place(pg, 'ER02_05', { t: 'treasure', gold: 150, tier: 'rare' }); await pg.waitForSelector('.wbtr .wbtr-gold', { state: 'attached' });
+  await pg.waitForFunction(() => /\+150G|150G/.test((document.querySelector('.wbtr .wbtr-card') || {}).textContent || ''), null, { timeout: 5000 });
   await idle(pg);
   assert.deepEqual(await pg.evaluate(() => [__gb, S.g]), [1, g0 + 200], '金貨の演出は1回・所持金の加算は従来どおり1回ずつ');
 });

@@ -63,6 +63,7 @@ const measure = (pg, i) => pg.evaluate((i) => {
   return { cut: bt.classList.contains('mmsk-cut'), cx: r.left + r.width / 2 - br.left, cy: r.top + r.height / 2 - br.top, W: br.width, H: br.height, inside: r.left >= br.left - 1 && r.right <= br.right + 1 && r.top >= br.top - 1 && r.bottom <= br.bottom + 1,
     stopHidden: st.visibility === 'hidden' || +st.opacity === 0, stopHit: !!(hit && (hit === go || hit.closest('.gow') || hit.closest('.bui'))), card: card ? card.innerText : null, ring: !!document.querySelector('.mmskc-ring'), img: !!document.querySelector('.mmskc-img'), fx: (document.querySelector('.mmskc-fx') || { src: '' }).src.split('/').pop() || null,
     anims: document.getAnimations().filter((a) => a.effect && a.effect.target && (a.effect.target.classList.contains('vs') || a.effect.target.classList.contains('bgs'))).length,
+    cutA: document.getAnimations().filter((a) => a.id === 'mmsk-cut').length,   // 2026-10-14：固有スキルのカメラの動きだけ（寄り終わりの余韻を 0.7秒延ばした＝片付けのあとすぐ相手の技の演出が戦場を動かすことがある）
     msgHidden: getComputedStyle(document.getElementById('msg')).visibility === 'hidden', turn: (MMRULES.current() || {}).turn, dmg: (MMRULES.current() || { totalDamage: null }).totalDamage };
 }, i);
 
@@ -152,7 +153,7 @@ test('D28-B3：ガウル「紅翼の猛攻」＝ゴングの直後・最初の�
     await pg.waitForFunction(() => !document.getElementById('bt').classList.contains('mmsk-cut') && !document.querySelector('.mmskc'), null, { timeout: 6000 });
     await pg.waitForTimeout(300);
     const after = await measure(pg, i);
-    assert.ok(!after.cut && after.anims === 0 && after.card === null && !after.ring && !after.fx, `${tag}：片付け ${JSON.stringify(after)}`);
+    assert.ok(!after.cut && after.cutA === 0 && after.card === null && !after.ring && !after.fx, `${tag}：片付け ${JSON.stringify(after)}`);
     assert.ok(Math.abs(after.cx - m.cx) > 20, '元の位置へ戻る');
     await pg.waitForFunction(() => { const g = document.querySelector('#bt .gow'); return g && getComputedStyle(g).visibility !== 'hidden' && +getComputedStyle(g).opacity > 0; }, null, { timeout: 10000 });   // 正式の STOP（.gow）が戻る
     assert.equal((await cutLog(pg)).length, 1, `${tag}：1回だけ`);

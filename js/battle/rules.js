@@ -364,7 +364,7 @@
       el.style.transformOrigin = `${(cam.cx - (er.left - br.left)).toFixed(1)}px ${(cam.cy - (er.top - br.top) + oy).toFixed(1)}px`;
       const t0 = 'translate(0px,0px) scale(1)', t1 = `translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${kk.toFixed(4)})`;
       try {
-        cutAnims.push(el.animate([{ transform: t0, offset: 0, easing: CUT.ease }, { transform: t1, offset: CUT.in / total, easing: 'linear' }, { transform: t1, offset: (CUT.in + CUT.hold) / total, easing: 'cubic-bezier(.45,0,.3,1)' }, { transform: t0, offset: 1 }], { duration: total, fill: 'forwards', composite: 'add' }));
+        cutAnims.push(el.animate([{ transform: t0, offset: 0, easing: CUT.ease }, { transform: t1, offset: CUT.in / total, easing: 'linear' }, { transform: t1, offset: (CUT.in + CUT.hold) / total, easing: 'cubic-bezier(.45,0,.3,1)' }, { transform: t0, offset: 1 }], { duration: total, fill: 'forwards', composite: 'add', id: 'mmsk-cut' }));   // id＝固有スキルのカメラの動き（片付けの確認・技の演出の動きと区別する）
       } catch (e) { /* 動かせない環境＝寄らない（説明と発光だけ） */ }
     };
     move(bt.querySelector('.vs'), cam.dx, cam.dy, cam.k);
