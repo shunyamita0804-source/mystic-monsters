@@ -2312,7 +2312,7 @@ button.p10karen img{display:block;width:100%;height:auto;margin-top:2px;transfor
 #app .lab nav.labnav .labc::before{display:none}
 #app .lab nav.labnav .labc:nth-child(1){left:8.6%;width:27.1%}#app .lab nav.labnav .labc:nth-child(2){left:36.9%;width:28.8%}#app .lab nav.labnav .labc:nth-child(3){left:66.6%;width:27.7%}
 #app .lab nav.labnav .labc svg{width:20px;height:20px}#app .lab nav.labnav .labc b{font-size:14px}
-#app .lab .labhint{display:grid;grid-template-columns:27.1fr 28.8fr 27.7fr;column-gap:1.3%;margin:0 5.6% 3px 8.6%;font:700 10.5px/1.25 var(--mm-font-body,sans-serif);text-align:center;color:#f6e8c4;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.8);pointer-events:none}
+#app .lab .labhint{position:relative;z-index:2;display:grid;grid-template-columns:27.1fr 28.8fr 27.7fr;column-gap:1.3%;margin:0 5.6% 3px 8.6%;font:700 10.5px/1.25 var(--mm-font-body,sans-serif);text-align:center;color:#f6e8c4;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.8);pointer-events:none}
 #app .lab .labhint span{padding:2px 2px;border-radius:6px;background:rgba(6,12,32,.55)}
 #app .lab nav.labnav .labc.on,#app .lab nav.labnav .labc:active{transform:none;box-shadow:inset 0 0 0 2px rgba(242,213,140,.85),0 0 12px rgba(242,213,140,.5)}
 .p10mk .p10arw{width:50px;height:52px;border:0;border-radius:50%;background:url(./assets/ui/b_group/b45_nav_back_medallion.png) center/contain no-repeat;box-shadow:none}
@@ -4775,7 +4775,7 @@ const LAB_IC={book:'<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 7h9a
  table:'<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M13 5h6M14 5v8L7 25a2 2 0 0 0 2 3h14a2 2 0 0 0 2-3l-7-12V5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 21h12" stroke="currentColor" stroke-width="1.8"/></svg>'};
 /** 研究所の下の機能（図鑑・合体・配合表。2026-10-04 正式。復元の機能は主要メニューに置かない） */
 function labNav(cur){return `<nav class="labcmd labnav cmdimg" aria-label="研究所の機能">${[["book","図鑑"],["fuse","合体"],["table","配合表"]].map(([k,l])=>`<button class="labc${cur==k?" on":""}" data-cmd="lab_${k}" onclick="museum('${k}')" data-se="${cur==k?"UI_TAB":"UI_SELECT"}">${LAB_IC[k]}<b>${l}</b></button>`).join("")}</nav>`} // 2026-10-07：正式のコマンド画像（assets/ui/cmd/lab_*.png）
-function labShell(cls,back,plq,body,cur){return `<div class="lab ${cls}"><div class="labbg" style="background-image:url(${LAB_BG})"></div><div class="dtop">${back}</div>${plq}${body}<div class="labhint" aria-hidden="true"><span>出会った子の記録</span><span>育てた2体から次の世代</span><span>合体の組み合わせ</span></div>${labNav(cur)}</div>`} // 2026-10-14 実機試遊 Q06：3つの機能の違いを一言で（ボタンのすぐ上。未実装の機能・レシピは作らない）
+function labShell(cls,back,plq,body,cur){return `<div class="lab ${cls}"><div class="labbg" style="background-image:url(${LAB_BG})"></div><div class="dtop">${back}</div>${plq}${body}<div class="labhint" aria-hidden="true"><span>出会った子の記録</span><span>育てた2体を合体</span><span>合体の組み合わせ</span></div>${labNav(cur)}</div>`} // 2026-10-14 実機試遊 Q06：3つの機能の違いを一言で（ボタンのすぐ上。未実装の機能・レシピは作らない）
 // 研究所（2026-10-04 第二段階）：入口＝エリオット＋機能のカード（図鑑・合体・配合表）。図鑑はデザイン参考 06（濃紺＋金・魔法図鑑・2列・No.・名前・未発見は近日公開）。合体は牧場から移した（処理 fuse・selm・cname はそのまま）。
 //  配合表は既存の規則（MMP7.resolveFusionSpecies＝子は親1の種族・能力60%・名前・技の継承・200G）だけを表示する（データの無い組み合わせは作らない）
 function museum(tab){if(p8Blocked())return;bgm("lab");npcWarm("elliot");facVoice("lab",!tab&&npcFirstWill("lab"));if(!tab)setTimeout(()=>npcFirst("lab"),0); // 2026-10-04：初回訪問の会話（エリオット ↔ フィナ）
@@ -5262,7 +5262,7 @@ window.addEventListener("unhandledrejection",rescue);
  *  ./version.json（小さな JSON。毎回取り直す）の build がこのページの MM_BUILD と違えば1回だけ reload（同じ版へは15分に1回まで＝読み込み直しを繰り返さない）。
  *  確かめる時：起動したとき・ページがメモリから戻ったとき（pageshow の persisted）・10分以上裏にいて表に戻ったとき。セーブ（mr4v6）には触れない（読み込み直しは iOS がタブを閉じたときと同じ＝つづきから）。
  *  公開するたびに MM_BUILD と version.json の build を同じ値に上げる（tests/dev24-1013.test.mjs で一致を確かめる） */
-const MM_BUILD="2026-10-14-play47";
+const MM_BUILD="2026-10-14-play47b";
 (function(){const K="mmbuildReload";let hidAt=0;
  const check=()=>{try{const x=new XMLHttpRequest();x.open("GET","./version.json?t="+Date.now(),true);x.timeout=8000;
   x.onload=()=>{try{if(x.status<200||x.status>=300)return;const b=(JSON.parse(x.responseText)||{}).build;if(!b||b===MM_BUILD)return;

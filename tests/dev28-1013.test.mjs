@@ -264,9 +264,9 @@ test('D28-08：固有スキルのカメラ＝cutCamera（全身が切れない�
   assert.deepEqual(J(R.cutQueue()), []); assert.equal(R.cutActive(), false);
 });
 
-test('D28-09：MM_BUILD と version.json は同じ値（公開のたびに上げる。2026-10-14 Chapter 1 A／B／C 高品質化＝2026-10-14-ch1hq → 進入時のクラッシュ対策＝2026-10-14-ch1fix → 実機試遊47項目＝2026-10-14-play47）', () => {
+test('D28-09：MM_BUILD と version.json は同じ値（公開のたびに上げる。2026-10-14 Chapter 1 A／B／C 高品質化＝2026-10-14-ch1hq → 進入時のクラッシュ対策＝2026-10-14-ch1fix → 実機試遊47項目＝2026-10-14-play47 → 研究所の一言の重なり＝2026-10-14-play47b）', () => {
   const b = /const MM_BUILD="([^"]+)";/.exec(HTML); assert.ok(b);
-  assert.deepEqual(JSON.parse(rd('version.json')), { build: b[1] }); assert.equal(b[1], '2026-10-14-play47');
+  assert.deepEqual(JSON.parse(rd('version.json')), { build: b[1] }); assert.equal(b[1], '2026-10-14-play47b');
 });
 
 // ---- js/battle/rules.js を Node で動かす（tests/battle-rules-1006.test.mjs と同じ組み立て） ----
