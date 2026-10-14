@@ -35,10 +35,19 @@ test('WK-01：ガウルの 2.5D 歩行＝front・back 各8コマ（walk_25d・38
     assert.equal(ds[k].h, 1.106); assert.equal(ds[k].foot, 0.049); assert.equal(ds[k].face, 'none', '正面・後ろ姿＝反転しない'); assert.equal(ds[k].idle, 0);
   }
   assert.deepEqual(S.gauru.walk.frames.length, 6, '旧 Chapter 1（field-view）は従来の walk（6コマ）');
-  for (const k of ['solamo', 'jiol', 'nobiton']) assert.ok(w.MMWB.dirSets(S[k]).front === undefined && !JSON.stringify(S[k]).includes('walk_25d'), `${k} は組み込んでいない（原本の修正待ち）`);
+  // 2026-10-14：ソラモ・ノビトン・ジオルも作り直された 2.5D の front・back（各8コマ・384×384・h 1.169・foot 0.066）。横の1歩は standFace の立ち絵（旧 2D の横向きは使わない）
+  for (const [k, face] of [['solamo', 'left'], ['nobiton', 'right'], ['jiol', 'right']]) {
+    const d = w.MMWB.dirSets(S[k]); assert.deepEqual(Object.keys(d).sort(), ['back', 'front'], k); assert.equal(S[k].standFace, face, k);
+    for (const dn of ['front', 'back']) {
+      assert.equal(d[dn].frames.length, 8); assert.deepEqual([d[dn].fps, d[dn].h, d[dn].foot, d[dn].face], [12, 1.169, 0.066, 'none'], k + dn);
+      d[dn].frames.forEach((f, i) => { assert.equal(f, `./assets/monsters/walk_25d/${k}/${k}_walk_${dn}_0${i + 1}.webp`); assert.deepEqual(webpSize(f.slice(2)), [384, 384, true], f); });
+    }
+    assert.ok(S[k].walk.frames.length >= 8 && !S[k].walk.frames[0].includes('walk_25d'), `${k}：旧 Chapter 1（field-view）は従来の walk`);
+  }
   const rm = rd('assets/monsters/walk_25d/README.md');
   for (const k of ['soramo', 'regnas back', 'nobiton', 'gioru']) assert.match(rm, new RegExp(k), `組み込まなかった理由：${k}`);
   assert.equal((rm.match(/\| gauru\/gauru_walk_(front|back)_0[1-8]\.png \|/g) || []).length, 16, '元ファイルと sha256');
+  assert.equal((rm.match(/\| (solamo|nobiton|jiol)\/\1_walk_(front|back)_0[1-8]\.png \|/g) || []).length, 48, '2026-10-14 の48枚の元ファイルと sha256');
 });
 
 test('WK-02：対戦表の顔＝faces_25d（5体・256×256）・読めないときは従来の faces・重複を登録しない・原本を置かない', () => {

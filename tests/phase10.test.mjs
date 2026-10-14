@@ -28,8 +28,8 @@ test('M1-1：正式4原種の名前・英字・種類・初期能力・素早さ
   const row = (id) => { const s = M.byId(id); return [s.name, s.en, s.kind, M.STAT_KEYS.map((k) => s.base[k]), s.speed]; };
   assert.deepEqual(row(0), ['ソラモ', 'SORAMO', '獣種', [100, 100, 100, 100, 100, 100], 5]);
   assert.deepEqual(row(1), ['ガウル', 'GAURU', '鳥種', [80, 110, 110, 90, 90, 60], 7]);
-  assert.deepEqual(row(2), ['ノビトン', 'NOBITON', '獣種', [120, 80, 80, 80, 50, 100], 2]);
-  assert.deepEqual(row(3), ['ジオル', null, '岩石種', [90, 120, 40, 50, 30, 150], 1], 'ジオルの英字表記は未確定のため null');
+  assert.deepEqual(row(2), ['ノビトン', 'NOBITON', '獣種', [140, 80, 120, 100, 70, 110], 2]);
+  assert.deepEqual(row(3), ['ジオル', null, '岩石種', [120, 150, 80, 70, 30, 160], 1], 'ジオルの英字表記は未確定のため null');
   assert.equal(M.byId(3).personality, 'のんびり・おとなしい');
   assert.deepEqual(M.byId(1).formerNames, ['ハヤテ']);
   assert.equal(M.SPECIES.length, 4); assert.equal(M.STAT_MAX, 999);

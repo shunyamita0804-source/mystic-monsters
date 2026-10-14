@@ -40,8 +40,8 @@
   // ---- ライバル専用のモンスター（2026-10-05 正式）：リュウの相棒レグナス。プレイヤー用の SPECIES とは別の表＝市場・図鑑・合体・初期選択・特殊復元・牧場・野生の相手には出さない
   //  （プレイヤーの入手方法は未決。成長適性は未確定＝null。2026-10-05：正式技10個と固有スキルを登録＝ライバル戦だけで使う（js/battle/rival-partner.js。fight() は変えない））
   const RIVAL_MONSTERS = fz([
-    fz({ key: 'regnas', name: 'レグナス', en: 'REGNAS', kind: '竜種', personality: '誇り高い・負けず嫌い', owner: 'ryu',
-      base: fz({ li: 90, po: 115, in: 75, hi: 105, ev: 115, de: 100 }), speed: 8, style: '俊敏な地上竜＋回避反撃型',
+    fz({ key: 'regnas', name: 'レグナス', en: 'REGNAS', kind: '牙獣種', personality: '誇り高い・負けず嫌い', owner: 'ryu',
+      base: fz({ li: 90, po: 115, in: 75, hi: 105, ev: 115, de: 100 }), speed: 8, style: '俊敏な牙獣種＋回避反撃型',
       uniqueSkill: fz({ id: 'unique_regnas', name: '蒼銀の反撃', implemented: true, /* 2026-10-05：ライバル戦だけ（js/battle/rival-partner.js。セーブしない） */ desc: '相手の攻撃を回避すると、次に与えるダメージが一度だけ1.20倍。効果は重複しない。',
         params: fz({ trigger: 'evade', damageMultiplier: 1.2, uses: 1, stack: false }), hiddenParams: fz([]) }),
       // 正式技10個（2026-10-05 正式。竜眼ロックの「竜」は この字）。命中 100% は必中ではない（回避の計算はほかの技と同じ）。support＝自分の強化（重ねがけしない・使い直すと残りターンを更新）
@@ -168,12 +168,12 @@
       growth: G6('D', 'B', 'B', 'C', 'B', 'E'),
       image: fz({ src: './assets/monsters/2p5d/gauru.webp', w: 720, h: 663 }), }),
     fz({ id: 2, key: 'nobiton', name: 'ノビトン', en: 'NOBITON', kind: '獣種', personality: null, formerNames: fz([]),
-      base: fz({ li: 120, po: 80, in: 80, hi: 80, ev: 50, de: 100 }), speed: 2, uniqueSkill: 'unique_nobiton', growth: G6('B', 'D', 'D', 'D', 'E', 'C'), tagline: 'のびる・たれる・くっつく。不思議な鼻（くち）を持つ、マイペースなモンスター。',
+      base: fz({ li: 140, po: 80, in: 120, hi: 100, ev: 70, de: 110 }), speed: 2, uniqueSkill: 'unique_nobiton', growth: G6('B', 'D', 'D', 'D', 'E', 'C'), tagline: 'のびる・たれる・くっつく。不思議な鼻（くち）を持つ、マイペースなモンスター。',
       image: fz({ src: './assets/monsters/2p5d/nobiton.webp', w: 720, h: 657 }),
       silhouette: fz({ src: './assets/monsters/2p5d/nobiton_silhouette.webp', w: 720, h: 657 }) }),
     // ジオル：英字表記は正式仕様に未記載のため null（推測で決めない）
     fz({ id: 3, key: 'jiol', name: 'ジオル', en: null, kind: '岩石種', personality: 'のんびり・おとなしい', formerNames: fz([]),
-      base: fz({ li: 90, po: 120, in: 40, hi: 50, ev: 30, de: 150 }), speed: 1, uniqueSkill: 'unique_jiol', tagline: null, growth: G6('C', 'A', 'E', 'D', 'E', 'A'),   // 成長適性（2026-10-02 正式）
+      base: fz({ li: 120, po: 150, in: 80, hi: 70, ev: 30, de: 160 }), speed: 1, uniqueSkill: 'unique_jiol', tagline: null, growth: G6('C', 'A', 'E', 'D', 'E', 'A'),   // 成長適性（2026-10-02 正式）
       image: fz({ src: './assets/monsters/2p5d/jiol.webp', w: 720, h: 667 }), }),
   ]);
   // ---- 種族IDの役割（二重管理にしない：1つの種族レコードが両方を持つ） ----

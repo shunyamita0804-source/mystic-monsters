@@ -2,7 +2,7 @@
 // 実ブラウザ：2.5D の歩行コマ（ガウルの front・back 各8コマ）と対戦表の横顔アイコン（5体）（2026-10-11）
 //  WK-B1（390×844・375×667）：本編 Chapter 1 の盤（worldCh1:true）でガウル＝16コマを重ねて置き全部読める・止まると正面（front の1コマ目）・
 //        足の位置と体の高さが静止の立ち絵とそろう・奥へ進む1歩は back・行き止まりから戻る1歩も back（2026-10-14 開発29：後ろから追うカメラ。旧は front）（左右反転なし＝ムーンウォークしない）・画面の外へ出ない
-//  WK-B2：横顔の歩行素材が無い種族（ソラモ）は従来どおり（後ろ姿の歩行＋手前は弾む）
+//  WK-B2：2026-10-14 ソラモ・ノビトン・ジオルの 2.5D 歩行（16コマ・止まると正面・足と体の高さ・奥へ back）
 //  FC-B1（390×844・375×667）：対戦表（6体 E・8体 C）の顔＝faces_25d の横顔（読める・円の中）・読み込めないときは従来の丸い顔（faces）
 //  QA_E2E=1 のときだけ実行
 // =========================================================
@@ -94,15 +94,32 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
   });
 }
 
-test('WK-B2：front・back の 2.5D 素材を組み込んでいない種族（ソラモ）は従来どおり（奥へ後ろ姿の歩行・止まると静止の立ち絵）', { skip: SKIP, timeout: 120000 }, async () => {
-  const p = await openPage({ worldCh1: true }); const pg = p.page;
-  await toBoard(pg, 0);
-  const a = await pg.evaluate(() => ({ n: document.querySelectorAll('.rfw-mon img.wk').length, src: [...document.querySelectorAll('.rfw-mon img.wk')].map((i) => i.getAttribute('src')), idle: document.querySelector('.rfw-mon').classList.contains('wk-idle') }));
-  assert.equal(a.n, 8);
-  assert.ok(a.src.every((s) => /solamo_walk_back\//.test(s)), '従来の後ろ姿の歩行');
-  assert.equal(a.idle, false, '止まると静止の立ち絵（front が無い）');
-  assert.deepEqual(p.errors, []);
-});
+for (const [sp, key] of [[0, 'solamo'], [2, 'nobiton'], [3, 'jiol']]) {
+  test(`WK-B2（${key}）：2026-10-14 の 2.5D 歩行（front・back 各8コマ）＝止まると正面・足と体の高さ・奥へ back`, { skip: SKIP, timeout: 120000 }, async () => {
+    const p = await openPage({ worldCh1: true }); const pg = p.page; mkdirSync(SHOT, { recursive: true });
+    await toBoard(pg, sp);
+    await pg.waitForFunction(() => [...document.querySelectorAll('.rfw-mon img.wk')].every((i) => i.complete && i.naturalWidth > 0), null, { timeout: 30000 });
+    const src = await pg.evaluate(() => [...document.querySelectorAll('.rfw-mon img.wk')].map((i) => i.getAttribute('src')));
+    assert.equal(src.length, 16, '読み込むのはこの種族の16コマだけ');
+    assert.ok(src.every((s) => new RegExp(`assets/monsters/walk_25d/${key}/${key}_walk_(front|back)_0[1-8]\\.webp$`).test(s)), JSON.stringify(src.slice(0, 2)));
+    await pg.evaluate(() => board()); await idle(pg);
+    let m = await measure(pg);
+    assert.ok(m.on && m.on.set === 'front' && m.on.i === 0 && /wk-idle/.test(m.cls), `止まると正面 ${JSON.stringify(m)}`);
+    assert.ok(Math.abs(m.on.b - m.st.b) <= 3, `足の位置 ${m.on.b} / ${m.st.b}`);
+    const body = m.on.body * (438 / 463);   // 3体の絵は体の高さ 438px（512px の中）
+    assert.ok(Math.abs(body / m.st.h - 1) <= 0.05, `体の高さ ${body} / ${m.st.h}`);
+    await pg.screenshot({ path: path.join(SHOT, `${key}_idle.png`) });
+    await pg.evaluate(() => { window.__seen = []; const el = document.querySelector('.rfw-mon'); new MutationObserver(() => { const on = el.querySelector('img.wk.on'); __seen.push([el.dataset.dir || '', on ? on.dataset.s : '', el.classList.contains('wk-flip')]); }).observe(el, { subtree: true, attributes: true, attributeFilter: ['class'] }); });
+    await pg.evaluate(() => { window.__mr = Math.random; Math.random = () => (2 - 0.5) / 6; }); await pg.click('#brollbtn'); await pg.evaluate(() => { Math.random = window.__mr; });
+    await pg.waitForFunction(() => document.querySelector('.rfw-mon').classList.contains('wk-on'), null, { timeout: 20000 });
+    await pg.waitForTimeout(200); await pg.screenshot({ path: path.join(SHOT, `${key}_walk_back.png`) });
+    await idle(pg);
+    const walking = (await pg.evaluate(() => __seen)).filter((x) => x[0]);
+    assert.ok(walking.length > 0 && walking.every((x) => x[0] === 'back' && x[1] === 'back' && !x[2]), `奥へは back・反転なし ${JSON.stringify(walking.slice(0, 4))}`);
+    m = await measure(pg); assert.ok(m.on && m.on.set === 'front' && m.on.i === 0, '止まったら正面に戻る');
+    assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+  });
+}
 
 async function toTournament(pg, rank) {
   await H.newGame(pg, 'テスト');
