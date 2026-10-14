@@ -303,10 +303,20 @@
    *  → 余韻 0.98秒 → 戻る 0.33秒 → UI を戻す（総尺 約1.64秒＋消える 0.2秒）。重なったら待ち行列（同じ側・同じスキルは1回・最大2つ）。決着・画面の片付けで必ず消す。
    *  視差を減らす設定：寄らない（発光と説明だけ・1.3秒）。判定・ダメージ・ターン・セーブは変えない（表示だけ・待たない）。
    *  専用の画像（モンスター1体に1枚・計5枚＝未納）：SKILL_FX[key] にパスを入れると足元に <img> で出る（それまでは仮の輪）。 */
-  const CUT = Object.freeze({ in: 330, hold: 980, out: 330, card: 170, calm: 1300, zMax: 1.3, bgK: 0.5, bgPan: 0.3, se: 'SKILL_ACTIVATE' });
-  const SKILL_FX = { solamo: null, gauru: null, nobiton: null, jiol: null, regnas: null };   // 足元の正式エフェクト（未納＝null＝仮の輪）
+  // 2026-10-14 開発29（3）：寄りを「グッ・ササッ」と速く（0.33 → 0.27秒・出だしが速く最後はやわらかく止まる）・寄る上限 1.3 → 1.45（全身が切れない範囲で）。総尺は約1.64秒のまま（余韻を 0.06秒のばした）
+  const CUT = Object.freeze({ in: 270, hold: 1040, out: 330, card: 170, calm: 1300, zMax: 1.45, bgK: 0.5, bgPan: 0.3, se: 'SKILL_ACTIVATE', ease: 'cubic-bezier(.12,.82,.26,1)' });
+  // 2026-10-14 開発29（4）：足元の正式エフェクト（ユーザー納品の透過 PNG 5枚＝assets/battle/skill_fx_1014/original/。表示は tools/skillfx1014/derive.py の派生 640×640）。
+  //   ax・ay＝絵の中の輪の中心（地面の円の中心＝モンスターの足もとに合わせる点・絵の幅に対する割合。絵ごとに透明の余白が違う＝一律に中央へは置かない）・w＝絵の幅（モンスターの立ち絵の幅に対する倍率）
+  //   モンスターの後ろ（.mw の中・立ち絵より奥）に置く＝顔や体を覆わない・カメラの寄りと一緒に動く（足もとからずれない）。相手側は左右反転（立ち絵と同じ規則）。仮の輪（.mmskc-ring）は出さない
+  const SKILL_FX = Object.freeze({
+    solamo: { src: './assets/battle/skill_fx_1014/solamo.webp', ax: 0.500, ay: 0.761, w: 1.75 },
+    gauru: { src: './assets/battle/skill_fx_1014/gauru.webp', ax: 0.499, ay: 0.750, w: 1.75 },
+    nobiton: { src: './assets/battle/skill_fx_1014/nobiton.webp', ax: 0.504, ay: 0.676, w: 1.75 },
+    jiol: { src: './assets/battle/skill_fx_1014/jiol.webp', ax: 0.495, ay: 0.660, w: 1.75 },
+    regnas: { src: './assets/battle/skill_fx_1014/regnas.webp', ax: 0.499, ay: 0.679, w: 1.75 },
+  });
   const FX_RGB = Object.freeze({ solamo: '255,214,120', gauru: '255,86,60', nobiton: '150,232,130', jiol: '160,130,255', regnas: '150,200,255' });
-  let cutEl = null, cutT = 0, cutAnims = [], cutSide = -1, cutKey = '', cutQueue = [];
+  let cutEl = null, cutT = 0, cutAnims = [], cutSide = -1, cutKey = '', cutQueue = [], cutFx = null;
   const cutLog = [];
   function skillInfo(key) {
     const M = root.MMP10M; if (!M) return null;
@@ -353,7 +363,7 @@
       el.style.transformOrigin = `${(cam.cx - (er.left - br.left)).toFixed(1)}px ${(cam.cy - (er.top - br.top) + oy).toFixed(1)}px`;
       const t0 = 'translate(0px,0px) scale(1)', t1 = `translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${kk.toFixed(4)})`;
       try {
-        cutAnims.push(el.animate([{ transform: t0, offset: 0, easing: 'cubic-bezier(.2,.7,.2,1)' }, { transform: t1, offset: CUT.in / total, easing: 'linear' }, { transform: t1, offset: (CUT.in + CUT.hold) / total, easing: 'cubic-bezier(.45,0,.3,1)' }, { transform: t0, offset: 1 }], { duration: total, fill: 'forwards', composite: 'add' }));
+        cutAnims.push(el.animate([{ transform: t0, offset: 0, easing: CUT.ease }, { transform: t1, offset: CUT.in / total, easing: 'linear' }, { transform: t1, offset: (CUT.in + CUT.hold) / total, easing: 'cubic-bezier(.45,0,.3,1)' }, { transform: t0, offset: 1 }], { duration: total, fill: 'forwards', composite: 'add' }));
       } catch (e) { /* 動かせない環境＝寄らない（説明と発光だけ） */ }
     };
     move(bt.querySelector('.vs'), cam.dx, cam.dy, cam.k);
@@ -362,15 +372,20 @@
     bt.classList.add('mmsk-cut');
     const side = mw && mw.closest ? mw.closest('.mside') : null; if (side) side.classList.add('mmsk-tg');
     const d = document.createElement('div'); d.className = 'mmskc' + (i ? ' r' : '') + (calm ? ' calm' : ''); d.setAttribute('role', 'status'); d.style.setProperty('--fx', FX_RGB[key] || FX_RGB.solamo);
-    const footX = cam.fx, footY = cam.fy + r.height * cam.k / 2 - 2, fw = Math.round(r.width * cam.k * 1.3), src = SKILL_FX[key];
+    const footX = cam.fx, footY = cam.fy + r.height * cam.k / 2 - 2, fw = Math.round(r.width * cam.k * 1.3), fx = SKILL_FX[key];
     d.innerHTML = `<i class="mmskc-vig" style="--vx:${cam.fx.toFixed(0)}px;--vy:${cam.fy.toFixed(0)}px"></i>`
-      + (src ? `<img class="mmskc-img" alt="" draggable="false" style="left:${footX.toFixed(0)}px;top:${footY.toFixed(0)}px;width:${fw}px">` : `<i class="mmskc-ring" style="left:${footX.toFixed(0)}px;top:${footY.toFixed(0)}px;width:${fw}px"></i>`)
+      + (fx ? '' : `<i class="mmskc-ring" style="left:${footX.toFixed(0)}px;top:${footY.toFixed(0)}px;width:${fw}px"></i>`)
       + `<div class="mmskc-card"><small>${i ? '相手の固有スキル' : '固有スキル'}</small><b></b><p></p></div>`;
-    if (src) d.querySelector('.mmskc-img').src = src;
+    if (fx && mw && rr && rr.width) {   // 正式エフェクト：立ち絵の足もと（下端の中央）に輪の中心を合わせ、.mw の中の立ち絵の後ろへ
+      const mr = mw.getBoundingClientRect(), w = rr.width * fx.w, footMx = rr.left + rr.width / 2 - mr.left, footMy = rr.bottom - mr.top;
+      const im = document.createElement('img'); im.className = 'mmskc-fx' + (calm ? ' calm' : ''); im.alt = ''; im.draggable = false; im.decoding = 'async';
+      im.style.cssText = `left:${(footMx - w * (i ? 1 - fx.ax : fx.ax)).toFixed(1)}px;top:${(footMy - w * fx.ay).toFixed(1)}px;width:${w.toFixed(1)}px;height:${w.toFixed(1)}px;--fd:${total}ms;transform-origin:${((i ? 1 - fx.ax : fx.ax) * 100).toFixed(1)}% ${(fx.ay * 100).toFixed(1)}%` + (i ? ';transform:scaleX(-1)' : '');
+      im.src = fx.src; mw.insertBefore(im, mw.firstChild); cutFx = im;
+    }
     d.querySelector('b').textContent = info.name; d.querySelector('p').textContent = info.desc || '';
     bt.appendChild(d); cutEl = d; cutSide = i; cutKey = key;
     setTimeout(() => { try { if (cutEl === d && root.MMAUDIO) root.MMAUDIO.se(CUT.se); } catch (e) { /* 音が無くても進行は変わらない */ } }, 110);
-    cutLog.push({ side: i, key, name: info.name, k: +cam.k.toFixed(3), dx: Math.round(cam.dx), dy: Math.round(cam.dy), fx: Math.round(cam.fx), fy: Math.round(cam.fy), calm, total, at: now() });
+    cutLog.push({ side: i, key, name: info.name, fxImg: fx ? fx.src.split('/').pop() : null, in: CUT.in, k: +cam.k.toFixed(3), dx: Math.round(cam.dx), dy: Math.round(cam.dy), fx: Math.round(cam.fx), fy: Math.round(cam.fy), calm, total, at: now() });
     cutT = setTimeout(endCut, total + 40);
     return true;
   }
@@ -381,10 +396,11 @@
     if (bt) { bt.classList.remove('mmsk-cut'); bt.querySelectorAll('.mside.mmsk-tg').forEach((e) => e.classList.remove('mmsk-tg')); }
     for (const a of cutAnims) { try { a.cancel(); } catch (e) {} } cutAnims = [];
     if (cutEl) { const e = cutEl; cutEl = null; e.classList.add('out'); setTimeout(() => e.remove(), 220); }
+    if (cutFx) { const e = cutFx; cutFx = null; e.classList.add('out'); setTimeout(() => e.remove(), 220); }
     cutSide = -1; cutKey = '';
     const nx = cutQueue.shift(); if (nx && bt && bt.isConnected) setTimeout(() => { if (!cutEl && document.getElementById('bt') === bt) skillCut(nx.i, nx.key); }, 140);
   }
-  function clearCuts() { cutQueue = []; if (cutEl || cutAnims.length) endCut(); }
+  function clearCuts() { cutQueue = []; if (cutEl || cutFx || cutAnims.length) endCut(); }
   /** 開幕のゴング（fight() の ban('FIGHT!')）：ガウル「紅翼の猛攻」は最初の3ターンの効果＝ゴングの直後・最初の行動の前に1回（両側。相手側も同じ）。効果そのものは statMul のまま */
   let lastSess = null;
   function gong() {
@@ -414,7 +430,15 @@
       + '#bt .mmskc.calm .mmskc-vig{display:none}'
       + '#bt .mmskc-ring{position:absolute;aspect-ratio:2.7;transform:translate(-50%,-50%);border-radius:50%;opacity:0;background:radial-gradient(ellipse at center,rgba(var(--fx),.5) 0,rgba(var(--fx),.3) 36%,rgba(var(--fx),0) 70%);box-shadow:0 0 0 1.5px rgba(var(--fx),.6),0 0 16px 4px rgba(var(--fx),.35),inset 0 0 12px rgba(var(--fx),.4);animation:mmskRing 1.2s ease-out .24s both}'
       + '#bt .mmskc-img{position:absolute;transform:translate(-50%,-50%);height:auto;opacity:0;animation:mmskRing 1.2s ease-out .24s both}'
-      + '#bt .mmskc-card{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 22%);width:min(88vw,360px);transform:translateX(-50%);box-sizing:border-box;padding:10px 16px 12px;border-radius:14px;text-align:center;color:#fff;'
+      // 2026-10-14 開発29（4）：正式エフェクト（.mw の中・立ち絵の後ろ＝z-index -1 の層。.mw は位置の基準に）。ふわっと出て少しだけ広がり、演出の終わりで消える
+      + '#bt .mw:has(>.mmskc-fx){position:relative;z-index:0}'
+      + '#bt .mmskc-fx{position:absolute;z-index:-1;max-width:none;pointer-events:none;opacity:0;animation:mmskFx var(--fd,1640ms) cubic-bezier(.2,.7,.3,1) both}'
+      + '#bt .mmskc-fx[style*="scaleX(-1)"]{animation-name:mmskFxR}'
+      + '#bt .mmskc-fx.out{opacity:0!important;transition:opacity .2s}'
+      + '@keyframes mmskFx{0%{opacity:0;transform:scale(.86)}14%{opacity:1}22%{transform:scale(1)}80%{opacity:1;transform:scale(1.04)}100%{opacity:0;transform:scale(1.06)}}'
+      + '@keyframes mmskFxR{0%{opacity:0;transform:scaleX(-1) scale(.86)}14%{opacity:1}22%{transform:scaleX(-1) scale(1)}80%{opacity:1;transform:scaleX(-1) scale(1.04)}100%{opacity:0;transform:scaleX(-1) scale(1.06)}}'
+      + '#bt .mmskc-fx.calm{animation-timing-function:ease-out}'
+      + '#bt .mmskc-card{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 13%);width:min(88vw,360px);transform:translateX(-50%);box-sizing:border-box;padding:10px 16px 12px;border-radius:14px;text-align:center;color:#fff;'
       + 'background:linear-gradient(rgba(14,24,60,.92),rgba(8,14,38,.94));border:1.5px solid #e6c46e;box-shadow:0 6px 18px rgba(0,0,0,.5),0 0 16px rgba(255,210,120,.35);opacity:0;animation:mmskCard .32s cubic-bezier(.2,1.2,.4,1) .17s both,mmskCardOut .22s ease-in 1.33s forwards}'
       + '#bt .mmskc.r .mmskc-card{border-color:#9cc4ff;box-shadow:0 6px 18px rgba(0,0,0,.5),0 0 16px rgba(120,170,255,.35)}'
       + '#bt .mmskc.calm .mmskc-card{animation:mmskCard .32s cubic-bezier(.2,1.2,.4,1) .12s both,mmskCardOut .22s ease-in 1.04s forwards}'

@@ -140,12 +140,14 @@
     REWARD:           { src: UI + 'confirm_style_6_002.ogg', gain: 1.3 },
     // ---- 2026-10-13 開発24：観客の声（公式大会の会場だけ・js/battle/crowd.js。ユーザー提供の派生＝Pixabay の3音源の区間を切り出し OGG／M4A にしたもの。AUDIO_CREDITS.md）----
     //  src は [OGG, M4A]＝そのブラウザで再生できる形式を1つだけ選ぶ（同じ音を二重に鳴らさない）。gain はユーザー指定の初期値（歓声 0.55・落胆 0.55・ブーイング 0.20）から。ブーイングは素材が約6dB大きい
-    CROWD_HIT:        { src: [CR + 'hit_cheer_2p0_2p7_700ms.ogg', CR + 'hit_cheer_2p0_2p7_700ms.m4a'], gain: 0.55 },                       // 命中（-14.7 LUFS → 約 -20）
-    CROWD_HIT_LONG:   { src: [CR + 'hit_cheer_2p0_3p0_1000ms.ogg', CR + 'hit_cheer_2p0_3p0_1000ms.m4a'], gain: 0.6 },                       // 同・1.0秒の版（比較用）
-    CROWD_MISS:       { src: [CR + 'miss_disappointment_0p5_1p2_700ms.ogg', CR + 'miss_disappointment_0p5_1p2_700ms.m4a'], gain: 0.55 },   // ルーレットの MISS（技が出ない）
-    CROWD_MISS_LONG:  { src: [CR + 'miss_disappointment_0p5_1p5_1000ms.ogg', CR + 'miss_disappointment_0p5_1p5_1000ms.m4a'], gain: 0.53 },
-    CROWD_EVADE:      { src: [CR + 'evade_boo_0p0_0p6_600ms.ogg', CR + 'evade_boo_0p0_0p6_600ms.m4a'], gain: 0.2 },                         // 技を相手がかわした（-8.9 LUFS → 約 -23）
-    CROWD_EVADE_LONG: { src: [CR + 'evade_boo_0p0_1p0_1000ms.ogg', CR + 'evade_boo_0p0_1p0_1000ms.m4a'], gain: 0.15 },                      // 同・1.0秒の版（-6.5 LUFS）
+    //  2026-10-14 開発29（7）：iPhone の試遊「聞こえづらい」→ 再生の gain だけ約 +6dB（曲・区間・鳴る時刻・設定 mmcrowd は不変）。歓声・落胆＝約 -14 LUFS（旧 約 -20）・ブーイング＝約 -17 LUFS（旧 約 -23）。
+    //    旧→新：HIT 0.55→1.08・HIT_LONG 0.6→1.19・MISS 0.55→1.11・MISS_LONG 0.53→1.06・EVADE 0.2→0.39・EVADE_LONG 0.15→0.30。ピークは最大でも約 -4 dBFS（クリップしない）
+    CROWD_HIT:        { src: [CR + 'hit_cheer_2p0_2p7_700ms.ogg', CR + 'hit_cheer_2p0_2p7_700ms.m4a'], gain: 1.08 },                       // 命中（-14.7 LUFS → 約 -14）
+    CROWD_HIT_LONG:   { src: [CR + 'hit_cheer_2p0_3p0_1000ms.ogg', CR + 'hit_cheer_2p0_3p0_1000ms.m4a'], gain: 1.19 },                       // 同・1.0秒の版（比較用）
+    CROWD_MISS:       { src: [CR + 'miss_disappointment_0p5_1p2_700ms.ogg', CR + 'miss_disappointment_0p5_1p2_700ms.m4a'], gain: 1.11 },   // ルーレットの MISS（技が出ない）
+    CROWD_MISS_LONG:  { src: [CR + 'miss_disappointment_0p5_1p5_1000ms.ogg', CR + 'miss_disappointment_0p5_1p5_1000ms.m4a'], gain: 1.06 },
+    CROWD_EVADE:      { src: [CR + 'evade_boo_0p0_0p6_600ms.ogg', CR + 'evade_boo_0p0_0p6_600ms.m4a'], gain: 0.39 },                         // 技を相手がかわした（-8.9 LUFS → 約 -17）
+    CROWD_EVADE_LONG: { src: [CR + 'evade_boo_0p0_1p0_1000ms.ogg', CR + 'evade_boo_0p0_1p0_1000ms.m4a'], gain: 0.30 },                      // 同・1.0秒の版（-6.5 LUFS）
   };
 
   // ---- 2026-10-13 開発24：NPC のボイス（ユーザー提供の試遊素材。MP3 から OGG／M4A に変換したもの。AUDIO_CREDITS.md）----

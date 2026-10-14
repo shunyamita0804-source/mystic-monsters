@@ -170,6 +170,15 @@
       // 2026-10-13 開発27（23）：勝ち／負けの画面を横帯に統一（全バトル共通・判定は変えない）。勝ち＝金〜暖色の横帯に大きく WIN／負け＝落ち着いた寒色の横帯に LOSE。
       //  旧描画層：勝ったとき fight() が差し込む決着のポーズ（.sp／.spa の img.spi＝旧 2D）が正式の勝利の絵の後ろに残っていた → 正式の勝利の絵（mma-win）がある間は旧のポーズの層を出さない（1体だけ）
       '#bt .mon.mma-won>:not(.mma-win){visibility:hidden!important;opacity:0!important}',
+      // 2026-10-14 開発29（9）：決着のあとは旧のポーズ（.sp／.spa＝SPX）・旧の静止の絵・倒れる動き（.dead）を出さない。正式の待機立ち絵（mma-fin）だけ（勝利の絵がある側はそれだけ）
+      '#bt.mma-fin .mon>:not(.mma-win):not(.mma-fin){visibility:hidden!important;opacity:0!important}',
+      '#bt.mma-fin .mon.mma-won>.mma-fin{visibility:hidden!important;opacity:0!important}',
+      // 2026-10-14 開発29（8）：決着の曲（WIN 4秒／LOSE 5秒）の間は「もどる」を見せない・押せない（index.html の rjLock が #bt に data-rjlock を付ける）
+      '#bt[data-rjlock] .gow,#bt[data-rjlock] #go{opacity:0!important;pointer-events:none!important}',
+      '#bt.mma-fin .mon:not(.mma-won)>.mma-fin{opacity:1!important;visibility:visible!important}',
+      '#bt .mon .mma-fin{position:absolute;left:50%;bottom:0;height:calc(118% * var(--mma-k,1));width:auto;max-width:none;transform:translateX(-50%);pointer-events:none;filter:drop-shadow(0 8px 6px rgba(0,0,0,.45))}',
+      '#bt .mon .mma-fin.fl{transform:translateX(-50%) scaleX(-1)}',
+      '#bt.mma-fin .mw.dead,#bt.mma-fin .dead .mon{animation:none!important;transform:none!important;opacity:1!important;filter:none!important;transition:none!important}',
       '#bt.mma-v24 .mma-endband{top:auto;bottom:calc(40% * .6 - 4.6%);height:clamp(92px,15%,130px);transform-origin:50% 50%;animation:mmaendb .42s cubic-bezier(.2,1.1,.4,1) .1s both}',
       '#bt.mma-v24.mma-res-win .mma-endband{background:linear-gradient(90deg,rgba(120,56,0,0),rgba(176,96,12,.78) 14%,rgba(232,156,40,.9) 38%,rgba(250,196,84,.94) 50%,rgba(232,156,40,.9) 62%,rgba(176,96,12,.78) 86%,rgba(120,56,0,0))}',
       '#bt.mma-v24.mma-res-lose .mma-endband{background:linear-gradient(90deg,rgba(10,22,58,0),rgba(22,44,96,.82) 14%,rgba(42,74,140,.9) 40%,rgba(58,92,162,.92) 50%,rgba(42,74,140,.9) 60%,rgba(22,44,96,.82) 86%,rgba(10,22,58,0))}',
@@ -357,6 +366,7 @@
         if (r.height || r.top) { ban.style.top = (r.top - b.top + Math.max(r.height, 20) / 2) + 'px'; ban.classList.add('mm-low'); }
       }
       if (ban && /^WIN!/.test(ban.textContent || '')) won(bt);
+      if (ban && /^(WIN!|LOSE)/.test(ban.textContent || '')) fin(bt);
     };
     sync();
     const mo = new MutationObserver(sync);
@@ -386,6 +396,33 @@
     const mon = $('#m0 .mon', bt); if (!mon || mon.querySelector('.mma-win')) return;
     if (re) w.im.style.animation = 'none';
     mon.appendChild(w.im); if (w.loaded) mon.classList.add('mma-won');
+  }
+  // 2026-10-14 開発29（9）：決着（WIN!／LOSE）で fight() が差し込む旧 2D の決着のポーズ（poseSeq＝SPX の WINS／LOSES を 0.65秒ごとに .mon の中身へ入れ替える。
+  //   ソラモ・ガウル）と、旧の倒れる動き（.dead＝回転・灰色。ノビトン・ジオル・レグナス）が、正式の勝利の絵が無い側（負けた側・相手が勝った側）に出ていた
+  //   → 決着のあとは両側とも旧のポーズ・倒れる動きを出さず、正式の待機立ち絵（assets/battle/idle/。同じ大きさ・向き）を1枚だけ立てる。プレイヤーが勝った側は従来どおり正式の勝利の絵（mma-win）。
+  //   fight()・判定・結果・WIN／LOSE の帯と音は変えない。旧の絵（SPX）は技の演出でも使うので消さない（表示の経路だけ止める）
+  const FIN_IMG = new WeakMap();   // #bt → [side0, side1]
+  const finLog = [];
+  function fin(bt) {
+    if (!bt.classList.contains('mma-fin')) { bt.classList.add('mma-fin'); finLog.push({ at: Date.now(), win: !!bt.querySelector(':scope>#ban') && /^WIN!/.test(bt.querySelector(':scope>#ban').textContent || '') }); }
+    const pl = G('BPL'); if (!pl) return;
+    let arr = FIN_IMG.get(bt);
+    if (!arr) {
+      arr = [0, 1].map((s) => {
+        const sp = pl[s] && pl[s].sp, src = idleSrc(sp); if (!src) return null;
+        const im = new Image(); im.className = 'mma-fin' + (flipOf(s, sp) ? ' fl' : ''); im.alt = ''; im.decoding = 'sync'; im.src = src;
+        const mon = $(`#m${s} .mon`, bt); if (mon && bt.classList.contains('mma-v24') && SCALE[sp]) mon.style.setProperty('--mma-k', String(SCALE[sp]));
+        const side = $(`#m${s}`, bt);
+        if (side) { const mo = new MutationObserver(() => { if (!bt.isConnected) { mo.disconnect(); return; } placeFin(bt, s, im); }); mo.observe(side, { childList: true, subtree: true }); }
+        return im;
+      });
+      FIN_IMG.set(bt, arr);
+    }
+    arr.forEach((im, s) => im && placeFin(bt, s, im));
+  }
+  function placeFin(bt, s, im) {
+    const mon = $(`#m${s} .mon`, bt); if (!mon || im.parentNode === mon) return;
+    mon.appendChild(im);
   }
   // 2026-10-12 試遊：状態異常（#mmail）・能力の上げ下げ（#st0／#st1）の札は名前の横に小さく1行（左＝名前の右・右＝名前の左）。行の高さは固定＝札が出てもライフのバーは動かない
   function setupChips(bt) {
@@ -521,7 +558,7 @@
     new MutationObserver((muts) => { for (const mu of muts) for (const n of mu.addedNodes) if (n && n.id === 'bt') setup(n); }).observe(document.body, { childList: true });
   }
   if (typeof document !== 'undefined') { if (document.body) watch(); else document.addEventListener('DOMContentLoaded', watch); }
-  root.MMARENA = Object.freeze({ R, IDLE, FACE, SCALE, GEO, UI_KEY, v24, setUi, crowdLog: () => crowdLog.slice(), endLog: () => endLog.slice(), rankOf, arenaSrc, fieldSrc, FIELD_BG, idleSrc, flipOf, setup, react, RX_MS, rxLog: () => rxLog.slice(), faceSrc: (sp) => (IDLE[sp] ? `./assets/tournament/faces_25d/face_${IDLE[sp].slice(5)}.webp` : null),
+  root.MMARENA = Object.freeze({ R, IDLE, FACE, SCALE, GEO, UI_KEY, v24, setUi, crowdLog: () => crowdLog.slice(), endLog: () => endLog.slice(), finLog: () => finLog.slice(), rankOf, arenaSrc, fieldSrc, FIELD_BG, idleSrc, flipOf, setup, react, RX_MS, rxLog: () => rxLog.slice(), faceSrc: (sp) => (IDLE[sp] ? `./assets/tournament/faces_25d/face_${IDLE[sp].slice(5)}.webp` : null),
     // 2026-10-11：対戦表の顔＝2.5D の横顔（faces_25d）。読めなかったときは従来の丸い顔（faces）へ（index.html の tbIcon の onerror）
     faceOldSrc: (sp) => (IDLE[sp] ? `./assets/tournament/faces/face_${IDLE[sp].slice(5)}.webp` : null) });
 })(typeof window !== 'undefined' ? window : globalThis);

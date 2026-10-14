@@ -155,7 +155,7 @@ test('D24-B3：観客の声＝命中・ルーレットの MISS・かわされた
   assert.ok(r.rx.some((x) => x.side === 0), '相手の攻撃（自分が受けた）にも');
   // 実際に再生を始めた（seLog だけで判断しない）：名前ごとの数・AudioContext running・OGG の1本だけ
   assert.equal(r.play.length, r.crowd.length, '頼んだ数だけ再生を始めた（二重に鳴らない）'); assert.ok(r.play.every((x) => x.ctx === 'running' && /crowd_1013\/.*\.ogg$/.test(x.src)), JSON.stringify(r.play.slice(0, 3)));
-  const G = { CROWD_HIT_LONG: 0.6, CROWD_MISS_LONG: 0.53, CROWD_EVADE_LONG: 0.15 }; assert.ok(r.play.every((x) => x.name in G && Math.abs(x.gain - G[x.name]) < 0.001), `初期の音量（2026-10-13 開発28 A4：既定は通常＝1.0秒の版・標準）${JSON.stringify(r.play.map((x) => [x.name, x.gain]).slice(0, 3))}`);
+  const G = { CROWD_HIT_LONG: 1.19, CROWD_MISS_LONG: 1.06, CROWD_EVADE_LONG: 0.30 }; assert.ok(r.play.every((x) => x.name in G && Math.abs(x.gain - G[x.name]) < 0.001), `初期の音量（2026-10-13 開発28 A4：既定は通常＝1.0秒の版・標準）${JSON.stringify(r.play.map((x) => [x.name, x.gain]).slice(0, 3))}`);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
@@ -175,7 +175,7 @@ test('D24-B4：練習試合（野外）は観客なし・1秒／控えめ／な�
   await fightToEnd(pg, (t) => t % 2 === 1);
   const r = await pg.evaluate(() => MMAUDIO.playLog().filter((x) => /^CROWD/.test(x.name)));
   assert.ok(r.length > 0 && r.every((x) => /_LONG$/.test(x.name) && /1000ms\.ogg$/.test(x.src)), '1秒の版');
-  const G = { CROWD_HIT_LONG: 0.6, CROWD_MISS_LONG: 0.53, CROWD_EVADE_LONG: 0.15 }; assert.ok(r.every((x) => Math.abs(x.gain - G[x.name] * 0.6) < 0.001), '控えめ＝×0.6');
+  const G = { CROWD_HIT_LONG: 1.19, CROWD_MISS_LONG: 1.06, CROWD_EVADE_LONG: 0.30 }; assert.ok(r.every((x) => Math.abs(x.gain - G[x.name] * 0.6) < 0.001), '控えめ＝×0.6');
   await pg.evaluate(() => MMCROWD.set({ mode: 'off' }));
   const n = r.length; await pg.click('#go').catch(() => {});
   assert.equal(await pg.evaluate(() => JSON.parse(localStorage.getItem('mmcrowd')).mode), 'off');

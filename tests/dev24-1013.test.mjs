@@ -56,7 +56,7 @@ function env(o = {}) {
 
 test('DV-01：registry＝観客の声 6本（OGG／M4A の対）・ボイス 13本（2026-10-13 開発25 から13本とも ON＝エリオットは再訪の挨拶）・SE の名前の一覧に登録', () => {
   const got = loadRegistry(), { A } = env();
-  const want = { CROWD_HIT: 0.55, CROWD_MISS: 0.55, CROWD_EVADE: 0.2, CROWD_HIT_LONG: 0.6, CROWD_MISS_LONG: 0.53, CROWD_EVADE_LONG: 0.15 };
+  const want = { CROWD_HIT: 1.08, CROWD_MISS: 1.11, CROWD_EVADE: 0.39, CROWD_HIT_LONG: 1.19, CROWD_MISS_LONG: 1.06, CROWD_EVADE_LONG: 0.30 };   // 2026-10-14 開発29（7）：約 +6dB
   for (const [k, g] of Object.entries(want)) {
     assert.ok(A.SE.includes(k), `SE の名前の一覧（ホワイトリスト）：${k}`);
     const v = got.se[k]; assert.ok(v, k); assert.equal(v.gain, g, `${k} の gain`);

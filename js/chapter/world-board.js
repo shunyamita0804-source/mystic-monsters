@@ -75,7 +75,8 @@
   function info(m, node) {
     const f = fieldOf(m), st = f.core, d = D(), c = C(), at = node || st.node;
     const first = st.done || node ? null : c.options(d, st).map((e) => e.dst);
-    let back = node ? null : st.back;
+    // 2026-10-14 開発29（6）：歩いている途中（node を渡す）も、行き止まりから戻る区間の上なら戻る向きで先を見る（旧：途中は前向き＝行き止まりの側を向いてカメラが一瞬逆へ回っていた）
+    let back = node ? (st.back && d.segments[st.back] && d.segments[st.back][3].includes(node) ? st.back : null) : st.back;
     if (!back && !node && c.DEAD_ROLES.includes(c.role(d, at))) { const ix = c.index(d); back = ix.spurs.find((k) => ix.endOf[k] === at) || null; }
     const la = (n, per) => (st.done ? [] : root.MMRF_WORLD.lookahead(d, at, back ? null : first, back, n, per));
     const ahead = la(CAM.fit, CAM.fitPer), near = la(CAM.ahead, CAM.per);   // カメラが入れる地点（先の4・分かれ道の手前は各2）／明るく残す地点（先の5・各3）
@@ -340,7 +341,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     V.el = $('#wbw'); V.key = key;
     if (root.MMRF_WORLD) V.world = root.MMRF_WORLD.create(V.el.querySelector('.wbv'), D(), root.MMRF_PLAY, { view: viewRect, monSrc: monSrc(m), art: { base: ART, road: 'strip' },
       focus: true, veil: false, xray: true, hideLm: ['START', 'LOWER_GATE', 'UPPER_GATE'], ahead: CAM.ahead,   // 2026-10-13 開発27（11・15）：開始地点の門・中央の門2か所（下門・上門）の飾りの絵は出さない（マス・道・判定はそのまま）
-      sMin: CAM.sMin, sMax: CAM.sMax, tilePx: CAM.tilePx, monRatio: CAM.monRatio, zoomTau: CAM.zoomTau });
+      sMin: CAM.sMin, sMax: CAM.sMax, tilePx: CAM.tilePx, monRatio: CAM.monRatio, zoomTau: CAM.zoomTau, heading: true });   // 2026-10-14 開発29（6）：後ろから追うカメラ（進む向きが画面の上）
     V.el.querySelectorAll('.rfw-title').forEach((e) => e.remove());   // 2026-10-13 開発25 H：全景の地図の上に大きな題字を出さない（題字は中継カットの間だけ＝cover）。HUD の Chapter 表示は別（残す）
     sprSetup(m);
     return true;
@@ -505,7 +506,9 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
   /** 1歩ごと：from → to の向きで見た目を決める（位置は MMRF_WORLD が動かす） */
   function sprWalk(from, to) {
     const el = monEl(), d = D(), a = d.nodes[from], b = d.nodes[to]; if (!el || !a || !b || calm()) return;
-    const r = pickDir(b[0] - a[0], b[1] - a[1], SPR.sets, { set: SPR.cur, flip: SPR.flip, lat: SPR.lat }, SPR.stand), w = r.set ? SPR.sets[r.set] : null;
+    // 2026-10-14 開発29（6）：カメラが進む向きへ回っている＝画面の上での向きで選ぶ（世界の差をカメラの回転 yaw で回す）＝前へ進む1歩は後ろ姿の歩行（back）
+    const yw = V.world && V.world.yawGoal ? V.world.yawGoal() * Math.PI / 180 : 0, ddx = b[0] - a[0], ddy = b[1] - a[1];
+    const r = pickDir(ddx * Math.cos(yw) - ddy * Math.sin(yw), ddx * Math.sin(yw) + ddy * Math.cos(yw), SPR.sets, { set: SPR.cur, flip: SPR.flip, lat: SPR.lat }, SPR.stand), w = r.set ? SPR.sets[r.set] : null;
     if (r.set !== SPR.cur) SPR.phase = 0;
     SPR.cur = r.set; SPR.flip = r.flip; SPR.lat = r.lat;
     el.classList.remove('wk-idle'); el.classList.toggle('wk-on', !!w); el.classList.toggle('bob', !w); el.classList.toggle('wk-flip', !!w && r.flip); el.classList.toggle('st-flip', !w && r.flip);
@@ -616,7 +619,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
         if (!onBoard()) break;
         const before = m.raise.node, s = P8().step(S, m); doSave();
         if (m.raise.node !== before) V.path.push(m.raise.node);
-        if (m.raise.node !== before && V.world) { sprWalk(before, m.raise.node); V.world.update(info(m, m.raise.node)); progSet(m.raise.node); const c = $('#chfd'); if (c) c.textContent = placeName(m.raise.node); await wait(calm() ? 60 : STEP_MS); }
+        if (m.raise.node !== before && V.world) { V.world.update(info(m, m.raise.node)); sprWalk(before, m.raise.node); progSet(m.raise.node); const c = $('#chfd'); if (c) c.textContent = placeName(m.raise.node); await wait(calm() ? 60 : STEP_MS); }
         if (s && s.stage === 'branch') break;
       }
     } finally { sprStop(); busySet(false); }

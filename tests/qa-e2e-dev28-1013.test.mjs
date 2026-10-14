@@ -61,7 +61,7 @@ const measure = (pg, i) => pg.evaluate((i) => {
   const go = document.getElementById('go'), gow = go.closest('.gow') || go, gr = go.getBoundingClientRect(), st = getComputedStyle(gow), hit = document.elementFromPoint(gr.left + gr.width / 2, gr.top + gr.height / 2);
   const card = document.querySelector('.mmskc-card');
   return { cut: bt.classList.contains('mmsk-cut'), cx: r.left + r.width / 2 - br.left, cy: r.top + r.height / 2 - br.top, W: br.width, H: br.height, inside: r.left >= br.left - 1 && r.right <= br.right + 1 && r.top >= br.top - 1 && r.bottom <= br.bottom + 1,
-    stopHidden: st.visibility === 'hidden' || +st.opacity === 0, stopHit: !!(hit && (hit === go || hit.closest('.gow') || hit.closest('.bui'))), card: card ? card.innerText : null, ring: !!document.querySelector('.mmskc-ring'), img: !!document.querySelector('.mmskc-img'),
+    stopHidden: st.visibility === 'hidden' || +st.opacity === 0, stopHit: !!(hit && (hit === go || hit.closest('.gow') || hit.closest('.bui'))), card: card ? card.innerText : null, ring: !!document.querySelector('.mmskc-ring'), img: !!document.querySelector('.mmskc-img'), fx: (document.querySelector('.mmskc-fx') || { src: '' }).src.split('/').pop() || null,
     anims: document.getAnimations().filter((a) => a.effect && a.effect.target && (a.effect.target.classList.contains('vs') || a.effect.target.classList.contains('bgs'))).length,
     msgHidden: getComputedStyle(document.getElementById('msg')).visibility === 'hidden', turn: (MMRULES.current() || {}).turn, dmg: (MMRULES.current() || { totalDamage: null }).totalDamage };
 }, i);
@@ -139,11 +139,11 @@ test('D28-B3：ガウル「紅翼の猛攻」＝ゴングの直後・最初の�
     const i = mine ? 0 : 1, m = await measure(pg, i), log = await cutLog(pg);
     const tag = `${size.join('x')} ${mine ? '自分' : '相手'}`;
     assert.equal(log.length, 1, `${tag}：演出は1回 ${JSON.stringify(log)}`); assert.deepEqual([log[0].side, log[0].key, log[0].name], [i, 'gauru', '紅翼の猛攻']);
-    assert.ok(log[0].k > 1.15 && log[0].k <= 1.3, `${tag}：寄り ${log[0].k}`); assert.ok(log[0].total >= 1500 && log[0].total <= 2100);
+    assert.ok(log[0].k > 1.15 && log[0].k <= 1.45, `${tag}：寄り ${log[0].k}`); assert.ok(log[0].total >= 1500 && log[0].total <= 2100);
     assert.ok(m.cut && Math.abs(m.cx - m.W / 2) <= 3 && m.inside, `${tag}：対象が中央・切れない ${JSON.stringify(m)}`);
     assert.ok(m.cy > m.H * 0.2 && m.cy < m.H * 0.5, `${tag}：縦は HUD の下・説明の上 ${m.cy}/${m.H}`);
     assert.ok(m.stopHidden && !m.stopHit && m.msgHidden, `${tag}：STOP・説明が隠れて押せない`);
-    assert.ok(m.ring && !m.img, '足元の正式エフェクトは未納＝仮の輪');
+    assert.ok(!m.ring && !m.img && m.fx === 'gauru.webp', `足元の正式エフェクト（2026-10-14 開発29）＝仮の輪は出さない ${m.fx}`);
     const desc = await pg.evaluate(() => MMP10M.skillText(1));
     assert.ok(m.card && m.card.includes(mine ? '固有スキル' : '相手の固有スキル') && m.card.includes('紅翼の猛攻') && m.card.includes(desc.desc), `${tag}：札 ${m.card}`);
     assert.ok(m.anims >= 1, 'カメラは Web Animations');
@@ -152,7 +152,7 @@ test('D28-B3：ガウル「紅翼の猛攻」＝ゴングの直後・最初の�
     await pg.waitForFunction(() => !document.getElementById('bt').classList.contains('mmsk-cut') && !document.querySelector('.mmskc'), null, { timeout: 6000 });
     await pg.waitForTimeout(300);
     const after = await measure(pg, i);
-    assert.ok(!after.cut && after.anims === 0 && after.card === null && !after.ring, `${tag}：片付け ${JSON.stringify(after)}`);
+    assert.ok(!after.cut && after.anims === 0 && after.card === null && !after.ring && !after.fx, `${tag}：片付け ${JSON.stringify(after)}`);
     assert.ok(Math.abs(after.cx - m.cx) > 20, '元の位置へ戻る');
     await pg.waitForFunction(() => { const g = document.querySelector('#bt .gow'); return g && getComputedStyle(g).visibility !== 'hidden' && +getComputedStyle(g).opacity > 0; }, null, { timeout: 10000 });   // 正式の STOP（.gow）が戻る
     assert.equal((await cutLog(pg)).length, 1, `${tag}：1回だけ`);
@@ -169,7 +169,7 @@ test('D28-B3：ガウル「紅翼の猛攻」＝ゴングの直後・最初の�
   assert.deepEqual(await pg.evaluate(() => MMRULES.cutQueue()), []);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
-const CUT_PEAK = 620;   // 寄りきった頃（in 330ms ＋ 少し）
+const CUT_PEAK = 620;   // 寄りきった頃（in 270ms ＋ 少し。2026-10-14 開発29 で 330 → 270）
 
 test('D28-B4：ソラモ「逆境のひと踏ん張り」＝ライフ 20% 以下になった瞬間（実戦）・1バトル1回／レグナス「蒼銀の反撃」＝構えの成立（回避）の瞬間・構え中の再回避では出ない', { skip: SKIP, timeout: 400000 }, async () => {
   // ソラモ：自分（li 999・回避 1＝相手の攻撃が当たる・丈夫さ 1＝1発で 11 以上減る）。ライフを 210（21%）にしてから相手の攻撃で 20% 以下へ（0 にはならない）
@@ -236,14 +236,15 @@ test('D28-B5：ノビトン・ジオル（今のバトルには出ない）の�
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
-test('D28-B6：立体サイコロ＝正式の面に12本の面取りと8つの角の飾り・面の角が丸い・止まったあと少し斜めで出目の面は読める', { skip: SKIP, timeout: 200000 }, async () => {
+test('D28-B6：立体サイコロ＝正式の面（2026-10-14 開発29 から正式デザイン A の絵）・面の角が丸い・止まったあと少し斜めで出目の面は読める', { skip: SKIP, timeout: 200000 }, async () => {
   const p = await openPage({ worldCh1: true }); const pg = p.page;
   await toWorld(pg); await pg.mouse.click(4, 300);
   await pg.evaluate(() => { const mr = Math.random; Math.random = () => (3 - 0.5) / 6; document.getElementById('brollbtn').click(); Math.random = mr; });
   await pg.waitForSelector('.d3z', { timeout: 8000 });
-  const a = await pg.evaluate(() => { const z = document.querySelector('.d3z'); return { off: z.classList.contains('off'), e: z.querySelectorAll('.d3-e').length, t: z.querySelectorAll('.d3-e.t').length, c: z.querySelectorAll('.d3-c').length, f: z.querySelectorAll('.d3-f').length, radius: getComputedStyle(z.querySelector('.d3-f')).borderRadius, star: getComputedStyle(z.querySelector('.d3-c'), '::before').clipPath }; });
-  assert.deepEqual([a.off, a.e, a.t, a.c, a.f], [true, 12, 8, 8, 6], JSON.stringify(a));
-  assert.ok(parseFloat(a.radius) > 0, `角が丸い ${a.radius}`); assert.match(a.star, /polygon/, '角の飾り');
+  // 2026-10-14 開発29（2）：正式の面＝正式デザイン A の絵（面取り・角の飾りは絵の中）＝面取りの帯・角の丸い飾りは出さない・中の金の芯 6枚
+  const a = await pg.evaluate(() => { const z = document.querySelector('.d3z'); return { off: z.classList.contains('off'), skin: z.dataset.skin, e: z.querySelectorAll('.d3-e').length, c: z.querySelectorAll('.d3-c').length, k: z.querySelectorAll('.d3-k').length, f: z.querySelectorAll('.d3-f').length, radius: getComputedStyle(z.querySelector('.d3-f')).borderRadius, bi: getComputedStyle(z.querySelector('.d3-f')).backgroundImage }; });
+  assert.deepEqual([a.off, a.skin, a.e, a.c, a.k, a.f], [true, 'official', 0, 0, 6, 6], JSON.stringify(a));
+  assert.ok(parseFloat(a.radius) > 0, `角が丸い ${a.radius}`); assert.match(a.bi, /cube_1014\/face_[1-6]\.webp/, '正式デザイン A の面');
   await pg.waitForFunction(() => document.querySelector('.d3z') && document.querySelector('.d3z').dataset.final, null, { timeout: 8000 });
   const r = await pg.evaluate(() => { const t = document.querySelector('.d3z .d3-tilt'); const m = /matrix3d\(([^)]+)\)/.exec(getComputedStyle(t).transform); return { fin: document.querySelector('.d3z').dataset.final, n: m ? m[1].split(',').map(Number) : null }; });
   assert.equal(r.fin, '3');
