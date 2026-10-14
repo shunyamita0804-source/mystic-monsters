@@ -283,7 +283,8 @@ test('D28-B7：全景 → 盤のズーム＝地面の板の Web Animations・マ
   // 動いている間はマスの style を書き換えない（Web Animations だけ）。終わったとき（finishIntro）に最後の姿を1回ずつ入れる
   const during = r.writes.filter((w) => w[0] < r.lastRun - 20).reduce((a, w) => a + w[1], 0), total = r.writes.reduce((a, w) => a + w[1], 0);
   assert.ok(during <= 2, `ズームの間の書き換えは毎フレームではない（${during} 回。${JSON.stringify(r.writes.filter((w) => w[0] < r.lastRun - 20).slice(0, 4))} … 終わり ${r.lastRun}ms）`);   // 見える範囲に入ったマスの display の切り替え（最大数回）は毎フレームの幅・zIndex の書き換えではない
-  assert.ok(total <= r.tiles, `終わりの1回だけ（${total} ≤ ${r.tiles}）`);
+  // 2026-10-14 進入時のクラッシュ対策：寄る間だけ縮めた幅を終わりで戻す＝終わりの1回の処理でマスごとに最大2つ（幅を戻す・最後の姿）
+  assert.ok(total <= r.tiles * 2, `終わりの1回だけ（${total} ≤ ${r.tiles} × 2）`);
   const dec = []; for (let i = 1; i < r.s.length; i++) { if (r.s[i][1] < r.s[i - 1][1] - 1e-6) dec.push([i, r.s[i - 2], r.s[i - 1], r.s[i], r.s[i + 1]]); }
   const gap = gapOf(r.s);
   assert.equal(dec.length, 0, `倍率は単調に増える（逆行 ${JSON.stringify(dec)}・${r.s.length} フレーム・終わり ${r.lastRun}ms）`); assert.ok(gap.g <= 250, `途切れない（最大の刻み ${gap.g}ms・${gap.at}ms の所・${r.s.length} フレーム）`);

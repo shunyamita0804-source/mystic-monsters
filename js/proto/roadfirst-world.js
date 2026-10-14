@@ -360,21 +360,33 @@
       run(plane, cams.map((c, i) => ({ transform: `translate(${c.ax}px,${c.ay}px) rotateX(${c.tilt}deg) scale(${c.s}) rotate(${(c.yaw || 0).toFixed(3)}deg) translate(${-c.tx}px,${-c.ty}px)`, offset: i / INTRO_SAMPLES })));
       const tileW = (c, q) => Math.max(c.s < 1 ? 2 : o.tilePx[0], Math.min(o.tilePx[1], o.tileW * c.s * q.k));
       const onScreen = (q, w) => q.x > -w && q.x < Wd + w && q.y > -w && q.y < Hd + w;
+      // 2026-10-14 Chapter 1 進入時のクラッシュ対策（iPhone で題字 → 全景の瞬間に落ちる）：寄る間は全要素が別々の層になる。
+      //  要素の幅を決まった base のままにすると、全景で米粒ほどの要素も base の大きさの層を持つ（約570層）→ 寄る間だけ幅を「画面に見えている間の最大の大きさ」に縮め、
+      //  scale はその幅に対する比（見えている間は 1 以下＝見た目・位置は同じ）。画面の外の刻みは 1 で止める（左上が基準＝小さくしても画面に入らない）。終わりで base に戻す
+      const resized = [];
+      const fit = (el, base, rs, on) => {
+        const near = on.map((v, i) => v || on[i - 1] || on[i + 1]);   // 画面のふちを出入りする刻みの前後も含める（出入りの途中の大きさを変えない）
+        const m = Math.max(...rs.filter((r, i) => near[i]), 0);
+        if (!(m > 0) || m >= 0.98) return (r) => r;
+        el.style.width = Math.max(1, base * m).toFixed(1) + 'px'; resized.push([el, base]);
+        return (r, i) => (near[i] ? r / m : Math.min(1, r / m));
+      };
       for (const [id, t] of Object.entries(tiles)) {
-        const n = D.nodes[id]; let any = false;
-        const kf = cams.map((c, i) => { const q = project(c, n[0], n[1]), w = tileW(c, q); if (onScreen(q, w)) any = true; return { transform: `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * 0.62).toFixed(1)}px) scale(${(w / TB).toFixed(4)})`, offset: i / INTRO_SAMPLES }; });
-        if (!any) { if (!t.hid) { t.el.style.display = 'none'; t.hid = true; } continue; }
+        const n = D.nodes[id], on = [], rs = [];
+        const qs = cams.map((c) => { const q = project(c, n[0], n[1]), w = tileW(c, q); on.push(onScreen(q, w)); rs.push(w / TB); return [q, w]; });
+        if (!on.includes(true)) { if (!t.hid) { t.el.style.display = 'none'; t.hid = true; } continue; }
         if (t.hid) { t.el.style.display = ''; t.hid = false; }
-        run(t.el, kf);
+        const sc = fit(t.el, TB, rs, on);
+        run(t.el, qs.map(([q, w], i) => ({ transform: `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * 0.62).toFixed(1)}px) scale(${sc(rs[i], i).toFixed(4)})`, offset: i / INTRO_SAMPLES })));
       }
       for (const p of props) {
-        if (!p.base) propBase(p); let any = false;
-        const kf = cams.map((c, i) => { const q = project(c, p.x, p.y), w = Math.min(p.max || 1e9, Math.max(p.min || 0, p.w * c.s * q.k)); if (q.x > -w && q.x < Wd + w && q.y > -10 && q.y < Hd + w * 1.2 && w > 1.5) any = true;
-          return { transform: `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * (p.ah || 0.92)).toFixed(1)}px) scale(${(w / p.base).toFixed(4)})`, offset: i / INTRO_SAMPLES }; });
-        if (!any) { if (!p.hid) { p.el.style.display = 'none'; p.hid = true; } continue; }
+        if (!p.base) propBase(p); const on = [], rs = [];
+        const qs = cams.map((c) => { const q = project(c, p.x, p.y), w = Math.min(p.max || 1e9, Math.max(p.min || 0, p.w * c.s * q.k)); on.push(q.x > -w && q.x < Wd + w && q.y > -10 && q.y < Hd + w * 1.2 && w > 1.5); rs.push(w / p.base); return [q, w]; });
+        if (!on.includes(true)) { if (!p.hid) { p.el.style.display = 'none'; p.hid = true; } continue; }
         if (p.hid) { p.el.style.display = ''; p.hid = false; }
         if (p.zi == null) { p.zi = p.solid && S.goalZ != null ? Math.min(zOf(p.y, p.z), S.goalZ - 1) : zOf(p.y, p.z); p.el.style.zIndex = String(p.zi); }
-        run(p.el, kf);
+        const sc = fit(p.el, p.base, rs, on);
+        run(p.el, qs.map(([q, w], i) => ({ transform: `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * (p.ah || 0.92)).toFixed(1)}px) scale(${sc(rs[i], i).toFixed(4)})`, offset: i / INTRO_SAMPLES })));
       }
       if (S.mon) {
         const kf = cams.map((c, i) => { const q = project(c, S.mon[0], S.mon[1]), w = o.monRatio > 0 ? Math.max(c.s < 1 ? 14 : 30, tileW(c, q) * o.monRatio) : Math.max(c.s < 1 ? 14 : 40, Math.min(100, 24 * c.s * q.k));
@@ -382,11 +394,12 @@
         run(mon, kf);
       }
       run(title, [{ opacity: 1, offset: 0 }, { opacity: 0, offset: 0.45 }, { opacity: 0, offset: 1 }]);
-      it.anims = anims; it.end = now + (can ? dur : 0); S.introAnims = anims.length; it.final = Object.assign({}, cams[INTRO_SAMPLES]);   // 道筋の終点（寄り終わりはここから通常の追従へ＝途中で注視点が変わっても飛ばない）
+      it.anims = anims; it.resized = resized; S.introResized = resized.length; it.end = now + (can ? dur : 0); S.introAnims = anims.length; it.final = Object.assign({}, cams[INTRO_SAMPLES]);   // 道筋の終点（寄り終わりはここから通常の追従へ＝途中で注視点が変わっても飛ばない）
     }
     /** 寄り終わり：最後の姿を通常の描画で置いてからアニメーションを外す（1フレームも飛ばない） */
     function finishIntro(it) {
       const done = it.done; S.intro = null;
+      for (const [el, base] of it.resized || []) el.style.width = base + 'px';   // 寄る間だけ縮めた幅を決まった base へ戻す（下の apply と同じ処理の中＝1フレームも縮んだまま見えない）
       S.cam = Object.assign({}, it.final || it.to()); S.cam.P = o.persp; S.sig = ''; S.dirty = true; title.style.opacity = '0';   // 2026-10-13 開発28：keyframe の終点そのもの（動いている間に目標＝fitZoom が少し変わっていても、ここで飛ばず通常の追従で寄る）
       apply();
       for (const a of it.anims || []) { try { a.cancel(); } catch (e) {} }
@@ -481,7 +494,7 @@
       markerDim(id, dim) { const p = props.find((x) => x.mark === id); if (p) p.el.classList.toggle('dim', !!dim); },
       markerOff(id) { const i = props.findIndex((x) => x.mark === id); if (i >= 0) { props[i].el.remove(); props.splice(i, 1); } },
       yawGoal: () => (o.heading ? S.yawGoal || 0 : 0),
-      state: () => ({ yaw: S.cam.yaw || 0, yawGoal: S.yawGoal || 0, heading: !!o.heading, focus: o.focus ? veilSig.split(',').filter(Boolean) : null, cam: Object.assign({}, S.cam), goal: S.goal && Object.assign({}, S.goal), mon: S.mon && S.mon.slice(), view: S.view, intro: !!S.intro, introAnims: S.introAnims || 0, ahead: S.lastAhead || [],
+      state: () => ({ yaw: S.cam.yaw || 0, yawGoal: S.yawGoal || 0, heading: !!o.heading, focus: o.focus ? veilSig.split(',').filter(Boolean) : null, cam: Object.assign({}, S.cam), goal: S.goal && Object.assign({}, S.goal), mon: S.mon && S.mon.slice(), view: S.view, intro: !!S.intro, introAnims: S.introAnims || 0, introResized: S.introResized || 0, ahead: S.lastAhead || [],
         visual: VIS.key, skin: SK ? SK.key : null, artSkin: art.ground ? { ground: !!art.ground._sk, road: !!(art.road && art.road._sk), strip: !!(art.strip && art.strip._sk), water: !!(art.water && art.water._sk) } : null, tiles: Object.keys(tiles).length, chunks: chunks.length, painted, res: o.res, tilt: o.tilt, props: props.length, art: !!(art.ground || art.road), rims: art.terrain ? art.terrain.rims.filter((r) => r.kind === 'valley').map((r) => r.pts.length) : null,
         rimKinds: art.terrain ? art.terrain.rims.reduce((a, r) => { a[r.kind] = (a[r.kind] || 0) + 1; return a; }, {}) : null }),
       project: (x, y) => project(S.cam, x, y),
@@ -756,7 +769,7 @@
 :is(#rfp,.wbv) .rfw-plane{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
 :is(#rfp,.wbv) .rfw-chunk{position:absolute;display:block}
 :is(#rfp,.wbv) .rfw-bb{position:absolute;inset:0;pointer-events:none}
-:is(#rfp,.wbv) .rfw-tile{position:absolute;left:0;top:0;will-change:transform;transform-origin:0 0}
+:is(#rfp,.wbv) .rfw-tile{position:absolute;left:0;top:0;transform-origin:0 0}
 :is(#rfp,.wbv) .rfw-tile img{display:block;width:100%;height:auto}
 :is(#rfp,.wbv) .rfw-tile span{position:absolute;left:0;right:0;top:30%;text-align:center;font:800 11px/1 "Noto Sans JP",sans-serif;color:#13233a;text-shadow:0 0 3px #fff,0 0 3px #fff}
 :is(#rfp,.wbv) .rfw-tile span:empty{display:none}
@@ -768,7 +781,9 @@
 :is(#rfp,.wbv) .rfw.intro .rfw-tile.far{opacity:1}
 :is(#rfp,.wbv) .rfw.intro .rfw-veil{opacity:0}
 :is(#rfp,.wbv) .rfw-apron{position:absolute;pointer-events:none}
-:is(#rfp,.wbv) .rfw-prop{position:absolute;left:0;top:0;will-change:transform;transform-origin:0 0;pointer-events:none;user-select:none;-webkit-user-drag:none}
+:is(#rfp,.wbv) .rfw-prop{position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none;user-select:none;-webkit-user-drag:none}
+/* 2026-10-14 Chapter 1 進入時のクラッシュ対策：マス・景物の will-change は開始の俯瞰の外（追従の間）だけ。俯瞰では約540個が一度に画面に入る＝決まった幅（base）の層が一斉にできていた */
+:is(#rfp,.wbv) .rfw:not(.intro) :is(.rfw-tile,.rfw-prop){will-change:transform}
 :is(#rfp,.wbv) .rfw-prop{transition:opacity .25s}:is(#rfp,.wbv) .rfw-prop.thru{opacity:.32}
 :is(#rfp,.wbv) .rfw-mark{filter:drop-shadow(0 0 6px rgba(190,110,255,.85));transition:opacity .5s,filter .5s}
 :is(#rfp,.wbv) .rfw-mark.dim{opacity:.32;filter:none}
