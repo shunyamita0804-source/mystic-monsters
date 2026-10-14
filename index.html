@@ -3863,6 +3863,35 @@ html[data-mmev] #app .chsheet,html[data-mmev] #app .p9sheet{visibility:hidden!im
  *  操作欄の高さ（--chdeck と同じ式）＋案内の行＋余白で決める（固定 px の決め打ちではない）。操作欄・ボタンの位置は動かさない。大型の窓（到着・重要な会話＝big）と施設の背景つきの会話は従来どおり */
 html:has(#app>.chfw) .mmtalk:not(.mmtalk-big):not(.mmtalk-scene) .mmtalk-stage{margin-bottom:calc(clamp(136px,20.6dvh,180px) + env(safe-area-inset-bottom,0px) + 54px)}
 html:has(#app>.chfw.wbw) .mmtalk:not(.mmtalk-big):not(.mmtalk-scene) .mmtalk-stage{margin-bottom:calc(clamp(136px,20.6dvh,180px) + 26px + env(safe-area-inset-bottom,0px) + 54px)}
+/* ===== 2026-10-14 開発30：技管理のルーレットの6枠＝横長の技カード1行・技の一覧の正式技カード（js/battle/move-cards.js）。
+ *  行は .mvr（Phase 6 の行と同じ要素に足した class。Phase 6 の CSS は変えない＝ここでは上書きだけ）。
+ *  左＝正式技カードの絵（16:9 のまま・切り抜かない・横に伸ばさない）＋番号、中＝技名（2行まで）と威力・命中率・クリ率、右＝▲▼と✕（押しやすい大きさ）。
+ *  文字・数値は従来どおり HTML（SK のデータ）。技の一覧の絵は 16:9 の枠（object-fit:cover＝切れない比率）。 */
+.ds .drl{gap:7px;padding:8px}
+.ds .drl .mvr{display:grid;grid-template-columns:minmax(84px,30%) minmax(0,1fr) 30px 32px;grid-template-rows:1fr auto;grid-template-areas:"img nm mv x" "img st mv x";column-gap:7px;row-gap:3px;align-items:center;height:auto;min-height:62px;padding:4px 5px;overflow:visible;border-radius:11px;border:2px solid #d4a64a;
+ background:linear-gradient(180deg,rgba(255,236,190,.10),rgba(0,0,0,0) 46%),linear-gradient(100deg,#3b2510,#2a180b 58%,#1c1007);box-shadow:inset 0 0 0 1px rgba(255,228,160,.28),inset 0 0 0 3px rgba(40,22,8,.9),inset 0 0 0 4px rgba(212,166,74,.35),0 2px 6px rgba(0,0,0,.45)}
+.ds .drl .mvr.ci{border-color:#6fd59a;background:linear-gradient(180deg,rgba(220,255,236,.09),rgba(0,0,0,0) 46%),linear-gradient(100deg,#123826,#0c2a1c 58%,#07190f);box-shadow:inset 0 0 0 1px rgba(200,255,224,.24),inset 0 0 0 3px rgba(6,24,14,.9),inset 0 0 0 4px rgba(111,213,154,.32),0 2px 6px rgba(0,0,0,.45)}
+.ds .drl .mvr.ms{border-color:#6a6f7a;background:linear-gradient(100deg,#2c2e35,#1c1d23);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.ds .drl .mvr.sel{border-color:#7ef06a;box-shadow:0 0 0 2px #7ef06a,0 0 14px #7ef06a}
+.ds .drl .mvr .rt{grid-area:img;position:relative;left:auto;top:auto;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;object-position:center;border-radius:7px;border:1.5px solid #e8c56a;box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 8px rgba(255,214,120,.25);-webkit-mask:none;mask:none;align-self:center;z-index:1}
+.ds .drl .mvr .rsil{display:none}
+.ds .drl .mvr.ms::before{content:"";grid-area:img;width:100%;aspect-ratio:16/9;border-radius:7px;border:1.5px dashed rgba(170,176,190,.45);background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,.55),rgba(0,0,0,.15) 72%)}
+.ds .drl .mvr .ric{grid-area:img;align-self:start;justify-self:start;z-index:3;width:24px;height:24px;margin:-3px 0 0 -3px;font-size:.78rem;box-shadow:0 1px 3px rgba(0,0,0,.7)}
+.ds .drl .mvr:not(.ms) .rn,.ds .drl .mvr.ms .rn{grid-area:nm;align-self:end;margin:0;font-size:.84rem;line-height:1.18;white-space:normal;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;word-break:normal;overflow-wrap:anywhere;color:#fff3d6;text-shadow:0 1px 2px #000}
+.ds .drl .mvr.ms .rn{color:#aab0bb;letter-spacing:.2em}
+.ds .drl .mvr .rst{grid-area:st;align-self:start;justify-self:start;margin:0;max-width:100%;border:1px solid rgba(232,197,106,.35);background:rgba(0,0,0,.5)}
+.ds .drl .mvr .rst div{width:auto;min-width:34px;padding:1px 3px}
+.ds .drl .mvr .rst b{font-size:.74rem;white-space:nowrap}
+.ds .drl .mvr .rst small{font-size:.5rem}
+.ds .drl .mvr .rst div:first-child b{display:inline-flex;gap:1px;align-items:center}
+.ds .drl .mvr .rst .efi{font-size:.56rem;padding:0 2px;line-height:1.25}
+.ds .drl .mvr .wmv{grid-area:mv;position:static;transform:none;justify-self:center;gap:3px}
+.ds .drl .mvr .wmv button{width:30px;height:25px;border-radius:6px;font-size:.7rem;background:linear-gradient(#4d6378,#2f3f50);border:1px solid rgba(232,210,154,.7)}
+.ds .drl .mvr button.wx2{grid-area:x;position:static;transform:none;justify-self:center;width:30px;height:30px;font-size:.8rem;border:1.5px solid #ffd9d0;background:radial-gradient(circle at 40% 35%,#d9524a,#8e1f1a)}
+.ds .dska.mvc img{aspect-ratio:16/9;object-fit:cover;object-position:center}
+.ds .dska.mvc{box-shadow:inset 0 0 0 1px rgba(255,226,150,.45)}
+.dsha.mvc img{aspect-ratio:16/9;object-fit:cover;object-position:center}
+@media (max-width:380px){.ds .drl .mvr{grid-template-columns:minmax(78px,28%) minmax(0,1fr) 30px 30px;column-gap:5px}.ds .drl .mvr .rst div{min-width:31px;padding:1px 2px}.ds .drl .mvr .rst b{font-size:.7rem}}
 </style></head><body><main>
 <h1>ミスティックモンスターズ</h1>
 <div id="app"></div>
@@ -3919,6 +3948,7 @@ html:has(#app>.chfw.wbw) .mmtalk:not(.mmtalk-big):not(.mmtalk-scene) .mmtalk-sta
 <script src="./js/battle/rival-partner.js"></script>
 <script src="./js/battle/official-moves.js"></script>
 <script src="./js/battle/rules.js"></script>
+<script src="./js/battle/move-cards.js"></script>
 <script src="./js/monsters/reaction-art.data.js"></script>
 <script src="./js/monsters/reaction-art.js"></script>
 <script src="./js/battle/crowd.js"></script><!-- 2026-10-13 開発24：観客の声（公式大会の会場だけ。MMCROWD） -->
@@ -4838,6 +4868,8 @@ function learnAt(k,m){for(const sp of [m.sp,m.s2]){if(sp==null)continue;for(cons
 function radar(m){const K=KS,mx=Math.max(200,Math.ceil(Math.max(...K.map(k=>m[k]))/100)*100),P=(i,r)=>{const a=-Math.PI/2+i*Math.PI/3;return [110+Math.cos(a)*r,105+Math.sin(a)*r]};
  const ring=f=>K.map((_,i)=>P(i,80*f).join(",")).join(" "),pts=K.map((k,i)=>P(i,80*Math.min(1,m[k]/mx)).join(",")).join(" ");
  return `<svg class="rdr" viewBox="0 -4 220 218"><defs><linearGradient id="rg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7dffb0" stop-opacity=".85"/><stop offset="1" stop-color="#1fae5b" stop-opacity=".55"/></linearGradient></defs>${[1,.75,.5,.25].map(f=>`<polygon points="${ring(f)}" fill="${f==1?"rgba(0,0,0,.35)":"none"}" stroke="rgba(232,200,106,${f==1?.9:.35})" stroke-width="${f==1?2:1}"/>`).join("")}${K.map((_,i)=>`<line x1="110" y1="105" x2="${P(i,80)[0]}" y2="${P(i,80)[1]}" stroke="rgba(232,200,106,.3)"/>`).join("")}<polygon points="${pts}" fill="url(#rg1)" stroke="#bfffd8" stroke-width="2"/>${K.map((k,i)=>{const [x,y]=P(i,99);return `<text x="${x}" y="${y+4}" text-anchor="middle" font-size="11" font-weight="800" fill="#ffe9b0">${LAB[k]}</text>`}).join("")}</svg><div class="rdn">外側の線 = ${mx}</div>`}
+// 2026-10-14 開発30：技管理（ルーレットの6枠・技の一覧・技の詳細）の技の絵＝正式5体50技の静止カード（js/battle/move-cards.js）。無い技は従来の SKART。バトル中のルーレット（ic・sico）・技辞典は変えない
+const mvSrc=k=>window.MMMVCARD?MMMVCARD.src(k,SKART[k]):SKART[k],mvNew=k=>!!(window.MMMVCARD&&MMMVCARD.bySlot(k));
 function dscr(id,msg){if(id=="b")return hall("t"); // Phase 8：旧「腕試し大会」（暦に依存する1試合制の大会）は廃止。既存の実績はそのまま有効
  if(S.m&&MMP7.inChapter(S.m)&&id!="st"&&id!="w")return board(msg); // Phase 8：Chapter中はステータス・わざだけ
  const m=S.m,D=DST[id];let c="";
@@ -4846,9 +4878,9 @@ function dscr(id,msg){if(id=="b")return hall("t"); // Phase 8：旧「腕試し�
  else if(id=="s"){c=p7TrainMenu()} // Phase 7：新しい特訓（15マス一本道）。旧「師匠と1戦」への入口はここで切断
  else{while(m.eq.length<6)m.eq.push(-1);if(selSlot<0||selSlot>5)selSlot=Math.max(0,m.eq.indexOf(-1));
   const own=Array.isArray(m.sk)?m.sk:[],st3=(k)=>k<0||!SK[k]?`<div class="rst"><div><small>威力</small><b>?</b></div><div><small>命中率</small><b>?</b></div><div><small>クリ率</small><b>?</b></div></div>`:`<div class="rst"><div><small>${SK[k][1]?"威力":"効果"}</small><b>${SK[k][1]?Math.round(SK[k][1]*100):efIco(k)}</b></div><div><small>命中率</small><b>${SK[k][8]}%</b></div><div><small>クリ率</small><b>${Math.round(SK[k][9]*100)}%</b></div></div>`;
-  const rows=m.eq.map((k,q)=>k<0||!SK[k]?`<div class="rw ms ${q==selSlot?"sel":""}" onclick="selS(${q})"><span class="ric">${q+1}</span><span class="rsil"></span><span class="rn">ミス</span>${st3(-1)}<div class="wmv"><button ${q==0?"disabled":""} onclick="event.stopPropagation();moveSlot(${q},-1)">▲</button><button ${q==5?"disabled":""} onclick="event.stopPropagation();moveSlot(${q},1)">▼</button></div></div>`:`<div class="rw ${SK[k][7]=="p"?"cp":"ci"} ${q==selSlot?"sel":""}" onclick="selS(${q})"><span class="ric">${q+1}</span><img class="rt" src="${SKART[k]}" alt=""><span class="rn">${SK[k][0]}</span>${st3(k)}<div class="wmv"><button ${q==0?"disabled":""} onclick="event.stopPropagation();moveSlot(${q},-1)">▲</button><button ${q==5?"disabled":""} onclick="event.stopPropagation();moveSlot(${q},1)">▼</button></div><button class="wx2" onclick="event.stopPropagation();clrS(${q})">✕</button></div>`).join("");
+  const rows=m.eq.map((k,q)=>k<0||!SK[k]?`<div class="rw mvr ms ${q==selSlot?"sel":""}" onclick="selS(${q})"><span class="ric">${q+1}</span><span class="rsil"></span><span class="rn">ミス</span>${st3(-1)}<div class="wmv"><button ${q==0?"disabled":""} onclick="event.stopPropagation();moveSlot(${q},-1)">▲</button><button ${q==5?"disabled":""} onclick="event.stopPropagation();moveSlot(${q},1)">▼</button></div></div>`:`<div class="rw mvr ${SK[k][7]=="p"?"cp":"ci"} ${q==selSlot?"sel":""}" onclick="selS(${q})"><span class="ric">${q+1}</span><img class="rt" src="${mvSrc(k)}" alt="" decoding="async"><span class="rn">${SK[k][0]}</span>${st3(k)}<div class="wmv"><button ${q==0?"disabled":""} onclick="event.stopPropagation();moveSlot(${q},-1)">▲</button><button ${q==5?"disabled":""} onclick="event.stopPropagation();moveSlot(${q},1)">▼</button></div><button class="wx2" onclick="event.stopPropagation();clrS(${q})">✕</button></div>`).join("");
   const list=skl(m).filter(k=>wflt=="a"||SK[k][7]==wflt);
-  const cards=list.map(k=>{const x=SK[k],ok=own.includes(k),at=m.eq.indexOf(k);if(!ok)return `<div class="dsk dsq ${x[7]=="p"?"kp":"ki"}" aria-label="まだ覚えていない技"><div class="dska dslock"><img src="./assets/ui/skill/locked_skill_panel.png" alt="" decoding="async"></div><b>？？？</b><div class="dsp"><span>まだ覚えていない技</span></div></div>`;return `<div class="dsk ${x[7]=="p"?"kp":"ki"} ${ok?"":"lock"} ${k==lastSk?"cur":""}" role="button" onclick="${ok?`skd(${k})`:`skd(${k})`}"><div class="dska"><img src="${SKART[k]}" alt="">${at>=0?`<i class="dsb">${at+1}</i>`:""}${ok?"":'<i class="dlk">🔒</i>'}</div><b>${x[0]}</b>${EFF[k]?`<div class="dsef">${EFF[k].map(e=>efChip(e)).join("")}</div>`:""}<div class="dsp"><span>威${x[1]?Math.round(x[1]*100):"—"}</span><span>命${x[8]}</span><span>ク${Math.round(x[9]*100)}</span></div></div>`}).join("");
+  const cards=list.map(k=>{const x=SK[k],ok=own.includes(k),at=m.eq.indexOf(k);if(!ok)return `<div class="dsk dsq ${x[7]=="p"?"kp":"ki"}" aria-label="まだ覚えていない技"><div class="dska dslock"><img src="./assets/ui/skill/locked_skill_panel.png" alt="" decoding="async"></div><b>？？？</b><div class="dsp"><span>まだ覚えていない技</span></div></div>`;return `<div class="dsk ${x[7]=="p"?"kp":"ki"} ${ok?"":"lock"} ${k==lastSk?"cur":""}" role="button" onclick="${ok?`skd(${k})`:`skd(${k})`}"><div class="dska${mvNew(k)?" mvc":""}"><img src="${mvSrc(k)}" alt="" loading="lazy" decoding="async">${at>=0?`<i class="dsb">${at+1}</i>`:""}${ok?"":'<i class="dlk">🔒</i>'}</div><b>${x[0]}</b>${EFF[k]?`<div class="dsef">${EFF[k].map(e=>efChip(e)).join("")}</div>`:""}<div class="dsp"><span>威${x[1]?Math.round(x[1]*100):"—"}</span><span>命${x[8]}</span><span>ク${Math.round(x[9]*100)}</span></div></div>`}).join("");
   const n=m.eq.filter(x=>x>=0&&SK[x]).length;
   c=`<div class="dcard"><div class="dh">バトルのルーレット <small>${n} / 6 セット中</small></div><div class="dhint">枠をタップして選び、下の技をタップしてセット</div><div class="drl">${rows}</div></div>
   <div class="dcard"><div class="dh">技の一覧 <small>${own.length} / ${skl(m).length} 習得</small>${window.MMMOVEDEX&&MMMOVEDEX.listOf(m.sp).length?`<button class="dmvall" onclick="MMMOVEDEX.open(${m.sp})">📖 技辞典</button>`:""}</div><div class="dflt">${[["a","すべて"],["p","✊ ちから"],["i","📖 かしこさ"]].map(([v,l])=>`<button class="${wflt==v?"on":""}" onclick="wflt='${v}';hall('w')">${l}</button>`).join("")}</div><div class="dskg">${cards}</div></div>`}
@@ -4875,7 +4907,7 @@ function stScr(m,msg){bgm("farmmenu");p9Immersive(true);const s=MMP10M.byId(m.sp
  <section class="stcard stab"><h3 class="sth">能力バランス</h3><div class="stgrid">${stRadar(m)}<div class="stbars">${bars}</div></div></section></div>${nav}</div>`;try{window.scrollTo(0,0)}catch(e){}}
 function skd(k){lastSk=k;hall("w")}
 function skSheet(k,m){const x=SK[k],ok=Array.isArray(m.sk)&&m.sk.includes(k),at=m.eq.indexOf(k),B=(v,mx)=>`<div class="dbar"><i style="width:${Math.min(100,v/mx*100)}%"></i></div>`;
- return `<div class="dsheet ${x[7]=="p"?"kp":"ki"}"><button class="dclose" onclick="lastSk=-1;hall('w')">✕</button><div class="dsha"><img src="${SKART[k]}" alt=""></div><div class="dshb"><div class="dshn"><span class="dcat">${x[1]?(x[7]=="p"?"✊ ちから":"📖 かしこさ"):"✨ 補助"}</span><b>${x[0]}</b></div><p>${x[6]}</p>${window.MMMOVEDEX&&MMMOVEDEX.hasSlot(k)?`<button class="dmvdex" onclick="MMMOVEDEX.openSlot(${k})">📖 技の演出を見る（技辞典）</button>`:""}
+ return `<div class="dsheet ${x[7]=="p"?"kp":"ki"}"><button class="dclose" onclick="lastSk=-1;hall('w')">✕</button><div class="dsha${mvNew(k)?" mvc":""}"><img src="${mvSrc(k)}" alt="" decoding="async"></div><div class="dshb"><div class="dshn"><span class="dcat">${x[1]?(x[7]=="p"?"✊ ちから":"📖 かしこさ"):"✨ 補助"}</span><b>${x[0]}</b></div><p>${x[6]}</p>${window.MMMOVEDEX&&MMMOVEDEX.hasSlot(k)?`<button class="dmvdex" onclick="MMMOVEDEX.openSlot(${k})">📖 技の演出を見る（技辞典）</button>`:""}
  ${x[1]?`<div class="dstat"><span>威力</span><b>${Math.round(x[1]*100)}</b>${B(x[1]*100,130)}</div>`:`<div class="dstat"><span>威力</span><b>—</b><small class="dnd">ダメージなし</small></div>`}<div class="dstat"><span>命中率</span><b>${x[8]}%</b>${B(x[8],100)}</div><div class="dstat"><span>クリ率</span><b>${Math.round(x[9]*100)}%</b>${B(x[9]*100,30)}</div>
  ${EFF[k]?`<div class="defx"><div class="defh">追加効果</div>${EFF[k].map(e=>`<div class="defr ${e.lv<0?"dn":"up"}"><div class="defi"><i>${EIC[e.st]}</i><b>${e.lv<0?"▼":"▲"}</b></div><div class="deft"><b>${efTxt(e)}</b><div class="defm"><span class="${e.tg?"foe":"me"}">${e.tg?"🎯 相手にかかる":"🙋 自分にかかる"}</span><span>⏱ ${e.t}ターン</span><span class="lvm">${[1,2,3].map(q=>`<i class="${q<=Math.abs(e.lv)?"on":""}"></i>`).join("")}${DLV[Math.abs(e.lv)]}</span></div><small>${e.st=="atk"?(e.tg?"相手が与えるダメージが減る":"自分が与えるダメージが増える"):e.st=="de"?(e.tg?"相手が受けるダメージが増える":"自分が受けるダメージが減る"):e.st=="hi"?(e.tg?"相手の技が当たりにくくなる":"自分の技が当たりやすくなる"):(e.tg?"相手に技が当たりやすくなる":"相手の技をよけやすくなる")}</small></div></div>`).join("")}<div class="deflg">強さ　小 = 10%　中 = 20%　大 = 30%<br>ターン数は、効果を受けたモンスターの行動（防御・回避は相手の攻撃）ごとに減ります</div></div>`:""}
  ${ok?(at>=0?`<div class="dact"><span>いま ${at+1}番の枠にセット中</span><button onclick="clrS(${at})">はずす</button></div>`:`<div class="dact"><button class="dput" onclick="putS(${k})">${selSlot+1}番の枠にセット</button></div>`):`<div class="dact lk">🔒 まだ覚えていません<br><small>${learnAt(k,m)}</small></div>`}</div></div>`}
@@ -5146,7 +5178,7 @@ window.addEventListener("unhandledrejection",rescue);
  *  ./version.json（小さな JSON。毎回取り直す）の build がこのページの MM_BUILD と違えば1回だけ reload（同じ版へは15分に1回まで＝読み込み直しを繰り返さない）。
  *  確かめる時：起動したとき・ページがメモリから戻ったとき（pageshow の persisted）・10分以上裏にいて表に戻ったとき。セーブ（mr4v6）には触れない（読み込み直しは iOS がタブを閉じたときと同じ＝つづきから）。
  *  公開するたびに MM_BUILD と version.json の build を同じ値に上げる（tests/dev24-1013.test.mjs で一致を確かめる） */
-const MM_BUILD="2026-10-14-dev29";
+const MM_BUILD="2026-10-14-dev30";
 (function(){const K="mmbuildReload";let hidAt=0;
  const check=()=>{try{const x=new XMLHttpRequest();x.open("GET","./version.json?t="+Date.now(),true);x.timeout=8000;
   x.onload=()=>{try{if(x.status<200||x.status>=300)return;const b=(JSON.parse(x.responseText)||{}).build;if(!b||b===MM_BUILD)return;
