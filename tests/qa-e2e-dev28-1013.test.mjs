@@ -139,7 +139,7 @@ test('D28-B3：ガウル「紅翼の猛攻」＝ゴングの直後・最初の�
     const i = mine ? 0 : 1, m = await measure(pg, i), log = await cutLog(pg);
     const tag = `${size.join('x')} ${mine ? '自分' : '相手'}`;
     assert.equal(log.length, 1, `${tag}：演出は1回 ${JSON.stringify(log)}`); assert.deepEqual([log[0].side, log[0].key, log[0].name], [i, 'gauru', '紅翼の猛攻']);
-    assert.ok(log[0].k > 1.15 && log[0].k <= 1.45, `${tag}：寄り ${log[0].k}`); assert.ok(log[0].total >= 1500 && log[0].total <= 2100);
+    assert.ok(log[0].k > 1.15 && log[0].k <= 1.45, `${tag}：寄り ${log[0].k}`); assert.ok(log[0].total >= 2100 && log[0].total <= 2600, `全体 ${log[0].total}ms（2026-10-14 実機試遊⑪：寄り終わってから約0.7秒長く）`);
     assert.ok(m.cut && Math.abs(m.cx - m.W / 2) <= 3 && m.inside, `${tag}：対象が中央・切れない ${JSON.stringify(m)}`);
     assert.ok(m.cy > m.H * 0.2 && m.cy < m.H * 0.5, `${tag}：縦は HUD の下・説明の上 ${m.cy}/${m.H}`);
     assert.ok(m.stopHidden && !m.stopHit && m.msgHidden, `${tag}：STOP・説明が隠れて押せない`);
@@ -244,7 +244,7 @@ test('D28-B6：立体サイコロ＝正式の面（2026-10-14 開発29 から正
   // 2026-10-14 開発29（2）：正式の面＝正式デザイン A の絵（面取り・角の飾りは絵の中）＝面取りの帯・角の丸い飾りは出さない・中の金の芯 6枚
   const a = await pg.evaluate(() => { const z = document.querySelector('.d3z'); return { off: z.classList.contains('off'), skin: z.dataset.skin, e: z.querySelectorAll('.d3-e').length, c: z.querySelectorAll('.d3-c').length, k: z.querySelectorAll('.d3-k').length, f: z.querySelectorAll('.d3-f').length, radius: getComputedStyle(z.querySelector('.d3-f')).borderRadius, bi: getComputedStyle(z.querySelector('.d3-f')).backgroundImage }; });
   assert.deepEqual([a.off, a.skin, a.e, a.c, a.k, a.f], [true, 'official', 0, 0, 6, 6], JSON.stringify(a));
-  assert.ok(parseFloat(a.radius) > 0, `角が丸い ${a.radius}`); assert.match(a.bi, /cube_1014\/face_[1-6]\.webp/, '正式デザイン A の面');
+  assert.ok(parseFloat(a.radius) > 0, `角が丸い ${a.radius}`); assert.match(a.bi, /cube_1014s\/face_[1-6]\.webp/, '正式デザイン A の面（2026-10-14 実機試遊③：目の大きさ・角の飾りをそろえた対称版 cube_1014s）');
   await pg.waitForFunction(() => document.querySelector('.d3z') && document.querySelector('.d3z').dataset.final, null, { timeout: 8000 });
   const r = await pg.evaluate(() => { const t = document.querySelector('.d3z .d3-tilt'); const m = /matrix3d\(([^)]+)\)/.exec(getComputedStyle(t).transform); return { fin: document.querySelector('.d3z').dataset.final, n: m ? m[1].split(',').map(Number) : null }; });
   assert.equal(r.fin, '3');
