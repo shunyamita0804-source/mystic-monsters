@@ -53,7 +53,7 @@ test('FX-03：world-board の演出（RIVAL・野生／レア・高額 G・砂�
   const wb = rd('js/chapter/world-board.js'), rw = rd('js/proto/roadfirst-world.js');
   assert.match(wb, /const GOLD_BIG = 150;/); assert.match(wb, /const TURN_WARN = \[10, 5, 1\];/);
   assert.match(wb, /f\.tw\[left\] = 1; doSave\(\);/, '砂時計は各1回（先に記録）');
-  assert.match(wb, /document\.querySelector\('\.mmtalk,\.wb-pop,\.chf-enc2,\.wbx-gold,\.wbx-hg'\)/, '会話・演出・遭遇の間は待つ');
+  assert.match(wb, /document\.querySelector\('\.mmtalk,\.wb-pop,\.wbtr,\.chf-enc2,\.wbx-gold,\.wbx-hg'\)/, '会話・演出・遭遇（2026-10-14 実機試遊④：宝箱のカットイン .wbtr を含む）の間は待つ');
   assert.match(wb, /if \(rival\) return rivalCut\(/);
   assert.match(wb, /FXF\.rivalBg[\s\S]*FXF\.clash/, 'EV01 の幕と EV06 の X');
   assert.doesNotMatch(wb, /Lv\.|レベル/, 'Lv は出さない');

@@ -57,7 +57,7 @@ test('PL-02：マスの配置は seed で決まる・序盤の区間に野生／
     }
     for (const v of Object.values(t)) if (v.t === 'event' || v.t === 'rest') assert.ok(P.pool().some((e) => e.id === v.e), `既存の eventPool の id（${v.e}）`);
   }
-  const avg = total / n; assert.ok(avg > 120 && avg < 200, `特別なマスは全部ではない（平均 ${avg.toFixed(1)} / 261）`);
+  const avg = total / n; assert.ok(avg > 170 && avg < 235, `特別なマスは全部ではない（平均 ${avg.toFixed(1)} / 261。2026-10-14 実機試遊⑲：無地を減らして能力マスを増やした＝能力 45%・出来事 15%・休憩 6%・野生 8%・宝 6%）`);
   for (const k of ['stat', 'event', 'rest', 'wild', 'treasure']) assert.ok(kinds[k] > 0, k);
 });
 

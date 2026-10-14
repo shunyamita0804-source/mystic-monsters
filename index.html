@@ -2409,7 +2409,7 @@ button.p10karen img{display:block;width:100%;height:auto;margin-top:2px;transfor
 .ds.shop.shopf .dcard .t.shi.poor .shown{color:#a3261b}
 .ds.shop.shopf .dcard .t.shi.shlock{grid-template-areas:"ic nm own" "ic fx fx" "ic pr pr"}
 .ds.shop.shopf .dcard .t.shi.shlock .shpr{justify-self:start;font:700 11.5px/1.35 var(--mm-font-body);color:#3f3424;white-space:normal}
-.ds.shop.shopf .dcard .t.shi:disabled{opacity:1}.ds.shop.shopf .dcard .t.shi.shlock{background:linear-gradient(#c9c1b1,#aea493);filter:none}.ds.shop.shopf .dcard .t.shi.shlock>.itic{opacity:.55}
+.ds.shop.shopf .dcard .t.shi:disabled{opacity:1}.ds.shop.shopf .dcard .t.shi.shlock{background:linear-gradient(#c9c1b1,#aea493)}.ds.shop.shopf .dcard .t.shi.shlock>.itic{opacity:.55}
 #app>.ds.shop.shopf.tab>.dbody{max-height:56%}
 @media (max-height:720px){#app>.ds.shop.shopf.tab>.dbody{max-height:58%}.ds.shop.shopf .dcard .t.shi{padding:7px 11px;margin-bottom:6px}}
 .ds.shop.shopf .shmenu{flex:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 -2px;padding:8px 0 calc(12px + env(safe-area-inset-bottom,0px));z-index:3}
@@ -2816,7 +2816,6 @@ body:has(#app>.bu) #snd{display:none}
 .sts .stnav .bctix{position:absolute;top:2px;right:4px;font:700 9px/1.4 var(--mm-font-body);font-style:normal;padding:0 4px;border-radius:4px;background:#e0b861;color:#2a1a05}
 /* 2026-10-14 実機試遊 Q08：主役のモンスターが小さかった（共通の .mon{width:96px;height:96px} が効いていた）→ 正式の 2.5D 立ち絵を全身が切れない大きさで（数値・固有スキルは従来どおり） */
 .sts .sthero{grid-template-columns:1.25fr 1fr}.sts .stmon{min-height:200px}.sts .stmon .mon{width:100%!important;height:auto!important;max-width:240px;aspect-ratio:1;background:none;border:0;box-shadow:none}
-.sts .stmon .mon>img{filter:drop-shadow(0 8px 10px rgba(0,0,0,.45))}
 @media (max-height:720px){.sts .stmon{min-height:130px}.sts .stmon .mon{max-width:150px}.sts .stnm{font-size:25px}.sts .stbody{gap:7px}.sts .stb{gap:5px}.sts .stbars{gap:3px}}
 /* 2026-10-05：聖獣士管理局の「世界地図」（序盤の会話のあと。3つ目のボタン） */
 .bu .bunav:has(.bumap){grid-template-columns:1fr 1fr 1fr;gap:8px}
@@ -3930,6 +3929,9 @@ html[data-mmev] #app .chsheet,html[data-mmev] #app .p9sheet{visibility:hidden!im
 .tb1g.tbv2 .tbh b{font-size:clamp(9px,3cqw,13px);font-weight:800}
 .tb1g.tbv2 .tbo,.tb1g.tbv2 .tbx{width:54%}.tb1g.tbv2 .tbo{border-width:3px}.tb1g.tbv2 .tbx::before,.tb1g.tbv2 .tbx::after{height:3px}
 .tb1g.tbv2 .rme .tbnm b{color:#d6ecff}
+/* 長い名前（6文字以上＝プレイヤーが付けた8文字まで）は字を一段小さく＝2行（見出しは3行）に収めて切らない（短い名前は大きいまま） */
+.tb1g.tbv2 .tbnm b:is([data-l="6"],[data-l="7"],[data-l="8"]){font-size:clamp(9.5px,3.1cqw,12.5px)}.tb1g.tbv2.n8 .tbnm b:is([data-l="6"],[data-l="7"],[data-l="8"]){font-size:clamp(9px,2.8cqw,11.5px)}
+.tb1g.tbv2 .tbh b:is([data-l="5"],[data-l="6"],[data-l="7"],[data-l="8"]){font-size:clamp(7.5px,2.6cqw,10.5px)}
 /* 2026-10-14 実機試遊㉗：対戦表の上のフィナの会話は、会話窓を画面の下（「対戦する」の上）へ寄せて立ち絵は出さない＝表の行・印を隠さない（会話は消さない） */
 html:has(#app>.p9tour.tb1) .mmtalk .mmtalk-fig{display:none}
 html:has(#app>.p9tour.tb1) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-inset-bottom,0px) + 8px)!important}
@@ -5623,13 +5625,13 @@ function tbOthersShow(lg){const L=TB_FRESH;TB_FRESH=[];const host=document.query
  host.addEventListener("pointerdown",end,true);step()}
 function tbBoardGrid(lg,pm,enter){const E=lg.entrants,n=E.length,nx=pm?pm.opp:-1,me=(E.find(e=>e.player)||{}).id; // 2026-10-07（ADDENDUM2）：最終モックどおり＝左に参加者・右に対戦マトリクス（行と列は同じ順）・勝ち＝赤○・負け＝青×・未対戦は空欄・自分自身は斜線・プレイヤーの行は青く光る・次の相手との交点が光る
  const cls=e=>`${e.player?" me":""}${e.id===nx?" nx":""}`;
- const heads=E.map(e=>`<span class="tbh${cls(e)}"><span class="tbic hd${cls(e)}">${tbIcon(p9Npc(lg,e.id))}</span><b>${p11Esc(p9Short(lg,e.id))}</b></span>`).join("");
+ const heads=E.map(e=>`<span class="tbh${cls(e)}"><span class="tbic hd${cls(e)}">${tbIcon(p9Npc(lg,e.id))}</span><b data-l="${[...p9Short(lg,e.id)].length}">${p11Esc(p9Short(lg,e.id))}</b></span>`).join("");
  const sk=lg.seed+":"+lg.rank+":"+n;let seen=TB_SEEN.get(sk);const first=!seen;if(first){seen=new Set();TB_SEEN.set(sk,seen)}const fr=new Map(); // 2026-10-07 試遊：ほかの参加者どうしの試合で新しく決まった結果だけ、ライフが減る短い演出 → ○／×（結果の計算は変えない。ページの中の記録だけ・セーブしない）
  for(const a of E)for(const b of E){if(a.id>=b.id||a.player||b.player)continue;const k=MMP8L.resultCell(lg,a.id,b.id);if(k!="win"&&k!="loss")continue;const id=a.id+"-"+b.id;if(!seen.has(id)){seen.add(id);if(!first)fr.set(id,fr.size)}}
  const lf=(a,b)=>{try{for(let r=0;r<lg.round;r++)for(const mt of lg.rounds[r])if((mt.a===a&&mt.b===b)||(mt.a===b&&mt.b===a)){const v=MMP8L.matchStats(lg,r,mt)[a];return Math.max(0,Math.min(100,v.life))/100}}catch(x){}return 0.5};
  TB_FRESH=[...fr.keys()].map(id=>{const [x,y]=id.split("-").map(Number);return {a:x,b:y,aw:MMP8L.resultCell(lg,x,y)=="win",la:lf(x,y),lb:lf(y,x)}}); // 2026-10-12 試遊：ほかの参加者どうしの「A VS B」の短い演出（tbOthersShow）に渡す
  const rows=E.map((e,r)=>{const dl=enter?` style="animation-delay:${r*90}ms"`:"",rc=e.player?" rme":e.id===nx?" rnx":"";
-  return `<span class="tbrw${rc}${cls(e)}"${dl}><span class="tbic${cls(e)}">${tbIcon(p9Npc(lg,e.id))}</span><span class="tbnm${cls(e)}" data-r="${r}"><b>${p11Esc(p9Short(lg,e.id))}</b></span></span>`+E.map((o,c)=>{if(e.id===o.id)return `<span class="tbc c-self${rc}" data-r="${r}" data-c="${c}"></span>`;const k=MMP8L.resultCell(lg,e.id,o.id)||"pending",hot=k=="next"&&(e.id===me||o.id===me)&&e.id===me;const fi=fr.get(Math.min(e.id,o.id)+"-"+Math.max(e.id,o.id)),fx=fi!=null?` fresh" style="--d:${120+fi*TB_OTHER_MS}ms;--lf:${lf(e.id,o.id).toFixed(2)}`:"";return `<span class="tbc c-${k}${rc}${hot?" hot":""}${fx}" data-r="${r}" data-c="${c}">${fi!=null?'<i class="tblf" aria-hidden="true"></i>':""}${k=="win"?'<i class="tbo" aria-label="勝ち"></i>':k=="loss"?'<i class="tbx" aria-label="負け"></i>':""}</span>`}).join("")}).join("");
+  return `<span class="tbrw${rc}${cls(e)}"${dl}><span class="tbic${cls(e)}">${tbIcon(p9Npc(lg,e.id))}</span><span class="tbnm${cls(e)}" data-r="${r}"><b data-l="${[...p9Short(lg,e.id)].length}">${p11Esc(p9Short(lg,e.id))}</b></span></span>`+E.map((o,c)=>{if(e.id===o.id)return `<span class="tbc c-self${rc}" data-r="${r}" data-c="${c}"></span>`;const k=MMP8L.resultCell(lg,e.id,o.id)||"pending",hot=k=="next"&&(e.id===me||o.id===me)&&e.id===me;const fi=fr.get(Math.min(e.id,o.id)+"-"+Math.max(e.id,o.id)),fx=fi!=null?` fresh" style="--d:${120+fi*TB_OTHER_MS}ms;--lf:${lf(e.id,o.id).toFixed(2)}`:"";return `<span class="tbc c-${k}${rc}${hot?" hot":""}${fx}" data-r="${r}" data-c="${c}">${fi!=null?'<i class="tblf" aria-hidden="true"></i>':""}${k=="win"?'<i class="tbo" aria-label="勝ち"></i>':k=="loss"?'<i class="tbx" aria-label="負け"></i>':""}</span>`}).join("")}).join("");
  return `<div class="tb1g tbv2 n${n}${enter?" tbenter":""}" style="--n:${n}" aria-label="対戦表"><span class="tbcorner"></span>${heads}${rows}</div>`}
 function p8TourScr(msg){const m=S.m,t=m.raise.tour,lg=t.league;bgm(t.status=="settled"?"result":"tour");p9Immersive(true);p9MenuClose();
  if(t.status=="settled")return p9TourResult(msg);

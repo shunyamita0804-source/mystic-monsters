@@ -158,6 +158,19 @@ export async function chooseTalk(page, id, max = 240) {
   }
   throw new Error('選択肢が出ない');
 }
+/** 2026-10-14 実機試遊⑩：遭遇は「バトルする」の確認なしに自動でバトルへ移る＝テストで先へ進むときは、始まったバトルを降参して盤へ戻る（降参の確認は2度押し・「もどる」まで）。
+ *  始まらなければ（timeout）例外。戻ったら true */
+export async function surrenderBattle(page, timeout = 30000) {
+  await page.waitForSelector('#bt #m1 img', { timeout });
+  await page.waitForFunction(() => { const g = document.getElementById('go'); return g && !g.disabled; }, null, { timeout: 20000 });
+  for (let k = 0; k < 2; k++) { await page.click('#sur', { force: true }).catch(() => {}); await page.waitForTimeout(320); }
+  for (let i = 0; i < 100; i++) {
+    if (await page.evaluate(() => !document.getElementById('bt'))) return true;
+    if (await page.evaluate(() => { const g = document.getElementById('go'); return !!g && !g.disabled; })) await page.click('#go').catch(() => {});   // 降参のあとの「もどる」（間に合わなければ STOP＝試合を進める）
+    await page.waitForTimeout(400);
+  }
+  throw new Error('バトルから戻れない');
+}
 /** 出発準備の出発ボタンから育成を始める：フィナの確認 →「始める」→ 同じ会話でフィナ→ダンの掛け合い → ボードへ */
 export async function startRaising(page, dep = '#app button[onclick="p7Depart(this)"]') {
   await page.waitForSelector(dep);
