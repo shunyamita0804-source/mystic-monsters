@@ -17,7 +17,7 @@ const load = () => { const ctx = { console }; ctx.window = ctx; ctx.globalThis =
 const TSV = {
   solamo: [[1, 'taiatari', 0], [2, 'hikkaki', 1], [3, 'shippo_attack', 2], [4, 'hoeru', 3], [5, 'star_crash', 4], [6, 'soramo_beam', 5], [7, 'sunakake', 6], [8, 'hoshi_no_mamori', 7], [9, 'stardust_ray', 8], [10, 'star_fall', 9]],
   gauru: [[1, 'tsutsuku', 11], [2, 'wind', 12], [3, 'spiral_dive', 10], [4, 'sonic_move', 13], [5, 'kouyoku_slash', 14], [6, 'fireball', 15], [7, 'sky_rush', 17], [8, 'flare_ray', 16], [9, 'feather_storm', 18], [10, 'seinaru_honoo', 19]],
-  nobiton: [[1, 'hana_binta', 30], [2, 'zutsuki', 31], [3, 'hanamizu', 32], [4, 'hitoyasumi', 33], [5, 'hammer_nose', 34], [6, 'nose_wave', 35], [7, 'shibire_tsuki', 36], [8, 'mirage_nose', 37], [9, 'downer_mist', 38], [10, 'gigant_nose', 39]],
+  nobiton: [[1, 'hana_binta', 30], [2, 'zutsuki', 31], [3, 'hanamizu', 32], [4, 'hitoyasumi', 33], [5, 'makitsuku', 34], [6, 'nose_wave', 35], [7, 'shibire_tsuki', 36], [8, 'mirage_nose', 37], [9, 'downer_mist', 38], [10, 'gigant_nose', 39]],
   jiol: [[1, 'punch', null], [2, 'kick', null], [3, 'chikara_wo_tameru', null], [4, 'noshikakari', null], [5, 'ground_hammer', null], [6, 'crystal_ray', null], [7, 'ground_spike', null], [8, 'rock_upper', null], [9, 'geo_impact', null], [10, 'crystal_nova', null]],
   regnas: [[1, 'kirisaku', 20], [2, 'shippo_attack', 21], [3, 'ryugan_lock', 22], [4, 'zanei_step', 23], [5, 'dragon_crash', 24], [6, 'soukou_breath', 25], [7, 'snipe_fang', 26], [8, 'genei_claw', 27], [9, 'soujin_ranbu', 28], [10, 'tail_cyclone', 29]],
 };

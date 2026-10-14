@@ -100,7 +100,10 @@
         effects: [E('opponent', 'de', 'down', 'small', 1)] }),
       MV({ no: 4, id: 'hitoyasumi', name: 'ひとやすみ', type: 'heal', slot: null, cuts: 4, desc: '休んで、自分の状態異常をすべて治し、最大ライフの20%を回復する（能力の上げ下げは残る）。',
         heal: fz({ lifeRatio: 0.2, cureAilments: true, clearStatChanges: false }) }),
-      MV({ no: 5, id: 'hammer_nose', name: 'ハンマーノーズ', type: 'power', power: 105, accuracy: 80, critical: 15, slot: null, cuts: 4, desc: '鼻をハンマーのように振り下ろす。' }),
+      // 2026-10-14：No.5 は正式に「まきつく」（旧「ハンマーノーズ」威力105／命中80／CR15 は撤回）＝ダメージなし・相手の攻撃力 小DOWN 2ターン。
+      //  技辞典の資料（assets/moves/nobiton/05_hammer_nose.webp）は旧ハンマーノーズの絵＝使わない（sheet: null＝「資料はまだありません」）
+      MV({ no: 5, id: 'makitsuku', name: 'まきつく', type: 'support', slot: null, cuts: null, sheet: null, desc: '長い鼻でまきつき、相手の攻撃力を少し下げる（2ターン）。',
+        effects: [E('opponent', 'atk', 'down', 'small', 2)] }),
       MV({ no: 6, id: 'nose_wave', name: 'ノーズウェーブ', type: 'wisdom', power: 90, accuracy: 90, critical: 10, slot: null, cuts: 4, desc: '鼻から不思議な波動を放つ。' }),
       MV({ no: 7, id: 'shibire_tsuki', name: 'しびれ突き', type: 'power', power: 75, accuracy: 100, critical: 10, slot: null, cuts: 4, desc: '鼻で鋭く突く。30%で相手を「まひ」にする。',
         ailment: fz({ kind: 'paralysis', label: 'まひ', chance: 0.3 }), formerName: 'ピンポイント突き' }),
@@ -138,7 +141,7 @@
     }
     const s = typeof ref === 'string' ? byKey(ref) : byId(ref);
     const t = s && OFFICIAL_MOVES[s.key];
-    return t ? t.list.map((m) => ({ ...m, sheet: sheetOf(s.key, m.no, m.id) })) : [];
+    return t ? t.list.map((m) => ({ ...m, sheet: m.sheet === null ? null : sheetOf(s.key, m.no, m.id) })) : [];   // sheet: null＝技辞典の資料なし（ノビトン No.5 まきつく＝旧資料はハンマーノーズのため使わない）
   }
   /** 技の番号（SK）→ 正式技（ソラモ・ガウルの 0〜19・レグナスの 20〜29）。無ければ null */
   function moveBySlot(k) {

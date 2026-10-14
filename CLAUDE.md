@@ -855,7 +855,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - **対応**（js/battle/move-cards.js の MMMVCARD）：納品の対応表どおり技ID で引く（番号の昇順で SK に刺さない）。ソラモ 04 吠える＝SK 3・05 スタークラッシュ＝SK 4・08 ほしのまもり＝SK 7、ガウル 03 スパイラルダイブ＝SK 10・07 スカイラッシュ＝SK 17・08 フレアレイ＝SK 16・10＝seinaru_honoo、レグナス＝SK 20〜29、ノビトン＝SK 30〜39、ジオル＝SK なし（技管理に出ない）。対応表の solamo `star_crush` はコードの `star_crash` に合わせた
 - **画面**（index.html の mvSrc・mvNew と CSS「開発30」の1か所）：ルーレットの6枠＝1行の横長カード（左＝正式カードの絵 16:9＋番号・中＝技名2行まで＋威力／命中率／クリ率・右＝▲▼ 30×25・✕ 30×30。金の二重縁・ちから＝茶・かしこさ＝緑・選択＝緑の光・ミスの枠＝点線の空き）。技の一覧・技の詳細の絵＝正式カード（16:9・lazy）。行は従来の要素（.rw）に class .mvr を足して上書き（Phase 6 の CSS は変えない）。未習得の伏せカード・フィルタ・セット／▲▼／✕・保存は従来どおり
 - **変えていない**：技の性能・名前・習得・SK／EFF／SKART・バトル中のルーレットの絵（ic・sico）・技辞典・技の演出・ノビトン／ジオル／レグナスの解放・セーブ v6／mr4v6
-- **要確認**：ノビトン 05 の画像は「まきつく」（NOBITON_05_makitsuku.png）・データは hammer_nose（ハンマーノーズ）＝表記と絵柄の不一致（データは変えていない）
+- **2026-10-14 追補（ノビトン No.5＝まきつく。この1件だけ）**：js/phase10/monsters.js の OFFICIAL_MOVES.nobiton の No.5 を「まきつく」（id makitsuku・type support・ダメージなし・effects＝E('opponent','atk','down','small',2)）に。旧「ハンマーノーズ」（威力105・命中80・CR15・攻撃技）は撤回（別の枠にも足していない）。SK 34・習得・装備・セーブは不変。掛け直しは既存の更新ルール（足さない）。技カードは 05_hammer_nose.webp → 05_makitsuku.webp に名前だけ変えた（中身は同じ＝git の blob 997a37d）。js/battle/rules.js の No.5 の絵文字 🔨 → ➰・借りる旧技の絵（NOBI_VISUAL）は スタークラッシュ → 吠える（補助）。技アニメ（MMNOMV_DATA の 34＝05_まきつく）は変えていない。技辞典の資料は旧ハンマーノーズの絵（assets/moves/nobiton/05_hammer_nose.webp）なので使わない＝sheet null（「技の資料はまだありません」・ファイルは残す）。MM_BUILD／version.json＝2026-10-14-dev30b
 - テスト：tests/movecards-1014.test.mjs（MC-01〜03）・実ブラウザ tests/qa-e2e-movecards-1014.test.mjs（MCB-1〜3）。MM_BUILD／version.json＝2026-10-14-dev30
 
 ### 開発29：iPhone 実機の指摘の最小差分＋正式5体個性エフェクト＋公開クレジット（2026-10-14。いまの正式。基準 ce556dc への差分）

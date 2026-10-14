@@ -62,8 +62,8 @@
   // ---- ノビトンの正式技（SK の 30〜39。ノビトンはまだ市場で買えない＝今のゲームでは出ない。エンジンには入れておく） ----
   const NOBI_FIRST = 30;
   // 旧技の絵を借りる（正式の小さな絵は素材待ち）：No. → 借りる SK の番号
-  const NOBI_VISUAL = { 1: 1, 2: 0, 3: 12, 4: 7, 5: 4, 6: 5, 7: 6, 8: 2, 9: 15, 10: 9 };
-  const NOBI_EMOJI = ['👃', '💥', '💧', '💤', '🔨', '🌀', '⚡', '✨', '🌫️', '🗻'];
+  const NOBI_VISUAL = { 1: 1, 2: 0, 3: 12, 4: 7, 5: 3, 6: 5, 7: 6, 8: 2, 9: 15, 10: 9 };
+  const NOBI_EMOJI = ['👃', '💥', '💧', '💤', '➰', '🌀', '⚡', '✨', '🌫️', '🗻'];
   const STATKEY = { atk: 'atk', de: 'de', hi: 'hi', ev: 'ev' }, LV = { small: 1, medium: 2, large: 3 };
   const BEHAVIOR = {};   // SK の番号 → { ailment, heal, support, owner }
   let installed = false;

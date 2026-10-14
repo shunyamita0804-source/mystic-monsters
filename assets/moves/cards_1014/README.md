@@ -5,7 +5,7 @@
 - 変換：幅 640px に縮小（縦横比のまま・LANCZOS）→ WebP 品質 84（method 6）。切り抜き・描き直し・色の加工なし。道具＝tools/movecards1014/derive.py
 - 原本の PNG（2560×1440 または 1360×768）はリポジトリに置かない（ユーザーが保管）。part11（レグナスの背景なし）は今回使っていない。
 - ファイル名＝{カードの番号}_{技ID}.webp。カードの番号は納品の画像の番号（技の No.・SK の番号とは一致しない）。技ID はコードの正式 ID（対応表の「star_crush」はコードの `star_crash` に合わせた）。
-- ノビトン 05：画像は「まきつく」（NOBITON_05_makitsuku.png）・データは hammer_nose（ハンマーノーズ）＝表記と絵柄の不一致（要確認。データは変えていない）。
+- ノビトン 05：「まきつく」（技ID makitsuku）。2026-10-14 に正式の技データを旧「ハンマーノーズ」（hammer_nose）から「まきつく」に直し、表示用のファイルを 05_hammer_nose.webp → 05_makitsuku.webp に名前だけ変えた（中身は同じ）。
 - ノビトン 07：素材名 pinpoint_tsuki は旧呼称（データは shibire_tsuki＝しびれ突き）。
 
 | 種族 | 番号 | 原本 | 大きさ | sha256（原本） | 表示用 |
@@ -34,7 +34,7 @@
 | ノビトン | 2 | NOBITON_02_zutsuki.png | 2560x1440 | a39859a584fa3849e0d0a83567960728ce44cb004950214962df2b91227a86bb | nobiton/02_zutsuki.webp |
 | ノビトン | 3 | NOBITON_03_hana_mizu.png | 2560x1440 | 3768c37dbf4af5fa05918d7ec2ee99a163b1608fa7b8110d8a7f6264fb36132f | nobiton/03_hanamizu.webp |
 | ノビトン | 4 | NOBITON_04_hitoyasumi.png | 2560x1440 | 0fd3ce91944b4f8e763095cfecfd7e289ae86aff7f7d88bb9483a4cd6438fa29 | nobiton/04_hitoyasumi.webp |
-| ノビトン | 5 | NOBITON_05_makitsuku.png | 2560x1440 | da9978cd3befff4d24cc28b2bd3230e8c4fad0fe959931eae4c526e2a81a3d77 | nobiton/05_hammer_nose.webp |
+| ノビトン | 5 | NOBITON_05_makitsuku.png | 2560x1440 | da9978cd3befff4d24cc28b2bd3230e8c4fad0fe959931eae4c526e2a81a3d77 | nobiton/05_makitsuku.webp |
 | ノビトン | 6 | NOBITON_06_nose_wave.png | 2560x1440 | 6252c915d16599c500bb85fad89127c91334b027945f97d448e21b7d0f966b75 | nobiton/06_nose_wave.webp |
 | ノビトン | 7 | NOBITON_07_pinpoint_tsuki.png | 2560x1440 | 1761ed97b0e9743fb646b8d59db2329ad554dcbc8f26a0b00e545da0c8120862 | nobiton/07_shibire_tsuki.webp |
 | ノビトン | 8 | NOBITON_08_mirage_nose.png | 2560x1440 | 4b0bd9e133e9fd3486f3381aa4bfdd07dbdc06289417a9f13771e461e4d2fc5e | nobiton/08_mirage_nose.webp |
