@@ -47,10 +47,17 @@
     const c = f.core; if (!isObj(c) || !d.nodes[c.node] || !Array.isArray(c.trail) || !Number.isInteger(c.turn) || !Number.isInteger(c.moveLeft) || c.moveLeft < 0) return false;
     return isObj(f.tiles) && isObj(f.used) && isObj(f.claimed);
   }
-  function newField(rnd = Math.random, seed) {
+  // 2026-10-14 Chapter 1 B／C：景観のパターン（A＝従来・B＝花と清流・C＝岩丘と遺跡）。見た目だけ＝道・配置（tiles）・報酬・成長・サイコロ・空腹は共通。
+  //   出発のときだけ決め（setVisual → onDepart が読む）、配置 m.raise.field の任意項目 visualPattern に保存（v6 の形は不変。patternId 'W' はそのまま）。無い・知らない値＝A（旧セーブ）
+  const VISUALS = Object.freeze(['A', 'B', 'C']);
+  const visualKey = (v) => (VISUALS.includes(v) ? v : 'A');
+  let pendingVisual = 'A';
+  function setVisual(v) { pendingVisual = visualKey(v); return pendingVisual; }
+  const visualOf = (m) => { const f = fieldOf(m); return visualKey(f && f.visualPattern); };
+  function newField(rnd = Math.random, seed, visual) {
     const s = Number.isInteger(seed) ? seed >>> 0 : ((Math.floor(rnd() * 0x7fffffff) >>> 0) || 1);
     const core = C().create(D(), { seed: s, turnLimit: TURN_LIMIT });
-    return { world: 1, chapterId: CH, patternId: 'W', layoutSeed: s, core, tiles: P().layout(D(), s), used: {}, claimed: {}, rivalMet: false, introSeen: false, arrivalSeen: false };
+    return { world: 1, chapterId: CH, patternId: 'W', layoutSeed: s, core, tiles: P().layout(D(), s), used: {}, claimed: {}, rivalMet: false, introSeen: false, arrivalSeen: false, visualPattern: visualKey(visual) };
   }
   const clampFat = (v) => Math.max(0, Math.min(T().fatigueMax, Math.round(Number(v) || 0)));
   const carry = (f) => (root.MMCH && root.MMCH.carryFatigue ? root.MMCH.carryFatigue(f) : Math.max(0, (Number(f) || 0) - 50));
@@ -220,7 +227,7 @@
     handles: (key) => key === CH,
     turnLimit: () => TURN_LIMIT,
     diceSides: () => DICE,
-    onDepart(S, m, key, rnd = Math.random, fresh) { m.raise.fatigue = fresh ? 0 : carry(m.raise.fatigue); m.raise.field = newField(rnd); return { patternId: 'W' }; },
+    onDepart(S, m, key, rnd = Math.random, fresh) { m.raise.fatigue = fresh ? 0 : carry(m.raise.fatigue); m.raise.field = newField(rnd, undefined, pendingVisual); pendingVisual = 'A'; return { patternId: 'W' }; },   // 景観は出発の1回だけ読む（使ったら A へ戻す）
     onDepartOther(S, m, key, fresh) { m.raise.fatigue = fresh ? 0 : carry(m.raise.fatigue); m.raise.field = null; },
     trackFor: () => track(),
     /** ボードを開くとき：配置が無い・壊れている・旧い Chapter 1 の配置なら、Chapter 1 の最初から（大会の途中ならゴールで大会を続ける）。途中の状態の食い違いを直す */
@@ -262,6 +269,6 @@
   /** この個体の今の Chapter がこのボードか（画面の切り替え用） */
   const active = (m) => attached && !!m && isObj(m.raise) && m.raise.ch === CH && !!root.MMP7 && root.MMP7.inChapter(m) && !!fieldOf(m);
 
-  root.MMWD = Object.freeze({ CH, TURN_LIMIT, DICE, ROUTE_NAME, PLACE, STORY, DRIVER, storyEvents, markStory, segOf, attach, detach, active, fieldOf, valid, newField, track, routeName, branchOptions, isAttached: () => attached });
+  root.MMWD = Object.freeze({ CH, TURN_LIMIT, DICE, ROUTE_NAME, PLACE, STORY, DRIVER, VISUALS, storyEvents, markStory, segOf, attach, detach, active, fieldOf, valid, newField, track, routeName, branchOptions, setVisual, visualOf, pendingVisual: () => pendingVisual, isAttached: () => attached });
   attach();
 })(typeof window !== 'undefined' ? window : globalThis);

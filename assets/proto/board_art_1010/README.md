@@ -112,3 +112,9 @@ E14a と E14b は門以外の細部も少し描き直されている（画素の
 | G7_den | tile_den.webp | RANDOM_DEN のマス | マス |
 
 能力6種・イベント・休憩・野生・レア・宝箱・ライバル・分かれ道・通常のマスの新しい上面（共通17種）は**この16枚に含まれない**＝本編は tiles_v2 のまま。新しい上面の試作は TOP01（ライフ）・TOP07（野生）の2種だけ（assets/fields/ch1a/tiles_top_1011/・?tileTop=1011・検収前）＝未着：ちから・かしこさ・命中・回避・丈夫さ・イベント・休憩・レア・宝箱 1／2・ライバル・分かれ道・通常（白紙）・START・宝の行き止まり。
+
+## 2026-10-14 Chapter 1 B／C（景観のパターン。js/proto/roadfirst-world.js の VISUAL）
+
+新しい絵は無い（このフォルダの既存の素材だけ）。A＝従来のまま。B「花と清流の草原」＝prop_flowers・prop_shrub・prop_tree を多く、prop_reeds を草地にも少し、川の景物（prop_lilies・prop_stream_rocks・prop_reeds）を密に。
+C「岩丘と遺跡の草原」＝prop_rock・prop_mossy_rock・prop_pillar を多く、**rock_pillar.webp（遺跡の柱）と cliff_grass_chunk.webp（岩棚）をここで初めて画面に出す**（道の外に散らす景物）、prop_peak の岩峰を道から離れた所に7つ足す（決まった乱数）。
+道・地点・マス・固定の報酬・目印・大会会場・谷・雲海・森の範囲は3つとも同じ。

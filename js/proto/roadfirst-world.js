@@ -35,6 +35,7 @@
     hideLm: null,
     // 2026-10-14 開発29（6）：後ろから追うカメラ（本編の Chapter 1 だけ・試作の既定は従来の北が上）。true＝進む向き（今の地点 → 先の数地点）が画面の上になるよう、地面の板を注視点のまわりで回す（yaw）。
     //   マス・景物・モンスターは立てたまま（project で同じ回転を通して置く）。回る速さ yawTau（ms）＝急に回らない・角を曲がるときもなめらか。止まっている間は最後の向きのまま
+    visual: 'A',         // 2026-10-14 Chapter 1 B／C：景観のパターン（VISUAL の鍵。A＝従来のまま・B＝花と清流・C＝岩丘と遺跡。地点・道・判定は共通＝景物の混ぜ方と配置だけ）
     heading: false, yawTau: 420,        // 2026-10-13 開発27（11・15）：出さない目印の地点（例 ['START','LOWER_GATE','UPPER_GATE']＝門の飾りの絵だけを出さない。地点・道・門のマス・判定・イベントはそのまま。本編の Chapter 1 だけ）
   };
   // 第1便の絵（assets/proto/board_art_1010/README.md）。大きさは世界の単位
@@ -65,6 +66,25 @@
       { node: 'REWARD5', file: 'lm_watch_statue.webp', w: 42, along: 20, z: -30 }, { node: 'R_SPECIAL', file: 'lm_rainbow_falls.webp', w: 44, along: 22, z: -30 },
       { node: 'RANDOM_DEN', file: 'lm_den_closed.webp', open: 'lm_den_open.webp', w: 42, along: 20, z: -30 }],
   };
+  // 2026-10-14 Chapter 1 B／C（景観のパターン。ユーザー指示「Chapter1 B・Cパターン 最短完成・限定実装」）：
+  //   A＝従来の「はじまりの草原」そのまま（seed・割合・密度は上の ART.props と同じ値＝scatter の出力はバイト単位で同じ。tests の VP-01）。
+  //   B＝「花と清流の草原」：小花・茂み・木が多く針葉樹と岩が少ない。川の景物（睡蓮・渓流の岩・葦）を密に。
+  //   C＝「岩丘と遺跡の草原」：岩・苔岩・石柱・遺跡の柱（rock_pillar）・岩棚（cliff_grass_chunk）が多く、道から離れた所に岩峰を足す。
+  //   どれも既存の素材だけ（新しい絵は作らない）。道・地点・マス・固定の報酬・目印・大会会場・谷・雲海・森の範囲は共通。密度 density＝残す割合（大きいほど多い）・far＝道からの最大の距離
+  const VISUAL = {
+    A: { key: 'A', name: 'はじまりの草原', desc: 'いまの草原のまま', seed: 0x1010, density: 0.62, far: 66, props: ART.props, water: { every: 34, reedEvery: 3 }, peaks: null },
+    B: { key: 'B', name: '花と清流の草原', desc: '小花と清流が多い、明るい緑の草原', seed: 0x1021, density: 0.70, far: 72,
+      props: [{ key: 'flowers', file: 'prop_flowers.webp', w: 14, p: 0.30 }, { key: 'shrub', file: 'prop_shrub.webp', w: 17, p: 0.24 }, { key: 'tree', file: 'prop_tree.webp', w: 30, p: 0.22 },
+        { key: 'conifer', file: 'prop_conifer.webp', w: 17, p: 0.08 }, { key: 'reeds', file: 'prop_reeds.webp', w: 12, p: 0.06 }, { key: 'mossy', file: 'prop_mossy_rock.webp', w: 15, p: 0.05 },
+        { key: 'rock', file: 'prop_rock.webp', w: 20, p: 0.03 }, { key: 'pillar', file: 'prop_pillar.webp', w: 11, p: 0.02 }],
+      water: { every: 22, reedEvery: 2 }, peaks: null },
+    C: { key: 'C', name: '岩丘と遺跡の草原', desc: '岩と石柱、遺跡の多い明るい高原', seed: 0x1032, density: 0.60, far: 72,
+      props: [{ key: 'rock', file: 'prop_rock.webp', w: 24, p: 0.24 }, { key: 'mossy', file: 'prop_mossy_rock.webp', w: 17, p: 0.16 }, { key: 'pillar', file: 'prop_pillar.webp', w: 12, p: 0.14 },
+        { key: 'ruin', file: 'rock_pillar.webp', w: 20, p: 0.08 }, { key: 'ledge', file: 'cliff_grass_chunk.webp', w: 24, p: 0.06 }, { key: 'tree', file: 'prop_tree.webp', w: 28, p: 0.12 },
+        { key: 'conifer', file: 'prop_conifer.webp', w: 17, p: 0.10 }, { key: 'shrub', file: 'prop_shrub.webp', w: 16, p: 0.07 }, { key: 'flowers', file: 'prop_flowers.webp', w: 13, p: 0.03 }],
+      water: { every: 34, reedEvery: 3 }, peaks: { n: 7, w: [44, 60], far: 92, gap: 110, seed: 0x1033 } },   // peaks＝道から far 以上・谷／雲海／森の外・目印と岩峰から離れた所に n 個を足す（決まった乱数）
+  };
+  const visualOf = (o) => VISUAL[o && o.visual] || VISUAL.A;
   // 2026-10-11 地形の範囲（設計：68 Scene の表の景観の説明から）。谷＝輪になった道の内側（崩落の谷・中央の崖）＋石橋の下を横切る谷の腕。
   //   loop＝区間を順にたどった多角形（rev＝逆向き）・arms＝谷の腕の中心線と幅・bridges＝谷の上を渡る区間（道のまわりを陸にしない）・water＝谷の中の水（滝の側）
   const TERRAIN = [
@@ -139,6 +159,7 @@
     const bb = doc.createElement('div'); bb.className = 'rfw-bb';
     const title = doc.createElement('div'); title.className = 'rfw-title'; title.innerHTML = '<small>CHAPTER 1</small>はじまりの草原<em>全体マップ</em>';
     wrap.appendChild(plane); wrap.appendChild(bb); wrap.appendChild(title); host.appendChild(wrap);
+    const VIS = visualOf(o); wrap.dataset.visual = VIS.key;   // 2026-10-14 Chapter 1 B／C：景観のパターン（A＝従来）
     css(doc);
     const W = Math.ceil(WORLD.w * o.res), H = Math.ceil(WORLD.h * o.res);
     plane.style.width = WORLD.w + 'px'; plane.style.height = WORLD.h + 'px';
@@ -221,8 +242,8 @@
       for (const q of scatter(D, o)) add(q.file, q.x, q.y, q.w);
       const gn = D.nodes.GOAL; if (gn) { add(ART.goal.file, gn[0], gn[1] + ART.goal.dy, ART.goal.w, -40, 'rfw-goal'); props[props.length - 1].solid = true; }   // 2026-10-13 開発27（26）：大会会場（建物・門）は半透明にしない（xray で草地が透けて見えていた）
       for (const L of ART.landmarks) { if (o.hideLm && o.hideLm.includes(L.node)) continue; const at = landmarkAt(D, L); if (at) { add(L.file, at[0], at[1], L.w, L.z || 0, 'rfw-lm'); props[props.length - 1].L = L; } }
-      for (const q of waterProps(D)) add(q.file, q.x, q.y, q.w, q.z || 0, 'rfw-wp');   // 第4便：川の景物
-      for (const [x, y, w] of ART.peaks.at) add(ART.peaks.file, x, y, w, -20, 'rfw-peak');   // 第4便：山の岩峰
+      for (const q of waterProps(D, o)) add(q.file, q.x, q.y, q.w, q.z || 0, 'rfw-wp');   // 第4便：川の景物（B は密に）
+      for (const [x, y, w] of peaksOf(D, o)) add(ART.peaks.file, x, y, w, -20, 'rfw-peak');   // 第4便：山の岩峰（C は足す）
     }
     const S = {
       cam: { tx: WORLD.w / 2, ty: WORLD.h / 2, s: 1, tilt: 0, P: o.persp, ax: 0, ay: 0, yaw: 0 }, goal: null, mon: null, monGoal: null, yawGoal: 0,
@@ -437,7 +458,7 @@
       markerOff(id) { const i = props.findIndex((x) => x.mark === id); if (i >= 0) { props[i].el.remove(); props.splice(i, 1); } },
       yawGoal: () => (o.heading ? S.yawGoal || 0 : 0),
       state: () => ({ yaw: S.cam.yaw || 0, yawGoal: S.yawGoal || 0, heading: !!o.heading, focus: o.focus ? veilSig.split(',').filter(Boolean) : null, cam: Object.assign({}, S.cam), goal: S.goal && Object.assign({}, S.goal), mon: S.mon && S.mon.slice(), view: S.view, intro: !!S.intro, introAnims: S.introAnims || 0, ahead: S.lastAhead || [],
-        tiles: Object.keys(tiles).length, chunks: chunks.length, painted, res: o.res, tilt: o.tilt, props: props.length, art: !!(art.ground || art.road), rims: art.terrain ? art.terrain.rims.filter((r) => r.kind === 'valley').map((r) => r.pts.length) : null,
+        visual: VIS.key, tiles: Object.keys(tiles).length, chunks: chunks.length, painted, res: o.res, tilt: o.tilt, props: props.length, art: !!(art.ground || art.road), rims: art.terrain ? art.terrain.rims.filter((r) => r.kind === 'valley').map((r) => r.pts.length) : null,
         rimKinds: art.terrain ? art.terrain.rims.reduce((a, r) => { a[r.kind] = (a[r.kind] || 0) + 1; return a; }, {}) : null }),
       project: (x, y) => project(S.cam, x, y),
       frames: (reset) => { const f = S.frames.slice(); if (reset) S.frames = []; return f; },
@@ -643,8 +664,8 @@
   function alongLine(line, d) { const out = [line[0]]; let rest = d; for (let i = 0; i < line.length - 1; i++) { const a = line[i], b = line[i + 1], L = Math.hypot(b[0] - a[0], b[1] - a[1]); let t = rest;
     while (t <= L) { out.push([a[0] + (b[0] - a[0]) * t / L, a[1] + (b[1] - a[1]) * t / L]); t += d; } rest = t - L; } return out; }
   /** 川の景物（決まった並び）：川の始まりに小さな滝、川筋に沿って渓流の岩と睡蓮を交互に、岸に葦。道（石橋）のまわりには置かない */
-  function waterProps(D) {
-    const W = ART.water, out = [], segs = Object.values(D.segments).map((s) => s[3].map((n) => D.nodes[n]));
+  function waterProps(D, o) {
+    const VW = visualOf(o).water, W = Object.assign({}, ART.water, { every: VW.every }), RE = VW.reedEvery, out = [], segs = Object.values(D.segments).map((s) => s[3].map((n) => D.nodes[n]));
     const nearRoad = (x, y, r) => segs.some((l) => distLine(l, x, y) < r);
     for (const T of TERRAIN) for (const A of T.water || []) {
       const P = alongLine(A.line, W.every).filter((q) => q[1] < WORLD.h - 20 && q[0] < WORLD.w - 10); out.push({ file: W.fall.file, x: A.line[0][0], y: A.line[0][1] + 6, w: W.fall.w, z: -10 });
@@ -653,7 +674,7 @@
         if (nearRoad(q[0], q[1], 24)) return;
         const P2 = i % 2 ? W.lilies : W.rocks; out.push({ file: P2.file, x: q[0] - dy / L * A.w * 0.12 * s, y: q[1] + dx / L * A.w * 0.12 * s, w: P2.w });
         const rx = q[0] + dy / L * (A.w * 0.5 + 3) * s, ry = q[1] - dx / L * (A.w * 0.5 + 3) * s;
-        if (i % 3 === 1 && !nearRoad(rx, ry, 24)) out.push({ file: W.reeds.file, x: rx, y: ry, w: W.reeds.w });
+        if (i % RE === 1 && !nearRoad(rx, ry, 24)) out.push({ file: W.reeds.file, x: rx, y: ry, w: W.reeds.w });
       });
     }
     return out;
@@ -666,18 +687,39 @@
     for (const q of pts) { const k = key(q[0], q[1]); if (!grid.has(k)) grid.set(k, []); grid.get(k).push(q); }
     const near = (x, y) => { let m = 1e9; const cx = Math.floor(x / cell), cy = Math.floor(y / cell);
       for (let i = -3; i <= 3; i++) for (let j = -3; j <= 3; j++) for (const q of grid.get((cx + i) + ',' + (cy + j)) || []) m = Math.min(m, Math.hypot(q[0] - x, q[1] - y)); return m; };
-    let a = 0x1010; const rnd = () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+    const VIS = visualOf(o), PK = peaksOf(D, o), PR = VIS.props;   // 2026-10-14 Chapter 1 B／C：seed・密度・割合はパターンごと（A は従来の値＝出力は同じ）
+    const rnd = mulberry(VIS.seed);
     const out = [], gap = o.roadW / 2 + 10;
     for (let y = 10; y < WORLD.h; y += 30) for (let x = 10; x < WORLD.w; x += 30) {
       const px = x + (rnd() - 0.5) * 24, py = y + (rnd() - 0.5) * 24, d = near(px, py), r = rnd(), pick = rnd();
-      if (d < gap || d > 66 || r > 0.62 || py < 150) continue;   // GOAL の会場のまわり（y<150）には置かない
+      if (d < gap || d > VIS.far || r > VIS.density || py < 150) continue;   // GOAL の会場のまわり（y<150）には置かない
       if (inValley(D, px, py)) continue;   // 谷の中には置かない
       if (ART.landmarks.some((L) => { const at = landmarkAt(D, L); return at && Math.hypot(at[0] - px, at[1] - py) < L.w * 0.75; })) continue;   // 目印のまわりにも置かない
-      if (ART.peaks.at.some(([x0, y0, w0]) => Math.hypot(x0 - px, y0 - py) < w0 * 0.6)) continue;   // 岩峰のまわりにも置かない
-      let acc = 0, P = ART.props[ART.props.length - 1]; for (const c of ART.props) { acc += c.p; if (pick < acc) { P = c; break; } }
+      if (PK.some(([x0, y0, w0]) => Math.hypot(x0 - px, y0 - py) < w0 * 0.6)) continue;   // 岩峰のまわりにも置かない
+      let acc = 0, P = PR[PR.length - 1]; for (const c of PR) { acc += c.p; if (pick < acc) { P = c; break; } }
       out.push({ x: px, y: py, file: P.file, w: P.w * (0.8 + rnd() * 0.45) });
     }
     return out;
+  }
+  /** 決まった乱数（mulberry32） */
+  function mulberry(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  /** 山の岩峰の位置 [x, y, w]：ART.peaks.at（全パターン共通）＋ C の追加（道から far 以上・谷／雲海／森の外・目印と岩峰から離れた所・決まった乱数）。1回だけ計算 */
+  const PEAK_CACHE = new Map();
+  function peaksOf(D, o) {
+    const VIS = visualOf(o), X = VIS.peaks; if (!X) return ART.peaks.at;
+    if (PEAK_CACHE.has(VIS.key)) return PEAK_CACHE.get(VIS.key);
+    const segs = Object.values(D.segments).map((s) => s[3].map((n) => D.nodes[n])), rnd = mulberry(X.seed), out = ART.peaks.at.slice();
+    const far = (x, y, pts, r) => pts.every((p) => Math.hypot(p[0] - x, p[1] - y) >= r);
+    for (let tries = 0; tries < 4000 && out.length < ART.peaks.at.length + X.n; tries++) {
+      const x = 40 + rnd() * (WORLD.w - 80), y = 170 + rnd() * (WORLD.h - 210), w = X.w[0] + rnd() * (X.w[1] - X.w[0]);
+      if (segs.some((l) => distLine(l, x, y) < X.far)) continue;
+      if (inValley(D, x, y) || TERRAIN.some((T) => inPoly(loopPoly(D, T), x, y))) continue;
+      if (!far(x, y, out, X.gap)) continue;
+      if (ART.landmarks.some((L) => { const at = landmarkAt(D, L); return at && Math.hypot(at[0] - x, at[1] - y) < L.w + w; })) continue;
+      const gn = D.nodes.GOAL; if (gn && Math.hypot(gn[0] - x, gn[1] - y) < ART.goal.w) continue;
+      out.push([Math.round(x), Math.round(y), Math.round(w)]);
+    }
+    PEAK_CACHE.set(VIS.key, out); return out;
   }
 
   let cssDone = false;
@@ -720,10 +762,10 @@
   function warmArt(base) {
     if (pre || !root.Image) return pre; base = base || './assets/proto/board_art_1010/';
     const T = ART.terrain, files = [ART.ground.file, ART.road.file, ART.strip.file, ART.goal.file, ART.peaks.file, T.valley.file, T.water.file, T.cloud.file, ...Object.values(T.edges).map((e) => e.file),
-      ...ART.props.map((p) => p.file), ...ART.landmarks.map((l) => l.file), ...Object.values(ART.water).filter((w) => w && w.file).map((w) => w.file)];
+      ...Object.values(VISUAL).flatMap((v) => v.props.map((p) => p.file)), ...ART.landmarks.map((l) => l.file), ...Object.values(ART.water).filter((w) => w && w.file).map((w) => w.file)];
     pre = [...new Set(files)].map((f) => { const im = new root.Image(); im.decoding = 'async'; im.src = base + f; return im; });
     return pre;
   }
-  const api = { DEF, WORLD, ART, TERRAIN, project, fitZoom, lookahead, headingYaw, angDiff, create, scatter, waterProps, curvePts, landmarkAt, inValley, loopPoly, warmArt };
+  const api = { DEF, WORLD, ART, TERRAIN, VISUAL, visualOf, peaksOf, project, fitZoom, lookahead, headingYaw, angDiff, create, scatter, waterProps, curvePts, landmarkAt, inValley, loopPoly, warmArt };
   if (typeof module === 'object' && module.exports) module.exports = api; else root.MMRF_WORLD = api;
 })(typeof window !== 'undefined' ? window : globalThis);
