@@ -5188,7 +5188,7 @@ window.addEventListener("unhandledrejection",rescue);
  *  ./version.json（小さな JSON。毎回取り直す）の build がこのページの MM_BUILD と違えば1回だけ reload（同じ版へは15分に1回まで＝読み込み直しを繰り返さない）。
  *  確かめる時：起動したとき・ページがメモリから戻ったとき（pageshow の persisted）・10分以上裏にいて表に戻ったとき。セーブ（mr4v6）には触れない（読み込み直しは iOS がタブを閉じたときと同じ＝つづきから）。
  *  公開するたびに MM_BUILD と version.json の build を同じ値に上げる（tests/dev24-1013.test.mjs で一致を確かめる） */
-const MM_BUILD="2026-10-14-ch1bc";
+const MM_BUILD="2026-10-14-ch1hq";
 (function(){const K="mmbuildReload";let hidAt=0;
  const check=()=>{try{const x=new XMLHttpRequest();x.open("GET","./version.json?t="+Date.now(),true);x.timeout=8000;
   x.onload=()=>{try{if(x.status<200||x.status>=300)return;const b=(JSON.parse(x.responseText)||{}).build;if(!b||b===MM_BUILD)return;
@@ -5989,7 +5989,7 @@ const finaScene=k=>k=="intro"?TOWN_BG:k=="done"||k=="raiseFirst"||k=="raiseAgain
 const FINA_BIG=new Set(["intro","done"]); // 2026-10-04 G2：大型の会話窓（街の案内・育成完了＝イベント） // branches：選択肢ごとの続きの行（同じ会話ウィンドウで続ける）。選んだ id で解決
 /** 名前登録の直後に1度だけ：先に「表示済み」を保存してから会話を出す（再読込しても二度出ない） */
 function finaIntro(){const f=finaFlags();if(f.finaIntro)return;f.finaIntro=1;save();finaTalk("intro")}
-function p7Depart(b){const m=S.m;if(!m)return lobby();try{if(window.MMWB&&window.MMRF_WORLD&&(m.raise&&m.raise.ch||0)<=1){MMRF_WORLD.warmArt();new Image().src=PP_ART[1];if(window.MMDICE3D&&MMDICE3D.warm)MMDICE3D.warm('official')}}catch(e){} // 2026-10-12 開発21（C-5）：出発を押したら Chapter 1 の盤の絵を先に読み込む（会話の間に）
+function p7Depart(b){const m=S.m;if(!m)return lobby();try{if(window.MMWB&&window.MMRF_WORLD&&(m.raise&&m.raise.ch||0)<=1){MMRF_WORLD.warmArt(null,MMWB.skinKey&&MMWB.skinKey());new Image().src=PP_ART[1];if(window.MMDICE3D&&MMDICE3D.warm)MMDICE3D.warm('official')}}catch(e){} // 2026-10-12 開発21（C-5）：出発を押したら Chapter 1 の盤の絵を先に読み込む（会話の間に）
  // 育成開始（未育成→Chapter 1）：フィナがプレイヤーへ確認（選択肢「始める／まだやめておく」。初回だけ「途中で街へ戻れない」説明つき）。選択肢が確認を兼ねるので2度押しは求めない
  //  「始める」を選んだときだけ、同じ会話でフィナ→ダンの掛け合い → 会話のあと従来の出発処理（引数なしの p7Depart() ＝ 下の出発処理そのもの）。「まだやめておく」・選ばずに閉じたときは何もしない
  if(MMP7.raiseState(m)=="none"&&b&&window.MMNPC){if(b.dataset.fina)return;b.dataset.fina="1";const f=finaFlags(),first=!f.raiseIntro;if(first){f.raiseIntro=1;save()}

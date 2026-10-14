@@ -52,7 +52,7 @@ for (const size of [[375, 667], [390, 844], [430, 932]]) {
 
 test('CR-2：盤の絵が読めない（404）でも永久に待たない（仮の色で描いて進む）', { skip: SKIP, timeout: 120000 }, async () => {
   const p = await openPage({ intro: true }); const pg = p.page;
-  await pg.route('**/assets/proto/board_art_1010/**', (r) => r.fulfill({ status: 404, body: '' }));
+  await pg.route('**/assets/{proto/board_art_1010,fields/ch1a/board_hq_1014}/**', (r) => r.fulfill({ status: 404, body: '' }));   // 2026-10-14：新しい絵（skin）も従来の絵も読めない
   await H.newGame(pg, 'テスト'); await depart(pg);
   await pg.waitForSelector('.wbv .rfw.intro', { timeout: 20000 }); await idle(pg);
   assert.equal(await pg.evaluate(() => MMWB.state().world.painted), true);
@@ -61,7 +61,7 @@ test('CR-2：盤の絵が読めない（404）でも永久に待たない（仮�
 
 test('CR-3：絵がとても遅い → 「もう一度読み込む」「タイトルへ戻る」→ もう一度読み込む → 盤（出発は1回・セーブはそのまま）', { skip: SKIP, timeout: 120000 }, async () => {
   const p = await openPage({ intro: true }); const pg = p.page;
-  let hold = true; await pg.route('**/assets/proto/board_art_1010/ground_grass.webp', async (r) => { while (hold) await new Promise((ok) => setTimeout(ok, 200)); await r.continue(); });
+  let hold = true; await pg.route('**/assets/{proto/board_art_1010/ground_grass,fields/ch1a/board_hq_1014/ground_a1}.webp', async (r) => { while (hold) await new Promise((ok) => setTimeout(ok, 200)); await r.continue(); });
   await H.newGame(pg, 'テスト'); await depart(pg);
   await pg.waitForSelector('.wbrelay.slow .wbr-err', { timeout: 15000 });
   const b = await pg.evaluate(() => [...document.querySelectorAll('.wbrelay .wbr-err button')].map((x) => x.textContent));
