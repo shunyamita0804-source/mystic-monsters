@@ -232,7 +232,7 @@ test('QA-RF-B1：市場で買った1体目は手持ち、2体目は牧場へ。�
     assert.match(await pg.evaluate(() => MM_GOT_LOG.slice(-1)[0].title), /ガウBを手に入れた！（牧場に預けました）/);   // 2026-10-05 試遊：購入の知らせはシステム通知の帯
     // 牧場の一覧に並ぶ（1 / 20）
     await toRanch(pg);
-    assert.equal(await txt(pg, '.rncnt'), '1 / 8');
+    assert.equal(await txt(pg, '.rncnt'), '預かり中 1 / 20（空き 19）');   // 2026-10-14：牧場20体（ユーザー正式）・Q05 の「預かり中・空き」
     assert.deepEqual(await cells(pg), ['ソラA 連れている', 'ガウB 未育成']);
     await invariants(p);
   } finally { await p.ctx.close(); }
@@ -246,7 +246,7 @@ test('QA-RF-B2：牧場の表示：連れている子・牧場の子が一覧に
     assert.deepEqual(await pg.evaluate(() => [...document.querySelectorAll('.rnact .rna span')].map((b) => b.textContent)), ['見る', '名前変更', '預ける', '売る']);
     assert.match(await txt(pg, '.fhud'), /1000G/);
     assert.deepEqual(await cells(pg), ['ソラA 連れている', 'ガウB 未育成', 'ソラC 未育成']);
-    assert.equal(await txt(pg, '.rncnt'), '2 / 8');
+    assert.equal(await txt(pg, '.rncnt'), '預かり中 2 / 20（空き 18）');
     // 見る：ガウBの6能力
     await pick(pg, 1); await tap(pg, ".rna[onclick=\"rnView=rnSel;farm('','e')\"]");
     await pg.waitForSelector('.rnlook');
@@ -282,7 +282,7 @@ test('QA-RF-B3：預ける・受け取る（入れ替え）：並びと uid が�
     let s = await H.storedSave(pg);
     assert.equal(s.m, null); assert.deepEqual(s.box.map((x) => x.uid), [ub, ua]);
     assert.match(await txt(pg, '.fbub'), /預けました。/);
-    assert.equal(await txt(pg, '.rncnt'), '2 / 8'); assert.equal(await pg.$('.rncur'), null, '連れている子はいない');
+    assert.equal(await txt(pg, '.rncnt'), '預かり中 2 / 20（空き 18）'); assert.equal(await pg.$('.rncur'), null, '連れている子はいない');
     // 手持ちが空のまま受け取る（ソラA）
     await pick(pg, 1); await tap(pg, '.rna[onclick="wd(1)"]');
     await pg.waitForFunction(() => S.m && S.m.name === 'ソラA');
