@@ -145,8 +145,11 @@
       '#bt.mma-v24 .vs{translate:0 min(10.5dvh,90px)}',
       // 2026-10-13 開発25 B：公式ランク戦（正式の会場＝床の始まりが絵の約56%・円形の床の奥の縁が約60%）は足もとを円形の床の上（絵の約64%）へ。旧 10.5dvh では奥の縁（壁の前）に立って浮いて見えた
       '#bt.mma-v24:not([data-mmprac="1"]) .vs{translate:0 min(16dvh,160px)}',
+      // 2026-10-14 実機試遊⑱：まだ浮いて見えた（足もと＝絵の約64%＝円形の床の奥の縁）→ 円形の床の中央（絵の約67〜69%＝「あなたのターン」・技カードの上の中央の印の手前）まで下げる。
+      //  ルーレットの板（アーチ）にはかからない（375×667 で足もと 411px・板 422px）。2体とも同じ位置・同じ規則（待機・攻撃・被弾・決着の絵は .vs の中＝一緒に動く）
+      '#bt.mma-v24:not([data-mmprac="1"]) .vs{translate:0 min(21.5dvh,210px)}',
       // 低い画面（375×667 など）は足もとの下に説明の文字があり足もとを下げきれない＝背景を下を軸に少しだけ大きく（床の円が上がって足もとに来る。絵は描き直さない・左右が少し切れる）
-      '@media (max-height:720px){#bt.mma-v24:not([data-mmprac="1"]) .mma-bg.ofc{transform:scale(1.19)}}',
+      '@media (max-height:720px){#bt.mma-v24:not([data-mmprac="1"]) .mma-bg.ofc{transform:scale(1.27)}}',   // 2026-10-14 実機試遊⑱：1.19 → 1.27（足もとが円形の床の中央に来る）
       // 2026-10-13 開発25 C：勝ち／負けの画面（mma-end）。帯は画面の下 40%（モンスターの足もとより下・技UIの箱 z6 より奥＝もどるを暗くしない）・文字・一言・もどるを帯の中に
       '#bt.mma-v24 .mma-endband{position:absolute;left:0;right:0;bottom:0;height:40%;z-index:5;pointer-events:none;opacity:0;animation:mmaend .5s ease-out .15s forwards}',
       '#bt.mma-v24.mma-res-win .mma-endband{background:linear-gradient(rgba(40,26,4,0),rgba(40,26,4,.55) 22%,rgba(22,14,4,.86) 60%,rgba(14,9,3,.94))}',

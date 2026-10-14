@@ -981,6 +981,7 @@ button.mkc b{font-size:.9rem}button.mkc small{font-size:.66rem;color:#ffe9b0}
 .p9leg{display:grid;gap:6px}
 .p9leg div{display:grid;grid-template-columns:30px 6.8em 1fr;align-items:center;gap:6px;font-size:.86rem}
 .p9leg small{color:#d8cba6}
+.p9leg.wbleg{max-height:min(62dvh,520px);overflow:auto;gap:4px}.p9leg.wbleg div{grid-template-columns:46px 6.6em 1fr}.p9leg.wbleg img{width:46px;height:auto;display:block}
 .p8hud .p9chip .p9tk{flex:none}
 /* ===== Phase 9：公式大会（大会掲示板・対戦表・VS画面・結果） ===== */
 .p9tour,.p9vs{margin:-16px -16px 0;min-height:100vh;padding:0 12px calc(24px + env(safe-area-inset-bottom,0px));color:#f6e7c1;background:radial-gradient(ellipse at 50% -10%,#3b4c7c 0,#16244a 45%,#0a1124 100%)}
@@ -5241,7 +5242,10 @@ function p8BoardMenu(){return `<div class="p8menu"><button onclick="p9MenuClose(
 function p9Menu(){if(bBusy)return;p9MenuClose();const d=document.createElement("div");d.className="p9ov";d.id="p9ov";tapAt(d);d.onclick=e=>{if(e.target===d&&!tapSoon(d,350))p9MenuClose()};
  d.innerHTML=`<div class="p9ovc" role="dialog" aria-modal="true"><div class="p9ovh">メニュー<button class="p9x" onclick="p9MenuClose()" aria-label="閉じる">✕</button></div>${TEST_TOUR?`<button class="p9btn2 ttest" onclick="ynAsk('大会をやめて街へ戻りますか？','',()=>testTourEnd())">大会をやめて街へ戻る</button>`:""}${p8BoardMenu()}<button class="p9btn2 tsetbtn" onclick="trialOv()">🔊 音・画面の設定</button></div>`;document.body.appendChild(d)}
 function p9MenuClose(){const d=$("#p9ov");if(d)d.remove()}
-function p9Legend(){const d=$("#p9ov .p9ovc");if(!d)return;const T=["life","power","wisdom","hit","evasion","toughness","event","rare","treasure","battle","ticket","normal"];
+/* 2026-10-14 実機試遊 Q10：本編の Chapter 1（1枚の世界のボード）は正式のマスの絵（色と紋章の両方）で説明する（旧ボードの絵の説明は Chapter 2 以降のまま） */
+const WB_LEGEND=[["tiles_top_1012/tile_stat_life","ライフ","止まるとライフが伸びる"],["tiles_top_1012/tile_stat_power","ちから","止まるとちからが伸びる"],["tiles_top_1012/tile_stat_intelligence","かしこさ","止まるとかしこさが伸びる"],["tiles_top_1012/tile_stat_accuracy","命中","止まると命中が伸びる"],["tiles_top_1012/tile_stat_evasion","回避","止まると回避が伸びる"],["tiles_top_1012/tile_stat_toughness","丈夫さ","止まると丈夫さが伸びる"],["tiles_top_1012/tile_event","出来事","いろいろな出来事が起きる"],["tiles_top_1012/tile_meal","食事","みんなでごはん（空腹が減る）"],["tiles_top_1012/tile_treasure","宝箱","G などが手に入る"],["tiles_top_1012/tile_wild_monster","野生","野生のモンスターとバトル"],["tiles_top_1012/tile_rare_monster","レア","レアモンスターとバトル"],["tiles_top_1012/tile_rival","ライバル","リュウとバトル"],["@tile_reward","宝の行き止まり","一度だけの報酬（帰りもサイコロ）"],["@tile_challenge","封印の遺跡門","5か6で遺跡の道へ"],["@tile_goal","ゴール","大会会場"]];
+function p9LegendWB(d){d.innerHTML=`<div class="p9ovh">マスの説明<button class="p9x" onclick="p9MenuClose()" aria-label="閉じる">✕</button></div><div class="p9leg wbleg">${WB_LEGEND.map(([f,n,t])=>`<div><img src="./assets/${f[0]==="@"?"proto/board_art_1010/"+f.slice(1):"fields/ch1a/"+f}.webp" alt="" loading="lazy"><b>${n}</b><small>${t}</small></div>`).join("")}</div><button class="p9btn2" data-se="UI_CANCEL" onclick="p9Menu()">もどる</button>`}
+function p9Legend(){const d=$("#p9ov .p9ovc");if(!d)return;if(window.MMWB&&S&&S.m&&MMWB.active(S.m))return p9LegendWB(d);const T=["life","power","wisdom","hit","evasion","toughness","event","rare","treasure","battle","ticket","normal"];
  d.innerHTML=`<div class="p9ovh">マスの説明<button class="p9x" onclick="p9MenuClose()" aria-label="閉じる">✕</button></div><div class="p9leg">${T.map(t=>`<div>${MMP9ART.iconSvg(t,26)}<b>${MMP9ART.SQ[t].label}</b><small>${MMP9ART.SQ[t].desc}</small></div>`).join("")}</div><button class="p9btn2" data-se="UI_CANCEL" onclick="p9Menu()">もどる</button>`}
 function p9BoardHud(m){const r=m.raise,c=p9Ch(r.ch),fin=r.ch==MMP8.FINAL;
  return `<header class="p9hud"><div class="r1"><div class="p9plq"><div class="no">${fin?"Final Chapter":`Chapter <b>${r.ch}</b> / ${MMP7.CHAPTER_COUNT}`}</div><div class="nm">${MMP8.chapterName(r.ch)}</div></div>

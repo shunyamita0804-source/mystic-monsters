@@ -801,7 +801,6 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     const id = await root.MMNPC.talk(E.choiceLines(fx), { kind: 'event', presentation: 'board' });
     return (fx.options || []).some((o) => o.id === id) ? id : first;
   }
-  const VS_KEY = ['solamo', 'gauru', 'nobiton', 'jiol', 'regnas'];   // index.html の TB_VS と同じ（VS の勝負絵のファイル名）
   async function encounter(m, bt) {
     const ui = $('#wb-ui'), B = (cfg().battleTypes || {})[bt] || {}, text = B.encounter || '', rival = bt === 'rival', cue = rival ? 'rival.appear' : bt === 'rare' ? 'rare.alert' : 'wild.alert';
     if (!ui || calm() || !text) { feel(cue, { battleType: bt }); await wait(calm() ? 300 : 500); return; }
@@ -809,8 +808,9 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     if (rival) return rivalCut(ui, B, text, cue);
     // 2026-10-11 野生・レアの遭遇（EV03 の構図＝大きな相手＋下の札。参考画像の仮の名前・Lv は使わない＝実際の種族から作る。Lv は無い）
     let foe = null;
-    // 2026-10-14 実機試遊㉔：影は直後の VS に出る相手と同じ絵（VS の勝負絵 assets/tournament/vs_monsters/・同じ向き）から作る＝形・大きさ・向きがそろう。無い種族は正式の立ち絵
-    if (root.MMP10M && root.MMCH && root.MMCH.foeSpecies && typeof root.battleFoeCount === 'function') { const n = root.MMCH.foeSpecies(m, root.battleFoeCount()), sp = root.MMP10M.byId(n), k = VS_KEY[n]; if (sp && sp.image) foe = { src: k ? `./assets/tournament/vs_monsters/${k}_vs.webp` : sp.image.src, name: sp.name, fl: !!(k && root.MMARENA && root.MMARENA.flipOf && root.MMARENA.flipOf(1, n)) }; }
+    // 2026-10-14 実機試遊㉔：影は、このあとバトルに出る相手と同じ正式の立ち絵（バトルの待機立ち絵 assets/battle/idle/・相手側と同じ向き＝MMARENA.flipOf(1, 種族)）から作る＝形・向きがそろう。
+    //  （VS の勝負絵は翼や光が四角い端で切れていて、影にすると四角い塊になる＝使わない）。待機立ち絵の無い種族は正式の 2.5D 立ち絵
+    if (root.MMP10M && root.MMCH && root.MMCH.foeSpecies && typeof root.battleFoeCount === 'function') { const n = root.MMCH.foeSpecies(m, root.battleFoeCount()), sp = root.MMP10M.byId(n), A = root.MMARENA, idle = A && A.idleSrc ? A.idleSrc(n) : null; if (sp && sp.image) foe = { src: idle || sp.image.src, name: sp.name, fl: !!(idle && A.flipOf && A.flipOf(1, n)) }; }
     const sil = bt === 'wild' && !!foe, rare = bt === 'rare';
     ui.insertAdjacentHTML('beforeend', `<div class="chf-enc chf-enc2 wbx wbx-w${rare ? ' rare' : ''}${sil ? ' sil' : ''}" role="status" aria-label="${esc(text)}"><i class="wbx-veil"></i>
       <div class="wbx-stage${foe && foe.fl ? ' fl' : ''}"><i class="wbx-glow"></i>${foe ? `<img class="wbx-mon" src="${esc(foe.src)}" alt="${sil ? '？？？' : esc(foe.name)}" draggable="false">` : ''}${sil ? `<i class="wbx-sil" aria-hidden="true" style="-webkit-mask-image:url('${esc(foe.src)}');mask-image:url('${esc(foe.src)}')"></i>` : ''}</div>
