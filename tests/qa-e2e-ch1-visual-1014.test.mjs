@@ -81,6 +81,6 @@ test('VB-3：visualPattern の無いセーブは A・C を選んだ出発は C�
   await reopen(pg);
   const a = await boardState(pg);
   assert.deepEqual([a.vp, a.vis, a.wvis, a.node], [undefined, 'A', 'A', c.node], `旧セーブは A ${JSON.stringify(a)}`);
-  assert.notEqual(a.sig, c.sig, 'C と A で景物（種類と位置）が違う'); assert.ok(c.sig.includes('rock_pillar') && !a.sig.includes('rock_pillar'), 'C だけ遺跡の石柱');
+  assert.notEqual(a.sig, c.sig, 'C と A で景物（種類と位置）が違う'); assert.ok(c.sig.includes('rockpillar_rp2') && !a.sig.includes('rockpillar_rp2'), 'C だけ RP2 の岩柱（2026-10-14 A／B／C 高品質化：岩の絵は skin で読み替え）');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });

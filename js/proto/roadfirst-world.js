@@ -85,6 +85,21 @@
       water: { every: 34, reedEvery: 3 }, peaks: { n: 7, w: [44, 60], far: 92, gap: 110, seed: 0x1033 } },   // peaks＝道から far 以上・谷／雲海／森の外・目印と岩峰から離れた所に n 個を足す（決まった乱数）
   };
   const visualOf = (o) => VISUAL[o && o.visual] || VISUAL.A;
+  // 2026-10-14 Chapter 1 A／B／C 高品質化（skin 'hq1014'）：正式13点の派生（assets/fields/ch1a/board_hq_1014/・tools/boardhq1014/derive.py）で
+  //   草地・道の敷石・谷の湿地・木・岩・小花の「絵だけ」を差し替える。地点・道の形・谷／雲海／森の範囲・景物の位置と数（scatter・waterProps・peaksOf の出力）は変えない＝
+  //   描くときにファイル名を読み替えるだけ（k＝その景物の幅の倍率。縦長の岩柱を置くときだけ少し細く）。読めない絵は従来の絵へ戻す。o.skin が無ければ従来のまま（試作の既定）
+  //   roadTile＝R のくり返し1枚の大きさ（単位。道の帯の石と同じ大きさ）・discCenter＝分かれ目・行き止まりの敷石の円は円の中心に R の中央を合わせる（R2 の上下のつなぎ目を出さない）
+  const SKIN = {
+    hq1014: { base: './assets/fields/ch1a/board_hq_1014/', roadTile: 57.5, discCenter: true,
+      A: { ground: 'ground_a1.webp', road: 'road_r1.webp', strip: 'strip_r1.webp', water: 'water_w1.webp',
+        props: { 'prop_tree.webp': ['tree_t1.webp', 1], 'prop_rock.webp': ['rockpillar_rp1.webp', 0.85], 'prop_flowers.webp': ['flowers_f1.webp', 1] } },
+      B: { ground: 'ground_a2.webp', road: 'road_r1.webp', strip: 'strip_r1.webp', water: 'water_w1.webp',
+        props: { 'prop_tree.webp': ['tree_t2.webp', 1], 'prop_rock.webp': ['rockpillar_rp1.webp', 0.85], 'prop_flowers.webp': ['flowers_f2.webp', 1] } },
+      C: { ground: 'ground_a3.webp', road: 'road_r2.webp', strip: 'strip_r2.webp', water: 'water_w2.webp',
+        props: { 'prop_tree.webp': ['tree_t1.webp', 1], 'prop_rock.webp': ['rockpillar_rp2.webp', 0.85], 'rock_pillar.webp': ['rockpillar_rp1.webp', 1], 'prop_flowers.webp': ['flowers_f1.webp', 1] } } },
+  };
+  /** その盤の skin（無ければ null）＝{ base, roadTile, discCenter, ground, road, strip, water, props } */
+  const skinOf = (o) => { const K = SKIN[o && o.skin]; if (!K) return null; const v = K[visualOf(o).key] || K.A; return Object.assign({ key: o.skin, base: K.base, roadTile: K.roadTile, discCenter: K.discCenter }, v); };
   // 2026-10-11 地形の範囲（設計：68 Scene の表の景観の説明から）。谷＝輪になった道の内側（崩落の谷・中央の崖）＋石橋の下を横切る谷の腕。
   //   loop＝区間を順にたどった多角形（rev＝逆向き）・arms＝谷の腕の中心線と幅・bridges＝谷の上を渡る区間（道のまわりを陸にしない）・water＝谷の中の水（滝の側）
   const TERRAIN = [
@@ -160,6 +175,7 @@
     const title = doc.createElement('div'); title.className = 'rfw-title'; title.innerHTML = '<small>CHAPTER 1</small>はじまりの草原<em>全体マップ</em>';
     wrap.appendChild(plane); wrap.appendChild(bb); wrap.appendChild(title); host.appendChild(wrap);
     const VIS = visualOf(o); wrap.dataset.visual = VIS.key;   // 2026-10-14 Chapter 1 B／C：景観のパターン（A＝従来）
+    const SK = skinOf(o); if (SK) wrap.dataset.skin = SK.key;   // 2026-10-14 A／B／C 高品質化：絵の差し替え（無ければ従来の絵）
     css(doc);
     const W = Math.ceil(WORLD.w * o.res), H = Math.ceil(WORLD.h * o.res);
     plane.style.width = WORLD.w + 'px'; plane.style.height = WORLD.h + 'px';
@@ -224,21 +240,29 @@
     if (o.art) {
       const base = o.art.base || './assets/proto/board_art_1010/';
       const load = (f) => new Promise((res) => { const im = new root.Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = base + f; });
+      // skin の絵 → 読めなければ従来の絵（im._u＝実際に読めた URL。草地の外の帯にも同じ絵）
+      const load2 = (k, f) => (SK && SK[k] ? new Promise((res) => { const im = new root.Image(); im.onload = () => { im._sk = true; res(im); }; im.onerror = () => res(null); im.src = SK.base + SK[k]; }) : Promise.resolve(null))
+        .then((im) => im || load(f));
       const T = ART.terrain;
       const EK = Object.keys(T.edges);
-      Promise.all([load(ART.ground.file), load(ART.road.file), o.art.road === 'pattern' ? null : load(ART.strip.file),
-        load(T.valley.file), load(T.water.file), load(T.cloud.file), ...EK.map((k) => load(T.edges[k].file))]).then(([gi, ri, si, vi, wi, ci, ...ei]) => {
+      Promise.all([load2('ground', ART.ground.file), load2('road', ART.road.file), o.art.road === 'pattern' ? null : load2('strip', ART.strip.file),
+        load(T.valley.file), load2('water', T.water.file), load(T.cloud.file), ...EK.map((k) => load(T.edges[k].file))]).then(([gi, ri, si, vi, wi, ci, ...ei]) => {
         if (S.dead) return; art.ground = gi; art.road = ri; art.strip = si;
+        if (ri && ri._sk) { art.roadTile = SK.roadTile; art.discCenter = !!SK.discCenter; }   // R の石の大きさ＝道の帯の石にそろえる
         if (vi) { art.terrain = terrainMasks(doc, D, o); art.valley = vi; art.water = wi; art.cloud = ci; art.edges = {}; EK.forEach((k, i) => { art.edges[k] = ei[i]; });
           if (art.edges.forest) art.canopy = canopyTile(doc, art.edges.forest); }
         if (gi || ri) { paint(); wrap.classList.add('art'); } else paint();
         artDone = true;
         // 世界の外（端へ寄ったときに見える所）も同じ草地で続ける：平面の中の安い背景（canvas は世界の中だけ）
         if (gi) { const ap = doc.createElement('div'); ap.className = 'rfw-apron'; const m = APRON;
-          Object.assign(ap.style, { left: -m + 'px', top: -m + 'px', width: WORLD.w + 2 * m + 'px', height: WORLD.h + 2 * m + 'px', backgroundImage: `url(${base + ART.ground.file})`,
+          Object.assign(ap.style, { left: -m + 'px', top: -m + 'px', width: WORLD.w + 2 * m + 'px', height: WORLD.h + 2 * m + 'px', backgroundImage: `url(${gi._sk ? SK.base + SK.ground : base + ART.ground.file})`,
             backgroundSize: `${ART.ground.tile}px ${ART.ground.tile}px`, backgroundPosition: `${m % ART.ground.tile}px ${m % ART.ground.tile}px` });
           plane.insertBefore(ap, plane.firstChild); } });
-      const add = (file, x, y, w, z, cls) => { const d = doc.createElement('img'); d.className = 'rfw-prop' + (cls ? ' ' + cls : ''); d.alt = ''; d.draggable = false; d.src = base + file; bb.appendChild(d); props.push({ el: d, x, y, w, z: z || 0 }); };
+      const add = (file, x, y, w, z, cls) => { const d = doc.createElement('img'); d.className = 'rfw-prop' + (cls ? ' ' + cls : ''); d.alt = ''; d.draggable = false;
+        const sub = SK && SK.props[file], p = { el: d, x, y, w: sub ? w * sub[1] : w, z: z || 0 };
+        if (sub) { d.dataset.k = file; d.addEventListener('error', () => { d.src = base + file; p.w = w; p.base = 0; S.dirty = true; }, { once: true }); d.src = SK.base + sub[0]; }   // 読めなければ従来の絵・従来の幅
+        else d.src = base + file;
+        bb.appendChild(d); props.push(p); };
       for (const q of scatter(D, o)) add(q.file, q.x, q.y, q.w);
       const gn = D.nodes.GOAL; if (gn) { add(ART.goal.file, gn[0], gn[1] + ART.goal.dy, ART.goal.w, -40, 'rfw-goal'); props[props.length - 1].solid = true; }   // 2026-10-13 開発27（26）：大会会場（建物・門）は半透明にしない（xray で草地が透けて見えていた）
       for (const L of ART.landmarks) { if (o.hideLm && o.hideLm.includes(L.node)) continue; const at = landmarkAt(D, L); if (at) { add(L.file, at[0], at[1], L.w, L.z || 0, 'rfw-lm'); props[props.length - 1].L = L; } }
@@ -458,7 +482,7 @@
       markerOff(id) { const i = props.findIndex((x) => x.mark === id); if (i >= 0) { props[i].el.remove(); props.splice(i, 1); } },
       yawGoal: () => (o.heading ? S.yawGoal || 0 : 0),
       state: () => ({ yaw: S.cam.yaw || 0, yawGoal: S.yawGoal || 0, heading: !!o.heading, focus: o.focus ? veilSig.split(',').filter(Boolean) : null, cam: Object.assign({}, S.cam), goal: S.goal && Object.assign({}, S.goal), mon: S.mon && S.mon.slice(), view: S.view, intro: !!S.intro, introAnims: S.introAnims || 0, ahead: S.lastAhead || [],
-        visual: VIS.key, tiles: Object.keys(tiles).length, chunks: chunks.length, painted, res: o.res, tilt: o.tilt, props: props.length, art: !!(art.ground || art.road), rims: art.terrain ? art.terrain.rims.filter((r) => r.kind === 'valley').map((r) => r.pts.length) : null,
+        visual: VIS.key, skin: SK ? SK.key : null, artSkin: art.ground ? { ground: !!art.ground._sk, road: !!(art.road && art.road._sk), strip: !!(art.strip && art.strip._sk), water: !!(art.water && art.water._sk) } : null, tiles: Object.keys(tiles).length, chunks: chunks.length, painted, res: o.res, tilt: o.tilt, props: props.length, art: !!(art.ground || art.road), rims: art.terrain ? art.terrain.rims.filter((r) => r.kind === 'valley').map((r) => r.pts.length) : null,
         rimKinds: art.terrain ? art.terrain.rims.reduce((a, r) => { a[r.kind] = (a[r.kind] || 0) + 1; return a; }, {}) : null }),
       project: (x, y) => project(S.cam, x, y),
       frames: (reset) => { const f = S.frames.slice(); if (reset) S.frames = []; return f; },
@@ -489,7 +513,9 @@
     const hubs = Object.keys(D.nodes).filter((id) => (out[id] || 0) > 1 || (inn[id] || 0) > 1);
     const ends = Object.keys(D.nodes).filter((id) => /dead_end/.test(D.nodes[id][2]));
     const disc = (id, r) => { const n = D.nodes[id]; g.beginPath(); g.arc(n[0], n[1], r, 0, 7); g.fill(); };
-    const rp = art && art.road ? pattern(g, art.road, ART.road.tile) : null;
+    const rt = (art && art.roadTile) || ART.road.tile, rp = art && art.road ? pattern(g, art.road, rt) : null;
+    // skin：敷石の円は円の中心に R の中央を合わせる（円は R の1枚より小さい＝くり返しのつなぎ目が円の中に入らない）
+    const centre = (id) => { if (!art.discCenter || !rp || !rp.setTransform || !root.DOMMatrix) return; const n = D.nodes[id]; rp.setTransform(new root.DOMMatrix().translate(n[0] - rt / 2, n[1] - rt / 2).scale(rt / art.road.width)); g.fillStyle = rp; };
     if (rp) { g.strokeStyle = 'rgba(40,52,20,.28)'; g.lineWidth = o.roadW + 9; for (const s of segs) { path(s[3]); g.stroke(); } }   // 草へ落ちる薄い影
     if (rp && art.strip) {   // 直線の石の道を道筋に沿って並べる（分かれ目・合流・行き止まりは敷石の円で覆う）
       if (art.terrain) {   // 谷の上を渡る石橋：下へ落ちる影（高さに見せる）
@@ -498,7 +524,7 @@
       }
       for (const s of segs) stripAlong(g, curvePts(s[3].map((id) => D.nodes[id])), art.strip, ART.strip.w, bx);
       g.fillStyle = '#8f8573'; for (const id of hubs) disc(id, ART.strip.w * 0.62 + 1.5); for (const id of ends) disc(id, ART.strip.w * 0.6 + 1.5);
-      g.fillStyle = rp; for (const id of hubs) disc(id, ART.strip.w * 0.62 - 1); for (const id of ends) disc(id, ART.strip.w * 0.6 - 1);
+      g.fillStyle = rp; for (const id of hubs) { centre(id); disc(id, ART.strip.w * 0.62 - 1); } for (const id of ends) { centre(id); disc(id, ART.strip.w * 0.6 - 1); }
       return;
     }
     g.strokeStyle = rp ? '#8f8573' : '#6f6248'; g.lineWidth = o.roadW + 4; for (const s of segs) { path(s[3]); g.stroke(); }
@@ -759,13 +785,14 @@
 
   /** 2026-10-12 開発21：出発の前に盤の絵を先に読み込んでおく（ブラウザの取り置き。描画はしない）。1回だけ */
   let pre = null;
-  function warmArt(base) {
+  function warmArt(base, skin) {
     if (pre || !root.Image) return pre; base = base || './assets/proto/board_art_1010/';
+    const K = SKIN[skin], sk = K ? [...new Set(['A', 'B', 'C'].flatMap((v) => [K[v].ground, K[v].road, K[v].strip, K[v].water, ...Object.values(K[v].props).map((q) => q[0])]))].map((f) => K.base + f) : [];
     const T = ART.terrain, files = [ART.ground.file, ART.road.file, ART.strip.file, ART.goal.file, ART.peaks.file, T.valley.file, T.water.file, T.cloud.file, ...Object.values(T.edges).map((e) => e.file),
       ...Object.values(VISUAL).flatMap((v) => v.props.map((p) => p.file)), ...ART.landmarks.map((l) => l.file), ...Object.values(ART.water).filter((w) => w && w.file).map((w) => w.file)];
-    pre = [...new Set(files)].map((f) => { const im = new root.Image(); im.decoding = 'async'; im.src = base + f; return im; });
+    pre = [...[...new Set(files)].map((f) => base + f), ...sk].map((u) => { const im = new root.Image(); im.decoding = 'async'; im.src = u; return im; });
     return pre;
   }
-  const api = { DEF, WORLD, ART, TERRAIN, VISUAL, visualOf, peaksOf, project, fitZoom, lookahead, headingYaw, angDiff, create, scatter, waterProps, curvePts, landmarkAt, inValley, loopPoly, warmArt };
+  const api = { DEF, WORLD, ART, TERRAIN, VISUAL, SKIN, skinOf, visualOf, peaksOf, project, fitZoom, lookahead, headingYaw, angDiff, create, scatter, waterProps, curvePts, landmarkAt, inValley, loopPoly, warmArt };
   if (typeof module === 'object' && module.exports) module.exports = api; else root.MMRF_WORLD = api;
 })(typeof window !== 'undefined' ? window : globalThis);

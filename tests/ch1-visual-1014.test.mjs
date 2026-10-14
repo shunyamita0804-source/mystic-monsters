@@ -148,6 +148,6 @@ test('VP-05：index.html＝出発準備の景色の選択（Chapter 1 だけ・�
   assert.match(H, /<section class="ppcard"><div class="ppcin"><small>\$\{chNo\}<\/small><b>\$\{chName\|\|"ー"\}<\/b>\$\{art\}\$\{vis\}\$\{note\}/);
   const css = H.slice(H.indexOf('/* 2026-10-14 Chapter 1 B／C'), H.indexOf('@media (max-height:700px){.ppvb'));
   assert.doesNotMatch(css, /filter|hue-rotate|saturate/, '色を変えない');
-  const WB = rd('js/chapter/world-board.js'); assert.match(WB, /visual: vis \}\);/); assert.match(WB, /MMWD\.visualOf\(m\)/);
+  const WB = rd('js/chapter/world-board.js'); assert.match(WB, /visual: vis, skin: skinKey\(\) \}\);/); assert.match(WB, /MMWD\.visualOf\(m\)/);
   const RW = rd('js/proto/roadfirst-world.js'); assert.doesNotMatch(RW.slice(RW.indexOf('const VISUAL = {'), RW.indexOf('const visualOf')), /filter|hue|tint/, '景観は景物の混ぜ方と配置だけ');
 });
