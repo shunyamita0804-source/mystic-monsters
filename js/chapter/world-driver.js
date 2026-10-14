@@ -16,7 +16,16 @@
   const CH = 1, TURN_LIMIT = 40, DICE = 6;
   const STAT_KEYS = ['li', 'po', 'in', 'hi', 'ev', 'de'], STAT_MAX = 999;
   const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
-  const D = () => root.MMRF_DATA, C = () => root.MMRF_CORE, P = () => root.MMRF_PLAY;
+  const C = () => root.MMRF_CORE, P = () => root.MMRF_PLAY;
+  // 2026-10-14 Chapter 1 B／C 独立ルート：A＝js/proto/roadfirst-data.js（MMRF_DATA・変えない）、B／C＝js/proto/roadfirst-routes.js（MMRF_ROUTES。A と同じ 42区間の部品をつなぎ直した別の道）。
+  //   新しい育成の出発で A／B／C を各 1/3 で抽選して配置 m.raise.field.route に保存（v6 の任意項目）＝再開・読み込みでは決め直さない。route が無い・知らない値＝A（旧セーブはすべて A のまま続く）。
+  //   テスト・確認用：URL の ?ch1route=A|B|C（index.html が window.MM_CH1ROUTE に入れる）または MMWD.setRoute で次の出発のルートを固定。本番の選択の画面は無い
+  const ROUTES = Object.freeze(['A', 'B', 'C']);
+  const routeKey = (v) => (v === 'B' || v === 'C' ? v : 'A');
+  const dataOf = (k) => (k === 'B' || k === 'C' ? (root.MMRF_ROUTES && root.MMRF_ROUTES[k]) || null : root.MMRF_DATA);
+  const routeOf = (m) => { const f = fieldOf(m); return routeKey(f && f.route); };
+  /** その個体のルートの道のデータ（m が無い・B/C のデータが読めない＝A） */
+  const D = (m) => (m && dataOf(routeOf(m))) || root.MMRF_DATA;
   const T = () => P().TUNING;
 
   /** 分かれ道の道の名前（プレイヤー向け。区間 ID → 名前。68 Scene の景観の表から） */
@@ -25,39 +34,62 @@
     LATE_SAFE: '中央の安全な尾根', LATE_L1: '封印の遺跡門への道（特殊挑戦）', LATE_R1: 'ライオン石像への尾根道',
     D_LC: '寄り道：苔むした小塔', D_LA: '寄り道：森の祭壇', D_RC: '寄り道：岩棚の見張り台', D_LLA: '寄り道：谷の端の小祠', D_R5: '寄り道：石像の奥', D_RS: '寄り道：虹の滝', D_RAND: '寄り道：閉ざされた古道',
   });
+  // B／C の道の名前（2026-10-14・仮案＝ユーザーの承認前。A と同じ区間 ID）。左右（EL／Q_L／LATE_L＝進む向きの左）は3ルートで同じ向き
+  const ROUTE_NAME_BY = Object.freeze({
+    B: Object.freeze({ EL01: '左の道（湖の北岸の花道）', ER01: '右の道（湖の南岸の水辺道）',
+      LATE_SAFE: '花畑の中央道', LATE_L1: '封印の遺跡門への道（特殊挑戦）', LATE_R1: '白鳥の石像の丘道',
+      D_LC: '寄り道：八角の東屋', D_LA: '寄り道：湖畔の祭壇', D_RC: '寄り道：水車小屋', D_LLA: '寄り道：泉のほとりの祠', D_R5: '寄り道：水瓶の女神像', D_RS: '寄り道：花の丘の段々の滝', D_RAND: '寄り道：滝の裏の隠れ家' }),
+    C: Object.freeze({ EL01: '左の道（岩丘の尾根道）', ER01: '右の道（外周の崖ぞいの道）',
+      LATE_SAFE: '遺跡の中庭を抜ける近道', LATE_L1: '神殿の門への道（特殊挑戦）', LATE_R1: 'ゴーレム像の列柱の道',
+      D_LC: '寄り道：崩れた見張り塔', D_LA: '寄り道：環状列石', D_RC: '寄り道：岩壁の宝物庫', D_LLA: '寄り道：崖の上の列柱神殿', D_R5: '寄り道：古代のオベリスク', D_RS: '寄り道：螺旋階段の塔', D_RAND: '寄り道：岩の裂け目の隠れ家' }),
+  });
   const SPUR = (seg) => /^D_/.test(seg);
   const PLACE = Object.freeze({ START: 'スタート', J0: '分かれ道', P: '合流', LOWER_GATE: '下の門', Q: '運命の分かれ道', R: '合流', UPPER_GATE: '上の門', RIVAL: 'ライバルの広場', H: '後半の分かれ道', CHALLENGE: '封印の遺跡門', FINAL: '最後の合流', GOAL: '大会会場', STATUE: 'ライオン石像' });
-  function routeName(seg) { return ROUTE_NAME[seg] || (SPUR(seg) ? '寄り道' : 'このまま進む'); }
+  const PLACE_BY = Object.freeze({ B: Object.freeze({ STATUE: '白鳥の石像' }), C: Object.freeze({ CHALLENGE: '神殿の門', STATUE: 'ゴーレム像' }) });
+  /** 固定報酬の表示名（中身・価値・取得の機会は A と同じ＝js/proto/roadfirst-play.js の TUNING.rewards。名前だけルートの景色に合わせる） */
+  const REWARD_TITLE_BY = Object.freeze({
+    B: Object.freeze({ L_CHEST: '八角の東屋', R_CHEST: '水車小屋', L_ALTAR: '湖畔の祭壇', L_LATE_ALTAR: '泉のほとりの祠', REWARD5: '水瓶の女神像', R_SPECIAL: '花の丘の段々の滝', RANDOM_DEN: '滝の裏の隠れ家' }),
+    C: Object.freeze({ L_CHEST: '崩れた見張り塔', R_CHEST: '岩壁の宝物庫', L_ALTAR: '環状列石', L_LATE_ALTAR: '崖の上の列柱神殿', REWARD5: '古代のオベリスク', R_SPECIAL: '螺旋階段の塔', RANDOM_DEN: '岩の裂け目の隠れ家' }),
+  });
+  function routeName(seg, key) { const B = ROUTE_NAME_BY[routeKey(key)]; return (B && B[seg]) || ROUTE_NAME[seg] || (SPUR(seg) ? '寄り道' : 'このまま進む'); }
+  function placeOf(id, key) { const B = PLACE_BY[routeKey(key)]; return (B && B[id]) || PLACE[id] || null; }
+  const rewardTitle = (id, key, def) => { const B = REWARD_TITLE_BY[routeKey(key)]; return (B && B[id]) || def; };
 
   // ---- マップ（raising.js の boardOf・ゴールの判定用。行き止まりからは戻れるので、戻りの接続も conn に入れる＝行き止まりはゴールではない） ----
-  let TRACK = null;
-  function track() {
-    if (TRACK) return TRACK;
-    const d = D(), nodes = {}, conn = {};
+  const TRACK = {};   // ルートごとに1回だけ作る
+  function track(key) {
+    const k = routeKey(key), d = dataOf(k) || root.MMRF_DATA; if (TRACK[k] && TRACK[k].d === d) return TRACK[k].t;
+    const nodes = {}, conn = {};
     for (const [id, n] of Object.entries(d.nodes)) { nodes[id] = { type: n[2], x: n[0], y: n[1] }; conn[id] = []; }
     for (const e of d.edges) if (!conn[e[0]].includes(e[1])) conn[e[0]].push(e[1]);
-    TRACK = Object.freeze({ nodes, conn, start: 'START', goal: 'GOAL', world: true });
-    return TRACK;
+    const t = Object.freeze({ nodes, conn, start: 'START', goal: 'GOAL', world: true, route: k });
+    TRACK[k] = { d, t }; return t;
   }
 
   // ---- 配置（m.raise.field） ----
   const fieldOf = (m) => (m && isObj(m.raise) && isObj(m.raise.field) && m.raise.field.world === 1 ? m.raise.field : null);
   function valid(f) {
-    const d = D(); if (!isObj(f) || f.world !== 1 || f.chapterId !== CH || !Number.isInteger(f.layoutSeed)) return false;
-    const c = f.core; if (!isObj(c) || !d.nodes[c.node] || !Array.isArray(c.trail) || !Number.isInteger(c.turn) || !Number.isInteger(c.moveLeft) || c.moveLeft < 0) return false;
+    if (!isObj(f) || f.world !== 1 || f.chapterId !== CH || !Number.isInteger(f.layoutSeed)) return false;
+    const d = dataOf(routeKey(f.route));   // B／C のデータが読めないときは地点を確かめない（その育成の配置を消さない）
+    const c = f.core; if (!isObj(c) || (d && !d.nodes[c.node]) || !Array.isArray(c.trail) || !Number.isInteger(c.turn) || !Number.isInteger(c.moveLeft) || c.moveLeft < 0) return false;
     return isObj(f.tiles) && isObj(f.used) && isObj(f.claimed);
   }
-  // 2026-10-14 Chapter 1 B／C：景観のパターン（A＝従来・B＝花と清流・C＝岩丘と遺跡）。見た目だけ＝道・配置（tiles）・報酬・成長・サイコロ・空腹は共通。
-  //   出発のときだけ決め（setVisual → onDepart が読む）、配置 m.raise.field の任意項目 visualPattern に保存（v6 の形は不変。patternId 'W' はそのまま）。無い・知らない値＝A（旧セーブ）
-  const VISUALS = Object.freeze(['A', 'B', 'C']);
+  // 景観のパターン（A＝従来・B＝花と清流・C＝岩丘と遺跡）＝配置の任意項目 visualPattern。2026-10-14 からは新しい育成ではルートと同じ値（B のルート＝B の景観）。
+  //   無い・知らない値＝A。旧セーブで景観 B／C のまま A の道を進んでいる個体は、その育成の終わりまで「B／C の景観＋A の道」（route が無い＝A）
+  const VISUALS = ROUTES;
   const visualKey = (v) => (VISUALS.includes(v) ? v : 'A');
-  let pendingVisual = 'A';
-  function setVisual(v) { pendingVisual = visualKey(v); return pendingVisual; }
   const visualOf = (m) => { const f = fieldOf(m); return visualKey(f && f.visualPattern); };
-  function newField(rnd = Math.random, seed, visual) {
+  let pendingRoute = null;
+  /** 次の出発のルートを固定（テスト・確認用。null＝本番の抽選）。1回の出発で使ったら戻す */
+  function setRoute(v) { pendingRoute = ROUTES.includes(v) ? v : null; return pendingRoute; }
+  const forcedRoute = () => { if (pendingRoute) return pendingRoute; let q = null; try { q = root.MM_CH1ROUTE || new URLSearchParams(root.location.search).get('ch1route'); } catch (e) {} return ROUTES.includes(q) ? q : null; };
+  /** ルートの抽選：A／B／C を各 1/3（配置の seed とは別の1回。保存して再開では決め直さない） */
+  const drawRoute = (rnd) => ROUTES[Math.min(2, Math.floor(rnd() * 3))];
+  function newField(rnd = Math.random, seed, route) {
+    const k = ROUTES.includes(route) ? route : drawRoute(rnd), d = dataOf(k) || root.MMRF_DATA, rk = d === root.MMRF_DATA ? 'A' : k;
     const s = Number.isInteger(seed) ? seed >>> 0 : ((Math.floor(rnd() * 0x7fffffff) >>> 0) || 1);
-    const core = C().create(D(), { seed: s, turnLimit: TURN_LIMIT });
-    return { world: 1, chapterId: CH, patternId: 'W', layoutSeed: s, core, tiles: P().layout(D(), s), used: {}, claimed: {}, rivalMet: false, introSeen: false, arrivalSeen: false, visualPattern: visualKey(visual) };
+    const core = C().create(d, { seed: s, turnLimit: TURN_LIMIT });
+    return { world: 1, chapterId: CH, patternId: 'W', layoutSeed: s, core, tiles: P().layout(d, s, { route: rk, bias: true }), used: {}, claimed: {}, rivalMet: false, introSeen: false, arrivalSeen: false, route: rk, visualPattern: rk };
   }
   const clampFat = (v) => Math.max(0, Math.min(T().fatigueMax, Math.round(Number(v) || 0)));
   const carry = (f) => (root.MMCH && root.MMCH.carryFatigue ? root.MMCH.carryFatigue(f) : Math.max(0, (Number(f) || 0) - 50));
@@ -88,41 +120,42 @@
     r.node = c.node; p.left = c.moveLeft;
     const keep = ev.filter((e) => KEEP_EV.includes(e.type)); if (keep.length) p.evs = [...(p.evs || []), ...keep].slice(-12);
     const ch = ev.find((e) => e.type === 'choice');
-    if (ch) { const op = C().options(D(), c); p.stage = 'branch'; p.opts = op.map((e) => e.dst); p.segs = op.map((e) => e.seg); return { stage: 'branch', opts: p.opts, ev }; }
+    if (ch) { const op = C().options(D(m), c); p.stage = 'branch'; p.opts = op.map((e) => e.dst); p.segs = op.map((e) => e.seg); return { stage: 'branch', opts: p.opts, ev }; }
     if (c.moveLeft <= 0 || c.done) { p.left = 0; p.stage = 'resolve'; } else p.stage = 'move';
     return { stage: p.stage, node: c.node, ev };
   }
   function step(S, m) {
     const f = fieldOf(m), p = m.raise.pend; if (!f || !p) return { stage: p ? p.stage : null };
     if (f.core.moveLeft <= 0 || f.core.done) { p.left = 0; p.stage = 'resolve'; return { stage: 'resolve' }; }
-    return after(S, m, C().stepOnce(D(), f.core, {}));
+    return after(S, m, C().stepOnce(D(m), f.core, {}));
   }
   function chooseBranch(S, m, id) {
     const f = fieldOf(m), p = m.raise.pend; if (!f || !p || p.stage !== 'branch') return { ok: false };
     const i = (p.opts || []).indexOf(id), seg = Array.isArray(p.segs) ? p.segs[i] : null; if (i < 0 || !seg) return { ok: false };
     delete p.opts; delete p.segs;
-    const ev = C().stepOnce(D(), f.core, { choose: seg });
+    const ev = C().stepOnce(D(m), f.core, { choose: seg });
     if (!ev.some((e) => e.type === 'step')) { const o = after(S, m, ev); return { ok: false, ...o }; }
     return { ok: true, ...after(S, m, ev) };
   }
   /** 分かれ道の選択肢（画面用）：[{ id＝次の地点, seg, name, spur }] */
   function branchOptions(m) {
     const p = m && m.raise && m.raise.pend; if (!p || p.stage !== 'branch' || !Array.isArray(p.opts)) return [];
-    return p.opts.map((id, i) => { const seg = (p.segs || [])[i]; return { id, seg, name: routeName(seg), spur: SPUR(seg) }; });
+    const k = routeOf(m); return p.opts.map((id, i) => { const seg = (p.segs || [])[i]; return { id, seg, name: routeName(seg, k), spur: SPUR(seg) }; });
   }
 
   // ---- 止まった地点の中身（raising.js の resolveLanding から。1回だけ） ----
   function dieAt(m, id) { const p = m.raise.pend; return ((p && p.evs) || []).filter((e) => e.type === 'eventDie' && e.at === id).map((e) => ({ kind: e.kind, die: e.die, result: e.result })); }
   function resolve(S, m, id) {
-    const f = fieldOf(m), d = D(), role = d.nodes[id] ? d.nodes[id][2] : '', dice = dieAt(m, id);
-    const base = { place: PLACE[id] || null, dice };
+    const f = fieldOf(m), d = D(m), k = routeOf(m), role = d.nodes[id] ? d.nodes[id][2] : '', dice = dieAt(m, id);
+    const base = { place: placeOf(id, k), dice };
     if (role === 'goal') return { kind: 'none', note: 'goal', ...base };
     if (role === 'mandatory_rival') { if (f.rivalMet) return { kind: 'none', note: 'rival_done', ...base }; f.rivalMet = true; return { kind: 'battle', battleType: 'rival', ...base }; }
     if (role === 'fixed_reward_dead_end' || role === 'optional_random_unlock_dead_end') {
       const R = T().rewards[id]; if (!R) return { kind: 'none', note: 'normal', ...base };
-      if (f.claimed[id] != null) return { kind: 'none', note: 'claimed', title: R.title, ...base };
+      const title = rewardTitle(id, k, R.title);
+      if (f.claimed[id] != null) return { kind: 'none', note: 'claimed', title, ...base };
       f.claimed[id] = f.core.turn;
-      return { kind: 'reward', id, den: role !== 'fixed_reward_dead_end', title: R.title, ...apply(S, m, R.eff), ...base };
+      return { kind: 'reward', id, den: role !== 'fixed_reward_dead_end', title, ...apply(S, m, R.eff), ...base };
     }
     const tile = f.tiles[id];
     if (role !== 'ordinary_tile' || !tile || f.used[id] != null) return { kind: 'none', note: role === 'ordinary_tile' ? 'normal' : role, ...base };
@@ -182,11 +215,37 @@
     { id: 'w_castle', trigger: 'land', priority: 14, when: { pass: ['LATE_L_DONE', 'LATE_R_DONE', 'FINAL', 'S_END'], notNode: ['GOAL'] }, lines: [L('happy', '大会会場が見えてきた！ あと少しだよ。')] },
     { id: 'ch1_tired', trigger: 'land', priority: 5, when: { fatigueMin: 80 }, lines: [L('worried', 'だいぶお腹がすいてきたみたい。何か食べさせるか、休もうね。')] },
   ]);
-  let SEG_OF = null;
-  /** 地点 → 区間（区間の途中の地点だけ。分かれ道・合流などの端の地点は区間に入れない＝pass では地点 ID で書く） */
-  function segOf(id) {
-    if (!SEG_OF) { SEG_OF = {}; for (const [k, s] of Object.entries(D().segments)) { const pts = s[3] || []; for (let i = 1; i < pts.length - 1; i++) SEG_OF[pts[i]] = k; } }
-    return SEG_OF[id] || null;
+  // 2026-10-14 B／C：景色を言う一言だけルートごとに文を差し替える（id・条件・優先度は A と同じ＝見た記録も共通。文は仮案＝ユーザーの承認前）
+  const STORY_LINES_BY = Object.freeze({
+    B: Object.freeze({
+      ch1_start: [L('happy', '川の音がするね！ 今日は川に沿って、草原を行ったり来たりするみたい。大会会場まで、一緒にがんばろう。')],
+      tut_challenge_w: [L('guide', 'この先には封印の遺跡門があるよ。サイコロで5か6が出れば、門が開いて奥の道へ進めるんだ。'), L('normal', '失敗しても、遠回りの道で先へ進めるから安心してね。')],
+      w_left: [L('happy', '湖の北側は花がいっぱい！ 小島にも何かありそう。')],
+      w_right: [L('smile', '水辺の道だね。足元がぬれないように気をつけよう。')],
+      w_merge: [L('smile', '道がひとつに戻ったね。この先に門があるよ。')],
+      w_rival_before: [L('serious', '門の向こうに誰かいる…。もしかして、リュウ？')],
+      w_safe: [L('smile', '花畑のまん中の道だね。ここなら安心して進めそう。')],
+      w_statue: [L('surprised', '丘の上に白鳥の石像…！ 川を見守ってるみたい。')],
+      w_castle: [L('happy', '大会会場が見えてきた！ 川の上流の丘だね。あと少しだよ。')],
+    }),
+    C: Object.freeze({
+      ch1_start: [L('happy', '大きな岩の丘がぐるっと続いてる…。外側から回って、まん中の会場を目指すんだね。一緒にがんばろう。')],
+      tut_challenge_w: [L('guide', 'この先には遺跡の神殿の門があるよ。サイコロで5か6が出れば、門が開いて奥の道へ進めるんだ。'), L('normal', '失敗しても、遠回りの道で先へ進めるから安心してね。')],
+      w_left: [L('smile', '岩の尾根道だね。見晴らしがいいよ。')],
+      w_right: [L('surprised', '崖ぞいの道…。端に寄りすぎないでね。')],
+      w_merge: [L('smile', '道がひとつに戻ったね。この先に遺跡の門があるよ。')],
+      w_rival_before: [L('serious', '遺跡の門の向こうに誰かいる…。もしかして、リュウ？')],
+      w_safe: [L('smile', '遺跡の中庭を抜ける近道だね。')],
+      w_statue: [L('surprised', '大きなゴーレムの像…！ 遺跡の番人みたい。')],
+      w_castle: [L('happy', '渦のまん中に会場が見えた！ あとひと回りだよ。')],
+    }),
+  });
+  const SEG_OF = {};
+  /** 地点 → 区間（区間の途中の地点だけ。分かれ道・合流などの端の地点は区間に入れない＝pass では地点 ID で書く）。ルートごと */
+  function segOf(id, key) {
+    const k = routeKey(key), d = dataOf(k) || root.MMRF_DATA;
+    if (!SEG_OF[k] || SEG_OF[k].d !== d) { const map = {}; for (const [sk, s] of Object.entries(d.segments)) { const pts = s[3] || []; for (let i = 1; i < pts.length - 1; i++) map[pts[i]] = sk; } SEG_OF[k] = { d, map }; }
+    return SEG_OF[k].map[id] || null;
   }
   const STORY_CONDS = {
     kind: (w, c) => !!c.fx && c.fx.kind === w,
@@ -194,7 +253,7 @@
     recovery: (w, c) => (!!c.fx && c.fx.kind === 'event' && !!c.fx.recovery) === !!w,
     hasEvent: (w, c) => (!!c.fx && c.fx.kind === 'event' && !c.fx.recovery) === !!w,
     goal: (w, c) => !!c.goal === !!w,
-    pass: (w, c) => c.path.some((id) => w.includes(id) || w.includes(segOf(id))),
+    pass: (w, c) => c.path.some((id) => w.includes(id) || w.includes(segOf(id, c.route))),
     notNode: (w, c) => !w.includes(c.node),
     spurOpt: (w, c) => (c.segs || []).some((s) => SPUR(s)) === !!w,
     optSeg: (w, c) => (c.segs || []).includes(w),
@@ -206,12 +265,13 @@
   function storyEvents(m, trigger, ctx = {}) {
     const f = fieldOf(m); if (!f) return [];
     const seen = Array.isArray(f.storySeen) ? f.storySeen : [], saveSeen = ctx.flags && Array.isArray(ctx.flags.story) ? ctx.flags.story : [];
-    const node = m.raise.node, c = { ...ctx, node, path: [...(Array.isArray(ctx.path) ? ctx.path : []), node], fatigue: clampFat(m.raise.fatigue) };
+    const route = routeOf(m), LB = STORY_LINES_BY[route] || {};
+    const node = m.raise.node, c = { ...ctx, node, route, path: [...(Array.isArray(ctx.path) ? ctx.path : []), node], fatigue: clampFat(m.raise.fatigue) };
     const out = [];
     for (const e of STORY) {
       if (e.trigger !== trigger) continue;
       if (e.scope === 'save' ? (!ctx.flags || saveSeen.includes(e.id)) : seen.includes(e.id)) continue;
-      if (Object.entries(e.when || {}).every(([k, v]) => STORY_CONDS[k] && STORY_CONDS[k](v, c))) out.push(e);
+      if (Object.entries(e.when || {}).every(([k, v]) => STORY_CONDS[k] && STORY_CONDS[k](v, c))) out.push(LB[e.id] ? Object.assign({}, e, { lines: LB[e.id] }) : e);
     }
     return out.sort((a, b) => (b.priority || 0) - (a.priority || 0));
   }
@@ -227,9 +287,9 @@
     handles: (key) => key === CH,
     turnLimit: () => TURN_LIMIT,
     diceSides: () => DICE,
-    onDepart(S, m, key, rnd = Math.random, fresh) { m.raise.fatigue = fresh ? 0 : carry(m.raise.fatigue); m.raise.field = newField(rnd, undefined, pendingVisual); pendingVisual = 'A'; return { patternId: 'W' }; },   // 景観は出発の1回だけ読む（使ったら A へ戻す）
+    onDepart(S, m, key, rnd = Math.random, fresh) { m.raise.fatigue = fresh ? 0 : carry(m.raise.fatigue); m.raise.field = newField(rnd, undefined, forcedRoute()); pendingRoute = null; return { patternId: 'W' }; },   // ルートは出発の1回だけ抽選（固定は1回で戻す）
     onDepartOther(S, m, key, fresh) { m.raise.fatigue = fresh ? 0 : carry(m.raise.fatigue); m.raise.field = null; },
-    trackFor: () => track(),
+    trackFor: (m) => track(m ? routeOf(m) : 'A'),
     /** ボードを開くとき：配置が無い・壊れている・旧い Chapter 1 の配置なら、Chapter 1 の最初から（大会の途中ならゴールで大会を続ける）。途中の状態の食い違いを直す */
     ensure(S, m, rnd = Math.random) {
       const r = m.raise, f = r.field;
@@ -238,11 +298,11 @@
         if (r.node !== c.node) { r.node = c.node; changed = true; }
         if (!r.pend && c.moveLeft > 0) { c.discarded += c.moveLeft; c.moveLeft = 0; changed = true; }   // 移動の途中の記録が無い＝残りの目は捨てる
         if (r.pend && (r.pend.stage === 'move' || r.pend.stage === 'branch') && c.moveLeft <= 0) { r.pend.left = 0; r.pend.stage = 'resolve'; delete r.pend.opts; delete r.pend.segs; changed = true; }
-        if (r.pend && r.pend.stage === 'branch' && !Array.isArray(r.pend.segs)) { const op = C().options(D(), c); r.pend.opts = op.map((e) => e.dst); r.pend.segs = op.map((e) => e.seg); changed = true; }
+        if (r.pend && r.pend.stage === 'branch' && !Array.isArray(r.pend.segs)) { const op = C().options(D(m), c); r.pend.opts = op.map((e) => e.dst); r.pend.segs = op.map((e) => e.seg); changed = true; }
         if (c.turn !== r.turnsUsed) { c.turn = r.turnsUsed; changed = true; }
         return { changed };
       }
-      r.field = newField(rnd);
+      r.field = newField(rnd, undefined, 'A');   // 配置が無い・壊れている・旧い Chapter 1 の配置＝A の最初から（ここでは抽選しない＝旧セーブは A）
       if (r.tour) Object.assign(r, { node: 'GOAL', pend: null, goal: true, turnLimit: TURN_LIMIT });
       else Object.assign(r, { node: 'START', turnsUsed: 0, pend: null, goal: false, turnLimit: TURN_LIMIT });
       if (r.tour) { r.field.core.node = 'GOAL'; r.field.core.done = true; }
@@ -251,7 +311,7 @@
     canRoll: (m) => { const f = fieldOf(m); return !!f && clampFat(m.raise.fatigue) < T().fatigueMax && !f.core.done && f.core.moveLeft === 0; },
     onRoll(S, m, v) {
       const f = fieldOf(m), c = f.core; c.turn = m.raise.turnsUsed - 1;
-      C().roll(D(), c, v);
+      C().roll(D(m), c, v);
       const add = addFat(m, T().fatigueByDie[v] || 0);
       return { fatigueAdded: add, evs: [] };
     },
@@ -269,6 +329,7 @@
   /** この個体の今の Chapter がこのボードか（画面の切り替え用） */
   const active = (m) => attached && !!m && isObj(m.raise) && m.raise.ch === CH && !!root.MMP7 && root.MMP7.inChapter(m) && !!fieldOf(m);
 
-  root.MMWD = Object.freeze({ CH, TURN_LIMIT, DICE, ROUTE_NAME, PLACE, STORY, DRIVER, VISUALS, storyEvents, markStory, segOf, attach, detach, active, fieldOf, valid, newField, track, routeName, branchOptions, setVisual, visualOf, pendingVisual: () => pendingVisual, isAttached: () => attached });
+  root.MMWD = Object.freeze({ CH, TURN_LIMIT, DICE, ROUTES, ROUTE_NAME, ROUTE_NAME_BY, PLACE, PLACE_BY, REWARD_TITLE_BY, STORY, STORY_LINES_BY, DRIVER, VISUALS, storyEvents, markStory, segOf, attach, detach, active, fieldOf, valid, newField, track, routeName, placeOf, rewardTitle, branchOptions,
+    routeOf, routeKey, dataOf: (m) => D(m), routeData: dataOf, drawRoute, setRoute, forcedRoute, visualOf, isAttached: () => attached });
   attach();
 })(typeof window !== 'undefined' ? window : globalThis);

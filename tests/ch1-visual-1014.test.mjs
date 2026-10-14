@@ -2,9 +2,9 @@
 // 2026-10-14 Chapter 1 B／C（景観のパターン。js/proto/roadfirst-world.js の VISUAL・js/chapter/world-driver.js の visualPattern・index.html の出発準備の選択）
 //  VP-01 A は従来のまま＝景物の配置（scatter）・川の景物・岩峰の出力がバイト単位で同じ（基準＝main 9ca90aa の sha256）
 //  VP-02 B／C＝決まった配置（同じ出力）・A と違う・互いに違う・既存の素材だけ・道／マス／谷／目印／岩峰から離れる・B は小花と水辺が多く C は岩と石柱が多い
-//  VP-03 進み方は共通＝同じ seed で A／B／C の配置（tiles・core）は同じ・本物の流れで最後まで進めた結果（能力・所持金・使ったマス・報酬・ターン・地点）が同じ
-//  VP-04 セーブ互換＝visualPattern は配置の任意項目・無い／知らない値は A・出発の1回だけ読む（使ったら A へ戻す）・旧い配置の作り直しは A
-//  VP-05 index.html＝出発準備の選択（Chapter 1 だけ・既定 A）・CSS で色を変えない
+//  VP-03 B／C 独立ルート（2026-10-14 後半）＝出発で A／B／C を各 1/3 抽選・景観＝ルート・本物の流れで最後まで
+//  VP-04 セーブ互換＝route は任意項目・無い／知らない値は A・再開で決め直さない・旧い配置の作り直しは A
+//  VP-05 index.html＝選択ボタンは撤去・routes を読み込む
 // =========================================================
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -71,21 +71,21 @@ function pointIn(poly, x, y) { let c = false; for (let i = 0, j = poly.length - 
 
 // ---- 進み方（本物の MMP8 の流れ）----
 const FILES = ['js/phase7/progression.js', 'js/phase8/league.js', 'js/phase8/raising.js', 'js/phase10/monsters.js', 'js/phase9/chapters.js', 'js/chapter/engine.js', 'js/chapter/configs/ch1a.js', 'js/chapter/configs/ch2a.js',
-  'js/proto/roadfirst-data.js', 'js/proto/roadfirst-core.js', 'js/proto/roadfirst-play.js', 'js/chapter/world-driver.js'];
+  'js/proto/roadfirst-data.js', 'js/proto/roadfirst-routes.js', 'js/proto/roadfirst-core.js', 'js/proto/roadfirst-play.js', 'js/chapter/world-driver.js'];
 const SRC = Object.fromEntries(FILES.map((f) => [f, rd(f)]));
 function load() { const w = {}; for (const f of FILES) new Function('window', SRC[f])(w); for (const c of w.MMP9C.CHAPTERS) w.MMP7.registerChapterBoard(c.no, c.track, { provisional: false }); return w; }
 const lcg = (seed) => { let s = seed >>> 0; return () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; };
 const SIX = ['li', 'po', 'in', 'hi', 'ev', 'de'];
-function setup(w, seed, visual) {
+function setup(w, seed, route) {
   const { MMP7: P7, MMP8: P8, MMWD: WD } = w, S = P8.newSave();
   S.m = P8.initIndividual(S, { sp: 0, name: 'テスト', rk: 0, fa: 0, st: 0, li: 100, po: 100, in: 100, hi: 100, ev: 100, de: 100, sk: [0, 1, 2, 3], eq: [0, 1, 2, 3, -1, -1] });
-  P7.ensureProg(S.m); if (visual !== undefined) WD.setVisual(visual);
+  P7.ensureProg(S.m); if (route !== undefined) WD.setRoute(route);
   assert.equal(P8.depart(S, S.m, lcg(seed)).ok, true);
   return S;
 }
 /** 同じ乱数・同じ方針（分かれ道は乱数・2択は最初・バトルはやめておく・疲れ86以上なら休む）で最後まで */
-function play(w, seed, visual) {
-  const { MMP8: P8, MMWD: WD } = w, rnd = lcg(seed * 7 + 3), S = setup(w, seed, visual), m = S.m;
+function play(w, seed, route) {
+  const { MMP8: P8, MMWD: WD } = w, rnd = lcg(seed * 7 + 3), S = setup(w, seed, route), m = S.m;
   const log = [];
   for (let g = 0; g < 3000; g++) {
     P8.ensureBoardPosition(S, m);
@@ -103,51 +103,53 @@ function play(w, seed, visual) {
 const snap = (S, m) => ({ st: Object.fromEntries(SIX.map((k) => [k, m[k]])), g: S.g, fat: m.raise.fatigue, used: m.raise.field.used, claimed: m.raise.field.claimed, rival: m.raise.field.rivalMet,
   turns: m.raise.turnsUsed, node: m.raise.node, trail: m.raise.field.core.trail, tiles: m.raise.field.tiles, seed: m.raise.field.layoutSeed, bag: S.inv.bag });
 
-test('VP-03：進み方は共通＝同じ seed なら A／B／C の配置は同じ・本物の流れの結果（能力・所持金・使ったマス・報酬・ターン・地点・持ち物）が同じ', () => {
-  const w = load();
-  for (const seed of [1, 2, 3, 7, 11, 23, 42, 100]) {
-    const R = {}; for (const v of ['A', 'B', 'C']) { const r = play(w, seed, v); R[v] = { ...snap(r.S, r.m), ph: r.ph, log: r.log, vp: r.m.raise.field.visualPattern }; }
-    assert.equal(R.A.vp, 'A'); assert.equal(R.B.vp, 'B'); assert.equal(R.C.vp, 'C');
-    for (const v of ['B', 'C']) { const { vp: _a, ...a } = R.A, { vp: _b, ...b } = R[v]; assert.deepEqual(b, a, `seed ${seed}：${v} の結果は A と同じ`); }
-    assert.ok(R.A.turns >= 10 && Object.keys(R.A.used).length >= 3, `seed ${seed}：実際に進んでいる（${R.A.turns}ターン・${R.A.log.length}手）`);
+test('VP-03：B／C 独立ルート＝出発で A／B／C を各 1/3 で抽選・景観はルートと同じ・本物の流れで最後まで進む・同じ seed でも B／C の道は A と違う', () => {
+  const w = load(), { MMWD: WD, MMP8: P8 } = w;
+  const n = { A: 0, B: 0, C: 0 };
+  const mb = (seed) => { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
+  for (let seed = 1; seed <= 600; seed++) { const S = w.MMP8.newSave(); S.m = w.MMP8.initIndividual(S, { sp: 0, name: 'テスト', rk: 0, fa: 0, st: 0, li: 100, po: 100, in: 100, hi: 100, ev: 100, de: 100, sk: [0, 1, 2, 3], eq: [0, 1, 2, 3, -1, -1] });
+    w.MMP7.ensureProg(S.m); assert.equal(w.MMP8.depart(S, S.m, mb(seed)).ok, true); const f = S.m.raise.field; n[f.route]++; assert.equal(f.visualPattern, f.route, '景観＝ルート'); assert.equal(f.patternId, 'W'); }
+  for (const k of ['A', 'B', 'C']) assert.ok(n[k] > 160 && n[k] < 240, `${k} が約 1/3（${n[k]}／600）`);
+  for (const seed of [1, 2, 3, 7, 11, 23]) for (const r of ['B', 'C']) {
+    const x = play(w, seed, r); assert.equal(x.m.raise.field.route, r); assert.ok(['goal', 'timeup'].includes(x.ph), `${r} seed ${seed}：最後まで（${x.ph}）`);
+    assert.ok(x.m.raise.field.core.trail.every((id) => WD.routeData(r).nodes[id]), `${r}：通った地点はすべて ${r} の道`);
+    if (x.ph === 'goal') assert.ok(x.m.raise.field.core.trail.includes('RIVAL'), 'ライバルを通る');
   }
-  // 配置そのもの（newField）も seed が同じなら同じ（visualPattern だけ違う）
-  const { MMWD: WD } = w, fa = WD.newField(undefined, 12345, 'A'), fb = WD.newField(undefined, 12345, 'B'), fc = WD.newField(undefined, 12345, 'C');
-  const strip = (f) => { const { visualPattern, ...r } = f; return r; };
-  assert.deepEqual(strip(fb), strip(fa)); assert.deepEqual(strip(fc), strip(fa)); assert.deepEqual([fa.visualPattern, fb.visualPattern, fc.visualPattern], ['A', 'B', 'C']);
-  assert.equal(fa.patternId, 'W', 'patternId は W のまま');
+  // 同じ seed で作った配置：B／C は A と別の道（接続の地点 ID が違う）・固定の地点 ID は同じ
+  const fa = WD.newField(undefined, 12345, 'A'), fb = WD.newField(undefined, 12345, 'B'), fc = WD.newField(undefined, 12345, 'C');
+  assert.deepEqual([fa.route, fb.route, fc.route], ['A', 'B', 'C']);
+  assert.ok(WD.routeData('B').nodes.C05_09 && !WD.routeData('A').nodes.C05_09, 'B の接続の地点は A に無い');
+  for (const id of ['START', 'GOAL', 'RIVAL', 'H', 'J0', 'Q', 'L_CHEST', 'RANDOM_DEN']) assert.ok(WD.routeData('B').nodes[id] && WD.routeData('C').nodes[id], id);
 });
 
-test('VP-04：セーブ互換＝visualPattern は配置の任意項目・無い／知らない値は A・出発の1回だけ読む・旧い配置の作り直しは A・ensure は配置を引き直さない', () => {
+test('VP-04：セーブ互換＝route は配置の任意項目・無い／知らない値は A（旧セーブは景観 B／C でも A の道のまま）・再開で決め直さない・旧い配置の作り直しは A', () => {
   const w = load(); const { MMP8: P8, MMWD: WD } = w;
-  assert.deepEqual(WD.VISUALS, ['A', 'B', 'C']);
-  assert.equal(WD.pendingVisual(), 'A'); assert.equal(WD.setVisual('C'), 'C'); assert.equal(WD.setVisual('x'), 'A'); assert.equal(WD.setVisual('B'), 'B');
-  const S = setup(w, 5);   // 直前の setVisual('B') を出発の1回だけ読む
-  assert.equal(S.m.raise.field.visualPattern, 'B'); assert.equal(WD.pendingVisual(), 'A', '使ったら A へ戻す'); assert.equal(WD.visualOf(S.m), 'B');
-  assert.equal(WD.valid(S.m.raise.field), true);
-  delete S.m.raise.field.visualPattern; assert.equal(WD.visualOf(S.m), 'A', '旧セーブ（項目なし）は A'); assert.equal(WD.valid(S.m.raise.field), true, '項目が無くても配置は有効');
-  S.m.raise.field.visualPattern = 'Z'; assert.equal(WD.visualOf(S.m), 'A', '知らない値は A');
-  S.m.raise.field.visualPattern = 'C';
+  assert.deepEqual(WD.ROUTES, ['A', 'B', 'C']); assert.equal(WD.setRoute('C'), 'C'); assert.equal(WD.setRoute('x'), null);
+  WD.setRoute('B'); const S = setup(w, 5);
+  assert.equal(S.m.raise.field.route, 'B'); assert.equal(WD.routeOf(S.m), 'B'); assert.equal(WD.forcedRoute(), null, '固定は1回で戻す'); assert.equal(WD.valid(S.m.raise.field), true);
+  assert.equal(WD.dataOf(S.m), WD.routeData('B'));
   const r = P8.loadFromStorage({ getItem: (k) => (k === 'mr4v6' ? JSON.stringify(S) : null), setItem() {}, removeItem() {} });
-  assert.equal(r.status, 'ok'); assert.equal(r.S.m.raise.field.visualPattern, 'C', '保存 → 読み込みで残る'); assert.equal(WD.visualOf(r.S.m), 'C');
-  const before = JSON.stringify(r.S.m.raise.field); WD.setVisual('B'); P8.ensureBoardPosition(r.S, r.S.m);
-  assert.equal(JSON.stringify(r.S.m.raise.field), before, 'ボードを開き直しても配置も景観も引き直さない'); WD.setVisual('A');
-  assert.equal(WD.visualOf(null), 'A'); assert.equal(WD.visualOf({ raise: { field: null } }), 'A');
-  // 旧い（壊れた）配置の作り直し（ensure）は A
-  const S2 = setup(w, 6, 'C'); S2.m.raise.field = { world: 1, chapterId: 1, layoutSeed: 'bad' }; WD.setVisual('B'); P8.ensureBoardPosition(S2, S2.m);
-  assert.equal(S2.m.raise.field.visualPattern, 'A', '作り直した配置は A（選んでいた景観を勝手に使わない）'); WD.setVisual('A');
-  // 性能に関わる所は visualPattern を読まない
-  const src = rd('js/chapter/world-driver.js'); assert.equal((src.match(/visualPattern/g) || []).length, 3, 'world-driver は保存・読み取り（visualOf）だけ');
-  for (const f of ['js/proto/roadfirst-core.js', 'js/proto/roadfirst-play.js', 'js/phase8/raising.js', 'js/chapter/engine.js']) assert.doesNotMatch(rd(f), /visualPattern|VISUAL\b/, f + ' は景観を読まない');
+  assert.equal(r.status, 'ok'); assert.equal(r.S.m.raise.field.route, 'B', '保存 → 読み込みで残る');
+  const before = JSON.stringify(r.S.m.raise.field); P8.ensureBoardPosition(r.S, r.S.m);
+  assert.equal(JSON.stringify(r.S.m.raise.field), before, 'ボードを開き直しても道も配置も決め直さない');
+  // 旧セーブ：route なし（景観 B で A の道を進んでいた個体）
+  WD.setRoute('A'); const S1 = setup(w, 9); const f1 = S1.m.raise.field; delete f1.route; f1.visualPattern = 'B';
+  assert.equal(WD.routeOf(S1.m), 'A'); assert.equal(WD.visualOf(S1.m), 'B'); assert.equal(WD.valid(f1), true); assert.equal(WD.dataOf(S1.m), w.MMRF_DATA, 'A の道');
+  const b1 = JSON.stringify(f1); P8.ensureBoardPosition(S1, S1.m); assert.equal(JSON.stringify(S1.m.raise.field), b1, '旧セーブの配置はそのまま');
+  f1.route = 'Z'; assert.equal(WD.routeOf(S1.m), 'A', '知らない値は A');
+  // 旧い（壊れた）配置の作り直し（ensure）は A（ここでは抽選しない）
+  for (let i = 0; i < 20; i++) { const S2 = setup(w, 30 + i); S2.m.raise.field = { world: 1, chapterId: 1, layoutSeed: 'bad' }; P8.ensureBoardPosition(S2, S2.m); assert.equal(S2.m.raise.field.route, 'A'); }
+  // B の育成中の地点が A に無くても消えない（B のデータで確かめる）
+  WD.setRoute('B'); const S3 = setup(w, 4); S3.m.raise.field.core.node = 'C05_09'; S3.m.raise.node = 'C05_09'; assert.equal(WD.valid(S3.m.raise.field), true);
+  assert.equal(w.MMWD.DRIVER.sanitize(S3.m).raise.field != null, true, 'sanitize で消えない');
+  for (const f of ['js/proto/roadfirst-core.js', 'js/phase8/raising.js', 'js/chapter/engine.js']) assert.doesNotMatch(rd(f), /visualPattern|MMRF_ROUTES/, f + ' はルート・景観を読まない');
 });
 
-test('VP-05：index.html＝出発準備の景色の選択（Chapter 1 だけ・既定 A・3つ）・world-board は配置の景観を渡す・色を変える CSS なし', () => {
+test('VP-05：index.html＝出発準備の景色の選択ボタンは無い・routes を読み込む・world-board は配置の景観とルートのデータを渡す', () => {
   const H = rd('index.html');
-  assert.match(H, /let PP_VISUAL="A";/); assert.match(H, /function ppVisualHtml\(nx,c\)\{if\(nx!=1\|\|!window\.MMWD/, 'Chapter 1 だけ');
-  assert.match(H, /function ppVisual\(k\)\{if\(!window\.MMWD\|\|!MMWD\.VISUALS\.includes\(k\)\)return;PP_VISUAL=k;MMWD\.setVisual\(k\)/);
-  assert.match(H, /<section class="ppcard"><div class="ppcin"><small>\$\{chNo\}<\/small><b>\$\{chName\|\|"ー"\}<\/b>\$\{art\}\$\{vis\}\$\{note\}/);
-  const css = H.slice(H.indexOf('/* 2026-10-14 Chapter 1 B／C'), H.indexOf('@media (max-height:700px){.ppvb'));
-  assert.doesNotMatch(css, /filter|hue-rotate|saturate/, '色を変えない');
-  const WB = rd('js/chapter/world-board.js'); assert.match(WB, /visual: vis, skin: skinKey\(\) \}\);/); assert.match(WB, /MMWD\.visualOf\(m\)/);
+  assert.doesNotMatch(H, /PP_VISUAL|ppVisualHtml|class="ppvis"|\.ppvb\{/, '選択ボタン・その CSS は無い');
+  assert.match(H, /<b>\$\{chName\|\|"ー"\}<\/b>\$\{art\}\$\{note\}/);
+  assert.match(H, /<script src="\.\/js\/proto\/roadfirst-data\.js"><\/script><script src="\.\/js\/proto\/roadfirst-routes\.js"><\/script>/);
+  const WB = rd('js/chapter/world-board.js'); assert.match(WB, /visual: vis, skin: skinKey\(\) \}\);/); assert.match(WB, /MMWD\.visualOf\(m\)/); assert.match(WB, /MMRF_WORLD\.create\(V\.el\.querySelector\('\.wbv'\), D\(m\)/);
   const RW = rd('js/proto/roadfirst-world.js'); assert.doesNotMatch(RW.slice(RW.indexOf('const VISUAL = {'), RW.indexOf('const visualOf')), /filter|hue|tint/, '景観は景物の混ぜ方と配置だけ');
 });

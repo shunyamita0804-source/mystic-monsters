@@ -23,6 +23,16 @@
     // マスの割合（通常の地点＝ordinary_tile 261 か所のうち。残りは「通常マス」＝何も起きない）
     density: Object.freeze({ stat: 0.30, event: 0.12, rest: 0.06, wild: 0.08, treasure: 0.03 }),
     calmSegments: Object.freeze(['S01', 'EL01', 'ER01']),   // 序盤（スタートの階段と J0 のすぐ先）には野生・休憩・宝箱を置かない
+    // 2026-10-14 Chapter 1 B／C 独立ルート：出だしの落ち着いた区間はルートごと（B は最初の分かれ道が運命の分かれ道＝奇偶の道の前半。A・C は従来と同じ）
+    calmByRoute: Object.freeze({ B: Object.freeze(['S01', 'Q_L1', 'Q_R1', 'Q_L2', 'Q_R2']) }),
+    // 2026-10-14 能力マスの道の偏り（A／B／C 共通の考え方＝区間 ID で決める。左右は3ルートとも進む向きの左右）：能力マスになった地点で、どの能力にするかの重みだけを変える
+    //   （能力マスの数・位置・ほかのマスは同じ seed で変わらない＝乱数は従来どおり1回）。左の道＝物理（ちから・丈夫さ）／右の道＝かしこさ・命中／
+    //   特殊挑戦の道＝攻撃（ちから・かしこさ）／石像の道・安全な道＝ライフ・回避。運命の分かれ道（サイコロで決まる奇偶の道）・寄り道・接続の区間は偏りなし＝プレイヤーが選んだ道だけで差が出る。weight＝対象の能力の重み（ほかは 1）
+    statBias: Object.freeze({ weight: 3, lanes: Object.freeze(Object.assign({},
+      ...['EL01', 'EL02', 'EL03', 'EL04'].map((k) => ({ [k]: ['po', 'de'] })),
+      ...['ER01', 'ER02', 'ER03', 'ER04'].map((k) => ({ [k]: ['in', 'hi'] })),
+      ...['LATE_L1', 'LATE_L_FAIL', 'LATE_L_FAIL_JOIN', 'LATE_L_SUCCESS1', 'LATE_L_SUCCESS2', 'LATE_L_SUCCESS_JOIN', 'LATE_L_DONE'].map((k) => ({ [k]: ['po', 'in'] })),
+      ...['LATE_SAFE', 'LATE_R1', 'LATE_R2', 'LATE_R3', 'LATE_R_DONE'].map((k) => ({ [k]: ['li', 'ev'] })))) }),
     // レアモンスターマス（2026-10-10 ユーザー決定）：1つの Chapter に1マス・候補は Z1 右の本道と Z2 石像の尾根の通常マスだけ
     //（行き止まりの終点とその枝・分かれ目・合流・門・ライバル・特殊挑戦は候補にしない）。開始時に配置と一緒に決めて保存。旧：野生マスごと 10%
     // 2026-10-11 ユーザー決定（ChatGPT 経由の正式指定）：育成開始時に 1回だけ 10% で判定 → 当たった育成だけ候補から1マス・外れれば 0マス（旧：毎回必ず1マス）。
@@ -80,8 +90,9 @@
   const gainOf = (play, k) => { const MM = M(); const g = play.mon.growth[k]; return MM ? MM.GROWTH_GAIN[g] : ({ A: 25, B: 21, C: 18, D: 14, E: 11 })[g]; };
 
   // ---- マスの配置（開始時に1回・seed から） ----
-  function layout(D, seed) {
+  function layout(D, seed, opts = {}) {
     const rng = mulberry((seed ^ 0xA5C3E1) >>> 0), dens = TUNING.density, tiles = {};
+    const calmSegs = (TUNING.calmByRoute && TUNING.calmByRoute[opts.route]) || TUNING.calmSegments, SB = opts.bias === true ? TUNING.statBias : null;   // 偏りは本編（world-driver の newField が bias:true）だけ＝試作の配置は従来どおり
     const evs = pool().filter(usableEvent), rec = pool().filter(isRecovery);
     let bag = [];
     const nextEvent = () => { if (!bag.length) { bag = evs.map((e) => e.id); for (let i = bag.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [bag[i], bag[j]] = [bag[j], bag[i]]; } } return bag.pop(); };
@@ -91,11 +102,15 @@
         const n = D.nodes[id]; if (!n || n[2] !== 'ordinary_tile' || tiles[id] !== undefined) { prev = null; continue; }
         const r = rng(); let t = null, acc = 0;
         for (const k of ['stat', 'event', 'rest', 'wild', 'treasure']) { acc += dens[k]; if (r < acc) { t = k; break; } }
-        const calm = TUNING.calmSegments.includes(sid);
+        const calm = calmSegs.includes(sid);
         if (calm && (t === 'wild' || t === 'rest' || t === 'treasure')) t = null;
         if (t === 'wild' && prev && prev.t === 'wild') t = null;
         let tile = null;
-        if (t === 'stat') { const ks = STAT_KEYS.filter((k) => !(prev && prev.t === 'stat' && prev.k === k)); tile = { t, k: ks[Math.floor(rng() * ks.length)] }; }
+        if (t === 'stat') {
+          const ks = STAT_KEYS.filter((k) => !(prev && prev.t === 'stat' && prev.k === k)), fav = SB && SB.lanes[sid];
+          if (!fav) tile = { t, k: ks[Math.floor(rng() * ks.length)] };
+          else { const w = ks.map((k) => (fav.includes(k) ? SB.weight : 1)); let r2 = rng() * w.reduce((a, b) => a + b, 0), j = 0; for (; j < ks.length - 1; j++) { r2 -= w[j]; if (r2 < 0) break; } tile = { t, k: ks[j] }; }   // 乱数は1回（ほかのマスの配置は変わらない）
+        }
         else if (t === 'event' && evs.length) { const e = evById(nextEvent()); tile = { t, e: e.id }; if (e.handler === 'stat_random' && !(e.params && e.params.keys)) tile.k = STAT_KEYS[Math.floor(rng() * 6)]; else if (e.params && Array.isArray(e.params.keys) && e.params.keys.length > 1) tile.k = e.params.keys[Math.floor(rng() * e.params.keys.length)]; }
         else if (t === 'rest' && rec.length) tile = { t, e: pickW(rng, rec).id };
         else if (t === 'wild') { rng(); tile = { t, rare: false }; }   // 旧い 10% の抽選の分も乱数を進める（ほかのマスの配置を変えないため）
@@ -120,7 +135,7 @@
     st.v = 2;
     st.play = {
       ver: 1, mon, stats: Object.assign({}, mon.base), fat: 0, gold: 0,
-      tiles: layout(D, st.seed), used: {}, claimed: {}, hist: [], notice: null, landed: 0, rests: 0, lastRoll: null,
+      tiles: layout(D, st.seed, { bias: o.bias === true, route: o.route }), used: {}, claimed: {}, hist: [], notice: null, landed: 0, rests: 0, lastRoll: null,
       lab: !!o.lab, items: { dd: o.lab ? (Number.isInteger(o.dd) ? o.dd : TUNING.doubleDie.labDefault) : 0 }, ddArmed: false,
       migrated: !!o.migrated, poolSize: pool().length,
     };
@@ -246,7 +261,7 @@
   // ---- シミュレーション（Node でも動く） ----
   /** 1回の育成（40ターン）。pol＝道の選び方（MMRF_CORE.makePolicy）、restAt＝この疲れ以上なら休む（100＝振れないときだけ）、dd＝ダブルダイスの使い方 */
   function simulate(D, C, o = {}) {
-    const st = attach(D, C.create(D, o), { monster: o.monster, lab: o.dd > 0, dd: o.dd || 0 });
+    const st = attach(D, C.create(D, o), { monster: o.monster, lab: o.dd > 0, dd: o.dd || 0, bias: o.bias, route: o.route });   // bias・route＝本編と同じ配置（能力の道の偏り・出だしの区間）で測るとき
     const pol = o.policy || C.makePolicy(o.p || {}, C.mulberry(((o.seed || 1) ^ 0x51ED) >>> 0));
     const pickRng = C.mulberry(((o.seed || 1) ^ 0xC0FFEE) >>> 0), restAt = o.restAt ?? TUNING.fatigueMax;
     let stuck = 0;
