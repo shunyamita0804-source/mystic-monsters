@@ -5336,6 +5336,7 @@ function board(msg){facVoice(null);
  bgm("chapter"); // Chapter ごとの BGM（CHAPTER_1〜4。曲の対応は js/audio/audio-registry.js）
  if(window.MMWB&&MMWB.active(m))return MMWB.board(msg); // 2026-10-11 本編の Chapter 1＝1枚の世界のボード（js/chapter/world-board.js）
  if(window.chfActive&&chfActive(m))return chfBoard(msg); // Chapterフィールドエンジン（js/chapter/）が担当するChapter：フィールドの中を旅する正式画面
+ if(ph!="battle")p9AutoCancel(); // 2026-10-14 実機試遊⑩：遭遇がほかの方法で片付いたら、待っている自動の開始を取り消す
  let ctl="",def=r.turnsUsed==0&&ph=="roll"&&c&&c.desc?`<b>${MMP8.chapterName(r.ch)}</b>　${c.desc}`:"サイコロを振って進もう！";
  if(ph=="roll")ctl=`<button class="p9dice" id="brollbtn" onclick="bRoll()" aria-label="サイコロを振る"><span class="dz" id="bdice"><img class="p12dicon" src="${MMP12D.icon("std")}" alt=""></span><span class="t1">サイコロを振る</span><span class="t2">1・2・3のみ</span></button>`;
  else if(ph=="move"||ph=="resolve"){def="移動中…";ctl=`<button class="p9dice" disabled><span class="dz" id="bdice">${r.pend.roll}</span><span class="t1">移動中</span></button>`}
@@ -5447,8 +5448,9 @@ function p8FxText(r){const f=r.fx||{},L=k=>LAB[k];let t;
  return (t+(r.goal?" ゴールに到着した！":r.timeUp?" ターンを使い切った…":"")).trim()}
 // globalThis.MM_LAST_BT＝直前に始めた道中のバトルの種類（wild／rare／rival。ページの中だけ・セーブしない＝野生の勝利演出 MMCHV.queueWin の判定）
 /** 2026-10-14 実機試遊⑩：旧ボード（Chapter 3・4）の練習試合＝遭遇の札を見せて約0.9秒後に自動でバトルへ。1つのマス（pend）で1回だけ・会話や別の画面の間は待つ・負けたあとは再戦しない */
-const P9_AUTO_BT=new WeakSet();
-function p9AutoBattle(m){const p=m&&m.raise&&m.raise.pend;if(!p||P9_AUTO_BT.has(p))return;P9_AUTO_BT.add(p);let n=0;const go=()=>{if(S.m!==m||m.raise.pend!==p||MMP8.boardPhase(m)!=="battle")return;if(bBusy||!document.querySelector("#app>.p9board")||document.getElementById("bt")||document.getElementById("tvs")||document.querySelector(".mmtalk")){if(++n<40)setTimeout(go,400);else P9_AUTO_BT.delete(p);return}bBattleGo()};setTimeout(go,900)}
+const P9_AUTO_BT=new WeakSet();let P9_AUTO_T=0; // 待っている自動の開始は1つだけ（遭遇がほかの方法で片付いたら board() で取り消す＝タイマーを残さない）
+function p9AutoCancel(){if(P9_AUTO_T){clearTimeout(P9_AUTO_T);P9_AUTO_T=0}}
+function p9AutoBattle(m){const p=m&&m.raise&&m.raise.pend;if(!p||P9_AUTO_BT.has(p))return;P9_AUTO_BT.add(p);let n=0;const go=()=>{P9_AUTO_T=0;if(S.m!==m||m.raise.pend!==p||MMP8.boardPhase(m)!=="battle")return;if(bBusy||!document.querySelector("#app>.p9board")||document.getElementById("bt")||document.getElementById("tvs")||document.querySelector(".mmtalk")){if(++n<40)P9_AUTO_T=setTimeout(go,400);else P9_AUTO_BT.delete(p);return}bBattleGo()};p9AutoCancel();P9_AUTO_T=setTimeout(go,900)}
 function bBattleGo(){const m=S.m;if(bBusy||!m||document.getElementById("bt")||document.getElementById("tvs")||MMP8.boardPhase(m)!=="battle")return; // 2026-10-14 実機試遊⑩：遭遇は自動でバトルへ＝同じ遭遇で二重に始めない（自動の開始・古い呼び出しのどちらが先でも1回）
  const bt=m.raise&&m.raise.pend&&m.raise.pend.fx?m.raise.pend.fx.battleType:null,rk=bt=="rival"&&window.MMRIVAL?MMRIVAL.rankFor(m):MMP8.practiceRank(m);const fs=bt!="rival"&&window.MMCH&&MMCH.foeSpecies&&m.raise&&m.raise.field?MMCH.foeSpecies(m,SP.length):-1;
  // 2026-10-12 試遊：野生・レア・ライバルの開始も大会と同じ正式の VS 演出（背景は練習試合の会場 venue＝公式ランク戦の背景は使わない）→ バトル（fight() の導入は出さない）。自動テストの既定（MM_QA_NO_TOURVS）では出さない

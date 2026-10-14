@@ -687,17 +687,20 @@
   // 2026-10-14 実機試遊⑩・Q13：遭遇のあと自動でバトルへ（短い白い光 → VS → バトル）。1つの遭遇（pend）で自動の開始は1回だけ。負けたあと（pend が無い）は再戦しない。
   //  会話・演出・別の画面の間は待つ（最大 16秒。それでも始められなければ次の盤の描き直しでもう一度）
   const AUTO_BT = new WeakSet();
+  let autoT = 0;   // 待っている自動の開始（1つだけ）。遭遇がほかの方法で片付いたら（盤の描き直しで battle でなければ）取り消す＝タイマーを残さない
+  function autoBattleCancel() { if (autoT) { clearTimeout(autoT); autoT = 0; } }
   function autoBattle(m, ms) {
     const p = m.raise.pend; if (!p || AUTO_BT.has(p)) return; AUTO_BT.add(p);
     let tries = 0;
     const go = () => {
+      autoT = 0;
       const S = gS(); if (!S || S.m !== m || !chfActive(m) || m.raise.pend !== p || P8().boardPhase(m) !== 'battle') return;
       const wait = !onField() || busyGet() || document.getElementById('bt') || document.getElementById('tvs') || document.querySelector('.mmtalk,.chintro,.chf-enc2') || typeof root.bBattleGo !== 'function' || (typeof bBusy !== 'undefined' && bBusy);
-      if (wait) { if (++tries < 40) setTimeout(go, 400); else AUTO_BT.delete(p); return; }
+      if (wait) { if (++tries < 40) autoT = setTimeout(go, 400); else AUTO_BT.delete(p); return; }
       const w = $('#chfw'); if (w && !V.calm) { w.insertAdjacentHTML('beforeend', '<i class="chf-btflash" aria-hidden="true"></i>'); const fl = w.querySelector('.chf-btflash:last-child'); setTimeout(() => { if (fl) fl.remove(); }, 520); }
       root.bBattleGo();
     };
-    setTimeout(go, ms);
+    autoBattleCancel(); autoT = setTimeout(go, ms);
   }
   function chfBoard(msg) {
     const m = gS() && gS().m; if (!chfActive(m)) return false;
@@ -726,7 +729,7 @@
     // 2026-10-04：大会のある Chapter で到着イベントが無いとき（Chapter 2 など）も、ゴールでは Chapter 1 と同じランク選択（index.html の p9ReceptionHtml）を会場のロビーの背景の上に。HUD・操作欄は出さない
     if (ph === 'goal' && root.p9ReceptionHtml && (P8().chapterRule(m.raise.ch) || {}).tournament) { $('#chf-ui').innerHTML = `<div class="chrcv bg" id="chrcv" style="--lobby:url(${root.P9_LOBBY_BG || ''})">${root.p9ReceptionHtml(m)}</div>`; return true; }
     $('#chf-ui').innerHTML = hudHtml(m) + sheetHtml(m, ph) + deckHtml(m, ph, msg);
-    if (ph === 'battle') autoBattle(m, 900);
+    if (ph === 'battle') autoBattle(m, 900); else autoBattleCancel();
     if (ph !== 'branch') V.camLoose = 0;
     if (ph === 'branch') branchCamera(m); else if (V.focus && ph === 'roll') camFocus(null);
     if (ph === 'branch') setTimeout(() => { if (onField() && P8().boardPhase(m) === 'branch') storyAt(m, 'branch'); }, 350);   // 2026-10-04：初めての分かれ道（チュートリアル。config.story の trigger 'branch'）

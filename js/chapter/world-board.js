@@ -410,7 +410,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     else if (wantIntro) intro(m);
     else if (ph === 'roll' && r.turnsUsed === 0 && !V.intro && !V.cover) setTimeout(() => { if (onBoard() && active(m) && P8().boardPhase(m) === 'roll' && !busyGet()) storyAt(m, 'start').then((shown) => { if (shown && onBoard()) paint(m); }); }, 350);
     if (ph === 'branch') setTimeout(() => { if (onBoard() && active(m) && P8().boardPhase(m) === 'branch' && !busyGet()) storyAt(m, 'branch', { segs: (m.raise.pend && m.raise.pend.segs) || [] }); }, 350);
-    if (ph === 'battle') autoBattle(m, 900);
+    if (ph === 'battle') autoBattle(m, 900); else autoBattleCancel();
     if (ph === 'move') setTimeout(() => { if (onBoard()) walk(); }, 300);
     else if (ph === 'resolve') setTimeout(() => { if (onBoard()) resolve(); }, 300);
     return true;
@@ -929,16 +929,19 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     if (!calm() && V.el) { V.el.insertAdjacentHTML('beforeend', '<i class="wbx-flash" aria-hidden="true"></i>'); const fl = V.el.querySelector('.wbx-flash:last-child'); setTimeout(() => { if (fl) fl.remove(); }, 520); }
     root.bBattleGo();
   }
+  let autoT = 0;   // 待っている自動の開始（1つだけ）。遭遇がほかの方法で片付いたら取り消す＝タイマーを残さない
+  function autoBattleCancel() { if (autoT) { clearTimeout(autoT); autoT = 0; } }
   function autoBattle(m, ms) {
     const p = m.raise.pend; if (!p || AUTO_BT.has(p)) return; AUTO_BT.add(p);
     let tries = 0;
     const go = () => {
+      autoT = 0;
       const S = gS(); if (!S || S.m !== m || !active(m) || m.raise.pend !== p || P8().boardPhase(m) !== 'battle') return;   // もう別の局面（バトルを始めた・負けた・セーブを替えた）＝何もしない
       const wait = !onBoard() || busyGet() || V.cover || V.intro || root.document.getElementById('bt') || root.document.getElementById('tvs') || root.document.querySelector('.mmtalk') || typeof root.bBattleGo !== 'function' || (typeof bBusy !== 'undefined' && bBusy);
-      if (wait) { if (++tries < 40) setTimeout(go, 400); else AUTO_BT.delete(p); return; }
+      if (wait) { if (++tries < 40) autoT = setTimeout(go, 400); else AUTO_BT.delete(p); return; }
       battleStart();
     };
-    setTimeout(go, ms);
+    autoBattleCancel(); autoT = setTimeout(go, ms);
   }
   async function resolve() {
     const S = gS(), m = S && S.m; if (!active(m) || busyGet() || !onBoard() || !m.raise.pend || m.raise.pend.stage !== 'resolve') return;
