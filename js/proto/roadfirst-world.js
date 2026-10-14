@@ -48,7 +48,7 @@
       { key: 'shrub', file: 'prop_shrub.webp', w: 17, p: 0.18 }, { key: 'rock', file: 'prop_rock.webp', w: 24, p: 0.12 },
       { key: 'flowers', file: 'prop_flowers.webp', w: 13, p: 0.10 }, { key: 'pillar', file: 'prop_pillar.webp', w: 11, p: 0.04 },
       { key: 'mossy', file: 'prop_mossy_rock.webp', w: 16, p: 0.04 }],   // 第4便：苔むした岩
-    goal: { file: 'goal_arena.webp', w: 150, dy: 14 },      // GOAL の後ろ（足もと＝GOAL の 14単位手前）
+    goal: { file: 'goal_arena.webp', w: 150, dy: 14, back: 4 },      // GOAL の後ろ（足もと＝GOAL の 14単位手前）
     terrain: { valley: { file: 'ground_valley.webp', tile: 72 }, water: { file: 'ground_water.webp', tile: 80 },   // 谷底は小さく＝遠く深く見せる
       cloud: { file: 'ground_cloud.webp', tile: 150 }, canopy: { row: 13 },   // 第4便：雲海（A6）・森の樹冠（B3 の帯を段に重ねたくり返し・段の間隔 13単位）
       edges: { grass: { file: 'edge_grass.webp', w: 22, shift: 5 }, rock: { file: 'edge_rock.webp', w: 22, shift: 5 },
@@ -231,11 +231,16 @@
     // 2026-10-13 開発28（全景 → START へ寄るカメラのカクつき）：マス・景物・モンスターの大きさは、毎フレーム width を書き換えるのではなく
     //  決まった幅（base）に置いて transform の scale で見せる（width の変更＝レイアウト・再描画・ラスタが要素の数（約600）ぶん毎フレーム起きていた＝66〜91ms の Commit）。
     //  前後の順（zIndex）も画面の y ではなく世界の y で1回だけ決める（画面の y は世界の y に対して単調＝並びは同じ。毎フレームの zIndex の書き換えをなくす）
-    const TB = o.tilePx[1], zOf = (y, dz) => Math.round(y * 4) + (dz || 0);
+    // 2026-10-14 実機試遊①・㉒（モンスターがマスの下に潜る・景物がマスを覆う）：開発29（6）で地面の板を進む向きへ回す（yaw）ようになったのに、
+    //  前後の順は回す前の世界の y のままだった＝向きが変わると「奥のマス」が手前のモンスターの上に描かれていた。→ 前後の順は回したあとの奥行き
+    //  （x・sin(yaw)＋y・cos(yaw)）で決める。毎フレームは書き換えず、向きが 3° 以上変わったときだけ全部を決め直す（zSync）。北が上（yaw 0）では従来と同じ順
+    const TB = o.tilePx[1], Z0 = 20000;
+    let zYaw = 0;
+    const zOf = (y, dz, x) => { const a = rad(zYaw); return Z0 + Math.round(((x || 0) * Math.sin(a) + y * Math.cos(a)) * 4) + (dz || 0); };
     const tiles = {};
     for (const id of Object.keys(D.nodes)) {
       const d = doc.createElement('div'); d.className = 'rfw-tile'; d.dataset.node = id; d.innerHTML = '<img alt="" draggable="false"><span></span>';
-      d.style.width = TB + 'px'; d.style.zIndex = String(zOf(D.nodes[id][1]));
+      d.style.width = TB + 'px'; d.style.zIndex = String(zOf(D.nodes[id][1], 0, D.nodes[id][0]));
       bb.appendChild(d); tiles[id] = { el: d, img: d.firstChild, lab: d.lastChild, src: '', mk: '', used: false };
     }
     const rootEl = host.closest ? host.closest('#rfp,.wbv') || wrap : wrap;   // 2026-10-11 本編の Chapter 1（js/chapter/world-board.js の .wbv）でも同じ描画
@@ -270,7 +275,10 @@
         else d.src = artUrl(base, file);
         bb.appendChild(d); props.push(p); };
       for (const q of scatter(D, o)) add(q.file, q.x, q.y, q.w);
-      const gn = D.nodes.GOAL; if (gn) { add(ART.goal.file, gn[0], gn[1] + ART.goal.dy, ART.goal.w, -40, 'rfw-goal'); props[props.length - 1].solid = true; }   // 2026-10-13 開発27（26）：大会会場（建物・門）は半透明にしない（xray で草地が透けて見えていた）
+      const gn = D.nodes.GOAL; if (gn) { add(ART.goal.file, gn[0], gn[1] + ART.goal.dy, ART.goal.w, -40, 'rfw-goal'); const gp = props[props.length - 1]; gp.solid = true;
+        // 2026-10-14 実機試遊⑭：大会会場は立てた絵（いつもカメラの方を向く）なので、置く位置も「カメラから見て GOAL のすぐ奥」に合わせる＝正面の階段の下に GOAL の円盤が来る。
+        //  地面を進む向きへ回す（heading）本編だけ：GOAL から画面の奥の向きへ back だけ下げた点（回したあとの画面で真上）。試作（北が上）は従来の dy のまま。GOAL の地点・歩数・判定は変えない
+        if (o.heading) gp.at = (c) => { const a = rad((c && c.yaw) || 0); return [gn[0] - ART.goal.back * Math.sin(a), gn[1] - ART.goal.back * Math.cos(a)]; }; }   // 2026-10-13 開発27（26）：大会会場（建物・門）は半透明にしない（xray で草地が透けて見えていた）
       for (const L of lmOf(D)) { if (o.hideLm && o.hideLm.includes(L.node)) continue; const at = landmarkAt(D, L); if (at) { add(L.file, at[0], at[1], L.w, L.z || 0, 'rfw-lm'); props[props.length - 1].L = L; } }
       for (const q of waterProps(D, o)) add(q.file, q.x, q.y, q.w, q.z || 0, 'rfw-wp');   // 第4便：川の景物（B は密に）
       for (const [x, y, w] of peaksOf(D, o)) add(ART.peaks.file, x, y, w, -20, 'rfw-peak');   // 第4便：山の岩峰（C は足す）
@@ -308,9 +316,20 @@
       p.base = Math.max(8, Math.round(nat ? Math.min(nat, want) : Math.min(1024, want))); p.el.style.width = p.base + 'px';
       if (!nat) p.el.addEventListener('load', () => { p.base = 0; S.dirty = true; }, { once: true });   // 絵が読めたら実際の幅で決め直す（1回）
     }
-    { const gn = D.nodes.GOAL; S.goalZ = gn ? zOf(gn[1]) : null; }
+    const propZ = (p) => (p.solid && S.goalZ != null ? Math.min(zOf(p.y, p.z, p.x), S.goalZ - 1) : zOf(p.y, p.z, p.x));
+    { const gn = D.nodes.GOAL; S.goalZ = gn ? zOf(gn[1], 0, gn[0]) : null; }
+    /** 向き（yaw）に合わせて前後の順を決め直す（3° 以上変わったときだけ＝回っている間も数回だけ） */
+    function zSync(yaw) {
+      if (!o.heading || Math.abs(angDiff(zYaw, yaw || 0)) < 3) return;
+      zYaw = yaw || 0;
+      for (const id of Object.keys(tiles)) { const n = D.nodes[id]; tiles[id].el.style.zIndex = String(zOf(n[1], 0, n[0])); }
+      { const gn = D.nodes.GOAL; S.goalZ = gn ? zOf(gn[1], 0, gn[0]) : null; }
+      for (const p of props) if (p.zi != null) { p.zi = propZ(p); p.el.style.zIndex = String(p.zi); }
+      S.monZ = null;
+    }
     function apply() {
       const c = S.cam;
+      zSync(c.yaw);
       // カメラもモンスターも動いていなければ描き直さない（止まっている間は何もしない）
       const sig = [c.tx, c.ty, c.s * 100, c.tilt * 10, (c.yaw || 0) * 10, c.ax, c.ay, S.mon ? S.mon[0] : 0, S.mon ? S.mon[1] : 0, S.dirty ? 1 : 0].map((x) => Math.round(x * 10)).join(',');
       if (sig === S.sig) return; S.sig = sig; S.dirty = false;
@@ -330,13 +349,14 @@
         if (o.xray) xr.push([q.x - w / 2, q.y - w * 0.62, q.x + w / 2, q.y + w * 0.14, q.y, w * w * 0.76]);
       }
       for (const p of props) {
+        if (p.at) { const xy = p.at(c); p.x = xy[0]; p.y = xy[1]; }
         const q = project(c, p.x, p.y), w = Math.min(p.max || 1e9, Math.max(p.min || 0, p.w * c.s * q.k));
         const vis = q.x > -w && q.x < Wd + w && q.y > -10 && q.y < Hd + w * 1.2 && w > 1.5;
         if (!vis) { if (!p.hid) { p.el.style.display = 'none'; p.hid = true; } continue; }
         if (p.hid) { p.el.style.display = ''; p.hid = false; }
         if (!p.base) propBase(p);
         p.el.style.transform = `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * (p.ah || 0.92)).toFixed(1)}px) scale(${(w / p.base).toFixed(4)})`;
-        if (p.zi == null) { p.zi = p.solid && S.goalZ != null ? Math.min(zOf(p.y, p.z), S.goalZ - 1) : zOf(p.y, p.z); p.el.style.zIndex = String(p.zi); }   // 2026-10-13 開発27（26）：半透明にしない大会会場は GOAL のマスより奥（マスを隠さない）。順は世界の y で1回だけ
+        if (p.zi == null) { p.zi = propZ(p); p.el.style.zIndex = String(p.zi); }   // 2026-10-13 開発27（26）：半透明にしない大会会場は GOAL のマスより奥（マスを隠さない）。順は世界の y で1回だけ
         if (o.xray && !p.mark && !p.solid) {   // 手前の景物がマス・モンスターを隠す＝その景物だけ半透明（重なった面積がマス・モンスターの 22% 以上）
           const pz = Math.round(q.y) + (p.z || 0), x0 = q.x - w / 2, x1 = q.x + w / 2, y0 = q.y - w * (p.ah || 0.92), y1 = q.y;
           let thru = false;
@@ -349,7 +369,7 @@
         const w = o.monRatio > 0 ? Math.max(c.s < 1 ? 14 : 30, Math.max(c.s < 1 ? 2 : o.tilePx[0], Math.min(o.tilePx[1], o.tileW * c.s * q.k)) * o.monRatio)   // 2026-10-12：その地点のマスの幅 × 倍率（マスと同じ式）
           : Math.max(c.s < 1 ? 14 : 40, Math.min(100, 24 * c.s * q.k));
         mon.style.transform = `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * (S.monAh || 0.92)).toFixed(1)}px) scale(${(w / MB).toFixed(4)})`;
-        const mz = zOf(S.mon[1], 2); if (mz !== S.monZ) { S.monZ = mz; mon.style.zIndex = String(mz); }
+        const mz = zOf(S.mon[1], 2, S.mon[0]); if (mz !== S.monZ) { S.monZ = mz; mon.style.zIndex = String(mz); }
       }
     }
     const lerp = (a, b, t) => a + (b - a) * t;
@@ -360,6 +380,7 @@
       const to = it.to(), from = it.from, v = S.view || viewRect(), Wd = v.W, Hd = v.H, dur = Math.max(1, it.dur);
       const cams = []; for (let i = 0; i <= INTRO_SAMPLES; i++) { const e = easeInOut(i / INTRO_SAMPLES), c = { P: o.persp, ax: to.ax, ay: to.ay };
         for (const k of ['tx', 'ty', 'tilt']) c[k] = lerp(from[k], to[k], e); c.s = Math.exp(lerp(Math.log(from.s), Math.log(to.s), e)); c.yaw = (from.yaw || 0) + angDiff(from.yaw || 0, to.yaw || 0) * e; cams.push(c); }
+      zSync(to.yaw);   // 寄り終わりの向きで前後の順を決めておく（寄る間は小さい＝順の違いは見えない）
       const anims = [], can = typeof plane.animate === 'function';
       const run = (el, kf) => { if (!can) return; try { anims.push(el.animate(kf, { duration: dur, easing: 'linear', fill: 'forwards' })); } catch (e) { /* 動かせない要素は最後の姿へ */ } };
       wrap.style.perspective = o.persp + 'px'; wrap.style.perspectiveOrigin = `${to.ax}px ${to.ay}px`;
@@ -387,10 +408,10 @@
       }
       for (const p of props) {
         if (!p.base) propBase(p); const on = [], rs = [];
-        const qs = cams.map((c) => { const q = project(c, p.x, p.y), w = Math.min(p.max || 1e9, Math.max(p.min || 0, p.w * c.s * q.k)); on.push(q.x > -w && q.x < Wd + w && q.y > -10 && q.y < Hd + w * 1.2 && w > 1.5); rs.push(w / p.base); return [q, w]; });
+        const qs = cams.map((c) => { const xy = p.at ? p.at(c) : [p.x, p.y], q = project(c, xy[0], xy[1]), w = Math.min(p.max || 1e9, Math.max(p.min || 0, p.w * c.s * q.k)); on.push(q.x > -w && q.x < Wd + w && q.y > -10 && q.y < Hd + w * 1.2 && w > 1.5); rs.push(w / p.base); return [q, w]; });
         if (!on.includes(true)) { if (!p.hid) { p.el.style.display = 'none'; p.hid = true; } continue; }
         if (p.hid) { p.el.style.display = ''; p.hid = false; }
-        if (p.zi == null) { p.zi = p.solid && S.goalZ != null ? Math.min(zOf(p.y, p.z), S.goalZ - 1) : zOf(p.y, p.z); p.el.style.zIndex = String(p.zi); }
+        if (p.zi == null) { p.zi = propZ(p); p.el.style.zIndex = String(p.zi); }
         const sc = fit(p.el, p.base, rs, on);
         run(p.el, qs.map(([q, w], i) => ({ transform: `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * (p.ah || 0.92)).toFixed(1)}px) scale(${sc(rs[i], i).toFixed(4)})`, offset: i / INTRO_SAMPLES })));
       }

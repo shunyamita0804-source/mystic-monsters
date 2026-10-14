@@ -116,6 +116,9 @@
       '#bt .hpn .hn1{order:0;flex:1 1 100%;max-width:100%}#bt .hpn.s1 .hn1{text-align:right}#bt .hpn #b0,#bt .hpn #b1{order:2}#bt .hpn .mmchips,#bt .hpn.s1 .mmchips{order:3;flex:0 0 100%;max-width:100%;height:18px;margin-top:1px;justify-content:flex-start}#bt .hpn.s1 .mmchips{justify-content:flex-end}',
       '#bt .hpn .mmchips .stb,#bt .hpn .mmchips .mmail span{height:15px!important;font-size:8px!important;line-height:13px!important;padding:0 3px 0 2px!important;letter-spacing:-.02em}#bt .hpn .mmchips .sts,#bt .hpn .mmchips .mmail{gap:2px!important}#bt .hpn .mmchips{gap:2px}',
       '#bt .hpn.s1 .hn1{display:flex;justify-content:flex-end}',
+      // 2026-10-14 実機試遊㉕：同じ種族・同じ名前どうしでも左右が分かるよう、名前の前に小さな札（あなた／相手）。数値・顔・待機の絵は変えない
+      '#bt .hpn .hn1::before{display:inline-block;vertical-align:1px;margin-right:4px;padding:0 5px;border-radius:7px;font:800 9px/14px "Noto Sans JP",sans-serif;letter-spacing:.04em;text-shadow:none;color:#fff}',
+      '#bt .hpn.s0 .hn1::before{content:"あなた";background:#2b62c4;border:1px solid #9cc4ff}#bt .hpn.s1 .hn1::before{content:"相手";background:#a8342a;border:1px solid #ffb0a2;align-self:center}',
       '#bt .hpn.s1 .hpb{justify-content:flex-end}#bt .hpn.s1 small{text-align:right}',
       '#bt .hpn .eg2{height:14px;margin:2px 0 1px;border:1.5px solid rgba(255,236,190,.9);border-radius:8px;background:rgba(8,14,30,.72);box-shadow:0 1px 4px rgba(0,0,0,.6)}',
       '#bt .hpn .eg2 i{background:url(./assets/ui/b_group/b29_ability_bar_fill_green.png) left center/100% 100% no-repeat!important;box-shadow:none!important}',
@@ -175,6 +178,8 @@
       '#bt.mma-fin .mon.mma-won>.mma-fin{visibility:hidden!important;opacity:0!important}',
       // 2026-10-14 開発29（8）：決着の曲（WIN 4秒／LOSE 5秒）の間は「もどる」を見せない・押せない（index.html の rjLock が #bt に data-rjlock を付ける）
       '#bt[data-rjlock] .gow,#bt[data-rjlock] #go{opacity:0!important;pointer-events:none!important}',
+      // 2026-10-14 実機試遊⑥：LOSE（5.00秒）は曲の終わり（4.6秒）までに「もどる」を出してすぐ押せる＝曲のあとの長い無音を待たせない（やわらかく 0.3秒で出す）
+      '#bt[data-rj] .gow,#bt[data-rj] #go{transition:opacity .3s ease-out}',
       '#bt.mma-fin .mon:not(.mma-won)>.mma-fin{opacity:1!important;visibility:visible!important}',
       '#bt .mon .mma-fin{position:absolute;left:50%;bottom:0;height:calc(118% * var(--mma-k,1));width:auto;max-width:none;transform:translateX(-50%);pointer-events:none;filter:drop-shadow(0 8px 6px rgba(0,0,0,.45))}',
       '#bt .mon .mma-fin.fl{transform:translateX(-50%) scaleX(-1)}',
@@ -265,10 +270,22 @@
     new MutationObserver(goSync).observe(go, { attributes: true, attributeFilter: ['class', 'disabled'] });
     const trk = $('.trk', box);
     const S = { plates: [], n: 0, cur: -1, tn: 0, dt: 120, p: 0, vis: 0, mode: 'idle', stop: null, len: 7 };
+    // 2026-10-14 実機試遊⑰：ルーレットの技の絵＝正式の技カード（MMMVCARD＝SK の番号 → カード）。fight() の行は旧の技絵（SKART）と技名だけを持つので、
+    //  今ルーレットを回している側（見出し「〇〇のルーレット」）の装備の中から同じ技名の SK を探してカードに替える（無ければ従来の絵）。抽選・結果・6枠は変えない
+    const cardOf = (nm, fb) => {
+      try {
+        const C = root.MMMVCARD, SK = G('SK'), P = G('BPL'); if (!C || !SK || !P || !nm) return fb;
+        const rh = (rl.querySelector('.rh') || {}).textContent || '';
+        const sides = P.filter(Boolean), cur = sides.filter((p) => p.name && rh.indexOf(p.name + 'のルーレット') === 0);
+        for (const p of (cur.length ? cur : sides)) for (const k of (p.eq || [])) if (k >= 0 && SK[k] && SK[k][0] === nm) { const c = C.bySlot(k); if (c) return c.src; }
+      } catch (e) {}
+      return fb;
+    };
     const read = (row) => {
       const ms = row.classList.contains('ms'), img = row.querySelector('img.rt'), nm = (row.querySelector('.rn') || {}).textContent || '';
       const vals = [...row.querySelectorAll('.rst b')].map((b) => b.textContent);
-      return { ms, src: img ? img.getAttribute('src') : '', nm, vals };
+      const fb = img ? img.getAttribute('src') : '';
+      return { ms, src: ms ? fb : cardOf(nm, fb), nm, vals, card: !ms && cardOf(nm, null) != null };
     };
     function build() {
       const rows = [...rl.querySelectorAll('.rw')];
@@ -276,7 +293,7 @@
       trk.innerHTML = rows.map((row) => {
         const d = read(row);
         return `<div class="pl${d.ms ? ' ms' : ''}"><img class="bgp nor" src="${PL}${d.ms ? 'plate_miss' : 'plate_normal'}${SFX}.webp" alt="">${d.ms ? '' : `<img class="bgp sel" src="${PL}plate_selected${SFX}.webp" alt="">`}`
-          + (d.ms ? '' : `<div class="ic">${d.src ? `<img src="${d.src}" alt="">` : ''}</div><div class="nm"></div>${NEW ? '' : '<div class="st"><div>威力<b></b></div><div>命中率<b></b></div><div>クリ率<b></b></div></div>'}`) + '</div>';   // 2026-10-13：新しい画面は威力・命中率・クリ率を出さない（計算・技のデータは変えない）
+          + (d.ms ? '' : `<div class="ic${d.card ? ' card' : ''}">${d.src ? `<img src="${d.src}" alt="" decoding="async">` : ''}</div><div class="nm"></div>${NEW ? '' : '<div class="st"><div>威力<b></b></div><div>命中率<b></b></div><div>クリ率<b></b></div></div>'}`) + '</div>';   // 2026-10-13：新しい画面は威力・命中率・クリ率を出さない（計算・技のデータは変えない）
       }).join('');
       S.plates = [...trk.children];
       rows.forEach((row, i) => {

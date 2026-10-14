@@ -39,7 +39,7 @@
   /** 会話の行に付ける声（データ側で { voice: 'fina_yes' } のように書く）。ここで false にした声は会話でも鳴らさない */
   const LINE_VOICE = Object.freeze({ fina_hello: true, fina_yeah: true, fina_hmm: true, fina_look: true, fina_hey: true, fina_giggle: true, fina_yes: true, fina_wonder: true,
     cedric_opening: true, serge_welcome: true,
-    ryu_praise: true });   // 2026-10-13 開発27（24）：ライバル戦に勝ったあと、ボードでのリュウの会話の行（「やるじゃん！ …」）と同時に1回   // 2026-10-13 開発25 追加便：セドリックの開幕の1行目・セルジュの受付の1行目（台詞の頭と声が同じ）
+    ryu_praise: true, ryu_chuckle: true });   // 2026-10-14 実機試遊⑬：ライバル戦に負けたあと、ボードでのリュウの会話の行（「へへっ、…」）と同時に1回   // 2026-10-13 開発27（24）：ライバル戦に勝ったあと、ボードでのリュウの会話の行（「やるじゃん！ …」）と同時に1回   // 2026-10-13 開発25 追加便：セドリックの開幕の1行目・セルジュの受付の1行目（台詞の頭と声が同じ）
   const CUE_COOLDOWN_MS = 0;
   const last = {}, visit = {}, log = [];
   const A = () => root.MMAUDIO;

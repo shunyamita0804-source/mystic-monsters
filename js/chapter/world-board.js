@@ -156,9 +156,11 @@
         return `<button class="chroute${o.spur ? ' spur' : ''}" data-id="${esc(o.id)}" onclick="MMWB.pick('${esc(o.id)}')"><b>${esc(o.name)}</b>${desc ? `<small>${esc(desc)}</small>` : ''}</button>`; }).join('')}</div>`;
     }
     if (ph === 'battle') {
-      if (V.rivalAuto && (r.pend.fx || {}).battleType === 'rival') return '';   // 2026-10-13 開発27（21）：ライバルは演出からそのままバトルへ（案内のシートを出さない。途中で閉じて読み込み直したときだけ従来のシート）
-      const fx = r.pend.fx || {}, bt = (cfg().battleTypes || {})[fx.battleType || 'wild'] || { label: 'モンスター' }, fb = root.MMRF_PLAY ? root.MMRF_PLAY.TUNING.wildFatigue : 5;
-      return `<div class="chsheet chbat"><small class="chbat-kind">${esc(bt.label)}</small><h3>${esc(bt.encounter || bt.label)}</h3>${bt.note ? `<p class="p9s chbat-note">${esc(bt.note)}</p>` : ''}<p class="p9s">バトルの後は空腹 +${fb}。賞金・ランクアップはありません。</p><button class="p9btn" onclick="bBattleGo()">バトルする</button></div>`;   // 2026-10-12 試遊：遭遇はすべて強制バトル（「やめておく」は出さない）
+      // 2026-10-14 実機試遊⑩：遭遇はすべて自動の強制バトル＝「バトルする」の確認ボタンは出さない（演出 → 短い光 → VS → バトル）。
+      //  途中で閉じて読み込み直したときだけ、遭遇の一言の札を出して少し待ってから自動でバトルへ（autoBattle）。負けたあと（pend が無い）は再戦しない
+      if (V.autoBt) return '';
+      const fx = r.pend.fx || {}, bt = (cfg().battleTypes || {})[fx.battleType || 'wild'] || { label: 'モンスター' };
+      return `<div class="chsheet chbat auto" role="status"><small class="chbat-kind">${esc(bt.label)}</small><h3>${esc(bt.encounter || bt.label)}</h3><p class="p9s">まもなくバトル！</p></div>`;
     }
     if (ph === 'timeup') return `<div class="chsheet"><h3>⌛ ターン終了</h3><p class="p9s">ゴールできなかったため、このChapterの公式大会には参加できません。Chapterは終了し、次のChapterへ進めます（育成失敗ではありません）。</p><button class="p9btn" onclick="p8EndChapter()">Chapterを終えてベースキャンプへ</button></div>`;
     return '';
@@ -263,6 +265,10 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
 .wbw .wbx-w.rare .wbx-glow{background:radial-gradient(closest-side,rgba(214,150,255,.7),rgba(150,70,230,.25) 60%,rgba(0,0,0,0));box-shadow:0 0 30px 8px rgba(170,90,255,.25)}
 .wbw .wbx-mon{position:absolute;left:50%;bottom:12%;height:76%;width:auto;max-width:100%;object-fit:contain;transform:translateX(-50%);filter:drop-shadow(0 8px 12px rgba(0,0,0,.6));animation:wbxmon .55s .05s cubic-bezier(.2,.8,.3,1) both}
 .wbw .wbx-w.sil .wbx-mon{visibility:hidden}
+.wbw .wbx-stage.fl{transform:translate(-50%,-50%) scaleX(-1)}
+.wbw .wbx-flash{position:absolute;inset:0;z-index:60;pointer-events:none;background:radial-gradient(circle at 50% 46%,rgba(255,252,240,.78),rgba(255,246,220,.42) 45%,rgba(255,240,210,.2));animation:wbxflash .5s ease-out forwards}
+@keyframes wbxflash{0%{opacity:0}30%{opacity:.62}100%{opacity:0}}
+.wbw .chsheet.chbat.auto h3{margin-bottom:2px}.wbw .chsheet.chbat.auto .p9s{opacity:.85}
 .wbw .wbx-sil{position:absolute;left:0;right:0;bottom:12%;height:76%;background:#05070d;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center bottom;mask-position:center bottom;-webkit-mask-size:contain;mask-size:contain;filter:drop-shadow(0 0 10px rgba(255,236,190,.55));animation:wbxmon .55s .05s cubic-bezier(.2,.8,.3,1) both}
 .wbw .wbx-card{position:absolute;left:50%;bottom:calc(var(--chdeck,150px) + 18px);transform:translateX(-50%);width:min(88vw,360px);padding:9px 14px 11px;border-radius:12px;background:linear-gradient(180deg,rgba(14,26,62,.96),rgba(8,16,40,.96));border:1.5px solid #d9b45c;box-shadow:inset 0 0 0 3px rgba(9,18,44,.95),inset 0 0 0 4px rgba(217,180,92,.55),0 8px 22px rgba(0,0,0,.5);color:#fff;text-align:center;animation:wbxcard .4s .12s cubic-bezier(.2,.8,.3,1) both}
 .wbw .wbx-card small{display:block;font:700 12.5px/1.4 "Noto Sans JP",sans-serif;color:#f1d68e;letter-spacing:.04em}
@@ -371,6 +377,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     else if (wantIntro) intro(m);
     else if (ph === 'roll' && r.turnsUsed === 0 && !V.intro && !V.cover) setTimeout(() => { if (onBoard() && active(m) && P8().boardPhase(m) === 'roll' && !busyGet()) storyAt(m, 'start').then((shown) => { if (shown && onBoard()) paint(m); }); }, 350);
     if (ph === 'branch') setTimeout(() => { if (onBoard() && active(m) && P8().boardPhase(m) === 'branch' && !busyGet()) storyAt(m, 'branch', { segs: (m.raise.pend && m.raise.pend.segs) || [] }); }, 350);
+    if (ph === 'battle') autoBattle(m, 900);
     if (ph === 'move') setTimeout(() => { if (onBoard()) walk(); }, 300);
     else if (ph === 'resolve') setTimeout(() => { if (onBoard()) resolve(); }, 300);
     return true;
@@ -761,6 +768,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     const id = await root.MMNPC.talk(E.choiceLines(fx), { kind: 'event', presentation: 'board' });
     return (fx.options || []).some((o) => o.id === id) ? id : first;
   }
+  const VS_KEY = ['solamo', 'gauru', 'nobiton', 'jiol', 'regnas'];   // index.html の TB_VS と同じ（VS の勝負絵のファイル名）
   async function encounter(m, bt) {
     const ui = $('#wb-ui'), B = (cfg().battleTypes || {})[bt] || {}, text = B.encounter || '', rival = bt === 'rival', cue = rival ? 'rival.appear' : bt === 'rare' ? 'rare.alert' : 'wild.alert';
     if (!ui || calm() || !text) { feel(cue, { battleType: bt }); await wait(calm() ? 300 : 500); return; }
@@ -768,10 +776,11 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     if (rival) return rivalCut(ui, B, text, cue);
     // 2026-10-11 野生・レアの遭遇（EV03 の構図＝大きな相手＋下の札。参考画像の仮の名前・Lv は使わない＝実際の種族から作る。Lv は無い）
     let foe = null;
-    if (root.MMP10M && root.MMCH && root.MMCH.foeSpecies && typeof root.battleFoeCount === 'function') { const sp = root.MMP10M.byId(root.MMCH.foeSpecies(m, root.battleFoeCount())); if (sp && sp.image) foe = { src: sp.image.src, name: sp.name }; }
+    // 2026-10-14 実機試遊㉔：影は直後の VS に出る相手と同じ絵（VS の勝負絵 assets/tournament/vs_monsters/・同じ向き）から作る＝形・大きさ・向きがそろう。無い種族は正式の立ち絵
+    if (root.MMP10M && root.MMCH && root.MMCH.foeSpecies && typeof root.battleFoeCount === 'function') { const n = root.MMCH.foeSpecies(m, root.battleFoeCount()), sp = root.MMP10M.byId(n), k = VS_KEY[n]; if (sp && sp.image) foe = { src: k ? `./assets/tournament/vs_monsters/${k}_vs.webp` : sp.image.src, name: sp.name, fl: !!(k && root.MMARENA && root.MMARENA.flipOf && root.MMARENA.flipOf(1, n)) }; }
     const sil = bt === 'wild' && !!foe, rare = bt === 'rare';
     ui.insertAdjacentHTML('beforeend', `<div class="chf-enc chf-enc2 wbx wbx-w${rare ? ' rare' : ''}${sil ? ' sil' : ''}" role="status" aria-label="${esc(text)}"><i class="wbx-veil"></i>
-      <div class="wbx-stage"><i class="wbx-glow"></i>${foe ? `<img class="wbx-mon" src="${esc(foe.src)}" alt="${sil ? '？？？' : esc(foe.name)}" draggable="false">` : ''}${sil ? `<i class="wbx-sil" aria-hidden="true" style="-webkit-mask-image:url('${esc(foe.src)}');mask-image:url('${esc(foe.src)}')"></i>` : ''}</div>
+      <div class="wbx-stage${foe && foe.fl ? ' fl' : ''}"><i class="wbx-glow"></i>${foe ? `<img class="wbx-mon" src="${esc(foe.src)}" alt="${sil ? '？？？' : esc(foe.name)}" draggable="false">` : ''}${sil ? `<i class="wbx-sil" aria-hidden="true" style="-webkit-mask-image:url('${esc(foe.src)}');mask-image:url('${esc(foe.src)}')"></i>` : ''}</div>
       <div class="wbx-card"><small>${esc(text)}</small><div class="wbx-nm"><b>${sil || !foe ? '？？？' : esc(foe.name)}</b>${rare ? '<em>★ レア</em>' : ''}</div></div></div>`);
     const el = ui.querySelector('.wbx-w:last-child'); feel(cue, { battleType: bt });
     await wait(1650);
@@ -817,9 +826,14 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     V.world.marker(id, FXF.rare, { w: 40, min: 46, max: 110, ah: 1.55 });
     V.world.markerDim(id, f.used[id] != null);
   }
+  const PRE_SE = ['DICE_CUBE', 'DICE_THROW', 'WILD_ALERT', 'RARE_ALERT', 'RIVAL_APPEAR', 'MATCHUP', 'BATTLE_START', 'BATTLE_WIN', 'BATTLE_LOSE', 'TREASURE_TIER_1', 'TREASURE_TIER_2', 'TREASURE_TIER_3', 'TRAINING_ITEM_SPAWN', 'TRAINING_SUCCESS', 'EVENT_TRIGGER', 'REST_RECOVER', 'SKILL_ACTIVATE', 'GOLD_GET'];
   function fxPreload() {
     if (V.pre) return; V.pre = true;
-    const go = () => { for (const u of [FXF.rivalBg, FXF.clash, FXF.gold, FXF.hg[10], FXF.hg[5], FXF.hg[1]]) { const im = new root.Image(); im.decoding = 'async'; im.src = u; } };
+    const go = () => {
+      for (const u of [FXF.rivalBg, FXF.clash, FXF.gold, FXF.hg[10], FXF.hg[5], FXF.hg[1]]) { const im = new root.Image(); im.decoding = 'async'; im.src = u; }
+      // 2026-10-14 実機試遊⑨：盤で初めて鳴る音（遭遇・VS・宝箱・決着など）を先に読んでおく＝最初の1回が無音にならない
+      try { if (root.MMAUDIO && root.MMAUDIO.prefetchSe) for (const n of PRE_SE) root.MMAUDIO.prefetchSe(n); } catch (e) {}
+    };
     if (root.requestIdleCallback) root.requestIdleCallback(go, { timeout: 4000 }); else setTimeout(go, 1500);
   }
   /** 2026-10-13 開発24：フィナの声（js/npc/voice-cues.js の CUES）。自動テストの一言なし（MM_QA_NO_STORY）では鳴らさない */
@@ -853,14 +867,31 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     const el = host.querySelector('.wbdband:last-child');
     try { await play(); } finally { if (el) { el.classList.add('out'); setTimeout(() => el.remove(), 260); } }
   }
+  // 2026-10-14 実機試遊⑩・Q13：遭遇 → 短い白い光（眩しすぎない・視差を減らす設定では出さない）→ VS（bBattleGo）。1つの遭遇（pend）で自動の開始は1回だけ（AUTO_BT）
+  const AUTO_BT = new WeakSet();
+  function battleStart() {
+    if (!calm() && V.el) { V.el.insertAdjacentHTML('beforeend', '<i class="wbx-flash" aria-hidden="true"></i>'); const fl = V.el.querySelector('.wbx-flash:last-child'); setTimeout(() => { if (fl) fl.remove(); }, 520); }
+    root.bBattleGo();
+  }
+  function autoBattle(m, ms) {
+    const p = m.raise.pend; if (!p || AUTO_BT.has(p)) return; AUTO_BT.add(p);
+    let tries = 0;
+    const go = () => {
+      const S = gS(); if (!S || S.m !== m || !active(m) || m.raise.pend !== p || P8().boardPhase(m) !== 'battle') return;   // もう別の局面（バトルを始めた・負けた・セーブを替えた）＝何もしない
+      const wait = !onBoard() || busyGet() || V.cover || V.intro || root.document.getElementById('bt') || root.document.getElementById('tvs') || root.document.querySelector('.mmtalk') || typeof root.bBattleGo !== 'function' || (typeof bBusy !== 'undefined' && bBusy);
+      if (wait) { if (++tries < 40) setTimeout(go, 400); else AUTO_BT.delete(p); return; }
+      battleStart();
+    };
+    setTimeout(go, ms);
+  }
   async function resolve() {
     const S = gS(), m = S && S.m; if (!active(m) || busyGet() || !onBoard() || !m.raise.pend || m.raise.pend.stage !== 'resolve') return;
     busySet(true); lock();
-    let tail = '', card = null, rivalGo = false;
+    let tail = '', card = null, battleGo = false;
     try {
       const r = P8().resolveLanding(S, m); doSave();
       let fx = r.fx || {};
-      if (fx.kind === 'battle' && fx.battleType === 'rival') V.rivalAuto = true;
+      if (fx.kind === 'battle') V.autoBt = true;
       if ((fx.dice || []).length) await storyAt(m, 'die', { dice: fx.dice });
       for (const e of fx.dice || []) {   // イベントのサイコロ（Q の左右・特殊挑戦）：出目はもう決まっている（見せるだけ）
         const tx = (DIE_TEXT[e.kind] || ((x) => `サイコロ：${x.die}`))(e);
@@ -905,14 +936,14 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
         const body = `${fx.text ? `<p>${esc(fx.text)}</p>` : ''}${rowsHtml(fx)}`;
         cardRes(card, body); await cardHold(card, 300, body ? 1900 : 900); await cardClose(card); card = null;
         tail = plainOf(fx) || fx.title || '';
-      } else if (fx.kind === 'battle') { if (fx.battleType === 'rival') V.rivalAuto = rivalGo = true; await encounter(m, fx.battleType); }   // 2026-10-13 開発27（21）：ライバルは演出のあとバトルの案内（説明・「バトルする」）を出さずにそのままバトルへ
+      } else if (fx.kind === 'battle') { V.autoBt = battleGo = true; await encounter(m, fx.battleType); }   // 2026-10-14 実機試遊⑩：野生・レア・ライバルとも演出のあと案内のシートを出さずにそのままバトルへ（旧 2026-10-13 開発27（21）はライバルだけ）
       else if (fx.note === 'claimed') tail = `${fx.title || '宝'}はもう手に入れている。`;
       const told = await storyAt(m, 'land', { fx, goal: !!r.goal });
       if (!told && fx.kind === 'none' && fx.note === 'normal' && !r.goal && !r.timeUp) tail = (await reactionAt(m)) || tail;
       if (r.goal) tail = `${tail}　大会会場に着いた！`.trim(); else if (r.timeUp) tail = `${tail}　ターンを使い切った…`.trim();
     } finally { if (card) cardClose(card, true); busySet(false); }
-    if (rivalGo && onBoard() && P8().boardPhase(m) === 'battle' && typeof root.bBattleGo === 'function') { root.bBattleGo(); V.rivalAuto = false; if (!root.document.getElementById('bt')) board(tail || undefined); return; }
-    V.rivalAuto = false;   // 強制戦闘・戻り先・バトルの種類・報酬なしは従来の bBattleGo のまま
+    if (battleGo && onBoard() && P8().boardPhase(m) === 'battle' && typeof root.bBattleGo === 'function') { AUTO_BT.add(m.raise.pend); battleStart(); if (!root.document.getElementById('bt') && !root.document.getElementById('tvs')) board(tail || undefined); V.autoBt = false; return; }
+    V.autoBt = false;   // 強制戦闘・戻り先・バトルの種類・報酬なしは従来の bBattleGo のまま
     if (onBoard()) board(tail || undefined);
   }
 
