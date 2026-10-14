@@ -27,6 +27,7 @@
   const LIC12 = BGM_DIR + 'licensed_20261012/';      // 2026-10-12 正式採用：公式ランク戦の曲（ユーザー納品「公式ランク.mp3」を OGG Vorbis q5 に変換しただけ。作曲者・出典は AUDIO_CREDITS.md＝要確認）       // 2026-10-08 正式採用：街の曲「冒険への誘い」（ユーザー提供の MP3 を OGG Vorbis q5 に変換しただけ。AUDIO_CREDITS.md）
   const CR = SE_DIR + 'crowd_1013/';                    // 2026-10-13 開発24：観客の声（Pixabay：DRAGON-STUDIO・Universfield。区間の切り出しはユーザー提供。AUDIO_CREDITS.md）
   const VO = './assets/audio/voice/npc_1013/';          // 2026-10-13 開発24：NPC のボイス（ユーザー提供の試遊素材）
+  const SKL = SE_DIR + 'skill_1014/';                   // 2026-10-14：固有スキルの発動の正式 SE（Mixkit「Shot light energy flowing」0〜3.5秒。AUDIO_CREDITS.md）
   const RES = SE_DIR + 'result_1013/';                  // 2026-10-13 開発28：バトルの決着の短い曲（WIN＝red bears「ファンファーレ12」の先頭4.00秒・LOSE＝ポケットサウンド「ゲームオーバー＃2」の先頭5.00秒。AUDIO_CREDITS.md）
   const MMB = BGM_DIR + 'mystic_monsters_official/';  // 同じく正式の BGM（2026-10-06：タイトル・プロローグ。ユーザー提供・ゲームの所有素材。AUDIO_CREDITS.md）
 
@@ -92,7 +93,8 @@
     // ---- Chapter ----
     CHAPTER_START: { src: AKSE + 'fx_2.ogg', gain: 3.0 },              // 第3弾試遊候補：alkakrab Fx 2（2秒・低くふくらんで消える音）。元が小さい（-28 LUFS）
     DICE_THROW: { src: MMO + '01_dice_large_full.ogg', gain: 0.95 },   // 2026-10-06 正式：投げる → 着地 → 短く転がる → 停止 を1本にした完成 SE（2.05秒）。投げ始めに1回だけ（1ロール1回）。下の LAND／ROLL／STOP は鳴らさない（同じ音を重ねない）
-    DICE_CUBE:  { src: SE_DIR + 'dice_1013/dice_cube_throw_land.ogg', gain: 0.9 },   // 2026-10-13 開発27（17）：着地の足音「トンッ、ト、トン」だけ（魔法的な「ヒュイン」＝投げる風・止まる光は外した）。旧 開発25 E：投げる音 → 回る間は無音 → 着地＋止まる光（tools/dice1013/se_cut.py＝下の 1012 版と比較用の着地音なし版から作った派生。音の時刻は同じ）。旧 1012 版はファイルを残す
+    DICE_CUBE:  { src: SE_DIR + 'dice_1014/dice_cube_throw_land2.ogg', gain: 0.9 },   // 2026-10-14 実機試遊⑤：投げ出しの瞬間に正式 DICE_THROW（01_dice_large_full）の投げる音（0〜0.50秒）を戻し、回る間は無音 → 現行の着地の足音「トンッ、ト、トン」。1本の完成した音＝1ロールに1回（tools/dice1014/se_throw.py・原本は変えない）
+    // DICE_CUBE（2026-10-13 開発27（17）〜2026-10-14）：dice_1013/dice_cube_throw_land.ogg＝着地の足音だけ（投げる風・止まる光の「ヒュイン」を外した版）。ファイルは残す
     // DICE_CUBE（旧・2026-10-12）：2026-10-12 開発23 B 正式採用：立体サイコロ（MMDICE3D・tempo long＝1.30秒で止まる）の1本（風 → 回る → トンッ、ト、トン → 止まる光）。Pixabay の A1／B4／C1 と正式 SE 05 の足音を編集・合成（AUDIO_CREDITS.md）。DICE_THROW（旧サイコロ・特訓）とは別＝二重に鳴らない
     DICE_LAND:  { silent: true },   // 2026-10-06：着地の音は DICE_THROW の完成 SE に含まれる（鳴らさない）。サイコロが地面に最初に触れた：2026-10-03 第4弾の試遊で NG → 無音（代わりの音は選ばない）
     DICE_ROLL:  { silent: true },   // 出目の面を見せ始めた（停止のあと）：2026-10-03 第4弾の試遊で NG → 無音（代わりの音は選ばない）
@@ -116,7 +118,7 @@
     TREASURE_TIER_2:     { src: MMO + '10_treasure_open_tier2.ogg', gain: 1.01 },   // 宝箱 rare
     TREASURE_TIER_3:     { src: MMO + '11_treasure_open_tier3.ogg', gain: 0.88 },   // 宝箱 special
     TREASURE_TIER_4:     { src: MMO + '12_treasure_open_tier4.ogg', gain: 0.65 },
-    SKILL_ACTIVATE:      { src: MMO + '12_treasure_open_tier4.ogg', gain: 0.5 },    // 2026-10-13 開発28【暫定】固有スキルの発動（js/battle/rules.js の runCut）。能力UP の TRAINING_SUCCESS と区別できる既存の正式 SE のうち、どの場面でも鳴っていない宝箱の第4段階の音を借りる（専用の SE が届いたらここを替える）   // 正式素材として登録だけ（ゲームに第4の段階は無い＝どこからも鳴らさない。報酬・段階は作らない）
+    SKILL_ACTIVATE:      { src: [SKL + 'skill_activate_shot_light_energy_3p5s.ogg', SKL + 'skill_activate_shot_light_energy_3p5s.m4a'], gain: 0.55 },   // 2026-10-14 ユーザー正式決定（実機試遊⑫）：固有スキルの発動＝Mixkit「Shot light energy flowing」（ID 2589）の冒頭 0.000〜3.500秒（末尾 60ms のフェードだけ・ユーザー提供の完成ファイル。-12.2 LUFS → 約 -17）。OGG／M4A のどちらか1つだけ鳴らす。Mixkit SFX Free License＝ゲームへの組み込み可・素材単体の再配布は不可（ユーザー確認済み）。旧【暫定】12_treasure_open_tier4 はこの1か所だけ外した（宝箱の TIER_4 は従来のまま）
     REST_RECOVER:        { src: MMO + '13_rest_recover.ogg', gain: 1.11 },          // 「休む」・休むマスで疲れの回復が成立した瞬間
     EVENT_TRIGGER:       { src: MMO + '14_event_trigger.ogg', gain: 1.0 },          // 出来事のマスで出来事が始まった瞬間（休むマスの回復は REST_RECOVER）
     BRANCH_SELECT:       { src: MMO + '15_branch_select.ogg', gain: 1.05 },         // 分かれ道で道を選んだ瞬間

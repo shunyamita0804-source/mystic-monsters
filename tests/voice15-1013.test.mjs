@@ -126,8 +126,9 @@ test('VC-04：出しどころ＝既存の場面に1回・三伝説は on:false',
   assert.match(HTML, /bgm\("train"\);p9Immersive\(true\);if\(done\)try\{window\.MMVOICE&&MMVOICE\.cue\("genshin\.ack",\{delay:\.35\}\)\}catch\(e\)\{\}/);
   // リュウ：ライバル戦の決着（fight() の WIN!／LOSE＝ban）だけ。勝ち→やるじゃん・負け→へへっ。大会・野生・レアでは鳴らない（BATTLE_DRESS のラベル）
   // 2026-10-13 開発27（24）：決着で鳴らすのは負け（へへっ）だけ。勝ちの「やるじゃん」はボードへ戻ってからのリュウの会話の行（rivalWinTalk・LINE_VOICE の ryu_praise）
-  assert.match(HTML, /if\(t==="LOSE"&&D&&D\.pl&&D\.pl===BPL&&D\.label===PRACTICE_LABEL\.rival\)try\{window\.MMVOICE&&MMVOICE\.cue\("ryu\.won",\{delay:\.55\}\)\}catch\(e\)\{\}/);
-  assert.match(HTML, /if\(bt=="rival"&&f\.won&&!f\.interrupted\)rivalWinTalk\(S\.m\);/); assert.ok(V.LINE_VOICE.ryu_praise);
+  // 2026-10-14 実機試遊⑬：負けの「へへっ」も決着の画面（ban の WIN!／LOSE）では鳴らさない＝ボードへ戻ってから勝ち負け別のリュウ ↔ フィナの会話の行の声（LINE_VOICE の ryu_praise／ryu_chuckle）
+  { const ban = HTML.slice(HTML.indexOf('function ban(t,c,keep,sm){'), HTML.indexOf('\nfunction ', HTML.indexOf('function ban(t,c,keep,sm){') + 10)); assert.doesNotMatch(ban.replace(/\/\*[\s\S]*?\*\//g, ''), /ryu\.won|ryu\.lost/, '決着の帯では鳴らさない'); }
+  assert.match(HTML, /if\(bt=="rival"&&!f\.interrupted\)rivalWinTalk\(S\.m,!f\.won\);/); assert.ok(V.LINE_VOICE.ryu_praise && V.LINE_VOICE.ryu_chuckle);
   const fight = HTML.slice(HTML.indexOf('async function fight('), HTML.indexOf('\n$("#snd").textContent'));
   assert.doesNotMatch(fight, /MMVOICE|ryu\.|genshin|vargas_ack|cedric_opening/, 'fight()（Phase 6）には入れない');
   // 2026-10-13 開発27（20）：リュウの登場の「よっ！」は不採用＝どの演出からも呼ばない（声のファイル・登録は残す）

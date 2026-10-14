@@ -76,7 +76,11 @@ test('D28-01：決着の曲＝BATTLE_WIN（red bears「ファンファーレ12�
   assert.equal(sha(`${dir}/win_fanfare12_4s.m4a`), 'f9b9de572eb5c9909b7c1b194f9ae5f09965c4284ba1c2d328c1260c792271f0');
   assert.equal(readFileSync(path.join(ROOT, dir, 'win_fanfare12_4s.ogg')).subarray(0, 4).toString(), 'OggS');
   assert.ok(se.VICTORY && !se.VICTORY.silent, '旧 VICTORY は登録だけ残す（ほかの場面は従来どおり）');
-  assert.ok(se.SKILL_ACTIVATE && /12_treasure_open_tier4\.ogg$/.test(se.SKILL_ACTIVATE.src), '固有スキルの発動の音【暫定】＝宝箱の第4段階（どの場面でも鳴っていなかった正式 SE）');
+  // 2026-10-14 ユーザー正式決定（実機試遊⑫）：固有スキルの発動の音＝Mixkit「Shot light energy flowing」（ID 2589）の先頭 3.500秒（OGG／M4A の対）。旧の暫定（宝箱の第4段階）はこの場面だけ置き換えた＝宝箱の第4段階の登録はそのまま
+  assert.deepEqual(se.SKILL_ACTIVATE.src, ['./assets/audio/se/skill_1014/skill_activate_shot_light_energy_3p5s.ogg', './assets/audio/se/skill_1014/skill_activate_shot_light_energy_3p5s.m4a']);
+  assert.ok(/12_treasure_open_tier4\.ogg$/.test(se.TREASURE_TIER_4.src), '宝箱の第4段階の音は変えていない');
+  { const d = 'assets/audio/se/skill_1014/', so = oggSeconds(readFileSync(path.join(ROOT, d + 'skill_activate_shot_light_energy_3p5s.ogg'))), sm = m4aSeconds(readFileSync(path.join(ROOT, d + 'skill_activate_shot_light_energy_3p5s.m4a')));
+    assert.ok(Math.abs(so - 3.5) <= 0.02 && Math.abs(sm - 3.5) <= 0.06, `3.500秒（OGG ${so}・M4A ${sm}）`); }
 });
 
 test('D28-02：鳴らし方＝勝利の sfx(3) は BATTLE_WIN（旧 VICTORY は鳴らさない）・WIN!／LOSE の帯で resultJingle（戦闘の BGM を止める・LOSE は BATTLE_LOSE・帯の再描画でも1回）・実戦の前に先読み・SE の名前の一覧', () => {
@@ -192,7 +196,7 @@ test('D28-07：全景 → 盤のズーム＝Web Animations（linear・刻みに�
   assert.match(src, /function startIntroAnims\(it, now\)/); assert.match(src, /function finishIntro\(it\)/);
   assert.match(src, /S\.introAnims = anims\.length;/);
   // マス・景物・モンスター：幅は作るときに1回（scale で大きさ）・前後の順は世界の y から1回（zOf）
-  assert.match(src, /d\.style\.width = TB \+ 'px'; d\.style\.zIndex = String\(zOf\(D\.nodes\[id\]\[1\]\)\);/);
+  assert.match(src, /d\.style\.width = TB \+ 'px'; d\.style\.zIndex = String\(zOf\(D\.nodes\[id\]\[1\], 0, D\.nodes\[id\]\[0\]\)\);/);   // 2026-10-14 実機試遊①：前後の順は回したあとの奥行き（x・y）から
   assert.match(src, /const MB = Math\.round\(TB \* Math\.max\(1, o\.monRatio \|\| 1\)\); mon\.style\.width = MB \+ 'px';/);
   assert.match(src, /scale\(\$\{\(w \/ TB\)\.toFixed\(4\)\}\)/); assert.match(src, /scale\(\$\{\(w \/ MB\)\.toFixed\(4\)\}\)/);
   for (const c of ['.rfw-plane', '.rfw-tile', '.rfw-prop', '.rfw-mon']) assert.match(src, new RegExp(`:is\\(#rfp,\\.wbv\\) ${c.replace('.', '\\.')}\\{[^}]*transform-origin:0 0`), c);
@@ -205,7 +209,7 @@ test('D28-08：固有スキルのカメラ＝cutCamera（全身が切れない�
   const E = loadRules();
   const R = E.R, CUT = R.CUT;
   const total = CUT.in + CUT.hold + CUT.out;
-  assert.ok(total >= 1500 && total <= 2100, `全体 ${total}ms`); assert.ok(CUT.calm >= 900 && CUT.calm <= 1500, '視差を減らす設定＝短く');
+  assert.ok(total >= 2100 && total <= 2600, `全体 ${total}ms（2026-10-14 実機試遊⑪：寄り終わってから約0.7秒長く見せる＝hold 1040 → 1740）`); assert.equal(CUT.hold, 1740); assert.ok(CUT.calm >= 900 && CUT.calm <= 1500, '視差を減らす設定＝短く');
   assert.equal(CUT.zMax, 1.45); assert.equal(CUT.se, 'SKILL_ACTIVATE');   // 2026-10-14 開発29（3）：1.3 → 1.45・寄りは 0.27秒
   assert.ok(CUT.in >= 200 && CUT.in <= 350, `寄り ${CUT.in}ms`);
   // 2026-10-14 開発29（4）：足元の正式エフェクト5枚（assets/battle/skill_fx_1014/）が届いた＝仮の輪ではなく専用の絵
@@ -260,9 +264,9 @@ test('D28-08：固有スキルのカメラ＝cutCamera（全身が切れない�
   assert.deepEqual(J(R.cutQueue()), []); assert.equal(R.cutActive(), false);
 });
 
-test('D28-09：MM_BUILD と version.json は同じ値（公開のたびに上げる。2026-10-14 Chapter 1 A／B／C 高品質化＝2026-10-14-ch1hq → 進入時のクラッシュ対策＝2026-10-14-ch1fix）', () => {
+test('D28-09：MM_BUILD と version.json は同じ値（公開のたびに上げる。2026-10-14 Chapter 1 A／B／C 高品質化＝2026-10-14-ch1hq → 進入時のクラッシュ対策＝2026-10-14-ch1fix → 実機試遊47項目＝2026-10-14-play47）', () => {
   const b = /const MM_BUILD="([^"]+)";/.exec(HTML); assert.ok(b);
-  assert.deepEqual(JSON.parse(rd('version.json')), { build: b[1] }); assert.equal(b[1], '2026-10-14-walk48');
+  assert.deepEqual(JSON.parse(rd('version.json')), { build: b[1] }); assert.equal(b[1], '2026-10-14-play47');
 });
 
 // ---- js/battle/rules.js を Node で動かす（tests/battle-rules-1006.test.mjs と同じ組み立て） ----

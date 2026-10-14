@@ -52,8 +52,8 @@ test('FE-2：能力UP：止まる → 間 → マスが光る → モンスタ�
   const li0 = await pg.evaluate(() => S.m.li);
   await rollAs(pg, 1); await idle(pg);
   const fx = await pg.evaluate(() => window.__fx), cnts = fx.map((x) => x[0]).filter(Boolean), r = await pg.evaluate(() => [S.m.raise.node, S.m.li, MMFEEL.log()]);
-  assert.equal(r[0], 'p1_2'); assert.equal(r[1] - li0, 18, 'ソラモのライフ（C）は +18（2026-10-08：全 Chapter 共通の GROWTH_GAIN）');
-  assert.equal(cnts[0], '+0', '数値は +0 から'); assert.equal(cnts[cnts.length - 1], '+18'); assert.ok(new Set(cnts).size >= 3, `カウントアップ（${[...new Set(cnts)].join(' ')}）`);
+  assert.equal(r[0], 'p1_2'); assert.equal(r[1] - li0, 16, 'ソラモのライフ（C）は Chapter 1 の +16（2026-10-14 実機試遊⑲：Chapter ごとの GROWTH_GAIN_BY_CH）');
+  assert.equal(cnts[0], '+0', '数値は +0 から'); assert.equal(cnts[cnts.length - 1], '+16'); assert.ok(new Set(cnts).size >= 3, `カウントアップ（${[...new Set(cnts)].join(' ')}）`);
   const firstPop = fx.findIndex((x) => x[0]), firstReact = fx.findIndex((x) => x[1]), firstHit = fx.findIndex((x) => x[2]);
   assert.ok(firstHit >= 0 && firstReact > firstHit && firstPop > firstReact, `マス → モンスター → 枠の順（${firstHit}・${firstReact}・${firstPop}）`);
   assert.ok(fx.filter((x) => x[0]).every((x) => x[3] !== false), '結果を見せている間は START を押せない（ボタンが無いか disabled）');

@@ -38,7 +38,7 @@ for (const [size, route] of [[[375, 667], 'A'], [[390, 844], 'A'], [[375, 667], 
       const end = await pg.evaluate(() => {
         const tiles = [...document.querySelectorAll('#wbw .rfw-tile')], vis = [...document.querySelectorAll('#wbw .rfw-tile, #wbw .rfw-prop')].filter((e) => getComputedStyle(e).display !== 'none');
         return { tileW: [...new Set(tiles.map((t) => t.style.width))], small: [...document.querySelectorAll('#wbw .rfw-prop')].filter((e) => parseFloat(e.style.width) < 8).length,
-          vis: vis.length, wc: [...new Set(vis.map((e) => getComputedStyle(e).willChange))], anims: document.getAnimations().filter((a) => a.effect && a.effect.target && a.effect.target.matches && a.effect.target.matches('.rfw-tile,.rfw-prop')).length };
+          vis: vis.length, wc: [...new Set(vis.map((e) => getComputedStyle(e).willChange))], anims: document.getAnimations().filter((a) => !(a instanceof CSSTransition) && a.effect && a.effect.target && a.effect.target.matches && a.effect.target.matches('.rfw-tile,.rfw-prop')).length };   // 寄る Web Animations だけを数える（2026-10-14 実機試遊①㉒：手前の景物を半透明にする・道筋の外のマスを薄くする opacity の CSS の transition は数えない）
       });
       assert.deepEqual(end.tileW, ['84px'], 'マスの幅は決まった base（84px）に戻る');
       assert.equal(end.small, 0, '景物の幅も base に戻る（8px 未満の景物なし）');

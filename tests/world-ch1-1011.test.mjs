@@ -96,7 +96,7 @@ test('WC-03：停止の中身＝能力マスは成長適性を1回・宝の行�
   const S = setup(w, 21), m = S.m, f = m.raise.field;
   const at = (id) => { m.raise.node = id; f.core.node = id; m.raise.pend = { roll: 1, left: 0, stage: 'resolve' }; return P8.resolveLanding(S, m, () => 0.5); };
   const statId = Object.keys(f.tiles).find((id) => f.tiles[id].t === 'stat'), k = f.tiles[statId].k, b = m[k];
-  const r1 = at(statId); assert.equal(r1.fx.kind, 'stat'); assert.equal(m[k] - b, M.growthGain(m, k), '成長適性の値（GROWTH_GAIN）'); assert.equal(M.growthGain(m, k), M.GROWTH_GAIN[M.growthOf(m, k)]);
+  const r1 = at(statId); assert.equal(r1.fx.kind, 'stat'); assert.equal(m[k] - b, M.growthGain(m, k), '成長適性の値（GROWTH_GAIN）'); assert.equal(M.growthGain(m, k), M.GROWTH_GAIN_BY_CH[1][M.growthOf(m, k)]);   // 2026-10-14 実機試遊⑲：Chapter 1 の表
   const r2 = at(statId); assert.equal(r2.fx.kind, 'none'); assert.equal(m[k] - b, M.growthGain(m, k), '同じ能力マスは1回だけ');
   const g0 = S.g, rw = at('L_CHEST'); assert.equal(rw.fx.kind, 'reward'); assert.ok(S.g > g0 || rw.fx.gains.length || rw.fx.fatigue, '報酬の中身');
   assert.equal(at('L_CHEST').fx.note, 'claimed', '宝の行き止まりは1回だけ');

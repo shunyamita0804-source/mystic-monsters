@@ -385,12 +385,12 @@ test('QA-C3：市場：ソラモ・ガウルは500G、ノビトンは入荷待�
   assert.deepEqual([r.ok, r.rescued, r.before, r.after, F.g], [true, true, 300, 0, 0]);
 });
 
-test('QA-C4：牧場は8体まで（2026-10-06 ユーザー指示。預ける処理）、所持上限は牧場8＋連れている1＝9体（市場の購入判定）', () => {
+test('QA-C4：牧場は20体まで（2026-10-14 ユーザー正式。預ける処理）、所持上限は牧場20＋連れている1＝21体（市場の購入判定）', () => {
   const { P8, M } = load();
-  assert.equal(M.OWN_LIMIT, 9); assert.equal(M.RANCH_LIMIT, 8);   /* 2026-10-06：牧場8体 */
+  assert.equal(M.OWN_LIMIT, 21); assert.equal(M.RANCH_LIMIT, 20);   /* 2026-10-14：牧場20体（ユーザー正式） */
   const S = { ...P8.newSave(), g: 5000 };
-  assert.equal(M.canPurchase(S, 'solamo', 8).ok, true);
-  assert.deepEqual(M.canPurchase(S, 'solamo', 9), { ok: false, reason: 'full' });
+  assert.equal(M.canPurchase(S, 'solamo', 20).ok, true);
+  assert.deepEqual(M.canPurchase(S, 'solamo', 21), { ok: false, reason: 'full' });
   assert.match(fnBody(CODE, 'dep'), /if\(S\.box\.length>=MMP10M\.RANCH_LIMIT\)return farm\("牧場がいっぱいです。","b"\)/);
   // 購入の確定（adopt）に渡す「所持数」は手持ち＋牧場
   assert.match(fnBody(CODE, 'adopt'), /MMP10M\.purchase\(S,MMP10M\.keyOf\(i\),S\.box\.length\+\(S\.m\?1:0\)\)/);
@@ -516,7 +516,10 @@ test('QA-C14：フィナの登場は指定の3か所だけ（名前登録の直�
   const ft = cut(CODE, 'const FINA_TALK={', '};');
   assert.deepEqual(Object.keys(new Function(`return ${ft.slice('const FINA_TALK='.length)}}`)()), ['intro', 'raiseFirst', 'raiseAgain', 'done']);
   const o0 = CODE.indexOf('const OPEN_TALK={'), oe = CODE.indexOf('function opPrologue(', o0);   // 2026-10-05：正式の序盤導線のフィナ（OPEN_TALK）は別に数える
-  const finaAt = [...CODE.matchAll(/npc:\s*"fina"/g)].map((m) => m.index).filter((i) => !(i > o0 && i < oe)), s0 = CODE.indexOf('const FINA_TALK={');
+  // 2026-10-14 実機試遊⑬：ライバル戦のあとのリュウ ↔ フィナの短い会話（RYU_WIN_TALK／RYU_LOSE_TALK＝ボードへ戻ってから）も別に数える
+  const r0 = CODE.indexOf('const RYU_WIN_TALK={'), re = CODE.indexOf('let RYU_WIN_LOG', r0);
+  const finaAt = [...CODE.matchAll(/npc:\s*"fina"/g)].map((m) => m.index).filter((i) => !(i > o0 && i < oe) && !(i > r0 && i < re)), s0 = CODE.indexOf('const FINA_TALK={');
+  assert.equal([...CODE.slice(r0, re).matchAll(/npc:"fina"/g)].length, 2, 'リュウ戦のあとのフィナは勝ち・負けの各1行');
   const d0 = CODE.indexOf('const DAN_TALK={'), dh = cut(CODE, 'const DAN_TALK={', '\n farm:');
   assert.ok(finaAt.length === 5 && finaAt.filter((i) => i > s0 && i < s0 + ft.length).length === 4 && finaAt.filter((i) => i > d0 && i < d0 + dh.length).length === 1,
     'フィナのセリフは FINA_TALK と、フィナ ↔ ダンの掛け合い（DAN_TALK.handoff）の中だけ');

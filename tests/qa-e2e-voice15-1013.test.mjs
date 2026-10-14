@@ -138,7 +138,7 @@ test('VB-4：リュウ＝（2026-10-13 開発27：遭遇の「よっ！」なし
   await shot(pg, 'vb4_rival_win');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   // 負け（降参）
-  const q = await openPage({ size: H.SIZES.base }); const qg = q.page;
+  const q = await openPage({ size: H.SIZES.base, npc: true }); const qg = q.page;   // npc：ボードへ戻ってからのリュウ ↔ フィナの会話（MM_QA_NO_NPC を外す）
   await rivalBattle(qg, { li: 30, po: 20, in: 20, hi: 20, ev: 10, de: 20 });
   n = await vcount(qg);
   await qg.evaluate(() => bBattleGo()); await qg.waitForSelector('#bt #m0 .mon', { timeout: 20000 });
@@ -147,9 +147,14 @@ test('VB-4：リュウ＝（2026-10-13 開発27：遭遇の「よっ！」なし
   await qg.waitForFunction(SUR, null, { timeout: 20000 }); await qg.click('#sur', { force: true });
   await fightToEnd(qg); await qg.waitForTimeout(1300);
   assert.match(await qg.evaluate(() => (document.getElementById('ban') || {}).textContent || ''), /^LOSE/);
-  assert.deepEqual(await voices(qg, n), ['ryu_chuckle'], '負け（降参）＝「へへっ」だけ');
+  // 2026-10-14 実機試遊⑬：決着の画面では鳴らさない → ボードへ戻ってからリュウ ↔ フィナの会話の1行目「へへっ、今日は俺の勝ちだな！」と同時に「へへっ」
+  assert.deepEqual(await voices(qg, n), [], '決着の画面（LOSE）では声を出さない');
+  await qg.click('#go');
+  await qg.waitForFunction(() => /へへっ/.test((document.querySelector('.mmtalk:not(.mmtalk-out)') || {}).textContent || ''), null, { timeout: 20000 });
+  await qg.waitForTimeout(600);
+  assert.deepEqual(await voices(qg, n), ['ryu_chuckle'], '負け（降参）＝ボードの会話の行で「へへっ」だけ');
+  await H.finishTalk(qg); await qg.waitForTimeout(500);
   // 野生では鳴らない（同じページで野生のバトル）
-  await qg.click('#go'); await qg.waitForTimeout(800);
   n = await vcount(qg);
   await qg.evaluate(() => { const g = MMCH.graphFor(S.m), a = S.m.raise.field.nodeAssignments; const id = g.order.find((x) => a[x] && a[x].t === 'battle' && a[x].bt === 'wild'); const r = S.m.raise; r.node = id; r.pend = { roll: 1, left: 0, stage: 'resolve' }; save(); board(); });
   await qg.waitForSelector('.chbat', { timeout: 20000 }); await qg.evaluate(() => bBattleGo()); await qg.waitForSelector('#bt #m0 .mon', { timeout: 20000 });

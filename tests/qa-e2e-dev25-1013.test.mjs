@@ -67,13 +67,13 @@ test('D25-E：正式サイコロ＝6面とも正式の絵・出目どおり（�
         return { off: z.classList.contains('off'), bi, last: MMDICE3D.lastTiming() };
       });
       assert.ok(r.off, '正式の絵（skin official）');
-      assert.ok(r.bi.every((b) => /cube_1014\/face_[1-6]\.webp/.test(b)), `6面とも正式の面の絵（2026-10-14 開発29：正式デザイン A）${r.bi}`);
+      assert.ok(r.bi.every((b) => /cube_1014s\/face_[1-6]\.webp/.test(b)), `6面とも正式の面の絵（2026-10-14 開発29：正式デザイン A・実機試遊③の対称版 cube_1014s）${r.bi}`);
       assert.deepEqual(r.last.values, [v]);
       assert.ok(r.last.lock > 1250 && r.last.lock < 1420, `1.30秒で止まる ${r.last.lock}`);
       await pg.waitForFunction(() => !document.querySelector('.d3z'), null, { timeout: 8000 });
       const se = await pg.evaluate((n0) => MMAUDIO.playLog().filter((x) => x.name === 'DICE_CUBE').slice(n0), n0);
       assert.equal(se.length, 1, 'DICE_CUBE は1回');
-      assert.ok(/dice_1013\/dice_cube_throw_land\.ogg$/.test(se[0].src), se[0].src);
+      assert.ok(/dice_1014\/dice_cube_throw_land2\.ogg$/.test(se[0].src), se[0].src);   // 2026-10-14 実機試遊⑤：投げる音つきの1本
       assert.equal(await pg.evaluate(() => MMAUDIO.playLog().filter((x) => /^DICE_(THROW|LAND|ROLL|STOP)$/.test(x.name)).length), 0, '旧サイコロの音は鳴らない');
       for (let k = 0; k < 20; k++) { const b = await pg.$('.wb-pop button, .chsheet button, .mmtalk'); if (!b) break; await b.click().catch(() => {}); await pg.waitForTimeout(400); }
     }
@@ -155,9 +155,8 @@ async function toTour(pg, { sp = 0, rank = 1, stats = null } = {}) {
   await H.newGame(pg, 'テスト');
   await pg.evaluate(({ sp, rank, stats }) => { const m = mk(sp); m.name = 'テストテスト'; Object.assign(m, stats || { li: 0, po: 70, in: 100, hi: 999, ev: 500, de: 250 }); MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); if (rank >= 2) { m.raise.ch = 2; MMP7.recordRankClear(S, m, rank - 1); } const g = MMCH.graphFor(m); Object.assign(m.raise, { node: g.goal, goal: true, pend: null }); m.raise.field.arrivalSeen = true; save(); if (!MMP8.startTournament(S, m, rank, 7).ok) throw new Error('start'); save(); }, { sp, rank, stats });
 }
-const GO_TOP = { 375: 511, 390: 664, 430: 752 };   // 開発21 ⑤／開発25 A で決めた「対戦開始」の上端（残件A の前と同じ）
 
-test('D25-A2：固有スキルの説明は能力の枠に重ならない・全文・語の途中で折り返さない・「対戦開始」の位置は従来どおり（3サイズ×ソラモ／ガウル）', { skip: SKIP, timeout: 300000 }, async () => {
+test('D25-A2：（2026-10-14 実機試遊⑯：比較画面は名前とスキル名だけ＝説明は出さない）スキル名は能力の枠に重ならない・「対戦開始」と数値は画面の中（3サイズ×ソラモ／ガウル）', { skip: SKIP, timeout: 300000 }, async () => {
   for (const size of SIZES) for (const sp of [0, 1]) {
     const p = await openPage({ size }); const pg = p.page;
     await toTour(pg, { sp });
@@ -165,17 +164,17 @@ test('D25-A2：固有スキルの説明は能力の枠に重ならない・全�
     const r = await pg.evaluate(() => {
       const R = (e) => e.getBoundingClientRect();
       const st = R(document.querySelector('.tb3 .tbst')), go = R(document.querySelector('.pcgo'));
-      const d = [...document.querySelectorAll('.tb3 .tbskd')];
-      const want = [MMP10M.skillText(S.m.sp).desc];
+      const d = [...document.querySelectorAll('.tb3 .tbskd')], sn = [...document.querySelectorAll('.tb3 .tbskn')];
+      const want = [MMP10M.skillText(S.m.sp).name];
       return { stT: st.top, goT: Math.round(go.top), goB: go.bottom, H: innerHeight, W: innerWidth,
-        desc: d.map((e) => ({ b: R(e).bottom, txt: e.textContent, clip: e.scrollHeight > e.clientHeight + 1, words: [...e.querySelectorAll('.tbw')].map((w) => w.getClientRects().length) })), want,
+        desc: d.length, names: sn.map((e) => ({ b: R(e).bottom, txt: e.textContent.replace(/^スキル/, '') })), want,
         vals: [...document.querySelectorAll('.tb3 .pcv')].map((e) => { const b = R(e); return b.left >= 0 && b.right <= innerWidth && b.bottom <= innerHeight; }),
         bars: [...document.querySelectorAll('.tb3 .pcb:not(.r) i')].map((i) => i.style.width) };
     });
     const tag = `${size.join('×')} sp${sp}`;
-    for (const x of r.desc) { assert.ok(x.b <= r.stT - 4, `${tag}：説明（下端 ${x.b}）は能力の枠（上端 ${r.stT}）に重ならない`); assert.equal(x.clip, false, `${tag}：説明は切り捨てない`); assert.ok(x.words.every((n) => n === 1), `${tag}：語の途中で折り返さない ${x.words}`); }
-    assert.equal(r.desc[0].txt, r.want[0], `${tag}：説明は全文・文は変えない`);
-    assert.ok(Math.abs(r.goT - GO_TOP[size[0]]) <= 2, `${tag}：「対戦開始」の位置は従来どおり（${r.goT}）`);
+    assert.equal(r.desc, 0, `${tag}：説明は出さない`);
+    for (const x of r.names) assert.ok(x.b <= r.stT - 2, `${tag}：スキル名（下端 ${x.b}）は能力の枠（上端 ${r.stT}）に重ならない`);
+    assert.equal(r.names[0].txt, r.want[0], `${tag}：スキル名は正式のまま`);
     assert.ok(r.goB <= r.H && r.vals.every(Boolean), `${tag}：数値・ボタンは画面の中`);
     assert.equal(r.bars[3], '100%', `${tag}：999 は満タン`);
     assert.equal(await pg.$('.pcback'), null);

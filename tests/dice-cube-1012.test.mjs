@@ -72,7 +72,7 @@ test('DC-03：本編は dice-cube.js を読み込む（2026-10-12 正式採用�
   assert.equal(fs.readdirSync(path.join(ROOT, 'prototype/dice_1012'), { recursive: true }).filter((f) => /\.mp3$/i.test(f)).length, 0); assert.match(demo, /dice-cube\.js/);
   const reg = read('js/audio/audio-registry.js');
   assert.match(reg, /DICE_THROW:\s*\{ src: MMO \+ '01_dice_large_full\.ogg'/, '旧サイコロ（Chapter 2・旧ボード・特訓）の SE はそのまま');
-  assert.match(reg, /DICE_CUBE:\s*\{ src: SE_DIR \+ 'dice_1013\/dice_cube_throw_land\.ogg', gain: 0\.9 \}/, '立体サイコロの SE＝2026-10-13 開発25 E：投げる音 → 回る間は無音 → 着地（1012 版の派生）');
+  assert.match(reg, /DICE_CUBE:\s*\{ src: SE_DIR \+ 'dice_1014\/dice_cube_throw_land2\.ogg', gain: 0\.9 \}/, '立体サイコロの SE＝2026-10-14 実機試遊⑤：投げ出しの音（正式 DICE_THROW の頭）→ 回る間は無音 → 着地（dice_1013 の着地）を1本に');
   assert.doesNotMatch(reg, /prototype\//);
 });
 

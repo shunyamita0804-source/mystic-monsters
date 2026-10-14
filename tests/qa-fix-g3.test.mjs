@@ -131,7 +131,7 @@ test('QA-G3-4：最初からやり直す（reset）：画面を出した直後�
   assert.doesNotMatch(lineOf('function reset('), /setTimeout/, 'reset に取り消しのタイマーは足していない');
   // セーブ・ロード画面を出すたびに「最初からやり直す」の表示時刻を記録する（画面に .ghost はこのボタン1つだけ）
   const scr = lineOf(' $("#app").innerHTML=`<div class="svs"><header class="svhead"><button class="back" onclick="lobby()">◀ 街にもどる</button><h2>セーブ・ロード</h2></header>');
-  assert.match(scr, /<button class="ghost" onclick="reset\(this\)">最初からやり直す<\/button><\/div>`;tapAt\(\$\("#app \.ghost"\)\)\}$/);
+  assert.match(scr, /<button class="ghost" onclick="reset\(this\)">最初からやり直す<\/button><\/div>`;uiReady\(document\.querySelector\("#app>\.svs"\),SAVE_PRE\);tapAt\(\$\("#app \.ghost"\)\)\}$/);   // 2026-10-14 実機試遊㉛：枠の絵が読めるまで見せない（uiReady）のあと、従来どおり tapAt
   assert.equal(scr.split('class="ghost"').length - 1, 1);
 });
 

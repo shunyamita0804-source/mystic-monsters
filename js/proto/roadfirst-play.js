@@ -21,7 +21,9 @@
   // ---- 【試作用・要承認】ここだけで決める（正式仕様ではない） ----
   const TUNING = Object.freeze({
     // マスの割合（通常の地点＝ordinary_tile 261 か所のうち。残りは「通常マス」＝何も起きない）
-    density: Object.freeze({ stat: 0.30, event: 0.12, rest: 0.06, wild: 0.08, treasure: 0.03 }),
+    // 2026-10-14 実機試遊⑲（ユーザー正式方針）：無地のマスを減らして能力マスを増やす（旧 stat 30%・event 12%・treasure 3%＝無地 41%）→ 能力 45%・出来事 15%・宝箱 6%（無地 20%）。
+    //  新しい出発の配置だけ（育成途中の配置 f.tiles は引き直さない）。候補の比較は tools/balance/sim-full.mjs・fair.mjs（報告書 G）。MM_BALANCE_OVERRIDE＝その道具だけが入れる上書き
+    density: Object.freeze(Object.assign({ stat: 0.45, event: 0.15, rest: 0.06, wild: 0.08, treasure: 0.06 }, (root.MM_BALANCE_OVERRIDE && root.MM_BALANCE_OVERRIDE.density) || {})),
     calmSegments: Object.freeze(['S01', 'EL01', 'ER01']),   // 序盤（スタートの階段と J0 のすぐ先）には野生・休憩・宝箱を置かない
     // 2026-10-14 Chapter 1 B／C 独立ルート：出だしの落ち着いた区間はルートごと（B は最初の分かれ道が運命の分かれ道＝奇偶の道の前半。A・C は従来と同じ）
     calmByRoute: Object.freeze({ B: Object.freeze(['S01', 'Q_L1', 'Q_R1', 'Q_L2', 'Q_R2']) }),

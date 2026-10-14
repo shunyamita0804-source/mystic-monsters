@@ -135,7 +135,13 @@
   function deckHtml(m, ph, msg) {
     const r = m.raise, Dk = cfg().deck || {}, canRoll = P8().canRoll(m), canRest = P8().canRest(m), tired = ph === 'roll' && !canRoll && (r.fatigue || 0) >= 100;
     let def = '';
-    if (ph === 'roll') def = r.turnsUsed === 0 ? '<b>はじまりの草原</b>　大会会場を目指そう。START でサイコロ（1〜6）を振る。' : tired ? 'お腹がすいて動けない…食べさせるか、休もう。' : 'START でサイコロを振る。休むこともできる。';
+    // 2026-10-14 実機試遊㉜：操作の案内（START でサイコロ…）は最初の数ターンだけ。そのあとは直前の結果（能力・空腹・遭遇・分岐・宝）を残し、空腹・残りターンの注意を優先する
+    if (ph === 'roll') {
+      const left = Math.max(0, (r.turnLimit || 40) - (r.turnsUsed || 0)), fat = r.fatigue || 0;
+      def = r.turnsUsed === 0 ? '<b>はじまりの草原</b>　大会会場を目指そう。START でサイコロ（1〜6）を振る。' : tired ? 'お腹がすいて動けない…食べさせるか、休もう。'
+        : fat >= 80 ? `空腹 ${fat}。そろそろアイテムで食べさせるか、休もう。` : left <= 5 ? `のこり${left}ターン！ 大会会場を目指そう。`
+        : V.lastMsg ? esc(V.lastMsg) : r.turnsUsed < 3 ? 'START でサイコロを振る。休むこともできる。' : `のこり${left}ターン。`;
+    }
     else if (ph === 'move' || ph === 'resolve') def = '移動中…';
     else if (ph === 'branch') def = `分かれ道だ。どちらへ進む？（のこり${r.pend.left}）`;
     const H = Dk.hit || {}, box = (k) => { const h = H[k] || { x: 0, y: 0, w: 0, h: 0 }; return `style="left:${(h.x * 100).toFixed(1)}%;top:${(h.y * 100).toFixed(1)}%;width:${(h.w * 100).toFixed(1)}%;height:${(h.h * 100).toFixed(1)}%"`; };
@@ -156,9 +162,11 @@
         return `<button class="chroute${o.spur ? ' spur' : ''}" data-id="${esc(o.id)}" onclick="MMWB.pick('${esc(o.id)}')"><b>${esc(o.name)}</b>${desc ? `<small>${esc(desc)}</small>` : ''}</button>`; }).join('')}</div>`;
     }
     if (ph === 'battle') {
-      if (V.rivalAuto && (r.pend.fx || {}).battleType === 'rival') return '';   // 2026-10-13 開発27（21）：ライバルは演出からそのままバトルへ（案内のシートを出さない。途中で閉じて読み込み直したときだけ従来のシート）
-      const fx = r.pend.fx || {}, bt = (cfg().battleTypes || {})[fx.battleType || 'wild'] || { label: 'モンスター' }, fb = root.MMRF_PLAY ? root.MMRF_PLAY.TUNING.wildFatigue : 5;
-      return `<div class="chsheet chbat"><small class="chbat-kind">${esc(bt.label)}</small><h3>${esc(bt.encounter || bt.label)}</h3>${bt.note ? `<p class="p9s chbat-note">${esc(bt.note)}</p>` : ''}<p class="p9s">バトルの後は空腹 +${fb}。賞金・ランクアップはありません。</p><button class="p9btn" onclick="bBattleGo()">バトルする</button></div>`;   // 2026-10-12 試遊：遭遇はすべて強制バトル（「やめておく」は出さない）
+      // 2026-10-14 実機試遊⑩：遭遇はすべて自動の強制バトル＝「バトルする」の確認ボタンは出さない（演出 → 短い光 → VS → バトル）。
+      //  途中で閉じて読み込み直したときだけ、遭遇の一言の札を出して少し待ってから自動でバトルへ（autoBattle）。負けたあと（pend が無い）は再戦しない
+      if (V.autoBt) return '';
+      const fx = r.pend.fx || {}, bt = (cfg().battleTypes || {})[fx.battleType || 'wild'] || { label: 'モンスター' };
+      return `<div class="chsheet chbat auto" role="status"><small class="chbat-kind">${esc(bt.label)}</small><h3>${esc(bt.encounter || bt.label)}</h3><p class="p9s">まもなくバトル！</p></div>`;
     }
     if (ph === 'timeup') return `<div class="chsheet"><h3>⌛ ターン終了</h3><p class="p9s">ゴールできなかったため、このChapterの公式大会には参加できません。Chapterは終了し、次のChapterへ進めます（育成失敗ではありません）。</p><button class="p9btn" onclick="p8EndChapter()">Chapterを終えてベースキャンプへ</button></div>`;
     return '';
@@ -220,7 +228,12 @@
 .wbw .wbcard .sbar .v{font:800 16px/1 var(--mm-font-body,sans-serif);min-width:3.2em;text-align:right}
 .wbw .wbcard .sbar .up{grid-column:1/-1;text-align:center;font:900 20px/1.1 var(--mm-font-title,serif);color:var(--c,#ffe08a);text-shadow:0 2px 4px #000,0 0 10px rgba(255,230,150,.5);opacity:0;transform:scale(.6);transition:opacity .25s,transform .35s cubic-bezier(.3,1.6,.5,1)}
 .wbw .wbcard .sbar.on .up{opacity:1;transform:none}
+.wbw .wbcard .sbar .up .ft{display:block;margin-top:2px;font:800 13px/1 var(--mm-font-body,sans-serif);color:#f3ecd9;letter-spacing:.04em}
 html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カードの間はフィナの立ち絵を出さない（挿絵を隠さない・名前の札と会話の窓は出す） */
+/* 2026-10-14 実機試遊②：小さい画面で2択の大きな会話窓が挿絵の下半分と題名を覆っていた → 挿絵カードの間は会話窓を画面の下（押せない操作欄の上）へ下げ、
+   挿絵は残りの高さに収まる大きさ（縦横比 3:2 のまま・切らない）。選択肢は安全領域の中 */
+html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-inset-bottom,0px) + 10px)!important}
+.wbw .wbcard{top:calc(env(safe-area-inset-top,0px) + 86px);width:min(92%,384px,max(220px,(100dvh - 86px - 300px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)) * 1.5))}
 @media (prefers-reduced-motion:reduce){.wbw .wbcard,.wbw .wbcard-dim{animation:none}.wbw .wbcard .sbar .tr i{transition:none}}
 .wbw .wb-pop img.art{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:10px;margin:0 0 8px}
 .wbw .wb-pop .wbmeal{position:relative;width:100%;aspect-ratio:3/2;border-radius:10px;overflow:hidden;margin:0 0 8px}.wbw .wb-pop .wbmeal .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -234,6 +247,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
 .wbw .wb-pop .rows .dn{color:#ffb3bf}
 .wbw .wb-arr{position:absolute;inset:0;z-index:4;background:#0b1636 center/cover no-repeat;opacity:0;transition:opacity .8s}
 .wbw .wb-arr.on{opacity:1}
+.wbw .wb-arr.gate{z-index:5;background-position:50% 30%;transition:opacity .8s,transform .9s ease-in}.wbw .wb-arr.gate.in{opacity:0;transform:scale(1.12)}
 @keyframes wbpop{from{opacity:0;transform:translate(-50%,-46%) scale(.94)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 @keyframes wbpopout{to{opacity:0;transform:translate(-50%,-52%) scale(.97)}}
 .wbv .rfw-mon .mon{display:block;position:relative;width:100%!important;height:auto!important}   /* 2026-10-12 試遊：index.html の共通の .mon{width:96px;height:96px} が効いて、絵が箱より大きく右下へずれていた（マスの上に立たない） */
@@ -263,6 +277,30 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
 .wbw .wbx-w.rare .wbx-glow{background:radial-gradient(closest-side,rgba(214,150,255,.7),rgba(150,70,230,.25) 60%,rgba(0,0,0,0));box-shadow:0 0 30px 8px rgba(170,90,255,.25)}
 .wbw .wbx-mon{position:absolute;left:50%;bottom:12%;height:76%;width:auto;max-width:100%;object-fit:contain;transform:translateX(-50%);filter:drop-shadow(0 8px 12px rgba(0,0,0,.6));animation:wbxmon .55s .05s cubic-bezier(.2,.8,.3,1) both}
 .wbw .wbx-w.sil .wbx-mon{visibility:hidden}
+.wbw .wbx-stage.fl{transform:translate(-50%,-50%) scaleX(-1)}
+.wbw .rows .chh-ic{width:1.15em;height:1.15em;vertical-align:-.2em;margin-right:2px;display:inline-block}
+.wbw .wbtr{position:absolute;inset:0;z-index:24;pointer-events:auto;overflow:hidden;transition:opacity .24s}.wbw .wbtr.out{opacity:0}
+.wbw .wbtr-veil{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 42%,rgba(40,28,8,.35),rgba(6,10,28,.82) 72%);animation:wbcfade .25s ease-out both}
+.wbw .wbtr-burst{position:absolute;left:62%;top:33%;width:min(110vw,520px);aspect-ratio:1;translate:-50% -50%;background:radial-gradient(circle,rgba(255,244,200,.9),rgba(255,214,120,.45) 22%,rgba(255,200,90,0) 55%),repeating-conic-gradient(rgba(255,230,160,.22) 0 6deg,transparent 6deg 18deg);border-radius:50%;opacity:0;scale:.4}
+.wbw .wbtr.open .wbtr-burst{animation:wbtrburst .7s ease-out forwards}@keyframes wbtrburst{0%{opacity:0;scale:.4}35%{opacity:1}100%{opacity:.55;scale:1;rotate:12deg}}
+.wbw .wbtr-gold{position:absolute;left:60%;top:34%;width:min(96vw,420px);translate:-50% -50%;opacity:0}.wbw .wbtr.open .wbtr-gold{animation:wbtrgold .9s ease-out forwards}@keyframes wbtrgold{0%{opacity:0;scale:.6}40%{opacity:1}100%{opacity:.8;scale:1.05}}
+.wbw .wbtr-chest{position:absolute;left:62%;top:33%;width:min(52vw,220px);aspect-ratio:1;translate:-50% -50%;animation:wbtrin .38s cubic-bezier(.2,.9,.3,1.2) both}
+.wbw .wbtr-chest img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;filter:drop-shadow(0 8px 10px rgba(0,0,0,.55))}.wbw .wbtr-chest img.on{opacity:1}
+.wbw .wbtr-chest.none .wbtr-star{position:absolute;inset:18%;border-radius:50%;background:radial-gradient(circle,#fff6d8,rgba(255,220,130,.6) 40%,transparent 70%);opacity:0}.wbw .wbtr.open .wbtr-chest.none .wbtr-star{animation:wbtrburst .7s ease-out forwards}
+@keyframes wbtrin{from{opacity:0;scale:.5;translate:-50% -30%}}
+.wbw .wbtr-fina{position:absolute;left:-4%;bottom:calc(var(--chdeck,170px) - 18px);height:min(46dvh,360px);width:auto;filter:drop-shadow(0 6px 12px rgba(0,0,0,.5));animation:wbtrfina .42s .12s cubic-bezier(.2,.8,.3,1) both;-webkit-mask-image:linear-gradient(#000 78%,transparent);mask-image:linear-gradient(#000 78%,transparent)}
+@keyframes wbtrfina{from{opacity:0;translate:-22% 0}}
+.wbw .wbtr-say{position:absolute;left:30%;bottom:calc(var(--chdeck,170px) + min(30dvh,232px));padding:6px 14px 7px;border-radius:14px 14px 14px 4px;background:#fff8e6;color:#2a1b08;font:900 17px/1.2 "Noto Sans JP",sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.4);opacity:0;scale:.6;transform-origin:0 100%}
+.wbw .wbtr-say b{display:block;font-size:10px;color:#9a6a1c;letter-spacing:.1em;margin-bottom:1px}
+.wbw .wbtr.open .wbtr-say{animation:wbtrsay .3s cubic-bezier(.2,.9,.3,1.3) forwards}@keyframes wbtrsay{to{opacity:1;scale:1}}
+.wbw .wbtr-card{position:absolute;right:4%;left:36%;bottom:calc(var(--chdeck,170px) + 8px);padding:9px 12px 10px;border-radius:14px;background:linear-gradient(180deg,rgba(20,36,82,.97),rgba(8,18,46,.97));border:1.5px solid #d9b465;color:#fff;text-align:center;box-shadow:0 8px 22px rgba(0,0,0,.5);opacity:0;translate:0 10px}
+.wbw .wbtr.res .wbtr-card{animation:wbtrcard .3s ease-out forwards}@keyframes wbtrcard{to{opacity:1;translate:0 0}}
+.wbw .wbtr-card small{display:block;font-size:12px;color:#f3d98e;font-weight:700}.wbw .wbtr-card .t{display:block;font-size:15px;margin:2px 0}
+.wbw .wbtr-card .rows{display:flex;flex-wrap:wrap;gap:4px 10px;justify-content:center;font-weight:900;font-size:18px;margin-top:3px}.wbw .wbtr-card .rows .dn{color:#ffb0a0}
+.wbw .wbtr.calm *{animation:none!important}.wbw .wbtr.calm .wbtr-say,.wbw .wbtr.calm .wbtr-card{opacity:1;scale:1;translate:0 0}
+.wbw .wbx-flash{position:absolute;inset:0;z-index:60;pointer-events:none;background:radial-gradient(circle at 50% 46%,rgba(255,252,240,.78),rgba(255,246,220,.42) 45%,rgba(255,240,210,.2));animation:wbxflash .5s ease-out forwards}
+@keyframes wbxflash{0%{opacity:0}30%{opacity:.62}100%{opacity:0}}
+.wbw .chsheet.chbat.auto h3{margin-bottom:2px}.wbw .chsheet.chbat.auto .p9s{opacity:.85}
 .wbw .wbx-sil{position:absolute;left:0;right:0;bottom:12%;height:76%;background:#05070d;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center bottom;mask-position:center bottom;-webkit-mask-size:contain;mask-size:contain;filter:drop-shadow(0 0 10px rgba(255,236,190,.55));animation:wbxmon .55s .05s cubic-bezier(.2,.8,.3,1) both}
 .wbw .wbx-card{position:absolute;left:50%;bottom:calc(var(--chdeck,150px) + 18px);transform:translateX(-50%);width:min(88vw,360px);padding:9px 14px 11px;border-radius:12px;background:linear-gradient(180deg,rgba(14,26,62,.96),rgba(8,16,40,.96));border:1.5px solid #d9b45c;box-shadow:inset 0 0 0 3px rgba(9,18,44,.95),inset 0 0 0 4px rgba(217,180,92,.55),0 8px 22px rgba(0,0,0,.5);color:#fff;text-align:center;animation:wbxcard .4s .12s cubic-bezier(.2,.8,.3,1) both}
 .wbw .wbx-card small{display:block;font:700 12.5px/1.4 "Noto Sans JP",sans-serif;color:#f1d68e;letter-spacing:.04em}
@@ -342,10 +380,10 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     if (V.el && V.key === key) { if (!V.el.isConnected) { app.innerHTML = ''; app.appendChild(V.el); } return false; }
     release(); css();
     app.innerHTML = '<div class="chfw wbw" id="wbw"><div class="wbv" id="wbv"></div><div class="chf-ui" id="wb-ui"></div></div>';
-    V.el = $('#wbw'); V.key = key;
+    V.el = $('#wbw'); if (V.key !== key) V.lastMsg = ''; V.key = key;
     if (root.MMRF_WORLD) V.world = root.MMRF_WORLD.create(V.el.querySelector('.wbv'), D(m), root.MMRF_PLAY, { view: viewRect, monSrc: monSrc(m), art: { base: ART, road: 'strip' },
       focus: true, veil: false, xray: true, hideLm: ['START', 'LOWER_GATE', 'UPPER_GATE'], ahead: CAM.ahead,   // 2026-10-13 開発27（11・15）：開始地点の門・中央の門2か所（下門・上門）の飾りの絵は出さない（マス・道・判定はそのまま）
-      sMin: CAM.sMin, sMax: CAM.sMax, tilePx: CAM.tilePx, monRatio: CAM.monRatio, zoomTau: CAM.zoomTau, heading: true, visual: vis, skin: skinKey() });   // visual＝景観のパターン（A／B／C。配置の中の visualPattern）   // 2026-10-14 開発29（6）：後ろから追うカメラ（進む向きが画面の上）
+      sMin: CAM.sMin, sMax: CAM.sMax, tilePx: CAM.tilePx, monRatio: CAM.monRatio, zoomTau: CAM.zoomTau, heading: true, yawTau: 600, visual: vis, skin: skinKey() });   // visual＝景観のパターン（A／B／C。配置の中の visualPattern）   // 2026-10-14 開発29（6）：後ろから追うカメラ（進む向きが画面の上）   // 2026-10-14 実機試遊 Q12：曲がり角・分かれ道で向きが急に回らないよう、回る速さを少しゆっくりに（yawTau 420 → 600ms）
     V.el.querySelectorAll('.rfw-title').forEach((e) => e.remove());   // 2026-10-13 開発25 H：全景の地図の上に大きな題字を出さない（題字は中継カットの間だけ＝cover）。HUD の Chapter 表示は別（残す）
     sprSetup(m);
     return true;
@@ -362,6 +400,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     if (fresh && root.MMDICE3D && root.MMDICE3D.warm) root.MMDICE3D.warm('official');   // 2026-10-13 開発25 E：正式サイコロの6面を先に読む
     if (!root.MMDICE3D && root.MMCHD && V.dice !== 6) { const dc = cfg().dice || {}; root.MMCHD.configure({ ...dc, sides: 6 }); V.dice = 6; root.MMCHD.preload(); }
     try { for (const e of [$('#app'), document.querySelector('main'), document.scrollingElement]) if (e && e.scrollTop) e.scrollTop = 0; } catch (e) {}
+    if (msg && ph === 'roll') V.lastMsg = String(msg).replace(/<[^>]*>/g, '');   // 2026-10-14 実機試遊㉜：直前の結果を次に描き直したときも残す（次のサイコロで消す）
     if (ph === 'goal') { paint(m, msg, null, fresh); arrive(m, fresh); return true; }
     paint(m, msg, null, fresh);
     rareMark(m); fxPreload();
@@ -371,6 +410,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     else if (wantIntro) intro(m);
     else if (ph === 'roll' && r.turnsUsed === 0 && !V.intro && !V.cover) setTimeout(() => { if (onBoard() && active(m) && P8().boardPhase(m) === 'roll' && !busyGet()) storyAt(m, 'start').then((shown) => { if (shown && onBoard()) paint(m); }); }, 350);
     if (ph === 'branch') setTimeout(() => { if (onBoard() && active(m) && P8().boardPhase(m) === 'branch' && !busyGet()) storyAt(m, 'branch', { segs: (m.raise.pend && m.raise.pend.segs) || [] }); }, 350);
+    if (ph === 'battle') autoBattle(m, 900); else autoBattleCancel();
     if (ph === 'move') setTimeout(() => { if (onBoard()) walk(); }, 300);
     else if (ph === 'resolve') setTimeout(() => { if (onBoard()) resolve(); }, 300);
     return true;
@@ -606,7 +646,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     const S = gS(), m = S && S.m; if (!active(m) || busyGet() || V.intro || !P8().canRoll(m)) return;
     busySet(true); lock();
     try {
-      V.path = [];
+      V.path = []; V.lastMsg = '';
       const from = pressPoint('#brollbtn'), r = P8().roll(S, m); doSave();   // 出目・ターン・疲れは見せる前に確定して保存
       paint(m, 'サイコロを振った…'); lock();
       await playDie(r.value, from);
@@ -711,7 +751,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
       tool.style.left = `${(50 + A.tool.dx * 40).toFixed(1)}%`; tool.style.bottom = `${Math.max(4, 5 - A.tool.dy * 36).toFixed(1)}%`; tool.style.translate = '-50% 0'; fig.appendChild(tool);
     }
     const pct = (v) => `${Math.max(0, Math.min(100, (v / 999) * 100)).toFixed(1)}%`;
-    cardRes(d, `<div class="sbar" data-k="${esc(key)}" style="--c:${col};--fill:url(./assets/ui/b_group/${BAR_FILL[key] || 'b29_ability_bar_fill_green'}.png);--w0:${pct(from)};--w1:${pct(to)}"><span class="nm">${esc(lab)}</span><span class="tr"><i class="old" style="width:${pct(from)}"></i><i class="new"></i></span><b class="v">${from}</b><span class="up">${esc(lab)} +${amount}</span></div>`);
+    cardRes(d, `<div class="sbar" data-k="${esc(key)}" style="--c:${col};--fill:url(./assets/ui/b_group/${BAR_FILL[key] || 'b29_ability_bar_fill_green'}.png);--w0:${pct(from)};--w1:${pct(to)}"><span class="nm">${esc(lab)}</span><span class="tr"><i class="old" style="width:${pct(from)}"></i><i class="new"></i></span><b class="v">${from}</b><span class="up">${esc(lab)} +${amount}<small class="ft">${from} → ${to}</small></span></div>`);   // 2026-10-14 実機試遊 Q11：旧値 → 新値も出す（保存した値と同じ）
     const bar = d.querySelector('.sbar'), num = d.querySelector('.sbar .v');
     if (!calm() && A && mon && mon.animate) { try { mon.animate(A.mon, { duration: A.ms, easing: 'ease-in-out' }); if (tool && tool.animate) tool.animate(A.tk, { duration: A.ms, easing: 'ease-in-out', fill: 'forwards' }); } catch (e) { /* 動きは飾り */ } }
     await wait(calm() ? 0 : Math.min(700, A ? A.ms * 0.55 : 500));
@@ -768,10 +808,12 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     if (rival) return rivalCut(ui, B, text, cue);
     // 2026-10-11 野生・レアの遭遇（EV03 の構図＝大きな相手＋下の札。参考画像の仮の名前・Lv は使わない＝実際の種族から作る。Lv は無い）
     let foe = null;
-    if (root.MMP10M && root.MMCH && root.MMCH.foeSpecies && typeof root.battleFoeCount === 'function') { const sp = root.MMP10M.byId(root.MMCH.foeSpecies(m, root.battleFoeCount())); if (sp && sp.image) foe = { src: sp.image.src, name: sp.name }; }
+    // 2026-10-14 実機試遊㉔：影は、このあとバトルに出る相手と同じ正式の立ち絵（バトルの待機立ち絵 assets/battle/idle/・相手側と同じ向き＝MMARENA.flipOf(1, 種族)）から作る＝形・向きがそろう。
+    //  （VS の勝負絵は翼や光が四角い端で切れていて、影にすると四角い塊になる＝使わない）。待機立ち絵の無い種族は正式の 2.5D 立ち絵
+    if (root.MMP10M && root.MMCH && root.MMCH.foeSpecies && typeof root.battleFoeCount === 'function') { const n = root.MMCH.foeSpecies(m, root.battleFoeCount()), sp = root.MMP10M.byId(n), A = root.MMARENA, idle = A && A.idleSrc ? A.idleSrc(n) : null; if (sp && sp.image) foe = { src: idle || sp.image.src, name: sp.name, fl: !!(idle && A.flipOf && A.flipOf(1, n)) }; }
     const sil = bt === 'wild' && !!foe, rare = bt === 'rare';
     ui.insertAdjacentHTML('beforeend', `<div class="chf-enc chf-enc2 wbx wbx-w${rare ? ' rare' : ''}${sil ? ' sil' : ''}" role="status" aria-label="${esc(text)}"><i class="wbx-veil"></i>
-      <div class="wbx-stage"><i class="wbx-glow"></i>${foe ? `<img class="wbx-mon" src="${esc(foe.src)}" alt="${sil ? '？？？' : esc(foe.name)}" draggable="false">` : ''}${sil ? `<i class="wbx-sil" aria-hidden="true" style="-webkit-mask-image:url('${esc(foe.src)}');mask-image:url('${esc(foe.src)}')"></i>` : ''}</div>
+      <div class="wbx-stage${foe && foe.fl ? ' fl' : ''}"><i class="wbx-glow"></i>${foe ? `<img class="wbx-mon" src="${esc(foe.src)}" alt="${sil ? '？？？' : esc(foe.name)}" draggable="false">` : ''}${sil ? `<i class="wbx-sil" aria-hidden="true" style="-webkit-mask-image:url('${esc(foe.src)}');mask-image:url('${esc(foe.src)}')"></i>` : ''}</div>
       <div class="wbx-card"><small>${esc(text)}</small><div class="wbx-nm"><b>${sil || !foe ? '？？？' : esc(foe.name)}</b>${rare ? '<em>★ レア</em>' : ''}</div></div></div>`);
     const el = ui.querySelector('.wbx-w:last-child'); feel(cue, { battleType: bt });
     await wait(1650);
@@ -789,6 +831,29 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     await wait(380);
     if (el) { el.classList.add('out'); await wait(240); el.remove(); }
   }
+  // 2026-10-14 実機試遊④：宝箱を見つけたときのカットイン。宝箱の正式素材（assets/chests/）の用途が決まっているものだけ＝ふつう chest_01・特別（宝の行き止まり・隠れ家）chest_04。
+  //  珍しい宝箱（rare）は対応表が無い＝宝箱の絵は出さない（光と中身だけ）。chest_02・03 は使わない。フィナの正式アップ（happy／surprised）を大きく、
+  //  「見て見て！」の字幕は声（fina.discover）と同時。開封 4コマ（0.1秒ずつ）→ 光 → 中身（rowsHtml）。タップで先へ・視差を減らす設定では動かさない（中身は同じ）
+  const CHEST = Object.freeze({ normal: 'chest_01', special: 'chest_04' });
+  function treasureCut(fx, o) {
+    const ui = $('#wb-ui'); if (!ui) return Promise.resolve();
+    const C = './assets/chests/', ch = o.chest, still = calm(), big = (fx.gold || 0) >= GOLD_BIG;
+    const chestHtml = ch ? `<div class="wbtr-chest">${[`${ch}_base`, `${ch}_anim_01`, `${ch}_anim_02`, `${ch}_anim_03`, `${ch}_anim_04`].map((f, i) => `<img class="f${i}${still && i === 4 ? ' on' : (!still && i === 0 ? ' on' : '')}" src="${C}${f}.webp" alt="" draggable="false" decoding="async">`).join('')}</div>` : '<div class="wbtr-chest none"><i class="wbtr-star"></i></div>';
+    ui.insertAdjacentHTML('beforeend', `<div class="wbtr${still ? ' calm' : ''}" role="status" aria-label="${esc(o.cap)}"><i class="wbtr-veil"></i>${big ? `<img class="wbtr-gold" src="${esc(FXF.gold)}" alt="" draggable="false">` : ''}<i class="wbtr-burst"></i>
+      ${chestHtml}<img class="wbtr-fina" src="./assets/npc/fina/closeup/${o.face || 'happy'}.webp" alt="フィナ" draggable="false" decoding="async"><div class="wbtr-say"><b>フィナ</b>見て見て！</div>
+      <div class="wbtr-card"><small>${esc(o.cap)}</small>${o.title ? `<b class="t">${esc(o.title)}</b>` : ''}${rowsHtml(fx)}</div></div>`);
+    const el = ui.querySelector('.wbtr:last-child');
+    return new Promise((done) => {
+      let closed = false; const t0 = Date.now(), T = [];
+      const close = () => { if (closed) return; closed = true; T.forEach(clearTimeout); el.classList.add('out'); setTimeout(() => { el.remove(); done(); }, still ? 0 : 240); };
+      const frame = (i) => { const im = el.querySelectorAll('.wbtr-chest img'); im.forEach((x, k) => x.classList.toggle('on', k === i)); };
+      if (!still && ch) [1, 2, 3, 4].forEach((i) => T.push(setTimeout(() => frame(i), 360 + i * 110)));
+      T.push(setTimeout(() => { el.classList.add('open'); vcue('fina.discover'); if (big) feel('gold.get', { amount: fx.gold }); }, still ? 0 : 820));   // 開ききった瞬間に光・字幕と声（「見て見て」）
+      T.push(setTimeout(() => el.classList.add('res'), still ? 0 : 1050));
+      T.push(setTimeout(close, still ? Math.min(o.ms, 1400) : o.ms));
+      el.addEventListener('click', () => { if (Date.now() - t0 > 900) close(); });
+    });
+  }
   /** 高額の G（GOLD_BIG 以上）：金貨の飛散（EV05）＋「+NG」（正式の G のアイコン）。1回の取得で1回・所持金の処理はしない（もう加算済み） */
   async function goldBurst(amount) {
     const ui = $('#wb-ui'); if (!ui || !(amount >= GOLD_BIG) || calm()) return;
@@ -802,7 +867,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     const f = fieldOf(m), r = m.raise; if (!f || !onBoard() || !active(m) || P8().boardPhase(m) !== 'roll' || r.goal) return;
     const left = (r.turnLimit || 40) - (r.turnsUsed || 0); if (!TURN_WARN.includes(left)) return;
     f.tw = isObjv(f.tw) ? f.tw : {}; if (f.tw[left]) return;
-    if (busyGet() || V.intro || document.querySelector('.mmtalk,.wb-pop,.chf-enc2,.wbx-gold,.wbx-hg')) { if (tries < 30) setTimeout(() => turnWarn(m, tries + 1), 400); return; }
+    if (busyGet() || V.intro || document.querySelector('.mmtalk,.wb-pop,.wbtr,.chf-enc2,.wbx-gold,.wbx-hg')) { if (tries < 30) setTimeout(() => turnWarn(m, tries + 1), 400); return; }
     f.tw[left] = 1; doSave();                                    // 先に記録（途中で閉じても二度出ない）
     const ui = $('#wb-ui'); if (!ui || calm() && left !== 1) return;
     const lv = left === 1 ? 'hi' : left === 5 ? 'mid' : 'lo';
@@ -817,9 +882,14 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     V.world.marker(id, FXF.rare, { w: 40, min: 46, max: 110, ah: 1.55 });
     V.world.markerDim(id, f.used[id] != null);
   }
+  const PRE_SE = ['DICE_CUBE', 'DICE_THROW', 'WILD_ALERT', 'RARE_ALERT', 'RIVAL_APPEAR', 'MATCHUP', 'BATTLE_START', 'BATTLE_WIN', 'BATTLE_LOSE', 'TREASURE_TIER_1', 'TREASURE_TIER_2', 'TREASURE_TIER_3', 'TRAINING_ITEM_SPAWN', 'TRAINING_SUCCESS', 'EVENT_TRIGGER', 'REST_RECOVER', 'SKILL_ACTIVATE', 'GOLD_GET'];
   function fxPreload() {
     if (V.pre) return; V.pre = true;
-    const go = () => { for (const u of [FXF.rivalBg, FXF.clash, FXF.gold, FXF.hg[10], FXF.hg[5], FXF.hg[1]]) { const im = new root.Image(); im.decoding = 'async'; im.src = u; } };
+    const go = () => {
+      for (const u of [FXF.rivalBg, FXF.clash, FXF.gold, FXF.hg[10], FXF.hg[5], FXF.hg[1]]) { const im = new root.Image(); im.decoding = 'async'; im.src = u; }
+      // 2026-10-14 実機試遊⑨：盤で初めて鳴る音（遭遇・VS・宝箱・決着など）を先に読んでおく＝最初の1回が無音にならない
+      try { if (root.MMAUDIO && root.MMAUDIO.prefetchSe) for (const n of PRE_SE) root.MMAUDIO.prefetchSe(n); } catch (e) {}
+    };
     if (root.requestIdleCallback) root.requestIdleCallback(go, { timeout: 4000 }); else setTimeout(go, 1500);
   }
   /** 2026-10-13 開発24：フィナの声（js/npc/voice-cues.js の CUES）。自動テストの一言なし（MM_QA_NO_STORY）では鳴らさない */
@@ -853,14 +923,34 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     const el = host.querySelector('.wbdband:last-child');
     try { await play(); } finally { if (el) { el.classList.add('out'); setTimeout(() => el.remove(), 260); } }
   }
+  // 2026-10-14 実機試遊⑩・Q13：遭遇 → 短い白い光（眩しすぎない・視差を減らす設定では出さない）→ VS（bBattleGo）。1つの遭遇（pend）で自動の開始は1回だけ（AUTO_BT）
+  const AUTO_BT = new WeakSet();
+  function battleStart() {
+    if (!calm() && V.el) { V.el.insertAdjacentHTML('beforeend', '<i class="wbx-flash" aria-hidden="true"></i>'); const fl = V.el.querySelector('.wbx-flash:last-child'); setTimeout(() => { if (fl) fl.remove(); }, 520); }
+    root.bBattleGo();
+  }
+  let autoT = 0;   // 待っている自動の開始（1つだけ）。遭遇がほかの方法で片付いたら取り消す＝タイマーを残さない
+  function autoBattleCancel() { if (autoT) { clearTimeout(autoT); autoT = 0; } }
+  function autoBattle(m, ms) {
+    const p = m.raise.pend; if (!p || AUTO_BT.has(p)) return; AUTO_BT.add(p);
+    let tries = 0;
+    const go = () => {
+      autoT = 0;
+      const S = gS(); if (!S || S.m !== m || !active(m) || m.raise.pend !== p || P8().boardPhase(m) !== 'battle') return;   // もう別の局面（バトルを始めた・負けた・セーブを替えた）＝何もしない
+      const wait = !onBoard() || busyGet() || V.cover || V.intro || root.document.getElementById('bt') || root.document.getElementById('tvs') || root.document.querySelector('.mmtalk') || typeof root.bBattleGo !== 'function' || (typeof bBusy !== 'undefined' && bBusy);
+      if (wait) { if (++tries < 40) autoT = setTimeout(go, 400); else AUTO_BT.delete(p); return; }
+      battleStart();
+    };
+    autoBattleCancel(); autoT = setTimeout(go, ms);
+  }
   async function resolve() {
     const S = gS(), m = S && S.m; if (!active(m) || busyGet() || !onBoard() || !m.raise.pend || m.raise.pend.stage !== 'resolve') return;
     busySet(true); lock();
-    let tail = '', card = null, rivalGo = false;
+    let tail = '', card = null, battleGo = false;
     try {
       const r = P8().resolveLanding(S, m); doSave();
       let fx = r.fx || {};
-      if (fx.kind === 'battle' && fx.battleType === 'rival') V.rivalAuto = true;
+      if (fx.kind === 'battle') V.autoBt = true;
       if ((fx.dice || []).length) await storyAt(m, 'die', { dice: fx.dice });
       for (const e of fx.dice || []) {   // イベントのサイコロ（Q の左右・特殊挑戦）：出目はもう決まっている（見せるだけ）
         const tx = (DIE_TEXT[e.kind] || ((x) => `サイコロ：${x.die}`))(e);
@@ -880,14 +970,12 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
         await wait(calm() ? 0 : 160); await statCard(m, fx.key, fx.amount); tail = `${labOf(fx.key)} +${fx.amount}`;   // 2026-10-12 試遊：挿絵カード＋能力のバー（旧 trainAct＋小さな窓）
       } else if (fx.kind === 'treasure') {
         feel(['normal', 'rare', 'special'].includes(fx.tier) ? `chest.open.${fx.tier}` : 'chest.open', { tier: fx.tier });
-        vcue('fina.discover');   // 2026-10-13：「見て見て」（同じ声は少しのあいだ繰り返さない）
-        await goldBurst(fx.gold);
-        await popup(`<small>${fx.tier === 'rare' ? '珍しい宝箱' : '宝箱'}を見つけた！</small>${rowsHtml(fx)}`, 1300); tail = plainOf(fx);
+        await treasureCut(fx, { cap: `${fx.tier === 'rare' ? '珍しい宝箱' : '宝箱'}を見つけた！`, chest: fx.tier === 'rare' ? null : CHEST.normal, face: fx.tier === 'rare' ? 'surprised' : 'happy', ms: 2300 });   // 2026-10-14 実機試遊④：宝箱の開封のアニメ＋フィナの大きな顔＋「見て見て！」（声と同時）→ 中身
+        tail = plainOf(fx);
       } else if (fx.kind === 'reward') {
         feel('chest.open.special', { tier: 'special' });
-        vcue('fina.discover');
-        await goldBurst(fx.gold);
-        await popup(`<small>${fx.den ? '隠れ家' : '宝の行き止まり'}</small><b>${esc(fx.title || '')}</b>${rowsHtml(fx)}`, 1800); tail = `${fx.title || ''}　${plainOf(fx)}`.trim();
+        await treasureCut(fx, { cap: fx.den ? '隠れ家の宝を見つけた！' : '宝の行き止まりにたどり着いた！', title: fx.title || '', chest: CHEST.special, face: 'happy', ms: 2700 });
+        tail = `${fx.title || ''}　${plainOf(fx)}`.trim();
       } else if (fx.kind === 'meal') {
         // 2026-10-12 正式：食事・焚き火のマス＝フィナが野外の岩に座る景色（assets/chapter/meal_1012）に、連れている子の正式画像。プレイヤーは台詞で参加を示す（顔の素材は無い＝描かない）
         feel('rest.recover');
@@ -905,14 +993,14 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
         const body = `${fx.text ? `<p>${esc(fx.text)}</p>` : ''}${rowsHtml(fx)}`;
         cardRes(card, body); await cardHold(card, 300, body ? 1900 : 900); await cardClose(card); card = null;
         tail = plainOf(fx) || fx.title || '';
-      } else if (fx.kind === 'battle') { if (fx.battleType === 'rival') V.rivalAuto = rivalGo = true; await encounter(m, fx.battleType); }   // 2026-10-13 開発27（21）：ライバルは演出のあとバトルの案内（説明・「バトルする」）を出さずにそのままバトルへ
+      } else if (fx.kind === 'battle') { V.autoBt = battleGo = true; await encounter(m, fx.battleType); }   // 2026-10-14 実機試遊⑩：野生・レア・ライバルとも演出のあと案内のシートを出さずにそのままバトルへ（旧 2026-10-13 開発27（21）はライバルだけ）
       else if (fx.note === 'claimed') tail = `${fx.title || '宝'}はもう手に入れている。`;
       const told = await storyAt(m, 'land', { fx, goal: !!r.goal });
       if (!told && fx.kind === 'none' && fx.note === 'normal' && !r.goal && !r.timeUp) tail = (await reactionAt(m)) || tail;
       if (r.goal) tail = `${tail}　大会会場に着いた！`.trim(); else if (r.timeUp) tail = `${tail}　ターンを使い切った…`.trim();
     } finally { if (card) cardClose(card, true); busySet(false); }
-    if (rivalGo && onBoard() && P8().boardPhase(m) === 'battle' && typeof root.bBattleGo === 'function') { root.bBattleGo(); V.rivalAuto = false; if (!root.document.getElementById('bt')) board(tail || undefined); return; }
-    V.rivalAuto = false;   // 強制戦闘・戻り先・バトルの種類・報酬なしは従来の bBattleGo のまま
+    if (battleGo && onBoard() && P8().boardPhase(m) === 'battle' && typeof root.bBattleGo === 'function') { AUTO_BT.add(m.raise.pend); battleStart(); if (!root.document.getElementById('bt') && !root.document.getElementById('tvs')) board(tail || undefined); V.autoBt = false; return; }
+    V.autoBt = false;   // 強制戦闘・戻り先・バトルの種類・報酬なしは従来の bBattleGo のまま
     if (onBoard()) board(tail || undefined);
   }
 
@@ -921,6 +1009,11 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     const S = gS() || {}, nm = root.MMP11P ? root.MMP11P.sanitize(S.playerName) : (S.playerName || 'アルト'), A = cfg().arrival || {};
     return (A.talk || []).map((l) => ({ ...l, text: String(l.text || '').split('{name}').join(nm) }));
   }
+  const GATE_BG = './assets/fields/ch1a/final/event/ch1_bg_15_event.webp';
+  const playerName = () => { const S = gS() || {}; return root.MMP11P ? root.MMP11P.sanitize(S.playerName) : (S.playerName || 'アルト'); };
+  // 2026-10-14 実機試遊⑮：到着の会話は2つに分ける（正門前＝着いた喜び・ロビー＝大会の説明）。本文は【暫定】
+  const ARRIVE_GATE = Object.freeze([{ npc: 'fina', view: 'closeup', expression: 'happy', text: 'ようやく着いたね、{name}さん！' }, { npc: 'fina', view: 'closeup', expression: 'smile', text: 'ここが公式大会の会場だよ。さあ、中へ入ろう！' }]);
+  const ARRIVE_LOBBY = Object.freeze([{ npc: 'fina', view: 'closeup', expression: 'guide', text: '公式大会は、ランクEからSまで。下のランクから順に挑戦できるよ。' }, { npc: 'fina', view: 'closeup', expression: 'smile', text: '総当たりで1位になれば優勝！ さあ、参加する大会を選ぼう。' }]);
   function receptionHtml(m) { const lob = G('P9_LOBBY_BG') || ''; return `<div class="chrcv bg" id="chrcv" style="--lobby:url(${lob})">${root.p9ReceptionHtml ? root.p9ReceptionHtml(m) : ''}</div>`; }
   async function arrive(m, fresh) {
     const ui = $('#wb-ui'), f = fieldOf(m); if (!ui || !f) return;
@@ -932,11 +1025,18 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カード�
     try {
       if (root.bgm) root.bgm('chapter');
       if (!fresh && !calm()) await wait(500);
-      void ov.offsetWidth; ov.classList.add('on'); feel('tournament.arrive');
+      // 2026-10-14 実機試遊⑮：まず会場の正門前（白い大門と塔＝ch1_bg_15_event）を全画面に → フィナの顔を大きく「ようやく着いたね！」→ 扉の中へ（ロビーへクロスフェード）
+      //  → ロビーで大会の説明（ランク E〜S）→ 大会受付。見た記録（arrivalSeen）は従来どおり最後に1回＝途中で閉じたら次も正門前から（二重には出ない）
+      V.el.insertAdjacentHTML('beforeend', `<div class="wb-arr gate" id="wbgate" style="background-image:url(${GATE_BG})"></div>`);
+      const gate = $('#wbgate'); void gate.offsetWidth; gate.classList.add('on'); feel('tournament.arrive');
       await wait(calm() ? 0 : 950);
-      if (root.MMNPC && !root.MM_QA_NO_ARRIVAL && arrivalLines().length) await root.MMNPC.talk(arrivalLines(), { kind: 'event', presentation: 'major', big: true });
+      const talkOk = root.MMNPC && !root.MM_QA_NO_ARRIVAL;
+      if (talkOk) await root.MMNPC.talk(ARRIVE_GATE.map((l) => ({ ...l, text: l.text.split('{name}').join(playerName()) })), { kind: 'event', presentation: 'major', big: true });
+      void ov.offsetWidth; ov.classList.add('on'); gate.classList.add('in');   // 扉をくぐる（正門前が少し寄りながら消えて、ロビーが出る）
+      await wait(calm() ? 0 : 900); gate.remove();
+      if (talkOk) await root.MMNPC.talk(ARRIVE_LOBBY.map((l) => ({ ...l })), { kind: 'event', presentation: 'major', big: true });
       f.arrivalSeen = true; doSave();
-    } finally { busySet(false); }
+    } finally { busySet(false); const g = $('#wbgate'); if (g) g.remove(); }
     const u2 = $('#wb-ui'); if (u2 && onBoard() && active(m) && P8().boardPhase(m) === 'goal') u2.innerHTML = receptionHtml(m);
   }
 

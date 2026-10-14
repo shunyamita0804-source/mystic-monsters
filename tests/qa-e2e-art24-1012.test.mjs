@@ -78,8 +78,7 @@ test('AR-B4：野生のバトル（Chapter 1）の背景＝ch1_meadow・Chapter 
   const p = await openPage({ stage: true }); const pg = p.page;
   await toBoard(pg);
   await landOn(pg, { t: 'wild', rare: false });
-  await pg.waitForSelector('.chbat', { timeout: 20000 }); await pg.click('.chbat .p9btn');
-  await pg.waitForSelector('#bt .mma-bg', { timeout: 20000 });
+  await pg.waitForSelector('#bt .mma-bg', { timeout: 25000 });   // 2026-10-14 実機試遊⑩：遭遇は確認のボタンなしに自動でバトルへ
   await pg.waitForFunction(() => { const b = document.querySelector('#bt .mma-bg'); return b && b.complete && b.naturalWidth > 0; }, null, { timeout: 15000 });
   const b = await pg.evaluate(() => ({ src: document.querySelector('#bt .mma-bg').getAttribute('src'), nw: document.querySelector('#bt .mma-bg').naturalWidth }));
   assert.equal(b.src, './assets/battle/field_1012/ch1_meadow.webp'); assert.equal(b.nw, 864);

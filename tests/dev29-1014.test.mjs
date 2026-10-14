@@ -53,7 +53,7 @@ test('D29-02：観客の声＝gain だけ約 +6dB（曲・区間・既定・設�
 });
 
 test('D29-03：決着の曲の間は飛ばせない＝WIN 4000ms・LOSE 5000ms・#bt の中の押下と Enter／Space を捕獲の段階で止める・時刻で解ける・表へ戻ったときも見る', () => {
-  assert.match(HTML, /const RJ_MS=\{win:4000,lose:5000\}/);
+  assert.match(HTML, /const RJ_MS=\{win:4000,lose:4600\}/);   // 2026-10-14 実機試遊⑥（ユーザー指示「戻るのボタンをそれまでに出す」）：LOSE 5.00秒の曲が終わる前（4.6秒＋0.3秒のフェード）に「もどる」を出して押せる
   assert.match(HTML, /function resultJingle\(win,b\)\{if\(!b\|\|b\.dataset\.rj\)return;b\.dataset\.rj=win\?"win":"lose";try\{rjLock\(win,b\)\}catch\(e\)\{\}/, 'WIN!／LOSE の帯（1回）で止める');
   assert.match(HTML, /\["pointerdown","pointerup","mousedown","mouseup","touchstart","touchend","click","dblclick"\]\.forEach\(t=>document\.addEventListener\(t,e=>\{if\(!RJ\.until\|\|!RJ\.bt\|\|!\(e\.target instanceof Node\)\|\|!RJ\.bt\.contains\(e\.target\)\)return;if\(!rjLocked\(\)\)return;e\.stopImmediatePropagation\(\)/);
   assert.match(HTML, /function rjLocked\(\)\{if\(!RJ\.until\)return false;if\(Date\.now\(\)<RJ\.until&&RJ\.bt&&RJ\.bt\.isConnected\)return true;rjUnlock\(\);return false\}/, '時刻で判定（タイマーが止まっても解ける）');
@@ -76,8 +76,8 @@ test('D29-04：決着のあと旧 2D の決着のポーズ（poseSeq の SPX）�
 
 test('D29-05：マスの上面の紋章＝金の輪の近くまで（作り方・README）・円盤はそのまま', () => {
   const R = rd('assets/fields/ch1a/tiles_top_1012/README.md');
-  assert.match(R, /2026-10-14 開発29（5）/); assert.match(R, /FIT 0\.90/);
-  assert.match(rd('tools/fx1011/tops_1014.py'), /FIT = '0\.90'/);
+  assert.match(R, /2026-10-14 開発29（5）/); assert.match(R, /2026-10-14 実機試遊⑳/); assert.match(R, /FIT 0\.97/);
+  assert.match(rd('tools/fx1011/tops_1014.py'), /FIT = '0\.97'/);   // 2026-10-14 実機試遊⑳：金の外枠の直前まで（旧 0.90）
   assert.match(rd('tools/fx1011/top_composite.py'), /comp\.putalpha\(base\.getchannel\('A'\)\)/, '外形・透明度は円盤のまま');
   for (const n of ['tile_stat_life', 'tile_stat_power', 'tile_stat_intelligence', 'tile_stat_accuracy', 'tile_stat_evasion', 'tile_stat_toughness', 'tile_wild_monster', 'tile_treasure', 'tile_meal', 'tile_rival', 'tile_event', 'tile_rare_monster']) assert.ok(existsSync(path.join(ROOT, `assets/fields/ch1a/tiles_top_1012/${n}.webp`)), n);
 });
@@ -88,7 +88,9 @@ test('D29-06：立体サイコロ＝正式デザイン A（sha256）から作っ
   for (let v = 1; v <= 6; v++) { const m = new RegExp(`\\| face_${v}\\.webp \\| ([0-9a-f]{64}) \\|`).exec(R); assert.ok(m, `face_${v}`); assert.equal(sha(`assets/fields/ch1a/dice/cube_1014/face_${v}.webp`), m[1]); }
   const ctx = { performance: { now: () => 0 } }; ctx.globalThis = ctx; vm.runInNewContext(rd('js/chapter/dice-cube.js'), ctx);
   const D = ctx.MMDICE3D;
-  assert.equal(D.SKIN.official, './assets/fields/ch1a/dice/cube_1014/face_');
+  // 2026-10-14 実機試遊③：面の目の大きさ・角の飾りをそろえた対称版（cube_1014s＝cube_1014 の画素を並べ直しただけ）。cube_1014 はファイルだけ残す（上の sha256）
+  assert.equal(D.SKIN.official, './assets/fields/ch1a/dice/cube_1014s/face_');
+  { const R2 = rd('assets/fields/ch1a/dice/cube_1014s/README.md'); for (let v = 1; v <= 6; v++) { const m = new RegExp(`\\| face_${v}\\.webp \\| ([0-9a-f]{64}) \\|`).exec(R2); assert.ok(m, `1014s face_${v}`); assert.equal(sha(`assets/fields/ch1a/dice/cube_1014s/face_${v}.webp`), m[1]); } }
   const h = D.cubeHtml('official');
   assert.equal((h.match(/class="d3-f"/g) || []).length, 6); assert.equal((h.match(/class="d3-k"/g) || []).length, 6); assert.equal((h.match(/d3-e|class="d3-c"/g) || []).length, 0);
   assert.deepEqual(J(D.BASE), { 1: [0, 0], 6: [0, 180], 3: [0, -90], 4: [0, 90], 5: [-90, 0], 2: [90, 0] }, '出目の向きは不変');
@@ -103,7 +105,7 @@ test('D29-07：固有スキルの正式エフェクト5枚＝原本（納品の 
   const R = rd('assets/battle/skill_fx_1014/README.md');
   for (const k of ['solamo', 'gauru', 'nobiton', 'jiol', 'regnas']) { const m = new RegExp(`\\| ${k} \\|[^\\n]*\\| ([0-9a-f]{64}) \\|`).exec(R); assert.ok(m, k); assert.equal(sha(`assets/battle/skill_fx_1014/${k}.webp`), m[1], k); }
   const S = rd('js/battle/rules.js');
-  assert.match(S, /const CUT = Object\.freeze\(\{ in: 270, hold: 1040, out: 330, card: 170, calm: 1300, zMax: 1\.45,/);
+  assert.match(S, /const CUT = Object\.freeze\(\{ in: 270, hold: 1740, out: 330, card: 170, calm: 1300, zMax: 1\.45,/);   // 2026-10-14 実機試遊⑪：寄り終わってから約0.7秒長く（hold 1040 → 1740）
   assert.match(S, /mw\.insertBefore\(im, mw\.firstChild\)/, '.mw の中の立ち絵の後ろ');
   assert.match(S, /'#bt \.mmskc-fx\{position:absolute;z-index:-1;/);
   assert.match(S, /\(fx \? '' : `<i class="mmskc-ring"/, '正式エフェクトがあれば仮の輪は出さない');
@@ -123,7 +125,7 @@ test('D29-08：後ろから追うカメラ＝project の回転（yaw）・進む
   }
   const q0 = W.project(cam, 150, 100), q1 = W.project({ ...cam, yaw: 0 }, 150, 100); assert.deepEqual([q0.x, q0.y], [q1.x, q1.y], 'yaw 0 は従来と同じ');
   const WB = rd('js/chapter/world-board.js');
-  assert.match(WB, /zoomTau: CAM\.zoomTau, heading: true, visual: vis, skin: skinKey\(\) \}\);/, '本編の Chapter 1（2026-10-14 Chapter 1 B／C から visual・A／B／C 高品質化から skin も渡す）');
+  assert.match(WB, /zoomTau: CAM\.zoomTau, heading: true, yawTau: 600, visual: vis, skin: skinKey\(\) \}\);/, '本編の Chapter 1（2026-10-14 Chapter 1 B／C から visual・A／B／C 高品質化から skin も渡す）');   // 2026-10-14 実機試遊 Q12：曲がり角で回りすぎない（yawTau 420 → 600）
   assert.match(WB, /const r = pickDir\(ddx \* Math\.cos\(yw\) - ddy \* Math\.sin\(yw\), ddx \* Math\.sin\(yw\) \+ ddy \* Math\.cos\(yw\), SPR\.sets,/, '歩行の向きは回したあとの画面の向き');
   const RW = rd('js/proto/roadfirst-world.js');
   assert.match(RW, /rotate\(\$\{\(c\.yaw \|\| 0\)\.toFixed\(3\)\}deg\) translate\(\$\{-c\.tx\}px,\$\{-c\.ty\}px\)/, '地面の板も同じ回転（CSS の rotate）');

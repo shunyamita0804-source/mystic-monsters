@@ -79,14 +79,14 @@ async function mash(pg) {
 const alive = (pg) => pg.evaluate(() => !!document.getElementById('bt'));
 
 for (const kind of ['win', 'lose']) {
-  test(`D29-B1：${kind === 'win' ? 'WIN（4.00秒）' : 'LOSE（5.00秒）'}の間は飛ばせない（タップ・連打・ダブルタップ・Enter・Space）→ 曲の長さのあとに「もどる」`, { skip: SKIP, timeout: 300000 }, async () => {
+  test(`D29-B1：${kind === 'win' ? 'WIN（4.00秒）' : 'LOSE（5.00秒の曲・4.6秒で「もどる」＝2026-10-14 実機試遊⑥）'}の間は飛ばせない（タップ・連打・ダブルタップ・Enter・Space）→ 止める時間のあとに「もどる」`, { skip: SKIP, timeout: 300000 }, async () => {
     const p = await openPage({ worldCh1: true, rjlock: true }); const pg = p.page;
     await pg.setViewportSize({ width: 390, height: 844 });
     await battle(pg, 0, kind === 'win' ? STRONG : WEAK, 'wild', 1);
     await toBand(pg);
     const L0 = await pg.evaluate(() => ({ lock: MMRJ.log().filter((x) => x.ev === 'lock'), rj: document.getElementById('bt').dataset.rjlock, scene: MMAUDIO.status().scene }));
-    assert.equal(L0.lock.length, 1); assert.equal(L0.rj, kind); assert.equal(L0.lock[0].ms, kind === 'win' ? 4000 : 5000);
-    const marks = kind === 'win' ? [500, 2000, 3800] : [500, 2000, 3900, 4800];
+    assert.equal(L0.lock.length, 1); assert.equal(L0.rj, kind); assert.equal(L0.lock[0].ms, kind === 'win' ? 4000 : 4600);
+    const marks = kind === 'win' ? [500, 2000, 3800] : [500, 2000, 3900, 4400];
     for (const t of marks) {
       await waitUntil(pg, t); await mash(pg);
       assert.equal(await alive(pg), true, `${t}ms の押下でバトルが閉じない`);
@@ -95,8 +95,8 @@ for (const kind of ['win', 'lose']) {
     }
     const blocks = await pg.evaluate(() => MMRJ.log().filter((x) => x.ev === 'block').length);
     assert.ok(blocks >= marks.length * 4, `押下を止めた回数 ${blocks}`);
-    await waitUntil(pg, (kind === 'win' ? 4000 : 5000) + 120);
-    assert.equal(await pg.evaluate(() => MMRJ.locked()), false, '曲の長さを過ぎたら解ける');
+    await waitUntil(pg, (kind === 'win' ? 4000 : 4600) + 120);
+    assert.equal(await pg.evaluate(() => MMRJ.locked()), false, kind === 'win' ? '曲の長さを過ぎたら解ける' : 'LOSE は曲の終わる前（4.6秒）に解ける＝曲のあとの長い無音を待たせない');
     const se = await pg.evaluate((k) => MMAUDIO.seLog().filter((x) => x === k).length, kind === 'win' ? 'BATTLE_WIN' : 'BATTLE_LOSE');
     assert.equal(se, 1, '決着の曲は1回');
     await pg.click('#go', { timeout: 5000 });

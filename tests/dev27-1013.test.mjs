@@ -19,7 +19,8 @@ const HTML = rd('index.html');
 
 test('D27-01：サイコロの SE＝着地の足音だけ・1 の面＝円の紋章・プレイヤーの印', () => {
   assert.equal(sha('assets/audio/se/dice_1013/dice_cube_throw_land.ogg'), '89b4e05fa5389f2a72c111c3f2ecceb8c80ed92b1937b3900fd5606dc256e5cb');
-  assert.match(rd('js/audio/audio-registry.js'), /DICE_CUBE:\s*\{ src: SE_DIR \+ 'dice_1013\/dice_cube_throw_land\.ogg', gain: 0\.9 \}/);
+  // 2026-10-14 実機試遊⑤：投げ出しの音を1回だけ戻した＝DICE_CUBE は dice_1014（投げる音＋この着地の足音）。dice_1013 の着地だけの版はファイルを残す（上の sha256）
+  assert.match(rd('js/audio/audio-registry.js'), /DICE_CUBE:\s*\{ src: SE_DIR \+ 'dice_1014\/dice_cube_throw_land2\.ogg', gain: 0\.9 \}/);
   assert.equal(sha('assets/fields/ch1a/dice/cube_1013/face_1.webp'), '30f938aade639554a3fe82d18b4cae93d831bf53592f29eebbdc719f401415ec');
   const R = rd('assets/fields/ch1a/dice/cube_1013/README.md');
   for (let v = 2; v <= 6; v++) { const m = new RegExp(`\\| face_${v}\\.webp \\|[^|]*\\| ([0-9a-f]{64}) \\|`).exec(R); assert.ok(m, `face_${v}`); assert.equal(sha(`assets/fields/ch1a/dice/cube_1013/face_${v}.webp`), m[1], `face_${v} は変えていない`); }
@@ -31,7 +32,7 @@ test('D27-02：門の飾りだけ出さない・大会会場は透けない・�
   const WB = rd('js/chapter/world-board.js'), RW = rd('js/proto/roadfirst-world.js');
   assert.match(WB, /hideLm: \['START', 'LOWER_GATE', 'UPPER_GATE'\]/);
   assert.match(RW, /if \(o\.hideLm && o\.hideLm\.includes\(L\.node\)\) continue;/);
-  assert.match(RW, /props\[props\.length - 1\]\.solid = true;/); assert.match(RW, /if \(o\.xray && !p\.mark && !p\.solid\)/);
+  assert.match(RW, /const gp = props\[props\.length - 1\]; gp\.solid = true;/); assert.match(RW, /if \(o\.xray && !p\.mark && !p\.solid\)/);
   const C = rd('js/chapter/configs/ch1a.js');
   assert.match(C, /solamo: \{[^\n]*standFace: 'left'/); assert.match(C, /gauru: \{[^\n]*standFace: 'right'/);
 });

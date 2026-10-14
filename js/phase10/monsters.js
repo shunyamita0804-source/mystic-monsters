@@ -155,6 +155,17 @@
   // 2026-10-08 正式（全 Chapter 共通の1つの表）：「適性 A の能力が、1体の育成を最後まで（Chapter 1〜4＋S の最終公式大会）終えたとき、開始 100 前後なら 250 前後」を基準に、
   //  実際の育成シミュレーションから逆算（旧表 A7 B6 C5 D4 E3 の比率のまま約3.5倍。旧：Chapter 1 だけ config の A5…E2 という二重の表）。
   const GROWTH_GAIN = fz({ A: 25, B: 21, C: 18, D: 14, E: 11 });
+  // 2026-10-14 実機試遊⑲（ユーザー正式方針）：Chapter 1 は能力マスを増やして1回の上昇量を下げる（少しずつ・何度も伸びる）。Chapter 2→3→4 と1回の上昇量を穏やかに上げる。
+  //  Chapter ごとの表（無い Chapter・最終ルートは Chapter 4 の表。Chapter の外＝GROWTH_GAIN）。値は tools/balance/sim-full.mjs の候補比較で決めた（報告書 G：
+  //  初回の1体の得意能力の最終値の平均（300回・大会は全勝の想定）ソラモ 258・ガウル 289・ノビトン 273・ジオル 323＝4体平均 286（旧の配置と表では 234／263／245／305＝262））。
+  //  window.MM_BALANCE_OVERRIDE.gainByCh（開発用の道具 tools/balance/sim-full.mjs だけが入れる）で上書きできる
+  const GROWTH_GAIN_BY_CH = (() => {
+    const T = { 1: fz({ A: 20, B: 18, C: 16, D: 12, E: 9 }), 2: fz({ A: 25, B: 23, C: 20, D: 16, E: 12 }), 3: fz({ A: 29, B: 27, C: 23, D: 18, E: 14 }), 4: fz({ A: 33, B: 30, C: 26, D: 20, E: 15 }) };
+    const ov = root.MM_BALANCE_OVERRIDE && root.MM_BALANCE_OVERRIDE.gainByCh;
+    if (ov && typeof ov === 'object') for (const c of Object.keys(ov)) if (T[c]) T[c] = fz({ ...T[c], ...ov[c] });
+    return fz(T);
+  })();
+  const gainTable = (ch) => GROWTH_GAIN_BY_CH[ch] || (ch === 'final' || ch > 4 ? GROWTH_GAIN_BY_CH[4] : GROWTH_GAIN);
   const G6 = (li, po, iN, hi, ev, de) => fz({ li, po, in: iN, hi, ev, de });
   // ---- 正式主要原種 ----
   //  tagline：市場などで使う短い紹介文。ソラモ・ガウルは既存ゲーム内の説明文、ノビトンは正式プロフィール資料の文。未提供は null。
@@ -201,7 +212,8 @@
     const s = m ? byId(m.sp) : null, g = s && s.growth ? s.growth[key] : null;
     return isGrade(g) ? g : GROWTH_UNREGISTERED;
   }
-  const growthGain = (m, key) => GROWTH_GAIN[growthOf(m, key)];
+  /** 能力マスの上昇量。ch＝Chapter（省略＝個体の今の Chapter。Chapter の外は Chapter 2 の表＝従来の GROWTH_GAIN） */
+  const growthGain = (m, key, ch) => { const c = ch != null ? ch : (m && m.raise && m.raise.ch != null ? m.raise.ch : null); return (c == null ? GROWTH_GAIN : gainTable(c))[growthOf(m, key)]; };
   const growthRegistered = (sp) => { const s = byId(sp); return !!(s && s.growth); };
   const skillText = (sp) => { const k = skillOf(sp); return k ? { name: k.name, desc: k.desc } : null; };
 
@@ -234,7 +246,7 @@
   // ---- 市場での購入（Phase 10 Step 4） ----
   // 2026-10-04 PHASE H3：牧場は最大20体（正式。旧「手持ち＋牧場で8体・牧場7体」は正式ではない）。所持上限＝牧場20＋連れている1体（旧ルールと同じ組み立て）
   // 2026-10-06：牧場は最大8体（ユーザー指示「牧場上限は8体・0/8」。2026-10-04 PHASE H3 の 20体から戻した）。所持上限＝牧場8＋連れている1
-  const RANCH_LIMIT = 8, OWN_LIMIT = RANCH_LIMIT + 1;
+  const RANCH_LIMIT = 20, OWN_LIMIT = RANCH_LIMIT + 1;   // 2026-10-14 ユーザー正式決定：牧場は最大20体（連れている1体＝所持21体）。旧 2026-10-06 の8体は撤回
   const marketItem = (key) => MARKET_CATALOG.find((c) => c.key === key) || null;
   /**
    * 初回購入救済：手持ち0体・牧場0体・所持金が500G未満のときだけ、市場での購入操作の時点で所持金を500Gにする。
@@ -345,6 +357,6 @@
 
   root.MMP10M = fz({ STAT_KEYS, STAT_LABELS, STAT_MAX, SPEED_MIN, SPEED_MAX, isValidSpeed, UNIQUE_SKILLS, SPECIES, RIVAL_MONSTERS, rivalMonster, OFFICIAL_MOVES, movesOf, moveBySlot,
     byId, byKey, keyOf, idOf, imageOf, silhouetteOf, speedOf, baseOf, skillOf, skillText, ensureSpeed, ECONOMY, MARKET_CATALOG,
-    GROWTH_GRADES, GROWTH_GAIN, GROWTH_UNREGISTERED, growthOf, growthGain, growthRegistered,
+    GROWTH_GRADES, GROWTH_GAIN, GROWTH_GAIN_BY_CH, GROWTH_UNREGISTERED, growthOf, growthGain, growthRegistered,
     OWN_LIMIT, RANCH_LIMIT, marketItem, canPurchase, purchase, FUSION_COST, setFusionAccess, fusionAvailable, continueRescueApplies, SELL, sellQuote, canSell, sell, NOBITON_STOCK_RAISES, nobitonStock });
 })(typeof window !== 'undefined' ? window : globalThis);

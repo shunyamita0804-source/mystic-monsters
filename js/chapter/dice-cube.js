@@ -84,7 +84,9 @@
   // 2026-10-14 開発29（2）：正式の面＝ユーザー指定の正式デザイン画像 A（真珠の地・金の角の飾り・金の目・天面の紋章）から作った6面（assets/fields/ch1a/dice/cube_1014/。tools/dice1014/faces_from_a.py）。
   //   面の絵に縁の光と角の金の飾りが入っている＝面は内側へ寄せない（旧 cube_1013 の面取りの帯 .d3-e・角の丸い飾り .d3-c は出さない）。角の小さなすき間は中の金の芯（.d3-k）でふさぐ。
   //   動き・1.30秒・出目・乱数・着地の SE は変えていない（絵だけ）。旧 cube_1013 はファイルだけ残す
-  const SKIN = Object.freeze({ official: './assets/fields/ch1a/dice/cube_1014/face_' });
+  // 2026-10-14 実機試遊③（立方体が歪んで見える）：cube_1014 は 2・3 の面の目の大きさが面の中でそろわず（透視の補正の残り）、角の金の飾りも面ごとに違った＝組むと角・面が「ねじれ」て見えた。
+  //   → cube_1014s（同じ画素を左右・上下対称に並べ直し、目は1〜6 とも同じ大きさ・普通の升目。tools/dice1014/faces_sym.py）。動き・出目・時間は変えない
+  const SKIN = Object.freeze({ official: './assets/fields/ch1a/dice/cube_1014s/face_' });
   const CORE = Object.freeze(['translateZ(calc(var(--h)*.9))', 'rotateY(180deg) translateZ(calc(var(--h)*.9))', 'rotateY(90deg) translateZ(calc(var(--h)*.9))', 'rotateY(-90deg) translateZ(calc(var(--h)*.9))', 'rotateX(90deg) translateZ(calc(var(--h)*.9))', 'rotateX(-90deg) translateZ(calc(var(--h)*.9))']);
   // 2026-10-13 開発28：角を落とした立方体の部品。面取りの帯 12本＝[縦長か, 向き, 明るさ]（向きは面の法線＝CSS の rotate。translateZ(.615 s) を足す）
   const EDGES = Object.freeze([
@@ -150,11 +152,11 @@
       { opacity: 1, transform: 'scale(.62)', offset: at(P.lift) },
       { opacity: 1, transform: 'scale(1.35)', offset: at(pk) },
       { opacity: 1, transform: 'scale(1.06)', offset: at(I1 - 30) },
-      { opacity: 1, transform: 'scale(1.15,.85)', offset: at(I1 + 20) },
+      { opacity: 1, transform: 'scale(1.035)', offset: at(I1 + 20) },   // 2026-10-14 実機試遊③：着地でつぶす（縦横の比を変える）と立方体が台形・平たい箱に見えた＝縦横の比は変えない（小さく弾む大きさだけ）
       { opacity: 1, transform: 'scale(1.03)', offset: at(m1) },
-      { opacity: 1, transform: 'scale(1.08,.92)', offset: at(I2 + 15) },
+      { opacity: 1, transform: 'scale(1.015)', offset: at(I2 + 15) },
       { opacity: 1, transform: 'scale(1)', offset: at(m2) },
-      { opacity: 1, transform: 'scale(1.05,.95)', offset: at(L + 10) },
+      { opacity: 1, transform: 'scale(1.01)', offset: at(L + 10) },
       { opacity: 1, transform: 'scale(1)', offset: at(L + 90) },
       { opacity: 1, transform: 'scale(1)', offset: 1 },
     ]);
@@ -210,7 +212,7 @@
         { opacity: 1, transform: 'scale(.62)', offset: at(P.lift) },
         { opacity: 1, transform: 'scale(1.35)', offset: at(P.peak * o.sp) },
         { opacity: 1, transform: 'scale(1.06)', offset: at(P.land * o.sp - 20) },
-        { opacity: 1, transform: 'scale(1.1,.9)', offset: at(P.land * o.sp + 30) },
+        { opacity: 1, transform: 'scale(1.03)', offset: at(P.land * o.sp + 30) },
         { opacity: 1, transform: 'scale(1)', offset: at(L) },
         { opacity: 1, transform: 'scale(1)', offset: 1 },
       ]);

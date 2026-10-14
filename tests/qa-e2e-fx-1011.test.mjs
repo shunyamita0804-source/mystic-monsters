@@ -50,23 +50,24 @@ test('FXB-2：野生（影・？？？）／レア（名前・★レア）→ �
   await toBoard(pg);
   await place(pg, 'ER02_03', { t: 'wild', rare: false });
   await pg.waitForSelector('.wbx-w');
-  const w = await pg.evaluate(() => { const e = document.querySelector('.wbx-w'); return { sil: e.classList.contains('sil'), nm: e.querySelector('.wbx-nm').textContent, all: e.textContent, sheet: getComputedStyle(document.querySelector('.chsheet') || document.body).visibility }; });
-  assert.equal(w.sil, true); assert.match(w.nm, /？？？/); assert.doesNotMatch(w.all, /Lv|レベル/); assert.equal(w.sheet, 'hidden', '演出の間は案内を隠す');
-  await idle(pg);
-  assert.equal(await pg.evaluate(() => !!document.querySelector('.chbat [onclick="bBattleSkip()"]')), false, '2026-10-12 試遊：野生も強制バトル（「やめておく」は出さない。テストは先へ進むために bBattleSkip を直接呼ぶ）');
-  await pg.evaluate(() => bBattleSkip()); await idle(pg);
+  const w = await pg.evaluate(() => { const e = document.querySelector('.wbx-w'), sh = document.querySelector('.chsheet'); return { sil: e.classList.contains('sil'), nm: e.querySelector('.wbx-nm').textContent, all: e.textContent, sheet: sh ? getComputedStyle(sh).visibility : 'none' }; });
+  assert.equal(w.sil, true); assert.match(w.nm, /？？？/); assert.doesNotMatch(w.all, /Lv|レベル/); assert.notEqual(w.sheet, 'visible', '演出の間は案内を出さない');
+  // 2026-10-14 実機試遊⑩：「バトルする」も「やめておく」も出さずに自動でバトルへ＝テストは降参して盤へ戻る
+  assert.equal(await pg.evaluate(() => !!document.querySelector('.chbat .p9btn,.chbat [onclick="bBattleSkip()"]')), false, '確認のボタンは出ない');
+  await H.surrenderBattle(pg); await pg.waitForSelector('#wbw #brollbtn'); await idle(pg);
   await place(pg, 'ER03_02', { t: 'wild', rare: true });
   await pg.waitForSelector('.wbx-w.rare');
   const r = await pg.evaluate(() => { const e = document.querySelector('.wbx-w'); return { nm: e.querySelector('.wbx-nm b').textContent, badge: !!e.querySelector('.wbx-nm em'), img: e.querySelector('.wbx-mon').getAttribute('src'), all: e.textContent }; });
-  assert.notEqual(r.nm, '？？？'); assert.equal(r.badge, true); assert.match(r.img, /2p5d\//); assert.doesNotMatch(r.all, /Lv|レベル/);
-  await idle(pg); await pg.evaluate(() => bBattleSkip()); await idle(pg);
+  assert.notEqual(r.nm, '？？？'); assert.equal(r.badge, true); assert.match(r.img, /battle\/idle\/idle_\w+\.webp$/, '2026-10-14 実機試遊㉔：遭遇の相手はこのあと VS・バトルに出る正式の待機立ち絵（レアは色つき・野生は同じ絵の影）'); assert.doesNotMatch(r.all, /Lv|レベル/);
+  await H.surrenderBattle(pg); await pg.waitForSelector('#wbw #brollbtn'); await idle(pg);
   // G：50G では出ない・150G で1回
-  await pg.evaluate(() => { window.__gb = 0; new MutationObserver((ms) => { for (const m of ms) for (const n of m.addedNodes) if (n.classList && n.classList.contains('wbx-gold')) __gb++; }).observe(document.getElementById('wbw'), { subtree: true, childList: true }); });
+  await pg.evaluate(() => { window.__gb = 0; new MutationObserver((ms) => { for (const m of ms) for (const n of m.addedNodes) if (n.classList && (n.classList.contains('wbx-gold') || (n.classList.contains('wbtr') && n.querySelector('.wbtr-gold')))) __gb++; }).observe(document.getElementById('wbw'), { subtree: true, childList: true }); });
   const g0 = await pg.evaluate(() => S.g);
   await place(pg, 'ER02_04', { t: 'treasure', gold: 50, tier: 'normal' }); await idle(pg);
   assert.equal(await pg.evaluate(() => __gb), 0, '50G は従来の小さな表示だけ');
-  await place(pg, 'ER02_05', { t: 'treasure', gold: 150, tier: 'rare' }); await pg.waitForSelector('.wbx-gold');
-  assert.match(await pg.evaluate(() => document.querySelector('.wbx-gold b').textContent), /\+150G/);
+  // 2026-10-14 実機試遊④：宝箱は開封のカットイン（.wbtr）の中に金貨（EV05）と中身（+150G）を出す＝別の金貨の演出（.wbx-gold）は重ねない
+  await place(pg, 'ER02_05', { t: 'treasure', gold: 150, tier: 'rare' }); await pg.waitForSelector('.wbtr .wbtr-gold', { state: 'attached' });
+  await pg.waitForFunction(() => /\+150G|150G/.test((document.querySelector('.wbtr .wbtr-card') || {}).textContent || ''), null, { timeout: 5000 });
   await idle(pg);
   assert.deepEqual(await pg.evaluate(() => [__gb, S.g]), [1, g0 + 200], '金貨の演出は1回・所持金の加算は従来どおり1回ずつ');
 });
@@ -97,8 +98,8 @@ test('FXB-4：レアの紋章（ある育成だけ・全景でも見える・訪
   const o = await pg.evaluate(() => { const e = document.querySelector('.rfw-mark'); const r = e && e.getBoundingClientRect(); return e ? { node: e.dataset.node, w: r.width, vis: getComputedStyle(e).display !== 'none', intro: MMWB.state().intro } : null; });
   assert.ok(o && o.intro && o.node === 'ER03_02' && o.vis && o.w >= 40, `全景で紋章が見える（${JSON.stringify(o)}）`);
   await pg.waitForFunction(() => !MMWB.state().intro, null, { timeout: 20000 }); await idle(pg);
-  await place(pg, 'ER03_02', { t: 'wild', rare: true }); await idle(pg);
-  await pg.evaluate(() => bBattleSkip()); await idle(pg);
+  await place(pg, 'ER03_02', { t: 'wild', rare: true });
+  await H.surrenderBattle(pg); await pg.waitForSelector('#wbw #brollbtn'); await idle(pg);   // 2026-10-14 実機試遊⑩：自動でバトルへ → 降参して戻る
   assert.equal(await pg.evaluate(() => document.querySelector('.rfw-mark').classList.contains('dim')), true, '訪れたら弱く');
   // レアの無い育成：紋章なし
   await pg.evaluate(() => { const f = S.m.raise.field; delete f.tiles.ER03_02; save(); MMWB.release(); board(); }); await idle(pg);

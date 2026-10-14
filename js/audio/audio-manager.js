@@ -438,6 +438,7 @@
     }
   }
   /** SE（出来事の名前）。ミュート中・音源の無い出来事は合成音へ（無ければ何もしない）。失敗しても投げない */
+  const SE_LATE_MS = 800;
   const PLAY_LOG = [];   // 2026-10-13：AudioBufferSourceNode の start まで行った音（SE・ボイス）。テスト・監査用（MMAUDIO.playLog()）
   const SE_LOG = [];   // 直近に頼まれた SE（登録・ミュート・silent に関係なく、名前だけ。テスト・監査用。MMAUDIO.seLog()）
   function se(name, opts = {}) {
@@ -452,6 +453,8 @@
         // running、または最初の操作で resume を頼んだ直後（iPhone は resume が少し遅れる。予約した音は resume と同時に鳴る）
         if (f.buffer && st.ctx && (st.ctx.state === 'running' || (st.resuming && st.ctx.state === 'suspended' && !st.hidden))) { playBuffer(f, opts); return true; }
         if (!f.buffer && opts.wait > 0 && st.ctx && !f.failed) { f.want = { opts: { ...opts, wait: 0 }, until: now + opts.wait }; if (!f.data) loadSe(name); else decodeSe(name); return true; }   // 最初のタップ：まだデコード中なら合成音へ落とさず、出来しだい鳴らす（wait＝待てる長さ ms）
+        // 2026-10-14 実機試遊⑨：まだ読み込んでいない音（その場面で初めて鳴る＝ライバルの登場など）は、合成音へ落とさず読み込み・デコードができしだい鳴らす（既定 0.8秒まで。過ぎたら鳴らさない＝遅れて場違いに鳴らない）
+        if (!f.buffer && st.ctx && !st.hidden && SE_LATE_MS > 0) { f.want = { opts: { ...opts, wait: 0 }, until: now + (opts.late != null ? opts.late : SE_LATE_MS) }; if (!f.data) loadSe(name); else decodeSe(name); return true; }
         if (!f.buffer) { if (!f.data) loadSe(name); else decodeSe(name); }
       }
       if (legacy && typeof legacy.sfx === 'function') return legacy.sfx(name, opts) !== false;

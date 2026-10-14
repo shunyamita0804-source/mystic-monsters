@@ -170,6 +170,7 @@ test('RP-B6：画面の操作だけで START → GOAL（休む・OK を含む）
     for (let i = 0; i < 400; i++) {
       s = await pg.evaluate(() => MMRF.state()); if (s.done || s.timeUp) break;
       await pg.waitForFunction(() => !MMRF.busy());
+      s = await pg.evaluate(() => MMRF.state()); if (s.done || s.timeUp) break;   // 2026-10-14：動き終わってから見直す（GOAL に着いた直後の「大会の入口へ」を進む操作と取り違えない）
       const btns = await pg.$$eval('#rfp .rf-ch button', (b) => b.map((x) => x.dataset.seg));
       if (btns.length) { const seg = ['EL01', 'LATE_SAFE'].find((x) => btns.includes(x)) || btns.find((x) => !/^D_/.test(x)) || btns[0]; await pg.click(`#rfp .rf-ch button[data-seg="${seg}"]`); }
       else if (s.play.fat >= 80 && !s.play.notice && await pg.$eval('#rfp .rf-rest', (b) => !b.disabled)) await pg.click('#rfp .rf-rest');
@@ -182,7 +183,8 @@ test('RP-B6：画面の操作だけで START → GOAL（休む・OK を含む）
   assert.ok(s.play.hist.length > 3, '止まったマスで出来事が起きた');
   const gain = Object.keys(s.play.stats).reduce((a, k) => a + s.play.stats[k] - s.play.mon.base[k], 0); assert.ok(gain > 0, `能力が伸びた（+${gain}）`);
   await pg.evaluate(() => { MMRF.fast = false; }); await pg.waitForTimeout(200); await shot(pg, 'RP-B6_goal');
-  if (s.play.notice) await pg.click('#rfp .rf-go');
+  for (let k = 0; k < 6 && await pg.evaluate(() => !!MMRF.state().play.notice); k++) { await pg.waitForFunction(() => !MMRF.busy() && !!document.querySelector('#rfp .rf-go'), null, { timeout: 5000 }); await pg.click('#rfp .rf-go'); await pg.waitForTimeout(300); }
+  await pg.waitForFunction(() => !MMRF.busy() && /大会の入口へ/.test((document.querySelector('#rfp .rf-go') || {}).textContent || ''), null, { timeout: 8000 });   // 2026-10-14：今の状態で確かめる（ループの最後の s は、速い送りで閉じた知らせを持っていることがある＝配置の割合が変わり GOAL の直前の出来事が増えた）
   assert.equal(await pg.$eval('#rfp .rf-go', (b) => b.textContent), '大会の入口へ');
   await pg.click('#rfp .rf-go');
   await pg.waitForFunction(() => !document.getElementById('rfp') && /公式大会/.test(document.querySelector('#app').innerText), null, { timeout: 15000 });

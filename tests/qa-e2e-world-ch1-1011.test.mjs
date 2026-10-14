@@ -84,10 +84,9 @@ test('WB-3：野生のマス → 遭遇 → 本物の fight() → 降参 → 新
   const p = await openPage({ size: H.SIZES.se }); const pg = p.page;
   await toBoard(pg);
   await pg.evaluate(() => { const f = S.m.raise.field, id = Object.keys(f.tiles).find((x) => f.tiles[x].t === 'wild' && !f.tiles[x].rare), r = S.m.raise, c = f.core; r.node = id; c.node = id; c.trail.push(id); r.turnsUsed = 3; c.turn = 3; r.fatigue = 20; r.pend = { roll: 1, left: 0, stage: 'resolve' }; save(); board(); });
-  await pg.waitForSelector('.chbat', { timeout: 20000 });
-  assert.match(await pg.textContent('.chbat h3'), /野生のモンスターが現れた/);
-  await pg.click('.chbat .p9btn');
-  await pg.waitForSelector('#bt #m1 img', { timeout: 15000 });
+  // 2026-10-14 実機試遊⑩：遭遇は「バトルする」の確認を出さずに自動でバトルへ（演出 → 短い光 → VS → バトル）
+  await pg.waitForSelector('#bt #m1 img', { timeout: 25000 });
+  assert.equal(await pg.evaluate(() => !!document.querySelector('.chbat .p9btn')), false, '確認のボタンは出ない');
   await pg.waitForFunction(() => { const g = document.getElementById('go'); return g && !g.disabled; }, null, { timeout: 15000 });
   await pg.click('#sur', { force: true }); await pg.waitForTimeout(300); await pg.click('#sur', { force: true });
   for (let i = 0; i < 80; i++) { if (await pg.evaluate(() => { const g = document.getElementById('go'); return !!g && g.classList.contains('bk'); })) break;
@@ -105,8 +104,13 @@ test('WB-4：ゴール → ロビー → フィナの会話 → 大会受付 →
   const s2 = await pg.evaluate(() => MMRF_DATA.segments.S_END[3]);
   await place(pg, s2[s2.length - 2], { turnsUsed: 30 }); await idle(pg);
   await rollAs(pg, 2);
-  await pg.waitForSelector('.mmtalk', { timeout: 20000 });
-  assert.match(await pg.textContent('.mmtalk'), /やっと着いたね|大会会場/);
+  // 2026-10-14 実機試遊⑮：まず会場の正門前（ch1_bg_15_event）で着いた喜び → ロビーで大会の説明（ランク E〜S）→ 受付
+  await pg.waitForSelector('.mmtalk:not(.mmtalk-out)', { timeout: 20000 });
+  assert.match(await pg.textContent('.mmtalk'), /ようやく着いたね/);
+  assert.match(await pg.evaluate(() => (document.getElementById('wbgate') || {}).style?.backgroundImage || ''), /ch1_bg_15_event\.webp/, '正門前の背景');
+  await H.finishTalk(pg);
+  await pg.waitForFunction(() => /ランクEからS/.test((document.querySelector('.mmtalk:not(.mmtalk-out)') || {}).textContent || ''), null, { timeout: 15000 });
+  assert.equal(await pg.evaluate(() => !!document.getElementById('wbgate')), false, 'ロビーでは正門前の絵は消えている');
   await H.finishTalk(pg);
   await pg.waitForSelector('#wbw #chrcv', { timeout: 15000 });
   assert.deepEqual(await pg.evaluate(() => [S.m.raise.node, S.m.raise.goal, S.m.raise.field.arrivalSeen]), ['GOAL', true, true]);
@@ -190,11 +194,17 @@ test('WB-7：チュートリアル（40ターン・1〜6）→ 分かれ道 → 
   assert.ok(tgt, '能力マスが見つかる');
   await place(pg, tgt.at, { turnsUsed: 2 }); await pg.evaluate(() => { S.m.raise.field.core.turn = 2; save(); }); await idle(pg);
   const v0 = await pg.evaluate((k) => S.m[k], tgt.key);
+  // 2026-10-14：配置の割合が変わった（能力マスが増えた）ため、選んだ地点しだいで景色の一言（谷など）が同じ着地に重なる＝景色の一言は見たことにして、能力マスのチュートリアルだけを確かめる
+  await pg.evaluate(() => { const f = S.m.raise.field; f.storySeen = MMWD.STORY.filter((e) => e.scope !== 'save').map((e) => e.id); save(); });
   await pg.evaluate(() => { window.__tact = 0; new MutationObserver(() => { if (document.querySelector('#wb-ui .chf-tact')) __tact++; }).observe(document.getElementById('wbw'), { childList: true, subtree: true }); });
+  const preStat = await pg.evaluate(() => (S.npcFlags.story || []).includes('tut_stat'));   // それまでの着地で能力マスに止まっていれば、チュートリアルはもう見た（このセーブで1回）
   await rollAs(pg, 1);
-  await pg.waitForSelector('.mmtalk:not(.mmtalk-out)', { timeout: 15000 });
-  assert.match(await pg.evaluate(() => document.querySelector('.mmtalk').textContent), /能力マス/);
-  await H.finishTalk(pg); await idle(pg);
+  if (!preStat) {
+    await pg.waitForSelector('.mmtalk:not(.mmtalk-out)', { timeout: 15000 });
+    assert.match(await pg.evaluate(() => document.querySelector('.mmtalk').textContent), /能力マス/);
+    await H.finishTalk(pg);
+  }
+  await idle(pg);
   const st = await pg.evaluate((k) => ({ v: S.m[k], node: S.m.raise.node, tact: __tact, story: S.npcFlags.story.slice(), left: document.querySelectorAll('.chf-tact,.chf-tact-tx').length }), tgt.key);
   assert.equal(st.node, tgt.id); assert.ok(st.v > v0, `能力が上がった（${v0}→${st.v}）`);
   assert.ok(st.tact > 0, '特訓の道具が出た'); assert.equal(st.left, 0, '道具・文字は消える');

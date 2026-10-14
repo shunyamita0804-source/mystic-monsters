@@ -36,7 +36,7 @@ test('TN-03：大会2 対戦前比較（2026-10-07 刷新・2026-10-13 開発25 
   const c = fnOf('p9CompareScr');
   assert.match(c, /<header class="tbttl"><b>公式ランク\$\{RN\[t\.rank\]\}大会<\/b><\/header>/);
   assert.doesNotMatch(c, /試合 \/ 全/, 'ADDENDUM2：比較画面に試合数は出さない');
-  assert.match(c, /tbIdle\(m,0\)/); assert.match(c, /tbIdle\(o,1\)/); assert.match(c, /tbSkillDesc\(m\)/); assert.match(c, /tbSkillDesc\(o\)/);
+  assert.match(c, /tbIdle\(m,0\)/); assert.match(c, /tbIdle\(o,1\)/); assert.match(c, /tbSkillDesc\(m,1\)/); assert.match(c, /tbSkillDesc\(o,1\)/);   // 2026-10-14 実機試遊⑯：対戦前の比較は名前とスキル名だけ（説明は出さない＝2番目の引数）
   assert.match(c, /<b class="pcv">\$\{a\}<\/b><div class="pcb l" style="--c:\$\{STAT_COLOR\[k\]\}"><i style="width:\$\{TB_CMP_W\(a\)\}%"><\/i><\/div><span class="pcl">\$\{LAB\[k\]\}<\/span><div class="pcb r" style="--c:\$\{STAT_COLOR\[k\]\}"><i style="width:\$\{TB_CMP_W\(b\)\}%"><\/i><\/div><b class="pcv">\$\{b\}<\/b>/, '能力は数値と棒');
   assert.doesNotMatch(c, /戦力|勝率|有利|p9Ced\(/, '戦力・勝率・有利は出さない・セドリックは出さない');
   assert.match(c, /data-nsfx="1" onclick="p9VsGo\(this\)" aria-label="対戦開始"/); assert.doesNotMatch(c, /対戦表にもどる|class="pcback/, '開発25 A：戻るボタンは出さない'); assert.match(HTML, /const TB_CMP_MAX=999;function TB_CMP_W\(x\)\{x=Math\.max\(0,Math\.min\(TB_CMP_MAX,\+x\|\|0\)\);return \+\(x\/TB_CMP_MAX\*100\)\.toFixed\(2\)\}/, '999＝100% の一次の目盛り');
