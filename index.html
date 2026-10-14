@@ -5262,7 +5262,7 @@ window.addEventListener("unhandledrejection",rescue);
  *  ./version.json（小さな JSON。毎回取り直す）の build がこのページの MM_BUILD と違えば1回だけ reload（同じ版へは15分に1回まで＝読み込み直しを繰り返さない）。
  *  確かめる時：起動したとき・ページがメモリから戻ったとき（pageshow の persisted）・10分以上裏にいて表に戻ったとき。セーブ（mr4v6）には触れない（読み込み直しは iOS がタブを閉じたときと同じ＝つづきから）。
  *  公開するたびに MM_BUILD と version.json の build を同じ値に上げる（tests/dev24-1013.test.mjs で一致を確かめる） */
-const MM_BUILD="2026-10-14-walk48";
+const MM_BUILD="2026-10-14-play47";
 (function(){const K="mmbuildReload";let hidAt=0;
  const check=()=>{try{const x=new XMLHttpRequest();x.open("GET","./version.json?t="+Date.now(),true);x.timeout=8000;
   x.onload=()=>{try{if(x.status<200||x.status>=300)return;const b=(JSON.parse(x.responseText)||{}).build;if(!b||b===MM_BUILD)return;
