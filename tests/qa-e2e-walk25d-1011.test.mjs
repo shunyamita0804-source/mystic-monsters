@@ -1,7 +1,7 @@
 // =========================================================
 // 実ブラウザ：2.5D の歩行コマ（ガウルの front・back 各8コマ）と対戦表の横顔アイコン（5体）（2026-10-11）
 //  WK-B1（390×844・375×667）：本編 Chapter 1 の盤（worldCh1:true）でガウル＝16コマを重ねて置き全部読める・止まると正面（front の1コマ目）・
-//        足の位置と体の高さが静止の立ち絵とそろう・奥へ進む1歩は back・手前へ戻る1歩は front（左右反転なし＝ムーンウォークしない）・画面の外へ出ない
+//        足の位置と体の高さが静止の立ち絵とそろう・奥へ進む1歩は back・行き止まりから戻る1歩も back（2026-10-14 開発29：後ろから追うカメラ。旧は front）（左右反転なし＝ムーンウォークしない）・画面の外へ出ない
 //  WK-B2：横顔の歩行素材が無い種族（ソラモ）は従来どおり（後ろ姿の歩行＋手前は弾む）
 //  FC-B1（390×844・375×667）：対戦表（6体 E・8体 C）の顔＝faces_25d の横顔（読める・円の中）・読み込めないときは従来の丸い顔（faces）
 //  QA_E2E=1 のときだけ実行
@@ -36,7 +36,7 @@ const measure = (pg) => pg.evaluate(() => {
 });
 
 for (const size of [H.SIZES.base, H.SIZES.se]) {
-  test(`WK-B1（${size.join('×')}）：ガウルの 2.5D 歩行（front・back 各8コマ）＝止まると正面・足と体の高さ・奥へ back／手前へ front`, { skip: SKIP, timeout: 150000 }, async () => {
+  test(`WK-B1（${size.join('×')}）：ガウルの 2.5D 歩行（front・back 各8コマ）＝止まると正面・足と体の高さ・奥へ back／行き止まりから戻る間も back（後ろから追うカメラ）`, { skip: SKIP, timeout: 150000 }, async () => {
     const p = await openPage({ size, worldCh1: true }); const pg = p.page; mkdirSync(SHOT, { recursive: true });
     await toBoard(pg, 1);
     await pg.waitForFunction(() => [...document.querySelectorAll('.rfw-mon img.wk')].every((i) => i.complete && i.naturalWidth > 0), null, { timeout: 30000 });
@@ -80,12 +80,16 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     await idle(pg);
     await pg.evaluate(() => { window.__seen = []; });
     await pg.evaluate(() => { window.__mr = Math.random; Math.random = () => (1 - 0.5) / 6; }); await pg.click('#brollbtn'); await pg.evaluate(() => { Math.random = window.__mr; });
-    await pg.waitForFunction(() => document.querySelector('.rfw-mon').dataset.dir === 'front', null, { timeout: 20000 });
+    // 2026-10-14 開発29（6）：本編の Chapter 1 は後ろから追うカメラ＝行き止まりから戻る間もカメラが戻る向きへ回る＝戻る1歩も画面の上へ進む後ろ姿（back）。
+    //   旧（北が上のカメラ）は D_LLA_10 → 09 が画面の下へ＝front だった。front のコマは止まっている姿（上）で使う
+    await pg.waitForFunction(() => document.querySelector('.rfw-mon').dataset.dir === 'back', null, { timeout: 20000 });
     await pg.waitForTimeout(160);
-    await pg.screenshot({ path: path.join(SHOT, `${size[0]}_walk_front.png`) });
+    await pg.screenshot({ path: path.join(SHOT, `${size[0]}_walk_return.png`) });
     await idle(pg);
     const seen2 = (await pg.evaluate(() => __seen)).filter((s) => s[0]);
-    assert.ok(seen2.length && seen2[0][0] === 'front' && seen2[0][1] === 'front' && !seen2[0][3], `手前へは front・反転なし ${JSON.stringify(seen2.slice(0, 4))}`);
+    assert.ok(seen2.length && seen2.every((s) => s[0] === 'back' && s[1] === 'back' && !s[3]), `戻る間も後ろ姿（back）・反転なし ${JSON.stringify(seen2.slice(0, 4))}`);
+    const yw = await pg.evaluate(() => { const N = MMRF_DATA.nodes, a = N.D_LLA_10, b = N.D_LLA_09; return { yaw: MMWB.world().state().yaw, want: MMRF_WORLD.headingYaw(b[0] - a[0], b[1] - a[1]) }; });
+    assert.ok(Math.abs(((yw.yaw - yw.want) % 360 + 540) % 360 - 180) < 45, `カメラは戻る向き ${JSON.stringify(yw)}`);
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   });
 }
