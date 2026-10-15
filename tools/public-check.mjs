@@ -293,8 +293,6 @@ try {
     await sleep(2500); await q.evaluate(() => MMQA.endBattle());
     for (let k = 0; k < 60 && await q.evaluate(() => !!document.getElementById('bt')); k++) await sleep(500);
     await q.waitForFunction(() => { const v = document.getElementById('mmqa'); return v && v.style.display !== 'none' && !!v.querySelector('.qoff'); }, null, { timeout: 30000 }).catch(() => {});
-    await q.evaluate(() => { const b = document.querySelector('#mmqa .qoff'); if (b) b.click(); }); await sleep(800);
-    const s1 = await q.evaluate(() => ({ save: localStorage.getItem('mr4v6'), on: MMQA.isOn(), rn: !!document.querySelector('#app>.rn') }));
     // 2026-10-15：フルーネの技アニメ 77枚（本体 42＋効果 35）と歩行 16コマが公開 URL で読める・QA のプレビューでコマが出る
     const fl = await q.evaluate(async () => {
       const D = window.MMFLMV_DATA || {}, urls = [];
@@ -312,6 +310,8 @@ try {
     for (let k = 0; k < 60 && await q.evaluate(() => !!document.getElementById('bt')); k++) await sleep(500);
     await q.waitForFunction(() => { const v = document.getElementById('mmqa'); return v && v.style.display !== 'none' && !!v.querySelector('.qoff'); }, null, { timeout: 30000 }).catch(() => {});
     rec('2026-10-15：フルーネの技アニメ 77枚・歩行 16コマが読める・QA のプレビュー（No.07）でコマが出る', fl.anim === 77 && fl.animOk === 77 && fl.walk === 16 && fl.walkOk === 16 && flb.prev && flb.sp === 5 && flb.cut && flb.idle, JSON.stringify({ fl, flb }));
+    await q.evaluate(() => { const b = document.querySelector('#mmqa .qoff'); if (b) b.click(); }); await sleep(800);
+    const s1 = await q.evaluate(() => ({ save: localStorage.getItem('mr4v6'), on: MMQA.isOn(), rn: !!document.querySelector('#app>.rn') }));
     rec('2026-10-15：QA 試合（ソラモ No.01）→ OFF で通常のセーブは同じ・通常の牧場へ戻る', qb.bt && qb.names.every((x) => x === 'たいあたり') && s1.save === s0 && !s1.on && s1.rn, JSON.stringify({ qb, same: s1.save === s0, on: s1.on, rn: s1.rn }));
     await q.screenshot({ path: `${OUT}/qa_off_390.png` }).catch(() => {});
     await q.close(); await ctxQ.close();
