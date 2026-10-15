@@ -370,6 +370,12 @@
         front: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/walk_25d/solamo/solamo_walk_front_0${i}.webp`), fps: 12, idle: 0, h: 1.169, foot: 0.066, face: 'none' },
         back: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/walk_25d/solamo/solamo_walk_back_0${i}.webp`), fps: 12, idle: 0, h: 1.169, foot: 0.066, face: 'none' },
       } },
+      // 2026-10-15：フルーネの 2.5D 歩行（front・back 各8コマ・assets/monsters/walk_25d/README.md）。未解禁＝本編の盤には出ない（QA 試遊モードの「歩行を確認」だけ）。
+      //   原本は加工済み・ユーザー実機未検収（back_03・back_05・front_01 は見切れの可能性）。h・foot は他の4体と同じ基準（体の高さ≒静止の立ち絵の 0.98・足の下の余白）で測った値
+      flurene: { standFace: 'none', dirs: {
+        front: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/walk_25d/flurene/flurene_walk_front_0${i}.webp`), fps: 12, idle: 0, h: 1.125, foot: 0.047, face: 'none' },
+        back: { frames: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `./assets/monsters/walk_25d/flurene/flurene_walk_back_0${i}.webp`), fps: 12, idle: 0, h: 1.125, foot: 0.047, face: 'none' },
+      } },
     },
     // 2026-10-11 向きの切り替え（本編 Chapter 1 の1枚の世界のボード＝js/chapter/world-board.js の pickDir）：dirs＝{ back（奥へ）, front（手前へ）, side（横へ） }。
     //  各セットは { frames, fps, idle, h（静止の立ち絵の高さに対する高さ）, foot（絵の下の透明な余白＝高さに対する割合・足を合わせる）, face（'none'＝真後ろ・真正面／'right'・'left'＝その向きの絵。進む向きで左右反転） }。

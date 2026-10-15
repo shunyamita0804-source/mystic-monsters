@@ -5,7 +5,9 @@
 //    実戦できる技（技の番号 SK があるもの＝ソラモ・ガウル・ノビトン・レグナス）は「この技で QA 試合」＝ルーレットの6枠をすべてその技にして、
 //    安全なテスト相手（ランク E の練習試合の相手・ソラモ）と戦う（戦闘の計算・技の性能・ルーレットは変えない）。
 //    ジオル＝技の性能が未決（SK の番号なし）＝実戦は無し・技アニメのコマのプレビュー（MM25D.preview）だけ。
-//    フルーネ＝技の性能・技アニメが未承認＝静止カード・待機絵・比較画面の確認だけ（『未実装／要仕様確認』と出す）。
+//    フルーネ＝技の性能が未承認＝実戦は無し。2026-10-15：技アニメ 77枚（本体 42＋効果 35）のプレビュー（MM25D.preview('flurene', No)）と
+//      2.5D 歩行 front・back 各8コマの確認（「歩行を確認」）。効果の無い技（09 は2枚・10 は0枚）は『FX追加待ち』と出す（作らない）。
+//      プレビューの間だけ、ページの中の IMG[5]・MMARENA.IDLE[5] にフルーネの絵を入れる（終わり・OFF で消す＝本編のデータ・セーブは変えない）。
 //  ・OFF：控えたセーブへ戻して（ページの中の S を元どおり）通常の画面（切り替えた所＝牧場／ベースキャンプ）へ。再読み込みすると必ず OFF（QA の状態は保存しない）。
 //  ・通常の牧場の数・所有・市場・合体・図鑑・技の習得・G・報酬・チケット・順位・記録は増減しない（すべて控えた S ごと捨てる）。
 (function (root) {
@@ -19,7 +21,15 @@
     Object.freeze({ sp: 3, key: 'jiol' }), Object.freeze({ sp: 4, key: 'regnas' }), Object.freeze({ sp: 5, key: 'flurene' }),
   ]);
   const KS = ['li', 'po', 'in', 'hi', 'ev', 'de'];
-  const ST = { on: false, snap: null, from: null, mon: 0, sel: null, battling: false, prev: false, wrap: false, set: null, rem: null };
+  const ST = { on: false, snap: null, from: null, mon: 0, sel: null, battling: false, prev: false, wrap: false, set: null, rem: null, flr: null };
+  const FL = () => root.MMFLMV_DATA || null;   // フルーネの技アニメ（js/battle/flurene-moves-data.js）
+  /** フルーネの技アニメの枚数（本体・効果）。効果が本体より少ない技＝『FX追加待ち』 */
+  function animInfo(key, no) {
+    if (key !== 'flurene') return null;
+    const d = FL() && FL()[no]; if (!d) return null;
+    return { bodies: d.bodies, effects: d.effects, wait: d.effects < d.bodies };
+  }
+  const animTxt = (a) => a ? `本体 ${a.bodies}・効果 ${a.effects}${a.wait ? '（FX追加待ち）' : ''}` : '';
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const G = (n) => { try { return (0, eval)(n); } catch (e) { return undefined; } };   // index.html の大域（S・SK・fight など）を呼ぶ時点で読む
   const M = () => root.MMP10M;
@@ -38,11 +48,12 @@
     if (key === 'flurene') { const f = m.pendingSpecies('flurene'); return (f && f.moves) || []; }
     const L = m.movesOf(key); return Array.isArray(L) ? L : (L && L.list) || [];
   }
-  /** 技の状態：battle＝実戦可能（SK の番号があり技のデータがある）／preview＝技アニメのコマのプレビューだけ（ジオル）／static＝静止カードだけ（フルーネ＝未実装／要仕様確認） */
+  /** 技の状態：battle＝実戦可能（SK の番号があり技のデータがある）／preview＝技アニメのコマのプレビューだけ（ジオル・フルーネ）／static＝静止カードだけ（技アニメのデータが無いとき） */
   function statusOf(key, slot) {
     const SK = G('SK');
     if (slot != null && SK && SK[slot]) return 'battle';
     if (key === 'jiol') return 'preview';
+    if (key === 'flurene' && FL() && slot == null) return 'preview';
     return 'static';
   }
   /** 6体×10技の一覧（テスト・画面の共通） */
@@ -52,7 +63,7 @@
       const inf = info(x.sp) || {}, md = moveData(x.key), cards = C ? C.list(x.key) : [];
       const moves = cards.map((c) => {
         const d = md.find((v) => v.no === c.no) || {};
-        return { no: c.no, id: c.id, name: c.name || d.name, slot: c.slot, src: c.src, status: statusOf(x.key, c.slot), type: d.type || null,
+        return { no: c.no, id: c.id, name: c.name || d.name, slot: c.slot, src: c.src, status: statusOf(x.key, c.slot), anim: animInfo(x.key, c.no), type: d.type || null,
           power: d.power == null ? null : d.power, accuracy: d.accuracy == null ? null : d.accuracy, critical: d.critical == null ? null : d.critical, desc: d.desc || null };
       });
       return { sp: x.sp, key: x.key, name: inf.name, note: inf.note, img: inf.img, idle: inf.idle, moves };
@@ -125,6 +136,20 @@
       '#mmqa-bar.top{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 98px);left:6px;right:auto;padding:4px 6px}',
       '#mmqa-bar button{min-width:38px;min-height:34px;padding:4px 8px;border:1.5px solid #fff;border-radius:8px;background:#0b1636;color:#fff;font:800 12px/1 "Noto Sans JP",sans-serif;cursor:pointer}',
       '#bt.mmqa-prev .bui,#bt.mmqa-prev .mmr,#bt.mmqa-prev .gow,#bt.mmqa-prev #go{visibility:hidden!important}',
+      '#mmqa .qfx{display:block;font-size:10px;color:#ffd27a}',
+      '#mmqa .qwalk{position:fixed;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:10px;background:rgba(4,8,22,.88)}',
+      '#mmqa .qwst{position:relative;width:min(92vw,360px);height:min(46dvh,330px);border:2px solid #d8b25a;border-radius:12px;overflow:hidden;background:#1b2033}',
+      '#mmqa .qwst.light{background:#e8e2d0}',
+      '#mmqa .qwst i{position:absolute;left:8%;right:8%;bottom:14%;height:2px;background:rgba(255,222,89,.7)}',
+      '#mmqa .qwbox{position:absolute;left:50%;bottom:14%;width:0;height:58%}',
+      '#mmqa .qwbox img{position:absolute;left:50%;transform:translateX(-50%);max-width:none;pointer-events:none}',
+      '#mmqa .qwbox img.qwf{opacity:0}#mmqa .qwbox img.qwf.on{opacity:1}',
+      '#mmqa .qwbox img.qws{opacity:.38;filter:none}#mmqa .qwbox img.qws[hidden]{display:none}',
+      '#mmqa .qwinfo{font:800 13px/1.3 "Noto Sans JP",sans-serif;color:#fff3d6;text-align:center}',
+      '#mmqa .qwbtn{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-width:400px}',
+      '#mmqa .qwbtn button{min-height:40px;min-width:62px;padding:6px 10px;border:1.5px solid #d8b25a;border-radius:10px;background:#1d2f66;color:#fff3d6;font:800 12px/1.2 "Noto Sans JP",sans-serif;cursor:pointer}',
+      '#mmqa .qwbtn button.on{background:#c27a12;color:#fff;border-color:#fff0c0}',
+      '#mmqa .qwnote{max-width:400px;font-size:11px;line-height:1.5;color:#e8cf8c;text-align:center}',
     ].join('\n');
     doc.head.appendChild(s);
   }
@@ -154,7 +179,7 @@
     const snap = ST.snap; hideBar(); const v = doc && doc.getElementById('mmqa'); if (v) v.remove();
     const cmp = doc && doc.getElementById('cmp'); if (cmp) cmp.remove();
     try { (0, eval)('S=JSON.parse(' + JSON.stringify(snap) + ')'); } catch (e) {}
-    ST.on = false; ST.snap = null; ST.battling = false; ST.prev = false; guardStorage(false);
+    ST.on = false; ST.snap = null; ST.battling = false; ST.prev = false; guardStorage(false); unlendFlurene();
     const from = ST.from; ST.from = null;
     try { if (from === 'basecamp' && G('S') && G('S').m) G('fmScr')(); else G('farm')(); } catch (e) { try { G('lobby')(); } catch (er) {} }
     syncSwitch();
@@ -174,15 +199,16 @@
     const v = doc.getElementById('mmqa'); if (!v) return;
     const cat = catalog(), x = cat[ST.mon] || cat[0];
     const sum = (mv) => mv.status === 'battle' ? '実戦可能' : mv.status === 'preview' ? '技アニメのプレビュー' : '未実装／要仕様確認';
-    const monNote = x.key === 'jiol' ? '技の性能が未決＝実戦は無し（技アニメのコマのプレビューだけ）' : x.key === 'flurene' ? '未解禁・技の性能と技アニメは未承認＝静止カードと絵の確認だけ（未実装／要仕様確認）' : x.key === 'regnas' ? 'ライバル専用のモンスター＝QA だけの貸与（本番では使えない）' : '全10技を QA 試合で確認できる';
+    const monNote = x.key === 'jiol' ? '技の性能が未決＝実戦は無し（技アニメのコマのプレビューだけ）' : x.key === 'flurene' ? (FL() ? '未解禁・技の性能は未承認＝実戦は無し（技アニメのプレビューと歩行の確認だけ）' : '未解禁・技の性能と技アニメは未承認＝静止カードと絵の確認だけ（未実装／要仕様確認）') : x.key === 'regnas' ? 'ライバル専用のモンスター＝QA だけの貸与（本番では使えない）' : '全10技を QA 試合で確認できる';
     v.innerHTML = `<div class="qh"><b>QA モード：全モンスター・全技試遊（ON）</b><small>試遊専用・通常のセーブには保存しません（OFF または再読み込みで元どおり）</small><button class="qoff" type="button" data-nsfx="1">QA を OFF にして通常へ戻る</button></div>`
-      + `<div class="qtabs" role="tablist">${cat.map((c, i) => `<button class="qtab${i === ST.mon ? ' on' : ''}" type="button" data-i="${i}" data-nsfx="1" role="tab" aria-selected="${i === ST.mon}"><img src="${esc(c.img)}" alt="">${esc(c.name)}<i>${c.moves.filter((m) => m.status === 'battle').length ? '実戦' : c.key === 'jiol' ? 'プレビュー' : '静止画'}</i></button>`).join('')}</div>`
-      + `<div class="qbody"><div class="qmon" data-key="${esc(x.key)}"><img src="${esc(x.img)}" alt=""><div><b>${esc(x.name)}${x.note ? `<small style="display:inline;margin-left:6px">${esc(x.note)}</small>` : ''}</b><small>${esc(monNote)}</small></div><button class="qbt qcmp" type="button" data-nsfx="1">比較画面を確認</button></div>`
-      + `<div class="qgrid">${x.moves.map((mv, i) => `<button class="qcard${ST.sel === i ? ' on' : ''}" type="button" data-n="${i}" data-status="${mv.status}" data-nsfx="1"><img src="${esc(mv.src)}" alt="" loading="lazy" decoding="async"><b>${String(mv.no).padStart(2, '0')} ${esc(mv.name)}</b><span class="qst ${mv.status}">${sum(mv)}</span></button>`).join('')}</div></div>`;
+      + `<div class="qtabs" role="tablist">${cat.map((c, i) => `<button class="qtab${i === ST.mon ? ' on' : ''}" type="button" data-i="${i}" data-nsfx="1" role="tab" aria-selected="${i === ST.mon}"><img src="${esc(c.img)}" alt="">${esc(c.name)}<i>${c.moves.filter((m) => m.status === 'battle').length ? '実戦' : c.moves.some((m) => m.status === 'preview') ? 'プレビュー' : '静止画'}</i></button>`).join('')}</div>`
+      + `<div class="qbody"><div class="qmon" data-key="${esc(x.key)}"><img src="${esc(x.img)}" alt=""><div><b>${esc(x.name)}${x.note ? `<small style="display:inline;margin-left:6px">${esc(x.note)}</small>` : ''}</b><small>${esc(monNote)}</small></div><div style="margin-left:auto;display:flex;flex-direction:column;gap:5px">${walkSets(x.key) ? '<button class="qbt qwk" type="button" data-nsfx="1">歩行を確認</button>' : ''}<button class="qbt qcmp" type="button" data-nsfx="1">比較画面を確認</button></div></div>`
+      + `<div class="qgrid">${x.moves.map((mv, i) => `<button class="qcard${ST.sel === i ? ' on' : ''}" type="button" data-n="${i}" data-status="${mv.status}" data-nsfx="1"><img src="${esc(mv.src)}" alt="" loading="lazy" decoding="async"><b>${String(mv.no).padStart(2, '0')} ${esc(mv.name)}</b><span class="qst ${mv.status}">${sum(mv)}</span>${mv.anim ? `<span class="qfx">${esc(animTxt(mv.anim))}</span>` : ''}</button>`).join('')}</div></div>`;
     v.querySelector('.qoff').onclick = () => off();
     v.querySelectorAll('.qtab').forEach((b) => { b.onclick = () => { ST.mon = +b.dataset.i; ST.sel = null; render(); }; });
     v.querySelectorAll('.qcard').forEach((b) => { b.onclick = () => { ST.sel = +b.dataset.n; detail(); }; });
     v.querySelector('.qcmp').onclick = () => compare(x, null);
+    const wk = v.querySelector('.qwk'); if (wk) wk.onclick = () => walk(x);
   }
   function detail() {
     const v = doc.getElementById('mmqa'); if (!v) return;
@@ -193,9 +219,9 @@
     const act = mv.status === 'battle' ? '<button class="qgo" type="button" data-nsfx="1">この技で QA 試合</button>' : mv.status === 'preview' ? '<button class="qgo" type="button" data-nsfx="1">技アニメを再生（QA 画面）</button>' : '';
     const pics = x.key === 'flurene' ? `<div class="qpics"><figure><img src="${esc(x.img)}" alt="">正式立ち絵</figure><figure><img src="${esc(x.idle)}" alt="">バトル待機絵</figure><figure><img src="${esc(root.MMCMP ? root.MMCMP.src(5) : '')}" alt="">比較画面の絵</figure></div>` : '';
     const what = mv.status === 'battle' ? 'ルーレットの6枠をすべてこの技にして、テスト相手（ランク E の練習試合の相手・ソラモ）と戦います。勝敗・G・ランクは保存されません。'
-      : mv.status === 'preview' ? 'ジオルの技は性能（威力・命中など）が未決のため実戦はありません。バトル画面で技アニメのコマだけを再生します（判定・ダメージなし）。'
+      : mv.status === 'preview' ? `${x.key === 'flurene' ? 'フルーネ' : 'ジオル'}の技は性能（威力・命中など）が未決のため実戦はありません。バトル画面で技アニメのコマだけを再生します（判定・ダメージなし）。${mv.anim ? `この技の絵＝${animTxt(mv.anim)}。${mv.anim.wait ? '効果の絵はまだ届いていません（作っていません）。' : ''}` : ''}`
         : '未実装／要仕様確認：フルーネの技は性能・技アニメが未承認のため、静止カードだけを確認できます（実戦・技アニメはありません）。';
-    d.innerHTML = `<div><img class="big" src="${esc(mv.src)}" alt=""><h3>${String(mv.no).padStart(2, '0')} ${esc(mv.name)}</h3><span class="qst ${mv.status}">${mv.status === 'battle' ? '実戦可能' : mv.status === 'preview' ? '技アニメのプレビュー（実戦不可）' : '未実装／要仕様確認'}</span><p>${esc(stat)}${mv.desc ? '<br>' + esc(mv.desc) : ''}</p><p>${esc(what)}</p>${pics}<div class="qrow">${act}<button class="qno" type="button" data-nsfx="1">閉じる</button></div></div>`;
+    d.innerHTML = `<div><img class="big" src="${esc(mv.src)}" alt=""><h3>${String(mv.no).padStart(2, '0')} ${esc(mv.name)}</h3><span class="qst ${mv.status}">${mv.status === 'battle' ? '実戦可能' : mv.status === 'preview' ? '技アニメのプレビュー（実戦不可）' : '未実装／要仕様確認'}</span>${mv.anim ? `<span class="qfx">${esc(animTxt(mv.anim))}</span>` : ''}<p>${esc(stat)}${mv.desc ? '<br>' + esc(mv.desc) : ''}</p><p>${esc(what)}</p>${pics}<div class="qrow">${act}<button class="qno" type="button" data-nsfx="1">閉じる</button></div></div>`;
     v.appendChild(d);
     d.querySelector('.qno').onclick = () => d.remove();
     d.addEventListener('click', (e) => { if (e.target === d) d.remove(); });
@@ -231,14 +257,14 @@
   const skillName = (sp) => (root.MMCMP && root.MMCMP.skillName ? root.MMCMP.skillName(sp) : '');
   function wrapAfter() {
     const A = root.after; if (typeof A !== 'function' || A.__mmqa) return;
-    const W = function () { if (ST.on && ST.battling) { ST.battling = false; ST.prev = false; hideBar(); setTimeout(show, 0); return undefined; } return A.apply(this, arguments); };
+    const W = function () { if (ST.on && ST.battling) { ST.battling = false; ST.prev = false; hideBar(); unlendFlurene(); setTimeout(show, 0); return undefined; } return A.apply(this, arguments); };
     W.__mmqa = true; root.after = W;
   }
   function start(m, prev) {
     const S = G('S'); if (!S || !m) return false;
     // fight() は「戦闘前の記録（m.raise.battle）」がある呼び出しだけを動かす＝QA の個体（控えた S には無い・ページの中だけ）に練習試合の記録を直接持たせる（MMP8.beginBattle は Chapter の中の遭遇だけ）
     m.raise = m.raise || {}; m.raise.battle = { kind: 'practice', rank: FOE.rank, done: false, qa: true, snap: { g: S.g, wins: S.wins, br: S.br, rk: m.rk, fa: m.fa, st: m.st } };
-    S.m = m; ST.battling = true; ST.prev = !!prev; wrapAfter();
+    S.m = m; ST.battling = true; ST.prev = !!prev; wrapAfter(); if (m.sp === 5) lendFlurene(); else unlendFlurene();
     const v = doc.getElementById('mmqa'); if (v) v.style.display = 'none';
     try { G('battleDress')({ rank: FOE.rank, label: 'QA 試遊', name: 'テスト相手' }); } catch (e) {}
     try { G('battleFoeOnce')(FOE.sp); } catch (e) {}
@@ -255,13 +281,73 @@
   function preview(x, mv) {
     const m = makeMon(x.sp); if (!m) return false;
     m.sk = [0]; m.eq = [0, 0, 0, 0, 0, 0];   // ルーレット・STOP は隠す（技は使わない）＝技アニメのコマを順に見せるだけ
+    m.speed = 10;   // QA の個体だけ：先にこちらの番＝ルーレットを隠したまま止まる（相手は動かない＝技アニメのコマに相手の攻撃が重ならない）
     if (!start(m, true)) return false;
     const play = (no) => { try { root.MM25D && root.MM25D.preview(x.key, no, 0); } catch (e) {} };
     const wait = () => { const b = doc.getElementById('bt'); if (!b) return void setTimeout(wait, 80); b.classList.add('mmqa-prev'); };
     wait();
-    bar(`QA：${x.name}の技アニメ`, x.moves.map((v) => ({ t: String(v.no).padStart(2, '0'), f: () => play(v.no), cur: v.no === mv.no })));
+    bar(`QA：${x.name}の技アニメ`, x.moves.map((v) => ({ t: String(v.no).padStart(2, '0') + (v.anim && v.anim.wait ? '*' : ''), f: () => play(v.no), cur: v.no === mv.no })).concat(x.key === 'flurene' ? [{ t: '* FX追加待ち', f: () => {} }] : []));
     setTimeout(() => play(mv.no), 1600);
     return true;
+  }
+  /** QA のプレビューの間だけ、フルーネ（予約番号 5）のバトルの絵をページの中に置く（IMG[5]・MMARENA.IDLE[5]）。終わり・OFF で元へ */
+  function lendFlurene() {
+    if (ST.flr) return;
+    const IMG = G('IMG'), A = root.MMARENA, inf = info(5); if (!inf) return;
+    const r = { len: IMG ? IMG.length : 0, img: !!(IMG && !Object.isFrozen(IMG) && IMG[5] === undefined), idle: A && A.IDLE && !Object.isFrozen(A.IDLE) && A.IDLE[5] === undefined };
+    if (r.img) IMG[5] = inf.img;
+    if (r.idle) A.IDLE[5] = 'idle_flurene';
+    ST.flr = r;
+  }
+  function unlendFlurene() {
+    const r = ST.flr; if (!r) return; ST.flr = null;
+    const IMG = G('IMG'), A = root.MMARENA;
+    if (r.img && IMG) IMG.length = r.len;
+    if (r.idle && A && A.IDLE) delete A.IDLE[5];
+  }
+  /** 歩行の確認（ch1a.js の monsterSprites[種族].dirs の front・back を、本編の盤と同じ fps・大きさ（h）・足（foot）で再生する。止めると front の1コマ目＝本編の盤の停止の姿） */
+  function walkSets(key) {
+    try { const c = root.MMCH && root.MMCH.getConfig && root.MMCH.getConfig(1), sp = c && c.monsterSprites && c.monsterSprites[key]; return key === 'flurene' && sp && sp.dirs && sp.dirs.front && sp.dirs.back ? sp.dirs : null; } catch (e) { return null; }
+  }
+  const WK = { t: null };
+  function walk(x) {
+    const v = doc.getElementById('mmqa'), D = walkSets(x.key); if (!v || !D) return;
+    const old = v.querySelector('.qwalk'); if (old) old.remove();
+    const st = { dir: 'front', i: 0, play: true, light: false, stand: false };
+    const w = doc.createElement('div'); w.className = 'qwalk'; w.setAttribute('role', 'dialog'); w.setAttribute('aria-label', '歩行の確認');
+    const frames = (dn) => D[dn].frames.map((f, i) => `<img class="qwf" data-dir="${dn}" data-i="${i}" src="${esc(f)}" alt="" decoding="async">`).join('');
+    w.innerHTML = `<div class="qwinfo"></div><div class="qwst"><i></i><div class="qwbox"><img class="qws" hidden src="${esc(x.img)}" alt="">${frames('front')}${frames('back')}</div></div>`
+      + '<div class="qwbtn"><button type="button" data-a="front" data-nsfx="1">前（front）</button><button type="button" data-a="back" data-nsfx="1">後ろ（back）</button><button type="button" data-a="play" data-nsfx="1">歩く／止める</button><button type="button" data-a="prev" data-nsfx="1">◀ コマ</button><button type="button" data-a="next" data-nsfx="1">コマ ▶</button><button type="button" data-a="bg" data-nsfx="1">背景 濃／淡</button><button type="button" data-a="stand" data-nsfx="1">立ち絵と重ねる</button><button type="button" data-a="close" data-nsfx="1">閉じる</button></div>'
+      + '<p class="qwnote">本編の盤と同じ 12fps・同じ大きさ／足の位置の計算。止めると前（front）の1コマ目（本編の盤の停止の姿）。原本は加工済み・実機未検収（back_03・back_05・front_01 は見切れの可能性）。</p>';
+    v.appendChild(w);
+    const box = w.querySelector('.qwbox'), info2 = w.querySelector('.qwinfo'), stand = w.querySelector('.qws');
+    const lay = () => {   // 静止の立ち絵の箱の高さ＝ステージの 58%（box の高さ）。歩行のコマ＝その h 倍の正方形・下を foot だけ下げる
+      const H = box.getBoundingClientRect().height;
+      w.querySelectorAll('img.qwf').forEach((im) => { const s = D[im.dataset.dir], sz = H * s.h; im.style.width = sz + 'px'; im.style.height = sz + 'px'; im.style.bottom = (-sz * (s.foot || 0)) + 'px'; });
+      stand.style.height = H + 'px'; stand.style.width = 'auto'; stand.style.bottom = '0px';
+    };
+    const draw = () => {
+      const s = D[st.dir], n = s.frames.length, i = (st.play || st.manual) ? st.i : (s.idle || 0);
+      w.querySelectorAll('img.qwf').forEach((im) => im.classList.toggle('on', im.dataset.dir === st.dir && +im.dataset.i === i));
+      info2.textContent = `${st.dir === 'front' ? '前（front）' : '後ろ（back）'} ${i + 1} / ${n}・${st.play ? `歩行中 ${s.fps}fps` : st.manual ? 'コマ送り' : '停止（front の1コマ目）'}`;
+      w.querySelector('.qwst').classList.toggle('light', st.light); stand.hidden = !st.stand;
+      w.querySelectorAll('.qwbtn button').forEach((b) => b.classList.toggle('on', (b.dataset.a === st.dir) || (b.dataset.a === 'play' && st.play) || (b.dataset.a === 'stand' && st.stand) || (b.dataset.a === 'bg' && st.light)));
+      w.dataset.dir = st.dir; w.dataset.i = String(i); w.dataset.play = st.play ? '1' : '0';
+    };
+    const tick = () => { if (!w.isConnected) return stop(); if (st.play) { st.i = (st.i + 1) % D[st.dir].frames.length; draw(); } };
+    const stop = () => { if (WK.t) { clearInterval(WK.t); WK.t = null; } };
+    const run = () => { stop(); WK.t = setInterval(tick, 1000 / (D[st.dir].fps || 12)); };
+    w.querySelector('.qwbtn').onclick = (e) => {
+      const a = e.target && e.target.dataset && e.target.dataset.a; if (!a) return;
+      if (a === 'front' || a === 'back') { st.dir = a; st.i = 0; st.manual = !st.play; }
+      else if (a === 'play') { st.play = !st.play; st.manual = false; if (!st.play) st.dir = 'front'; st.i = st.play ? 0 : (D.front.idle || 0); }
+      else if (a === 'prev' || a === 'next') { st.play = false; st.manual = true; const n = D[st.dir].frames.length; st.i = (st.i + (a === 'next' ? 1 : n - 1)) % n; }
+      else if (a === 'bg') st.light = !st.light;
+      else if (a === 'stand') st.stand = !st.stand;
+      else if (a === 'close') { stop(); w.remove(); return; }
+      draw();
+    };
+    lay(); draw(); run();
   }
   function bar(title, btns) {
     hideBar(); style();
@@ -302,6 +388,6 @@
     ENABLED, MONS, SAVE_KEY_RE, catalog, counts, statusOf,
     on, off, isOn: () => ST.on, active: () => ST.on, battling: () => ST.battling, snapshot: () => ST.snap,
     select: (i) => { ST.mon = Math.max(0, Math.min(5, i | 0)); ST.sel = null; render(); }, battle: (i, no) => { if (!ST.on) return false; const x = catalog()[i]; const mv = x && x.moves.find((v) => v.no === no); return x && mv ? (mv.status === 'battle' ? battle(x, mv) : mv.status === 'preview' ? preview(x, mv) : false) : false; },
-    endBattle, makeMon, FOE,
+    endBattle, makeMon, FOE, animInfo, walk: (i) => { if (!ST.on) return false; const x = catalog()[i]; if (!x || !walkSets(x.key)) return false; walk(x); return true; },
   });
 })(typeof window !== 'undefined' ? window : globalThis);

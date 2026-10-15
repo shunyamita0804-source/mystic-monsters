@@ -102,3 +102,31 @@ ZIP「次回Claude便_2体初期能力_レグナス牙獣種_2p5d歩行48コマ_
 | jiol/jiol_walk_back_06.png | assets/monsters/walk_25d/jiol/jiol_walk_back_06.webp | a40b3e30731691980b8408b14be593e5fc5f8f1f66a72f14e6243ad0b126b335 | |
 | jiol/jiol_walk_back_07.png | assets/monsters/walk_25d/jiol/jiol_walk_back_07.webp | 435c0baf902d31b970e0a8666b222050e192234bd1738f318295f91b5f174ab5 | |
 | jiol/jiol_walk_back_08.png | assets/monsters/walk_25d/jiol/jiol_walk_back_08.webp | 36853e9c3322471c6a1552a790330165524c3247f7cbc984efa4490f1ce998c3 | |
+
+## 2026-10-15：フルーネの front・back 各8コマ（ZIP Mismon_Flurene_Walk_And_Claude_Instructions_20261015 の walk/）
+
+- 原本は 512×512 の透過 PNG（歩行元の JPEG から ChatGPT が透過化＝**加工済み・ユーザー実機未検収**）。派生は縮小（384×384）と WebP（品質90・透明100）だけ（tools/walk25d/derive_flurene.py）。描き直し・切り抜き・色の変更はしていない
+- js/chapter/configs/ch1a.js の monsterSprites.flurene.dirs（fps 12・idle 0・h 1.125・foot 0.047＝足の位置と体の高さを他の4体と同じ基準で測った値）。**フルーネは未解禁＝本編の盤には出ない**（確認は QA 試遊モードの「歩行を確認」だけ）
+- 気づいた点（原本のまま・直していない）：
+  - 16枚とも葉の縁に白っぽい細い縁取り（半透明で明るい画素が各 約4,700〜6,000）＝濃い背景で目立つ（元の白背景の残り）
+  - back_05 の右端（x 458）に不透明な画素が縦に 57 並ぶ＝まっすぐ切れた所がある可能性（元のシートで隣のコマと接していた）
+  - back_03（左右 8・13）・front_01（左右 18・23）も端の列に不透明な画素＝見切れの可能性（指示書の注意のとおり・正式合格としない）
+
+| 原本 | 派生 | 原本の sha256 | 派生の sha256 |
+|---|---|---|---|
+| walk/front_01.png | flurene/flurene_walk_front_01.webp | 8b8dbe1fffb33bd43741928c2493c8ef2367ee6ac5c759245d51384d159cc1d1 | 64831c5689e78ef7183a2488c55308ea50ec7bcd54065c697a27e047c1832c0f |
+| walk/front_02.png | flurene/flurene_walk_front_02.webp | 041d93a33f4bf00b59b9e10c24426a5465d0d06d413c18b044c3c55f8d4ff0e8 | abfb9776953c3bc80752fb6427d5c3407660daf849ec4e338b6e1d32952ecd13 |
+| walk/front_03.png | flurene/flurene_walk_front_03.webp | 4b8382f5b2a4b0ab1229b08d3cd28e06491e9b7bd04daa4009a4e7f51e35adad | 9f098bcd3be32659d2d6fdcccf8d5913640201eb0dcc04ba4bdab227ca9132f1 |
+| walk/front_04.png | flurene/flurene_walk_front_04.webp | e082b725f510ab6f875859ddf824262da882d3840d476723faeef9e73d002075 | a6c1bf281188fa87494855e28956c518c702cd799f47ee4237f19485e1367f6b |
+| walk/front_05.png | flurene/flurene_walk_front_05.webp | 3fa3e9f1b3aa2fed97f9ba040ba0ae0240be56d1f1afbe6d3fd27e851f75a7a4 | 77400358de9e15c2a17d3e08e2194bed70b40b85652cdbfe11e3b84da658841e |
+| walk/front_06.png | flurene/flurene_walk_front_06.webp | 0e81bdfa59a0cdb256eb94ecb4cf3937eae4bc53b648654f379c31be143eef56 | 64a2180d2efb1d8365402d0feaceb5b8019df2c68406dedcf2cb0eeed5181e3d |
+| walk/front_07.png | flurene/flurene_walk_front_07.webp | 8ab93c1e193ef99df31112c85caeb03e6a5a1d22202e154e9c5d3f9c27858157 | 2154e762725be1ca6367b646fb0948a579d3e1b918bea752dca5301273b1b02c |
+| walk/front_08.png | flurene/flurene_walk_front_08.webp | fef00883c77af35447d9f645481a6e038df180896aa9125a6671d83f12e6ac9d | ff8c0f72581d4adc2f6bb9ca9c88033872beddd1394c49ba450b6a18c59c10d8 |
+| walk/back_01.png | flurene/flurene_walk_back_01.webp | 1ac27a85d60781c45934ca9ccfb73777e7f949b3ae77f5a780423e2bd14e098a | dc90924b972f5907259bf1e1387b09ffca810803a1c94784e580a3f578a33e14 |
+| walk/back_02.png | flurene/flurene_walk_back_02.webp | cdf5da287893c3d59c3722b98be2252347452f1c512e70ac812f64ada20ac1f4 | 1e81fd28c990f98aa4df64eead6252fffe5fe0f31ca94f6982ec0c9a9411ec28 |
+| walk/back_03.png | flurene/flurene_walk_back_03.webp | 73b5543afebf1bc11a78e679feea08e2ecc26a7ad800d80051a6d4a732a75a28 | 1c508c4f7a4bce0398eda8ea51b337b16e34ccc278d5d8e5447af8a8c11c0eda |
+| walk/back_04.png | flurene/flurene_walk_back_04.webp | e0e055c41cf9aa974bfbc027737c80b34672532c5c35894105533113d830b740 | 254422d4525057d0fcdcac829db4c19b51c7b864ae0e4dce571b064467556a48 |
+| walk/back_05.png | flurene/flurene_walk_back_05.webp | b810595a84fe5e58fbfdf9055616a325d3e6c30323ec8ad296febf471745723e | 176db628c6adbb2cbb4c585452a8263bae7217d8013aa0ccbd7931d1ced1fb87 |
+| walk/back_06.png | flurene/flurene_walk_back_06.webp | 465a6da1bb6b37082557888ee95dc0e3f2bdb49d3ef8bd3035e53c9a9c8700ff | 77c0112dd308fbc69a572f21014561609bfc681cdca9b8f4f00f1a679af7b775 |
+| walk/back_07.png | flurene/flurene_walk_back_07.webp | 61949935f4c7231e55c7fd1f35d7f05785a26a30b845d227b93b9bff8f9878af | f3ca63a05b2afac2ceb14bee27090532456c9d3f8eaa1fcd912fa4c375c64f9d |
+| walk/back_08.png | flurene/flurene_walk_back_08.webp | 41ab479e9542516f5398a6a568cb76472eec88b535578c138d11db092c9fccd4 | 37387717f8c929bec4df6d3af6daa048db51aab96f61af7cd5bf7aed18d4adf1 |
