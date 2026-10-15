@@ -19,6 +19,25 @@ const MONS = [{ sp: 0, name: 'ソラモ', ...E.w.MMP10M.baseOf(0) }, { sp: 1, na
 const BOARDS = { 'Ch1-A（基準）': globalThis.MMRF_DATA, 'Ch2-A': CH2.A, 'Ch2-B': CH2.B, 'Ch2-C': CH2.C };
 // 案の比較だけ：CH2_BOARDS=Ch2-A,Ch2-B のように回す盤を絞る（既定は全部）
 if (process.env.CH2_BOARDS) for (const k of Object.keys(BOARDS)) if (!process.env.CH2_BOARDS.split(',').includes(k)) delete BOARDS[k];
+// 2026-10-15 第3版：食事のあるモデル（CH2_FOOD=個数）。本編の Chapter 1 と同じ「空腹 80 以上でジャガイモ（−10）を1ターンに1個・ターンは使わない」
+//  （新人支援のジャガイモ 10個・バッグ 2枠＝最大 20個が目安）。それ以外は P.simulate と同じ手順（MMRF_PLAY の公開関数だけを使う＝ゲームのコードは変えない）
+const FOOD = Number(process.env.CH2_FOOD) || 0, EAT_AT = 80, POTATO = 10;
+function simFood(D, o) {
+  const st = P.attach(D, C.create(D, o), { monster: o.monster });
+  const pickRng = C.mulberry(((o.seed || 1) ^ 0xC0FFEE) >>> 0);
+  let food = FOOD, ateTurn = -1; st.ate = 0;
+  for (let guard = 0; guard < 400 && !st.done && !st.timeUp; guard++) {
+    const n = st.play.notice;
+    if (n) { if (n.kind === 'choice') P.choose(D, st, Math.floor(pickRng() * n.choices.length)); P.ack(st); continue; }
+    if (food > 0 && ateTurn !== st.turn && st.play.fat >= EAT_AT) { st.play.fat = Math.max(0, st.play.fat - POTATO); food--; ateTurn = st.turn; st.ate++; }
+    if (st.play.fat >= REST_AT || !P.canRoll(D, st, C)) { if (P.rest(D, st, C)) continue; break; }
+    if (P.roll(D, st, C) == null) break;
+    let adv = {};
+    for (let g = 0; g < 64; g++) { const ev = C.advance(D, st, adv); const c = ev.find((x) => x.type === 'choice'); if (!c) break; adv = { choose: o.policy(D, st, c.options) }; }
+    P.land(D, st, C);
+  }
+  return st;
+}
 /** 分かれ道の方針：寄り道は SPUR の割合で（未取得のときだけ）・本線は乱数。Chapter 1 の makePolicy（J0／H の名前に依存）は使わない */
 function policy(rng) {
   return (D, st, ops) => {
@@ -35,7 +54,7 @@ for (const [name, D] of Object.entries(BOARDS)) {
   const r = { n: 0, goal: 0, turns: [], gain: [], rew: 0, rewEach: {}, statStops: [], empty: [], spurOpp: [], timeAt: {}, rests: [], fat: [] };
   for (const mon of MONS) for (let i = 1; i <= N; i++) {
     const seed = (i + SEED0) * 7919 + 13, rng = C.mulberry((seed ^ 0x2CE2) >>> 0);
-    const st = P.simulate(D, C, { seed, monster: mon, policy: policy(rng), restAt: REST_AT, randOpen: undefined });
+    const st = FOOD ? simFood(D, { seed, monster: mon, policy: policy(rng) }) : P.simulate(D, C, { seed, monster: mon, policy: policy(rng), restAt: REST_AT, randOpen: undefined });
     r.n++; if (st.done) { r.goal++; r.turns.push(st.turn); }
     else { const seg = Object.entries(D.segments).find(([, s]) => s[3].includes(st.node)); const k = seg ? seg[0] : st.node; r.timeAt[k] = (r.timeAt[k] || 0) + 1; }
     r.gain.push(K.reduce((a, k) => a + (st.play.stats[k] - st.play.mon.base[k]), 0));
@@ -56,4 +75,4 @@ const base = out['Ch1-A（基準）'];
 if (base) for (const k of ['Ch2-A', 'Ch2-B', 'Ch2-C'].filter((k) => out[k])) { const o = out[k]; o.vsCh1 = { goalPP: +(o.goal - base.goal).toFixed(1), gainPct: +((o.gain / base.gain - 1) * 100).toFixed(1), rewardPP: +(o.rewardRate - base.rewardRate).toFixed(1) }; }
 const a2 = out['Ch2-A'];
 if (a2) for (const k of ['Ch2-B', 'Ch2-C'].filter((k) => out[k])) { const o = out[k]; o.vsCh2A = { goalPP: +(o.goal - a2.goal).toFixed(1), gainPct: +((o.gain / a2.gain - 1) * 100).toFixed(1), rewardPP: +(o.rewardRate - a2.rewardRate).toFixed(1) }; }
-console.log(JSON.stringify({ N, SPUR, REST_AT, monsters: MONS.map((m) => m.name), out }, null, 1));
+console.log(JSON.stringify({ N, SPUR, REST_AT, FOOD, monsters: MONS.map((m) => m.name), out }, null, 1));

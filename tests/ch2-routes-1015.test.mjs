@@ -7,7 +7,7 @@
 //  C2-06 2026-10-15 追補（論点 2・3・5）：特殊挑戦は成功＝近道・失敗＝回り道・高さ（海面 0・海底 −depth・下降／螺旋塔の上昇は単調）・螺旋塔 12〜13 歩・海底の地点は盆地の中・
 //        報酬 7 枠の中身の種類と数は Chapter 1 と同じ・探索路（explore）は道のデータにある区間
 //  C2-07 試作の進行が道のデータの割り当てを使う（報酬の中身・能力の道の偏り）・Chapter 1 のデータでは従来どおり
-//  C2-08 2026-10-15 追補2：道のデータ・tools/ch2/out/summary.json・設計書（DESIGN.md）の数値が一致（地点数 A 298・B 280・C 304、特殊挑戦の成功／失敗 A 6／20・B 2／14・C 6／18、螺旋塔）
+//  C2-08 2026-10-15 追補2：道のデータ・tools/ch2/out/summary.json・設計書（DESIGN.md）の数値が一致（地点数 A 298・B 284（第3版）・C 304、特殊挑戦の成功／失敗 A 6／20・B 2／18・C 6／18、螺旋塔）
 //  C2-05 隔離：本編（world-driver・world-board・raising.js）と Chapter 1 の試作のデータ（roadfirst-data.js・roadfirst-routes.js）は ch2-routes を参照しない・保存の鍵は別
 // =========================================================
 import test from 'node:test';
@@ -154,7 +154,7 @@ test('C2-07：試作の進行が道のデータの割り当てを使う（報酬
 
 test('C2-08：道のデータ・summary.json・設計書の数値が一致（2026-10-15 追補2）', () => {
   const sum = JSON.parse(rd('tools/ch2/out/summary.json')), doc = rd('docs/ch2_abc_design_1015/DESIGN.md');
-  const WANT = { A: { nodes: 298, ok: 6, ng: 20, sp: 12 }, B: { nodes: 280, ok: 2, ng: 14, sp: 12 }, C: { nodes: 304, ok: 6, ng: 18, sp: 13 } };
+  const WANT = { A: { nodes: 298, ok: 6, ng: 20, sp: 12 }, B: { nodes: 284, ok: 2, ng: 18, sp: 12 }, C: { nodes: 304, ok: 6, ng: 18, sp: 13 } };
   const L = (D, sid) => D.segments[sid][3].length - 1;
   for (const [k, w] of Object.entries(WANT)) {
     const D = R[k], n = Object.keys(D.nodes).length;

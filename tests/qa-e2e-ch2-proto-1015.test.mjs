@@ -133,3 +133,82 @@ for (const route of ['A', 'B', 'C']) {
     assert.deepEqual(p.errors, []);
   });
 }
+
+// CP-B4 2026-10-15 第3版：①B の特殊挑戦の成功の道（成功 2歩）を実際に歩く＝1歩ごとにモンスターが画面の上を連続して動く（瞬間移動に見えない）・
+//        祭壇への寄り道の入口と合流が見える ②A／B／C で止まるたびに「先の地点（lookahead 4）」が HUD と操作欄のあいだに入る割合
+const AHEAD_JS = () => {
+  const D = MMRF_CH2[MMRF.CH2], st = MMRF.state(), ids = MMRF_WORLD.lookahead(D, st.node, null, null, 4);
+  const top = document.querySelector('#rfp .rf-top').getBoundingClientRect().bottom, bot = document.querySelector('#rfp .rf-bot').getBoundingClientRect().top;
+  let vis = 0; const miss = [];
+  for (const id of ids) { const t = document.querySelector(`#rfp .rfw-tile[data-node="${id}"]`); if (!t) { miss.push(id); continue; } const r = t.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    if (cx >= 0 && cx <= innerWidth && cy >= top && cy <= bot) vis++; else miss.push(id); }
+  return { node: st.node, n: ids.length, vis, miss };
+};
+test('CP-B4 ルート B：特殊挑戦の成功の道（2歩）を連続して歩く・祭壇の寄り道と合流が見える', { skip: SKIP }, async () => {
+  const p = await open({ size: [390, 844] }); const pg = p.page;
+  await pg.goto(L.url + 'index.html?chapterBoard=roadfirst&rfData=ch2&ch2route=B&rfRand=open&rfSeed=7'); await pg.waitForSelector('#rfp .rfw');
+  await pg.evaluate(() => MMRF.skipIntro()); await idle(pg);
+  for (let i = 0; i < 200; i++) {   // 本線（寄り道は選ばない）を歩いて特殊挑戦（CHALLENGE）で止まる。挑戦のサイコロは 6（成功）
+    const r = await pg.evaluate(async () => {
+      const st0 = MMRF.state(); if (st0.node === 'CHALLENGE' && st0.chal) return { at: true, chal: st0.chal };
+      if (st0.done || st0.timeUp) return { end: true };
+      if (st0.play && st0.play.notice) { if (st0.play.notice.kind === 'choice') MMRF.choice(0); else MMRF.ok(); return {}; }
+      MMRF.fast = true; if (st0.play.fat >= 90) { MMRF.rest(); return {}; }
+      const D = MMRF_CH2.B, left = Object.values(D.segments).find((s) => s[3].includes(st0.node));
+      await MMRF.roll(3, { challengeDie: 6 });
+      for (let g = 0; g < 8; g++) { const st = MMRF.state(); if (!st.moveLeft) break; const ops = MMRF_CORE.options(D, st); if (ops.length > 1) { const main = ops.filter((o) => !/^D_/.test(o.seg)); await MMRF.choose((main[0] || ops[0]).seg, { challengeDie: 6 }); } else break; }
+      return {};
+    });
+    if (r.end) assert.fail('CHALLENGE に着く前に終わった');
+    await pg.waitForFunction(() => !MMRF.busy(), null, { timeout: 20000 });
+    if (r.at) { assert.equal(r.chal, 'success'); break; }
+  }
+  assert.equal(await pg.evaluate(() => MMRF.state().node), 'CHALLENGE');
+  await pg.evaluate(() => { MMRF.fast = false; }); await pg.waitForTimeout(700); await shot(pg, 'ch2proto_B_390x844_challenge');
+  const walk = async (die, seg) => {
+    await pg.evaluate(() => { const m = document.querySelector('#rfp .rfw-mon'); window.__samp = []; window.__si = setInterval(() => { const r = m.getBoundingClientRect(); window.__samp.push([r.left + r.width / 2, r.bottom]); }, 16); });
+    await pg.evaluate(async ([d, s]) => { await MMRF.roll(d); if (s && MMRF.state().moveLeft) await MMRF.choose(s); }, [die, seg]);
+    await pg.waitForFunction(() => !MMRF.busy(), null, { timeout: 20000 }); await pg.waitForTimeout(500);
+    return pg.evaluate(() => { clearInterval(window.__si); const a = window.__samp; let mx = 0, moved = 0; for (let i = 1; i < a.length; i++) { const d = Math.hypot(a[i][0] - a[i - 1][0], a[i][1] - a[i - 1][1]); mx = Math.max(mx, d); if (d > 0.5) moved++; } return { n: a.length, moved, maxJump: mx, total: Math.hypot(a[a.length - 1][0] - a[0][0], a[a.length - 1][1] - a[0][1]) }; });
+  };
+  const w1 = await walk(1);   // CHALLENGE → SUCCESS_L1（成功の1歩目・祭壇への寄り道の入口）
+  assert.equal(await pg.evaluate(() => MMRF.state().node), 'SUCCESS_L1');
+  assert.ok(w1.moved >= 6 && w1.maxJump < 40, '1歩目は連続した動き ' + JSON.stringify(w1));
+  const a1 = await pg.evaluate(AHEAD_JS);
+  assert.ok(a1.vis >= 3, '祭壇の寄り道と合流の先が見える ' + JSON.stringify(a1));
+  await shot(pg, 'ch2proto_B_390x844_success1');
+  const w2 = await walk(1, 'LATE_L_SUCCESS_JOIN');   // SUCCESS_L1 → L_MERGE（成功の2歩目・合流）
+  assert.equal(await pg.evaluate(() => MMRF.state().node), 'L_MERGE');
+  assert.ok(w2.moved >= 6 && w2.maxJump < 40, '2歩目も連続した動き ' + JSON.stringify(w2));
+  await shot(pg, 'ch2proto_B_390x844_success2');
+  console.log('CP-B4 B success walk', JSON.stringify({ w1, w2, a1 }));
+  assert.deepEqual(p.errors, []);
+});
+for (const route of ['A', 'B', 'C']) {
+  test(`CP-B4 ルート ${route}：止まるたびに先の4地点が HUD と操作欄のあいだに入る`, { skip: SKIP }, async () => {
+    const p = await open({ size: [390, 844] }); const pg = p.page;
+    await pg.goto(L.url + `index.html?chapterBoard=roadfirst&rfData=ch2&ch2route=${route}&rfRand=open&rfSeed=13`); await pg.waitForSelector('#rfp .rfw');
+    await pg.evaluate(() => MMRF.skipIntro()); await idle(pg);
+    const rows = [];
+    for (let i = 0; i < 120 && rows.length < 30; i++) {
+      const r = await pg.evaluate(async () => {
+        const st0 = MMRF.state(); if (st0.done || st0.timeUp) return { end: true };
+        if (st0.play && st0.play.notice) { if (st0.play.notice.kind === 'choice') MMRF.choice(0); else MMRF.ok(); return {}; }
+        MMRF.fast = true; if (st0.play.fat >= 90) { MMRF.rest(); return {}; }
+        await MMRF.roll(1 + (st0.turn % 4));
+        for (let g = 0; g < 8; g++) { const st = MMRF.state(); if (!st.moveLeft) break; const ops = MMRF_CORE.options(MMRF_CH2[MMRF.CH2], st); if (ops.length > 1) { const main = ops.filter((o) => !/^D_/.test(o.seg)); await MMRF.choose((main[g % Math.max(1, main.length)] || ops[0]).seg); } else break; }
+        return { moved: true };
+      });
+      if (r.end) break;
+      await pg.waitForFunction(() => !MMRF.busy(), null, { timeout: 20000 });
+      if (!r.moved) continue;
+      await pg.evaluate(() => { MMRF.fast = false; }); await pg.waitForTimeout(1300);   // カメラが落ち着くまで（zoomTau 320・yawTau 600）
+      const a = await pg.evaluate(AHEAD_JS); if (a.n) rows.push(a);
+    }
+    const tot = rows.reduce((s, r) => s + r.n, 0), vis = rows.reduce((s, r) => s + r.vis, 0), worst = rows.reduce((m, r) => Math.min(m, r.vis / r.n), 1);
+    console.log(`CP-B4 ${route} ahead`, JSON.stringify({ stops: rows.length, rate: +(vis / tot).toFixed(3), worst: +worst.toFixed(2), misses: rows.filter((r) => r.vis < r.n).map((r) => r.node + ':' + r.miss.join('/')) }));
+    assert.ok(rows.length >= 15, '止まった回数 ' + rows.length);
+    assert.ok(vis / tot >= 0.9, `先の地点が見える割合 ${vis}/${tot}`);
+    assert.deepEqual(p.errors, []);
+  });
+}

@@ -9,11 +9,14 @@ from pathlib import Path
 R = Path(__file__).resolve().parents[2]
 src = (R / 'js/proto/ch2-routes.js').read_text(encoding='utf-8'); DATA = json.loads(src[src.index('const R = ') + 10: src.index(';\n  if (typeof module')])
 SUMM = json.loads((R / 'tools/ch2/out/summary.json').read_text(encoding='utf-8'))
-SIM = json.loads((R / 'tools/ch2/out/sim_12000.json').read_text(encoding='utf-8'))['out']
-SIM50 = json.loads((R / 'tools/ch2/out/sim_12000_spur50.json').read_text(encoding='utf-8'))['out']   # 2026-10-15 追補2：寄り道 50%
+# 2026-10-15 第3版：食事ありのモデル（本編と同じくジャガイモを食べる）を主に・食事なしは下限の目安
+_ld = lambda f: json.loads((R / 'tools/ch2/out' / f).read_text(encoding='utf-8'))['out']
+SIM = _ld('sim_12000_food10.json')
+RUNS = [('食事あり', '0%', _ld('sim_12000_food10_spur0.json')), ('食事あり', '25%', SIM), ('食事あり', '50%', _ld('sim_12000_food10_spur50.json')),
+        ('食事なし', '0%', _ld('sim_12000_spur0.json')), ('食事なし', '25%', _ld('sim_12000.json')), ('食事なし', '50%', _ld('sim_12000_spur50.json'))]
 # 2026-10-15 追補2：特殊挑戦の案（tools/ch2/out/challenge_variants.json＝sim.mjs で測った値。COMPARISON.md・DESIGN.md と同じ）
 VAR = json.loads((R / 'tools/ch2/out/challenge_variants.json').read_text(encoding='utf-8'))
-B_VARIANTS = [(('<b>' + a + '</b>') if '採用' in a else a, b, (f'{c:+.1f}' if c else '±0.0'), (f'{d:+.1f}' if d else '±0.0'), e) for a, b, c, d, e in VAR['B']]
+B_VARIANTS = [(('<b>' + a + '</b>') if '（採用）' in a else a, b, '／'.join(f'{x:+.1f}' for x in f1), '／'.join(f'{x:+.1f}' for x in f0), e) for a, b, f1, f0, e in VAR['B3']]
 OUT = R / 'docs/ch2_abc_design_1015/route_design.html'
 
 # 道の色（Chapter 1 の設計書と同じ区分）
@@ -136,7 +139,8 @@ def img64(path, w=360):
 SH = 'docs/ch2_abc_design_1015/shots/'
 PREV = [(SH + 'ch2proto_A_390x844_start.png', 'A：港（START）'), (SH + 'ch2proto_A_390x844_spiral1.png', 'A：螺旋塔の斜路（海底から上る）'), (SH + 'ch2proto_A_390x844_spiral2.png', 'A：斜路の途中（塔の東面を回る）'),
         (SH + 'ch2proto_A_390x844_top.png', 'A：頂上（海面の高さ）'), (SH + 'ch2proto_C_390x844_spiral1.png', 'C：海底の回廊から塔へ'), (SH + 'ch2proto_B_390x844_spiral2.png', 'B：螺旋塔の斜路'),
-        (SH + 'ch2proto_B_390x844_undersea.png', 'B：海底（ガラス回廊・遺跡の柱・海中の光）'), (SH + 'ch2proto_C_390x844_undersea.png', 'C：海底の分かれ道（砂地の地面の上の回廊）')]
+        (SH + 'ch2proto_B_390x844_undersea.png', 'B：海底（ガラス回廊・遺跡の柱・海中の光）'), (SH + 'ch2proto_C_390x844_undersea.png', 'C：海底の分かれ道（砂地の地面の上の回廊）'),
+        (SH + 'ch2proto_B_390x844_challenge.png', 'B：封印の扉（特殊挑戦・成功）'), (SH + 'ch2proto_B_390x844_success1.png', 'B：成功の1歩目（扉の奥・祭壇への寄り道の入口）'), (SH + 'ch2proto_B_390x844_success2.png', 'B：成功の2歩目（合流）')]
 prev_html = ''.join(f'<figure><img src="{u}" alt="{html.escape(c)}" loading="lazy"><figcaption>{html.escape(c)}</figcaption></figure>' for u, c in ((img64(p), c) for p, c in PREV) if u)
 
 page = f'''<title>Chapter2 A/B/C ルート設計図</title>
@@ -204,40 +208,42 @@ a{{color:#8fd3ff}}
   <div class="wrap"><table><thead><tr><th></th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
   <tr><td>地点数</td><td>{SUMM['A']['nodes']}</td><td>{SUMM['B']['nodes']}</td><td>{SUMM['C']['nodes']}</td></tr>
   <tr><td>本線の歩数</td><td>{min(SUMM['A']['mainTotals'])}〜{max(SUMM['A']['mainTotals'])}</td><td>{min(SUMM['B']['mainTotals'])}〜{max(SUMM['B']['mainTotals'])}</td><td>{min(SUMM['C']['mainTotals'])}〜{max(SUMM['C']['mainTotals'])}</td></tr>
-  <tr><td>40T 以内の GOAL 到達率</td><td>{SIM['Ch2-A']['goal']}%</td><td>{SIM['Ch2-B']['goal']}%</td><td>{SIM['Ch2-C']['goal']}%</td></tr>
-  <tr><td>6能力の合計上昇</td><td>{SIM['Ch2-A']['gain']}</td><td>{SIM['Ch2-B']['gain']}</td><td>{SIM['Ch2-C']['gain']}</td></tr>
-  <tr><td>固定報酬の取得率</td><td>{SIM['Ch2-A']['rewardRate']}%</td><td>{SIM['Ch2-B']['rewardRate']}%</td><td>{SIM['Ch2-C']['rewardRate']}%</td></tr>
-  <tr><td>A との差（到達率・寄り道 25%）</td><td>—</td><td>{SIM['Ch2-B']['vsCh2A']['goalPP']:+}pt</td><td>{SIM['Ch2-C']['vsCh2A']['goalPP']:+}pt</td></tr>
-  <tr><td>40T 以内の GOAL 到達率（寄り道 50%）</td><td>{SIM50['Ch2-A']['goal']}%</td><td>{SIM50['Ch2-B']['goal']}%</td><td>{SIM50['Ch2-C']['goal']}%</td></tr>
-  <tr><td>A との差（到達率・寄り道 50%）</td><td>—</td><td>{SIM50['Ch2-B']['vsCh2A']['goalPP']:+}pt</td><td>{SIM50['Ch2-C']['vsCh2A']['goalPP']:+}pt</td></tr>
+  <tr><td>6能力の合計上昇（食事あり・寄り道 25%）</td><td>{SIM['Ch2-A']['gain']}</td><td>{SIM['Ch2-B']['gain']}</td><td>{SIM['Ch2-C']['gain']}</td></tr>
+  <tr><td>固定報酬の取得率（同）</td><td>{SIM['Ch2-A']['rewardRate']}%</td><td>{SIM['Ch2-B']['rewardRate']}%</td><td>{SIM['Ch2-C']['rewardRate']}%</td></tr>
   <tr><td>特殊挑戦（成功／失敗の歩数）</td><td>{SUMM['A']['challenge']['success']}／{SUMM['A']['challenge']['fail']}</td><td>{SUMM['B']['challenge']['success']}／{SUMM['B']['challenge']['fail']}</td><td>{SUMM['C']['challenge']['success']}／{SUMM['C']['challenge']['fail']}</td></tr>
   </tbody></table></div>
-  <p class="note">12000 seed × ソラモ・ガウル（24,000回）・寄り道 25% と 50%。試作の進行モデル（バトル・食事・Chapter 2 の上昇量は未反映）＝比較が目的で絶対値は参考。前回の報告（600 seed）の「寄り道 50% で B −6.2pt」は試行回数が少ないためのばらつきが大きかった（同じ前回の道を 12000 seed で測ると +0.9pt）。</p>
+  <p class="note">12000 seed × ソラモ・ガウル（24,000回）。試作の進行モデル（バトルの勝ち負け・Chapter 2 の上昇量は未反映）。</p>
 </section>
 <section>
-  <h2>B の特殊挑戦の案（成功／失敗の歩数・A との到達率の差）</h2>
-  <div class="wrap"><table><thead><tr><th>成功／失敗</th><th>道</th><th>寄り道 25%</th><th>寄り道 50%</th><th>備考</th></tr></thead><tbody>{''.join(f'<tr><td>{a}</td><td>{b}</td><td>{c}pt</td><td>{d}pt</td><td>{e}</td></tr>' for a, b, c, d, e in B_VARIANTS)}</tbody></table></div>
-  <p class="note">目標＝A との差 ±3pt（25%・50% の両方）。B の特殊挑戦は本線の上（必ず通る）なので、失敗の道を長くすると B だけ遅れる。採用案は海底の本線（潮の塔 → 回廊 → 封印の扉 → ライバル）を詰めて、その分を失敗の回り道に回した。C も 50% で +3.5pt と目標をわずかに超えていたので、C の失敗の回り道を 14 → 18 歩にして収めた。</p>
+  <h2>40ターン以内の GOAL 到達率（絶対値・2つのモデル × 寄り道 0／25／50%）</h2>
+  <div class="wrap"><table><thead><tr><th>条件</th><th>Ch1-A（参考）</th><th>Ch2-A</th><th>Ch2-B（A との差）</th><th>Ch2-C（A との差）</th></tr></thead><tbody>{''.join(f"<tr><td>{m}・寄り道 {sp}</td><td>{o['Ch1-A（基準）']['goal']}%</td><td>{o['Ch2-A']['goal']}%</td><td>{o['Ch2-B']['goal']}%（{o['Ch2-B']['goal'] - o['Ch2-A']['goal']:+.1f}）</td><td>{o['Ch2-C']['goal']}%（{o['Ch2-C']['goal'] - o['Ch2-A']['goal']:+.1f}）</td></tr>" for m, sp, o in RUNS)}</tbody></table></div>
+  <p class="note"><b>食事あり（主）</b>＝本編と同じく空腹 80 以上でジャガイモ（−10）を1ターンに1個（新人支援の 10 個）。このモデルの Chapter 1 は 73.5%（寄り道 25%）で、本物の進行で回す道具（tools/balance/sim-full.mjs）の Chapter 1 の 73〜78% とそろう。<b>食事なし</b>＝食べない場合の下限の目安。40ターンで GOAL に届かないと公式大会は無い＝ランク C を取れず Chapter 3 へ進めない（その個体の育成はベースキャンプで完了）。</p>
 </section>
 <section>
-  <h2>論点 1〜5 の反映</h2>
+  <h2>B の特殊挑戦の案（第3版・成功／失敗の歩数・A との到達率の差 pt）</h2>
+  <div class="wrap"><table><thead><tr><th>成功／失敗</th><th>道</th><th>食事あり 0／25／50%</th><th>食事なし 0／25／50%</th><th>備考</th></tr></thead><tbody>{''.join(f'<tr><td>{a}</td><td>{b}</td><td>{c}</td><td>{d}</td><td>{e}</td></tr>' for a, b, c, d, e in B_VARIANTS)}</tbody></table></div>
+  <p class="note">目標＝A との差 ±3pt（寄り道 0・25・50%）。B の特殊挑戦は本線の上（必ず通る・3回に2回は失敗）なので、失敗の道が1歩長くなると B 全体が遅れる。追補2 の 2／14 は食事なしでは目標内だったが、食事ありでは B が +4〜+8pt 速すぎた。第3版で失敗の回り道を北へ広げて 18 歩に（食事ありで ±2pt）。食事なしのモデルではこの案の B は −6〜−8pt＝どちらのモデルを基準にするかが次の承認点。</p>
+</section>
+<section>
+  <h2>第3版で確かめたこと（2026-10-15）</h2>
   <ol>
-    <li>ライバルの位置：現状維持（A 53〜74%・B 62〜73%・C 64〜78%）。</li>
-    <li>B：特殊挑戦は成功 2 歩（神殿の中を抜ける近道）・失敗 14 歩（神殿の外回り）。海底の本線を詰めて、寄り道 25%・50% の両方で A との差 ±3pt 以内（+0.8／−1.8pt）。</li>
-    <li>螺旋塔：12〜13 歩の上りを 2.5D の斜路で（上の画面）。</li>
-    <li>地点数：探索路を足して A 298・B 280・C 304（本線は延ばさない・40ターン・D6 のまま。C は失敗の回り道を延ばした分 300 → 304）。</li>
-    <li>報酬：7 枠の種類と数は同じ・建物に合わせて割り当て直し（値は仮）。</li>
+    <li>B の特殊挑戦：<b>成功 2・失敗 18 歩</b>（追補2 の 14 歩から延長）。A 6／20・C 6／18 は変えていない。食事ありのモデルで寄り道 0・25・50% のすべて A と ±2pt（+1.2／+1.9／+1.8）。地点数は B 280 → <b>284</b>。</li>
+    <li>B の成功の2歩：2.5D プレビューで実際に歩かせた＝1歩ごとにモンスターが画面の上を連続して動く（1歩 63〜74 コマ・1コマの移動は最大 11〜19px）。封印の扉の奥（1歩目）で祭壇への寄り道と合流が見える（先の 8 地点がすべて画面の中）。瞬間移動には見えない（下の写真）。</li>
+    <li>前方の見え方：A／B／C で止まるたびに先の4地点が HUD と操作欄のあいだに入る割合 97〜99%。外れるのは運命の分かれ道・封印の扉の直後に道が左右へ大きく分かれる所の3つ目以降だけ。</li>
+    <li>40ターン切れ：その Chapter の大会は無い・ランクは上がらない・能力と持ち物は持ったままベースキャンプへ（従来どおり）。Chapter 2 では C ランクを取れない＝Chapter 3 の解放条件（C クリア）に届かず、その個体の育成はベースキャンプで完了になる。</li>
+    <li>旧 Chapter 2 のセーブ：判定は「Chapter 2 へ出発するとき、その個体が旧 Chapter 2 の盤（配置と seed）を持っているか」。持っていれば旧のまま・持っていなければ新しい盤。新しいセーブ項目は足さない。</li>
   </ol>
 </section>
 <section>
   <h2>次に承認が要る論点</h2>
   <ol>
-    <li>道路グラフの設計の承認（分かれ道・探索路・報酬の割り当て）。2.5D の見た目・本実装は別に承認。</li>
-    <li>B の特殊挑戦の採用案（成功 2・失敗 14 歩）と、C の失敗の回り道の延長（14 → 18 歩）でよいか。</li>
-    <li>海底の見せ方（砂地の地面・地面に置いたガラスの筒・沈没遺跡の広場・海中の光）の方向でよいか（素材は U-08・FX-04 を追加）。</li>
-    <li>寄り道に入らないプレイ（0%）では C が A より −3.9pt（参考値・目標の対象外）。気にするか。</li>
+    <li><b>到達率をどちらのモデルで見るか</b>：食事あり（本編と同じ）を主にするなら B は 2／18 で A と ±2pt。食事なしを基準にすると 2／18 の B は −6〜−8pt（追補2 の 2／14 なら ±2pt だが、食事ありで +4〜+8pt）。</li>
+    <li>寄り道 0% の C：食事ありでは A と +1.1pt（食事なしの −3.9pt はモデルの差）。許容してよいか。</li>
+    <li>Chapter 2 の到達率の絶対値（食事あり：寄り道 25% で A 79%・B 81%・C 81%）と、届かなかった育成が Chapter 3 へ進めないこと。</li>
+    <li>海底の見せ方の方向（描画方式のみ了承済み・見た目は正式素材で別途検収）。</li>
+    <li>道・場所の名前とフィナの一言（仮案）、固定報酬の値（仮）の確定の時期。</li>
   </ol>
-  <p class="note">旧 Chapter 2 の途中の個体は<b>案1（その育成が終わるまで旧モードで継続・新しい育成から新 Chapter 2）</b>で決定（2026-10-15）。素材要求一覧（asset_requirements.tsv・54 行）：今回、沈没遺跡の広場（U-08）と海中の光の筋（FX-04）を追加。旧 Chapter 2 の背景 10 枚は使わない。</p>
+  <p class="note">素材要求一覧（asset_requirements.tsv・54 行）。初回納品 36 点のうち透過 NG の 27 点は組み込まない（修正待ち）。旧 Chapter 2 の背景 10 枚は使わない。</p>
 </section>
 </main>
 '''

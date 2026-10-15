@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """Chapter 2 A／B／C 設計案の比較表（Markdown）を tools/ch2/out/summary.json（build_ch2_routes.py）と tools/ch2/out/sim_*.json（sim.mjs）から作る。
-出力：docs/ch2_abc_design_1015/COMPARISON.md。実行：python3 -I tools/ch2/report.py [sim の JSON=tools/ch2/out/sim_12000.json]"""
+出力：docs/ch2_abc_design_1015/COMPARISON.md。実行：python3 -I tools/ch2/report.py [sim の JSON=tools/ch2/out/sim_12000_food10.json]"""
 import json, sys
 from pathlib import Path
 R = Path(__file__).resolve().parents[2]
 summ = json.loads((R / 'tools/ch2/out/summary.json').read_text(encoding='utf-8'))
-simp = Path(sys.argv[1]) if len(sys.argv) > 1 else R / 'tools/ch2/out/sim_12000.json'
+simp = Path(sys.argv[1]) if len(sys.argv) > 1 else R / 'tools/ch2/out/sim_12000_food10.json'   # 2026-10-15 第3版：食事ありのモデルを主に
 sim = json.loads(simp.read_text(encoding='utf-8'))
 src = (R / 'js/proto/ch2-routes.js').read_text(encoding='utf-8'); D = json.loads(src[src.index('const R = ') + 10: src.index(';\n  if (typeof module')])
 L = []
-L.append('# Chapter 2 A／B／C 比較表（設計案・未承認・2026-10-15 追補＝ユーザー承認の論点 1〜5 を反映）\n')
+L.append('# Chapter 2 A／B／C 比較表（設計案・未承認・2026-10-15 第3版＝食事ありのモデル・B の失敗の回り道 18 歩）\n')
 L.append('数値は tools/ch2/build_ch2_routes.py（グラフの検査）と tools/ch2/sim.mjs（小規模シミュレーション）の出力。推定条件と未測定項目は末尾。\n')
 L.append('## 1. グラフ（構造）\n')
 L.append('| 項目 | A 港と大橋の王道 | B 島めぐりの浅瀬 | C 沈没遺跡の回廊 | 参考：Chapter 1 A |')
@@ -59,7 +59,7 @@ for rid in ['L_CHEST', 'R_CHEST', 'L_ALTAR', 'L_LATE_ALTAR', 'REWARD5', 'R_SPECI
 L.append('')
 L.append('## 2. シミュレーション（同じ seed・同じ方針）\n')
 o = sim['out']
-L.append(f'条件：seed {sim["N"]}×モンスター {"・".join(sim["monsters"])}・寄り道に入る割合 {sim["SPUR"]}・空腹 {sim["REST_AT"]} 以上で休む。詳細は末尾。\n')
+L.append(f'条件：seed {sim["N"]}×モンスター {"・".join(sim["monsters"])}・寄り道に入る割合 {sim["SPUR"]}・' + (f'食事あり（空腹 80 以上でジャガイモ −10 を1ターンに1個・{sim["FOOD"]}個）・' if sim.get('FOOD') else '食事なし・') + f'空腹 {sim["REST_AT"]} 以上で休む。詳細は末尾。\n')
 L.append('| 指標 | Ch1-A（基準） | Ch2-A | Ch2-B | Ch2-C |')
 L.append('|---|---|---|---|---|')
 keys = [('nodes', '地点数'), ('goal', '40T 以内の GOAL 到達率（%）'), ('avgTurns', '到達したときの平均ターン'), ('p10', 'ターン p10'), ('p50', 'ターン p50'), ('p90', 'ターン p90'),
@@ -85,15 +85,17 @@ for c in ['Ch2-B', 'Ch2-C']:
 L.append('')
 import os
 sens = []
-for f, lab in [('sim_12000_spur0.json', '寄り道に入らない（0）'), ('sim_12000.json', '標準（0.25）'), ('sim_12000_spur50.json', '寄り道が多い（0.5）')]:
+for f, lab in [('sim_12000_food10_spur0.json', '食事あり・寄り道 0%'), ('sim_12000_food10.json', '食事あり・寄り道 25%'), ('sim_12000_food10_spur50.json', '食事あり・寄り道 50%'),
+               ('sim_12000_spur0.json', '食事なし・寄り道 0%'), ('sim_12000.json', '食事なし・寄り道 25%'), ('sim_12000_spur50.json', '食事なし・寄り道 50%')]:
     fp = R / 'tools/ch2/out' / f
     if fp.exists(): sens.append((lab, json.loads(fp.read_text(encoding='utf-8'))['out']))
 if sens:
-    L.append('### 感度（寄り道に入る割合を変えたとき・12000 seed×2体＝24,000回）\n')
-    L.append('| 寄り道の割合 | Ch1-A 到達 | Ch2-A 到達 | Ch2-B 到達（A との差） | Ch2-C 到達（A との差） |')
+    L.append('### 40ターン以内の GOAL 到達率の絶対値（2つのモデル × 寄り道 0／25／50%・12000 seed×2体＝24,000回）\n')
+    L.append('「食事あり」は本編と同じく空腹 80 以上でジャガイモを食べる（新人支援の 10 個。20 個にしても ±0.3pt）。Chapter 1 の本物の進行で回す道具 tools/balance/sim-full.mjs（食事あり・寄り道 25%）の Chapter 1 の到達率 73〜78% とこのモデルの Ch1-A 73.5% がそろう＝**食事ありを主に読む**。「食事なし」は食べない場合の下限の目安。\n')
+    L.append('| 条件 | Ch1-A（参考） | Ch2-A | Ch2-B（A との差） | Ch2-C（A との差） |')
     L.append('|---|---|---|---|---|')
     for lab, o2 in sens:
-        a = o2['Ch2-A']['goal']; L.append(f"| {lab} | {o2['Ch1-A（基準）']['goal']} | {a} | {o2['Ch2-B']['goal']}（{o2['Ch2-B']['goal'] - a:+.1f}） | {o2['Ch2-C']['goal']}（{o2['Ch2-C']['goal'] - a:+.1f}） |")
+        a = o2['Ch2-A']['goal']; L.append(f"| {lab} | {o2['Ch1-A（基準）']['goal']}% | {a}% | {o2['Ch2-B']['goal']}%（{o2['Ch2-B']['goal'] - a:+.1f}） | {o2['Ch2-C']['goal']}%（{o2['Ch2-C']['goal'] - a:+.1f}） |")
     L.append('')
 VAR = json.loads((R / 'tools/ch2/out/challenge_variants.json').read_text(encoding='utf-8'))
 L.append('### 特殊挑戦の案（2026-10-15 追補2：成功／失敗の歩数と A との到達率の差）\n')
@@ -103,15 +105,21 @@ for k in ('B', 'C'):
     L.append('|---|---|---|---|---|')
     for a, b, c, d, e in VAR[k]: L.append(f'| {a} | {b} | {c:+.1f} | {d:+.1f} | {e} |')
     L.append('')
+L.append('### B の失敗の回り道の案（2026-10-15 第3版・A との到達率の差 pt）\n')
+L.append(VAR['note3'] + '\n')
+L.append('| 成功／失敗 | 道 | 食事あり 0／25／50% | 食事なし 0／25／50% | 備考 |')
+L.append('|---|---|---|---|---|')
+for a, b, f1, f0, e in VAR['B3']: L.append(f"| {a} | {b} | {'／'.join(f'{x:+.1f}' for x in f1)} | {'／'.join(f'{x:+.1f}' for x in f0)} | {e} |")
+L.append('')
 L.append('''## 3. 推定の条件・簡略化・未測定（都合のいい数字にしないための明記）
 
 - 進行モデルは試作の MMRF_PLAY.simulate（MMRF_CORE の移動＋マスの中身）。本編の MMP8 ではない。
 - バトルは起きない（野生のマス＝空腹 +5 だけ）。ライバル戦の勝敗・負けたときの流れは入っていない。
-- 食事アイテムは使わない。「休む」は空腹が基準以上のとき（−10・1ターン）。本編の「みんなでごはん」（食事マス −50）は配置の割合どおり起きる。
+- 食事アイテム：「食事あり」のモデル（主）は空腹 80 以上でジャガイモ（−10）を1ターンに1個・ターンは使わない（本編と同じ規則・10個）。「食事なし」は使わない。どちらも「休む」は空腹 86 以上（−10・1ターン）。本編の「みんなでごはん」（食事マス −50）は配置の割合どおり起きる。
 - マスの配置の割合（能力 53%・出来事 15%・食事 6%・野生 8%・宝 6%）と上昇量は **Chapter 1 の TUNING と GROWTH_GAIN**（Chapter の区別なし）。Chapter 2 の正式な上昇量（A25…E12）は未反映＝公平性の比較が目的で、絶対値は参考。
 - 2026-10-15 追補：Chapter 2 の道のデータが持つ「落ち着いた区間（calm）」「能力の道の偏り（statLanes・重み 3）」「レアの候補（rareZones）」「報酬の割り当て（rewards）」を試作の進行（MMRF_PLAY）が読む（Chapter 1 のデータには無い＝従来どおり）。
 - 自由な分かれ道は乱数で選ぶ（プレイヤーの判断ではない）。寄り道は SPUR の割合で入る（未取得のときだけ）。運命のサイコロ・特殊挑戦は本物のルール（奇偶・5/6）。隠れ家の開閉は 50%【仮】。
-- 未測定：バトルの勝率・食事アイテムの効果・Chapter 2 の正式な上昇量での値・実機の操作時間・画面上の見やすさ。
+- 未測定：バトルの勝率・食事アイテムを買い足す量・Chapter 2 の正式な上昇量での値・実機の操作時間・画面上の見やすさ。
 ''')
 (R / 'docs/ch2_abc_design_1015/COMPARISON.md').write_text('\n'.join(L), encoding='utf-8')
 print('wrote COMPARISON.md')

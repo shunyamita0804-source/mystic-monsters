@@ -2,6 +2,7 @@
  "N": 12000,
  "SPUR": 0.25,
  "REST_AT": 86,
+ "FOOD": 0,
  "monsters": [
   "ソラモ",
   "ガウル"
@@ -67,40 +68,40 @@
    }
   },
   "Ch2-B": {
-   "nodes": 280,
-   "goal": 51.8,
-   "avgTurns": 36.2,
+   "nodes": 284,
+   "goal": 44.7,
+   "avgTurns": 36.3,
    "p10": 32,
    "p50": 37,
    "p90": 40,
-   "gain": 291,
-   "gainP10": 209,
-   "gainP90": 374,
-   "statStops": 14.11,
-   "rewards": 0.57,
-   "rewardRate": 8.1,
+   "gain": 295,
+   "gainP10": 216,
+   "gainP90": 378,
+   "statStops": 14.32,
+   "rewards": 0.54,
+   "rewardRate": 7.7,
    "rewardEach": {
     "L_CHEST": 8.3,
     "R_CHEST": 15.9,
-    "L_ALTAR": 5.3,
+    "L_ALTAR": 4.9,
     "L_LATE_ALTAR": 8.1,
-    "REWARD5": 10,
-    "R_SPECIAL": 3.6,
-    "RANDOM_DEN": 5.6
+    "REWARD5": 8.8,
+    "R_SPECIAL": 3,
+    "RANDOM_DEN": 5
    },
-   "spurOpp": 3.18,
-   "rests": 4.16,
-   "fatEnd": 75,
-   "timeUpAt": "Q_L4 8.5%・S_END 7.4%・QR_ALT 5.6%",
+   "spurOpp": 3.07,
+   "rests": 4.24,
+   "fatEnd": 76,
+   "timeUpAt": "Q_L4 8.3%・S_END 7.8%・QR_ALT 5.9%",
    "vsCh1": {
-    "goalPP": 2.4,
-    "gainPct": 1.7,
-    "rewardPP": 0.7
+    "goalPP": -4.7,
+    "gainPct": 3.1,
+    "rewardPP": 0.3
    },
    "vsCh2A": {
-    "goalPP": 0.8,
-    "gainPct": 1.7,
-    "rewardPP": 0
+    "goalPP": -6.3,
+    "gainPct": 3.1,
+    "rewardPP": -0.4
    }
   },
   "Ch2-C": {
