@@ -223,18 +223,19 @@ try {
   // 2026-10-13 開発24：公式大会（E）の実戦（上の Chapter 1 の出発のあと）：新しい画面・技の発動中の表示・観客の声（命中・ルーレットの MISS・かわされた）
   {
     await page.evaluate(() => { if (window.MMNPC) MMNPC.close(); Object.assign(S.m.raise, { goal: true, pend: null }); const r = MMP8.startTournament(S, S.m, 0, 7); if (!r || !r.ok) throw new Error('startTournament ' + JSON.stringify(r)); save(); window.__cine = []; board(); });
-    // 実際の画面の流れ：フィナの一言 → 対戦表「対戦する」→ 対戦前比較「対戦開始」（2度押し）→ VS → バトル
-    const flow = [];
+    // 実際の画面の流れ：フィナの一言 → 対戦表「対戦する」→ 対戦前比較（2026-10-15：新しいパラメーター比較）「対戦開始」→ バトル（独立した VS の画面は出さない）
+    const flow = []; let cmpInfo = null;
     for (let k = 0; k < 120 && !(await page.evaluate(() => !!document.querySelector('#bt #m0 .mon .mma-idle'))); k++) {
       const st = await page.evaluate(() => ({ talk: !!document.querySelector('.mmtalk:not(.mmtalk-out)'), ch: !!document.querySelector('.mmtalk-choice'), tb: !!document.querySelector('.tb1 .tbgo'), cmp: !!document.querySelector('.pcgo'), yn: !!document.querySelector('#p9conf .p9conf-yes, #ynm .ynm-y'), vs: !!document.getElementById('tvs') }));
       if (st.talk) { flow.push('talk'); if (st.ch) { await sleep(450); await page.click('.mmtalk-choice').catch(() => {}); } else await page.click('.mmtalk:not(.mmtalk-out)', { force: true }).catch(() => {}); await sleep(350); continue; }
       if (st.yn) { flow.push('yn'); await sleep(450); await page.click('#p9conf .p9conf-yes, #ynm .ynm-y').catch(() => {}); await sleep(300); continue; }
       if (st.vs) { if (flow[flow.length - 1] !== 'vs') flow.push('vs'); await sleep(400); continue; }
-      if (st.cmp) { flow.push('compare'); await sleep(500); await page.click('.pcgo').catch(() => {}); await sleep(500); continue; }   // 2026-10-13 開発27（29）：「対戦開始」は1回の押下
+      if (st.cmp) { if (!flow.includes('compare')) cmpInfo = await page.evaluate(() => ({ cmp2: !!document.querySelector('#app>.p9cmps.cmp2'), imgs: [...document.querySelectorAll('.cmp2 img.c2img')].map((i) => [i.getAttribute('src').split('/').pop(), i.complete && i.naturalWidth > 0]), rows: document.querySelectorAll('.cmp2 .c2r').length, flip: getComputedStyle(document.querySelector('.cmp2 .c2side.op img') || document.body).transform })); flow.push('compare'); await sleep(500); await page.click('.pcgo').catch(() => {}); await sleep(500); continue; }   // 2026-10-13 開発27（29）：「対戦開始」は1回の押下
       if (st.tb) { flow.push('board'); await sleep(400); await page.click('.tb1 .tbgo').catch(() => {}); await sleep(500); continue; }
       await sleep(500);
     }
-    rec('開発24：公式大会の実際の流れ（対戦表 → 対戦前比較 → VS → バトル）', await page.evaluate(() => !!document.getElementById('bt')), flow.join('→'));
+    rec('開発24：公式大会の実際の流れ（対戦表 → 対戦前比較 → バトル・2026-10-15：VS の画面なし）', await page.evaluate(() => !!document.getElementById('bt')) && flow.includes('compare') && !flow.includes('vs'), flow.join('→'));
+    rec('2026-10-15：新しいパラメーター比較（肩上アップ2枚が読める・6能力・右は左右反転）', !!(cmpInfo && cmpInfo.cmp2 && cmpInfo.imgs.length === 2 && cmpInfo.imgs.every((x) => x[1] && /^(solamo|gauru|nobiton|jiol|regnas|flurene)\.webp$/.test(x[0])) && cmpInfo.rows === 6 && /^matrix\(-1/.test(cmpInfo.flip)), JSON.stringify(cmpInfo));
     await page.waitForSelector('#bt #m0 .mon .mma-idle', { timeout: 30000 });
     await page.evaluate(() => { const bt = document.getElementById('bt'); new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => { if (n.classList && n.classList.contains('skb3')) { const c = { on: false, hpr: 'visible', bui: 'visible' }; window.__cine.push(c); const smp = (k) => { const on = bt.classList.contains('mma-cine'), h = getComputedStyle(bt.querySelector('.hpr')).visibility, b = getComputedStyle(bt.querySelector('.bui')).visibility; c.on = c.on || on; if (h === 'hidden' && b === 'hidden') { c.hpr = h; c.bui = b; } c['t' + k] = [on, h, b].join('/'); }; setTimeout(() => smp(600), 600); setTimeout(() => smp(900), 900); } }))).observe(bt, { childList: true });
       const B = window.MMBattle; let n = 0; window.MMBattle = Object.freeze(Object.assign({}, B, { resolveAction(o) { if (o && o.attackerSide === 'A' && (n++ % 2 === 0)) o = Object.assign({}, o, { rng: Object.assign({}, o.rng || {}, { hitRng: () => 0.999 }) }); return B.resolveAction(o); } })); });   // 確認のためだけ：自分の攻撃を1回おきに外れ側へ（かわされる場面を作る。保存されるのはこの試合の結果だけ）
@@ -264,6 +265,32 @@ try {
     const after = await page.evaluate(() => ({ name: S.m && S.m.name, g: S.g, key: !!localStorage.getItem('mr4v6'), title: !!document.querySelector('[onclick*="startGame"]'), build: MM_BUILD }));
     rec('開発24：開き直してもセーブはそのまま（つづきから）', before.key && after.key && after.name === before.name && after.title, JSON.stringify({ before, after }));
     await page.click('[onclick*="startGame"]').catch(() => {}); await sleep(1500); await drain();
+  }
+
+
+  // 2026-10-15：QA 試遊モード（?mmQaTrial=1）＝普段の URL では無効・ON → 6体×10技（60）のカードが読める → QA 試合 → OFF で通常のセーブは1文字も変わらない
+  {
+    rec('2026-10-15：普段の URL では QA 試遊モードは無効（切り替えも出ない）', await page.evaluate(() => !!window.MMQA && MMQA.ENABLED === false && !document.getElementById('mmqa-sw')), '');
+    const q = await ctx.newPage();
+    q.on('response', (r) => { if (r.status() >= 400 && !/fonts\.(googleapis|gstatic)/.test(r.url())) bad.push(`${r.status()} ${r.url().slice(0, 150)}`); });
+    q.on('pageerror', (e) => errs.push(('pageerror(QA) ' + String(e)).slice(0, 400)));
+    await q.goto(URL + (URL.includes('?') ? '&' : '?') + 'mmQaTrial=1', { waitUntil: 'load', timeout: 120000 });
+    await q.waitForFunction(() => window.MMQA && typeof S === 'object' && S, null, { timeout: 120000 }); await sleep(1500);
+    const s0 = await q.evaluate(() => localStorage.getItem('mr4v6'));
+    await q.evaluate(() => { try { if (window.MMNPC) MMNPC.close(); } catch (e) {} farm(); }); await sleep(1200);
+    const sw = await q.evaluate(() => !!document.getElementById('mmqa-sw'));
+    await q.click('#mmqa-sw').catch(() => {}); await sleep(800);
+    const cat = await q.evaluate(async () => { const c = MMQA.catalog(); const urls = c.flatMap((x) => x.moves.map((m) => m.src)); const ok = await Promise.all(urls.map((u) => new Promise((r) => { const i = new Image(); i.onload = () => r(i.naturalWidth > 0); i.onerror = () => r(false); i.src = u; }))); return { tabs: document.querySelectorAll('#mmqa .qtab').length, n: urls.length, ok: ok.filter(Boolean).length, counts: MMQA.counts() }; });
+    rec('2026-10-15：QA 試遊モード（?mmQaTrial=1）＝牧場に切り替え → ON → 6体×10技（60）のカードが読める（実戦 40・プレビュー 10・静止画 10）', sw && cat.tabs === 6 && cat.n === 60 && cat.ok === 60 && cat.counts.battle === 40 && cat.counts.preview === 10 && cat.counts.static === 10, JSON.stringify(cat));
+    await q.evaluate(() => MMQA.battle(0, 1)); await q.waitForSelector('#bt', { timeout: 20000 }).catch(() => {});
+    const qb = await q.evaluate(() => ({ bt: !!document.getElementById('bt'), names: [...document.querySelectorAll('#bt .mmr .pl .nm')].map((e) => e.textContent).slice(0, 3) }));
+    await sleep(2500); await q.evaluate(() => MMQA.endBattle());
+    for (let k = 0; k < 60 && await q.evaluate(() => !!document.getElementById('bt')); k++) await sleep(500);
+    await q.click('#mmqa .qoff').catch(() => {}); await sleep(800);
+    const s1 = await q.evaluate(() => ({ save: localStorage.getItem('mr4v6'), on: MMQA.isOn(), rn: !!document.querySelector('#app>.rn') }));
+    rec('2026-10-15：QA 試合（ソラモ No.01）→ OFF で通常のセーブは同じ・通常の牧場へ戻る', qb.bt && qb.names.every((x) => x === 'たいあたり') && s1.save === s0 && !s1.on && s1.rn, JSON.stringify({ qb, same: s1.save === s0, on: s1.on, rn: s1.rn }));
+    await q.screenshot({ path: `${OUT}/qa_off_390.png` }).catch(() => {});
+    await q.close();
   }
 
 } catch (e) {

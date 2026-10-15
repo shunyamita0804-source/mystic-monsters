@@ -92,7 +92,7 @@ test('PR-B1：本番の設定で大会を最後まで（到着 → 確認 → �
   assert.deepEqual(res.seen, ['final', 'champion', 'firstReward', 'rankUp', 'cedricEnd', 'next'], '大会の終わりの正式の順');
   assert.equal(res.cOpen, true, 'D の初回優勝で C が解放');
   assert.ok(seen.confirm >= 1, '参加の確認（はい／いいえ）が出た'); assert.ok(seen.talks >= 3, 'セドリックなどの会話が出た：' + seen.talks);
-  assert.ok(seen.vs >= 1 && seen.compare >= 5, `比較 ${seen.compare}・VS ${seen.vs}`);
+  assert.ok(seen.vs === 0 && seen.compare >= 5, `比較 ${seen.compare}・VS ${seen.vs}（2026-10-15：独立した VS の画面は出さない）`);
   assert.equal(seen.battles.length, 5);
   for (const b of seen.battles) {
     assert.equal(b.name, b.want, '相手の名前＝対戦表の参加者名');

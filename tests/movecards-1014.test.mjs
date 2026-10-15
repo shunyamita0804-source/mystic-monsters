@@ -61,9 +61,10 @@ test('MC-02：技管理だけが新しいカード（6枠・一覧・詳細）�
   assert.doesNotMatch(css, /filter|hue-rotate|saturate|\.rw|\.bt[\s.{]|#rl|#go/, '色を変えない・Phase 6 のセレクタに触れない');
 });
 
-test('MC-03：README に50枚の原本（背景あり）の sha256 と変換の条件・道具がある', () => {
+test('MC-03：README に50枚の原本（背景あり）の sha256 と変換の条件・道具がある（2026-10-15：フルーネの10枚を足して60）', () => {
   const md = readFileSync(path.join(ROOT, 'assets/moves/cards_1014/README.md'), 'utf8');
-  assert.equal((md.match(/\b[0-9a-f]{64}\b/g) || []).length, 50);
+  assert.equal((md.match(/\b[0-9a-f]{64}\b/g) || []).length, 60);
+  assert.equal((md.split('## フルーネ')[1].match(/\b[0-9a-f]{64}\b/g) || []).length, 10, 'フルーネの10枚は別の節');
   assert.match(md, /640/); assert.match(md, /品質 ?84/);
   assert.ok(existsSync(path.join(ROOT, 'tools/movecards1014/derive.py')));
   assert.ok(existsSync(path.join(ROOT, 'prototype/movecards_1014/index.html')));

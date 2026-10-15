@@ -52,7 +52,10 @@ test('TN-03b：大会3 VS 演出（正式素材 vs）：背景・VS のロゴ・
   assert.match(fnOf('tbVs'), /assets\/tournament\/vs_monsters\/\$\{k\}_vs\.webp/); assert.match(fnOf('tbVs'), /MMARENA\.flipOf\(side,x\.sp\)/); assert.match(fnOf('tbVs'), /:tbIdle\(x,side\)\}$/);
   for (const k of ['solamo', 'gauru', 'nobiton', 'jiol', 'regnas']) assert.ok(existsSync(path.join(ROOT, `assets/tournament/vs_monsters/${k}_vs.webp`)), k);
   assert.match(CODE, /const TB_INTRO=intro;intro=function\(pl\)\{if\(TB_SKIP_INTRO\)\{TB_SKIP_INTRO=false;return Promise\.resolve\(\)\}return TB_INTRO\(pl\)\};/);
-  assert.match(CODE, /if\(window\.MM_QA_NO_TOURVS\|\|!t\|\|t\.status!="league"\)return p8TourFight\(\);/, '自動テストの既定は大会2 から直接バトル（tourvs:true で大会3）');
+  // 2026-10-15：独立した VS の画面（大会3）は通常の流れから外した（関数・素材は残す）＝比較画面の「対戦開始」→ そのままバトル（fight() の導入も出さない）
+  const go = CODE.slice(CODE.indexOf('function p9VsGo('), CODE.indexOf('const TB_INTRO=intro;'));
+  assert.match(go, /if\(!t\|\|t\.status!="league"\)return p8TourFight\(\);TB_SKIP_INTRO=true;setTimeout\(\(\)=>\{TB_SKIP_INTRO=false\},4000\);p8TourFight\(\)\}/);
+  assert.doesNotMatch(go + fnOf('bBattleGo'), /tourVsShow\(/, '大会・野生・レア・ライバルのどれからも VS の画面を呼ばない');
 });
 
 test('TN-04：VS（デザイン参考 04）＝fight() の導入（CHALLENGER／YOUR MONSTER・VS・自動で FIGHT!）。fight()・intro()・.bt 系 CSS は変えず、色（金の VS・札）だけ', () => {

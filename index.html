@@ -4061,6 +4061,8 @@ html:has(#app>.chfw.wbw) .mmtalk:not(.mmtalk-big):not(.mmtalk-scene) .mmtalk-sta
 <script src="./js/monsters/reaction-art.js"></script>
 <script src="./js/battle/crowd.js"></script><!-- 2026-10-13 開発24：観客の声（公式大会の会場だけ。MMCROWD） -->
 <script src="./js/battle/arena.js"></script>
+<script src="./js/battle/compare.js"></script><!-- 2026-10-15：新しいパラメーター比較画面（MMCMP）＝大会・野生・レア・ライバルの対戦前。独立した VS の画面は出さない -->
+<script src="./js/qa/trial.js"></script><!-- 2026-10-15：QA 試遊モード（MMQA）＝URL に ?mmQaTrial=1 を付けたときだけ。通常のセーブへは書かない -->
 <script src="./js/battle/stage.js"></script>
 <script src="./js/battle/art25d-data.js"></script>
 <script src="./js/battle/soramo-moves-data.js"></script>
@@ -5296,7 +5298,7 @@ window.addEventListener("unhandledrejection",rescue);
  *  ./version.json（小さな JSON。毎回取り直す）の build がこのページの MM_BUILD と違えば1回だけ reload（同じ版へは15分に1回まで＝読み込み直しを繰り返さない）。
  *  確かめる時：起動したとき・ページがメモリから戻ったとき（pageshow の persisted）・10分以上裏にいて表に戻ったとき。セーブ（mr4v6）には触れない（読み込み直しは iOS がタブを閉じたときと同じ＝つづきから）。
  *  公開するたびに MM_BUILD と version.json の build を同じ値に上げる（tests/dev24-1013.test.mjs で一致を確かめる） */
-const MM_BUILD="2026-10-15-next12";
+const MM_BUILD="2026-10-15-cmpqa";
 (function(){const K="mmbuildReload";let hidAt=0;
  const check=()=>{try{const x=new XMLHttpRequest();x.open("GET","./version.json?t="+Date.now(),true);x.timeout=8000;
   x.onload=()=>{try{if(x.status<200||x.status>=300)return;const b=(JSON.parse(x.responseText)||{}).build;if(!b||b===MM_BUILD)return;
@@ -5485,11 +5487,16 @@ function p8FxText(r){const f=r.fx||{},L=k=>LAB[k];let t;
 const P9_AUTO_BT=new WeakSet();let P9_AUTO_T=0; // 待っている自動の開始は1つだけ（遭遇がほかの方法で片付いたら board() で取り消す＝タイマーを残さない）
 function p9AutoCancel(){if(P9_AUTO_T){clearTimeout(P9_AUTO_T);P9_AUTO_T=0}}
 function p9AutoBattle(m){const p=m&&m.raise&&m.raise.pend;if(!p||P9_AUTO_BT.has(p))return;P9_AUTO_BT.add(p);let n=0;const go=()=>{P9_AUTO_T=0;if(S.m!==m||m.raise.pend!==p||MMP8.boardPhase(m)!=="battle")return;if(bBusy||!document.querySelector("#app>.p9board")||document.getElementById("bt")||document.getElementById("tvs")||document.querySelector(".mmtalk")){if(++n<40)P9_AUTO_T=setTimeout(go,400);else P9_AUTO_BT.delete(p);return}bBattleGo()};p9AutoCancel();P9_AUTO_T=setTimeout(go,900)}
-function bBattleGo(){const m=S.m;if(bBusy||!m||document.getElementById("bt")||document.getElementById("tvs")||MMP8.boardPhase(m)!=="battle")return; // 2026-10-14 実機試遊⑩：遭遇は自動でバトルへ＝同じ遭遇で二重に始めない（自動の開始・古い呼び出しのどちらが先でも1回）
+function bBattleGo(){const m=S.m;if(bBusy||!m||document.getElementById("bt")||document.getElementById("tvs")||document.getElementById("cmp")||MMP8.boardPhase(m)!=="battle")return; // 2026-10-14 実機試遊⑩：遭遇は自動でバトルへ＝同じ遭遇で二重に始めない（自動の開始・古い呼び出しのどちらが先でも1回）
  const bt=m.raise&&m.raise.pend&&m.raise.pend.fx?m.raise.pend.fx.battleType:null,rk=bt=="rival"&&window.MMRIVAL?MMRIVAL.rankFor(m):MMP8.practiceRank(m);const fs=bt!="rival"&&window.MMCH&&MMCH.foeSpecies&&m.raise&&m.raise.field?MMCH.foeSpecies(m,SP.length):-1;
- // 2026-10-12 試遊：野生・レア・ライバルの開始も大会と同じ正式の VS 演出（背景は練習試合の会場 venue＝公式ランク戦の背景は使わない）→ バトル（fight() の導入は出さない）。自動テストの既定（MM_QA_NO_TOURVS）では出さない
- if(window.MM_QA_NO_TOURVS)return bBattleRun(m,bt,rk,fs);const rv=bt=="rival"&&window.MMP10M&&window.MMRIVAL&&MMP10M.rivalMonster(MMRIVAL.CONFIG.partner),o=bt=="rival"?{sp:4,name:rv?rv.name:"ライバルの相棒"}:{sp:fs>=0?fs:0,name:SP[fs]?SP[fs][0]:"野生のモンスター"};bBusy=true;try{MMAUDIO.stopBgm({fade:"quick"})}catch(e){} // 2026-10-14 実機試遊⑧：VS に入るときボードの曲を止める（実戦の曲は FIGHT! のあと＝battleBgmGo。戻ったら board() の bgm("chapter") で続きから）
- tourVsShow(m,o,{bg:(window.MMARENA&&MMARENA.fieldSrc&&MMARENA.fieldSrc(m.raise&&m.raise.ch))||TB_VENUE(rk),head:PRACTICE_LABEL[bt]||"野生のモンスター"}).then(d=>{bBusy=false;TB_SKIP_INTRO=true;setTimeout(()=>{TB_SKIP_INTRO=false},4000);bBattleRun(m,bt,rk,fs);setTimeout(()=>tourVsOut(d),document.getElementById("bt")?60:0)})}
+ // 2026-10-15：野生・レア・ライバルも 遭遇の演出 → パラメーター比較（MMCMP の重ね画面）→「対戦開始」→ バトル。独立した VS の画面（旧 tourVsShow）と fight() の導入（CHALLENGER／VS）は出さない。
+ //  背景＝練習試合の野外（MMARENA.fieldSrc＝実際のバトルと同じ。ライバル専用の背景は無い＝同じ野外）。相手の6能力＝fight() が作る相手と同じランクの一律の値（MMP8L.PROVISIONAL_OPPONENT_STAT）。
+ //  ボードの曲は比較の間は流したまま（無音で待たせない）→「対戦開始」で止めて FIGHT! のあと実戦の曲（従来どおり）。自動テストの既定（MM_QA_NO_TOURVS）では比較を出さず従来どおり
+ if(window.MM_QA_NO_TOURVS||!window.MMCMP)return bBattleRun(m,bt,rk,fs);const rv=bt=="rival"&&window.MMP10M&&window.MMRIVAL&&MMP10M.rivalMonster(MMRIVAL.CONFIG.partner),osp=bt=="rival"?4:(fs>=0?fs:0),ov=(window.MMP8L&&MMP8L.PROVISIONAL_OPPONENT_STAT[rk])||0,o={sp:osp};KS.forEach(k=>{o[k]=ov});
+ const oname=bt=="rival"?(rv?rv.name:"ライバルの相棒"):(SP[osp]?SP[osp][0]:"野生のモンスター");bBusy=true;
+ const ui=MMCMP.overlay({bg:(window.MMARENA&&MMARENA.fieldSrc&&MMARENA.fieldSrc(m.raise&&m.raise.ch))||TB_VENUE(rk),sub:PRACTICE_LABEL[bt]||"野生のモンスター",me:cmpSide(m,m.name),op:cmpSide(o,oname),alt:{me:cmpAlt(m,0),op:cmpAlt(o,1)}});cmpShown(ui.el);
+ ui.pressed.then(()=>{bBusy=false;try{MMAUDIO.stopBgm({fade:"quick"})}catch(e){} // 2026-10-14 実機試遊⑧：バトルに入るときボードの曲を止める（比較の間は流したまま＝無音で待たせない。実戦の曲は FIGHT! のあと＝battleBgmGo）
+ TB_SKIP_INTRO=true;setTimeout(()=>{TB_SKIP_INTRO=false},4000);bBattleRun(m,bt,rk,fs);if(document.getElementById("bt"))setTimeout(()=>ui.close(),60);else ui.close(0)})}
 function bBattleRun(m,bt,rk,fs){if(bt=="rival"&&window.MMRP)MMRP.arm();if(!MMP8.beginBattle(S,m,{kind:"practice",rank:rk}).ok)return board();globalThis.MM_LAST_BT=bt;save();battleDress({rank:rk,label:PRACTICE_LABEL[bt]||"野生のモンスター",name:bt!="rival"&&SP[fs]?SP[fs][0]:null});battleFoeOnce(fs);fight(rk);battleDressDom()}
 /** 2026-10-04 G3：遭遇の演出で見せた野生・レアの相手の種族を、そのままバトルへ（fight() は変えない＝相手の種族は fight() の最初の乱数 R(種族数) で決まるので、その1回だけその種族の値を返す。次の乱数からは元どおり） */
 function battleFoeCount(){return SP.length} // バトルの相手になれる種族の数（fight() の R(SP.length)。番号は MMP10M の内部番号と同じ）
@@ -5696,11 +5703,19 @@ function tbSkillDesc(x,noDesc){const k=x&&MMP10M.skillText(x.sp);return k?`<smal
 // 2026-10-13 開発25 A：比較のバーは左右とも 999＝100% の一次の目盛り（0＝空・見せかけの最低長なし・数値はそのまま）。「対戦表にもどる」は出さない（対戦開始だけ）
 const TB_CMP_MAX=999;function TB_CMP_W(x){x=Math.max(0,Math.min(TB_CMP_MAX,+x||0));return +(x/TB_CMP_MAX*100).toFixed(2)}
 function p9CompareScr(){const m=S.m,t=m&&m.raise&&m.raise.tour;if(!t||t.status!="league")return board();const lg=t.league,pm=MMP8.tourNext(m);if(!pm)return board();const o=p9Npc(lg,pm.opp);bgm("matchup");p9Immersive(true);p9MenuClose();
+ // 2026-10-15：新しいパラメーター比較（ZIP「Mismon_CompareScreen_And_QA_Instructions」A）＝js/battle/compare.js の MMCMP。背景＝公式の会場（TB_ARENA）・左右の肩上アップ・6能力（実際の値・999 の同じ尺度）・「対戦開始」（1回の押下）。旧 .tb3 の表示は使わない
+ if(window.MMCMP){$("#app").innerHTML=MMCMP.html({cls:"p9cmps",bg:TB_ARENA(t.rank),sub:`公式ランク${RN[t.rank]}大会`,me:cmpSide(m,m.name),op:cmpSide(o,p9Short(lg,pm.opp)),alt:{me:cmpAlt(m,0),op:cmpAlt(o,1)},go:{cls:"p9btn p9go pcgo tbstart",onclick:"p9VsGo(this)"}});cmpShown($("#app"));try{window.scrollTo(0,0)}catch(e){}return}
  const v=x=>Math.max(0,x|0),g=KS.map(k=>{const a=v(m[k]),b=v(o[k]);return `<div class="pcg" data-k="${k}"><b class="pcv">${a}</b><div class="pcb l" style="--c:${STAT_COLOR[k]}"><i style="width:${TB_CMP_W(a)}%"></i></div><span class="pcl">${LAB[k]}</span><div class="pcb r" style="--c:${STAT_COLOR[k]}"><i style="width:${TB_CMP_W(b)}%"></i></div><b class="pcv">${b}</b></div>`}).join("");
  $("#app").innerHTML=`<div class="p9cmps tb2 tb3"><div class="pcbg" style="background-image:url(${TB_ARENA(t.rank)})"></div><header class="tbttl"><b>公式ランク${RN[t.rank]}大会</b></header> <div class="pcduo"><div class="pcs me"><span class="tbmon">${tbIdle(m,0)}</span><b class="tbnp">${p11Esc(m.name)}</b><div class="tbskp l">${tbSkillDesc(m,1)}</div></div>
  <div class="pcs op"><span class="tbmon">${tbIdle(o,1)}</span><b class="tbnp">${p11Esc(p9Short(lg,pm.opp))}</b><div class="tbskp r">${tbSkillDesc(o,1)}</div></div></div>
  <div class="pcgs tbst" aria-label="能力の比較">${g}</div>
  <div class="pcacts"><button class="p9btn p9go pcgo tbstart" data-nsfx="1" onclick="p9VsGo(this)" aria-label="対戦開始">対戦開始</button></div></div>`;try{window.scrollTo(0,0)}catch(e){}}
+// 2026-10-15：比較画面の左右（名前は表示用の名前・6能力は戦闘に入る実際の値・固有スキルは名前だけ＝説明の長文は出さない）
+function cmpSide(x,nm){const st={};KS.forEach(k=>{st[k]=Math.max(0,(x&&x[k])|0)});return {sp:x?x.sp:0,name:String(nm==null?"":nm),stats:st,skill:MMCMP.skillName(x&&x.sp)}} // 名前は MMCMP.html が文字として表示（esc）
+function cmpAlt(x,side){try{return window.MMARENA&&x?MMARENA.idleSrc(x.sp):null}catch(e){return null}} // 肩上アップの無い種族（今は無い）は待機の立ち絵
+// 比較画面を出した瞬間：大きさを合わせ・技カードを先に読み・VS の飾りが入る頃に正式 SE（旧 VS 演出の Cinematic Swoosh Impact＝音の山を VS の着地に重ねる）を1回
+function cmpShown(el){try{MMCMP.fit(el);MMCMP.bindResize();el.querySelectorAll("img.c2img").forEach(i=>{if(!i.complete)i.addEventListener("load",()=>MMCMP.fit(el),{once:true})})}catch(e){}try{window.MMARENA&&MMARENA.warmCards&&MMARENA.warmCards(S.m&&S.m.eq)}catch(e){}
+ const calm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches),k=el.querySelector(".cmp2");if(!k||k.dataset.se)return;k.dataset.se="1";setTimeout(()=>{if(k.isConnected)try{MMFEEL.emit("battle.matchup")}catch(e){}},calm?0:300)}
 // 大会3 VS 演出（背景・VS のロゴ・斜めの光・名前の札・飾りは正式素材。モンスターは正式画像）→ バトル。タップで早送り。fight() の導入（intro）はこの試合だけ出さない（二重の VS にしない）
 let TB_SKIP_INTRO=false;
 function tourVsShow(m,o,opt){opt=opt||{};try{window.MMARENA&&MMARENA.warmCards&&MMARENA.warmCards(m&&m.eq)}catch(e){}/* 追加A：VS の間に自分の技カードを先に読む */return new Promise(res=>{const calm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
@@ -5816,9 +5831,8 @@ function p9VsScr(){const m=S.m,t=m&&m.raise&&m.raise.tour;if(!t||t.status!="leag
 /** 次の相手との能力の比較（2026-10-03 品質向上：対戦前の画面を1つに＝順位表の「次の相手」に小さく。VS・両者の対面は fight() の導入（Phase 6・変えない）が出す） */
 function p9Cmp(m,o){return `<div class="p9cmp" aria-label="能力の比較">${P9_STAT.map(([k,lb,col])=>{const a=m[k]|0,b=o[k]|0;return `<div class="c"><span class="lb" style="--c:${col}">${lb}</span><b class="${a>b?"hi":""}">${a}</b><i>:</i><b class="${b>a?"hi":""}">${b}</b></div>`}).join("")}</div>`}
 function p9VsGo(b){if(bBusy||(b&&b.dataset.go))return;if(b)b.dataset.go="1"; /* 2026-10-13 開発27（29）：「対戦開始」は1回の押下で始める（旧：2度押し p9arm）。押したら印を付けて2回目からは何もしない＝連打で二重に始まらない */const m=S.m,t=m&&m.raise&&m.raise.tour;
- if(window.MM_QA_NO_TOURVS||!t||t.status!="league")return p8TourFight();
- const pm=MMP8.tourNext(m);if(!pm)return p8TourFight();bBusy=true; // 2026-10-06：大会3（VS 演出）→ バトル（fight() の導入は出さない）
- tourVsShow(m,p9Npc(t.league,pm.opp)).then(d=>{bBusy=false;TB_SKIP_INTRO=true;setTimeout(()=>{TB_SKIP_INTRO=false},4000);p8TourFight();setTimeout(()=>tourVsOut(d),document.getElementById("bt")?60:0)})}
+ // 2026-10-15：独立した VS の画面（大会3＝tourVsShow）は出さない＝比較画面の「対戦開始」→ そのままバトル。fight() の導入（CHALLENGER／VS）も出さない（VS の重複をなくす）
+ if(!t||t.status!="league")return p8TourFight();TB_SKIP_INTRO=true;setTimeout(()=>{TB_SKIP_INTRO=false},4000);p8TourFight()}
 const TB_INTRO=intro;intro=function(pl){if(TB_SKIP_INTRO){TB_SKIP_INTRO=false;return Promise.resolve()}return TB_INTRO(pl)}; // 大会3 のあとは fight() の導入（CHALLENGER／VS）を出さない
 // 育成リソースHUD（複数リソース対応。今回は特訓チケットのみ）
 function p8Hud(pre=""){return `<div class="p8hud">${pre}${MMP8.resources(S).map(x=>`<span class="p9chip p9res" title="${x.label}">${x.id=="trainTix"?MMP9ART.ticketIcon(26):x.icon}<span class="p9rl">${x.label}</span><b>×${x.value}</b></span>`).join("")}</div>`}
