@@ -99,6 +99,8 @@
   function layout(D, seed, opts = {}) {
     const rng = mulberry((seed ^ 0xA5C3E1) >>> 0), dens = TUNING.density, tiles = {};
     const calmSegs = (TUNING.calmByRoute && TUNING.calmByRoute[opts.route]) || TUNING.calmSegments, SB = opts.bias === true ? TUNING.statBias : null;   // 偏りは本編（world-driver の newField が bias:true）だけ＝試作の配置は従来どおり
+    // 2026-10-15 Chapter 2 A／B／C 設計案の試作：道のデータが自分の「落ち着いた区間」「能力の道の偏り」「レアの候補」を持つときはそれを使う（Chapter 1 のデータには無い＝従来どおり）
+    const CALM = D.calm || calmSegs, SBX = D.statLanes ? { weight: TUNING.statBias.weight, lanes: D.statLanes } : SB, RZ = D.rareZones || TUNING.rare.zones;
     const evs = pool().filter(usableEvent), rec = pool().filter(isRecovery);
     let bag = [];
     const nextEvent = () => { if (!bag.length) { bag = evs.map((e) => e.id); for (let i = bag.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [bag[i], bag[j]] = [bag[j], bag[i]]; } } return bag.pop(); };
@@ -108,14 +110,14 @@
         const n = D.nodes[id]; if (!n || n[2] !== 'ordinary_tile' || tiles[id] !== undefined) { prev = null; continue; }
         const r = rng(); let t = null, acc = 0;
         for (const k of ['stat', 'event', 'rest', 'wild', 'treasure']) { acc += dens[k]; if (r < acc) { t = k; break; } }
-        const calm = calmSegs.includes(sid);
+        const calm = CALM.includes(sid);
         if (calm && (t === 'wild' || t === 'rest' || t === 'treasure')) t = TUNING.calmToStat ? 'stat' : null;
         if (t === 'wild' && prev && prev.t === 'wild') t = null;
         let tile = null;
         if (t === 'stat') {
-          const ks = STAT_KEYS.filter((k) => !(prev && prev.t === 'stat' && prev.k === k)), fav = SB && SB.lanes[sid];
+          const ks = STAT_KEYS.filter((k) => !(prev && prev.t === 'stat' && prev.k === k)), fav = SBX && SBX.lanes[sid];
           if (!fav) tile = { t, k: ks[Math.floor(rng() * ks.length)] };
-          else { const w = ks.map((k) => (fav.includes(k) ? SB.weight : 1)); let r2 = rng() * w.reduce((a, b) => a + b, 0), j = 0; for (; j < ks.length - 1; j++) { r2 -= w[j]; if (r2 < 0) break; } tile = { t, k: ks[j] }; }   // 乱数は1回（ほかのマスの配置は変わらない）
+          else { const w = ks.map((k) => (fav.includes(k) ? SBX.weight : 1)); let r2 = rng() * w.reduce((a, b) => a + b, 0), j = 0; for (; j < ks.length - 1; j++) { r2 -= w[j]; if (r2 < 0) break; } tile = { t, k: ks[j] }; }   // 乱数は1回（ほかのマスの配置は変わらない）
         }
         else if (t === 'event' && evs.length) { const e = evById(nextEvent()); tile = { t, e: e.id }; if (e.handler === 'stat_random' && !(e.params && e.params.keys)) tile.k = STAT_KEYS[Math.floor(rng() * 6)]; else if (e.params && Array.isArray(e.params.keys) && e.params.keys.length > 1) tile.k = e.params.keys[Math.floor(rng() * e.params.keys.length)]; }
         else if (t === 'rest' && rec.length) tile = { t, e: pickW(rng, rec).id };
@@ -129,7 +131,7 @@
     const rr = mulberry((seed ^ 0x5EA7A3E) >>> 0);
     const nb = {}; for (const s of Object.values(D.segments)) for (let i = 0; i < s[3].length; i++) (nb[s[3][i]] = nb[s[3][i]] || []).push(s[3][i - 1], s[3][i + 1]);
     const wildNear = (id) => (nb[id] || []).some((x) => x && tiles[x] && tiles[x].t === 'wild');   // バトルのマスを続けない（野生の隣には置かない）
-    const cand = Object.values(TUNING.rare.zones).flat().filter((id) => D.nodes[id] && D.nodes[id][2] === 'ordinary_tile' && !wildNear(id));
+    const cand = Object.values(RZ).flat().filter((id) => D.nodes[id] && D.nodes[id][2] === 'ordinary_tile' && !wildNear(id));
     const hit = rr() < (TUNING.rare.chance == null ? 1 : TUNING.rare.chance);   // 育成ごとに1回の判定（当たり＝この育成にレアが出る）
     for (let i = 0; hit && i < TUNING.rare.count && cand.length; i++) { const id = cand.splice(Math.floor(rr() * cand.length), 1)[0]; tiles[id] = { t: 'wild', rare: true }; }
     return tiles;
@@ -224,7 +226,7 @@
     const id = st.node, role = D.nodes[id][2];
     let n = null;
     if (role === 'fixed_reward_dead_end' || role === 'optional_random_unlock_dead_end') {
-      const R = TUNING.rewards[id];
+      const R = (D.rewards && D.rewards[id]) || TUNING.rewards[id];   // 2026-10-15 Chapter 2 設計案：道のデータの割り当て（無ければ Chapter 1 の値）
       if (R && !p.claimed[id]) { p.claimed[id] = st.turn; const d = applyEff(p, R.eff); n = { kind: role === 'fixed_reward_dead_end' ? 'reward' : 'den', title: R.title, text: `${R.title}を見つけた！【試作の中身】`, d }; }
       else if (R) n = { kind: 'reward', title: R.title, text: `${R.title}：もう受け取った（1回の育成で1回だけ）。`, d: [] };
     } else {

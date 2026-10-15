@@ -4,6 +4,8 @@
 //        運命のサイコロ／特殊挑戦／ライバルで止まる）・JS の例外 0・横にはみ出さない。スクリーンショットは RF_SHOT_DIR があるときだけ
 //  CP-B2 隔離：保存の鍵は mmrf_proto_ch2_<route>_v1 だけ（Chapter 1 の試作の鍵 mmrf_proto_v1・通常のセーブ mr4v6 には書かない）・再読み込みで同じ地点・
 //        通常の URL では何もしない（#rfp が無い）・rfData=ch2 なしは従来の Chapter 1 の試作
+//  CP-B3 2026-10-15 追補（論点 3）：390×844 × A／B／C で実際に歩いて螺旋塔を上る＝海底（高さ −36）→ 斜路で1歩ごとに上がる → 頂上で海面 0・
+//        3D の板（海底・盆地の壁・斜路・塔）がある・板の数は 300 未満・海底へ潜ると盆地の上の海面が薄くなる・例外 0
 //  QA_E2E=1 のときだけ
 // =========================================================
 import test from 'node:test';
@@ -84,3 +86,46 @@ test('CP-B2 隔離：保存の鍵・再読み込み・通常の URL・rfData な
   assert.equal(await pg.evaluate(() => !!document.getElementById('rfp')), false);
   assert.deepEqual(p.errors, []);
 });
+
+for (const route of ['A', 'B', 'C']) {
+  test(`CP-B3 ルート ${route}：螺旋塔を歩いて上る（海底 −36 → 斜路 → 海面 0）・3D の板・潜ると海面が薄くなる`, { skip: SKIP }, async () => {
+    const p = await open({ size: [390, 844] }); const pg = p.page;
+    await pg.goto(L.url + `index.html?chapterBoard=roadfirst&rfData=ch2&ch2route=${route}&rfRand=open&rfSeed=7`); await pg.waitForSelector('#rfp .rfw');
+    await pg.evaluate(() => MMRF.skipIntro()); await idle(pg);
+    await pg.waitForFunction(() => document.querySelectorAll('#rfp .rfs-deck').length > 0, null, { timeout: 15000 });
+    const parts = await pg.evaluate(() => ({ deck: document.querySelectorAll('#rfp .rfs-deck').length, wall: document.querySelectorAll('#rfp .rfs-wall').length, tw: document.querySelectorAll('#rfp .rfs-tw').length,
+      all: document.querySelectorAll('#rfp .rfs-q').length, floor: !!document.querySelector('#rfp .rfs-floor'), water: !!document.querySelector('#rfp .rfs-water'), sea: document.querySelector('#rfp .rfw').classList.contains('sea') }));
+    assert.ok(parts.sea && parts.floor && parts.water && parts.deck > 20 && parts.wall > 20 && parts.tw >= 18, JSON.stringify(parts));
+    assert.ok(parts.all < 300, '3D の板は 300 枚未満（層の数）' + parts.all);
+    const hs = [], seenNodes = []; let dived = null, shots = 0;
+    for (let i = 0; i < 200; i++) {
+      const r = await pg.evaluate(async () => {
+        const st0 = MMRF.state(); if (st0.done || st0.timeUp) return { end: true };
+        if (st0.play && st0.play.notice) { if (st0.play.notice.kind === 'choice') MMRF.choice(0); else MMRF.ok(); return { ack: true }; }
+        MMRF.fast = true;
+        if (st0.play.fat >= 90) { MMRF.rest(); return { rest: true }; }
+        await MMRF.roll(3);
+        for (let g = 0; g < 8; g++) { const st = MMRF.state(); if (!st.moveLeft) break; const ops = MMRF_CORE.options(MMRF_CH2[MMRF.CH2], st); if (ops.length > 1) { const main = ops.filter((o) => !/^D_/.test(o.seg)); await MMRF.choose((main[0] || ops[0]).seg); } else break; }
+        return { node: MMRF.state().node };
+      });
+      if (r.end) break;
+      await pg.waitForFunction(() => !MMRF.busy(), null, { timeout: 20000 });
+      if (!r.node) continue;
+      await pg.waitForTimeout(450);
+      const w = await pg.evaluate(() => ({ h: MMRF.world().mon[2], node: MMRF.state().node, water: getComputedStyle(document.querySelector('#rfp .rfs-water')).opacity }));
+      if (/^(SPIRAL|RIVAL|UPPER_GATE)/.test(w.node)) { hs.push([w.node, w.h]); if (dived == null && w.h < -2) dived = Number(w.water); }
+      if (SHOT && /^SPIRAL/.test(w.node) && shots < 3) { shots++; await shot(pg, `ch2proto_${route}_390x844_spiral${shots}`); }
+      seenNodes.push(w.node);
+      if (/^(H|Q|HS)$|^LATE_|^Q_/.test(w.node) && hs.some(([n]) => /^SPIRAL/.test(n))) break;   // 斜路を上ったあと頂上（H／Q）から先へ出た
+    }
+    const sp = hs.filter(([n]) => /^SPIRAL/.test(n));
+    assert.ok(sp.length >= 2, '斜路の上で止まった（' + JSON.stringify(hs) + '）');
+    for (let i = 1; i < sp.length; i++) assert.ok(sp[i][1] >= sp[i - 1][1] - 0.5, '斜路を上るほど高い ' + JSON.stringify(sp));
+    assert.ok(hs.some(([n, h]) => /^(RIVAL|UPPER_GATE)$/.test(n) && h < -30), '塔の門前は海底（' + JSON.stringify(hs) + '）');
+    const top = await pg.evaluate(() => MMRF.world().mon[2]);
+    assert.ok(dived != null && dived < 0.3, '海底では盆地の上の海面が薄い（' + dived + '）');
+    assert.ok(Math.abs(top) < 3 || seenNodes.slice(-1)[0].startsWith('SPIRAL'), '頂上は海面の高さ');
+    await shot(pg, `ch2proto_${route}_390x844_top`);
+    assert.deepEqual(p.errors, []);
+  });
+}

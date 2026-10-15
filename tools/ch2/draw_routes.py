@@ -34,6 +34,12 @@ def base(bg):
 
 def schema_base(D):
     im = Image.new('RGB', (W, H), (245, 248, 250)); g = ImageDraw.Draw(im)
+    if D['art'].get('basin'):   # 2026-10-15 追補：海底の盆地（海面より depth 低い）と塔
+        g.polygon([tuple(p) for p in D['art']['basin']], fill=(200, 226, 244), outline=(90, 140, 190))
+        g.text((D['art']['basin'][0][0] + 12, D['art']['basin'][0][1] - 40), f'海底の盆地（海面 −{D["art"]["depth"]}）', fill=(70, 110, 150), font=FONT_S)
+    for t in D['art'].get('towers', []):
+        c, r = t['c'], t['r']; g.ellipse([c[0] - r, c[1] - r, c[0] + r, c[1] + r], fill=(205, 200, 188), outline=(120, 110, 90), width=3)
+        g.text((c[0] - 30, c[1] - 8), '螺旋塔' if t['kind'] == 'spiral' else '潮の塔', fill=(80, 70, 50), font=FONT_S)
     for reg in D['art']['regions']:
         col = {'land': (232, 224, 190), 'seabed': (200, 228, 245), 'glass': (215, 245, 255), 'tower': (235, 235, 240), 'arena': (250, 236, 200)}.get(reg['kind'], (240, 240, 240))
         g.polygon([tuple(p) for p in reg['poly']], fill=col, outline=(180, 180, 190))
@@ -61,6 +67,8 @@ def draw_route(im, D, color=None, label=True, width=7):
         else: g.line(pts, fill=c + (255,), width=width)
         if cond != 'always':   # 条件つきの道＝中に細い白線
             g.line(pts, fill=(255, 255, 255, 200), width=2)
+        if sid in (D.get('explore') or {}):   # 探索路（2026-10-15 追補）＝中に緑の線
+            g.line(pts, fill=(60, 200, 90, 255), width=3)
         for p in pts[1:-1]: g.ellipse([p[0] - 3, p[1] - 3, p[0] + 3, p[1] + 3], fill=(255, 255, 255, 220))
         if label:
             mid = pts[len(pts) // 2]; g.text((mid[0] + 6, mid[1] - 18), sid, fill=(255, 255, 255), font=FONT_S, stroke_width=2, stroke_fill=(0, 0, 0))
@@ -80,7 +88,7 @@ def legend(im, title, sub, color_mode):
     if color_mode == 'zone':
         for k, lab in [('surface_early', '海面（序盤）'), ('descent', '下降／上昇（潮の塔・螺旋塔）'), ('undersea', '海底（ガラス回廊・遺跡）'), ('surface_late', '海面（会場前）')]:
             g.rectangle([14, y, 44, y + 14], fill=ZONE_COLOR[k] + (255,)); g.text((50, y - 3), lab, fill=(255, 255, 255), font=FONT_S, stroke_width=2, stroke_fill=(0, 0, 0)); y += 20
-        g.text((14, y - 1), '破線＝寄り道（行き止まり・帰りもサイコロ）  中に白線＝条件つきの道（Q の奇偶／挑戦の成否／隠れ家）', fill=(255, 255, 255), font=FONT_S, stroke_width=2, stroke_fill=(0, 0, 0))
+        g.text((14, y - 1), '破線＝寄り道（行き止まり・帰りもサイコロ）  中に白線＝条件つきの道（Q の奇偶／挑戦の成否／隠れ家）  中に緑線＝探索路', fill=(255, 255, 255), font=FONT_S, stroke_width=2, stroke_fill=(0, 0, 0))
     else:
         for k in 'ABC':
             g.rectangle([14, y, 44, y + 14], fill=ROUTE_COLOR[k] + (255,)); g.text((50, y - 3), f'ルート {k}：{DATA[k]["name"]}', fill=(255, 255, 255), font=FONT_S, stroke_width=2, stroke_fill=(0, 0, 0)); y += 20
@@ -90,7 +98,7 @@ for k, D in DATA.items():
     legend(im, f'Chapter 2 ルート {k}「{D["name"]}」設計案（未承認）', f'{len(D["nodes"])}地点・{len(D["edges"])}接続・{len(D["segments"])}区間。世界観参照（添付 02）に重ねた地理図。座標は暫定', 'zone')
     im.save(OUT / f'route_{k}_overlay.jpg', quality=86, optimize=True)
     im2 = schema_base(D); draw_route(im2, D)
-    legend(im2, f'Chapter 2 ルート {k} 路線図（グラフ）', '地理と区別するための模式図。区域の四角は共通の世界（港町・小島・海底・ガラス回廊・螺旋塔・会場島）の仮の範囲', 'zone')
+    legend(im2, f'Chapter 2 ルート {k} 路線図（グラフ）', '地理と区別するための模式図。島・海底の盆地・螺旋塔・潮の塔・会場島は3ルート共通（座標は暫定）', 'zone')
     im2.save(OUT / f'route_{k}_schema.png', optimize=True)
 im = base(BG)
 for k, D in DATA.items(): draw_route(im, D, color=ROUTE_COLOR[k], label=False, width=5)

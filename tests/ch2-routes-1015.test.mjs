@@ -1,9 +1,12 @@
 // =========================================================
 // Chapter 2「潮風の海岸」A／B／C 連続世界ボードの設計案（2026-10-15・未承認・限定試作）＝js/proto/ch2-routes.js（MMRF_CH2）
-//  C2-01 データ：3ルートとも MMRF_DATA と同じ形・役割の語彙・固定の規則（D6・40ターン）。Q／特殊挑戦／隠れ家 各1・固定報酬 6・ライバル 1・地点は 210〜330
+//  C2-01 データ：3ルートとも MMRF_DATA と同じ形・役割の語彙・固定の規則（D6・40ターン）。Q／特殊挑戦／隠れ家 各1・固定報酬 6・ライバル 1・地点は 280〜320（2026-10-15 追補・論点 4）
 //  C2-02 到達性：START から全地点・全地点から GOAL・ライバルと潮の塔（下降）を通らずに GOAL へ行けない・寄り道（行き止まり）から戻れる
 //  C2-03 3ルートは別のグラフ（区間の並び・接続・本線の歩数が互いに違う）＝見た目だけの複製ではない
 //  C2-04 実際の進行（MMRF_CORE）：運命の分かれ道（奇数＝左／偶数＝右）・特殊挑戦（5／6）・寄り道の往復・大きな出目でライバルを飛ばせない・40ターンの時間切れ
+//  C2-06 2026-10-15 追補（論点 2・3・5）：特殊挑戦は成功＝近道・失敗＝回り道・高さ（海面 0・海底 −depth・下降／螺旋塔の上昇は単調）・螺旋塔 12〜13 歩・海底の地点は盆地の中・
+//        報酬 7 枠の中身の種類と数は Chapter 1 と同じ・探索路（explore）は道のデータにある区間
+//  C2-07 試作の進行が道のデータの割り当てを使う（報酬の中身・能力の道の偏り）・Chapter 1 のデータでは従来どおり
 //  C2-05 隔離：本編（world-driver・world-board・raising.js）と Chapter 1 の試作のデータ（roadfirst-data.js・roadfirst-routes.js）は ch2-routes を参照しない・保存の鍵は別
 // =========================================================
 import test from 'node:test';
@@ -31,14 +34,14 @@ test('C2-01：3ルートの形・役割・規則・数', () => {
   for (const [k, D] of Object.entries(R)) {
     assert.equal(D.route, k); assert.equal(D.chapter, 2); assert.ok(D.name && D.concept);
     assert.deepEqual(D.fixed_rules.normal_movement_die, [1, 2, 3, 4, 5, 6]); assert.equal(D.fixed_rules.training_turn_limit, 40);
-    const n = Object.keys(D.nodes).length; assert.ok(n >= 210 && n <= 330, `${k}：地点 ${n}`);   // 目標 280〜320 は未達（本線を 40ターンで歩ける長さにしたため）＝設計書に明記
+    const n = Object.keys(D.nodes).length; assert.ok(n >= 280 && n <= 320, `${k}：地点 ${n}`);   // 2026-10-15 追補（論点 4）：意味のある探索路を足して 280〜320
     for (const [id, v] of Object.entries(D.nodes)) { assert.ok(ROLES.has(v[2]), `${k} ${id}：役割 ${v[2]} は Chapter 1 の語彙`); assert.ok(Number.isFinite(v[0]) && Number.isFinite(v[1])); if (v[2] === 'ordinary_tile') assert.ok(D.segments[v[3]], `${k} ${id}：区間`); }
     const cnt = {}; for (const v of Object.values(D.nodes)) cnt[v[2]] = (cnt[v[2]] || 0) + 1;
     assert.equal(cnt.start, 1); assert.equal(cnt.goal, 1); assert.equal(cnt.parity_forced_fork, 1); assert.equal(cnt.challenge_d6_5_6, 1); assert.equal(cnt.mandatory_rival, 1);
     assert.equal(cnt.fixed_reward_dead_end, 6); assert.equal(cnt.optional_random_unlock_dead_end, 1); assert.equal(cnt.lower_walk_through_gate, 1);
     for (const e of D.edges) { assert.ok(D.nodes[e[0]] && D.nodes[e[1]] && D.segments[e[2]], `${k}：接続 ${e}`); assert.ok(['forward', 'reverse'].includes(e[3])); }
     for (const [sid, s] of Object.entries(D.segments)) { assert.equal(s[3][0], s[0]); assert.equal(s[3][s[3].length - 1], s[1]); for (const id of s[3]) assert.ok(D.nodes[id], `${k} ${sid} ${id}`); }
-    assert.ok(Array.isArray(D.art.regions) && D.art.title, k + '：試作の区域と題字');
+    assert.ok(Array.isArray(D.art.regions) && D.art.title && D.art.sea3d && Array.isArray(D.art.basin) && Array.isArray(D.art.towers), k + '：試作の区域・題字・海底の盆地・塔');
     assert.deepEqual(Object.keys(D.rewardTitles).sort(), ['L_ALTAR', 'L_CHEST', 'L_LATE_ALTAR', 'RANDOM_DEN', 'REWARD5', 'R_CHEST', 'R_SPECIAL']);
   }
 });
@@ -92,6 +95,58 @@ test('C2-05：隔離＝本編と Chapter 1 の試作は ch2-routes を参照し�
   const v = rd('js/proto/roadfirst-view.js');
   assert.match(v, /rfData'\) === 'ch2'/); assert.match(v, /mmrf_proto_ch2_\$\{CH2\}_v1/); assert.match(v, /const KEY = 'mmrf_proto_v1'/); assert.match(v, /getItem\(SKEY\)/); assert.match(v, /setItem\(SKEY,/);
   assert.doesNotMatch(rd('js/proto/ch2-routes.js'), /mr4v\d/);
+  // 2026-10-15 追補：海の世界の描画（MMRF_SEA）は道のデータが art.sea3d を持つときだけ＝Chapter 1 のデータには無い
+  assert.ok(!(A1.art && A1.art.sea3d), 'Chapter 1 A には sea3d が無い');
+  const W = rd('js/proto/roadfirst-world.js'); assert.match(W, /const SEA = D && D\.art && D\.art\.sea3d && root\.MMRF_SEA \? root\.MMRF_SEA : null;/);
+  assert.match(rd('js/proto/roadfirst-routes.js'), /"route":"B"/); assert.doesNotMatch(rd('js/proto/roadfirst-routes.js'), /sea3d/, 'Chapter 1 B／C にも sea3d が無い');
   const html = rd('index.html'); assert.equal((html.match(/js\/proto\/ch2-routes\.js/g) || []).length, 1);
   assert.ok(html.indexOf('js/proto/ch2-routes.js') < html.indexOf('js/proto/roadfirst-view.js'), 'データは view より先に読む');
+});
+
+test('C2-06：特殊挑戦の規則・高さ・螺旋塔・盆地・報酬の種類と数・探索路', () => {
+  const inPoly = (P, x, y) => { let c = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) { const a = P[i], b = P[j]; if ((a[1] > y) !== (b[1] > y) && x < (b[0] - a[0]) * (y - a[1]) / (b[1] - a[1]) + a[0]) c = !c; } return c; };
+  const STD = ['all10', 'all15', 'best30', 'food', 'gold150', 'gold150', 'gold200'];
+  for (const [k, D] of Object.entries(R)) {
+    const L = (sid) => D.segments[sid][3].length - 1, Z = D.art.zoneOf, E = D.art.elev, dep = D.art.depth, h = (id) => E[id] || 0;
+    // 成功＝近道・失敗＝回り道（Chapter 1 と同じ）
+    const pathLen = (first) => { let n = 0, node = 'CHALLENGE', sid = first; for (let g = 0; g < 9 && node !== 'L_MERGE'; g++) { n += L(sid); node = D.segments[sid][1]; sid = Object.keys(D.segments).find((x) => D.segments[x][0] === node && !SPUR(D, x)); } return n; };
+    const ok = pathLen('LATE_L_SUCCESS1'), ng = pathLen('LATE_L_FAIL'); assert.ok(ok < ng, `${k}：成功 ${ok} < 失敗 ${ng}`);
+    // 高さ：区域ごと
+    for (const [sid, s] of Object.entries(D.segments)) {
+      const z = Z[sid], ids = s[3];
+      if (z === 'undersea') for (const id of ids) assert.equal(h(id), -dep, `${k} ${sid} ${id}：海底`);
+      if (z === 'surface_early' || z === 'surface_late') for (const id of ids) assert.equal(h(id), 0, `${k} ${sid} ${id}：海面`);
+      if (z === 'ascent') { assert.ok(L(sid) >= 12 && L(sid) <= 13, `${k}：螺旋塔 ${L(sid)} 歩`); assert.equal(h(ids[0]), -dep); assert.equal(h(ids[ids.length - 1]), 0); for (let i = 1; i < ids.length; i++) assert.ok(h(ids[i]) >= h(ids[i - 1]), `${k} 上り ${ids[i]}`); }
+      if (z === 'descent') { assert.equal(h(ids[0]), 0); assert.equal(h(ids[ids.length - 1]), -dep); for (let i = 1; i < ids.length; i++) assert.ok(h(ids[i]) <= h(ids[i - 1]), `${k} 下り ${ids[i]}`); }
+      if (z === 'undersea') for (const id of ids) assert.ok(inPoly(D.art.basin, D.nodes[id][0], D.nodes[id][1]), `${k} ${id}：盆地の中`);
+    }
+    for (const t of D.art.towers) for (const [id, n] of Object.entries(D.nodes)) assert.ok(Math.hypot(n[0] - t.c[0], n[1] - t.c[1]) >= t.r + 12, `${k} ${id}：塔 ${t.id} の外`);
+    // 報酬：7 枠の中身の種類と数は Chapter 1 と同じ（どの建物に置くかだけルートごと）
+    assert.deepEqual(Object.values(D.rewards).map((r) => r.key).sort(), STD, k + '：報酬の種類と数');
+    for (const [id, r] of Object.entries(D.rewards)) { assert.equal(r.title, D.rewardTitles[id]); assert.ok(Array.isArray(r.eff) && r.eff.length); }
+    // 探索路：道のデータにあり、能力の偏りを持つ
+    assert.ok(Object.keys(D.explore).length >= 4, k + '：探索路');
+    for (const [sid, x] of Object.entries(D.explore)) { assert.ok(D.segments[sid], `${k} ${sid}`); assert.ok(x.name && x.note && ['lane', 'loop'].includes(x.kind)); assert.deepEqual(D.statLanes[sid], x.lean); }
+  }
+  // 3ルートとも同じ世界（盆地・塔・島は共通）
+  assert.deepEqual(R.A.art.basin, R.B.art.basin); assert.deepEqual(R.A.art.towers, R.C.art.towers); assert.deepEqual(R.B.art.regions, R.C.art.regions);
+});
+
+test('C2-07：試作の進行が道のデータの割り当てを使う（報酬の中身・能力の道の偏り）・Chapter 1 は従来どおり', async () => {
+  await import('../js/proto/roadfirst-play.js'); const P = globalThis.MMRF_PLAY;
+  // 報酬：D.rewards の中身で確定（Chapter 1 の TUNING.rewards とは別の割り当て）
+  for (const [k, D] of Object.entries(R)) {
+    const st = P.attach(D, C.create(D, { seed: 3, randOpen: true }), {});
+    for (const id of ['L_CHEST', 'R_CHEST', 'L_ALTAR', 'REWARD5']) {
+      st.node = id; st.turn += 1; st.moveLeft = 0; st.play.notice = null; const before = JSON.parse(JSON.stringify(st.play)); const n = P.land(D, st, C);
+      assert.equal(n.title, D.rewards[id].title, `${k} ${id}`);
+      const e = D.rewards[id].eff; if (e[0].gold) assert.equal(st.play.gold - before.gold, e.reduce((a, x) => a + (x.gold || 0), 0)); if (e[0].statAll) assert.equal(st.play.stats.po - before.stats.po, e[0].statAll);
+    }
+  }
+  // 能力の道の偏り：偏りのある区間では対象の2能力が多い（多数の seed で）
+  const D = R.A, lane = D.statLanes.EL03B, cnt = { hit: 0, all: 0 };
+  for (let seed = 1; seed <= 400; seed++) { const t = P.layout(D, seed, {}); for (const id of D.segments.EL03B[3]) { const x = t[id]; if (x && x.t === 'stat') { cnt.all++; if (lane.includes(x.k)) cnt.hit++; } } }
+  assert.ok(cnt.hit / cnt.all > 0.45, `偏り ${cnt.hit}/${cnt.all}`);   // 偏りなしなら 2/6≒0.33・重み 3 で ≒0.6
+  // Chapter 1 のデータには statLanes・rewards・calm・rareZones が無い＝従来の TUNING のまま
+  for (const k of ['statLanes', 'rewards', 'calm', 'rareZones']) assert.equal(A1[k], undefined, k);
 });
