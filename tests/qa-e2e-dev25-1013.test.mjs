@@ -80,13 +80,14 @@ test('D25-E：正式サイコロ＝6面とも正式の絵・出目どおり（�
   }
 });
 
-test('D25-F：初回の説明がある訪問は入口の声なし・説明のあとの再訪で1回だけ（牧場・研究所・アイテム屋・ベースキャンプ・市場）', { skip: SKIP, timeout: 240000 }, async () => {
+test('D25-F：初回の説明がある訪問は入口の声なし・説明のあとの再訪で1回だけ（牧場・研究所・アイテム屋・ベースキャンプ・市場）＝2026-10-15 N04 から「頼む」だけで鳴らない', { skip: SKIP, timeout: 240000 }, async () => {
   const p = await openPage({ size: H.SIZES.base, npc: true, karen: true }); const pg = p.page;
   await H.newGame(pg, 'テスト');
   await pg.evaluate(() => { const m = mk(0); m.name = 'テスト'; MMP7.ensureProg(m); S.m = m; save(); lobby(); });
-  await pg.mouse.click(4, 300); await pg.waitForFunction(() => MMAUDIO.voiceStatus().nick_hello === 'ready' && MMAUDIO.voiceStatus().elliot_hello_OPTIONAL === 'ready', null, { timeout: 15000 });
+  await pg.mouse.click(4, 300); await pg.waitForTimeout(400);
   const FAC = ['nick_hello', 'elliot_hello_OPTIONAL', 'berna_welcome', 'dan_hello', 'karen_welcome'];   // 施設の入口の声（会話の行の声＝フィナの「うん」などは説明の一部なので数えない）
-  const voices = () => pg.evaluate((F) => MMAUDIO.playLog().filter((x) => x.kind === 'voice' && F.includes(x.name)).map((x) => x.name), FAC);
+  // 2026-10-15 N04：声は全停止＝頼んだ記録（voiceLog・結果 blocked）で出しどころを確かめる。鳴っていたら失敗
+  const voices = () => pg.evaluate((F) => { if (MMAUDIO.playLog().some((x) => x.kind === 'voice')) throw new Error('NPC の声が鳴った'); return MMAUDIO.voiceLog().filter((x) => F.includes(x.id) && x.result === 'blocked').map((x) => x.id); }, FAC);
   const drain = async () => { for (let k = 0; k < 60; k++) { const t = await pg.$('.mmtalk:not(.mmtalk-out)'); if (!t) break; await H.finishTalk(pg); await pg.waitForTimeout(150); } };
   const visit = async (fn, label) => {
     const n0 = (await voices()).length;
@@ -112,10 +113,10 @@ test('D25-F：初回の説明がある訪問は入口の声なし・説明のあ
   // 記録は施設の初回のフラグだけ（新しいセーブ項目なし）
   const keys = await pg.evaluate(() => Object.keys(S.npcFlags.first || {}).sort());
   assert.ok(['farm', 'lab', 'market', 'ranch', 'shop'].every((k) => keys.includes(k)), JSON.stringify(keys));
-  // ボイス OFF なら再訪でも鳴らない
+  // ボイス OFF でも同じ（頼むが鳴らない＝全停止は設定より先）
   await pg.evaluate(() => MMAUDIO.setVoice({ on: false }));
   const off = await visit(() => museum(), 'OFF');
-  assert.deepEqual(off.all, []);
+  assert.deepEqual(off.all, ['elliot_hello_OPTIONAL']);
   await pg.evaluate(() => MMAUDIO.setVoice({ on: true }));
 });
 

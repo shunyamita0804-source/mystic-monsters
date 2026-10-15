@@ -2196,6 +2196,7 @@ button.tround:active{background:radial-gradient(circle at 45% 35%,#2e5096,#12245
 /* 2026-10-13 開発24：試遊の比較設定（ボイス・観客の声・バトル画面）。街の設定と冒険中のメニュー（音・画面の設定）で同じ部品 */
 .pfrow.trow{min-height:40px;padding:5px 10px;flex-wrap:wrap;row-gap:4px}.pfrow.trow dt{font-size:13px}
 .tseg{display:inline-flex;gap:4px;flex-wrap:nowrap}
+.pfrow.tvoff .tnote{font:700 12px/1.3 "Noto Sans JP",sans-serif;color:#cdbf98}
 .tseg button{min-height:34px;min-width:44px;margin:0;padding:3px 10px;border-radius:999px;border:1.5px solid rgba(217,180,101,.85);background:linear-gradient(180deg,rgba(34,58,118,.97),rgba(12,26,62,.97));color:#e9dcb4;font:800 13px/1.1 "Noto Sans JP",sans-serif;box-shadow:none}
 .tseg button.on{background:linear-gradient(180deg,#f6dc94,#c99a3a);color:#1d1406;border-color:#fff1c4}
 .tsetp{max-height:calc(100dvh - 210px);overflow-y:auto;overscroll-behavior:contain}
@@ -4439,8 +4440,10 @@ function confScr(){if(p8Blocked())return;$("#app").innerHTML=`<div class="ds pfd
 const TRIAL_VOICE_VOL=[["小",0.5],["中",0.85],["大",1]];
 function trialSeg(label,items,re){return `<div class="pfrow trow"><dt>${label}</dt><dd><span class="tseg">${items.map(([t,on,act])=>`<button type="button" class="${on?"on":""}" aria-pressed="${on}" onclick="${act};${re}">${t}</button>`).join("")}</span></dd></div>`}
 function trialRows(re){const A=window.MMAUDIO,C=window.MMCROWD,M=window.MMARENA;if(!A||!A.voiceSettings)return"";const v=A.voiceSettings(),c=C?C.settings():{mode:"long",level:"std"},ui=M&&M.v24?(M.v24()?"new":"old"):"new";
- return trialSeg("ボイス",[["オン",v.on,"trialSet('von',1)"],["オフ",!v.on,"trialSet('von',0)"]],re)
-  +trialSeg("ボイスの音量",TRIAL_VOICE_VOL.map(([t,x])=>[t,Math.abs(v.vol-x)<0.01,`trialSet('vvol',${x})`]),re)
+ /* 2026-10-15 N04：NPC のボイスは全停止（新しい声の収録待ち）＝切り替えのボタンは出さない（押しても鳴らない設定を見せない）。声の設定（mmvoice）は消さずに残す */
+ return (A.voiceBlocked&&A.voiceBlocked()?`<div class="pfrow trow tvoff"><dt>ボイス</dt><dd><span class="tnote">準備中（新しい声の収録待ち）</span></dd></div>`
+  :trialSeg("ボイス",[["オン",v.on,"trialSet('von',1)"],["オフ",!v.on,"trialSet('von',0)"]],re)
+  +trialSeg("ボイスの音量",TRIAL_VOICE_VOL.map(([t,x])=>[t,Math.abs(v.vol-x)<0.01,`trialSet('vvol',${x})`]),re))
   +trialSeg("観客の声（大会）",[["通常",c.mode=="long","trialSet('crowd','long')"],["短い",c.mode=="short","trialSet('crowd','short')"],["なし",c.mode=="off","trialSet('crowd','off')"]],re)
   +trialSeg("観客の音量",[["標準",c.level=="std","trialSet('clv','std')"],["控えめ",c.level=="soft","trialSet('clv','soft')"]],re)
   +trialSeg("バトル画面",[["新",ui=="new","trialSet('ui','new')"],["旧",ui=="old","trialSet('ui','old')"]],re)}
@@ -5262,7 +5265,7 @@ window.addEventListener("unhandledrejection",rescue);
  *  ./version.json（小さな JSON。毎回取り直す）の build がこのページの MM_BUILD と違えば1回だけ reload（同じ版へは15分に1回まで＝読み込み直しを繰り返さない）。
  *  確かめる時：起動したとき・ページがメモリから戻ったとき（pageshow の persisted）・10分以上裏にいて表に戻ったとき。セーブ（mr4v6）には触れない（読み込み直しは iOS がタブを閉じたときと同じ＝つづきから）。
  *  公開するたびに MM_BUILD と version.json の build を同じ値に上げる（tests/dev24-1013.test.mjs で一致を確かめる） */
-const MM_BUILD="2026-10-14-play47b";
+const MM_BUILD="2026-10-15-voiceoff";
 (function(){const K="mmbuildReload";let hidAt=0;
  const check=()=>{try{const x=new XMLHttpRequest();x.open("GET","./version.json?t="+Date.now(),true);x.timeout=8000;
   x.onload=()=>{try{if(x.status<200||x.status>=300)return;const b=(JSON.parse(x.responseText)||{}).build;if(!b||b===MM_BUILD)return;

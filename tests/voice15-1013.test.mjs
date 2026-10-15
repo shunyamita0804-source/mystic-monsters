@@ -1,6 +1,6 @@
 // =========================================================
 // 2026-10-13 開発25 追加便：NPC のボイス（ZIP「全NPCボイス15本_BGM3本」）と BGM の候補 3曲（Node で動かす部分）
-//  VC-01：変換したファイル（OGG／M4A の対）の sha256・registry の登録（ON 7本＋三伝説4本は登録のみ）・フィナ「こんにちは」は参照先だけ差し替え（ほかのフィナ7種は変えない）
+//  VC-01（2026-10-15 N04 で書き直し）：旧い声のファイルは削除・sha256 は docs/voice-replacement-ledger.md・registry は id／話者／台詞だけ。（旧：変換したファイル（OGG／M4A の対）の sha256・registry の登録（ON 7本＋三伝説4本は登録のみ）・フィナ「こんにちは」は参照先だけ差し替え（ほかのフィナ7種は変えない）
 //  VC-02：取り込まないもの＝アストラッドの旧音源・研究所の「やあ」の二重登録（開発24 の elliot_hello_OPTIONAL と同じ元音源）
 //  （2026-10-13 開発26：確定ボイス15本＝フィナ8本・ダン・ニック・ベルナ・レオナ2本は中身だけ差し替え・アストラッド2本は新規の登録のみ）
 //  VC-03：BGM の候補は MMAUDIO に登録しない（どの場面からも鳴らない）・TITLE の無音・ARENA・公式戦／野生／レア／ライバルの曲は変えていない
@@ -57,32 +57,28 @@ const OLD = {
   elliot_hello_OPTIONAL: '60f86182e9e7b9067ac95397cb6398e14e082975fb6cf6a7570d2e77f43fbbd0',
 };
 
-test('VC-01：変換したファイルの sha256・registry の登録・フィナ「こんにちは」は参照先だけ差し替え', () => {
-  for (const [id, [o, m]] of Object.entries(NEW)) { assert.equal(sha(VO + id + '.ogg'), o, id + '.ogg'); assert.equal(sha(VO + id + '.m4a'), m, id + '.m4a'); }
+test('VC-01（2026-10-15 N04 で書き直し）：旧い声のファイルは今の木に無い・削除した54本の sha256 は台帳に残る・registry は id・話者・台詞だけ', () => {
+  const ledger = rd('docs/voice-replacement-ledger.md');
+  for (const [id, [o, m]] of Object.entries(NEW)) {
+    assert.ok(!existsSync(path.join(ROOT, VO, id + '.ogg')) && !existsSync(path.join(ROOT, VO, id + '.m4a')), id + ' のファイルは削除');
+    assert.ok(ledger.includes(o + '  ' + id + '.ogg') && ledger.includes(m + '  ' + id + '.m4a'), id + ' の sha256 は台帳に');
+  }
+  for (const [id, h] of Object.entries(OLD)) { assert.ok(!existsSync(path.join(ROOT, VO, id + '.ogg')), id); assert.ok(ledger.includes(h + '  ' + id + '.ogg'), id + ' の sha256 は台帳に'); }
+  const files = readdirSync(path.join(ROOT, 'assets/audio/voice'), { recursive: true }).map(String).filter((f) => /\.(ogg|m4a|mp3|wav)$/i.test(f));
+  assert.deepEqual(files, [], 'assets/audio/voice に音声ファイルは1つも無い');
   const { got } = loadRegistry(), V = got.voice;
-  assert.deepEqual(V.fina_hello.src, ['./' + VO + 'fina_hello_new.ogg', './' + VO + 'fina_hello_new.m4a'], 'fina_hello は新しい「こんにちは」');
-  assert.equal(V.fina_hello.gain, 1.12);
-  for (const [id, h] of Object.entries(OLD)) { assert.equal(sha(onDisk(V[id].src[0])), h, `${id} は変えない`); assert.notEqual(V[id].enabled, false, id); }
-  assert.ok(existsSync(path.join(ROOT, VO, 'fina_hello.ogg')) && existsSync(path.join(ROOT, VO, 'fina_hello.m4a')), '旧「こんにちは」はファイルだけ残す（戻すときは registry の1行）');
-  const on = ['cedric_opening', 'serge_welcome', 'genshin_ack', 'vargas_ack', 'ryu_hello', 'ryu_chuckle', 'ryu_praise', 'fina_yeah', 'fina_hmm', 'fina_look', 'fina_hey', 'fina_giggle', 'fina_yes', 'fina_wonder', 'berna_welcome', 'nick_hello', 'dan_hello'], off = ['leona_greet', 'leona_prebattle', 'ragnas_greet', 'ragnas_prebattle', 'astrad_greet', 'astrad_prebattle'];
-  for (const id of on) { assert.ok(V[id], id); assert.notEqual(V[id].enabled, false, id + ' は ON'); assert.deepEqual(V[id].src, ['./' + VO + id + '.ogg', './' + VO + id + '.m4a']); }
-  for (const id of off) { assert.ok(V[id], id); assert.equal(V[id].enabled, false, id + ' は登録のみ'); }
-  const GAIN = { cedric_opening: 1.51, serge_welcome: 1.17, genshin_ack: 1.94, vargas_ack: 2.39, ryu_hello: 1.16, ryu_chuckle: 2.08, ryu_praise: 0.95, leona_greet: 1.13, leona_prebattle: 1.05, ragnas_greet: 0.96, ragnas_prebattle: 0.6,
-    fina_yeah: 1.13, fina_hmm: 1.11, fina_look: 1.12, fina_hey: 1.13, fina_giggle: 1.12, fina_yes: 1.12, fina_wonder: 1.12, berna_welcome: 1.11, nick_hello: 1.12, dan_hello: 1.12, astrad_greet: 1.15, astrad_prebattle: 1.15 };   // 開発26：確定版は約 -19 LUFS＝従来の計算で約 -18 LUFS へ
-  for (const [id, g] of Object.entries(GAIN)) assert.equal(V[id].gain, g, id + ' の gain（約 -18 LUFS にそろえる）');
-  assert.equal(V.ragnas_greet.npc, 'ragnas'); assert.equal(V.leona_greet.npc, 'leona'); assert.equal(V.astrad_greet.npc, 'astrad'); assert.equal(V.astrad_prebattle.npc, 'astrad');
+  const ids = ['fina_hello', 'cedric_opening', 'serge_welcome', 'genshin_ack', 'vargas_ack', 'ryu_hello', 'ryu_chuckle', 'ryu_praise', 'fina_yeah', 'fina_hmm', 'fina_look', 'fina_hey', 'fina_giggle', 'fina_yes', 'fina_wonder', 'berna_welcome', 'nick_hello', 'dan_hello', 'karen_welcome', 'elliot_hello_OPTIONAL', 'leona_greet', 'leona_prebattle', 'ragnas_greet', 'ragnas_prebattle', 'astrad_greet', 'astrad_prebattle'];
+  assert.deepEqual(Object.keys(V).sort(), ids.slice().sort(), 'id は残す（新しい声の差し替え先）');
+  for (const id of ids) { assert.deepEqual(V[id].src, [], id + ' は src なし'); assert.ok(ledger.includes('`' + id + '`'), id + ' は台帳の表に'); }
+  assert.equal(V.ragnas_greet.npc, 'ragnas'); assert.equal(V.leona_greet.npc, 'leona'); assert.equal(V.astrad_greet.npc, 'astrad'); assert.equal(V.fina_look.line, '見て見て');
 });
 
-test('VC-02：アストラッドの旧音源・研究所「やあ」の二重登録は無い', () => {
+test('VC-02：アストラッドの旧音源は置いていない・登録していない・研究所「やあ」の二重登録は無い', () => {
   const { got } = loadRegistry();
   const all = readdirSync(path.join(ROOT, 'assets/audio'), { recursive: true }).map(String);
-  // 2026-10-13 開発26：アストラッドは新しい声の2本（「待っていた」「全力でこい！」）だけ＝OGG／M4A の4ファイル・登録のみ（enabled:false）
-  assert.deepEqual(all.filter((f) => /astrad|アストラッド/i.test(f)).map((f) => path.basename(f)).sort(), ['astrad_greet.m4a', 'astrad_greet.ogg', 'astrad_prebattle.m4a', 'astrad_prebattle.ogg'], 'アストラッドのファイルは新しい2本だけ（旧音源は使用禁止）');
+  assert.deepEqual(all.filter((f) => /astrad|アストラッド/i.test(f) && /\.(ogg|m4a|mp3|wav)$/i.test(f)), [], 'アストラッドの声のファイルは無い（2026-10-15 全停止）');
   assert.deepEqual(Object.keys(got.voice).filter((k) => /astrad/i.test(k)).sort(), ['astrad_greet', 'astrad_prebattle']);
-  for (const k of ['astrad_greet', 'astrad_prebattle']) assert.equal(got.voice[k].enabled, false, k + ' は登録のみ');
-  assert.equal(Object.keys(got.voice).filter((k) => /elliot/.test(k)).length, 1, 'エリオットの声は開発24 の1本だけ');
-  assert.equal(all.filter((f) => /elliot/.test(f)).length, 2, 'elliot_hello_OPTIONAL の OGG／M4A だけ');
-  // 旧アストラッド音源（「来たか」「お前の力、見せてみろ！」）は置いていない・登録していない
+  assert.equal(Object.keys(got.voice).filter((k) => /elliot/.test(k)).length, 1, 'エリオットの声の id は1つだけ');
   const REG = rd('js/audio/audio-registry.js'); assert.doesNotMatch(REG, /astrad_(kitaka|chikara)|アストラッド「(来たか|お前の力)/);
   const OLD_ASTRAD = ['d3ad7bda81895d2c9dcbe5a32ced1abfa6dde42509d719c4343a95dbfd1ec552', '3f485d20eb83871cba3fbcb0d0071f410e238b1cca4a62f617793e25ea1938f5'];
   for (const f of all.filter((x) => /\.(mp3|ogg|m4a|wav)$/i.test(x))) assert.ok(!OLD_ASTRAD.includes(sha('assets/audio/' + f)), f);

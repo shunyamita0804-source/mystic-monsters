@@ -182,48 +182,39 @@ test('D24-B4：練習試合（野外）は観客なし・1秒／控えめ／な�
   assert.ok((await pg.evaluate(() => MMAUDIO.playLog().filter((x) => /^CROWD/.test(x.name)).length)) === n);
 });
 
-test('D24-B5：施設のボイスは訪問1回に1回・研究所＝エリオット（開発25）・OFF／ミュートで鳴らない・会話を閉じたら止まる・音源 404 でも進行は止まらない', { skip: SKIP, timeout: 180000 }, async () => {
+test('D24-B5（2026-10-15 N04 で書き直し）：施設の入口で声を頼むのは訪問1回に1回（出しどころの設計は残す）・実際には1本も鳴らない・設定 on／off・ミュートでも同じ・会話は止まらない・声のファイルは取りに行かない', { skip: SKIP, timeout: 180000 }, async () => {
   const p = await openPage({ size: H.SIZES.base }); const pg = p.page;
+  const asked = []; pg.on('request', (r) => { if (/\/assets\/audio\/voice\//.test(r.url())) asked.push(r.url()); });
   await H.newGame(pg, 'テスト');
   await pg.evaluate(() => { const m = mk(0); m.name = 'テスト'; MMP7.ensureProg(m); S.m = m; save(); lobby(); });
-  await pg.mouse.click(4, 300); await pg.waitForFunction(() => MMAUDIO.voiceStatus().dan_hello === 'ready', null, { timeout: 15000 });
-  const NOW = [];
-  const visit = async (fn) => { const before = await pg.evaluate(() => MMAUDIO.playLog().filter((x) => x.kind === 'voice').length); await pg.evaluate(fn); await pg.waitForTimeout(150); NOW.push(await pg.evaluate(() => [MMAUDIO.status().scene, MMAUDIO.voiceNow()])); await pg.waitForTimeout(450); return pg.evaluate((b) => MMAUDIO.playLog().filter((x) => x.kind === 'voice').slice(b).map((x) => x.name), before); };
-  assert.deepEqual(await visit(() => market()), ['karen_welcome'], '市場＝カレン');
+  await pg.mouse.click(4, 300); await pg.waitForTimeout(400);
+  const visit = async (fn) => { const before = await pg.evaluate(() => MMAUDIO.voiceLog().length); await pg.evaluate(fn); await pg.waitForTimeout(650); return pg.evaluate((b) => { const p = MMAUDIO.playLog().filter((x) => x.kind === 'voice'); if (p.length) throw new Error('NPC の声が鳴った'); return MMAUDIO.voiceLog().slice(b).map((x) => x.id + ':' + x.result); }, before); };
+  assert.deepEqual(await visit(() => market()), ['karen_welcome:blocked'], '市場＝カレン（頼むが鳴らない）');
   assert.deepEqual(await visit(() => market()), [], '市場の中で描き直しても繰り返さない');
   assert.deepEqual(await visit(() => lobby()), []);
-  assert.deepEqual(await visit(() => farm()), ['nick_hello'], '牧場＝ニック'); assert.deepEqual(await visit(() => farm('', 'e')), [], 'タブを替えても繰り返さない');
+  assert.deepEqual(await visit(() => farm()), ['nick_hello:blocked'], '牧場＝ニック'); assert.deepEqual(await visit(() => farm('', 'e')), [], 'タブを替えても繰り返さない');
   assert.deepEqual(await visit(() => lobby()), []);
-  assert.deepEqual(await visit(() => hall('t')), ['dan_hello'], 'ベースキャンプ＝ダン'); assert.deepEqual(await visit(() => hall('st')), []); assert.deepEqual(await visit(() => hall('t')), [], 'ステータスから戻っても繰り返さない');
-  assert.deepEqual(await visit(() => shopScr()), ['berna_welcome'], 'アイテム屋＝ベルナ'); assert.deepEqual(await visit(() => shopScr('', false, 'buy')), []);
-  assert.deepEqual(await visit(() => museum()), ['elliot_hello_OPTIONAL'], '研究所＝エリオット（2026-10-13 開発25 F：ユーザー提供の音声を再訪の挨拶に採用）'); assert.deepEqual(await visit(() => museum('book')), [], '研究所の中で機能を替えても繰り返さない');
-  for (const [sc, v] of [['MARKET', 'karen_welcome'], ['RANCH', 'nick_hello'], ['FARM', 'dan_hello'], ['FARM', 'berna_welcome']]) assert.ok(NOW.some((x) => x[0] === sc && x[1] === v), `${v}：施設の BGM に切り替わったあとも鳴り続けている（切り替えで止まらない）${JSON.stringify(NOW)}`);
-  const pl = await pg.evaluate(() => MMAUDIO.playLog().filter((x) => x.kind === 'voice'));
-  assert.ok(pl.every((x) => x.ctx === 'running' && /voice\/npc_1013\/\w+\.ogg$/.test(x.src)), '実際に再生を始めた（OGG の1本）');
-  // OFF・ミュート
+  assert.deepEqual(await visit(() => hall('t')), ['dan_hello:blocked'], 'ベースキャンプ＝ダン'); assert.deepEqual(await visit(() => hall('st')), []); assert.deepEqual(await visit(() => hall('t')), [], 'ステータスから戻っても繰り返さない');
+  assert.deepEqual(await visit(() => shopScr()), ['berna_welcome:blocked'], 'アイテム屋＝ベルナ'); assert.deepEqual(await visit(() => shopScr('', false, 'buy')), []);
+  assert.deepEqual(await visit(() => museum()), ['elliot_hello_OPTIONAL:blocked'], '研究所＝エリオット'); assert.deepEqual(await visit(() => museum('book')), [], '研究所の中で機能を替えても繰り返さない');
+  // 設定 on／off・全体のミュートでも同じ（声は鳴らない・止まらない）
   await pg.evaluate(() => { lobby(); MMAUDIO.setVoice({ on: false }); });
-  assert.deepEqual(await visit(() => market()), [], 'ボイス OFF'); assert.equal(await pg.evaluate(() => MMAUDIO.voiceLog().slice(-1)[0].result), 'off');
+  assert.deepEqual(await visit(() => market()), ['karen_welcome:blocked'], 'ボイス OFF でも同じ（鳴らない）');
   await pg.evaluate(() => { lobby(); MMAUDIO.setVoice({ on: true, vol: 0.5 }); sndToggle(); });
-  assert.deepEqual(await visit(() => market()), [], '全体のミュート'); assert.equal(await pg.evaluate(() => MMAUDIO.voiceLog().slice(-1)[0].result), 'muted');
+  assert.deepEqual(await visit(() => market()), ['karen_welcome:blocked'], '全体のミュートでも同じ');
   await pg.evaluate(() => { sndToggle(); lobby(); });
-  assert.equal(await pg.evaluate(() => localStorage.getItem('mmvoice')), '{"on":true,"vol":0.5}');
-  // 会話の行の声：閉じたら止まる
-  await pg.evaluate(() => { MMNPC.talk([{ npc: 'fina', expression: 'troubled', voice: 'fina_hey', text: 'もう、リュウったら……。' }, { text: '次の行' }]); });
-  await pg.waitForFunction(() => MMAUDIO.voiceNow() === 'fina_hey', null, { timeout: 3000 });
-  await pg.evaluate(() => MMNPC.close()); assert.equal(await pg.evaluate(() => MMAUDIO.voiceNow()), null, '会話を閉じたら声も止まる');
+  assert.equal(await pg.evaluate(() => localStorage.getItem('mmvoice')), '{"on":true,"vol":0.5}', '設定は消さずに残す');
+  // 会話の行の声：頼むが鳴らない・会話は最後まで進む
+  const t = pg.evaluate(() => MMNPC.talk([{ npc: 'fina', expression: 'troubled', voice: 'fina_hey', text: 'もう、リュウったら……。' }, { text: '次の行' }]));
+  await pg.waitForFunction(() => MMAUDIO.voiceLog().some((e) => e.id === 'fina_hey' && e.result === 'blocked'), null, { timeout: 3000 });
+  assert.equal(await pg.evaluate(() => MMAUDIO.voiceNow()), null);
+  await H.finishTalk(pg); await t;
+  // 設定の画面の「ボイス」は準備中の表示だけ
+  await pg.evaluate(() => confScr()); await pg.waitForTimeout(400);
+  const conf = await pg.evaluate(() => ({ note: (document.querySelector('.pfrow.tvoff') || {}).textContent || '', btn: [...document.querySelectorAll('.tseg button')].map((b) => b.getAttribute('onclick') || '').filter((x) => /trialSet\('(von|vvol)'/.test(x)).length }));
+  assert.match(conf.note, /ボイス.*準備中/); assert.equal(conf.btn, 0, 'ボイスの切り替えのボタンは出さない');
+  assert.deepEqual(asked, [], '声のファイルは1つも取りに行かない');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
-  await p.ctx.close();
-  // 404：声が無くても会話・施設の画面は進む
-  const q = await openPage({ size: H.SIZES.base }); const qg = q.page;
-  await qg.route('**/voice/npc_1013/**', (r) => r.fulfill({ status: 404, body: '' }));
-  await H.newGame(qg, 'テスト');
-  await qg.evaluate(() => { const m = mk(0); m.name = 'テスト'; MMP7.ensureProg(m); S.m = m; save(); lobby(); });
-  await qg.mouse.click(4, 300); await qg.waitForTimeout(800);
-  await qg.evaluate(() => market()); await qg.waitForSelector('.p10mk', { timeout: 10000 });
-  const t = qg.evaluate(() => MMNPC.talk([{ npc: 'fina', voice: 'fina_yes', text: 'うん。' }]));
-  await qg.waitForSelector('.mmtalk', { timeout: 3000 }); await H.finishTalk(qg); await t;
-  assert.deepEqual(q.errors, []); assert.ok(q.bad.every((b) => /voice\/npc_1013/.test(b)), `404 は声だけ ${q.bad}`);
-  assert.equal(await qg.evaluate(() => MMAUDIO.playLog().filter((x) => x.kind === 'voice').length), 0);
 });
 
 test('D24-B6：「バトル画面：旧」で従来の見た目に戻る・設定はセーブを変えない・再読み込みでも保たれる', { skip: SKIP, timeout: 180000 }, async () => {
