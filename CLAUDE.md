@@ -929,6 +929,14 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - **施設・UI（㉑㉗〜㉛㉞㉟Q02〜Q09Q14）**：表記「ベースキャンプ」に統一（出発準備の戻る・救済のボタン）。対戦表＝字・印を大きく・フィナの会話は窓を下へ（立ち絵なし）。ランク選択の状態の札を読みやすく。アイテム屋＝商品カード（名前・空腹 −N・金貨の価格・所持数／未入荷は条件の1行）・一覧を広く。プロフィール・セーブ／ロード＝正式 UI の絵を街で先に読む＋読めるまで見せない（uiReady）。セーブのスロット＝クリアしたランクの札・3行目に進行（育成中の Chapter）と保存の日時（localStorage "mr4s"+n+"t"＝保存の時刻だけ。セーブの形式は不変）・上書きの確認の文がはみ出さない。プロローグの字幕＝縁取りと後ろの暗がりを強く（文・時刻・スキップは不変）。会話の共通 UI（金の▼・名前の札）。街の札の縁取りと押下の反応（高さは従来の 40px＝44px にすると闘技場の札が名札にかかる）。ランク選択の注記は色と影だけ（字の大きさは従来どおり＝6段を1画面に）。セーブ画面の下の帯は器の後ろを濃紺に。市場の中央のモンスター 1.2倍。研究所の3つの機能の一言（ボタンのすぐ上に「出会った子の記録／育てた2体を合体／合体の組み合わせ」。統合後の公開確認で研究所の背景 .labbg の下に隠れて見えていないことに気づき、2026-10-14-play47b で前面へ＝tests/qa-e2e-lab-prep の LP-B3 で3サイズ）。ステータスのモンスターを大きく（共通の .mon 96px が効いていた）。牧場＝同行中／預かり中の見出し・20体
 - テスト：tests/dev27・dev28・dev29・dice-cube・fx-1011・voice15・qa-static-guards・phase-h・sell・chapter-engine・qa-raising-logic・phase8・phase9・world-ch1・tournament・quality-1003・roadfirst-play・qa-fix-g3・audio-manager を新しい仕様に書き直し。MM_BUILD／version.json＝2026-10-14-play47（研究所の一言の修正で 2026-10-14-play47b）
 
+### NPC のボイス全停止（2026-10-15 N04。いまの正式。ユーザー指示＝無料で作った NPC の声は商用不可の認識・週末に有料プランで作り直す）
+
+- **ゲームで NPC の声は一切鳴らさない**：js/audio/audio-manager.js の `VOICE_BLOCKED = true`（MMAUDIO.voice・voiceLoad・voicePrefetch は何もしない・voice() の結果は 'blocked'・設定がオンでも無音・voiceGain 0）。会話・字幕・合図（js/npc/voice-cues.js の CUES・LINE_VOICE・MMVOICE の呼び出し）と時刻・並びは従来どおり＝声を待たない
+- **声のファイル 27種（54ファイル＝assets/audio/voice/npc_1013/ の OGG・M4A）はリポジトリから削除**＝GitHub Pages で配信されない（公開 URL は 404）。git の履歴（72fbfbc〜2f0c748）には残る＝履歴の書き換え・強制 push はしていない（ユーザーの判断待ち）。CDN（max-age=600）と端末のキャッシュは時間で消える
+- VOICE_REGISTRY（js/audio/audio-registry.js）は 26 の ID・話者・台詞だけ残し src は空＝週末の差し替えの受け皿。差し替え台帳＝docs/voice-replacement-ledger.md（ID・場面・削除したファイルの sha256・手順）。新しい声は**ライセンスと納品日を確認してから別の作業で**有効化する（VOICE_BLOCKED を false・src を新しいフォルダへ・tests/voice-stop-1015.test.mjs を更新）
+- 設定画面の「ボイス」は「準備中（新しい声の収録待ち）」。BGM・サイコロ・バトルの SE・固有スキルの SE（Mixkit）・観客の声は変えていない
+- テスト：tests/voice-stop-1015.test.mjs（VS-01〜05）・声のテスト（dev24・voice15・dev25・dev27）を「頼むが鳴らない」に書き直し・tools/public-check.mjs に旧い声の URL の 404
+
 ### 開発30：正式5体×10技＝50技カード・技管理の横長6枠（2026-10-14。基準 995b778 への差分）
 
 - 指示：ZIP「ミスモン_開発30_5体50技カード_技管理画面_Claude一括実装指示_20261014」＋技カードの ZIP（part02〜part10＝背景あり・part11＝レグナスの背景なし＝今回は使わない）。ユーザーが50枚すべてを正式採用
