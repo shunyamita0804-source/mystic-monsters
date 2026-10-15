@@ -1013,6 +1013,18 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
   - テスト：C2-08（A 298・B 284・C 304）・実ブラウザ CP-B4
 - **2026-10-15 4回目の回答（夜の一括依頼の 01）**：到達率は**食事ありを基準**（食事なしは参考）・B 成功 2・失敗 18 を維持・寄り道 0% の C（A 比 +1.1pt）は許容・**食事あり・寄り道 25% の A 79.1／B 81.0／C 80.7% を設計基準として採用する方向**・旧 Chapter 2 のセーブの判定は了承。**「時間切れ → Chapter 3 へ進めない」規則は現状のまま**（恒久的な採否は別判断）＝救済案（案1 現状維持／案2 再挑戦1回／案3a onTimeUp 'tournament'／案3b C 昇格戦）を DESIGN.md §6.5 で比較だけ・実装していない。tools/ch2/sim.mjs に shortAtTimeUp（時間切れの個体の GOAL までの残り歩数＝中央値 7〜9）と CH2_LIMIT（比較用のターン上限・45T で 95〜97%）
 
+### バトル技アニメ 試遊修正21件・体格サイズ1〜5（2026-10-15 夜の一括依頼 PHASE B。**ブランチ claude/claude-md-handoff-check-fcl9lb だけ＝main 未統合・未公開・iPhone 実機は未確認**）
+
+- 報告：docs/battle_fix_1015/REPORT.md（21件の原因・修正・状態の表・発注一覧・連続写真 film/・素材の比較 assets_check/・体格の比較 size_compare.jpg）
+- **共通スケール**（js/battle/art25d.js の layout・areaScales）：技のコマの大きさ＝コマごとに「見えている体の面積」（js/battle/move-area-1015.js＝`python3 -I tools/battlefix1015/areas.py` が作る・手で書き換えない）を待機立ち絵とそろえる＝技の途中で体の大きさが変わらない。`?mmScale=old` で従来の見積もり
+- **技ごとの修正**（js/battle/move-tune-1015.js の `MMTUNE.MOVES`・データ *-moves-data.js は変えない＝表示のときだけ `MMTUNE.patch` の写し）：stay（その場で撃つ）・detach＋launch／stretch（体の層に描かれた火球・光線・花粉を切り出して相手へ飛ばす／伸ばす）・arc（跳ぶ）・lift（浮く）・rot・aura・charge・shakeAt・sfxAt・hs（ヒットストップ）。15件（01・02・04〜07・10・13〜16・18〜21）
+- **素材の修正**（42 ファイル）：`python3 -I tools/battlefix1015/apply.py`（基準コミット bf310c4 の内容から作り直す＝何度実行しても同じ・修正前後の sha256 は tools/battlefix1015/applied.json）＝ジオル・ノビトンの市松の取り残し（体＝穴を消す・効果＝明るさの差を均す）・ひとやすみ 33_02／33_03 の松葉模様・スターフォール 09_04〜06 の切れた端・竜眼ロック 22_03／22_04 の緑。検出は tools/battlefix1015/checker.py
+- **体格サイズ**（`MMTUNE.SIZE`＝ソラモ2・ノビトン2・ガウル3・フルーネ3・レグナス3・ジオル4・5 は予約・ラズック1 は未登録）：倍率 70/80/90/100/115% は【暫定】＝**URL に `?mmSize=1` のときだけ**（js/battle/arena.js の kOf → --mma-k）。通常は今までの大きさ。セーブに項目なし
+- はなビンタの 👃（iPhone で写実的な鼻）→ 💫（js/battle/rules.js の NOBI_EMOJI）
+- 技の SE：合成音（skSfx）の当たりをコマの当たりに合わせて遅らせる（MMTUNE の skSfx の包み・コマで見せる技だけ）・蒼刃乱舞の決めの斬撃に BATTLE_CRIT。**技の SE は全部が合成音＝新しい音源は未採用（ライセンス確認待ち）**
+- 暫定・素材待ち：02 スターダストレイの専用光線・07 聖なる炎の三色の弾と着弾・09 ずつきの技カード・10 頭突きの姿・20／21 フルーネの専用 FX（未完成）・市松を均した 37 枚の正しい透過の再納品
+- テスト：tests/battle-tune-1015.test.mjs（BT-01〜06）・実ブラウザ tests/qa-e2e-battle-tune-1015.test.mjs（BTB-1〜4）
+
 ### NPC のボイス全停止（2026-10-15 N04。いまの正式。ユーザー指示＝無料で作った NPC の声は商用不可の認識・週末に有料プランで作り直す）
 
 - **ゲームで NPC の声は一切鳴らさない**：js/audio/audio-manager.js の `VOICE_BLOCKED = true`（MMAUDIO.voice・voiceLoad・voicePrefetch は何もしない・voice() の結果は 'blocked'・設定がオンでも無音・voiceGain 0）。会話・字幕・合図（js/npc/voice-cues.js の CUES・LINE_VOICE・MMVOICE の呼び出し）と時刻・並びは従来どおり＝声を待たない
@@ -1482,6 +1494,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
   - ユーザーの確認待ち：iPhone 実機でのフルーネ（歩行・技アニメ）とジオル10技の QA 試遊。**ユーザーが実機で「OK」と言うまで Chapter 2 の設計に着手しない**
   - 素材待ち・残課題：フルーネの技 09（効果 2/4）・10（効果 0）の FX／歩行の白い縁取りと back_05・back_03・front_01 の見切れの可能性（原本のまま）／一部の効果（05 FX01・06 FX01／FX04・08 FX02／FX03）が不透明な白い面／大技で相手の固有スキルのカメラが技アニメの終わりに重なる（全種族共通・未変更）
   - 作業報告は ZIP でユーザーへ渡す（直近：Mismon_Report_20261015_Flurene_Jiol.zip）
+  - **2026-10-15 夜（一括依頼）**：Chapter 2 の4回目の回答を反映（DESIGN.md §6.5 の救済案は比較だけ）・バトル技アニメ21件・体格サイズ1〜5（?mmSize=1）＝§3「バトル技アニメ 試遊修正21件」。同じブランチ・main 未統合
   - **2026-10-15 夕〜夜：Chapter 2 A／B／C の設計案と限定試作（論点 1〜5 反映・追補2・第3版＝食事ありのモデルの到達率・B 成功 2・失敗 18（284 地点）・旧セーブの判定・2.5D の海の世界のプレビュー）をブランチ claude/claude-md-handoff-check-fcl9lb に置いた（main 未改変・未公開・道路グラフと方向は基本了承・見た目と本実装は未承認）。設計の承認・素材制作（ChatGPT → 画像 AI）のあとに本実装へ（§3「Chapter 2 A／B／C 設計案」）。iPhone 実機のフルーネ・ジオルの QA 試遊の OK も引き続き待ち**
 
 ## 5. 未決事項（推測で埋めない）
