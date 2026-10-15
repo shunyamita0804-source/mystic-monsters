@@ -21,8 +21,12 @@
   'use strict';
   const Q = (() => { try { return new URLSearchParams(root.location ? root.location.search : ''); } catch (e) { return new URLSearchParams(''); } })();
   const ON = Q.get('chapterBoard') === 'roadfirst';
+  // 2026-10-15 Chapter 2 A／B／C 設計案の限定試作：&rfData=ch2&ch2route=A|B|C（js/proto/ch2-routes.js＝MMRF_CH2）。Chapter 1 の試作（既定）とは別の鍵に保存＝互いに触れない。
+  //  本編（MMWD／MMWB・raising.js・セーブ v6／mr4v6）にはつながない。通常の URL では何もしない（従来どおり）
+  const CH2 = ON && Q.get('rfData') === 'ch2' ? (['A', 'B', 'C'].includes(Q.get('ch2route')) ? Q.get('ch2route') : 'A') : null;
   const KEY = 'mmrf_proto_v1';
-  const BG = './assets/proto/ch1a_roadfirst_1009/01_road_geometry.svg';
+  const SKEY = CH2 ? `mmrf_proto_ch2_${CH2}_v1` : KEY;   // 実際に保存する鍵（Chapter 2 の試作はルートごとに別の鍵＝Chapter 1 の試作の保存と混ざらない）
+  const BG = CH2 ? './assets/fields/ch2a/intro/ch2_intro_overview_v2.webp' : './assets/proto/ch1a_roadfirst_1009/01_road_geometry.svg';   // 2026-10-15 Chapter 2 の試作：図面の代わりに既存の俯瞰図（864×1536 を 1024 幅に引き伸ばす＝設計の座標と同じ縮尺。参照用で正式の盤ではない）
   const ZOOM = 3, ZOOM_ALL = 0.36;
   const ZMODE = ON ? Q.get('rfZones') : null;   // 'phub'＝P の前後だけ／'all'＝68 Scene（背景の無い Scene は図面のまま。2026-10-10）
   const ZON = ZMODE === 'phub' || ZMODE === 'all', ZALL = ZMODE === 'all';
@@ -95,12 +99,12 @@
   function fresh(o) { return P.attach(D, C.create(D, Object.assign(opts(), o || {})), { monster: monCopy(), lab: LAB, dd: labDD() }); }
   /** 保存を読む：v 2 はそのまま・v 1（移動だけ）は育成の状態を付けて移行・読めなければ { broken } */
   function load() {
-    let t = null; try { t = localStorage.getItem(KEY); } catch (e) { return null; }
+    let t = null; try { t = localStorage.getItem(SKEY); } catch (e) { return null; }
     if (!t) return null;
     try { const s = P.upgrade(D, JSON.parse(t), { monster: monCopy(), lab: LAB, dd: labDD() }); if (s) return s; } catch (e) {}
     return { broken: t };
   }
-  function persist() { if (broken) return; try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+  function persist() { if (broken) return; try { localStorage.setItem(SKEY, JSON.stringify(st)); } catch (e) {} }
   function monSrc() {
     try { const S = G('S'), m = S && S.m; const s = m && root.MMP10M && root.MMP10M.byId(m.sp); if (s && s.image) return s.image.src; } catch (e) {}
     return './assets/monsters/2p5d/solamo.webp';
@@ -194,7 +198,7 @@
     css();
     el = document.createElement('div'); el.id = 'rfp'; el.setAttribute('role', 'application');
     el.innerHTML = `<div class="rf-vp"><div class="rf-cam"><img src="${BG}" alt="" draggable="false">${svgLayer()}<div class="rf-mon"><img src="${monSrc()}" alt="モンスター" draggable="false"></div></div>${ZON ? '<div class="rf-zone" aria-hidden="true"></div>' : ''}</div>
-<div class="rf-top"><div><b>Chapter 1 Pattern A 道路先行の試作</b> <span class="rf-warn">（試作・正式ではない／図面はブロックアウト）</span></div><div class="rf-row"><span class="rf-turn"></span><span class="rf-at"></span></div><div class="rf-row"><span class="rf-rw"></span><span class="rf-rand"></span><span class="rf-rule"></span></div><div class="rf-play"><span class="rf-fat"></span><span class="rf-gold"></span><span class="rf-gain"></span></div>${ZON ? '<div class="rf-zrow"></div>' : ''}</div>
+<div class="rf-top"><div><b>${CH2 ? `Chapter 2 ルート ${CH2}「${esc(D.name || '')}」設計案の試作` : 'Chapter 1 Pattern A 道路先行の試作'}</b> <span class="rf-warn">（試作・正式ではない／図面はブロックアウト）</span></div><div class="rf-row"><span class="rf-turn"></span><span class="rf-at"></span></div><div class="rf-row"><span class="rf-rw"></span><span class="rf-rand"></span><span class="rf-rule"></span></div><div class="rf-play"><span class="rf-fat"></span><span class="rf-gold"></span><span class="rf-gain"></span></div>${ZON ? '<div class="rf-zrow"></div>' : ''}</div>
 <div class="rf-tools"><button type="button" data-a="stats">能力</button><button type="button" data-a="zoom">全体</button><button type="button" data-a="reset">最初から</button><button type="button" data-a="close">閉じる</button></div>
 <div class="rf-panel" role="dialog" aria-label="能力と記録"></div>
 <div class="rf-die"><span></span><small></small></div>
@@ -393,7 +397,7 @@
   }
   function pickChoice(i) { if (busy || !st.play.notice || st.play.notice.kind !== 'choice') return; P.choose(D, st, i); persist(); render(); showNotice(); fly(); }
   function doReset(o) {
-    if (broken) { try { localStorage.setItem(KEY + '_broken', broken); } catch (e) {} broken = null; }
+    if (broken) { try { localStorage.setItem(SKEY + '_broken', broken); } catch (e) {} broken = null; }
     st = fresh(o); persist(); render(); cam(true);
     if (world && !(o && o.noIntro)) { busy = true; render(); world.intro(() => { busy = false; st.wintro = true; persist(); render(); cam(); }); }
   }
@@ -435,14 +439,15 @@
   }
 
   function start() {
-    D = root.MMRF_DATA; C = root.MMRF_CORE; P = root.MMRF_PLAY; if (!D || !C || !P) return;
+    D = CH2 ? (root.MMRF_CH2 && root.MMRF_CH2[CH2]) : root.MMRF_DATA; C = root.MMRF_CORE; P = root.MMRF_PLAY; if (!D || !C || !P) return;
+    if (CH2) { Object.assign(NAME, D.names || {}); Object.assign(PLACE, D.places || {}); }   // Chapter 2 の道・場所の名前（設計案・仮）
     const l = load();
     if (l && l.broken) { broken = l.broken; st = fresh(); } else { st = l || fresh(); persist(); }
     if (!document.getElementById('rfp')) mount();
     if (ZON) zloadAll();
   }
   const api = {
-    on: ON, KEY, start, close,
+    on: ON, KEY, SKEY, CH2, start, close,
     state: () => (st ? JSON.parse(JSON.stringify(st)) : null),
     reset: (o) => doReset(o),
     roll: (die, o) => turn(die, o), choose: (seg, o) => pick(seg, o), goal,

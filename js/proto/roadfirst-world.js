@@ -178,7 +178,9 @@
     const wrap = doc.createElement('div'); wrap.className = 'rfw';
     const plane = doc.createElement('div'); plane.className = 'rfw-plane';
     const bb = doc.createElement('div'); bb.className = 'rfw-bb';
-    const title = doc.createElement('div'); title.className = 'rfw-title'; title.innerHTML = '<small>CHAPTER 1</small>はじまりの草原<em>全体マップ</em>';
+    const title = doc.createElement('div'); title.className = 'rfw-title';
+    const TT = D.art && D.art.title;   // 2026-10-15 Chapter 2 の試作（js/proto/ch2-routes.js）だけ題字を持つ。無ければ従来どおり Chapter 1
+    title.innerHTML = TT ? `<small>${TT.small}</small>${TT.name}<em>全体マップ（設計案・試作）</em>` : '<small>CHAPTER 1</small>はじまりの草原<em>全体マップ</em>';
     wrap.appendChild(plane); wrap.appendChild(bb); wrap.appendChild(title); host.appendChild(wrap);
     const VIS = visualOf(o); wrap.dataset.visual = VIS.key;   // 2026-10-14 Chapter 1 B／C：景観のパターン（A＝従来）
     const SK = skinOf(o); if (SK) wrap.dataset.skin = SK.key;   // 2026-10-14 A／B／C 高品質化：絵の差し替え（無ければ従来の絵）
@@ -547,10 +549,20 @@
   function pattern(g, im, tile) { const p = g.createPattern(im, 'repeat'); if (p && p.setTransform && root.DOMMatrix) p.setTransform(new root.DOMMatrix().scale(tile / im.width)); return p; }
   function drawGround(g, D, x0, y0, w, h, art) {
     if (art && art.ground) { g.fillStyle = pattern(g, art.ground, ART.ground.tile); g.fillRect(x0, y0, w, h); return; }
+    if (D.art && Array.isArray(D.art.regions)) return drawSeaBlockout(g, D, x0, y0, w, h);   // 2026-10-15 Chapter 2 の試作：絵なしのブロックアウト（海・陸・海底・ガラス回廊・塔・会場島の仮の色）
     g.fillStyle = '#86b65a'; g.fillRect(x0, y0, w, h);
     let a = ((Math.floor(x0) * 73856093) ^ (Math.floor(y0) * 19349663)) >>> 0;
     const rnd = () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
     for (let i = 0; i < (w * h) / 90; i++) { g.fillStyle = rnd() < 0.5 ? 'rgba(60,110,40,.22)' : 'rgba(180,220,120,.22)'; const r = 1 + rnd() * 3; g.beginPath(); g.arc(x0 + rnd() * w, y0 + rnd() * h, r, 0, 7); g.fill(); }
+  }
+  /** 2026-10-15 Chapter 2 A／B／C 設計案の限定試作：絵が無いので区域（D.art.regions）を仮の色で塗る＝素材待ちの開発表示（正式アートではない）。Chapter 1 のデータには regions が無い＝通らない */
+  const SEA_COLOR = { land: '#d9cfa6', seabed: '#1f6fa6', glass: '#9fe3f2', tower: '#e6e8ee', arena: '#f1e3b8' };
+  function drawSeaBlockout(g, D, x0, y0, w, h) {
+    g.fillStyle = D.art.sea || '#2d8fc4'; g.fillRect(x0, y0, w, h);
+    for (const r of D.art.regions) { g.fillStyle = SEA_COLOR[r.kind] || '#cccccc'; g.beginPath(); r.poly.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.closePath(); g.fill();
+      if (r.kind === 'glass') { g.strokeStyle = 'rgba(255,255,255,.7)'; g.lineWidth = 3; g.stroke(); } }
+    g.fillStyle = 'rgba(0,0,0,.55)'; g.font = '13px sans-serif';
+    for (const r of D.art.regions) { const x = r.poly.reduce((a, p) => a + p[0], 0) / r.poly.length, y = r.poly.reduce((a, p) => a + p[1], 0) / r.poly.length; if (x >= x0 - 60 && x <= x0 + w + 60 && y >= y0 - 20 && y <= y0 + h + 20) g.fillText('素材待ち：' + r.id, x - 40, y); }
   }
   // 道：原本の区間ごとに地点を通るなめらかな帯（絵が届いたら C 群の帯の模様を貼る）。分かれ目・合流は小広場、行き止まりは踊り場（D 群）
   function drawRoads(g, D, o, art, bx) {
