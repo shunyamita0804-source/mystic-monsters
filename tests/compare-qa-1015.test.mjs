@@ -97,6 +97,7 @@ test('CQ-04：QA 試遊モード＝?mmQaTrial=1 のときだけ・通常のセ�
   assert.equal(load('?mmQaTrial=0').MMQA.ENABLED, false);
   const ctx = load('?mmQaTrial=1'); const Q = ctx.MMQA;
   assert.equal(Q.ENABLED, true); assert.equal(Q.isOn(), false, '開いただけでは OFF（ON は切り替えを押したとき）');
+  assert.equal(Q.battle(0, 1), false, 'OFF のときは QA 試合を始めない（通常のセーブの S を触らない）'); assert.equal(Q.endBattle(), undefined);
   for (const k of ['mr4v6', 'mr4', 'mr4s1', 'mr4s3', 'mr4s2t', 'mr4ng']) assert.ok(Q.SAVE_KEY_RE.test(k), k + '：通常のセーブ（止める）');
   for (const k of ['mr4a', 'mmaudio', 'mmvoice', 'mmcrowd', 'mmbattleui', 'mr4v6x']) assert.ok(!Q.SAVE_KEY_RE.test(k), k + '：設定（止めない）');
   // SK（index.html の技の表）があるときの状態：ソラモ・ガウル 0〜19・レグナス 20〜29・ノビトン 30〜39

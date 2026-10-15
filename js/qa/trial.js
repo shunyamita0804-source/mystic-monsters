@@ -274,6 +274,7 @@
   function hideBar() { const d = doc && doc.getElementById('mmqa-bar'); if (d) d.remove(); }
   /** QA 試合を終える：降参（2度押し）→ 試合を進める STOP → 「もどる」（いずれも既存のボタンを押すだけ） */
   function endBattle() {
+    if (!ST.on) return;
     const sur = doc.getElementById('sur'); let n = 0;
     const step = () => {
       const bt = doc.getElementById('bt'); if (!bt || !ST.battling) { if (ST.on && !doc.getElementById('bt')) { ST.battling = false; hideBar(); show(); } return; }
@@ -300,7 +301,7 @@
   root.MMQA = Object.freeze({
     ENABLED, MONS, SAVE_KEY_RE, catalog, counts, statusOf,
     on, off, isOn: () => ST.on, active: () => ST.on, battling: () => ST.battling, snapshot: () => ST.snap,
-    select: (i) => { ST.mon = Math.max(0, Math.min(5, i | 0)); ST.sel = null; render(); }, battle: (i, no) => { const x = catalog()[i]; const mv = x && x.moves.find((v) => v.no === no); return x && mv ? (mv.status === 'battle' ? battle(x, mv) : mv.status === 'preview' ? preview(x, mv) : false) : false; },
+    select: (i) => { ST.mon = Math.max(0, Math.min(5, i | 0)); ST.sel = null; render(); }, battle: (i, no) => { if (!ST.on) return false; const x = catalog()[i]; const mv = x && x.moves.find((v) => v.no === no); return x && mv ? (mv.status === 'battle' ? battle(x, mv) : mv.status === 'preview' ? preview(x, mv) : false) : false; },
     endBattle, makeMon, FOE,
   });
 })(typeof window !== 'undefined' ? window : globalThis);

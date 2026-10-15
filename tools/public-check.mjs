@@ -60,7 +60,7 @@ const browser = await chromium.launch(exe ? { executablePath: exe } : {}).catch(
 const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
 const host = new globalThis.URL(URL).origin;
 const retried = [];   // 通信の切断で1回取り直した URL（結果の最後に件数だけ出す）
-await ctx.route('**/*', async (route) => {
+const routeFn = async (route) => {
   const req = route.request(); const u = req.url();
   if (!u.startsWith(host)) return /fonts\.(googleapis|gstatic)/.test(u) ? route.abort() : route.continue();
   try {
@@ -72,7 +72,8 @@ await ctx.route('**/*', async (route) => {
     const hd = {}; r.headers.forEach((v, k) => { if (!['content-encoding', 'content-length', 'transfer-encoding'].includes(k)) hd[k] = v; });
     await route.fulfill({ status: r.status, headers: hd, body });
   } catch (e) { errs.push('取得失敗 ' + u + ' ' + e + (e && e.cause ? ' cause=' + (e.cause.code || '') + ' ' + String(e.cause.message || e.cause).slice(0, 160) : '') + ' type=' + req.resourceType()); await route.abort(); }   // 原因（通信・プロキシ・コード）を切り分けられるよう、cause とリソースの種類も記録
-});
+};
+await ctx.route('**/*', routeFn);
 const page = await ctx.newPage();
 page.on('response', (r) => { if (r.status() >= 400 && !/fonts\.(googleapis|gstatic)/.test(r.url())) bad.push(`${r.status()} ${r.url().slice(0, 150)}`); });
 page.on('pageerror', (e) => errs.push(('pageerror ' + String(e) + ' | stack: ' + String(e && e.stack || '')).slice(0, 700)));
@@ -271,26 +272,30 @@ try {
   // 2026-10-15：QA 試遊モード（?mmQaTrial=1）＝普段の URL では無効・ON → 6体×10技（60）のカードが読める → QA 試合 → OFF で通常のセーブは1文字も変わらない
   {
     rec('2026-10-15：普段の URL では QA 試遊モードは無効（切り替えも出ない）', await page.evaluate(() => !!window.MMQA && MMQA.ENABLED === false && !document.getElementById('mmqa-sw')), '');
-    const q = await ctx.newPage();
+    const ctxQ = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });   // QA は別の保存領域（本筋の確認のセーブとは混ぜない）
+    await ctxQ.route('**/*', routeFn);
+    const q = await ctxQ.newPage();
     q.on('response', (r) => { if (r.status() >= 400 && !/fonts\.(googleapis|gstatic)/.test(r.url())) bad.push(`${r.status()} ${r.url().slice(0, 150)}`); });
     q.on('pageerror', (e) => errs.push(('pageerror(QA) ' + String(e)).slice(0, 400)));
     await q.goto(URL + (URL.includes('?') ? '&' : '?') + 'mmQaTrial=1', { waitUntil: 'load', timeout: 120000 });
     await q.waitForFunction(() => window.MMQA && typeof S === 'object' && S, null, { timeout: 120000 }); await sleep(1500);
-    const s0 = await q.evaluate(() => localStorage.getItem('mr4v6'));
+    await q.evaluate(() => { const m = mk(0); m.name = 'QA確認'; MMP7.ensureProg(m); S.m = m; S.g = 1234; save(); });   // 通常のセーブ（牧場に連れている子）を1つ作る
     await q.evaluate(() => { try { if (window.MMNPC) MMNPC.close(); } catch (e) {} farm(); }); await sleep(1200);
+    const s0 = await q.evaluate(() => localStorage.getItem('mr4v6'));
     const sw = await q.evaluate(() => !!document.getElementById('mmqa-sw'));
-    await q.click('#mmqa-sw').catch(() => {}); await sleep(800);
+    await q.evaluate(() => { const b = document.getElementById('mmqa-sw'); if (b) b.click(); }); await sleep(800);
     const cat = await q.evaluate(async () => { const c = MMQA.catalog(); const urls = c.flatMap((x) => x.moves.map((m) => m.src)); const ok = await Promise.all(urls.map((u) => new Promise((r) => { const i = new Image(); i.onload = () => r(i.naturalWidth > 0); i.onerror = () => r(false); i.src = u; }))); return { tabs: document.querySelectorAll('#mmqa .qtab').length, n: urls.length, ok: ok.filter(Boolean).length, counts: MMQA.counts() }; });
     rec('2026-10-15：QA 試遊モード（?mmQaTrial=1）＝牧場に切り替え → ON → 6体×10技（60）のカードが読める（実戦 40・プレビュー 10・静止画 10）', sw && cat.tabs === 6 && cat.n === 60 && cat.ok === 60 && cat.counts.battle === 40 && cat.counts.preview === 10 && cat.counts.static === 10, JSON.stringify(cat));
-    await q.evaluate(() => MMQA.battle(0, 1)); await q.waitForSelector('#bt', { timeout: 20000 }).catch(() => {});
+    await q.evaluate(() => MMQA.battle(0, 1)); await q.waitForSelector('#bt .mmr .pl .nm', { timeout: 30000 }).catch(() => {});
     const qb = await q.evaluate(() => ({ bt: !!document.getElementById('bt'), names: [...document.querySelectorAll('#bt .mmr .pl .nm')].map((e) => e.textContent).slice(0, 3) }));
     await sleep(2500); await q.evaluate(() => MMQA.endBattle());
     for (let k = 0; k < 60 && await q.evaluate(() => !!document.getElementById('bt')); k++) await sleep(500);
-    await q.click('#mmqa .qoff').catch(() => {}); await sleep(800);
+    await q.waitForFunction(() => { const v = document.getElementById('mmqa'); return v && v.style.display !== 'none' && !!v.querySelector('.qoff'); }, null, { timeout: 30000 }).catch(() => {});
+    await q.evaluate(() => { const b = document.querySelector('#mmqa .qoff'); if (b) b.click(); }); await sleep(800);
     const s1 = await q.evaluate(() => ({ save: localStorage.getItem('mr4v6'), on: MMQA.isOn(), rn: !!document.querySelector('#app>.rn') }));
     rec('2026-10-15：QA 試合（ソラモ No.01）→ OFF で通常のセーブは同じ・通常の牧場へ戻る', qb.bt && qb.names.every((x) => x === 'たいあたり') && s1.save === s0 && !s1.on && s1.rn, JSON.stringify({ qb, same: s1.save === s0, on: s1.on, rn: s1.rn }));
     await q.screenshot({ path: `${OUT}/qa_off_390.png` }).catch(() => {});
-    await q.close();
+    await q.close(); await ctxQ.close();
   }
 
 } catch (e) {
