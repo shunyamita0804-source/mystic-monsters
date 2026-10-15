@@ -180,7 +180,7 @@ try {
     const want = { 'js/battle/crowd.js': /javascript/, 'js/npc/voice-cues.js': /javascript/, 'version.json': /json/,
       'assets/battle/roulette/compact_1013/plate_normal_c.webp': /image\/webp/, 'assets/battle/roulette/compact_1013/plate_selected_c.webp': /image\/webp/, 'assets/battle/roulette/compact_1013/plate_miss_c.webp': /image\/webp/, 'assets/battle/roulette/compact_1013/center_frame_c.webp': /image\/webp/,
       'assets/audio/se/crowd_1013/hit_cheer_2p0_2p7_700ms.ogg': /audio\/ogg/, 'assets/audio/se/crowd_1013/hit_cheer_2p0_2p7_700ms.m4a': /audio\/(mp4|x-m4a|m4a)/, 'assets/audio/se/crowd_1013/miss_disappointment_0p5_1p2_700ms.ogg': /audio\/ogg/, 'assets/audio/se/crowd_1013/evade_boo_0p0_0p6_600ms.ogg': /audio\/ogg/, 'assets/audio/se/crowd_1013/evade_boo_0p0_0p6_600ms.m4a': /audio\/(mp4|x-m4a|m4a)/,
-      'assets/audio/voice/npc_1013/fina_hello.ogg': /audio\/ogg/, 'assets/audio/voice/npc_1013/karen_welcome.ogg': /audio\/ogg/, 'assets/audio/voice/npc_1013/karen_welcome.m4a': /audio\/(mp4|x-m4a|m4a)/, 'assets/audio/voice/npc_1013/dan_hello.ogg': /audio\/ogg/, 'assets/audio/voice/npc_1013/nick_hello.ogg': /audio\/ogg/, 'assets/audio/voice/npc_1013/berna_welcome.ogg': /audio\/ogg/ };
+};
     const res = [];
     for (const [f, re] of Object.entries(want)) { try { const r = await fetch(URL + f + '?cb=' + Date.now()); const ct = r.headers.get('content-type') || ''; const n = (await r.arrayBuffer()).byteLength; res.push([f, r.status, ct, n, r.status === 200 && re.test(ct) && n > 0]); } catch (e) { res.push([f, 'ERR', String(e).slice(0, 80), 0, false]); } }
     rec('開発24：新しいスクリプト・画像・音源が 200・正しい MIME で返る', res.every((x) => x[4]), res.filter((x) => !x[4]).map((x) => x.slice(0, 3).join(' ')).join(' / ') || `${res.length}件`);
@@ -192,9 +192,13 @@ try {
     await page.evaluate(() => shopScr()); await sleep(1200); await drain(); await sleep(300);   // アイテム屋の初回（フィナ ↔ ベルナ）
     await page.evaluate(() => lobby()); await sleep(500); await page.evaluate(() => market()); await sleep(1400); await drain(); await sleep(300);   // 市場の再訪（カレンの来店の一言＋声）
     await page.evaluate(() => lobby()); await sleep(500); await page.evaluate(() => hall('t')); await sleep(900); await drain(); await page.evaluate(() => shopScr()); await sleep(1400); await drain(); await sleep(300);   // アイテム屋の再訪（ベルナ「いらっしゃい」＋声）
-    const vo = await page.evaluate(() => ({ play: MMAUDIO.playLog().filter((x) => x.kind === 'voice').map((x) => [x.name, x.ctx, x.src.split('/').pop()]), settings: MMAUDIO.voiceSettings(), ctx: MMAUDIO.status().context }));
-    const names = vo.play.map((x) => x[0]);
-    rec('開発24：施設の声が鳴り始めた（市場＝カレン・牧場＝ニック・ベースキャンプ＝ダン・アイテム屋＝ベルナ／既定 ON）', ['karen_welcome', 'nick_hello', 'dan_hello', 'berna_welcome'].every((n) => names.includes(n)) && vo.play.every((x) => x[1] === 'running') && vo.settings.on, JSON.stringify(vo));
+    // 2026-10-15 N04：NPC のボイスは全停止＝施設の入口・会話の行でも声は鳴らない（設定が on のままでも）。台詞の会話は出る。旧い声のファイルは公開 URL で取れない（404）
+    const vo = await page.evaluate(() => ({ play: MMAUDIO.playLog().filter((x) => x.kind === 'voice').map((x) => x.name), blocked: !!(MMAUDIO.voiceBlocked && MMAUDIO.voiceBlocked()), log: MMAUDIO.voiceLog().slice(-12).map((x) => x.id + ':' + x.result), entries: typeof FAC_ENTRY_LOG !== 'undefined' ? FAC_ENTRY_LOG.slice() : [] }));
+    rec('N04：NPC のボイスは鳴らない（施設の入口・会話の行・設定 on のまま）', vo.blocked && vo.play.length === 0 && !vo.log.some((x) => /:(play|wait)$/.test(x)), JSON.stringify(vo));
+    const old = ['fina_hello_new.ogg', 'fina_yes.m4a', 'karen_welcome.ogg', 'dan_hello.m4a', 'nick_hello.ogg', 'berna_welcome.ogg', 'ryu_praise.ogg', 'serge_welcome.m4a', 'leona_greet.ogg', 'astrad_greet.ogg'];
+    const gone = [];
+    for (const f of old) { try { const r = await fetch(URL + 'assets/audio/voice/npc_1013/' + f + '?cb=' + Date.now()); gone.push([f, r.status]); } catch (e) { gone.push([f, 'ERR']); } }
+    rec('N04：旧い NPC の声のファイルは公開 URL で 404', gone.every((x) => x[1] === 404), gone.map((x) => x.join(' ')).join(' / '));
   }
   // 2026-10-11：本編の Chapter 1＝1枚の世界のボード（js/chapter/world-board.js）。出発すると新ボード（299地点・サイコロ 1〜6・40ターン）
   await page.setViewportSize({ width: 390, height: 844 }); await sleep(300);

@@ -1,8 +1,8 @@
 // =========================================================
 // 2026-10-13 開発24：バトル画面（構図・低いルーレット・技の発動中の表示）・観客の声・NPC のボイス・最新の版への読み込み直し（Node で動かす部分）
 //  DV-01：registry＝観客の声 6本（OGG／M4A の対・gain の初期値）・ボイス 13本（12本 ON・エリオットは OFF）・SE の名前の一覧（ホワイトリスト）に登録
-//  DV-02：ボイスの仕組み（偽の Web Audio）＝専用の GainNode（Master の下）・ON/OFF／音量はボイスだけ（mmaudio は変えない）・1本だけ・止める・待ちすぎた声は鳴らさない・OFF／ミュート／無効の声は鳴らない
-//  DV-03：形式の予備（OGG が読めない・デコードできない → M4A を1回だけ）・どれも駄目でもゲームは止めない・再生の記録（playLog）は実際に start したものだけ
+//  DV-02：ボイス（2026-10-15 N04 から全停止）＝設定に関係なく鳴らない・取りに行かない・mmaudio は変えない
+//  DV-03：SE の形式の予備（OGG が読めない → M4A を1回だけ）・どれも駄目でもゲームは止めない・再生の記録（playLog）は実際に start したものだけ
 //  DV-04：観客の声 MMCROWD＝公式大会だけ・練習試合／修行は鳴らさない・短い／1秒／なし・標準／控えめ（設定は mmcrowd）
 //  DV-05：出しどころ MMVOICE＝施設は訪問1回に1回・グループ（ベースキャンプ ↔ アイテム屋）・CUES の on／LINE_VOICE で止められる・会話の行の voice は意味が合う行だけ
 //  DV-06：バトル画面（arena.js）＝新しい画面は既定・「旧」で戻せる・低い板の派生画像（元の4枚は変えない）・威力／命中率／クリ率を出さない・相手の番の説明を出さない・技の発動中は opacity／visibility だけ
@@ -54,7 +54,7 @@ function env(o = {}) {
   return { A: w.MMAUDIO, log, w, doc, store, lastUrl };
 }
 
-test('DV-01：registry＝観客の声 6本（OGG／M4A の対）・ボイス 13本（2026-10-13 開発25 から13本とも ON＝エリオットは再訪の挨拶）・SE の名前の一覧に登録', () => {
+test('DV-01：registry＝観客の声 6本（OGG／M4A の対）・SE の名前の一覧に登録・NPC のボイスは 2026-10-15 N04 から差し替えの台帳だけ（26 の id・ファイルなし）', () => {
   const got = loadRegistry(), { A } = env();
   const want = { CROWD_HIT: 1.08, CROWD_MISS: 1.11, CROWD_EVADE: 0.39, CROWD_HIT_LONG: 1.19, CROWD_MISS_LONG: 1.06, CROWD_EVADE_LONG: 0.30 };   // 2026-10-14 開発29（7）：約 +6dB
   for (const [k, g] of Object.entries(want)) {
@@ -67,62 +67,44 @@ test('DV-01：registry＝観客の声 6本（OGG／M4A の対）・ボイス 13�
   assert.match(got.se.CROWD_MISS.src[0], /miss_disappointment_0p5_1p2_700ms/); assert.match(got.se.CROWD_MISS_LONG.src[0], /miss_disappointment_0p5_1p5_1000ms/);
   assert.match(got.se.CROWD_EVADE.src[0], /evade_boo_0p0_0p6_600ms/); assert.match(got.se.CROWD_EVADE_LONG.src[0], /evade_boo_0p0_1p0_1000ms/);
   const ids = Object.keys(got.voice);
-  // 2026-10-13 開発25 追加便：セドリック・セルジュ・ゲンシン・ヴァルガス・リュウ3種（ON）＋三伝説4種（レオナ・ラグナス＝登録のみ・enabled:false）。アストラッドは未着の新音源待ち（旧音源は取り込まない）
-  assert.deepEqual(ids.sort(), ['astrad_greet', 'astrad_prebattle', 'berna_welcome', 'cedric_opening', 'dan_hello', 'elliot_hello_OPTIONAL', 'fina_giggle', 'fina_hello', 'fina_hey', 'fina_hmm', 'fina_look', 'fina_wonder', 'fina_yeah', 'fina_yes', 'genshin_ack', 'karen_welcome', 'leona_greet', 'leona_prebattle', 'nick_hello', 'ragnas_greet', 'ragnas_prebattle', 'ryu_chuckle', 'ryu_hello', 'ryu_praise', 'serge_welcome', 'vargas_ack']);
-  assert.equal(ids.filter((k) => got.voice[k].enabled !== false).length, 20);
-  assert.deepEqual(ids.filter((k) => got.voice[k].enabled === false).sort(), ['astrad_greet', 'astrad_prebattle', 'leona_greet', 'leona_prebattle', 'ragnas_greet', 'ragnas_prebattle'], '三伝説の声は登録のみ（場面が未実装。アストラッドは 2026-10-13 開発26）');
-  assert.notEqual(got.voice.elliot_hello_OPTIONAL.enabled, false, '開発25：研究所（エリオット）の「やあ」はユーザーが正式に提供＝既定 ON（再訪だけ）');
-  for (const v of Object.values(got.voice)) { assert.equal(v.src.length, 2); for (const s of v.src) assert.ok(existsSync(onDisk(s)), s); assert.ok(v.gain > 0 && v.gain <= 3); }
+  // 2026-10-15 N04：NPC のボイスは全停止＝id・話者・台詞だけの台帳（src は空・ファイルは削除）。詳しくは tests/voice-stop-1015.test.mjs
+  assert.equal(ids.length, 26);
+  for (const k of ids) { assert.deepEqual(got.voice[k].src, [], `${k} はファイルなし`); assert.ok(got.voice[k].npc && got.voice[k].line, `${k} の話者と台詞`); }
   const CR = rd('AUDIO_CREDITS.md'); for (const t of ['観客の声 3種', 'DRAGON-STUDIO', 'Universfield', 'pixabay.com/service/license-summary/', 'NPC のボイス', '利用規約・声の権利関係は、会話からは特定できていない']) assert.ok(CR.includes(t), `AUDIO_CREDITS.md：${t}`);
 });
 
-test('DV-02：ボイス＝専用の GainNode・ON/OFF と音量はボイスだけ（mmaudio は変えない）・1本だけ・止める・OFF／ミュート／無効は鳴らない', async () => {
+test('DV-02：ボイス（2026-10-15 N04 から全停止）＝設定 on／off・音量に関係なく鳴らない・取りに行かない・mmaudio は変えない・場面や裏に回っても投げない', async () => {
   const { A, log, store, doc } = env();
   new Function('window', rd('js/audio/audio-registry.js'))(Object.assign({}, { MMAUDIO: A }));
-  A.unlock(); await until(() => Object.values(A.voiceStatus()).every((v) => v !== 'loading'));
-  assert.equal(A.voiceStatus().fina_yes, 'ready'); assert.equal(A.voiceStatus().elliot_hello_OPTIONAL, 'ready');
-  assert.equal(A.voice('fina_yes'), true); assert.equal(A.voiceNow(), 'fina_yes');
-  const p1 = A.playLog().filter((x) => x.kind === 'voice'); assert.equal(p1.length, 1); assert.match(p1[0].src, /fina_yes\.ogg$/); assert.equal(p1[0].ctx, 'running'); assert.equal(p1[0].gain, 1.12);
-  const s1 = log.starts[log.starts.length - 1];
-  assert.equal(A.voice('dan_hello'), true); assert.ok(s1.stopped, '新しい声は前の声を止める（二重に鳴らない）'); assert.equal(A.voiceNow(), 'dan_hello');
-  A.stopVoice(); assert.equal(A.voiceNow(), null);
-  A.registerVoice('x_disabled', ['./x.ogg'], { enabled: false }); assert.equal(A.voice('x_disabled'), false); assert.equal(A.voiceLog().slice(-1)[0].result, 'disabled');
-  assert.equal(A.voice('nope'), false); assert.equal(A.voiceLog().slice(-1)[0].result, 'unknown');
-  A.setVoice({ on: false }); assert.equal(A.voice('fina_yes'), false); assert.equal(A.voiceLog().slice(-1)[0].result, 'off');
-  assert.deepEqual(JSON.parse(store.getItem('mmvoice')), { on: false, vol: 0.85 }); assert.equal(store.getItem('mmaudio'), null, 'BGM・SE の設定（mmaudio）は変えない');
-  A.setVoice({ on: true, vol: 0.5 }); assert.deepEqual(A.voiceSettings(), { on: true, vol: 0.5 }); assert.deepEqual(A.status().volume, { bgm: 0.8, se: 0.9 }, 'BGM・SE の音量はそのまま');
-  A.setMuted(true); assert.equal(A.voice('fina_yes'), false); assert.equal(A.voiceLog().slice(-1)[0].result, 'muted'); A.setMuted(false);
-  // 場面（施設・バトル）が変わったら前の声を止める
+  A.registerVoice('x_file', ['./x.ogg', './x.m4a']);   // ファイルを書いた声でも鳴らない（VOICE_BLOCKED）
+  A.unlock(); await tick(30);
+  assert.equal(A.voiceBlocked(), true);
+  assert.ok(Object.values(A.voiceStatus()).every((v) => v === 'blocked'));
+  for (const id of ['fina_yes', 'dan_hello', 'karen_welcome', 'x_file', 'nope']) { assert.equal(A.voice(id, { maxWaitMs: 900 }), false, id); assert.equal(A.voiceLog().slice(-1)[0].result, 'blocked', id); }
+  assert.equal(A.voiceNow(), null);
+  A.setVoice({ on: true, vol: 1 }); assert.equal(A.voice('fina_yes'), false);
+  assert.deepEqual(JSON.parse(store.getItem('mmvoice')), { on: true, vol: 1 }, '設定（mmvoice）は消さずに残す'); assert.equal(store.getItem('mmaudio'), null, 'BGM・SE の設定（mmaudio）は変えない');
+  A.voicePrefetch(); await tick(30);
+  assert.deepEqual(log.xhr.filter((u) => /voice|x\.(ogg|m4a)/.test(u)), [], '声のファイルは取りに行かない');
+  assert.equal(A.playLog().filter((x) => x.kind === 'voice').length, 0);
   A.registerBgm('TOWN', './bgm/t.ogg'); A.registerBgm('MARKET', './bgm/m.ogg');
-  A.scene('TOWN'); A.voice('karen_welcome'); assert.equal(A.voiceNow(), 'karen_welcome'); A.scene('MARKET'); assert.equal(A.voiceNow(), null);
-  // 裏に回ったら止める（戻っても鳴らし直さない）
-  A.voice('fina_yes'); assert.equal(A.voiceNow(), 'fina_yes'); doc.hidden = true; doc.emit('visibilitychange'); assert.equal(A.voiceNow(), null);
-  assert.equal(A.voice('fina_yes'), false, '裏にいる間は鳴らさない'); doc.hidden = false; doc.emit('visibilitychange'); assert.equal(A.voiceNow(), null);
+  assert.doesNotThrow(() => { A.scene('TOWN'); A.voice('karen_welcome'); A.scene('MARKET'); A.stopVoice(); doc.hidden = true; doc.emit('visibilitychange'); doc.hidden = false; doc.emit('visibilitychange'); });
+  assert.equal(A.voiceNow(), null);
 });
 
-test('DV-02b：読み込みが間に合わない声は短い待ち（既定 0.4秒）を過ぎたら鳴らさない＝画面が変わってから遅れて鳴らない', async () => {
-  const { A } = env({ decodeDelay: 600 });
+test('DV-02b：全停止の間は待ち（wait）にも入らない＝あとから遅れて鳴ることもない', async () => {
+  const { A, log } = env({ decodeDelay: 50 });
   A.registerVoice('v', ['./a.ogg']); A.unlock();
-  assert.equal(A.voice('v'), false); assert.equal(A.voiceLog().slice(-1)[0].result, 'wait');
-  await tick(700);
-  assert.equal(A.voiceLog().slice(-1)[0].result, 'drop'); assert.equal(A.playLog().length, 0);
-  // 間に合う待ちなら鳴る
-  const e2 = env({ decodeDelay: 50 }); e2.A.registerVoice('v', ['./a.ogg']); e2.A.unlock();
-  e2.A.voice('v', { maxWaitMs: 400 }); await until(() => e2.A.playLog().length === 1, 380);
-  assert.equal(e2.A.voiceLog().slice(-1)[0].result, 'play'); assert.equal(e2.A.playLog().length, 1);
-  // 待っている間に止めた（会話を閉じた・画面を移った）＝鳴らない
-  const e3 = env({ decodeDelay: 50 }); e3.A.registerVoice('v', ['./a.ogg']); e3.A.unlock();
-  e3.A.voice('v', { maxWaitMs: 400 }); e3.A.stopVoice(); await tick(120);
-  assert.equal(e3.A.playLog().length, 0);
+  assert.equal(A.voice('v', { maxWaitMs: 400 }), false); assert.equal(A.voiceLog().slice(-1)[0].result, 'blocked');
+  await tick(200);
+  assert.equal(A.playLog().length, 0); assert.deepEqual(log.xhr, []);
 });
 
-test('DV-03：OGG が読めない（404）・デコードできない → M4A を1回だけ。どれも駄目なら鳴らさない（投げない）。playLog は start したものだけ', async () => {
+test('DV-03：SE は OGG が読めない（404）→ M4A を1回だけ。どれも駄目なら鳴らさない（投げない）。playLog は start したものだけ（声は 2026-10-15 から全停止）', async () => {
   const a = env({ fail: /\.ogg$/ }); a.A.registerSe('CROWD_HIT', ['./c.ogg', './c.m4a'], { gain: 0.55 }); a.A.unlock(); await until(() => a.A.status().se.CROWD_HIT === 'ready');
   assert.equal(a.A.status().se.CROWD_HIT, 'ready'); assert.equal(a.A.se('CROWD_HIT'), true);
   assert.match(a.A.playLog()[0].src, /c\.m4a$/); assert.deepEqual(a.log.xhr, ['./c.ogg', './c.m4a'], 'OGG のあと M4A を1回だけ');
-  const b = env({ decodeFail: /\.ogg$/ }); b.A.registerVoice('v', ['./v.ogg', './v.m4a']); b.A.unlock(); await until(() => b.A.voiceStatus().v === 'ready');
-  assert.equal(b.A.voiceStatus().v, 'ready'); assert.equal(b.A.voice('v'), true); assert.match(b.A.playLog()[0].src, /v\.m4a$/);
-  const c = env({ fail: /./ }); c.A.registerSe('CROWD_MISS', ['./x.ogg', './x.m4a']); c.A.registerVoice('w', ['./w.ogg', './w.m4a']); c.A.unlock(); await until(() => c.A.status().se.CROWD_MISS === 'failed' && c.A.voiceStatus().w === 'failed');
+  const c = env({ fail: /./ }); c.A.registerSe('CROWD_MISS', ['./x.ogg', './x.m4a']); c.A.registerVoice('w', ['./w.ogg', './w.m4a']); c.A.unlock(); await until(() => c.A.status().se.CROWD_MISS === 'failed');
   assert.equal(c.A.status().se.CROWD_MISS, 'failed'); assert.doesNotThrow(() => c.A.se('CROWD_MISS'));
   assert.equal(c.A.voice('w'), false); assert.equal(c.A.playLog().length, 0, '鳴っていない音は記録しない（seLog は「頼まれた」だけ）');
   assert.ok(c.A.seLog().includes('CROWD_MISS'));

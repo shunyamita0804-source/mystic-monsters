@@ -123,7 +123,9 @@ test('D27-21：ライバル＝SE 1回・「よっ」なし・シートなしで�
   const t = await pg.evaluate(() => ({ npc: MMNPC.state().npc, board: !!document.getElementById('wbw'), txt: document.querySelector('.mmtalk-text').textContent }));
   assert.deepEqual([t.npc, t.board], ['ryu', true]);
   await pg.waitForTimeout(1500);
-  assert.deepEqual(await pg.evaluate((n) => MMAUDIO.voiceLog().slice(n).filter((x) => x.result === 'play').map((x) => x.id), v0), ['ryu_praise']);
+  // 2026-10-15 N04：声は全停止＝会話の行で「やるじゃん」を頼むが鳴らない（出しどころの設計は残す）
+  assert.deepEqual(await pg.evaluate((n) => MMAUDIO.voiceLog().slice(n).map((x) => x.id + ':' + x.result), v0), ['ryu_praise:blocked']);
+  assert.equal(await pg.evaluate(() => MMAUDIO.playLog().filter((x) => x.kind === 'voice').length), 0);
   await H.finishTalk(pg); await pg.waitForTimeout(800);
   assert.deepEqual(await pg.evaluate(() => RYU_WIN_LOG), [1], '会話は1回');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);

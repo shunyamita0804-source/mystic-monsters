@@ -7,6 +7,8 @@
 //  VB-4：リュウ＝道中のライバルの遭遇で「よっ！」・ライバル戦に勝つと「やるじゃん」／負け（降参）で「へへっ」（勝敗に合う方だけ・1試合1回）・野生では鳴らない
 //  VB-5：フィナ「こんにちは」は新しい音（fina_hello_new.ogg）・ボイス OFF で今回の声はどれも鳴らない・会話を閉じたら止まる
 //  VB-6：音源の HTTP 200（新しい声 24ファイル・BGM の候補 3曲）・試聴ページで BGM の候補が読み込めて再生できる（長さ）・三伝説の声は読み込まない
+//  ★ 2026-10-15 N04：NPC のボイスは全停止（MMAUDIO の VOICE_BLOCKED・ファイルは削除）。このファイルは「声を頼む場面・順番・回数（出しどころの設計）は残っている」を
+//    MMAUDIO.voiceLog（頼まれた声の id・結果は blocked）で確かめ、実際には1本も鳴っていない（playLog に voice が無い）ことを毎回確かめる形に書き直した
 // =========================================================
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -20,12 +22,14 @@ const OPEN = [];
 const openPage = async (o) => { const p = await L.open(o); OPEN.push(p); return p; };
 test.afterEach(async () => { for (const p of OPEN.splice(0)) await p.ctx.close().catch(() => {}); });
 const shot = (pg, n) => (process.env.MM_SHOT ? pg.screenshot({ path: `${process.env.MM_SHOT}/${n}.png` }) : null);
-const voices = (pg, from = 0) => pg.evaluate((b) => MMAUDIO.playLog().filter((x) => x.kind === 'voice').slice(b).map((x) => x.name), from);
-const vcount = (pg) => pg.evaluate(() => MMAUDIO.playLog().filter((x) => x.kind === 'voice').length);
+/** 頼まれた声の id（2026-10-15 N04：結果はすべて blocked＝鳴っていない。鳴っていたら失敗にする） */
+const voices = (pg, from = 0) => pg.evaluate((b) => { const p = MMAUDIO.playLog().filter((x) => x.kind === 'voice'); if (p.length) throw new Error('NPC の声が鳴った ' + p.map((x) => x.name)); const L = MMAUDIO.voiceLog().slice(b); if (L.some((x) => x.result !== 'blocked')) throw new Error('blocked 以外 ' + JSON.stringify(L)); return L.map((x) => x.id); }, from);
+const vcount = (pg) => pg.evaluate(() => MMAUDIO.voiceLog().length);
+const askedVoice = (pg, id) => pg.waitForFunction((x) => MMAUDIO.voiceLog().some((e) => e.id === x), id, { timeout: 4000 });
 const NEWV = ['cedric_opening', 'serge_welcome', 'genshin_ack', 'vargas_ack', 'ryu_hello', 'ryu_chuckle', 'ryu_praise', 'fina_hello'];
 async function ready(pg) {
   await pg.mouse.click(4, 300);
-  await pg.waitForFunction((ids) => { const s = MMAUDIO.voiceStatus(); return ids.every((k) => s[k] === 'ready'); }, NEWV, { timeout: 20000 });
+  await pg.waitForFunction((ids) => { const s = MMAUDIO.voiceStatus(); return ids.every((k) => s[k] === 'blocked'); }, NEWV, { timeout: 20000 });   // 2026-10-15 N04：全停止
 }
 async function base(pg, stats) {
   await H.newGame(pg, 'テスト');
@@ -37,16 +41,16 @@ for (const size of [H.SIZES.se, H.SIZES.base, H.SIZES.max]) {
   test(`VB-1（${size.join('×')}）：公式大会の開幕＝セドリック「さあ！いよいよ開幕です！」が1回・BGM は CEDRIC・対戦表にセドリックの顔なし`, { skip: SKIP, timeout: 120000 }, async () => {
     const p = await openPage({ size, npc: true }); const pg = p.page;
     await base(pg);
-    await pg.evaluate(() => { MMP8.depart(S, S.m, () => 0.37); const g = MMCH.graphFor(S.m); Object.assign(S.m.raise, { node: g.goal, goal: true, pend: null }); MMP8.startTournament(S, S.m, 0, 5); save(); window.__v0 = MMAUDIO.playLog().filter((x) => x.kind === 'voice').length; p9TourOpen(0); });
+    await pg.evaluate(() => { MMP8.depart(S, S.m, () => 0.37); const g = MMCH.graphFor(S.m); Object.assign(S.m.raise, { node: g.goal, goal: true, pend: null }); MMP8.startTournament(S, S.m, 0, 5); save(); window.__v0 = MMAUDIO.voiceLog().length; p9TourOpen(0); });
     await pg.waitForSelector('.mmtalk:not(.mmtalk-out)', { timeout: 20000 });
-    await pg.waitForFunction(() => MMAUDIO.voiceNow() === 'cedric_opening', null, { timeout: 4000 });
+    await askedVoice(pg, 'cedric_opening');
     const st = await pg.evaluate(() => ({ scene: MMAUDIO.status().scene, txt: document.querySelector('.mmtalk-text, .mmtalk .tx, .mmtalk')?.textContent || '', name: document.querySelector('.mmtalk-name')?.textContent || '' }));
     assert.equal(st.scene, 'CEDRIC', '開幕の曲（CEDRIC）は変えない'); assert.match(st.txt, /いよいよ公式ランクE大会の開幕です/); assert.match(st.name, /セドリック/);
     await shot(pg, `vb1_cedric_${size.join('x')}`);
     await H.finishTalk(pg);
     await pg.waitForSelector('.tb1', { timeout: 20000 });
-    const v = await pg.evaluate(() => MMAUDIO.playLog().filter((x) => x.kind === 'voice').slice(window.__v0).map((x) => x.name));
-    assert.deepEqual(v, ['cedric_opening'], '開幕の声は1回だけ（ほかの行・対戦表では鳴らない）');
+    const v = await voices(pg, await pg.evaluate(() => window.__v0));
+    assert.deepEqual(v, ['cedric_opening'], '開幕の声を頼むのは1回だけ（ほかの行・対戦表では頼まない）・鳴らない');
     assert.equal(await pg.evaluate(() => document.querySelectorAll('.tb1 .p9ced, .tb1 img[src*="cedric"]').length), 0, '対戦表にセドリックの顔は出ない');
     assert.equal(await pg.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
@@ -58,7 +62,7 @@ test('VB-2：セルジュ＝受付の1行目で「ようこそ」・管理局の
   await base(pg);
   let n = await vcount(pg);
   await pg.evaluate(() => { MMNPC.talk(OPEN_TALK.serge, { kind: 'event', big: true }); });
-  await pg.waitForFunction(() => MMAUDIO.voiceNow() === 'serge_welcome', null, { timeout: 4000 });
+  await askedVoice(pg, 'serge_welcome');
   assert.match(await pg.evaluate(() => document.querySelector('.mmtalk').textContent), /ようこそ、聖獣士管理局へ/);
   await H.finishTalk(pg); assert.deepEqual(await voices(pg, n), ['serge_welcome'], '受付の会話で1回だけ（2行目以降は鳴らない）');
   // 再訪の入口（背景が出てから）・中でタブを替えても繰り返さない・街へ出て入り直すとまた
@@ -165,53 +169,54 @@ test('VB-4：リュウ＝（2026-10-13 開発27：遭遇の「よっ！」なし
   assert.deepEqual(q.errors, []); assert.deepEqual(q.bad, []);
 });
 
-test('VB-5：フィナ「こんにちは」は新しい音・ボイス OFF で今回の声はどれも鳴らない・会話を閉じたら止まる', { skip: SKIP, timeout: 120000 }, async () => {
+test('VB-5（2026-10-15 N04 で書き直し）：フィナ「こんにちは」の行で声を頼むが鳴らない・ボイスの設定が on でも off でも鳴らない・会話は止まらない', { skip: SKIP, timeout: 120000 }, async () => {
   const p = await openPage({ size: H.SIZES.base }); const pg = p.page;
   await base(pg);
   let n = await vcount(pg);
   await pg.evaluate(() => { MMNPC.talk(OPEN_TALK.first); });
-  await pg.waitForFunction(() => MMAUDIO.voiceNow() === 'fina_hello', null, { timeout: 4000 });
-  const pl = await pg.evaluate(() => MMAUDIO.playLog().filter((x) => x.kind === 'voice').slice(-1)[0]);
-  assert.match(pl.src, /voice\/npc_1013\/fina_hello_new\.ogg$/, '新しい「こんにちは」'); assert.ok(pl.dur >= 1020 && pl.dur <= 1120, `長さ ${pl.dur}ms（1.071秒＝2026-10-13 開発26 の確定版）`);
-  await pg.evaluate(() => MMNPC.close()); assert.equal(await pg.evaluate(() => MMAUDIO.voiceNow()), null, '会話を閉じたら止まる');
-  // ボイス OFF：開幕・受付・再訪・特訓・ヴァルガス のどれも鳴らない
-  await pg.evaluate(() => MMAUDIO.setVoice({ on: false }));
-  n = await vcount(pg); const vl0 = await pg.evaluate(() => MMAUDIO.voiceLog().length);
-  await pg.evaluate(() => { MMNPC.talk(OPEN_TALK.serge); }); await pg.waitForTimeout(600); await pg.evaluate(() => MMNPC.close());
-  await pg.evaluate(() => { MMNPC.talk(CEDRIC_EV.open(0, false)); }); await pg.waitForTimeout(600); await pg.evaluate(() => MMNPC.close());
-  await pg.evaluate(() => bureauScr()); await pg.waitForTimeout(800);
-  await pg.evaluate(() => trScr('', { kind: 'po' })); await pg.waitForTimeout(800);
-  await pg.evaluate(() => { S.br = 2; S.npcFlags = S.npcFlags || {}; S.npcFlags.first = Object.assign(S.npcFlags.first || {}, { arena: 1 }); lobby(); }); for (let i = 0; i < 8; i++) { await pg.evaluate(() => townArena()); await pg.waitForTimeout(80); }
-  assert.deepEqual(await voices(pg, n), [], 'ボイス OFF＝どれも鳴らない');
-  const res = await pg.evaluate((b) => MMAUDIO.voiceLog().slice(b).map((x) => [x.id, x.result]), vl0);
-  assert.ok(res.length >= 4 && res.every((x) => x[1] === 'off'), `OFF のときの記録 ${JSON.stringify(res)}`);
-  // ON に戻すとまた鳴る
-  await pg.evaluate(() => { MMAUDIO.setVoice({ on: true }); lobby(); }); await pg.waitForTimeout(300);
-  n = await vcount(pg); await pg.evaluate(() => bureauScr()); await pg.waitForTimeout(900);
-  assert.deepEqual(await voices(pg, n), ['serge_welcome'], 'ON に戻したら鳴る');
+  await askedVoice(pg, 'fina_hello');
+  assert.equal(await pg.evaluate(() => MMAUDIO.voiceNow()), null, '鳴っていない');
+  await pg.waitForTimeout(400); await pg.evaluate(() => MMNPC.close());   // 1行目の最後に選択肢がある＝閉じる
+  assert.deepEqual(await voices(pg, n), ['fina_hello'], '台詞の行は従来どおり（声は頼むだけ）');
+  for (const on of [false, true]) {
+    await pg.evaluate((v) => MMAUDIO.setVoice({ on: v }), on);
+    n = await vcount(pg);
+    await pg.evaluate(() => { MMNPC.talk(OPEN_TALK.serge); }); await pg.waitForTimeout(600); await pg.evaluate(() => MMNPC.close());
+    await pg.evaluate(() => { MMNPC.talk(CEDRIC_EV.open(0, false)); }); await pg.waitForTimeout(600); await pg.evaluate(() => MMNPC.close());
+    await pg.evaluate(() => bureauScr()); await pg.waitForTimeout(800);
+    await pg.evaluate(() => trScr('', { kind: 'po' })); await pg.waitForTimeout(800);
+    await pg.evaluate(() => lobby()); await pg.waitForTimeout(300);
+    const v = await voices(pg, n);
+    assert.ok(v.length >= 3, `設定 ${on}：声は頼むが鳴らない ${v}`);
+  }
+  assert.equal(await pg.evaluate(() => MMAUDIO.voiceBlocked()), true);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
-test('VB-6：音源の HTTP 200・試聴ページで BGM の候補が読み込めて再生できる・三伝説の声は読み込まない', { skip: SKIP, timeout: 120000 }, async () => {
+test('VB-6（2026-10-15 N04 で書き直し）：旧い声のファイルは 404・声は1本も取りに行かない・BGM の候補は従来どおり 200 で試聴ページで再生できる', { skip: SKIP, timeout: 120000 }, async () => {
   const p = await openPage({ size: H.SIZES.base }); const pg = p.page;
+  const asked = []; pg.on('request', (r) => { if (/\/assets\/audio\/voice\//.test(r.url())) asked.push(r.url()); });
   await base(pg);
+  await pg.evaluate(() => { MMNPC.talk(OPEN_TALK.first); }); await pg.waitForTimeout(800); await pg.evaluate(() => MMNPC.close());
+  await pg.evaluate(() => market()); await pg.waitForTimeout(800); await pg.evaluate(() => lobby());
+  assert.deepEqual(asked, [], 'ゲームは声のファイルを1つも取りに行かない');
   const st = await pg.evaluate(() => MMAUDIO.voiceStatus());
-  for (const k of ['leona_greet', 'leona_prebattle', 'ragnas_greet', 'ragnas_prebattle', 'astrad_greet', 'astrad_prebattle']) assert.equal(st[k], 'disabled', `${k} は登録のみ（読み込まない）`);
-  const files = ['fina_hello_new', 'cedric_opening', 'serge_welcome', 'genshin_ack', 'vargas_ack', 'ryu_hello', 'ryu_chuckle', 'ryu_praise', 'leona_greet', 'leona_prebattle', 'ragnas_greet', 'ragnas_prebattle', 'astrad_greet', 'astrad_prebattle'].flatMap((k) => [`assets/audio/voice/npc_1013/${k}.ogg`, `assets/audio/voice/npc_1013/${k}.m4a`])
-    .concat(['title_candidate', 'arena_candidate', 'legend_battle_candidate'].map((k) => `assets/audio/bgm/candidates_1013/${k}.ogg`));
-  const res = await pg.evaluate(async (fs) => Promise.all(fs.map(async (f) => { const r = await fetch('./' + f); const n = (await r.arrayBuffer()).byteLength; return [f, r.status, r.headers.get('content-type') || '', n]; })), files);
-  for (const [f, s, , n] of res) { assert.equal(s, 200, f); assert.ok(n > 5000, `${f} ${n}バイト`); }
-  assert.equal(res.length, 31);
-  // 試聴ページ
+  assert.ok(Object.values(st).every((x) => x === 'blocked'));
+  const old = ['fina_hello_new', 'cedric_opening', 'serge_welcome', 'genshin_ack', 'vargas_ack', 'ryu_chuckle', 'ryu_praise', 'leona_greet', 'astrad_greet'].flatMap((k) => [`assets/audio/voice/npc_1013/${k}.ogg`, `assets/audio/voice/npc_1013/${k}.m4a`]);
+  const bgm = ['title_candidate', 'arena_candidate', 'legend_battle_candidate'].map((k) => `assets/audio/bgm/candidates_1013/${k}.ogg`);
+  const res = await pg.evaluate(async (fs) => Promise.all(fs.map(async (f) => { const r = await fetch('./' + f); const n = (await r.arrayBuffer()).byteLength; return [f, r.status, n]; })), old.concat(bgm));
+  for (const [f, s] of res.slice(0, old.length)) assert.equal(s, 404, f + ' は削除');
+  for (const [f, s, n] of res.slice(old.length)) { assert.equal(s, 200, f); assert.ok(n > 5000, `${f} ${n}バイト`); }
+  // 試聴ページ（声の欄は「全停止」の説明だけ）
   const url = new URL('prototype/audio_candidates_1013/index.html', pg.url()).href;
   await pg.goto(url); await pg.waitForFunction(() => window.__previewReady === true);
-  const rows = await pg.evaluate(() => ({ bgm: document.querySelectorAll('#bgm audio').length, voice: document.querySelectorAll('#voice audio').length }));
-  assert.deepEqual(rows, { bgm: 3, voice: 12 });
+  const rows = await pg.evaluate(() => ({ bgm: document.querySelectorAll('#bgm audio').length, voice: document.querySelectorAll('audio source[src*="/voice/"]').length, note: (document.getElementById('voice') || {}).textContent || '' }));
+  assert.equal(rows.bgm, 3); assert.equal(rows.voice, 0); assert.match(rows.note, /全停止/);
   // 長さはデコードして測る（テスト用のサーバーは長さの情報を返さない＝<audio> の duration が Infinity になるため）
-  const dur = await pg.evaluate(async () => { const c = new (window.AudioContext || window.webkitAudioContext)(); const out = []; for (const a of document.querySelectorAll('#bgm audio')) { const src = a.querySelector('source').src; const b = await (await fetch(src)).arrayBuffer(); const d = await c.decodeAudioData(b); out.push(Math.round(d.duration)); } c.close(); return out; });
+  const dur = await pg.evaluate(async () => { const c = new (window.AudioContext || window.webkitAudioContext)(); const out = []; for (const a of document.querySelectorAll('#bgm audio')) { const src = a.querySelector('source').src; const b = await (await fetch(src)).arrayBuffer(); const d = await c.decodeAudioData(b); out.push(Math.round(d.duration)); } return out; });
   assert.deepEqual(dur, [231, 186, 272], `BGM の候補の長さ ${dur}`);
   const play = await pg.evaluate(async () => { const a = document.querySelector('#bgm audio'); a.muted = true; try { await a.play(); await new Promise((r) => setTimeout(r, 600)); const t = a.currentTime; a.pause(); return t; } catch (e) { return -1; } });
   assert.ok(play > 0.2, `候補の曲が再生できる（${play}秒）`);
   await shot(pg, 'vb6_preview');
-  assert.deepEqual(p.bad, []);
+  assert.deepEqual(p.bad.filter((b) => !/assets\/audio\/voice\//.test(b)), [], '404 は削除した声の確認だけ');
 });
