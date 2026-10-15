@@ -95,7 +95,7 @@ for (const size of SIZES) {
     const oldH = r.pw * (360 / 229) * 1.16 + 28; const cut = 1 - r.mmr.h / oldH;
     assert.ok(cut >= 0.25 && cut <= 0.38, `ルーレットの縦は従来より約3割低い（${Math.round(cut * 100)}%）`);
     assert.equal(r.st, 0, '威力・命中率・クリ率は出さない'); assert.ok(r.plates.every((s) => /compact_1013\/plate_(normal|selected|miss)_c\.webp$/.test(s)), '低い板（派生）');
-    assert.ok(r.nmVis.filter((o) => o > 0.5).length <= 1, '技名は中央の板だけ（回っている間は0〜1枚）');
+    assert.ok(r.nmVis.length >= 4 && r.nmVis.filter((o) => o > 0.5).length >= 1, '2026-10-15 追加A：技カードは帯に技名（中央だけでなく画面の中のカードも）');   // 旧：技名は中央の板だけ
     const sw = Math.round(Math.min(r.W * 0.62, 270)); assert.ok(Math.abs(r.go.w - sw) <= 1 && r.go.h >= sw * 268 / 720 - 2, `STOP の押せる所は従来の大きさ ${r.go.w}×${r.go.h}`);
     assert.ok(r.goHit, 'STOP の真ん中を押すと #go'); assert.ok(r.go.b <= r.ih && r.stop.b <= r.ih + 1, 'STOP は画面の中');
     assert.deepEqual(r.k, [0.91, 0.92], '大きさ（ソラモ 0.91・ガウル 0.92）');
@@ -103,12 +103,12 @@ for (const size of SIZES) {
     assert.ok(Math.abs(r.i0.b - r.i1.b) < 3, '左右の足もとがそろう');
     assert.ok(r.i0.t - r.hpr.b < r.ih * 0.28, `上に大きな空きを作らない（${Math.round(r.i0.t - r.hpr.b)}px）`);   // 2026-10-14 実機試遊⑱：足もとを円形の床の中央へ下げた（公式ランク戦の戦場 min(21.5dvh,210px)）＝背の高い画面では上の空き（会場の客席）が少し増える（430×932 で約26%）
     assert.ok(r.sw <= r.iw + 1, '横はみ出しなし');
-    // STOP で止まったら：中央の板＝止まった行（技名はその板だけ）
+    // STOP で止まったら：中央の板＝止まった行（その技名が読める）
     await pg.click('#go');
     const lk = await pg.waitForFunction(() => { const S = window.MMARENA_LAST, rl = document.getElementById('rl'); const hit = rl && rl.querySelector('.rw.hit'); if (!S || !hit || S.mode !== 'locked') return null;
       const c = document.querySelector('.mmr .pl.c'), on = [...document.querySelectorAll('.mmr .pl:not(.ms) .nm')].filter((n) => +getComputedStyle(n).opacity > 0.5);
       return { hit: hit.classList.contains('ms') ? 'MISS' : (hit.querySelector('.rn') || {}).textContent, plate: c ? (c.classList.contains('ms') ? 'MISS' : (c.querySelector('.nm') || {}).textContent) : null, names: on.map((n) => n.textContent) }; }, null, { timeout: 8000 }).then((h) => h.jsonValue());
-    assert.equal(lk.plate, lk.hit, '止まった板＝fight() の結果'); assert.deepEqual(lk.names, lk.hit === 'MISS' ? [] : [lk.hit], '技名は止まった板だけ');
+    assert.equal(lk.plate, lk.hit, '止まった板＝fight() の結果'); if (lk.hit !== 'MISS') assert.ok(lk.names.includes(lk.hit), '止まったカードの技名が読める（2026-10-15 追加A：左右のカードも帯に技名）');
     // 相手の番：「相手がルーレットを回している…」は見えない
     const enemy = await pg.waitForFunction(() => { const m = document.querySelector('#bt #msg'); return m && /相手がルーレットを回している/.test(m.textContent) ? { vis: getComputedStyle(m).visibility } : null; }, null, { timeout: 15000, polling: 20 }).then((h) => h.jsonValue()).catch(() => null);
     if (enemy) assert.equal(enemy.vis, 'hidden', '相手の番の説明は出さない');
