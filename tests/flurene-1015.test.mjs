@@ -121,7 +121,8 @@ test('FL-04：対戦表の顔＝正式のイラスト6枚（6枚目＝フルー�
   assert.match(HTML, /\nfunction tbIconFb\(im\)\{/);
   // 旧い顔のファイルは残す（代わりに使う）
   for (const k of ['soramo', 'gauru', 'nobiton', 'jiol', 'regnas']) { assert.ok(existsSync(path.join(ROOT, `assets/tournament/faces_25d/face_${k}.webp`))); assert.ok(existsSync(path.join(ROOT, `assets/tournament/faces/face_${k}.webp`))); }
-  // 枠：四角い枠は枠いっぱい・丸い枠は 88% で下に寄せて灰色を敷く（頭を切らない）
-  assert.match(HTML, /\.tbic img\.tbface\.ti15\{object-fit:contain;object-position:50% 100%;transform:none;box-sizing:border-box;padding:12% 6% 0;background:var\(--tibg,#cfd2d7\)\}/);
-  assert.match(HTML, /\.tb1g\.tbv2 \.tbic img\.tbface\.ti15\{padding:0;object-fit:cover;object-position:50% 50%\}/);
+  // 枠：ユーザー指示（2026-10-15）＝丸くしないで四角形のまま。どの枠も角の小さい四角・絵は枠いっぱい
+  assert.match(HTML, /\.tbic img\.tbface\.ti15\{object-fit:cover;object-position:50% 50%;transform:none;box-sizing:border-box;padding:0;background:var\(--tibg,#cfd2d7\)\}/);
+  assert.match(HTML, /\.tbic:has\(>img\.ti15\),\.tbvsx \.tvx-s \.tbic:has\(>img\.ti15\)\{border-radius:5px\}/);
+  assert.doesNotMatch(HTML, /ti15\{object-fit:contain;object-position:50% 100%/);
 });

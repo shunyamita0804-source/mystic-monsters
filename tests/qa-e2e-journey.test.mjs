@@ -350,9 +350,9 @@ test('JR-14：マスUI（正式素材）：今の背景のマスに正式素材�
   const by = Object.fromEntries(a.tiles.map((t) => [t.id, t.img]));
   const T2 = './assets/fields/ch1a/tiles_v2/';   // 2026-10-06：小型の立体マス（宝箱は段階ごと）
   assert.equal(by.p1_1, T2 + 'tile_stat_toughness.webp'); assert.equal(by.p1_2, T2 + 'tile_treasure_1.webp'); assert.equal(by.p1_3, T2 + 'tile_treasure_2.webp', 'rare＝宝箱2'); assert.equal(by.p1_0, undefined, 'スタートには置かない');
-  // 能力マス（丈夫さ）に止まる：ガウル（丈夫さ E）は +9（2026-10-14 実機試遊⑲：Chapter 1 の表 A20 B18 C16 D12 E9）、マスが光り、使ったマスは少し暗く
-  const de0 = await pg.evaluate(() => S.m.de); await rollAs(pg, 1); await pg.waitForSelector('.chpop'); await pg.waitForFunction(() => /\+9/.test((document.querySelector('.chpop') || {}).textContent || ''), null, { timeout: 5000 }); const pop = await pg.evaluate(() => [document.querySelector('.chpop').textContent, document.querySelector('.chf-tile[data-id="p1_1"]').classList.contains('hit')]); await idle(pg);
-  assert.deepEqual([pop[1], await pg.evaluate(() => S.m.de) - de0, await pg.evaluate(() => document.querySelector('.chf-tile[data-id="p1_1"]').classList.contains('used'))], [true, 9, true]); assert.match(pop[0], /丈夫さ \+9/);
+  // 能力マス（丈夫さ）に止まる：ガウル（丈夫さ E）は +8（2026-10-15 追加B：Chapter 1 の表 A17 B15 C14 D10 E8）、マスが光り、使ったマスは少し暗く
+  const de0 = await pg.evaluate(() => S.m.de); await rollAs(pg, 1); await pg.waitForSelector('.chpop'); await pg.waitForFunction(() => /\+8/.test((document.querySelector('.chpop') || {}).textContent || ''), null, { timeout: 5000 }); const pop = await pg.evaluate(() => [document.querySelector('.chpop').textContent, document.querySelector('.chf-tile[data-id="p1_1"]').classList.contains('hit')]); await idle(pg);
+  assert.deepEqual([pop[1], await pg.evaluate(() => S.m.de) - de0, await pg.evaluate(() => document.querySelector('.chf-tile[data-id="p1_1"]').classList.contains('used'))], [true, 8, true]); assert.match(pop[0], /丈夫さ \+8/);
   // 宝箱（normal）：止まると通常の宝箱が現れて開く。rare は宝箱の絵を出さない（従来の表示＝マスUIだけ）
   const chest = () => pg.evaluate(() => { const o = document.querySelector('#chf .chf-obj[data-id="p1_2"]'), im = o && o.querySelector('img'); return o ? { hid: o.classList.contains('hid'), src: im.getAttribute('src'), ok: im.naturalWidth > 0 } : null; });
   assert.deepEqual(await chest(), { hid: true, src: './assets/chests/chest_01_base.webp', ok: true }, '止まるまでは見えない（2026-10-03 正式の宝箱 chest_01）');

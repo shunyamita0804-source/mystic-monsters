@@ -3970,10 +3970,9 @@ html:has(#app>.chfw.wbw) .mmtalk:not(.mmtalk-big):not(.mmtalk-scene) .mmtalk-sta
 .dsha.mvc img{aspect-ratio:16/9;object-fit:cover;object-position:center}
 @media (max-width:380px){.ds .drl .mvr{grid-template-columns:minmax(78px,28%) minmax(0,1fr) 30px 30px;column-gap:5px}.ds .drl .mvr .rst div{min-width:31px;padding:1px 2px}.ds .drl .mvr .rst b{font-size:.7rem}}
 /* ===== 2026-10-15 N12：大会の対戦表の顔＝正式のイラスト（正方形・薄い灰色の背景つき・左向き。背景は消さない）。
- *  対戦表の四角い枠は枠いっぱい（cover＝正方形どうしなので切れない）。丸い枠（ほかの試合の観戦の帯など）は絵を 88% にして下に寄せ、
- *  上と左右の余りは絵と同じ灰色（--tibg）＝頭・耳・羽・花を丸い縁で切らない（下の体だけが丸い縁にかかる）。 */
-.tbic img.tbface.ti15{object-fit:contain;object-position:50% 100%;transform:none;box-sizing:border-box;padding:12% 6% 0;background:var(--tibg,#cfd2d7)}
-.tb1g.tbv2 .tbic img.tbface.ti15{padding:0;object-fit:cover;object-position:50% 50%}
+ *  ユーザー指示（2026-10-15）：丸くしないで四角形のまま＝どの枠（対戦表・ほかの試合の観戦の帯）も角の小さい四角・絵は枠いっぱい（正方形どうし＝切れない・伸ばさない） */
+.tbic img.tbface.ti15{object-fit:cover;object-position:50% 50%;transform:none;box-sizing:border-box;padding:0;background:var(--tibg,#cfd2d7)}
+.tbic:has(>img.ti15),.tbvsx .tvx-s .tbic:has(>img.ti15){border-radius:5px}
 .tbvsx .tvx-s .tbic img.tbface.ti15{width:100%;height:100%}
 .tbic img.tbface.tbst{object-fit:contain;transform:scale(.92)}
 /* ===== 2026-10-15 N01：技の一覧＝1技1行（画面の幅いっぱい）。上＝技名（省略しない・折り返す）、左＝大きな正式技カード（16:9 のまま・切らない・伸ばさない）、
@@ -5704,7 +5703,7 @@ function p9CompareScr(){const m=S.m,t=m&&m.raise&&m.raise.tour;if(!t||t.status!=
  <div class="pcacts"><button class="p9btn p9go pcgo tbstart" data-nsfx="1" onclick="p9VsGo(this)" aria-label="対戦開始">対戦開始</button></div></div>`;try{window.scrollTo(0,0)}catch(e){}}
 // 大会3 VS 演出（背景・VS のロゴ・斜めの光・名前の札・飾りは正式素材。モンスターは正式画像）→ バトル。タップで早送り。fight() の導入（intro）はこの試合だけ出さない（二重の VS にしない）
 let TB_SKIP_INTRO=false;
-function tourVsShow(m,o,opt){opt=opt||{};return new Promise(res=>{const calm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
+function tourVsShow(m,o,opt){opt=opt||{};try{window.MMARENA&&MMARENA.warmCards&&MMARENA.warmCards(m&&m.eq)}catch(e){}/* 追加A：VS の間に自分の技カードを先に読む */return new Promise(res=>{const calm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
  const d=document.createElement("div");d.className="tvs"+(calm?" calm":"");d.id="tvs";
  d.innerHTML=`<div class="tvsbg" style="background-image:url(${opt.bg||TB_ARENA(S.m&&S.m.raise&&S.m.raise.tour?S.m.raise.tour.rank:0)})"></div><img class="tvsline" src="${TB_UI}vs/vs_diagonal.png" alt=""><b class="tvshd">${p11Esc(opt.head||"マッチアップ")}</b><div class="tvsm op"><span class="mon">${tbVs(o,1)}</span></div><div class="tvsm me"><span class="mon">${tbVs(m,0)}</span></div>
  <div class="tvsnp op"><img src="${TB_UI}vs/vs_nameplate.png" alt=""><b>${p11Esc(o.name)}</b><i class="tvstag op">相手</i><img class="tvsorn" src="${TB_UI}vs/vs_ornament.png" alt=""></div><div class="tvsnp me"><img src="${TB_UI}vs/vs_nameplate.png" alt=""><b>${p11Esc(m.name)}</b><i class="tvstag me">あなた</i><img class="tvsorn" src="${TB_UI}vs/vs_ornament.png" alt=""></div>

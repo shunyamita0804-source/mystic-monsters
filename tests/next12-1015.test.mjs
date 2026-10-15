@@ -6,7 +6,7 @@
 //  NX-05 N06 宝箱のカットインにフィナと「見て見て！」なし・中央
 //  NX-06 N07 運命の分かれ道（改名）・左右の矢印・帯の CSS は #wbw の中（旧 .wbv の中の指定＝見えていなかった）・出目と進む側
 //  NX-07 N08 ライバルのマス 1.25 倍・影は正式の輪郭だけから作った派生（README）・会ったあとは外す
-//  NX-08 N09 ルーレットの技カードは class mvc（旧 card＝汎用 .card と衝突）・contain・MISS の板は変えない
+//  NX-08 追加A（N09 の最新版）：ルーレット＝横長の技カード（16:9 の窓・技名の帯）・MISS の板は変えない
 //  NX-09 N10 会場へ続く道のマスは会場の絵より手前（apprIds・propZ）
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -80,12 +80,25 @@ test('NX-07：N08 ライバルのマス 1.25 倍・影は正式の輪郭から�
   const R = rd('assets/chapter/rival_mark_1015/README.md'); assert.match(R, /輪郭（アルファ）だけ/); assert.match(R, /rival_mark\.py/);
 });
 
-test('NX-08：N09 ルーレットの技カード＝class mvc（旧 card は汎用 .card と衝突）・contain・MISS の板は変えない', () => {
-  assert.match(AR, /<div class="ic\$\{d\.card \? ' mvc' : ''\}">/); assert.doesNotMatch(AR, /' card' : ''/);
-  assert.match(AR, /'#bt \.mmr \.pl \.ic\.mvc\{padding:0;border:0;border-radius:6%;box-shadow:none;background:#0b1430\}'/);
-  assert.match(AR, /'#bt \.mmr \.pl \.ic\.mvc img\{object-fit:contain;object-position:50% 50%\}'/);
-  assert.match(AR, /'#bt \.mmr \.pl\.ms \.ic,#bt \.mmr \.pl\.ms \.nm\{display:none\}'/, 'MISS の板は従来どおり（No.26）');
-  assert.match(HTML, /\n\.card\{background:var\(--card\);border:2px solid var\(--line\);border-radius:18px;padding:12px\}/, '汎用の .card はそのまま（衝突は arena 側の名前で避ける）');
+test('NX-08：追加A（N09 の最新版）ルーレット＝新しい画面は横長の技カード（16:9 の窓・技名の帯）・旧い縦長の板の絵を重ねない・MISS の板は変えない', () => {
+  assert.match(AR, /const CARD_SP = 0\.27;/);
+  assert.match(AR, /const CARD = NEW, cw = Math\.round\(Math\.min\(W \* 0\.27, 132\)\), hb = Math\.round\(Math\.max\(15, cw \* 0\.155\)\), ch = Math\.round\(8 \+ \(cw - 8\) \* 9 \/ 16 \+ 2 \+ hb\);/);
+  assert.match(AR, /if \(CARD && !d\.ms\) return `<div class="pl cd"><div class="cf"><div class="ic\$\{d\.card \? ' mvc' : ''\}"\$\{d\.src \? ` data-src="\$\{d\.src\}"` : ''\}><\/div><div class="nm"><\/div><\/div><\/div>`;/);
+  assert.match(AR, /else if \(c && c\.dataset\.ok === '1' && c\.naturalWidth && !c\.isConnected\) \{ im = c; im\.classList\.add\('on'\); \}/, '先に読んだ絵（デコード済み）をそのまま差し込む＝毎ターン読み直さない');
+  assert.match(AR, /else \{ im = new Image\(\); im\.alt = ''; im\.decoding = 'async'; im\.onload = \(\) => im\.classList\.add\('on'\); im\.src = src; \}/, 'まだの絵は読めてから出す');
+  assert.match(AR, /'#bt \.mmr\.cards \.pl \.cf \.ic img\{opacity:0;transition:opacity \.12s ease-out\}#bt \.mmr\.cards \.pl \.cf \.ic img\.on\{opacity:1\}'/);
+  assert.match(AR, /try \{ const pl = G\('BPL'\); if \(pl\) \[0, 1\]\.forEach\(\(i\) => pl\[i\] && warmCards\(pl\[i\]\.eq\)\); \}/, 'バトルの開始で両側の技カードを先に読む');
+  assert.match(HTML, /function tourVsShow\(m,o,opt\)\{opt=opt\|\|\{\};try\{window\.MMARENA&&MMARENA\.warmCards&&MMARENA\.warmCards\(m&&m\.eq\)\}catch\(e\)\{\}/, 'VS の間に自分の技カードを先に読む');
+  assert.match(AR, /'#bt \.mmr\.cards \.pl \.cf \.ic\{position:relative;left:auto;right:auto;top:auto;height:auto;width:100%;aspect-ratio:16\/9;/);
+  assert.match(AR, /'#bt \.mmr\.cards \.pl \.cf \.ic img\{width:100%;height:100%;object-fit:contain;/);
+  assert.match(AR, /'#bt \.mmr\.cards \.pl\.ms\{width:var\(--mmr-mw\);aspect-ratio:259\/326;/, 'MISS の板は従来の絵の縦横比のまま（大きさだけ揃える）');
+  assert.match(AR, /'#bt \.mmr\.cards \.fr\{display:none\}#bt \.mmr\.cards\.msc \.fr\{display:block\}'/);
+  assert.match(AR, /'#bt \.mmr \.pl\.ms \.ic,#bt \.mmr \.pl\.ms \.nm\{display:none\}'/);
+  assert.match(AR, /<div class="ic\$\{d\.card \? ' mvc' : ''\}">/); assert.doesNotMatch(AR, /' card' : ''/, '汎用の .card と衝突する名前は使わない');
+  assert.match(AR, /nm\.style\.fontSize = Math\.max\(8, Math\.min\(12\.5, \(cw - 16\) \/ Math\.max\(4, \[\.\.\.d\.nm\]\.length\)\)\)/, '長い技名も1行');
+  assert.match(AR, /const x = d \* \(CARD \? CARD_SP : R\.spacing\) \* W/, '間隔は見た目だけ');
+  assert.match(AR, /nm\.style\.opacity = \(CARD \? Math\.max\(0, Math\.min\(1, 1 - \(a - 2\.4\) \* 2\)\) : k > 0\.5/, '技カードは左右のカードも技名');
+  assert.match(HTML, /\n\.card\{background:var\(--card\);border:2px solid var\(--line\);border-radius:18px;padding:12px\}/);
 });
 
 test('NX-09：N10 会場へ続く道のマスは会場の絵より手前（GOAL・道・判定は不変）', () => {
@@ -93,4 +106,29 @@ test('NX-09：N10 会場へ続く道のマスは会場の絵より手前（GOAL�
   assert.match(RW, /const propZ = \(p\) => \(p\.solid && S\.goalZ != null \? Math\.min\(zOf\(p\.y, p\.z, p\.x\), S\.goalZ - 1, S\.apprZ - 1\) : zOf\(p\.y, p\.z, p\.x\)\);/);
   assert.equal((RW.match(/S\.apprZ = apprZ\(\);/g) || []).length, 2, '作るときと向きが変わったとき');
   assert.match(RW, /goal: \{ file: 'goal_arena\.webp', w: 150, dy: 14, back: 4 \}/, '会場の大きさ・位置は従来どおり');
+});
+
+test('NX-10：追加B（Chapter 1）＝能力マスを増やし（45%→53%＋落ち着いた区間も能力マス）無地を 20% 未満へ・1回の上昇を下げる（A17 B15 C14 D10 E8・A＞B＞C＞D＞E）・A／B／C 同じ方針・道と固定の地点は不変', () => {
+  const w = {}; for (const f of ['js/phase10/monsters.js', 'js/chapter/engine.js', 'js/chapter/configs/ch1a.js', 'js/proto/roadfirst-data.js', 'js/proto/roadfirst-routes.js', 'js/proto/roadfirst-core.js', 'js/proto/roadfirst-play.js']) new Function('window', rd(f))(w);
+  const T = w.MMRF_PLAY.TUNING, M = w.MMP10M;
+  assert.deepEqual({ ...T.density }, { stat: 0.53, event: 0.15, rest: 0.06, wild: 0.08, treasure: 0.06 });
+  assert.equal(T.calmToStat, true);
+  assert.deepEqual({ ...M.GROWTH_GAIN_BY_CH[1] }, { A: 17, B: 15, C: 14, D: 10, E: 8 });
+  const G = 'ABCDE'; for (let i = 0; i < 4; i++) assert.ok(M.GROWTH_GAIN_BY_CH[1][G[i]] > M.GROWTH_GAIN_BY_CH[1][G[i + 1]], 'A＞B＞C＞D＞E');
+  assert.ok(M.GROWTH_GAIN_BY_CH[1].A < 20 && M.GROWTH_GAIN_BY_CH[1].E < 9, '旧 A20…E9 より低い');
+  for (const c of [2, 3, 4]) assert.ok(M.GROWTH_GAIN_BY_CH[c].A > M.GROWTH_GAIN_BY_CH[1].A, 'Chapter 2〜4 の表は変えない（Chapter 1 より大きい）');
+  const R = { A: w.MMRF_DATA, B: w.MMRF_ROUTES.B, C: w.MMRF_ROUTES.C };
+  for (const [rt, D] of Object.entries(R)) {
+    const ord = Object.keys(D.nodes).filter((id) => D.nodes[id][2] === 'ordinary_tile');
+    const calmSegs = (T.calmByRoute && T.calmByRoute[rt]) || T.calmSegments, calmIds = new Set(calmSegs.flatMap((sid) => (D.segments[sid] || [])[3] || []));
+    let stat = 0, empty = 0, n = 0, calmStat = 0, calmBad = 0;
+    for (let s = 1; s <= 60; s++) {
+      const L = w.MMRF_PLAY.layout(D, (s * 2654435761) >>> 0, { route: rt, bias: true });
+      for (const id of ord) { n++; const t = L[id]; if (!t) empty++; else if (t.t === 'stat') stat++; if (calmIds.has(id) && t) { if (t.t === 'stat') calmStat++; if (['wild', 'rest', 'treasure'].includes(t.t)) calmBad++; } }
+    }
+    assert.ok(stat / n > 0.5 && empty / n < 0.2, `${rt}：能力 ${(100 * stat / n).toFixed(1)}%・無地 ${(100 * empty / n).toFixed(1)}%`);
+    assert.equal(calmBad, 0, `${rt}：落ち着いた区間に野生・休憩・宝箱は置かない`); assert.ok(calmStat > 0, `${rt}：落ち着いた区間にも能力マス`);
+    assert.equal(Object.keys(D.nodes).length, 299); assert.equal(Object.keys(D.segments).length, 42);
+  }
+  assert.match(rd('js/chapter/world-driver.js'), /layout\(/, '配置は出発のときに1回（育成途中の配置 f.tiles は引き直さない）');
 });

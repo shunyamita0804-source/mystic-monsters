@@ -7,9 +7,10 @@
 //  NB-05 宝箱：フィナと「見て見て！」なし・宝箱と中身だけ・所持金は1回だけ増える
 //  NB-06 運命の分かれ道：案内に左右の矢印（奇数＝左・偶数＝右）・紺の帯の上でサイコロ・出目と進む側を光らせる（奇数／偶数）
 //  NB-07 ライバルのマス（A／B／C）：1.25 倍・マスの奥にリュウとレグナスの影（会ったあとは外す）
-//  NB-08 バトルの横型ルーレット：正式の技カードが窓の幅いっぱい（切らない・伸ばさない・旧 .card の白い枠なし）・MISS の板は従来どおり（ソラモ・ガウル・ライバルのレグナス）
+//  NB-08 バトルの横型ルーレット（追加A）：横長の技カード（16:9 を切らず・伸ばさず大きく・二重の額縁なし）・技名は帯で1行・MISS の板は従来の絵・STOP に重ならない（3サイズ・ソラモ・ガウル・レグナス）
 //  NB-09 大会会場の手前（A／B／C）：会場へ続く道のマスは建物に隠れない
-//  NB-10 大会の対戦表の顔＝正式のイラスト6枚（5体＋フルーネのモック）・枠の中・丸い枠は頭を切らない・読めないときの代わり・実際の大会にフルーネは出ない
+//  NB-11 技カードの読み込みが遅いとき（追加A）：旧い絵・空白・途中の絵を出さない
+//  NB-10 大会の対戦表の顔＝正式のイラスト6枚（5体＋フルーネのモック）・枠の中・四角のまま（丸くしない）・読めないときの代わり・実際の大会にフルーネは出ない
 //  QA_E2E=1 のときだけ実行（tests/e2e/harness.mjs）
 // =========================================================
 import test from 'node:test';
@@ -192,29 +193,45 @@ test('NB-07：ライバルのマス（A／B／C）＝1.25 倍・奥にリュウ�
   }
 });
 
-test('NB-08：バトルの横型ルーレット＝正式の技カードが窓の幅いっぱい（切らない・伸ばさない）・旧 .card の白い枠なし・MISS の板は従来どおり（ソラモ・ガウル・レグナス）', { skip: SKIP, timeout: 240000 }, async () => {
-  const cases = [{ sp: 0, eq: [0, 1, 2, 3, 4, 8], bt: 'wild', fs: 0 }, { sp: 1, eq: [11, 12, 10, 13, 14, 19], bt: 'wild', fs: 1 }, { sp: 0, eq: [0, 1, 2, 3, 4, 8], bt: 'rival', fs: -1 }];
-  for (const c of cases) {
-    const p = await openPage({ worldCh1: true }); const pg = p.page;
+test('NB-08（追加A＝N09 の最新版・3サイズ）：バトルの技ルーレット＝横長の技カード（16:9 の正式カードを切らず・伸ばさず大きく・二重の額縁なし）・技名は下の帯で1行・止まったら中央のカード・MISS の板は従来の絵・STOP に重ならない（ソラモ・ガウル・ライバルのレグナス）', { skip: SKIP, timeout: 400000 }, async () => {
+  const cases = [{ sp: 0, eq: [2, 0, 1, 3, 4, 8], bt: 'wild', fs: 0, sizes: SIZES3 }, { sp: 1, eq: [18, 11, 12, 10, 13, 19], bt: 'wild', fs: 1, sizes: [H.SIZES.base] }, { sp: 0, eq: [0, 1, 2, 3, 4, 8], bt: 'rival', fs: -1, sizes: [H.SIZES.base] }];
+  const read = (pg) => pg.evaluate(() => { const rh = (document.querySelector('#rl .rh') || {}).textContent || '', gr = document.getElementById('go').getBoundingClientRect(), bt = document.getElementById('bt').getBoundingClientRect();
+    return { rh, goT: gr.top, W: bt.width, pl: [...document.querySelectorAll('#bt .mmr .pl')].map((e) => { const ic = e.querySelector('.ic'), im = ic && ic.querySelector('img'), nm = e.querySelector('.nm'), r = e.getBoundingClientRect(), ir = im && im.getBoundingClientRect(), cr = ic && ic.getBoundingClientRect();
+      return { ms: e.classList.contains('ms'), cd: e.classList.contains('cd'), c: e.classList.contains('c'), cls: ic ? ic.className : '', fit: im ? getComputedStyle(im).objectFit : null, bg: [...e.querySelectorAll('img.bgp')].map((x) => x.getAttribute('src').split('/').pop()),
+        box: [r.left, r.right, r.bottom], img: ir ? [im.offsetWidth, im.offsetHeight, ic.offsetWidth, ic.offsetHeight, im.naturalWidth, im.naturalHeight] : null, src: im ? im.getAttribute('src') : null,   // img＝実寸（板の傾き・遠近の影響を受けない）
+        nm: nm ? [nm.textContent, nm.scrollWidth <= nm.clientWidth + 1, +getComputedStyle(nm).opacity, nm.getBoundingClientRect().top >= (cr ? cr.bottom - 1 : 0)] : null }; }) }; });
+  for (const c of cases) for (const size of c.sizes) {
+    const p = await openPage({ worldCh1: true, size }); const pg = p.page;
     await toWorld(pg, { sp: c.sp, eq: c.eq });
     await pg.evaluate((c) => { const m = S.m, r = m.raise; r.pend = { roll: 1, left: 0, stage: 'battle', fx: { kind: 'battle', battleType: c.bt } }; save(); const rk = c.bt === 'rival' ? MMRIVAL.rankFor(m) : MMP8.practiceRank(m); bBattleRun(m, c.bt, rk, c.fs); }, c);
-    await pg.waitForSelector('#bt .mmr .pl', { timeout: 30000 });
-    const seen = new Set();
-    for (let i = 0; i < 40 && seen.size < (c.bt === 'rival' ? 2 : 1); i++) {
-      const r = await pg.evaluate(() => { const rh = (document.querySelector('#rl .rh') || {}).textContent || ''; return { rh, pl: [...document.querySelectorAll('#bt .mmr .pl')].map((e) => { const ic = e.querySelector('.ic'), im = ic && ic.querySelector('img'); return { ms: e.classList.contains('ms'), card: !!(ic && ic.classList.contains('card')), mvc: !!(ic && ic.classList.contains('mvc')), pad: ic ? getComputedStyle(ic).paddingLeft : null, fit: im ? getComputedStyle(im).objectFit : null, w: im ? [im.offsetWidth, ic.offsetWidth, im.naturalWidth, im.naturalHeight] : null, src: im ? im.getAttribute('src') : null }; }) }; });
-      const owner = /^テスト/.test(r.rh) ? 'me' : /レグナス/.test(r.rh) ? 'regnas' : 'foe';
-      if (r.pl.length >= 7 && r.pl.some((x) => x.src && x.w && x.w[2] > 0) && !seen.has(owner)) {
-        seen.add(owner);
-        if (owner === 'me') assert.equal(r.pl.filter((x) => x.ms).length, 1, '自分（6技）の MISS の板は1枚（従来どおり）'); else assert.ok(r.pl.filter((x) => x.ms).length >= 1, '相手の空き枠は MISS（従来どおり）');
-        for (const x of r.pl.filter((y) => !y.ms && y.mvc)) {
-          assert.equal(x.card, false, '旧 class「card」（白い枠）は使わない'); assert.equal(x.pad, '0px'); assert.equal(x.fit, 'contain', '切らない・伸ばさない');
-          assert.ok(x.w[0] >= x.w[1] - 1, `窓の幅いっぱい ${x.w}`); assert.ok(/cards_1014\//.test(x.src) && x.w[2] === 640 && Math.abs(x.w[3] - 360) <= 1, x.src);   // レグナス・ジオルの一部は 640×361（開発30 の派生のまま）
-        }
-        assert.ok(r.pl.filter((y) => y.mvc).length >= 4, '正式の技カード');
-      }
-      await pg.waitForTimeout(500);
+    await pg.waitForSelector('#bt .mmr.cards .pl', { timeout: 30000 });
+    await pg.waitForFunction(() => { const g = document.getElementById('go'); return g && !g.disabled && [...document.querySelectorAll('#bt .mmr .pl.cd img')].every((i) => i.complete); }, null, { timeout: 30000 });
+    // 回っている間
+    let r = await read(pg);
+    assert.ok(/^テスト/.test(r.rh), '自分のルーレット');
+    assert.equal(r.pl.length, 7); assert.equal(r.pl.filter((x) => x.ms).length, 1, '自分（6技）の MISS の板は1枚（従来どおり）');
+    assert.deepEqual(r.pl.filter((x) => x.ms)[0].bg, ['plate_miss_c.webp'], 'MISS の板は従来の絵（No.26）');
+    for (const x of r.pl.filter((y) => !y.ms)) {
+      assert.ok(x.cd && /\bmvc\b/.test(x.cls) && !/\bcard\b/.test(x.cls), `横長の技カード（${x.src}）`); assert.deepEqual(x.bg, [], '旧い縦長の板の絵（二重の額縁）は使わない');
+      assert.equal(x.fit, 'contain'); assert.ok(/cards_1014\//.test(x.src) && x.img[4] === 640, x.src);
+      assert.ok(Math.abs(x.img[0] - x.img[2]) <= 1 && Math.abs(x.img[1] - x.img[3]) <= 1, `絵は窓いっぱい（余りなし） ${x.img}`);
+      assert.ok(Math.abs(x.img[2] / x.img[3] - 16 / 9) < 0.05, `窓は 16:9（正式カードと同じ比率＝切らない・伸ばさない） ${x.img}`);
+      assert.ok(x.nm[1] && x.nm[3], `技名は1行で欠けず、絵の下の帯 ${x.nm}`);
+      if (x.box[0] >= 0 && x.box[1] <= r.W) assert.ok(x.nm[2] > 0.9, `画面の中のカードは左右も帯に技名（空の帯を見せない） ${x.nm}`);
+      assert.ok(x.box[2] <= r.goT + 1, 'STOP に重ならない');
     }
-    assert.ok(seen.has('me'), '自分のルーレットを確かめた');
+    // 止まった瞬間（技の演出で隠れる前）：中央のカードが大きく、技名が読める
+    await pg.evaluate(() => { window.__lk = 0; const m = document.querySelector('#bt .mmr'); new MutationObserver(() => { if (m.classList.contains('lock') && !window.__lk) { window.__lk = 1; window.__snap = (() => { const e = document.querySelector('#bt .mmr .pl.c'), im = e && e.querySelector('.ic img'), nm = e && e.querySelector('.nm'); return e ? { ms: e.classList.contains('ms'), w: im ? im.getBoundingClientRect().width : 0, h: im ? im.getBoundingClientRect().height : 0, nm: nm ? nm.textContent : null, op: nm ? +getComputedStyle(nm).opacity : 0, fr: getComputedStyle(document.querySelector('#bt .mmr .fr')).display } : null; })(); } }).observe(m, { attributes: true, attributeFilter: ['class'] }); });
+    await pg.click('#go');
+    await pg.waitForFunction(() => window.__lk === 1, null, { timeout: 8000, polling: 'raf' });
+    const sn = await pg.evaluate(() => window.__snap);
+    if (sn.ms) assert.equal(sn.fr, 'block', '中央が MISS のときは従来の中央の枠');
+    else { assert.ok(sn.w >= r.W * 0.26, `中央のカードの絵が大きい（${Math.round(sn.w)}px／画面 ${r.W}）`); assert.ok(sn.op > 0.9 && sn.nm, `技名が読める ${sn.nm}`); assert.equal(sn.fr, 'none', '技カードには旧い中央の枠を重ねない'); }
+    if (c.bt === 'rival') {   // 相手（レグナス）の番：レグナスの正式カード
+      let ok = false;
+      for (let i = 0; i < 60 && !ok; i++) { const q = await read(pg).catch(() => null); if (q && /レグナス/.test(q.rh) && q.pl.length >= 7 && q.pl.some((x) => x.src)) { ok = true; for (const x of q.pl.filter((y) => !y.ms)) assert.ok(/cards_1014\/regnas\//.test(x.src) && Math.abs(x.img[2] / x.img[3] - 16 / 9) < 0.05, x.src); } else await pg.waitForTimeout(300); }
+      assert.ok(ok, 'ライバルの番のルーレット');
+    }
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
     await p.ctx.close().catch(() => {});
   }
@@ -236,7 +253,7 @@ test('NB-09：大会会場の手前（A／B／C）＝会場へ続く道のマス
   }
 });
 
-test('NB-10：大会の対戦表の顔＝正式のイラスト6枚（5体＋フルーネのモック）・枠の中・丸い枠は頭を切らない・読めないときの代わり・実際の大会にフルーネは出ない', { skip: SKIP, timeout: 200000 }, async () => {
+test('NB-10：大会の対戦表の顔＝正式のイラスト6枚（5体＋フルーネのモック）・枠の中・四角のまま（丸くしない）・読めないときの代わり・実際の大会にフルーネは出ない', { skip: SKIP, timeout: 200000 }, async () => {
   for (const size of SIZES3) {
     const p = await openPage({ size }); const pg = p.page;
     await H.newGame(pg, 'テスト');
@@ -255,9 +272,11 @@ test('NB-10：大会の対戦表の顔＝正式のイラスト6枚（5体＋フ�
     const want = ['icon_gauru.webp', 'icon_nobiton.webp', 'icon_jiol.webp', 'icon_regnas.webp', 'icon_flurene.webp', 'icon_solamo.webp'];
     for (const f of want) assert.ok(r.faces.some((x) => x.src === f && x.ti && x.nw === 256 && x.inside), `${f} が枠の中に ${JSON.stringify(r.faces)}`);
     assert.ok(r.faces.every((x) => x.w >= 16), '読める大きさ'); assert.ok(r.sw);
-    // 丸い枠（ほかの試合の観戦の帯）：モックの枠に入れて、絵は 88%・下寄せ・灰色の地＝頭を切らない
-    const band = await pg.evaluate(() => { const d = document.createElement('div'); d.className = 'tbvsx'; d.innerHTML = `<span class="tvx-s"><span class="tbic">${tbIcon({ sp: 5 })}</span></span>`; document.getElementById('app').appendChild(d); const im = d.querySelector('img'), c = getComputedStyle(im); const out = { cls: im.className, pad: [c.paddingTop, c.paddingLeft], fit: c.objectFit, pos: c.objectPosition, bg: c.backgroundColor, rad: getComputedStyle(d.querySelector('.tbic')).borderRadius }; d.remove(); return out; });
-    assert.match(band.cls, /ti15/); assert.equal(band.fit, 'contain'); assert.equal(band.pos, '50% 100%'); assert.notEqual(band.pad[0], '0px'); assert.equal(band.bg, 'rgb(206, 207, 208)'); assert.equal(band.rad, '50%');
+    // ほかの試合の観戦の帯の枠（モック）：ユーザー指示＝丸くしないで四角のまま・絵は枠いっぱい
+    const band = await pg.evaluate(() => { const d = document.createElement('div'); d.className = 'tbvsx'; d.innerHTML = `<span class="tvx-s"><span class="tbic">${tbIcon({ sp: 5 })}</span></span>`; document.getElementById('app').appendChild(d); const im = d.querySelector('img'), c = getComputedStyle(im), b = d.querySelector('.tbic'); const ir = im.getBoundingClientRect(), br = b.getBoundingClientRect(); const out = { cls: im.className, pad: c.paddingTop, fit: c.objectFit, rad: getComputedStyle(b).borderRadius, fill: ir.width >= br.width - 6 && ir.height >= br.height - 6 }; d.remove(); return out; });
+    assert.match(band.cls, /ti15/); assert.equal(band.fit, 'cover'); assert.equal(band.pad, '0px'); assert.equal(band.rad, '5px', '四角（角の小さい丸み）'); assert.ok(band.fill, '絵は枠いっぱい');
+    const sq = await pg.evaluate(() => [...document.querySelectorAll('.tb1 .tbic:has(>img.ti15)')].map((b) => getComputedStyle(b).borderRadius));
+    assert.ok(sq.length && sq.every((r) => r === '5px'), `対戦表の枠も四角 ${[...new Set(sq)]}`);
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   }
   // 読めないとき：イラスト → 2.5D の横顔 → 丸い顔（フルーネは横顔が無い＝正式の立ち絵）
@@ -268,4 +287,27 @@ test('NB-10：大会の対戦表の顔＝正式のイラスト6枚（5体＋フ�
   assert.match(fb[0][0], /faces_25d\/face_soramo\.webp$/); assert.match(fb[0][1], /f25/); assert.ok(fb[0][2]);
   assert.match(fb[1][0], /monsters\/2p5d\/flurene\.webp$/); assert.match(fb[1][1], /tbst/); assert.ok(fb[1][2]);
   assert.deepEqual(q.errors, []);
+});
+
+test('NB-11（追加A）：技カードの読み込みが遅いとき＝旧い技の絵・白い空白・途中まで描いた絵を出さない（濃紺の枠と技名の帯だけ → 読めたら出す）・抽選と STOP は従来どおり', { skip: SKIP, timeout: 200000 }, async () => {
+  const p = await openPage({ worldCh1: true }); const pg = p.page;
+  await toWorld(pg, { sp: 0, eq: [2, 0, 1, 3, 4, 8] });
+  await pg.route('**/assets/moves/cards_1014/**', async (r) => { await new Promise((res) => setTimeout(res, 7000)); await r.continue().catch(() => {}); });
+  await pg.evaluate(() => { window.__bad = []; window.__hid = 0; const tick = () => { for (const im of document.querySelectorAll('#bt .mmr .pl.cd .ic img')) { const src = im.getAttribute('src') || '', op = +getComputedStyle(im).opacity;
+      if (!/cards_1014\//.test(src)) window.__bad.push('src ' + src);
+      if ((!im.complete || !im.naturalWidth) && op > 0.01) window.__bad.push('未読込なのに見える ' + src + ' ' + op);
+      if (!im.complete) window.__hid++; }
+    if (!window.__stop) requestAnimationFrame(tick); }; requestAnimationFrame(tick); });
+  await pg.evaluate(() => { const m = S.m, r = m.raise; r.pend = { roll: 1, left: 0, stage: 'battle', fx: { kind: 'battle', battleType: 'wild' } }; save(); bBattleRun(m, 'wild', MMP8.practiceRank(m), 0); });
+  await pg.waitForSelector('#bt .mmr.cards .pl.cd', { timeout: 30000 });
+  const early = await pg.evaluate(() => [...document.querySelectorAll('#bt .mmr .pl.cd')].map((e) => ({ nm: e.querySelector('.nm').textContent, frame: getComputedStyle(e.querySelector('.cf')).backgroundImage !== 'none' })));
+  assert.ok(early.length >= 4 && early.every((x) => x.nm && x.frame), `読み込み中も技名の帯と枠 ${JSON.stringify(early)}`);
+  await pg.waitForFunction(() => [...document.querySelectorAll('#bt .mmr .pl.cd .ic img')].every((i) => i.complete && i.naturalWidth && i.classList.contains('on') && +getComputedStyle(i).opacity > 0.99), null, { timeout: 30000 });
+  const r = await pg.evaluate(() => { window.__stop = 1; return { bad: window.__bad.slice(0, 5), hid: window.__hid }; });
+  assert.deepEqual(r.bad, [], '旧い絵・未読込の絵を見せない');
+  assert.ok(r.hid > 0, '遅延が効いている（読み込み中の時間があった）');
+  await pg.waitForFunction(() => { const g = document.getElementById('go'); return g && !g.disabled; }, null, { timeout: 30000 });
+  await pg.click('#go');
+  await pg.waitForFunction(() => document.querySelector('#bt .mmr.lock'), null, { timeout: 8000 });
+  assert.deepEqual(p.errors, []);
 });

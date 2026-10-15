@@ -160,7 +160,9 @@
   //  初回の1体の得意能力の最終値の平均（300回・大会は全勝の想定）ソラモ 258・ガウル 289・ノビトン 273・ジオル 323＝4体平均 286（旧の配置と表では 234／263／245／305＝262））。
   //  window.MM_BALANCE_OVERRIDE.gainByCh（開発用の道具 tools/balance/sim-full.mjs だけが入れる）で上書きできる
   const GROWTH_GAIN_BY_CH = (() => {
-    const T = { 1: fz({ A: 20, B: 18, C: 16, D: 12, E: 9 }), 2: fz({ A: 25, B: 23, C: 20, D: 16, E: 12 }), 3: fz({ A: 29, B: 27, C: 23, D: 18, E: 14 }), 4: fz({ A: 33, B: 30, C: 26, D: 20, E: 15 }) };
+    // 2026-10-15 追加B：Chapter 1 は能力マスが増えた分だけ1回の上昇を下げる（旧 A20 B18 C16 D12 E9 → A17 B15 C14 D10 E8・A＞B＞C＞D＞E のまま）。
+    //  得意能力の最終値の平均（300回・大会は全勝の想定）ソラモ 261・ガウル 291・ノビトン 273・ジオル 327＝4体平均 288（変更前 258／289／273／323＝286）
+    const T = { 1: fz({ A: 17, B: 15, C: 14, D: 10, E: 8 }), 2: fz({ A: 25, B: 23, C: 20, D: 16, E: 12 }), 3: fz({ A: 29, B: 27, C: 23, D: 18, E: 14 }), 4: fz({ A: 33, B: 30, C: 26, D: 20, E: 15 }) };
     const ov = root.MM_BALANCE_OVERRIDE && root.MM_BALANCE_OVERRIDE.gainByCh;
     if (ov && typeof ov === 'object') for (const c of Object.keys(ov)) if (T[c]) T[c] = fz({ ...T[c], ...ov[c] });
     return fz(T);
