@@ -48,8 +48,10 @@
   const SRC_OF = { 0: OFF, 1: GOFF, 2: NOFF, 3: JSK, 4: ROFF };
   /** 読み込めなかったコマがある技（その技だけ従来の演出へ戻す）。キー＝dir＋ファイル名 */
   const failed = new Set();
-  const usable = (d) => !!d && !d.cuts.concat(d.fx || []).some((c) => [c.f, c.fx].some((f) => f && failed.has((d.dir || OA) + f)));
-  const offData = (k, s) => { if (!offOn()) return null; const o = owner(k), src = SRC_OF[o]; if (!src || spOf(s) !== o) return null; const d = src()[k] || null; return usable(d) ? d : null; };
+  const usable = (d) => !!d && !d.cuts.concat(d.fx || []).some((c) => (c.u ? [c.u] : [c.f, c.fx].filter(Boolean).map((f) => (d.dir || OA) + f)).some((u) => failed.has(u)));
+  // 2026-10-15 夜：技アニメの試遊修正（js/battle/move-tune-1015.js の MMTUNE.patch＝表示のときだけ上書きした写し。データは変えない）
+  const tuned = (d) => (d && root.MMTUNE ? root.MMTUNE.patch(d, d.dir || OA) : d);
+  const offData = (k, s) => { if (!offOn()) return null; const o = owner(k), src = SRC_OF[o]; if (!src || spOf(s) !== o) return null; const d = tuned(src()[k] || null); return usable(d) ? d : null; };
   const OFF_DUR = { 48: 2700, 4: 2300, 8: 2300, 9: 2700, 17: 2300, 18: 2300, 19: 2500, 34: 2300, 35: 2300, 37: 2300, 39: 2700, 28: 2700, 29: 2700 };   // 6コマ以上の大技は少し長く（共通演出を通るとき）
 
   function spOf(s) { const pl = G('BPL'); return pl && pl[s] ? pl[s].sp : null; }
@@ -159,6 +161,18 @@
     return out;
   }
 
+  /** 2026-10-15 夜：コマごとの倍率（体の面積を待機立ち絵とそろえる）。測った面積が無い・?mmScale=old のときは null（従来） */
+  function areaScales(d, s, idleW, idleH) {
+    const A = root.MMAREA; if (!A) return null;
+    try { if (/[?&]mmScale=old(&|$)/.test(root.location.search)) return null; } catch (e) { /* 下へ */ }
+    const sp = spOf(s), I = root.MMARENA && root.MMARENA.IDLE, ia = I && I[sp] != null ? A['idle/' + I[sp] + '.webp'] : null;
+    if (!ia) return null;
+    const m = /([^/]+)\/$/.exec(d.dir || OA), dir = m ? m[1] : 'soramo_moves_1012';
+    const raw = d.cuts.map((c) => { const a = A[dir + '/' + c.f]; return a ? Math.sqrt((ia * idleW * idleH) / (a * c.pw * c.ph)) * (c.cs || 1) : null; });
+    if (raw.some((x) => x == null)) return null;
+    const mm = med(raw);
+    return raw.map((x, i) => (d.cuts[i].cs ? x : Math.max(mm * 0.72, Math.min(mm * 1.5, x))));   // 効果が体の層に描き込まれたコマなどの外れ値を抑える（倍率を明示したコマは除く）
+  }
   const med = (a) => { const b = a.slice().sort((x, y) => x - y); return b[Math.floor(b.length / 2)] || 1; };
   /**
    * 1つの技の置き方（画面の画素）。2026-10-09 完全版：
@@ -174,34 +188,47 @@
     const bw = d.cuts.map((c) => c.b[2] - c.b[0]), bh = d.cuts.map((c) => c.b[3] - c.b[1]);
     // 本体の高さ（中央値）と面積（中央値）の2つの見積もりの平均。高さだけだと伏せた姿勢・飛ぶ姿勢で、面積だけだと横に長い姿勢で大きさがずれる
     const area = med(d.cuts.map((c, i) => bw[i] * bh[i]));
-    let S = (idleH * 0.95 / med(bh) + Math.sqrt((idleW * idleH) / area)) / 2;
-    d.cuts.forEach((c, i) => { S = Math.min(S, (xmax - xmin) * 0.96 / bw[i], (Ag.y + idleH * 0.06 - ytop) / bh[i]); });
+    let S = (idleH * 0.95 / med(bh) + Math.sqrt((idleW * idleH) / area)) / 2 * (d.tune && d.tune.sc || 1);
+    // 2026-10-15 夜（共通スケール）：コマごとに「見えている体の面積」（js/battle/move-area-1015.js＝アルファの画素数）を待機立ち絵とそろえる。
+    //  姿勢（しゃがむ・伸びる・翼を広げる）で枠の大きさが変わっても体の大きさは同じ＝技の途中で急に大きく／小さくならない。?mmScale=old で従来の見積もり
+    const Sc = areaScales(d, s, idleW, idleH);
+    let K = d.cuts.map((c, i) => (Sc ? Sc[i] * (d.tune && d.tune.sc || 1) / S : (c.cs || 1)));
+    d.cuts.forEach((c, i) => { S = Math.min(S, (xmax - xmin) * 0.96 / (bw[i] * K[i]), (Ag.y + idleH * 0.06 - ytop) / (bh[i] * K[i])); });
     // その場・踏み込み・戻るのコマの本体が、自分側の画面の端から相手の手前までに収まる大きさ（翼を広げたガウルが相手の顔に重ならない）。
     // 縮めすぎると立ち絵との大きさの差が目立つ＝最大 22% まで（それ以上は相手の体の手前の端に少し重なってよい）
     const room = f > 0 ? tFront - xmin : xmax - tFront;
     if (room > 0) {
       let S2 = S;
-      d.cuts.forEach((c, i) => { if (c.m === 'self' || c.m === 'back' || c.m === 'lunge') S2 = Math.min(S2, room / (bw[i] * 1.06)); });
+      d.cuts.forEach((c, i) => { if (c.m === 'self' || c.m === 'back' || c.m === 'lunge') S2 = Math.min(S2, room / (bw[i] * K[i] * 1.06)); });
       S = Math.max(S * 0.78, S2);
     }
-    const ground = {}; d.cuts.forEach((c) => { const key = c.src.replace(/_\d+$/, ''); ground[key] = Math.max(ground[key] || 0, c.b[3]); });
+    const ground = {}; d.cuts.forEach((c, i) => { const key = c.src.replace(/_\d+$/, ''); ground[key] = Math.max(ground[key] || 0, c.b[3] * K[i]); });
     const reach = Math.abs(Tg.x - Ag.x);
     const fx = (c, x) => (f > 0 ? x : c.pw - x);   // 相手側は左右反転（コマの中の x）
-    return d.cuts.map((c) => {
-      const g = ground[c.src.replace(/_\d+$/, '')];
+    const S0 = S;
+    return d.cuts.map((c, ci) => {
+      const S = S0 * K[ci];   // コマごとの倍率（面積をそろえた分）
+      const g = ground[c.src.replace(/_\d+$/, '')] / K[ci];
       const bL = Math.min(fx(c, c.b[0]), fx(c, c.b[2])), bR = Math.max(fx(c, c.b[0]), fx(c, c.b[2]));
       const bcx = (bL + bR) / 2;
       // 本体の中心の x（画面）：モードごとの始め → 終わり
       const at = (r) => Ag.x + f * reach * r;
-      const R = calm ? [[0, 0]] : { self: [0, 0.02], lunge: [0.12, 0.24], move: [0.1, 0.42], contact: [0.46, 0.54], back: [0.3, 0.04] }[c.m] || [0, 0.02];
+      let R = calm ? [[0, 0]] : { self: [0, 0.02], lunge: [0.12, 0.24], move: [0.1, 0.42], contact: [0.46, 0.54], back: [0.3, 0.04] }[c.m] || [0, 0.02];
+      if (!calm && c.r) R = c.r; else if (!calm && d.stay && c.m !== 'move' && c.m !== 'contact') R = [0, 0];   // 2026-10-15：射撃の技はその場（前へ出ない）
       const ends = (calm ? [0, 0] : R).map((r) => {
-        let px = at(r) - bcx * S, py = Ag.y - g * S;   // コマ（元の枠）の左上
+        let px = at(r) - bcx * S, py = Ag.y - g * S + (c.lift || 0) * idleH;   // コマ（元の枠）の左上（lift＝その場で浮く・負＝上）
         // 本体を画面の左右・HUD の下・地面の上に収める（3% の余白）
         const m = (bR - bL) * S * 0.03;
         const l = px + bL * S - m, rr = px + bR * S + m;
         if (l < xmin) px += xmin - l; else if (rr > xmax) px -= rr - xmax;
         const top = py + c.b[1] * S - (c.b[3] - c.b[1]) * S * 0.03;
         if (top < ytop) py += ytop - top;
+        // 2026-10-15：射撃の技（stay）のその場のコマは、体の前の端を待機立ち絵の前の端の少し先までに（体が相手へ迫って体当たりに見えない）
+        if (d.stay && !c.r && c.m !== 'move' && c.m !== 'contact') {
+          const lim = Ag.x + f * idleW * 0.5;
+          if (f > 0) { const over = px + bR * S - lim; if (over > 0) px -= Math.min(over, Math.max(0, px + bL * S - m - xmin)); }
+          else { const over = lim - (px + bL * S); if (over > 0) px += Math.min(over, Math.max(0, xmax - (px + bR * S) - m)); }
+        }
         // その場のコマは相手の体に重ねない（当たるコマ・移動のコマは重なってよい）
         if (c.m === 'self' || c.m === 'back' || c.m === 'lunge') {
           if (f > 0) { const over = px + bR * S - tFront; if (over > 0) px -= Math.max(0, Math.min(over, px + bL * S - m - xmin)); }
@@ -209,7 +236,8 @@
         }
         return { x: px, y: py };
       });
-      return { c, S, p0: ends[0], p1: ends[1] };
+      const mid = !calm && c.arc ? { x: (ends[0].x + ends[1].x) / 2, y: Math.max(ytop - c.b[1] * S, (ends[0].y + ends[1].y) / 2 - c.arc * idleH) } : null;   // 跳ぶ（放物線の頂点）
+      return { c, S, p0: ends[0], p1: ends[1], mid };
     });
   }
 
@@ -276,6 +304,14 @@
 
   // ---- 正式のソラモの技（2026-10-12）----
   /** 攻撃側・相手・画面の位置（anim と同じ測り方） */
+  /** ヒットストップ（バトル画面の中の動きを ms だけ止める。stage.js の hitStop と同じ方式＝共通演出を通らないプレビューでも効く） */
+  function hitStop(ms) {
+    if (!ms || !document.getAnimations || reduced()) return;
+    const bt = document.getElementById('bt'); if (!bt) return;
+    const list = document.getAnimations().filter((a) => { const t = a.effect && a.effect.target; return t && bt.contains(t) && a.playState === 'running'; });
+    list.forEach((a) => { try { a.pause(); } catch (e) { /* 無視 */ } });
+    setTimeout(() => list.forEach((a) => { try { if (a.playState === 'paused') a.play(); } catch (e) { /* 無視 */ } }), ms);
+  }
   function geom(s) {
     const v = $('.vs'), bt = document.getElementById('bt'), me = document.getElementById('m' + s), op = document.getElementById('m' + (1 - s));
     if (!v || !v.appendChild || !me || !op || !bt) return null;
@@ -301,30 +337,77 @@
     const at = (i) => lay.find((q) => q.c.t[0] <= i && q.c.t[1] >= i);
     const put = (im, z) => { im.className = 'p25f'; im.alt = ''; im.decoding = 'sync'; if (z) im.style.zIndex = z; v.appendChild(im); imgs.push(im); return im; };
     // 窓 [w0, w1] の間だけ見せる（前後は X だけ重ねて切り替える）
-    const kfWin = (w0, w1, a, b, first, last) => {
+    const kfWin = (w0, w1, a, b, first, last, mid) => {
       const t0 = Math.max(0, w0 - (first ? 0 : X)) / D, t1 = Math.min(D, w1 + (last ? 0 : X)) / D;
       const k2 = [{ opacity: 0, transform: a, offset: 0 }];
       if (t0 > e) k2.push({ opacity: 0, transform: a, offset: t0 - e });
       k2.push({ opacity: 1, transform: a, offset: Math.min(t0 + (first ? 0.02 : X / D), t1 - 2 * e) });
+      if (mid) { const o1 = k2[k2.length - 1].offset, o2 = Math.max(t0 + 2 * e, t1 - (last ? 0.04 : X / D)); k2[k2.length - 1].easing = 'ease-out'; k2.push({ opacity: 1, transform: mid, offset: (o1 + o2) / 2, easing: 'ease-in' }); }
       k2.push({ opacity: 1, transform: b, offset: Math.max(t0 + 2 * e, t1 - (last ? 0.04 : X / D)) });
       k2.push({ opacity: 0, transform: b, offset: Math.min(1, t1) });
       if (t1 < 1) k2.push({ opacity: 0, transform: b, offset: 1 });
       return k2;
     };
+    const tune = d.tune || {};
+    try { if (root.MMTUNE) root.MMTUNE.onAnimStart(k, s, P); } catch (er) { /* 無視 */ }
     lay.forEach((q) => {
-      const c = q.c, S = q.S, Tf = (p) => `translate(${p.x}px,${p.y}px) scaleX(${f})`;
+      const c = q.c, S = q.S, Tf = (p) => `translate(${p.x}px,${p.y}px) scaleX(${f})` + (c.rot ? ` rotate(${c.rot}deg)` : '');
       const w0 = P.win[c.t[0]][0], w1 = P.win[c.t[1]][1];
       // 本体（と、同じ切り出しの効果の層＝ガウル。本体の上に同じ動きで重ねる）
       [[c.f, 0], [c.fx, 8]].forEach(([src, z]) => { if (!src) return;
         const im = document.createElement('img'); im.src = base + src; im.dataset.cut = z ? c.src + '_fx' : c.src;
         im.style.width = c.w * S + 'px'; im.style.height = c.h * S + 'px'; im.style.transformOrigin = '50% 50%'; put(im, z);
-        im.animate(kfWin(w0, w1, Tf(q.p0), Tf(q.p1), c.t[0] === 0, c.t[1] === d.steps - 1), { duration: D, fill: 'both' }).onfinish = () => im.remove(); });
+        im.animate(kfWin(w0, w1, Tf(q.p0), Tf(q.p1), c.t[0] === 0, c.t[1] === d.steps - 1, q.mid ? Tf(q.mid) : null), { duration: D, fill: 'both' }).onfinish = () => im.remove(); });
     });
+    const S0 = lay.length ? lay[0].S : 1;
+    // 2026-10-15：効果の層の一部だけを切り出して動かす（体と同じ画面に描かれた火球・光線・花粉）。fb＝絵の中の範囲（画素）
+    const crop = (c, fb, Sc) => {
+      const box = document.createElement('div'); box.className = 'p25f p25c'; box.dataset.cut = c.src;
+      const w = (fb[2] - fb[0]) * Sc, h = (fb[3] - fb[1]) * Sc;
+      box.style.width = w + 'px'; box.style.height = h + 'px'; box.style.overflow = 'hidden';
+      const im = document.createElement('img'); im.src = c.u || base + c.f; im.alt = ''; im.decoding = 'sync';
+      im.style.cssText = `position:absolute;left:${-fb[0] * Sc}px;top:${-fb[1] * Sc}px;width:${c.pw * Sc}px;height:${c.ph * Sc}px;max-width:none`;
+      box.appendChild(im); v.appendChild(box); imgs.push(box); return { box, w, h };
+    };
+    const cutPos = (src, x, y) => { const q = lay.find((z) => z.c.src === src) || lay[0]; const fx2 = f > 0 ? x : q.c.pw - x; return { x: q.p0.x + fx2 * q.S, y: q.p0.y + y * q.S, q }; };
+    // 溜め（フルーネの必殺など・素材の無い光の溜めを CSS で）
+    if (tune.charge) {
+      const ch = tune.charge, w0 = P.win[ch.t[0]][0], w1 = P.win[ch.t[1]][1], R = L.idleW * 1.25, cx = L.Ag.x, cy = L.Ag.y - L.idleH * 0.5;
+      const a = document.createElement('div'); a.className = 'p25f'; a.style.cssText = `width:${R}px;height:${R}px;border-radius:50%;background:radial-gradient(circle,#fff 0 10%,${ch.c1} 32%,${ch.c2} 52%,transparent 70%);mix-blend-mode:screen`;
+      v.appendChild(a); imgs.push(a);
+      const T0 = `translate(${cx - R / 2}px,${cy - R / 2}px)`;
+      a.animate([{ opacity: 0, transform: T0 + ' scale(.3)', offset: 0 }, { opacity: 0, transform: T0 + ' scale(.3)', offset: w0 / D }, { opacity: 0.95, transform: T0 + ' scale(1.1)', offset: (w0 + (w1 - w0) * 0.8) / D }, { opacity: 0, transform: T0 + ' scale(.6)', offset: Math.min(1, (w1 + 120) / D) }, { opacity: 0, offset: 1 }], { duration: D, fill: 'both' });
+    }
     (d.fx || []).forEach((c) => {
-      const im = document.createElement('img'); im.src = base + c.f; im.dataset.cut = c.src; put(im, 8);
       const w0 = P.win[c.t[0]][0], w1 = P.win[c.t[1]][1], last = c.t[1] === d.steps - 1;
+      if (c.at === 'launch') {   // 2026-10-15：効果を相手の胸まで飛ばす（ファイアボール・フルーネの花粉・聖なる炎の放射）。from＝'self'：自分の胸から
+        const fb = c.fb || [0, 0, c.pw, c.ph], Sc = (c.ref ? (lay.find((z) => z.c.src === c.ref) || lay[0]).S : S0) * (c.ws || 1), g2 = c.grow || [0.9, 1.1];
+        const { box, w, h } = crop(c, fb, Sc);
+        const st = c.from === 'self' || !c.ref ? { x: L.Ag.x + f * L.idleW * 0.08, y: L.Ag.y - L.idleH * 0.5 } : cutPos(c.ref, (fb[0] + fb[2]) / 2, (fb[1] + fb[3]) / 2);
+        const ex = T.x, ey = T.cy;
+        box.style.transformOrigin = '50% 50%';
+        box.animate(kfWin(w0, w1, `translate(${st.x - w / 2}px,${st.y - h / 2}px) scaleX(${f}) scale(${g2[0]})`, `translate(${ex - w / 2}px,${ey - h / 2}px) scaleX(${f}) scale(${g2[1]})`, false, last), { duration: D, fill: 'both' }).onfinish = () => box.remove();
+        return;
+      }
+      if (c.at === 'stretch') {   // 2026-10-15：口から相手の胸の少し先まで伸びる光線（フレアレイ）。mouth＝その区切りの体の範囲に対する口の位置（右向き）
+        const fb = c.fb || [0, 0, c.pw, c.ph], q = lay.find((z) => z.c.src === c.ref) || lay[0], b = q.c.b, bw = b[2] - b[0], bh = b[3] - b[1], mo = c.mouth || [0.92, 0.4];
+        const mxl = b[0] + bw * mo[0], mx = f > 0 ? mxl : q.c.pw - mxl, sx = q.p0.x + mx * q.S, sy = q.p0.y + (b[1] + bh * mo[1]) * q.S;
+        const ex = T.x + f * T.w * 0.25, ey = sy * 0.4 + T.cy * 0.6, len = Math.max(Math.hypot(ex - sx, ey - sy), L.idleW * 1.1), ang = Math.atan2(ey - sy, ex - sx) * 180 / Math.PI;
+        const { box, w, h } = crop(c, fb, q.S), th = Math.max(1, Math.min(3, (L.idleH * 0.2) / h));
+        box.style.transformOrigin = '0 50%';
+        const b0 = `translate(${sx}px,${sy - h / 2}px) rotate(${ang}deg)` + (f > 0 ? '' : ' scaleY(-1)');   // 絵の左端＝口。角度で相手へ向ける（相手側は上下だけ返す）
+        box.animate(kfWin(w0, w1, b0 + ` scale(0.12,${th})`, b0 + ` scale(${len / w},${th})`, false, last), { duration: D, fill: 'both' }).onfinish = () => box.remove();
+        return;
+      }
+      const im = document.createElement('img'); im.src = c.u || base + c.f; im.dataset.cut = c.src; put(im, 8);
+      if (c.at === 'aura') {   // 2026-10-15：自分の胸から広がる放射（聖なる炎）
+        const W = L.idleW * 1.7 * (c.ws || 1), H = W * c.ph / c.pw, cx = L.Ag.x, cy = L.Ag.y - L.idleH * 0.55;
+        im.style.width = W + 'px'; im.style.height = H + 'px'; im.style.transformOrigin = '50% 50%';
+        im.animate(kfWin(w0, w1, `translate(${cx - W / 2}px,${cy - H / 2}px) scale(0.25)`, `translate(${cx - W / 2}px,${cy - H / 2}px) scale(1.15)`, false, last), { duration: D, fill: 'both' }).onfinish = () => im.remove();
+        return;
+      }
       if (c.at === 'fly') {   // ノビトン：自分の口・鼻の先から相手の体へ飛ぶ効果（はなみず・ノーズウェーブ・ピンポイント突き・ダウナーミスト）
-        const S0 = lay.length ? lay[0].S : 1, W = c.pw * S0 * 0.7, H = c.ph * S0 * 0.7;
+        const W = c.pw * S0 * 0.7, H = c.ph * S0 * 0.7;
         const sx = L.Ag.x + f * L.idleW * 0.45, sy = L.Ag.y - L.idleH * 0.55, ex = T.x, ey = T.cy;
         im.style.width = W + 'px'; im.style.height = H + 'px'; im.style.transformOrigin = '50% 50%';
         im.animate(kfWin(w0, w1, `translate(${sx - W / 2}px,${sy - H / 2}px) scaleX(${f}) scale(0.8)`, `translate(${ex - W / 2}px,${ey - H / 2}px) scaleX(${f}) scale(1)`, false, last), { duration: D, fill: 'both' }).onfinish = () => im.remove();
@@ -332,7 +415,7 @@
       }
       if (c.at === 'tgt' || c.at === 'self') {
         // ガウル：着弾の効果＝相手の体の中ほど／特殊エフェクト（バフのキラキラ・炎のオーラ）＝自分の上。大きさは本体のコマと同じ倍率（元の絶対の大きさ）
-        const S0 = lay.length ? lay[0].S : 1, W = c.pw * S0, H = c.ph * S0;
+        const W = c.pw * S0 * (c.ws || 1), H = c.ph * S0 * (c.ws || 1);
         const cx = c.at === 'tgt' ? T.x : L.Ag.x, cy = c.at === 'tgt' ? T.cy : L.Ag.y - L.idleH * 0.5;
         im.style.width = W + 'px'; im.style.height = H + 'px'; im.style.transformOrigin = '50% 50%';
         const a = `translate(${cx - W / 2}px,${cy - H / 2}px) scaleX(${f}) scale(0.92)`, z = `translate(${cx - W / 2}px,${cy - H / 2}px) scaleX(${f}) scale(1)`;
@@ -341,7 +424,7 @@
       }
       if (c.at === 'ray') {
         // ジオル：胸の結晶から相手の体の中ほどへ伸ばす光線（クリスタルレイ・クリスタルノヴァ）。絵の左端＝出る所。相手側は左右反転
-        const sx = L.Ag.x + f * L.idleW * 0.18, sy = L.Ag.y - L.idleH * 0.48, ex = T.x, ey = T.cy;
+        const sx = L.Ag.x + f * L.idleW * 0.18, sy = L.Ag.y - L.idleH * 0.48, ex = T.x + f * T.w * (c.over || 0), ey = T.cy;   // over＝相手の先まで（クリスタルレイ）
         const len = Math.max(Math.hypot(ex - sx, ey - sy), L.idleW * 1.1), th = Math.atan2(ey - sy, ex - sx) * 180 / Math.PI;
         const W = len, H = Math.max(24, Math.min(L.idleH * 0.6, W * c.ph / c.pw));
         im.style.width = W + 'px'; im.style.height = H + 'px'; im.style.transformOrigin = '0% 50%';
@@ -356,7 +439,7 @@
         // 相手が近くても短くしすぎない（待機の立ち絵の幅の 1.1倍以上）・口の高さと相手の中ほどの間へ・相手の中心の少し先まで
         const sx = q.p0.x + mx * S, sy = q.p0.y + my * S, ex = T.x + f * T.w * 0.2, ey = sy * 0.45 + T.cy * 0.55;
         const len = Math.max(Math.hypot(ex - sx, ey - sy), L.idleW * 1.1), ang = Math.atan2(ey - sy, ex - sx) * 180 / Math.PI;
-        const W = len / 0.92, H = Math.max(26, Math.min(L.idleH * 0.42, Math.max(L.idleH * 0.3, W * c.ph / c.pw)));
+        const W = len / 0.92, H = Math.max(26, Math.min(L.idleH * 0.42, Math.max(L.idleH * 0.3, W * c.ph / c.pw))) * (c.thick || 1);   // thick＝極太（スターダストレイ）
         im.style.width = W + 'px'; im.style.height = H + 'px'; im.style.transformOrigin = '4% 50%';
         const base = `translate(${sx - W * 0.04}px,${sy - H / 2}px) rotate(${ang}deg)`;
         im.animate(kfWin(w0, w1, base + ' scaleX(0.15)', base + ' scaleX(1)', false, last), { duration: D, fill: 'both' }).onfinish = () => im.remove();
@@ -378,8 +461,12 @@
     const end = P.body / D;
     me.animate([{ opacity: 0, offset: 0 }, { opacity: 0, offset: Math.min(0.99, end - 0.02) }, { opacity: 1, offset: Math.min(1, end + 0.08) }, { opacity: 1, offset: 1 }], { duration: D });
     const ms = me.parentNode; if (ms && ms.style) { ms.style.zIndex = 7; setTimeout(() => { ms.style.zIndex = ''; }, D + 100); }
+    // 2026-10-15：区切りの始めの揺れ・止め（shakeAt）と SE（sfxAt＝映像の決めの瞬間に合わせる）
+    (tune.shakeAt || []).forEach((i) => { if (!P.win[i]) return; setTimeout(() => { try { const shake = G('shake'); if (shake && !reduced()) shake(v); hitStop(tune.hs || 90); } catch (er) { /* 無視 */ } }, P.win[i][0] + 30); });
+    (tune.sfxAt || []).forEach(([i, se]) => { if (!P.win[i]) return; setTimeout(() => { try { if (root.MMAUDIO && root.MMAUDIO.se) root.MMAUDIO.se(se); } catch (er) { /* 無視 */ } }, P.win[i][0] + 40); });
     if (P.hit != null) {
       const SK = G('SK'), col = (SK && SK[k] && SK[k][3]) || '#ffd36a';
+      if (tune.hs && !(tune.shakeAt || []).length) setTimeout(() => hitStop(tune.hs), P.hit);
       setTimeout(() => {
         try { const burst = G('burst'), knock = G('knock'), shake = G('shake'), flash = G('flash');
           if (burst) burst(v, T.x, T.cy, col, 14); if (knock) knock('#m' + (1 - s), f); if (shake) shake(v); if (flash) flash(col); } catch (er) { /* 無視 */ }
@@ -388,11 +475,11 @@
     return true;
   }
   /** 技のコマを先に読む。読めなかったコマがあれば、その技は従来の演出へ戻す（failed） */
-  function warm(d) { d.cuts.concat(d.fx || []).forEach((c) => [c.f, c.fx].forEach((f) => { if (!f) return; const u = (d.dir || OA) + f, i = new Image(); i.decoding = 'async'; i.onerror = () => failed.add(u); i.src = u; })); }
+  function warm(d) { d.cuts.concat(d.fx || []).forEach((c) => (c.u ? [c.u] : [c.f, c.fx].filter(Boolean).map((f) => (d.dir || OA) + f)).forEach((u) => { const i = new Image(); i.decoding = 'async'; i.onerror = () => failed.add(u); i.src = u; })); }
   function preloadOff(pl) { if (!pl) return; [0, 1].forEach((s) => (pl[s] && pl[s].eq || []).forEach((k) => { const d = offData(k, s); if (d) warm(d); })); }
   /** 開発用のプレビュー（バトル画面が出ている間だけ）：kind＝'jiol'（正式No 1〜10）／'regnas'（正式No 1〜10）／'flurene'（登録の No 1〜10）。性能・番号の決まっていない技も、データのコマを順に見せるだけ（判定・ダメージ・セーブは触らない） */
   function preview(kind, no, s, opt) {
-    const d = kind === 'jiol' ? JOFF()[no] : kind === 'regnas' ? ROFF()[20 + no - 1] : kind === 'flurene' ? FLOFF()[no] : null;
+    const d = tuned(kind === 'jiol' ? JOFF()[no] : kind === 'regnas' ? ROFF()[20 + no - 1] : kind === 'flurene' ? FLOFF()[no] : null);
     if (!d || !usable(d)) return false;
     return animOff(-1, s || 0, d, Object.assign({ via: false, dmg: !!d.hit }, opt || {}));
   }

@@ -41,6 +41,9 @@
   const setUi = (mode) => { try { if (root.localStorage) root.localStorage.setItem(UI_KEY, mode === 'old' ? 'old' : 'new'); } catch (e) {} return v24() ? 'new' : 'old'; };
   /** モンスターの大きさ（従来の待機立ち絵に対する比）。ソラモ＝四足・ガウル＝腕2足2翼2・ノビトン＝横に長い・ジオル・レグナス */
   const SCALE = Object.freeze({ 0: 0.91, 1: 0.92, 2: 0.88, 3: 0.91, 4: 0.91 });
+  /** 2026-10-15 夜：体格サイズ 1〜5 の比較プレビュー（js/battle/move-tune-1015.js の MMTUNE.sizeK＝URL に ?mmSize=1 のときだけ。通常は 1＝今までの大きさ）。
+   *  待機立ち絵・被弾／回避・勝利の絵は同じ --mma-k を使い、技のコマ（art25d）は待機立ち絵の矩形から作る＝技の途中で大きさが変わらない */
+  const kOf = (sp) => (SCALE[sp] || 0.91) * (root.MMTUNE && root.MMTUNE.sizeK ? root.MMTUNE.sizeK(sp) : 1);
   /** ルーレットの板の形（%）：icon＝技の絵の窓（ふつうの板 n／選ばれた板 s）・nm＝技名の帯（中央の板だけ）。v24＝compact_1013 の派生（tools/roulette1013/compact.py で測った値） */
   const CARD_SP = 0.27;   // 2026-10-15 追加A：横長の技カードの並びの間隔（画面の幅に対する比。旧 R.spacing 0.235）
   const GEO = Object.freeze({
@@ -249,7 +252,7 @@
     [0, 1].forEach((s) => {
       const mon = $(`#m${s} .mon`, bt), sp = pl[s] && pl[s].sp, src = idleSrc(sp);
       if (!mon || !src) return;
-      if (bt.classList.contains('mma-v24') && SCALE[sp]) mon.style.setProperty('--mma-k', String(SCALE[sp]));   // 2026-10-13：体格ごとの大きさ
+      if (bt.classList.contains('mma-v24') && (SCALE[sp] || IDLE[sp])) mon.style.setProperty('--mma-k', String(kOf(sp)));   // 2026-10-13：体格ごとの大きさ
       const still = () => { const im = mon.querySelector(':scope>img:not(.mma-idle):not(.mma-rx):not(.b2)'); return !!(im && IMG && im.getAttribute('src') === IMG[sp]); };
       const sync = () => {
         let idle = mon.querySelector('.mma-idle');
@@ -482,7 +485,7 @@
         const im = new Image(); im.className = 'mma-fin' + (la ? ' mma-lose' : '') + (flipOf(s, sp) ? ' fl' : ''); im.alt = ''; im.decoding = 'sync'; im.src = src;
         if (la) { im.style.setProperty('--rh', String(la.hRel)); im.dataset.kind = la.kind; }
         if (s === loser && finLog.length) finLog[finLog.length - 1].lose = la ? { side: s, kind: la.kind } : { side: s, kind: 'idle' };
-        const mon = $(`#m${s} .mon`, bt); if (mon && bt.classList.contains('mma-v24') && SCALE[sp]) mon.style.setProperty('--mma-k', String(SCALE[sp]));
+        const mon = $(`#m${s} .mon`, bt); if (mon && bt.classList.contains('mma-v24') && (SCALE[sp] || IDLE[sp])) mon.style.setProperty('--mma-k', String(kOf(sp)));
         const side = $(`#m${s}`, bt);
         if (side) { const mo = new MutationObserver(() => { if (!bt.isConnected) { mo.disconnect(); return; } placeFin(bt, s, im); }); mo.observe(side, { childList: true, subtree: true }); }
         return im;

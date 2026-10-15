@@ -81,7 +81,8 @@ test('FL-02：番号 5 はどの表とも重ならない（SPECIES 0〜3・レ�
   const walk = (d) => { for (const n of readdirSync(path.join(ROOT, d))) { const p = path.join(d, n); if (statSync(path.join(ROOT, p)).isDirectory()) walk(p); else if (/\.(js|mjs|html)$/.test(n) && /flurene|フルーネ/i.test(rd(p))) hits.push(p); } };
   walk('js'); if (/flurene|フルーネ/i.test(HTML)) hits.push('index.html');
   //  2026-10-15：技アニメのデータ（flurene-moves-data.js）と art25d.js の QA のプレビュー（preview('flurene')）・歩行の登録（ch1a.js の monsterSprites.flurene＝本編の盤は番号→キーの keyOf で引く＝5 は引けない）・index.html はそのデータの script の1行だけ
-  assert.deepEqual(hits.sort(), ['index.html', 'js/battle/arena.js', 'js/battle/art25d.js', 'js/battle/compare.js', 'js/battle/flurene-moves-data.js', 'js/battle/move-cards.js', 'js/chapter/configs/ch1a.js', 'js/phase10/monsters.js', 'js/qa/trial.js']);
+  //  2026-10-15 夜：技アニメの試遊修正（move-tune-1015.js＝QA のプレビューの技03／09／10 の修正）・体の面積の表（move-area-1015.js＝コマのファイル名）
+  assert.deepEqual(hits.sort(), ['index.html', 'js/battle/arena.js', 'js/battle/art25d.js', 'js/battle/compare.js', 'js/battle/flurene-moves-data.js', 'js/battle/move-area-1015.js', 'js/battle/move-cards.js', 'js/battle/move-tune-1015.js', 'js/chapter/configs/ch1a.js', 'js/phase10/monsters.js', 'js/qa/trial.js']);
   assert.deepEqual(HTML.split('\n').filter((l) => l.length < 50000 && /flurene|フルーネ/i.test(l)), ['<script src="./js/battle/flurene-moves-data.js"></script>'], 'index.html はデータの読み込みだけ');
   // 大会の参加者の種族は従来どおり（SP.length）
   assert.match(HTML, /MMP8L\.setSpeciesCount\(SP\.length\);/);
