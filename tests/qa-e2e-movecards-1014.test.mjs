@@ -63,7 +63,7 @@ test('MCB-2：セット・並び替え・外す・保存と再読み込み・フ
   } finally { await L.close(); }
 });
 
-test('MCB-3：ノビトン・レグナスの10枚（テストの中だけ）・確認ページの50枚（ジオルを含む）', { skip }, async () => {
+test('MCB-3：ノビトン・レグナスの10枚（テストの中だけ）・確認ページの50枚（ジオルを含む）＋フルーネの10枚（2026-10-15）', { skip }, async () => {
   const L = await H.launch();
   try {
     for (const size of SIZES) {
@@ -82,7 +82,7 @@ test('MCB-3：ノビトン・レグナスの10枚（テストの中だけ）・�
       await pg.evaluate(() => Promise.all([...document.images].map((i) => i.decode().catch(() => {}))));
       const q = await pg.evaluate(() => ({ n: [...document.images].filter((i) => i.naturalWidth > 0).length, bad: document.querySelectorAll('.c.bad').length,
         per: [...document.querySelectorAll('h2')].map((h) => h.textContent), jiol: [...document.querySelectorAll('h2[data-sp="jiol"] + .g img')].map((i) => i.getAttribute('src')), sw: document.documentElement.scrollWidth, vw: innerWidth }));
-      assert.equal(q.n, 50); assert.equal(q.bad, 0); assert.equal(q.sw, q.vw);
+      assert.equal(q.n, 60, '50枚＋フルーネの10枚（2026-10-15）'); assert.equal(q.bad, 0); assert.equal(q.sw, q.vw);
       for (const t of q.per) assert.match(t, /（10 \/ 10）/);
       assert.equal(q.jiol.length, 10); for (const s of q.jiol) assert.match(s, /cards_1014\/jiol\//);
       assert.deepEqual(bad, []);

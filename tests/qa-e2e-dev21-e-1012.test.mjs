@@ -35,17 +35,16 @@ const loaded = (pg, url) => pg.evaluate((u) => new Promise((ok) => { const i = n
 
 for (let rank = 0; rank < 6; rank++) {
   const size = SIZES[rank % 3];
-  test(`BE-1（ランク${RN[rank]}・${size.join('×')}）：対戦表・比較・VS・バトルの背景＝正式背景 rank_${RN[rank]}・足もとが床`, { skip: SKIP, timeout: 150000 }, async () => {
+  test(`BE-1（ランク${RN[rank]}・${size.join('×')}）：対戦表・比較・バトルの背景＝正式背景 rank_${RN[rank]}・足もとが床（2026-10-15：独立した VS の画面は出さない）`, { skip: SKIP, timeout: 150000 }, async () => {
     const p = await openPage({ size, tourvs: true, stage: true }); const pg = p.page;
     await toTour(pg, rank);
     const want = `assets/battle/official_rank_1012/rank_${RN[rank]}.webp`;
     assert.ok(await loaded(pg, './' + want), '正式背景が読める');
     assert.match(await bgOf(pg, '.tb1 .tbbgw'), new RegExp(want), '対戦表（2026-10-13 開発27（27）：引いた構図の絵は .tbbgw）');
     await pg.click('.tb1 .tbgo'); await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(500);
-    assert.match(await bgOf(pg, '.p9cmps .pcbg'), new RegExp(want), '対戦前比較'); await shot(pg, `be1_cmp_${RN[rank]}_${size.join('x')}`);
+    assert.match(await bgOf(pg, '.p9cmps .c2bg'), new RegExp(want), '対戦前比較（2026-10-15：新しいパラメーター比較）'); await shot(pg, `be1_cmp_${RN[rank]}_${size.join('x')}`);
     await pg.click('.pcgo');   // 2026-10-13 開発27（29）：1回の押下
-    await pg.waitForSelector('#tvs .tvsbg', { timeout: 10000 });
-    assert.match(await bgOf(pg, '#tvs .tvsbg'), new RegExp(want), 'VS'); await pg.waitForTimeout(1500); await shot(pg, `be1_vs_${RN[rank]}_${size.join('x')}`);
+    await pg.waitForSelector('#bt', { timeout: 10000 }); assert.equal(await pg.$('#tvs'), null, '2026-10-15：比較 → そのままバトル（VS の画面は出さない）');
     await pg.waitForSelector('#bt .mma-bg', { timeout: 20000 }); await pg.waitForSelector('#bt #m0 .mma-idle', { timeout: 20000 }); await pg.waitForTimeout(4200);
     const b = await pg.evaluate(() => { const bg = document.querySelector('#bt .mma-bg'), r = bg.getBoundingClientRect(), m = [0, 1].map((i) => document.querySelector(`#bt #m${i} .mma-idle`).getBoundingClientRect()), hp = [0, 1].map((i) => document.getElementById('hp' + i).getBoundingClientRect());
       return { src: bg.getAttribute('src'), ofc: bg.classList.contains('ofc'), floor: r.top + r.height * 0.555, top: r.top, h: r.height, feet: m.map((x) => x.bottom), mon: m.map((x) => [x.left, x.right, x.top]), hp: hp.map((x) => [x.left, x.right, x.top, x.bottom]), W: innerWidth, H: innerHeight, prac: document.getElementById('bt').dataset.mmprac || '' }; });
@@ -60,28 +59,28 @@ for (let rank = 0; rank < 6; rank++) {
 }
 
 for (const size of SIZES) {
-  test(`BE-2（${size.join('×')}）：対戦前比較＝立ち絵・名前・固有スキル・6能力・ボタンが重ならない・「対戦開始」は下から離れた`, { skip: SKIP, timeout: 120000 }, async () => {
+  test(`BE-2（${size.join('×')}・2026-10-15 書き直し）：対戦前比較（新しいパラメーター比較）＝肩上アップ・名前の札・6能力・「対戦開始」が重ならない・画面の中`, { skip: SKIP, timeout: 120000 }, async () => {
     const p = await openPage({ size }); const pg = p.page;
     await toTour(pg, 0);
     await pg.click('.tb1 .tbgo'); await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(800);
     const r = await pg.evaluate(() => { const R = (e) => { const b = e.getBoundingClientRect(); return { l: b.left, r: b.right, t: b.top, b: b.bottom }; }, all = (q) => [...document.querySelectorAll(q)].map(R);
-      return { mon: all('.tb3 .tbmon .tbidle'), np: all('.tb3 .tbnp'), sk: all('.tb3 .tbskp'), st: R(document.querySelector('.tb3 .tbst')), go: R(document.querySelector('.pcgo')), H: innerHeight }; });
+      return { duo: R(document.querySelector('.cmp2 .c2duo')), np: all('.cmp2 .c2n'), st: R(document.querySelector('.cmp2 .c2tbl')), go: R(document.querySelector('.pcgo')), H: innerHeight, W: innerWidth, sk: [...document.querySelectorAll('.cmp2 .c2n small')].map((e) => e.textContent) }; });
     const over = (a, b) => a.l < b.r - 1 && b.l < a.r - 1 && a.t < b.b - 1 && b.t < a.b - 1;
-    for (let i = 0; i < 2; i++) { assert.ok(r.mon[i].b <= r.np[i].t + 1, `立ち絵は名前の札の上 ${JSON.stringify(r)}`); assert.ok(!over(r.np[i], r.sk[i]) && r.sk[i].b <= r.st.t + 1, '固有スキルは名前と表に重ならない'); }
-    assert.ok(!over(r.sk[0], r.sk[1]), '左右の固有スキルの説明は重ならない'); assert.ok(r.st.b <= r.go.t, '表とボタン');
-    assert.ok(r.H - r.go.b >= (size[1] <= 700 ? 70 : 100), `「対戦開始」は下から離れた ${JSON.stringify(r.go)}`);
+    assert.ok(!over(r.np[0], r.np[1]), '左右の名前の札は重ならない'); for (const n of r.np) assert.ok(n.b <= r.st.t + 1, '名前の札は表の上');
+    assert.ok(r.st.b <= r.go.t, '表とボタンは重ならない'); assert.ok(r.go.b <= r.H - 8 && r.go.l >= 0 && r.go.r <= r.W, `「対戦開始」は画面の中 ${JSON.stringify(r.go)}`);
+    assert.ok(r.sk.every((t) => /^スキル/.test(t) && t.length <= 14), '固有スキルは名前だけ（説明の長文は出さない）');
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   });
 }
 
-test('BE-3：VS の斜めの光は左上 → 右下・モンスターの向きは従来どおり', { skip: SKIP, timeout: 120000 }, async () => {
+test('BE-3（2026-10-15 書き直し）：独立した VS の画面は出さない＝比較の右（相手）は肩上アップを左右反転して中央を向く・左（自分）はそのまま', { skip: SKIP, timeout: 120000 }, async () => {
   const p = await openPage({ tourvs: true }); const pg = p.page;
   await toTour(pg, 0);
-  await pg.click('.tb1 .tbgo'); await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(500); await pg.click('.pcgo');
-  await pg.waitForSelector('#tvs .tvsline'); await pg.waitForTimeout(1300);
-  const v = await pg.evaluate(() => ({ line: getComputedStyle(document.querySelector('#tvs .tvsline')).scale, me: document.querySelector('#tvs .tvsm.me .tbvs').className, op: document.querySelector('#tvs .tvsm.op .tbvs').className,
-    meY: document.querySelector('#tvs .tvsm.me').getBoundingClientRect().top, opY: document.querySelector('#tvs .tvsm.op').getBoundingClientRect().top }));
-  assert.equal(v.line, '-1 1', '素材を左右反転＝左上 → 右下'); assert.doesNotMatch(v.me, /\bfl\b/, '自分は右向きのまま'); assert.match(v.op, /\bfl\b/, '相手は反転のまま'); assert.ok(v.opY < v.meY, '相手が上・自分が下（斜めの光が2体の間）');
+  await pg.click('.tb1 .tbgo'); await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(800);
+  const v = await pg.evaluate(() => ({ me: getComputedStyle(document.querySelector('.cmp2 .c2side.me img')).transform, op: getComputedStyle(document.querySelector('.cmp2 .c2side.op img')).transform, vs: document.querySelector('.cmp2 .c2vs').textContent }));
+  assert.equal(v.me, 'none'); assert.match(v.op, /^matrix\(-1, 0, 0, 1,/); assert.equal(v.vs, 'VS', '画面の中の小さな VS の飾り');
+  await pg.click('.pcgo'); await pg.waitForSelector('#bt', { timeout: 10000 }); await pg.waitForTimeout(800);
+  assert.equal(await pg.evaluate(() => document.querySelectorAll('#tvs, #bt .intro').length), 0);
   assert.deepEqual(p.errors, []);
 });
 

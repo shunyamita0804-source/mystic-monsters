@@ -34,11 +34,11 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     let f = await fit(pg); assert.ok(f.sw <= f.W + 1, `大会進行：横にはみ出さない ${JSON.stringify(f)}`);
     await pg.screenshot({ path: path.join(SHOT, `${size[0]}_progress.png`) });
     await pg.click('.p9next .p9go'); await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(600);
-    const c = await pg.evaluate(() => ({ g: [...document.querySelectorAll('.pcgs .pcg')].map((r) => [r.querySelector('.pcl').textContent, ...[...r.querySelectorAll('.pcb i')].map((x) => parseFloat(x.style.width))]), digits: /\d/.test(document.querySelector('.pcgs').textContent), hd: !!document.querySelector('.pchd'), names: [...document.querySelectorAll('.pcs b')].map((b) => b.textContent), imgs: [...document.querySelectorAll('.pcs .tbmon img')].map((i) => i.getAttribute('src')), battle: S.m.raise.battle }));
-    // 2026-10-07 刷新：能力は数値と棒・左右に待機の立ち絵。2026-10-13 開発25 A：棒は 999 を 100% とした長さ（相手との比較ではない）
+    const c = await pg.evaluate(() => ({ g: [...document.querySelectorAll('.cmp2 .c2r')].map((r) => [r.querySelector('.c2lab').textContent, ...[...r.querySelectorAll('.c2bar i')].map((x) => parseFloat(x.style.width))]), digits: /\d/.test(document.querySelector('.cmp2 .c2tbl').textContent), hd: !!document.querySelector('.pchd'), names: [...document.querySelectorAll('.cmp2 .c2n b')].map((b) => b.textContent), imgs: [...document.querySelectorAll('.cmp2 img.c2img')].map((i) => i.getAttribute('src')), battle: S.m.raise.battle }));
+    // 2026-10-07 刷新：能力は数値と棒。2026-10-13 開発25 A：棒は 999 を 100% とした長さ（相手との比較ではない）。2026-10-15：新しいパラメーター比較＝左右に肩上アップ
     const opp = await pg.evaluate(() => MMP8L.PROVISIONAL_OPPONENT_STAT[0]), pc = (v) => +(v / 999 * 100).toFixed(2);
     assert.deepEqual(c.g, [['ライフ', pc(100), pc(opp)], ['ちから', pc(100), pc(opp)], ['かしこさ', pc(100), pc(opp)], ['命中', pc(100), pc(opp)], ['回避', pc(100), pc(opp)], ['丈夫さ', pc(100), pc(opp)]], '棒の長さ');
-    assert.equal(c.digits, true, '数値を出す'); assert.equal(c.hd, false, '試合数は出さない'); assert.equal(c.names[0], 'ソラ'); assert.match(c.imgs[0], /assets\/battle\/idle\/idle_soramo\.webp$/); assert.equal(c.battle, null);
+    assert.equal(c.digits, true, '数値を出す'); assert.equal(c.hd, false, '試合数は出さない'); assert.equal(c.names[0], 'ソラ'); assert.match(c.imgs[0], /assets\/monsters\/compare_1015\/solamo\.webp$/, '2026-10-15：肩上アップ'); assert.equal(c.battle, null);
     f = await fit(pg); assert.ok(f.sw <= f.W + 1 && f.sh <= f.H + 1, `比較：はみ出さない・ページは伸びない ${JSON.stringify(f)}`);
     await pg.screenshot({ path: path.join(SHOT, `${size[0]}_compare.png`) });
     assert.equal(await pg.$('.pcback'), null, '開発25 A：「対戦表にもどる」は無い');
@@ -47,7 +47,7 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     assert.equal(await pg.evaluate(() => S.m.raise.battle), null, '押す前は始まっていない');
     await pg.click('.pcgo');   // 2026-10-13 開発27（29）：1回の押下で始まる
     await pg.waitForSelector('#bt', { timeout: 15000 }); await pg.waitForTimeout(500);
-    assert.deepEqual(await pg.evaluate(() => ({ kind: S.m.raise.battle && S.m.raise.battle.kind, intro: !!document.querySelector('#bt .intro'), labels: [...document.querySelectorAll('#bt .intro .inm small')].map((s) => s.textContent) })), { kind: 'league', intro: true, labels: ['YOUR MONSTER', 'CHALLENGER'] }, 'fight() の導入（VS）が自動で始まる');
+    assert.deepEqual(await pg.evaluate(() => ({ kind: S.m.raise.battle && S.m.raise.battle.kind, intro: !!document.querySelector('#bt .intro'), labels: [...document.querySelectorAll('#bt .intro .inm small')].map((s) => s.textContent) })), { kind: 'league', intro: false, labels: [] }, '2026-10-15：比較 → そのままバトル（fight() の導入の VS も独立した VS の画面も出さない）');
     await pg.screenshot({ path: path.join(SHOT, `${size[0]}_vs.png`) });
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   });

@@ -60,3 +60,21 @@
 | レグナス | 8 | REGNAS_08_phantom_claw.png | 1360x768 | 0477b292752dcab1a9c213dedf20ffa0b4c71e7ed306647f4be22ff47371aa9d | regnas/08_genei_claw.webp |
 | レグナス | 9 | REGNAS_09_blue_blade_flurry.png | 1360x768 | 70d38c8d761fbeb77d6bb6a2bcdf6480a75418e0ba27d0e5c2d61071a3f7b0aa | regnas/09_soujin_ranbu.webp |
 | レグナス | 10 | REGNAS_10_tail_cyclone.png | 1360x768 | 7a77ca2fd55a40d1bb848b1b6cfcd6e1ccf2a4e1061b985937bb9cfce91ada5c | regnas/10_tail_cyclone.webp |
+
+## フルーネ（2026-10-15 追加・ZIP Mismon_Flurene_10SkillCards_20261015）
+
+- 原本＝背景あり PNG 1664×936（RGB・文字・枠・UI なし）。変換は上と同じ（幅 640px・WebP 品質84）。道具＝tools/movecards1014/derive_flurene.py
+- 技ID＝納品のファイル名のローマ字（js/battle/move-cards.js の CARDS の1か所。js/phase10/monsters.js の登録（PENDING_SPECIES）には ID を足していない＝カードの番号＝技の No. で引く）。フルーネは未解禁＝SK の番号なし＝技管理・ルーレットには出ない（QA 試遊モードでだけ見られる）
+
+| 種族 | 番号 | 原本 | 大きさ | sha256（原本） | 表示用 |
+|---|---|---|---|---|---|
+| フルーネ | 1 | FLURENE_01_tsuruuchi.png | 1664x936 | 68408c307d1b59c64bc09ac839420150c87c0b0d8a6869d8284aac30ee4f7cda | flurene/01_tsuruuchi.webp |
+| フルーネ | 2 | FLURENE_02_tane_tobashi.png | 1664x936 | 151e7165eb2a4b7424d10c1f0ffbe1817f002615457f46012545a120fff1a16d | flurene/02_tane_tobashi.webp |
+| フルーネ | 3 | FLURENE_03_hana_no_kaori.png | 1664x936 | 5b40a3ccf5cdd6de6b3661b83c56256c3f958131e9be2916fcdcd385667cfa20 | flurene/03_hana_no_kaori.webp |
+| フルーネ | 4 | FLURENE_04_nekko_no_mamori.png | 1664x936 | 4672b581e64f9f1a2445e62109c381bd63d9b699a9469131d3943157dee2cc92 | flurene/04_nekko_no_mamori.webp |
+| フルーネ | 5 | FLURENE_05_konsai_press.png | 1664x936 | 123435f7a4fab06b2d09cc45cb98b92f23ba15b6b6034efea92b0f95f8aaafff | flurene/05_konsai_press.webp |
+| フルーネ | 6 | FLURENE_06_bloom_ray.png | 1664x936 | 5e25993812837f9608488cdd698d6f372d939aee635b838000c0c352dc5058aa | flurene/06_bloom_ray.webp |
+| フルーネ | 7 | FLURENE_07_shibari_zuru.png | 1664x936 | a7cf03f5bf598ee03b5efaa6026739c2280128d0e272b8a70c1b214e351aa0a1 | flurene/07_shibari_zuru.webp |
+| フルーネ | 8 | FLURENE_08_hanakage_no_mai.png | 1664x936 | 6ef92c09fc8d99b8012dd93ff17d9b94505bfbfcbe2a42f4d76a0e6a6fca4b6e | flurene/08_hanakage_no_mai.webp |
+| フルーネ | 9 | FLURENE_09_inochi_no_shizuku.png | 1664x936 | 44c97cd4b5e04fda9f5b38f8e962029de5b86096a865644ce1caadd761f4d385 | flurene/09_inochi_no_shizuku.webp |
+| フルーネ | 10 | FLURENE_10_root_tempest.png | 1664x936 | 63659d7d7a92f49edc887ce9b63d5a1196b834253298721ed73e14b28851fe69 | flurene/10_root_tempest.webp |

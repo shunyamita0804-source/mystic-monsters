@@ -27,7 +27,7 @@ async function toTournament(pg, rank = 0, sp = 0) {
 }
 
 for (const size of [H.SIZES.base, H.SIZES.se, H.SIZES.android, [414, 896]]) {
-  test(`TB-B1（${size.join('×')}）：大会1 → 大会2 → 大会3 → バトル`, { skip: SKIP, timeout: 120000 }, async () => {
+  test(`TB-B1（${size.join('×')}）：大会1 → 大会2（新しいパラメーター比較）→ バトル（2026-10-15：独立した VS の画面は出さない）`, { skip: SKIP, timeout: 120000 }, async () => {
     const p = await openPage({ size, tourvs: true }); const pg = p.page;
     await toTournament(pg, 0);
     const b1 = await pg.evaluate(() => { const a = document.querySelector('#app>.p9tour.tb1'); const r = (s) => [...document.querySelectorAll(s)];
@@ -37,23 +37,22 @@ for (const size of [H.SIZES.base, H.SIZES.se, H.SIZES.android, [414, 896]]) {
     assert.deepEqual([b1.rows, b1.heads, b1.next, b1.pend, b1.nx, b1.me], [6, 6, 2, 28, 1, 1], `6体の対戦表：次の試合2マス・未対戦28マス・次の相手が光る ${JSON.stringify(b1)}`);
     assert.deepEqual([b1.sub, b1.legend, b1.ced, b1.hot, b1.self], [false, false, false, 1, 6], 'ADDENDUM2：試合数・凡例・セドリックなし・次の相手との交点が光る・自分自身は斜線'); assert.equal(b1.myName, 'ソラ'); assert.ok(b1.imgs, '素材が読み込まれている');
     assert.ok(b1.sw <= b1.W + 1 && b1.sh <= b1.ch + 1, `大会1：はみ出さない・スクロールしない ${JSON.stringify(b1)}`);
-    await pg.click('.tb1 .tbgo'); await pg.waitForSelector('.tb2 .pcgo'); await pg.waitForTimeout(600);
-    const b2 = await pg.evaluate(() => { const a = document.querySelector('.p9cmps'), last = a.querySelector('.pcacts').getBoundingClientRect();
-      return { sw: document.documentElement.scrollWidth, W: innerWidth, bottom: last.bottom, H: innerHeight, bars: [...document.querySelectorAll('.tb2 .pcg')].map((g) => [g.querySelector('.pcl').textContent, ...[...g.querySelectorAll('.pcb i')].map((i) => parseFloat(i.style.width))]),
-        names: [...document.querySelectorAll('.tb2 .pcs b')].map((b) => b.textContent), skills: [...document.querySelectorAll('.tb2 .tbskp .tbskn')].map((b) => b.textContent.replace(/^スキル/, '')), descs: [...document.querySelectorAll('.tb2 .tbskp .tbskd')].map((b) => b.textContent), vals: [...document.querySelectorAll('.tb2 .pcg .pcv')].map((b) => b.textContent), hd: !!document.querySelector('.tb2 .pchd'),
-        btns: document.querySelectorAll('.p9cmps button').length }; });
-    assert.equal(b2.hd, false, 'ADDENDUM2：比較画面に試合数は出さない'); assert.equal(b2.names[0], 'ソラ'); assert.equal(b2.skills[0], '逆境のひと踏ん張り'); assert.equal(b2.btns, 1, '開発25 A：「対戦開始」だけ（「対戦表にもどる」は無い）');
-    assert.deepEqual(b2.bars.map((r) => r[0]), ['ライフ', 'ちから', 'かしこさ', '命中', '回避', '丈夫さ']); assert.ok(b2.bars.every((r) => r[1] > 0 && r[1] <= 100 && r[2] > 0 && r[2] <= 100), '棒の長さ'); assert.equal(b2.vals[0], '100', '2026-10-07：能力の数値を出す'); assert.equal(b2.descs.length, 0, '2026-10-14 実機試遊⑯：比較画面は名前とスキル名だけ（説明は出さない）');
+    // 2026-10-15：大会2＝新しいパラメーター比較（js/battle/compare.js）→「対戦開始」→ そのままバトル（独立した VS の画面＝旧 大会3・fight() の導入は出さない）
+    await pg.click('.tb1 .tbgo'); await pg.waitForSelector('.p9cmps.cmp2 .pcgo'); await pg.waitForTimeout(800);
+    const b2 = await pg.evaluate(() => { const a = document.querySelector('.p9cmps'), last = a.querySelector('.c2go').getBoundingClientRect();
+      return { sw: document.documentElement.scrollWidth, W: innerWidth, bottom: last.bottom, H: innerHeight, bars: [...document.querySelectorAll('.cmp2 .c2r')].map((g) => [g.querySelector('.c2lab').textContent, ...[...g.querySelectorAll('.c2bar i')].map((i) => parseFloat(i.style.width))]),
+        names: [...document.querySelectorAll('.cmp2 .c2n b')].map((b) => b.textContent), tags: [...document.querySelectorAll('.cmp2 .c2n i')].map((b) => b.textContent), skills: [...document.querySelectorAll('.cmp2 .c2n small')].map((b) => b.textContent.replace(/^スキル\s*/, '')), vals: [...document.querySelectorAll('.cmp2 .c2r b.l')].map((b) => b.textContent),
+        imgs: [...document.querySelectorAll('.cmp2 img.c2img')].map((i) => i.getAttribute('src')), btns: document.querySelectorAll('.p9cmps button').length }; });
+    assert.deepEqual(b2.tags, ['あなた', '相手']); assert.equal(b2.names[0], 'ソラ'); assert.equal(b2.skills[0], '逆境のひと踏ん張り'); assert.equal(b2.btns, 1, '「対戦開始」だけ');
+    assert.match(b2.imgs[0], /compare_1015\/solamo\.webp$/, '肩上アップ');
+    assert.deepEqual(b2.bars.map((r) => r[0]), ['ライフ', 'ちから', 'かしこさ', '命中', '回避', '丈夫さ']); assert.ok(b2.bars.every((r) => r[1] > 0 && r[1] <= 100 && r[2] > 0 && r[2] <= 100), '棒の長さ'); assert.equal(b2.vals[0], '100', '能力の数値を出す');
     assert.ok(b2.sw <= b2.W + 1 && b2.bottom <= b2.H + 1, `大会2：はみ出さない ${JSON.stringify(b2)}`);
     await pg.evaluate(() => p8TourScr()); await pg.waitForSelector('.tb1 .tbgo'); await pg.waitForTimeout(500);
-    await pg.click('.tb1 .tbgo'); await pg.waitForSelector('.tb2 .pcgo'); await pg.waitForTimeout(500);
-    assert.equal(await pg.evaluate(() => !!document.getElementById('tvs')), false, '押す前は始まっていない');
+    await pg.click('.tb1 .tbgo'); await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(500);
+    assert.equal(await pg.evaluate(() => S.m.raise.battle), null, '押す前は始まっていない');
     await pg.click('.pcgo');   // 2026-10-13 開発27（29）：1回の押下で始まる
-    await pg.waitForSelector('#tvs'); await pg.waitForTimeout(1100);
-    const b3 = await pg.evaluate(() => ({ names: [...document.querySelectorAll('#tvs .tvsnp b')].map((b) => b.textContent), logo: !!document.querySelector('#tvs .tvslogo'), battle: S.m.raise.battle }));
-    assert.equal(b3.names[1], 'ソラ'); assert.ok(b3.logo); assert.equal(b3.battle, null, '大会3の間はまだバトルを始めない');
     await pg.waitForSelector('#bt', { timeout: 8000 }); await pg.waitForTimeout(700);
-    assert.deepEqual(await pg.evaluate(() => ({ kind: S.m.raise.battle && S.m.raise.battle.kind, intro: !!document.querySelector('#bt .intro'), tvs: !!document.getElementById('tvs') })), { kind: 'league', intro: false, tvs: false }, 'fight() の導入（CHALLENGER／VS）は出さない・大会3は片付く');
+    assert.deepEqual(await pg.evaluate(() => ({ kind: S.m.raise.battle && S.m.raise.battle.kind, intro: !!document.querySelector('#bt .intro'), tvs: !!document.getElementById('tvs') })), { kind: 'league', intro: false, tvs: false }, '比較 → そのままバトル（独立した VS の画面・fight() の導入は出さない）');
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   });
 }

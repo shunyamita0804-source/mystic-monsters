@@ -60,7 +60,7 @@ test('P47-03：遭遇⑩＝「バトルする」の確認は出さない（世�
   assert.match(WB, /const AUTO_BT = new WeakSet\(\);/); assert.match(WB, /function autoBattle\(m, ms\) \{\n    const p = m\.raise\.pend; if \(!p \|\| AUTO_BT\.has\(p\)\) return; AUTO_BT\.add\(p\);/);
   assert.match(FV, /const AUTO_BT = new WeakSet\(\);/); assert.match(FV, /if \(ph === 'battle'\) autoBattle\(m, 900\);/);
   assert.match(HTML, /const P9_AUTO_BT=new WeakSet\(\);/); assert.match(HTML, /setTimeout\(\(\)=>p9AutoBattle\(m\),0\)/);
-  assert.match(fnOf('bBattleGo'), /^function bBattleGo\(\)\{const m=S\.m;if\(bBusy\|\|!m\|\|document\.getElementById\("bt"\)\|\|document\.getElementById\("tvs"\)\|\|MMP8\.boardPhase\(m\)!=="battle"\)return;/);
+  assert.match(fnOf('bBattleGo'), /^function bBattleGo\(\)\{const m=S\.m;if\(bBusy\|\|!m\|\|document\.getElementById\("bt"\)\|\|document\.getElementById\("tvs"\)\|\|document\.getElementById\("cmp"\)\|\|MMP8\.boardPhase\(m\)!=="battle"\)return;/);   // 2026-10-15：比較の重ね画面（#cmp）が出ている間も二重に始めない
   // VS に入るときボードの曲を止める⑧・影は相手の待機立ち絵から㉔・「あなた／相手」の札㉕
   assert.match(HTML, /try\{MMAUDIO\.stopBgm\(\{fade:"quick"\}\)\}catch\(e\)\{\} \/\/ 2026-10-14 実機試遊⑧/);
   assert.match(WB, /MMARENA\.flipOf\(1, /); assert.match(WB, /\.idleSrc\(/);

@@ -44,21 +44,20 @@ for (const [rank, clear] of [[0, 0], [3, 3]]) {
   });
 }
 
-test('AS8-B2：大会3 VS＝専用勝負絵（自分は右向き・相手は反転）→ バトル。VS は1回だけ', { skip: SKIP, timeout: 120000 }, async () => {
+test('AS8-B2（2026-10-15 書き直し）：独立した VS の画面（専用勝負絵）は通常の流れから外した＝比較（肩上アップ：自分はそのまま・相手は反転）→ バトル。VS は1回も出ない', { skip: SKIP, timeout: 120000 }, async () => {
   const p = await openPage({ size: H.SIZES.base, tourvs: true }); const pg = p.page;
   await toReception(pg, 1);
   await pg.evaluate(() => { MMP8.startTournament(S, S.m, 0, 7); save(); board(); });
   await pg.waitForSelector('.tb1 .tbgo'); await pg.click('.tb1 .tbgo');
-  await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(500); await pg.click('.pcgo');
-  await pg.waitForSelector('#tvs .tvsm.me img'); await pg.waitForTimeout(600);
-  const v = await pg.evaluate(() => { const g = (s) => document.querySelector(s); const op = g('#tvs .tvsm.op img'), me = g('#tvs .tvsm.me img'); const o = MMP8L.entrantView(S.m.raise.tour.league, MMP8.tourNext(S.m).opp);
-    return { me: me.getAttribute('src'), meFl: me.classList.contains('fl'), meOk: me.complete && me.naturalWidth > 0, op: op.getAttribute('src'), opFl: op.classList.contains('fl'), opOk: op.complete && op.naturalWidth > 0, want: ['solamo', 'gauru', 'nobiton', 'jiol', 'regnas'][o.sp], bgFl: getComputedStyle(g('#tvs .tvsbg')).transform };
+  await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForFunction(() => [...document.querySelectorAll('.cmp2 img.c2img')].every((i) => i.complete && i.naturalWidth > 0)); await pg.waitForTimeout(500);
+  const v = await pg.evaluate(() => { const g = (s) => document.querySelector(s); const op = g('.cmp2 .c2side.op img'), me = g('.cmp2 .c2side.me img'); const o = MMP8L.entrantView(S.m.raise.tour.league, MMP8.tourNext(S.m).opp);
+    return { me: me.getAttribute('src'), meT: getComputedStyle(me).transform, op: op.getAttribute('src'), opT: getComputedStyle(op).transform, want: ['solamo', 'gauru', 'nobiton', 'jiol', 'regnas'][o.sp], bgT: getComputedStyle(g('.cmp2 .c2bg')).transform };
   });
-  assert.equal(v.me, './assets/tournament/vs_monsters/gauru_vs.webp'); assert.equal(v.meFl, false, '自分は右向き（反転しない）');
-  assert.equal(v.op, `./assets/tournament/vs_monsters/${v.want}_vs.webp`); assert.equal(v.opFl, true, '相手は反転（モンスターの絵だけ）');
-  assert.ok(v.meOk && v.opOk, '読み込まれた'); assert.ok(v.bgFl === 'none' || !/-1/.test(v.bgFl), '背景は反転しない');
+  assert.equal(v.me, './assets/monsters/compare_1015/gauru.webp'); assert.equal(v.meT, 'none', '自分はそのまま（右向き）');
+  assert.equal(v.op, `./assets/monsters/compare_1015/${v.want}.webp`); assert.match(v.opT, /^matrix\(-1, 0, 0, 1,/, '相手は反転（モンスターの絵だけ）'); assert.equal(v.bgT, 'none', '背景は反転しない');
+  await pg.click('.pcgo');
   await pg.waitForSelector('#bt', { timeout: 15000 }); await pg.waitForTimeout(1500);
-  assert.equal(await pg.evaluate(() => document.querySelectorAll('#tvs').length + document.querySelectorAll('.intro, #intro').length), 0, 'バトル側で VS を重ねて出さない');
+  assert.equal(await pg.evaluate(() => document.querySelectorAll('#tvs').length + document.querySelectorAll('.intro, #intro').length), 0, 'VS の画面もバトル側の VS も出さない');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 

@@ -103,6 +103,7 @@ test('QA-G4-2：モンスター名を画面に出すところ（fight()・バト
     /if\(nm\)x\.name=MMP11P\.monsterName\(nm,x\.sp\);/g, /c\.name=MMP11P\.monsterName\(cname\(a,b\),c\.sp\);/g, /a\.name\.slice\(0,2\)\+b\.name\.slice\(-2\)/g,   // 名前を付ける（保存する名前はそのまま）
     /CEDRIC_EV\.close\(rs,rs\.reward&&rs\.reward\.rankUp,m&&m\.name\)/g,   // 2026-10-07：セドリックの締め（共通会話は textContent で表示＝HTML として解釈しない）
     /name:v\.name,/g, /e\.player\?S\.m\.name:String\(e\.name\)/g,    // 大会の表示データ（表示するところで p11Esc）
+    /cmpSide\(m,m\.name\)/g, /oname=bt=="rival"\?\(rv\?rv\.name:"ライバルの相棒"\)/g,   // 2026-10-15：比較画面（js/battle/compare.js の MMCMP.html が文字として表示＝esc）
   ];
   for (const re of ALLOW) code = code.replace(re, '');
   const left = [...code.matchAll(/.{0,50}\.name\b.{0,30}/g)].map((m) => m[0]);

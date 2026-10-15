@@ -75,11 +75,12 @@ test('FL-02：番号 5 はどの表とも重ならない（SPECIES 0〜3・レ�
   assert.ok(!M.MARKET_CATALOG.some((c) => c.key === 'flurene' || c.sp === 5));
   assert.ok(!Object.values(M.UNIQUE_SKILLS).some((u) => u.speciesKey === 'flurene' || u.species === 5));
   assert.ok(!('flurene' in M.OFFICIAL_MOVES));
-  // 画面のコードは 'flurene' を名前で参照しない（番号 5 の顔の対応表 arena の TOUR_ICON と登録の monsters.js だけ）
+  // 画面のコードは 'flurene' を名前で参照しない（番号 5 の顔の対応表 arena の TOUR_ICON と登録の monsters.js だけ）。
+  //  2026-10-15：比較画面の肩上アップの表（compare.js の PORTRAIT・番号 5）・技カード10枚の表（move-cards.js・技管理には出ない）・QA 試遊モード（qa/trial.js・?mmQaTrial=1 のときだけ）も例外
   const hits = [];
   const walk = (d) => { for (const n of readdirSync(path.join(ROOT, d))) { const p = path.join(d, n); if (statSync(path.join(ROOT, p)).isDirectory()) walk(p); else if (/\.(js|mjs|html)$/.test(n) && /flurene|フルーネ/i.test(rd(p))) hits.push(p); } };
   walk('js'); if (/flurene|フルーネ/i.test(HTML)) hits.push('index.html');
-  assert.deepEqual(hits.sort(), ['js/battle/arena.js', 'js/phase10/monsters.js']);
+  assert.deepEqual(hits.sort(), ['js/battle/arena.js', 'js/battle/compare.js', 'js/battle/move-cards.js', 'js/phase10/monsters.js', 'js/qa/trial.js']);
   // 大会の参加者の種族は従来どおり（SP.length）
   assert.match(HTML, /MMP8L\.setSpeciesCount\(SP\.length\);/);
 });

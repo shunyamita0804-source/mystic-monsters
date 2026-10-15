@@ -3,6 +3,7 @@
 //  対応＝ユーザー納品の対応表（全5体50技_画像ファイル名と正式技ID対応.tsv）。カードの番号と技の No.・SK の番号は一致しない＝技ID で引く。
 //  SK の番号：ソラモ・ガウル＝js/phase10/monsters.js の OFFICIAL_MOVES の slot、レグナス＝20＋No−1（js/battle/rival-partner.js）、
 //  ノビトン＝MMRULES.NOBI_FIRST（30）＋No−1（js/battle/rules.js）、ジオル＝SK の番号なし（未決）＝技管理には出ない。
+//  2026-10-15：フルーネの10枚（登録のみ・未解禁・SK の番号なし）＝list('flurene') だけ（技管理・ルーレットには出ない）。
 //  技の性能・名前・習得・バトル・技辞典・ルーレットの抽選は変えない（このファイルは画像のパスを返すだけ）。
 (function (root) {
   'use strict';
@@ -13,6 +14,8 @@
     gauru: [[1, 'tsutsuku'], [2, 'wind'], [3, 'spiral_dive'], [4, 'sonic_move'], [5, 'kouyoku_slash'], [6, 'fireball'], [7, 'sky_rush'], [8, 'flare_ray'], [9, 'feather_storm'], [10, 'seinaru_honoo']],
     nobiton: [[1, 'hana_binta'], [2, 'zutsuki'], [3, 'hanamizu'], [4, 'hitoyasumi'], [5, 'makitsuku'], [6, 'nose_wave'], [7, 'shibire_tsuki'], [8, 'mirage_nose'], [9, 'downer_mist'], [10, 'gigant_nose']],
     jiol: [[1, 'punch'], [2, 'kick'], [3, 'chikara_wo_tameru'], [4, 'noshikakari'], [5, 'ground_hammer'], [6, 'crystal_ray'], [7, 'ground_spike'], [8, 'rock_upper'], [9, 'geo_impact'], [10, 'crystal_nova']],
+    // 2026-10-15：フルーネ（登録のみ・未解禁）＝納品の FLURENE_01〜10（tools/movecards1014/derive_flurene.py）。SK の番号なし＝技管理・ルーレットには出ない（QA の試遊と確認の一覧だけ）
+    flurene: [[1, 'tsuruuchi'], [2, 'tane_tobashi'], [3, 'hana_no_kaori'], [4, 'nekko_no_mamori'], [5, 'konsai_press'], [6, 'bloom_ray'], [7, 'shibari_zuru'], [8, 'hanakage_no_mai'], [9, 'inochi_no_shizuku'], [10, 'root_tempest']],
     regnas: [[1, 'kirisaku'], [2, 'shippo_attack'], [3, 'ryugan_lock'], [4, 'zanei_step'], [5, 'dragon_crash'], [6, 'soukou_breath'], [7, 'snipe_fang'], [8, 'genei_claw'], [9, 'soujin_ranbu'], [10, 'tail_cyclone']],
   };
   const pad = (n) => (n < 10 ? '0' : '') + n;
@@ -25,6 +28,7 @@
     const m = M();
     if (!m) return [];
     if (sp === 'regnas') { const r = m.rivalMonster ? m.rivalMonster('regnas') : null; return (r && r.moves && r.moves.list) || []; }
+    if (sp === 'flurene') { const f = m.pendingSpecies ? m.pendingSpecies('flurene') : null; return (f && f.moves) || []; }   // 登録のみ（名前と習得区分だけ・性能なし）
     const L = m.movesOf ? m.movesOf(sp) : null;
     return Array.isArray(L) ? L : (L && L.list) || [];
   };
@@ -32,6 +36,7 @@
   const slotOf = (sp, mv) => {
     if (sp === 'regnas') return 20 + mv.no - 1;
     if (sp === 'nobiton') return ((root.MMRULES && root.MMRULES.NOBI_FIRST) || 30) + mv.no - 1;
+    if (sp === 'flurene') return null;   // SK の番号は無い（未解禁・性能未定）
     return mv.slot == null ? null : mv.slot;
   };
   let BY_SLOT = null;
@@ -47,6 +52,8 @@
   // 技管理・技の一覧・技の詳細の画像：正式カードがあればそれ、無ければ従来の絵（fb）
   const src = (k, fb) => { const c = bySlot(k); return c ? c.src : fb; };
   // 検証用：種族ごとの10枚（技管理に出ないジオルを含む）
-  const list = (sp) => movesList(sp).map((mv) => ({ sp, no: mv.no, id: mv.id, name: mv.name, slot: slotOf(sp, mv), src: srcOf(sp, mv.id) }));
+  // 技ID の無い登録（フルーネ＝名前と習得区分だけ）はカードの番号＝技の No. で引く（納品のカードの番号と技の No. が同じ）
+  const idOf = (sp, mv) => mv.id || ((CARDS[sp] || []).find((x) => x[0] === mv.no) || [])[1] || null;
+  const list = (sp) => movesList(sp).map((mv) => { const id = idOf(sp, mv); return { sp, no: mv.no, id, name: mv.name, slot: slotOf(sp, mv), src: id ? srcOf(sp, id) : null }; });
   root.MMMVCARD = Object.freeze({ DIR, CARDS, srcOf, bySlot, src, list, SPECIES: Object.keys(CARDS) });
 })(typeof window !== 'undefined' ? window : globalThis);

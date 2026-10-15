@@ -28,7 +28,7 @@ test('D25-A：対戦前比較の棒は 999＝100%（0 は空）・「対戦表�
     await pg.waitForSelector('.p9cmps .pcgo');
     await pg.waitForTimeout(900);   // 棒の伸びる動きが終わるまで
     const r = await pg.evaluate(() => {
-      const L = [...document.querySelectorAll('.tb3 .pcb:not(.r)')].slice(0, 6);
+      const L = [...document.querySelectorAll('.cmp2 .c2bar.l')].slice(0, 6);   // 2026-10-15：新しいパラメーター比較（左＝自分）
       return { back: document.querySelectorAll('.pcback').length, txt: document.body.innerText.includes('対戦表にもどる'),
         pct: L.map((b) => b.querySelector('i').style.width), px: L.map((b) => [Math.round(b.querySelector('i').getBoundingClientRect().width), Math.round(b.getBoundingClientRect().width)]),
         go: (() => { const g = document.querySelector('.p9cmps .pcgo'); const rr = g.getBoundingClientRect(); return rr.bottom <= innerHeight && rr.top >= 0; })() };
@@ -164,13 +164,13 @@ test('D25-A2：（2026-10-14 実機試遊⑯：比較画面は名前とスキル
     await pg.evaluate(() => p9CompareScr()); await pg.waitForSelector('.p9cmps .pcgo'); await pg.waitForTimeout(900);
     const r = await pg.evaluate(() => {
       const R = (e) => e.getBoundingClientRect();
-      const st = R(document.querySelector('.tb3 .tbst')), go = R(document.querySelector('.pcgo'));
-      const d = [...document.querySelectorAll('.tb3 .tbskd')], sn = [...document.querySelectorAll('.tb3 .tbskn')];
+      const st = R(document.querySelector('.cmp2 .c2tbl')), go = R(document.querySelector('.pcgo'));   // 2026-10-15：新しいパラメーター比較
+      const d = [...document.querySelectorAll('.cmp2 .tbskd')], sn = [...document.querySelectorAll('.cmp2 .c2n.me small, .cmp2 .c2n.op small')];
       const want = [MMP10M.skillText(S.m.sp).name];
       return { stT: st.top, goT: Math.round(go.top), goB: go.bottom, H: innerHeight, W: innerWidth,
-        desc: d.length, names: sn.map((e) => ({ b: R(e).bottom, txt: e.textContent.replace(/^スキル/, '') })), want,
-        vals: [...document.querySelectorAll('.tb3 .pcv')].map((e) => { const b = R(e); return b.left >= 0 && b.right <= innerWidth && b.bottom <= innerHeight; }),
-        bars: [...document.querySelectorAll('.tb3 .pcb:not(.r) i')].map((i) => i.style.width) };
+        desc: d.length, names: sn.map((e) => ({ b: R(e).bottom, txt: e.textContent.replace(/^スキル\s*/, '') })), want,
+        vals: [...document.querySelectorAll('.cmp2 .c2r>b')].map((e) => { const b = R(e); return b.left >= 0 && b.right <= innerWidth && b.bottom <= innerHeight; }),
+        bars: [...document.querySelectorAll('.cmp2 .c2bar.l i')].map((i) => i.style.width) };
     });
     const tag = `${size.join('×')} sp${sp}`;
     assert.equal(r.desc, 0, `${tag}：説明は出さない`);
