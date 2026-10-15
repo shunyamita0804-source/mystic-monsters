@@ -40,6 +40,8 @@
   // 2026-10-12：ジオルの技＝正式採用用・透過補正版 全96枚（assets/battle/jiol_moves_1012/・js/battle/jiol-moves-data.js）。
   //   ジオルの技の SK の番号・性能は未決（OFFICIAL_MOVES.jiol は名前だけ）＝バトルでは使わない。開発用のプレビュー（MM25D.preview('jiol', 番号, 側)）だけ
   const JOFF = () => root.MMJIMV_DATA || {};
+  // 2026-10-15：フルーネの技＝本体 42＋効果 35（assets/battle/flurene_moves_1015/・js/battle/flurene-moves-data.js）。SK の番号・性能は無い＝バトルでは使わない・QA 試遊のプレビュー（MM25D.preview('flurene', No, 側)）だけ
+  const FLOFF = () => root.MMFLMV_DATA || {};
   const SRC_OF = { 0: OFF, 1: GOFF, 2: NOFF, 4: ROFF };
   /** 読み込めなかったコマがある技（その技だけ従来の演出へ戻す）。キー＝dir＋ファイル名 */
   const failed = new Set();
@@ -385,9 +387,9 @@
   /** 技のコマを先に読む。読めなかったコマがあれば、その技は従来の演出へ戻す（failed） */
   function warm(d) { d.cuts.concat(d.fx || []).forEach((c) => [c.f, c.fx].forEach((f) => { if (!f) return; const u = (d.dir || OA) + f, i = new Image(); i.decoding = 'async'; i.onerror = () => failed.add(u); i.src = u; })); }
   function preloadOff(pl) { if (!pl) return; [0, 1].forEach((s) => (pl[s] && pl[s].eq || []).forEach((k) => { const d = offData(k, s); if (d) warm(d); })); }
-  /** 開発用のプレビュー（バトル画面が出ている間だけ）：kind＝'jiol'（正式No 1〜10）／'regnas'（正式No 1〜10）。性能・番号の決まっていない技も、データのコマを順に見せるだけ（判定・ダメージ・セーブは触らない） */
+  /** 開発用のプレビュー（バトル画面が出ている間だけ）：kind＝'jiol'（正式No 1〜10）／'regnas'（正式No 1〜10）／'flurene'（登録の No 1〜10）。性能・番号の決まっていない技も、データのコマを順に見せるだけ（判定・ダメージ・セーブは触らない） */
   function preview(kind, no, s, opt) {
-    const d = kind === 'jiol' ? JOFF()[no] : kind === 'regnas' ? ROFF()[20 + no - 1] : null;
+    const d = kind === 'jiol' ? JOFF()[no] : kind === 'regnas' ? ROFF()[20 + no - 1] : kind === 'flurene' ? FLOFF()[no] : null;
     if (!d || !usable(d)) return false;
     return animOff(-1, s || 0, d, Object.assign({ via: false, dmg: !!d.hit }, opt || {}));
   }
