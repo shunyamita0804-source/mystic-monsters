@@ -175,7 +175,7 @@ T('EN-B3b：ファームへの帰還＝ダン 04（誇らしげ）・大会の�
   assert.ok(b1.go, '「対戦する」');
   await q.waitForTimeout(400); await q.click('.p9next .p9go'); await q.waitForSelector('.p9cmps .pcgo');
   assert.equal(await q.evaluate(() => document.querySelectorAll('.p9cmps .p9ced').length), 0, '2026-10-06：大会2（対戦前比較）は正式デザインどおりセドリックを出さない');
-  const fit = await q.evaluate(() => { const a = document.querySelector('.pcacts').getBoundingClientRect(); return [a.bottom <= innerHeight + 1, document.documentElement.scrollWidth <= innerWidth + 1]; });
+  const fit = await q.evaluate(() => { const a = document.querySelector('.p9cmps .pcgo').getBoundingClientRect();   /* 2026-10-15：新しいパラメーター比較の「対戦開始」 */ return [a.bottom <= innerHeight + 1, document.documentElement.scrollWidth <= innerWidth + 1]; });
   assert.deepEqual(fit, [true, true], '対戦開始のボタンは画面内・横はみ出しなし');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []); assert.deepEqual(p2.errors, []); assert.deepEqual(p2.bad, []);
 });
