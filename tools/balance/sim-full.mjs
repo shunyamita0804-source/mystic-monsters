@@ -1,7 +1,7 @@
 // 2026-10-14 実機試遊⑲：育成全体（Chapter 1〜4＋最終公式大会 S）の能力の伸びのシミュレーション（テストではない道具）。
 //  Chapter 1＝本編の1枚の世界のボード（js/chapter/world-driver.js＝A／B／C を各 1/3）、Chapter 2＝エンジン（ch2a）、3・4＝旧ボード。本物の進行（MMP8）を node の中で回す。
 //  方針：分かれ道は乱数・空腹 86 以上で休む（80 以上でジャガイモを食べる）・出発の前にジャガイモを買い足す・大会は選べる最高ランクに出て全勝（初回の1体が最後まで進む想定）。
-//  使い方：node tools/balance/sim-full.mjs [回数=300] [JSON の上書き（例 '{"density":{"stat":0.45},"ch1Gain":{"A":13}}'）]
+//  使い方：node tools/balance/sim-full.mjs [回数=300] [JSON の上書き（例 '{"density":{"stat":0.45},"gainByCh":{"1":{"A":13}},"calmToStat":false}'＝js/proto/roadfirst-play.js の TUNING・js/phase10/monsters.js の GROWTH_GAIN_BY_CH）]
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -29,11 +29,13 @@ function runOne(sp, seed) {
   const rnd = lcg(seed), S = P8.newSave();
   S.m = P8.initIndividual(S, { sp, name: 'シム', age: 0, span: 30, h: 0, rk: 0, fa: 0, st: 0, last: null, ...M.baseOf(sp), sk: [0, 1, 2, 3], eq: [0, 1, 2, 3, -1, -1] });
   P7.ensureProg(S.m); const m = S.m; S.g = 500; P7.bagAdd(S, 'potato', 10);
-  const base = Object.fromEntries(K.map((k) => [k, m[k]])), ch = {}, c1 = { stat: 0, empty: 0, event: 0, battle: 0, treasure: 0, meal: 0, reward: 0, stops: 0, goal: false, turns: 0, route: null };
+  const base = Object.fromEntries(K.map((k) => [k, m[k]])), ch = {}, c1 = { stat: 0, empty: 0, emptyFirst: 0, revisit: 0, special: 0, event: 0, battle: 0, treasure: 0, meal: 0, reward: 0, stops: 0, goal: false, turns: 0, route: null, dens: null };
   let snap = null;
   for (let g = 0; g < 40; g++) {
     const st = m.raise.state;
-    if (st === 'none' || st === 'farm') { if (!P8.canDepart(S, m).ok) { P8.finishWithoutFinal(S, m); break; } restock(S); P8.depart(S, m, rnd); snap = Object.fromEntries(K.map((k) => [k, m[k]])); continue; }
+    if (st === 'none' || st === 'farm') { if (!P8.canDepart(S, m).ok) { P8.finishWithoutFinal(S, m); break; } restock(S); P8.depart(S, m, rnd); snap = Object.fromEntries(K.map((k) => [k, m[k]]));
+      if (m.raise.ch === 1 && w.MMWD && m.raise.field && m.raise.field.tiles) { const D1 = w.MMWD.dataOf(m), ord = Object.keys(D1.nodes).filter((x) => D1.nodes[x][2] === 'ordinary_tile'), dn = { n: ord.length, stat: 0, event: 0, rest: 0, wild: 0, treasure: 0, empty: 0 }; for (const x of ord) { const t = m.raise.field.tiles[x]; dn[t ? t.t : 'empty']++; } c1.dens = dn; }
+      continue; }
     if (st !== 'board') break;
     const cn = m.raise.ch;
     for (let i = 0; i < 6000; i++) {
@@ -44,8 +46,9 @@ function runOne(sp, seed) {
       if (ph === 'branch') { const o = m.raise.pend.opts; let pick = o[Math.floor(rnd() * o.length)];
         if (cn === 1 && w.MMWD && w.MMWD.branchOptions) { const bo = w.MMWD.branchOptions(m), main = bo.filter((x) => !x.spur), sp2 = bo.filter((x) => x.spur); const pool = sp2.length && rnd() < SPUR ? sp2 : main.length ? main : bo; if (pool.length) pick = pool[Math.floor(rnd() * pool.length)].id; }   // 寄り道（宝の行き止まり）は SPUR の割合だけ
         P8.chooseBranch(S, m, pick); continue; }
-      if (ph === 'resolve') { let r = P8.resolveLanding(S, m, rnd); if (r.fx && r.fx.kind === 'choice') r = P8.resolveChoice(S, m, r.fx.options[Math.floor(rnd() * r.fx.options.length)].id, rnd);
-        if (cn === 1) { const fx = r.fx || {}; c1.stops++; const k = fx.kind; if (k === 'stat') c1.stat++; else if (k === 'event') c1.event++; else if (k === 'battle') c1.battle++; else if (k === 'treasure') c1.treasure++; else if (k === 'meal') c1.meal++; else if (k === 'reward') c1.reward++; else if (k === 'none' && fx.note === 'normal') c1.empty++; }
+      if (ph === 'resolve') { const f0 = m.raise.field, id0 = m.raise.node, D0 = cn === 1 && w.MMWD ? w.MMWD.dataOf(m) : null, role0 = D0 && D0.nodes[id0] ? D0.nodes[id0][2] : '', had0 = !!(f0 && f0.tiles && f0.tiles[id0]), used0 = !!(f0 && f0.used && f0.used[id0] != null);   // 2026-10-15 追加B：何も起きない停止の内訳
+        let r = P8.resolveLanding(S, m, rnd); if (r.fx && r.fx.kind === 'choice') r = P8.resolveChoice(S, m, r.fx.options[Math.floor(rnd() * r.fx.options.length)].id, rnd);
+        if (cn === 1) { const fx = r.fx || {}; c1.stops++; const k = fx.kind; if (k === 'stat') c1.stat++; else if (k === 'event') c1.event++; else if (k === 'battle') c1.battle++; else if (k === 'treasure') c1.treasure++; else if (k === 'meal') c1.meal++; else if (k === 'reward') c1.reward++; else if (k === 'none' && fx.note === 'normal') c1.empty++; if (k === 'none') { if (role0 === 'ordinary_tile') { if (had0 && used0) c1.revisit++; else if (!had0) c1.emptyFirst++; } else if (!['goal', 'rival_done', 'claimed'].includes(fx.note)) c1.special++; } }
         continue; }
       if (ph === 'battle') { P8.beginBattle(S, m, { kind: 'practice', rank: 0 }); P8.markBattleDone(S); P8.finishBattle(S, m, rnd); continue; }
     }
@@ -72,6 +75,8 @@ for (let sp = 0; sp < 4; sp++) {
   { const f = R.map((r) => r.fin[bestK]); row.finalAll = { p10: pct(f, 0.1), avg: Math.round(avg(f)), p90: pct(f, 0.9) }; }
   for (const c of [1, 2, 3, 4, 'final']) { const xs = RF.filter((r) => r.ch[c]).map((r) => r.ch[c][bestK]); if (xs.length) row.perCh[c] = Math.round(avg(xs) * 10) / 10; }
   const c1 = R.map((r) => r.c1); row.c1 = { goal: +(c1.filter((x) => x.goal).length / N * 100).toFixed(1), turns: +avg(c1.map((x) => x.turns)).toFixed(1), stat: +avg(c1.map((x) => x.stat)).toFixed(2), empty: +avg(c1.map((x) => x.empty)).toFixed(2), event: +avg(c1.map((x) => x.event)).toFixed(2), battle: +avg(c1.map((x) => x.battle)).toFixed(2), treasure: +avg(c1.map((x) => x.treasure)).toFixed(2), meal: +avg(c1.map((x) => x.meal)).toFixed(2), reward: +avg(c1.map((x) => x.reward)).toFixed(2) };
+  { const ds = c1.map((x) => x.dens).filter(Boolean); row.c1dens = ds.length ? Object.fromEntries(['stat', 'event', 'rest', 'wild', 'treasure', 'empty'].map((k) => [k, +(avg(ds.map((d) => d[k] / d.n)) * 100).toFixed(1)])) : null;
+    row.c1stop = { emptyFirst: +avg(c1.map((x) => x.emptyFirst)).toFixed(2), revisit: +avg(c1.map((x) => x.revisit)).toFixed(2), special: +avg(c1.map((x) => x.special)).toFixed(2), stops: +avg(c1.map((x) => x.stops)).toFixed(2) }; }
   row.c1byRoute = {}; for (const rt of ['A', 'B', 'C']) { const xs = R.filter((r) => r.c1.route === rt); if (!xs.length) continue; row.c1byRoute[rt] = { n: xs.length, goal: +(xs.filter((x) => x.c1.goal).length / xs.length * 100).toFixed(1), gain1: Math.round(avg(xs.map((x) => K.reduce((a, k) => a + x.ch[1][k], 0)))) }; }
   out[NAMES[sp]] = row;
 }

@@ -95,15 +95,15 @@ test('FXB-4：レアの紋章（ある育成だけ・全景でも見える・訪
   await H.newGame(pg, 'テスト');
   await pg.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); const f = S.m.raise.field; for (const k of Object.keys(f.tiles)) if (f.tiles[k].rare) delete f.tiles[k]; f.tiles.ER03_02 = { t: 'wild', rare: true }; save(); board(); });
   await pg.waitForFunction(() => MMWB.state().intro, null, { timeout: 20000 }); await pg.waitForTimeout(300);   // 2026-10-12 開発21：絵がそろうまで中継カット → 全景
-  const o = await pg.evaluate(() => { const e = document.querySelector('.rfw-mark'); const r = e && e.getBoundingClientRect(); return e ? { node: e.dataset.node, w: r.width, vis: getComputedStyle(e).display !== 'none', intro: MMWB.state().intro } : null; });
+  const o = await pg.evaluate(() => { const e = document.querySelector('.rfw-mark:not(.rival)'); const r = e && e.getBoundingClientRect(); return e ? { node: e.dataset.node, w: r.width, vis: getComputedStyle(e).display !== 'none', intro: MMWB.state().intro } : null; });
   assert.ok(o && o.intro && o.node === 'ER03_02' && o.vis && o.w >= 40, `全景で紋章が見える（${JSON.stringify(o)}）`);
   await pg.waitForFunction(() => !MMWB.state().intro, null, { timeout: 20000 }); await idle(pg);
   await place(pg, 'ER03_02', { t: 'wild', rare: true });
   await H.surrenderBattle(pg); await pg.waitForSelector('#wbw #brollbtn'); await idle(pg);   // 2026-10-14 実機試遊⑩：自動でバトルへ → 降参して戻る
-  assert.equal(await pg.evaluate(() => document.querySelector('.rfw-mark').classList.contains('dim')), true, '訪れたら弱く');
+  assert.equal(await pg.evaluate(() => document.querySelector('.rfw-mark:not(.rival)').classList.contains('dim')), true, '訪れたら弱く');
   // レアの無い育成：紋章なし
   await pg.evaluate(() => { const f = S.m.raise.field; delete f.tiles.ER03_02; save(); MMWB.release(); board(); }); await idle(pg);
-  assert.equal(await pg.evaluate(() => document.querySelectorAll('.rfw-mark').length), 0, 'レアが無い育成では出ない');
+  assert.equal(await pg.evaluate(() => document.querySelectorAll('.rfw-mark:not(.rival)').length), 0, 'レアが無い育成では出ない');
   // 2026-10-12：マスの上面は正式の12種（tiles_top_1012）
   await pg.evaluate(() => { const f = S.m.raise.field, id = MMRF_DATA.segments.S01[3][1]; f.tiles[id] = { t: 'stat', k: 'li' }; save(); MMWB.release(); board(); }); await idle(pg);
   const src0 = await pg.evaluate(() => document.querySelector(`.rfw-tile[data-node="${MMRF_DATA.segments.S01[3][1]}"] img`).getAttribute('src'));

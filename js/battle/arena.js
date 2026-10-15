@@ -23,6 +23,12 @@
   const A = './assets/battle/';
   const IDLE = { 0: 'idle_soramo', 1: 'idle_gauru', 2: 'idle_nobiton', 3: 'idle_jiol', 4: 'idle_regnas' };
   const FACE = { 0: 'R', 1: 'R', 2: 'R', 3: 'R', 4: 'R' };   // 待機立ち絵の元の向き（5体とも右向き）
+  // ---- 2026-10-15 N12：大会の対戦表の顔＝正式のイラスト6枚（assets/tournament/icons_1015/・薄い灰色の背景つきの正方形・左向き）----
+  //  番号：0〜3＝SPECIES・4＝レグナス（バトルの絵の番号）・5＝フルーネ（MMP10M.PENDING_SPECIES の予約番号＝登録のみ・大会には出ない）。
+  //  読めないときは従来の 2.5D の横顔（faces_25d）→ 丸い顔（faces）の順（index.html の tbIcon・tbIconFb）。bg＝その絵の背景の色（丸い枠の地に敷く）
+  const TOUR_ICON = Object.freeze({ 0: 'solamo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas', 5: 'flurene' });
+  const TOUR_ICON_BG = Object.freeze({ 0: '#d4d7dc', 1: '#cccfd5', 2: '#cfd3db', 3: '#d2d2d1', 4: '#c7c9d1', 5: '#cecfd0' });
+  const tourIconSrc = (sp) => (TOUR_ICON[sp] ? `./assets/tournament/icons_1015/icon_${TOUR_ICON[sp]}.webp` : null);
   const RANKS = 'EDCBAS';
   /** ルーレットの見た目（中央を 0 とした |d| ごとの値。間は直線補間） */
   const R = Object.freeze({
@@ -36,6 +42,7 @@
   /** モンスターの大きさ（従来の待機立ち絵に対する比）。ソラモ＝四足・ガウル＝腕2足2翼2・ノビトン＝横に長い・ジオル・レグナス */
   const SCALE = Object.freeze({ 0: 0.91, 1: 0.92, 2: 0.88, 3: 0.91, 4: 0.91 });
   /** ルーレットの板の形（%）：icon＝技の絵の窓（ふつうの板 n／選ばれた板 s）・nm＝技名の帯（中央の板だけ）。v24＝compact_1013 の派生（tools/roulette1013/compact.py で測った値） */
+  const CARD_SP = 0.27;   // 2026-10-15 追加A：横長の技カードの並びの間隔（画面の幅に対する比。旧 R.spacing 0.235）
   const GEO = Object.freeze({
     old: { ar: '229/360', fr: '400/560', n: [13.5, 12.5, 13.5, 51], s: [18.5, 13, 18.5, 34.5], nm: [69, 14, 55.8, 7.2], hk: 360 / 229, pad: 28, frTop: 1 },
     v24: { ar: '229/256', fr: '400/396', n: [12.5, 13.5, 16.4, 62.9], s: [20.5, 14.5, 21.6, 45.4], nm: [71.3, 11.5, 71.3, 11.5], hk: 256 / 229, pad: 12, frTop: 2 },
@@ -89,12 +96,26 @@
       '#bt .mmr .pl .sel{opacity:0}',
       '#bt .mmr .pl .ic{position:absolute;left:13.5%;right:12.5%;top:13.5%;height:51%;border-radius:6%;overflow:hidden;background:#0d1a38}',
       '#bt .mmr .pl .ic img{width:100%;height:100%;object-fit:cover;display:block}',
+      // 2026-10-15 N09：正式の技カード（16:9）は窓の内側いっぱいの幅で、切らず・伸ばさずに見せる（contain・上下の余りは窓の紺）。
+      //  旧：class 名「card」が index.html の汎用 .card（余白 12px・明るい地・枠）に当たり、絵が細い縦長の白い枠の中に小さく出ていた。MISS の板は変えない
+      '#bt .mmr .pl .ic.mvc{padding:0;border:0;border-radius:6%;box-shadow:none;background:#0b1430}',
+      '#bt .mmr .pl .ic.mvc img{object-fit:contain;object-position:50% 50%}',
       '#bt .mmr .pl .nm{position:absolute;left:8%;right:8%;top:69%;height:14%;display:flex;align-items:center;justify-content:center;text-align:center;color:#f3ecd9;font:800 clamp(9px,2.6vw,12px)/1.1 "Noto Sans JP",sans-serif;text-shadow:0 1px 2px #000;letter-spacing:.02em}',
       '#bt .mmr .pl.ms .ic,#bt .mmr .pl.ms .nm{display:none}',
       '#bt .mmr .pl .st{position:absolute;left:19%;right:15%;top:65%;height:20%;display:flex;flex-direction:column;justify-content:space-around;opacity:0;color:#f3ecd9;font:700 clamp(6px,1.85vw,9px)/1.05 "Noto Sans JP",sans-serif}',
       '#bt .mmr .pl .st div{display:flex;justify-content:space-between}#bt .mmr .pl .st b{color:#ffe7a8;font-size:1.12em}',
       '#bt .mmr .fr{position:absolute;left:50%;top:var(--mmr-ft,1%);width:calc(var(--mmr-pw)*1.3);margin-left:calc(var(--mmr-pw)*-0.65);aspect-ratio:var(--mmr-far,400/560);z-index:60;pointer-events:none}',
       '#bt .mmr.lock .pl.c{animation:mmrlock .3s ease-out}@keyframes mmrlock{40%{filter:brightness(1.35)}}',
+      // 2026-10-15 追加A：横長の技カード（新しい画面）。濃紺の地＋細い金の二重の縁・絵は 16:9 の窓いっぱい（contain＝正式カードと同じ比率なので余りなし）・下に技名の帯
+      '#bt .mmr.cards .pl.cd{width:var(--mmr-cw);height:var(--mmr-ch);aspect-ratio:auto;margin-left:calc(var(--mmr-cw)/-2);top:9%}',
+      '#bt .mmr.cards .pl.ms{width:var(--mmr-mw);aspect-ratio:259/326;margin-left:calc(var(--mmr-mw)/-2);top:9%}',
+      '#bt .mmr.cards .pl .cf{position:absolute;inset:0;display:flex;flex-direction:column;gap:2px;padding:4px;box-sizing:border-box;border-radius:7px;background:linear-gradient(#1d2f5c,#0b1430);box-shadow:inset 0 0 0 1.5px #c9a35a,inset 0 0 0 3px #0b1430,inset 0 0 0 4px rgba(232,198,110,.42),0 3px 8px rgba(0,0,0,.55)}',
+      '#bt .mmr.cards .pl .cf .ic{position:relative;left:auto;right:auto;top:auto;height:auto;width:100%;aspect-ratio:16/9;flex:none;border-radius:4px;background:#0b1430;overflow:hidden}',
+      '#bt .mmr.cards .pl .cf .ic img{width:100%;height:100%;object-fit:contain;object-position:50% 50%;display:block}',
+      '#bt .mmr.cards .pl .cf .ic img{opacity:0;transition:opacity .12s ease-out}#bt .mmr.cards .pl .cf .ic img.on{opacity:1}',   // 追加A：読み込めてから見せる（読み込み中は濃紺の枠と技名の帯だけ＝空白の白・旧い絵・途中まで描いた絵を出さない）
+      '#bt .mmr.cards .pl .cf .nm{position:relative;left:auto;right:auto;top:auto;height:auto;flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;padding:0 3px;border-radius:3px;background:rgba(0,0,0,.42);white-space:nowrap;overflow:hidden;color:#fff3d6;font-weight:800;letter-spacing:.02em;line-height:1}',
+      '#bt .mmr.cards .pl.cd.c .cf{box-shadow:inset 0 0 0 2px #ffe08a,inset 0 0 0 3.5px #0b1430,inset 0 0 0 4.5px rgba(255,224,138,.6),0 0 12px rgba(255,214,120,.7),0 3px 8px rgba(0,0,0,.55)}',
+      '#bt .mmr.cards .fr{display:none}#bt .mmr.cards.msc .fr{display:block}',
       '#bt .bui.mmr-on .mmr{transition:opacity .25s,transform .25s}#bt .bui.anim .mmr{opacity:.35;transform:translateY(14px)}',
       '#bt .gow .mma-stop{position:absolute;left:50%;bottom:6px;width:var(--mms-w);transform:translateX(-50%);pointer-events:none;z-index:1;transition:opacity .2s}',
       '#bt .gow .mma-stop.off{opacity:.45}',
@@ -184,7 +205,7 @@
       // 2026-10-14 実機試遊⑥：LOSE（5.00秒）は曲の終わり（4.6秒）までに「もどる」を出してすぐ押せる＝曲のあとの長い無音を待たせない（やわらかく 0.3秒で出す）
       '#bt[data-rj] .gow,#bt[data-rj] #go{transition:opacity .3s ease-out}',
       '#bt.mma-fin .mon:not(.mma-won)>.mma-fin{opacity:1!important;visibility:visible!important}',
-      '#bt .mon .mma-fin{position:absolute;left:50%;bottom:0;height:calc(118% * var(--mma-k,1));width:auto;max-width:none;transform:translateX(-50%);pointer-events:none;filter:drop-shadow(0 8px 6px rgba(0,0,0,.45))}',
+      '#bt .mon .mma-fin{position:absolute;left:50%;bottom:0;height:calc(118% * var(--mma-k,1) * var(--rh,1));width:auto;max-width:none;transform:translateX(-50%);pointer-events:none;filter:drop-shadow(0 8px 6px rgba(0,0,0,.45))}',
       '#bt .mon .mma-fin.fl{transform:translateX(-50%) scaleX(-1)}',
       '#bt.mma-fin .mw.dead,#bt.mma-fin .dead .mon{animation:none!important;transform:none!important;opacity:1!important;filter:none!important;transition:none!important}',
       '#bt.mma-v24 .mma-endband{top:auto;bottom:calc(40% * .6 - 4.6%);height:clamp(92px,15%,130px);transform-origin:50% 50%;animation:mmaendb .42s cubic-bezier(.2,1.1,.4,1) .1s both}',
@@ -250,8 +271,13 @@
     const W = Math.min(bt.clientWidth || innerWidth, 480);
     const pw = Math.round(Math.min(W * 0.2, 104));
     const NEW = bt.classList.contains('mma-v24'), Gm = NEW ? GEO.v24 : GEO.old, PL = NEW ? `${A}roulette/compact_1013/` : `${A}roulette/`, SFX = NEW ? '_c' : '';   // 2026-10-13：低い板（派生）
-    const box = document.createElement('div'); box.className = 'mmr'; box.setAttribute('aria-hidden', 'true');
-    box.style.setProperty('--mmr-pw', pw + 'px'); box.style.setProperty('--mmr-h', Math.round(pw * Gm.hk * 1.16 + Gm.pad) + 'px');
+    // 2026-10-15 追加A（N09 の最新版）：新しい画面の技の板＝横長の技カード（CARD）。正式の技カード（16:9）を板の幅いっぱいに切らず・伸ばさず、
+    //  下に技名の専用の帯。旧い板の絵（plate_normal／selected）の縦長の小窓に入れる二重の額縁はやめた。MISS の板は絵柄そのまま（高さだけ揃える＝No.26）。
+    //  並びの間隔だけカードの幅に合わせて少し広げる（CARD_SP。見た目だけ＝抽選・停止・結果・タイミングは変えない）
+    const CARD = NEW, cw = Math.round(Math.min(W * 0.27, 132)), hb = Math.round(Math.max(15, cw * 0.155)), ch = Math.round(8 + (cw - 8) * 9 / 16 + 2 + hb);
+    const box = document.createElement('div'); box.className = 'mmr' + (CARD ? ' cards' : ''); box.setAttribute('aria-hidden', 'true');
+    box.style.setProperty('--mmr-pw', pw + 'px'); box.style.setProperty('--mmr-h', (CARD ? Math.round(ch * 1.22 + 16) : Math.round(pw * Gm.hk * 1.16 + Gm.pad)) + 'px');
+    if (CARD) { box.style.setProperty('--mmr-cw', cw + 'px'); box.style.setProperty('--mmr-ch', ch + 'px'); box.style.setProperty('--mmr-mw', Math.round(ch * 259 / 326) + 'px'); box.style.setProperty('--mmr-hb', hb + 'px'); }
     box.style.setProperty('--mmr-ar', Gm.ar); box.style.setProperty('--mmr-far', Gm.fr); box.style.setProperty('--mmr-ft', Gm.frTop + '%');
     box.innerHTML = `<img class="arch" src="${A}roulette/arch.webp" alt=""><img class="rail" src="${A}roulette/rail_base.png" alt=""><div class="trk"></div><img class="fr" src="${PL}center_frame${SFX}.webp" alt="">`;
     rl.style.display = 'none';
@@ -295,13 +321,23 @@
       S.len = rows.length || 7;
       trk.innerHTML = rows.map((row) => {
         const d = read(row);
+        if (CARD && !d.ms) return `<div class="pl cd"><div class="cf"><div class="ic${d.card ? ' mvc' : ''}"${d.src ? ` data-src="${d.src}"` : ''}></div><div class="nm"></div></div></div>`;
         return `<div class="pl${d.ms ? ' ms' : ''}"><img class="bgp nor" src="${PL}${d.ms ? 'plate_miss' : 'plate_normal'}${SFX}.webp" alt="">${d.ms ? '' : `<img class="bgp sel" src="${PL}plate_selected${SFX}.webp" alt="">`}`
-          + (d.ms ? '' : `<div class="ic${d.card ? ' card' : ''}">${d.src ? `<img src="${d.src}" alt="" decoding="async">` : ''}</div><div class="nm"></div>${NEW ? '' : '<div class="st"><div>威力<b></b></div><div>命中率<b></b></div><div>クリ率<b></b></div></div>'}`) + '</div>';   // 2026-10-13：新しい画面は威力・命中率・クリ率を出さない（計算・技のデータは変えない）
+          + (d.ms ? '' : `<div class="ic${d.card ? ' mvc' : ''}">${d.src ? `<img src="${d.src}" alt="" decoding="async">` : ''}</div><div class="nm"></div>${NEW ? '' : '<div class="st"><div>威力<b></b></div><div>命中率<b></b></div><div>クリ率<b></b></div></div>'}`) + '</div>';   // 2026-10-13：新しい画面は威力・命中率・クリ率を出さない（計算・技のデータは変えない）
       }).join('');
       S.plates = [...trk.children];
+      // 追加A：技カードの絵＝先に読んでデコード済みの Image そのものを差し込む（毎ターン作り直しても読み直さない＝ちらつかない）。まだの絵は新しく読み、読めてから出す（.on）
+      if (CARD) for (const ic of trk.querySelectorAll('.pl.cd .ic[data-src]')) {
+        const src = ic.dataset.src, c = CARD_IMG.get(src); let im;
+        if (!ic.classList.contains('mvc')) { im = new Image(); im.className = 'on'; im.alt = ''; im.src = src; }   // 正式カードの無い技（従来の絵）
+        else if (c && c.dataset.ok === '1' && c.naturalWidth && !c.isConnected) { im = c; im.classList.add('on'); }
+        else { im = new Image(); im.alt = ''; im.decoding = 'async'; im.onload = () => im.classList.add('on'); im.src = src; }
+        ic.appendChild(im);
+      }
       rows.forEach((row, i) => {
         const d = read(row), el = S.plates[i]; if (d.ms) return;
-        el.querySelector('.nm').textContent = d.nm;
+        const nm = el.querySelector('.nm'); nm.textContent = d.nm;
+        if (CARD) nm.style.fontSize = Math.max(8, Math.min(12.5, (cw - 16) / Math.max(4, [...d.nm].length))).toFixed(1) + 'px';   // 長い技名も1行で欠けない（フェザーストーム・ドラゴンクラッシュなど）
         el.querySelectorAll('.st b').forEach((b, j) => { b.textContent = d.vals[j] || ''; });
       });
       const on = rows.findIndex((r) => r.classList.contains('on'));
@@ -333,7 +369,7 @@
       S.plates.forEach((el, i) => {
         let d = ((i - pos) % L + L) % L; if (d > L / 2) d -= L;
         const a = Math.abs(d), sc = lerpTab(R.scale, a), rot = Math.sign(d) * lerpTab(R.rot, a), drop = lerpTab(R.drop, a) * H, dim = lerpTab(R.dim, a);
-        const x = d * R.spacing * W * (1 - 0.08 * Math.min(a, 3));
+        const x = d * (CARD ? CARD_SP : R.spacing) * W * (1 - 0.08 * Math.min(a, 3));
         el.style.transform = `translate3d(${x.toFixed(1)}px,${drop.toFixed(1)}px,0) rotateY(${(-rot).toFixed(1)}deg) scale(${sc.toFixed(3)})`;
         el.style.zIndex = String(50 - Math.round(a * 10));
         el.style.opacity = String(a > 3.2 ? Math.max(0, 1 - (a - 3.2) * 3) : 1);
@@ -343,8 +379,10 @@
         if (st) st.style.opacity = k > 0.6 ? ((k - 0.6) / 0.4).toFixed(2) : '0';
         // 中央（選択中の板）へ近づくほど、技の絵・名前を選択中の板の窓の位置へ（間は補間）
         const ic = el.querySelector('.ic'), f = (u, v) => (u + (v - u) * k).toFixed(2) + '%';
-        if (ic) { ic.style.left = f(Gm.n[0], Gm.s[0]); ic.style.right = f(Gm.n[1], Gm.s[1]); ic.style.top = f(Gm.n[2], Gm.s[2]); ic.style.height = f(Gm.n[3], Gm.s[3]); }
-        if (nm) { nm.style.top = f(Gm.nm[0], Gm.nm[2]); nm.style.height = f(Gm.nm[1], Gm.nm[3]); if (NEW) nm.style.opacity = (k > 0.5 ? (k - 0.5) / 0.5 : 0).toFixed(2); }   // 2026-10-13：技名は中央の板だけ
+        if (ic && !CARD) { ic.style.left = f(Gm.n[0], Gm.s[0]); ic.style.right = f(Gm.n[1], Gm.s[1]); ic.style.top = f(Gm.n[2], Gm.s[2]); ic.style.height = f(Gm.n[3], Gm.s[3]); }
+        if (nm && !CARD) { nm.style.top = f(Gm.nm[0], Gm.nm[2]); nm.style.height = f(Gm.nm[1], Gm.nm[3]); }
+        if (nm && NEW) nm.style.opacity = (CARD ? Math.max(0, Math.min(1, 1 - (a - 2.4) * 2)) : k > 0.5 ? (k - 0.5) / 0.5 : 0).toFixed(2);   // 2026-10-13：技名は中央の板だけ。追加A（技カード）：左右のカードも帯に技名（空の帯を見せない・遠い端だけ消す）
+        if (CARD && a < 0.5) box.classList.toggle('msc', el.classList.contains('ms'));   // 中央が MISS の板のときだけ従来の中央の枠（.fr）
         el.classList.toggle('c', a < 0.5);
       });
     }
@@ -358,7 +396,7 @@
         S.vis += (target - S.vis) * Math.min(1, 0.35 * (0.3 + 0.7 * ramp));
       } else if (S.mode === 'stop' && S.stop) {
         const q = Math.min(1, (t - S.stop.t0) / S.stop.ms), d = S.stop.to - S.stop.from;
-        const os = R.overshootPx / Math.max(1, R.spacing * W);   // 慣性で減速 → ごく小さな行き過ぎ（px を候補の単位へ）→ 吸着
+        const os = R.overshootPx / Math.max(1, (CARD ? CARD_SP : R.spacing) * W);   // 慣性で減速 → ごく小さな行き過ぎ（px を候補の単位へ）→ 吸着
         const v = q < 0.82 ? easeOut(q / 0.82) * (1 + os / Math.max(0.5, d)) : 1 + (os / Math.max(0.5, d)) * (1 - easeOut((q - 0.82) / 0.18));
         S.vis = S.stop.from + d * v;
         if (q >= 1) { S.vis = S.stop.to; S.mode = 'locked'; box.classList.add('lock'); }
@@ -421,16 +459,29 @@
   //   ソラモ・ガウル）と、旧の倒れる動き（.dead＝回転・灰色。ノビトン・ジオル・レグナス）が、正式の勝利の絵が無い側（負けた側・相手が勝った側）に出ていた
   //   → 決着のあとは両側とも旧のポーズ・倒れる動きを出さず、正式の待機立ち絵（assets/battle/idle/。同じ大きさ・向き）を1枚だけ立てる。プレイヤーが勝った側は従来どおり正式の勝利の絵（mma-win）。
   //   fight()・判定・結果・WIN／LOSE の帯と音は変えない。旧の絵（SPX）は技の演出でも使うので消さない（表示の経路だけ止める）
+  //  2026-10-15 N02：負けた側は「負けた」と分かる姿＝既存の正式 2.5D のリアクション「しょんぼり」（assets/monsters/reactions_1012/・MMRXART の sad。
+  //   バトルの開始時に先に読む＝rxPreload）。敗北の専用の絵は未提供＝DEFEAT_ART（種族の番号 → 絵のパス）を空のまま用意し、届いたら1行で差し替える。
+  //   読めていない（読み込み中・404）ときは従来どおり待機立ち絵。勝った側（プレイヤー）は正式の勝利の絵・相手が勝ったときの相手は待機立ち絵（従来どおり）
+  const DEFEAT_ART = Object.freeze({});   // 専用の敗北の絵（追加制作待ち）：{ [sp]: { src, hRel } }
+  function loseArt(s, sp) {
+    const d = DEFEAT_ART[sp]; if (d) return { src: d.src, hRel: d.hRel || 1, kind: 'defeat' };
+    const X = root.MMRXART, inf = X && X.info(sp, 'sad'), im = rxImg[`${s}:sad`];
+    return inf && im && im.dataset.src === inf.src && im.dataset.ok === '1' && im.naturalWidth ? { src: inf.src, hRel: inf.hRel, kind: 'sad' } : null;
+  }
   const FIN_IMG = new WeakMap();   // #bt → [side0, side1]
   const finLog = [];
   function fin(bt) {
-    if (!bt.classList.contains('mma-fin')) { bt.classList.add('mma-fin'); finLog.push({ at: Date.now(), win: !!bt.querySelector(':scope>#ban') && /^WIN!/.test(bt.querySelector(':scope>#ban').textContent || '') }); }
+    const ban = bt.querySelector(':scope>#ban'), win = !!ban && /^WIN!/.test(ban.textContent || '');
+    if (!bt.classList.contains('mma-fin')) { bt.classList.add('mma-fin'); finLog.push({ at: Date.now(), win }); }
     const pl = G('BPL'); if (!pl) return;
     let arr = FIN_IMG.get(bt);
     if (!arr) {
+      const loser = win ? 1 : 0;
       arr = [0, 1].map((s) => {
-        const sp = pl[s] && pl[s].sp, src = idleSrc(sp); if (!src) return null;
-        const im = new Image(); im.className = 'mma-fin' + (flipOf(s, sp) ? ' fl' : ''); im.alt = ''; im.decoding = 'sync'; im.src = src;
+        const sp = pl[s] && pl[s].sp, la = s === loser ? loseArt(s, sp) : null, src = la ? la.src : idleSrc(sp); if (!src) return null;
+        const im = new Image(); im.className = 'mma-fin' + (la ? ' mma-lose' : '') + (flipOf(s, sp) ? ' fl' : ''); im.alt = ''; im.decoding = 'sync'; im.src = src;
+        if (la) { im.style.setProperty('--rh', String(la.hRel)); im.dataset.kind = la.kind; }
+        if (s === loser && finLog.length) finLog[finLog.length - 1].lose = la ? { side: s, kind: la.kind } : { side: s, kind: 'idle' };
         const mon = $(`#m${s} .mon`, bt); if (mon && bt.classList.contains('mma-v24') && SCALE[sp]) mon.style.setProperty('--mma-k', String(SCALE[sp]));
         const side = $(`#m${s}`, bt);
         if (side) { const mo = new MutationObserver(() => { if (!bt.isConnected) { mo.disconnect(); return; } placeFin(bt, s, im); }); mo.observe(side, { childList: true, subtree: true }); }
@@ -455,12 +506,25 @@
   // ---- 被弾／回避のリアクション（2026-10-12）----
   const RX_MS = { hit: 560, dodge: 520 }, RX_CALM_MS = 420;
   const rxLog = [];   // 確認用（最大30件）：{ side, kind, sp }
+  // 追加A（2026-10-15）：ルーレットの技カード（正式 16:9）を先に読んでデコードしておく（VS の間＝warmCards・バトルの開始＝setup）。
+  //  読み終わった絵はルーレットを作った瞬間から見せ、まだのものは読めた時点でふわっと出す（.on）。抽選・STOP・結果には触れない
+  const CARD_IMG = new Map();
+  function warmCards(eqs) {
+    const C = root.MMMVCARD; if (!C) return;
+    for (const k of (eqs || [])) {
+      const c = k >= 0 ? C.bySlot(k) : null; if (!c || CARD_IMG.has(c.src)) continue;
+      const im = new Image(); im.alt = ''; im.decoding = 'sync'; im.dataset.ok = '';
+      im.onload = () => { const ok = () => { im.dataset.ok = '1'; }; if (im.decode) im.decode().then(ok, ok); else ok(); };
+      im.src = c.src; CARD_IMG.set(c.src, im);
+    }
+  }
+  const cardReady = (src) => { const im = CARD_IMG.get(src); return !!(im && im.dataset.ok === '1' && im.naturalWidth); };
   let lastAct = null;
   /** 両側の被弾・回避の絵を先に読んでデコードしておく（側ごとに別の要素＝同じ種族どうしでも重ならない）。読み終わっていない絵には差し替えない */
   const rxImg = {};
   function rxPreload() {
     const pl = G('BPL'), X = root.MMRXART; if (!pl || !X) return;
-    [0, 1].forEach((s) => ['hit', 'dodge'].forEach((k) => {
+    [0, 1].forEach((s) => ['hit', 'dodge', 'sad'].forEach((k) => {   // 2026-10-15 N02：sad＝決着で負けた側の姿（fin）
       const i = pl[s] && X.info(pl[s].sp, k), key = `${s}:${k}`;
       if (!i || (rxImg[key] && rxImg[key].dataset.src === i.src)) return;
       const im = new Image(); im.alt = ''; im.decoding = 'sync'; im.dataset.src = i.src; im.dataset.ok = '';
@@ -540,6 +604,7 @@
     try { if (root.MMCROWD) root.MMCROWD.prefetch(bt); } catch (e) { /* 音だけ */ }
     try { setupCine(bt); } catch (e) { /* 見た目だけ */ }
     try { lastAct = null; rxWrap(); rxPreload(); rxWatch(bt); } catch (e) { /* 見た目だけ */ }
+    try { const pl = G('BPL'); if (pl) [0, 1].forEach((i) => pl[i] && warmCards(pl[i].eq)); } catch (e) { /* 見た目だけ */ }
     try { setupChips(bt); } catch (e) { /* 見た目だけ */ }
     try { setupText(bt); } catch (e) { /* 見た目だけ */ }
     try { setupBg(bt); } catch (e) { /* 見た目だけ */ }
@@ -578,7 +643,7 @@
     new MutationObserver((muts) => { for (const mu of muts) for (const n of mu.addedNodes) if (n && n.id === 'bt') setup(n); }).observe(document.body, { childList: true });
   }
   if (typeof document !== 'undefined') { if (document.body) watch(); else document.addEventListener('DOMContentLoaded', watch); }
-  root.MMARENA = Object.freeze({ R, IDLE, FACE, SCALE, GEO, UI_KEY, v24, setUi, crowdLog: () => crowdLog.slice(), endLog: () => endLog.slice(), finLog: () => finLog.slice(), rankOf, arenaSrc, fieldSrc, FIELD_BG, idleSrc, flipOf, setup, react, RX_MS, rxLog: () => rxLog.slice(), faceSrc: (sp) => (IDLE[sp] ? `./assets/tournament/faces_25d/face_${IDLE[sp].slice(5)}.webp` : null),
+  root.MMARENA = Object.freeze({ R, IDLE, FACE, SCALE, GEO, UI_KEY, v24, setUi, crowdLog: () => crowdLog.slice(), endLog: () => endLog.slice(), finLog: () => finLog.slice(), rankOf, arenaSrc, fieldSrc, FIELD_BG, idleSrc, flipOf, setup, react, warmCards, cardReady, RX_MS, rxLog: () => rxLog.slice(), DEFEAT_ART, TOUR_ICON, TOUR_ICON_BG, tourIconSrc, tourIconBg: (sp) => TOUR_ICON_BG[sp] || null, faceSrc: (sp) => (IDLE[sp] ? `./assets/tournament/faces_25d/face_${IDLE[sp].slice(5)}.webp` : null),
     // 2026-10-11：対戦表の顔＝2.5D の横顔（faces_25d）。読めなかったときは従来の丸い顔（faces）へ（index.html の tbIcon の onerror）
     faceOldSrc: (sp) => (IDLE[sp] ? `./assets/tournament/faces/face_${IDLE[sp].slice(5)}.webp` : null) });
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -23,8 +23,12 @@
     // マスの割合（通常の地点＝ordinary_tile 261 か所のうち。残りは「通常マス」＝何も起きない）
     // 2026-10-14 実機試遊⑲（ユーザー正式方針）：無地のマスを減らして能力マスを増やす（旧 stat 30%・event 12%・treasure 3%＝無地 41%）→ 能力 45%・出来事 15%・宝箱 6%（無地 20%）。
     //  新しい出発の配置だけ（育成途中の配置 f.tiles は引き直さない）。候補の比較は tools/balance/sim-full.mjs・fair.mjs（報告書 G）。MM_BALANCE_OVERRIDE＝その道具だけが入れる上書き
-    density: Object.freeze(Object.assign({ stat: 0.45, event: 0.15, rest: 0.06, wild: 0.08, treasure: 0.06 }, (root.MM_BALANCE_OVERRIDE && root.MM_BALANCE_OVERRIDE.density) || {})),
+    // 2026-10-15 追加B（ユーザー指示・候補 stat .53／無地 .12）：能力マスをさらに増やし無地を 20% 未満へ（能力 45% → 53%・無地 20% → 12%。出来事・休憩・野生・宝箱は同じ）。
+    //  落ち着いた区間の能力マス化（calmToStat）と合わせ、実測の割合は能力 約54.5%・無地 約12.4%（tools/balance/sim-full.mjs 300回×4体）
+    density: Object.freeze(Object.assign({ stat: 0.53, event: 0.15, rest: 0.06, wild: 0.08, treasure: 0.06 }, (root.MM_BALANCE_OVERRIDE && root.MM_BALANCE_OVERRIDE.density) || {})),
     calmSegments: Object.freeze(['S01', 'EL01', 'ER01']),   // 序盤（スタートの階段と J0 のすぐ先）には野生・休憩・宝箱を置かない
+    // 2026-10-15 追加B：落ち着いた区間で野生・休憩・宝箱になった地点は、無地ではなく能力マスにする（序盤から少しずつ育つ。野生・休憩・宝箱を置かない制限はそのまま）
+    calmToStat: !(root.MM_BALANCE_OVERRIDE && root.MM_BALANCE_OVERRIDE.calmToStat === false),
     // 2026-10-14 Chapter 1 B／C 独立ルート：出だしの落ち着いた区間はルートごと（B は最初の分かれ道が運命の分かれ道＝奇偶の道の前半。A・C は従来と同じ）
     calmByRoute: Object.freeze({ B: Object.freeze(['S01', 'Q_L1', 'Q_R1', 'Q_L2', 'Q_R2']) }),
     // 2026-10-14 能力マスの道の偏り（A／B／C 共通の考え方＝区間 ID で決める。左右は3ルートとも進む向きの左右）：能力マスになった地点で、どの能力にするかの重みだけを変える
@@ -105,7 +109,7 @@
         const r = rng(); let t = null, acc = 0;
         for (const k of ['stat', 'event', 'rest', 'wild', 'treasure']) { acc += dens[k]; if (r < acc) { t = k; break; } }
         const calm = calmSegs.includes(sid);
-        if (calm && (t === 'wild' || t === 'rest' || t === 'treasure')) t = null;
+        if (calm && (t === 'wild' || t === 'rest' || t === 'treasure')) t = TUNING.calmToStat ? 'stat' : null;
         if (t === 'wild' && prev && prev.t === 'wild') t = null;
         let tile = null;
         if (t === 'stat') {

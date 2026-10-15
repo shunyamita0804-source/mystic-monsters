@@ -3,7 +3,8 @@
 //  WK-B1（390×844・375×667）：本編 Chapter 1 の盤（worldCh1:true）でガウル＝16コマを重ねて置き全部読める・止まると正面（front の1コマ目）・
 //        足の位置と体の高さが静止の立ち絵とそろう・奥へ進む1歩は back・行き止まりから戻る1歩も back（2026-10-14 開発29：後ろから追うカメラ。旧は front）（左右反転なし＝ムーンウォークしない）・画面の外へ出ない
 //  WK-B2：2026-10-14 ソラモ・ノビトン・ジオルの 2.5D 歩行（16コマ・止まると正面・足と体の高さ・奥へ back）
-//  FC-B1（390×844・375×667）：対戦表（6体 E・8体 C）の顔＝faces_25d の横顔（読める・円の中）・読み込めないときは従来の丸い顔（faces）
+//  FC-B1（390×844・375×667）：対戦表（6体 E・8体 C）の顔＝2026-10-15 N12 から正式のイラスト（icons_1015・枠の中）
+//  FC-B2：イラストが読めないときは 2.5D の横顔（faces_25d）→ それも読めないときは従来の丸い顔（faces）
 //  QA_E2E=1 のときだけ実行
 // =========================================================
 import test from 'node:test';
@@ -138,10 +139,10 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
       await pg.evaluate(() => { S.m.raise.tour.league.entrants.forEach((x, i) => { if (!x.player) x.sp = (i - 1) % 5; }); board(); });
       await pg.waitForSelector('.tb1 .tbgo'); await pg.waitForTimeout(500);
       await pg.waitForFunction(() => [...document.querySelectorAll('.tb1 img.tbface')].every((i) => i.complete), null, { timeout: 20000 });
-      const r = await pg.evaluate(() => ({ faces: [...document.querySelectorAll('.tb1 img.tbface')].map((i) => ({ src: i.getAttribute('src'), w: i.naturalWidth, f25: i.classList.contains('f25'), box: i.getBoundingClientRect().width })), rows: document.querySelectorAll('.tb1g .tbnm').length, sw: document.documentElement.scrollWidth <= innerWidth + 1 }));
+      const r = await pg.evaluate(() => ({ faces: [...document.querySelectorAll('.tb1 img.tbface')].map((i) => ({ src: i.getAttribute('src'), w: i.naturalWidth, f25: i.classList.contains('f25'), ti: i.classList.contains('ti15'), box: i.getBoundingClientRect().width })), rows: document.querySelectorAll('.tb1g .tbnm').length, sw: document.documentElement.scrollWidth <= innerWidth + 1 }));
       assert.equal(r.rows, n);
       assert.ok(r.faces.length >= n, `顔の数 ${r.faces.length}`);
-      assert.ok(r.faces.every((f) => /faces_25d\/face_(soramo|gauru|nobiton|jiol|regnas)\.webp$/.test(f.src) && f.w === 256 && f.f25), JSON.stringify(r.faces.slice(0, 3)));
+      assert.ok(r.faces.every((f) => /icons_1015\/icon_(solamo|gauru|nobiton|jiol|regnas)\.webp$/.test(f.src) && f.w === 256 && f.ti), JSON.stringify(r.faces.slice(0, 3)));   // 2026-10-15 N12
       assert.ok(r.faces.every((f) => f.box >= 16), `縮小しても読める大きさ ${Math.min(...r.faces.map((f) => f.box))}`);
       assert.ok(r.sw, 'はみ出さない');
       await pg.screenshot({ path: path.join(SHOT, `${size[0]}_bracket_${n}.png`) });
@@ -150,11 +151,16 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
   });
 }
 
-test('FC-B2：横顔が読み込めないときは従来の丸い顔（faces）へ', { skip: SKIP, timeout: 120000 }, async () => {
-  const p = await openPage({}); const pg = p.page;
-  await pg.route(/faces_25d\//, (r) => r.fulfill({ status: 404, body: '' }));
-  await toTournament(pg, 0);
-  await pg.waitForFunction(() => [...document.querySelectorAll('.tb1 img.tbface')].every((i) => i.complete && i.naturalWidth > 0), null, { timeout: 20000 });
-  const srcs = await pg.evaluate(() => [...document.querySelectorAll('.tb1 img.tbface')].map((i) => [i.getAttribute('src'), i.classList.contains('f25')]));
-  assert.ok(srcs.length && srcs.every(([s, f]) => /assets\/tournament\/faces\/face_/.test(s) && !f), JSON.stringify(srcs));
+test('FC-B2（2026-10-15 N12 で書き直し）：イラストが読めないときは 2.5D の横顔 → それも読めないときは従来の丸い顔（faces）へ', { skip: SKIP, timeout: 160000 }, async () => {
+  for (const both of [false, true]) {
+    const p = await openPage({}); const pg = p.page;
+    await pg.route(/icons_1015\//, (r) => r.fulfill({ status: 404, body: '' }));
+    if (both) await pg.route(/faces_25d\//, (r) => r.fulfill({ status: 404, body: '' }));
+    await toTournament(pg, 0);
+    await pg.waitForFunction(() => [...document.querySelectorAll('.tb1 img.tbface')].every((i) => i.complete && i.naturalWidth > 0), null, { timeout: 20000 });
+    const srcs = await pg.evaluate(() => [...document.querySelectorAll('.tb1 img.tbface')].map((i) => [i.getAttribute('src'), i.classList.contains('f25'), i.classList.contains('ti15')]));
+    if (both) assert.ok(srcs.length && srcs.every(([s, f, t]) => /assets\/tournament\/faces\/face_/.test(s) && !f && !t), JSON.stringify(srcs));
+    else assert.ok(srcs.length && srcs.every(([s, f, t]) => /assets\/tournament\/faces_25d\/face_/.test(s) && f && !t), JSON.stringify(srcs));
+    await p.ctx.close().catch(() => {});
+  }
 });

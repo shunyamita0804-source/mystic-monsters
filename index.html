@@ -3969,6 +3969,37 @@ html:has(#app>.chfw.wbw) .mmtalk:not(.mmtalk-big):not(.mmtalk-scene) .mmtalk-sta
 .ds .dska.mvc{box-shadow:inset 0 0 0 1px rgba(255,226,150,.45)}
 .dsha.mvc img{aspect-ratio:16/9;object-fit:cover;object-position:center}
 @media (max-width:380px){.ds .drl .mvr{grid-template-columns:minmax(78px,28%) minmax(0,1fr) 30px 30px;column-gap:5px}.ds .drl .mvr .rst div{min-width:31px;padding:1px 2px}.ds .drl .mvr .rst b{font-size:.7rem}}
+/* ===== 2026-10-15 N12：大会の対戦表の顔＝正式のイラスト（正方形・薄い灰色の背景つき・左向き。背景は消さない）。
+ *  ユーザー指示（2026-10-15）：丸くしないで四角形のまま＝どの枠（対戦表・ほかの試合の観戦の帯）も角の小さい四角・絵は枠いっぱい（正方形どうし＝切れない・伸ばさない） */
+.tbic img.tbface.ti15{object-fit:cover;object-position:50% 50%;transform:none;box-sizing:border-box;padding:0;background:var(--tibg,#cfd2d7)}
+.tbic:has(>img.ti15),.tbvsx .tvx-s .tbic:has(>img.ti15){border-radius:5px}
+.tbvsx .tvx-s .tbic img.tbface.ti15{width:100%;height:100%}
+.tbic img.tbface.tbst{object-fit:contain;transform:scale(.92)}
+/* ===== 2026-10-15 N01：技の一覧＝1技1行（画面の幅いっぱい）。上＝技名（省略しない・折り返す）、左＝大きな正式技カード（16:9 のまま・切らない・伸ばさない）、
+ *  右＝分類（ちから／かしこさ／補助）・威力・命中・クリ（実際の技データ。威力の無い補助技は「—」）・効果の札。未習得はロックのカードのまま（？？？）。
+ *  タップ（skd）・分類のタブ・選択中（cur）・技辞典の入口・セット中の番号の印は従来どおり */
+.dskg.n01{grid-template-columns:1fr;gap:9px}
+.dskg.n01 .dsk{display:grid;grid-template-columns:minmax(0,58%) minmax(0,1fr);grid-template-areas:"nm nm" "img st";column-gap:10px;row-gap:5px;align-items:center;padding:7px 9px 9px}
+.dskg.n01 .dsk>b{grid-area:nm;margin:0;text-align:left;font-size:.98rem;line-height:1.25;white-space:normal;overflow:visible;line-break:strict;overflow-wrap:anywhere;padding-left:2px}
+.dskg.n01 .dsk .dska{grid-area:img;width:100%}
+.dskg.n01 .dsk .dska img{width:100%;aspect-ratio:16/9;object-fit:cover;object-position:center;border-radius:6px}
+.dskg.n01 .dsk .dsb{width:24px;height:24px;font-size:.8rem}
+.dskg.n01 .dsr{grid-area:st;display:flex;flex-direction:column;align-items:stretch;gap:4px;min-width:0}
+.dskg.n01 .dsc{align-self:flex-start;font:800 .7rem/1.4 "Noto Sans JP",sans-serif;padding:1px 8px;border-radius:999px;background:rgba(0,0,0,.42);border:1px solid rgba(232,197,106,.55);color:#f3e2b4;white-space:nowrap}
+.dskg.n01 .dsp{flex-direction:column;justify-content:flex-start;gap:3px}
+.dskg.n01 .dsp span{display:flex;justify-content:space-between;align-items:baseline;gap:6px;padding:2px 8px;border-radius:6px;font-size:.72rem;background:rgba(0,0,0,.45)}
+.dskg.n01 .dsp small{font-size:.66rem;font-weight:700;color:#e9d9b0}
+.dskg.n01 .dsp em{font-style:normal;font-weight:800;font-size:.92rem;color:#fff;font-variant-numeric:tabular-nums}
+.dskg.n01 .dsef{justify-content:flex-start;flex-wrap:wrap;margin:0}
+.dskg.n01 .dsk.dsq .dska{aspect-ratio:16/9;border-radius:6px}
+.dskg.n01 .dsk.dsq .dska.dslock img{width:auto;height:86%;aspect-ratio:auto;margin:0 auto}
+.dskg.n01 .dsk.dsq .dsp span{justify-content:center;font-size:.72rem;color:#9aa6c4}
+.dskg.n01 .dsk.dsq>b{letter-spacing:.2em}
+/* ===== 2026-10-15 N03：会話・出来事の選択肢＝細い紺の楕円＋金枠（旧イベント名の札の見た目）。旧の青く光る大きな枠（button_blank の border-image）はやめた。
+ *  押せる高さ 46px 以上・文字は明朝 15px。文言・2択の効果・選んだ処理（MMNPC の選択肢）は従来どおり。START・STOP・サイコロ・アイテム・戻るなどのボタンは変えない */
+.mmtalk .mmtalk-choice,.mmtalk.mmtalk-big .mmtalk-choice{box-sizing:border-box;height:auto;min-height:46px;padding:8px 22px;line-height:1.3;border:1.5px solid #e0b861;border-image:none;border-radius:999px;background:linear-gradient(#1c3373,#0d1a45);box-shadow:0 3px 8px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,236,190,.16);color:#fbefcf;font-family:"Shippori Mincho",var(--mm-font-head,serif);font-size:15px;font-weight:800;letter-spacing:.08em;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.mmtalk .mmtalk-choice:active,.mmtalk .mmtalk-choice.on,.mmtalk.mmtalk-big .mmtalk-choice:active,.mmtalk.mmtalk-big .mmtalk-choice.on{border-color:#ffe6a3;box-shadow:0 0 0 2px rgba(255,214,120,.32),0 0 12px rgba(255,214,120,.42);transform:translateY(1px) scale(.985)}
+.mmtalk .mmtalk-choice.long,.mmtalk.mmtalk-big .mmtalk-choice.long{font-size:min(14px,3.6vw);letter-spacing:.02em;padding:8px 16px}
 </style></head><body><main>
 <h1>ミスティックモンスターズ</h1>
 <div id="app"></div>
@@ -4967,10 +4998,10 @@ function dscr(id,msg){if(id=="b")return hall("t"); // Phase 8：旧「腕試し�
   const own=Array.isArray(m.sk)?m.sk:[],st3=(k)=>k<0||!SK[k]?`<div class="rst"><div><small>威力</small><b>?</b></div><div><small>命中率</small><b>?</b></div><div><small>クリ率</small><b>?</b></div></div>`:`<div class="rst"><div><small>${SK[k][1]?"威力":"効果"}</small><b>${SK[k][1]?Math.round(SK[k][1]*100):efIco(k)}</b></div><div><small>命中率</small><b>${SK[k][8]}%</b></div><div><small>クリ率</small><b>${Math.round(SK[k][9]*100)}%</b></div></div>`;
   const rows=m.eq.map((k,q)=>k<0||!SK[k]?`<div class="rw mvr ms ${q==selSlot?"sel":""}" onclick="selS(${q})"><span class="ric">${q+1}</span><span class="rsil"></span><span class="rn">ミス</span>${st3(-1)}<div class="wmv"><button ${q==0?"disabled":""} onclick="event.stopPropagation();moveSlot(${q},-1)">▲</button><button ${q==5?"disabled":""} onclick="event.stopPropagation();moveSlot(${q},1)">▼</button></div></div>`:`<div class="rw mvr ${SK[k][7]=="p"?"cp":"ci"} ${q==selSlot?"sel":""}" onclick="selS(${q})"><span class="ric">${q+1}</span><img class="rt" src="${mvSrc(k)}" alt="" decoding="async"><span class="rn">${SK[k][0]}</span>${st3(k)}<div class="wmv"><button ${q==0?"disabled":""} onclick="event.stopPropagation();moveSlot(${q},-1)">▲</button><button ${q==5?"disabled":""} onclick="event.stopPropagation();moveSlot(${q},1)">▼</button></div><button class="wx2" onclick="event.stopPropagation();clrS(${q})">✕</button></div>`).join("");
   const list=skl(m).filter(k=>wflt=="a"||SK[k][7]==wflt);
-  const cards=list.map(k=>{const x=SK[k],ok=own.includes(k),at=m.eq.indexOf(k);if(!ok)return `<div class="dsk dsq ${x[7]=="p"?"kp":"ki"}" aria-label="まだ覚えていない技"><div class="dska dslock"><img src="./assets/ui/skill/locked_skill_panel.png" alt="" decoding="async"></div><b>？？？</b><div class="dsp"><span>まだ覚えていない技</span></div></div>`;return `<div class="dsk ${x[7]=="p"?"kp":"ki"} ${ok?"":"lock"} ${k==lastSk?"cur":""}" role="button" onclick="${ok?`skd(${k})`:`skd(${k})`}"><div class="dska${mvNew(k)?" mvc":""}"><img src="${mvSrc(k)}" alt="" loading="lazy" decoding="async">${at>=0?`<i class="dsb">${at+1}</i>`:""}${ok?"":'<i class="dlk">🔒</i>'}</div><b>${x[0]}</b>${EFF[k]?`<div class="dsef">${EFF[k].map(e=>efChip(e)).join("")}</div>`:""}<div class="dsp"><span>威${x[1]?Math.round(x[1]*100):"—"}</span><span>命${x[8]}</span><span>ク${Math.round(x[9]*100)}</span></div></div>`}).join("");
+  const cards=list.map(k=>{const x=SK[k],ok=own.includes(k),at=m.eq.indexOf(k);if(!ok)return `<div class="dsk dsq ${x[7]=="p"?"kp":"ki"}" aria-label="まだ覚えていない技"><b>？？？</b><div class="dska dslock"><img src="./assets/ui/skill/locked_skill_panel.png" alt="" decoding="async"></div><div class="dsr"><div class="dsp"><span>まだ覚えていない技</span></div></div></div>`;return `<div class="dsk ${x[7]=="p"?"kp":"ki"} ${ok?"":"lock"} ${k==lastSk?"cur":""}" role="button" onclick="${ok?`skd(${k})`:`skd(${k})`}"><b>${x[0]}</b><div class="dska${mvNew(k)?" mvc":""}"><img src="${mvSrc(k)}" alt="" loading="lazy" decoding="async">${at>=0?`<i class="dsb">${at+1}</i>`:""}${ok?"":'<i class="dlk">🔒</i>'}</div><div class="dsr"><span class="dsc">${x[1]?(x[7]=="p"?"✊ ちから":"📖 かしこさ"):"✨ 補助"}</span><div class="dsp"><span><small>威力</small><em>${x[1]?Math.round(x[1]*100):"—"}</em></span><span><small>命中</small><em>${x[8]}%</em></span><span><small>クリ</small><em>${x[1]?Math.round(x[9]*100)+"%":"—"}</em></span></div>${EFF[k]?`<div class="dsef">${EFF[k].map(e=>efChip(e)).join("")}</div>`:""}</div></div>`}).join("");
   const n=m.eq.filter(x=>x>=0&&SK[x]).length;
   c=`<div class="dcard"><div class="dh">バトルのルーレット <small>${n} / 6 セット中</small></div><div class="dhint">枠をタップして選び、下の技をタップしてセット</div><div class="drl">${rows}</div></div>
-  <div class="dcard"><div class="dh">技の一覧 <small>${own.length} / ${skl(m).length} 習得</small>${window.MMMOVEDEX&&MMMOVEDEX.listOf(m.sp).length?`<button class="dmvall" onclick="MMMOVEDEX.open(${m.sp})">📖 技辞典</button>`:""}</div><div class="dflt">${[["a","すべて"],["p","✊ ちから"],["i","📖 かしこさ"]].map(([v,l])=>`<button class="${wflt==v?"on":""}" onclick="wflt='${v}';hall('w')">${l}</button>`).join("")}</div><div class="dskg">${cards}</div></div>`}
+  <div class="dcard"><div class="dh">技の一覧 <small>${own.length} / ${skl(m).length} 習得</small>${window.MMMOVEDEX&&MMMOVEDEX.listOf(m.sp).length?`<button class="dmvall" onclick="MMMOVEDEX.open(${m.sp})">📖 技辞典</button>`:""}</div><div class="dflt">${[["a","すべて"],["p","✊ ちから"],["i","📖 かしこさ"]].map(([v,l])=>`<button class="${wflt==v?"on":""}" onclick="wflt='${v}';hall('w')">${l}</button>`).join("")}</div><div class="dskg n01">${cards}</div></div>`}
  $("#app").innerHTML=`<div class="ds ds-${id}" style="--dc:${D[3]}"><div class="dbg" style="background-image:url(${FARM_BG})"></div><div class="dtop"><button class="dback" data-nav="back" onclick="lastSk=-1;hall('t')">${S.m&&MMP7.inChapter(S.m)?"◀ ボードへ":"◀ ベースキャンプ"}</button><div class="dmoney">${GCOIN} ${S.g}G</div></div><div class="dtitle"><img src="${TABS[D[2]]}" alt=""><div><b>${D[0]}</b><small>${D[1]}</small></div></div>${msg?`<div class="dmsg"><span>${msg}</span></div>`:""}<div class="dbody">${c}</div></div>`;
  if(id=="s")tapHold($("#app .dbody"),350); // 特訓メニューを出したタップの2打目で、特訓（チケット1枚）を始めない
  if(id=="w"&&lastSk>=0&&document.body.insertAdjacentHTML)document.body.insertAdjacentHTML("beforeend",`<div id="dsh">${skSheet(lastSk,m)}</div>`);try{window.scrollTo(0,0)}catch(e){}}
@@ -5265,7 +5296,7 @@ window.addEventListener("unhandledrejection",rescue);
  *  ./version.json（小さな JSON。毎回取り直す）の build がこのページの MM_BUILD と違えば1回だけ reload（同じ版へは15分に1回まで＝読み込み直しを繰り返さない）。
  *  確かめる時：起動したとき・ページがメモリから戻ったとき（pageshow の persisted）・10分以上裏にいて表に戻ったとき。セーブ（mr4v6）には触れない（読み込み直しは iOS がタブを閉じたときと同じ＝つづきから）。
  *  公開するたびに MM_BUILD と version.json の build を同じ値に上げる（tests/dev24-1013.test.mjs で一致を確かめる） */
-const MM_BUILD="2026-10-15-voiceoff";
+const MM_BUILD="2026-10-15-next12";
 (function(){const K="mmbuildReload";let hidAt=0;
  const check=()=>{try{const x=new XMLHttpRequest();x.open("GET","./version.json?t="+Date.now(),true);x.timeout=8000;
   x.onload=()=>{try{if(x.status<200||x.status>=300)return;const b=(JSON.parse(x.responseText)||{}).build;if(!b||b===MM_BUILD)return;
@@ -5605,7 +5636,10 @@ const TB_GRID={6:{img:"ui1/grid6.png",ar:"1098/841",cy:[19.44,32.25,45.05,57.86,
  8:{img:"ui1/grid8.png",ar:"1083/784",cy:[16.39,26.62,36.85,47.08,57.31,67.54,77.77,88.0],lx:7.94,ld:5.1,px:13.3,pw:26.4,ph:7.65,hy:14.8,hd:4.0,gx:[43.03,92.43],gy:[20.03,89.92]}};
 // 専用のモンスターアイコンは未着＝正式画像を丸い枠で切り抜く（顔のあたり。種族の番号 → object-position）。専用アイコンが届いたらここを差し替える
 const TOUR_ICON_POS={0:"58% 22%",1:"55% 18%",2:"58% 28%",3:"50% 25%"};
-function tbIcon(x){const f=window.MMARENA&&x&&MMARENA.faceSrc(x.sp);if(f){const o=MMARENA.faceOldSrc&&MMARENA.faceOldSrc(x.sp);return `<img class="tbface f25" src="${f}" alt=""${o?` onerror="this.onerror=null;this.classList.remove('f25');this.src='${o}'"`:""}>`}const s=x&&MMP10M.byId(x.sp);if(x&&x.s2==null&&!x.h&&s)return `<img src="${s.image.src}" alt="" style="object-position:${TOUR_ICON_POS[x.sp]||"50% 30%"}">`;return `<span class="tbsv">${msv(x)}</span>`}
+/** 2026-10-15 N12：対戦表の顔＝正式のイラスト6枚（MMARENA.tourIconSrc＝薄い灰色の背景つきの正方形）。読めないときは 2.5D の横顔 → 丸い顔 → 正式の立ち絵の順（tbIconFb）。表に無い種族（tourIconSrc が null）は従来どおり */
+function tbIcon(x){const A=window.MMARENA,i=A&&x&&A.tourIconSrc&&A.tourIconSrc(x.sp);if(i){const st=MMP10M.byId(x.sp)||(MMP10M.pendingSpecies&&MMP10M.pendingSpecies(x.sp)),fb=[A.faceSrc&&A.faceSrc(x.sp),A.faceOldSrc&&A.faceOldSrc(x.sp),st&&st.image&&st.image.src].filter(Boolean).join("|");return `<img class="tbface ti15" src="${i}" alt="" style="--tibg:${A.tourIconBg(x.sp)||"#cfd2d7"}" data-fb="${fb}" onerror="tbIconFb(this)">`}return tbIconOld(x)}
+function tbIconFb(im){const l=(im.dataset.fb||"").split("|").filter(Boolean);im.classList.remove("ti15","f25");if(!l.length){im.onerror=null;im.style.visibility="hidden";return}const n=l.shift();im.dataset.fb=l.join("|");if(/faces_25d\//.test(n))im.classList.add("f25");else if(!/\/faces\//.test(n))im.classList.add("tbst");im.src=n}
+function tbIconOld(x){const f=window.MMARENA&&x&&MMARENA.faceSrc(x.sp);if(f){const o=MMARENA.faceOldSrc&&MMARENA.faceOldSrc(x.sp);return `<img class="tbface f25" src="${f}" alt=""${o?` onerror="this.onerror=null;this.classList.remove('f25');this.src='${o}'"`:""}>`}const s=x&&MMP10M.byId(x.sp);if(x&&x.s2==null&&!x.h&&s)return `<img src="${s.image.src}" alt="" style="object-position:${TOUR_ICON_POS[x.sp]||"50% 30%"}">`;return `<span class="tbsv">${msv(x)}</span>`}
 const TB_SEEN=new Map();let TB_FRESH=[];const TB_OTHER_MS=2600;
 // 2026-10-12 試遊：ほかの参加者どうしの新しい結果は、すぐに○／×を出さず、両者の顔で「A VS B」→ ライフが減る → ○／× を1試合ずつ短く（結果・順位・プレイヤーの試合は変えない）。画面に触れると残りを飛ばす（触れたボタンはそのまま押せる）
 // 2026-10-13 開発25 D：観戦の見せ方を強く＝対戦表の真ん中に重ねる（後ろに半透明の暗い帯・対戦表は透けて見える）・顔と名前とライフを大きく・
@@ -5669,7 +5703,7 @@ function p9CompareScr(){const m=S.m,t=m&&m.raise&&m.raise.tour;if(!t||t.status!=
  <div class="pcacts"><button class="p9btn p9go pcgo tbstart" data-nsfx="1" onclick="p9VsGo(this)" aria-label="対戦開始">対戦開始</button></div></div>`;try{window.scrollTo(0,0)}catch(e){}}
 // 大会3 VS 演出（背景・VS のロゴ・斜めの光・名前の札・飾りは正式素材。モンスターは正式画像）→ バトル。タップで早送り。fight() の導入（intro）はこの試合だけ出さない（二重の VS にしない）
 let TB_SKIP_INTRO=false;
-function tourVsShow(m,o,opt){opt=opt||{};return new Promise(res=>{const calm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
+function tourVsShow(m,o,opt){opt=opt||{};try{window.MMARENA&&MMARENA.warmCards&&MMARENA.warmCards(m&&m.eq)}catch(e){}/* 追加A：VS の間に自分の技カードを先に読む */return new Promise(res=>{const calm=!!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches);
  const d=document.createElement("div");d.className="tvs"+(calm?" calm":"");d.id="tvs";
  d.innerHTML=`<div class="tvsbg" style="background-image:url(${opt.bg||TB_ARENA(S.m&&S.m.raise&&S.m.raise.tour?S.m.raise.tour.rank:0)})"></div><img class="tvsline" src="${TB_UI}vs/vs_diagonal.png" alt=""><b class="tvshd">${p11Esc(opt.head||"マッチアップ")}</b><div class="tvsm op"><span class="mon">${tbVs(o,1)}</span></div><div class="tvsm me"><span class="mon">${tbVs(m,0)}</span></div>
  <div class="tvsnp op"><img src="${TB_UI}vs/vs_nameplate.png" alt=""><b>${p11Esc(o.name)}</b><i class="tvstag op">相手</i><img class="tvsorn" src="${TB_UI}vs/vs_ornament.png" alt=""></div><div class="tvsnp me"><img src="${TB_UI}vs/vs_nameplate.png" alt=""><b>${p11Esc(m.name)}</b><i class="tvstag me">あなた</i><img class="tvsorn" src="${TB_UI}vs/vs_ornament.png" alt=""></div>

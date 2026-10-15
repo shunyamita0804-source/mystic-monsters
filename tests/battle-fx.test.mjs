@@ -61,7 +61,8 @@ test('BFX-02：対応：ダメージ表示（span.dmg／.crt／.ms）→ #6／#7
   assert.match(HTML, /const lvOf=ef=>\(ef\.direction=="down"\?-1:1\)\*\(ef\.size=="large"\?3:ef\.size=="medium"\?2:1\);/);
   const src = rd('js/battle/fx.js');
   assert.match(src, /cl\.contains\('ms'\) \? 'miss' : cl\.contains\('crt'\) \? 'critical' : 'hit'/);
-  assert.match(src, /if \(t === 'WIN!'\) showEnd\('victory'\); else if \(t === 'LOSE'\) showEnd\('defeat'\);/);
+  // 2026-10-15 N02：決着の煙・光の層（#28・#29）は出さない（帯 #ban を見ても showEnd を呼ばない・API は残す）
+  assert.match(src, /if \(n\.id === 'ban'\) return;/); assert.doesNotMatch(src, /showEnd\('victory'\)|showEnd\('defeat'\)/);
   assert.doesNotMatch(src, /bc0[1-5]_|bc08|bc1[0-4]_|bc2[1-7]_|bc30/, '保留の素材を使わない');
 });
 

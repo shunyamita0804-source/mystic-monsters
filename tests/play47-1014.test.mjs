@@ -39,14 +39,14 @@ test('P47-01：牧場は最大20体（2026-10-14 ユーザー正式）・所持�
 
 test('P47-02：育成バランス⑲＝Chapter ごとの成長量（Chapter 1 は1回の上昇を下げ、2→3→4 と穏やかに上げる）・Chapter 1 の配置は能力マスを増やし無地を減らす', () => {
   const M = loadMon();
-  assert.deepEqual(JSON.parse(JSON.stringify(M.GROWTH_GAIN_BY_CH)), { 1: { A: 20, B: 18, C: 16, D: 12, E: 9 }, 2: { A: 25, B: 23, C: 20, D: 16, E: 12 }, 3: { A: 29, B: 27, C: 23, D: 18, E: 14 }, 4: { A: 33, B: 30, C: 26, D: 20, E: 15 } });
+  assert.deepEqual(JSON.parse(JSON.stringify(M.GROWTH_GAIN_BY_CH)), { 1: { A: 17, B: 15, C: 14, D: 10, E: 8 }, 2: { A: 25, B: 23, C: 20, D: 16, E: 12 }, 3: { A: 29, B: 27, C: 23, D: 18, E: 14 }, 4: { A: 33, B: 30, C: 26, D: 20, E: 15 } });
   for (const g of ['A', 'B', 'C', 'D', 'E']) for (let c = 1; c < 4; c++) assert.ok(M.GROWTH_GAIN_BY_CH[c + 1][g] > M.GROWTH_GAIN_BY_CH[c][g], `${g}：Chapter ${c} → ${c + 1} で上がる`);
   assert.deepEqual({ ...M.GROWTH_GAIN }, { A: 25, B: 21, C: 18, D: 14, E: 11 }, 'Chapter の分からない所の控えは従来の表');
   const mon = (ch, sp = 3) => ({ sp, raise: ch == null ? null : { ch } });
-  assert.equal(M.growthGain(mon(1), 'po'), 20); assert.equal(M.growthGain(mon(2), 'po'), 25); assert.equal(M.growthGain(mon(3), 'po'), 29); assert.equal(M.growthGain(mon(4), 'po'), 33);
-  assert.equal(M.growthGain(mon(1), 'in'), 9, 'ジオルのかしこさ E＝Chapter 1 の +9'); assert.equal(M.growthGain(mon(null), 'po'), 25, '育成の外＝控えの表');
+  assert.equal(M.growthGain(mon(1), 'po'), 17); assert.equal(M.growthGain(mon(2), 'po'), 25); assert.equal(M.growthGain(mon(3), 'po'), 29); assert.equal(M.growthGain(mon(4), 'po'), 33);
+  assert.equal(M.growthGain(mon(1), 'in'), 8, 'ジオルのかしこさ E＝Chapter 1 の +8（2026-10-15 追加B）'); assert.equal(M.growthGain(mon(null), 'po'), 25, '育成の外＝控えの表');
   const w = {}; for (const f of ['js/phase10/monsters.js', 'js/chapter/engine.js', 'js/chapter/configs/ch1a.js', 'js/proto/roadfirst-data.js', 'js/proto/roadfirst-routes.js', 'js/proto/roadfirst-core.js', 'js/proto/roadfirst-play.js']) new Function('window', rd(f))(w);
-  assert.deepEqual({ ...w.MMRF_PLAY.TUNING.density }, { stat: 0.45, event: 0.15, rest: 0.06, wild: 0.08, treasure: 0.06 });
+  assert.deepEqual({ ...w.MMRF_PLAY.TUNING.density }, { stat: 0.53, event: 0.15, rest: 0.06, wild: 0.08, treasure: 0.06 });   // 2026-10-15 追加B（旧 stat 0.45）
   // 配置の実物：無地が約2割まで減る（序盤の落ち着いた区間・固定の地点を除いた割合）
   let stat = 0, empty = 0, all = 0;
   for (let s = 1; s <= 40; s++) { const L = w.MMRF_PLAY.layout(w.MMRF_DATA, (s * 2654435761) >>> 0, { bias: true }); for (const id of Object.keys(w.MMRF_DATA.nodes)) { const t = L.tiles ? L.tiles[id] : L[id]; if (w.MMRF_DATA.nodes[id] == null) continue; all++; if (!t) empty++; else if (t.t === 'stat') stat++; } }
@@ -122,7 +122,8 @@ test('P47-07：盤のイベント④⑮㉜＝宝箱のカットイン（ふつ�
   assert.match(WB, /const ARRIVE_LOBBY = Object\.freeze\(\[\{ npc: 'fina', view: 'closeup', expression: 'guide', text: '公式大会は、ランクEからSまで。/);
   assert.match(WB, /f\.arrivalSeen = true; doSave\(\);/, '見た記録は最後に1回');
   assert.match(WB, /2026-10-14 実機試遊㉜/);
-  assert.match(WB, /vcue\('fina\.discover'\)|fina\.discover/, '「見て見て」は既存の声の出しどころ');
+  // 2026-10-15 N06（ユーザーの最新決定）：宝箱のカットインに大きなフィナと「見て見て！」・声の合図は出さない＝宝箱・光・金貨・中身だけ
+  assert.doesNotMatch(WB, /wbtr-fina|wbtr-say|vcue\('fina\.discover'\)/); assert.doesNotMatch(WB.replace(/\/\/.*$/gm, ''), /見て見て/);
 });
 
 test('P47-08：施設・UI＝アイテム屋の商品カード（価格・所持数・条件）・セーブのスロット（ランクの札・進行・日時）・プロローグの字幕のコントラスト・正式 UI の絵を読めるまで見せない', () => {

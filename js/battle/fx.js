@@ -3,7 +3,7 @@
 //  バトル画面に出る既存の表示を「外から」見て、正式素材を短く重ねるだけ（視覚レイヤー。ゲームの処理・時間・判定には触れない）：
 //   ・ダメージ表示（pop の span.dmg。#f0／#f1＝どちらのモンスターか）：通常ヒット #6／クリティカル（.crt）#7／ミス・回避（.ms）#9
 //   ・能力アップ／ダウン（efBurst(w, { lv })。lv＝±1 小・±2 中・±3 大＝lvOf）：#15〜#17／#18〜#20
-//   ・決着の帯（#ban の「WIN!」／「LOSE」）：勝利 #28／敗北 #29（降参も LOSE）
+//   ・決着の帯（#ban の「WIN!」／「LOSE」）：勝利 #28／敗北 #29（降参も LOSE）＝2026-10-15 N02 から出さない（showEnd は呼ばない）
 //  素材の番号・元ファイルは assets/battle/common/README.md。未使用の19枚は original/ に保存だけ（別の用途へ使わない）
 //  重ね方：モンスターの演出は #f0／#f1（モンスターの枠の上の効果の層）の先頭に入れる＝ダメージの数字・技の演出より下。決着は #bt の中で帯（#ban）より下。
 //   同じ場所の前の演出は消してから出す（重ならない）。時間が来たら必ず消す（DOM を残さない）。#bt が消えたら中の物も消える
@@ -75,7 +75,8 @@
   function onAdded(n) {
     if (!n || n.nodeType !== 1) return;
     if (root.MMRULES && root.MMRULES.swallow && root.MMRULES.swallow(n)) return;   // 2026-10-06：まひ・ねむりで動けない行動の MISS は出さない（js/battle/rules.js）
-    if (n.id === 'ban') { const t = (n.textContent || '').trim(); if (t === 'WIN!') showEnd('victory'); else if (t === 'LOSE') showEnd('defeat'); return; }
+    // 2026-10-15 N02：決着（WIN!／LOSE）の煙・光の層（#28・#29）は出さない＝モンスターの顔と体を覆っていた（実機）。主役は正式の勝利の絵・負けた側の姿（js/battle/arena.js の fin）。showEnd は API だけ残す
+    if (n.id === 'ban') return;
     const cl = n.classList, p = n.parentNode;
     if (n.tagName === 'SPAN' && cl && cl.contains('dmg') && !cl.contains('ef') && p && /^f[01]$/.test(p.id || '')) {
       const side = +p.id.slice(1);

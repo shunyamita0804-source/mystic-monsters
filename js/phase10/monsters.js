@@ -160,7 +160,9 @@
   //  初回の1体の得意能力の最終値の平均（300回・大会は全勝の想定）ソラモ 258・ガウル 289・ノビトン 273・ジオル 323＝4体平均 286（旧の配置と表では 234／263／245／305＝262））。
   //  window.MM_BALANCE_OVERRIDE.gainByCh（開発用の道具 tools/balance/sim-full.mjs だけが入れる）で上書きできる
   const GROWTH_GAIN_BY_CH = (() => {
-    const T = { 1: fz({ A: 20, B: 18, C: 16, D: 12, E: 9 }), 2: fz({ A: 25, B: 23, C: 20, D: 16, E: 12 }), 3: fz({ A: 29, B: 27, C: 23, D: 18, E: 14 }), 4: fz({ A: 33, B: 30, C: 26, D: 20, E: 15 }) };
+    // 2026-10-15 追加B：Chapter 1 は能力マスが増えた分だけ1回の上昇を下げる（旧 A20 B18 C16 D12 E9 → A17 B15 C14 D10 E8・A＞B＞C＞D＞E のまま）。
+    //  得意能力の最終値の平均（300回・大会は全勝の想定）ソラモ 261・ガウル 291・ノビトン 273・ジオル 327＝4体平均 288（変更前 258／289／273／323＝286）
+    const T = { 1: fz({ A: 17, B: 15, C: 14, D: 10, E: 8 }), 2: fz({ A: 25, B: 23, C: 20, D: 16, E: 12 }), 3: fz({ A: 29, B: 27, C: 23, D: 18, E: 14 }), 4: fz({ A: 33, B: 30, C: 26, D: 20, E: 15 }) };
     const ov = root.MM_BALANCE_OVERRIDE && root.MM_BALANCE_OVERRIDE.gainByCh;
     if (ov && typeof ov === 'object') for (const c of Object.keys(ov)) if (T[c]) T[c] = fz({ ...T[c], ...ov[c] });
     return fz(T);
@@ -187,6 +189,38 @@
       base: fz({ li: 120, po: 150, in: 80, hi: 70, ev: 30, de: 160 }), speed: 1, uniqueSkill: 'unique_jiol', tagline: null, growth: G6('C', 'A', 'E', 'D', 'E', 'A'),   // 成長適性（2026-10-02 正式）
       image: fz({ src: './assets/monsters/2p5d/jiol.webp', w: 720, h: 667 }), }),
   ]);
+  // ---- 登録のみ・未解禁のモンスター（2026-10-15 N11 正式：フルーネ）----
+  //  SPECIES（市場・図鑑・合体・野生・大会の相手・初期選択が読む表）とも RIVAL_MONSTERS とも別の表＝byId／byKey では引けない
+  //  ＝どの画面にも出ない・入手できない・バトルに出ない。解禁はユーザーの指示があってから（unlocked:false のまま）。
+  //  番号 5 は予約だけ（セーブの m.sp に入ることは無い）。SPECIES の 0〜3・レグナスのバトルの絵の番号 4（js/battle/rival-partner.js の SPRITE）と重ならない。
+  //   調べた表：SPECIES・index.html の IMG（＝SPECIES＋IMG[4]）と旧 SP（2種）・VICTORY_IMG（0〜4）・js/battle/arena.js の IDLE／SCALE（0〜4）・
+  //   js/battle/rules.js の SPECIES（0〜4）・MMP8L の種族数（SP.length）・MMCH.foeSpecies（SP.length）・reactions（ev.sp 0〜4）＝5 はどこにも無い（tests/flurene-1015.test.mjs）。
+  //  技は名前と習得区分だけ（威力・命中・クリティカル・効果は未提供＝持たない）。learn：initial＝初期・po／in／hi／ev／de＝その特訓・deOrder＝丈夫さの何回目。
+  //  固有スキルは原文の効果だけ（回復量の丸め・判定の順・二重発動の防ぎ方は未確定＝params なし・バトルに入れない）。
+  //  画像：原本（1254×1254 の透過 PNG）はリポジトリに置かない。表示用の派生＝tools/next1015/derive.py（README.md に sha256）。
+  const PENDING_SPECIES = fz([
+    fz({ id: 5, key: 'flurene', name: 'フルーネ', en: null, kind: '植物系', personality: null, formerNames: fz([]), unlocked: false, playerAvailable: false,
+      base: fz({ li: 150, po: 70, in: 110, hi: 90, ev: 60, de: 70 }), speed: 4, growth: G6('A', 'E', 'C', 'D', 'E', 'D'),
+      uniqueSkill: fz({ id: 'unique_flurene', name: '生命の芽吹き', implemented: false, params: null,
+        desc: '攻撃を受けた後、残りライフが最大ライフの50％以下になり、生き残っていた場合、1戦闘に1回だけ最大ライフの10％を回復する。' }),
+      moves: fz([
+        fz({ no: 1, name: 'つるうち', learn: 'initial' }),
+        fz({ no: 2, name: 'たねとばし', learn: 'initial' }),
+        fz({ no: 3, name: 'はなのかおり', learn: 'initial' }),
+        fz({ no: 4, name: 'ねっこのまもり', learn: 'initial' }),
+        fz({ no: 5, name: 'こんさいプレス', learn: 'po' }),
+        fz({ no: 6, name: 'ブルームレイ', learn: 'in' }),
+        fz({ no: 7, name: 'しばりづる', learn: 'hi' }),
+        fz({ no: 8, name: 'はなかげのまい', learn: 'ev' }),
+        fz({ no: 9, name: '生命のしずく', learn: 'de', deOrder: 1 }),
+        fz({ no: 10, name: 'ルートテンペスト', learn: 'de', deOrder: 2, finisher: true }),
+      ]),
+      image: fz({ src: './assets/monsters/2p5d/flurene.webp', w: 705, h: 720 }),
+      battleIdle: fz({ src: './assets/battle/idle/idle_flurene.webp', w: 730, h: 720 }),
+      tourIcon: fz({ src: './assets/tournament/icons_1015/icon_flurene.webp', w: 256, h: 256 }) }),
+  ]);
+  /** 登録のみの種族（番号でも文字IDでも）。無ければ null。画面の処理には使わない（解禁していない） */
+  const pendingSpecies = (ref) => PENDING_SPECIES.find((x) => (typeof ref === 'string' ? x.key === ref : x.id === ref)) || null;
   // ---- 種族IDの役割（二重管理にしない：1つの種族レコードが両方を持つ） ----
   //  id（0〜3の番号）…既存互換用。セーブの m.sp・旧SP表・fight() などの既存コードは番号のまま使う（変更・削除しない）。
   //  key（solamo 等） …新規参照用。画像アセット・マスター参照・市場・将来の技／亜種／合体／図鑑はこちらを使う。
@@ -358,5 +392,6 @@
   root.MMP10M = fz({ STAT_KEYS, STAT_LABELS, STAT_MAX, SPEED_MIN, SPEED_MAX, isValidSpeed, UNIQUE_SKILLS, SPECIES, RIVAL_MONSTERS, rivalMonster, OFFICIAL_MOVES, movesOf, moveBySlot,
     byId, byKey, keyOf, idOf, imageOf, silhouetteOf, speedOf, baseOf, skillOf, skillText, ensureSpeed, ECONOMY, MARKET_CATALOG,
     GROWTH_GRADES, GROWTH_GAIN, GROWTH_GAIN_BY_CH, GROWTH_UNREGISTERED, growthOf, growthGain, growthRegistered,
+    PENDING_SPECIES, pendingSpecies,
     OWN_LIMIT, RANCH_LIMIT, marketItem, canPurchase, purchase, FUSION_COST, setFusionAccess, fusionAvailable, continueRescueApplies, SELL, sellQuote, canSell, sell, NOBITON_STOCK_RAISES, nobitonStock });
 })(typeof window !== 'undefined' ? window : globalThis);

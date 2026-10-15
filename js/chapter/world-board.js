@@ -55,7 +55,7 @@
     return (id) => {
       const n = d.nodes[id], role = n ? n[2] : '', out = { src: TV2 + 'tile_blank.webp', mark: '', used: false };
       if (ART_TILE[role]) out.src = ART + ART_TILE[role];
-      else if (role === 'mandatory_rival') out.src = TOP + 'tile_rival.webp';
+      else if (role === 'mandatory_rival') { out.src = TOP + 'tile_rival.webp'; out.k = RIVAL_TILE_K; }   // 2026-10-15 N08：ライバルのマスだけ少し大きく
       else if ((fwdN[id] || 0) > 1) out.src = TV2 + 'tile_branch.webp';
       else if ((inN[id] || 0) > 1) out.src = ART + 'tile_merge.webp';
       else if (role === 'ordinary_tile' && f) {
@@ -192,6 +192,13 @@
 .wbw .wbh .chh-tix{gap:3px}.wbw .wbh .chh-tix .chh-tk{width:26px;height:18px;flex:none;object-fit:contain}
 .wbw .wbh .chh-tix span{font-size:10.5px;font-weight:700;color:#dfe6f8;letter-spacing:0}
 .wbw .wbh .chh-tix b{font-size:14px}
+/* 2026-10-15 N05：上の4つ（Turn・空腹・G・特訓）を画面の左右いっぱいに横1列で均等に（右の音のボタンより下の段＝右端まで使える）。
+ *  今の Turn の数字だけオレンジ（5/40 → 6/40 の変化が分かる）。数字は等幅（tabular-nums）・G の桁と「特訓 ×N」は省略しない（各欄は中央寄せ・折り返さない） */
+.wbw .wbh .chh-chips{display:grid;grid-template-columns:minmax(0,1.06fr) minmax(0,.92fr) minmax(0,1.04fr) minmax(0,1.1fr);gap:5px;margin-right:-46px;flex-wrap:nowrap}
+.wbw .wbh .chh-chips>.chip{justify-content:center;min-width:0;padding:0 5px;gap:4px;overflow:visible}
+.wbw .wbh .chh-chips .chip b{font-variant-numeric:tabular-nums}
+.wbw .wbh .chh-turn b{color:#ff9d2e;text-shadow:0 1px 2px rgba(0,0,0,.7)}
+@media (max-width:370px){.wbw .wbh .chh-chips{gap:4px}.wbw .wbh .chh-chips>.chip{padding:0 3px;gap:3px}.wbw .wbh .chh-turn{font-size:10.5px}.wbw .wbh .chh-turn b,.wbw .wbh .chh-fat b,.wbw .wbh .chh-gold b{font-size:14px}.wbw .wbh .chh-tix .chh-tk{width:22px}}
 #app>.chfw.wbw{--chdeck:calc(clamp(136px,20.6dvh,180px) + 26px + env(safe-area-inset-bottom,0px))}
 .wbw .wbmsg{display:flex;align-items:center;gap:7px;margin:0 6px 2px;min-height:38px;padding:3px 10px 3px 4px;border-radius:12px;background:rgba(4,10,30,.62);border:1px solid rgba(217,180,101,.4)}
 .wbw .wbmsg:has(.chmsg:empty){display:none}
@@ -212,7 +219,9 @@
 .wbw .wbcard figure .mon{position:absolute;left:50%;bottom:5%;height:68%;width:auto;max-width:70%;object-fit:contain;translate:-50% 0;z-index:3;filter:drop-shadow(0 6px 5px rgba(0,0,0,.45))}
 .wbw .wbcard figure .tool{position:absolute;z-index:4;height:34%;width:auto;filter:drop-shadow(0 3px 3px rgba(0,0,0,.4))}
 .wbw .wbcard figure .tool.back{z-index:2}
-.wbw .wbcard .cap{margin:-14px auto 0;position:relative;z-index:4;display:inline-block;max-width:92%;padding:5px 18px 6px;border-radius:999px;background:linear-gradient(#1c3373,#0d1a45);border:1.5px solid #e0b861;font:800 15px/1.3 var(--mm-font-title,serif);box-shadow:0 4px 10px rgba(0,0,0,.45)}
+/* 2026-10-15 N03：イベント名の札（古い訓練跡・出来事・〇〇のマス）＝会話の名前の札と同じ控えめな名札（正式の空欄の札 name_label_blank・濃い文字）。紺の楕円＋金枠の見た目は会話の選択肢へ移した（index.html の N03） */
+.wbw .wbcard .cap{margin:-15px auto 0;position:relative;z-index:4;display:inline-block;max-width:86%;min-width:104px;box-sizing:border-box;padding:6px 28px 7px;border:0;border-radius:0;background:url(./assets/ui/recovery_1006/talk/name_label_blank.png) center/100% 100% no-repeat;color:#1d2442;font:700 14px/1.25 "Shippori Mincho",var(--mm-font-title,serif);letter-spacing:.12em;text-shadow:0 1px 0 rgba(255,250,235,.7);filter:drop-shadow(0 3px 5px rgba(0,0,0,.42))}
+.wbw .wbbr .chroute{align-items:center;text-align:center;min-height:48px;border-radius:26px;border:1.5px solid #e0b861;background:linear-gradient(#1c3373,#0d1a45);box-shadow:0 3px 8px rgba(0,0,0,.4)}
 .wbw .wbcard .res{margin:8px auto 0;padding:9px 12px 10px;border-radius:12px;background:linear-gradient(180deg,rgba(20,36,82,.96),rgba(8,18,46,.96));border:1.5px solid #d9b465;box-shadow:0 6px 16px rgba(0,0,0,.45)}
 .wbw .wbcard .res:empty{display:none}
 .wbw .wbcard .res p{margin:0 0 4px;font-size:13px;line-height:1.5}
@@ -265,10 +274,25 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
 /* 2026-10-13 開発27（18）：イベントのサイコロの案内（「サイコロを振る」）と、サイコロの後ろの帯（盤の上・サイコロ（z30）より奥・HUD と操作欄より下） */
 .wbw .wbdask{text-align:center}.wbw .wbdask h3{margin:0 0 4px}.wbw .wbdask .p9s{margin:0 0 10px;line-height:1.55}
 .wbw .wbdask .wbdgo{display:block;width:min(100%,260px);margin:0 auto;padding:11px 0;border-radius:999px;border:1.5px solid #e8c66e;background:linear-gradient(#b8283a,#6e0f1e);color:#fff;font:800 16px/1.2 var(--mm-font-head);letter-spacing:.06em;box-shadow:0 3px 10px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25)}
-.wbv .wbdband{position:absolute;left:0;right:0;z-index:29;height:clamp(120px,24dvh,190px);transform:translateY(-50%);pointer-events:none;background:linear-gradient(180deg,rgba(8,16,44,0),rgba(8,16,44,.78) 18%,rgba(12,26,66,.86) 50%,rgba(8,16,44,.78) 82%,rgba(8,16,44,0));animation:wbdbIn .26s ease-out both}
-.wbv .wbdband::before,.wbv .wbdband::after{content:"";position:absolute;left:0;right:0;height:1.5px;background:linear-gradient(90deg,rgba(232,198,110,0),#e8c66e 20%,#fff1c4 50%,#e8c66e 80%,rgba(232,198,110,0))}
-.wbv .wbdband::before{top:16%}.wbv .wbdband::after{bottom:16%}
-.wbv .wbdband.out{opacity:0;transition:opacity .24s}
+.wbw .wbdband{position:absolute;left:0;right:0;z-index:29;height:clamp(132px,25dvh,196px);transform:translateY(-50%);pointer-events:none;background:linear-gradient(180deg,rgba(8,16,44,0),rgba(8,16,44,.8) 16%,rgba(12,26,66,.9) 50%,rgba(8,16,44,.8) 84%,rgba(8,16,44,0));animation:wbdbin .22s ease-out both}
+@keyframes wbdbin{from{opacity:0}}
+.wbw .wbdband::before,.wbw .wbdband::after{content:"";position:absolute;left:0;right:0;height:1.5px;background:linear-gradient(90deg,rgba(232,198,110,0),#e8c66e 20%,#fff1c4 50%,#e8c66e 80%,rgba(232,198,110,0))}
+.wbw .wbdband::before{top:15%}.wbw .wbdband::after{bottom:15%}
+.wbw .wbdband.out{opacity:0;transition:opacity .24s}
+.wbw .wbds{position:absolute;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:1px;min-width:62px;padding:6px 8px;border-radius:12px;color:#f3e6c4;font:800 15px/1.1 var(--mm-font-head,serif);text-shadow:0 1px 2px #000;transition:color .2s,background .2s,box-shadow .2s,opacity .2s}
+.wbw .wbds b{font-size:22px;line-height:1;color:#ffd977}
+.wbw .wbds small{font:700 11px/1.2 "Noto Sans JP",sans-serif;color:#cfd8f0}
+.wbw .wbds.l{left:4%}.wbw .wbds.r{right:4%}
+.wbw .wbds.c{left:50%;top:16%;transform:translate(-50%,-30%);flex-direction:row;font-size:13px;min-width:0;padding:2px 10px}
+.wbw .wbdband.go-l .wbds.l,.wbw .wbdband.go-r .wbds.r{background:rgba(255,214,120,.18);box-shadow:0 0 0 1.5px #e8c66e,0 0 14px rgba(255,214,120,.55);color:#fff}
+.wbw .wbdband.go-l .wbds.r,.wbw .wbdband.go-r .wbds.l{opacity:.45}
+.wbw .wbdn{position:absolute;left:50%;bottom:17%;transform:translateX(-50%);font:900 16px/1 var(--mm-font-head,serif);color:#fff6d8;letter-spacing:.08em;text-shadow:0 1px 3px #000;opacity:0;transition:opacity .2s}
+.wbw .wbdband.done .wbdn{opacity:1}
+.wbw .wbdband.ok .wbds.c{color:#b8ffb8}.wbw .wbdband.ng .wbds.c{color:#c9cfdc}
+.wbw .wbdask .wbdlr{display:flex;justify-content:space-between;gap:10px;margin:0 2px 10px}
+.wbw .wbdask .wbdlr span{flex:1 1 0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;border-radius:12px;border:1px solid rgba(232,198,110,.55);background:rgba(4,10,30,.5)}
+.wbw .wbdask .wbdlr b{font:800 16px/1.2 var(--mm-font-head,serif);color:#ffe3a0}
+.wbw .wbdask .wbdlr small{font-size:12px;color:#dfe6f8}
 @keyframes wbdbIn{from{opacity:0;transform:translateY(-50%) scaleY(.4)}to{opacity:1;transform:translateY(-50%)}}
 .wbw .wbx-veil{position:absolute;inset:0;background:radial-gradient(ellipse 85% 60% at 50% 44%,rgba(6,12,30,.25) 20%,rgba(4,8,22,.78) 72%,rgba(3,6,16,.9));animation:cefade .3s ease-out both}
 .wbw .wbx-w.rare .wbx-veil{background:radial-gradient(ellipse 85% 60% at 50% 44%,rgba(40,8,60,.3) 20%,rgba(18,4,30,.8) 72%,rgba(10,2,18,.92))}
@@ -281,23 +305,18 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
 .wbw .rows .chh-ic{width:1.15em;height:1.15em;vertical-align:-.2em;margin-right:2px;display:inline-block}
 .wbw .wbtr{position:absolute;inset:0;z-index:24;pointer-events:auto;overflow:hidden;transition:opacity .24s}.wbw .wbtr.out{opacity:0}
 .wbw .wbtr-veil{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 42%,rgba(40,28,8,.35),rgba(6,10,28,.82) 72%);animation:wbcfade .25s ease-out both}
-.wbw .wbtr-burst{position:absolute;left:62%;top:33%;width:min(110vw,520px);aspect-ratio:1;translate:-50% -50%;background:radial-gradient(circle,rgba(255,244,200,.9),rgba(255,214,120,.45) 22%,rgba(255,200,90,0) 55%),repeating-conic-gradient(rgba(255,230,160,.22) 0 6deg,transparent 6deg 18deg);border-radius:50%;opacity:0;scale:.4}
+.wbw .wbtr-burst{position:absolute;left:50%;top:36%;width:min(110vw,520px);aspect-ratio:1;translate:-50% -50%;background:radial-gradient(circle,rgba(255,244,200,.9),rgba(255,214,120,.45) 22%,rgba(255,200,90,0) 55%),repeating-conic-gradient(rgba(255,230,160,.22) 0 6deg,transparent 6deg 18deg);border-radius:50%;opacity:0;scale:.4}
 .wbw .wbtr.open .wbtr-burst{animation:wbtrburst .7s ease-out forwards}@keyframes wbtrburst{0%{opacity:0;scale:.4}35%{opacity:1}100%{opacity:.55;scale:1;rotate:12deg}}
-.wbw .wbtr-gold{position:absolute;left:60%;top:34%;width:min(96vw,420px);translate:-50% -50%;opacity:0}.wbw .wbtr.open .wbtr-gold{animation:wbtrgold .9s ease-out forwards}@keyframes wbtrgold{0%{opacity:0;scale:.6}40%{opacity:1}100%{opacity:.8;scale:1.05}}
-.wbw .wbtr-chest{position:absolute;left:62%;top:33%;width:min(52vw,220px);aspect-ratio:1;translate:-50% -50%;animation:wbtrin .38s cubic-bezier(.2,.9,.3,1.2) both}
+.wbw .wbtr-gold{position:absolute;left:50%;top:37%;width:min(96vw,420px);translate:-50% -50%;opacity:0}.wbw .wbtr.open .wbtr-gold{animation:wbtrgold .9s ease-out forwards}@keyframes wbtrgold{0%{opacity:0;scale:.6}40%{opacity:1}100%{opacity:.8;scale:1.05}}
+.wbw .wbtr-chest{position:absolute;left:50%;top:36%;width:min(60vw,250px);aspect-ratio:1;translate:-50% -50%;animation:wbtrin .38s cubic-bezier(.2,.9,.3,1.2) both}
 .wbw .wbtr-chest img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;filter:drop-shadow(0 8px 10px rgba(0,0,0,.55))}.wbw .wbtr-chest img.on{opacity:1}
 .wbw .wbtr-chest.none .wbtr-star{position:absolute;inset:18%;border-radius:50%;background:radial-gradient(circle,#fff6d8,rgba(255,220,130,.6) 40%,transparent 70%);opacity:0}.wbw .wbtr.open .wbtr-chest.none .wbtr-star{animation:wbtrburst .7s ease-out forwards}
 @keyframes wbtrin{from{opacity:0;scale:.5;translate:-50% -30%}}
-.wbw .wbtr-fina{position:absolute;left:-4%;bottom:calc(var(--chdeck,170px) - 18px);height:min(46dvh,360px);width:auto;filter:drop-shadow(0 6px 12px rgba(0,0,0,.5));animation:wbtrfina .42s .12s cubic-bezier(.2,.8,.3,1) both;-webkit-mask-image:linear-gradient(#000 78%,transparent);mask-image:linear-gradient(#000 78%,transparent)}
-@keyframes wbtrfina{from{opacity:0;translate:-22% 0}}
-.wbw .wbtr-say{position:absolute;left:30%;bottom:calc(var(--chdeck,170px) + min(30dvh,232px));padding:6px 14px 7px;border-radius:14px 14px 14px 4px;background:#fff8e6;color:#2a1b08;font:900 17px/1.2 "Noto Sans JP",sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.4);opacity:0;scale:.6;transform-origin:0 100%}
-.wbw .wbtr-say b{display:block;font-size:10px;color:#9a6a1c;letter-spacing:.1em;margin-bottom:1px}
-.wbw .wbtr.open .wbtr-say{animation:wbtrsay .3s cubic-bezier(.2,.9,.3,1.3) forwards}@keyframes wbtrsay{to{opacity:1;scale:1}}
-.wbw .wbtr-card{position:absolute;right:4%;left:36%;bottom:calc(var(--chdeck,170px) + 8px);padding:9px 12px 10px;border-radius:14px;background:linear-gradient(180deg,rgba(20,36,82,.97),rgba(8,18,46,.97));border:1.5px solid #d9b465;color:#fff;text-align:center;box-shadow:0 8px 22px rgba(0,0,0,.5);opacity:0;translate:0 10px}
+.wbw .wbtr-card{position:absolute;left:50%;right:auto;width:min(86%,340px);margin-left:calc(min(86%,340px) / -2);box-sizing:border-box;bottom:calc(var(--chdeck,170px) + 14px);padding:9px 12px 10px;border-radius:14px;background:linear-gradient(180deg,rgba(20,36,82,.97),rgba(8,18,46,.97));border:1.5px solid #d9b465;color:#fff;text-align:center;box-shadow:0 8px 22px rgba(0,0,0,.5);opacity:0;translate:0 10px}
 .wbw .wbtr.res .wbtr-card{animation:wbtrcard .3s ease-out forwards}@keyframes wbtrcard{to{opacity:1;translate:0 0}}
 .wbw .wbtr-card small{display:block;font-size:12px;color:#f3d98e;font-weight:700}.wbw .wbtr-card .t{display:block;font-size:15px;margin:2px 0}
 .wbw .wbtr-card .rows{display:flex;flex-wrap:wrap;gap:4px 10px;justify-content:center;font-weight:900;font-size:18px;margin-top:3px}.wbw .wbtr-card .rows .dn{color:#ffb0a0}
-.wbw .wbtr.calm *{animation:none!important}.wbw .wbtr.calm .wbtr-say,.wbw .wbtr.calm .wbtr-card{opacity:1;scale:1;translate:0 0}
+.wbw .wbtr.calm *{animation:none!important}.wbw .wbtr.calm .wbtr-card{opacity:1;scale:1;translate:0 0}
 .wbw .wbx-flash{position:absolute;inset:0;z-index:60;pointer-events:none;background:radial-gradient(circle at 50% 46%,rgba(255,252,240,.78),rgba(255,246,220,.42) 45%,rgba(255,240,210,.2));animation:wbxflash .5s ease-out forwards}
 @keyframes wbxflash{0%{opacity:0}30%{opacity:.62}100%{opacity:0}}
 .wbw .chsheet.chbat.auto h3{margin-bottom:2px}.wbw .chsheet.chbat.auto .p9s{opacity:.85}
@@ -339,6 +358,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
 :is(#rfp,.wbv) .rfw-mark{animation:rfwmk 2.4s ease-in-out infinite}
 @keyframes rfwmk{50%{translate:0 -7%;filter:drop-shadow(0 0 13px rgba(190,110,255,.95))}}   /* 2026-10-12：紫の光がゆっくり脈打つ（点滅にしない） */
 :is(#rfp,.wbv) .rfw-mark.dim{animation:none}
+:is(#rfp,.wbv) .rfw-mark.rival{animation:none;filter:drop-shadow(0 3px 4px rgba(0,0,0,.4))}   /* 2026-10-15 N08：ライバルの影は揺らさない（紫の淡い光は絵の中） */
 @keyframes wbxglow{from{opacity:0;transform:translateX(-50%) scale(.6)}}
 @keyframes wbxmon{from{opacity:0;translate:0 10%;scale:.86}}
 @keyframes wbxcard{from{opacity:0;translate:0 12px}}
@@ -403,7 +423,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     if (msg && ph === 'roll') V.lastMsg = String(msg).replace(/<[^>]*>/g, '');   // 2026-10-14 実機試遊㉜：直前の結果を次に描き直したときも残す（次のサイコロで消す）
     if (ph === 'goal') { paint(m, msg, null, fresh); arrive(m, fresh); return true; }
     paint(m, msg, null, fresh);
-    rareMark(m); fxPreload();
+    rareMark(m); rivalMark(m); fxPreload();
     if (ph === 'roll') setTimeout(() => turnWarn(m), 600);
     const wantIntro = fresh && ph === 'roll' && r.turnsUsed === 0 && r.node === 'START' && !f.introSeen && V.world && !root.MM_QA_NO_INTRO;
     if (fresh && V.world && V.world.ready) cover(m, wantIntro);   // 2026-10-12 開発21：描き終わるまで盤を見せない（出発の全景は中継カットから）
@@ -832,15 +852,16 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     if (el) { el.classList.add('out'); await wait(240); el.remove(); }
   }
   // 2026-10-14 実機試遊④：宝箱を見つけたときのカットイン。宝箱の正式素材（assets/chests/）の用途が決まっているものだけ＝ふつう chest_01・特別（宝の行き止まり・隠れ家）chest_04。
-  //  珍しい宝箱（rare）は対応表が無い＝宝箱の絵は出さない（光と中身だけ）。chest_02・03 は使わない。フィナの正式アップ（happy／surprised）を大きく、
-  //  「見て見て！」の字幕は声（fina.discover）と同時。開封 4コマ（0.1秒ずつ）→ 光 → 中身（rowsHtml）。タップで先へ・視差を減らす設定では動かさない（中身は同じ）
+  //  珍しい宝箱（rare）は対応表が無い＝宝箱の絵は出さない（光と中身だけ）。chest_02・03 は使わない。
+  //  2026-10-15 N06（ユーザーの最新決定・旧④より優先）：大きなフィナと「見て見て！」は出さない＝宝箱・光・金貨・中身だけを中央に。
+  //  開封 4コマ（0.1秒ずつ）→ 光 → 中身（rowsHtml）。タップで先へ・視差を減らす設定では動かさない（中身は同じ）。報酬は呼ぶ前に確定済み（ここでは加算しない）
   const CHEST = Object.freeze({ normal: 'chest_01', special: 'chest_04' });
   function treasureCut(fx, o) {
     const ui = $('#wb-ui'); if (!ui) return Promise.resolve();
     const C = './assets/chests/', ch = o.chest, still = calm(), big = (fx.gold || 0) >= GOLD_BIG;
     const chestHtml = ch ? `<div class="wbtr-chest">${[`${ch}_base`, `${ch}_anim_01`, `${ch}_anim_02`, `${ch}_anim_03`, `${ch}_anim_04`].map((f, i) => `<img class="f${i}${still && i === 4 ? ' on' : (!still && i === 0 ? ' on' : '')}" src="${C}${f}.webp" alt="" draggable="false" decoding="async">`).join('')}</div>` : '<div class="wbtr-chest none"><i class="wbtr-star"></i></div>';
     ui.insertAdjacentHTML('beforeend', `<div class="wbtr${still ? ' calm' : ''}" role="status" aria-label="${esc(o.cap)}"><i class="wbtr-veil"></i>${big ? `<img class="wbtr-gold" src="${esc(FXF.gold)}" alt="" draggable="false">` : ''}<i class="wbtr-burst"></i>
-      ${chestHtml}<img class="wbtr-fina" src="./assets/npc/fina/closeup/${o.face || 'happy'}.webp" alt="フィナ" draggable="false" decoding="async"><div class="wbtr-say"><b>フィナ</b>見て見て！</div>
+      ${chestHtml}
       <div class="wbtr-card"><small>${esc(o.cap)}</small>${o.title ? `<b class="t">${esc(o.title)}</b>` : ''}${rowsHtml(fx)}</div></div>`);
     const el = ui.querySelector('.wbtr:last-child');
     return new Promise((done) => {
@@ -848,7 +869,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
       const close = () => { if (closed) return; closed = true; T.forEach(clearTimeout); el.classList.add('out'); setTimeout(() => { el.remove(); done(); }, still ? 0 : 240); };
       const frame = (i) => { const im = el.querySelectorAll('.wbtr-chest img'); im.forEach((x, k) => x.classList.toggle('on', k === i)); };
       if (!still && ch) [1, 2, 3, 4].forEach((i) => T.push(setTimeout(() => frame(i), 360 + i * 110)));
-      T.push(setTimeout(() => { el.classList.add('open'); vcue('fina.discover'); if (big) feel('gold.get', { amount: fx.gold }); }, still ? 0 : 820));   // 開ききった瞬間に光・字幕と声（「見て見て」）
+      T.push(setTimeout(() => { el.classList.add('open'); if (big) feel('gold.get', { amount: fx.gold }); }, still ? 0 : 820));   // 開ききった瞬間に光（2026-10-15 N06：フィナの「見て見て！」と声の合図 fina.discover は出さない）
       T.push(setTimeout(() => el.classList.add('res'), still ? 0 : 1050));
       T.push(setTimeout(close, still ? Math.min(o.ms, 1400) : o.ms));
       el.addEventListener('click', () => { if (Date.now() - t0 > 900) close(); });
@@ -875,6 +896,14 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     const el = ui.querySelector('.wbx-hg:last-child'); feel('turn.warn', { left });
     setTimeout(() => { if (el) { el.classList.add('out'); setTimeout(() => el.remove(), 260); } }, left === 1 ? 2400 : left === 5 ? 2000 : 1600);
   }
+  /** 2026-10-15 N08：ライバルの地点（RIVAL・A／B／C 共通）＝マスを 1.25 倍・マスの奥にリュウと相棒レグナスの影（正式の立ち絵の輪郭だけ・
+   *  assets/chapter/rival_mark_1015/）。会ったあと（rivalMet）は影を外す。道・地点・判定・カメラ・固定戦闘は変えない */
+  const RIVAL_TILE_K = 1.25, RIVAL_MARK = './assets/chapter/rival_mark_1015/rival_silhouette.webp';
+  function rivalMark(m) {
+    const f = fieldOf(m), d = D(m); if (!f || !V.world || !V.world.marker || !d.nodes.RIVAL) return;
+    if (f.rivalMet) { if (V.world.markerOff) V.world.markerOff('RIVAL'); return; }
+    V.world.marker('RIVAL', RIVAL_MARK, { w: 46, min: 42, max: 132, ah: 1.16, z: -40, cls: 'rival' });
+  }
   /** レアのマス（この育成で出たときだけ）：その地点の上に紫の紋章（全景でも見える大きさ）。訪れたら弱くする */
   function rareMark(m) {
     const f = fieldOf(m); if (!f || !V.world || !V.world.marker) return;
@@ -895,13 +924,13 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
   /** 2026-10-13 開発24：フィナの声（js/npc/voice-cues.js の CUES）。自動テストの一言なし（MM_QA_NO_STORY）では鳴らさない */
   const vcue = (name) => { try { if (!root.MM_QA_NO_STORY && root.MMVOICE) root.MMVOICE.cue(name); } catch (e) {} };
   const DIE_TEXT = {
-    Q: (e) => `運命のサイコロ：${e.die}（${e.die % 2 ? '奇数＝左の道' : '偶数＝右の道'}へ）`,
+    Q: (e) => `運命の分かれ道：出目 ${e.die}（${e.die % 2 ? '奇数 → ← 左の道' : '偶数 → 右の道 →'}）`,   // 2026-10-15 N07：アイテムと紛らわしい「運命のサイコロ」から改名
     CHALLENGE: (e) => `封印の遺跡門の挑戦：${e.die} → ${e.die >= 5 ? '成功！ 遺跡の道へ' : '失敗… 遠回りの道へ'}`,
   };
   /** 2026-10-13 開発27（18）：イベントのサイコロ（Q の左右・特殊挑戦）は、案内を出してプレイヤーが「サイコロを振る」を押してから1回だけ振る。
    *  出目・判定（奇数／偶数・5／6 で成功）は resolveLanding で決まって保存済み＝ここは見せ方だけ。自動テストの一言なし（MM_QA_NO_STORY）では待たない */
   const DIE_ASK = {
-    Q: { h: '運命のサイコロ', p: 'サイコロを振って進む道を決めよう。奇数なら左の道、偶数なら右の道へ。' },
+    Q: { h: '運命の分かれ道', p: 'サイコロの出目で進む道が決まる。', lr: true },   // 2026-10-15 N07：左右は自分で選べない（出目で決まる）＝矢印は説明だけ
     CHALLENGE: { h: '封印の遺跡門の挑戦', p: 'サイコロを振って、5か6が出れば成功！ 遺跡の道へ進める。それ以外は遠回りの道へ。' },
   };
   function dieAsk(e) {
@@ -909,19 +938,31 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     if (!ui || root.MM_QA_NO_STORY) return Promise.resolve();
     const b0 = $('#bmsg'); if (b0) b0.textContent = A.h;
     return new Promise((done) => {
-      ui.insertAdjacentHTML('beforeend', `<div class="chsheet wbdask" role="dialog" aria-label="${esc(A.h)}"><h3>🎲 ${esc(A.h)}</h3><p class="p9s">${esc(A.p)}</p><button type="button" class="p9btn wbdgo">サイコロを振る</button></div>`);
+      const lr = A.lr ? '<div class="wbdlr" aria-label="奇数なら左の道、偶数なら右の道"><span class="l"><b>← 左の道</b><small>奇数（1・3・5）</small></span><span class="r"><b>右の道 →</b><small>偶数（2・4・6）</small></span></div>' : '';
+      ui.insertAdjacentHTML('beforeend', `<div class="chsheet wbdask" role="dialog" aria-label="${esc(A.h)}"><h3>🎲 ${esc(A.h)}</h3><p class="p9s">${esc(A.p)}</p>${lr}<button type="button" class="p9btn wbdgo">サイコロを振る</button></div>`);
       const el = ui.querySelector('.wbdask:last-child'), b = el && el.querySelector('.wbdgo'), t0 = Date.now();
       if (!b) { if (el) el.remove(); return done(); }
       const go = (ev) => { if (ev) ev.stopPropagation(); if (b.disabled || Date.now() - t0 < 350) return; b.disabled = true; el.remove(); done(); };   // 1回だけ（連打・表示直後の押下は無視）
       b.addEventListener('click', go);
     });
   }
+  //  2026-10-15 N07：サイコロの舞台＝画面の中ほどの紺の横長の帯（サイコロはこの帯の上に着地して止まる）。運命の分かれ道は帯の左右に「← 左（奇数）」「右（偶数）→」、
+  //   止まったら出目の数字と進む側を光らせて少し見せてから消える。特殊挑戦は「5・6で成功」。出目・判定・ターン・保存は変えない（もう決まっている＝見せるだけ）。
+  //   （旧：帯は #wbw に入れていたのに CSS が .wbv の中だけを指していた＝実際には見えていなかった）
   async function dieBand(e, play) {
     const host = V.el; if (!host || calm()) return play();
     const vr = viewRect(), y = vr ? vr.top + (vr.bottom - vr.top) * 0.36 : host.getBoundingClientRect().height * 0.4;
-    host.insertAdjacentHTML('beforeend', `<div class="wbdband" aria-hidden="true" style="top:${Math.round(y)}px"><i></i></div>`);
+    const side = e.kind === 'Q' ? '<span class="wbds l"><b>←</b>左<small>奇数</small></span><span class="wbds r">右<b>→</b><small>偶数</small></span>' : e.kind === 'CHALLENGE' ? '<span class="wbds c">5・6で成功</span>' : '';
+    host.insertAdjacentHTML('beforeend', `<div class="wbdband k-${esc(e.kind || '')}" aria-hidden="true" style="top:${Math.round(y)}px">${side}<b class="wbdn"></b></div>`);
     const el = host.querySelector('.wbdband:last-child');
-    try { await play(); } finally { if (el) { el.classList.add('out'); setTimeout(() => el.remove(), 260); } }
+    try { await play(); }
+    finally {
+      if (el) {
+        const n = el.querySelector('.wbdn'); if (n) n.textContent = `出目 ${e.die}`;
+        el.classList.add('done', e.kind === 'Q' ? (e.die % 2 ? 'go-l' : 'go-r') : e.kind === 'CHALLENGE' ? (e.die >= 5 ? 'ok' : 'ng') : 'x');
+        await wait(700); el.classList.add('out'); setTimeout(() => el.remove(), 260);
+      }
+    }
   }
   // 2026-10-14 実機試遊⑩・Q13：遭遇 → 短い白い光（眩しすぎない・視差を減らす設定では出さない）→ VS（bBattleGo）。1つの遭遇（pend）で自動の開始は1回だけ（AUTO_BT）
   const AUTO_BT = new WeakSet();

@@ -176,8 +176,8 @@ test('CH1-08：能力マスの上昇量＝成長適性（2026-10-08 正式：全
   assert.equal(CH.statGain({ sp: 1 }, 'de').amount, 11);
 });
 
-test('CH1-09：能力マスに止まる → その能力だけ 適性の値ぶん上がる（どの疲れ・どの乱数でも同じ。2026-10-14 実機試遊⑲：Chapter ごとの表 GROWTH_GAIN_BY_CH＝Chapter 1 は A20 B18 C16 D12 E9）。イベントの能力変化は適性の影響を受けない', () => {
-  for (const [sp, want] of [[0, { li: 16, po: 16, in: 16, hi: 16, ev: 16, de: 16 }], [1, { li: 12, po: 18, in: 18, hi: 16, ev: 18, de: 9 }], [2, { li: 18, po: 12, in: 12, hi: 12, ev: 9, de: 16 }], [3, { li: 16, po: 20, in: 9, hi: 12, ev: 9, de: 20 }]]) {
+test('CH1-09：能力マスに止まる → その能力だけ 適性の値ぶん上がる（どの疲れ・どの乱数でも同じ。2026-10-14 実機試遊⑲：Chapter ごとの表 GROWTH_GAIN_BY_CH＝Chapter 1 は A20 B18 C16 D12 E9 → 2026-10-15 追加B で A17 B15 C14 D10 E8）。イベントの能力変化は適性の影響を受けない', () => {
+  for (const [sp, want] of [[0, { li: 14, po: 14, in: 14, hi: 14, ev: 14, de: 14 }], [1, { li: 10, po: 15, in: 15, hi: 14, ev: 15, de: 8 }], [2, { li: 15, po: 10, in: 10, hi: 10, ev: 8, de: 14 }], [3, { li: 14, po: 17, in: 8, hi: 10, ev: 8, de: 17 }]]) {
     for (const k of Object.keys(want)) for (const [fat, rv] of [[0, 0.01], [55, 0.5], [99, 0.99]]) {
       const E = onCh1(); E.m.sp = sp; const g = E.CH.graphFor(E.m), id = g.order.find((x) => x !== g.start && g.nodes[x].kind === 'slot');
       E.m.raise.field.nodeAssignments[id] = { t: 'stat', k }; E.m.raise.node = id; E.m.raise.pend = { roll: 1, left: 0, stage: 'resolve' }; E.m.raise.fatigue = fat;
