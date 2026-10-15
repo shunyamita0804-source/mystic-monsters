@@ -196,6 +196,9 @@ try {
     // 2026-10-15 N11・N12：フルーネは登録だけ（市場・図鑑の表に無い・予約番号 5）・対戦表の顔は正式のイラスト（6番目＝フルーネ）
     const fl = await page.evaluate(() => { const f = MMP10M.pendingSpecies && MMP10M.pendingSpecies('flurene'); return { reg: !!f, id: f && f.id, unlocked: f && f.unlocked, inSpecies: MMP10M.SPECIES.some((s) => s.key === 'flurene' || s.id === 5), byId: !!MMP10M.byId(5), market: MMP10M.MARKET_CATALOG.some((c) => c.key === 'flurene'), icon5: window.MMARENA && MMARENA.tourIconSrc(5), icon0: window.MMARENA && MMARENA.tourIconSrc(0) }; });
     rec('N11・N12：フルーネは登録のみ（市場・図鑑・byId に無い）・対戦表の顔は正式のイラスト', fl.reg && fl.id === 5 && fl.unlocked === false && !fl.inSpecies && !fl.byId && !fl.market && /icons_1015\/icon_flurene\.webp$/.test(fl.icon5 || '') && /icons_1015\/icon_solamo\.webp$/.test(fl.icon0 || ''), JSON.stringify(fl));
+    // 2026-10-15 追加B：Chapter 1 の能力マス 53%（無地 12%）・落ち着いた区間も能力マス・Chapter 1 の上昇 A17 B15 C14 D10 E8
+    const cb = await page.evaluate(() => ({ dens: window.MMRF_PLAY && Object.assign({}, MMRF_PLAY.TUNING.density), calm: window.MMRF_PLAY && MMRF_PLAY.TUNING.calmToStat, g1: Object.assign({}, MMP10M.GROWTH_GAIN_BY_CH[1]) }));
+    rec('追加B：Chapter 1 の能力マス 53%・上昇 A17〜E8', !!cb.dens && cb.dens.stat === 0.53 && cb.calm === true && JSON.stringify(cb.g1) === JSON.stringify({ A: 17, B: 15, C: 14, D: 10, E: 8 }), JSON.stringify(cb));
     // 施設の声：2026-10-13 開発25 F＝初回の説明（MMNPCE の FIRST・カレンの初回）が出る訪問は入口の声を出さない → 説明のあとの再訪で1回。
     //  上の流れ（市場の購入・牧場・ベースキャンプ）は初回＝声なし。牧場・ベースキャンプは「ほかの画面サイズ」の再訪で鳴っている。市場・アイテム屋はここで初回の説明を送ってから、もう一度入る（再訪）
     await page.evaluate(() => shopScr()); await sleep(1200); await drain(); await sleep(300);   // アイテム屋の初回（フィナ ↔ ベルナ）
@@ -242,11 +245,13 @@ try {
     while (Date.now() - tb < 200000) {
       const st = await page.evaluate(() => { const g = document.getElementById('go'); return { bt: !!document.getElementById('bt'), back: !!g && g.classList.contains('bk'), can: !!g && !g.disabled && !g.classList.contains('bk') }; });
       if (!st.bt || st.back) break;
+      if (st.can && !ui.cards) ui.cards = await page.evaluate(() => { const bt = document.getElementById('bt'); return bt.querySelector('.mmr.cards') ? { n: bt.querySelectorAll('.mmr .pl.cd').length, src: [...bt.querySelectorAll('.mmr .pl.cd .ic img')].map((i) => i.getAttribute('src')), miss: bt.querySelectorAll('.mmr .pl.ms img.bgp').length } : { none: true }; });   // 追加A
       if (st.can) { const w = turn++ % 3 === 1; await page.waitForFunction((w) => { const on = document.querySelector('#rl .rw.on'); return on && on.classList.contains('ms') === w; }, w, { timeout: 4000, polling: 5 }).catch(() => {}); await page.click('#go').catch(() => {}); if (turn === 2) { await sleep(1300); await page.screenshot({ path: `${OUT}/dev24_cine_390.png` }); } }
       await sleep(150);
     }
     const bt2 = await page.evaluate(() => ({ cine: window.__cine, crowd: MMCROWD.log().map((x) => [x.kind, x.result]), play: MMAUDIO.playLog().filter((x) => /^CROWD/.test(x.name)).map((x) => [x.name, x.ctx, x.src.split('/').pop()]), back: !!document.querySelector('#go.bk') }));
     await page.screenshot({ path: `${OUT}/dev24_end_390.png` });
+    rec('追加A：ルーレット＝横長の技カード（正式カード・技名の帯・MISS の板は従来の絵）', ui.cards && ui.cards.n >= 4 && ui.cards.src.every((x) => /cards_1014\//.test(x)) && ui.cards.miss >= 1, JSON.stringify(ui.cards));
     rec('開発24：公式大会の新しいバトル画面（低いルーレット・数値なし・STOP は画面の中）', ui.v24 && ui.st === 0 && ui.mmrH < 130 && ui.goBottom <= ui.ih, JSON.stringify(ui));
     rec('開発24：技の発動中は HUD・ルーレット・STOP を隠す', bt2.cine.length > 0 && bt2.cine.every((c) => c.on && c.hpr === 'hidden' && c.bui === 'hidden'), JSON.stringify(bt2.cine.slice(0, 4)));
     const pk = new Set(bt2.play.map((x) => x[0]));
