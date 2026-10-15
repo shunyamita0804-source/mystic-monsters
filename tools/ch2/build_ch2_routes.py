@@ -18,12 +18,13 @@ import json, math, itertools, os
 from collections import deque
 from pathlib import Path
 R = Path(__file__).resolve().parents[2]
-SRC = R / 'tools/ch2/routes'
-OUT_JS = R / 'js/proto/ch2-routes.js'
-OUT_SUM = R / 'tools/ch2/out/summary.json'
+SRC = Path(os.environ.get('CH2_SRC') or R / 'tools/ch2/routes')          # 案の比較だけ別の置き場（CH2_SRC・CH2_OUT・CH2_SUM）
+OUT_JS = Path(os.environ.get('CH2_OUT') or R / 'js/proto/ch2-routes.js')
+OUT_SUM = Path(os.environ.get('CH2_SUM') or R / 'tools/ch2/out/summary.json')
 
 COND = {'parity_left': 'Q_odd_only', 'parity_right': 'Q_even_only', 'challenge_fail': 'CHALLENGE_1_4', 'challenge_success': 'CHALLENGE_5_6', 'optional_random_spur': 'unlock_random_event'}
 SPUR = {'reward_spur', 'optional_random_spur'}
+LOOSE = bool(os.environ.get('CH2_LOOSE'))   # 案の比較だけ：歩数だけ書き換えた仮の案（間隔・距離・交差の検査を外す）。正式の出力には使わない
 STEP = 24.0   # 1歩のおおよその長さ（単位）。Chapter 1 A の実測は 15〜28（平均 約21）。Chapter 2 は少し広め（40ターンで 95〜125歩の本線にするため）
 REWARD_IDS = ['L_CHEST', 'R_CHEST', 'L_ALTAR', 'L_LATE_ALTAR', 'REWARD5', 'R_SPECIAL']
 
@@ -152,7 +153,7 @@ def build(spec):
         L = plen(line)
         n = s[4] if len(s) > 4 else max(2, round(L / step), math.ceil(L / 28))
         sp = L / n
-        assert 15 <= sp <= 28, f'{spec["key"]} 間隔 {sid} {sp:.1f}（歩数 {n}・長さ {L:.0f}）'
+        assert LOOSE or 15 <= sp <= 28, f'{spec["key"]} 間隔 {sid} {sp:.1f}（歩数 {n}・長さ {L:.0f}）'
         p = resample(line, n); pts[sid] = p
         ids = [a] + [f'{sid}_{i:02d}' for i in range(1, n)] + [b]
         for i, id_ in enumerate(ids):
@@ -181,7 +182,9 @@ def build(spec):
     # レアの候補（区間 → その区間の通常の地点）。MMRF_PLAY.layout が D.rareZones を読む
     D['rareZones'] = {z: [i for sid in segs_ for i in segments[sid][3][1:-1]] for z, segs_ in (spec.get('rareZones') or {}).items()}
     D['art'] = dict(WORLD_ART, spurs=[k for k, s in segs.items() if s[2] in SPUR], elev={k: v for k, v in elev.items() if v}, sea3d=True,
-                    zoneOf={sid: seg_zone(spec, sid) for sid in segments}, landmarks=landmarks_of(spec), peaks=[])
+                    zoneOf={sid: seg_zone(spec, sid) for sid in segments}, landmarks=landmarks_of(spec), peaks=[],
+                    # 2026-10-15 追補2：沈没遺跡の広場（海底の要の地点＝封印の扉・遺跡の門・回廊の出口）。2.5D の試作は海底の地面に割れた敷石の円を描く
+                    ruins=[{'at': k, 'r': 34 if k == 'CHALLENGE' else 26} for k in ('CHALLENGE', 'RIVAL', 'R') if k in anc and elev.get(k, 0) <= -DEPTH + 0.1])
     stats = check(spec, D, pts, elev)
     return D, stats
 
@@ -248,7 +251,7 @@ def check(spec, D, pts, elev):
         d = math.dist(N[a][:2] + [hh(a)], N[b][:2] + [hh(b)])
         mind = min(mind, d)
         if d < 12: near.append((a, b, round(d, 1)))
-    assert not near, f'{key}：地点が近すぎる {near[:8]}'
+    assert LOOSE or not near, f'{key}：地点が近すぎる {near[:8]}'
     for k, v in N.items(): assert 20 <= v[0] <= 1004 and 40 <= v[1] <= 1520, (key, k, v)
     # 道が交わらない・近すぎない（端を共有しない区間どうし。高さが 20 以上違えば橋＝可）
     S = D['segments']; ends = {k: {v[0], v[1]} for k, v in S.items()}
@@ -266,16 +269,16 @@ def check(spec, D, pts, elev):
                 if t is not None or d < 20: bad.append((a, b, round(d, 1))); break
             else: continue
             break
-    assert not bad, f'{key}：道が交わる・近すぎる {bad}'
+    assert LOOSE or not bad, f'{key}：道が交わる・近すぎる {bad}'
     # 海底の地点は盆地の中（ふちから 14 以上内側）
     basin = WORLD_ART['basin']
     for sid, s in S.items():
         if seg_zone(spec, sid) != 'undersea': continue
         for i in s[3]:
-            x, y = N[i][:2]; assert in_poly(basin, x, y) and dist_poly_edge(basin, (x, y)) >= 14, f'{key}：海底の地点 {i} が盆地の外かふちに近い（{x},{y}）'
+            x, y = N[i][:2]; assert LOOSE or in_poly(basin, x, y) and dist_poly_edge(basin, (x, y)) >= 14, f'{key}：海底の地点 {i} が盆地の外かふちに近い（{x},{y}）'
     # 塔のまわり：道は塔の中を通らない
     for T in WORLD_ART['towers']:
-        for k, v in N.items(): assert math.dist(v[:2], T['c']) >= T['r'] + 12, f'{key}：地点 {k} が塔 {T["id"]} の中'
+        for k, v in N.items(): assert LOOSE or math.dist(v[:2], T['c']) >= T['r'] + 12, f'{key}：地点 {k} が塔 {T["id"]} の中'
     mr = main_routes(D)
     bad = [m for m in mr if not (0.45 <= m['rivalRatio'] <= 0.80)]
     assert not bad, f'{key}：ライバルの位置 ' + '；'.join(f'{m["rival"]}/{m["total"]}（{m["rivalRatio"]}）{m["segs"]}' for m in bad)

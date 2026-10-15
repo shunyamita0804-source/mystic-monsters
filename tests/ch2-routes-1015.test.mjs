@@ -7,6 +7,7 @@
 //  C2-06 2026-10-15 追補（論点 2・3・5）：特殊挑戦は成功＝近道・失敗＝回り道・高さ（海面 0・海底 −depth・下降／螺旋塔の上昇は単調）・螺旋塔 12〜13 歩・海底の地点は盆地の中・
 //        報酬 7 枠の中身の種類と数は Chapter 1 と同じ・探索路（explore）は道のデータにある区間
 //  C2-07 試作の進行が道のデータの割り当てを使う（報酬の中身・能力の道の偏り）・Chapter 1 のデータでは従来どおり
+//  C2-08 2026-10-15 追補2：道のデータ・tools/ch2/out/summary.json・設計書（DESIGN.md）の数値が一致（地点数 A 298・B 280・C 304、特殊挑戦の成功／失敗 A 6／20・B 2／14・C 6／18、螺旋塔）
 //  C2-05 隔離：本編（world-driver・world-board・raising.js）と Chapter 1 の試作のデータ（roadfirst-data.js・roadfirst-routes.js）は ch2-routes を参照しない・保存の鍵は別
 // =========================================================
 import test from 'node:test';
@@ -54,7 +55,7 @@ test('C2-02：到達性・必通・寄り道から戻れる・ライバルは本
     assert.ok(!reach(D, 'START', 'LOWER_GATE').has('GOAL'), k + '：潮の塔（海底へ下りる）を必ず通る');
     for (const sid of Object.keys(D.segments)) if (SPUR(D, sid)) assert.ok(reach(D, D.segments[sid][1]).has(D.segments[sid][0]), `${k} ${sid}：戻れる`);
     const ms = mainRoutes(D); assert.ok(ms.length >= 4, k + '：本線が複数');
-    for (const m of ms) { assert.ok(m.rival != null); assert.ok(m.rival / m.tot >= 0.45 && m.rival / m.tot <= 0.8, `${k}：ライバル ${m.rival}/${m.tot}`); assert.ok(m.tot >= 90 && m.tot <= 140, `${k}：本線 ${m.tot}歩`); }
+    for (const m of ms) { assert.ok(m.rival != null); assert.ok(m.rival / m.tot >= 0.45 && m.rival / m.tot <= 0.8, `${k}：ライバル ${m.rival}/${m.tot}`); assert.ok(m.tot >= 85 && m.tot <= 140, `${k}：本線 ${m.tot}歩`); }   // 2026-10-15 追補2：B は特殊挑戦の成功の近道（2歩）を含めて最短 88 歩
   }
 });
 
@@ -77,7 +78,7 @@ test('C2-04：実際の進行（MMRF_CORE）＝運命の分かれ道・特殊挑
       while (!st.done && !st.timeUp) C.playTurn(D, st, pol, { eventDie: 1 + (seed % 6), challengeDie: seed % 2 ? 6 : 2 });
       assert.ok(st.done && st.node === 'GOAL', `${k}/${seed}：GOAL`); assert.equal(st.rival, true); assert.ok(st.trail.includes('LOWER_GATE'));
       if (st.qDie != null) { const side = st.qDie % 2 ? 'Q_L' : 'Q_R'; assert.ok(st.trail.some((id) => id.startsWith(side)), `${k}：運命のサイコロ ${st.qDie} → ${side}`); }
-      if (st.chal) assert.ok(st.trail.some((id) => id.startsWith(st.chal === 'success' ? 'LATE_L_SUCCESS' : 'LATE_L_FAIL')), `${k}：特殊挑戦 ${st.chal}`);
+      if (st.chal) assert.ok(st.trail.includes(st.chal === 'success' ? 'SUCCESS_L1' : 'FAIL_L') && !st.trail.includes(st.chal === 'success' ? 'FAIL_L' : 'SUCCESS_L1'), `${k}：特殊挑戦 ${st.chal}`);   // B の成功の道は 1歩＋1歩＝途中の地点が無い
       if (seed % 2 && st.trail.includes('RANDOM_DEN')) { assert.equal(st.rewards.RANDOM_DEN, true); const i = st.trail.indexOf('RANDOM_DEN'); assert.ok(st.trail.slice(i).includes(D.segments.D_RAND[0]), k + '：隠れ家から戻る'); }
     }
     // ライバルで止まり残りの目は捨てる
@@ -149,4 +150,18 @@ test('C2-07：試作の進行が道のデータの割り当てを使う（報酬
   assert.ok(cnt.hit / cnt.all > 0.45, `偏り ${cnt.hit}/${cnt.all}`);   // 偏りなしなら 2/6≒0.33・重み 3 で ≒0.6
   // Chapter 1 のデータには statLanes・rewards・calm・rareZones が無い＝従来の TUNING のまま
   for (const k of ['statLanes', 'rewards', 'calm', 'rareZones']) assert.equal(A1[k], undefined, k);
+});
+
+test('C2-08：道のデータ・summary.json・設計書の数値が一致（2026-10-15 追補2）', () => {
+  const sum = JSON.parse(rd('tools/ch2/out/summary.json')), doc = rd('docs/ch2_abc_design_1015/DESIGN.md');
+  const WANT = { A: { nodes: 298, ok: 6, ng: 20, sp: 12 }, B: { nodes: 280, ok: 2, ng: 14, sp: 12 }, C: { nodes: 304, ok: 6, ng: 18, sp: 13 } };
+  const L = (D, sid) => D.segments[sid][3].length - 1;
+  for (const [k, w] of Object.entries(WANT)) {
+    const D = R[k], n = Object.keys(D.nodes).length;
+    assert.equal(n, w.nodes, k + '：地点数'); assert.equal(sum[k].nodes, n, k + '：summary の地点数'); assert.equal(sum[k].edges, D.edges.length); assert.equal(sum[k].segments, Object.keys(D.segments).length);
+    assert.equal(L(D, 'LATE_L_SUCCESS1') + L(D, 'LATE_L_SUCCESS_JOIN'), w.ok, k + '：成功の道');
+    assert.equal(L(D, 'LATE_L_FAIL') + L(D, 'LATE_L_FAIL_JOIN'), w.ng, k + '：失敗の道');
+    assert.deepEqual(sum[k].challenge, { success: w.ok, fail: w.ng }); assert.deepEqual(sum[k].spiralSteps, [w.sp]); assert.equal(L(D, 'SPIRAL'), w.sp);
+    assert.ok(doc.includes(`${k} ${w.nodes}`), k + '：設計書の地点数'); assert.ok(doc.includes(`成功 ${w.ok}・失敗 ${w.ng}`), k + '：設計書の特殊挑戦');
+  }
 });

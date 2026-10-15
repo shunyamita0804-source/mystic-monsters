@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Chapter 2 A／B／C の「ルート設計図」（Chapter 1 B／C の設計書と同じ見せ方＝濃紺の地に色分けした道・地点の札・歩数）を1枚の HTML にする。
-入力：js/proto/ch2-routes.js（build_ch2_routes.py の出力）・tools/ch2/out/summary.json・tools/ch2/out/sim_600.json
+入力：js/proto/ch2-routes.js（build_ch2_routes.py の出力）・tools/ch2/out/summary.json・tools/ch2/out/sim_12000.json
 出力：docs/ch2_abc_design_1015/route_design.html（Artifact としても公開する。外部の画像・スクリプトなし＝SVG を直書き）
 実行：python3 -I tools/ch2/make_design_html.py"""
 import json, html, base64, io
@@ -9,7 +9,11 @@ from pathlib import Path
 R = Path(__file__).resolve().parents[2]
 src = (R / 'js/proto/ch2-routes.js').read_text(encoding='utf-8'); DATA = json.loads(src[src.index('const R = ') + 10: src.index(';\n  if (typeof module')])
 SUMM = json.loads((R / 'tools/ch2/out/summary.json').read_text(encoding='utf-8'))
-SIM = json.loads((R / 'tools/ch2/out/sim_600.json').read_text(encoding='utf-8'))['out']
+SIM = json.loads((R / 'tools/ch2/out/sim_12000.json').read_text(encoding='utf-8'))['out']
+SIM50 = json.loads((R / 'tools/ch2/out/sim_12000_spur50.json').read_text(encoding='utf-8'))['out']   # 2026-10-15 追補2：寄り道 50%
+# 2026-10-15 追補2：特殊挑戦の案（tools/ch2/out/challenge_variants.json＝sim.mjs で測った値。COMPARISON.md・DESIGN.md と同じ）
+VAR = json.loads((R / 'tools/ch2/out/challenge_variants.json').read_text(encoding='utf-8'))
+B_VARIANTS = [(('<b>' + a + '</b>') if '採用' in a else a, b, (f'{c:+.1f}' if c else '±0.0'), (f'{d:+.1f}' if d else '±0.0'), e) for a, b, c, d, e in VAR['B']]
 OUT = R / 'docs/ch2_abc_design_1015/route_design.html'
 
 # 道の色（Chapter 1 の設計書と同じ区分）
@@ -131,7 +135,8 @@ def img64(path, w=360):
     return 'data:image/jpeg;base64,' + base64.b64encode(b.getvalue()).decode()
 SH = 'docs/ch2_abc_design_1015/shots/'
 PREV = [(SH + 'ch2proto_A_390x844_start.png', 'A：港（START）'), (SH + 'ch2proto_A_390x844_spiral1.png', 'A：螺旋塔の斜路（海底から上る）'), (SH + 'ch2proto_A_390x844_spiral2.png', 'A：斜路の途中（塔の東面を回る）'),
-        (SH + 'ch2proto_A_390x844_top.png', 'A：頂上（海面の高さ）'), (SH + 'ch2proto_C_390x844_spiral1.png', 'C：海底の回廊から塔へ'), (SH + 'ch2proto_B_390x844_spiral2.png', 'B：螺旋塔の斜路')]
+        (SH + 'ch2proto_A_390x844_top.png', 'A：頂上（海面の高さ）'), (SH + 'ch2proto_C_390x844_spiral1.png', 'C：海底の回廊から塔へ'), (SH + 'ch2proto_B_390x844_spiral2.png', 'B：螺旋塔の斜路'),
+        (SH + 'ch2proto_B_390x844_undersea.png', 'B：海底（ガラス回廊・遺跡の柱・海中の光）'), (SH + 'ch2proto_C_390x844_undersea.png', 'C：海底の分かれ道（砂地の地面の上の回廊）')]
 prev_html = ''.join(f'<figure><img src="{u}" alt="{html.escape(c)}" loading="lazy"><figcaption>{html.escape(c)}</figcaption></figure>' for u, c in ((img64(p), c) for p, c in PREV) if u)
 
 page = f'''<title>Chapter2 A/B/C ルート設計図</title>
@@ -186,7 +191,7 @@ a{{color:#8fd3ff}}
 {route_section('C')}
 <section>
   <h2>2.5D の世界ボード（論点 3・プレビュー）</h2>
-  <p class="desc">海底は海面より {DATA['A']['art']['depth']} 低い<b>盆地の板</b>、潮の塔の下り坂と螺旋塔の上り坂は<b>高さの変わる石の斜路</b>、塔は<b>海底から海面より上へそびえる多角柱</b>。マスもモンスターも斜路の高さで上がり、海底へ潜ると盆地の上の海面が薄くなる。絵は Chapter 1 の正式素材の代用（正式の Chapter 2 の素材は素材要求一覧）。カメラは本編の Chapter 1 と同じ（後ろから追う）。</p>
+  <p class="desc">海底は海面より {DATA['A']['art']['depth']} 低い<b>盆地の板</b>、潮の塔の下り坂と螺旋塔の上り坂は<b>高さの変わる石の斜路</b>、塔は<b>海底から海面より上へそびえる多角柱</b>。マスもモンスターも斜路の高さで上がり、海底へ潜ると盆地の上の海面が薄くなり、画面に海中の光の筋が差す。<b>海底の道は高架橋にしない</b>：海底は砂地の地面（砂紋・藻場・岩の斑・光の網）で、ガラス回廊は地面に置いた透明な筒（両側の光る縁と骨組みの輪）、封印の扉・遺跡の門などの要の地点は沈没遺跡の広場（割れた敷石と崩れた柱）につながる。見た目は仮で未承認。絵は Chapter 1 の正式素材の代用（正式の Chapter 2 の素材は素材要求一覧）。カメラは本編の Chapter 1 と同じ（後ろから追う）。</p>
   <div class="shots">{prev_html}</div>
   <p class="note">プレビュー：ローカルの index.html に <code>?chapterBoard=roadfirst&amp;rfData=ch2&amp;ch2route=A</code>（B・C も）。HUD と操作欄は試作の画面（本編の HUD ではない）。main 未改変・公開なし・iPhone 実機は未確認。</p>
 </section>
@@ -202,17 +207,25 @@ a{{color:#8fd3ff}}
   <tr><td>40T 以内の GOAL 到達率</td><td>{SIM['Ch2-A']['goal']}%</td><td>{SIM['Ch2-B']['goal']}%</td><td>{SIM['Ch2-C']['goal']}%</td></tr>
   <tr><td>6能力の合計上昇</td><td>{SIM['Ch2-A']['gain']}</td><td>{SIM['Ch2-B']['gain']}</td><td>{SIM['Ch2-C']['gain']}</td></tr>
   <tr><td>固定報酬の取得率</td><td>{SIM['Ch2-A']['rewardRate']}%</td><td>{SIM['Ch2-B']['rewardRate']}%</td><td>{SIM['Ch2-C']['rewardRate']}%</td></tr>
-  <tr><td>A との差（到達率）</td><td>—</td><td>{SIM['Ch2-B']['vsCh2A']['goalPP']:+}pt</td><td>{SIM['Ch2-C']['vsCh2A']['goalPP']:+}pt</td></tr>
+  <tr><td>A との差（到達率・寄り道 25%）</td><td>—</td><td>{SIM['Ch2-B']['vsCh2A']['goalPP']:+}pt</td><td>{SIM['Ch2-C']['vsCh2A']['goalPP']:+}pt</td></tr>
+  <tr><td>40T 以内の GOAL 到達率（寄り道 50%）</td><td>{SIM50['Ch2-A']['goal']}%</td><td>{SIM50['Ch2-B']['goal']}%</td><td>{SIM50['Ch2-C']['goal']}%</td></tr>
+  <tr><td>A との差（到達率・寄り道 50%）</td><td>—</td><td>{SIM50['Ch2-B']['vsCh2A']['goalPP']:+}pt</td><td>{SIM50['Ch2-C']['vsCh2A']['goalPP']:+}pt</td></tr>
+  <tr><td>特殊挑戦（成功／失敗の歩数）</td><td>{SUMM['A']['challenge']['success']}／{SUMM['A']['challenge']['fail']}</td><td>{SUMM['B']['challenge']['success']}／{SUMM['B']['challenge']['fail']}</td><td>{SUMM['C']['challenge']['success']}／{SUMM['C']['challenge']['fail']}</td></tr>
   </tbody></table></div>
-  <p class="note">600 seed × ソラモ・ガウル・寄り道 25%。試作の進行モデル（バトル・食事・Chapter 2 の上昇量は未反映）＝比較が目的で絶対値は参考。寄り道 50% では B が A より約 −6pt（感度は COMPARISON.md）。</p>
+  <p class="note">12000 seed × ソラモ・ガウル（24,000回）・寄り道 25% と 50%。試作の進行モデル（バトル・食事・Chapter 2 の上昇量は未反映）＝比較が目的で絶対値は参考。前回の報告（600 seed）の「寄り道 50% で B −6.2pt」は試行回数が少ないためのばらつきが大きかった（同じ前回の道を 12000 seed で測ると +0.9pt）。</p>
+</section>
+<section>
+  <h2>B の特殊挑戦の案（成功／失敗の歩数・A との到達率の差）</h2>
+  <div class="wrap"><table><thead><tr><th>成功／失敗</th><th>道</th><th>寄り道 25%</th><th>寄り道 50%</th><th>備考</th></tr></thead><tbody>{''.join(f'<tr><td>{a}</td><td>{b}</td><td>{c}pt</td><td>{d}pt</td><td>{e}</td></tr>' for a, b, c, d, e in B_VARIANTS)}</tbody></table></div>
+  <p class="note">目標＝A との差 ±3pt（25%・50% の両方）。B の特殊挑戦は本線の上（必ず通る）なので、失敗の道を長くすると B だけ遅れる。採用案は海底の本線（潮の塔 → 回廊 → 封印の扉 → ライバル）を詰めて、その分を失敗の回り道に回した。C も 50% で +3.5pt と目標をわずかに超えていたので、C の失敗の回り道を 14 → 18 歩にして収めた。</p>
 </section>
 <section>
   <h2>論点 1〜5 の反映</h2>
   <ol>
     <li>ライバルの位置：現状維持（A 53〜74%・B 62〜73%・C 64〜78%）。</li>
-    <li>B：特殊挑戦を Chapter 1 と同じ「成功＝近道・失敗＝回り道」に直したうえで、失敗の回り道を短く（4／6 歩）・寄り道の長さを A と同程度に。到達率の差は ±3pt 以内。</li>
+    <li>B：特殊挑戦は成功 2 歩（神殿の中を抜ける近道）・失敗 14 歩（神殿の外回り）。海底の本線を詰めて、寄り道 25%・50% の両方で A との差 ±3pt 以内（+0.8／−1.8pt）。</li>
     <li>螺旋塔：12〜13 歩の上りを 2.5D の斜路で（上の画面）。</li>
-    <li>地点数：探索路を足して A 298・B 280・C 300（本線は延ばさない・40ターン・D6 のまま）。</li>
+    <li>地点数：探索路を足して A 298・B 280・C 304（本線は延ばさない・40ターン・D6 のまま。C は失敗の回り道を延ばした分 300 → 304）。</li>
     <li>報酬：7 枠の種類と数は同じ・建物に合わせて割り当て直し（値は仮）。</li>
   </ol>
 </section>
@@ -220,12 +233,11 @@ a{{color:#8fd3ff}}
   <h2>次に承認が要る論点</h2>
   <ol>
     <li>道路グラフの設計の承認（分かれ道・探索路・報酬の割り当て）。2.5D の見た目・本実装は別に承認。</li>
-    <li>寄り道を多く取るプレイ（50%）では B が A より約 −6pt。このままでよいか。</li>
-    <li>B の特殊挑戦の差（成功 4・失敗 6 歩）が小さい。このままでよいか。</li>
-    <li>2.5D の表現（盆地の板・傾いた斜路・多角柱の塔・潜ると海面が薄くなる）の方向でよいか。</li>
-    <li>旧 Chapter 2 の途中の個体：案1 旧モード継続（推奨）／案2 Chapter 2 の最初から。</li>
+    <li>B の特殊挑戦の採用案（成功 2・失敗 14 歩）と、C の失敗の回り道の延長（14 → 18 歩）でよいか。</li>
+    <li>海底の見せ方（砂地の地面・地面に置いたガラスの筒・沈没遺跡の広場・海中の光）の方向でよいか（素材は U-08・FX-04 を追加）。</li>
+    <li>寄り道に入らないプレイ（0%）では C が A より −3.9pt（参考値・目標の対象外）。気にするか。</li>
   </ol>
-  <p class="note">素材要求一覧（asset_requirements.tsv・52 行）：2.5D の作りに合わせて、螺旋塔の壁面・斜路の道と側壁・盆地の壁・透ける海面・探索路の目印を追加。旧 Chapter 2 の背景 10 枚は使わない。</p>
+  <p class="note">旧 Chapter 2 の途中の個体は<b>案1（その育成が終わるまで旧モードで継続・新しい育成から新 Chapter 2）</b>で決定（2026-10-15）。素材要求一覧（asset_requirements.tsv・54 行）：今回、沈没遺跡の広場（U-08）と海中の光の筋（FX-04）を追加。旧 Chapter 2 の背景 10 枚は使わない。</p>
 </section>
 </main>
 '''

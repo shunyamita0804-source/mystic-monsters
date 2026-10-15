@@ -118,6 +118,15 @@
       }
       if (r1 < 0.022 && !nearRoad(px, py, 30)) out.push({ file: 'prop_stream_rocks.webp', x: px, y: py, w: 18 + rnd() * 8 });   // 海の岩礁（まばら）
     }
+    // 2026-10-15 追補2：沈没遺跡の広場のまわりに崩れた柱（海底の地面に立つ＝遺跡が海底の地形につながる）
+    for (const R of (D.art.ruins || [])) {
+      const n = D.nodes[R.at]; if (!n) continue;
+      for (let k = 0; k < 10; k++) {
+        const a = (k / 10) * Math.PI * 2 + rnd() * 0.4, rr = R.r + 6 + rnd() * 12, px = n[0] + Math.cos(a) * rr, py = n[1] + Math.sin(a) * rr;
+        if (!H.inPoly(B, px, py) || nearRoad(px, py, 15) || nearTower(px, py, 10)) continue;
+        out.push({ file: rnd() < 0.6 ? 'prop_pillar.webp' : 'rock_pillar.webp', x: px, y: py, w: 12 + rnd() * 7, h: -dep });
+      }
+    }
     return out;
   }
 
@@ -156,17 +165,49 @@
     const g = cv.getContext('2d'); g.setTransform(res, 0, 0, res, -bx0 * res, -by0 * res);
     const H = ctx.H, box = [bx0, by0, bw, bh];
     g.save(); polyPath(g, B); g.clip();
-    g.fillStyle = (S.water && H.pattern(g, S.water, 70)) || '#2a6f93'; g.fillRect(bx0, by0, bw, bh);
-    g.fillStyle = DEEP_TINT; g.fillRect(bx0, by0, bw, bh);
-    // 砂地のまだら（決まった乱数）
-    const rnd = H.mulberry(0x5EA); for (let i = 0; i < 900; i++) { g.fillStyle = rnd() < 0.5 ? 'rgba(230,214,170,.10)' : 'rgba(10,40,60,.12)'; g.beginPath(); g.arc(bx0 + rnd() * bw, by0 + rnd() * bh, 2 + rnd() * 9, 0, 7); g.fill(); }
-    // ガラス回廊：海底の道に沿った明るい帯（ガラスの床と両側の光る縁）
+    // 2026-10-15 追補2（ユーザー指示：海底の道を高架橋に見せない＝海底の地形・ガラス回廊・沈没遺跡・海中の光がつながる構成）：
+    //  海底は「水の色」ではなく砂地の地面（砂紋・藻場・岩の斑）＋差し込む光の網（コースティクス）。道は地面の上（板の高さ −depth）
+    const rnd = H.mulberry(0x5EA);
+    { const gr = g.createLinearGradient(bx0, by0, bx0 + bw * 0.35, by0 + bh); gr.addColorStop(0, 'rgb(122,150,136)'); gr.addColorStop(0.55, 'rgb(104,134,126)'); gr.addColorStop(1, 'rgb(92,120,118)'); g.fillStyle = gr; g.fillRect(bx0, by0, bw, bh); }
+    for (let i = 0; i < 260; i++) {   // 藻場・岩の斑（地形の起伏）
+      const x = bx0 + rnd() * bw, y = by0 + rnd() * bh, r = 8 + rnd() * 30;
+      g.fillStyle = rnd() < 0.55 ? 'rgba(52,86,74,.16)' : 'rgba(196,186,150,.12)'; g.beginPath(); g.ellipse(x, y, r, r * (0.45 + rnd() * 0.4), rnd() * 3, 0, 7); g.fill();
+    }
+    g.lineWidth = 1.1;   // 砂紋（同じ向きの細い波線）
+    for (let i = 0; i < 420; i++) {
+      const x = bx0 + rnd() * bw, y = by0 + rnd() * bh, L = 10 + rnd() * 22, a = -0.35 + rnd() * 0.2;
+      g.strokeStyle = rnd() < 0.5 ? 'rgba(232,222,186,.22)' : 'rgba(40,70,70,.14)'; g.beginPath();
+      for (let t = 0; t <= 1.001; t += 0.25) { const u = x + Math.cos(a) * L * t, v = y + Math.sin(a) * L * t + Math.sin(t * 6.3) * 1.6; t ? g.lineTo(u, v) : g.moveTo(u, v); } g.stroke();
+    }
+    // 沈没遺跡の広場（art.ruins＝海底の要の地点：封印の扉・遺跡の門など）：割れた敷石の円と崩れた縁
+    for (const R of (A.ruins || [])) {
+      const n = D.nodes[R.at]; if (!n) continue; const rp = art.road ? H.pattern(g, art.road, 57.5) : null;
+      g.save(); g.beginPath(); for (let k = 0; k <= 24; k++) { const a = (k / 24) * Math.PI * 2, rr = R.r * (0.86 + 0.14 * Math.sin(k * 2.7 + R.r)); k ? g.lineTo(n[0] + rr * Math.cos(a), n[1] + rr * Math.sin(a)) : g.moveTo(n[0] + rr * Math.cos(a), n[1] + rr * Math.sin(a)); } g.closePath();
+      g.fillStyle = 'rgba(40,58,60,.55)'; g.fill(); g.clip(); g.globalAlpha = 0.78; g.fillStyle = rp || '#b9b09a'; g.fill(); g.globalAlpha = 1;
+      g.strokeStyle = 'rgba(30,44,46,.45)'; g.lineWidth = 1.2; for (let k = 0; k < 9; k++) { const a = rnd() * 7, b = rnd() * R.r; g.beginPath(); g.moveTo(n[0] + Math.cos(a) * b * 0.2, n[1] + Math.sin(a) * b * 0.2); g.lineTo(n[0] + Math.cos(a) * R.r, n[1] + Math.sin(a) * R.r); g.stroke(); }
+      g.fillStyle = 'rgba(52,86,74,.28)'; for (let k = 0; k < 14; k++) { const a = rnd() * 7, b = R.r * (0.55 + rnd() * 0.45); g.beginPath(); g.arc(n[0] + Math.cos(a) * b, n[1] + Math.sin(a) * b, 3 + rnd() * 6, 0, 7); g.fill(); }
+      g.restore();
+    }
+    // ガラス回廊：海底の地面に置いた透明な筒（両側の光る縁＋一定の間隔の骨組みの輪）＝地面の上を歩く回廊（橋ではない）
     const under = Object.entries(D.segments).filter(([sid]) => zoneOf(D, sid) === 'undersea');
     const lines = under.map(([, s]) => H.curvePts(s[3].map((id) => D.nodes[id])));
     g.lineCap = g.lineJoin = 'round';
-    for (const [lw, col] of [[40, 'rgba(160,236,255,.22)'], [32, 'rgba(200,248,255,.22)']]) { g.strokeStyle = col; g.lineWidth = lw; for (const P of lines) { g.beginPath(); P.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.stroke(); } }
+    for (const [lw, col] of [[44, 'rgba(10,30,36,.20)'], [36, 'rgba(170,236,255,.20)']]) { g.strokeStyle = col; g.lineWidth = lw; for (const P of lines) { g.beginPath(); P.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.stroke(); } }
     if (art.strip) for (const P of lines) H.stripAlong(g, P, art.strip, H.ART.strip.w, box);
+    const RIB = 15, HALF = 15;
+    for (const P of lines) {
+      for (const sg of [-1, 1]) { g.strokeStyle = 'rgba(214,250,255,.78)'; g.lineWidth = 1.6; g.beginPath(); P.forEach((p, i) => { const q = P[Math.min(i + 1, P.length - 1)], r0 = P[Math.max(i - 1, 0)], dx = q[0] - r0[0], dy = q[1] - r0[1], L = Math.hypot(dx, dy) || 1, x = p[0] - dy / L * HALF * sg, y = p[1] + dx / L * HALF * sg; i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.stroke(); }
+      let acc = 0; for (let i = 1; i < P.length; i++) {
+        const a = P[i - 1], b = P[i], L = Math.hypot(b[0] - a[0], b[1] - a[1]); acc += L; if (acc < RIB) continue; acc = 0;
+        const nx = -(b[1] - a[1]) / (L || 1), ny = (b[0] - a[0]) / (L || 1); g.strokeStyle = 'rgba(214,250,255,.42)'; g.lineWidth = 2.2;
+        g.beginPath(); g.moveTo(b[0] - nx * HALF, b[1] - ny * HALF); g.lineTo(b[0] + nx * HALF, b[1] + ny * HALF); g.stroke();
+      }
+    }
     hubs(g, D, (sid) => zoneOf(D, sid) === 'undersea', art, H);
+    // 差し込む光の網（コースティクス）：細い明るい曲線の網を全体に薄く
+    g.save(); g.globalCompositeOperation = 'lighter'; g.strokeStyle = 'rgba(160,220,230,.10)'; g.lineWidth = 2.4;
+    for (let i = 0; i < 160; i++) { const x = bx0 + rnd() * bw, y = by0 + rnd() * bh, r = 10 + rnd() * 18; g.beginPath(); for (let k = 0; k <= 6; k++) { const a = (k / 6) * Math.PI * 2, rr = r * (0.7 + 0.3 * Math.sin(k * 2.1 + i)); k ? g.lineTo(x + rr * Math.cos(a), y + rr * Math.sin(a) * 0.8) : g.moveTo(x + rr, y); } g.stroke(); }
+    g.restore();
     // 盆地のふちの影（内側を暗く＝深さ）
     g.strokeStyle = 'rgba(4,20,36,.35)'; g.lineWidth = 46; polyPath(g, B); g.stroke();
     g.restore();
@@ -245,10 +286,12 @@
       return q.x > cT.x - r && q.x < cT.x + r && q.y > cT.y - r * 0.6 && q.y < cB.y + r * 0.4;
     }
     /** モンスターの高さ（毎フレーム）：海底（−2 より下）にいる間は盆地の上の海面を薄く */
+    // 海中の光（画面の上から差し込む光の筋）：モンスターが海底にいる間だけ。画面に固定の薄い層（押せない・視差を減らす設定では動かさない）
+    const view = plane.parentElement, rays = doc.createElement('div'); rays.className = 'rfs-rays'; if (view) view.insertBefore(rays, plane.nextSibling);
     let dived = null;
-    function mon(h) { const u = (h || 0) < -2; if (u === dived) return; dived = u; wv.style.opacity = u ? String(1 - BASIN_UNDER) : String(BASIN_ALPHA); }
+    function mon(h) { const u = (h || 0) < -2; if (u === dived) return; dived = u; wv.style.opacity = u ? String(1 - BASIN_UNDER) : String(BASIN_ALPHA); rays.classList.toggle('on', u); }
     mon(0);
-    return { occl, mon, el: g3 };
+    return { occl, mon, el: g3, rays };
   }
   let cssDone = false;
   function css(doc) {
@@ -261,6 +304,8 @@
 :is(#rfp,.wbv) .rfs-wall{opacity:.92}
 :is(#rfp,.wbv) .rfs-lamp{background:linear-gradient(180deg,#fff6c8,#e7c46a)}
 :is(#rfp,.wbv) .rfs-cap{position:absolute;left:0;top:0;transform-origin:0 0;border-radius:50%}
+:is(#rfp,.wbv) .rfs-rays{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .7s ease;mix-blend-mode:screen;background:repeating-linear-gradient(104deg,rgba(150,225,255,0) 0 36px,rgba(150,225,255,.10) 46px,rgba(150,225,255,0) 62px),linear-gradient(180deg,rgba(90,180,220,.22),rgba(20,60,90,0) 65%)}
+:is(#rfp,.wbv) .rfs-rays.on{opacity:1;animation:rfsRay 7s ease-in-out infinite alternate}@keyframes rfsRay{from{background-position:0 0,0 0}to{background-position:80px 0,0 0}}@media (prefers-reduced-motion:reduce){:is(#rfp,.wbv) .rfs-rays.on{animation:none}}
 :is(#rfp,.wbv) .rfs-glow{position:absolute;left:0;top:0;transform-origin:0 0;border-radius:50%;background:radial-gradient(circle,#fffbe0 0 30%,rgba(255,236,150,.55) 45%,rgba(255,236,150,0) 70%)}`;
     doc.head.appendChild(s);
   }

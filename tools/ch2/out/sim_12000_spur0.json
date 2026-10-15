@@ -1,5 +1,5 @@
 {
- "N": 600,
+ "N": 12000,
  "SPUR": 0,
  "REST_AT": 86,
  "monsters": [
@@ -9,15 +9,42 @@
  "out": {
   "Ch1-A（基準）": {
    "nodes": 299,
-   "goal": 72,
+   "goal": 71,
+   "avgTurns": 34.7,
+   "p10": 29,
+   "p50": 35,
+   "p90": 39,
+   "gain": 272,
+   "gainP10": 198,
+   "gainP90": 346,
+   "statStops": 14.14,
+   "rewards": 0,
+   "rewardRate": 0,
+   "rewardEach": {
+    "L_CHEST": 0,
+    "R_CHEST": 0,
+    "L_ALTAR": 0,
+    "L_LATE_ALTAR": 0,
+    "REWARD5": 0,
+    "R_SPECIAL": 0,
+    "RANDOM_DEN": 0
+   },
+   "spurOpp": 2.59,
+   "rests": 3.9,
+   "fatEnd": 78,
+   "timeUpAt": "LATE_R_DONE 9.7%・LATE_L_DONE 8.2%・S_END 5.1%"
+  },
+  "Ch2-A": {
+   "nodes": 298,
+   "goal": 68.7,
    "avgTurns": 34.3,
    "p10": 29,
    "p50": 35,
    "p90": 39,
-   "gain": 273,
-   "gainP10": 196,
-   "gainP90": 351,
-   "statStops": 14.29,
+   "gain": 269,
+   "gainP10": 195,
+   "gainP90": 345,
+   "statStops": 13.93,
    "rewards": 0,
    "rewardRate": 0,
    "rewardEach": {
@@ -29,54 +56,27 @@
     "R_SPECIAL": 0,
     "RANDOM_DEN": 0
    },
-   "spurOpp": 2.63,
-   "rests": 3.6,
-   "fatEnd": 78,
-   "timeUpAt": "LATE_R_DONE 10.7%・LATE_L_DONE 9.8%・S_END 4.0%"
-  },
-  "Ch2-A": {
-   "nodes": 298,
-   "goal": 67.7,
-   "avgTurns": 34.1,
-   "p10": 29,
-   "p50": 34,
-   "p90": 39,
-   "gain": 265,
-   "gainP10": 191,
-   "gainP90": 339,
-   "statStops": 13.8,
-   "rewards": 0,
-   "rewardRate": 0,
-   "rewardEach": {
-    "L_CHEST": 0,
-    "R_CHEST": 0,
-    "L_ALTAR": 0,
-    "L_LATE_ALTAR": 0,
-    "REWARD5": 0,
-    "R_SPECIAL": 0,
-    "RANDOM_DEN": 0
-   },
-   "spurOpp": 2.46,
-   "rests": 3.86,
+   "spurOpp": 2.6,
+   "rests": 3.78,
    "fatEnd": 79,
-   "timeUpAt": "LATE_L_FAIL_JOIN 10.5%・LATE_L_DONE 8.7%・LATE_R_DONE 4.7%",
+   "timeUpAt": "LATE_L_FAIL_JOIN 9.2%・LATE_L_DONE 8.0%・S_END 5.7%",
    "vsCh1": {
-    "goalPP": -4.3,
-    "gainPct": -2.9,
+    "goalPP": -2.3,
+    "gainPct": -1.1,
     "rewardPP": 0
    }
   },
   "Ch2-B": {
    "nodes": 280,
-   "goal": 70.5,
-   "avgTurns": 35.8,
-   "p10": 32,
+   "goal": 69.3,
+   "avgTurns": 35.6,
+   "p10": 31,
    "p50": 36,
-   "p90": 39,
-   "gain": 266,
-   "gainP10": 197,
-   "gainP90": 342,
-   "statStops": 13.75,
+   "p90": 40,
+   "gain": 270,
+   "gainP10": 196,
+   "gainP90": 343,
+   "statStops": 13.96,
    "rewards": 0,
    "rewardRate": 0,
    "rewardEach": {
@@ -88,32 +88,32 @@
     "R_SPECIAL": 0,
     "RANDOM_DEN": 0
    },
-   "spurOpp": 2.78,
-   "rests": 4.13,
-   "fatEnd": 80,
-   "timeUpAt": "S_END 8.7%・Q_L4 6.7%・Q_R4 4.5%",
+   "spurOpp": 2.75,
+   "rests": 3.99,
+   "fatEnd": 79,
+   "timeUpAt": "S_END 7.4%・Q_L4 7.1%・QR_ALT 3.9%",
    "vsCh1": {
-    "goalPP": -1.5,
-    "gainPct": -2.6,
+    "goalPP": -1.7,
+    "gainPct": -0.7,
     "rewardPP": 0
    },
    "vsCh2A": {
-    "goalPP": 2.8,
+    "goalPP": 0.6,
     "gainPct": 0.4,
     "rewardPP": 0
    }
   },
   "Ch2-C": {
-   "nodes": 300,
-   "goal": 68,
-   "avgTurns": 35.4,
+   "nodes": 304,
+   "goal": 64.8,
+   "avgTurns": 35.5,
    "p10": 31,
    "p50": 36,
    "p90": 40,
-   "gain": 290,
-   "gainP10": 212,
-   "gainP90": 359,
-   "statStops": 14.98,
+   "gain": 288,
+   "gainP10": 213,
+   "gainP90": 362,
+   "statStops": 14.85,
    "rewards": 0,
    "rewardRate": 0,
    "rewardEach": {
@@ -125,18 +125,18 @@
     "R_SPECIAL": 0,
     "RANDOM_DEN": 0
    },
-   "spurOpp": 2.19,
-   "rests": 3.91,
-   "fatEnd": 79,
-   "timeUpAt": "LATE_W 8.5%・LATE_R_DONE 7.8%・S_END 7.5%",
+   "spurOpp": 2.05,
+   "rests": 3.98,
+   "fatEnd": 78,
+   "timeUpAt": "LATE_W 9.8%・S_END 7.6%・LATE_R_DONE 5.5%",
    "vsCh1": {
-    "goalPP": -4,
-    "gainPct": 6.2,
+    "goalPP": -6.2,
+    "gainPct": 5.9,
     "rewardPP": 0
    },
    "vsCh2A": {
-    "goalPP": 0.3,
-    "gainPct": 9.4,
+    "goalPP": -3.9,
+    "gainPct": 7.1,
     "rewardPP": 0
    }
   }

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Chapter 2 A／B／C 設計案の比較表（Markdown）を tools/ch2/out/summary.json（build_ch2_routes.py）と tools/ch2/out/sim_*.json（sim.mjs）から作る。
-出力：docs/ch2_abc_design_1015/COMPARISON.md。実行：python3 -I tools/ch2/report.py [sim の JSON=tools/ch2/out/sim_600.json]"""
+出力：docs/ch2_abc_design_1015/COMPARISON.md。実行：python3 -I tools/ch2/report.py [sim の JSON=tools/ch2/out/sim_12000.json]"""
 import json, sys
 from pathlib import Path
 R = Path(__file__).resolve().parents[2]
 summ = json.loads((R / 'tools/ch2/out/summary.json').read_text(encoding='utf-8'))
-simp = Path(sys.argv[1]) if len(sys.argv) > 1 else R / 'tools/ch2/out/sim_600.json'
+simp = Path(sys.argv[1]) if len(sys.argv) > 1 else R / 'tools/ch2/out/sim_12000.json'
 sim = json.loads(simp.read_text(encoding='utf-8'))
 src = (R / 'js/proto/ch2-routes.js').read_text(encoding='utf-8'); D = json.loads(src[src.index('const R = ') + 10: src.index(';\n  if (typeof module')])
 L = []
@@ -85,15 +85,23 @@ for c in ['Ch2-B', 'Ch2-C']:
 L.append('')
 import os
 sens = []
-for f, lab in [('sim_600_spur0.json', '寄り道に入らない（0）'), ('sim_600.json', '標準（0.25）'), ('sim_600_spur50.json', '寄り道が多い（0.5）')]:
+for f, lab in [('sim_12000_spur0.json', '寄り道に入らない（0）'), ('sim_12000.json', '標準（0.25）'), ('sim_12000_spur50.json', '寄り道が多い（0.5）')]:
     fp = R / 'tools/ch2/out' / f
     if fp.exists(): sens.append((lab, json.loads(fp.read_text(encoding='utf-8'))['out']))
 if sens:
-    L.append('### 感度（寄り道に入る割合を変えたとき・600 seed×2体）\n')
+    L.append('### 感度（寄り道に入る割合を変えたとき・12000 seed×2体＝24,000回）\n')
     L.append('| 寄り道の割合 | Ch1-A 到達 | Ch2-A 到達 | Ch2-B 到達（A との差） | Ch2-C 到達（A との差） |')
     L.append('|---|---|---|---|---|')
     for lab, o2 in sens:
         a = o2['Ch2-A']['goal']; L.append(f"| {lab} | {o2['Ch1-A（基準）']['goal']} | {a} | {o2['Ch2-B']['goal']}（{o2['Ch2-B']['goal'] - a:+.1f}） | {o2['Ch2-C']['goal']}（{o2['Ch2-C']['goal'] - a:+.1f}） |")
+    L.append('')
+VAR = json.loads((R / 'tools/ch2/out/challenge_variants.json').read_text(encoding='utf-8'))
+L.append('### 特殊挑戦の案（2026-10-15 追補2：成功／失敗の歩数と A との到達率の差）\n')
+L.append(VAR['note'] + '\n')
+for k in ('B', 'C'):
+    L.append(f'| {k}：成功／失敗 | 道 | 寄り道 25%（pt） | 寄り道 50%（pt） | 備考 |')
+    L.append('|---|---|---|---|---|')
+    for a, b, c, d, e in VAR[k]: L.append(f'| {a} | {b} | {c:+.1f} | {d:+.1f} | {e} |')
     L.append('')
 L.append('''## 3. 推定の条件・簡略化・未測定（都合のいい数字にしないための明記）
 

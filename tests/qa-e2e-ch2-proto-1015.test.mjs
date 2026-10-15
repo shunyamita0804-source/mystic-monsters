@@ -97,7 +97,7 @@ for (const route of ['A', 'B', 'C']) {
       all: document.querySelectorAll('#rfp .rfs-q').length, floor: !!document.querySelector('#rfp .rfs-floor'), water: !!document.querySelector('#rfp .rfs-water'), sea: document.querySelector('#rfp .rfw').classList.contains('sea') }));
     assert.ok(parts.sea && parts.floor && parts.water && parts.deck > 20 && parts.wall > 20 && parts.tw >= 18, JSON.stringify(parts));
     assert.ok(parts.all < 300, '3D の板は 300 枚未満（層の数）' + parts.all);
-    const hs = [], seenNodes = []; let dived = null, shots = 0;
+    const hs = [], seenNodes = []; let dived = null, shots = 0, under = 0, raysOn = null;
     for (let i = 0; i < 200; i++) {
       const r = await pg.evaluate(async () => {
         const st0 = MMRF.state(); if (st0.done || st0.timeUp) return { end: true };
@@ -112,7 +112,9 @@ for (const route of ['A', 'B', 'C']) {
       await pg.waitForFunction(() => !MMRF.busy(), null, { timeout: 20000 });
       if (!r.node) continue;
       await pg.waitForTimeout(450);
-      const w = await pg.evaluate(() => ({ h: MMRF.world().mon[2], node: MMRF.state().node, water: getComputedStyle(document.querySelector('#rfp .rfs-water')).opacity }));
+      const w = await pg.evaluate(() => ({ h: MMRF.world().mon[2], node: MMRF.state().node, water: getComputedStyle(document.querySelector('#rfp .rfs-water')).opacity, rays: !!document.querySelector('#rfp .rfs-rays.on') }));
+      if (w.h < -30 && raysOn == null) raysOn = w.rays;   // 2026-10-15 追補2：海底にいる間は海中の光の筋
+      if (SHOT && w.h < -30 && !under && !/^(SPIRAL|RIVAL|UPPER_GATE)/.test(w.node)) { under++; await shot(pg, `ch2proto_${route}_390x844_undersea`); }
       if (/^(SPIRAL|RIVAL|UPPER_GATE)/.test(w.node)) { hs.push([w.node, w.h]); if (dived == null && w.h < -2) dived = Number(w.water); }
       if (SHOT && /^SPIRAL/.test(w.node) && shots < 3) { shots++; await shot(pg, `ch2proto_${route}_390x844_spiral${shots}`); }
       seenNodes.push(w.node);
@@ -124,6 +126,8 @@ for (const route of ['A', 'B', 'C']) {
     assert.ok(hs.some(([n, h]) => /^(RIVAL|UPPER_GATE)$/.test(n) && h < -30), '塔の門前は海底（' + JSON.stringify(hs) + '）');
     const top = await pg.evaluate(() => MMRF.world().mon[2]);
     assert.ok(dived != null && dived < 0.3, '海底では盆地の上の海面が薄い（' + dived + '）');
+    assert.equal(raysOn, true, '海底では海中の光の筋が出る');
+    assert.ok(await pg.evaluate(() => document.querySelectorAll('#rfp .rfs-rays').length === 1), '光の筋の層は1枚');
     assert.ok(Math.abs(top) < 3 || seenNodes.slice(-1)[0].startsWith('SPIRAL'), '頂上は海面の高さ');
     await shot(pg, `ch2proto_${route}_390x844_top`);
     assert.deepEqual(p.errors, []);

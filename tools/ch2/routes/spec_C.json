@@ -99,8 +99,8 @@
    "challenge_d6_5_6"
   ],
   "FAIL_L": [
-   300,
-   400,
+   240,
+   420,
    "challenge_failure_route"
   ],
   "SUCCESS_L1": [
@@ -399,6 +399,10 @@
    "challenge_fail",
    [
     [
+     262,
+     382
+    ],
+    [
      356,
      378
     ],
@@ -410,7 +414,8 @@
      392,
      492
     ]
-   ]
+   ],
+   15
   ],
   "LATE_L_SUCCESS1": [
    "CHALLENGE",

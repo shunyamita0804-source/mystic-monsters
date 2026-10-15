@@ -64,32 +64,32 @@
    "lower_walk_through_gate"
   ],
   "U1": [
-   560,
-   815,
+   555,
+   818,
    "route_anchor"
   ],
   "CHALLENGE": [
-   690,
-   580,
+   640,
+   620,
    "challenge_d6_5_6"
   ],
   "FAIL_L": [
-   655,
-   560,
+   668,
+   590,
    "challenge_failure_route"
   ],
   "SUCCESS_L1": [
-   646,
-   612,
+   616,
+   610,
    "challenge_success_route"
   ],
   "L_MERGE": [
+   592,
    600,
-   640,
    "route_anchor"
   ],
   "L_LATE_ALTAR": [
-   620,
+   568,
    690,
    "fixed_reward_dead_end"
   ],
@@ -119,8 +119,8 @@
    "route_anchor"
   ],
   "L_ALTAR": [
-   205,
-   205,
+   240,
+   212,
    "fixed_reward_dead_end"
   ],
   "QR1": [
@@ -301,23 +301,13 @@
    "LOWER_GATE",
    "U1",
    "undersea_main",
-   [
-    [
-     470,
-     880
-    ]
-   ]
+   []
   ],
   "U03": [
    "U1",
    "CHALLENGE",
    "undersea_main",
-   [
-    [
-     640,
-     700
-    ]
-   ]
+   []
   ],
   "LATE_L_FAIL": [
    "CHALLENGE",
@@ -331,33 +321,43 @@
    "challenge_fail",
    [
     [
-     612,
-     590
+     705,
+     530
+    ],
+    [
+     670,
+     470
+    ],
+    [
+     615,
+     470
+    ],
+    [
+     605,
+     520
     ]
-   ]
+   ],
+   12
   ],
   "LATE_L_SUCCESS1": [
    "CHALLENGE",
    "SUCCESS_L1",
    "challenge_success",
-   []
+   [],
+   1
   ],
   "LATE_L_SUCCESS_JOIN": [
    "SUCCESS_L1",
    "L_MERGE",
    "challenge_success",
-   []
+   [],
+   1
   ],
   "D_LLA": [
    "SUCCESS_L1",
    "L_LATE_ALTAR",
    "reward_spur",
-   [
-    [
-     632,
-     652
-    ]
-   ]
+   []
   ],
   "U04": [
    "L_MERGE",
@@ -422,12 +422,7 @@
    "QL2",
    "L_ALTAR",
    "reward_spur",
-   [
-    [
-     285,
-     218
-    ]
-   ]
+   []
   ],
   "Q_R1": [
    "Q",
@@ -571,11 +566,11 @@
    [
     [
      650,
-     800
+     790
     ],
     [
-     715,
-     690
+     700,
+     700
     ]
    ]
   ],
@@ -684,11 +679,7 @@
    [
     [
      560,
-     668
-    ],
-    [
-     520,
-     650
+     640
     ]
    ]
   ],
@@ -858,7 +849,7 @@
     "po",
     "de"
    ],
-   "note": "沈没神殿の前へ。ガラス回廊の東側の回り道（+2歩）・ちからと丈夫さ"
+   "note": "沈没神殿の前へ。ガラス回廊の東側の回り道（+3歩）・ちからと丈夫さ"
   },
   "QL_IN": {
    "name": "西の潮流の近道",

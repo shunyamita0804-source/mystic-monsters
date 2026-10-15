@@ -9,13 +9,16 @@
 //  使い方：node tools/ch2/sim.mjs [seed 数=400] [SPUR=0.25] [restAt=86]
 import { loadEngine } from '../../tests/chapter-sim.mjs';
 const N = Number(process.argv[2]) || 400, SPUR = process.argv[3] != null ? Number(process.argv[3]) : 0.25, REST_AT = process.argv[4] != null ? Number(process.argv[4]) : 86;
+const SEED0 = Number(process.env.CH2_SEED0) || 0;   // 案の比較だけ：seed の並びをずらす（ばらつきの確かめ）
 const E = loadEngine(); globalThis.MMP10M = E.w.MMP10M;
-await import('../../js/proto/roadfirst-data.js'); await import('../../js/proto/roadfirst-core.js'); await import('../../js/proto/roadfirst-play.js'); await import('../../js/proto/ch2-routes.js');
+await import('../../js/proto/roadfirst-data.js'); await import('../../js/proto/roadfirst-core.js'); await import('../../js/proto/roadfirst-play.js'); await import(process.env.CH2_ROUTES ? new URL('file://' + process.env.CH2_ROUTES).href : '../../js/proto/ch2-routes.js');
 const C = globalThis.MMRF_CORE, P = globalThis.MMRF_PLAY, CH2 = globalThis.MMRF_CH2;
 P.setEventPool(E.CH.getConfig(1).eventPool);
 const K = P.STAT_KEYS, REW = ['L_CHEST', 'R_CHEST', 'L_ALTAR', 'L_LATE_ALTAR', 'REWARD5', 'R_SPECIAL', 'RANDOM_DEN'];
 const MONS = [{ sp: 0, name: 'ソラモ', ...E.w.MMP10M.baseOf(0) }, { sp: 1, name: 'ガウル', ...E.w.MMP10M.baseOf(1) }];
 const BOARDS = { 'Ch1-A（基準）': globalThis.MMRF_DATA, 'Ch2-A': CH2.A, 'Ch2-B': CH2.B, 'Ch2-C': CH2.C };
+// 案の比較だけ：CH2_BOARDS=Ch2-A,Ch2-B のように回す盤を絞る（既定は全部）
+if (process.env.CH2_BOARDS) for (const k of Object.keys(BOARDS)) if (!process.env.CH2_BOARDS.split(',').includes(k)) delete BOARDS[k];
 /** 分かれ道の方針：寄り道は SPUR の割合で（未取得のときだけ）・本線は乱数。Chapter 1 の makePolicy（J0／H の名前に依存）は使わない */
 function policy(rng) {
   return (D, st, ops) => {
@@ -31,7 +34,7 @@ const out = {};
 for (const [name, D] of Object.entries(BOARDS)) {
   const r = { n: 0, goal: 0, turns: [], gain: [], rew: 0, rewEach: {}, statStops: [], empty: [], spurOpp: [], timeAt: {}, rests: [], fat: [] };
   for (const mon of MONS) for (let i = 1; i <= N; i++) {
-    const seed = i * 7919 + 13, rng = C.mulberry((seed ^ 0x2CE2) >>> 0);
+    const seed = (i + SEED0) * 7919 + 13, rng = C.mulberry((seed ^ 0x2CE2) >>> 0);
     const st = P.simulate(D, C, { seed, monster: mon, policy: policy(rng), restAt: REST_AT, randOpen: undefined });
     r.n++; if (st.done) { r.goal++; r.turns.push(st.turn); }
     else { const seg = Object.entries(D.segments).find(([, s]) => s[3].includes(st.node)); const k = seg ? seg[0] : st.node; r.timeAt[k] = (r.timeAt[k] || 0) + 1; }
@@ -50,7 +53,7 @@ for (const [name, D] of Object.entries(BOARDS)) {
     rewardEach: Object.fromEntries(REW.map((id) => [id, +pct((r.rewEach[id] || 0) / r.n)])), spurOpp: +avg(r.spurOpp).toFixed(2), rests: +avg(r.rests).toFixed(2), fatEnd: Math.round(avg(r.fat)), timeUpAt: top };
 }
 const base = out['Ch1-A（基準）'];
-for (const k of ['Ch2-A', 'Ch2-B', 'Ch2-C']) { const o = out[k]; o.vsCh1 = { goalPP: +(o.goal - base.goal).toFixed(1), gainPct: +((o.gain / base.gain - 1) * 100).toFixed(1), rewardPP: +(o.rewardRate - base.rewardRate).toFixed(1) }; }
+if (base) for (const k of ['Ch2-A', 'Ch2-B', 'Ch2-C'].filter((k) => out[k])) { const o = out[k]; o.vsCh1 = { goalPP: +(o.goal - base.goal).toFixed(1), gainPct: +((o.gain / base.gain - 1) * 100).toFixed(1), rewardPP: +(o.rewardRate - base.rewardRate).toFixed(1) }; }
 const a2 = out['Ch2-A'];
-for (const k of ['Ch2-B', 'Ch2-C']) { const o = out[k]; o.vsCh2A = { goalPP: +(o.goal - a2.goal).toFixed(1), gainPct: +((o.gain / a2.gain - 1) * 100).toFixed(1), rewardPP: +(o.rewardRate - a2.rewardRate).toFixed(1) }; }
+if (a2) for (const k of ['Ch2-B', 'Ch2-C'].filter((k) => out[k])) { const o = out[k]; o.vsCh2A = { goalPP: +(o.goal - a2.goal).toFixed(1), gainPct: +((o.gain / a2.gain - 1) * 100).toFixed(1), rewardPP: +(o.rewardRate - a2.rewardRate).toFixed(1) }; }
 console.log(JSON.stringify({ N, SPUR, REST_AT, monsters: MONS.map((m) => m.name), out }, null, 1));
