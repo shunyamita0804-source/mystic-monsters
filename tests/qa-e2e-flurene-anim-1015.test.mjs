@@ -83,7 +83,7 @@ test('FA-B2（390×844）：技アニメ No.01〜10＝コマが順に出て待�
   for (let no = 1; no <= 10; no++) {
     const d = D[no], want = new Set(d.cuts.flatMap((c) => [c.f, c.fx]).concat(d.fx.map((c) => c.f)).filter(Boolean));
     await pg.evaluate((no) => { window.__flSeen = new Set(); window.__flMax = 0; window.__flBody = 0;
-      window.__flT = setInterval(() => { const im = [...document.querySelectorAll('#bt img.p25f')]; im.forEach((i) => { const m = (i.getAttribute('src') || '').match(/flurene_moves_1015\/(.+)$/); if (m && +getComputedStyle(i).opacity > 0.05) window.__flSeen.add(m[1]); });
+      window.__flT = setInterval(() => { const im = [...document.querySelectorAll('#bt img.p25f')]; im.concat([...document.querySelectorAll('#bt .p25c > img')]).forEach((i) => { const m = (i.getAttribute('src') || '').match(/flurene_moves_1015\/(.+)$/), o = i.parentNode.classList.contains('p25c') ? i.parentNode : i; if (m && +getComputedStyle(o).opacity > 0.05) window.__flSeen.add(m[1]); });   // 2026-10-15 夜：相手へ飛ばす効果は切り出しの箱（.p25c）の中
         const vb = im.filter((i) => /_b\d\d\.webp$/.test(i.getAttribute('src') || '') && +getComputedStyle(i).opacity > 0.98).length; window.__flBody = Math.max(window.__flBody, vb); }, 16);
       const b = [...document.querySelectorAll('#mmqa-bar button')].find((e) => e.textContent.startsWith(String(no).padStart(2, '0'))); b.click(); }, no);
     if (no === 6) { await pg.waitForTimeout(820); await pg.screenshot({ path: path.join(SHOT, 'b2_06_mid.png') }); }
