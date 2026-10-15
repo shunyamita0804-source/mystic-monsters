@@ -112,9 +112,22 @@
         effects: [E('opponent', 'atk', 'down', 'medium', 2), E('opponent', 'de', 'down', 'medium', 2)], ailment: fz({ kind: 'sleep', label: 'ねむり', chance: 0.2 }) }),
       MV({ no: 10, id: 'gigant_nose', name: 'ギガントノーズ', type: 'power', power: 150, accuracy: 75, critical: 25, slot: null, cuts: 4, desc: '巨大化させた鼻で押しつぶす、ノビトンの大技。' }),
     ]), removed: fz(['くっつく']), renamed: fz({ 'ピンポイント突き': 'しびれ突き' }) }),
-    // ジオル：正式10技の名前は維持（2026-10-06）。威力・命中・効果の数値は同期されていない＝null（推測で入れない・要確認）
-    jiol: fz({ style: null, list: fz(['パンチ', 'キック', '力をためる', 'のしかかり', 'グランドハンマー', 'クリスタルレイ', 'グランドスパイク', 'ロックアッパー', 'ジオインパクト', 'クリスタルノヴァ'].map((name, i) =>
-      MV({ no: i + 1, id: ['punch', 'kick', 'chikara_wo_tameru', 'noshikakari', 'ground_hammer', 'crystal_ray', 'ground_spike', 'rock_upper', 'geo_impact', 'crystal_nova'][i], name, type: null, power: null, accuracy: null, critical: null, slot: null, cuts: null, desc: null }))) }),
+    // ジオル：2026-10-15 ユーザー正式承認（ZIP Mismon_Jiol_10Moves_Battle_Addendum_20261015 の 02_Jiol_Approved_Moves.tsv）。SK の番号＝40＋No−1（js/battle/rules.js が実行時に足す）。
+    //  習得：初期＝No.1〜4・ちから特訓 No.5・かしこさ特訓 No.6・命中特訓 No.7・回避特訓 No.8・丈夫さ特訓 No.9／No.10（learn）。No.9・10＝必殺技（威力 120 以上）。追加効果は No.3 だけ（状態異常なし）
+    //  cuts＝技アニメの本体のコマ数（js/battle/jiol-moves-data.js）。desc は承認表に無い＝効果のある No.3 だけ
+    jiol: fz({ style: null, list: fz([
+      MV({ no: 1, id: 'punch', name: 'パンチ', type: 'power', power: 70, accuracy: 95, critical: 5, slot: 40, cuts: 4, learn: 'initial', desc: null }),
+      MV({ no: 2, id: 'kick', name: 'キック', type: 'power', power: 85, accuracy: 85, critical: 10, slot: 41, cuts: 4, learn: 'initial', desc: null }),
+      MV({ no: 3, id: 'chikara_wo_tameru', name: '力をためる', type: 'support', accuracy: 100, slot: 42, cuts: 4, learn: 'initial', desc: '力をためて、自分の攻撃力を上げる（中・2ターン）。',
+        effects: [E('self', 'atk', 'up', 'medium', 2)] }),
+      MV({ no: 4, id: 'noshikakari', name: 'のしかかり', type: 'power', power: 95, accuracy: 75, critical: 10, slot: 43, cuts: 4, learn: 'initial', desc: null }),
+      MV({ no: 5, id: 'ground_hammer', name: 'グランドハンマー', type: 'power', power: 115, accuracy: 80, critical: 15, slot: 44, cuts: 4, learn: 'po', desc: null }),
+      MV({ no: 6, id: 'crystal_ray', name: 'クリスタルレイ', type: 'wisdom', power: 100, accuracy: 95, critical: 10, slot: 45, cuts: 4, learn: 'in', desc: null }),
+      MV({ no: 7, id: 'ground_spike', name: 'グランドスパイク', type: 'power', power: 95, accuracy: 100, critical: 10, slot: 46, cuts: 4, learn: 'hi', desc: null }),
+      MV({ no: 8, id: 'rock_upper', name: 'ロックアッパー', type: 'power', power: 105, accuracy: 90, critical: 20, slot: 47, cuts: 4, learn: 'ev', desc: null }),
+      MV({ no: 9, id: 'geo_impact', name: 'ジオインパクト', type: 'power', power: 140, accuracy: 75, critical: 25, slot: 48, cuts: 12, learn: 'de', desc: null }),
+      MV({ no: 10, id: 'crystal_nova', name: 'クリスタルノヴァ', type: 'wisdom', power: 145, accuracy: 90, critical: 20, slot: 49, cuts: 4, learn: 'de', desc: null }),
+    ]) }),
     gauru: fz({ style: '高速・高火力・短期決戦型の両刀アタッカー', list: fz([
       MV({ no: 1, id: 'tsutsuku', name: 'つつく', type: 'power', power: 60, accuracy: 100, critical: 5, slot: 11, cuts: 4, desc: 'くちばしで素早くつつく。' }),
       MV({ no: 2, id: 'wind', name: 'ウィンド', type: 'wisdom', power: 65, accuracy: 95, critical: 5, slot: 12, cuts: 4, desc: '風をまとい、相手に風の力をぶつける。' }),
@@ -145,7 +158,7 @@
   }
   /** 技の番号（SK）→ 正式技（ソラモ・ガウルの 0〜19・レグナスの 20〜29）。無ければ null */
   function moveBySlot(k) {
-    for (const key of ['solamo', 'gauru', 'regnas']) { const m = movesOf(key).find((x) => x.slot === k); if (m) return { ...m, owner: key }; }
+    for (const key of ['solamo', 'gauru', 'regnas', 'jiol']) { const m = movesOf(key).find((x) => x.slot === k); if (m) return { ...m, owner: key }; }
     return null;
   }
 

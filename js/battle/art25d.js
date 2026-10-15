@@ -24,7 +24,7 @@
   const SPK = { 0: 'soramo', 1: 'gauru' };
   /** 待機の立ち絵（新）と、今の立ち絵に対する高さの倍率（足元の位置はそのまま） */
   const IDLE = { 0: { src: A + 'soramo/idle.webp', h: 0.84 }, 1: { src: A + 'gauru/idle.webp', h: 0.9 } };
-  const owner = (k) => (k >= 0 && k <= 9 ? 0 : k >= 10 && k <= 19 ? 1 : k >= 30 && k <= 39 ? 2 : k >= 20 && k <= 29 ? 4 : -1);   // 30〜39＝ノビトン（js/battle/rules.js が実行時に足す技）・20〜29＝レグナス（js/battle/rival-partner.js。IMG の 4）
+  const owner = (k) => (k >= 0 && k <= 9 ? 0 : k >= 10 && k <= 19 ? 1 : k >= 30 && k <= 39 ? 2 : k >= 20 && k <= 29 ? 4 : k >= 40 && k <= 49 ? 3 : -1);   // 30〜39＝ノビトン（js/battle/rules.js が実行時に足す技）・20〜29＝レグナス（js/battle/rival-partner.js。IMG の 4）
   const DATA = () => root.MM25D_DATA || {};
   // 2026-10-12 正式：ソラモの技（SK の 0〜9）は修正納品の46コマ（assets/battle/soramo_moves_1012/・js/battle/soramo-moves-data.js）を通常のバトルで見せる。
   //   待機の立ち絵は変えない（2.5D の待機絵は従来どおり ?battleArt=2p5d のときだけ）。?battleArt=old で「旧」を選んでいる間だけ今までの演出（見比べ用）
@@ -38,16 +38,19 @@
   //   1枚に本体と効果が描かれている（別の層は無い）。ライバル戦で使うのは初期の4技（20〜23）だけ。従来の静止ポーズの演出（MMRP.anim）は、読み込めないときの代わり
   const ROFF = () => root.MMREMV_DATA || {};
   // 2026-10-12：ジオルの技＝正式採用用・透過補正版 全96枚（assets/battle/jiol_moves_1012/・js/battle/jiol-moves-data.js）。
-  //   ジオルの技の SK の番号・性能は未決（OFFICIAL_MOVES.jiol は名前だけ）＝バトルでは使わない。開発用のプレビュー（MM25D.preview('jiol', 番号, 側)）だけ
+  //   2026-10-15 から SK 40〜49 の正式技（下の SRC_OF の 3）。開発用のプレビュー（MM25D.preview('jiol', 番号, 側)）も従来どおり
   const JOFF = () => root.MMJIMV_DATA || {};
   // 2026-10-15：フルーネの技＝本体 42＋効果 35（assets/battle/flurene_moves_1015/・js/battle/flurene-moves-data.js）。SK の番号・性能は無い＝バトルでは使わない・QA 試遊のプレビュー（MM25D.preview('flurene', No, 側)）だけ
   const FLOFF = () => root.MMFLMV_DATA || {};
-  const SRC_OF = { 0: OFF, 1: GOFF, 2: NOFF, 4: ROFF };
+  // 2026-10-15：ジオルの正式技（SK 40〜49＝40＋No−1・js/battle/rules.js）＝通常のバトルでも同じ 96枚（データは No. で引く＝SK の番号に読み替える）
+  let JK = null;
+  const JSK = () => { const D = JOFF(); if (!JK || JK.src !== D) { JK = { src: D, map: {} }; Object.keys(D).forEach((no) => { JK.map[39 + +no] = D[no]; }); } return JK.map; };
+  const SRC_OF = { 0: OFF, 1: GOFF, 2: NOFF, 3: JSK, 4: ROFF };
   /** 読み込めなかったコマがある技（その技だけ従来の演出へ戻す）。キー＝dir＋ファイル名 */
   const failed = new Set();
   const usable = (d) => !!d && !d.cuts.concat(d.fx || []).some((c) => [c.f, c.fx].some((f) => f && failed.has((d.dir || OA) + f)));
   const offData = (k, s) => { if (!offOn()) return null; const o = owner(k), src = SRC_OF[o]; if (!src || spOf(s) !== o) return null; const d = src()[k] || null; return usable(d) ? d : null; };
-  const OFF_DUR = { 4: 2300, 8: 2300, 9: 2700, 17: 2300, 18: 2300, 19: 2500, 34: 2300, 35: 2300, 37: 2300, 39: 2700, 28: 2700, 29: 2700 };   // 6コマ以上の大技は少し長く（共通演出を通るとき）
+  const OFF_DUR = { 48: 2700, 4: 2300, 8: 2300, 9: 2700, 17: 2300, 18: 2300, 19: 2500, 34: 2300, 35: 2300, 37: 2300, 39: 2700, 28: 2700, 29: 2700 };   // 6コマ以上の大技は少し長く（共通演出を通るとき）
 
   function spOf(s) { const pl = G('BPL'); return pl && pl[s] ? pl[s].sp : null; }
   /** この技をこの側が使うとき新しいコマで見せるか */

@@ -18,7 +18,7 @@ const TSV = {
   solamo: [[1, 'taiatari', 0], [2, 'hikkaki', 1], [3, 'shippo_attack', 2], [4, 'hoeru', 3], [5, 'star_crash', 4], [6, 'soramo_beam', 5], [7, 'sunakake', 6], [8, 'hoshi_no_mamori', 7], [9, 'stardust_ray', 8], [10, 'star_fall', 9]],
   gauru: [[1, 'tsutsuku', 11], [2, 'wind', 12], [3, 'spiral_dive', 10], [4, 'sonic_move', 13], [5, 'kouyoku_slash', 14], [6, 'fireball', 15], [7, 'sky_rush', 17], [8, 'flare_ray', 16], [9, 'feather_storm', 18], [10, 'seinaru_honoo', 19]],
   nobiton: [[1, 'hana_binta', 30], [2, 'zutsuki', 31], [3, 'hanamizu', 32], [4, 'hitoyasumi', 33], [5, 'makitsuku', 34], [6, 'nose_wave', 35], [7, 'shibire_tsuki', 36], [8, 'mirage_nose', 37], [9, 'downer_mist', 38], [10, 'gigant_nose', 39]],
-  jiol: [[1, 'punch', null], [2, 'kick', null], [3, 'chikara_wo_tameru', null], [4, 'noshikakari', null], [5, 'ground_hammer', null], [6, 'crystal_ray', null], [7, 'ground_spike', null], [8, 'rock_upper', null], [9, 'geo_impact', null], [10, 'crystal_nova', null]],
+  jiol: [[1, 'punch', 40], [2, 'kick', 41], [3, 'chikara_wo_tameru', 42], [4, 'noshikakari', 43], [5, 'ground_hammer', 44], [6, 'crystal_ray', 45], [7, 'ground_spike', 46], [8, 'rock_upper', 47], [9, 'geo_impact', 48], [10, 'crystal_nova', 49]],   // 2026-10-15：40＋No−1
   regnas: [[1, 'kirisaku', 20], [2, 'shippo_attack', 21], [3, 'ryugan_lock', 22], [4, 'zanei_step', 23], [5, 'dragon_crash', 24], [6, 'soukou_breath', 25], [7, 'snipe_fang', 26], [8, 'genei_claw', 27], [9, 'soujin_ranbu', 28], [10, 'tail_cyclone', 29]],
 };
 
@@ -43,7 +43,7 @@ test('MC-01：50枚の対応が納品の対応表どおり（番号の昇順で�
   // 番号のずれに注意する所（指示書）
   assert.match(C.src(3), /solamo\/04_hoeru/); assert.match(C.src(4), /solamo\/05_star_crash/); assert.match(C.src(7), /solamo\/08_hoshi_no_mamori/);
   assert.match(C.src(10), /gauru\/03_spiral_dive/); assert.match(C.src(17), /gauru\/07_sky_rush/); assert.match(C.src(16), /gauru\/08_flare_ray/);
-  assert.equal(C.src(40, 'fb'), 'fb', 'カードの無い番号は従来の絵');
+  assert.equal(C.src(50, 'fb'), 'fb', 'カードの無い番号は従来の絵'); assert.match(C.src(40), /jiol\/01_punch/, '2026-10-15：ジオル＝SK 40〜49');
 });
 
 test('MC-02：技管理だけが新しいカード（6枠・一覧・詳細）・バトルのルーレット／技辞典／技データは従来のまま', () => {

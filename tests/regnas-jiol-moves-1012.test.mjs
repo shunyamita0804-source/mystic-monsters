@@ -57,7 +57,7 @@ test('RJ-02：ジオル 10技・96枚（本体48＋効果48）・正式の技表
   }
   assert.equal(body, 48); assert.equal(fx, 48);
   assert.equal(rd('assets/battle/jiol_moves_1012/sha256.txt').trim().split('\n').length, 96);
-  assert.doesNotMatch(rd('js/phase10/monsters.js').match(/jiol: fz\(\{ style[\s\S]*?\}\)\),/)?.[0] || '', /power: \d/, 'ジオルの技の性能は未決のまま（作らない）');
+  // 2026-10-15：ジオルの技の性能はユーザー承認の表（js/phase10/monsters.js）＝tests/jiol-moves-1015.test.mjs
 });
 
 test('RJ-03：レグナスの技だけ新しいコマ・ジオルはプレビューだけ', () => {

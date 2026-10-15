@@ -2,7 +2,7 @@
 //  CQ-01 比較画面の肩上アップ6枚（派生 640×640・原本の sha256 は納品の 04_Assets_Manifest と一致・番号 → 絵）・固定の数値なし・999 の尺度・正式6色
 //  CQ-02 流れ：大会＝比較（MMCMP.html・公式の会場）→ p9VsGo → そのままバトル／野生・レア・ライバル＝比較の重ね画面（MMCMP.overlay・野外）→ バトル。独立した VS の画面は呼ばない
 //  CQ-03 フルーネの技カード10枚（番号・名前・ファイル・README の原本の sha256）・既存の50枚の対応は不変（SK の番号にフルーネは入らない）
-//  CQ-04 QA 試遊モード：?mmQaTrial=1 のときだけ・通常のセーブのキーだけを止める・6体×10技＝実戦 40／プレビュー 20（ジオル・フルーネ＝2026-10-15 技アニメ）／静止画 0
+//  CQ-04 QA 試遊モード：?mmQaTrial=1 のときだけ・通常のセーブのキーだけを止める・6体×10技＝実戦 50（ジオル＝2026-10-15 正式10技）／プレビュー 10（フルーネ）／静止画 0
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
@@ -88,10 +88,10 @@ test('CQ-03：フルーネの技カード10枚（番号・名前・ファイル�
   const n = { solamo: 0, gauru: 0, regnas: 0, nobiton: 0 };
   for (let k = 0; k < 40; k++) { const c = C.bySlot(k); assert.ok(c, 'SK ' + k); assert.notEqual(c.sp, 'flurene'); n[c.sp]++; assert.ok(existsSync(path.join(ROOT, c.src.replace(/^\.\//, ''))), c.src); }
   assert.deepEqual(n, { solamo: 10, gauru: 10, regnas: 10, nobiton: 10 });
-  assert.equal(J(C.list('jiol')).filter((x) => x.src).length, 10, 'ジオルの10枚（SK なし）も従来どおり');
+  assert.equal(J(C.list('jiol')).filter((x) => x.src).length, 10, 'ジオルの10枚（2026-10-15 から SK 40〜49）');
 });
 
-test('CQ-04：QA 試遊モード＝?mmQaTrial=1 のときだけ・通常のセーブのキーだけ止める・6体×10技（実戦 40／プレビュー 20／静止画 0）', () => {
+test('CQ-04：QA 試遊モード＝?mmQaTrial=1 のときだけ・通常のセーブのキーだけ止める・6体×10技（実戦 50／プレビュー 10／静止画 0）', () => {
   const load = (search, fl = true) => ctxWith(['js/phase10/monsters.js', 'js/battle/move-cards.js'].concat(fl ? ['js/battle/flurene-moves-data.js'] : [], ['js/qa/trial.js']), { location: { search }, URLSearchParams });
   assert.equal(load('').MMQA.ENABLED, false, '普段の URL では何も出さない');
   assert.equal(load('?mmQaTrial=0').MMQA.ENABLED, false);
@@ -100,13 +100,13 @@ test('CQ-04：QA 試遊モード＝?mmQaTrial=1 のときだけ・通常のセ�
   assert.equal(Q.battle(0, 1), false, 'OFF のときは QA 試合を始めない（通常のセーブの S を触らない）'); assert.equal(Q.endBattle(), undefined);
   for (const k of ['mr4v6', 'mr4', 'mr4s1', 'mr4s3', 'mr4s2t', 'mr4ng']) assert.ok(Q.SAVE_KEY_RE.test(k), k + '：通常のセーブ（止める）');
   for (const k of ['mr4a', 'mmaudio', 'mmvoice', 'mmcrowd', 'mmbattleui', 'mr4v6x']) assert.ok(!Q.SAVE_KEY_RE.test(k), k + '：設定（止めない）');
-  // SK（index.html の技の表）があるときの状態：ソラモ・ガウル 0〜19・レグナス 20〜29・ノビトン 30〜39
-  ctx.SK = Array.from({ length: 40 }, (_, i) => ['技' + i]);
+  // SK（index.html の技の表）があるときの状態：ソラモ・ガウル 0〜19・レグナス 20〜29・ノビトン 30〜39・ジオル 40〜49（2026-10-15）
+  ctx.SK = Array.from({ length: 50 }, (_, i) => ['技' + i]);
   const cat = J(Q.catalog());
   assert.deepEqual(cat.map((x) => x.key), ['solamo', 'gauru', 'nobiton', 'jiol', 'regnas', 'flurene']);
   assert.ok(cat.every((x) => x.moves.length === 10 && x.moves.every((m) => m.src)), '6体×10技＝60 のカード');
-  assert.deepEqual(J(Q.counts()), { battle: 40, preview: 20, static: 0, total: 60 });
-  assert.ok(cat[3].moves.every((m) => m.status === 'preview'), 'ジオル＝技アニメのプレビューだけ（性能未決＝実戦なし）');
+  assert.deepEqual(J(Q.counts()), { battle: 50, preview: 10, static: 0, total: 60 });
+  assert.deepEqual(cat[3].moves.map((m) => [m.status, m.slot]), Array.from({ length: 10 }, (_, i) => ['battle', 40 + i]), '2026-10-15：ジオル＝正式10技で実戦（SK 40〜49）');
   assert.ok(cat[5].moves.every((m) => m.status === 'preview' && m.slot == null), '2026-10-15：フルーネ＝技アニメのプレビューだけ（技の番号 SK なし＝実戦なし）');
   assert.deepEqual(cat[5].moves.map((m) => [m.anim.bodies, m.anim.effects, m.anim.wait]), [[4, 4, false], [4, 4, false], [4, 4, false], [4, 4, false], [5, 5, false], [4, 4, false], [4, 4, false], [4, 4, false], [4, 2, true], [5, 0, true]], '本体・効果の枚数（09・10＝FX追加待ち）');
   { const c0 = load('?mmQaTrial=1', false); c0.SK = ctx.SK; assert.ok(J(c0.MMQA.catalog())[5].moves.every((m) => m.status === 'static'), '技アニメのデータが読めないときは静止カードだけ（未実装／要仕様確認）'); }

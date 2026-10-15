@@ -2,9 +2,9 @@
 //  ・URL に ?mmQaTrial=1 を付けたときだけ、ベースキャンプと牧場に『QA：全モンスター・全技試遊 ON/OFF』の切り替えを出す（普段の URL では何も出さない・何も動かない）。
 //  ・ON：今のセーブ（S）をページの中に控え、通常のセーブへ一切書かない（index.html の save() は何もしない＋localStorage のセーブのキー mr4… への書き込みを止める）。
 //    試遊専用の画面に 6体（ソラモ・ガウル・ノビトン・ジオル・レグナス〔QA だけの貸与〕・フルーネ〔未解禁〕）×各10技＝60 の技カードを並べる。
-//    実戦できる技（技の番号 SK があるもの＝ソラモ・ガウル・ノビトン・レグナス）は「この技で QA 試合」＝ルーレットの6枠をすべてその技にして、
+//    実戦できる技（技の番号 SK があるもの＝ソラモ・ガウル・ノビトン・レグナス・ジオル〔2026-10-15 正式 SK 40〜49〕）は「この技で QA 試合」＝ルーレットの6枠をすべてその技にして、
 //    安全なテスト相手（ランク E の練習試合の相手・ソラモ）と戦う（戦闘の計算・技の性能・ルーレットは変えない）。
-//    ジオル＝技の性能が未決（SK の番号なし）＝実戦は無し・技アニメのコマのプレビュー（MM25D.preview）だけ。
+//    ジオル＝2026-10-15 から正式10技（承認の性能表・SK 40〜49）で実戦できる（旧：技アニメのコマのプレビューだけ）。
 //    フルーネ＝技の性能が未承認＝実戦は無し。2026-10-15：技アニメ 77枚（本体 42＋効果 35）のプレビュー（MM25D.preview('flurene', No)）と
 //      2.5D 歩行 front・back 各8コマの確認（「歩行を確認」）。効果の無い技（09 は2枚・10 は0枚）は『FX追加待ち』と出す（作らない）。
 //      プレビューの間だけ、ページの中の IMG[5]・MMARENA.IDLE[5] にフルーネの絵を入れる（終わり・OFF で消す＝本編のデータ・セーブは変えない）。
@@ -48,7 +48,7 @@
     if (key === 'flurene') { const f = m.pendingSpecies('flurene'); return (f && f.moves) || []; }
     const L = m.movesOf(key); return Array.isArray(L) ? L : (L && L.list) || [];
   }
-  /** 技の状態：battle＝実戦可能（SK の番号があり技のデータがある）／preview＝技アニメのコマのプレビューだけ（ジオル・フルーネ）／static＝静止カードだけ（技アニメのデータが無いとき） */
+  /** 技の状態：battle＝実戦可能（SK の番号があり技のデータがある）／preview＝技アニメのコマのプレビューだけ（フルーネ。ジオルは SK が入る前だけ）／static＝静止カードだけ（技アニメのデータが無いとき） */
   function statusOf(key, slot) {
     const SK = G('SK');
     if (slot != null && SK && SK[slot]) return 'battle';
@@ -199,7 +199,7 @@
     const v = doc.getElementById('mmqa'); if (!v) return;
     const cat = catalog(), x = cat[ST.mon] || cat[0];
     const sum = (mv) => mv.status === 'battle' ? '実戦可能' : mv.status === 'preview' ? '技アニメのプレビュー' : '未実装／要仕様確認';
-    const monNote = x.key === 'jiol' ? '技の性能が未決＝実戦は無し（技アニメのコマのプレビューだけ）' : x.key === 'flurene' ? (FL() ? '未解禁・技の性能は未承認＝実戦は無し（技アニメのプレビューと歩行の確認だけ）' : '未解禁・技の性能と技アニメは未承認＝静止カードと絵の確認だけ（未実装／要仕様確認）') : x.key === 'regnas' ? 'ライバル専用のモンスター＝QA だけの貸与（本番では使えない）' : '全10技を QA 試合で確認できる';
+    const monNote = x.key === 'jiol' && !x.moves.some((m) => m.status === 'battle') ? '技の性能が未決＝実戦は無し（技アニメのコマのプレビューだけ）' : x.key === 'flurene' ? (FL() ? '未解禁・技の性能は未承認＝実戦は無し（技アニメのプレビューと歩行の確認だけ）' : '未解禁・技の性能と技アニメは未承認＝静止カードと絵の確認だけ（未実装／要仕様確認）') : x.key === 'regnas' ? 'ライバル専用のモンスター＝QA だけの貸与（本番では使えない）' : '全10技を QA 試合で確認できる';
     v.innerHTML = `<div class="qh"><b>QA モード：全モンスター・全技試遊（ON）</b><small>試遊専用・通常のセーブには保存しません（OFF または再読み込みで元どおり）</small><button class="qoff" type="button" data-nsfx="1">QA を OFF にして通常へ戻る</button></div>`
       + `<div class="qtabs" role="tablist">${cat.map((c, i) => `<button class="qtab${i === ST.mon ? ' on' : ''}" type="button" data-i="${i}" data-nsfx="1" role="tab" aria-selected="${i === ST.mon}"><img src="${esc(c.img)}" alt="">${esc(c.name)}<i>${c.moves.filter((m) => m.status === 'battle').length ? '実戦' : c.moves.some((m) => m.status === 'preview') ? 'プレビュー' : '静止画'}</i></button>`).join('')}</div>`
       + `<div class="qbody"><div class="qmon" data-key="${esc(x.key)}"><img src="${esc(x.img)}" alt=""><div><b>${esc(x.name)}${x.note ? `<small style="display:inline;margin-left:6px">${esc(x.note)}</small>` : ''}</b><small>${esc(monNote)}</small></div><div style="margin-left:auto;display:flex;flex-direction:column;gap:5px">${walkSets(x.key) ? '<button class="qbt qwk" type="button" data-nsfx="1">歩行を確認</button>' : ''}<button class="qbt qcmp" type="button" data-nsfx="1">比較画面を確認</button></div></div>`
