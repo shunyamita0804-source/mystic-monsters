@@ -1,0 +1,254 @@
+[
+ {
+  "file": "assets/battle/nobiton_moves_1012/31_02.webp",
+  "how": "市松の穴を消す",
+  "before": "09b5b779a742baa3cc1ff2b980e5a657321eccb7290ff1dd2caa427e8be7d6ad",
+  "after": "ecfec7f2dec48333e2d05efdeec9ed70288b9f02edb235b1de2eba68773ace66"
+ },
+ {
+  "file": "assets/battle/nobiton_moves_1012/35_03.webp",
+  "how": "市松の穴を消す",
+  "before": "23eb567d4eea28621a5b9d2f28479f6847ee973205f1585679b05c229ca8e655",
+  "after": "90178e10e15e51b8db64c4b6e11dc5d2428f903111507da4ee4f2f1de6b30716"
+ },
+ {
+  "file": "assets/battle/nobiton_moves_1012/35_04.webp",
+  "how": "市松の穴を消す",
+  "before": "2f9b72c71bde880ff49b6263a33a6663794070b1554e507b4b5bc90e6de5e218",
+  "after": "8b72703b914d775e3cd46aac3799c640c21fc05f6fbf63534175eeb04795b890"
+ },
+ {
+  "file": "assets/battle/nobiton_moves_1012/37_02.webp",
+  "how": "市松の穴を消す",
+  "before": "50d072555bc25985058625ab36182a6cc0b5887abc550355521dd6c83c0c9918",
+  "after": "27fed5077a5f4df8fdce0bbc587a00ae49d7003520381f152d67997112e664b2"
+ },
+ {
+  "file": "assets/battle/nobiton_moves_1012/37_03.webp",
+  "how": "市松の穴を消す",
+  "before": "a59861958d2b6f867e1f879e315d2d295ca28f8d5ec37c1dcf7d455797e64734",
+  "after": "5fd7a6483caffba835bda6023ff3c164a54d577644352dbdeb90902049f5e3cf"
+ },
+ {
+  "file": "assets/battle/nobiton_moves_1012/37_04.webp",
+  "how": "市松の穴を消す",
+  "before": "fbe4d0bae7ab6085cac749ccde4094b954cfeaf9f680342521730a82bde12ef8",
+  "after": "9172931dc793bc58f0287482de36f3464af9f40ed778f93d31d69d1ec99cdba9"
+ },
+ {
+  "file": "assets/battle/jiol_moves_1012/j02_04.webp",
+  "how": "市松の穴を消す",
+  "before": "54736a4fb9473d46958a6636204137e7a930881a330200d9b2bb9906073bddaf",
+  "after": "d166f772df01b6cd0797c832c623dee5211c845c127a17891c3176c22bd0e789"
+ },
+ {
+  "file": "assets/battle/jiol_moves_1012/j03_02.webp",
+  "how": "市松の穴を消す",
+  "before": "348914b31a35f8cbd99f71dd71f48385d5a6e7df27e2114a303da17e3271c2b7",
+  "after": "f0d7b67c5ca54f15cc4fdb328dffa55f3d46f0db6d9ff5d271f6ec25d1022dab"
+ },
+ {
+  "file": "assets/battle/jiol_moves_1012/j03_03.webp",
+  "how": "市松の穴を消す",
+  "before": "94b06ccd6f90e06c1f1fb6b004f9f80f763753b89ce81913bde20e9b97cf40b9",
+  "after": "a069985557cca004e97f4c7a2af3526c82bbfde9cf5ad354d705fa5e51eb7fff"
+ },
+ {
+  "file": "assets/battle/jiol_moves_1012/j03_04.webp",
+  "how": "市松の穴を消す",
+  "before": "7e1f083871c28beb03714be1ed441a8d0ab3d5eef24ebf46c5a32f7af70b0a3c",
+  "after": "d9649c36ad07fb7ba3c42f2057bcfdf72f81770968a2a8b09f7a601fcaa1e35f"
+ },
+ {
+  "file": "assets/battle/jiol_moves_1012/j04_01.webp",
+  "how": "市松の穴を消す",
+  "before": "edf57c65b5b7a3babc2f3cdac034b02f761e691a942fdd7f96f0b63bac8eeef0",
+  "after": "28267d6e3746da0cbf29231b2a12f1c57d78524f8870721c78f7f06541617667"
+ },
+ {
+  "file": "assets/battle/jiol_moves_1012/j04_03.webp",
+  "how": "市松の穴を消す",
+  "before": "b3a0476cc4f85fcf18ce5cf17f28d2cfca32b732d0ef2839eae3ef72b88c76a8",
+  "after": "ea2823397a83088dd1ead25a5b062e918824dad65fccce5c62cdc59f96451c2b"
+ },
+ {
+  "file": "assets/battle/jiol_moves_1012/j04_04.webp",
+  "how": "市松の穴を消す",
+  "before": "7a4ad0c38a2d4d839bbf6912aa7a9deae819efc672f9150bb08db21ffd27b8f0",
+  "after": "20496f38dc0784147fcf080addf1e568de4d16b836dcb554f5f8a1b59314a967"
+ },
+ {
+  "file": "assets/battle/jiol_moves_1012/j05_02.webp",
+  "how": "市松の穴を消す",
+  "before": "7ddb6df84523d74cc4f137d42e7ea6a048eeac1d1339b24f59901beaebef2eb3",
+  "after": "1db21918ca71478a516632368d6381f80b3f375483c7dc4fa1a540a4c3d601e0"
+ },
+ {
+  "file": "assets/battle/jiol_moves_1012/j05_04.webp",
+  "how": "市松の穴を消す",
+  "before": "de3cce22aaa4aed783edc41c114ee3aa6fa40c523b2498246df4b0618fb60b42",
+  "after": "0ccd4cf238d29f6d4bf45909598f5dc85abaa74f8f4a859cd833e109e28ad26c"
+ },
+ {
+  "file": "assets/battle/jiol_moves_1012/j06_02.webp",
+  "how": "市松の穴を消す",
+  "before": "fe2acc74542c850066c8ce26e87bf231fc5db99f743add17835274ae303fc77a",
+  "after": "7c8c65fcbe692d5111de8ea9a76aa1de4b883cb2bc2d3bbaf0cac542d2aacc89"
+ },
+ {
+  "file": "assets/battle/jiol_moves_1012/j06_03.webp",
+  "how": "市松の穴を消す",
+  "before": "98255b0a81809f16f5d0a03f2f37d6d4eaaa362a07e37893fe00f99edac70221",
+  "after": "7edcf57c3b92a1c1c16f9121b16f90c07e6d67258e2a8802543b6096ee0005f1"
+ },
+ {
+  "file": "assets/battle/jiol_moves_1012/j06_04.webp",
+  "how": "市松の穴を消す",
+  "before": "f1a8c0d4d5a65fd4da6e2aa919f214dc36fedf8d054596d83c67c8800694b485",
+  "after": "72e9bd8011ea0724ca799c618c262ee113f98c958700fb974e80253fb870c367"
+ },
+ {
+  "file": "assets/battle/nobiton_moves_1012/31_03_fx1.webp",
+  "how": "市松を均す（効果）",
+  "before": "02c795b8e1f81989d9db99a5b78a079c802ef4653a715354094c0ff74338d1fc",
+  "after": "47d54f225a095bbfec8ecb0caa3e178507267bb9ce4346788c4e11032aebbeae"
+ },
+ {
+  "file": "assets/battle/nobiton_moves_1012/34_05_fx1.webp",
+  "how": "市松を均す（効果）",
+  "before": "39c59fb8a30dc43c3619b950f6f8268c968a0b6645418d6d8d4e3f9970713e26",
+  "after": "d37afd8ce7d640340c250c5e8bc6d20687cfb931a2099abdc6dbc7764c684621"
+ },
+ {
+  "file": "assets/battle/nobiton_moves_1012/35_05_fx1.webp",
+  "how": "市松を均す（効果）",
+  "before": "31771aa6206e127536d94ec017f994f11aaa90972f6ad408237dbd40acf4365d",
+  "after": "efc66b3398165d8dda4cfdd5932bea4578554f21c77bdee7361a553e189086a2"
+ },
+ {
+  "file": "assets/battle/nobiton_moves_1012/37_05_fx1.webp",
+  "how": "市松を均す（効果）",
+  "before": "a6c8815f165de68fb674bb81409a337cdc44d336be08f81f910b6e61bd228a03",
+  "after": "12367eafe7f2fff2823357a296b78415587f6c5913984b70f33dd9283540bd63"
+ },
+ {
+  "file": "assets/battle/nobiton_moves_1012/38_02_fx1.webp",
+  "how": "市松を均す（効果）",
+  "before": "0ac260e266de3a1c12417f9bec0c54cfefcd8de54b3ed3c11ea8bff8ffaa8818",
+  "after": "3b96a602500d03c79882713184e24687e7c3bd3ff797c25d2388b9ac3691a861"
+ },
+ {
+  "file": "assets/battle/nobiton_moves_1012/38_03_fx1.webp",
+  "how": "市松を均す（効果）",
+  "before": "d90072fe65c54455a5ad6368f7b3644aea33d0ff2acbb123174e65fd54752179",
+  "after": "dc6b2e48127fa0a5d59cad55b33d6fb4f58363c4f71eb8e5c7a4977e11a73315"
+ },
+ {
+  "file": "assets/battle/nobiton_moves_1012/39_03_fx1.webp",
+  "how": "市松を均す（効果）",
+  "before": "8d5093244eb14908f596bb313fc6b195c2d6391e01a75c80262e8f58c23adf88",
+  "after": "0cfa72eec985fdf313d9d48539624abf6a138ba8263cd868de8bf006d62e7d88"
+ },
+ {
+  "file": "assets/battle/jiol_moves_1012/j01_03_fx.webp",
+  "how": "市松を均す（効果）",
+  "before": "96662c203d63b5c0f8cb821ffb00b0f73376de39bf2a13d8f08634e708a96c4a",
+  "after": "9c9c1fdd609600bc7fbacd262988daad5c3555006939309f5b45c4aeab5a04a4"
+ },
+ {
+  "file": "assets/battle/jiol_moves_1012/j02_03_fx.webp",
+  "how": "市松を均す（効果）",
+  "before": "1d6fe212304bd9de58a50f0c80c5141d7a4249270c3da3cce730b19924428064",
+  "after": "80f7e97e88ee81ce488a65c6f393d6a4bbb85f8f2ded203b7ea6a6215bf00d6b"
+ },
+ {
+  "file": "assets/battle/jiol_moves_1012/j03_01_fx.webp",
+  "how": "市松を均す（効果）",
+  "before": "8835e49b34780326f1b1db66dfeca1bc7c523319e598b65b5b34c539534595d2",
+  "after": "03d4e9aeb7fdc689ee2ef16d704eaa8b9070b8e45cd94f2a1fd0c46c37bbe274"
+ },
+ {
+  "file": "assets/battle/jiol_moves_1012/j03_02_fx.webp",
+  "how": "市松を均す（効果）",
+  "before": "d380bd10b8450ce3b21dbf0f09a547739b8fca40534b750441eb61c549c728a9",
+  "after": "1343d26faaec742eec77e1c9433d12cacf26678b3c527d27f508d665326feb1e"
+ },
+ {
+  "file": "assets/battle/jiol_moves_1012/j03_03_fx.webp",
+  "how": "市松を均す（効果）",
+  "before": "af2c8ead1944df8081e026b7f76897fe77741b88a90999def000b101d3322440",
+  "after": "2b800d0e132ef52d0ba1d4e9605b88d7940a67f53c0dfe0c17b597f02e27e517"
+ },
+ {
+  "file": "assets/battle/jiol_moves_1012/j03_04_fx.webp",
+  "how": "市松を均す（効果）",
+  "before": "f7a6943b8d961c3ef4d16d1a6b29a77da0dd1dc4cadb03a15cf69d4e1a7d6a62",
+  "after": "7c5b3b8bbabbf5b2019391f553c4a5ab45f1052c14a787e1219b207ff8751c49"
+ },
+ {
+  "file": "assets/battle/jiol_moves_1012/j04_01_fx.webp",
+  "how": "市松を均す（効果）",
+  "before": "6235fca2abbdcce40057d7d754323918da20e5158c738bd5036f32cabe5a0b09",
+  "after": "14b11783bc67b0e17e68ec26d0a60dcf057d14e110d4650c034104603739b87d"
+ },
+ {
+  "file": "assets/battle/jiol_moves_1012/j04_02_fx.webp",
+  "how": "市松を均す（効果）",
+  "before": "1e4225060dd5a2b3f7a288cc10b3606eba1e55c4ace285ce30216e5e036a8711",
+  "after": "7f9f80ec63533affa6c0085ca492113db1b00675548128da3fe7d89fdd8f1919"
+ },
+ {
+  "file": "assets/battle/jiol_moves_1012/j05_03_fx.webp",
+  "how": "市松を均す（効果）",
+  "before": "7bfc3dea5841a2b8ae31a4baeda52baa53811f8bb9c651ee45c5ce7ff1d9ae53",
+  "after": "2df18dc271ed28200c6e1279f2b703a0d0c46d36d30e9ca1665b126a7b3e8415"
+ },
+ {
+  "file": "assets/battle/jiol_moves_1012/j05_04_fx.webp",
+  "how": "市松を均す（効果）",
+  "before": "4eb02662b8e37cdb54e81b2144ad166f1964e92ff0167dbe48fffe1e8b30971b",
+  "after": "08457d80c14b2b041903dd8e890dc477714512a0252116e46516cc3cee32b8c4"
+ },
+ {
+  "file": "assets/battle/nobiton_moves_1012/33_02.webp",
+  "how": "輪郭の松葉模様を均す",
+  "before": "520e7770fadf007d390e4c33bef855f14d786fe0c20f71c40adbb736bf36d503",
+  "after": "aaa797c2e882b007819d0f4ebc4aead6a186b05172e9b8c7fe649e2e9f92e0c8"
+ },
+ {
+  "file": "assets/battle/nobiton_moves_1012/33_03.webp",
+  "how": "輪郭の松葉模様を均す",
+  "before": "996b7cd90cbb1f863f6367bd33ace093f586ae3e3118005755320d8ba0073e1f",
+  "after": "c6080a80a22fe742439fd5c08ed9c1d6404892e27a6fdd0f35e73f7f5a0291c3"
+ },
+ {
+  "file": "assets/battle/soramo_moves_1012/09_04.webp",
+  "how": "端を透明へぼかす",
+  "before": "9774cdfa2fa833a01ab6491fc0318807a1cd9b8c7eeaa6840bffcfa70dac6ecf",
+  "after": "006692d6441d4cdbceb812c1244e0f2a0034fed2dcf55559961fc82d4e0cff55"
+ },
+ {
+  "file": "assets/battle/soramo_moves_1012/09_05.webp",
+  "how": "端を透明へぼかす",
+  "before": "72446dfdce2218e12b18fb2cc6ae9d2a8a6b6c1092bff5bcd7331cff65b9fc3a",
+  "after": "5cfffb915eb53605a698d5f93edd0b74a124edd1f202a8cbde34b2f70b77eeef"
+ },
+ {
+  "file": "assets/battle/soramo_moves_1012/09_06.webp",
+  "how": "端を透明へぼかす",
+  "before": "7a18a9eda6e3a339ef2541616f9462f230bfa00bdd38162014dd176ade1bdcfd",
+  "after": "c62c52a0d59245c2c05552c7b3d1f2e0b97f9bae4b70307462e18ff2512180b4"
+ },
+ {
+  "file": "assets/battle/regnas_moves_1012/22_03.webp",
+  "how": "照準の緑を水色へ",
+  "before": "1d58410f5c9f7413de504a127416e6521476de2992bd88d15c9ae9d1ec575208",
+  "after": "a1098d93f2ade3e14cdbbed0808d0b6a27c2bd10e082d55707c00a17a4cbafea"
+ },
+ {
+  "file": "assets/battle/regnas_moves_1012/22_04.webp",
+  "how": "照準の緑を水色へ",
+  "before": "98ffdab489720dbba5eb485f4a56bcdee471753a85b583460ff19c7f0fdf0a63",
+  "after": "de21733d4805ae28e28deaa67b750bddc5576f38e0cd8c55e0c8cbb6aece7090"
+ }
+]
