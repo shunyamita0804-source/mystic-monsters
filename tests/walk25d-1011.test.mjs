@@ -63,7 +63,8 @@ test('WK-02：対戦表の顔＝faces_25d（5体・256×256）・読めないと
   assert.deepEqual(readdirSync(path.join(ROOT, 'assets/tournament/faces_25d')).sort(), ['README.md', ...keys.map((k) => `face_${k}.webp`)].sort(), '日本語名の重複・PNG の原本は置かない');
   assert.deepEqual(readdirSync(path.join(ROOT, 'assets/monsters/walk_25d/gauru')).filter((f) => !f.endsWith('.webp')), []);
   const html = rd('index.html');
-  assert.match(html, /function tbIcon\(x\)\{const f=window\.MMARENA&&x&&MMARENA\.faceSrc\(x\.sp\);if\(f\)\{const o=MMARENA\.faceOldSrc&&MMARENA\.faceOldSrc\(x\.sp\);return `<img class="tbface f25" src="\$\{f\}" alt=""\$\{o\?` onerror="this\.onerror=null;this\.classList\.remove\('f25'\);this\.src='\$\{o\}'"`:""\}>`\}/);
+  // 2026-10-15 N12：対戦表の顔は正式のイラスト（icons_1015）が先・faces_25d → faces は読めないときの代わり（tbIcon → tbIconFb）。表に無い種族は従来の tbIconOld
+  assert.match(html, /function tbIconOld\(x\)\{const f=window\.MMARENA&&x&&MMARENA\.faceSrc\(x\.sp\);if\(f\)\{const o=MMARENA\.faceOldSrc&&MMARENA\.faceOldSrc\(x\.sp\);return `<img class="tbface f25" src="\$\{f\}" alt=""\$\{o\?` onerror="this\.onerror=null;this\.classList\.remove\('f25'\);this\.src='\$\{o\}'"`:""\}>`\}/);
   assert.match(html, /\.tbic img\.tbface\.f25\{object-fit:contain;transform:scale\(\.9\)\}/);
   assert.match(rd('assets/tournament/faces_25d/README.md'), /georu\.png \| assets\/tournament\/faces_25d\/face_jiol\.webp/);
 });

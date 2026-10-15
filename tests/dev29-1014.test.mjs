@@ -70,7 +70,8 @@ test('D29-04：決着のあと旧 2D の決着のポーズ（poseSeq の SPX）�
   assert.match(A, /if \(ban && \/\^\(WIN!\|LOSE\)\/\.test\(ban\.textContent \|\| ''\)\) fin\(bt\);/);
   assert.match(A, /'#bt\.mma-fin \.mon>:not\(\.mma-win\):not\(\.mma-fin\)\{visibility:hidden!important;opacity:0!important\}'/);
   assert.match(A, /'#bt\.mma-fin \.mw\.dead,#bt\.mma-fin \.dead \.mon\{animation:none!important;transform:none!important;opacity:1!important;filter:none!important;transition:none!important\}'/);
-  assert.match(A, /im\.className = 'mma-fin' \+ \(flipOf\(s, sp\) \? ' fl' : ''\);[^\n]*im\.src = src;/, '立ち絵＝待機立ち絵（idleSrc）・向きは flipOf');
+  // 2026-10-15 N02：負けた側は正式 2.5D の「しょんぼり」（読めていなければ待機立ち絵）・勝った側は従来どおり
+  assert.match(A, /im\.className = 'mma-fin' \+ \(la \? ' mma-lose' : ''\) \+ \(flipOf\(s, sp\) \? ' fl' : ''\);[^\n]*im\.src = src;/, '立ち絵＝待機立ち絵（idleSrc）または負けた姿・向きは flipOf');
   assert.match(HTML, /function poseSeq\(s,sp,seq,h\)/, 'fight() の旧のポーズの処理・旧の絵（SPX）は残す（技の演出でも使う）');
 });
 

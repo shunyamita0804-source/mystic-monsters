@@ -23,7 +23,7 @@
 | `fina_hello` | フィナ | こんにちは | 会話の行の voice（序盤の最初の声かけ OPEN_TALK・旧フィナの紹介） | fina_hello_new.ogg（766fb3b74d9fa698）<br>fina_hello_new.m4a（a4f4b0c11975b598） | 未着 |
 | `fina_yeah` | フィナ | やったね | 行の voice（初優勝・育成完了）＋cue fina.challengeOk（封印の遺跡門の成功） | fina_yeah.ogg（1588f55ca9945f99）<br>fina_yeah.m4a（d1cdf170b6d3c1b1） | 未着 |
 | `fina_hmm` | フィナ | うーん | 行の voice（「……話は聞いてるんだけどな。」・初めての大会で優勝できなかった）＋cue fina.challengeNg | fina_hmm.ogg（fbb79971622541a3）<br>fina_hmm.m4a（bafbbb352fe83973） | 未着 |
-| `fina_look` | フィナ | 見て見て | 行の voice（「見て、…」の行）＋cue fina.discover（宝の行き止まり・隠れ家・45秒は繰り返さない） | fina_look.ogg（19a3864a9c130a6f）<br>fina_look.m4a（20d8da3680499339） | 未着 |
+| `fina_look` | フィナ | 見て見て | 行の voice（「見て、…」の行）（cue fina.discover は 2026-10-15 N06 で宝箱のカットインからフィナを外したため呼ぶ所なし） | fina_look.ogg（19a3864a9c130a6f）<br>fina_look.m4a（20d8da3680499339） | 未着 |
 | `fina_hey` | フィナ | もう | 行の voice（「もう、リュウったら……」） | fina_hey.ogg（2a1d20e887cf68a7）<br>fina_hey.m4a（e0509dd462ef8c75） | 未着 |
 | `fina_giggle` | フィナ | えへへ | 行の voice（名前を呼ぶ・「ふふ、大丈夫。」・最初の相棒） | fina_giggle.ogg（d708489636186b98）<br>fina_giggle.m4a（b490c598a9849c0e） | 未着 |
 | `fina_yes` | フィナ | うん | 行の voice（「うん。」で始まる行） | fina_yes.ogg（6f0874ef1b55c01f）<br>fina_yes.m4a（0fb45e27f8436ef7） | 未着 |

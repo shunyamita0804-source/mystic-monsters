@@ -140,8 +140,9 @@ const watchEnd = (pg) => pg.evaluate(() => new Promise((ok) => { const out = [];
     return vis.map((e) => (e.className || e.tagName) + '|' + ((e.getAttribute && e.getAttribute('src')) || '').split('/').pop()).concat(mw.classList.contains('dead') ? [`dead:${mt}:${mf}`] : []); });
   out.push(row); if (++n < 18) setTimeout(f, 150); else ok(out); }; f(); }));
 
-test('D29-B2：決着のあと旧 2D のポーズ（SPX）・倒れる動きを出さない＝勝った自分は正式の勝利の絵・ほかは正式の待機立ち絵（勝ち／負け × 両側）', { skip: SKIP, timeout: 400000 }, async () => {
-  const cases = [{ sp: 0, st: STRONG, fs: 0, want: ['victory', 'idle_soramo'] }, { sp: 0, st: WEAK, fs: 1, want: ['idle_soramo', 'idle_gauru'] }, { sp: 1, st: WEAK, fs: 0, want: ['idle_gauru', 'idle_soramo'] }];
+test('D29-B2：決着のあと旧 2D のポーズ（SPX）・倒れる動きを出さない＝勝った自分は正式の勝利の絵・負けた側は正式の「しょんぼり」（2026-10-15 N02）・相手が勝ったら相手は待機立ち絵（勝ち／負け × 両側）', { skip: SKIP, timeout: 400000 }, async () => {
+  // 2026-10-15 N02：負けた側＝正式 2.5D の「しょんぼり」（03_sad）
+  const cases = [{ sp: 0, st: STRONG, fs: 0, want: ['victory', '03_sad'] }, { sp: 0, st: WEAK, fs: 1, want: ['03_sad', 'idle_gauru'] }, { sp: 1, st: WEAK, fs: 0, want: ['03_sad', 'idle_soramo'] }];
   for (const c of cases) {
     const p = await openPage({ worldCh1: true }); const pg = p.page;
     await battle(pg, c.sp, c.st, 'wild', c.fs); await toBand(pg);
@@ -152,7 +153,7 @@ test('D29-B2：決着のあと旧 2D のポーズ（SPX）・倒れる動きを�
       const v = r[s]; assert.equal(v.length, 1, `${i * 150}ms 側${s}：見えている絵は1枚 ${JSON.stringify(v)}`);
       assert.ok(!/spa|bsp|spi|dead/.test(v[0]), `旧のポーズ・倒れる動きが無い ${v[0]}`);
       if (c.want[s] === 'victory') assert.match(v[0], /mma-win\|.*_victory\.webp$/, `勝った自分＝正式の勝利の絵 ${v[0]}`);
-      else assert.match(v[0], new RegExp(`mma-fin.*\\|${c.want[s]}\\.webp$`), `側${s}＝正式の待機立ち絵 ${v[0]}`);
+      else assert.match(v[0], new RegExp(`mma-fin.*\\|${c.want[s]}\\.webp$`), `側${s}＝正式の待機立ち絵／負けた姿 ${v[0]}`);
     }));
     await shot(pg, `b2_after_sp${c.sp}_vs${c.fs}_${c.st === STRONG ? 'win' : 'lose'}`);
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);

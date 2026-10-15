@@ -316,14 +316,22 @@
       p.base = Math.max(8, Math.round(nat ? Math.min(nat, want) : Math.min(1024, want))); p.el.style.width = p.base + 'px';
       if (!nat) p.el.addEventListener('load', () => { p.base = 0; S.dirty = true; }, { once: true });   // 絵が読めたら実際の幅で決め直す（1回）
     }
-    const propZ = (p) => (p.solid && S.goalZ != null ? Math.min(zOf(p.y, p.z, p.x), S.goalZ - 1) : zOf(p.y, p.z, p.x));
-    { const gn = D.nodes.GOAL; S.goalZ = gn ? zOf(gn[1], 0, gn[0]) : null; }
+    // 2026-10-15 N10：会場へ続く道のマス（GOAL から前向きの接続を逆にたどって、会場の絵の幅のうちにある地点）は、いつも会場の絵より手前に描く。
+    //  道が曲がってカメラの向きと会場の向きがずれると、立てた会場の絵が GOAL の手前のマスを覆っていた（C の渦の中心など）。地点・道・GOAL の判定は変えない
+    const apprIds = (() => { const gn = D.nodes.GOAL; if (!gn || !ART.goal) return []; const R = ART.goal.w * 0.95, rev = {};
+      for (const e of D.edges) if (e[3] === 'forward') (rev[e[1]] = rev[e[1]] || []).push(e[0]);
+      const seen = new Set(), q = ['GOAL'];
+      for (let i = 0; i < q.length && i < 400; i++) for (const n of rev[q[i]] || []) { const v = D.nodes[n]; if (!seen.has(n) && v && Math.hypot(v[0] - gn[0], v[1] - gn[1]) <= R) { seen.add(n); q.push(n); } }
+      return [...seen]; })();
+    const apprZ = () => apprIds.reduce((m, id) => Math.min(m, zOf(D.nodes[id][1], 0, D.nodes[id][0])), Infinity);
+    const propZ = (p) => (p.solid && S.goalZ != null ? Math.min(zOf(p.y, p.z, p.x), S.goalZ - 1, S.apprZ - 1) : zOf(p.y, p.z, p.x));
+    { const gn = D.nodes.GOAL; S.goalZ = gn ? zOf(gn[1], 0, gn[0]) : null; S.apprZ = apprZ(); }
     /** 向き（yaw）に合わせて前後の順を決め直す（3° 以上変わったときだけ＝回っている間も数回だけ） */
     function zSync(yaw) {
       if (!o.heading || Math.abs(angDiff(zYaw, yaw || 0)) < 3) return;
       zYaw = yaw || 0;
       for (const id of Object.keys(tiles)) { const n = D.nodes[id]; tiles[id].el.style.zIndex = String(zOf(n[1], 0, n[0])); }
-      { const gn = D.nodes.GOAL; S.goalZ = gn ? zOf(gn[1], 0, gn[0]) : null; }
+      { const gn = D.nodes.GOAL; S.goalZ = gn ? zOf(gn[1], 0, gn[0]) : null; S.apprZ = apprZ(); }
       for (const p of props) if (p.zi != null) { p.zi = propZ(p); p.el.style.zIndex = String(p.zi); }
       S.monZ = null;
     }
@@ -341,7 +349,7 @@
         xr.push([q.x - w / 2, q.y - h, q.x + w / 2, q.y, q.y + 2, w * h * 0.5]); }   // モンスターの箱（重なりの判定は半分で＝少しでも隠れたら）
       for (const [id, t] of Object.entries(tiles)) {
         const n = D.nodes[id], q = project(c, n[0], n[1]);
-        const w = Math.max(c.s < 1 ? 2 : o.tilePx[0], Math.min(o.tilePx[1], o.tileW * c.s * q.k));
+        const w = Math.max(c.s < 1 ? 2 : o.tilePx[0], Math.min(o.tilePx[1], o.tileW * c.s * q.k)) * (t.k || 1);   // 2026-10-15 N08：t.k＝そのマスだけの大きさの倍率（ライバルのマス）
         const vis = q.x > -w && q.x < Wd + w && q.y > -w && q.y < Hd + w;
         if (!vis) { if (!t.hid) { t.el.style.display = 'none'; t.hid = true; } continue; }
         if (t.hid) { t.el.style.display = ''; t.hid = false; }
@@ -400,7 +408,7 @@
       };
       for (const [id, t] of Object.entries(tiles)) {
         const n = D.nodes[id], on = [], rs = [];
-        const qs = cams.map((c) => { const q = project(c, n[0], n[1]), w = tileW(c, q); on.push(onScreen(q, w)); rs.push(w / TB); return [q, w]; });
+        const qs = cams.map((c) => { const q = project(c, n[0], n[1]), w = tileW(c, q) * (t.k || 1); on.push(onScreen(q, w)); rs.push(w / TB); return [q, w]; });
         if (!on.includes(true)) { if (!t.hid) { t.el.style.display = 'none'; t.hid = true; } continue; }
         if (t.hid) { t.el.style.display = ''; t.hid = false; }
         const sc = fit(t.el, TB, rs, on);
@@ -486,6 +494,7 @@
           const L = info.look(id) || {}; if (L.src && L.src !== t.src) { t.img.src = L.src; t.src = L.src; }
           const m = L.mark || ''; if (m !== t.mk) { t.lab.textContent = m; t.mk = m; }
           const u = !!L.used; if (u !== t.used) { t.el.classList.toggle('used', u); t.used = u; }
+          const k = L.k || 1; if (k !== (t.k || 1)) { t.k = k; t.el.classList.toggle('big', k > 1); S.dirty = true; }
           const c = info.node === id; if (c !== t.cur) { t.el.classList.toggle('cur', c); t.cur = c; }
         }
       },
@@ -520,6 +529,7 @@
       },
       markerDim(id, dim) { const p = props.find((x) => x.mark === id); if (p) p.el.classList.toggle('dim', !!dim); },
       markerOff(id) { const i = props.findIndex((x) => x.mark === id); if (i >= 0) { props[i].el.remove(); props.splice(i, 1); } },
+      goalApproach: () => apprIds.slice(),   // 2026-10-15 N10（確認用）
       yawGoal: () => (o.heading ? S.yawGoal || 0 : 0),
       state: () => ({ yaw: S.cam.yaw || 0, yawGoal: S.yawGoal || 0, heading: !!o.heading, focus: o.focus ? veilSig.split(',').filter(Boolean) : null, cam: Object.assign({}, S.cam), goal: S.goal && Object.assign({}, S.goal), mon: S.mon && S.mon.slice(), view: S.view, intro: !!S.intro, introAnims: S.introAnims || 0, introResized: S.introResized || 0, ahead: S.lastAhead || [],
         visual: VIS.key, skin: SK ? SK.key : null, artSkin: art.ground ? { ground: !!art.ground._sk, road: !!(art.road && art.road._sk), strip: !!(art.strip && art.strip._sk), water: !!(art.water && art.water._sk) } : null, tiles: Object.keys(tiles).length, chunks: chunks.length, painted, res: o.res, tilt: o.tilt, props: props.length, art: !!(art.ground || art.road), rims: art.terrain ? art.terrain.rims.filter((r) => r.kind === 'valley').map((r) => r.pts.length) : null,

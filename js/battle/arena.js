@@ -23,6 +23,12 @@
   const A = './assets/battle/';
   const IDLE = { 0: 'idle_soramo', 1: 'idle_gauru', 2: 'idle_nobiton', 3: 'idle_jiol', 4: 'idle_regnas' };
   const FACE = { 0: 'R', 1: 'R', 2: 'R', 3: 'R', 4: 'R' };   // 待機立ち絵の元の向き（5体とも右向き）
+  // ---- 2026-10-15 N12：大会の対戦表の顔＝正式のイラスト6枚（assets/tournament/icons_1015/・薄い灰色の背景つきの正方形・左向き）----
+  //  番号：0〜3＝SPECIES・4＝レグナス（バトルの絵の番号）・5＝フルーネ（MMP10M.PENDING_SPECIES の予約番号＝登録のみ・大会には出ない）。
+  //  読めないときは従来の 2.5D の横顔（faces_25d）→ 丸い顔（faces）の順（index.html の tbIcon・tbIconFb）。bg＝その絵の背景の色（丸い枠の地に敷く）
+  const TOUR_ICON = Object.freeze({ 0: 'solamo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas', 5: 'flurene' });
+  const TOUR_ICON_BG = Object.freeze({ 0: '#d4d7dc', 1: '#cccfd5', 2: '#cfd3db', 3: '#d2d2d1', 4: '#c7c9d1', 5: '#cecfd0' });
+  const tourIconSrc = (sp) => (TOUR_ICON[sp] ? `./assets/tournament/icons_1015/icon_${TOUR_ICON[sp]}.webp` : null);
   const RANKS = 'EDCBAS';
   /** ルーレットの見た目（中央を 0 とした |d| ごとの値。間は直線補間） */
   const R = Object.freeze({
@@ -89,6 +95,10 @@
       '#bt .mmr .pl .sel{opacity:0}',
       '#bt .mmr .pl .ic{position:absolute;left:13.5%;right:12.5%;top:13.5%;height:51%;border-radius:6%;overflow:hidden;background:#0d1a38}',
       '#bt .mmr .pl .ic img{width:100%;height:100%;object-fit:cover;display:block}',
+      // 2026-10-15 N09：正式の技カード（16:9）は窓の内側いっぱいの幅で、切らず・伸ばさずに見せる（contain・上下の余りは窓の紺）。
+      //  旧：class 名「card」が index.html の汎用 .card（余白 12px・明るい地・枠）に当たり、絵が細い縦長の白い枠の中に小さく出ていた。MISS の板は変えない
+      '#bt .mmr .pl .ic.mvc{padding:0;border:0;border-radius:6%;box-shadow:none;background:#0b1430}',
+      '#bt .mmr .pl .ic.mvc img{object-fit:contain;object-position:50% 50%}',
       '#bt .mmr .pl .nm{position:absolute;left:8%;right:8%;top:69%;height:14%;display:flex;align-items:center;justify-content:center;text-align:center;color:#f3ecd9;font:800 clamp(9px,2.6vw,12px)/1.1 "Noto Sans JP",sans-serif;text-shadow:0 1px 2px #000;letter-spacing:.02em}',
       '#bt .mmr .pl.ms .ic,#bt .mmr .pl.ms .nm{display:none}',
       '#bt .mmr .pl .st{position:absolute;left:19%;right:15%;top:65%;height:20%;display:flex;flex-direction:column;justify-content:space-around;opacity:0;color:#f3ecd9;font:700 clamp(6px,1.85vw,9px)/1.05 "Noto Sans JP",sans-serif}',
@@ -184,7 +194,7 @@
       // 2026-10-14 実機試遊⑥：LOSE（5.00秒）は曲の終わり（4.6秒）までに「もどる」を出してすぐ押せる＝曲のあとの長い無音を待たせない（やわらかく 0.3秒で出す）
       '#bt[data-rj] .gow,#bt[data-rj] #go{transition:opacity .3s ease-out}',
       '#bt.mma-fin .mon:not(.mma-won)>.mma-fin{opacity:1!important;visibility:visible!important}',
-      '#bt .mon .mma-fin{position:absolute;left:50%;bottom:0;height:calc(118% * var(--mma-k,1));width:auto;max-width:none;transform:translateX(-50%);pointer-events:none;filter:drop-shadow(0 8px 6px rgba(0,0,0,.45))}',
+      '#bt .mon .mma-fin{position:absolute;left:50%;bottom:0;height:calc(118% * var(--mma-k,1) * var(--rh,1));width:auto;max-width:none;transform:translateX(-50%);pointer-events:none;filter:drop-shadow(0 8px 6px rgba(0,0,0,.45))}',
       '#bt .mon .mma-fin.fl{transform:translateX(-50%) scaleX(-1)}',
       '#bt.mma-fin .mw.dead,#bt.mma-fin .dead .mon{animation:none!important;transform:none!important;opacity:1!important;filter:none!important;transition:none!important}',
       '#bt.mma-v24 .mma-endband{top:auto;bottom:calc(40% * .6 - 4.6%);height:clamp(92px,15%,130px);transform-origin:50% 50%;animation:mmaendb .42s cubic-bezier(.2,1.1,.4,1) .1s both}',
@@ -296,7 +306,7 @@
       trk.innerHTML = rows.map((row) => {
         const d = read(row);
         return `<div class="pl${d.ms ? ' ms' : ''}"><img class="bgp nor" src="${PL}${d.ms ? 'plate_miss' : 'plate_normal'}${SFX}.webp" alt="">${d.ms ? '' : `<img class="bgp sel" src="${PL}plate_selected${SFX}.webp" alt="">`}`
-          + (d.ms ? '' : `<div class="ic${d.card ? ' card' : ''}">${d.src ? `<img src="${d.src}" alt="" decoding="async">` : ''}</div><div class="nm"></div>${NEW ? '' : '<div class="st"><div>威力<b></b></div><div>命中率<b></b></div><div>クリ率<b></b></div></div>'}`) + '</div>';   // 2026-10-13：新しい画面は威力・命中率・クリ率を出さない（計算・技のデータは変えない）
+          + (d.ms ? '' : `<div class="ic${d.card ? ' mvc' : ''}">${d.src ? `<img src="${d.src}" alt="" decoding="async">` : ''}</div><div class="nm"></div>${NEW ? '' : '<div class="st"><div>威力<b></b></div><div>命中率<b></b></div><div>クリ率<b></b></div></div>'}`) + '</div>';   // 2026-10-13：新しい画面は威力・命中率・クリ率を出さない（計算・技のデータは変えない）
       }).join('');
       S.plates = [...trk.children];
       rows.forEach((row, i) => {
@@ -421,16 +431,29 @@
   //   ソラモ・ガウル）と、旧の倒れる動き（.dead＝回転・灰色。ノビトン・ジオル・レグナス）が、正式の勝利の絵が無い側（負けた側・相手が勝った側）に出ていた
   //   → 決着のあとは両側とも旧のポーズ・倒れる動きを出さず、正式の待機立ち絵（assets/battle/idle/。同じ大きさ・向き）を1枚だけ立てる。プレイヤーが勝った側は従来どおり正式の勝利の絵（mma-win）。
   //   fight()・判定・結果・WIN／LOSE の帯と音は変えない。旧の絵（SPX）は技の演出でも使うので消さない（表示の経路だけ止める）
+  //  2026-10-15 N02：負けた側は「負けた」と分かる姿＝既存の正式 2.5D のリアクション「しょんぼり」（assets/monsters/reactions_1012/・MMRXART の sad。
+  //   バトルの開始時に先に読む＝rxPreload）。敗北の専用の絵は未提供＝DEFEAT_ART（種族の番号 → 絵のパス）を空のまま用意し、届いたら1行で差し替える。
+  //   読めていない（読み込み中・404）ときは従来どおり待機立ち絵。勝った側（プレイヤー）は正式の勝利の絵・相手が勝ったときの相手は待機立ち絵（従来どおり）
+  const DEFEAT_ART = Object.freeze({});   // 専用の敗北の絵（追加制作待ち）：{ [sp]: { src, hRel } }
+  function loseArt(s, sp) {
+    const d = DEFEAT_ART[sp]; if (d) return { src: d.src, hRel: d.hRel || 1, kind: 'defeat' };
+    const X = root.MMRXART, inf = X && X.info(sp, 'sad'), im = rxImg[`${s}:sad`];
+    return inf && im && im.dataset.src === inf.src && im.dataset.ok === '1' && im.naturalWidth ? { src: inf.src, hRel: inf.hRel, kind: 'sad' } : null;
+  }
   const FIN_IMG = new WeakMap();   // #bt → [side0, side1]
   const finLog = [];
   function fin(bt) {
-    if (!bt.classList.contains('mma-fin')) { bt.classList.add('mma-fin'); finLog.push({ at: Date.now(), win: !!bt.querySelector(':scope>#ban') && /^WIN!/.test(bt.querySelector(':scope>#ban').textContent || '') }); }
+    const ban = bt.querySelector(':scope>#ban'), win = !!ban && /^WIN!/.test(ban.textContent || '');
+    if (!bt.classList.contains('mma-fin')) { bt.classList.add('mma-fin'); finLog.push({ at: Date.now(), win }); }
     const pl = G('BPL'); if (!pl) return;
     let arr = FIN_IMG.get(bt);
     if (!arr) {
+      const loser = win ? 1 : 0;
       arr = [0, 1].map((s) => {
-        const sp = pl[s] && pl[s].sp, src = idleSrc(sp); if (!src) return null;
-        const im = new Image(); im.className = 'mma-fin' + (flipOf(s, sp) ? ' fl' : ''); im.alt = ''; im.decoding = 'sync'; im.src = src;
+        const sp = pl[s] && pl[s].sp, la = s === loser ? loseArt(s, sp) : null, src = la ? la.src : idleSrc(sp); if (!src) return null;
+        const im = new Image(); im.className = 'mma-fin' + (la ? ' mma-lose' : '') + (flipOf(s, sp) ? ' fl' : ''); im.alt = ''; im.decoding = 'sync'; im.src = src;
+        if (la) { im.style.setProperty('--rh', String(la.hRel)); im.dataset.kind = la.kind; }
+        if (s === loser && finLog.length) finLog[finLog.length - 1].lose = la ? { side: s, kind: la.kind } : { side: s, kind: 'idle' };
         const mon = $(`#m${s} .mon`, bt); if (mon && bt.classList.contains('mma-v24') && SCALE[sp]) mon.style.setProperty('--mma-k', String(SCALE[sp]));
         const side = $(`#m${s}`, bt);
         if (side) { const mo = new MutationObserver(() => { if (!bt.isConnected) { mo.disconnect(); return; } placeFin(bt, s, im); }); mo.observe(side, { childList: true, subtree: true }); }
@@ -460,7 +483,7 @@
   const rxImg = {};
   function rxPreload() {
     const pl = G('BPL'), X = root.MMRXART; if (!pl || !X) return;
-    [0, 1].forEach((s) => ['hit', 'dodge'].forEach((k) => {
+    [0, 1].forEach((s) => ['hit', 'dodge', 'sad'].forEach((k) => {   // 2026-10-15 N02：sad＝決着で負けた側の姿（fin）
       const i = pl[s] && X.info(pl[s].sp, k), key = `${s}:${k}`;
       if (!i || (rxImg[key] && rxImg[key].dataset.src === i.src)) return;
       const im = new Image(); im.alt = ''; im.decoding = 'sync'; im.dataset.src = i.src; im.dataset.ok = '';
@@ -578,7 +601,7 @@
     new MutationObserver((muts) => { for (const mu of muts) for (const n of mu.addedNodes) if (n && n.id === 'bt') setup(n); }).observe(document.body, { childList: true });
   }
   if (typeof document !== 'undefined') { if (document.body) watch(); else document.addEventListener('DOMContentLoaded', watch); }
-  root.MMARENA = Object.freeze({ R, IDLE, FACE, SCALE, GEO, UI_KEY, v24, setUi, crowdLog: () => crowdLog.slice(), endLog: () => endLog.slice(), finLog: () => finLog.slice(), rankOf, arenaSrc, fieldSrc, FIELD_BG, idleSrc, flipOf, setup, react, RX_MS, rxLog: () => rxLog.slice(), faceSrc: (sp) => (IDLE[sp] ? `./assets/tournament/faces_25d/face_${IDLE[sp].slice(5)}.webp` : null),
+  root.MMARENA = Object.freeze({ R, IDLE, FACE, SCALE, GEO, UI_KEY, v24, setUi, crowdLog: () => crowdLog.slice(), endLog: () => endLog.slice(), finLog: () => finLog.slice(), rankOf, arenaSrc, fieldSrc, FIELD_BG, idleSrc, flipOf, setup, react, RX_MS, rxLog: () => rxLog.slice(), DEFEAT_ART, TOUR_ICON, TOUR_ICON_BG, tourIconSrc, tourIconBg: (sp) => TOUR_ICON_BG[sp] || null, faceSrc: (sp) => (IDLE[sp] ? `./assets/tournament/faces_25d/face_${IDLE[sp].slice(5)}.webp` : null),
     // 2026-10-11：対戦表の顔＝2.5D の横顔（faces_25d）。読めなかったときは従来の丸い顔（faces）へ（index.html の tbIcon の onerror）
     faceOldSrc: (sp) => (IDLE[sp] ? `./assets/tournament/faces/face_${IDLE[sp].slice(5)}.webp` : null) });
 })(typeof window !== 'undefined' ? window : globalThis);

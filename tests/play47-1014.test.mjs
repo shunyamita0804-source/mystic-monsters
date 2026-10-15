@@ -122,7 +122,8 @@ test('P47-07：盤のイベント④⑮㉜＝宝箱のカットイン（ふつ�
   assert.match(WB, /const ARRIVE_LOBBY = Object\.freeze\(\[\{ npc: 'fina', view: 'closeup', expression: 'guide', text: '公式大会は、ランクEからSまで。/);
   assert.match(WB, /f\.arrivalSeen = true; doSave\(\);/, '見た記録は最後に1回');
   assert.match(WB, /2026-10-14 実機試遊㉜/);
-  assert.match(WB, /vcue\('fina\.discover'\)|fina\.discover/, '「見て見て」は既存の声の出しどころ');
+  // 2026-10-15 N06（ユーザーの最新決定）：宝箱のカットインに大きなフィナと「見て見て！」・声の合図は出さない＝宝箱・光・金貨・中身だけ
+  assert.doesNotMatch(WB, /wbtr-fina|wbtr-say|vcue\('fina\.discover'\)/); assert.doesNotMatch(WB.replace(/\/\/.*$/gm, ''), /見て見て/);
 });
 
 test('P47-08：施設・UI＝アイテム屋の商品カード（価格・所持数・条件）・セーブのスロット（ランクの札・進行・日時）・プロローグの字幕のコントラスト・正式 UI の絵を読めるまで見せない', () => {

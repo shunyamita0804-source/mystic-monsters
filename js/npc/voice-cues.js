@@ -19,7 +19,7 @@
     'facility.market': { voice: 'karen_welcome', on: true },   // 市場＝カレン
     'facility.lab':    { voice: 'elliot_hello_OPTIONAL', on: true },    // 研究所＝エリオット（2026-10-13 開発25：ユーザー提供の「やあ」を再訪の挨拶に採用＝既定 ON。id は開発24 のまま）
     // Chapter 1 の世界のボード（フィナの短い反応。案内欄のフィナの顔が話す）
-    'fina.discover':   { voice: 'fina_look', on: true, cooldown: 45000 },   // 宝箱・宝の行き止まり・隠れ家
+    'fina.discover':   { voice: 'fina_look', on: true, cooldown: 45000 },   // 宝箱・宝の行き止まり・隠れ家（2026-10-15 N06：宝箱のカットインからフィナを外した＝今は呼ぶ所なし。ID は差し替え台帳のために残す）
     'fina.challengeOk':  { voice: 'fina_yeah', on: true },                 // 封印の遺跡門の挑戦に成功
     'fina.challengeNg':  { voice: 'fina_hmm', on: true },                  // 同・失敗
     // レアモンスターの「なんだろう？」は、初めてのレアのフィナの一言（world-driver.js の ch1_first_rare の行の voice）だけ（遭遇の演出・強制バトルは変えない）

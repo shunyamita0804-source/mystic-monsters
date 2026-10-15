@@ -13,6 +13,7 @@
 | jiol.webp | ジオル（3） | 04_giol_2.5D.png | 3b02fb21b8bd154f8dda1f30bb671a54f4f993df95bc2591e90134674f5ad21c | 720×667 |
 | regnas.webp | レグナス（4・リュウの相棒） | 05_regnas_2.5D.png | a169fd3410e8fcc8bc3e76cc092d22fa1598ec031b07a8ec256262c5df646e35 | 720×699 |
 | nobiton_silhouette.webp | ノビトン（市場の入荷待ち） | nobiton.webp の輪郭（アルファ）だけ・色は従来の影絵と同じ (24,18,16) | — | 720×657 |
+| flurene.webp | フルーネ（予約番号 5・**登録のみ・未解禁**＝どの画面にも出さない） | flurene_official_2p5d_standing.png（2026-10-15 ZIP「次回Claude便_12項目」の 01_フルーネ正式登録） | ec08627d77135ddfa11c2f03277a95194b06cc51de62a5f73ba30a4362784411 | 705×720 |
 
 - v2_Fixed は、最初の版（ソラモ・ガウル・ジオルの体のすき間に背景の消し残り）を直したもの。直した3体は透明度だけが変わっていて、見えている部分の色は1画素も変わっていない（2026-10-11 確認）。ノビトン・レグナスは最初の版と同じファイル。
 - 原本の端に絵が接している所がある（ソラモ＝右端・ガウル＝上・左・右端）。表示用の派生は余白を切り詰めただけなので、そのまま端に接する。
@@ -27,3 +28,10 @@ js/phase10/monsters.js の `SPECIES[].image`（4原種）と `RIVAL_MONSTERS[].i
 バトル待機の立ち絵（assets/battle/idle/・実装済み）・VS の勝負絵（assets/tournament/vs_monsters/）・優勝の絵（assets/tournament/victory/）・対戦表の顔アイコン（assets/tournament/faces/）・Chapter 1 の歩行（assets/monsters/*_walk*/）・バトルの技のコマ（index.html の旧 2D の埋め込み・保護対象）。
 
 旧 2D の正式画像（assets/monsters/solamo.png・gauru.png・nobiton.png・jiol.png・nobiton_silhouette.png、assets/monsters/regnas/regnas_official.webp）はファイルだけ残す（参照しない）。
+
+## フルーネ（2026-10-15 N11・登録のみ）
+
+- 作り方：tools/next1015/derive.py。原本（1254×1254 の RGBA）の**アルファが 1 以上の画素の外接矩形**で余白だけを切る（ほかの4体の「8 以下を余白」より厳しく＝本体・根・葉・花・薄い縁を1画素も切らない。原本の左端に根が接している）→ 長辺 720px へ等倍率で縮小（乗算済みアルファ）→ 透過 WebP（品質 92・exact）。色・形・向きは変えていない。
+- 派生の sha256：786bf4312183089396f313ad6120ec33553cff095947c777ab963d3f22fe8661
+- アルファ：原本の本体の不透明度は 251〜253（完全な 255 は約0.2%）＝わずかに透ける絵。派生もそのまま（不透明にしていない）。原本の周りに見えないほど薄い画素（アルファ 1）が約2.9万画素ある。
+- 使っている所：js/phase10/monsters.js の `PENDING_SPECIES`（`image`）。市場・牧場・図鑑・合体・野生・大会・バトルのどこからも参照していない（未解禁）。
