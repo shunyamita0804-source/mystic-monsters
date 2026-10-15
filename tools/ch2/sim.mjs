@@ -22,8 +22,18 @@ if (process.env.CH2_BOARDS) for (const k of Object.keys(BOARDS)) if (!process.en
 // 2026-10-15 第3版：食事のあるモデル（CH2_FOOD=個数）。本編の Chapter 1 と同じ「空腹 80 以上でジャガイモ（−10）を1ターンに1個・ターンは使わない」
 //  （新人支援のジャガイモ 10個・バッグ 2枠＝最大 20個が目安）。それ以外は P.simulate と同じ手順（MMRF_PLAY の公開関数だけを使う＝ゲームのコードは変えない）
 const FOOD = Number(process.env.CH2_FOOD) || 0, EAT_AT = 80, POTATO = 10;
+const LIMIT = Number(process.env.CH2_LIMIT) || undefined;   // 時間切れの救済案の比較だけ：ターン上限を変えて回す（ゲームの規則は変えない）
+/** GOAL までの最短の歩数（条件・向きを見ない逆向きの幅優先）＝時間切れの個体があと何歩だったか */
+function goalDist(D) {
+  if (D.__gd) return D.__gd;
+  const back = {}; for (const e of D.edges) (back[e[1]] = back[e[1]] || []).push(e[0]);
+  const d = { GOAL: 0 }, qq = ['GOAL'];
+  while (qq.length) { const v = qq.shift(); for (const u of back[v] || []) if (d[u] == null) { d[u] = d[v] + 1; qq.push(u); } }
+  Object.defineProperty(D, '__gd', { value: d, enumerable: false });
+  return d;
+}
 function simFood(D, o) {
-  const st = P.attach(D, C.create(D, o), { monster: o.monster });
+  const st = P.attach(D, C.create(D, { ...o, turnLimit: LIMIT }), { monster: o.monster });
   const pickRng = C.mulberry(((o.seed || 1) ^ 0xC0FFEE) >>> 0);
   let food = FOOD, ateTurn = -1; st.ate = 0;
   for (let guard = 0; guard < 400 && !st.done && !st.timeUp; guard++) {
@@ -50,13 +60,14 @@ const pct = (x) => (x * 100).toFixed(1);
 const avg = (a) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0);
 const q = (arr, p) => { if (!arr.length) return '-'; const s = arr.slice().sort((a, b) => a - b); return s[Math.min(s.length - 1, Math.floor(p * s.length))]; };
 const out = {};
+if (LIMIT) process.stderr.write(`turnLimit=${LIMIT}\n`);
 for (const [name, D] of Object.entries(BOARDS)) {
-  const r = { n: 0, goal: 0, turns: [], gain: [], rew: 0, rewEach: {}, statStops: [], empty: [], spurOpp: [], timeAt: {}, rests: [], fat: [] };
+  const r = { n: 0, goal: 0, turns: [], gain: [], rew: 0, rewEach: {}, statStops: [], empty: [], spurOpp: [], timeAt: {}, rests: [], fat: [], short: [] };
   for (const mon of MONS) for (let i = 1; i <= N; i++) {
     const seed = (i + SEED0) * 7919 + 13, rng = C.mulberry((seed ^ 0x2CE2) >>> 0);
-    const st = FOOD ? simFood(D, { seed, monster: mon, policy: policy(rng) }) : P.simulate(D, C, { seed, monster: mon, policy: policy(rng), restAt: REST_AT, randOpen: undefined });
+    const st = FOOD ? simFood(D, { seed, monster: mon, policy: policy(rng) }) : P.simulate(D, C, { seed, monster: mon, policy: policy(rng), restAt: REST_AT, randOpen: undefined, turnLimit: LIMIT });
     r.n++; if (st.done) { r.goal++; r.turns.push(st.turn); }
-    else { const seg = Object.entries(D.segments).find(([, s]) => s[3].includes(st.node)); const k = seg ? seg[0] : st.node; r.timeAt[k] = (r.timeAt[k] || 0) + 1; }
+    else { const seg = Object.entries(D.segments).find(([, s]) => s[3].includes(st.node)); const k = seg ? seg[0] : st.node; r.timeAt[k] = (r.timeAt[k] || 0) + 1; const gd = goalDist(D)[st.node]; if (gd != null) r.short.push(gd); }
     r.gain.push(K.reduce((a, k) => a + (st.play.stats[k] - st.play.mon.base[k]), 0));
     const got = REW.filter((id) => st.play.claimed[id] != null); r.rew += got.length; for (const id of got) r.rewEach[id] = (r.rewEach[id] || 0) + 1;
     let ss = 0, em = 0; for (const h of st.play.hist) { if (h.kind === 'stat') ss++; }
@@ -69,10 +80,11 @@ for (const [name, D] of Object.entries(BOARDS)) {
   const top = Object.entries(r.timeAt).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => `${k} ${pct(v / r.n)}%`).join('・') || '-';
   out[name] = { nodes: Object.keys(D.nodes).length, goal: +pct(r.goal / r.n), avgTurns: +avg(r.turns).toFixed(1), p10: q(r.turns, 0.1), p50: q(r.turns, 0.5), p90: q(r.turns, 0.9),
     gain: Math.round(avg(r.gain)), gainP10: q(r.gain, 0.1), gainP90: q(r.gain, 0.9), statStops: +avg(r.statStops).toFixed(2), rewards: +(r.rew / r.n).toFixed(2), rewardRate: +pct(r.rew / r.n / REW.length),
-    rewardEach: Object.fromEntries(REW.map((id) => [id, +pct((r.rewEach[id] || 0) / r.n)])), spurOpp: +avg(r.spurOpp).toFixed(2), rests: +avg(r.rests).toFixed(2), fatEnd: Math.round(avg(r.fat)), timeUpAt: top };
+    rewardEach: Object.fromEntries(REW.map((id) => [id, +pct((r.rewEach[id] || 0) / r.n)])), spurOpp: +avg(r.spurOpp).toFixed(2), rests: +avg(r.rests).toFixed(2), fatEnd: Math.round(avg(r.fat)), timeUpAt: top,
+    shortAtTimeUp: r.short.length ? { p25: q(r.short, 0.25), p50: q(r.short, 0.5), p90: q(r.short, 0.9), within6: +pct(r.short.filter((x) => x <= 6).length / r.n) } : null };
 }
 const base = out['Ch1-A（基準）'];
 if (base) for (const k of ['Ch2-A', 'Ch2-B', 'Ch2-C'].filter((k) => out[k])) { const o = out[k]; o.vsCh1 = { goalPP: +(o.goal - base.goal).toFixed(1), gainPct: +((o.gain / base.gain - 1) * 100).toFixed(1), rewardPP: +(o.rewardRate - base.rewardRate).toFixed(1) }; }
 const a2 = out['Ch2-A'];
 if (a2) for (const k of ['Ch2-B', 'Ch2-C'].filter((k) => out[k])) { const o = out[k]; o.vsCh2A = { goalPP: +(o.goal - a2.goal).toFixed(1), gainPct: +((o.gain / a2.gain - 1) * 100).toFixed(1), rewardPP: +(o.rewardRate - a2.rewardRate).toFixed(1) }; }
-console.log(JSON.stringify({ N, SPUR, REST_AT, FOOD, monsters: MONS.map((m) => m.name), out }, null, 1));
+console.log(JSON.stringify({ N, SPUR, REST_AT, FOOD, LIMIT: LIMIT || 40, monsters: MONS.map((m) => m.name), out }, null, 1));

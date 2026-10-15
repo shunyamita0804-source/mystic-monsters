@@ -3,6 +3,7 @@
  "SPUR": 0.25,
  "REST_AT": 86,
  "FOOD": 10,
+ "LIMIT": 40,
  "monsters": [
   "ソラモ",
   "ガウル"
@@ -33,7 +34,13 @@
    "spurOpp": 3.06,
    "rests": 0.02,
    "fatEnd": 72,
-   "timeUpAt": "LATE_R_DONE 6.1%・D_RS 3.5%・LATE_L_DONE 3.3%"
+   "timeUpAt": "LATE_R_DONE 6.1%・D_RS 3.5%・LATE_L_DONE 3.3%",
+   "shortAtTimeUp": {
+    "p25": 7,
+    "p50": 15,
+    "p90": 28,
+    "within6": 6.2
+   }
   },
   "Ch2-A": {
    "nodes": 298,
@@ -61,6 +68,12 @@
    "rests": 0.02,
    "fatEnd": 72,
    "timeUpAt": "LATE_L_DONE 4.5%・S_END 4.3%・LATE_L_FAIL_JOIN 3.6%",
+   "shortAtTimeUp": {
+    "p25": 4,
+    "p50": 9,
+    "p90": 21,
+    "within6": 7.7
+   },
    "vsCh1": {
     "goalPP": 5.6,
     "gainPct": -0.7,
@@ -93,6 +106,12 @@
    "rests": 0.01,
    "fatEnd": 71,
    "timeUpAt": "S_END 4.6%・Q_L4 3.3%・Q_R4 2.5%",
+   "shortAtTimeUp": {
+    "p25": 4,
+    "p50": 7,
+    "p90": 16,
+    "within6": 8.6
+   },
    "vsCh1": {
     "goalPP": 7.5,
     "gainPct": 2.3,
@@ -130,6 +149,12 @@
    "rests": 0.01,
    "fatEnd": 72,
    "timeUpAt": "S_END 4.1%・LATE_W 3.5%・LATE_R_DONE 3.2%",
+   "shortAtTimeUp": {
+    "p25": 4,
+    "p50": 9,
+    "p90": 20,
+    "within6": 7.3
+   },
    "vsCh1": {
     "goalPP": 7.2,
     "gainPct": 4,

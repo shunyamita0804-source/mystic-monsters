@@ -1,0 +1,170 @@
+{
+ "N": 12000,
+ "SPUR": 0.25,
+ "REST_AT": 86,
+ "FOOD": 10,
+ "LIMIT": 45,
+ "monsters": [
+  "ソラモ",
+  "ガウル"
+ ],
+ "out": {
+  "Ch1-A（基準）": {
+   "nodes": 299,
+   "goal": 88.3,
+   "avgTurns": 35,
+   "p10": 28,
+   "p50": 35,
+   "p90": 42,
+   "gain": 308,
+   "gainP10": 209,
+   "gainP90": 420,
+   "statStops": 15.42,
+   "rewards": 0.6,
+   "rewardRate": 8.6,
+   "rewardEach": {
+    "L_CHEST": 13,
+    "R_CHEST": 12.6,
+    "L_ALTAR": 12.6,
+    "L_LATE_ALTAR": 2.5,
+    "REWARD5": 8.4,
+    "R_SPECIAL": 7.3,
+    "RANDOM_DEN": 4
+   },
+   "spurOpp": 3.18,
+   "rests": 0.06,
+   "fatEnd": 73,
+   "timeUpAt": "LATE_R_DONE 3.8%・D_RS 1.8%・LATE_L_DONE 1.5%",
+   "shortAtTimeUp": {
+    "p25": 5,
+    "p50": 12,
+    "p90": 26,
+    "within6": 3.5
+   }
+  },
+  "Ch2-A": {
+   "nodes": 298,
+   "goal": 94.7,
+   "avgTurns": 35.2,
+   "p10": 28,
+   "p50": 35,
+   "p90": 42,
+   "gain": 304,
+   "gainP10": 205,
+   "gainP90": 410,
+   "statStops": 14.99,
+   "rewards": 0.62,
+   "rewardRate": 8.8,
+   "rewardEach": {
+    "L_CHEST": 13,
+    "R_CHEST": 12.6,
+    "L_ALTAR": 12.7,
+    "L_LATE_ALTAR": 2.7,
+    "REWARD5": 8.1,
+    "R_SPECIAL": 8.6,
+    "RANDOM_DEN": 4
+   },
+   "spurOpp": 3.23,
+   "rests": 0.04,
+   "fatEnd": 72,
+   "timeUpAt": "S_END 1.6%・LATE_L_DONE 1.4%・LATE_R_DONE 0.8%",
+   "shortAtTimeUp": {
+    "p25": 3,
+    "p50": 7,
+    "p90": 19,
+    "within6": 2.5
+   },
+   "vsCh1": {
+    "goalPP": 6.4,
+    "gainPct": -1.3,
+    "rewardPP": 0.2
+   }
+  },
+  "Ch2-B": {
+   "nodes": 284,
+   "goal": 97.1,
+   "avgTurns": 36.3,
+   "p10": 31,
+   "p50": 36,
+   "p90": 42,
+   "gain": 311,
+   "gainP10": 219,
+   "gainP90": 407,
+   "statStops": 15.1,
+   "rewards": 0.62,
+   "rewardRate": 8.9,
+   "rewardEach": {
+    "L_CHEST": 8.3,
+    "R_CHEST": 15.9,
+    "L_ALTAR": 6.3,
+    "L_LATE_ALTAR": 8.1,
+    "REWARD5": 12.1,
+    "R_SPECIAL": 5.6,
+    "RANDOM_DEN": 6
+   },
+   "spurOpp": 3.45,
+   "rests": 0.02,
+   "fatEnd": 71,
+   "timeUpAt": "S_END 1.1%・Q_L4 0.5%・Q_R4 0.5%",
+   "shortAtTimeUp": {
+    "p25": 2,
+    "p50": 5,
+    "p90": 14,
+    "within6": 1.7
+   },
+   "vsCh1": {
+    "goalPP": 8.8,
+    "gainPct": 1,
+    "rewardPP": 0.3
+   },
+   "vsCh2A": {
+    "goalPP": 2.4,
+    "gainPct": 2.3,
+    "rewardPP": 0.1
+   }
+  },
+  "Ch2-C": {
+   "nodes": 304,
+   "goal": 95,
+   "avgTurns": 35.5,
+   "p10": 30,
+   "p50": 35,
+   "p90": 42,
+   "gain": 317,
+   "gainP10": 225,
+   "gainP90": 415,
+   "statStops": 15.73,
+   "rewards": 0.53,
+   "rewardRate": 7.5,
+   "rewardEach": {
+    "L_CHEST": 7.6,
+    "R_CHEST": 7.7,
+    "L_ALTAR": 13.1,
+    "L_LATE_ALTAR": 4.3,
+    "REWARD5": 8,
+    "R_SPECIAL": 7.9,
+    "RANDOM_DEN": 4.2
+   },
+   "spurOpp": 2.65,
+   "rests": 0.03,
+   "fatEnd": 72,
+   "timeUpAt": "S_END 1.3%・LATE_R_DONE 1.1%・LATE_W 0.7%",
+   "shortAtTimeUp": {
+    "p25": 3,
+    "p50": 8,
+    "p90": 18,
+    "within6": 2.2
+   },
+   "vsCh1": {
+    "goalPP": 6.7,
+    "gainPct": 2.9,
+    "rewardPP": -1.1
+   },
+   "vsCh2A": {
+    "goalPP": 0.3,
+    "gainPct": 4.3,
+    "rewardPP": -1.3
+   }
+  }
+ }
+}
