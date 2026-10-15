@@ -218,5 +218,5 @@ test('VB-6（2026-10-15 N04 で書き直し）：旧い声のファイルは 404
   const play = await pg.evaluate(async () => { const a = document.querySelector('#bgm audio'); a.muted = true; try { await a.play(); await new Promise((r) => setTimeout(r, 600)); const t = a.currentTime; a.pause(); return t; } catch (e) { return -1; } });
   assert.ok(play > 0.2, `候補の曲が再生できる（${play}秒）`);
   await shot(pg, 'vb6_preview');
-  assert.deepEqual(p.bad.filter((b) => !/\/assets\/audio\/voice\//.test(b)), [], '404 は削除した声の確認だけ');
+  assert.deepEqual(p.bad.filter((b) => !/assets\/audio\/voice\//.test(b)), [], '404 は削除した声の確認だけ');
 });
