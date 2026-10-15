@@ -101,7 +101,8 @@ test('RWB-2：再読み込みで同じ地点・俯瞰は出ない・連打して
   await boot(pg, 44); await pg.waitForTimeout(300);
   const w = await pg.evaluate(() => ({ w: MMRF.world(), s: MMRF.state() }));
   assert.equal(w.w.intro, false, '再読み込みでは俯瞰を出さない'); assert.equal(w.s.node, s0.node); assert.equal(w.s.turn, s0.turn);
-  await idle(pg); await pg.evaluate(() => { const s = MMRF.state(); if (s.play.notice) MMRF.ok(); });
+  // 2026-10-15 追加B（能力マス 53%・出だしの落ち着いた区間も能力マス）で seed 44 の止まる地点が2択の出来事（古い訓練跡）になった＝選んでから OK（OK だけでは閉じない）
+  await idle(pg); await pg.evaluate(() => { const s = MMRF.state(); if (s.play.notice) { if (s.play.notice.kind === 'choice') MMRF.choice(0); else MMRF.ok(); } }); await idle(pg); await pg.evaluate(() => { const s = MMRF.state(); if (s.play.notice) MMRF.ok(); });
   const t0 = await pg.evaluate(() => MMRF.state().turn);
   await pg.evaluate(() => { const b = document.querySelector('#rfp .rf-go'); for (let i = 0; i < 5; i++) b.click(); });
   await idle(pg); await pg.waitForTimeout(200);

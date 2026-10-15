@@ -171,7 +171,7 @@ T('EN-B3b：ファームへの帰還＝ダン 04（誇らしげ）・大会の�
   assert.equal(b1.ced, 0, '対戦表にセドリックの顔・一言は出さない（正式）');
   assert.match(b1.ttl, /公式ランクE大会/, '題字＝公式ランクE大会');
   assert.equal(b1.rows, 6, 'E は 6体'); assert.equal(b1.me, 'ソラ', '自分の行'); assert.ok(b1.nx, '次の相手の行'); assert.equal(b1.next, 2, '次の試合の交点が2マス光る');
-  assert.equal(b1.icons.length, 6, '参加者それぞれに顔アイコン'); assert.ok(b1.icons.every((s) => /assets\/tournament\/faces(_25d)?\/face_\w+\.webp$/.test(s)), `顔アイコンは正式の横顔 ${b1.icons}`);
+  assert.equal(b1.icons.length, 6, '参加者それぞれに顔アイコン'); assert.ok(b1.icons.every((s) => /assets\/tournament\/icons_1015\/icon_\w+\.webp$/.test(s)), `顔アイコンは正式のイラスト（2026-10-15 N12） ${b1.icons}`);
   assert.ok(b1.go, '「対戦する」');
   await q.waitForTimeout(400); await q.click('.p9next .p9go'); await q.waitForSelector('.p9cmps .pcgo');
   assert.equal(await q.evaluate(() => document.querySelectorAll('.p9cmps .p9ced').length), 0, '2026-10-06：大会2（対戦前比較）は正式デザインどおりセドリックを出さない');
