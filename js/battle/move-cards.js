@@ -2,7 +2,7 @@
 //  画像＝assets/moves/cards_1014/{種族}/{カードの番号}_{技ID}.webp（ユーザーが正式採用した「背景あり」PNG を幅 640px の WebP にしただけ。tools/movecards1014/derive.py・README.md）。
 //  対応＝ユーザー納品の対応表（全5体50技_画像ファイル名と正式技ID対応.tsv）。カードの番号と技の No.・SK の番号は一致しない＝技ID で引く。
 //  SK の番号：ソラモ・ガウル＝js/phase10/monsters.js の OFFICIAL_MOVES の slot、レグナス＝20＋No−1（js/battle/rival-partner.js）、
-//  ノビトン＝MMRULES.NOBI_FIRST（30）＋No−1（js/battle/rules.js）、ジオル＝SK の番号なし（未決）＝技管理には出ない。
+//  ノビトン＝MMRULES.NOBI_FIRST（30）＋No−1（js/battle/rules.js）、ジオル＝OFFICIAL_MOVES.jiol の slot（2026-10-15 正式＝40＋No−1）。
 //  2026-10-15：フルーネの10枚（登録のみ・未解禁・SK の番号なし）＝list('flurene') だけ（技管理・ルーレットには出ない）。
 //  技の性能・名前・習得・バトル・技辞典・ルーレットの抽選は変えない（このファイルは画像のパスを返すだけ）。
 (function (root) {

@@ -285,7 +285,7 @@ try {
     const sw = await q.evaluate(() => !!document.getElementById('mmqa-sw'));
     await q.evaluate(() => { const b = document.getElementById('mmqa-sw'); if (b) b.click(); }); await sleep(800);
     const cat = await q.evaluate(async () => { const c = MMQA.catalog(); const urls = c.flatMap((x) => x.moves.map((m) => m.src)); const ok = await Promise.all(urls.map((u) => new Promise((r) => { const i = new Image(); i.onload = () => r(i.naturalWidth > 0); i.onerror = () => r(false); i.src = u; }))); return { tabs: document.querySelectorAll('#mmqa .qtab').length, n: urls.length, ok: ok.filter(Boolean).length, counts: MMQA.counts() }; });
-    rec('2026-10-15：QA 試遊モード（?mmQaTrial=1）＝牧場に切り替え → ON → 6体×10技（60）のカードが読める（実戦 40・プレビュー 20・静止画 0＝2026-10-15 フルーネの技アニメ）', sw && cat.tabs === 6 && cat.n === 60 && cat.ok === 60 && cat.counts.battle === 40 && cat.counts.preview === 20 && cat.counts.static === 0, JSON.stringify(cat));
+    rec('2026-10-15：QA 試遊モード（?mmQaTrial=1）＝牧場に切り替え → ON → 6体×10技（60）のカードが読める（実戦 50＝ジオルの正式10技を含む・プレビュー 10＝フルーネ・静止画 0）', sw && cat.tabs === 6 && cat.n === 60 && cat.ok === 60 && cat.counts.battle === 50 && cat.counts.preview === 10 && cat.counts.static === 0, JSON.stringify(cat));
     await q.evaluate(() => MMQA.battle(0, 1)); await q.waitForSelector('#bt .mmr .pl .nm', { timeout: 30000 }).catch(() => {});
     // 素早さが同じ（ソラモどうし）なら相手が先に動くことがある＝自分の番（STOP が押せる）になってからルーレットの技を読む（相手の番のルーレットは相手の技）
     await q.waitForFunction(() => { const g = document.getElementById('go'); return g && !g.disabled && !g.classList.contains('bk'); }, null, { timeout: 30000 }).catch(() => {}); await sleep(400);
@@ -293,6 +293,21 @@ try {
     await sleep(2500); await q.evaluate(() => MMQA.endBattle());
     for (let k = 0; k < 60 && await q.evaluate(() => !!document.getElementById('bt')); k++) await sleep(500);
     await q.waitForFunction(() => { const v = document.getElementById('mmqa'); return v && v.style.display !== 'none' && !!v.querySelector('.qoff'); }, null, { timeout: 30000 }).catch(() => {});
+    // 2026-10-15：ジオルの正式10技（SK 40〜49）＝QA の実戦でジオインパクト（No.9）のルーレット・技アニメのコマが出る
+    await q.evaluate(() => MMQA.battle(3, 9)); await q.waitForSelector('#bt .mmr .pl .nm', { timeout: 30000 }).catch(() => {});
+    await q.waitForFunction(() => { const g = document.getElementById('go'); return g && !g.disabled && !g.classList.contains('bk'); }, null, { timeout: 40000 }).catch(() => {}); await sleep(400);
+    const jb = await q.evaluate(() => ({ sp: typeof BPL !== 'undefined' && BPL[0] && BPL[0].sp, eq: typeof BPL !== 'undefined' && BPL[0] && BPL[0].eq.slice(0, 6), names: [...document.querySelectorAll('#bt .mmr .pl .nm')].map((e) => e.textContent).slice(0, 3), sk: typeof SK !== 'undefined' && SK[48] && [SK[48][0], SK[48][1], SK[48][7], SK[48][8], SK[48][9]] }));
+    let jcut = false;
+    for (let t = 0; t < 4 && !jcut; t++) {
+      await q.evaluate(() => { const g = document.getElementById('go'); if (g && !g.disabled) g.click(); });
+      await q.waitForFunction(() => [...document.querySelectorAll('#bt img')].some((i) => /jiol_moves_1012\/j09_/.test(i.getAttribute('src') || '')), null, { timeout: 5000 }).then(() => { jcut = true; }).catch(() => {});
+      if (!jcut) await q.waitForFunction(() => { const g = document.getElementById('go'); return g && !g.disabled && !g.classList.contains('bk'); }, null, { timeout: 40000 }).catch(() => {});
+    }
+    await q.screenshot({ path: `${OUT}/qa_jiol_390.png` }).catch(() => {});
+    await sleep(3000); await q.evaluate(() => MMQA.endBattle());
+    for (let k = 0; k < 60 && await q.evaluate(() => !!document.getElementById('bt')); k++) await sleep(500);
+    await q.waitForFunction(() => { const v = document.getElementById('mmqa'); return v && v.style.display !== 'none' && !!v.querySelector('.qoff'); }, null, { timeout: 30000 }).catch(() => {});
+    rec('2026-10-15：ジオルの正式10技＝QA の実戦でジオインパクト（SK 48・威力 140・ちから・命中 75・CR 25%）のルーレットと技アニメ', jb.sp === 3 && JSON.stringify(jb.eq) === JSON.stringify(Array(6).fill(48)) && jb.names.length && jb.names.every((x) => x === 'ジオインパクト') && JSON.stringify(jb.sk) === JSON.stringify(['ジオインパクト', 1.4, 'p', 75, 0.25]) && jcut, JSON.stringify({ jb, jcut }));
     // 2026-10-15：フルーネの技アニメ 77枚（本体 42＋効果 35）と歩行 16コマが公開 URL で読める・QA のプレビューでコマが出る
     const fl = await q.evaluate(async () => {
       const D = window.MMFLMV_DATA || {}, urls = [];

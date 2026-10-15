@@ -141,7 +141,7 @@ test('CQ-B3：QA 試遊モード＝切り替えは牧場とベースキャンプ
       await pg.click('#mmqa .qdet .qno');
     }
   }
-  assert.deepEqual(tally, { battle: 40, preview: 20, static: 0 }, '実戦 40（ソラモ・ガウル・ノビトン・レグナス）／技アニメのプレビュー 20（ジオル・フルーネ＝2026-10-15）');
+  assert.deepEqual(tally, { battle: 50, preview: 10, static: 0 }, '実戦 50（ソラモ・ガウル・ノビトン・レグナス・ジオル＝2026-10-15 正式10技）／技アニメのプレビュー 10（フルーネ）');
   // QA 試合：4体（比較 → 対戦開始 → 6枠すべて選んだ技 → STOP で技が出る → QA 一覧へ）
   for (const [i, no, sp] of [[0, 10, 0], [1, 3, 1], [2, 7, 2], [4, 9, 4]]) {
     await pg.click(`#mmqa .qtab[data-i="${i}"]`); await pg.click(`#mmqa .qcard[data-n="${no - 1}"]`); await pg.click('#mmqa .qdet .qgo');
@@ -157,11 +157,11 @@ test('CQ-B3：QA 試遊モード＝切り替えは牧場とベースキャンプ
     await pg.evaluate(() => MMQA.endBattle()); await pg.waitForSelector('#mmqa .qcard', { state: 'visible', timeout: 60000 });
     assert.equal(await pg.evaluate(() => !!document.getElementById('bt')), false, 'QA 試合のあとは QA の一覧へ');
   }
-  // ジオル：技アニメのコマ（判定・ダメージなし）
-  await pg.click('#mmqa .qtab[data-i="3"]'); await pg.click('#mmqa .qcard[data-n="5"]'); await pg.click('#mmqa .qdet .qgo');
+  // 技アニメのプレビュー（判定・ダメージなし）＝2026-10-15 からフルーネ（ジオルは正式10技で実戦＝tests/qa-e2e-jiol-moves-1015.test.mjs）
+  await pg.click('#mmqa .qtab[data-i="5"]'); await pg.click('#mmqa .qcard[data-n="5"]'); await pg.click('#mmqa .qdet .qgo');
   await pg.waitForSelector('#bt.mmqa-prev'); await pg.waitForSelector('#mmqa-bar button');
-  await pg.waitForFunction(() => [...document.querySelectorAll('#bt img')].some((i) => /jiol_moves_1012\//.test(i.getAttribute('src') || '')), null, { timeout: 8000 });
-  await pg.screenshot({ path: path.join(SHOT, 'b3_jiol.png') });
+  await pg.waitForFunction(() => [...document.querySelectorAll('#bt img')].some((i) => /flurene_moves_1015\//.test(i.getAttribute('src') || '')), null, { timeout: 8000 });
+  await pg.screenshot({ path: path.join(SHOT, 'b3_preview.png') });
   await pg.evaluate(() => MMQA.endBattle()); await pg.waitForSelector('#mmqa .qcard', { state: 'visible', timeout: 60000 });
   await pg.click('#mmqa .qoff'); await pg.waitForSelector('#app>.rn'); await pg.waitForSelector('#mmqa-sw');
   assert.equal(await pg.$('#mmqa'), null);
