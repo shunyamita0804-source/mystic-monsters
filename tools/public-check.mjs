@@ -304,7 +304,7 @@ try {
     });
     await q.evaluate(() => MMQA.battle(5, 7)); await q.waitForSelector('#bt.mmqa-prev', { timeout: 30000 }).catch(() => {});
     await q.waitForFunction(() => [...document.querySelectorAll('#bt img')].some((i) => /flurene_moves_1015\//.test(i.getAttribute('src') || '')), null, { timeout: 12000 }).catch(() => {});
-    const flb = await q.evaluate(() => ({ prev: !!document.querySelector('#bt.mmqa-prev'), sp: window.BPL && BPL[0] && BPL[0].sp, cut: [...document.querySelectorAll('#bt img')].some((i) => /flurene_moves_1015\//.test(i.getAttribute('src') || '')), idle: /idle_flurene/.test((document.querySelector('#m0 .mma-idle') || {}).src || '') }));
+    const flb = await q.evaluate(() => ({ prev: !!document.querySelector('#bt.mmqa-prev'), sp: typeof BPL !== 'undefined' && BPL[0] && BPL[0].sp, cut: [...document.querySelectorAll('#bt img')].some((i) => /flurene_moves_1015\//.test(i.getAttribute('src') || '')), idle: /idle_flurene/.test((document.querySelector('#m0 .mma-idle') || {}).src || '') }));
     await q.screenshot({ path: `${OUT}/qa_flurene_anim_390.png` }).catch(() => {});
     await q.evaluate(() => MMQA.endBattle());
     for (let k = 0; k < 60 && await q.evaluate(() => !!document.getElementById('bt')); k++) await sleep(500);
