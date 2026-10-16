@@ -6,7 +6,7 @@ import { launch, finishTalk } from '../../tests/e2e/harness.mjs';
 import { writeFileSync, mkdirSync } from 'node:fs';
 const OUT = process.argv[2] || 'cam-measure.json', VID = process.argv[3] || null;
 const DICE = [3, 4, 2, 5, 3, 4, 2, 3, 4, 3, 5, 2];
-const MODES = ['', 'fixed', 'c', 'ccut'];
+const MODES = process.env.QA_MODES ? JSON.parse(process.env.QA_MODES) : ['', 'fixed', 'c', 'ccut'];   // 例 '["c","c&qaCamDeg=70"]'（qaCam= のあとに足す）
 const CASES = [{ ch: 1, route: 'A', rolls: 10 }, { ch: 2, route: 'A', rolls: 10 }, { ch: 2, route: 'B', rolls: 10 }, { ch: 2, route: 'C', rolls: 10 }];
 const L = await launch();
 const res = [];
