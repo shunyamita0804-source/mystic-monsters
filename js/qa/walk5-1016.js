@@ -13,7 +13,7 @@
   'use strict';
   let P = null; try { P = new URLSearchParams(root.location.search); } catch (e) {}
   const q = P ? P.get('qaWalk') : null;
-  const num = (k, d, lo, hi) => { const x = P ? Number(P.get(k)) : NaN; return Number.isFinite(x) && x >= lo && x <= hi ? x : d; };
+  const num = (k, d, lo, hi) => { const x = P && P.get(k) != null ? Number(P.get(k)) : NaN; return Number.isFinite(x) && x >= lo && x <= hi ? x : d; };
   const ACTIVE = q === 'soramo5' || q === '5dir';
   const FPS = num('qaWalkFps', 8, 2, 24), TURN_MS = num('qaWalkTurn', 70, 0, 400);
   const BASE = './assets/qa/soramo_5dir_1016/';
@@ -37,12 +37,15 @@
     return look(s);
   }
   const look = (s) => { s = norm(s); return { sector: s, set: SECT[s][0], flip: SECT[s][1] }; };
-  /** from → to の間の向き（両端を含まない）。近いほうへ回る（ちょうど反対なら時計回り） */
-  function turnPath(from, to) {
+  /** from → to の間の向き（両端を含まない）。近いほうへ回る。ちょうど反対（180°）のときは rot の向き（1＝時計回り・-1＝反時計回り・既定は時計回り）。
+   *  盤では「前回の 180° と逆の回り方」を渡す＝出発で左回りに後ろを向いたら、止まって正面へ向き直るときは右回り＝来た道を戻るように回る（毎回1回転しない） */
+  function turnPath(from, to, rot) {
     if (from == null || to == null) return [];
-    let d = norm(to - from); if (d === -4) d = 4;
+    let d = norm(to - from); if (d === 4 || d === -4) d = rot === -1 ? -4 : 4;
     const out = []; for (let i = 1; i < Math.abs(d); i++) out.push(norm(from + Math.sign(d) * i));
     return out;
   }
-  root.MMQAW = Object.freeze({ active: ACTIVE, species: 'solamo', FPS, TURN_MS, KEYS, BASE, H, FOOT, sets, pick8, look, turnPath, norm });
+  /** その回り方（1＝時計回り・-1＝反時計回り・0＝回らない） */
+  const rotOf = (path, from) => (path.length ? Math.sign(norm(path[0] - from)) : 0);
+  root.MMQAW = Object.freeze({ rotOf, active: ACTIVE, species: 'solamo', FPS, TURN_MS, KEYS, BASE, H, FOOT, sets, pick8, look, turnPath, norm });
 })(typeof window !== 'undefined' ? window : globalThis);

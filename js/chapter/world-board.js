@@ -99,7 +99,7 @@
   // 2026-10-16 QA（試作・未承認）：URL の ?qaCam= でカメラの方式を比べる。無い・old＝従来（後ろから追う・yawTau 600）／fixed＝向きを回さない（北が上）／
   //  c＝C案（歩いている間は向き・倍率を変えない・止まったとき／分かれ道を選んだときだけ短く向きを変える）／ccut＝C案の向きの変え方を「少し暗くして切り替え」に。
   //  qaCamDeg（向きを変えるずれの角度・既定 50）・qaCamMs（90° 回す時間・既定 600）で調整できる。通常の URL では何も変わらない
-  const QA_CAM = (() => { let q = null; try { q = new URLSearchParams(root.location.search); } catch (e) {} const v = q && q.get('qaCam'); const num = (k, d, lo, hi) => { const x = q ? Number(q.get(k)) : NaN; return Number.isFinite(x) && x >= lo && x <= hi ? x : d; };
+  const QA_CAM = (() => { let q = null; try { q = new URLSearchParams(root.location.search); } catch (e) {} const v = q && q.get('qaCam'); const num = (k, d, lo, hi) => { const x = q && q.get(k) != null ? Number(q.get(k)) : NaN; return Number.isFinite(x) && x >= lo && x <= hi ? x : d; };
     return ['fixed', 'c', 'ccut'].includes(v) ? { mode: v, deg: num('qaCamDeg', 50, 10, 180), ms: num('qaCamMs', 600, 120, 2000) } : null; })();
   const camOpts = () => (!QA_CAM ? { heading: true, yawTau: 600 } : QA_CAM.mode === 'fixed' ? { heading: false } : { heading: true, yawTau: 600, camMode: QA_CAM.mode, camTurnDeg: QA_CAM.deg, camTurnMs: QA_CAM.ms });
   function viewRect() {
@@ -604,9 +604,11 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
   // ---- 2026-10-16 QA（C）：8方向の歩行。向きを変えるときは近いほうの回り方で間の向きを1つずつ通る（MMQAW.turnPath）・歩く位相は続ける ----
   function qaFace(el, s) { const L = root.MMQAW.look(s); SPR.sector = L.sector; SPR.cur = L.set; SPR.flip = L.flip; el.classList.toggle('wk-flip', L.flip); el.dataset.dir = L.set; el.dataset.sector = String(L.sector); sprShow(L.set, Math.floor(SPR.phase) % SPR.sets[L.set].frames.length); }
   function qaTurnNext(now) { const el = monEl(), t = SPR.turn; if (!el || !t) { SPR.turn = null; return; } const s = t.q.shift(); if (s != null) qaFace(el, s); SPR.turn = t.q.length ? { q: t.q, until: now + root.MMQAW.TURN_MS } : null; }
+  /** 間の向き。180° のときは前回の 180° と逆の回り方（来た向きへ戻るように回る） */
+  function qaPath(from, to) { const Q = root.MMQAW, half = Math.abs(Q.norm(to - from)) === 4, p = Q.turnPath(from, to, half && SPR.rot ? -SPR.rot : 1); if (half) SPR.rot = Q.rotOf(p, from); return p; }
   function qaWalk(el, dx, dy) {
     const Q = root.MMQAW, r = Q.pick8(dx, dy * TILT_COS, SPR.sector); if (!r) return;
-    const path = SPR.sector == null ? [] : Q.turnPath(SPR.sector, r.sector);
+    const path = SPR.sector == null ? [] : qaPath(SPR.sector, r.sector);
     el.classList.remove('wk-idle', 'bob', 'st-flip'); el.classList.add('wk-on');
     if (path.length && Q.TURN_MS > 0) { SPR.turn = { q: path.concat([r.sector]), until: 0 }; qaTurnNext(root.performance.now()); }
     else { SPR.turn = null; qaFace(el, r.sector); }
@@ -616,13 +618,13 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
   function qaStopTurn() {
     const el = monEl(), Q = root.MMQAW; if (!el || SPR.sector == null || SPR.sector === 4 || calm()) return false;
     SPR.on = false; if (SPR.raf && root.cancelAnimationFrame) cancelAnimationFrame(SPR.raf); SPR.raf = 0; SPR.turn = null;
-    const tok = ++SPR.tok, seq = Q.turnPath(SPR.sector, 4); let i = 0; SPR.phase = 0;
+    const tok = ++SPR.tok, seq = qaPath(SPR.sector, 4); let i = 0; SPR.phase = 0;
     const step = () => { if (tok !== SPR.tok) return; const e = monEl(); if (!e) return; if (i < seq.length) { qaFace(e, seq[i++]); setTimeout(step, Math.max(40, Q.TURN_MS)); } else { SPR.sector = 4; sprStopNow(); } };
     step(); return true;
   }
   function sprStop() { if (SPR.qa && qaStopTurn()) return; sprStopNow(); }
   function sprStopNow() {
-    if (SPR.qa) { SPR.tok = (SPR.tok || 0) + 1; SPR.turn = null; SPR.sector = 4; }
+    if (SPR.qa) { SPR.tok = (SPR.tok || 0) + 1; SPR.turn = null; SPR.sector = 4; const e = monEl(); if (e) e.dataset.sector = '4'; }   // 止まった姿＝正面（記録の向きもそろえる）
     SPR.on = false; if (SPR.raf && root.cancelAnimationFrame) cancelAnimationFrame(SPR.raf); SPR.raf = 0; SPR.phase = 0; SPR.last = 0; SPR.cur = null; SPR.flip = false; SPR.lat = false;
     const el = monEl(); if (el) { el.classList.remove('wk-on', 'bob', 'wk-flip', 'st-flip'); el.dataset.dir = ''; }
     sprIdle();

@@ -48,7 +48,8 @@ test('QW-01：8つの向きの選び方（画面の上＝奥＝背面・時計�
 test('QW-02：向きを変えるときに通る間の向き（近いほうの回り方・最大3つ）', async () => {
   await import('../js/qa/walk5-1016.js');
   const Q = globalThis.MMQAW;
-  assert.deepEqual(Q.turnPath(4, 0), [-3, -2, -1], 'ちょうど反対＝時計回り（正面 → 左手前 → 左 → 左奥 → 背面）');
+  assert.deepEqual(Q.turnPath(4, 0), [-3, -2, -1], 'ちょうど反対・既定＝時計回り（正面 → 左手前 → 左 → 左奥 → 背面）');
+  assert.deepEqual(Q.turnPath(0, 4, -1), [-1, -2, -3], '反時計回り＝来た向きへ戻る'); assert.equal(Q.rotOf([-3, -2, -1], 4), 1); assert.equal(Q.rotOf([-1, -2, -3], 0), -1);
   assert.deepEqual(Q.turnPath(0, 2), [1]); assert.deepEqual(Q.turnPath(2, 1), []); assert.deepEqual(Q.turnPath(-2, 2), [-1, 0, 1]);
   for (let a = -3; a <= 4; a++) for (let b = -3; b <= 4; b++) assert.ok(Q.turnPath(a, b).length <= 3, `${a}→${b}`);
 });
@@ -64,4 +65,8 @@ test('QW-04：盤につなぐのは ?qaWalk=soramo5 のソラモだけ（ほか�
   assert.match(wb, /if \(SPR\.qa\) return qaWalk\(/);
   assert.match(rd('js/qa/walk5-1016.js'), /const ACTIVE = q === 'soramo5' \|\| q === '5dir';/);
   assert.match(rd('index.html'), /<script src="\.\/js\/qa\/walk5-1016\.js"><\/script>/);
+});
+test('QW-05：URL の数の指定が無いときは既定の値（Number(null)＝0 にしない）', async () => {
+  for (const f of ['js/qa/walk5-1016.js', 'js/chapter/world-board.js']) assert.match(rd(f), /&& (P|q)\.get\(k\) != null \? Number/, f);
+  await import('../js/qa/walk5-1016.js'); assert.equal(globalThis.MMQAW.TURN_MS, 70); assert.equal(globalThis.MMQAW.FPS, 8);
 });
