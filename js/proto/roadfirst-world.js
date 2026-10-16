@@ -531,9 +531,9 @@
         const f = 1 - Math.exp(-dt / 170), g = S.goal;
         for (const k of ['tx', 'ty', 'ax', 'ay', 'tilt']) S.cam[k] = lerp(S.cam[k], g[k], f);
         const y0 = S.cam.yaw || 0;
-        if (CMODE) {   // 2026-10-16 QA C案：向きは止まったとき・分かれ道を選んだときに決めた分だけ、決まった時間で回して止める（指数の長い尾を引かない）
+        if (CMODE) {   // 2026-10-16 QA C案：向きは止まったとき・分かれ道を選んだときに決めた分だけ、決まった時間で回して止める（指数の長い尾を引かない）。緩急は smoothstep＝速さの山が平均の 1.5倍（二次の緩急は 2倍）
           const tw = S.yawTw;
-          if (tw) { const u = Math.max(0, Math.min(1, (now - tw.t0) / tw.dur)); S.cam.yaw = tw.from + angDiff(tw.from, tw.to) * (u * u * (3 - 2 * u));   // smoothstep＝速さの山が平均の 1.5倍（二次の緩急は 2倍）＝急に回って見えない if (u >= 1) { S.cam.yaw = tw.to; S.yawTw = null; if (tw.cut) dim(false); } }
+          if (tw) { const u = Math.max(0, Math.min(1, (now - tw.t0) / tw.dur)); S.cam.yaw = tw.from + angDiff(tw.from, tw.to) * (u * u * (3 - 2 * u)); if (u >= 1) { S.cam.yaw = tw.to; S.yawTw = null; if (tw.cut) dim(false); } }
           else S.cam.yaw = g.yaw || 0;
         } else if (o.heading) { const d = angDiff(S.cam.yaw || 0, g.yaw || 0); S.cam.yaw = Math.abs(d) < 0.05 ? (g.yaw || 0) : (S.cam.yaw || 0) + d * (1 - Math.exp(-dt / o.yawTau)); }   // 2026-10-14 開発29（6）：近いほうへなめらかに回る
         S.cam.s = Math.exp(lerp(Math.log(S.cam.s), Math.log(g.s), (1 - Math.exp(-dt / o.zoomTau)) * 0.8));
