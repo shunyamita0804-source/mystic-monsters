@@ -30,7 +30,7 @@ test('D27-01：サイコロの SE＝着地の足音だけ・1 の面＝円の紋
 
 test('D27-02：門の飾りだけ出さない・大会会場は透けない・横の1歩は立ち絵を進む向きへ', () => {
   const WB = rd('js/chapter/world-board.js'), RW = rd('js/proto/roadfirst-world.js');
-  assert.match(WB, /hideLm: \['START', 'LOWER_GATE', 'UPPER_GATE'\]/);
+  assert.match(WB, /hideLm: chOf\(m\) === 1 \? \['START', 'LOWER_GATE', 'UPPER_GATE'\] : null/);   // 2026-10-16：Chapter 1 だけ（Chapter 2 は正式の門を出す）
   assert.match(RW, /if \(o\.hideLm && o\.hideLm\.includes\(L\.node\)\) continue;/);
   assert.match(RW, /const gp = props\[props\.length - 1\]; gp\.solid = true;/); assert.match(RW, /if \(o\.xray && !p\.mark && !p\.solid\)/);
   const C = rd('js/chapter/configs/ch1a.js');

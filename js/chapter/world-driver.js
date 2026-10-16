@@ -13,7 +13,11 @@
 // =========================================================
 (function (root) {
   'use strict';
-  const CH = 1, TURN_LIMIT = 40, DICE = 6;
+  // 2026-10-16：Chapter 2「潮風の海岸」も同じ1枚の世界のボード（js/chapter/world-driver-ch2.js）＝本体を make(cfg) にまとめて Chapter ごとの違い（道のデータ・名前・一言・確認用の URL）だけ cfg で渡す。
+  //   Chapter 1 は cfg なし＝従来とまったく同じ（root.MMWD）。make は root.MMWD_MAKE
+  function make(cfg) {
+  cfg = cfg || {};
+  const CH = cfg.ch || 1, TURN_LIMIT = 40, DICE = 6;
   const STAT_KEYS = ['li', 'po', 'in', 'hi', 'ev', 'de'], STAT_MAX = 999;
   const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
   const C = () => root.MMRF_CORE, P = () => root.MMRF_PLAY;
@@ -22,10 +26,11 @@
   //   テスト・確認用：URL の ?ch1route=A|B|C（index.html が window.MM_CH1ROUTE に入れる）または MMWD.setRoute で次の出発のルートを固定。本番の選択の画面は無い
   const ROUTES = Object.freeze(['A', 'B', 'C']);
   const routeKey = (v) => (v === 'B' || v === 'C' ? v : 'A');
-  const dataOf = (k) => (k === 'B' || k === 'C' ? (root.MMRF_ROUTES && root.MMRF_ROUTES[k]) || null : root.MMRF_DATA);
+  const dataOf = cfg.dataOf || ((k) => (k === 'B' || k === 'C' ? (root.MMRF_ROUTES && root.MMRF_ROUTES[k]) || null : root.MMRF_DATA));
+  const BASE = () => dataOf('A') || root.MMRF_DATA;   // ルートのデータが読めないときの控え（Chapter 1＝MMRF_DATA）
   const routeOf = (m) => { const f = fieldOf(m); return routeKey(f && f.route); };
   /** その個体のルートの道のデータ（m が無い・B/C のデータが読めない＝A） */
-  const D = (m) => (m && dataOf(routeOf(m))) || root.MMRF_DATA;
+  const D = (m) => (m && dataOf(routeOf(m))) || BASE();
   const T = () => P().TUNING;
 
   /** 分かれ道の道の名前（プレイヤー向け。区間 ID → 名前。68 Scene の景観の表から） */
@@ -51,14 +56,14 @@
     B: Object.freeze({ L_CHEST: '八角の東屋', R_CHEST: '水車小屋', L_ALTAR: '湖畔の祭壇', L_LATE_ALTAR: '泉のほとりの祠', REWARD5: '水瓶の女神像', R_SPECIAL: '花の丘の段々の滝', RANDOM_DEN: '滝の裏の隠れ家' }),
     C: Object.freeze({ L_CHEST: '崩れた見張り塔', R_CHEST: '岩壁の宝物庫', L_ALTAR: '環状列石', L_LATE_ALTAR: '崖の上の列柱神殿', REWARD5: '古代のオベリスク', R_SPECIAL: '螺旋階段の塔', RANDOM_DEN: '岩の裂け目の隠れ家' }),
   });
-  function routeName(seg, key) { const B = ROUTE_NAME_BY[routeKey(key)]; return (B && B[seg]) || ROUTE_NAME[seg] || (SPUR(seg) ? '寄り道' : 'このまま進む'); }
-  function placeOf(id, key) { const B = PLACE_BY[routeKey(key)]; return (B && B[id]) || PLACE[id] || null; }
-  const rewardTitle = (id, key, def) => { const B = REWARD_TITLE_BY[routeKey(key)]; return (B && B[id]) || def; };
+  function routeName(seg, key) { if (cfg.routeName) return cfg.routeName(seg, routeKey(key), dataOf(routeKey(key))); const B = ROUTE_NAME_BY[routeKey(key)]; return (B && B[seg]) || ROUTE_NAME[seg] || (SPUR(seg) ? '寄り道' : 'このまま進む'); }
+  function placeOf(id, key) { if (cfg.placeOf) return cfg.placeOf(id, routeKey(key), dataOf(routeKey(key))); const B = PLACE_BY[routeKey(key)]; return (B && B[id]) || PLACE[id] || null; }
+  const rewardTitle = (id, key, def) => { if (cfg.rewardTitle) return cfg.rewardTitle(id, routeKey(key), def, dataOf(routeKey(key))); const B = REWARD_TITLE_BY[routeKey(key)]; return (B && B[id]) || def; };
 
   // ---- マップ（raising.js の boardOf・ゴールの判定用。行き止まりからは戻れるので、戻りの接続も conn に入れる＝行き止まりはゴールではない） ----
   const TRACK = {};   // ルートごとに1回だけ作る
   function track(key) {
-    const k = routeKey(key), d = dataOf(k) || root.MMRF_DATA; if (TRACK[k] && TRACK[k].d === d) return TRACK[k].t;
+    const k = routeKey(key), d = dataOf(k) || BASE(); if (TRACK[k] && TRACK[k].d === d) return TRACK[k].t;
     const nodes = {}, conn = {};
     for (const [id, n] of Object.entries(d.nodes)) { nodes[id] = { type: n[2], x: n[0], y: n[1] }; conn[id] = []; }
     for (const e of d.edges) if (!conn[e[0]].includes(e[1])) conn[e[0]].push(e[1]);
@@ -82,14 +87,14 @@
   let pendingRoute = null;
   /** 次の出発のルートを固定（テスト・確認用。null＝本番の抽選）。1回の出発で使ったら戻す */
   function setRoute(v) { pendingRoute = ROUTES.includes(v) ? v : null; return pendingRoute; }
-  const forcedRoute = () => { if (pendingRoute) return pendingRoute; let q = null; try { q = root.MM_CH1ROUTE || new URLSearchParams(root.location.search).get('ch1route'); } catch (e) {} return ROUTES.includes(q) ? q : null; };
+  const forcedRoute = () => { if (pendingRoute) return pendingRoute; let q = null; try { q = root[cfg.forceVar || 'MM_CH1ROUTE'] || new URLSearchParams(root.location.search).get(cfg.forceParam || 'ch1route'); } catch (e) {} return ROUTES.includes(q) ? q : null; };
   /** ルートの抽選：A／B／C を各 1/3（配置の seed とは別の1回。保存して再開では決め直さない） */
   const drawRoute = (rnd) => ROUTES[Math.min(2, Math.floor(rnd() * 3))];
   function newField(rnd = Math.random, seed, route) {
-    const k = ROUTES.includes(route) ? route : drawRoute(rnd), d = dataOf(k) || root.MMRF_DATA, rk = d === root.MMRF_DATA ? 'A' : k;
+    const k = ROUTES.includes(route) ? route : drawRoute(rnd), d = dataOf(k) || BASE(), rk = d === BASE() ? 'A' : k;
     const s = Number.isInteger(seed) ? seed >>> 0 : ((Math.floor(rnd() * 0x7fffffff) >>> 0) || 1);
     const core = C().create(d, { seed: s, turnLimit: TURN_LIMIT });
-    return { world: 1, chapterId: CH, patternId: 'W', layoutSeed: s, core, tiles: P().layout(d, s, { route: rk, bias: true }), used: {}, claimed: {}, rivalMet: false, introSeen: false, arrivalSeen: false, route: rk, visualPattern: rk };
+    return { world: 1, chapterId: CH, patternId: 'W', layoutSeed: s, core, tiles: P().layout(d, s, { route: rk, bias: true, pool: cfg.pool ? cfg.pool() : undefined }), used: {}, claimed: {}, rivalMet: false, introSeen: false, arrivalSeen: false, route: rk, visualPattern: rk };
   }
   const clampFat = (v) => Math.max(0, Math.min(T().fatigueMax, Math.round(Number(v) || 0)));
   const carry = (f) => (root.MMCH && root.MMCH.carryFatigue ? root.MMCH.carryFatigue(f) : Math.max(0, (Number(f) || 0) - 50));
@@ -111,7 +116,8 @@
     }
     return out;
   }
-  const evById = (id) => (P().pool() || []).find((e) => e.id === id) || null;
+  const poolOf = () => (cfg.pool && cfg.pool()) || P().pool() || [];   // 出来事の表（Chapter 2 は cfg.pool＝Chapter 2 の出来事）
+  const evById = (id) => poolOf().find((e) => e.id === id) || null;
 
   // ---- 移動（raising.js の step／chooseBranch から） ----
   const KEEP_EV = ['eventDie', 'gate', 'rival', 'reward', 'den', 'goal', 'timeup', 'stop', 'blocked'];
@@ -151,7 +157,7 @@
     if (role === 'goal') return { kind: 'none', note: 'goal', ...base };
     if (role === 'mandatory_rival') { if (f.rivalMet) return { kind: 'none', note: 'rival_done', ...base }; f.rivalMet = true; return { kind: 'battle', battleType: 'rival', ...base }; }
     if (role === 'fixed_reward_dead_end' || role === 'optional_random_unlock_dead_end') {
-      const R = T().rewards[id]; if (!R) return { kind: 'none', note: 'normal', ...base };
+      const R = (d.rewards && d.rewards[id]) || T().rewards[id]; if (!R) return { kind: 'none', note: 'normal', ...base };
       const title = rewardTitle(id, k, R.title);
       if (f.claimed[id] != null) return { kind: 'none', note: 'claimed', title, ...base };
       f.claimed[id] = f.core.turn;
@@ -189,7 +195,7 @@
   //  scope 'save'＝このセーブで1回（S.npcFlags.story。旧ボードのチュートリアルと同じ id は共通＝もう見た人には出さない）／既定＝この個体のこの Chapter で1回（m.raise.field.storySeen）。
   //  presentation 'talk'＝ボードの大きな会話窓／既定＝小さな会話窓。同時に満たしたら priority の高いものを1つだけ。
   const L = (expression, text, speaker) => (speaker ? { speaker, expression: expression || 'normal', text } : { expression, text });
-  const STORY = Object.freeze([
+  const STORY = cfg.story || Object.freeze([
     { id: 'tut_turns_w', trigger: 'start', scope: 'save', priority: 70, presentation: 'talk', lines: [L('guide', `出発の前に、ひとつだけ。この旅は${TURN_LIMIT}ターンだよ。サイコロ（1〜${DICE}）を1回振るか、「休む」を1回使うと、1ターン進むよ。`), L('normal', `${TURN_LIMIT}ターンのうちに大会会場に着けば、公式大会に挑戦できるんだ。`), L('smile', '間に合わなくても失敗じゃないよ。育った能力は、そのまま次へ持っていけるからね。')] },
     { id: 'tut_stat', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { kind: 'stat' }, lines: [L('guide', '能力マスだよ。止まると、この子の得意に合わせて能力が伸びるんだ。'), L('smile', '伸び方は子ごとに違うから、ステータスで確かめてみてね。')] },
     { id: 'tut_event', trigger: 'land', scope: 'save', priority: 50, presentation: 'talk', when: { hasEvent: true }, lines: [L('guide', 'イベントマスは、止まるたびに違う出来事が起きるよ。'), L('happy', '何が起きるかは、その時のお楽しみ！')] },
@@ -216,7 +222,7 @@
     { id: 'ch1_tired', trigger: 'land', priority: 5, when: { fatigueMin: 80 }, lines: [L('worried', 'だいぶお腹がすいてきたみたい。何か食べさせるか、休もうね。')] },
   ]);
   // 2026-10-14 B／C：景色を言う一言だけルートごとに文を差し替える（id・条件・優先度は A と同じ＝見た記録も共通。文は仮案＝ユーザーの承認前）
-  const STORY_LINES_BY = Object.freeze({
+  const STORY_LINES_BY = cfg.storyLinesBy || Object.freeze({
     B: Object.freeze({
       ch1_start: [L('happy', '川の音がするね！ 今日は川に沿って、草原を行ったり来たりするみたい。大会会場まで、一緒にがんばろう。')],
       tut_challenge_w: [L('guide', 'この先には封印の遺跡門があるよ。サイコロで5か6が出れば、門が開いて奥の道へ進めるんだ。'), L('normal', '失敗しても、遠回りの道で先へ進めるから安心してね。')],
@@ -243,7 +249,7 @@
   const SEG_OF = {};
   /** 地点 → 区間（区間の途中の地点だけ。分かれ道・合流などの端の地点は区間に入れない＝pass では地点 ID で書く）。ルートごと */
   function segOf(id, key) {
-    const k = routeKey(key), d = dataOf(k) || root.MMRF_DATA;
+    const k = routeKey(key), d = dataOf(k) || BASE();
     if (!SEG_OF[k] || SEG_OF[k].d !== d) { const map = {}; for (const [sk, s] of Object.entries(d.segments)) { const pts = s[3] || []; for (let i = 1; i < pts.length - 1; i++) map[pts[i]] = sk; } SEG_OF[k] = { d, map }; }
     return SEG_OF[k].map[id] || null;
   }
@@ -284,7 +290,7 @@
   // ---- raising.js（MMP8）へのつなぎ ----
   const DRIVER = Object.freeze({
     world: true,
-    handles: (key) => key === CH,
+    handles: cfg.handles || ((key) => key === CH),
     turnLimit: () => TURN_LIMIT,
     diceSides: () => DICE,
     onDepart(S, m, key, rnd = Math.random, fresh) { m.raise.fatigue = fresh ? 0 : carry(m.raise.fatigue); m.raise.field = newField(rnd, undefined, forcedRoute()); pendingRoute = null; return { patternId: 'W' }; },   // ルートは出発の1回だけ抽選（固定は1回で戻す）
@@ -302,7 +308,7 @@
         if (c.turn !== r.turnsUsed) { c.turn = r.turnsUsed; changed = true; }
         return { changed };
       }
-      r.field = newField(rnd, undefined, 'A');   // 配置が無い・壊れている・旧い Chapter 1 の配置＝A の最初から（ここでは抽選しない＝旧セーブは A）
+      r.field = newField(rnd, undefined, cfg.ensureRoute ? cfg.ensureRoute(f) : 'A');   // 配置が無い・壊れている・旧い Chapter 1 の配置＝A の最初から（ここでは抽選しない＝旧セーブは A）
       if (r.tour) Object.assign(r, { node: 'GOAL', pend: null, goal: true, turnLimit: TURN_LIMIT });
       else Object.assign(r, { node: 'START', turnsUsed: 0, pend: null, goal: false, turnLimit: TURN_LIMIT });
       if (r.tour) { r.field.core.node = 'GOAL'; r.field.core.done = true; }
@@ -324,12 +330,16 @@
     sanitize(m) { const r = m && m.raise; if (!isObj(r)) return m; r.fatigue = clampFat(r.fatigue); if (r.ch === CH && r.field != null && !valid(r.field)) r.field = null; return m; },
   });
   let attached = false;
-  function attach(P8 = root.MMP8) { if (!P8 || !P8.registerChapterOverride || root.MM_QA_OLD_CH1) return false; P8.registerChapterOverride(DRIVER); attached = true; return true; }
+  function attach(P8 = root.MMP8) { if (!P8 || !P8.registerChapterOverride || root[cfg.qaOld || 'MM_QA_OLD_CH1']) return false; P8.registerChapterOverride(DRIVER); attached = true; return true; }
   function detach(P8 = root.MMP8) { if (P8 && P8.removeChapterOverride) P8.removeChapterOverride(DRIVER); attached = false; }
   /** この個体の今の Chapter がこのボードか（画面の切り替え用） */
   const active = (m) => attached && !!m && isObj(m.raise) && m.raise.ch === CH && !!root.MMP7 && root.MMP7.inChapter(m) && !!fieldOf(m);
 
-  root.MMWD = Object.freeze({ CH, TURN_LIMIT, DICE, ROUTES, ROUTE_NAME, ROUTE_NAME_BY, PLACE, PLACE_BY, REWARD_TITLE_BY, STORY, STORY_LINES_BY, DRIVER, VISUALS, storyEvents, markStory, segOf, attach, detach, active, fieldOf, valid, newField, track, routeName, placeOf, rewardTitle, branchOptions,
+  const API = Object.freeze({ CH, TURN_LIMIT, DICE, ROUTES, ROUTE_NAME, ROUTE_NAME_BY, PLACE, PLACE_BY, REWARD_TITLE_BY, STORY, STORY_LINES_BY, DRIVER, VISUALS, storyEvents, markStory, segOf, attach, detach, active, fieldOf, valid, newField, track, routeName, placeOf, rewardTitle, branchOptions,
     routeOf, routeKey, dataOf: (m) => D(m), routeData: dataOf, drawRoute, setRoute, forcedRoute, visualOf, isAttached: () => attached });
-  attach();
+  if (cfg.attach !== false) attach();
+  return API;
+  }
+  root.MMWD_MAKE = make;
+  root.MMWD = make();
 })(typeof window !== 'undefined' ? window : globalThis);

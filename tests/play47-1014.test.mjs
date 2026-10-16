@@ -117,7 +117,7 @@ test('P47-07：盤のイベント④⑮㉜＝宝箱のカットイン（ふつ�
   assert.match(WB, /const CHEST = Object\.freeze\(\{ normal: 'chest_01', special: 'chest_04' \}\);/);
   assert.doesNotMatch(WB.replace(/\/\/.*$/gm, ''), /chest_02|chest_03/, '用途の決まっていない宝箱は使わない（コメントを除く）');
   for (const n of ['chest_01', 'chest_04']) for (let i = 1; i <= 4; i++) assert.ok(existsSync(path.join(ROOT, `assets/chests/${n}_anim_0${i}.webp`)) || existsSync(path.join(ROOT, `assets/chests/${n}_base/anim_0${i}.webp`)) || rd('assets/chests/README.md').includes(n), `${n} の素材`);
-  assert.match(WB, /const GATE_BG = '\.\/assets\/fields\/ch1a\/final\/event\/ch1_bg_15_event\.webp';/);
+  assert.match(WB, /gate: '\.\/assets\/fields\/ch1a\/final\/event\/ch1_bg_15_event\.webp'/);   // 2026-10-16：章ごとの表（CHI）
   assert.match(WB, /const ARRIVE_GATE = Object\.freeze\(\[\{ npc: 'fina', view: 'closeup', expression: 'happy', text: 'ようやく着いたね、\{name\}さん！' \}/);
   assert.match(WB, /const ARRIVE_LOBBY = Object\.freeze\(\[\{ npc: 'fina', view: 'closeup', expression: 'guide', text: '公式大会は、ランクEからSまで。/);
   assert.match(WB, /f\.arrivalSeen = true; doSave\(\);/, '見た記録は最後に1回');

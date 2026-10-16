@@ -32,9 +32,15 @@
   const G = (n) => { try { return (0, eval)(n); } catch (e) { return undefined; } };   // index.html の let／const（S・LAB・P9_LOBBY_BG・bBusy）
   const gS = () => G('S');
   const doSave = () => { try { root.save(); } catch (e) {} };
-  const P8 = () => root.MMP8, WD = () => root.MMWD, C = () => root.MMRF_CORE;
+  // 2026-10-16：Chapter 2「潮風の海岸」も同じ画面（進行は js/chapter/world-driver-ch2.js の MMWD2）。今の個体（S.m）の Chapter で進行と表示を選ぶ
+  const chOf = (m) => { const mm = m || (gS() && gS().m); return mm && mm.raise && mm.raise.ch === 2 && root.MMWD2 ? 2 : 1; };
+  const A2 = './assets/fields/ch2/art_1016/';
+  const CHI = Object.freeze({ 1: { name: 'はじまりの草原', relay: './assets/fields/ch1a/intro/ch1_intro_overview.webp', gate: './assets/fields/ch1a/final/event/ch1_bg_15_event.webp' },
+    2: { name: '潮風の海岸', relay: A2 + 'chapter2_sea_medallion.webp', medal: true, gate: null, gateArt: A2 + 'arena_approach_gate.webp', gateSea: A2 + 'open_sea_water.webp' } });
+  const chi = (m) => CHI[chOf(m)];
+  const P8 = () => root.MMP8, WD = (m) => (chOf(m) === 2 ? root.MMWD2 : root.MMWD), C = () => root.MMRF_CORE;
   // 2026-10-14 B／C 独立ルート：その個体のルートの道のデータ（m を省くと今の個体＝S.m。route の無い配置＝A＝MMRF_DATA）
-  const D = (m) => { const W = WD(), mm = m || (gS() && gS().m); return (W && W.dataOf && mm ? W.dataOf(mm) : null) || root.MMRF_DATA; };
+  const D = (m) => { const W = WD(m), mm = m || (gS() && gS().m); return (W && W.dataOf && mm ? W.dataOf(mm) : null) || root.MMRF_DATA; };
   const cfg = () => (root.MMCH && root.MMCH.getConfig ? root.MMCH.getConfig(1) : null) || {};
   const calm = () => !!(root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const feel = (n, d) => { try { if (root.MMFEEL) root.MMFEEL.emit(n, d); } catch (e) {} };
@@ -45,7 +51,7 @@
   const busySet = (v) => { try { bBusy = v; } catch (e) {} };
   const V = { el: null, world: null, key: null, intro: false, path: [] };
   const onBoard = () => !!(V.el && V.el.isConnected);
-  const fieldOf = (m) => WD().fieldOf(m);
+  const fieldOf = (m) => WD(m).fieldOf(m);
   function monSrc(m) { const sp = root.MMP10M && root.MMP10M.byId ? root.MMP10M.byId(m.sp) : null; return sp && sp.image ? sp.image.src : './assets/monsters/2p5d/solamo.webp'; }
 
   // ---- マスの見た目（全地点）。役割の決まった地点は専用の絵、通常の地点は配置の中身（能力・イベント・休憩・野生・宝箱） ----
@@ -99,7 +105,7 @@
 
   // ---- 画面の部品 ----
   const COIN = '<img class="chh-ic" src="./assets/ui/gold/coin.png" alt="" aria-hidden="true" draggable="false">';
-  function placeName(id, m) { const W = WD(), d = D(m), mm = m || (gS() && gS().m), pl = W.placeOf ? W.placeOf(id, W.routeOf ? W.routeOf(mm) : 'A') : W.PLACE && W.PLACE[id]; return pl || (d.nodes[id] && d.nodes[id][2] === 'fixed_reward_dead_end' ? '宝の行き止まり' : ''); }
+  function placeName(id, m) { const W = WD(m), d = D(m), mm = m || (gS() && gS().m), pl = W.placeOf ? W.placeOf(id, W.routeOf ? W.routeOf(mm) : 'A') : W.PLACE && W.PLACE[id]; return pl || (d.nodes[id] && d.nodes[id][2] === 'fixed_reward_dead_end' ? '宝の行き止まり' : ''); }
   // 2026-10-12 開発21（試遊 No.003・004＝D-4）：進行ラインの位置＝GOAL までの最短の地点数（接続を GOAL から逆にたどる・条件は見ない＝道として通れる最短。1回だけ計算）。
   //  P＝(D0 − Dcur) ÷ D0（D0＝START から、Dcur＝今の地点から）を 0〜1 に収める。寄り道・行き止まりで GOAL から遠ざかれば戻る。経過ターンでも最高到達でもない＝「ゴールへの進み具合の目安」
   const DIST = new WeakMap();   // 道のデータ（ルート）ごとに1回
@@ -118,7 +124,7 @@
   function hudHtml(m) {
     const r = m.raise, fat = Math.round(r.fatigue || 0), lv = fat > 80 ? 'hi' : fat >= 50 ? 'mid' : 'lo', S = gS() || {};   // 2026-10-12 D-2：81 以上で赤（80 までは通常）
     const ph = P8().boardPhase(m), pl = placeName(r.node, m), pc = Math.round(progressAt(r.node, m) * 1000) / 10, fs = faceSrc(m);
-    return `<header class="chh wbh"><div class="chh-top"><div class="chh-l chh-prog"><div class="chh-cap"><small>Chapter <b>1</b> / ${root.MMP7 ? root.MMP7.CHAPTER_COUNT : 4}</small><b class="chh-nm">はじまりの草原</b><span class="chh-fd" id="chfd">${esc(pl)}</span></div>
+    return `<header class="chh wbh"><div class="chh-top"><div class="chh-l chh-prog"><div class="chh-cap"><small>Chapter <b>${chOf(m)}</b> / ${root.MMP7 ? root.MMP7.CHAPTER_COUNT : 4}</small><b class="chh-nm">${chi(m).name}</b><span class="chh-fd" id="chfd">${esc(pl)}</span></div>
       <div class="chh-line" role="img" aria-label="ゴールまでの進み具合 ${Math.round(pc)}%"><span class="chh-se">START</span><div class="chh-track"><i class="chh-fill" style="width:${pc}%"></i><span class="chh-face" id="chface" style="left:${pc}%">${fs ? `<img src="${esc(fs)}" alt="" decoding="async">` : ''}</span></div><span class="chh-se g">GOAL</span></div></div>
       <button class="p9mbtn chh-menu" onclick="p9Menu()" aria-label="メニュー">☰</button></div>
       <div class="chh-r chh-chips"><div class="chh-turn chip">Turn <b id="chturn">${Math.min(r.turnsUsed + (ph === 'roll' ? 1 : 0), r.turnLimit)}</b><small> / ${r.turnLimit}</small></div>
@@ -138,7 +144,7 @@
     // 2026-10-14 実機試遊㉜：操作の案内（START でサイコロ…）は最初の数ターンだけ。そのあとは直前の結果（能力・空腹・遭遇・分岐・宝）を残し、空腹・残りターンの注意を優先する
     if (ph === 'roll') {
       const left = Math.max(0, (r.turnLimit || 40) - (r.turnsUsed || 0)), fat = r.fatigue || 0;
-      def = r.turnsUsed === 0 ? '<b>はじまりの草原</b>　大会会場を目指そう。START でサイコロ（1〜6）を振る。' : tired ? 'お腹がすいて動けない…食べさせるか、休もう。'
+      def = r.turnsUsed === 0 ? `<b>${chi(m).name}</b>　大会会場を目指そう。` + 'START でサイコロ（1〜6）を振る。' : tired ? 'お腹がすいて動けない…食べさせるか、休もう。'
         : fat >= 80 ? `空腹 ${fat}。そろそろアイテムで食べさせるか、休もう。` : left <= 5 ? `のこり${left}ターン！ 大会会場を目指そう。`
         : V.lastMsg ? esc(V.lastMsg) : r.turnsUsed < 3 ? 'START でサイコロを振る。休むこともできる。' : `のこり${left}ターン。`;
     }
@@ -156,7 +162,7 @@
     const r = m.raise;
     if (ph === 'branch') {
       const f = fieldOf(m), d = D(m);
-      return `<div class="chsheet chbr wbbr"><h3>分かれ道</h3>${WD().branchOptions(m).map((o) => {
+      return `<div class="chsheet chbr wbbr"><h3>分かれ道</h3>${WD(m).branchOptions(m).map((o) => {
         const end = o.seg && d.segments[o.seg] ? d.segments[o.seg][1] : null, got = o.spur && end && f.claimed[end] != null;
         const desc = o.spur ? (got ? '取得済み（行き止まり。帰りもサイコロ）' : '行き止まりの先に宝。帰りもサイコロで戻る') : '';
         return `<button class="chroute${o.spur ? ' spur' : ''}" data-id="${esc(o.id)}" onclick="MMWB.pick('${esc(o.id)}')"><b>${esc(o.name)}</b>${desc ? `<small>${esc(desc)}</small>` : ''}</button>`; }).join('')}</div>`;
@@ -371,6 +377,8 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
 .wbw .wbrelay{position:absolute;inset:0;z-index:9;background:#0b1636;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity .56s ease;pointer-events:auto}
 .wbw .wbrelay.out{opacity:0;pointer-events:none}
 .wbw .wbrelay .wbr-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.wbw .wbrelay.medal{background:radial-gradient(circle at 50% 40%,#1d6f9e,#0b2c4f 70%)}.wbw .wbrelay.medal .wbr-img{inset:auto;left:50%;top:22%;width:min(56vw,250px);height:auto;transform:translateX(-50%);object-fit:contain;filter:drop-shadow(0 6px 18px rgba(0,0,0,.45))}
+.wbw .wb-arr.gate.sea{background-color:#0b3a63}
 .wbw .wbrelay .wbr-t{position:absolute;left:12px;right:12px;top:50%;transform:translateY(calc(-50% - 4dvh));text-align:center;color:#fff6dc;pointer-events:none;padding:18px 0 16px;background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(6,12,30,.66),rgba(6,12,30,0) 76%);transition:opacity .36s ease}
 .wbw .wbrelay .wbr-t i{display:inline-block;font-style:normal;opacity:0;transform:translateX(-14px);filter:blur(2px)}
 .wbw .wbrelay.ton .wbr-t i{opacity:1;transform:none;filter:none;transition:opacity .42s ease var(--d),transform .42s cubic-bezier(.2,.8,.3,1) var(--d),filter .42s ease var(--d)}
@@ -396,13 +404,13 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
   }
   function release() { sprStop(); if (V.intro || V.cover) busySet(false); if (V.cover) { V.cover.remove(); V.cover = null; } if (V.world) { try { V.world.destroy(); } catch (e) {} } V.world = null; V.el = null; V.key = null; V.intro = false; }
   function ensureView(m) {
-    const f = fieldOf(m), vis = root.MMWD && root.MMWD.visualOf ? root.MMWD.visualOf(m) : 'A', rt = root.MMWD && root.MMWD.routeOf ? root.MMWD.routeOf(m) : 'A', key = `${m.uid}:${f.layoutSeed}:${vis}:${rt}`, app = $('#app');   // 2026-10-14 B／C：ルートも鍵に   // 2026-10-14 Chapter 1 B／C：景観のパターンも鍵に
+    const f = fieldOf(m), W = WD(m), vis = W && W.visualOf ? W.visualOf(m) : 'A', rt = W && W.routeOf ? W.routeOf(m) : 'A', key = `${chOf(m)}:${m.uid}:${f.layoutSeed}:${vis}:${rt}`, app = $('#app');   // 2026-10-14 B／C：ルートも鍵に   // 2026-10-14 Chapter 1 B／C：景観のパターンも鍵に
     if (V.el && V.key === key) { if (!V.el.isConnected) { app.innerHTML = ''; app.appendChild(V.el); } return false; }
     release(); css();
     app.innerHTML = '<div class="chfw wbw" id="wbw"><div class="wbv" id="wbv"></div><div class="chf-ui" id="wb-ui"></div></div>';
     V.el = $('#wbw'); if (V.key !== key) V.lastMsg = ''; V.key = key;
     if (root.MMRF_WORLD) V.world = root.MMRF_WORLD.create(V.el.querySelector('.wbv'), D(m), root.MMRF_PLAY, { view: viewRect, monSrc: monSrc(m), art: { base: ART, road: 'strip' },
-      focus: true, veil: false, xray: true, hideLm: ['START', 'LOWER_GATE', 'UPPER_GATE'], ahead: CAM.ahead,   // 2026-10-13 開発27（11・15）：開始地点の門・中央の門2か所（下門・上門）の飾りの絵は出さない（マス・道・判定はそのまま）
+      focus: true, veil: false, xray: true, hideLm: chOf(m) === 1 ? ['START', 'LOWER_GATE', 'UPPER_GATE'] : null, ahead: CAM.ahead,   // 2026-10-13 開発27（11・15）：開始地点の門・中央の門2か所（下門・上門）の飾りの絵は出さない（マス・道・判定はそのまま）
       sMin: CAM.sMin, sMax: CAM.sMax, tilePx: CAM.tilePx, monRatio: CAM.monRatio, zoomTau: CAM.zoomTau, heading: true, yawTau: 600, visual: vis, skin: skinKey() });   // visual＝景観のパターン（A／B／C。配置の中の visualPattern）   // 2026-10-14 開発29（6）：後ろから追うカメラ（進む向きが画面の上）   // 2026-10-14 実機試遊 Q12：曲がり角・分かれ道で向きが急に回らないよう、回る速さを少しゆっくりに（yawTau 420 → 600ms）
     V.el.querySelectorAll('.rfw-title').forEach((e) => e.remove());   // 2026-10-13 開発25 H：全景の地図の上に大きな題字を出さない（題字は中継カットの間だけ＝cover）。HUD の Chapter 表示は別（残す）
     sprSetup(m);
@@ -445,17 +453,18 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
   //  順＝導入の絵と題字 → 題字を消す（outMs）→ 地図の全景（クロスフェード）→ START へ寄る。地図の上には題字を残さない（全景の題字 .rfw-title は ensureView で外す）
   //  視差を減らす設定では動かさない（はじめから全部出す）。題字が出そろうまで（min）は覆いを外さない
   const TITLE = Object.freeze({ lead: 260, gap: 55, nameGap: 95, inMs: 420, hold: 650, outMs: 360, waitMs: 1500 });
-  const TITLE_CH = 'CHAPTER 1', TITLE_NAME = 'はじまりの草原';
-  const titleDone = () => TITLE.lead + TITLE_CH.length * TITLE.gap + 140 + TITLE_NAME.length * TITLE.nameGap + TITLE.inMs + TITLE.hold;
-  function titleHtml() {
+  const TITLE_CHOF = (m) => 'CHAPTER ' + chOf(m), TITLE_NAMEOF = (m) => chi(m).name;
+  const titleDone = (m) => TITLE.lead + TITLE_CHOF(m).length * TITLE.gap + 140 + TITLE_NAMEOF(m).length * TITLE.nameGap + TITLE.inMs + TITLE.hold;
+  function titleHtml(m) {
+    const TITLE_CH = TITLE_CHOF(m), TITLE_NAME = TITLE_NAMEOF(m);
     const ch = (t, gap, base) => [...t].map((c, i) => `<i style="--d:${base + i * gap}ms">${c === ' ' ? '&nbsp;' : c}</i>`).join('');
     const a = ch(TITLE_CH, TITLE.gap, TITLE.lead), b = ch(TITLE_NAME, TITLE.nameGap, TITLE.lead + TITLE_CH.length * TITLE.gap + 140);
-    return `<div class="wbr-t" aria-label="CHAPTER 1 はじまりの草原"><small aria-hidden="true"><span class="wbr-ln"></span>${a}<span class="wbr-ln r"></span></small><b aria-hidden="true">${b}</b><span class="wbr-orn" aria-hidden="true"><span class="wbr-ln"></span>⚜<span class="wbr-ln r"></span></span></div>`;
+    return `<div class="wbr-t" aria-label="${TITLE_CH} ${TITLE_NAME}"><small aria-hidden="true"><span class="wbr-ln"></span>${a}<span class="wbr-ln r"></span></small><b aria-hidden="true">${b}</b><span class="wbr-orn" aria-hidden="true"><span class="wbr-ln"></span>⚜<span class="wbr-ln r"></span></span></div>`;
   }
   function cover(m, withIntro) {
     if (V.cover) V.cover.remove();
-    const el = document.createElement('div'); el.className = 'wbrelay' + (withIntro ? ' art' : ''); el.setAttribute('role', 'status');
-    el.innerHTML = (withIntro ? `<img class="wbr-img" src="${RELAY.src}" alt="" draggable="false" decoding="async">${titleHtml()}` : '')
+    const el = document.createElement('div'); el.className = 'wbrelay' + (withIntro ? ' art' : '') + (chi(m).medal ? ' medal' : ''); el.setAttribute('role', 'status');
+    el.innerHTML = (withIntro ? `<img class="wbr-img" src="${chi(m).relay}" alt="" draggable="false" decoding="async">${titleHtml(m)}` : '')
       + '<div class="wbr-load"><i aria-hidden="true"></i><span>読み込み中…</span></div><div class="wbr-err"><p>読み込みに時間がかかっています。</p><button class="p9btn" data-act="retry">もう一度読み込む</button><button class="p9btn2" data-act="back">タイトルへ戻る</button></div>';
     V.el.appendChild(el); V.cover = el; busySet(true); paint(m);   // 覆っている間は START・コマンドを押せない形で描き直す
     const calm = !!(root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -468,7 +477,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
       if (!img || (img.complete && img.naturalWidth)) on();
       else { img.addEventListener('load', () => { (img.decode ? img.decode().catch(() => {}) : Promise.resolve()).then(on); }, { once: true }); img.addEventListener('error', on, { once: true }); }
     });
-    const minMs = withIntro ? (calm ? RELAY.min : Math.max(RELAY.min, titleDone())) : 0;
+    const minMs = withIntro ? (calm ? RELAY.min : Math.max(RELAY.min, titleDone(m))) : 0;
     const world = V.world, slow = setTimeout(() => { if (V.cover === el) el.classList.add('slow'); }, RELAY.slow);
     el.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('button[data-act]'); if (!b || V.cover !== el) return;
       clearTimeout(slow); V.cover = null; busySet(false);
@@ -589,12 +598,12 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
 
   // ---- フィナの節目の一言・チュートリアル（MMWD.storyEvents）。見たら記録してから出す（途中で閉じても二度出ない） ----
   async function storyAt(m, trigger, ctx = {}) {
-    if (root.MM_QA_NO_STORY || !root.MMNPC || !onBoard() || !WD().storyEvents) return false;
+    if (root.MM_QA_NO_STORY || !root.MMNPC || !onBoard() || !WD(m).storyEvents) return false;
     const S = gS(); if (!S) return false;
     const flags = (S.npcFlags = isObjv(S.npcFlags) ? S.npcFlags : {});
-    const P = root.MMP10M, ev = WD().storyEvents(m, trigger, { ...ctx, flags, path: V.path, species: P && P.keyOf ? P.keyOf(m.sp) : null })[0];
+    const P = root.MMP10M, ev = WD(m).storyEvents(m, trigger, { ...ctx, flags, path: V.path, species: P && P.keyOf ? P.keyOf(m.sp) : null })[0];
     if (!ev) return false;
-    WD().markStory(m, ev.id, flags); doSave();
+    WD(m).markStory(m, ev.id, flags); doSave();
     const was = busyGet(); busySet(true);
     try {
       const lines = (ev.lines || []).map((l) => ({ npc: l.speaker || 'fina', expression: l.expression || 'normal', text: l.text, ...(l.voice ? { voice: l.voice } : {}) }));   // 2026-10-13：行の声
@@ -1050,7 +1059,6 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     const S = gS() || {}, nm = root.MMP11P ? root.MMP11P.sanitize(S.playerName) : (S.playerName || 'アルト'), A = cfg().arrival || {};
     return (A.talk || []).map((l) => ({ ...l, text: String(l.text || '').split('{name}').join(nm) }));
   }
-  const GATE_BG = './assets/fields/ch1a/final/event/ch1_bg_15_event.webp';
   const playerName = () => { const S = gS() || {}; return root.MMP11P ? root.MMP11P.sanitize(S.playerName) : (S.playerName || 'アルト'); };
   // 2026-10-14 実機試遊⑮：到着の会話は2つに分ける（正門前＝着いた喜び・ロビー＝大会の説明）。本文は【暫定】
   const ARRIVE_GATE = Object.freeze([{ npc: 'fina', view: 'closeup', expression: 'happy', text: 'ようやく着いたね、{name}さん！' }, { npc: 'fina', view: 'closeup', expression: 'smile', text: 'ここが公式大会の会場だよ。さあ、中へ入ろう！' }]);
@@ -1068,7 +1076,8 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
       if (!fresh && !calm()) await wait(500);
       // 2026-10-14 実機試遊⑮：まず会場の正門前（白い大門と塔＝ch1_bg_15_event）を全画面に → フィナの顔を大きく「ようやく着いたね！」→ 扉の中へ（ロビーへクロスフェード）
       //  → ロビーで大会の説明（ランク E〜S）→ 大会受付。見た記録（arrivalSeen）は従来どおり最後に1回＝途中で閉じたら次も正門前から（二重には出ない）
-      V.el.insertAdjacentHTML('beforeend', `<div class="wb-arr gate" id="wbgate" style="background-image:url(${GATE_BG})"></div>`);
+      { const CI = chi(m), bg = CI.gate ? `url(${CI.gate})` : `url(${CI.gateArt}) center 62%/min(88vw,420px) auto no-repeat,linear-gradient(180deg,#9fd8f2 0%,#e8f5fb 46%,rgba(0,0,0,0) 47%),url(${CI.gateSea}) 0 0/180px 180px`;   // Chapter 2：会場への門（arena_approach_gate）を空と海の上に
+        V.el.insertAdjacentHTML('beforeend', `<div class="wb-arr gate${CI.gate ? '' : ' sea'}" id="wbgate" style="background:${bg}"></div>`); }
       const gate = $('#wbgate'); void gate.offsetWidth; gate.classList.add('on'); feel('tournament.arrive');
       await wait(calm() ? 0 : 950);
       const talkOk = root.MMNPC && !root.MM_QA_NO_ARRIVAL;
@@ -1081,6 +1090,6 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     const u2 = $('#wb-ui'); if (u2 && onBoard() && active(m) && P8().boardPhase(m) === 'goal') u2.innerHTML = receptionHtml(m);
   }
 
-  const active = (m) => !!(WD() && WD().active(m));
+  const active = (m) => !!(WD(m) && WD(m).active(m));
   root.MMWB = Object.freeze({ STEP_MS, skinKey, pickDir, dirSets, progressAt, active, board, release, roll, pick, rest, open, items, itemsClose, useItem, state: () => ({ key: V.key, intro: V.intro, world: V.world ? V.world.state() : null }), world: () => V.world });
 })(typeof window !== 'undefined' ? window : globalThis);
