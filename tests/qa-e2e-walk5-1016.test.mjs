@@ -31,13 +31,16 @@ async function open(L, q, size) {
 async function walkLog(pg, n) {
   await pg.evaluate(() => { window.__wl = []; clearInterval(window.__wlT); window.__wlT = setInterval(() => { const m = document.querySelector('.rfw-mon'), on = m && m.querySelector('img.wk.on'), box = m && m.querySelector('.mon');
     if (!m) return; const r = on ? on.getBoundingClientRect() : null, b = box.getBoundingClientRect();
-    window.__wl.push({ sec: m.dataset.sector || '', dir: m.dataset.dir || '', walking: m.classList.contains('wk-on'), src: on ? on.getAttribute('src').split('/').pop() : '', flip: m.classList.contains('wk-flip'), foot: r ? Math.round((b.bottom - r.bottom) / b.height * 1000) / 1000 : null, w: Math.round(b.width) }); }, 40); });
+    window.__wl.push({ sec: m.dataset.sector || '', dir: m.dataset.dir || '', walking: m.classList.contains('wk-on'), src: on ? on.getAttribute('src').split('/').pop() : '', flip: m.classList.contains('wk-flip'), foot: r ? Math.round((b.bottom - r.bottom) / b.height * 1000) / 1000 : null, w: Math.round(b.width) }); }, 40);
+    // 向きの変わり目は取り逃さないよう、属性の変化をすべて記録（40ms ごとの取り出しは重いときに間の1コマを飛ばす）
+    window.__ws = []; const mm = document.querySelector('.rfw-mon'); if (window.__wsO) window.__wsO.disconnect();
+    window.__wsO = new MutationObserver(() => { const v = mm.dataset.sector || ''; if (window.__ws[window.__ws.length - 1] !== v) window.__ws.push(v); }); window.__wsO.observe(mm, { attributes: true, attributeFilter: ['data-sector'] }); });
   for (let i = 0; i < n; i++) {
     if (await pg.evaluate(() => MMP8.boardPhase(S.m)) !== 'roll') break;
     await pg.evaluate((v) => { const mr = Math.random; Math.random = () => (v - 0.5) / 6; document.getElementById('brollbtn').click(); Math.random = mr; }, DICE[i % DICE.length]);
     await pg.waitForTimeout(400); await settle(pg);
   }
-  return pg.evaluate(() => { clearInterval(window.__wlT); return window.__wl; });
+  return pg.evaluate(() => { clearInterval(window.__wlT); window.__wsO.disconnect(); const l = window.__wl; l.secs = window.__ws; return { log: l, secs: window.__ws }; });
 }
 
 test('WQ-B1：ソラモ 5方向（Chapter 1 A・3サイズ）＝8方向・間の向き・足もとが跳ねない・止まると正面', { skip, timeout: 1800000 }, async () => {
@@ -48,12 +51,12 @@ test('WQ-B1：ソラモ 5方向（Chapter 1 A・3サイズ）＝8方向・間の
       const sets = await pg.evaluate(() => [...new Set([...document.querySelectorAll('.rfw-mon img.wk')].map((i) => i.dataset.s))].sort());
       assert.deepEqual(sets, ['back', 'backd', 'front', 'frontd', 'side'], `${tag}：5方向の絵`);
       assert.equal(await pg.evaluate(() => document.querySelector('.rfw-mon').dataset.qawalk), '1');
-      const log = await walkLog(pg, DICE.length), wk = log.filter((x) => x.walking && x.src);
+      const { log, secs: seq } = await walkLog(pg, DICE.length), wk = log.filter((x) => x.walking && x.src);
       assert.ok(wk.length > 20, `${tag}：歩いた ${wk.length}`);
       const secs = new Set(wk.map((x) => x.sec)); assert.ok(secs.size >= 2, `${tag}：向きが変わる ${[...secs]}`);
       assert.ok(wk.every((x) => /^soramo_(front|back|side|backd|frontd)_[1-4]\.webp$/.test(x.src)), `${tag}：試作の絵だけ`);
       // 向きの変わり目は隣の向きへ1つずつ（2つ以上飛ばない）
-      for (let i = 1; i < log.length; i++) { const a = log[i - 1].sec, b = log[i].sec; if (a === '' || b === '' || a === b) continue; let d = ((Number(b) - Number(a)) % 8 + 8) % 8; if (d > 4) d -= 8; assert.ok(Math.abs(d) <= 1, `${tag}：${a}→${b} で向きが飛んだ`); }
+      for (let i = 1; i < seq.length; i++) { const a = seq[i - 1], b = seq[i]; if (a === '' || b === '' || a === b) continue; let d = ((Number(b) - Number(a)) % 8 + 8) % 8; if (d > 4) d -= 8; assert.ok(Math.abs(d) <= 1, `${tag}：${a}→${b} で向きが飛んだ`); }
       const feet = wk.map((x) => x.foot).filter((x) => x != null), fmin = Math.min(...feet), fmax = Math.max(...feet);
       assert.ok(fmax - fmin < 0.02, `${tag}：足もとの高さ（箱に対する割合）が跳ねない ${fmin}〜${fmax}`);
       await pg.waitForTimeout(600);
@@ -68,7 +71,7 @@ test('WQ-B1：ソラモ 5方向（Chapter 1 A・3サイズ）＝8方向・間の
 test('WQ-B2：C案カメラ（?qaCam=c）と組み合わせても動く', { skip, timeout: 900000 }, async () => {
   const L = await H.launch();
   try {
-    const p = await open(L, '?ch1trial=A&qaWalk=soramo5&qaCam=c', [390, 844]), log = await walkLog(p.page, 5);
+    const p = await open(L, '?ch1trial=A&qaWalk=soramo5&qaCam=c', [390, 844]), { log } = await walkLog(p.page, 5);
     assert.ok(log.filter((x) => x.walking).length > 10);
     assert.equal(await p.page.evaluate(() => MMWB.world().qa().camMode), 'c');
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
