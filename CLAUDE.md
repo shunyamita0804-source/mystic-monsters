@@ -63,6 +63,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 | js/battle/jiol-moves-data.js、assets/battle/jiol_moves_1012/、tools/jiol1012/ | **ジオルの正式の技アニメ（2026-10-12・透過補正版 96枚＝本体48・効果48）**：データ MMJIMV_DATA（正式の技表の番号 1〜10）。**2026-10-15 から正式10技の SK 40〜49 で実戦でも使う（art25d.js の SRC_OF の 3）＝§3「ジオルの正式10技（2026-10-15）」**。開発用のプレビュー `MM25D.preview('jiol', 番号, 側)`（バトル画面が出ている間だけ）。§3「レグナス・ジオルの技アニメ（2026-10-12）」 |
 | js/battle/compare.js、assets/monsters/compare_1015/、tools/compare1015/ | **新しいパラメーター比較画面 `MMCMP`（2026-10-15）**：大会（p9CompareScr）・野生／レア／ライバル（bBattleGo の重ね画面 #cmp）の対戦前。左右に承認済みの肩上アップ6枚（右は CSS で反転）・6能力（実際の値・999 の同じ尺度・正式6色）・名前と「あなた／相手」・固有スキルの名前だけ・小さな VS の飾り・「対戦開始」。独立した VS の画面（tourVsShow）と fight() の導入は出さない。§3「新しいパラメーター比較・QA 試遊モード」 |
 | trial.html（作業ブランチ claude/claude-md-handoff-check-fcl9lb だけ） | **2026-10-16 試遊の入口**：iPhone から1回のタップで開く入口（QA の直接起動 `index.html?mmQaTrial=1&qaDirect=1`（qaMon=0〜5）・体格サイズ `&mmSize=1`・修正前の大きさ `&mmScale=old`・Chapter 2 試作 A／B／C・最初から）。リンクはすべて相対パス＝開いた場所の版。URL＝`https://raw.githack.com/shunyamita0804-source/mystic-monsters/claude/claude-md-handoff-check-fcl9lb/trial.html`（公開リポジトリのブランチを githack が配信する＝GitHub Pages・main とは別の場所・セーブも別。push のあと反映まで数分）。**main へ統合するときは trial.html を持ち込まない**（判断はユーザー） |
+| js/battle/sk19-v2-1016.js、assets/battle/gauru_sk19_v2_1016/、tools/sk19v2/、docs/sk19_v2_1016/（作業ブランチ claude/claude-md-handoff-check-fcl9lb だけ） | **2026-10-16 ガウル SK19「聖なる炎」承認演出 V2 の試験実装 `MMSK19V2`**：飛行2枚＋胸中心の放射4枚・既存の SK19 の時間枠のまま（当たり＝炎の外縁が相手の中心に届く時刻に1回）・`?sk19time=v2`＝試写と同じ実時間（QA の比較用）・`?sk19=v1`＝前回の演出。main 未統合・未公開・iPhone実機再検収待ち。§3「SK19 承認演出 V2」 |
 | js/qa/trial.js | **QA 試遊モード `MMQA`（2026-10-15）**：URL に ?mmQaTrial=1 のときだけ、牧場・ベースキャンプに『QA：全モンスター・全技試遊 ON/OFF』。ON＝6体×10技（実戦 50＝ジオルの正式10技を含む・技アニメのプレビュー 10＝フルーネ・静止画だけ 0。2026-10-15）・通常のセーブのキー（mr4…）への書き込みを止める・OFF／再読み込みで元どおり。§3「新しいパラメーター比較・QA 試遊モード」 |
 | js/battle/flurene-moves-data.js、assets/battle/flurene_moves_1015/、tools/flurene1015/、assets/monsters/walk_25d/flurene/、tools/walk25d/derive_flurene.py | **フルーネの技アニメ 77枚（本体 42＋効果 35）と 2.5D 歩行 16コマ（2026-10-15）**：未解禁＝本編には出ない。技アニメは QA 試遊モードのプレビュー（MM25D.preview('flurene', No)＝SK の番号なし・判定なし）だけ、歩行は ch1a.js の monsterSprites.flurene.dirs（QA の「歩行を確認」で再生）。§3「フルーネの技アニメ・歩行（2026-10-15）」 |
 | js/battle/move-cards.js、assets/moves/cards_1014/、tools/movecards1014/、prototype/movecards_1014/ | **正式5体×10技＝50技の静止カード `MMMVCARD`（2026-10-14 開発30）**：技管理（バトルのルーレットの6枠＝横長の技カード1行・技の一覧・技の詳細）の技の絵。カードの番号→技ID→SK の番号は納品の対応表どおり（ソラモ・ガウル＝OFFICIAL_MOVES の slot・レグナス 20＋No−1・ノビトン 30＋No−1・ジオル＝SK なし）。バトル中のルーレット・技辞典・技データは変えない。確認ページ prototype/movecards_1014/（本編からつながない）。§3「開発30」 |
@@ -1024,6 +1025,15 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - **体格（項目08）**：動画はプレビュー ON と判断（高さ比 1.22 ≒ ?mmSize=1 の 1.25。通常は 1.02）。候補A（ジオル 106%／ソラモ 74%）・候補B（112%／68%）は提案だけ＝未実装
 - テスト：BT-07・BTB-5〜7（tests/battle-tune-1015・qa-e2e-battle-tune-1015）
 
+### SK19 承認演出 V2（2026-10-16。**ブランチ claude/claude-md-handoff-check-fcl9lb だけ＝main 未統合・未公開・iPhone実機再検収待ち**）
+
+- 依頼：ZIP Mismon_Claude_SK19_Only_TestHandoff_20261016（SK19 だけ・ほかの技・SE・計算・体格・セーブは変えない）。報告：docs/sk19_v2_1016/REPORT.md
+- js/battle/sk19-v2-1016.js（MMSK19V2）＝承認動画（5.79秒）の相対時刻を既存の SK19 の時間枠（art25d の planOff＝2.5秒）に縮めて再生。浮上 → 飛行2枚を交互（1時点で1枚）→ 胸で点火・拡大・放射・最大放射（背面 0.70・前面 0.16）→ 2.88 外縁が相手の中心 → 2.95 当たり（既存の命中・ダメージのイベント1回）→ 既存の sp_buff → 降下 → 正式の待機絵
+- 置き方：正式のバトル待機絵（idle_gauru）の目の位置に飛行ポーズの目を合わせる・大きさは参照待機の体の面積をそろえる。相手側は scaleX(-1)。敵側の着弾の炎・burst は出さない
+- 確認用：?sk19time=v2（試写と同じ実時間・戦闘が延びる）／?sk19=v1（前回の演出）。V2 の絵が読めないときは前回の演出へ
+- 気づいた点：正式の待機絵と V2 の飛行ポーズは別の絵（翼・尾の形が入れ替わりで変わる）・wings_down の右端で羽先が切れている（20行）
+- テスト：BT-08・BTB-8（自分側・相手側）・BTB-9（決着のあとも残らない）
+
 ### バトル技アニメ 試遊修正21件・体格サイズ1〜5（2026-10-15 夜の一括依頼 PHASE B。**ブランチ claude/claude-md-handoff-check-fcl9lb だけ＝main 未統合・未公開・iPhone 実機は未確認**）
 
 - 報告：docs/battle_fix_1015/REPORT.md（21件の原因・修正・状態の表・発注一覧・連続写真 film/・素材の比較 assets_check/・体格の比較 size_compare.jpg）
@@ -1505,6 +1515,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
   - ユーザーの確認待ち：iPhone 実機でのフルーネ（歩行・技アニメ）とジオル10技の QA 試遊。**ユーザーが実機で「OK」と言うまで Chapter 2 の設計に着手しない**
   - 素材待ち・残課題：フルーネの技 09（効果 2/4）・10（効果 0）の FX／歩行の白い縁取りと back_05・back_03・front_01 の見切れの可能性（原本のまま）／一部の効果（05 FX01・06 FX01／FX04・08 FX02／FX03）が不透明な白い面／大技で相手の固有スキルのカメラが技アニメの終わりに重なる（全種族共通・未変更）
   - 作業報告は ZIP でユーザーへ渡す（直近：Mismon_Report_20261015_Flurene_Jiol.zip）
+  - **2026-10-16 SK19 承認演出 V2**：§3「SK19 承認演出 V2」・docs/sk19_v2_1016/REPORT.md。時間（いつもの長さ／試写と同じ実時間）と待機絵の違いはユーザーの判断待ち・iPhone実機再検収待ち
   - **2026-10-16 iPhone 8本の限定修正**：§3「iPhone 実機8本の限定修正」・docs/battle_fix_1016/REPORT.md。全件 iPhone実機再検収待ち・体格の候補はユーザーの承認待ち
   - **2026-10-16 試遊の入口**：ブランチの版を iPhone で開く URL＝`https://raw.githack.com/shunyamita0804-source/mystic-monsters/claude/claude-md-handoff-check-fcl9lb/trial.html`（§2 の trial.html）
   - **2026-10-15 夜（一括依頼）**：Chapter 2 の4回目の回答を反映（DESIGN.md §6.5 の救済案は比較だけ）・バトル技アニメ21件・体格サイズ1〜5（?mmSize=1）＝§3「バトル技アニメ 試遊修正21件」。同じブランチ・main 未統合

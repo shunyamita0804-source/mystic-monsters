@@ -8,7 +8,9 @@
 //  BTB-5：ソラモビーム・スターダストレイ・ファイアボール・フレアレイ＝光線の根元／火球の生まれる所＝同じ区切りの体のコマの口先（MMTUNE.MOUTH）。
 //         左右（自分側・相手側）・体格プレビュー（?mmSize=1）でも 2px 以内。光線は区切りごとに出し直す（スターダストレイ・フレアレイは2本）
 //  BTB-6：スターフォールの当たりの絵文字 🌠（iPhone で四角い額の絵）を技のコマの間だけ出さない（ほかの技の絵文字は出る）
-//  BTB-7：聖なる炎＝三色の炎の輪は自分の体の中心から広がるだけ（相手へ飛ばない）・相手の当たりは別の表現（bc06）
+//  BTB-7：聖なる炎（前回の演出＝?sk19=v1）＝三色の炎の輪は自分の体の中心から広がるだけ（相手へ飛ばない）・相手の当たりは別の表現（bc06）
+//  BTB-8（2026-10-16 SK19 承認演出 V2）：自分側・相手側＝1時点で1枚の飛行ポーズ・胸の中心は動かない・炎の外縁が相手の中心に届く時刻＝当たり（1回）・終わったら残らない
+//  BTB-9（SK19 V2）：実戦（STOP）で SK19 が出た番に相手が倒れる＝決着のあとも炎・ポーズ・タイマーが残らない
 //  Playwright / Chromium が無い環境では省略（skip）する。
 // =========================================================
 import test from 'node:test';
@@ -156,8 +158,8 @@ test('BTB-6：スターフォールの 🌠 を当たりに出さない（ほか
   assert.deepEqual(p.errors, []);
 });
 
-test('BTB-7：聖なる炎＝炎の輪は自分の体から広がるだけ・相手の当たりは別の表現', { skip: SKIP, timeout: 240000 }, async () => {
-  const p = await battle('', 1, 0), pg = p.page;
+test('BTB-7：聖なる炎（前回の演出＝?sk19=v1）＝炎の輪は自分の体から広がるだけ・相手の当たりは別の表現', { skip: SKIP, timeout: 240000 }, async () => {
+  const p = await battle('&sk19=v1', 1, 0), pg = p.page;
   const r = await pg.evaluate(TRACE, 19);
   const ring = r.out.flatMap((f) => f.els.filter((e) => /^G19_aura/.test(e.cut)));
   assert.ok(ring.length >= 4, `炎の輪が見える（${ring.length}）`);
@@ -167,5 +169,73 @@ test('BTB-7：聖なる炎＝炎の輪は自分の体から広がるだけ・相
   assert.ok(!r.out.some((f) => f.els.some((e) => e.crop && /^G19/.test(e.cut))), '切り出して飛ばす効果は無い');
   const hit = r.out.flatMap((f) => f.els.filter((e) => /bc06_hit/.test(e.src)));
   assert.ok(hit.length >= 2 && hit.every((e) => Math.abs(e.cx - r.tgt.cx) < 40), `相手の当たりは相手の位置（${hit.length}）`);
+  assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+});
+
+/** SK19 V2 を side の側で再生し、0.04秒ごとに飛行ポーズ・炎・相手の位置を記録する（knock の回数も数える） */
+const TRACE19 = (side) => new Promise((res) => {
+  const out = [], t0 = performance.now(), vs = document.querySelector('#bt .vs').getBoundingClientRect();
+  const tgt = document.querySelector(`#bt #m${1 - side} .mma-idle`).getBoundingClientRect(), me = document.getElementById('m' + side);
+  anim(19, side);
+  const iv = setInterval(() => {
+    const v = document.querySelector('#bt .vs').getBoundingClientRect();   // 揺れ（shake）で .vs ごと動く＝.vs に対する位置で比べる
+    const els = [...document.querySelectorAll('#bt .sk19v2')].map((e) => { const r = e.getBoundingClientRect(), o = +getComputedStyle(e).opacity; return { cut: e.dataset.cut, o, w: r.width, cx: r.left + r.width / 2 - v.left + vs.left, cy: r.top + r.height / 2 - v.top + vs.top, dcx: e.dataset.cx != null ? +e.dataset.cx + vs.left : null, dcy: e.dataset.cy != null ? +e.dataset.cy + vs.top : null, E: +e.dataset.e || null }; });
+    const m = /matrix\(([^,]+),/.exec(getComputedStyle(document.querySelector('#bt .vs')).transform);
+    out.push({ t: Math.round(performance.now() - t0), els, meO: +getComputedStyle(me).opacity, zoom: m ? +m[1] : 1 });
+    if (performance.now() - t0 > 4200) {
+      clearInterval(iv);
+      const lg = MMSK19V2.log().slice(-1)[0];
+      res({ out, log: lg, tgt: { cx: tgt.left + tgt.width / 2, cy: tgt.top + tgt.height * 0.55 }, left: [...document.querySelectorAll('#bt .sk19v2')].length, meAnims: me.getAnimations().length, meO: +getComputedStyle(me).opacity, meT: getComputedStyle(me).transform });
+    }
+  }, 40);
+});
+for (const [name, me, foe, side] of [['自分側', 1, 0, 0], ['相手側', 0, 1, 1]]) {
+  test(`BTB-8：SK19 V2（${name}）＝飛行ポーズは1枚ずつ・胸の中心は動かない・炎が相手の中心に届く時刻に当たり1回・残らない`, { skip: SKIP, timeout: 240000 }, async () => {
+    const p = await battle('', me, foe), pg = p.page;
+    const r = await pg.evaluate(TRACE19, side);
+    // 飛行ポーズ：見える時間がある・1時点で1枚だけ（入れ替えの途中も合計の不透明度は 1 を超えない）
+    const poses = r.out.map((f) => f.els.filter((e) => /^SK19V2_(up|down)$/.test(e.cut)));
+    assert.ok(poses.filter((ps) => ps.some((e) => e.o > 0.9)).length > 10, '飛行ポーズが見える');
+    assert.ok(poses.every((ps) => ps.reduce((a, e) => a + e.o, 0) <= 1.05), '1時点で1枚（翼・脚が重ならない）');
+    assert.ok(new Set(poses.flatMap((ps) => ps.filter((e) => e.o > 0.9).map((e) => e.cut))).size === 2, '翼上げ・翼を横の2枚を切り替える');
+    // 炎の中心＝胸＝動かない・自分側
+    // 当たりの寄り（既存の被弾の演出が戦場 .vs を少し拡大する）の間は除いて比べる
+    const fl = r.out.filter((f) => Math.abs(f.zoom - 1) < 0.001).flatMap((f) => f.els.filter((e) => /^SK19V2_f\d[bf]$/.test(e.cut) && e.o > 0.02));
+    assert.ok(fl.length > 20, '炎が見える');
+    const cxs = fl.map((e) => e.cx), cys = fl.map((e) => e.cy);
+    assert.ok(Math.max(...cxs) - Math.min(...cxs) < 2 && Math.max(...cys) - Math.min(...cys) < 2, `炎の中心は動かない（x ${Math.min(...cxs).toFixed(1)}〜${Math.max(...cxs).toFixed(1)}）`);
+    const cx = cxs[0], cy = cys[0], D = Math.hypot(r.tgt.cx - cx, r.tgt.cy - cy);
+    assert.ok(side === 0 ? cx < r.tgt.cx - 60 : cx > r.tgt.cx + 60, '炎の中心は自分の胸（相手の側ではない）');
+    // 外縁が相手の中心に届く最初の時刻 ≒ 当たり（共通演出の構え 0.42秒＋当たり ÷ 1.18）
+    const edge = (f) => Math.max(0, ...f.els.filter((e) => /^SK19V2_f\d[bf]$/.test(e.cut) && e.o > 0.02).map((e) => e.w * e.E));
+    const reach = r.out.find((f) => edge(f) >= D * 0.97);
+    assert.ok(reach, `炎が相手の中心に届く（最大 ${Math.max(...r.out.map(edge)).toFixed(0)} ／ 距離 ${D.toFixed(0)}）`);
+    const hitAt = 420 + r.log.hit / 1.18;
+    assert.ok(Math.abs(reach.t - hitAt) < 160, `届く時刻 ${reach.t}ms ≒ 当たり ${hitAt.toFixed(0)}ms（${JSON.stringify(r.log)} 距離 ${D.toFixed(0)} 中心 ${cx.toFixed(0)},${cy.toFixed(0)} 相手 ${r.tgt.cx.toFixed(0)},${r.tgt.cy.toFixed(0)} 外縁 ${r.out.map((f) => f.t + ':' + edge(f).toFixed(0)).join(' ')}）`);
+    assert.equal(r.log.fired, 1, '当たりの演出は1回');
+    // 終わり：炎・ポーズ・胸の光・加護が残らない・待機絵が元へ
+    assert.equal(r.left, 0, '残らない'); assert.equal(r.meO, 1); assert.equal(r.meAnims, 0); assert.ok(r.meT === 'none' || /matrix\(1, 0, 0, 1, 0, 0\)/.test(r.meT), `待機絵の位置が戻る（${r.meT}）`);
+    assert.ok(r.out.some((f) => f.els.some((e) => e.cut === 'SK19V2_buff' && e.o > 0.9)), '金色の自己強化へつながる');
+    assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+  });
+}
+
+test('BTB-9：SK19 V2 の実戦（STOP）で相手が倒れる＝決着のあとも残らない', { skip: SKIP, timeout: 300000 }, async () => {
+  const p = await battle('', 1, 0), pg = p.page;
+  await pg.evaluate(() => { const pl = BPL; pl[0].eq = pl[0].eq.map(() => 19); });
+  let used = false;
+  for (let i = 0; i < 6 && !used; i++) {
+    const n0 = await pg.evaluate(() => MMSK19V2.log().length);
+    await pg.evaluate(() => { BPL[1].h = 1; document.getElementById('go').click(); });
+    await pg.waitForTimeout(400);
+    await pg.evaluate(() => { const g = document.getElementById('go'); if (g && !g.disabled) g.click(); });
+    await pg.waitForTimeout(6000);
+    used = (await pg.evaluate(() => MMSK19V2.log().length)) > n0;
+  }
+  assert.ok(used, 'SK19 が出た');
+  await pg.waitForTimeout(2500);
+  const r = await pg.evaluate(() => ({ left: document.querySelectorAll('.sk19v2').length, ban: (document.getElementById('ban') || {}).textContent || '', me: +getComputedStyle(document.getElementById('m0')).opacity }));
+  assert.equal(r.left, 0, '炎・ポーズが残らない');
+  assert.equal(r.me, 1, '自分の待機絵が見える');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });

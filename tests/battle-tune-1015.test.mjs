@@ -113,3 +113,40 @@ test('BT-07：口先の表・スターフォールの絵文字・聖なる炎・
   const rows = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/battlefix1015/applied.json'), 'utf8'));
   assert.ok(rows.some((r) => r.file === 'assets/battle/regnas_moves_1012/28_07.webp' && /柱/.test(r.how)), '蒼刃乱舞 28_07 の柱を消した記録');
 });
+
+// 2026-10-16：ガウル SK19「聖なる炎」承認演出 V2（js/battle/sk19-v2-1016.js）
+test('BT-08：SK19 V2＝素材・相対時刻・時間枠は変えない・当たりは1回（炎の外縁が相手の中心に届く時刻）', () => {
+  load('js/battle/sk19-v2-1016.js');
+  const V = globalThis.MMSK19V2, t = T.MOVES['gauru_moves_1012/19_01.webp'];
+  assert.ok(t.v2 && t.cuts && t.fx, 'V2 の印・前回の演出（?sk19=v1・読めないとき）も残す');
+  // 素材：派生6枚が実在・README の sha256 と一致
+  const dir = path.join(ROOT, 'assets/battle/gauru_sk19_v2_1016'), rd = fs.readFileSync(path.join(dir, 'README.md'), 'utf8');
+  for (const u of Object.values(V.A)) {
+    const f = path.join(ROOT, u.replace(/^\.\//, '')); assert.ok(fs.existsSync(f), u);
+    assert.ok(rd.includes(crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex')), `${u} の sha256 が README にある`);
+  }
+  assert.ok(!fs.readdirSync(dir).some((n) => /\.png$/i.test(n)), '原本 PNG は置かない');
+  // 承認動画の相対時刻（5.79秒の中）：浮上 0.42〜1.00・羽ばたき 0.65〜4.42（0.29秒）・点火 0.84・当たり 2.95・加護 3.46〜4.90・降下 3.86〜4.64
+  assert.equal(V.TL, 5790);
+  assert.deepEqual([V.T.rise0, V.T.rise1, V.T.flap0, V.T.flap1, V.T.flap, V.T.hit, V.T.buff0, V.T.buff1, V.T.fall0, V.T.fall1], [420, 1000, 650, 4420, 290, 2950, 3460, 4900, 3860, 4640]);
+  assert.deepEqual(V.FLAME.map((f) => f.k), ['f1', 'f2', 'f3', 'f4']);
+  assert.equal(V.FLAME[0].kf[0][0], 840); assert.equal(V.FLAME[3].kf[V.FLAME[3].kf.length - 1][0], 3600);
+  const R = (t2) => { let r = null; V.FLAME.forEach((f) => { for (let i = 0; i + 1 < f.kf.length; i++) { const [a, ra] = f.kf[i], [b, rb] = f.kf[i + 1]; if (t2 >= a && t2 <= b) r = Math.max(r || 0, ra + (rb - ra) * (t2 - a) / (b - a)); } }); return r; };
+  assert.ok(R(V.T.hit) >= 1 && R(V.T.hit) < 1.06, '当たりの時刻に炎の外縁が相手の中心に届いている（半径の比 1〜1.06）');
+  const first = (() => { for (let x = 840; x <= V.TL; x += 5) if (R(x) >= 1) return x; return null; })();
+  assert.ok(first >= 2850 && first <= V.T.hit, `外縁が届く時刻 ${first}ms は承認動画の約2.85〜3.05秒・当たりの前`);
+  // 胸の中心は動かない（相手へ飛ばない）＝炎の中心は1つの点（play の cx・cy）
+  assert.ok(V.BACK > 0.6 && V.BACK < 0.8 && V.FRONT > 0.1 && V.FRONT < 0.2, '背面 約70%・前面 約16%');
+  // 時間枠：既存の SK19 の枠（共通演出 2.5秒・通らないとき 1.44秒）のまま。当たりは枠の 2.95/5.79
+  for (const [dur, via] of [[2500, true], [1440, false]]) { const q = V.plan(dur, via, true); assert.equal(q.dur, dur); assert.equal(q.hit, Math.round(dur * 2950 / 5790)); }
+  assert.equal(V.plan(2500, true, false).hit, null, '威力の無い技なら当たりなし（SK19 は威力あり）');
+  // 1時点で1枚だけ・入れ替えと着地
+  for (let x = 0; x <= V.TL; x += 10) assert.ok(['up', 'down'].includes(V.poseAt(x, 290)));
+  assert.equal(V.flyVis(0), 0); assert.equal(V.flyVis(2000), 1); assert.equal(V.flyVis(V.TL), 0);
+  assert.equal(V.riseAt(0), 0); assert.equal(V.riseAt(2000), 1); assert.equal(V.riseAt(V.T.fall1), 0);
+  // 読み込みの順
+  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  assert.ok(html.indexOf('js/battle/move-tune-1015.js') < html.indexOf('js/battle/sk19-v2-1016.js') && html.indexOf('js/battle/sk19-v2-1016.js') < html.indexOf('js/battle/art25d.js'));
+  const src = fs.readFileSync(path.join(ROOT, 'js/battle/sk19-v2-1016.js'), 'utf8');
+  assert.doesNotMatch(src, /localStorage|S\.\w+\s*=|save\(|resolveAction|burst\(/, 'セーブ・判定に触れない・敵側の着弾の粒（burst）を出さない');
+});

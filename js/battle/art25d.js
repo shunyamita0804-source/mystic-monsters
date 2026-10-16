@@ -90,8 +90,11 @@
     const win = Array.from({ length: n }, (_, i) => [i * step, (i + 1) * step]);
     const SK = G('SK'), dmg = dmgOver != null ? !!dmgOver : !!(SK && SK[k] && SK[k][1] > 0);
     const hit = d.hit && dmg ? win[d.hit - 1][0] + Math.min(120, step * 0.3) : null;
+    // 2026-10-16：ガウル SK19「聖なる炎」承認演出 V2（js/battle/sk19-v2-1016.js）＝時間枠は同じ・当たり＝炎の外縁が相手の中心に届く時刻
+    if (v2of(d)) { const q = root.MMSK19V2.plan(dur, viaStage, dmg); return { dur: q.dur, body: q.dur * 0.88, step, win, hit: q.hit }; }
     return { dur, body, step, win, hit };
   }
+  const v2of = (d) => !!(d && d.tune && d.tune.v2 && root.MMSK19V2 && root.MMSK19V2.on());
 
   function style() {
     if (document.getElementById('mm25d-style')) return;
@@ -333,6 +336,7 @@
     const g = geom(s); if (!g) return false;
     style();
     const { v, me, f, L, T } = g, d = dd || offData(k, s), base = d.dir || OA, P = planOff(k, opt && opt.via != null ? opt.via : viaStage(), d, opt ? opt.dmg : null), D = P.dur, X = 60, e = 0.001, imgs = [];
+    if (v2of(d) && root.MMSK19V2.play(k, s, g, P)) { try { if (root.MMTUNE) root.MMTUNE.onAnimStart(k, s, P); } catch (er) { /* 無視 */ } return true; }
     const lay = layout(k, s, L, { cuts: d.cuts });
     const at = (i) => lay.find((q) => q.c.t[0] <= i && q.c.t[1] >= i);
     const put = (im, z) => { im.className = 'p25f'; im.alt = ''; im.decoding = 'sync'; if (z) im.style.zIndex = z; v.appendChild(im); imgs.push(im); return im; };
@@ -502,7 +506,7 @@
     return true;
   }
   /** 技のコマを先に読む。読めなかったコマがあれば、その技は従来の演出へ戻す（failed） */
-  function warm(d) { d.cuts.concat(d.fx || []).forEach((c) => (c.u ? [c.u] : [c.f, c.fx].filter(Boolean).map((f) => (d.dir || OA) + f)).forEach((u) => { const i = new Image(); i.decoding = 'async'; i.onerror = () => failed.add(u); i.src = u; })); }
+  function warm(d) { if (d.tune && d.tune.v2 && root.MMSK19V2) root.MMSK19V2.warm(); d.cuts.concat(d.fx || []).forEach((c) => (c.u ? [c.u] : [c.f, c.fx].filter(Boolean).map((f) => (d.dir || OA) + f)).forEach((u) => { const i = new Image(); i.decoding = 'async'; i.onerror = () => failed.add(u); i.src = u; })); }
   function preloadOff(pl) { if (!pl) return; [0, 1].forEach((s) => (pl[s] && pl[s].eq || []).forEach((k) => { const d = offData(k, s); if (d) warm(d); })); }
   /** 開発用のプレビュー（バトル画面が出ている間だけ）：kind＝'jiol'（正式No 1〜10）／'regnas'（正式No 1〜10）／'flurene'（登録の No 1〜10）。性能・番号の決まっていない技も、データのコマを順に見せるだけ（判定・ダメージ・セーブは触らない） */
   function preview(kind, no, s, opt) {

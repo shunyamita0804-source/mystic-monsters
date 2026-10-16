@@ -1,0 +1,103 @@
+[
+ {
+  "src": "Gauru_flight_wings_up_preview.png",
+  "src_size": [
+   1254,
+   1254
+  ],
+  "src_sha256": "c202da4a79a3d07f3d06289fb52c7d422be74c3d0a2de48b0fbcd41731800d8f",
+  "dst": "fly_up.webp",
+  "dst_size": [
+   640,
+   640
+  ],
+  "dst_sha256": "fe90ccc92c94d42d4217ef1fa48c49b42bcd184c8110d8317984f003f0d3884d",
+  "alpha128": 0.49495
+ },
+ {
+  "src": "Gauru_flight_wings_down_preview.png",
+  "src_size": [
+   1254,
+   1254
+  ],
+  "src_sha256": "5cc1eddfc27b4839effc53e7ea5e01813b9265538662f63d9ee5052741537601",
+  "dst": "fly_down.webp",
+  "dst_size": [
+   640,
+   640
+  ],
+  "dst_sha256": "4470da0bae6aed1810dbc2f0043169798fa071c8bebb416a03674eacb37115c8",
+  "alpha128": 0.43547
+ },
+ {
+  "src": "B_01_gauru_holyflame_self_ignite.png",
+  "src_size": [
+   1024,
+   1024
+  ],
+  "src_sha256": "0779a515bd6216f2c940265ee6a5f49d7e99c64b7cb33dcf8913ff534bf641e6",
+  "dst": "flame_01_ignite.webp",
+  "dst_size": [
+   768,
+   768
+  ],
+  "dst_sha256": "200a91f9329df53ef645c15ce5594d287f1a4222b0381e35a4252e514e9178ec",
+  "alpha128": 0.11061
+ },
+ {
+  "src": "B_02_gauru_holyflame_self_expand.png",
+  "src_size": [
+   1024,
+   1024
+  ],
+  "src_sha256": "23704f9fe504b095e0c6772ccc247e332852d9872b3022faead9ea0eca6b3d4b",
+  "dst": "flame_02_expand.webp",
+  "dst_size": [
+   768,
+   768
+  ],
+  "dst_sha256": "a17bb7cfbb5b9a7fc78a09a5a839441f2ec020072e54b5e5fa9ac74e176824b8",
+  "alpha128": 0.38655
+ },
+ {
+  "src": "B_03_gauru_holyflame_self_radiate.png",
+  "src_size": [
+   1024,
+   1024
+  ],
+  "src_sha256": "7db8bd853a1de1f04d2bfeda32c15ef0b023fb85459ba31ca9fc3596ebc0779c",
+  "dst": "flame_03_radiate.webp",
+  "dst_size": [
+   768,
+   768
+  ],
+  "dst_sha256": "9a1bbb6086445bf176c9778cd53f860777327ddc18c7103d5c7e3aed2b9b40c4",
+  "alpha128": 0.35065
+ },
+ {
+  "src": "B_04_gauru_holyflame_self_peak.png",
+  "src_size": [
+   1024,
+   1024
+  ],
+  "src_sha256": "2a11219adaa33abce684a924c752c82219118a66e0ee4675f187287f55c79922",
+  "dst": "flame_04_peak.webp",
+  "dst_size": [
+   768,
+   768
+  ],
+  "dst_sha256": "16a48832f9916c45fd59eb2eb2cfea8c47ae783f4c295b65f07b2aaf9285abf3",
+  "alpha128": 0.42539
+ },
+ {
+  "src": "Gauru_official_art_transparent_preview_cutout.png",
+  "src_size": [
+   1254,
+   1254
+  ],
+  "src_sha256": "7497f3e06c128e257b4f5d57b5478dc0ad2d46880a3e33e3dbe7b4c011079a5e",
+  "dst": null,
+  "note": "位置合わせの参照だけ（ゲームでは正式の待機絵 assets/battle/idle/idle_gauru.webp を使う）",
+  "alpha128": 0.45058
+ }
+]
