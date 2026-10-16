@@ -45,7 +45,7 @@
 - 滝の動き（数コマ）・雲の流れる層。
 - 海から空への導入の絵（Ch2 の終わり → Ch3 の始まり）。今のプレビューの「2」は参考の重ね合わせだけ。
 
-## 6. 試遊の URL（コミット固定。push 後に版の SHA を入れる）
+## 6. 試遊の URL（コミット固定）
 
-- プレビュー：`https://raw.githack.com/shunyamita0804-source/mystic-monsters/<SHA>/prototype/ch3_sky_1016/index.html`
+- プレビュー：`https://raw.githack.com/shunyamita0804-source/mystic-monsters/c7c9304c6f3c13e6e5baff3463ccc0e77b48c39b/prototype/ch3_sky_1016/index.html`（raw.githack の「One more step」の画面では「Open the page」を押す）
 - 確認したサイズ：375×667・390×844・393×852（Chromium。横はみ出し・404・エラーなし）。iPhone 実機は未確認。
