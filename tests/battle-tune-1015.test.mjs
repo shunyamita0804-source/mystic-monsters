@@ -6,6 +6,8 @@
 //  BT-04：素材の修正（tools/battlefix1015/applied.json）の修正後の sha256＝いまのファイル
 //  BT-05：体の面積（MMAREA）が全部の技のコマにある（共通スケール）
 //  BT-06：フェザーストームの最後の渦巻きを出さない・聖なる炎は相手へ動かない・射撃の技はその場（stay）
+//  BT-07（2026-10-16 iPhone 8本）：口先の表（MOUTH）が光線・火球の区切りのコマにある・コマの中・ソラモビームは発射の姿だけ／
+//         スターフォールの当たりの絵文字を消す設定／聖なる炎の輪は飛ばない／蒼刃乱舞 28_07 の柱を消した記録
 // =========================================================
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -63,7 +65,7 @@ test('BT-03：はなビンタの絵文字は「鼻」でない（ダメージの
 
 test('BT-04：素材の修正の記録（修正後の sha256＝いまのファイル）', () => {
   const rows = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/battlefix1015/applied.json'), 'utf8'));
-  assert.equal(rows.length, 42);
+  assert.equal(rows.length, 43);
   for (const r of rows) {
     const h = crypto.createHash('sha256').update(fs.readFileSync(path.join(ROOT, r.file))).digest('hex');
     assert.equal(h, r.after, r.file); assert.notEqual(r.before, r.after, `${r.file} は変わった`);
@@ -82,8 +84,32 @@ test('BT-06：フェザーストーム・聖なる炎・射撃の技', () => {
   const holy = get('gauru_moves_1012/19_01.webp');
   assert.ok(holy.cuts.every((c) => c.m === 'self'), '07：相手へ動かない');
   assert.ok(holy.cuts.some((c) => c.lift < -0.1), '07：その場で上昇');
-  assert.ok(holy.fx.some((c) => c.at === 'launch') && holy.fx.some((c) => c.at === 'tgt'), '07：放射が相手へ届いて命中');
+  assert.ok(!holy.fx.some((c) => c.at === 'launch'), '07（2026-10-16）：炎の輪を相手へ飛ばさない');
+  assert.ok(holy.fx.filter((c) => /^G19_aura/.test(c.src)).every((c) => c.at === 'aura' && c.onBody), '07：炎の輪は自分の体の中心から広がる');
+  assert.ok(holy.fx.some((c) => c.at === 'tgt' && /bc06_hit/.test(c.u || '')), '07：相手の当たりは別の表現（共通演出 bc06）');
   for (const k of ['soramo_moves_1012/05_01.webp', 'soramo_moves_1012/08_01.webp', 'gauru_moves_1012/15_01.webp', 'gauru_moves_1012/16_01.webp', 'jiol_moves_1012/j06_01.webp']) assert.equal(get(k).stay, true, `${k}：その場で撃つ`);
   assert.ok(get('gauru_moves_1012/15_01.webp').fx.some((c) => c.at === 'launch'), '04：火球を飛ばす');
   assert.ok(get('jiol_moves_1012/j04_01.webp').cuts.some((c) => c.arc > 0), '13：跳ぶ');
+});
+
+test('BT-07：口先の表・スターフォールの絵文字・聖なる炎・蒼刃乱舞の柱（2026-10-16）', () => {
+  const get = (key) => { const x = all.find(({ d, dir }) => T.keyOf(d, dir) === key); return { p: T.patch(x.d, x.dir), dir: x.dir }; };
+  for (const [key, srcs] of [['soramo_moves_1012/05_01.webp', ['SORAMO_BEAM_3']], ['soramo_moves_1012/08_01.webp', ['SDR_BEAM']], ['gauru_moves_1012/15_01.webp', ['G15_2_fx']], ['gauru_moves_1012/16_01.webp', ['G16_2_fx']]]) {
+    const { p, dir } = get(key);
+    for (const src of srcs) {
+      const c = p.fx.find((q) => q.src === src); assert.ok(c, `${key}：${src}`);
+      for (let i = c.t[0]; i <= c.t[1]; i++) {
+        const cut = p.cuts.find((q) => q.t[0] <= i && q.t[1] >= i), M = T.mouthOf(dir, cut.f);
+        assert.ok(M, `${key}：区切り ${i}（${cut.f}）の口先がある`);
+        assert.ok(M[0] > cut.b[0] && M[0] < cut.b[2] && M[1] > cut.b[1] && M[1] < cut.b[3], `${cut.f}：口先は体の範囲の中`);
+        assert.ok(M[0] > (cut.b[0] + cut.b[2]) / 2, `${cut.f}：口先は体の前の半分（右向き）`);
+      }
+    }
+  }
+  assert.deepEqual(get('soramo_moves_1012/05_01.webp').p.fx.find((c) => c.src === 'SORAMO_BEAM_3').t, [1, 1], 'ソラモビームは口を開いた発射の姿だけ');
+  assert.equal(get('gauru_moves_1012/15_01.webp').p.fx.find((c) => c.src === 'G15_2_fx').fromMouth, true, 'ファイアボールは口先で生まれる');
+  for (const key of Object.keys(T.MOUTH)) assert.ok(fs.existsSync(path.join(ROOT, 'assets/battle', key)), `口先の表のコマ ${key}`);
+  assert.deepEqual(Object.keys(T.EMOJI_OFF).map(Number), [9], '当たりの絵文字を消すのはスターフォールだけ');
+  const rows = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/battlefix1015/applied.json'), 'utf8'));
+  assert.ok(rows.some((r) => r.file === 'assets/battle/regnas_moves_1012/28_07.webp' && /柱/.test(r.how)), '蒼刃乱舞 28_07 の柱を消した記録');
 });

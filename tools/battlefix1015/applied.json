@@ -250,5 +250,11 @@
   "how": "照準の緑を水色へ",
   "before": "98ffdab489720dbba5eb485f4a56bcdee471753a85b583460ff19c7f0fdf0a63",
   "after": "de21733d4805ae28e28deaa67b750bddc5576f38e0cd8c55e0c8cbb6aece7090"
+ },
+ {
+  "file": "assets/battle/regnas_moves_1012/28_07.webp",
+  "how": "縦長の青い柱（剣のように見える）を消す",
+  "before": "25dbd64779a490c500598dd8e6458d55e5fc4743c089f9bf3d79bd05cf1e2ce5",
+  "after": "a8053c04e67883842dcdc18c758892669c4efc617464940e495758d157574ceb"
  }
 ]

@@ -3,6 +3,8 @@
 #  2. ノビトンのひとやすみ 33_02・33_03＝輪郭の「松葉模様」（光の縁＋市松）を均してなめらかな光の縁に
 #  3. ソラモのスターフォール 09_04〜09_06＝絵の端で切れている光を、端へ向けて少しずつ透明に（四角く切れて見えない）
 #  4. レグナスの竜眼ロック 22_03・22_04＝照準の緑（背景抜きの緑が残った色）を、同じ技の照準の水色へ置き換える
+#  5. 2026-10-16 iPhone 07：レグナスの蒼刃乱舞 28_07（決めの斬撃）＝体の右に描かれた縦長の青い柱（大きな剣を持っているように見える）だけを透明に。
+#     体（上げた前脚・爪・胸・後ろ脚）は残す範囲（KEEP28＝目で引いた境界）の内側。境界の内側に重なった柱の水色・薄い青の画素と、体から離れた小さな欠片だけを消す
 #  使い方：python3 -I tools/battlefix1015/apply.py [--check]（--check＝変更せずに対象と sha256 を表示）
 import sys, os, json, hashlib, subprocess
 import numpy as np
@@ -49,6 +51,23 @@ def green(src, dst):
     Image.fromarray(np.clip(a, 0, 255).astype(np.uint8)).save(dst, 'WEBP', lossless=True, quality=100, method=6)
     return int(m.sum())
 
+KEEP28 = [(0, 0), (412, 0), (414, 42), (446, 54), (453, 110), (449, 165), (441, 200), (446, 245), (450, 284), (457, 300), (452, 334), (428, 346), (404, 360), (393, 398), (383, 440), (360, 477), (0, 477)]
+PILLAR = ['regnas_moves_1012/28_07']
+def pillar(src, dst):
+    from PIL import ImageDraw
+    im = Image.open(src).convert('RGBA'); W, H = im.size
+    keep = Image.new('L', (W, H), 0); ImageDraw.Draw(keep).polygon(KEEP28, fill=255); keep = np.array(keep) > 0
+    o = np.array(im).astype(int); r, g, b = o[..., 0], o[..., 1], o[..., 2]
+    ys, xs = np.mgrid[0:H, 0:W]
+    o[~keep, 3] = 0
+    o[keep & (xs >= 398) & (b > 225) & (g > 165) & (r < 165), 3] = 0                                        # 境界の内側に重なった柱の水色
+    o[keep & (xs >= 395) & ((ys < 75) | (ys > 285)) & (b > 190) & (r < 110) & (g > 90) & (b - r > 120), 3] = 0   # 柱の上端・足もとの薄い青
+    o[keep & (xs >= 360) & (ys > 345) & (b > 200) & (g > 150) & (r < 170), 3] = 0                            # 足もとの水しぶき
+    lab, n = ndi.label(o[..., 3] > 24)
+    sizes = ndi.sum(np.ones_like(lab), lab, range(n + 1))
+    o[(sizes < 400)[lab] & (xs >= 370), 3] = 0                                                                 # 体から離れた小さな欠片
+    Image.fromarray(o.astype(np.uint8), 'RGBA').save(dst, 'WEBP', lossless=True, quality=100, method=6)
+
 def run(check=False):
     rows = []
     def go(rel, how, fn):
@@ -61,6 +80,7 @@ def run(check=False):
     for rel in HALO: go(rel, '輪郭の松葉模様を均す', lambda s, d: subprocess.check_call(py + ['--tol=40', '--lmin=175', '--smooth=10', '--smoothall=1', 'fix', s, d], stdout=subprocess.DEVNULL))
     for rel in EDGE: go(rel, '端を透明へぼかす', feather)
     for rel in GREEN: go(rel, '照準の緑を水色へ', green)
+    for rel in PILLAR: go(rel, '縦長の青い柱（剣のように見える）を消す', pillar)
     return rows
 
 if __name__ == '__main__':

@@ -45,19 +45,34 @@
     5: { mouth: [0.56, 0.40], head: [0.55, 0.24], fist: [0.20, 0.55], chest: [0.55, 0.56] },
   });
 
+  // ---- 口先（発射点）：技のコマの絵の中の画素（右向き・コマの元の枠）。2026-10-16 iPhone 01・02・04・05 ----
+  //  体の範囲（b）の割合や胸・前端を口の代わりにしない＝コマごとに絵を拡大して測った口の開いている所の前（開いた上下の嘴・口の間）。
+  //  光線（beam・stretch）は区切りごとにその区切りのコマの口先から出し直す（姿勢が変わっても根元が口から離れない）。火球（launch）は口先で生まれて相手へ飛ぶ。
+  //  反転（相手側）・回転・体格サイズは art25d の mouthPt がコマの置き方と同じ式で画面の位置へ直す。表に無いコマ＝従来の置き方
+  const MOUTH = Object.freeze({
+    'soramo_moves_1012/05_02.webp': [436, 252],   // ソラモビーム：発射の姿（舌の前の端＋口の開き）
+    'soramo_moves_1012/08_04.webp': [315, 214],   // スターダストレイ：本命の発射
+    'soramo_moves_1012/08_05.webp': [266, 203],   // スターダストレイ：撃ち続ける姿
+    'gauru_moves_1012/15_02.webp': [567, 207],    // ファイアボール：嘴を開いて吐く
+    'gauru_moves_1012/16_02.webp': [510, 221],    // フレアレイ：発射
+    'gauru_moves_1012/16_03.webp': [500, 215],    // フレアレイ：撃ち続ける姿
+  });
+  const mouthOf = (dir, f) => { const m = /([^/]+)\/$/.exec(dir || ''); return MOUTH[(m ? m[1] : 'soramo_moves_1012') + '/' + f] || null; };
+
   const C = './assets/battle/common/';
   // ---- 技ごとの修正（21件）----
   const MOVES = {
     // 01 ソラモビーム：その場で口から撃つ（前へ出ない）・光線を次の区切り（反動の姿）まで残す
-    'soramo_moves_1012/05_01.webp': { id: '01', stay: true, fxSet: { SORAMO_BEAM_3: { t: [1, 2] } } },
+    //    2026-10-16 iPhone 01：光線の根元＝そのコマの口先（上の MOUTH）。口を閉じた反動の姿（05_04）では光線を出さない＝発射の姿（05_02）の区切りだけ
+    'soramo_moves_1012/05_01.webp': { id: '01', stay: true, fxSet: { SORAMO_BEAM_3: { t: [1, 1] } } },
     // 02 スターダストレイ：技カード・資料（assets/moves/solamo/09_stardust_ray）は「口から極太の光線」。コマに光線が無い＝同じソラモの光線（05_03）を太く・長く
     //    【暫定】専用の光線（青白い星の光）は発注（報告書）
     'soramo_moves_1012/08_01.webp': { id: '02', stay: true, addFx: [{ src: 'SDR_BEAM', f: '05_03.webp', at: 'beam', t: [3, 4], pw: 567, ph: 209, thick: 1.9 }] },
     // 03 スターフォール：四角い切れ目は素材の修正（tools/battlefix1015/apply.py：絵の端で切れている光を端へ向けて透明に）
     // 04 ファイアボール：口元の火球を相手まで飛ばす（体当たりにしない）→ 着弾の爆発
-    'gauru_moves_1012/15_01.webp': { id: '04', stay: true, detach: [{ cut: 'G15_2', at: 'launch', fb: [118, 134, 467, 320], t: [1, 1] }] },
+    'gauru_moves_1012/15_01.webp': { id: '04', stay: true, detach: [{ cut: 'G15_2', at: 'launch', fb: [118, 134, 467, 320], t: [1, 1], fromMouth: true, grow: [0.3, 1.0] }] },   // 2026-10-16 iPhone 04：嘴の口先で小さく生まれて相手の胸へ
     // 05 フレアレイ：口から相手まで伸びる光線
-    'gauru_moves_1012/16_01.webp': { id: '05', stay: true, detach: [{ cut: 'G16_2', at: 'stretch', fb: [119, 175, 497, 233], t: [1, 2], mouth: [0.95, 0.34] }] },
+    'gauru_moves_1012/16_01.webp': { id: '05', stay: true, detach: [{ cut: 'G16_2', at: 'stretch', fb: [119, 175, 497, 233], t: [1, 2] }] },   // 2026-10-16 iPhone 05：根元＝区切りごとのコマの嘴の口先（MOUTH）
     // 06 フェザーストーム：最後の渦巻き（18_05_fx）を出さない。羽根の嵐（18_04_fx）を余韻まで
     'gauru_moves_1012/18_01.webp': { id: '06', drop: ['G18_5_fx'], fxSet: { G18_4_fx: { t: [3, 4] } } },
     // 07 聖なる炎：相手へ動かない。その場で少し上昇 → 中心から赤・青・白の放射が広がる → 相手へ届いて命中 → 着地
@@ -72,9 +87,10 @@
         { src: 'G19_6', f: '19_06.webp', m: 'self', t: [5, 5] },
       ],
       fx: [
-        { src: 'G19_aura1', f: 'sp_aura1.webp', at: 'aura', t: [2, 2] },
-        { src: 'G19_aura2', f: 'sp_aura2.webp', at: 'launch', from: 'self', t: [3, 3], grow: [0.45, 1.05] },
-        { src: 'G19_hit', f: 'sp_aura1.webp', at: 'tgt', t: [4, 4], ws: 0.75 },
+        // 2026-10-16 iPhone 06：三色の炎の輪は浮いたガウルの体の中心から外へ広がるだけ（相手へ飛ばさない）。相手の当たりは別の表現（共通演出の正式素材 bc06）
+        { src: 'G19_aura1', f: 'sp_aura1.webp', at: 'aura', onBody: true, t: [2, 2] },
+        { src: 'G19_aura2', f: 'sp_aura2.webp', at: 'aura', onBody: true, t: [3, 3], ws: 1.05, grow: [0.55, 1.12] },
+        { src: 'G19_hit', u: C + 'bc06_hit.webp', at: 'tgt', t: [4, 4], pw: 512, ph: 512, ws: 0.9 },
         { src: 'G19_buff', f: 'sp_buff.webp', at: 'self', t: [5, 5] },
       ],
       shakeAt: [4],
@@ -194,5 +210,25 @@
   }
   if (root.document) { if (root.document.readyState !== 'loading') setTimeout(wrapSe, 0); else root.addEventListener('DOMContentLoaded', () => setTimeout(wrapSe, 0)); }
 
-  root.MMTUNE = Object.freeze({ SIZE, SIZE_K, SIZE_NAME, FINE, ANCHOR, MOVES, sizePreview, sizeOf, sizeK, patch, keyOf, onAnimStart, sfxLog: () => sfxLog.slice(), wrapSe });
+  // ---- 当たりの絵文字（2026-10-16 iPhone 03）----
+  //  fight()（Phase 6）は当たりのたびにその技の絵文字（SK[k][4]）を相手の上に出す（index.html の pop(…, sk[4], "sk")）。
+  //  スターフォールの 🌠 は iPhone では四角い額の絵（写真のような絵文字）になり、着弾の上に四角い星が出ていた。
+  //  技のコマで見せている間（MM25D が受け持つ技）だけ、その技の絵文字の札を消す（fight()・技のデータ・ほかの技の絵文字は変えない）
+  const EMOJI_OFF = Object.freeze({ 9: 'スターフォールの 🌠（iPhone で四角い額の絵）' });
+  const emojiLog = [];
+  function watchEmoji() {
+    if (!root.MutationObserver || !root.document || !root.document.body) return;
+    new MutationObserver((list) => {
+      if (!lastAnim || !EMOJI_OFF[lastAnim.k] || performance.now() - lastAnim.t > 6000) return;
+      list.forEach((mu) => mu.addedNodes.forEach((n) => {
+        if (n.nodeType !== 1 || n.tagName !== 'SPAN' || n.className !== 'sk' || !n.parentNode || !/^f[01]$/.test(n.parentNode.id || '')) return;
+        const SK = G('SK'), M = root.MM25D, k = lastAnim.k;
+        if (!SK || !SK[k] || n.textContent !== SK[k][4] || !M || !M.handles || !M.handles(k, lastAnim.s)) return;
+        n.remove(); emojiLog.push({ k, text: SK[k][4] }); if (emojiLog.length > 40) emojiLog.shift();
+      }));
+    }).observe(root.document.body, { childList: true, subtree: true });
+  }
+  if (root.document) { if (root.document.readyState !== 'loading') setTimeout(watchEmoji, 0); else root.addEventListener('DOMContentLoaded', () => setTimeout(watchEmoji, 0)); }
+
+  root.MMTUNE = Object.freeze({ SIZE, SIZE_K, SIZE_NAME, FINE, ANCHOR, MOVES, MOUTH, mouthOf, EMOJI_OFF, emojiLog: () => emojiLog.slice(), sizePreview, sizeOf, sizeK, patch, keyOf, onAnimStart, sfxLog: () => sfxLog.slice(), wrapSe });
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -44,9 +44,10 @@ const checkMoves = (mv, D, side, want) => {
   const mine = mv.filter((r) => r.s === side && r.k >= 0 && r.k <= 9);
   assert.ok(mine.length >= want, `ソラモの技が ${mine.length} 回（${JSON.stringify(mv.map((r) => [r.k, r.s]))}）`);
   for (const r of mine) {
+    // 2026-10-16：表示の修正（MMTUNE.patch＝光線の追加・区切りごとの出し直し）のあとの並びで比べる。光線は区切りの数だけ同じ名前で出る
     const d = D[r.k], files = d.cuts.concat(d.fx).map((c) => c.src);
-    assert.ok(r.cuts.length === files.length, `技 ${r.k}（${d.name}）：コマ ${r.cuts.length}/${files.length}`);
-    assert.deepEqual([...r.cuts].sort(), [...files].sort(), `技 ${r.k} のコマ＝その技の絵だけ`);
+    assert.ok(r.cuts.length >= files.length && r.cuts.length <= files.length + 3, `技 ${r.k}（${d.name}）：コマ ${r.cuts.length}/${files.length}`);
+    assert.deepEqual([...new Set(r.cuts)].sort(), [...new Set(files)].sort(), `技 ${r.k} のコマ＝その技の絵だけ`);
     assert.ok(r.flip.every((f) => f === (side === 1)), `技 ${r.k}：向き（相手側だけ反転）`);
   }
 };
@@ -64,7 +65,7 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     const idle = await pg.evaluate(() => document.querySelector('#bt #m0 .mon .mma-idle').getAttribute('src'));
     assert.match(idle, /assets\/battle\/idle\//, '待機の立ち絵は今まで');
     const backs = await fightToEnd(pg);
-    const { mv, D } = await pg.evaluate(() => ({ mv: window.__mv, D: MMSOMV_DATA }));
+    const { mv, D } = await pg.evaluate(() => ({ mv: window.__mv, D: Object.fromEntries(Object.entries(MMSOMV_DATA).map(([k, d]) => [k, window.MMTUNE ? MMTUNE.patch(d) : d])) }));
     checkMoves(mv, D, 0, 1);
     assert.ok(backs.length && backs.every((o) => o > 0.95), `次の番では待機の姿（${backs}）`);
     assert.equal(await pg.evaluate(() => document.querySelectorAll('.p25f').length), 0, 'コマは残らない');
@@ -93,7 +94,7 @@ test('SM-B2：相手側のソラモ＝コマは左右反転・相手の技も一
     await pg.waitForTimeout(300);
   }
   await pg.waitForTimeout(3000);
-  const { mv, D } = await pg.evaluate(() => ({ mv: window.__mv, D: MMSOMV_DATA }));
+  const { mv, D } = await pg.evaluate(() => ({ mv: window.__mv, D: Object.fromEntries(Object.entries(MMSOMV_DATA).map(([k, d]) => [k, window.MMTUNE ? MMTUNE.patch(d) : d])) }));
   checkMoves(mv.filter((r) => r.cuts.length), D, 1, 1);
   assert.ok(mv.filter((r) => r.s === 0 && r.cuts.length).every((r) => r.cuts.every((c) => /^G\d/.test(c))), '自分（ガウル）の技は 2026-10-12 からガウルの正式のコマ（ソラモのコマは出ない）');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
@@ -111,7 +112,7 @@ test('SM-B3：野生の練習試合（共通演出なし）でもコマが一致
   await pg.evaluate(() => bBattleGo());
   await pg.waitForSelector('#bt #m0 .mon', { timeout: 15000 });
   const backs = await fightToEnd(pg);
-  const { mv, D } = await pg.evaluate(() => ({ mv: window.__mv, D: MMSOMV_DATA }));
+  const { mv, D } = await pg.evaluate(() => ({ mv: window.__mv, D: Object.fromEntries(Object.entries(MMSOMV_DATA).map(([k, d]) => [k, window.MMTUNE ? MMTUNE.patch(d) : d])) }));
   checkMoves(mv, D, 0, 1);
   assert.ok(backs.length && backs.every((o) => o > 0.95), `次の番では待機の姿（${backs}）`);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);

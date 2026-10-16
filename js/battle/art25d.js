@@ -370,6 +370,22 @@
       box.appendChild(im); v.appendChild(box); imgs.push(box); return { box, w, h };
     };
     const cutPos = (src, x, y) => { const q = lay.find((z) => z.c.src === src) || lay[0]; const fx2 = f > 0 ? x : q.c.pw - x; return { x: q.p0.x + fx2 * q.S, y: q.p0.y + y * q.S, q }; };
+    // 2026-10-16（iPhone 01・02・04・05）：そのコマの口先（MMTUNE.MOUTH＝絵の中の画素）を画面の位置へ。本体の img と同じ式（左上 p・反転 scaleX(f)・回転 rot・中心が原点）
+    const mouthPt = (q, end) => {
+      const M = root.MMTUNE && root.MMTUNE.mouthOf ? root.MMTUNE.mouthOf(base, q.c.f) : null; if (!M) return null;
+      const p = end ? q.p1 : q.p0, W = q.c.w * q.S, H = q.c.h * q.S, lx = (M[0] - q.c.w / 2) * q.S, ly = (M[1] - q.c.h / 2) * q.S;
+      const r = (q.c.rot || 0) * Math.PI / 180, rx = lx * Math.cos(r) - ly * Math.sin(r), ry = lx * Math.sin(r) + ly * Math.cos(r);
+      return { x: p.x + W / 2 + f * rx, y: p.y + H / 2 + ry };
+    };
+    // 光線は区切りごとにその区切りのコマの口先から出し直す（口先の分かるコマだけ。2つ目からは伸びきった長さで続ける＝途切れない）
+    const fxList = [];
+    (d.fx || []).forEach((c) => {
+      if ((c.at === 'beam' || c.at === 'stretch') && c.t[1] > c.t[0]) {
+        const ok = []; for (let i = c.t[0]; i <= c.t[1]; i++) { const q = at(i); ok.push(!!(q && mouthPt(q))); }
+        if (ok.every(Boolean)) { for (let i = c.t[0]; i <= c.t[1]; i++) fxList.push(Object.assign({}, c, { t: [i, i], seg: i - c.t[0] })); return; }
+      }
+      fxList.push(c);
+    });
     // 溜め（フルーネの必殺など・素材の無い光の溜めを CSS で）
     if (tune.charge) {
       const ch = tune.charge, w0 = P.win[ch.t[0]][0], w1 = P.win[ch.t[1]][1], R = L.idleW * 1.25, cx = L.Ag.x, cy = L.Ag.y - L.idleH * 0.5;
@@ -378,12 +394,14 @@
       const T0 = `translate(${cx - R / 2}px,${cy - R / 2}px)`;
       a.animate([{ opacity: 0, transform: T0 + ' scale(.3)', offset: 0 }, { opacity: 0, transform: T0 + ' scale(.3)', offset: w0 / D }, { opacity: 0.95, transform: T0 + ' scale(1.1)', offset: (w0 + (w1 - w0) * 0.8) / D }, { opacity: 0, transform: T0 + ' scale(.6)', offset: Math.min(1, (w1 + 120) / D) }, { opacity: 0, offset: 1 }], { duration: D, fill: 'both' });
     }
-    (d.fx || []).forEach((c) => {
+    fxList.forEach((c) => {
       const w0 = P.win[c.t[0]][0], w1 = P.win[c.t[1]][1], last = c.t[1] === d.steps - 1;
       if (c.at === 'launch') {   // 2026-10-15：効果を相手の胸まで飛ばす（ファイアボール・フルーネの花粉・聖なる炎の放射）。from＝'self'：自分の胸から
         const fb = c.fb || [0, 0, c.pw, c.ph], Sc = (c.ref ? (lay.find((z) => z.c.src === c.ref) || lay[0]).S : S0) * (c.ws || 1), g2 = c.grow || [0.9, 1.1];
         const { box, w, h } = crop(c, fb, Sc);
-        const st = c.from === 'self' || !c.ref ? { x: L.Ag.x + f * L.idleW * 0.08, y: L.Ag.y - L.idleH * 0.5 } : cutPos(c.ref, (fb[0] + fb[2]) / 2, (fb[1] + fb[3]) / 2);
+        const qm = c.fromMouth && c.ref ? at(c.t[0]) : null, mp = qm ? mouthPt(qm) : null;   // fromMouth＝その区切りのコマの口先で生まれる（ファイアボール）
+        const st = mp || (c.from === 'self' || !c.ref ? { x: L.Ag.x + f * L.idleW * 0.08, y: L.Ag.y - L.idleH * 0.5 } : cutPos(c.ref, (fb[0] + fb[2]) / 2, (fb[1] + fb[3]) / 2));
+        box.dataset.mx = Math.round(st.x); box.dataset.my = Math.round(st.y); if (mp) box.dataset.mf = qm.c.f;
         const ex = T.x, ey = T.cy;
         box.style.transformOrigin = '50% 50%';
         box.animate(kfWin(w0, w1, `translate(${st.x - w / 2}px,${st.y - h / 2}px) scaleX(${f}) scale(${g2[0]})`, `translate(${ex - w / 2}px,${ey - h / 2}px) scaleX(${f}) scale(${g2[1]})`, false, last), { duration: D, fill: 'both' }).onfinish = () => box.remove();
@@ -391,19 +409,26 @@
       }
       if (c.at === 'stretch') {   // 2026-10-15：口から相手の胸の少し先まで伸びる光線（フレアレイ）。mouth＝その区切りの体の範囲に対する口の位置（右向き）
         const fb = c.fb || [0, 0, c.pw, c.ph], q = lay.find((z) => z.c.src === c.ref) || lay[0], b = q.c.b, bw = b[2] - b[0], bh = b[3] - b[1], mo = c.mouth || [0.92, 0.4];
-        const mxl = b[0] + bw * mo[0], mx = f > 0 ? mxl : q.c.pw - mxl, sx = q.p0.x + mx * q.S, sy = q.p0.y + (b[1] + bh * mo[1]) * q.S;
-        const ex = T.x + f * T.w * 0.25, ey = sy * 0.4 + T.cy * 0.6, len = Math.max(Math.hypot(ex - sx, ey - sy), L.idleW * 1.1), ang = Math.atan2(ey - sy, ex - sx) * 180 / Math.PI;
+        const qs = at(c.t[0]) || q, m0 = mouthPt(qs), m1 = mouthPt(qs, true);   // 2026-10-16：その区切りのコマの口先（無いコマは従来の割合）
+        const mxl = b[0] + bw * mo[0], mx = f > 0 ? mxl : q.c.pw - mxl;
+        const st0 = m0 || { x: q.p0.x + mx * q.S, y: q.p0.y + (b[1] + bh * mo[1]) * q.S }, st1 = m1 || st0;
         const { box, w, h } = crop(c, fb, q.S), th = Math.max(1, Math.min(3, (L.idleH * 0.2) / h));
-        box.style.transformOrigin = '0 50%';
-        const b0 = `translate(${sx}px,${sy - h / 2}px) rotate(${ang}deg)` + (f > 0 ? '' : ' scaleY(-1)');   // 絵の左端＝口。角度で相手へ向ける（相手側は上下だけ返す）
-        box.animate(kfWin(w0, w1, b0 + ` scale(0.12,${th})`, b0 + ` scale(${len / w},${th})`, false, last), { duration: D, fill: 'both' }).onfinish = () => box.remove();
+        const pose = (pt) => { const ex = T.x + f * T.w * 0.25, ey = pt.y * 0.4 + T.cy * 0.6, len = Math.max(Math.hypot(ex - pt.x, ey - pt.y), L.idleW * 1.1), ang = Math.atan2(ey - pt.y, ex - pt.x) * 180 / Math.PI;
+          return { len, b0: `translate(${pt.x}px,${pt.y - h / 2}px) rotate(${ang}deg)` + (f > 0 ? '' : ' scaleY(-1)') }; };   // 絵の左端＝口。角度で相手へ向ける（相手側は上下だけ返す）
+        const A0 = pose(st0), A1 = pose(st1);
+        box.style.transformOrigin = '0 50%'; box.dataset.mx = Math.round(st0.x); box.dataset.my = Math.round(st0.y); if (m0) box.dataset.mf = qs.c.f;
+        box.animate(kfWin(w0, w1, A0.b0 + ` scale(${c.seg ? A0.len / w : 0.12},${th})`, A1.b0 + ` scale(${A1.len / w},${th})`, false, last), { duration: D, fill: 'both' }).onfinish = () => box.remove();
         return;
       }
       const im = document.createElement('img'); im.src = c.u || base + c.f; im.dataset.cut = c.src; put(im, 8);
       if (c.at === 'aura') {   // 2026-10-15：自分の胸から広がる放射（聖なる炎）
-        const W = L.idleW * 1.7 * (c.ws || 1), H = W * c.ph / c.pw, cx = L.Ag.x, cy = L.Ag.y - L.idleH * 0.55;
+        // 2026-10-16（iPhone 06）：onBody＝その区切りのコマの体の範囲の中心（浮いた姿のガウルの体の中心から放射する＝相手へは飛ばさない）
+        const qb = c.onBody ? at(c.t[0]) : null, bb = qb && qb.c.b, bx = bb ? (f > 0 ? (bb[0] + bb[2]) / 2 : qb.c.pw - (bb[0] + bb[2]) / 2) : 0;
+        const W = L.idleW * 1.7 * (c.ws || 1), H = W * c.ph / c.pw, cx = bb ? qb.p0.x + bx * qb.S : L.Ag.x, cy = bb ? qb.p0.y + (bb[1] + bb[3]) / 2 * qb.S : L.Ag.y - L.idleH * 0.55;
+        im.dataset.cx = Math.round(cx); im.dataset.cy = Math.round(cy);
         im.style.width = W + 'px'; im.style.height = H + 'px'; im.style.transformOrigin = '50% 50%';
-        im.animate(kfWin(w0, w1, `translate(${cx - W / 2}px,${cy - H / 2}px) scale(0.25)`, `translate(${cx - W / 2}px,${cy - H / 2}px) scale(1.15)`, false, last), { duration: D, fill: 'both' }).onfinish = () => im.remove();
+        const g3 = c.grow || [0.25, 1.15];
+        im.animate(kfWin(w0, w1, `translate(${cx - W / 2}px,${cy - H / 2}px) scale(${g3[0]})`, `translate(${cx - W / 2}px,${cy - H / 2}px) scale(${g3[1]})`, false, last), { duration: D, fill: 'both' }).onfinish = () => im.remove();
         return;
       }
       if (c.at === 'fly') {   // ノビトン：自分の口・鼻の先から相手の体へ飛ぶ効果（はなみず・ノーズウェーブ・ピンポイント突き・ダウナーミスト）
@@ -436,13 +461,15 @@
         // 発射の姿（同じ区切りの本体のコマ）の口から相手の体の中ほどへ伸ばす。絵の左の光の玉が口・右の星が相手
         const q = at(c.t[0]), b = q.c.b, S = q.S, bw = b[2] - b[0], bh = b[3] - b[1];
         const mx = f > 0 ? b[2] - bw * 0.08 : q.c.pw - (b[2] - bw * 0.08), my = b[1] + bh * 0.4;
+        // 2026-10-16（iPhone 01・02）：根元＝そのコマの口先（MMTUNE.MOUTH）。表に無いコマは従来の見積もり（体の範囲の前・上 40%）
+        const m0 = mouthPt(q) || { x: q.p0.x + mx * S, y: q.p0.y + my * S }, m1 = mouthPt(q, true) || m0;
         // 相手が近くても短くしすぎない（待機の立ち絵の幅の 1.1倍以上）・口の高さと相手の中ほどの間へ・相手の中心の少し先まで
-        const sx = q.p0.x + mx * S, sy = q.p0.y + my * S, ex = T.x + f * T.w * 0.2, ey = sy * 0.45 + T.cy * 0.55;
-        const len = Math.max(Math.hypot(ex - sx, ey - sy), L.idleW * 1.1), ang = Math.atan2(ey - sy, ex - sx) * 180 / Math.PI;
-        const W = len / 0.92, H = Math.max(26, Math.min(L.idleH * 0.42, Math.max(L.idleH * 0.3, W * c.ph / c.pw))) * (c.thick || 1);   // thick＝極太（スターダストレイ）
-        im.style.width = W + 'px'; im.style.height = H + 'px'; im.style.transformOrigin = '4% 50%';
-        const base = `translate(${sx - W * 0.04}px,${sy - H / 2}px) rotate(${ang}deg)`;
-        im.animate(kfWin(w0, w1, base + ' scaleX(0.15)', base + ' scaleX(1)', false, last), { duration: D, fill: 'both' }).onfinish = () => im.remove();
+        const L0 = Math.max(Math.hypot(T.x + f * T.w * 0.2 - m0.x, m0.y * 0.45 + T.cy * 0.55 - m0.y), L.idleW * 1.1);
+        const W = L0 / 0.92, H = Math.max(26, Math.min(L.idleH * 0.42, Math.max(L.idleH * 0.3, W * c.ph / c.pw))) * (c.thick || 1);   // thick＝極太（スターダストレイ）
+        const pose = (pt) => { const ex = T.x + f * T.w * 0.2, ey = pt.y * 0.45 + T.cy * 0.55, ang = Math.atan2(ey - pt.y, ex - pt.x) * 180 / Math.PI;
+          return `translate(${pt.x - W * 0.04}px,${pt.y - H / 2}px) rotate(${ang}deg)`; };   // 絵の左の光の玉（幅の 4%）＝口・右の星が相手
+        im.style.width = W + 'px'; im.style.height = H + 'px'; im.style.transformOrigin = '4% 50%'; im.dataset.mx = Math.round(m0.x); im.dataset.my = Math.round(m0.y); if (mouthPt(q)) im.dataset.mf = q.c.f;
+        im.animate(kfWin(w0, w1, pose(m0) + (c.seg ? ' scaleX(1)' : ' scaleX(0.15)'), pose(m1) + ' scaleX(1)', false, last), { duration: D, fill: 'both' }).onfinish = () => im.remove();
         return;
       }
       // 星群（空の門 → 降り注ぐ星 → 着弾の光）：相手の位置に合わせ、画面の左右の中に収める（端の淡い光を切らない）
