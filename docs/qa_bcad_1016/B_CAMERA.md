@@ -58,3 +58,10 @@ tools/qa1016/cam-measure.mjs の出力（納品 ZIP の out/B/cam_measure_*.json
 - 新しい tests/qa-e2e-qacam-1016.test.mjs（QC-B1〜B4）合格・tests/qa-1016.test.mjs（QB-01・02）合格。
 - フラグなしの回帰：既存の盤・カメラの実ブラウザテスト（board-1012・ch1-crash-1014・ch2-world-1016・dev29-1014・world-ch1-1011・walk25d-1011・roadfirst-world-1010・ch2-proto-1015）。
 - 土台（5474405）との比較（tools/qa1016/noflag-compare.mjs）：Chapter 1 A・Chapter 2 A を同じ乱数・同じ出目で歩かせ、止まるたびのカメラの目標・止まった地点・モンスターの位置が完全一致。画素の差は版の札の帯を除いて 0〜0.28%（土台のカメラが止まってもまだ回り続けている途中を写した差）。
+
+## 6. 比較動画（納品 ZIP の B/）
+
+- `B/ch1A_cam_compare.mp4`：Chapter 1 A を同じ出目で歩いた 従来／C案／C案・切替 の横並び（各 約35秒・画素比 1）。
+- `B/ch2B_cam_compare.mp4`：いちばん曲がる Chapter 2 B の 従来／C案。
+- 1本ずつ：`ch1A_cam_0〜2.mp4`・`ch2B_cam_0〜1.mp4`。計測の元：`cam_measure_all_first.json`（4方式×4盤）・`cam_measure_c_smooth.json`（smoothstep の C案）・`cam_measure_c_final.json`（切替・qaCamDeg=70）・`noflag_compare.json`（フラグなし＝土台と同じ）。
+- 動画は smoothstep にしたあとの版で撮り直した。
