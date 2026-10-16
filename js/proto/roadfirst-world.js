@@ -40,6 +40,7 @@
     //   歩いている間は向き（yaw）と倍率を変えない（区間で安定）・止まったとき／分かれ道を選んだときだけ、進む向きとのずれが camTurnDeg 以上なら短く向きを変える
     //   （'c'＝camTurnMs で回す・'ccut'＝盤を少し暗くして向きを切り替える）。止まったときの小さな注視点のずれ（camDz px 未満）は追わない
     camMode: null, camTurnDeg: 50, camTurnMs: 600, camDz: 12,
+    qaRoad: null,        // 2026-10-16 QA（A 道路の見た目・試作。URL の ?qaRoad=1|2 のときだけ js/chapter/world-board.js が渡す。null＝従来のまま）
     heading: false, yawTau: 420,        // 2026-10-13 開発27（11・15）：出さない目印の地点（例 ['START','LOWER_GATE','UPPER_GATE']＝門の飾りの絵だけを出さない。地点・道・門のマス・判定・イベントはそのまま。本編の Chapter 1 だけ）
   };
   // 第1便の絵（assets/proto/board_art_1010/README.md）。大きさは世界の単位
@@ -244,6 +245,10 @@
       if (idle) root.requestAnimationFrame(step);
     }
     if (!o.art) paint(true);   // 絵を貼るときは読み込みが終わってから1回だけ描く（失敗したら仮の色で描く）
+    // 2026-10-16 QA（A）：カメラの近くだけ、地面と道を高い解像度で描き直す層（js/qa/road-1016.js）。従来（qaRoad が null）は作らない
+    const QR = o.qaRoad && root.MMQAR ? root.MMQAR : null;
+    if (QR) art.qaRoad = o.qaRoad;
+    const HI = QR ? QR.hiLayer({ doc, parent: gnd || plane, WORLD, project, S: null, paintAt: (g, bx) => { if (SEA) { SEA.ground(g, D, bx, art, HELP); SEA.roads(g, D, o, art, bx, HELP); } else { drawGround(g, D, bx[0], bx[1], bx[2], bx[3], art); drawTerrain(g, D, o, art, bx); drawRoads(g, D, o, art, bx); } } }) : null;
     if (veil) plane.appendChild(veil);
     // マス（全地点・立てて置く）とモンスター
     // 2026-10-13 開発28（全景 → START へ寄るカメラのカクつき）：マス・景物・モンスターの大きさは、毎フレーム width を書き換えるのではなく
@@ -310,6 +315,7 @@
       // 2026-10-16 QA：向きの回り方の計測（見た目は変えない＝数えるだけ）。deg＝回った角度の合計・ms＝回っている時間・turns＝回り始めた回数・stops＝止まった回数
       qa: { deg: 0, ms: 0, turns: 0, rot: false, maxRate: 0, stops: 0, reorient: 0 }, yawTw: null, camOff: null,
     };
+    if (HI) HI.setS(S);
     const CMODE = o.heading && (o.camMode === 'c' || o.camMode === 'ccut') ? o.camMode : null;
     // 2026-10-11：モンスターの足を地点に合わせる＝静止の立ち絵の実際の縦横比で上へずらす（旧：一律 0.92＝縦長・横長の絵で浮く・沈む）。読み込み前は 0.92
     { const mi = mon.firstChild, fit = () => { if (mi.naturalWidth) { S.monAh = (mi.naturalHeight / mi.naturalWidth) * (o.monFoot || 0.97); S.dirty = true; } }; if (mi.complete) fit(); else mi.addEventListener('load', fit, { once: true }); }
@@ -536,6 +542,7 @@
       }
       if (S.monGoal) { if (!S.mon) S.mon = S.monGoal.slice(); const f = 1 - Math.exp(-dt / 70); S.mon[0] = lerp(S.mon[0], S.monGoal[0], f); S.mon[1] = lerp(S.mon[1], S.monGoal[1], f); S.mon[2] = lerp(S.mon[2] || 0, S.monGoal[2] || 0, f); }
       apply();
+      if (HI && !S.intro && artDone && painted) HI.tick();   // 2026-10-16 QA（A）：近くの高い解像度の区画（数フレームに分けて描く）
       S.raf = root.requestAnimationFrame(tick);
     }
     const api = {
@@ -610,7 +617,8 @@
         rimKinds: art.terrain ? art.terrain.rims.reduce((a, r) => { a[r.kind] = (a[r.kind] || 0) + 1; return a; }, {}) : null }),
       project: (x, y) => project(S.cam, x, y),
       frames: (reset) => { const f = S.frames.slice(); if (reset) S.frames = []; return f; },
-      destroy() { S.dead = true; root.cancelAnimationFrame(S.raf); wrap.remove(); },
+      destroy() { S.dead = true; root.cancelAnimationFrame(S.raf); if (HI) HI.destroy(); wrap.remove(); },
+      qaRoad: () => (HI ? { mode: o.qaRoad, res: HI.R, tiles: HI.count(), pending: HI.pending(), bytes: HI.bytes() } : null),
       opts: o,
     };
     S.raf = root.requestAnimationFrame(tick);
@@ -656,9 +664,13 @@
         g.strokeStyle = 'rgba(10,20,30,.42)'; g.lineWidth = ART.strip.w + 2;
         for (const id of terrainOf(D).flatMap((T) => T.bridges)) { const s = D.segments[id]; if (!s) continue; g.save(); g.translate(0, 10); path(s[3]); g.stroke(); g.restore(); }
       }
-      for (const s of segs) stripAlong(g, curvePts(s[3].map((id) => D.nodes[id])), art.strip, ART.strip.w, bx);
+      const QA = art.qaRoad && root.MMQAR, cps = QA ? segs.map((s) => curvePts(s[3].map((id) => D.nodes[id]))) : null;
+      if (QA && art.qaRoad === '2') QA.edgeShade(g, cps, ART.strip.w);
+      if (QA) for (const P of cps) QA.meshStrip(g, P, art.strip, ART.strip.w, bx);   // 2026-10-16 QA（A）：曲線に沿った網（曲がり角で折れない）
+      else for (const s of segs) stripAlong(g, curvePts(s[3].map((id) => D.nodes[id])), art.strip, ART.strip.w, bx);
       g.fillStyle = '#8f8573'; for (const id of hubs) disc(id, ART.strip.w * 0.62 + 1.5); for (const id of ends) disc(id, ART.strip.w * 0.6 + 1.5);
       g.fillStyle = rp; for (const id of hubs) { centre(id); disc(id, ART.strip.w * 0.62 - 1); } for (const id of ends) { centre(id); disc(id, ART.strip.w * 0.6 - 1); }
+      if (QA && art.qaRoad === '2') { QA.edgeGrass(g, cps, ART.strip.w, bx, 1016); QA.tileShadows(g, D, 11, bx); }   // 2026-10-16 QA（A 2）：ふちにかかる草・マスの足もとの影
       return;
     }
     g.strokeStyle = rp ? '#8f8573' : '#6f6248'; g.lineWidth = o.roadW + 4; for (const s of segs) { path(s[3]); g.stroke(); }
@@ -884,7 +896,7 @@
   }
 
   // 2026-10-15 Chapter 2 設計案の試作：js/proto/ch2-world.js（MMRF_SEA）へ渡す描画の部品（同じ帯・同じ曲線で描く）
-  const HELP = { WORLD, ART, pattern, stripAlong, curvePts, inPoly, distLine, mulberry, project, landmarkAt };
+  const HELP = { WORLD, ART, pattern, stripAlong, curvePts, inPoly, distLine, mulberry, project, landmarkAt, qa: () => root.MMQAR || null };
   let cssDone = false;
   function css(doc) {
     if (cssDone || doc.getElementById('rfw-css')) return; cssDone = true;

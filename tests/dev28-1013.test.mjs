@@ -264,9 +264,9 @@ test('D28-08：固有スキルのカメラ＝cutCamera（全身が切れない�
   assert.deepEqual(J(R.cutQueue()), []); assert.equal(R.cutActive(), false);
 });
 
-test('D28-09：MM_BUILD と version.json は同じ値（公開のたびに上げる。2026-10-14 Chapter 1 A／B／C 高品質化＝2026-10-14-ch1hq → 進入時のクラッシュ対策＝2026-10-14-ch1fix → 実機試遊47項目＝2026-10-14-play47 → 研究所の一言の重なり＝2026-10-14-play47b → NPC のボイスの全停止＝2026-10-15-next12 → 比較画面・QA 試遊＝2026-10-15-cmpqa → フルーネの技アニメ・歩行＝2026-10-15-flanim → ジオルの正式10技＝2026-10-15-jiol10 → 作業ブランチの iPhone 6件＝2026-10-16-ip6 → 夜間 QA B＝2026-10-16-qa-b1 → C＝2026-10-16-qa-c1）', () => {
+test('D28-09：MM_BUILD と version.json は同じ値（公開のたびに上げる。2026-10-14 Chapter 1 A／B／C 高品質化＝2026-10-14-ch1hq → 進入時のクラッシュ対策＝2026-10-14-ch1fix → 実機試遊47項目＝2026-10-14-play47 → 研究所の一言の重なり＝2026-10-14-play47b → NPC のボイスの全停止＝2026-10-15-next12 → 比較画面・QA 試遊＝2026-10-15-cmpqa → フルーネの技アニメ・歩行＝2026-10-15-flanim → ジオルの正式10技＝2026-10-15-jiol10 → 作業ブランチの iPhone 6件＝2026-10-16-ip6 → 夜間 QA B＝2026-10-16-qa-b1 → C＝2026-10-16-qa-c1 → A＝2026-10-16-qa-a1）', () => {
   const b = /const MM_BUILD="([^"]+)";/.exec(HTML); assert.ok(b);
-  assert.deepEqual(JSON.parse(rd('version.json')), { build: b[1] }); assert.equal(b[1], '2026-10-16-qa-c1');   // 2026-10-16 夜間 QA の作業ブランチ（claude/qa-bca-1016）
+  assert.deepEqual(JSON.parse(rd('version.json')), { build: b[1] }); assert.equal(b[1], '2026-10-16-qa-a1');   // 2026-10-16 夜間 QA の作業ブランチ（claude/qa-bca-1016）
 });
 
 // ---- js/battle/rules.js を Node で動かす（tests/battle-rules-1006.test.mjs と同じ組み立て） ----

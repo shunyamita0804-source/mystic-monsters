@@ -144,7 +144,11 @@
     g.restore();
     if (deck) {
       g.strokeStyle = 'rgb(168,160,140)'; g.lineWidth = CURB_W; for (const P of pts) { pathOf(g, P); g.stroke(); }   // 縁石
-      g.strokeStyle = deck; g.lineWidth = ROAD_W; for (const P of pts) { pathOf(g, P); g.stroke(); }
+      // 2026-10-16 QA（A。URL の ?qaRoad=1|2 のときだけ）：1＝海上橋の石板を鏡映しで並べる（継ぎ目が消える・模様は山形）／2＝正式の白い橋帯 R01 を道に沿わせて敷く
+      const QA = art.qaRoad && H.qa && H.qa(), walk = S.strip && S.strip.walk;
+      if (QA && art.qaRoad === '2' && walk) for (const P of pts) QA.meshStrip(g, P, walk, ROAD_W * 128 / 62, bx);   // R01 の帯の見える所（行 33〜94＝62px）を道の幅 ROAD_W に
+      else if (QA && art.qaRoad === '1') { const mt = QA.mirrorTile(S.tex.deck), mp = mt ? H.pattern(g, mt, TEX.deck[1] * 2) : null; g.strokeStyle = mp || deck; g.lineWidth = ROAD_W; for (const P of pts) { pathOf(g, P); g.stroke(); } }
+      else { g.strokeStyle = deck; g.lineWidth = ROAD_W; for (const P of pts) { pathOf(g, P); g.stroke(); } }
       if (white) { g.save(); g.beginPath(); for (const { P } of regionsOf(D)) { P.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.closePath(); } g.clip();
         g.strokeStyle = white; g.lineWidth = ROAD_W; for (const P of pts) { pathOf(g, P); g.stroke(); } g.restore(); }
       g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 1; for (const P of pts) for (const sg of [-1, 1]) edgeLine(g, P, ROAD_W / 2 * sg);   // 縁の光

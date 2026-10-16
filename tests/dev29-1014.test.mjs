@@ -127,7 +127,7 @@ test('D29-08：後ろから追うカメラ＝project の回転（yaw）・進む
   const q0 = W.project(cam, 150, 100), q1 = W.project({ ...cam, yaw: 0 }, 150, 100); assert.deepEqual([q0.x, q0.y], [q1.x, q1.y], 'yaw 0 は従来と同じ');
   const WB = rd('js/chapter/world-board.js');
   assert.match(WB, /const camOpts = \(\) => \(!QA_CAM \? \{ heading: true, yawTau: 600 \}/, '2026-10-16 夜間 QA：URL の ?qaCam が無いときは従来どおり');
-  assert.match(WB, /zoomTau: CAM\.zoomTau, \.\.\.camOpts\(\), visual: vis, skin: skinKey\(\) \}\);/, '本編の Chapter 1（2026-10-14 Chapter 1 B／C から visual・A／B／C 高品質化から skin も渡す）');   // 2026-10-14 実機試遊 Q12：曲がり角で回りすぎない（yawTau 420 → 600）
+  assert.match(WB, /zoomTau: CAM\.zoomTau, \.\.\.camOpts\(\), (\.\.\.\(QA_ROAD\(\) \? \{ qaRoad: QA_ROAD\(\) \} : \{\}\), )?visual: vis, skin: skinKey\(\) \}\);/, '本編の Chapter 1（2026-10-14 Chapter 1 B／C から visual・A／B／C 高品質化から skin も渡す）');   // 2026-10-14 実機試遊 Q12：曲がり角で回りすぎない（yawTau 420 → 600）
   assert.match(WB, /const r = pickDir\(ddx \* Math\.cos\(yw\) - ddy \* Math\.sin\(yw\), ddx \* Math\.sin\(yw\) \+ ddy \* Math\.cos\(yw\), SPR\.sets,/, '歩行の向きは回したあとの画面の向き');
   const RW = rd('js/proto/roadfirst-world.js');
   assert.match(RW, /rotate\(\$\{\(c\.yaw \|\| 0\)\.toFixed\(3\)\}deg\) translate\(\$\{-c\.tx\}px,\$\{-c\.ty\}px\)/, '地面の板も同じ回転（CSS の rotate）');

@@ -2,6 +2,7 @@
 // 2026-10-16 夜間 QA（B カメラ・C 歩行の向き・A 道路）のふだんのテスト（作業ブランチ claude/qa-bca-1016 だけ・試作）
 //  QB-01 C案カメラは URL の ?qaCam= のときだけ（既定＝従来の後ろから追う・yawTau 600）・MMRF_WORLD の既定は camMode null
 //  QW-01〜04 C：ソラモ 5方向×4コマ（?qaWalk=soramo5）の向きの選び方・間の向き・素材・つなぎ方
+//  QR-01 A：道路の比較案（?qaRoad=1|2）は URL のときだけ
 //  QB-02 QA の入口（js/qa/qa-board-1016.js）は ch1trial／ch2trial／qaCam／qaWalk／qaRoad の URL のときだけ・保存しない（TEST_TOUR）
 // =========================================================
 import test from 'node:test';
@@ -69,4 +70,15 @@ test('QW-04：盤につなぐのは ?qaWalk=soramo5 のソラモだけ（ほか�
 test('QW-05：URL の数の指定が無いときは既定の値（Number(null)＝0 にしない）', async () => {
   for (const f of ['js/qa/walk5-1016.js', 'js/chapter/world-board.js']) assert.match(rd(f), /&& (P|q)\.get\(k\) != null \? Number/, f);
   await import('../js/qa/walk5-1016.js'); assert.equal(globalThis.MMQAW.TURN_MS, 70); assert.equal(globalThis.MMQAW.FPS, 8);
+});
+
+// ---- A（道路の見た目・?qaRoad=1|2）----
+test('QR-01：道路の比較案は ?qaRoad=1|2 のときだけ（通常は従来の描き方のまま）', async () => {
+  await import('../js/qa/road-1016.js');
+  const R = globalThis.MMQAR; assert.equal(R.mode, null); assert.equal(R.RES, 5); assert.equal(R.MAX, 14);
+  const wb = rd('js/chapter/world-board.js'), rw = rd('js/proto/roadfirst-world.js'), c2 = rd('js/proto/ch2-world.js');
+  assert.match(wb, /\.\.\.\(QA_ROAD\(\) \? \{ qaRoad: QA_ROAD\(\) \} : \{\}\)/);
+  assert.match(rw, /const HI = QR \? QR\.hiLayer\(/, '近くの層は qaRoad のときだけ');
+  assert.match(rw, /if \(QA\) for \(const P of cps\) QA\.meshStrip\(g, P, art\.strip, ART\.strip\.w, bx\);[^\n]*\n\s*else for \(const s of segs\) stripAlong\(/, '従来は stripAlong のまま');
+  assert.match(c2, /else \{ g\.strokeStyle = deck; g\.lineWidth = ROAD_W; for \(const P of pts\) \{ pathOf\(g, P\); g\.stroke\(\); \} \}/, 'Chapter 2 も従来の石板のまま');
 });
