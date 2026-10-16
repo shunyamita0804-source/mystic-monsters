@@ -40,21 +40,21 @@
     if (sp === 'flurene') { const G = (n) => { try { return (0, eval)(n); } catch (e) { return null; } }, SK = G('SK'), k = ((root.MMRULES && root.MMRULES.FLU_FIRST) || 50) + mv.no - 1; return mv.no === 9 && SK && SK[k] ? k : null; }
     return mv.slot == null ? null : mv.slot;
   };
+  const idOf = (sp, mv) => mv.id || ((CARDS[sp] || []).find((x) => x[0] === mv.no) || [])[1] || null;
   let BY_SLOT = null;
   const build = () => {
     const t = {};
     for (const sp of Object.keys(CARDS)) for (const mv of movesList(sp)) {
-      const k = slotOf(sp, mv), s = srcOf(sp, mv.id);
-      if (k != null && s) t[k] = { sp, id: mv.id, no: mv.no, name: mv.name, src: s };
+      const id = idOf(sp, mv), k = slotOf(sp, mv), s = id ? srcOf(sp, id) : null;   // 技ID の無い登録（フルーネ）はカードの番号で引く
+      if (k != null && s) t[k] = { sp, id, no: mv.no, name: mv.name, src: s };
     }
     return t;
   };
-  const bySlot = (k) => { if (!BY_SLOT || !Object.keys(BY_SLOT).length || (k >= 50 && !BY_SLOT[k] && !BY_SLOT.__late)) { BY_SLOT = build(); if (k >= 50) Object.defineProperty(BY_SLOT, '__late', { value: 1 }); } return BY_SLOT[k] || null; };   // 50 番台（QA の SK 58）は rules.js があとから入れる＝1回だけ作り直す
+  const bySlot = (k) => { if (!BY_SLOT || !Object.keys(BY_SLOT).length || (k >= 50 && !BY_SLOT[k])) BY_SLOT = build(); return BY_SLOT[k] || null; };   // 50 番台（QA の SK 58）は rules.js があとから入れる＝無ければ作り直す（60件だけ）
   // 技管理・技の一覧・技の詳細の画像：正式カードがあればそれ、無ければ従来の絵（fb）
   const src = (k, fb) => { const c = bySlot(k); return c ? c.src : fb; };
   // 検証用：種族ごとの10枚（技管理に出ないジオルを含む）
   // 技ID の無い登録（フルーネ＝名前と習得区分だけ）はカードの番号＝技の No. で引く（納品のカードの番号と技の No. が同じ）
-  const idOf = (sp, mv) => mv.id || ((CARDS[sp] || []).find((x) => x[0] === mv.no) || [])[1] || null;
   const list = (sp) => movesList(sp).map((mv) => { const id = idOf(sp, mv); return { sp, no: mv.no, id, name: mv.name, slot: slotOf(sp, mv), src: id ? srcOf(sp, id) : null }; });
   root.MMMVCARD = Object.freeze({ DIR, CARDS, srcOf, bySlot, src, list, SPECIES: Object.keys(CARDS) });
 })(typeof window !== 'undefined' ? window : globalThis);
