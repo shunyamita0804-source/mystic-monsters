@@ -1,0 +1,252 @@
+{
+ "source": "Mismon_Soramo_5Directions_4Frames_Pilot_v5_2048x2560_RGBA.png",
+ "source_sha256": "355890ecb8a98d69b6c54fea5614bde55b23a27c05620bc2c642987730612c36",
+ "box": [
+  84,
+  92,
+  428,
+  436
+ ],
+ "frames": [
+  {
+   "file": "soramo_front_1.webp",
+   "row": 1,
+   "col": 1,
+   "cell_bbox": [
+    129,
+    110,
+    404,
+    404
+   ],
+   "sha256": "828b4e3e00986429592845c516c579d06b6cfb9c1152a85a9b2f459853061a0e"
+  },
+  {
+   "file": "soramo_front_2.webp",
+   "row": 1,
+   "col": 2,
+   "cell_bbox": [
+    123,
+    111,
+    390,
+    405
+   ],
+   "sha256": "727c6b8e4212bbf7346c8578622fa3982de0a45d4eff13ee99f59ebcd736cc40"
+  },
+  {
+   "file": "soramo_front_3.webp",
+   "row": 1,
+   "col": 3,
+   "cell_bbox": [
+    109,
+    112,
+    379,
+    408
+   ],
+   "sha256": "f58eccf7368c85182701896a94fc199c4796fd9c1d60b28edf2574616fccbe6d"
+  },
+  {
+   "file": "soramo_front_4.webp",
+   "row": 1,
+   "col": 4,
+   "cell_bbox": [
+    117,
+    110,
+    387,
+    402
+   ],
+   "sha256": "d59ca29b6cb8fad4fa94959a472d2eb7c6d9525497e5b0094832807c0f648396"
+  },
+  {
+   "file": "soramo_back_1.webp",
+   "row": 2,
+   "col": 1,
+   "cell_bbox": [
+    129,
+    109,
+    399,
+    410
+   ],
+   "sha256": "aeda70f57542bfc9311d99061ad87024b5c283517f43bdfcf92c197478e03bfd"
+  },
+  {
+   "file": "soramo_back_2.webp",
+   "row": 2,
+   "col": 2,
+   "cell_bbox": [
+    127,
+    110,
+    397,
+    408
+   ],
+   "sha256": "cc308d42663789f6b281cd6ec8a4cc28275448ebdfcc965402ba13f60c344bfa"
+  },
+  {
+   "file": "soramo_back_3.webp",
+   "row": 2,
+   "col": 3,
+   "cell_bbox": [
+    117,
+    110,
+    405,
+    410
+   ],
+   "sha256": "1259518fa7a25fd707f1f76768baf15402f1e7036b5729d024c01f9d292e9144"
+  },
+  {
+   "file": "soramo_back_4.webp",
+   "row": 2,
+   "col": 4,
+   "cell_bbox": [
+    129,
+    111,
+    397,
+    410
+   ],
+   "sha256": "ad38ffd5d4cc7231bb8a25f4ad3e9ce68aca18c8d37854a7acc4f304885f99e8"
+  },
+  {
+   "file": "soramo_side_1.webp",
+   "row": 3,
+   "col": 1,
+   "cell_bbox": [
+    116,
+    139,
+    407,
+    411
+   ],
+   "sha256": "c4948f5999be1228396b0462ffc4acb12526d91825717a965b9bfa5d60b2ba2c"
+  },
+  {
+   "file": "soramo_side_2.webp",
+   "row": 3,
+   "col": 2,
+   "cell_bbox": [
+    111,
+    139,
+    396,
+    412
+   ],
+   "sha256": "5476236631bf0ef72909ba40dacd653c7758ea03f4bece0626cbdc08bd563818"
+  },
+  {
+   "file": "soramo_side_3.webp",
+   "row": 3,
+   "col": 3,
+   "cell_bbox": [
+    107,
+    140,
+    390,
+    411
+   ],
+   "sha256": "c9afdde8753b57ba1b25047d9ce4118edcfd5535f92070873622823da97106b0"
+  },
+  {
+   "file": "soramo_side_4.webp",
+   "row": 3,
+   "col": 4,
+   "cell_bbox": [
+    103,
+    138,
+    379,
+    411
+   ],
+   "sha256": "a0689eaabdb232e3f77f3b33c41353c235a02d8231e5026844ebad7b7696b173"
+  },
+  {
+   "file": "soramo_backd_1.webp",
+   "row": 4,
+   "col": 1,
+   "cell_bbox": [
+    134,
+    119,
+    377,
+    412
+   ],
+   "sha256": "9dc4ee57feb610bc4950cd7ce666c9b8113c00ac8e86bc5c7faf1a0e345eb700"
+  },
+  {
+   "file": "soramo_backd_2.webp",
+   "row": 4,
+   "col": 2,
+   "cell_bbox": [
+    133,
+    119,
+    381,
+    412
+   ],
+   "sha256": "f40d99c1372ec3b56b09a3b66ee17475f68544ab9b89e8919f092806f20ba5ba"
+  },
+  {
+   "file": "soramo_backd_3.webp",
+   "row": 4,
+   "col": 3,
+   "cell_bbox": [
+    121,
+    120,
+    378,
+    413
+   ],
+   "sha256": "4c6899c2150dcad49c04f4e4cc0e0de762f39347badafc49911ca5f09c861824"
+  },
+  {
+   "file": "soramo_backd_4.webp",
+   "row": 4,
+   "col": 4,
+   "cell_bbox": [
+    140,
+    119,
+    379,
+    412
+   ],
+   "sha256": "f16ed85c5474c0a2920c3f13936ea6557fa566111dbc743cc3a1b6ea904a63a8"
+  },
+  {
+   "file": "soramo_frontd_1.webp",
+   "row": 5,
+   "col": 1,
+   "cell_bbox": [
+    122,
+    106,
+    412,
+    422
+   ],
+   "sha256": "01672fdb130967b2ca685d9268878527b8f33f35426b889fba1741f8c2bcfef5"
+  },
+  {
+   "file": "soramo_frontd_2.webp",
+   "row": 5,
+   "col": 2,
+   "cell_bbox": [
+    99,
+    106,
+    411,
+    407
+   ],
+   "sha256": "b9e58303ce9cd09a05de23c078c8a63ed54f767b6b6cc3925d5b0ce10aaaec3f"
+  },
+  {
+   "file": "soramo_frontd_3.webp",
+   "row": 5,
+   "col": 3,
+   "cell_bbox": [
+    114,
+    106,
+    412,
+    426
+   ],
+   "sha256": "be421f02beec1edb17f4eede1021b699b94e93dce6a4bcaa046836d0ceeef880"
+  },
+  {
+   "file": "soramo_frontd_4.webp",
+   "row": 5,
+   "col": 4,
+   "cell_bbox": [
+    99,
+    104,
+    402,
+    416
+   ],
+   "sha256": "bed0de8143ec8d206e8c489bec7db5096f1f856b2b1cf3f8aa6fba52fbdb7361"
+  }
+ ]
+}

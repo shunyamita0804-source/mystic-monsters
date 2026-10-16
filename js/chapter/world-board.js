@@ -409,7 +409,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     + (root.MMREACT ? Object.entries(root.MMREACT.MOTIONS).map(([k, v]) => `.wbv .rfw-mon.mrx-${k} .mon,.wbw .wbcard figure.mrx-${k} .mon{animation:mrx-${k} ${v.ms}ms cubic-bezier(.4,0,.3,1)}`).join('') : '');
     document.head.appendChild(s);
   }
-  function release() { sprStop(); if (V.intro || V.cover) busySet(false); if (V.cover) { V.cover.remove(); V.cover = null; } if (V.world) { try { V.world.destroy(); } catch (e) {} } V.world = null; V.el = null; V.key = null; V.intro = false; }
+  function release() { sprStopNow(); if (V.intro || V.cover) busySet(false); if (V.cover) { V.cover.remove(); V.cover = null; } if (V.world) { try { V.world.destroy(); } catch (e) {} } V.world = null; V.el = null; V.key = null; V.intro = false; }
   function ensureView(m) {
     const f = fieldOf(m), W = WD(m), vis = W && W.visualOf ? W.visualOf(m) : 'A', rt = W && W.routeOf ? W.routeOf(m) : 'A', key = `${chOf(m)}:${m.uid}:${f.layoutSeed}:${vis}:${rt}`, app = $('#app');   // 2026-10-14 B／C：ルートも鍵に   // 2026-10-14 Chapter 1 B／C：景観のパターンも鍵に
     if (V.el && V.key === key) { if (!V.el.isConnected) { app.innerHTML = ''; app.appendChild(V.el); } return false; }
@@ -546,13 +546,16 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     return { set, flip, lat };
   }
   function sprSetup(m) {
-    sprStop(); SPR.sets = {}; SPR.cur = null; SPR.flip = false; SPR.lat = false; SPR.frame = '';
+    sprStopNow(); SPR.sets = {}; SPR.cur = null; SPR.flip = false; SPR.lat = false; SPR.frame = '';
     const el = monEl(); if (!el) return;
     const st = el.querySelector('img'); if (!st) return;
     st.classList.add('st');
     const box = document.createElement('span'); box.className = 'mon'; el.insertBefore(box, st); box.appendChild(st);
     const P = root.MMP10M, key = P && P.keyOf ? P.keyOf(m.sp) : null, spr = key && cfg().monsterSprites ? cfg().monsterSprites[key] : null;
     SPR.sets = dirSets(spr); SPR.stand = (spr && spr.standFace) || 'none';
+    // 2026-10-16 QA（C）：URL の ?qaWalk=soramo5 のときだけ、ソラモを 5方向×4コマ（左右反転で 8方向）にする（js/qa/walk5-1016.js）。ほかの種族・通常の URL は従来のまま
+    SPR.qa = !!(root.MMQAW && root.MMQAW.active && key === root.MMQAW.species); SPR.sector = null; SPR.turn = null; SPR.tok = (SPR.tok || 0) + 1;
+    if (SPR.qa) { SPR.sets = root.MMQAW.sets(); SPR.sector = 4; el.dataset.qawalk = '1'; }
     // 2026-10-11：歩行のコマの高さ・足は「静止の立ち絵が実際に見えている高さ」に合わせる（横に広い立ち絵＝ガウルは箱より低く、上に寄せて置かれる）。--sth＝立ち絵の高さ ÷ 箱の高さ
     const fit = () => { const bh = box.offsetHeight, sh = st.offsetHeight; if (bh > 0 && sh > 0) box.style.setProperty('--sth', String(Math.min(1, sh / bh))); };
     if (st.complete) fit(); else st.addEventListener('load', fit, { once: true });
@@ -568,6 +571,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     next.classList.add('on'); SPR.frame = id;
   }
   function sprTick(now) {
+    if (SPR.qa && SPR.turn && now >= SPR.turn.until) qaTurnNext(now);
     const w = SPR.on && SPR.sets[SPR.cur]; if (!w) { SPR.raf = 0; return; }
     const dt = Math.min(100, now - (SPR.last || now)); SPR.last = now;
     SPR.phase += (dt / 1000) * w.fps; sprShow(SPR.cur, Math.floor(SPR.phase) % w.frames.length);
@@ -588,6 +592,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     const el = monEl(), d = D(), a = d.nodes[from], b = d.nodes[to]; if (!el || !a || !b || calm()) return;
     // 2026-10-14 開発29（6）：カメラが進む向きへ回っている＝画面の上での向きで選ぶ（世界の差をカメラの回転 yaw で回す）＝前へ進む1歩は後ろ姿の歩行（back）
     const yw = V.world && V.world.yawGoal ? V.world.yawGoal() * Math.PI / 180 : 0, ddx = b[0] - a[0], ddy = b[1] - a[1];
+    if (SPR.qa) return qaWalk(el, ddx * Math.cos(yw) - ddy * Math.sin(yw), ddx * Math.sin(yw) + ddy * Math.cos(yw));
     const r = pickDir(ddx * Math.cos(yw) - ddy * Math.sin(yw), ddx * Math.sin(yw) + ddy * Math.cos(yw), SPR.sets, { set: SPR.cur, flip: SPR.flip, lat: SPR.lat }, SPR.stand), w = r.set ? SPR.sets[r.set] : null;
     if (r.set !== SPR.cur) SPR.phase = 0;
     SPR.cur = r.set; SPR.flip = r.flip; SPR.lat = r.lat;
@@ -596,7 +601,28 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     if (w) { sprShow(r.set, Math.floor(SPR.phase) % w.frames.length); if (!SPR.on) { SPR.on = true; SPR.last = 0; if (!SPR.raf) SPR.raf = requestAnimationFrame(sprTick); } }
     else SPR.on = false;
   }
-  function sprStop() {
+  // ---- 2026-10-16 QA（C）：8方向の歩行。向きを変えるときは近いほうの回り方で間の向きを1つずつ通る（MMQAW.turnPath）・歩く位相は続ける ----
+  function qaFace(el, s) { const L = root.MMQAW.look(s); SPR.sector = L.sector; SPR.cur = L.set; SPR.flip = L.flip; el.classList.toggle('wk-flip', L.flip); el.dataset.dir = L.set; el.dataset.sector = String(L.sector); sprShow(L.set, Math.floor(SPR.phase) % SPR.sets[L.set].frames.length); }
+  function qaTurnNext(now) { const el = monEl(), t = SPR.turn; if (!el || !t) { SPR.turn = null; return; } const s = t.q.shift(); if (s != null) qaFace(el, s); SPR.turn = t.q.length ? { q: t.q, until: now + root.MMQAW.TURN_MS } : null; }
+  function qaWalk(el, dx, dy) {
+    const Q = root.MMQAW, r = Q.pick8(dx, dy * TILT_COS, SPR.sector); if (!r) return;
+    const path = SPR.sector == null ? [] : Q.turnPath(SPR.sector, r.sector);
+    el.classList.remove('wk-idle', 'bob', 'st-flip'); el.classList.add('wk-on');
+    if (path.length && Q.TURN_MS > 0) { SPR.turn = { q: path.concat([r.sector]), until: 0 }; qaTurnNext(root.performance.now()); }
+    else { SPR.turn = null; qaFace(el, r.sector); }
+    if (!SPR.on) { SPR.on = true; SPR.last = 0; if (!SPR.raf) SPR.raf = requestAnimationFrame(sprTick); }
+  }
+  /** 止まったら：正面（手前）へ、間の向きを1つずつ通って向き直る（その場で体を回す）。正面なら従来どおり */
+  function qaStopTurn() {
+    const el = monEl(), Q = root.MMQAW; if (!el || SPR.sector == null || SPR.sector === 4 || calm()) return false;
+    SPR.on = false; if (SPR.raf && root.cancelAnimationFrame) cancelAnimationFrame(SPR.raf); SPR.raf = 0; SPR.turn = null;
+    const tok = ++SPR.tok, seq = Q.turnPath(SPR.sector, 4); let i = 0; SPR.phase = 0;
+    const step = () => { if (tok !== SPR.tok) return; const e = monEl(); if (!e) return; if (i < seq.length) { qaFace(e, seq[i++]); setTimeout(step, Math.max(40, Q.TURN_MS)); } else { SPR.sector = 4; sprStopNow(); } };
+    step(); return true;
+  }
+  function sprStop() { if (SPR.qa && qaStopTurn()) return; sprStopNow(); }
+  function sprStopNow() {
+    if (SPR.qa) { SPR.tok = (SPR.tok || 0) + 1; SPR.turn = null; SPR.sector = 4; }
     SPR.on = false; if (SPR.raf && root.cancelAnimationFrame) cancelAnimationFrame(SPR.raf); SPR.raf = 0; SPR.phase = 0; SPR.last = 0; SPR.cur = null; SPR.flip = false; SPR.lat = false;
     const el = monEl(); if (el) { el.classList.remove('wk-on', 'bob', 'wk-flip', 'st-flip'); el.dataset.dir = ''; }
     sprIdle();
