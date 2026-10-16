@@ -10,7 +10,7 @@
 // =========================================================
 (function (root) {
   'use strict';
-  const SRC = 'd6cdb2e';   // この版の元になったコミット（画面の版表示用。コミットのたびに更新）
+  const SRC = 'efbfbbf';   // この版の元になったコミット（画面の版表示用。コミットのたびに更新）
   let q = null; try { q = new URLSearchParams(root.location.search).get('ch2trial'); } catch (e) {}
   const ROUTE = ['A', 'B', 'C'].includes(q) ? q : null;
   const G = (n) => { try { return (0, eval)(n); } catch (e) { return undefined; } };   // index.html の let／const（S・TEST_TOUR・TEST_MODE・MM_BUILD）
