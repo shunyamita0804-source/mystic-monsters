@@ -45,7 +45,7 @@ test('PT-02：チラつき対策＝黒い幕（会話の下 z 899）と、会話
 test('PT-03：共通の はい／いいえ・2択は縦・長い選択肢は1行・本番の文言に TEST を出さない', () => {
   assert.match(fnOf('ngAsk'), />はい<\/button><button class="ngm-back" data-se="UI_CANCEL" onclick="ngBack\(\)">いいえ<\/button>/); assert.doesNotMatch(fnOf('ngAsk'), />確認しました</);
   assert.match(fnOf('ynAsk'), /tapHold\(d,350\)/);
-  const menu = fnOf('p9Menu'); assert.match(menu, /ynAsk\('大会をやめて街へ戻りますか？','',\(\)=>testTourEnd\(\)\)">大会をやめて街へ戻る<\/button>/); assert.doesNotMatch(menu, /TEST 大会をやめて/);
+  const menu = fnOf('p9Menu'); assert.match(menu, /ynAsk\(TEST_TOUR\.ch2\?'試遊をやめて街へ戻りますか？':'大会をやめて街へ戻りますか？'/); assert.match(menu, /'試遊をやめて街へ戻る':'大会をやめて街へ戻る'\}<\/button>/);   // 2026-10-16：Chapter 2 の試遊（?ch2trial）も同じメニュー assert.doesNotMatch(menu, /TEST 大会をやめて/);
   assert.match(fnOf('testTourEnd'), /lobby\(msg\|\|"大会を終了しました（セーブは変わっていません）。"\)/);
   assert.match(CSS, /\.mmtalk-big \.mmtalk-choices:has\(>\.mmtalk-choice:nth-child\(2\):last-child\)\{flex-direction:column;/);
   assert.match(rd('js/npc/npc.js'), /if \(Array\.from\(x\.label\)\.length >= 13\) bt\.classList\.add\('long'\);/);

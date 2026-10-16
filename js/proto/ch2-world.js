@@ -111,7 +111,7 @@
       const paved = r.kind === 'arena';   // 港町は白砂の地面（家並み L01 と白石の道で町に見せる）・会場の島は白石の敷石
       if (sand || white) {
         g.fillStyle = (paved ? white : sand) || sand || white; g.fillRect(x0, y0, w, h);
-        if (!paved && grass) {   // 草地は島の内側だけ（ふちは白砂の浜）
+        if (!paved && grass && r.id !== 'town') {   // 草地は島の内側だけ（ふちは白砂の浜）。港町は白砂（家並み L01 と白石の道）
           g.save(); g.globalCompositeOperation = 'source-atop'; g.lineJoin = 'round';
           g.fillStyle = grass; polyPath(g, P); g.fill();
           g.globalCompositeOperation = 'source-atop'; g.strokeStyle = sand; g.lineWidth = 30; polyPath(g, P); g.stroke(); g.restore();
@@ -300,7 +300,7 @@
     const rnd = H.mulberry(0x5EA), seabed = tp(g, H, S, 'seabed');
     if (seabed) {   // 2026-10-16 正式：海底の砂地（undersea_sand_base）＋ゆるい明暗（深さ）
       g.fillStyle = seabed; g.fillRect(bx0, by0, bw, bh);
-      const gr = g.createLinearGradient(bx0, by0, bx0 + bw * 0.35, by0 + bh); gr.addColorStop(0, 'rgba(20,60,80,.10)'); gr.addColorStop(1, 'rgba(10,40,70,.28)'); g.fillStyle = gr; g.fillRect(bx0, by0, bw, bh);
+      const gr = g.createLinearGradient(bx0, by0, bx0 + bw * 0.35, by0 + bh); gr.addColorStop(0, 'rgba(20,60,90,.22)'); gr.addColorStop(1, 'rgba(10,40,80,.42)'); g.fillStyle = gr; g.fillRect(bx0, by0, bw, bh);
     } else oldFloor(g, rnd, bx0, by0, bw, bh);
     // 沈没遺跡の広場（art.ruins）：正式＝遺跡の地面（sunken_ruins_ground）の上に U08 の広場（base／cracked_a／cracked_b を順に）
     const ruinsG = tp(g, H, S, 'ruins');

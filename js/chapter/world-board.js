@@ -377,7 +377,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
 .wbw .wbrelay{position:absolute;inset:0;z-index:9;background:#0b1636;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity .56s ease;pointer-events:auto}
 .wbw .wbrelay.out{opacity:0;pointer-events:none}
 .wbw .wbrelay .wbr-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.wbw .wbrelay.medal{background:radial-gradient(circle at 50% 40%,#1d6f9e,#0b2c4f 70%)}.wbw .wbrelay.medal .wbr-img{inset:auto;left:50%;top:22%;width:min(56vw,250px);height:auto;transform:translateX(-50%);object-fit:contain;filter:drop-shadow(0 6px 18px rgba(0,0,0,.45))}
+.wbw .wbrelay.medal{background:radial-gradient(circle at 50% 40%,#1d6f9e,#0b2c4f 70%)}.wbw .wbrelay.medal .wbr-img{inset:auto;left:50%;top:max(9%,calc(env(safe-area-inset-top,0px) + 48px));width:min(46vw,210px);height:auto;transform:translateX(-50%);object-fit:contain;filter:drop-shadow(0 6px 18px rgba(0,0,0,.45))}
 .wbw .wb-arr.gate.sea{background-color:#0b3a63}
 .wbw .wbrelay .wbr-t{position:absolute;left:12px;right:12px;top:50%;transform:translateY(calc(-50% - 4dvh));text-align:center;color:#fff6dc;pointer-events:none;padding:18px 0 16px;background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(6,12,30,.66),rgba(6,12,30,0) 76%);transition:opacity .36s ease}
 .wbw .wbrelay .wbr-t i{display:inline-block;font-style:normal;opacity:0;transform:translateX(-14px);filter:blur(2px)}
@@ -818,7 +818,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
       d.addEventListener('click', close); setTimeout(close, calm() ? Math.min(ms, 900) : ms);
     });
   }
-  const evDef = (id) => ((cfg().eventPool) || []).find((e) => e.id === id) || null;
+  const evDef = (id) => { let c = null; try { c = root.MMCH && root.MMCH.getConfig(chOf()); } catch (e) {} return ((c && c.eventPool) || cfg().eventPool || []).find((e) => e.id === id) || null; };   // 2026-10-16：その Chapter の出来事（Chapter 2＝ch2a の eventPool）
   async function talkLines(lines) {
     if (!lines || !lines.length || root.MM_QA_NO_STORY || !root.MMNPC || !onBoard()) return;
     const L = lines.map((l) => (root.MMEVT ? root.MMEVT.lineOf(l) : { npc: 'fina', expression: l.expression || 'normal', text: l.text }));

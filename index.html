@@ -4080,7 +4080,7 @@ html:has(#app>.chfw.wbw) .mmtalk:not(.mmtalk-big):not(.mmtalk-scene) .mmtalk-sta
 <script src="./js/fx/sequence.js"></script>
 <script src="./js/proto/roadfirst-data.js"></script><script src="./js/proto/roadfirst-routes.js"></script><script src="./js/proto/roadfirst-core.js"></script><script src="./js/proto/roadfirst-play.js"></script><script src="./js/proto/roadfirst-zones.js"></script><script src="./js/proto/roadfirst-world.js"></script><script src="./js/proto/ch2-routes.js"></script>
 <script src="./js/proto/ch2-world.js"></script><script src="./js/proto/roadfirst-view.js"></script><!-- 2026-10-09：Chapter 1 Pattern A 道路先行の試作（?chapterBoard=roadfirst のときだけ。通常の URL では何もしない）。2026-10-15：Chapter 2 A／B／C 設計案のデータ（ch2-routes.js＝&rfData=ch2&ch2route=A|B|C の試作だけが読む。本編にはつながない） -->
-<script src="./js/chapter/world-driver.js"></script><script src="./js/chapter/world-driver-ch2.js"></script><script src="./js/chapter/world-board.js"></script><!-- 2026-10-11：本編の Chapter 1＝1枚の世界のボード（299地点。進行 MMWD・画面 MMWB） -->
+<script src="./js/chapter/world-driver.js"></script><script src="./js/chapter/world-driver-ch2.js"></script><script src="./js/chapter/world-board.js"></script><script src="./js/chapter/ch2-trial.js"></script><!-- 2026-10-11：本編の Chapter 1＝1枚の世界のボード（299地点。進行 MMWD・画面 MMWB） -->
 <script src="./js/prologue/prologue.js"></script>
 <script src="./js/opening/worldmap.js"></script>
 <script>
@@ -4322,7 +4322,7 @@ function testTour(){if(!TEST_MODE||TEST_TOUR||S.playerNamePending)return;const s
  try{const base=S.m?JSON.parse(JSON.stringify(S.m)):Object.assign(mk(0),{name:"テスト"});delete base.raise;MMP7.ensureProg(base);S.m=base;S.inv.bag=[];
   const r=MMP8.depart(S,base,Math.random);if(!r.ok)throw new Error(r.reason||"depart");Object.assign(base.raise,{goal:true,pend:null});if(base.raise.field)base.raise.field.arrivalSeen=true;board()}
  catch(e){testTourEnd("TEST 大会を始められませんでした。")}}
-function testTourEnd(msg){if(!TEST_TOUR)return false;const snap=TEST_TOUR.snap;TEST_TOUR=null;p9MenuClose();try{const d=$("#bt");if(d)d.remove()}catch(e){}S=JSON.parse(snap);lobby(msg||"大会を終了しました（セーブは変わっていません）。");return true}
+function testTourEnd(msg){if(!TEST_TOUR)return false;const snap=TEST_TOUR.snap;TEST_TOUR=null;{const tv=document.getElementById("ch2tv");if(tv)tv.remove()}if(window.MMWB)MMWB.release();p9MenuClose();try{const d=$("#bt");if(d)d.remove()}catch(e){}S=JSON.parse(snap);lobby(msg||"大会を終了しました（セーブは変わっていません）。");return true}
 function save(){if(P8_LOAD.locked||TEST_TOUR)return;if(P_NEWGAME===false)ngMark(0);try{localStorage.setItem(MMP8.SAVE_KEY,JSON.stringify(S))}catch(e){}}
 // Phase 10：新規ゲームの初期所持金は正式値（300G）。既存セーブの所持金は変えない
 function p10NewSave(){const n=MMP8.newSave();n.g=MMP10M.ECONOMY.initialGold;return n}
@@ -5304,7 +5304,7 @@ window.addEventListener("unhandledrejection",rescue);
  *  ./version.json（小さな JSON。毎回取り直す）の build がこのページの MM_BUILD と違えば1回だけ reload（同じ版へは15分に1回まで＝読み込み直しを繰り返さない）。
  *  確かめる時：起動したとき・ページがメモリから戻ったとき（pageshow の persisted）・10分以上裏にいて表に戻ったとき。セーブ（mr4v6）には触れない（読み込み直しは iOS がタブを閉じたときと同じ＝つづきから）。
  *  公開するたびに MM_BUILD と version.json の build を同じ値に上げる（tests/dev24-1013.test.mjs で一致を確かめる） */
-const MM_BUILD="2026-10-16-final";
+const MM_BUILD="2026-10-16-ch2art";
 (function(){const K="mmbuildReload";let hidAt=0;
  const check=()=>{try{const x=new XMLHttpRequest();x.open("GET","./version.json?t="+Date.now(),true);x.timeout=8000;
   x.onload=()=>{try{if(x.status<200||x.status>=300)return;const b=(JSON.parse(x.responseText)||{}).build;if(!b||b===MM_BUILD)return;
@@ -5356,7 +5356,7 @@ function p9Immersive(on){const h1=$("h1");if(h1)h1.style.display=on?"none":""}
 function p8TurnText(m){const r=m.raise;return r.turnLimit==null?`<b>${r.turnsUsed}</b>ターン目`:`残りターン <b>${MMP8.turnsLeft(m)}</b><small>/${r.turnLimit}</small>`}
 function p8BoardMenu(){return `<div class="p8menu"><button onclick="p9MenuClose();hall('st')">📊 ステータス</button><button onclick="p9MenuClose();hall('w')">⚔️ 技管理</button>${window.chfActive&&chfActive(S.m)?"":`<button onclick="p9Legend()">🗺 マスの説明</button>`}<button onclick="p9MenuClose();p8Suspend()">⏸ 中断</button><button class="p8danger" onclick="p9MenuClose();p8AbandonAsk()">🏳 育成放棄</button></div>`}
 function p9Menu(){if(bBusy)return;p9MenuClose();const d=document.createElement("div");d.className="p9ov";d.id="p9ov";tapAt(d);d.onclick=e=>{if(e.target===d&&!tapSoon(d,350))p9MenuClose()};
- d.innerHTML=`<div class="p9ovc" role="dialog" aria-modal="true"><div class="p9ovh">メニュー<button class="p9x" onclick="p9MenuClose()" aria-label="閉じる">✕</button></div>${TEST_TOUR?`<button class="p9btn2 ttest" onclick="ynAsk('大会をやめて街へ戻りますか？','',()=>testTourEnd())">大会をやめて街へ戻る</button>`:""}${p8BoardMenu()}<button class="p9btn2 tsetbtn" onclick="trialOv()">🔊 音・画面の設定</button></div>`;document.body.appendChild(d)}
+ d.innerHTML=`<div class="p9ovc" role="dialog" aria-modal="true"><div class="p9ovh">メニュー<button class="p9x" onclick="p9MenuClose()" aria-label="閉じる">✕</button></div>${TEST_TOUR?`<button class="p9btn2 ttest" onclick="ynAsk(TEST_TOUR.ch2?'試遊をやめて街へ戻りますか？':'大会をやめて街へ戻りますか？',TEST_TOUR.ch2?'セーブは変わりません。':'',()=>testTourEnd(TEST_TOUR.ch2?'Chapter 2 の試遊を終了しました（セーブは変わっていません）。':undefined))">${TEST_TOUR.ch2?'試遊をやめて街へ戻る':'大会をやめて街へ戻る'}</button>`:""}${p8BoardMenu()}<button class="p9btn2 tsetbtn" onclick="trialOv()">🔊 音・画面の設定</button></div>`;document.body.appendChild(d)}
 function p9MenuClose(){const d=$("#p9ov");if(d)d.remove()}
 /* 2026-10-14 実機試遊 Q10：本編の Chapter 1（1枚の世界のボード）は正式のマスの絵（色と紋章の両方）で説明する（旧ボードの絵の説明は Chapter 2 以降のまま） */
 const WB_LEGEND=[["tiles_top_1012/tile_stat_life","ライフ","止まるとライフが伸びる"],["tiles_top_1012/tile_stat_power","ちから","止まるとちからが伸びる"],["tiles_top_1012/tile_stat_intelligence","かしこさ","止まるとかしこさが伸びる"],["tiles_top_1012/tile_stat_accuracy","命中","止まると命中が伸びる"],["tiles_top_1012/tile_stat_evasion","回避","止まると回避が伸びる"],["tiles_top_1012/tile_stat_toughness","丈夫さ","止まると丈夫さが伸びる"],["tiles_top_1012/tile_event","出来事","いろいろな出来事が起きる"],["tiles_top_1012/tile_meal","食事","みんなでごはん（空腹が減る）"],["tiles_top_1012/tile_treasure","宝箱","G などが手に入る"],["tiles_top_1012/tile_wild_monster","野生","野生のモンスターとバトル"],["tiles_top_1012/tile_rare_monster","レア","レアモンスターとバトル"],["tiles_top_1012/tile_rival","ライバル","リュウとバトル"],["@tile_reward","宝の行き止まり","一度だけの報酬（帰りもサイコロ）"],["@tile_challenge","封印の遺跡門","5か6で遺跡の道へ"],["@tile_goal","ゴール","大会会場"]];
@@ -6124,7 +6124,7 @@ const finaScene=k=>k=="intro"?TOWN_BG:k=="done"||k=="raiseFirst"||k=="raiseAgain
 const FINA_BIG=new Set(["intro","done"]); // 2026-10-04 G2：大型の会話窓（街の案内・育成完了＝イベント） // branches：選択肢ごとの続きの行（同じ会話ウィンドウで続ける）。選んだ id で解決
 /** 名前登録の直後に1度だけ：先に「表示済み」を保存してから会話を出す（再読込しても二度出ない） */
 function finaIntro(){const f=finaFlags();if(f.finaIntro)return;f.finaIntro=1;save();finaTalk("intro")}
-function p7Depart(b){const m=S.m;if(!m)return lobby();try{if(window.MMWB&&window.MMRF_WORLD&&(m.raise&&m.raise.ch||0)<=1){MMRF_WORLD.warmArt(null,MMWB.skinKey&&MMWB.skinKey());new Image().src=PP_ART[1];if(window.MMDICE3D&&MMDICE3D.warm)MMDICE3D.warm('official')}}catch(e){} // 2026-10-12 開発21（C-5）：出発を押したら Chapter 1 の盤の絵を先に読み込む（会話の間に）
+function p7Depart(b){const m=S.m;if(!m)return lobby();try{if(window.MMWB&&window.MMRF_WORLD&&(m.raise&&m.raise.ch||0)<=1){MMRF_WORLD.warmArt(null,MMWB.skinKey&&MMWB.skinKey());new Image().src=PP_ART[1];if(window.MMDICE3D&&MMDICE3D.warm)MMDICE3D.warm('official')}else if(window.MMWD2&&MMWD2.isAttached()&&m.raise&&m.raise.ch===2&&window.MMRF_SEA&&window.MMRF_WORLD){MMRF_WORLD.warmArt(null,MMWB.skinKey&&MMWB.skinKey());MMRF_SEA.warm();if(window.MMDICE3D&&MMDICE3D.warm)MMDICE3D.warm('official')}}catch(e){} // 2026-10-16：Chapter 2 も正式美術（assets/fields/ch2/art_1016/）を出発の会話の間に先に読む。2026-10-12 開発21（C-5）：出発を押したら Chapter 1 の盤の絵を先に読み込む（会話の間に）
  // 育成開始（未育成→Chapter 1）：フィナがプレイヤーへ確認（選択肢「始める／まだやめておく」。初回だけ「途中で街へ戻れない」説明つき）。選択肢が確認を兼ねるので2度押しは求めない
  //  「始める」を選んだときだけ、同じ会話でフィナ→ダンの掛け合い → 会話のあと従来の出発処理（引数なしの p7Depart() ＝ 下の出発処理そのもの）。「まだやめておく」・選ばずに閉じたときは何もしない
  if(MMP7.raiseState(m)=="none"&&b&&window.MMNPC){if(b.dataset.fina)return;b.dataset.fina="1";const f=finaFlags(),first=!f.raiseIntro;if(first){f.raiseIntro=1;save()}
