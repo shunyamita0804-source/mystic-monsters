@@ -239,3 +239,25 @@ test('BTB-9：SK19 V2 の実戦（STOP）で相手が倒れる＝決着のあと
   assert.equal(r.me, 1, '自分の待機絵が見える');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
+
+test('BTB-10：SK19 V2 の実戦＝聖なる炎のあとの能力アップの印（青い球＋▲）を出さない・能力アップの処理と状態の札は従来どおり', { skip: SKIP, timeout: 300000 }, async () => {
+  const p = await battle('', 1, 0), pg = p.page;
+  await pg.evaluate(() => {
+    BPL[0].eq = BPL[0].eq.map(() => 19); BPL[1].h = Math.max(BPL[1].h, 500);
+    window.__efb = []; new MutationObserver((l) => l.forEach((m) => m.addedNodes.forEach((n) => { if (n.nodeType === 1 && n.classList.contains('efb')) window.__efb.push({ t: performance.now(), p: n.parentNode && n.parentNode.id }); }))).observe(document.getElementById('bt'), { childList: true, subtree: true });
+  });
+  let used = false;
+  for (let i = 0; i < 8 && !used; i++) {
+    await pg.evaluate(() => { const g = document.getElementById('go'); if (g) g.click(); });
+    await pg.waitForTimeout(400);
+    await pg.evaluate(() => { const g = document.getElementById('go'); if (g && !g.disabled) g.click(); });
+    for (let w = 0; w < 30; w++) { await pg.waitForTimeout(500); if (await pg.evaluate(() => { const g = document.getElementById('go'); return g && !g.disabled && !g.classList.contains('bk'); })) break; }
+    used = (await pg.evaluate(() => MMSK19V2.effLog().length)) > 0;   // SK19 が当たって能力アップの処理（efBurst）が呼ばれた
+  }
+  assert.ok(used, 'SK19 が当たって能力アップの処理が呼ばれた');
+  // 聖なる炎の時間枠（＋1.5秒）の中で、ガウルの側（#f0）に出た印を数える（相手の番の技の印は数えない）
+  const r = await pg.evaluate(() => { const L = MMSK19V2.log().filter((x) => x.s === 0); return { efb: window.__efb.filter((e) => e.p === 'f0' && L.some((x) => e.t >= x.t0 && e.t <= x.t0 + x.D + 1500)).length, all: window.__efb.length, eff: MMSK19V2.effLog().length }; });
+  assert.equal(r.efb, 0, `聖なる炎の能力アップの印（.efb）は出ない（全体 ${r.all}）`);
+  assert.ok(r.eff >= 1, `能力アップの処理は行われた（印だけ消した：${r.eff}）`);
+  assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+});

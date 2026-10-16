@@ -141,5 +141,19 @@
     return true;
   }
 
-  root.MMSK19V2 = Object.freeze({ A, TL, T, FLAME, EYE, CHEST, IDLE_EYE, IDLE_AREA, REF_AREA, BACK, FRONT, RISE, on, realTime, plan, play, warm, failed, riseAt, poseAt, flyVis, log: () => log.slice() });
+  // ---- 2026-10-16 ユーザー決定（iPhone 12:50 の録画）：聖なる炎のあとの「能力が上がるエフェクト」（index.html の efBurst＝青い球の光と ▲・js/battle/fx.js の能力アップの正式素材）を出さない ----
+  //  SK19 V2 を再生している間（その時間枠＋1.5秒・同じ側）だけ。能力が上がる処理・状態の札（drawSt）・文・SE（sfx）は従来どおり＝見た目だけ消す。ほかの技の能力アップの印は変えない
+  const effLog = [];
+  function activeOn(w) { const now = performance.now(); return log.some((r) => r.s === w && now >= r.t0 && now <= r.t0 + r.D + 1500); }
+  function wrapEff() {
+    const F = root.efBurst; if (typeof F !== 'function' || F.__sk19) return;
+    const W = function (w, e) {
+      if (on() && activeOn(w)) { effLog.push({ w, lv: e && e.lv, t: Math.round(performance.now()) }); if (effLog.length > 40) effLog.shift(); try { const sfx = G('sfx'); if (sfx) sfx(e && e.lv < 0 ? 10 : 11); } catch (er) { /* 無視 */ } return; }
+      return F.apply(this, arguments);
+    };
+    W.__sk19 = true; root.efBurst = W;
+  }
+  if (root.document) { if (root.document.readyState !== 'loading') setTimeout(wrapEff, 0); else root.addEventListener('DOMContentLoaded', () => setTimeout(wrapEff, 0)); }
+
+  root.MMSK19V2 = Object.freeze({ effLog: () => effLog.slice(), A, TL, T, FLAME, EYE, CHEST, IDLE_EYE, IDLE_AREA, REF_AREA, BACK, FRONT, RISE, on, realTime, plan, play, warm, failed, riseAt, poseAt, flyVis, log: () => log.slice() });
 })(typeof window !== 'undefined' ? window : globalThis);
