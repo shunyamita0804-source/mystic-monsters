@@ -123,7 +123,7 @@
   // 2026-10-14 Chapter 1 B／C 独立ルート：道のデータに art（景観の区域 terrain・岩峰 peaks・目印 landmarks）があればそれを使う（js/proto/roadfirst-routes.js の B／C）。
   //   無ければ A の定義（上の TERRAIN・ART.landmarks・ART.peaks.at）＝A の盤は従来と同じ。目印の file が './' で始まるときはそのままの場所（B／C の目印は assets/fields/ch1a/landmarks_bc_1014/）
   const terrainOf = (D) => (D && D.art && D.art.terrain) || TERRAIN;
-  const lmOf = (D) => (D && D.art && D.art.landmarks) || ART.landmarks;
+  const lmOf = (D) => (D && D.art && D.art.sea3d && root.MMRF_SEA && root.MMRF_SEA.lm ? root.MMRF_SEA.lm(D) : null) || (D && D.art && D.art.landmarks) || ART.landmarks;   // 2026-10-16 Chapter 2：正式の目印（js/proto/ch2-world.js）
   const peaksBase = (D) => (D && D.art && D.art.peaks) || ART.peaks.at;
   const artUrl = (base, f) => (/^\.\//.test(f) ? f : base + f);
   const ROAD_LAND = 18;   // 道の中心から谷のふちまで（単位）＝道の両側に残す陸
@@ -191,17 +191,21 @@
     const ELEV = (D && D.art && D.art.elev) || null, hOf = (id) => (ELEV && ELEV[id]) || 0;
     const scl = (s) => (SEA ? `scale3d(${s},${s},${s})` : `scale(${s})`);   // 高さのある子（海底・塔）は z も同じ倍率で
     if (SEA) { wrap.classList.add('sea'); plane.style.transformStyle = 'preserve-3d'; }
+    const GA = (SEA && SEA.goal) || ART.goal;   // 大会会場の絵（2026-10-16 Chapter 2 は正式の ocean_arena）
     css(doc);
     const W = Math.ceil(WORLD.w * o.res), H = Math.ceil(WORLD.h * o.res);
     plane.style.width = WORLD.w + 'px'; plane.style.height = WORLD.h + 'px';
     // 地面と道を区画ごとの canvas に1回だけ描く（区画の大きさ chunk px）
     const chunks = [], art = {};
+    // 2026-10-16 Chapter 2：海の世界は平面が preserve-3d（海底・塔の板のため）＝地面の区画が1枚ずつ別の 3D の層になり、層ごとの解像度の違いで区画の境目が直線に見えていた。
+    //  地面の区画は平らな入れ物（.rfw-gnd）にまとめて1枚の層にする（Chapter 1 は平面が平ら＝従来どおり平面へ直接）
+    let gnd = null; if (SEA) { gnd = doc.createElement('div'); gnd.className = 'rfw-gnd'; Object.assign(gnd.style, { position: 'absolute', left: '0px', top: '0px', width: WORLD.w + 'px', height: WORLD.h + 'px' }); plane.appendChild(gnd); }
     for (let y = 0; y < H; y += o.chunk) for (let x = 0; x < W; x += o.chunk) {
       // 区画どうしを 1px 重ねる（境目に細い線が出ないように）
       const c = doc.createElement('canvas'); const cw = Math.min(o.chunk, W - x) + 2, ch = Math.min(o.chunk, H - y) + 2;
       c.width = cw; c.height = ch; c.className = 'rfw-chunk'; c._x = x - 1; c._y = y - 1;
       c.style.left = (x - 1) / o.res + 'px'; c.style.top = (y - 1) / o.res + 'px'; c.style.width = cw / o.res + 'px'; c.style.height = ch / o.res + 'px';
-      plane.appendChild(c); chunks.push(c);
+      (gnd || plane).appendChild(c); chunks.push(c);
     }
     // 2026-10-12：道筋のまわりだけを明るく残す薄い幕（地面の区画の上・マスや景物の下。世界の半分の細かさ）。o.focus のときだけ
     let veil = null, veilSig = '';
@@ -288,10 +292,10 @@
         else d.src = artUrl(base, file);
         bb.appendChild(d); props.push(p); };
       for (const q of (SEA ? SEA.scatter(D, o, HELP) : scatter(D, o))) add(q.file, q.x, q.y, q.w, q.z || 0, q.cls, q.h);
-      const gn = D.nodes.GOAL; if (gn) { add(ART.goal.file, gn[0], gn[1] + ART.goal.dy, ART.goal.w, -40, 'rfw-goal'); const gp = props[props.length - 1]; gp.solid = true;
+      const gn = D.nodes.GOAL; if (gn) { add(GA.file, gn[0], gn[1] + GA.dy, GA.w, -40, 'rfw-goal'); const gp = props[props.length - 1]; gp.solid = true;
         // 2026-10-14 実機試遊⑭：大会会場は立てた絵（いつもカメラの方を向く）なので、置く位置も「カメラから見て GOAL のすぐ奥」に合わせる＝正面の階段の下に GOAL の円盤が来る。
         //  地面を進む向きへ回す（heading）本編だけ：GOAL から画面の奥の向きへ back だけ下げた点（回したあとの画面で真上）。試作（北が上）は従来の dy のまま。GOAL の地点・歩数・判定は変えない
-        if (o.heading) gp.at = (c) => { const a = rad((c && c.yaw) || 0); return [gn[0] - ART.goal.back * Math.sin(a), gn[1] - ART.goal.back * Math.cos(a)]; }; }   // 2026-10-13 開発27（26）：大会会場（建物・門）は半透明にしない（xray で草地が透けて見えていた）
+        if (o.heading) gp.at = (c) => { const a = rad((c && c.yaw) || 0); return [gn[0] - GA.back * Math.sin(a), gn[1] - GA.back * Math.cos(a)]; }; }   // 2026-10-13 開発27（26）：大会会場（建物・門）は半透明にしない（xray で草地が透けて見えていた）
       for (const L of lmOf(D)) { if (o.hideLm && o.hideLm.includes(L.node)) continue; const at = landmarkAt(D, L); if (at) { add(L.file, at[0], at[1], L.w, L.z || 0, 'rfw-lm', hOf(L.node)); props[props.length - 1].L = L; } }
       for (const q of (SEA ? [] : waterProps(D, o))) add(q.file, q.x, q.y, q.w, q.z || 0, 'rfw-wp');   // 第4便：川の景物（B は密に）
       for (const [x, y, w] of peaksOf(D, o)) add(ART.peaks.file, x, y, w, -20, 'rfw-peak');   // 第4便：山の岩峰（C は足す）
@@ -331,7 +335,7 @@
     }
     // 2026-10-15 N10：会場へ続く道のマス（GOAL から前向きの接続を逆にたどって、会場の絵の幅のうちにある地点）は、いつも会場の絵より手前に描く。
     //  道が曲がってカメラの向きと会場の向きがずれると、立てた会場の絵が GOAL の手前のマスを覆っていた（C の渦の中心など）。地点・道・GOAL の判定は変えない
-    const apprIds = (() => { const gn = D.nodes.GOAL; if (!gn || !ART.goal) return []; const R = ART.goal.w * 0.95, rev = {};
+    const apprIds = (() => { const gn = D.nodes.GOAL; if (!gn || !GA) return []; const R = GA.w * 0.95, rev = {};
       for (const e of D.edges) if (e[3] === 'forward') (rev[e[1]] = rev[e[1]] || []).push(e[0]);
       const seen = new Set(), q = ['GOAL'];
       for (let i = 0; i < q.length && i < 400; i++) for (const n of rev[q[i]] || []) { const v = D.nodes[n]; if (!seen.has(n) && v && Math.hypot(v[0] - gn[0], v[1] - gn[1]) <= R) { seen.add(n); q.push(n); } }
