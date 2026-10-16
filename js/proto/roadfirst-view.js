@@ -21,8 +21,12 @@
   'use strict';
   const Q = (() => { try { return new URLSearchParams(root.location ? root.location.search : ''); } catch (e) { return new URLSearchParams(''); } })();
   const ON = Q.get('chapterBoard') === 'roadfirst';
+  // 2026-10-15 Chapter 2 A／B／C 設計案の限定試作：&rfData=ch2&ch2route=A|B|C（js/proto/ch2-routes.js＝MMRF_CH2）。2026-10-16：ルートを省くと A＋上の帯に A／B／C の切り替え（.rf-c2sel）。Chapter 1 の試作（既定）とは別の鍵に保存＝互いに触れない。
+  //  本編（MMWD／MMWB・raising.js・セーブ v6／mr4v6）にはつながない。通常の URL では何もしない（従来どおり）
+  const CH2 = ON && Q.get('rfData') === 'ch2' ? (['A', 'B', 'C'].includes(Q.get('ch2route')) ? Q.get('ch2route') : 'A') : null;
   const KEY = 'mmrf_proto_v1';
-  const BG = './assets/proto/ch1a_roadfirst_1009/01_road_geometry.svg';
+  const SKEY = CH2 ? `mmrf_proto_ch2_${CH2}_v1` : KEY;   // 実際に保存する鍵（Chapter 2 の試作はルートごとに別の鍵＝Chapter 1 の試作の保存と混ざらない）
+  const BG = CH2 ? './assets/fields/ch2a/intro/ch2_intro_overview_v2.webp' : './assets/proto/ch1a_roadfirst_1009/01_road_geometry.svg';   // 2026-10-15 Chapter 2 の試作：図面の代わりに既存の俯瞰図（864×1536 を 1024 幅に引き伸ばす＝設計の座標と同じ縮尺。参照用で正式の盤ではない）
   const ZOOM = 3, ZOOM_ALL = 0.36;
   const ZMODE = ON ? Q.get('rfZones') : null;   // 'phub'＝P の前後だけ／'all'＝68 Scene（背景の無い Scene は図面のまま。2026-10-10）
   const ZON = ZMODE === 'phub' || ZMODE === 'all', ZALL = ZMODE === 'all';
@@ -30,10 +34,11 @@
   let zidx = null, zso = null;   // 68 Scene の索引・今の Scene（rfZones=all）
   // 2026-10-10 1枚の世界ビュー（絵なしの技術検証）：&rfView=world のときだけ js/proto/roadfirst-world.js（MMRF_WORLD）で描く
   //   （俯瞰 → START へ寄る → 6マス先までの追従・地面を傾ける・マスは既存の tiles_v2 を立てて置く）。&rfTilt=度・&rfRes=px／単位
-  const ZWORLD = ON && Q.get('rfView') === 'world';
-  const ART = ZWORLD && Q.get('rfArt') === '1010' ? './assets/proto/board_art_1010/' : null;   // 2026-10-10・11 ボード素材の試し貼り（第1便＋第2便）。&rfRoad=pattern＝道を敷石の模様だけで描く（比較用）
+  // 2026-10-15 追補（論点 3・Chapter 1 と同じ見せ方のプレビュー）：Chapter 2 の試作は既定で1枚の世界ビュー＋絵（&rfView=plan で図面・&rfArt=none で仮の色）
+  const ZWORLD = ON && (Q.get('rfView') === 'world' || (!!CH2 && Q.get('rfView') !== 'plan'));
+  const ART = ZWORLD && (Q.get('rfArt') === '1010' || (!!CH2 && Q.get('rfArt') !== 'none')) ? './assets/proto/board_art_1010/' : null;   // 2026-10-10・11 ボード素材の試し貼り（第1便＋第2便）。&rfRoad=pattern＝道を敷石の模様だけで描く（比較用）
   let world = null;
-  const TV2 = './assets/fields/ch1a/tiles_v2/';
+  const TV2 = './assets/fields/ch1a/tiles_v2/', TOP = './assets/fields/ch1a/tiles_top_1012/';
   const STAT_FILE = { li: 'life', po: 'power', in: 'intelligence', hi: 'accuracy', ev: 'evasion', de: 'toughness' };
   const ART_TILE = { start: 'tile_start.webp', goal: 'tile_goal.webp', lower_walk_through_gate: 'tile_gate.webp', upper_walk_through_gate: 'tile_gate.webp',
     challenge_d6_5_6: 'tile_challenge.webp', fixed_reward_dead_end: 'tile_reward.webp', optional_random_unlock_dead_end: 'tile_den.webp' };   // &rfArt=1010 の専用マス
@@ -43,6 +48,7 @@
     const n = D.nodes[id], role = n ? n[2] : '', out = { src: TV2 + 'tile_blank.webp', mark: '', used: false };
     const fwd = D.edges.filter((e) => e[0] === id && e[3] === 'forward').length, inn = D.edges.filter((e) => e[1] === id && e[3] === 'forward').length;
     if (ART && ART_TILE[role]) out.src = ART + ART_TILE[role];   // 第2便の G1・G6・第3便の G2〜G5・G7
+    else if (CH2 && role === 'mandatory_rival') out.src = TOP + 'tile_rival.webp';
     else if (ROLE_MARK[role]) out.mark = ROLE_MARK[role];
     else if (role === 'mandatory_rival') out.src = TV2 + 'tile_rival.webp';
     else if (fwd > 1) out.src = TV2 + 'tile_branch.webp';
@@ -51,11 +57,12 @@
       const t = st.play.tiles[id];
       if (t) {
         out.used = !!st.play.used[id];
-        if (t.t === 'stat') out.src = TV2 + 'tile_stat_' + STAT_FILE[t.k] + '.webp';
-        else if (t.t === 'event') out.src = TV2 + 'tile_event.webp';
-        else if (t.t === 'rest') out.src = TV2 + 'tile_rest.webp';
-        else if (t.t === 'wild') out.src = TV2 + (t.rare ? 'tile_rare_monster.webp' : 'tile_wild_monster.webp');
-        else if (t.t === 'treasure') out.src = TV2 + (t.tier === 'rare' ? 'tile_treasure_2.webp' : 'tile_treasure_1.webp');
+        const TT = CH2 ? TOP : TV2;   // 2026-10-15 Chapter 2 の試作は本編の Chapter 1 と同じ正式の上面（tiles_top_1012）
+        if (t.t === 'stat') out.src = TT + 'tile_stat_' + STAT_FILE[t.k] + '.webp';
+        else if (t.t === 'event') out.src = TT + 'tile_event.webp';
+        else if (t.t === 'rest') out.src = CH2 ? TOP + 'tile_meal.webp' : TV2 + 'tile_rest.webp';
+        else if (t.t === 'wild') out.src = TT + (t.rare ? 'tile_rare_monster.webp' : 'tile_wild_monster.webp');
+        else if (t.t === 'treasure') out.src = t.tier === 'rare' ? TV2 + 'tile_treasure_2.webp' : CH2 ? TOP + 'tile_treasure.webp' : TV2 + 'tile_treasure_1.webp';
       }
     }
     return out;
@@ -95,12 +102,12 @@
   function fresh(o) { return P.attach(D, C.create(D, Object.assign(opts(), o || {})), { monster: monCopy(), lab: LAB, dd: labDD() }); }
   /** 保存を読む：v 2 はそのまま・v 1（移動だけ）は育成の状態を付けて移行・読めなければ { broken } */
   function load() {
-    let t = null; try { t = localStorage.getItem(KEY); } catch (e) { return null; }
+    let t = null; try { t = localStorage.getItem(SKEY); } catch (e) { return null; }
     if (!t) return null;
     try { const s = P.upgrade(D, JSON.parse(t), { monster: monCopy(), lab: LAB, dd: labDD() }); if (s) return s; } catch (e) {}
     return { broken: t };
   }
-  function persist() { if (broken) return; try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+  function persist() { if (broken) return; try { localStorage.setItem(SKEY, JSON.stringify(st)); } catch (e) {} }
   function monSrc() {
     try { const S = G('S'), m = S && S.m; const s = m && root.MMP10M && root.MMP10M.byId(m.sp); if (s && s.image) return s.image.src; } catch (e) {}
     return './assets/monsters/2p5d/solamo.webp';
@@ -121,6 +128,7 @@
 #rfp .rf-top{position:absolute;left:8px;right:8px;top:calc(env(safe-area-inset-top,0px) + 8px);background:rgba(19,35,58,.9);color:#fff;border-radius:12px;padding:7px 10px;font-size:12px;line-height:1.45;z-index:5}
 #rfp .rf-top b{font-size:13px}#rfp .rf-top .rf-warn{color:#ffd27a;font-size:10.5px}
 #rfp .rf-top .rf-row{display:flex;gap:10px;flex-wrap:wrap}
+#rfp .rf-top .rf-c2sel{display:flex;align-items:center;gap:6px;margin:4px 0 2px;font-weight:700}#rfp .rf-top .rf-c2sel a{display:inline-block;min-width:40px;padding:5px 0;border:1.5px solid #ffd27a;border-radius:8px;color:#ffd27a;text-align:center;text-decoration:none;font-weight:900}#rfp .rf-top .rf-c2sel a.on{background:#ffd27a;color:#13233a}
 #rfp .rf-tools{position:absolute;right:8px;top:calc(env(safe-area-inset-top,0px) + 92px);display:flex;flex-direction:column;gap:6px;z-index:5}
 #rfp .rf-tools button{font:inherit;font-size:11.5px;padding:6px 8px;border-radius:9px;border:1px solid #13233a;background:rgba(255,255,255,.92);color:#13233a}
 #rfp .rf-bot{position:absolute;left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);z-index:5;display:flex;flex-direction:column;gap:8px}
@@ -194,7 +202,7 @@
     css();
     el = document.createElement('div'); el.id = 'rfp'; el.setAttribute('role', 'application');
     el.innerHTML = `<div class="rf-vp"><div class="rf-cam"><img src="${BG}" alt="" draggable="false">${svgLayer()}<div class="rf-mon"><img src="${monSrc()}" alt="モンスター" draggable="false"></div></div>${ZON ? '<div class="rf-zone" aria-hidden="true"></div>' : ''}</div>
-<div class="rf-top"><div><b>Chapter 1 Pattern A 道路先行の試作</b> <span class="rf-warn">（試作・正式ではない／図面はブロックアウト）</span></div><div class="rf-row"><span class="rf-turn"></span><span class="rf-at"></span></div><div class="rf-row"><span class="rf-rw"></span><span class="rf-rand"></span><span class="rf-rule"></span></div><div class="rf-play"><span class="rf-fat"></span><span class="rf-gold"></span><span class="rf-gain"></span></div>${ZON ? '<div class="rf-zrow"></div>' : ''}</div>
+<div class="rf-top"><div><b>${CH2 ? `Chapter 2 ルート ${CH2}「${esc(D.name || '')}」設計案の試作` : 'Chapter 1 Pattern A 道路先行の試作'}</b> <span class="rf-warn">（試作・正式ではない／図面はブロックアウト）</span></div>${CH2 ? `<div class="rf-c2sel" role="navigation" aria-label="Chapter 2 のルートを選ぶ">ルート：${['A', 'B', 'C'].map((r) => `<a href="?chapterBoard=roadfirst&rfData=ch2&ch2route=${r}" data-r="${r}"${r === CH2 ? ' class="on" aria-current="page"' : ''}>${r}</a>`).join('')}</div>` : ''}<div class="rf-row"><span class="rf-turn"></span><span class="rf-at"></span></div><div class="rf-row"><span class="rf-rw"></span><span class="rf-rand"></span><span class="rf-rule"></span></div><div class="rf-play"><span class="rf-fat"></span><span class="rf-gold"></span><span class="rf-gain"></span></div>${ZON ? '<div class="rf-zrow"></div>' : ''}</div>
 <div class="rf-tools"><button type="button" data-a="stats">能力</button><button type="button" data-a="zoom">全体</button><button type="button" data-a="reset">最初から</button><button type="button" data-a="close">閉じる</button></div>
 <div class="rf-panel" role="dialog" aria-label="能力と記録"></div>
 <div class="rf-die"><span></span><small></small></div>
@@ -207,7 +215,9 @@
       const tilt = Number(Q.get('rfTilt')), res = Number(Q.get('rfRes'));
       world = root.MMRF_WORLD.create(el.querySelector('.rf-vp'), D, P, { view: () => zview(), monSrc: monSrc(),
         tilt: Number.isFinite(tilt) && Q.get('rfTilt') !== null ? tilt : undefined, res: Number.isFinite(res) && res > 0 && res <= 4 ? res : undefined,
-        art: ART ? { base: ART, road: Q.get('rfRoad') === 'pattern' ? 'pattern' : 'strip' } : undefined });   // 2026-10-10 第1便の絵の試し貼り
+        art: ART ? { base: ART, road: Q.get('rfRoad') === 'pattern' ? 'pattern' : 'strip' } : undefined,   // 2026-10-10 第1便の絵の試し貼り
+        // 2026-10-15 Chapter 2 の試作：本編の Chapter 1（js/chapter/world-board.js）と同じカメラ・見せ方（後ろから追う・近い倍率・モンスター＝マスの1.2倍・道筋の強調・正式の絵 hq1014）
+        ...(CH2 ? { focus: true, veil: false, xray: true, heading: true, yawTau: 600, sMin: 2.2, sMax: 5.6, tilePx: [22, 84], monRatio: 1.2, zoomTau: 320, ahead: 5, skin: 'hq1014' } : {}) });
     }
     render(); cam(true);
     if (world && st.turn === 0 && st.node === 'START' && !st.wintro && !broken) {   // 開始の俯瞰（この試作の状態で1回・保存は試作の鍵だけ）
@@ -393,7 +403,7 @@
   }
   function pickChoice(i) { if (busy || !st.play.notice || st.play.notice.kind !== 'choice') return; P.choose(D, st, i); persist(); render(); showNotice(); fly(); }
   function doReset(o) {
-    if (broken) { try { localStorage.setItem(KEY + '_broken', broken); } catch (e) {} broken = null; }
+    if (broken) { try { localStorage.setItem(SKEY + '_broken', broken); } catch (e) {} broken = null; }
     st = fresh(o); persist(); render(); cam(true);
     if (world && !(o && o.noIntro)) { busy = true; render(); world.intro(() => { busy = false; st.wintro = true; persist(); render(); cam(); }); }
   }
@@ -420,7 +430,7 @@
   function renderPanel() {
     const p = st.play, pn = el.querySelector('.rf-panel');
     const rows = P.STAT_KEYS.map((k) => `<tr><td><i class="sw" style="background:${P.STAT_COLOR[k]}"></i>${P.STAT_LABEL[k]}</td><td>適性${p.mon.growth[k]}</td><td class="n">${p.mon.base[k]} → <b>${p.stats[k]}</b></td><td class="n">${p.stats[k] - p.mon.base[k] >= 0 ? '+' : ''}${p.stats[k] - p.mon.base[k]}</td></tr>`).join('');
-    const got = Object.keys(p.claimed).map((k) => `<li>${esc((P.TUNING.rewards[k] || {}).title || k)}（${k}・Turn ${p.claimed[k]}）</li>`).join('') || '<li>まだ無い</li>';
+    const got = Object.keys(p.claimed).map((k) => `<li>${esc(((D.rewards && D.rewards[k]) || P.TUNING.rewards[k] || {}).title || k)}（${k}・Turn ${p.claimed[k]}）</li>`).join('') || '<li>まだ無い</li>';
     const hist = p.hist.slice(-8).reverse().map((h) => `<li>T${h.t} ${esc(h.title)}${(h.d || []).map((x) => x.k ? ` ${P.STAT_LABEL[x.k]}${x.d >= 0 ? '+' : ''}${x.d}` : x.fat !== undefined && x.fat ? ` 疲れ${x.fat >= 0 ? '+' : ''}${x.fat}` : x.gold ? ` 試作G+${x.gold}` : '').join('')}</li>`).join('') || '<li>まだ無い</li>';
     const legend = P.STAT_KEYS.map((k) => `<span><i class="sw" style="background:${P.STAT_COLOR[k]}"></i>${P.STAT_LABEL[k]}</span>`).join('') + '<span><i class="sw" style="background:#8e5cc7"></i>？イベント</span><span><i class="sw" style="background:#2f9aa0"></i>休憩</span><span><i class="sw" style="background:#7a2b2b"></i>！野生</span><span><i class="sw" style="background:#c0143c"></i>★レア</span><span><i class="sw" style="background:#d9a520"></i>宝箱</span>';
     pn.innerHTML = `<h4>${p.mon.demo ? 'デモ個体（連れている子がいない）' : esc(p.mon.name)}の能力（試作の写し・正式のセーブは変わらない）</h4><table>${rows}</table>
@@ -435,14 +445,15 @@
   }
 
   function start() {
-    D = root.MMRF_DATA; C = root.MMRF_CORE; P = root.MMRF_PLAY; if (!D || !C || !P) return;
+    D = CH2 ? (root.MMRF_CH2 && root.MMRF_CH2[CH2]) : root.MMRF_DATA; C = root.MMRF_CORE; P = root.MMRF_PLAY; if (!D || !C || !P) return;
+    if (CH2) { Object.assign(NAME, D.names || {}); Object.assign(PLACE, D.places || {}); }   // Chapter 2 の道・場所の名前（設計案・仮）
     const l = load();
     if (l && l.broken) { broken = l.broken; st = fresh(); } else { st = l || fresh(); persist(); }
     if (!document.getElementById('rfp')) mount();
     if (ZON) zloadAll();
   }
   const api = {
-    on: ON, KEY, start, close,
+    on: ON, KEY, SKEY, CH2, start, close,
     state: () => (st ? JSON.parse(JSON.stringify(st)) : null),
     reset: (o) => doReset(o),
     roll: (die, o) => turn(die, o), choose: (seg, o) => pick(seg, o), goal,
@@ -450,6 +461,7 @@
     set fast(v) { fast = !!v; if (el) el.classList.toggle('fast', fast); }, get fast() { return fast; },
     busy: () => busy,
     world: () => (world ? world.state() : null),
+    worldApi: () => world,   // 2026-10-15：設計案のプレビュー（地点を指定して見る＝tools／テスト用。進行・保存は変えない）
     worldFrames: (reset) => (world ? world.frames(reset) : []),
     worldProject: (x, y) => (world ? world.project(x, y) : null),
     skipIntro: () => { if (world) world.skipIntro(); },

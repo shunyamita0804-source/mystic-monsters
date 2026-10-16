@@ -63,7 +63,8 @@
   const NOBI_FIRST = 30;
   // 旧技の絵を借りる（正式の小さな絵は素材待ち）：No. → 借りる SK の番号
   const NOBI_VISUAL = { 1: 1, 2: 0, 3: 12, 4: 7, 5: 3, 6: 5, 7: 6, 8: 2, 9: 15, 10: 9 };
-  const NOBI_EMOJI = ['👃', '💥', '💧', '💤', '➰', '🌀', '⚡', '✨', '🌫️', '🗻'];
+  // 2026-10-15 夜（試遊 08）：はなビンタの絵文字 👃 は iPhone で写実的な人の鼻＝ダメージの数字の横（fight() の pop）に「本物の鼻」のように出ていた → 💫
+  const NOBI_EMOJI = ['💫', '💥', '💧', '💤', '➰', '🌀', '⚡', '✨', '🌫️', '🗻'];
   const STATKEY = { atk: 'atk', de: 'de', hi: 'hi', ev: 'ev' }, LV = { small: 1, medium: 2, large: 3 };
   const BEHAVIOR = {};   // SK の番号 → { ailment, heal, support, owner }
   let installed = false;
@@ -88,6 +89,7 @@
     const SPM = G('SPECIAL_MOVES');
     if (SPM && SPM.add) list.filter((m) => m.power >= 120).forEach((m) => SPM.add(NOBI_FIRST + m.no - 1));
     installJiol(SK, EFF, SKART, SFR, SKM, SPM);
+    installFlureneQA(SK, SKART, SFR, SKM);
     // 純補助技（威力なし）＝ソラモ・ガウル・レグナスの補助技も同じ扱い（基本命中 100%）
     for (let k = 0; k < SK.length; k++) if (SK[k] && !SK[k][1] && !BEHAVIOR[k]) BEHAVIOR[k] = { support: true };
     hookGlobals();
@@ -118,6 +120,22 @@
       const P7 = root.MMP7, by = (l) => list.filter((m) => m.learn === l).map((m) => m.slot);
       if (P7 && P7.registerMoveset && !P7.getMoveset(3)) P7.registerMoveset(3, { initial: by('initial'), po: by('po'), in: by('in'), hi: by('hi'), ev: by('ev'), de: by('de') });
     } catch (e) { /* 無視（習得の表は QA に関係しない） */ }
+    return true;
+  }
+  // ---- フルーネ技09「ルートドレイン」（2026-10-16 ユーザー承認：威力110・命中90・CR10%・与えたダメージの50%を吸収）＝QA 試遊（?mmQaTrial=1）のときだけ SK 58（50＋No−1）に入れる ----
+  //  フルーネは未解禁（市場・野生・合体・大会に出ない）。ほかの9技は性能が未承認＝入れない
+  const FLU_FIRST = 50;
+  function installFlureneQA(SK, SKART, SFR, SKM) {
+    let qa = false; try { qa = /[?&]mmQaTrial=1(&|$)/.test(root.location.search); } catch (e) { /* 下へ */ }
+    const M = root.MMP10M, f = qa && M && M.pendingSpecies ? M.pendingSpecies('flurene') : null, mv = f && f.moves.find((m) => m.no === 9);
+    if (!mv || mv.power == null || !mv.drain) return false;
+    const k = FLU_FIRST + mv.no - 1;
+    SK[k] = [mv.name, mv.power / 100, 2.5, '#9be37a', '🌿', 'a', mv.desc || '', mv.type === 'wisdom' ? 'i' : 'p', mv.accuracy, mv.critical / 100];
+    const v = 1;   // 旧技の小さな絵を借りる（技アニメのコマは js/battle/rootdrain-1016.js）
+    if (Array.isArray(SKART) && SKART[v] != null) SKART[k] = SKART[v];
+    if (SFR && SFR[v] != null) SFR[k] = SFR[v];
+    if (SKM && SKM[v] != null) SKM[k] = SKM[v];
+    BEHAVIOR[k] = { owner: 'flurene', no: mv.no, drain: mv.drain };
     return true;
   }
   const kOf = (move) => { const m = /^sk(\d+)$/.exec((move && move.id) || ''); return m ? +m[1] : -1; };
@@ -195,6 +213,15 @@
         r.targetLifeAfter = sess.currentLife[def]; r.damage = now; r.ko = false; r.endured = true;
         notes.push({ skill: 'jiol', side: def, text: `${nameOf(pl, def)}は大地の守りで踏みとどまった！` });
       }
+    }
+    // ルートドレイン（フルーネ技09）：実際に与えたダメージ（r.damage＝固有スキルの補正のあと）の 50% を四捨五入（ひとやすみと同じ Math.round）して回復・最大ライフまで。
+    //  外れ・ダメージ 0 は回復しない。1回の行動で1回だけ。表示（数字・ライフの棒）は技アニメの回復のコマ（07）で（flushDrain）＝無ければ 1.2 秒あと
+    if (bh.drain && r.hit && r.damage > 0) {
+      const max = (sess.participants && sess.participants[atk] && sess.participants[atk].maxLife) || 0, before = sess.currentLife[atk];
+      const gain = Math.max(0, Math.min(max, before + Math.round(r.damage * bh.drain)) - before);
+      sess.currentLife[atk] = before + gain;
+      r.drained = gain;
+      notes.push({ side: atk, drain: gain, text: gain > 0 ? `${nameOf(pl, atk)}はライフを${gain}吸収した！` : '' });
     }
     // ねむり：ダメージを受けたらすぐ起きる
     if (r.hit && r.damage > 0 && st.ail[def].sleep > 0) { delete st.ail[def].sleep; notes.push({ side: def, text: `${nameOf(pl, def)}は目を覚ました！` }); }
@@ -284,7 +311,16 @@
     if (tx) { if (pending && pending.name === nm && pending.mode === 'append') { pending.text += ' ' + tx; pending.at = now(); } else pending = { name: nm, mode: 'append', text: tx, at: now() }; }
     rules.notes.forEach((n) => { if (n.skill) setTimeout(() => skillCut(idx(n.side), n.skill), 720); if (n.badge) setTimeout(() => badge(n.side, n.badge), 720); });   // 2026-10-13 開発28：固有スキルの成立＝シネマティック演出（skill）・効果の消費＝小さな札（badge）。どちらもダメージの表示の時刻
     if (rules.notes.some((n) => n.heal)) setTimeout(() => healBar(r.actor), 720);
+    rules.notes.filter((n) => n.drain != null).forEach((n) => { const i = idx(n.side); drainPend[i] = { gain: n.drain, side: n.side, t: now() }; setTimeout(() => flushDrain(i), 2600); });   // 2600＝stage.js の retime が読み替える 720・1500・1900 と重ねない（技アニメが無いときの控え）
     setTimeout(drawAil, 760);
+  }
+  // ルートドレインの回復の表示（技アニメの 07 から1回・二重に出さない）
+  const drainPend = {}, drainLog = [];
+  function flushDrain(i) {
+    const p = drainPend[i]; if (!p) return false; delete drainPend[i];
+    drainLog.push({ side: i, gain: p.gain, at: Math.round(now() - p.t) }); if (drainLog.length > 20) drainLog.shift();
+    if (p.gain > 0) { healBar(p.side); try { const pop = G('pop'); if (pop) pop(i, '+' + p.gain, 'dmg ef up'); } catch (e) { /* 無視 */ } }
+    return true;
   }
   function healBar(side) {
     const s = cur && cur.sess; if (!s) return;
@@ -570,7 +606,7 @@
   const surrendered = () => surrenderPl != null && surrenderPl === G('BPL');
 
   wrapBattle();
-  root.MMRULES = Object.freeze({ AILMENTS, NOBI_FIRST, JIOL_FIRST, install, wrapBattle, swallow, cleanResult, battleStats, surrendered, refreshSameEffects, withSpeed, speedOfUnit, current: () => (cur && cur.pl === G('BPL') ? cur.sess : null), drawAil, skillCut, clearCuts, cutLog: () => cutLog.slice(), cutQueue: () => cutQueue.slice(), cutCamera, CUT, SKILL_FX, cutActive: () => !!cutEl, behavior: (k) => BEHAVIOR[k] || null,
+  root.MMRULES = Object.freeze({ FLU_FIRST, flushDrain, drainLog: () => drainLog.slice(), AILMENTS, NOBI_FIRST, JIOL_FIRST, install, wrapBattle, swallow, cleanResult, battleStats, surrendered, refreshSameEffects, withSpeed, speedOfUnit, current: () => (cur && cur.pl === G('BPL') ? cur.sess : null), drawAil, skillCut, clearCuts, cutLog: () => cutLog.slice(), cutQueue: () => cutQueue.slice(), cutCamera, CUT, SKILL_FX, cutActive: () => !!cutEl, behavior: (k) => BEHAVIOR[k] || null,
     // テスト用の純粋な処理
     newState, applyAilment, opportunity, cureAll, hasAilment, statMul, resolveWith, stateOf });
 })(typeof window !== 'undefined' ? window : globalThis);

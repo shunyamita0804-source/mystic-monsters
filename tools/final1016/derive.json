@@ -1,0 +1,542 @@
+[
+ {
+  "src": "A_01_soramo_stardust_beam_extend.png",
+  "src_size": [
+   2048,
+   512
+  ],
+  "src_sha256": "0196200909af6d53d89d8ee75ca8dcd7e24c4cfbb587ddc2d7725eb42825c7ae",
+  "dst": "assets/battle/soramo_moves_1012/08_a01_fx.webp",
+  "size": [
+   1024,
+   256
+  ],
+  "dst_sha256": "7ba0fa0a5c32c3183373f1bfc9878919201995bcc6583f688e9dfd1f4b1c43e0",
+  "origin": [
+   0.10498046875,
+   0.546875
+  ]
+ },
+ {
+  "src": "A_02_soramo_stardust_beam_peak.png",
+  "src_size": [
+   2048,
+   512
+  ],
+  "src_sha256": "dcd8f96fe2c6e4a05b4df1f4dac4668d97adf0db52e9cea5406720a2be0fd7cf",
+  "dst": "assets/battle/soramo_moves_1012/08_a02_fx.webp",
+  "size": [
+   1024,
+   256
+  ],
+  "dst_sha256": "4bffc5550015a94720818a62a26602932731a535ca8993174e90a98d4d164709",
+  "origin": [
+   0.10498046875,
+   0.546875
+  ]
+ },
+ {
+  "src": "B_01_nobiton_headbutt_windup.png",
+  "src_size": [
+   1254,
+   1254
+  ],
+  "src_sha256": "f4734a02a301a4aa725cb7085e5e720e3b834e79cc6b201ba8093e02691d2a7f",
+  "dst": "assets/battle/nobiton_moves_1012/31_b01.webp",
+  "size": [
+   603,
+   451
+  ],
+  "dst_sha256": "a1c4ddb971f21e150417fee7f2cabb65479b384fd79c854296680f1dc3e99712",
+  "crop": [
+   89,
+   351,
+   1166,
+   1156
+  ],
+  "scale": 0.56,
+  "b": [
+   9,
+   9,
+   569,
+   442
+  ]
+ },
+ {
+  "src": "B_02_nobiton_headbutt_contact.png",
+  "src_size": [
+   1254,
+   1254
+  ],
+  "src_sha256": "12bc474c6a04523016898a0de2dec981cc43e75f844a443f33bd9c02bc1ee5f5",
+  "dst": "assets/battle/nobiton_moves_1012/31_b02.webp",
+  "size": [
+   603,
+   451
+  ],
+  "dst_sha256": "7363f46083425ff77231d657e21f924253da6a661d5130e52a8a4abf7e19546e",
+  "crop": [
+   89,
+   351,
+   1166,
+   1156
+  ],
+  "scale": 0.56,
+  "b": [
+   35,
+   182,
+   594,
+   442
+  ]
+ },
+ {
+  "src": "D_01_flurene_roottem_root_rise.png",
+  "src_size": [
+   1024,
+   1024
+  ],
+  "src_sha256": "3d874b14d363e13e0b29dc59ffdf0bed1cbe242595a1c2b6b5565366559da230",
+  "dst": "assets/battle/flurene_moves_1015/f10_d01_fx.webp",
+  "size": [
+   512,
+   512
+  ],
+  "dst_sha256": "27cce12e178c70771627588948d0c57996a630ff3bb8122a479cc564d6d3ff28"
+ },
+ {
+  "src": "D_02_flurene_roottem_root_full.png",
+  "src_size": [
+   1024,
+   1024
+  ],
+  "src_sha256": "32dd1bf9e516754e35024e2cb5844f5f993c38d9127a79cb55d8ae358f06959a",
+  "dst": "assets/battle/flurene_moves_1015/f10_d02_fx.webp",
+  "size": [
+   512,
+   512
+  ],
+  "dst_sha256": "7b21dc5238962f83ab9edf8a67a640182b15381617f71abb5646bc32321006e3"
+ },
+ {
+  "src": "D_03_flurene_roottem_root_strike.png",
+  "src_size": [
+   1024,
+   1024
+  ],
+  "src_sha256": "ba8db39a5aa8efc01a4c004d9dea77c3174a98a5f77f5b6000c833e31b620ae2",
+  "dst": "assets/battle/flurene_moves_1015/f10_d03_fx.webp",
+  "size": [
+   512,
+   512
+  ],
+  "dst_sha256": "8ac5294b91d54934dd0b28eb253d7fdef8e9ef379e5882009b6e5fbe2cb28451"
+ },
+ {
+  "src": "D_04_flurene_roottem_root_retract.png",
+  "src_size": [
+   1024,
+   1024
+  ],
+  "src_sha256": "4194df77ec43e6dd6c97cb77e63b2d1af7c838e340a1eef4316cb5f08af9272b",
+  "dst": "assets/battle/flurene_moves_1015/f10_d04_fx.webp",
+  "size": [
+   512,
+   512
+  ],
+  "dst_sha256": "f8a24b153cf8cc5dea771ebbbc6233c0fcdc91418919973fedd90d1decadad33"
+ },
+ {
+  "src": "D_05_flurene_roottem_hit_open.png",
+  "src_size": [
+   1024,
+   1024
+  ],
+  "src_sha256": "5e007b46bb678d504aac28531dafad9fe929ee9c55b81e68e0b909feda76e444",
+  "dst": "assets/battle/flurene_moves_1015/f10_d05_fx.webp",
+  "size": [
+   512,
+   512
+  ],
+  "dst_sha256": "f649d05a3680928851c473cd3ed935434e937f4231eeffed6ecc443b67451b3f"
+ },
+ {
+  "src": "D_06_flurene_roottem_hit_peak.png",
+  "src_size": [
+   1024,
+   1024
+  ],
+  "src_sha256": "3215ae8ea03de4d6094eeb09f24506031816c8732d1afdd62cf0d4da0333dbe0",
+  "dst": "assets/battle/flurene_moves_1015/f10_d06_fx.webp",
+  "size": [
+   512,
+   512
+  ],
+  "dst_sha256": "f9edd7a936ad50451ebdb8b38adf7e7102b82de1bf64b566d7a67a66b00daf2a"
+ },
+ {
+  "src": "D_07_flurene_roottem_hit_fade.png",
+  "src_size": [
+   1024,
+   1024
+  ],
+  "src_sha256": "129781b58a78f943454ecd80c5e61f742cea4facba342f4e165dd07e17ff5139",
+  "dst": "assets/battle/flurene_moves_1015/f10_d07_fx.webp",
+  "size": [
+   512,
+   512
+  ],
+  "dst_sha256": "6403591c70bc79446fada676acfdd34bf55a56993b63af915731ef8f7e34288a"
+ },
+ {
+  "src": "root_drain_01.png",
+  "src_size": [
+   2560,
+   1536
+  ],
+  "src_sha256": "c200bd48d0b52915955542a7e91bfe832c6a7221a079f0a51ce90c880b61fa96",
+  "dst": "assets/battle/flurene_rootdrain_v2_1016/rd2_01.webp",
+  "size": [
+   850,
+   449
+  ],
+  "dst_sha256": "e04ea1a0851daca55481cfa5356f6c556f0a104f615ec51699be0f20580bab6d",
+  "order": "01",
+  "crop": [
+   235,
+   245,
+   2258,
+   1315
+  ],
+  "scale": 0.42,
+  "alpha128": 0.27121,
+  "bbox": [
+   17,
+   7,
+   506,
+   442
+  ],
+  "cx": 0.3071,
+  "bottom": 0.9866
+ },
+ {
+  "src": "root_drain_02.png",
+  "src_size": [
+   2560,
+   1536
+  ],
+  "src_sha256": "b46f2bd418ccc972de9d0052398e5d2592a0d23bcb6bd447ca58ebc97c631016",
+  "dst": "assets/battle/flurene_rootdrain_v2_1016/rd2_02.webp",
+  "size": [
+   850,
+   449
+  ],
+  "dst_sha256": "e23df0151d7e035596f536e9c0d233a1242da860df6ea05ce5d28b5e7bf8a8ba",
+  "order": "02",
+  "crop": [
+   235,
+   245,
+   2258,
+   1315
+  ],
+  "scale": 0.42,
+  "alpha128": 0.24972,
+  "bbox": [
+   36,
+   7,
+   487,
+   442
+  ],
+  "cx": 0.3233,
+  "bottom": 0.9866
+ },
+ {
+  "src": "root_drain_03.png",
+  "src_size": [
+   2560,
+   1536
+  ],
+  "src_sha256": "bff4cbf3c091463b5b39db773bccac0bb76cb0ca6254176f86e7615bac600d49",
+  "dst": "assets/battle/flurene_rootdrain_v2_1016/rd2_03.webp",
+  "size": [
+   850,
+   449
+  ],
+  "dst_sha256": "3b7b79bfadea7944e98825982c8f868a524beeb80a0a00d3b2302f09d6800a56",
+  "order": "03",
+  "crop": [
+   235,
+   245,
+   2258,
+   1315
+  ],
+  "scale": 0.42,
+  "alpha128": 0.24364,
+  "bbox": [
+   25,
+   8,
+   499,
+   442
+  ],
+  "cx": 0.3078,
+  "bottom": 0.9866
+ },
+ {
+  "src": "root_drain_04.png",
+  "src_size": [
+   2560,
+   1536
+  ],
+  "src_sha256": "e7fa5520de0ebf41db5f0bdd8bf404d986ea616c107c37587a9745e197a51667",
+  "dst": "assets/battle/flurene_rootdrain_v2_1016/rd2_04.webp",
+  "size": [
+   850,
+   449
+  ],
+  "dst_sha256": "3dd23ffe7c914ed52b9082dff6841e84f2507d1abeda727b73ad53b0e49dbff8",
+  "order": "04",
+  "crop": [
+   235,
+   245,
+   2258,
+   1315
+  ],
+  "scale": 0.42,
+  "alpha128": 0.30824,
+  "bbox": [
+   28,
+   6,
+   837,
+   442
+  ],
+  "cx": 0.4075,
+  "bottom": 0.9866
+ },
+ {
+  "src": "root_drain_05_prebeat.png",
+  "src_size": [
+   2560,
+   1536
+  ],
+  "src_sha256": "deabb050b4795baf38b6bdaa476a1855d257e83f51c97019391f45a02f9d75c4",
+  "dst": "assets/battle/flurene_rootdrain_v2_1016/rd2_05.webp",
+  "size": [
+   850,
+   449
+  ],
+  "dst_sha256": "d712c44bde307608998110e64c3a10802481a988ddac1e7d013fa5a0b49c8e56",
+  "order": "05_prebeat",
+  "crop": [
+   235,
+   245,
+   2258,
+   1315
+  ],
+  "scale": 0.42,
+  "alpha128": 0.27612,
+  "bbox": [
+   12,
+   7,
+   800,
+   442
+  ],
+  "cx": 0.4049,
+  "bottom": 0.9866
+ },
+ {
+  "src": "root_drain_05.png",
+  "src_size": [
+   2560,
+   1536
+  ],
+  "src_sha256": "9f48cdce9347aa2601fc7ccf7284ee25c8f54646d2bcbbd44f84defd9971a0cc",
+  "dst": "assets/battle/flurene_rootdrain_v2_1016/rd2_06.webp",
+  "size": [
+   850,
+   449
+  ],
+  "dst_sha256": "419676cec4e73c659558a2895ef2c2930387678d0e71575d0948c83c279205fd",
+  "order": "05",
+  "crop": [
+   235,
+   245,
+   2258,
+   1315
+  ],
+  "scale": 0.42,
+  "alpha128": 0.29377,
+  "bbox": [
+   12,
+   7,
+   801,
+   442
+  ],
+  "cx": 0.4249,
+  "bottom": 0.9866
+ },
+ {
+  "src": "root_drain_06_prebeat.png",
+  "src_size": [
+   2560,
+   1536
+  ],
+  "src_sha256": "ed2e29fe4cc004b5b07fb9c784112a0c6cf0ac94f83fa1460f28941d85b3a981",
+  "dst": "assets/battle/flurene_rootdrain_v2_1016/rd2_07.webp",
+  "size": [
+   850,
+   449
+  ],
+  "dst_sha256": "4689e5eac16d60effa37a882765c12a9eb689366179631bde9c96eb8229c8f38",
+  "order": "06_prebeat",
+  "crop": [
+   235,
+   245,
+   2258,
+   1315
+  ],
+  "scale": 0.42,
+  "alpha128": 0.30911,
+  "bbox": [
+   5,
+   7,
+   803,
+   442
+  ],
+  "cx": 0.3993,
+  "bottom": 0.9866
+ },
+ {
+  "src": "root_drain_06.png",
+  "src_size": [
+   2560,
+   1536
+  ],
+  "src_sha256": "58225d670fc87670fc90b3fc538425f870f539c714b03db65b4b7a168a9fac1c",
+  "dst": "assets/battle/flurene_rootdrain_v2_1016/rd2_08.webp",
+  "size": [
+   850,
+   449
+  ],
+  "dst_sha256": "1e67f2aac8a20bb60d3605626929b3c863feda5fd5463d1c62877a1c0c8dfacb",
+  "order": "06",
+  "crop": [
+   235,
+   245,
+   2258,
+   1315
+  ],
+  "scale": 0.42,
+  "alpha128": 0.32809,
+  "bbox": [
+   5,
+   7,
+   803,
+   442
+  ],
+  "cx": 0.4132,
+  "bottom": 0.9866
+ },
+ {
+  "src": "root_drain_07.png",
+  "src_size": [
+   2560,
+   1536
+  ],
+  "src_sha256": "16554bebc7407c75a3fd71089275350fe55fbf96f7fe45d150822ca1c5aaf94e",
+  "dst": "assets/battle/flurene_rootdrain_v2_1016/rd2_09.webp",
+  "size": [
+   850,
+   449
+  ],
+  "dst_sha256": "bc7458436ab44201f384f5fa740a92f574ace4a434a043ef1b9bc141c59b2de9",
+  "order": "07",
+  "crop": [
+   235,
+   245,
+   2258,
+   1315
+  ],
+  "scale": 0.42,
+  "alpha128": 0.22664,
+  "bbox": [
+   18,
+   12,
+   435,
+   442
+  ],
+  "cx": 0.2673,
+  "bottom": 0.9866
+ },
+ {
+  "src": "root_drain_08.png",
+  "src_size": [
+   2560,
+   1536
+  ],
+  "src_sha256": "bf0de9c12c9f56a3271846a45dc0ed8d5cb5ab34f8acef377725ed35b88306a6",
+  "dst": "assets/battle/flurene_rootdrain_v2_1016/rd2_10.webp",
+  "size": [
+   850,
+   449
+  ],
+  "dst_sha256": "9a38a095dea309a5c91fdfd4b93fae9eccbe25781c88472033973e3fb5322300",
+  "order": "08",
+  "crop": [
+   235,
+   245,
+   2258,
+   1315
+  ],
+  "scale": 0.42,
+  "alpha128": 0.25979,
+  "bbox": [
+   11,
+   13,
+   442,
+   440
+  ],
+  "cx": 0.2723,
+  "bottom": 0.9822
+ },
+ {
+  "src": "01_Gauru_06_Fireball_Card_Mouth.png",
+  "src_size": [
+   1664,
+   936
+  ],
+  "src_sha256": "33c0d944c2b43701f18bc26918c49e719fa7f227a5cb55f97c91056e02f0fa16",
+  "dst": "assets/moves/cards_1014/gauru/06_fireball.webp",
+  "size": [
+   640,
+   360
+  ],
+  "dst_sha256": "d1ee93e9b0e54c0d7dc129a54ce5645842003facffdb0a1e63b521256bfbfaf1"
+ },
+ {
+  "src": "02_Nobiton_02_Headbutt_Card_Forehead.png",
+  "src_size": [
+   1664,
+   936
+  ],
+  "src_sha256": "4faf599bea769c7655218b4baf23cb63bf2b38076e934f3f4c1c21771efcd661",
+  "dst": "assets/moves/cards_1014/nobiton/02_zutsuki.webp",
+  "size": [
+   640,
+   360
+  ],
+  "dst_sha256": "0317ea48ad90b6a3b1b7fb1b77c91cb765cb7c3f1fecbbe1bd5b5e0f4d07eb0f"
+ },
+ {
+  "src": "03_Fulune_09_RootDrain_Card_Absorb.png",
+  "src_size": [
+   1664,
+   936
+  ],
+  "src_sha256": "325edfd8ae91c68e4f6749b706fc75cbc05af3cea1738307d5ca733a23325c9a",
+  "dst": "assets/moves/cards_1014/flurene/09_root_drain.webp",
+  "size": [
+   640,
+   360
+  ],
+  "dst_sha256": "519768ef4ee78d7d903691425d45052120a6a39772d5777bae102b03dd21206f"
+ }
+]

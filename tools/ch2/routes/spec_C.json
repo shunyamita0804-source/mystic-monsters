@@ -1,0 +1,967 @@
+{
+ "key": "C",
+ "name": "沈没遺跡の回廊",
+ "concept": "港から大橋（または西の灯台島回りの浜道）で潮の塔の島へ → 潮の塔で海底へ → 海底の分かれ道：ガラス回廊（運命の分かれ道）／西の崩れた列柱の回廊（封印の間＝特殊挑戦：成功は中を抜ける近道と祭壇・失敗は外回り）→ 塔の門前でライバル → 螺旋塔 → 頂上の分かれ道（桟橋2本／海神像の島）→ 会場",
+ "anchors": {
+  "START": [
+   250,
+   1480,
+   "start"
+  ],
+  "B1": [
+   450,
+   1418,
+   "route_anchor"
+  ],
+  "B2": [
+   700,
+   1150,
+   "route_anchor"
+  ],
+  "L_CHEST": [
+   852,
+   1172,
+   "fixed_reward_dead_end"
+  ],
+  "R_CHEST": [
+   772,
+   980,
+   "fixed_reward_dead_end"
+  ],
+  "P": [
+   400,
+   965,
+   "early_merge"
+  ],
+  "LOWER_GATE": [
+   395,
+   925,
+   "lower_walk_through_gate"
+  ],
+  "J1": [
+   455,
+   888,
+   "free_fork"
+  ],
+  "Q": [
+   540,
+   858,
+   "parity_forced_fork"
+  ],
+  "QL1": [
+   330,
+   790,
+   "route_anchor"
+  ],
+  "QL2": [
+   310,
+   715,
+   "route_anchor"
+  ],
+  "QR1": [
+   690,
+   800,
+   "route_anchor"
+  ],
+  "QR2": [
+   715,
+   720,
+   "route_anchor"
+  ],
+  "R": [
+   510,
+   660,
+   "parity_rejoin"
+  ],
+  "WL1": [
+   215,
+   815,
+   "route_anchor"
+  ],
+  "WL2": [
+   236,
+   640,
+   "route_anchor"
+  ],
+  "WL3": [
+   262,
+   560,
+   "route_anchor"
+  ],
+  "L_ALTAR": [
+   188,
+   500,
+   "fixed_reward_dead_end"
+  ],
+  "CHALLENGE": [
+   300,
+   470,
+   "challenge_d6_5_6"
+  ],
+  "FAIL_L": [
+   240,
+   420,
+   "challenge_failure_route"
+  ],
+  "SUCCESS_L1": [
+   355,
+   500,
+   "challenge_success_route"
+  ],
+  "L_MERGE": [
+   410,
+   560,
+   "route_anchor"
+  ],
+  "L_LATE_ALTAR": [
+   350,
+   438,
+   "fixed_reward_dead_end"
+  ],
+  "RIVAL": [
+   510,
+   585,
+   "mandatory_rival"
+  ],
+  "H": [
+   548,
+   300,
+   "late_free_fork"
+  ],
+  "HR1": [
+   668,
+   318,
+   "route_anchor"
+  ],
+  "STATUE": [
+   772,
+   250,
+   "rare_zone_candidate"
+  ],
+  "HR3": [
+   700,
+   180,
+   "route_anchor"
+  ],
+  "REWARD5": [
+   862,
+   206,
+   "fixed_reward_dead_end"
+  ],
+  "R_SPECIAL": [
+   812,
+   110,
+   "fixed_reward_dead_end"
+  ],
+  "RANDOM_DEN": [
+   740,
+   400,
+   "optional_random_unlock_dead_end"
+  ],
+  "FINAL": [
+   510,
+   190,
+   "final_merge"
+  ],
+  "GOAL": [
+   510,
+   95,
+   "goal"
+  ],
+  "HS": [
+   550,
+   254,
+   "route_anchor"
+  ]
+ },
+ "segs": {
+  "S01": [
+   "START",
+   "B1",
+   "main_port",
+   [
+    [
+     360,
+     1452
+    ]
+   ],
+   8
+  ],
+  "BR01": [
+   "B1",
+   "B2",
+   "bridge_main",
+   [],
+   14
+  ],
+  "BR02": [
+   "B2",
+   "P",
+   "bridge_main",
+   [
+    [
+     560,
+     1010
+    ]
+   ],
+   14
+  ],
+  "D_LC": [
+   "B2",
+   "L_CHEST",
+   "reward_spur",
+   [
+    [
+     760,
+     1192
+    ],
+    [
+     812,
+     1205
+    ]
+   ]
+  ],
+  "D_RC": [
+   "B2",
+   "R_CHEST",
+   "reward_spur",
+   [
+    [
+     752,
+     1082
+    ],
+    [
+     790,
+     1030
+    ]
+   ]
+  ],
+  "C01": [
+   "P",
+   "LOWER_GATE",
+   "central_main",
+   []
+  ],
+  "C02": [
+   "LOWER_GATE",
+   "J1",
+   "central_main",
+   []
+  ],
+  "G01": [
+   "J1",
+   "Q",
+   "glass_main",
+   []
+  ],
+  "Q_L1": [
+   "Q",
+   "QL1",
+   "parity_left",
+   [
+    [
+     440,
+     835
+    ]
+   ],
+   8
+  ],
+  "Q_L2": [
+   "QL1",
+   "QL2",
+   "parity_left",
+   [
+    [
+     282,
+     760
+    ]
+   ]
+  ],
+  "Q_L3": [
+   "QL2",
+   "R",
+   "parity_left",
+   [
+    [
+     360,
+     660
+    ],
+    [
+     430,
+     650
+    ]
+   ],
+   9
+  ],
+  "Q_R1": [
+   "Q",
+   "QR1",
+   "parity_right",
+   [
+    [
+     620,
+     835
+    ]
+   ]
+  ],
+  "Q_R2": [
+   "QR1",
+   "QR2",
+   "parity_right",
+   [
+    [
+     722,
+     772
+    ]
+   ]
+  ],
+  "Q_R3": [
+   "QR2",
+   "R",
+   "parity_right",
+   [
+    [
+     660,
+     660
+    ],
+    [
+     590,
+     650
+    ]
+   ],
+   9
+  ],
+  "G02": [
+   "R",
+   "RIVAL",
+   "glass_main",
+   [
+    [
+     500,
+     620
+    ]
+   ]
+  ],
+  "WL01": [
+   "J1",
+   "WL1",
+   "ruins_west",
+   [
+    [
+     380,
+     866
+    ],
+    [
+     280,
+     848
+    ]
+   ],
+   10
+  ],
+  "WL02": [
+   "WL1",
+   "WL2",
+   "ruins_west",
+   []
+  ],
+  "WL03": [
+   "WL2",
+   "WL3",
+   "ruins_west",
+   []
+  ],
+  "D_LA": [
+   "WL3",
+   "L_ALTAR",
+   "reward_spur",
+   [
+    [
+     222,
+     520
+    ]
+   ]
+  ],
+  "WL04": [
+   "WL3",
+   "CHALLENGE",
+   "ruins_west",
+   []
+  ],
+  "LATE_L_FAIL": [
+   "CHALLENGE",
+   "FAIL_L",
+   "challenge_fail",
+   []
+  ],
+  "LATE_L_FAIL_JOIN": [
+   "FAIL_L",
+   "L_MERGE",
+   "challenge_fail",
+   [
+    [
+     262,
+     382
+    ],
+    [
+     356,
+     378
+    ],
+    [
+     384,
+     418
+    ],
+    [
+     392,
+     492
+    ]
+   ],
+   15
+  ],
+  "LATE_L_SUCCESS1": [
+   "CHALLENGE",
+   "SUCCESS_L1",
+   "challenge_success",
+   []
+  ],
+  "LATE_L_SUCCESS_JOIN": [
+   "SUCCESS_L1",
+   "L_MERGE",
+   "challenge_success",
+   []
+  ],
+  "D_LLA": [
+   "SUCCESS_L1",
+   "L_LATE_ALTAR",
+   "reward_spur",
+   []
+  ],
+  "WL05": [
+   "L_MERGE",
+   "RIVAL",
+   "ruins_west",
+   []
+  ],
+  "SPIRAL": [
+   "RIVAL",
+   "H",
+   "spiral_ascent",
+   [
+    [
+     537,
+     522
+    ],
+    [
+     561,
+     474
+    ],
+    [
+     559,
+     423
+    ],
+    [
+     531,
+     377
+    ]
+   ],
+   13
+  ],
+  "LATE_SAFE": [
+   "HS",
+   "FINAL",
+   "late_safe",
+   [
+    [
+     594,
+     236
+    ],
+    [
+     606,
+     206
+    ],
+    [
+     560,
+     198
+    ]
+   ]
+  ],
+  "LATE_R1": [
+   "H",
+   "HR1",
+   "late_right",
+   [
+    [
+     600,
+     332
+    ]
+   ]
+  ],
+  "LATE_R2": [
+   "HR1",
+   "STATUE",
+   "late_right",
+   [
+    [
+     722,
+     302
+    ]
+   ]
+  ],
+  "LATE_R3": [
+   "STATUE",
+   "HR3",
+   "late_right",
+   [
+    [
+     748,
+     206
+    ]
+   ]
+  ],
+  "LATE_R_DONE": [
+   "HR3",
+   "FINAL",
+   "late_right",
+   [
+    [
+     650,
+     140
+    ],
+    [
+     575,
+     136
+    ]
+   ],
+   8
+  ],
+  "D_R5": [
+   "STATUE",
+   "REWARD5",
+   "reward_spur",
+   [
+    [
+     806,
+     238
+    ],
+    [
+     840,
+     236
+    ]
+   ]
+  ],
+  "D_RS": [
+   "HR3",
+   "R_SPECIAL",
+   "reward_spur",
+   [
+    [
+     740,
+     148
+    ],
+    [
+     775,
+     130
+    ]
+   ]
+  ],
+  "D_RAND": [
+   "HR1",
+   "RANDOM_DEN",
+   "optional_random_spur",
+   [
+    [
+     690,
+     345
+    ],
+    [
+     716,
+     372
+    ]
+   ]
+  ],
+  "S_END": [
+   "FINAL",
+   "GOAL",
+   "main_stairs",
+   [],
+   4
+  ],
+  "BW01": [
+   "B1",
+   "P",
+   "bridge_main",
+   [
+    [
+     330,
+     1330
+    ],
+    [
+     250,
+     1200
+    ],
+    [
+     150,
+     1090
+    ],
+    [
+     260,
+     1005
+    ]
+   ]
+  ],
+  "LATE_SAFE2": [
+   "HS",
+   "FINAL",
+   "late_safe",
+   [
+    [
+     500,
+     246
+    ],
+    [
+     458,
+     228
+    ],
+    [
+     452,
+     202
+    ],
+    [
+     476,
+     188
+    ]
+   ]
+  ],
+  "S01B": [
+   "START",
+   "B1",
+   "main_port",
+   [
+    [
+     320,
+     1515
+    ],
+    [
+     400,
+     1495
+    ]
+   ]
+  ],
+  "QR_OUT": [
+   "QR1",
+   "QR2",
+   "parity_right",
+   [
+    [
+     790,
+     815
+    ],
+    [
+     840,
+     740
+    ],
+    [
+     800,
+     690
+    ]
+   ]
+  ],
+  "LATE_W": [
+   "H",
+   "FINAL",
+   "late_west",
+   [
+    [
+     470,
+     318
+    ],
+    [
+     380,
+     302
+    ],
+    [
+     325,
+     255
+    ],
+    [
+     350,
+     195
+    ],
+    [
+     420,
+     155
+    ],
+    [
+     475,
+     165
+    ]
+   ]
+  ],
+  "LATE_SAFE0": [
+   "H",
+   "HS",
+   "late_safe",
+   []
+  ]
+ },
+ "names": {
+  "G01": "ガラス回廊へ（運命の分かれ道）",
+  "WL01": "西の崩れた列柱の回廊（長い道・封印の間）",
+  "LATE_SAFE": "まっすぐ会場への桟橋",
+  "LATE_R1": "海神像の島への道",
+  "D_LC": "寄り道：貝殻の祠",
+  "D_RC": "寄り道：神殿島の宝物庫",
+  "D_LA": "寄り道：西の遺跡の修行の祭壇",
+  "D_LLA": "寄り道：封印の間の祭壇",
+  "D_R5": "寄り道：海神像の足もと",
+  "D_RS": "寄り道：珊瑚の秘宝",
+  "D_RAND": "寄り道：沈没船の隠れ家",
+  "BW01": "灯台島回りの浜道（探索路）",
+  "BR01": "大橋",
+  "LATE_SAFE2": "灯の桟橋（探索路）",
+  "S01B": "港の南の岸壁（探索路）",
+  "S01": "港の大通り",
+  "QR_OUT": "沈没船の甲板めぐり（探索路）",
+  "Q_R2": "ガラス回廊の右",
+  "LATE_W": "西の白塔めぐり（探索路）",
+  "LATE_SAFE0": "会場への桟橋"
+ },
+ "places": {
+  "START": "港の広場",
+  "P": "潮の塔の島",
+  "LOWER_GATE": "潮の塔（海底へ下りる）",
+  "J1": "海底の分かれ道",
+  "Q": "ガラス回廊の入口（運命の分かれ道）",
+  "R": "回廊の出口",
+  "CHALLENGE": "封印の間",
+  "RIVAL": "螺旋塔の門前広場",
+  "H": "螺旋塔の頂上（分かれ道）",
+  "FINAL": "会場前の桟橋",
+  "GOAL": "大会会場",
+  "STATUE": "海神像",
+  "SUCCESS_L1": "封印の間（中）",
+  "FAIL_L": "封印の間の外回り",
+  "HS": "桟橋の分かれ道"
+ },
+ "rewardTitles": {
+  "L_CHEST": "貝殻の祠",
+  "R_CHEST": "神殿島の宝物庫",
+  "L_ALTAR": "西の遺跡の修行の祭壇",
+  "L_LATE_ALTAR": "封印の間の祭壇",
+  "REWARD5": "海神像の恵み（海の幸）",
+  "R_SPECIAL": "珊瑚の秘宝",
+  "RANDOM_DEN": "沈没船の隠れ家"
+ },
+ "zones": {
+  "surface_early": [
+   "S01",
+   "BR01",
+   "BR02",
+   "D_LC",
+   "D_RC",
+   "C01",
+   "BW01",
+   "S01B"
+  ],
+  "descent": [
+   "C02"
+  ],
+  "undersea": [
+   "G01",
+   "Q_L1",
+   "Q_L2",
+   "Q_L3",
+   "Q_R1",
+   "Q_R2",
+   "Q_R3",
+   "G02",
+   "WL01",
+   "WL02",
+   "WL03",
+   "D_LA",
+   "WL04",
+   "LATE_L_FAIL",
+   "LATE_L_FAIL_JOIN",
+   "LATE_L_SUCCESS1",
+   "LATE_L_SUCCESS_JOIN",
+   "D_LLA",
+   "WL05",
+   "QR_OUT"
+  ],
+  "ascent": [
+   "SPIRAL"
+  ],
+  "surface_late": [
+   "LATE_SAFE0",
+   "LATE_SAFE",
+   "LATE_R1",
+   "LATE_R2",
+   "LATE_R3",
+   "LATE_R_DONE",
+   "D_R5",
+   "D_RS",
+   "D_RAND",
+   "S_END",
+   "LATE_SAFE2",
+   "LATE_W"
+  ]
+ },
+ "explore": {
+  "BW01": {
+   "name": "灯台島回りの浜道",
+   "kind": "lane",
+   "lean": [
+    "li",
+    "ev"
+   ],
+   "note": "港から潮の塔の島へ、大橋と並ぶ西の浜道（+1歩）。灯台の島を通る・ライフと回避（固定の宝は大橋側）"
+  },
+  "LATE_SAFE2": {
+   "name": "灯の桟橋",
+   "kind": "lane",
+   "lean": [
+    "de",
+    "hi"
+   ],
+   "note": "会場への桟橋の途中で分かれる2本目の桟橋（同じ長さ）・丈夫さと命中"
+  },
+  "S01B": {
+   "name": "港の南の岸壁",
+   "kind": "loop",
+   "lean": [
+    "po",
+    "hi"
+   ],
+   "note": "港の広場から南の岸壁を回って大橋のたもとへ（+2歩）・ちからと命中"
+  },
+  "QR_OUT": {
+   "name": "沈没船の甲板めぐり",
+   "kind": "loop",
+   "lean": [
+    "in",
+    "de"
+   ],
+   "note": "運命の右の道の中の寄り道。沈没船の甲板を回る（+9歩）・かしこさと丈夫さ"
+  },
+  "LATE_W": {
+   "name": "西の白塔めぐり",
+   "kind": "loop",
+   "lean": [
+    "po",
+    "in"
+   ],
+   "note": "頂上から西の白塔の島を眺めて会場へ回る長い探索路（+12歩）・ちからとかしこさ"
+  }
+ },
+ "lanes": {
+  "BR01": [
+   "in",
+   "hi"
+  ],
+  "BR02": [
+   "in",
+   "hi"
+  ],
+  "BW01": [
+   "li",
+   "ev"
+  ],
+  "LATE_SAFE2": [
+   "de",
+   "hi"
+  ],
+  "WL01": [
+   "po",
+   "de"
+  ],
+  "WL02": [
+   "po",
+   "de"
+  ],
+  "WL03": [
+   "po",
+   "de"
+  ],
+  "WL04": [
+   "po",
+   "de"
+  ],
+  "WL05": [
+   "po",
+   "de"
+  ],
+  "LATE_L_FAIL": [
+   "po",
+   "in"
+  ],
+  "LATE_L_FAIL_JOIN": [
+   "po",
+   "in"
+  ],
+  "LATE_L_SUCCESS1": [
+   "po",
+   "in"
+  ],
+  "LATE_L_SUCCESS_JOIN": [
+   "po",
+   "in"
+  ],
+  "LATE_SAFE": [
+   "li",
+   "ev"
+  ],
+  "LATE_R1": [
+   "li",
+   "ev"
+  ],
+  "LATE_R2": [
+   "li",
+   "ev"
+  ],
+  "LATE_R3": [
+   "li",
+   "ev"
+  ],
+  "LATE_R_DONE": [
+   "li",
+   "ev"
+  ],
+  "S01B": [
+   "po",
+   "hi"
+  ],
+  "QR_OUT": [
+   "in",
+   "de"
+  ],
+  "LATE_W": [
+   "po",
+   "in"
+  ],
+  "LATE_SAFE0": [
+   "li",
+   "ev"
+  ]
+ },
+ "rewards": {
+  "L_CHEST": "all10",
+  "R_CHEST": "gold150",
+  "L_ALTAR": "best30",
+  "L_LATE_ALTAR": "all15",
+  "REWARD5": "food",
+  "R_SPECIAL": "gold150",
+  "RANDOM_DEN": "gold200"
+ },
+ "calm": [
+  "S01",
+  "S01B"
+ ],
+ "rareZones": {
+  "Z1": [
+   "BR01"
+  ],
+  "Z2": [
+   "LATE_R2",
+   "LATE_R3"
+  ]
+ }
+}

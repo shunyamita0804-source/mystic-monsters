@@ -68,3 +68,12 @@
 - スターダストレイ F002 は再構成版（F001 の本体＋金色の光）＝区切り1〜3で本体の大きさ・向きはそろっている（tools/soramo1012/qa.mjs の画面で確認）。動きの最終判断は実機
 - スターフォール F05 の左下に小さな緑の彗星がある（星群の色の一部か、緑の残りかは要確認）
 - 補助技（ほえる・すなかけ・ほしのまもり）は当たる瞬間の効果を出さない（今までどおり）
+
+## 2026-10-16（バトル最終統合）：SK08 スターダストレイの専用の光線2枚
+
+- ZIP Mismon_Battle_Final_Part01_Art の A_Soramo_SK08（ユーザー承認）。全キャンバスのまま 1024×256 へ縮小（発光点＝絵の x 215/2048・y 280/512 を保つ）。js/battle/move-tune-1015.js の MOVES（at 'sprbeam'）。旧：05_03 の1.9倍の流用はやめた。道具＝tools/final1016/derive.py（原本はリポジトリに置かない）
+
+| 原本 | 大きさ | sha256（原本） | 表示用 | 大きさ | sha256（表示用） |
+|---|---|---|---|---|---|
+| A_01_soramo_stardust_beam_extend.png | 2048x512 | 0196200909af6d53d89d8ee75ca8dcd7e24c4cfbb587ddc2d7725eb42825c7ae | 08_a01_fx.webp | 1024x256 | 7ba0fa0a5c32c3183373f1bfc9878919201995bcc6583f688e9dfd1f4b1c43e0 |
+| A_02_soramo_stardust_beam_peak.png | 2048x512 | dcd8f96fe2c6e4a05b4df1f4dac4668d97adf0db52e9cea5406720a2be0fd7cf | 08_a02_fx.webp | 1024x256 | 4bffc5550015a94720818a62a26602932731a535ca8993174e90a98d4d164709 |

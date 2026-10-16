@@ -33,6 +33,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 | assets/fields/ch1a/board_hq_1014/、tools/boardhq1014/ | **2026-10-14 Chapter 1 A／B／C 高品質化**：正式13点（草 A1〜A3・石道 R1／R2・湿地 W1／W2・木 T1／T2・岩柱 RP1／RP2・花 F1／F2）の表示用派生 WebP 15点（地面はつなぎ目を最小誤差の切れ目で周期化・道の帯は既存の縁石＋R の敷石・原本 PNG は置かない・README.md に原本と派生の SHA-256）。js/proto/roadfirst-world.js の SKIN 'hq1014'＝描くときにファイル名を読み替えるだけ（配置・数・道・地形は不変）。本編だけ（world-board の skinKey）・?boardSkin=1010 で従来の絵・読めない絵は従来の絵へ。§3「Chapter 1 A／B／C 高品質化」 |
 | js/chapter/world-driver.js、js/chapter/world-board.js | **2026-10-14 後半 Chapter 1 B／C 独立ルート：出発で A／B／C を各 1/3 で抽選して m.raise.field.route に保存（v6 の任意項目・無い＝A・再開で決め直さない）・道のデータは MMWD.dataOf(m)（A＝MMRF_DATA／B・C＝MMRF_ROUTES）・道の名前／場所の名前／宝の名前／フィナの景色の一言はルートごと・出発準備の景色の選択ボタンは撤去（確認用は ?ch1route=A|B|C）。§3「Chapter 1 B／C 独立ルート」。** **2026-10-14 Chapter 1 B／C：景色のパターン A／B／C（roadfirst-world.js の VISUAL＝景物の散らし方だけ。A は従来と同一・B「花と清流の草原」・C「岩丘と遺跡の草原」）。出発準備で選ぶ（index.html の ppVisualHtml／ppVisual・MMWD.setVisual）→ 出発で m.raise.field.visualPattern（v6 の任意項目・無ければ A・patternId 'W' は不変）→ MMWB が MMRF_WORLD.create の options.visual に渡す。道・報酬・成長・バトル・サイコロ・カメラは変えない（§3「Chapter 1 B／C」）。** **2026-10-14 開発29（6）：後ろから追うカメラ＝進む向き（今の地点 → 先の地点の重心）が画面の上になるよう地面の板を回す（roadfirst-world.js の heading・yaw・本編だけ）・歩行の向きは回したあとの画面の向きで選ぶ（§3「開発29」）。** **2026-10-13 開発28 A5：全景 → START のズームの引っかかりを解消＝js/proto/roadfirst-world.js の描画を transform だけに（幅・zIndex は作るときに1回）・開始の俯瞰の寄りは Web Animations（§3「開発28」）。** **本編の Chapter 1「はじまりの草原」＝1枚の世界のボード（2026-10-11）**：進行 `MMWD`（raising.js の registerChapterOverride で Chapter 1 だけを受け持つ。道と進み方は js/proto/roadfirst-data.js／roadfirst-core.js、マスの中身は roadfirst-play.js の配置と TUNING）・画面 `MMWB`（js/proto/roadfirst-world.js の描画＋assets/proto/board_art_1010/ の素材・HUD・正式の操作欄・分かれ道・遭遇・ゴール → 大会受付）。§3「本編 Chapter 1＝1枚の世界のボード」。自動テストの既定（harness の MM_QA_OLD_CH1）では旧い14枚の Chapter 1 |
 | js/proto/roadfirst-routes.js、tools/roadfirst/build_routes.py、tools/roadfirst/routes/spec_B.json・spec_C.json、assets/fields/ch1a/landmarks_bc_1014/、tools/landmarksbc1014/ | **2026-10-14 後半 Chapter 1 B／C 独立ルート**：`MMRF_ROUTES`＝{ B, C }（MMRF_DATA と同じ形＋route・name・visual・art＝景観の区域 terrain・岩峰 peaks・目印 landmarks）。A の 42区間の部品（長さ・種類・条件・地点 ID）をそのまま使い、つなぎ方と形だけ変えた別の道（B＝Z字・C＝渦巻き）。正本は spec_*.json・`python3 -I tools/roadfirst/build_routes.py` で作る（手で書き換えない・検査つき）。目印は B／C 各10枚（ユーザー納品の透過 PNG の派生・README.md に sha256）。§3「Chapter 1 B／C 独立ルート」 |
+| js/proto/ch2-routes.js、js/proto/ch2-world.js、tools/ch2/（routes/spec_A/B/C.json・build_ch2_routes.py・draw_routes.py・sim.mjs・report.py・make_design_html.py）、docs/ch2_abc_design_1015/ | **2026-10-15 Chapter 2「潮風の海岸」A／B／C 連続世界ボードの設計案＝未承認・限定試作**（同日の追補：論点 1〜5 を反映・2.5D の海の世界＝`MMRF_SEA`（ch2-world.js。道のデータが art.sea3d のときだけ MMRF_WORLD が呼ぶ）・試作は `?chapterBoard=roadfirst&rfData=ch2&ch2route=A|B|C` だけで世界ビュー＋絵）：道路グラフ3本（`MMRF_CH2`＝{ A, B, C }。形式は MMRF_DATA と同じ・MMRF_CORE がそのまま進行）。試作は `?chapterBoard=roadfirst&rfData=ch2&ch2route=A|B|C&rfView=world` のときだけ（js/proto/roadfirst-view.js。保存は mmrf_proto_ch2_<route>_v1＝通常のセーブ・Chapter 1 の試作とは別）。本編（MMWD／MMWB・raising.js・ch2a.js）にはつないでいない。設計書・比較表・素材要求 TSV・設計図・試作の画面は docs/ch2_abc_design_1015/。§3「Chapter 2 A／B／C 設計案」 |
 | js/chapter/engine.js | Chapterフィールドの共通エンジン `MMCH`（**2026-10-08：1本の道（同じノードID）を複数の背景にまたがせられる＝path.key（区間の名前）・path.idOffset（最初のノードの番号）。next は区間の key。従来の config は変わらない**。config の登録・ノードの組み立て・配置の生成と検証・疲れ・能力マス・イベント・宝箱・バトル）。MMP8.registerChapterDriver で raising.js へつなぐ。Chapter ごとの分岐（if chapter===N）は書かない |
 | js/chapter/configs/ch1a.js | Chapter 1「はじまりの草原」Pattern A の config（データだけ）。**2026-10-08（正式ボード）：完成背景14枚（assets/fields/ch1a/formal_1008/）を SCENES（背景ごとの道路中央ライン road・マスの列 rows・enter／playable／handoff・視線誘導 cue・camera）、ゲームの中身は PIECES（どのマスをどの背景のどこに置くか。84マス・ノードID・種類・つながり・分岐は 2026-10-06 のまま＝tests/board-1008.test.mjs の BD-01 で監視）。1回の旅で 01→14 を全部通る（森／大橋は 07・08 の左右の道）。§3「Chapter 1 Pattern A 正式ボード」。以下は従来の記録：****2026-10-06（次期総合改修・2）：小型の立体マス（tileUI.discs＝assets/fields/ch1a/tiles_v2/）・分岐3か所（A＝03 の中の左右 p3l_／p3r_→合流 p3m_、C＝05 の分かれ道 森／大橋、B＝11 の中の左右 p11l_／p11r_→合流 p11m_）・公式マス84・1回の旅64歩・45ターン（rules.turnLimit 45）・能力マスの上昇量 rules.growthGain＝A5 B4 C3 D2 E2（§3「次期総合改修・2」）。BACKGROUNDS は seq（マスの種類）と span（手前・奥の y）で書き、座標は道の中央線から作る。以下は従来の記録：****2026-10-04（第二段階）：正式仕様の 30ターン（rules.turnLimit 30）＝効果の無い通常マス6つを外して公式マス 54（通常13・能力18・野生6・イベント6・宝4・休む3・ライバル1・分岐／合流2・ゴール1。森 46歩・大橋 46歩）。10,000回のシミュレーション（`node tests/chapter-turns.mjs 10000`）：30ターン以内の到達 森 99.8%／大橋 99.3%（休む方針 cautious）・平均 24.4／24.9 ターン。eventPool に短いランダムイベント 14 種（フィナの会話 lines＋小さな効果。**2026-10-04 追加アセット：そのうち 12 種に正式の挿絵（image・title）と正式の会話・効果。2択は old_grounds（少し鍛える＝ちから+5・疲れ+5／動きを確かめる＝命中+5）と sudden_rain（雨宿り＝疲れ−10／このまま進む＝丈夫さ+5・疲れ+5）。small_shrine は2択をやめて疲れ−10。到達率（10,000回）森 99.7%／大橋 99.3%**）、story にチュートリアル 8 件（scope 'save'＝このセーブで1回）。battleTypes.rival＝リュウ。**以下は従来の記録：**2026-10-02 の60マス再設計：正式背景14枚（final/field/ch1_bg_01〜14）を 共通 01〜05 → 05 の最後のマス＝分かれ道 p5_3 → 森の道 06〜07／大橋の道 08〜09 → 10 の最初のマス＝合流 p10_0 → 終盤 11〜14（ライバル p14_0＝強制停止・ゴール p14_2＝大会会場の門前）。BACKGROUNDS＝背景ごとの route・image・表示名【暫定】・地形・道の中央線 road [y, x, 半幅]（目視）・nodes＝[x, y, マスの種類, {s,f}?]（背景ごとに個数が違う。公式マス60＋スタート）。ノードID は p1_〜p14_（旧 w1_〜w14_ の途中セーブは開始地点から）。layoutRules.fixed＝マスの種類は config のとおり（seed で決めるのは中身だけ）・expect＝内訳の検査。マスUI＝tileUI（正式素材＋共通の台座 pedestal・遠近の大きさ／潰れ size・分かれ道の左右の門 gates）。背景の切り替え＝backgroundTransition crossfade。ゴールのあとは arrival（ch1_bg_15_event・フィナの会話 → 大会受付）。1〜3・40ターン・カメラ near 1.45／far 2.15（anchorY 0.72）・操作欄 deck（START だけ）・歩行アニメ monsterSprites（4原種）。新しい Chapter／パターンは configs/ にファイルを足して MMCH.registerConfig する |
 | js/chapter/events.js | **Chapter のイベント基盤 `MMEVT`（2026-10-04 第二段階）**：イベントのデータ形式（EVENT_FIELDS）と検査（validatePool）、直列のイベントキュー run(fn)（フィナの会話・能力の演出・遭遇・画面の切り替えが重ならない）、2択の会話の行（choiceLines）、自動テストの自動選択（autoChoice。MM_QA_NO_STORY のとき最初の候補・MM_QA_CHOICE で指定）。イベントそのものはデータ（config.eventPool＝止まったマスのランダムイベント、config.story＝節目・条件・チュートリアル、MMNPCE＝施設）。engine：同じ Chapter で同じイベントを重複して割り当てない（pickDistinct）、2択は resolve が `{ kind:'choice', options }` を返し（使った印を付けない・stage は resolve のまま＝再読み込みでも同じ選択肢）、MMP8.resolveChoice → MMCH.resolveChoice で選んだ効果を1回。story の scope 'save'（記録は S.npcFlags.story）、trigger 'branch'、条件 kind／hasEvent／recovery／goal |
@@ -61,6 +62,8 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 | js/battle/regnas-moves-data.js、assets/battle/regnas_moves_1012/、tools/regnas1012/ | **レグナスの正式の技アニメ（2026-10-12・正式補正版 48枚）**：レグナス（IMG の 4）が技 20〜29 を使うとき js/battle/art25d.js の animOff が見せる（従来の静止ポーズ MMRP.anim は、コマが読めないときの代わり）。ライバル戦で使うのは初期の4技（20〜23）だけ＝変えていない。データ MMREMV_DATA。§3「レグナス・ジオルの技アニメ（2026-10-12）」 |
 | js/battle/jiol-moves-data.js、assets/battle/jiol_moves_1012/、tools/jiol1012/ | **ジオルの正式の技アニメ（2026-10-12・透過補正版 96枚＝本体48・効果48）**：データ MMJIMV_DATA（正式の技表の番号 1〜10）。**2026-10-15 から正式10技の SK 40〜49 で実戦でも使う（art25d.js の SRC_OF の 3）＝§3「ジオルの正式10技（2026-10-15）」**。開発用のプレビュー `MM25D.preview('jiol', 番号, 側)`（バトル画面が出ている間だけ）。§3「レグナス・ジオルの技アニメ（2026-10-12）」 |
 | js/battle/compare.js、assets/monsters/compare_1015/、tools/compare1015/ | **新しいパラメーター比較画面 `MMCMP`（2026-10-15）**：大会（p9CompareScr）・野生／レア／ライバル（bBattleGo の重ね画面 #cmp）の対戦前。左右に承認済みの肩上アップ6枚（右は CSS で反転）・6能力（実際の値・999 の同じ尺度・正式6色）・名前と「あなた／相手」・固有スキルの名前だけ・小さな VS の飾り・「対戦開始」。独立した VS の画面（tourVsShow）と fight() の導入は出さない。§3「新しいパラメーター比較・QA 試遊モード」 |
+| js/qa/battle-stage.js | **2026-10-16 常設バトル QA のステージ `MMQAS`**：?mmQaTrial=1 の QA 画面の「▶ バトル技ステージ」（開始画面の『QA を開く』からも）。6体（MMQA.catalog＝マスターデータの登録から）×10技を1技ずつ／全10技の連続再生・攻撃側・相手・体格（従来／案A／案B／1〜5＝?mmSize=1 を吸収）・背景（会場／黒／白／紺）・速さ（仮想の時計 window.__mmqaST＝stage.js の ST もこれを通る）・ループ・命中／回避／MISS（MMSTAGE.qaForce＝見せ方だけ）・一時停止・コマ送り。実戦と同じ描画（anim(k, s)・MM25D.preview）。保存しない（QA が ON の間だけ）。§3「バトル最終統合」。旧 trial.html（作業ブランチだけの試遊の入口）は main に持ち込まない＝削除 |
+| js/battle/sk19-v2-1016.js、assets/battle/gauru_sk19_v2_1016/、tools/sk19v2/、docs/sk19_v2_1016/（作業ブランチ claude/claude-md-handoff-check-fcl9lb だけ） | **2026-10-16 ガウル SK19「聖なる炎」承認演出 V2 の試験実装 `MMSK19V2`**：飛行2枚＋胸中心の放射4枚・既存の SK19 の時間枠のまま（当たり＝炎の外縁が相手の中心に届く時刻に1回）・`?sk19time=v2`＝試写と同じ実時間（QA の比較用）・`?sk19=v1`＝前回の演出。main 未統合・未公開・iPhone実機再検収待ち。§3「SK19 承認演出 V2」 |
 | js/qa/trial.js | **QA 試遊モード `MMQA`（2026-10-15）**：URL に ?mmQaTrial=1 のときだけ、牧場・ベースキャンプに『QA：全モンスター・全技試遊 ON/OFF』。ON＝6体×10技（実戦 50＝ジオルの正式10技を含む・技アニメのプレビュー 10＝フルーネ・静止画だけ 0。2026-10-15）・通常のセーブのキー（mr4…）への書き込みを止める・OFF／再読み込みで元どおり。§3「新しいパラメーター比較・QA 試遊モード」 |
 | js/battle/flurene-moves-data.js、assets/battle/flurene_moves_1015/、tools/flurene1015/、assets/monsters/walk_25d/flurene/、tools/walk25d/derive_flurene.py | **フルーネの技アニメ 77枚（本体 42＋効果 35）と 2.5D 歩行 16コマ（2026-10-15）**：未解禁＝本編には出ない。技アニメは QA 試遊モードのプレビュー（MM25D.preview('flurene', No)＝SK の番号なし・判定なし）だけ、歩行は ch1a.js の monsterSprites.flurene.dirs（QA の「歩行を確認」で再生）。§3「フルーネの技アニメ・歩行（2026-10-15）」 |
 | js/battle/move-cards.js、assets/moves/cards_1014/、tools/movecards1014/、prototype/movecards_1014/ | **正式5体×10技＝50技の静止カード `MMMVCARD`（2026-10-14 開発30）**：技管理（バトルのルーレットの6枠＝横長の技カード1行・技の一覧・技の詳細）の技の絵。カードの番号→技ID→SK の番号は納品の対応表どおり（ソラモ・ガウル＝OFFICIAL_MOVES の slot・レグナス 20＋No−1・ノビトン 30＋No−1・ジオル＝SK なし）。バトル中のルーレット・技辞典・技データは変えない。確認ページ prototype/movecards_1014/（本編からつながない）。§3「開発30」 |
@@ -978,6 +981,94 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - 気づいた点（原本のまま・直していない）：効果のうち 05 FX01・06 FX01／FX04・08 FX02／FX03 などは不透明な白〜クリーム色の面（光の加算ではない）＝本体の上に白い塊のように重なって見える
 - テスト：tests/flurene-anim-1015.test.mjs（FA-01〜04）・実ブラウザ tests/qa-e2e-flurene-anim-1015.test.mjs（FA-B1 3サイズ＝歩行・FA-B2＝10技）。CQ-04・CQ-B3（プレビュー 20）・FL-02（名前で参照するファイル）・qa-static-guards（読み込むスクリプト）・tools/public-check.mjs（77枚・16コマ・プレビュー）を書き直し。MM_BUILD／version.json＝2026-10-15-flanim
 
+### Chapter 2 A／B／C 設計案・限定試作（2026-10-15。**未承認＝本番に入れない**。依頼 ZIP「Mismon_Ch2_ABC_Claude_Design_Request_20261015」。基準 main a28837e）
+
+- **やったこと**：設計先行（第一段階）＋本番から隔離した限定試作（第二段階）。main・公開・通常の章の進行・セーブ v6／mr4v6・Chapter 1 A／B／C・旧 Chapter 2（ch2a.js と 11 背景）は変えていない。報告は docs/ch2_abc_design_1015/（DESIGN.md・COMPARISON.md・asset_requirements.tsv・route_*_overlay.jpg／schema.png・shots/）
+- **設計**：1枚の世界（1024×1536・添付の世界観参照＝ch2_intro_overview_v2 と同じ絵の座標）に、建物・島・海底・螺旋塔・会場の位置は共通、道だけがルートごとに違う3本の別グラフ。A「港と大橋の王道」（自由 → 運命 → 自由3択・256地点・本線 93〜132歩）／B「島めぐりの浅瀬」（自由 → 自由 → 特殊挑戦 → 運命・216地点・98〜122歩・歩幅 27）／C「沈没遺跡の回廊」（海底の自由 → 運命か特殊挑戦・232地点・94〜127歩）。3本とも 港 → 海上 → 潮の塔（LOWER_GATE）で海底へ → ガラス回廊／沈没遺跡 → 螺旋塔の門前でライバル（必通）→ 斜路で海面へ → 会場前 → GOAL。役割・条件・停止の規則・固定報酬の7枠（効果は Chapter 1 の TUNING.rewards）は Chapter 1 の語彙のまま。**地点数は依頼の目標 280〜320 に届かない（本線を 40ターン・D6 で歩ける長さにしたため）＝承認論点**。ライバルの位置は本線の 53〜78%（最短の安全な道だけ 70% を超える）
+- **公平性（tools/ch2/sim.mjs 600 seed×2体・試作の進行モデル＝バトル・食事・Chapter 2 の上昇量は未反映）**：GOAL 到達率 A 55.2／B 49.7／C 56.3%（Ch1 A 50.7）・6能力の合計上昇 276／286／286（Ch1 288）・固定報酬の取得率 7.6／9.5／10.4%（Ch1 7.7）。B は A より −5.5pt（目標 ±3pt）＝承認論点
+- **素材要求**（asset_requirements.tsv）：新しい絵は最小 24 種（最優先 8＝海面の水・陸地・海底の砂・白石の橋の帯・潮の塔・螺旋塔・大会会場・ガラス回廊の床）。旧 Chapter 2 の 11 背景は 俯瞰図（A そのまま）・会場前（B 到着の演出に流用）以外は参考（C）か不要（D）。Chapter 1 のマス・サイコロ・UI・HUD はそのまま＝Chapter 2 専用 UI は不要
+- **試作**：js/proto/ch2-routes.js（tools/ch2/build_ch2_routes.py が spec_A/B/C.json から生成・検査つき）。roadfirst-view.js の `rfData=ch2`＝データの差し替え・保存の鍵 mmrf_proto_ch2_<route>_v1・題字・道と場所の名前。roadfirst-world.js＝題字（D.art.title）と絵なしの区域の仮の色（D.art.regions があるときだけ＝Chapter 1 は通らない）。テスト tests/ch2-routes-1015.test.mjs（C2-01〜05）・実ブラウザ tests/qa-e2e-ch2-proto-1015.test.mjs（CP-B1 3サイズ×A／B／C・CP-B2 隔離）
+- **本実装のときに要る変更（やっていない）**：Chapter 2 用の driver（MMWD の Chapter 1 固定を別ファイルへ）・MMWB の Chapter 読み替え（約10か所）・MMRF_WORLD の地形 kind（海面の陸地・海底・ガラス回廊の前景）・Chapter 2 用の TUNING（落ち着いた区間・能力の道の偏り・レアの候補・報酬）・旧 Chapter 2 の途中セーブの扱い（案1 旧モード継続＝推奨／案2 最初から）
+- **承認論点 5つ**（DESIGN.md §7）：ライバルの位置／B の到達率／螺旋塔の上り（斜路 12〜13 歩）／地点数／固定報酬の絵と中身の対応。**ユーザーが設計を承認するまで次の実装に進まない**（下の追補で反映済み）
+- **2026-10-15 追補（ユーザー回答：論点 1〜5・A の骨格は現状維持・道路グラフの承認と 2.5D の見た目／本実装の承認は別）**：
+  - 論点 1＝ライバルの位置は現状維持（A 53〜74・B 62〜73・C 64〜78%）／論点 2＝**前回の B・C は特殊挑戦の成功の道が失敗より長かった（Chapter 1 と逆＝報告漏れ）**→ 3ルートとも成功＝近道＋祭壇・失敗＝回り道に直し、B は失敗の回り道を短く（成功 4・失敗 6 歩。A 6／20・C 6／14）・B の寄り道を A と同程度に・A／C の頂上の「桟橋」を途中で2本に分けて分かれ道の数をそろえた／論点 3＝高さ（art.elev：海面 0・海底 −36・下降／螺旋塔の上昇は道の長さで補間）＋2.5D（海底の盆地の板・盆地の壁・傾いた石の斜路・多角柱の塔・潜ると盆地の上の海面が薄くなる。MMRF_WORLD.project に高さの引数＝0 なら従来の式）・螺旋塔 A 12・B 12・C 13 歩／論点 4＝探索路（並ぶ道・寄り道の輪・能力の道の偏り statLanes）で A 298・B 280・C 300 地点（本線は延ばさない）／論点 5＝報酬 7 枠の種類と数は同じで建物に合わせて割り当て直し（D.rewards・値は【仮】）
+  - 公平性（600 seed×2体・寄り道 25%）：到達率 A 51.5／B 49.8／C 52.7%（Ch1 A 50.7）・上昇 281／288／302（Ch1 288）・報酬 7.7／8.2／6.8%。感度：寄り道 50% では B が A より −6.2pt
+  - MMRF_PLAY は道のデータの calm・statLanes・rareZones・rewards があればそれを使う（Chapter 1 のデータには無い＝従来どおり）。tools/ch2/build_ch2_routes.py の検査を強化（280〜320・高さを含む距離・道の交差／近接・盆地・塔・特殊挑戦の成功＜失敗・螺旋塔 12〜13 歩・報酬の種類と数）。CH2_DEV=1 は設計の途中の確かめだけ（地点数の検査を外す）
+  - プレビューは本編の Chapter 1 と同じカメラ（後ろから追う・倍率 2.2〜5.6・マス＝tiles_top_1012・hq1014）＋Chapter 1 の正式素材の代用。HUD と操作欄は試作の画面。iPhone 実機は未確認（3D の板 約240枚）
+  - テスト：C2-01〜07・実ブラウザ CP-B1〜B3（CP-B3＝実際に歩いて螺旋塔を上る）。Chapter 1 側の QA-S1・S68-06・RW-05／06・HQ-04 を新しい読み込み・定義に書き直し
+  - **次の承認論点**（DESIGN.md §7）：道路グラフの承認／寄り道 50% での B の遅れ／B の特殊挑戦の差（4／6）／2.5D の表現の方向／旧 Chapter 2 の途中の個体（案1・案2）。**承認まで本実装・main 統合・公開はしない**
+- **2026-10-15 追補2（ユーザー回答：道路グラフと 2.5D の方向は基本了承・見た目と本実装は未承認・main 統合／公開しない）**：
+  - **到達率の測り直し**：前回の「寄り道 50% で B が A より −6.2pt」は 600 seed の揺れ（1回の試行で ±2〜3pt）だった＝tools/ch2/sim.mjs を 12000 seed×2体に（CH2_SEED0・CH2_ROUTES・CH2_BOARDS で比較の切り替え）。結果（A との差）：寄り道 25%＝B +0.8・C −0.1／50%＝B −1.8・C +1.3／0%（参考）＝B +0.6・C −3.9。上昇・報酬の取得率も目標の内
+  - **特殊挑戦の差を広げた**（成功＝近道＋祭壇・失敗＝回り道）：A 成功 6・失敗 20（不変）／**B 成功 2・失敗 14**（旧 4／6）／**C 成功 6・失敗 18**（旧 6／14）。B・C の案の比較は tools/ch2/out/challenge_variants.json（build_ch2_routes.py の CH2_LOOSE＝比較用に配置の検査だけ外す・CH2_SRC／OUT／SUM）。B は本線を U03B の回り道で +3歩 して到達率をそろえた
+  - **地点数（最終）**：A 298・B 280・**C 304**（C は失敗の回り道を延ばして 300 → 304。280〜320 の内）。道のデータ・summary.json・DESIGN.md の一致は C2-08 で監視
+  - **海底の見せ方**（ch2-world.js・仮素材＝見た目は未承認）：高架橋に見えないよう、海底の床＝砂・藻・岩・砂紋、ガラス回廊＝暗い影の帯＋光の帯＋石の床＋左右の手すり＋15単位ごとの肋材、沈没遺跡の広場（D.art.ruins＝CHALLENGE・RIVAL・R の海底の地点・ひび・苔・周りの柱）、水面からの光の筋（.rfs-rays＝潜っている間だけ・視差を減らす設定では止める）。1枚の連続した世界をカメラが追う（Chapter 1 と同じ）
+  - **旧 Chapter 2 の途中セーブ＝案1 採用**：その育成が終わるまで旧モード（ch2a.js の 11 背景）を続け、新しく始める育成から新 Chapter 2。v6・mr4v6・旧 field のデータ・報酬の取得履歴は変えない。印の付け方（新しい育成の開始時に付ける・印の無い育成は旧）は DESIGN.md §5＝公開の時点で Chapter 2 に入っていない育成の扱いは要確認
+  - 素材要求は 54行（U-08 沈没遺跡の広場・FX-04 海中の光の筋を追加）。テスト C2-01〜08・実ブラウザ CP-B1〜B3（海中の光の筋・海底の画面）
+  - **次の承認論点**：B 成功 2・失敗 14／C 18 の差の採否／海底の見た目（素材が来てから）／案1 の印の付け方／寄り道 0% の C −3.9pt／名前と報酬の値【仮】
+- **2026-10-15 第3版（ユーザー回答：B 成功 2・C 失敗 18 の方向で採用・海底は描画方式の方向だけ了承・旧セーブの線引き・到達率の絶対値の確認。main 統合・正式素材の組込み・公開は次の明示承認まで保留）**：
+  - **到達率は「食事あり」のモデルで読む**：tools/ch2/sim.mjs に CH2_FOOD（本編と同じく空腹 80 以上でジャガイモ −10 を1ターンに1個・ターンは使わない）。このモデルの Chapter 1 A＝73.5%（寄り道 25%）が本物の進行の道具 tools/balance/sim-full.mjs の Chapter 1 の 73〜78% とそろう。前の版の約 50% は食べないモデルの値。40ターン以内の GOAL 到達率（食事あり・寄り道 0／25／50%）＝Ch1-A 96.9／73.5／55.1・A 92.2／79.1／64.1・B 93.4／81.0／65.9・C 93.3／80.7／65.6（12000 seed×2体）
+  - **B の失敗の回り道 14 → 18 歩**（spec_B の LATE_L_FAIL_JOIN を北へ広げた・検査あり）＝**B 284 地点・成功 2・失敗 18**。食事ありで A と +1.2／+1.9／+1.8pt。追補2 の 2／14 は食事ありでは +4.2／+6.9／+8.1pt（速すぎた）。**食事なしのモデルでは 2／18 の B は −8.1／−6.3／−7.1pt**＝どちらのモデルを基準にするかが承認点。寄り道 0% の C は食事ありで +1.1pt（−3.9pt は食事なしの値）。案の比較は challenge_variants.json の B3
+  - **40ターン切れ**（今の規則のまま）：その Chapter の大会なし・ランクは上がらない・能力と持ち物は持ったままベースキャンプへ。C を取れる大会は Chapter 2 のゴールだけ＝Chapter 2 で切れた個体は Chapter 3 の解放条件（C クリア）に届かず育成完了
+  - **B の成功の2歩**：2.5D で実際に歩かせて1歩 63〜74 コマの連続した動き（瞬間移動に見えない）・扉の奥で先の 8 地点が見える。止まるたびの先の4地点の見え方 A 98.6・B 96.9・C 97.9%（テスト CP-B4）
+  - **旧 Chapter 2 のセーブの判定**：Chapter 2 へ出発する時点で m.raise.field が旧の盤（chapterId 2・world なし）なら旧ボードのまま、無ければ新しい盤。旧の盤は今のコードでは出発の瞬間にだけ作られる・事前に持っていれば作り直さない。新しいセーブ項目なし（DESIGN.md §5）
+  - 初回納品 36 点のうち透過 NG の 27 点は組み込まない・地面と道路の 9 点もまだ組み込まない（次の明示承認まで）。素材要求は 54 行のまま
+  - テスト：C2-08（A 298・B 284・C 304）・実ブラウザ CP-B4
+- **2026-10-15 4回目の回答（夜の一括依頼の 01）**：到達率は**食事ありを基準**（食事なしは参考）・B 成功 2・失敗 18 を維持・寄り道 0% の C（A 比 +1.1pt）は許容・**食事あり・寄り道 25% の A 79.1／B 81.0／C 80.7% を設計基準として採用する方向**・旧 Chapter 2 のセーブの判定は了承。**「時間切れ → Chapter 3 へ進めない」規則は現状のまま**（恒久的な採否は別判断）＝救済案（案1 現状維持／案2 再挑戦1回／案3a onTimeUp 'tournament'／案3b C 昇格戦）を DESIGN.md §6.5 で比較だけ・実装していない。tools/ch2/sim.mjs に shortAtTimeUp（時間切れの個体の GOAL までの残り歩数＝中央値 7〜9）と CH2_LIMIT（比較用のターン上限・45T で 95〜97%）
+
+### バトル最終統合（2026-10-16。いまの正式＝ユーザー許可でバトルの範囲だけ PR → main 統合 → 公開。iPhone 実機の合格はユーザーの検収待ち）
+
+- 指示：00_Claudeへ送信_統合実装指示（Part01〜04）。新しい技の性能・体格の正式倍率（案A／B）・Chapter 2 の本編完成・未許諾の SE・容姿の変更は許可されていない＝入れていない
+- **SK08 スターダストレイ**＝ユーザー承認の専用の光線2枚（assets/battle/soramo_moves_1012/08_a01_fx・08_a02_fx＝A_01 extend・A_02 peak を 1024×256 に）。art25d の新しい置き方 `sprbeam`＝絵の発光点（x 215/2048・y 280/512）をそのコマ（08_04・08_05）の口先（MMTUNE.MOUTH）へ・縦横比のまま・A_02 の右端の平らな切り口は mask で溶かす。旧：ソラモビームの光線（05_03）の1.9倍の流用・?sk08=blue の CSS の試作（js/battle/sk08-blue-1016.js）＝やめた・削除
+- **SK31 ずつき**＝専用の本体2枚（nobiton_moves_1012/31_b01・31_b02。同じ切り出し＝足もと y 1140）。MOVES の cuts＝B01 溜め → B02 突進（move）→ B02 接触（contact・ヒットストップ 110・揺れ）→ B01 戻る。旧の本体 31_01〜04 はファイルだけ残す（使わない）
+- **フルーネ技10 ルートテンペスト**＝専用の根4＋命中3（flurene_moves_1015/f10_d01_fx〜d07_fx）。7区切り（MOVES の steps）・art25d の `root`（絵の根元＝下 7% を相手の足もとへ）・`hitc`（絵の中心を相手の被弾点へ・画面の端で切れない大きさ）。当たり＝D03 打撃と D05 開き。旧の共通演出 bc06／bc07 の流用はやめた
+- **フルーネ技09 ルートドレイン**＝補修版10コマ（assets/battle/flurene_rootdrain_v2_1016/rd2_01〜10＝01・02・03・04・05_prebeat・05・06_prebeat・06・07・08）。js/battle/rootdrain-1016.js（MMRD）を作り直し＝08 を正式の待機絵に合わせて全10枚同じ倍率・足もと（2560 の全幅の縮小はしない）・04〜08 の蔦の部分（派生の x ≥ 470）だけ横に伸縮して2つの接触点の中ほど（派生の 761, 210）を相手の被弾点へ・2回の脈動で相手が小さく震える・07 で回復の表示。共通演出を通るとき約2.9秒。**旧1536px・8コマ（flurene_rootdrain_1016）は失効＝削除**
+- **技カード3枚**（画像だけ）：gauru/06_fireball（SK 15）・nobiton/02_zutsuki（SK 31）・flurene/09_root_drain（技ID root_drain・旧 09_inochi_no_shizuku は削除）。move-cards.js の slotOf：フルーネ No.9 は QA で SK 58 が入っているときだけ 58
+- **常設バトル QA**：§2 の js/qa/battle-stage.js。**Chapter 2 試作**：?chapterBoard=roadfirst&rfData=ch2（ルートを省くと A）の上の帯に A／B／C の切り替え（.rf-c2sel・各 URL へ）
+- 素材の派生：`python3 -I tools/final1016/derive.py <Part01 の P01_ArtCards> <Part02 の RootDrain_v2_repaired>`（derive.json・各 README に原本と派生の sha256）
+- テスト：tests/qa-e2e-battle-final-1016.test.mjs（BF-B1〜B5）・BTB-4／5／11／12・CQ-03・FA-01・BT-07 を書き直し。MM_BUILD／version.json／MMTUNE.BUILD＝2026-10-16-final
+
+### iPhone 実機8本の限定修正（2026-10-16。**ブランチ claude/claude-md-handoff-check-fcl9lb だけ＝main 未統合・未公開・全件 iPhone実機再検収待ち**）
+
+- 報告：docs/battle_fix_1016/REPORT.md（状態の表・原因・前後の画像）。技名・番号・性能・固有スキル・ルーレット・セーブ・BGM／SE の音源・fight() は変えていない
+- **口先（発射点）**：js/battle/move-tune-1015.js の `MMTUNE.MOUTH`（コマの絵の画素・右向き・手で測った値）→ js/battle/art25d.js の `mouthPt`（本体の img と同じ式＝反転・回転・体格に追従）。光線（beam・stretch）は区切りごとにそのコマの口先から出し直す（2本目は伸びきった長さで続ける）・火球（launch の fromMouth）は口先で小さく生まれる。対象＝ソラモビーム（05_02 だけ＝t[1,1]）・スターダストレイ（08_04・08_05。光線の絵は 05_03 の流用＝暫定）・ファイアボール（15_02）・フレアレイ（16_02・16_03）。表に無いコマは従来の見積もり。効果の要素に data-mx／my／mf（口先の位置とコマ）
+- **当たりの絵文字**：スターフォールの 🌠（iPhone で四角い額の絵）だけ、技のコマで見せている間は fight() が出す札（span.sk）を出た直後に消す（`MMTUNE.EMOJI_OFF`・MutationObserver）。ほかの絵文字は変えていない（候補は報告書）
+- **聖なる炎**：三色の炎の輪は浮いたガウルの体の中心から広がるだけ（aura の onBody）＝相手へ飛ばさない。相手の当たりは共通演出 bc06。最後の青い球と ▲＝fight() の能力アップの印（efBurst）＝報告のみ
+- **蒼刃乱舞 28_07**：体の右の縦長の青い柱だけ透明に（tools/battlefix1015/apply.py の PILLAR。applied.json は 43件）。前脚の先が少し欠ける＝正式な修正コマを推奨
+- **体格（項目08）**：動画はプレビュー ON と判断（高さ比 1.22 ≒ ?mmSize=1 の 1.25。通常は 1.02）。候補A（ジオル 106%／ソラモ 74%）・候補B（112%／68%）は提案だけ＝未実装
+- テスト：BT-07・BTB-5〜7（tests/battle-tune-1015・qa-e2e-battle-tune-1015）
+
+### iPhone 再試遊6件＋フルーネ09 ルートドレイン（2026-10-16。**ブランチ claude/claude-md-handoff-check-fcl9lb だけ＝main 未統合・未公開・iPhone実機再検収待ち**）
+
+- 依頼：ZIP Mismon_Claude_Combined_iPhone6_Fulune_20261016。報告：docs/ip6_fulune_1016/REPORT.md
+- 録画4本（12:06〜12:08）は c1035f7 より前の版の動き＝配信（raw.githack）のキャッシュで古い JS が混ざった可能性。QA 画面の見出しに「版：画面／技アニメ」を出す（MMTUNE.BUILD と MM_BUILD＝2026-10-16-ip6）
+- SK16 の溜めの光（16_01_fx の光の玉）を嘴の先へ（art25d の at:'mouth'・口先の表 16_01）。SK08 の青い専用光線の試作＝js/battle/sk08-blue-1016.js（CSS だけ・?sk08=blue のときだけ）
+- 体格サイズ 比較案 A／B：?mmSize=A｜B（MMTUNE.SIZE_PLAN・VIS_H＝見えている体の高さで割る）・?mmSizeAs＝比較用の読み替え。正式倍率ではない
+- WIN の帯＝青・LOSE の帯＝赤（arena.js の CSS だけ）
+- フルーネ技09 ルートドレイン：js/battle/rootdrain-1016.js（MMRD・8コマ・08 を正式待機絵に合わせる）・rules.js（QA 試遊のときだけ SK 58・与えたダメージの 50% を四捨五入で吸収・最大ライフまで・MISS／0 は吸収なし）。monsters.js：01 威力60・02 威力65・09 ルートドレイン 110／90／10%／吸収50%・10 威力120（ユーザー決定の項目だけ）。固有スキル「生命の芽吹き」は変えていない（資料との食い違いはユーザー判断待ち）
+- SK19 V2：聖なる炎のあとの能力アップの印（青い球＋▲）を出さない（ユーザー決定）
+- テスト：BTB-5・BTB-10〜12・D27-22・FL-01／02・CQ-03
+
+### SK19 承認演出 V2（2026-10-16。**ブランチ claude/claude-md-handoff-check-fcl9lb だけ＝main 未統合・未公開・iPhone実機再検収待ち**）
+
+- 依頼：ZIP Mismon_Claude_SK19_Only_TestHandoff_20261016（SK19 だけ・ほかの技・SE・計算・体格・セーブは変えない）。報告：docs/sk19_v2_1016/REPORT.md
+- js/battle/sk19-v2-1016.js（MMSK19V2）＝承認動画（5.79秒）の相対時刻を既存の SK19 の時間枠（art25d の planOff＝2.5秒）に縮めて再生。浮上 → 飛行2枚を交互（1時点で1枚）→ 胸で点火・拡大・放射・最大放射（背面 0.70・前面 0.16）→ 2.88 外縁が相手の中心 → 2.95 当たり（既存の命中・ダメージのイベント1回）→ 既存の sp_buff → 降下 → 正式の待機絵
+- 置き方：正式のバトル待機絵（idle_gauru）の目の位置に飛行ポーズの目を合わせる・大きさは参照待機の体の面積をそろえる。相手側は scaleX(-1)。敵側の着弾の炎・burst は出さない
+- 確認用：?sk19time=v2（試写と同じ実時間・戦闘が延びる）／?sk19=v1（前回の演出）。V2 の絵が読めないときは前回の演出へ
+- 気づいた点：正式の待機絵と V2 の飛行ポーズは別の絵（翼・尾の形が入れ替わりで変わる）・wings_down の右端で羽先が切れている（20行）
+- テスト：BT-08・BTB-8（自分側・相手側）・BTB-9（決着のあとも残らない）
+
+### バトル技アニメ 試遊修正21件・体格サイズ1〜5（2026-10-15 夜の一括依頼 PHASE B。**ブランチ claude/claude-md-handoff-check-fcl9lb だけ＝main 未統合・未公開・iPhone 実機は未確認**）
+
+- 報告：docs/battle_fix_1015/REPORT.md（21件の原因・修正・状態の表・発注一覧・連続写真 film/・素材の比較 assets_check/・体格の比較 size_compare.jpg）
+- **共通スケール**（js/battle/art25d.js の layout・areaScales）：技のコマの大きさ＝コマごとに「見えている体の面積」（js/battle/move-area-1015.js＝`python3 -I tools/battlefix1015/areas.py` が作る・手で書き換えない）を待機立ち絵とそろえる＝技の途中で体の大きさが変わらない。`?mmScale=old` で従来の見積もり
+- **技ごとの修正**（js/battle/move-tune-1015.js の `MMTUNE.MOVES`・データ *-moves-data.js は変えない＝表示のときだけ `MMTUNE.patch` の写し）：stay（その場で撃つ）・detach＋launch／stretch（体の層に描かれた火球・光線・花粉を切り出して相手へ飛ばす／伸ばす）・arc（跳ぶ）・lift（浮く）・rot・aura・charge・shakeAt・sfxAt・hs（ヒットストップ）。15件（01・02・04〜07・10・13〜16・18〜21）
+- **素材の修正**（42 ファイル）：`python3 -I tools/battlefix1015/apply.py`（基準コミット bf310c4 の内容から作り直す＝何度実行しても同じ・修正前後の sha256 は tools/battlefix1015/applied.json）＝ジオル・ノビトンの市松の取り残し（体＝穴を消す・効果＝明るさの差を均す）・ひとやすみ 33_02／33_03 の松葉模様・スターフォール 09_04〜06 の切れた端・竜眼ロック 22_03／22_04 の緑。検出は tools/battlefix1015/checker.py
+- **体格サイズ**（`MMTUNE.SIZE`＝ソラモ2・ノビトン2・ガウル3・フルーネ3・レグナス3・ジオル4・5 は予約・ラズック1 は未登録）：倍率 70/80/90/100/115% は【暫定】＝**URL に `?mmSize=1` のときだけ**（js/battle/arena.js の kOf → --mma-k）。通常は今までの大きさ。セーブに項目なし
+- はなビンタの 👃（iPhone で写実的な鼻）→ 💫（js/battle/rules.js の NOBI_EMOJI）
+- 技の SE：合成音（skSfx）の当たりをコマの当たりに合わせて遅らせる（MMTUNE の skSfx の包み・コマで見せる技だけ）・蒼刃乱舞の決めの斬撃に BATTLE_CRIT。**技の SE は全部が合成音＝新しい音源は未採用（ライセンス確認待ち）**
+- 暫定・素材待ち：02 スターダストレイの専用光線・07 聖なる炎の三色の弾と着弾・09 ずつきの技カード・10 頭突きの姿・20／21 フルーネの専用 FX（未完成）・市松を均した 37 枚の正しい透過の再納品
+- テスト：tests/battle-tune-1015.test.mjs（BT-01〜06）・実ブラウザ tests/qa-e2e-battle-tune-1015.test.mjs（BTB-1〜4）
+
 ### NPC のボイス全停止（2026-10-15 N04。いまの正式。ユーザー指示＝無料で作った NPC の声は商用不可の認識・週末に有料プランで作り直す）
 
 - **ゲームで NPC の声は一切鳴らさない**：js/audio/audio-manager.js の `VOICE_BLOCKED = true`（MMAUDIO.voice・voiceLoad・voicePrefetch は何もしない・voice() の結果は 'blocked'・設定がオンでも無音・voiceGain 0）。会話・字幕・合図（js/npc/voice-cues.js の CUES・LINE_VOICE・MMVOICE の呼び出し）と時刻・並びは従来どおり＝声を待たない
@@ -1447,6 +1538,12 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
   - ユーザーの確認待ち：iPhone 実機でのフルーネ（歩行・技アニメ）とジオル10技の QA 試遊。**ユーザーが実機で「OK」と言うまで Chapter 2 の設計に着手しない**
   - 素材待ち・残課題：フルーネの技 09（効果 2/4）・10（効果 0）の FX／歩行の白い縁取りと back_05・back_03・front_01 の見切れの可能性（原本のまま）／一部の効果（05 FX01・06 FX01／FX04・08 FX02／FX03）が不透明な白い面／大技で相手の固有スキルのカメラが技アニメの終わりに重なる（全種族共通・未変更）
   - 作業報告は ZIP でユーザーへ渡す（直近：Mismon_Report_20261015_Flurene_Jiol.zip）
+  - **2026-10-16 iPhone 6件＋フルーネ09**：§3「iPhone 再試遊6件＋フルーネ09 ルートドレイン」・docs/ip6_fulune_1016/REPORT.md。体格案・青い光線・ルートドレインの素材・固有スキルはユーザーの判断待ち
+  - **2026-10-16 SK19 承認演出 V2**：§3「SK19 承認演出 V2」・docs/sk19_v2_1016/REPORT.md。時間（いつもの長さ／試写と同じ実時間）と待機絵の違いはユーザーの判断待ち・iPhone実機再検収待ち
+  - **2026-10-16 iPhone 8本の限定修正**：§3「iPhone 実機8本の限定修正」・docs/battle_fix_1016/REPORT.md。全件 iPhone実機再検収待ち・体格の候補はユーザーの承認待ち
+  - **2026-10-16 試遊の入口**：（旧）ブランチの trial.html は main 統合のときに削除。いまの入口＝公開版の `?mmQaTrial=1`（開始画面の『QA を開く』→ バトル技ステージ）と `?chapterBoard=roadfirst&rfData=ch2`（A／B／C の切り替え）。§3「バトル最終統合」
+  - **2026-10-15 夜（一括依頼）**：Chapter 2 の4回目の回答を反映（DESIGN.md §6.5 の救済案は比較だけ）・バトル技アニメ21件・体格サイズ1〜5（?mmSize=1）＝§3「バトル技アニメ 試遊修正21件」。同じブランチ・main 未統合
+  - **2026-10-15 夕〜夜：Chapter 2 A／B／C の設計案と限定試作（論点 1〜5 反映・追補2・第3版＝食事ありのモデルの到達率・B 成功 2・失敗 18（284 地点）・旧セーブの判定・2.5D の海の世界のプレビュー）をブランチ claude/claude-md-handoff-check-fcl9lb に置いた（main 未改変・未公開・道路グラフと方向は基本了承・見た目と本実装は未承認）。設計の承認・素材制作（ChatGPT → 画像 AI）のあとに本実装へ（§3「Chapter 2 A／B／C 設計案」）。iPhone 実機のフルーネ・ジオルの QA 試遊の OK も引き続き待ち**
 
 ## 5. 未決事項（推測で埋めない）
 

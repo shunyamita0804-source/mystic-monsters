@@ -4063,6 +4063,7 @@ html:has(#app>.chfw.wbw) .mmtalk:not(.mmtalk-big):not(.mmtalk-scene) .mmtalk-sta
 <script src="./js/battle/arena.js"></script>
 <script src="./js/battle/compare.js"></script><!-- 2026-10-15：新しいパラメーター比較画面（MMCMP）＝大会・野生・レア・ライバルの対戦前。独立した VS の画面は出さない -->
 <script src="./js/qa/trial.js"></script><!-- 2026-10-15：QA 試遊モード（MMQA）＝URL に ?mmQaTrial=1 を付けたときだけ。通常のセーブへは書かない -->
+<script src="./js/qa/battle-stage.js"></script><!-- 2026-10-16：常設バトル QA のステージ（MMQAS）＝QA 試遊モードの中だけ。全モンスター・全技を1つの画面で（1技ずつ／全10技の連続再生・側・相手・体格・背景・速さ・結果） -->
 <script src="./js/battle/stage.js"></script>
 <script src="./js/battle/art25d-data.js"></script>
 <script src="./js/battle/soramo-moves-data.js"></script>
@@ -4071,10 +4072,14 @@ html:has(#app>.chfw.wbw) .mmtalk:not(.mmtalk-big):not(.mmtalk-scene) .mmtalk-sta
 <script src="./js/battle/regnas-moves-data.js"></script>
 <script src="./js/battle/jiol-moves-data.js"></script>
 <script src="./js/battle/flurene-moves-data.js"></script>
+<script src="./js/battle/move-area-1015.js"></script><script src="./js/battle/move-tune-1015.js"></script><!-- 2026-10-15 夜：技アニメの試遊修正21件・体格サイズ1〜5（?mmSize=1 のときだけ）・技の SE の時刻（MMTUNE） -->
+<script src="./js/battle/rootdrain-1016.js"></script><!-- 2026-10-16：フルーネ技09 ルートドレイン（QA 試遊だけ） -->
+<script src="./js/battle/sk19-v2-1016.js"></script><!-- 2026-10-16：ガウル SK19「聖なる炎」承認演出 V2 の試験実装（作業ブランチだけ） -->
 <script src="./js/battle/art25d.js"></script>
 <script src="./js/battle/movedex.js"></script>
 <script src="./js/fx/sequence.js"></script>
-<script src="./js/proto/roadfirst-data.js"></script><script src="./js/proto/roadfirst-routes.js"></script><script src="./js/proto/roadfirst-core.js"></script><script src="./js/proto/roadfirst-play.js"></script><script src="./js/proto/roadfirst-zones.js"></script><script src="./js/proto/roadfirst-world.js"></script><script src="./js/proto/roadfirst-view.js"></script><!-- 2026-10-09：Chapter 1 Pattern A 道路先行の試作（?chapterBoard=roadfirst のときだけ。通常の URL では何もしない） -->
+<script src="./js/proto/roadfirst-data.js"></script><script src="./js/proto/roadfirst-routes.js"></script><script src="./js/proto/roadfirst-core.js"></script><script src="./js/proto/roadfirst-play.js"></script><script src="./js/proto/roadfirst-zones.js"></script><script src="./js/proto/roadfirst-world.js"></script><script src="./js/proto/ch2-routes.js"></script>
+<script src="./js/proto/ch2-world.js"></script><script src="./js/proto/roadfirst-view.js"></script><!-- 2026-10-09：Chapter 1 Pattern A 道路先行の試作（?chapterBoard=roadfirst のときだけ。通常の URL では何もしない）。2026-10-15：Chapter 2 A／B／C 設計案のデータ（ch2-routes.js＝&rfData=ch2&ch2route=A|B|C の試作だけが読む。本編にはつながない） -->
 <script src="./js/chapter/world-driver.js"></script><script src="./js/chapter/world-board.js"></script><!-- 2026-10-11：本編の Chapter 1＝1枚の世界のボード（299地点。進行 MMWD・画面 MMWB） -->
 <script src="./js/prologue/prologue.js"></script>
 <script src="./js/opening/worldmap.js"></script>
@@ -5299,7 +5304,7 @@ window.addEventListener("unhandledrejection",rescue);
  *  ./version.json（小さな JSON。毎回取り直す）の build がこのページの MM_BUILD と違えば1回だけ reload（同じ版へは15分に1回まで＝読み込み直しを繰り返さない）。
  *  確かめる時：起動したとき・ページがメモリから戻ったとき（pageshow の persisted）・10分以上裏にいて表に戻ったとき。セーブ（mr4v6）には触れない（読み込み直しは iOS がタブを閉じたときと同じ＝つづきから）。
  *  公開するたびに MM_BUILD と version.json の build を同じ値に上げる（tests/dev24-1013.test.mjs で一致を確かめる） */
-const MM_BUILD="2026-10-15-jiol10";
+const MM_BUILD="2026-10-16-final";
 (function(){const K="mmbuildReload";let hidAt=0;
  const check=()=>{try{const x=new XMLHttpRequest();x.open("GET","./version.json?t="+Date.now(),true);x.timeout=8000;
   x.onload=()=>{try{if(x.status<200||x.status>=300)return;const b=(JSON.parse(x.responseText)||{}).build;if(!b||b===MM_BUILD)return;

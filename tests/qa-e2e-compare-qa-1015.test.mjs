@@ -141,7 +141,7 @@ test('CQ-B3：QA 試遊モード＝切り替えは牧場とベースキャンプ
       await pg.click('#mmqa .qdet .qno');
     }
   }
-  assert.deepEqual(tally, { battle: 50, preview: 10, static: 0 }, '実戦 50（ソラモ・ガウル・ノビトン・レグナス・ジオル＝2026-10-15 正式10技）／技アニメのプレビュー 10（フルーネ）');
+  assert.deepEqual(tally, { battle: 51, preview: 9, static: 0 }, '実戦 51（ソラモ・ガウル・ノビトン・レグナス・ジオル＝2026-10-15 正式10技＋2026-10-16 フルーネ 09 ルートドレイン＝QA だけ SK 58）／技アニメのプレビュー 9（フルーネの残り）');
   // QA 試合：4体（比較 → 対戦開始 → 6枠すべて選んだ技 → STOP で技が出る → QA 一覧へ）
   for (const [i, no, sp] of [[0, 10, 0], [1, 3, 1], [2, 7, 2], [4, 9, 4]]) {
     await pg.click(`#mmqa .qtab[data-i="${i}"]`); await pg.click(`#mmqa .qcard[data-n="${no - 1}"]`); await pg.click('#mmqa .qdet .qgo');

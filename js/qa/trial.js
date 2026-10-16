@@ -15,6 +15,9 @@
   const doc = root.document;
   const qs = (() => { try { return new URLSearchParams(root.location && root.location.search || ''); } catch (e) { return null; } })();
   const ENABLED = !!(qs && qs.get('mmQaTrial') === '1');
+  // 2026-10-16：試遊の入口（trial.html）から直接 QA の画面へ＝?mmQaTrial=1&qaDirect=1（開始画面の上に QA を開く・qaMon=0〜5 で最初のタブ）。普段の URL では動かない
+  const DIRECT = ENABLED && qs.get('qaDirect') === '1';
+  const DIRECT_MON = (() => { const n = qs && parseInt(qs.get('qaMon'), 10); return n >= 0 && n <= 5 ? n : 0; })();
   // 6体（番号は表示の順。sp＝バトルの絵の番号＝IMG の番号。フルーネの 5 は予約＝バトルの絵は無い）
   const MONS = Object.freeze([
     Object.freeze({ sp: 0, key: 'solamo' }), Object.freeze({ sp: 1, key: 'gauru' }), Object.freeze({ sp: 2, key: 'nobiton' }),
@@ -26,10 +29,13 @@
   /** フルーネの技アニメの枚数（本体・効果）。効果が本体より少ない技＝『FX追加待ち』 */
   function animInfo(key, no) {
     if (key !== 'flurene') return null;
+    if (no === 9 && root.MMRD) return { rd: true, bodies: root.MMRD.FRAMES.length, effects: 0, wait: false };   // 2026-10-16：09 はルートドレインの補修版10コマ（本体と効果が1枚）＝旧「生命のしずく」の枚数は出さない
     const d = FL() && FL()[no]; if (!d) return null;
-    return { bodies: d.bodies, effects: d.effects, wait: d.effects < d.bodies };
+    // 2026-10-16（バトル最終統合）：技10 の専用の根4＋命中3（js/battle/move-tune-1015.js の MOVES の addFx）も数える
+    const T = root.MMTUNE, t = T && T.keyOf && T.MOVES[T.keyOf(d, d.dir)], add = t && t.addFx ? t.addFx.filter((f) => /^F\d+_D\d+$/.test(f.src)).length : 0, ef = d.effects + add;
+    return { bodies: d.bodies, effects: ef, wait: ef < d.bodies && !add };
   }
-  const animTxt = (a) => a ? `本体 ${a.bodies}・効果 ${a.effects}${a.wait ? '（FX追加待ち）' : ''}` : '';
+  const animTxt = (a) => a ? (a.rd ? `ルートドレイン ${a.bodies}コマ（補修版）` : `本体 ${a.bodies}・効果 ${a.effects}${a.wait ? '（FX追加待ち）' : ''}`) : '';
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const G = (n) => { try { return (0, eval)(n); } catch (e) { return undefined; } };   // index.html の大域（S・SK・fight など）を呼ぶ時点で読む
   const M = () => root.MMP10M;
@@ -63,7 +69,9 @@
       const inf = info(x.sp) || {}, md = moveData(x.key), cards = C ? C.list(x.key) : [];
       const moves = cards.map((c) => {
         const d = md.find((v) => v.no === c.no) || {};
-        return { no: c.no, id: c.id, name: c.name || d.name, slot: c.slot, src: c.src, status: statusOf(x.key, c.slot), anim: animInfo(x.key, c.no), type: d.type || null,
+        // 2026-10-16：フルーネ技09「ルートドレイン」は QA だけ SK 58（js/battle/rules.js）＝実戦で確認できる。名前は登録の新しい名前（カードの絵は旧「生命のしずく」のまま＝新しいカードは素材待ち）
+        const flu9 = x.key === 'flurene' && c.no === 9 && G('SK') && G('SK')[58] ? 58 : null, slot = c.slot != null ? c.slot : flu9;
+        return { no: c.no, id: c.id, name: x.key === 'flurene' ? d.name || c.name : c.name || d.name, slot, src: c.src, status: statusOf(x.key, slot), anim: animInfo(x.key, c.no), type: d.type || null,
           power: d.power == null ? null : d.power, accuracy: d.accuracy == null ? null : d.accuracy, critical: d.critical == null ? null : d.critical, desc: d.desc || null };
       });
       return { sp: x.sp, key: x.key, name: inf.name, note: inf.note, img: inf.img, idle: inf.idle, moves };
@@ -103,6 +111,8 @@
       '#mmqa .qh{flex:none;padding:calc(env(safe-area-inset-top,0px) + 8px) 10px 8px;background:repeating-linear-gradient(135deg,#b3122e 0 12px,#8c0d24 12px 24px);border-bottom:3px solid #ffde59;text-align:center}',
       '#mmqa .qh b{display:block;font:900 16px/1.25 "Noto Sans JP",sans-serif;color:#fff;text-shadow:0 1px 0 #000}',
       '#mmqa .qh small{display:block;margin-top:2px;font:700 11px/1.3 "Noto Sans JP",sans-serif;color:#ffe9a8}',
+      '#mmqa .qstg{display:block;width:100%;margin-top:6px;min-height:44px;padding:8px 10px;border:2px solid #fff0c0;border-radius:10px;background:linear-gradient(180deg,#fbe39a,#c58d2a);color:#3b2406;font:900 14px/1.2 "Noto Sans JP",sans-serif;cursor:pointer}',
+      '#mmqa-entry{position:fixed;z-index:850;right:8px;top:calc(env(safe-area-inset-top,0px) + 62px);padding:9px 12px;border:2px solid #ffde59;border-radius:12px;background:repeating-linear-gradient(135deg,#b3122e 0 10px,#8c0d24 10px 20px);color:#fff;font:900 13px/1.2 "Noto Sans JP",sans-serif;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.4)}',
       '#mmqa .qoff{margin-top:6px;padding:7px 14px;border:2px solid #fff;border-radius:10px;background:#0b1636;color:#fff;font:800 13px/1 "Noto Sans JP",sans-serif;cursor:pointer}',
       '#mmqa .qtabs{flex:none;display:grid;grid-template-columns:repeat(6,1fr);gap:4px;padding:6px}',
       '#mmqa .qtab{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 2px;border:1.5px solid rgba(216,178,90,.5);border-radius:10px;background:#13224f;color:#fff3d6;font:700 10px/1.15 "Noto Sans JP",sans-serif;cursor:pointer;min-width:0}',
@@ -155,6 +165,14 @@
   }
   function syncSwitch() {
     if (!ENABLED || !doc || !doc.body) return;
+    // 2026-10-16（バトル最終統合）：?mmQaTrial=1 の直リンクで開いた開始画面に『QA を開く』（押すと牧場から ON にしたのと同じ＝通常のセーブへは書かない）
+    const ttl = !ST.on && !!doc.querySelector('#app>.mmtscr') && !doc.getElementById('bt');
+    let en = doc.getElementById('mmqa-entry');
+    if (!ttl) { if (en) en.remove(); } else if (!en) {
+      style(); en = doc.createElement('button'); en.id = 'mmqa-entry'; en.type = 'button'; en.setAttribute('data-nsfx', '1'); en.textContent = 'QA を開く（全モンスター・全技）';
+      en.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); try { root.MMAUDIO && root.MMAUDIO.stopBgm({ fade: 'quick' }); } catch (er) {} on('ranch'); });
+      doc.body.appendChild(en);
+    }
     const w = !ST.on && !doc.getElementById('bt') && where();
     let b = doc.getElementById('mmqa-sw');
     if (!w) { if (b) b.remove(); return; }
@@ -200,11 +218,12 @@
     const cat = catalog(), x = cat[ST.mon] || cat[0];
     const sum = (mv) => mv.status === 'battle' ? '実戦可能' : mv.status === 'preview' ? '技アニメのプレビュー' : '未実装／要仕様確認';
     const monNote = x.key === 'jiol' && !x.moves.some((m) => m.status === 'battle') ? '技の性能が未決＝実戦は無し（技アニメのコマのプレビューだけ）' : x.key === 'flurene' ? (FL() ? '未解禁・技の性能は未承認＝実戦は無し（技アニメのプレビューと歩行の確認だけ）' : '未解禁・技の性能と技アニメは未承認＝静止カードと絵の確認だけ（未実装／要仕様確認）') : x.key === 'regnas' ? 'ライバル専用のモンスター＝QA だけの貸与（本番では使えない）' : '全10技を QA 試合で確認できる';
-    v.innerHTML = `<div class="qh"><b>QA モード：全モンスター・全技試遊（ON）</b><small>試遊専用・通常のセーブには保存しません（OFF または再読み込みで元どおり）</small><button class="qoff" type="button" data-nsfx="1">QA を OFF にして通常へ戻る</button></div>`
+    v.innerHTML = `<div class="qh"><b>QA モード：全モンスター・全技試遊（ON）</b><small>試遊専用・通常のセーブには保存しません（OFF または再読み込みで元どおり）</small><small class="qver">版：画面 ${esc(String(G('MM_BUILD') || '?'))}／技アニメ ${esc(String((root.MMTUNE && root.MMTUNE.BUILD) || '古い版'))}${G('MM_BUILD') && root.MMTUNE && root.MMTUNE.BUILD === G('MM_BUILD') ? '' : '（一致しない＝再読み込みしてください）'}</small><button class="qstg" type="button" data-nsfx="1">▶ バトル技ステージ（1技ずつ／全10技を連続再生）</button><button class="qoff" type="button" data-nsfx="1">QA を OFF にして通常へ戻る</button></div>`
       + `<div class="qtabs" role="tablist">${cat.map((c, i) => `<button class="qtab${i === ST.mon ? ' on' : ''}" type="button" data-i="${i}" data-nsfx="1" role="tab" aria-selected="${i === ST.mon}"><img src="${esc(c.img)}" alt="">${esc(c.name)}<i>${c.moves.filter((m) => m.status === 'battle').length ? '実戦' : c.moves.some((m) => m.status === 'preview') ? 'プレビュー' : '静止画'}</i></button>`).join('')}</div>`
       + `<div class="qbody"><div class="qmon" data-key="${esc(x.key)}"><img src="${esc(x.img)}" alt=""><div><b>${esc(x.name)}${x.note ? `<small style="display:inline;margin-left:6px">${esc(x.note)}</small>` : ''}</b><small>${esc(monNote)}</small></div><div style="margin-left:auto;display:flex;flex-direction:column;gap:5px">${walkSets(x.key) ? '<button class="qbt qwk" type="button" data-nsfx="1">歩行を確認</button>' : ''}<button class="qbt qcmp" type="button" data-nsfx="1">比較画面を確認</button></div></div>`
       + `<div class="qgrid">${x.moves.map((mv, i) => `<button class="qcard${ST.sel === i ? ' on' : ''}" type="button" data-n="${i}" data-status="${mv.status}" data-nsfx="1"><img src="${esc(mv.src)}" alt="" loading="lazy" decoding="async"><b>${String(mv.no).padStart(2, '0')} ${esc(mv.name)}</b><span class="qst ${mv.status}">${sum(mv)}</span>${mv.anim ? `<span class="qfx">${esc(animTxt(mv.anim))}</span>` : ''}</button>`).join('')}</div></div>`;
     v.querySelector('.qoff').onclick = () => off();
+    v.querySelector('.qstg').onclick = () => stage(ST.mon, 1);
     v.querySelectorAll('.qtab').forEach((b) => { b.onclick = () => { ST.mon = +b.dataset.i; ST.sel = null; render(); }; });
     v.querySelectorAll('.qcard').forEach((b) => { b.onclick = () => { ST.sel = +b.dataset.n; detail(); }; });
     v.querySelector('.qcmp').onclick = () => compare(x, null);
@@ -216,7 +235,7 @@
     const old = v.querySelector('.qdet'); if (old) old.remove();
     const d = doc.createElement('div'); d.className = 'qdet';
     const stat = mv.type === 'support' ? '補助技（威力なし）' : mv.power != null ? `威力 ${mv.power}／命中 ${mv.accuracy}／クリ ${mv.critical}` : '性能：未決（データなし）';
-    const act = mv.status === 'battle' ? '<button class="qgo" type="button" data-nsfx="1">この技で QA 試合</button>' : mv.status === 'preview' ? '<button class="qgo" type="button" data-nsfx="1">技アニメを再生（QA 画面）</button>' : '';
+    const act = (mv.status === 'battle' ? '<button class="qgo qbt1" type="button" data-nsfx="1">この技で QA 試合</button>' : mv.status === 'preview' ? '<button class="qgo qbt1" type="button" data-nsfx="1">技アニメを再生（QA 画面）</button>' : '') + (mv.status === 'battle' || mv.status === 'preview' ? '<button class="qgo qsg1" type="button" data-nsfx="1">ステージで再生</button>' : '');
     const pics = x.key === 'flurene' ? `<div class="qpics"><figure><img src="${esc(x.img)}" alt="">正式立ち絵</figure><figure><img src="${esc(x.idle)}" alt="">バトル待機絵</figure><figure><img src="${esc(root.MMCMP ? root.MMCMP.src(5) : '')}" alt="">比較画面の絵</figure></div>` : '';
     const what = mv.status === 'battle' ? 'ルーレットの6枠をすべてこの技にして、テスト相手（ランク E の練習試合の相手・ソラモ）と戦います。勝敗・G・ランクは保存されません。'
       : mv.status === 'preview' ? `${x.key === 'flurene' ? 'フルーネ' : 'ジオル'}の技は性能（威力・命中など）が未決のため実戦はありません。バトル画面で技アニメのコマだけを再生します（判定・ダメージなし）。${mv.anim ? `この技の絵＝${animTxt(mv.anim)}。${mv.anim.wait ? '効果の絵はまだ届いていません（作っていません）。' : ''}` : ''}`
@@ -225,7 +244,8 @@
     v.appendChild(d);
     d.querySelector('.qno').onclick = () => d.remove();
     d.addEventListener('click', (e) => { if (e.target === d) d.remove(); });
-    const g = d.querySelector('.qgo'); if (g) g.onclick = () => { d.remove(); if (mv.status === 'battle') compare(x, mv); else preview(x, mv); };
+    const g = d.querySelector('.qbt1'); if (g) g.onclick = () => { d.remove(); if (mv.status === 'battle') compare(x, mv); else preview(x, mv); };
+    const g2 = d.querySelector('.qsg1'); if (g2) g2.onclick = () => { d.remove(); stage(ST.mon, mv.no); };
   }
 
   // ---- QA の個体（控えた S には入れない・ページの中だけ） ----
@@ -286,10 +306,12 @@
     const play = (no) => { try { root.MM25D && root.MM25D.preview(x.key, no, 0); } catch (e) {} };
     const wait = () => { const b = doc.getElementById('bt'); if (!b) return void setTimeout(wait, 80); b.classList.add('mmqa-prev'); };
     wait();
-    bar(`QA：${x.name}の技アニメ`, x.moves.map((v) => ({ t: String(v.no).padStart(2, '0') + (v.anim && v.anim.wait ? '*' : ''), f: () => play(v.no), cur: v.no === mv.no })).concat(x.key === 'flurene' ? [{ t: '* FX追加待ち', f: () => {} }] : []));
+    bar(`QA：${x.name}の技アニメ`, x.moves.map((v) => ({ t: String(v.no).padStart(2, '0') + (v.anim && v.anim.wait ? '*' : ''), f: () => play(v.no), cur: v.no === mv.no })).concat(x.key === 'flurene' && x.moves.some((v) => v.anim && v.anim.wait) ? [{ t: '* FX追加待ち', f: () => {} }] : []));
     setTimeout(() => play(mv.no), 1600);
     return true;
   }
+  /** 2026-10-16（バトル最終統合）：常設バトル QA のステージ（js/qa/battle-stage.js の MMQAS）。全モンスター・全技を1つの画面で */
+  function stage(mon, no) { if (!ST.on || !root.MMQAS) return false; const v = doc.getElementById('mmqa'); const ok = root.MMQAS.open(mon, no); if (ok && v) v.style.display = 'none'; return ok; }
   /** QA のプレビューの間だけ、フルーネ（予約番号 5）のバトルの絵をページの中に置く（IMG[5]・MMARENA.IDLE[5]）。終わり・OFF で元へ */
   function lendFlurene() {
     if (ST.flr) return;
@@ -371,6 +393,18 @@
     step();
   }
 
+  /** 入口（trial.html）から：開始画面が出て S ができたら、開始画面の曲を止めて QA を ON（OFF は牧場へ） */
+  function direct() {
+    let n = 0;
+    const tick = () => {
+      if (ST.on) return;
+      const app = doc.getElementById('app');
+      if (G('S') && app && app.firstElementChild) { try { root.MMAUDIO && root.MMAUDIO.stopBgm({ fade: 'quick' }); } catch (e) {} ST.mon = DIRECT_MON; on('ranch'); return; }
+      if (++n < 200) setTimeout(tick, 100);
+    };
+    setTimeout(tick, 300);
+  }
+
   // ---- 起動 ----
   if (ENABLED && doc) {
     const boot = () => {
@@ -380,14 +414,15 @@
       mo.observe(doc.body, { childList: true, subtree: false });
       if (app) mo.observe(app, { childList: true });
       syncSwitch();
+      if (DIRECT) direct();
     };
     if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', boot); else boot();
   }
 
   root.MMQA = Object.freeze({
-    ENABLED, MONS, SAVE_KEY_RE, catalog, counts, statusOf,
+    ENABLED, DIRECT, MONS, SAVE_KEY_RE, catalog, counts, statusOf,
     on, off, isOn: () => ST.on, active: () => ST.on, battling: () => ST.battling, snapshot: () => ST.snap,
     select: (i) => { ST.mon = Math.max(0, Math.min(5, i | 0)); ST.sel = null; render(); }, battle: (i, no) => { if (!ST.on) return false; const x = catalog()[i]; const mv = x && x.moves.find((v) => v.no === no); return x && mv ? (mv.status === 'battle' ? battle(x, mv) : mv.status === 'preview' ? preview(x, mv) : false) : false; },
-    endBattle, makeMon, FOE, animInfo, walk: (i) => { if (!ST.on) return false; const x = catalog()[i]; if (!x || !walkSets(x.key)) return false; walk(x); return true; },
+    endBattle, makeMon, FOE, animInfo, stage, _start: (m, prev) => start(m, prev), _lend: () => lendFlurene(), _unlend: () => unlendFlurene(), show, walk: (i) => { if (!ST.on) return false; const x = catalog()[i]; if (!x || !walkSets(x.key)) return false; walk(x); return true; },
   });
 })(typeof window !== 'undefined' ? window : globalThis);

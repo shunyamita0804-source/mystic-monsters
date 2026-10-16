@@ -79,7 +79,7 @@ test('RW-04：レアは育成開始時に1回だけ 10%（当たれば1マス・
 
 test('RW-05：&rfView=world のときだけ・保存の鍵は同じ・読み込み順・world は保存／通信をしない', () => {
   const v = rd('js/proto/roadfirst-view.js'), w = rd('js/proto/roadfirst-world.js'), html = rd('index.html');
-  assert.match(v, /const ZWORLD = ON && Q\.get\('rfView'\) === 'world'/);
+  assert.match(v, /const ZWORLD = ON && \(Q\.get\('rfView'\) === 'world' \|\| \(!!CH2 && Q\.get\('rfView'\) !== 'plan'\)\)/);   // 2026-10-15：Chapter 2 設計案のプレビューは既定で世界ビュー（Chapter 1 の試作は従来どおり &rfView=world のときだけ）
   assert.match(v, /const KEY = 'mmrf_proto_v1'/);
   assert.doesNotMatch(w, /localStorage|fetch\(|XMLHttpRequest/);
   const iz = html.indexOf('roadfirst-zones.js'), iw = html.indexOf('roadfirst-world.js'), iv = html.indexOf('roadfirst-view.js');
@@ -90,7 +90,7 @@ test('RW-06：ボード素材の試し貼り（&rfArt=1010）＝ファイル・�
   const { existsSync } = await import('node:fs');
   const A = Wd.ART, files = [A.ground.file, A.road.file, A.goal.file, ...A.props.map((q) => q.file)];
   for (const f of files) assert.ok(existsSync(path.join(ROOT, 'assets/proto/board_art_1010', f)), f);
-  assert.match(rd('js/proto/roadfirst-view.js'), /const ART = ZWORLD && Q\.get\('rfArt'\) === '1010'/);
+  assert.match(rd('js/proto/roadfirst-view.js'), /const ART = ZWORLD && \(Q\.get\('rfArt'\) === '1010' \|\| \(!!CH2 && Q\.get\('rfArt'\) !== 'none'\)\)/);
   for (const L of A.landmarks) {
     for (const f of [L.file, L.open].filter(Boolean)) assert.ok(existsSync(path.join(ROOT, 'assets/proto/board_art_1010', f)), f);
     assert.ok(D.nodes[L.node], L.node); const at = Wd.landmarkAt(D, L); assert.ok(at && at[0] > 0 && at[0] < Wd.WORLD.w && at[1] > 0 && at[1] < Wd.WORLD.h, `${L.node} は世界の中`);

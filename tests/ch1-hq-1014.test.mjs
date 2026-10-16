@@ -72,6 +72,8 @@ test('HQ-04：本編だけが skin を渡す・?boardSkin=1010 で従来の絵�
   assert.match(IX, /MMRF_WORLD\.warmArt\(null,MMWB\.skinKey&&MMWB\.skinKey\(\)\)/);
   assert.match(W, /\.then\(\(im\) => im \|\| load\(f\)\)/, '地面・道・水：読めなければ従来の絵');
   assert.match(W, /addEventListener\('error', \(\) => \{ d\.src = base \+ file; p\.w = w;/, '景物：読めなければ従来の絵と幅');
-  // 試作（?chapterBoard=roadfirst）は skin を渡さない
-  assert.ok(!/skin:/.test(rd('js/proto/roadfirst-view.js')), '試作の画面は従来の絵');
+  // 試作（?chapterBoard=roadfirst）は skin を渡さない（2026-10-15：Chapter 2 設計案のプレビュー＝&rfData=ch2 の分かれ道の中だけ hq1014）
+  const RV = rd('js/proto/roadfirst-view.js'), sk = [...RV.matchAll(/skin:/g)].map((m) => m.index);
+  assert.equal(sk.length, 1, '試作の画面は従来の絵（Chapter 2 のプレビューだけ）');
+  assert.ok(/\.\.\.\(CH2 \? \{[^}]*skin: 'hq1014' \} : \{\}\)/.test(RV), 'skin は CH2 の分かれ道の中');
 });

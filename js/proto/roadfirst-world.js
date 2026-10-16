@@ -132,12 +132,13 @@
 
   // ---- 純粋な関数 ----
   /** 世界の点 (x, y) → 画面の点。cam＝{ tx, ty（注視点）, s, tilt（度）, P, ax, ay（注視点を写す画面の位置） }。k＝遠近の縮み */
-  function project(cam, x, y) {
+  function project(cam, x, y, h) {
     let X0 = x - cam.tx, Y0 = y - cam.ty;
     if (cam.yaw) { const a = rad(cam.yaw), c = Math.cos(a), sn = Math.sin(a), rx = X0 * c - Y0 * sn; Y0 = X0 * sn + Y0 * c; X0 = rx; }   // 2026-10-14 開発29（6）：注視点のまわりで回す（CSS の rotate と同じ向き＝時計回りが正）
     const X = X0 * cam.s, Y = Y0 * cam.s, th = rad(cam.tilt);
-    const z = Y * Math.sin(th), k = cam.P / (cam.P - z);
-    return { x: cam.ax + X * k, y: cam.ay + Y * Math.cos(th) * k, k };
+    // 2026-10-15 Chapter 2 設計案の試作：h＝地面からの高さ（単位・上が正）。CSS の rotateX と同じ式（h が無い・0 なら従来と同じ）
+    const Z = (h || 0) * cam.s, z = Y * Math.sin(th) + Z * Math.cos(th), k = cam.P / (cam.P - z);
+    return { x: cam.ax + X * k, y: cam.ay + (Y * Math.cos(th) - Z * Math.sin(th)) * k, k, z };
   }
   /** 2026-10-14 開発29（6）：進む向き → 画面の上に向ける回転（度）。dx・dy は世界の座標の差（y は下向き）。北（上）へ進む＝0・東（右）へ＝−90・南（下）へ＝±180 */
   function headingYaw(dx, dy) { return -Math.atan2(dx, -dy) * 180 / Math.PI; }
@@ -145,7 +146,7 @@
   function angDiff(a, b) { let d = (b - a) % 360; if (d > 180) d -= 360; if (d < -180) d += 360; return d; }
   /** 点がすべて rect（{ l, t, r, b }）の内側に入る最大の倍率（二分探索）。入らなければ sMin */
   function fitZoom(cam, pts, rect, sMin, sMax) {
-    const ok = (s) => pts.every((p) => { const q = project(Object.assign({}, cam, { s }), p[0], p[1]); return q.x >= rect.l && q.x <= rect.r && q.y >= rect.t && q.y <= rect.b; });
+    const ok = (s) => pts.every((p) => { const q = project(Object.assign({}, cam, { s }), p[0], p[1], p[2]); return q.x >= rect.l && q.x <= rect.r && q.y >= rect.t && q.y <= rect.b; });
     if (ok(sMax)) return sMax;
     if (!ok(sMin)) return sMin;
     let lo = sMin, hi = sMax;
@@ -178,10 +179,18 @@
     const wrap = doc.createElement('div'); wrap.className = 'rfw';
     const plane = doc.createElement('div'); plane.className = 'rfw-plane';
     const bb = doc.createElement('div'); bb.className = 'rfw-bb';
-    const title = doc.createElement('div'); title.className = 'rfw-title'; title.innerHTML = '<small>CHAPTER 1</small>はじまりの草原<em>全体マップ</em>';
+    const title = doc.createElement('div'); title.className = 'rfw-title';
+    const TT = D.art && D.art.title;   // 2026-10-15 Chapter 2 の試作（js/proto/ch2-routes.js）だけ題字を持つ。無ければ従来どおり Chapter 1
+    title.innerHTML = TT ? `<small>${TT.small}</small>${TT.name}<em>全体マップ（設計案・試作）</em>` : '<small>CHAPTER 1</small>はじまりの草原<em>全体マップ</em>';
     wrap.appendChild(plane); wrap.appendChild(bb); wrap.appendChild(title); host.appendChild(wrap);
     const VIS = visualOf(o); wrap.dataset.visual = VIS.key;   // 2026-10-14 Chapter 1 B／C：景観のパターン（A＝従来）
     const SK = skinOf(o); if (SK) wrap.dataset.skin = SK.key;   // 2026-10-14 A／B／C 高品質化：絵の差し替え（無ければ従来の絵）
+    // 2026-10-15 Chapter 2 A／B／C 設計案の試作（未承認）：道のデータが art.sea3d を持つときだけ海・海底の盆地・螺旋塔を js/proto/ch2-world.js（MMRF_SEA）で描く。
+    //  Chapter 1 のデータには無い＝下の SEA の分かれ道はすべて通らない（従来どおり）
+    const SEA = D && D.art && D.art.sea3d && root.MMRF_SEA ? root.MMRF_SEA : null;
+    const ELEV = (D && D.art && D.art.elev) || null, hOf = (id) => (ELEV && ELEV[id]) || 0;
+    const scl = (s) => (SEA ? `scale3d(${s},${s},${s})` : `scale(${s})`);   // 高さのある子（海底・塔）は z も同じ倍率で
+    if (SEA) { wrap.classList.add('sea'); plane.style.transformStyle = 'preserve-3d'; }
     css(doc);
     const W = Math.ceil(WORLD.w * o.res), H = Math.ceil(WORLD.h * o.res);
     plane.style.width = WORLD.w + 'px'; plane.style.height = WORLD.h + 'px';
@@ -214,6 +223,7 @@
     }
     function paintChunk(c) { const g = c.getContext('2d'); g.setTransform(o.res, 0, 0, o.res, -c._x, -c._y);
       const bx = [c._x / o.res, c._y / o.res, c.width / o.res, c.height / o.res];
+      if (SEA) { SEA.ground(g, D, bx, art, HELP); SEA.roads(g, D, o, art, bx, HELP); return; }
       drawGround(g, D, bx[0], bx[1], bx[2], bx[3], art); drawTerrain(g, D, o, art, bx); drawRoads(g, D, o, art, bx); }
     // 区画は数フレームに分けて描く（1回の長い処理で画面を止めない。iPhone で開始の俯瞰が引っかからないように）。今の注視点に近い区画から
     let queue = [], painted = false, artDone = !o.art; const dead = () => typeof S !== 'undefined' && S.dead;   // artDone＝絵の読み込みが終わった（失敗した絵は仮の色で描く＝読み込みは必ず終わる）
@@ -257,8 +267,10 @@
       const T = ART.terrain;
       const EK = Object.keys(T.edges);
       Promise.all([load2('ground', ART.ground.file), load2('road', ART.road.file), o.art.road === 'pattern' ? null : load2('strip', ART.strip.file),
-        load(T.valley.file), load2('water', T.water.file), load(T.cloud.file), ...EK.map((k) => load(T.edges[k].file))]).then(([gi, ri, si, vi, wi, ci, ...ei]) => {
+        load(T.valley.file), load2('water', T.water.file), load(T.cloud.file), ...EK.map((k) => load(T.edges[k].file)), SEA ? SEA.load(load, base) : null]).then(([gi, ri, si, vi, wi, ci, ...ei]) => {
         if (S.dead) return; art.ground = gi; art.road = ri; art.strip = si;
+        if (SEA) { art.sea = ei.pop(); vi = null; S.sea3d = SEA.build3d({ doc, plane, D, o, art, H: HELP, base }); }   // 2026-10-15 Chapter 2：谷・雲海・森は使わない（海・海底の盆地・塔）
+        else ei.pop();
         if (ri && ri._sk) { art.roadTile = SK.roadTile; art.discCenter = !!SK.discCenter; }   // R の石の大きさ＝道の帯の石にそろえる
         if (vi) { art.terrain = terrainMasks(doc, D, o); art.valley = vi; art.water = wi; art.cloud = ci; art.edges = {}; EK.forEach((k, i) => { art.edges[k] = ei[i]; });
           if (art.edges.forest) art.canopy = canopyTile(doc, art.edges.forest); }
@@ -268,19 +280,20 @@
         if (gi) { const ap = doc.createElement('div'); ap.className = 'rfw-apron'; const m = APRON;
           Object.assign(ap.style, { left: -m + 'px', top: -m + 'px', width: WORLD.w + 2 * m + 'px', height: WORLD.h + 2 * m + 'px', backgroundImage: `url(${gi._sk ? SK.base + SK.ground : base + ART.ground.file})`,
             backgroundSize: `${ART.ground.tile}px ${ART.ground.tile}px`, backgroundPosition: `${m % ART.ground.tile}px ${m % ART.ground.tile}px` });
+          if (SEA) SEA.apron(ap, base, m);   // 世界の外も海
           plane.insertBefore(ap, plane.firstChild); } });
-      const add = (file, x, y, w, z, cls) => { const d = doc.createElement('img'); d.className = 'rfw-prop' + (cls ? ' ' + cls : ''); d.alt = ''; d.draggable = false;
-        const sub = SK && SK.props[file], p = { el: d, x, y, w: sub ? w * sub[1] : w, z: z || 0 };
+      const add = (file, x, y, w, z, cls, h) => { const d = doc.createElement('img'); d.className = 'rfw-prop' + (cls ? ' ' + cls : ''); d.alt = ''; d.draggable = false;
+        const sub = SK && SK.props[file], p = { el: d, x, y, w: sub ? w * sub[1] : w, z: z || 0, h: h || 0 };
         if (sub) { d.dataset.k = file; d.addEventListener('error', () => { d.src = base + file; p.w = w; p.base = 0; S.dirty = true; }, { once: true }); d.src = SK.base + sub[0]; }   // 読めなければ従来の絵・従来の幅
         else d.src = artUrl(base, file);
         bb.appendChild(d); props.push(p); };
-      for (const q of scatter(D, o)) add(q.file, q.x, q.y, q.w);
+      for (const q of (SEA ? SEA.scatter(D, o, HELP) : scatter(D, o))) add(q.file, q.x, q.y, q.w, q.z || 0, q.cls, q.h);
       const gn = D.nodes.GOAL; if (gn) { add(ART.goal.file, gn[0], gn[1] + ART.goal.dy, ART.goal.w, -40, 'rfw-goal'); const gp = props[props.length - 1]; gp.solid = true;
         // 2026-10-14 実機試遊⑭：大会会場は立てた絵（いつもカメラの方を向く）なので、置く位置も「カメラから見て GOAL のすぐ奥」に合わせる＝正面の階段の下に GOAL の円盤が来る。
         //  地面を進む向きへ回す（heading）本編だけ：GOAL から画面の奥の向きへ back だけ下げた点（回したあとの画面で真上）。試作（北が上）は従来の dy のまま。GOAL の地点・歩数・判定は変えない
         if (o.heading) gp.at = (c) => { const a = rad((c && c.yaw) || 0); return [gn[0] - ART.goal.back * Math.sin(a), gn[1] - ART.goal.back * Math.cos(a)]; }; }   // 2026-10-13 開発27（26）：大会会場（建物・門）は半透明にしない（xray で草地が透けて見えていた）
-      for (const L of lmOf(D)) { if (o.hideLm && o.hideLm.includes(L.node)) continue; const at = landmarkAt(D, L); if (at) { add(L.file, at[0], at[1], L.w, L.z || 0, 'rfw-lm'); props[props.length - 1].L = L; } }
-      for (const q of waterProps(D, o)) add(q.file, q.x, q.y, q.w, q.z || 0, 'rfw-wp');   // 第4便：川の景物（B は密に）
+      for (const L of lmOf(D)) { if (o.hideLm && o.hideLm.includes(L.node)) continue; const at = landmarkAt(D, L); if (at) { add(L.file, at[0], at[1], L.w, L.z || 0, 'rfw-lm', hOf(L.node)); props[props.length - 1].L = L; } }
+      for (const q of (SEA ? [] : waterProps(D, o))) add(q.file, q.x, q.y, q.w, q.z || 0, 'rfw-wp');   // 第4便：川の景物（B は密に）
       for (const [x, y, w] of peaksOf(D, o)) add(ART.peaks.file, x, y, w, -20, 'rfw-peak');   // 第4便：山の岩峰（C は足す）
     }
     const S = {
@@ -298,7 +311,7 @@
       return { tx: (x0 + x1) / 2, ty: (y0 + y1) / 2, s, tilt: 0, P: o.persp, ax: v.W / 2, ay: v.H / 2 + 26 };
     }
     /** 追従のカメラ：モンスター（mx, my）と先の地点 pts が空いている所に入る倍率 */
-    function followCam(v, mx, my, pts, yaw) {
+    function followCam(v, mx, my, pts, yaw, mh) {
       const rect = { l: o.margin, r: v.right - o.margin, t: v.top + o.margin, b: v.bottom - o.margin };
       const fh = v.bottom - v.top, ax = (rect.l + rect.r) / 2, ay = v.top + fh * o.anchor;
       let tx = mx, ty = my;
@@ -307,7 +320,7 @@
         const mid = (Math.min(...xs) + Math.max(...xs)) / 2 * 0.6; tx = mx + mid * c; ty = my - mid * sn;
       }
       const cam = { tx, ty, s: o.sMax, tilt: o.tilt, P: o.persp, ax, ay, yaw: yaw || 0 };
-      cam.s = fitZoom(cam, pts.concat([[mx, my]]), rect, o.sMin, o.sMax);
+      cam.s = fitZoom(cam, pts.concat([[mx, my, mh || 0]]), rect, o.sMin, o.sMax);
       return cam;
     }
     /** 景物の決まった幅（px）：いちばん寄ったときの大きさ（世界の幅 × 最大の倍率 × 手前の遠近）まで。絵の実際の幅より大きくしない（それ以上はぼやけるだけ） */
@@ -343,22 +356,23 @@
       if (sig === S.sig) return; S.sig = sig; S.dirty = false;
       // 平面：注視点を原点に移して → 倍率 → 傾き → 画面の位置へ（project と同じ式。perspective-origin＝注視点の画面位置）
       wrap.style.perspective = c.P + 'px'; wrap.style.perspectiveOrigin = `${c.ax}px ${c.ay}px`;
-      plane.style.transform = `translate(${c.ax}px,${c.ay}px) rotateX(${c.tilt}deg) scale(${c.s}) rotate(${(c.yaw || 0).toFixed(3)}deg) translate(${-c.tx}px,${-c.ty}px)`;
+      plane.style.transform = `translate(${c.ax}px,${c.ay}px) rotateX(${c.tilt}deg) ${scl(c.s)} rotate(${(c.yaw || 0).toFixed(3)}deg) translate(${-c.tx}px,${-c.ty}px)`;
       const v = S.view, Wd = v ? v.W : 400, Hd = v ? v.H : 800, xr = [];
-      if (o.xray && S.mon) { const q = project(c, S.mon[0], S.mon[1]), w = o.monRatio > 0 ? Math.max(c.s < 1 ? 14 : 30, Math.max(c.s < 1 ? 2 : o.tilePx[0], Math.min(o.tilePx[1], o.tileW * c.s * q.k)) * o.monRatio) : Math.max(c.s < 1 ? 14 : 40, Math.min(100, 24 * c.s * q.k)), h = w * (S.monAh || 0.92);
+      if (o.xray && S.mon) { const q = project(c, S.mon[0], S.mon[1], S.mon[2]), w = o.monRatio > 0 ? Math.max(c.s < 1 ? 14 : 30, Math.max(c.s < 1 ? 2 : o.tilePx[0], Math.min(o.tilePx[1], o.tileW * c.s * q.k)) * o.monRatio) : Math.max(c.s < 1 ? 14 : 40, Math.min(100, 24 * c.s * q.k)), h = w * (S.monAh || 0.92);
         xr.push([q.x - w / 2, q.y - h, q.x + w / 2, q.y, q.y + 2, w * h * 0.5]); }   // モンスターの箱（重なりの判定は半分で＝少しでも隠れたら）
       for (const [id, t] of Object.entries(tiles)) {
-        const n = D.nodes[id], q = project(c, n[0], n[1]);
+        const n = D.nodes[id], q = project(c, n[0], n[1], hOf(id));
         const w = Math.max(c.s < 1 ? 2 : o.tilePx[0], Math.min(o.tilePx[1], o.tileW * c.s * q.k)) * (t.k || 1);   // 2026-10-15 N08：t.k＝そのマスだけの大きさの倍率（ライバルのマス）
         const vis = q.x > -w && q.x < Wd + w && q.y > -w && q.y < Hd + w;
         if (!vis) { if (!t.hid) { t.el.style.display = 'none'; t.hid = true; } continue; }
         if (t.hid) { t.el.style.display = ''; t.hid = false; }
         t.el.style.transform = `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * 0.62).toFixed(1)}px) scale(${(w / TB).toFixed(4)})`;   // 幅は決まった base（TB）＝scale だけで大きさを変える（レイアウトなし）
         if (o.xray) xr.push([q.x - w / 2, q.y - w * 0.62, q.x + w / 2, q.y + w * 0.14, q.y, w * w * 0.76]);
+        if (S.sea3d) { const oc = S.sea3d.occl(c, n[0], n[1], hOf(id), q); if (oc !== !!t.oc) { t.oc = oc; t.el.classList.toggle('occl', oc); } }   // 2026-10-15：塔のうしろのマスは薄く
       }
       for (const p of props) {
         if (p.at) { const xy = p.at(c); p.x = xy[0]; p.y = xy[1]; }
-        const q = project(c, p.x, p.y), w = Math.min(p.max || 1e9, Math.max(p.min || 0, p.w * c.s * q.k));
+        const q = project(c, p.x, p.y, p.h), w = Math.min(p.max || 1e9, Math.max(p.min || 0, p.w * c.s * q.k));
         const vis = q.x > -w && q.x < Wd + w && q.y > -10 && q.y < Hd + w * 1.2 && w > 1.5;
         if (!vis) { if (!p.hid) { p.el.style.display = 'none'; p.hid = true; } continue; }
         if (p.hid) { p.el.style.display = ''; p.hid = false; }
@@ -373,7 +387,8 @@
         }
       }
       if (S.mon) {
-        const q = project(c, S.mon[0], S.mon[1]);
+        if (S.sea3d) S.sea3d.mon(S.mon[2]);   // 2026-10-15 Chapter 2：海底へ潜ると盆地の上の海面が薄くなる
+        const q = project(c, S.mon[0], S.mon[1], S.mon[2]);
         const w = o.monRatio > 0 ? Math.max(c.s < 1 ? 14 : 30, Math.max(c.s < 1 ? 2 : o.tilePx[0], Math.min(o.tilePx[1], o.tileW * c.s * q.k)) * o.monRatio)   // 2026-10-12：その地点のマスの幅 × 倍率（マスと同じ式）
           : Math.max(c.s < 1 ? 14 : 40, Math.min(100, 24 * c.s * q.k));
         mon.style.transform = `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * (S.monAh || 0.92)).toFixed(1)}px) scale(${(w / MB).toFixed(4)})`;
@@ -392,7 +407,7 @@
       const anims = [], can = typeof plane.animate === 'function';
       const run = (el, kf) => { if (!can) return; try { anims.push(el.animate(kf, { duration: dur, easing: 'linear', fill: 'forwards' })); } catch (e) { /* 動かせない要素は最後の姿へ */ } };
       wrap.style.perspective = o.persp + 'px'; wrap.style.perspectiveOrigin = `${to.ax}px ${to.ay}px`;
-      run(plane, cams.map((c, i) => ({ transform: `translate(${c.ax}px,${c.ay}px) rotateX(${c.tilt}deg) scale(${c.s}) rotate(${(c.yaw || 0).toFixed(3)}deg) translate(${-c.tx}px,${-c.ty}px)`, offset: i / INTRO_SAMPLES })));
+      run(plane, cams.map((c, i) => ({ transform: `translate(${c.ax}px,${c.ay}px) rotateX(${c.tilt}deg) ${scl(c.s)} rotate(${(c.yaw || 0).toFixed(3)}deg) translate(${-c.tx}px,${-c.ty}px)`, offset: i / INTRO_SAMPLES })));
       const tileW = (c, q) => Math.max(c.s < 1 ? 2 : o.tilePx[0], Math.min(o.tilePx[1], o.tileW * c.s * q.k));
       const onScreen = (q, w) => q.x > -w && q.x < Wd + w && q.y > -w && q.y < Hd + w;
       // 2026-10-14 Chapter 1 進入時のクラッシュ対策（iPhone で題字 → 全景の瞬間に落ちる）：寄る間は全要素が別々の層になる。
@@ -408,7 +423,7 @@
       };
       for (const [id, t] of Object.entries(tiles)) {
         const n = D.nodes[id], on = [], rs = [];
-        const qs = cams.map((c) => { const q = project(c, n[0], n[1]), w = tileW(c, q) * (t.k || 1); on.push(onScreen(q, w)); rs.push(w / TB); return [q, w]; });
+        const qs = cams.map((c) => { const q = project(c, n[0], n[1], hOf(id)), w = tileW(c, q) * (t.k || 1); on.push(onScreen(q, w)); rs.push(w / TB); return [q, w]; });
         if (!on.includes(true)) { if (!t.hid) { t.el.style.display = 'none'; t.hid = true; } continue; }
         if (t.hid) { t.el.style.display = ''; t.hid = false; }
         const sc = fit(t.el, TB, rs, on);
@@ -416,7 +431,7 @@
       }
       for (const p of props) {
         if (!p.base) propBase(p); const on = [], rs = [];
-        const qs = cams.map((c) => { const xy = p.at ? p.at(c) : [p.x, p.y], q = project(c, xy[0], xy[1]), w = Math.min(p.max || 1e9, Math.max(p.min || 0, p.w * c.s * q.k)); on.push(q.x > -w && q.x < Wd + w && q.y > -10 && q.y < Hd + w * 1.2 && w > 1.5); rs.push(w / p.base); return [q, w]; });
+        const qs = cams.map((c) => { const xy = p.at ? p.at(c) : [p.x, p.y], q = project(c, xy[0], xy[1], p.h), w = Math.min(p.max || 1e9, Math.max(p.min || 0, p.w * c.s * q.k)); on.push(q.x > -w && q.x < Wd + w && q.y > -10 && q.y < Hd + w * 1.2 && w > 1.5); rs.push(w / p.base); return [q, w]; });
         if (!on.includes(true)) { if (!p.hid) { p.el.style.display = 'none'; p.hid = true; } continue; }
         if (p.hid) { p.el.style.display = ''; p.hid = false; }
         if (p.zi == null) { p.zi = propZ(p); p.el.style.zIndex = String(p.zi); }
@@ -424,7 +439,7 @@
         run(p.el, qs.map(([q, w], i) => ({ transform: `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * (p.ah || 0.92)).toFixed(1)}px) scale(${sc(rs[i], i).toFixed(4)})`, offset: i / INTRO_SAMPLES })));
       }
       if (S.mon) {
-        const kf = cams.map((c, i) => { const q = project(c, S.mon[0], S.mon[1]), w = o.monRatio > 0 ? Math.max(c.s < 1 ? 14 : 30, tileW(c, q) * o.monRatio) : Math.max(c.s < 1 ? 14 : 40, Math.min(100, 24 * c.s * q.k));
+        const kf = cams.map((c, i) => { const q = project(c, S.mon[0], S.mon[1], S.mon[2]), w = o.monRatio > 0 ? Math.max(c.s < 1 ? 14 : 30, tileW(c, q) * o.monRatio) : Math.max(c.s < 1 ? 14 : 40, Math.min(100, 24 * c.s * q.k));
           return { transform: `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * (S.monAh || 0.92)).toFixed(1)}px) scale(${(w / MB).toFixed(4)})`, offset: i / INTRO_SAMPLES }; });
         run(mon, kf);
       }
@@ -466,7 +481,7 @@
         if (o.heading) { const d = angDiff(S.cam.yaw || 0, g.yaw || 0); S.cam.yaw = Math.abs(d) < 0.05 ? (g.yaw || 0) : (S.cam.yaw || 0) + d * (1 - Math.exp(-dt / o.yawTau)); }   // 2026-10-14 開発29（6）：近いほうへなめらかに回る
         S.cam.s = Math.exp(lerp(Math.log(S.cam.s), Math.log(g.s), (1 - Math.exp(-dt / o.zoomTau)) * 0.8));
       }
-      if (S.monGoal) { if (!S.mon) S.mon = S.monGoal.slice(); const f = 1 - Math.exp(-dt / 70); S.mon[0] = lerp(S.mon[0], S.monGoal[0], f); S.mon[1] = lerp(S.mon[1], S.monGoal[1], f); }
+      if (S.monGoal) { if (!S.mon) S.mon = S.monGoal.slice(); const f = 1 - Math.exp(-dt / 70); S.mon[0] = lerp(S.mon[0], S.monGoal[0], f); S.mon[1] = lerp(S.mon[1], S.monGoal[1], f); S.mon[2] = lerp(S.mon[2] || 0, S.monGoal[2] || 0, f); }
       apply();
       S.raf = root.requestAnimationFrame(tick);
     }
@@ -475,14 +490,14 @@
       /** 今の地点・先の地点・マスの見た目を渡す（roadfirst-view の render／cam から呼ぶ）。instant＝すぐ合わせる */
       update(info, instant) {
         const n = D.nodes[info.node]; if (!n) return;
-        S.monGoal = [n[0], n[1]]; if (instant || !S.mon) S.mon = S.monGoal.slice();
+        S.monGoal = [n[0], n[1], hOf(info.node)]; if (instant || !S.mon) S.mon = S.monGoal.slice();
         S.view = viewRect();
-        const pts = (info.ahead || []).map((id) => D.nodes[id]).filter(Boolean).map((p) => [p[0], p[1]]);
+        const pts = (info.ahead || []).filter((id) => D.nodes[id]).map((id) => [D.nodes[id][0], D.nodes[id][1], hOf(id)]);
         if (o.heading && pts.length) {   // 2026-10-14 開発29（6）：進む向き＝今の地点 → 先の地点（最大4つ）の重心（分かれ道の手前は両方の道の真ん中・行き止まりから戻る間は戻る向き）
           const k = pts.slice(0, 4), gx = k.reduce((a, p) => a + p[0], 0) / k.length - n[0], gy = k.reduce((a, p) => a + p[1], 0) / k.length - n[1];
           if (Math.hypot(gx, gy) > 2) { const y0 = headingYaw(gx, gy); S.yawGoal = (S.yawGoal || 0) + angDiff(S.yawGoal || 0, y0); }
         }
-        S.goal = followCam(S.view, n[0], n[1], pts, o.heading ? S.yawGoal : 0); S.lastAhead = info.ahead || [];
+        S.goal = followCam(S.view, n[0], n[1], pts, o.heading ? S.yawGoal : 0, hOf(info.node)); S.lastAhead = info.ahead || [];
         if (instant && !S.intro) S.cam = Object.assign({}, S.goal);
         S.dirty = true;
         if ('denOpen' in info) for (const p of props) if (p.L && p.L.open) { const f = info.denOpen ? p.L.open : p.L.file; if (p.f !== f) { p.el.src = artUrl(o.art.base || './assets/proto/board_art_1010/', f); p.f = f; } }
@@ -547,10 +562,20 @@
   function pattern(g, im, tile) { const p = g.createPattern(im, 'repeat'); if (p && p.setTransform && root.DOMMatrix) p.setTransform(new root.DOMMatrix().scale(tile / im.width)); return p; }
   function drawGround(g, D, x0, y0, w, h, art) {
     if (art && art.ground) { g.fillStyle = pattern(g, art.ground, ART.ground.tile); g.fillRect(x0, y0, w, h); return; }
+    if (D.art && Array.isArray(D.art.regions)) return drawSeaBlockout(g, D, x0, y0, w, h);   // 2026-10-15 Chapter 2 の試作：絵なしのブロックアウト（海・陸・海底・ガラス回廊・塔・会場島の仮の色）
     g.fillStyle = '#86b65a'; g.fillRect(x0, y0, w, h);
     let a = ((Math.floor(x0) * 73856093) ^ (Math.floor(y0) * 19349663)) >>> 0;
     const rnd = () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
     for (let i = 0; i < (w * h) / 90; i++) { g.fillStyle = rnd() < 0.5 ? 'rgba(60,110,40,.22)' : 'rgba(180,220,120,.22)'; const r = 1 + rnd() * 3; g.beginPath(); g.arc(x0 + rnd() * w, y0 + rnd() * h, r, 0, 7); g.fill(); }
+  }
+  /** 2026-10-15 Chapter 2 A／B／C 設計案の限定試作：絵が無いので区域（D.art.regions）を仮の色で塗る＝素材待ちの開発表示（正式アートではない）。Chapter 1 のデータには regions が無い＝通らない */
+  const SEA_COLOR = { land: '#d9cfa6', seabed: '#1f6fa6', glass: '#9fe3f2', tower: '#e6e8ee', arena: '#f1e3b8' };
+  function drawSeaBlockout(g, D, x0, y0, w, h) {
+    g.fillStyle = D.art.sea || '#2d8fc4'; g.fillRect(x0, y0, w, h);
+    for (const r of D.art.regions) { g.fillStyle = SEA_COLOR[r.kind] || '#cccccc'; g.beginPath(); r.poly.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.closePath(); g.fill();
+      if (r.kind === 'glass') { g.strokeStyle = 'rgba(255,255,255,.7)'; g.lineWidth = 3; g.stroke(); } }
+    g.fillStyle = 'rgba(0,0,0,.55)'; g.font = '13px sans-serif';
+    for (const r of D.art.regions) { const x = r.poly.reduce((a, p) => a + p[0], 0) / r.poly.length, y = r.poly.reduce((a, p) => a + p[1], 0) / r.poly.length; if (x >= x0 - 60 && x <= x0 + w + 60 && y >= y0 - 20 && y <= y0 + h + 20) g.fillText('素材待ち：' + r.id, x - 40, y); }
   }
   // 道：原本の区間ごとに地点を通るなめらかな帯（絵が届いたら C 群の帯の模様を貼る）。分かれ目・合流は小広場、行き止まりは踊り場（D 群）
   function drawRoads(g, D, o, art, bx) {
@@ -799,6 +824,8 @@
     PEAK_CACHE.set(ck, out); return out;
   }
 
+  // 2026-10-15 Chapter 2 設計案の試作：js/proto/ch2-world.js（MMRF_SEA）へ渡す描画の部品（同じ帯・同じ曲線で描く）
+  const HELP = { WORLD, ART, pattern, stripAlong, curvePts, inPoly, distLine, mulberry, project, landmarkAt };
   let cssDone = false;
   function css(doc) {
     if (cssDone || doc.getElementById('rfw-css')) return; cssDone = true;
@@ -825,7 +852,7 @@
 :is(#rfp,.wbv) .rfw-prop{transition:opacity .25s}:is(#rfp,.wbv) .rfw-prop.thru{opacity:.32}
 :is(#rfp,.wbv) .rfw-mark{filter:drop-shadow(0 0 6px rgba(190,110,255,.85));transition:opacity .5s,filter .5s}
 :is(#rfp,.wbv) .rfw-mark.dim{opacity:.32;filter:none}
-:is(#rfp,.wbv) .rfw.art{background:#7aa84c}
+:is(#rfp,.wbv) .rfw.art{background:#7aa84c}:is(#rfp,.wbv) .rfw.sea{background:#1b5f8a}:is(#rfp,.wbv) .rfw-tile.occl{opacity:.3}
 :is(#rfp,.wbv) .rfw-mon{position:absolute;left:0;top:0;will-change:transform;transform-origin:0 0}
 :is(#rfp,.wbv) .rfw-mon img{display:block;width:100%;height:auto;filter:drop-shadow(0 3px 2px rgba(0,0,0,.45))}
 :is(#rfp,.wbv) .rfw-title{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 18px);text-align:center;font-family:"Shippori Mincho",serif;font-weight:800;font-size:26px;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.6);opacity:0;pointer-events:none;z-index:3}

@@ -75,14 +75,14 @@ test('CQ-03：フルーネの技カード10枚（番号・名前・ファイル�
   const ctx = ctxWith(['js/phase10/monsters.js', 'js/battle/move-cards.js']);
   const C = ctx.MMMVCARD, F = ctx.MMP10M.pendingSpecies('flurene');
   const L = J(C.list('flurene'));
-  const names = ['つるうち', 'たねとばし', 'はなのかおり', 'ねっこのまもり', 'こんさいプレス', 'ブルームレイ', 'しばりづる', 'はなかげのまい', '生命のしずく', 'ルートテンペスト'];
-  const ids = ['tsuruuchi', 'tane_tobashi', 'hana_no_kaori', 'nekko_no_mamori', 'konsai_press', 'bloom_ray', 'shibari_zuru', 'hanakage_no_mai', 'inochi_no_shizuku', 'root_tempest'];
+  const names = ['つるうち', 'たねとばし', 'はなのかおり', 'ねっこのまもり', 'こんさいプレス', 'ブルームレイ', 'しばりづる', 'はなかげのまい', 'ルートドレイン', 'ルートテンペスト'];   // 2026-10-16：09 の新しい名前（カードの絵とファイル名 inochi_no_shizuku は旧のまま）
+  const ids = ['tsuruuchi', 'tane_tobashi', 'hana_no_kaori', 'nekko_no_mamori', 'konsai_press', 'bloom_ray', 'shibari_zuru', 'hanakage_no_mai', 'root_drain', 'root_tempest'];   // 2026-10-16：09 のカードを差し替え（技ID root_drain）
   assert.deepEqual(L.map((x) => x.no), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]); assert.deepEqual(L.map((x) => x.name), names); assert.deepEqual(L.map((x) => x.id), ids);
   assert.deepEqual(J(F.moves).map((x) => x.name), names, '登録の技の名前の並びと同じ');
-  assert.ok(F.moves.every((x) => !('id' in x) && !('power' in x)), '登録（monsters.js）には ID・性能を足していない');
+  assert.ok(F.moves.every((x) => !('id' in x) && ([1, 2, 9, 10].includes(x.no) ? x.power != null : !('power' in x))), '登録（monsters.js）には ID を足していない・性能はユーザー決定の 01・02・09・10 だけ（2026-10-16）');
   assert.ok(L.every((x) => x.slot === null), 'SK の番号なし＝技管理・ルーレットには出ない');
   const md = rd('assets/moves/cards_1014/README.md').split('## フルーネ')[1];
-  L.forEach((x, i) => { const f = `assets/moves/cards_1014/flurene/${String(i + 1).padStart(2, '0')}_${ids[i]}.webp`; assert.equal(x.src, './' + f); assert.deepEqual(webpSize(f), [640, 360], f); assert.ok(md.includes(`FLURENE_${String(i + 1).padStart(2, '0')}_${ids[i]}.png`), f); });
+  L.forEach((x, i) => { const f = `assets/moves/cards_1014/flurene/${String(i + 1).padStart(2, '0')}_${ids[i]}.webp`; assert.equal(x.src, './' + f); assert.deepEqual(webpSize(f), [640, 360], f); assert.ok(md.includes(i === 8 ? '03_Fulune_09_RootDrain_Card_Absorb.png' : `FLURENE_${String(i + 1).padStart(2, '0')}_${ids[i]}.png`), f); });
   assert.equal((md.match(/\b[0-9a-f]{64}\b/g) || []).length, 10);
   // 既存の50枚：SK の番号 → カード（ソラモ・ガウル 0〜19・レグナス 20〜29・ノビトン 30〜39）は変えていない＝フルーネは入らない
   const n = { solamo: 0, gauru: 0, regnas: 0, nobiton: 0 };
@@ -115,7 +115,7 @@ test('CQ-04：QA 試遊モード＝?mmQaTrial=1 のときだけ・通常のセ�
   assert.doesNotMatch(qa, /localStorage\.setItem|sessionStorage\.setItem|indexedDB/, 'QA は何も保存しない');
   assert.match(qa, /rank: FOE\.rank/, 'テスト相手＝ランク E の練習試合の相手'); assert.match(qa, /const FOE = Object\.freeze\(\{ sp: 0, rank: 0 \}\);/);
   assert.match(HTML, /<script src="\.\/js\/qa\/trial\.js"><\/script>/);
-  assert.deepEqual(HTML.split('\n').filter((l) => l.length < 50000 && !l.includes('src="./js/qa/trial.js"') && /mmQaTrial|MMQA/.test(l)), [], 'index.html は読み込むだけ（本番の画面のコードに QA の分岐を足していない。画像データの長い行は除く）');
+  assert.deepEqual(HTML.split('\n').filter((l) => l.length < 50000 && !l.includes('src="./js/qa/trial.js"') && !l.includes('src="./js/qa/battle-stage.js"') && /mmQaTrial|MMQA/.test(l)), [], 'index.html は読み込むだけ（本番の画面のコードに QA の分岐を足していない。画像データの長い行は除く）');
   // 本番の表は変えていない（レグナス＝ライバル専用・フルーネ＝未解禁）
   const M = ctx.MMP10M;
   assert.deepEqual(J(M.SPECIES.map((s) => s.id)), [0, 1, 2, 3]); assert.equal(M.rivalMonster('regnas').playerAvailable, false); assert.equal(M.pendingSpecies('flurene').unlocked, false);
