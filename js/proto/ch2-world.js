@@ -161,7 +161,8 @@
         for (const [id, n] of Object.entries(D.nodes)) if ((outE[id] || 0) > 1 || (inn[id] || 0) > 1 || /dead_end/.test(n[2])) { g.moveTo(n[0] + 24, n[1]); g.arc(n[0], n[1], 24, 0, Math.PI * 2); }
         g.clip('evenodd');
         const sh = -(CURB_W / 2) - RAIL.w / 2 + 1;
-        for (const P of pts) { H.stripAlong(g, P, rl, RAIL.w, bx, sh); H.stripAlong(g, P.slice().reverse(), rr, RAIL.w, bx, sh); }
+        if (QA) for (const P of pts) { QA.meshStrip(g, P, rl, RAIL.w, bx, sh); QA.meshStrip(g, P.slice().reverse(), rr, RAIL.w, bx, sh); }   // 2026-10-16 QA（A）：欄干も曲線に沿った帯（直線の切れ端を回して並べるとふちがのこぎり状になる）
+        else for (const P of pts) { H.stripAlong(g, P, rl, RAIL.w, bx, sh); H.stripAlong(g, P.slice().reverse(), rr, RAIL.w, bx, sh); }
         g.restore();
       }
     } else if (art.strip) for (const P of pts) H.stripAlong(g, P, art.strip, H.ART.strip.w, bx);
