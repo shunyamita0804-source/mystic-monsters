@@ -20,10 +20,13 @@
   const TEX = { sea: ['open_sea_water', 110], shallow: ['shallow_turquoise_water', 96], sand: ['coastal_sand_base', 72], grass: ['G02b_coastal_grass_tile', 96],
     white: ['coastal_white_stone_road', 56], deck: ['sea_bridge_deck', 72], seabed: ['undersea_sand_base', 96], glass: ['glass_corridor_floor', 38],
     temple: ['sunken_temple_road', 40], ruins: ['sunken_ruins_ground', 84] };
-  const STRIPS = { walk: 'R01_white_bridge_walkstrip', foam: 'E03_shore_foam_edge_tile', rim: 'E04_seabed_cliff_edge_tile', roof: 'U01_glass_corridor_roof_strip' };
+  const STRIPS = { walk: 'R01_white_bridge_walkstrip', foam: 'E03_shore_foam_edge_tile', rim: 'E04_seabed_cliff_edge_tile', roof: 'U01_glass_corridor_roof_strip', railL: 'sea_bridge_railing_left', railR: 'sea_bridge_railing_right' };
   const PLAZA = ['U08_ruins_plaza_base', 'U08_ruins_plaza_cracked_a', 'U08_ruins_plaza_cracked_b'];
   const WALL = { tower: U('R05_spiral_tower_wall_tile'), ramp: U('R07_ramp_sidewall_tile'), basin: U('R08_seabed_basin_wall_tile') };
   const FX = U('FX04_underwater_light_screen_strip');
+  // 2026-10-16 Part04A／04B の再送で届いた8点：海上橋の欄干（左右）・海中の泡（光の層）・分かれ目の塔・島／海底のふちの崖・珊瑚の浅瀬
+  const RAIL = { l: U('sea_bridge_railing_left'), r: U('sea_bridge_railing_right'), w: 8 };   // 欄干＝海面の板に橋の縁の帯として描く（立てた板は細切れに崩れて見えた＝2026-10-16 の確認）
+  const BUB = U('undersea_bubble_light_fx');
   const ROAD_W = 22, CURB_W = 27, GLASS_W = 30;
   const W_TILE = 96, SEA_TINT = 'rgba(18,86,138,.42)';
   const BASIN_ALPHA = 0.62, BASIN_UNDER = 0.86;   // 盆地の上の海面の濃さ（海面にいるとき）・海底に潜ったときに消す割合（大きいほど海底がよく見える）
@@ -40,7 +43,7 @@
   }
   /** 出発の前に読み始めておく（ブラウザの取り置き）。1回だけ */
   let warmed = null;
-  function warm() { if (warmed || !root.Image) return warmed; const fs = [...Object.values(TEX).map((t) => U(t[0])), ...Object.values(STRIPS).map(U), ...PLAZA.map(U), ...Object.values(WALL), FX, ...ALL_LM.map(U)];
+  function warm() { if (warmed || !root.Image) return warmed; const fs = [...Object.values(TEX).map((t) => U(t[0])), ...Object.values(STRIPS).map(U), ...PLAZA.map(U), ...Object.values(WALL), FX, BUB, ...ALL_LM.map(U)];
     warmed = fs.map((u) => { const im = new root.Image(); im.decoding = 'async'; im.src = u; return im; }); return warmed; }
   const tp = (g, H, S, k) => (S && S.tex && S.tex[k] ? H.pattern(g, S.tex[k], TEX[k][1]) : null);
   const zoneOf = (D, sid) => (D.art.zoneOf || {})[sid] || 'surface_early';
@@ -145,6 +148,18 @@
       if (white) { g.save(); g.beginPath(); for (const { P } of regionsOf(D)) { P.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.closePath(); } g.clip();
         g.strokeStyle = white; g.lineWidth = ROAD_W; for (const P of pts) { pathOf(g, P); g.stroke(); } g.restore(); }
       g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 1; for (const P of pts) for (const sg of [-1, 1]) edgeLine(g, P, ROAD_W / 2 * sg);   // 縁の光
+      // 2026-10-16 再送：海上橋の欄干（左右）＝海の上だけ・分かれ目の円のまわりは描かない。進む向きの左に left・右に right（絵の上側が橋の外）
+      const rl = S.strip && S.strip.railL, rr = S.strip && S.strip.railR;
+      if (rl && rr) {
+        const inn = {}, outE = {}; for (const e of D.edges) if (e[3] === 'forward') { outE[e[0]] = (outE[e[0]] || 0) + 1; inn[e[1]] = (inn[e[1]] || 0) + 1; }
+        g.save(); g.beginPath(); g.rect(-50, -50, 1124, 1636);
+        for (const { P } of regionsOf(D)) { const Q = grow(P, 4); Q.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.closePath(); }
+        for (const [id, n] of Object.entries(D.nodes)) if ((outE[id] || 0) > 1 || (inn[id] || 0) > 1 || /dead_end/.test(n[2])) { g.moveTo(n[0] + 24, n[1]); g.arc(n[0], n[1], 24, 0, Math.PI * 2); }
+        g.clip('evenodd');
+        const sh = -(CURB_W / 2) - RAIL.w / 2 + 1;
+        for (const P of pts) { H.stripAlong(g, P, rl, RAIL.w, bx, sh); H.stripAlong(g, P.slice().reverse(), rr, RAIL.w, bx, sh); }
+        g.restore();
+      }
     } else if (art.strip) for (const P of pts) H.stripAlong(g, P, art.strip, H.ART.strip.w, bx);
     else { g.strokeStyle = '#d9cfb0'; g.lineWidth = 18; for (const P of pts) { pathOf(g, P); g.stroke(); } }
     hubs(g, D, (sid) => isSurface(zoneOf(D, sid)), art, H, (n) => (onLand(D, H, n[0], n[1]) ? white || deck : deck));
@@ -167,6 +182,7 @@
 
   // ---- 目印（決まった地点の建物・門）と大会会場：2026-10-16 正式美術。意味（設計の standin）に合う絵をルートごとに。地点・道・判定は変えない ----
   //  along＝その地点へ入ってくる向きにずらす（行き止まりは奥へ）・z＝前後（負＝モンスターより奥）・open＝隠れ家が開いている回の絵
+  const JT = 'sea_junction_tower', EDGE_PROPS = ['coral_shoal_edge', 'white_coastal_cliff_edge', 'undersea_cliff_edge'];
   const LM_BASE = {
     START: ['harbor_start_gate', 52, 8], LOWER_GATE: ['undersea_descent_gate', 40, 6], RIVAL: ['rival_pass_gate', 34, 10], Q: ['glass_corridor_arch', 50, 4],
     STATUE: ['L07_winged_sea_god_statue', 30, 0, [-34, -20]], RANDOM_DEN: ['L11_sunken_ship_den_closed', 44, 20, null, 'L11_sunken_ship_den_open'],
@@ -177,13 +193,27 @@
     B: { CHALLENGE: ['U03_sunken_temple_gate', 38, 14], L_CHEST: ['coastal_lighthouse', 30, 20], R_CHEST: ['L05_temple_island_altar', 50, 20], L_ALTAR: ['L08_western_white_tower', 34, 20], L_LATE_ALTAR: ['U05_sealed_chamber_altar', 40, 20] },
     C: { CHALLENGE: ['U03_sunken_temple_gate', 38, 14], L_CHEST: ['L04_shell_shrine', 32, 20], R_CHEST: ['undersea_treasure_vault', 32, 20], L_ALTAR: ['trial_monolith', 40, 20], L_LATE_ALTAR: ['U05_sealed_chamber_altar', 40, 20] },
   };
-  const ALL_LM = [...new Set([...Object.values(LM_BASE), ...Object.values(LM_ROUTE).flatMap(Object.values)].flatMap((v) => [v[0], v[4]].filter(Boolean)).concat(['ocean_arena', 'R05_spiral_tower_door', 'R05_spiral_tower_beacon', 'arena_approach_gate', 'L01_harbor_town_cluster', 'chapter2_sea_medallion']))];
+  const ALL_LM = [...new Set([...Object.values(LM_BASE), ...Object.values(LM_ROUTE).flatMap(Object.values)].flatMap((v) => [v[0], v[4]].filter(Boolean)).concat(['ocean_arena', 'R05_spiral_tower_door', 'R05_spiral_tower_beacon', 'arena_approach_gate', 'L01_harbor_town_cluster', 'chapter2_sea_medallion', 'sea_zone_nameplate', JT, ...EDGE_PROPS]))];
   const LM_CACHE = new WeakMap();
+  const dSeg = (x, y, a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], L2 = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / L2)); return Math.hypot(a[0] + dx * t - x, a[1] + dy * t - y); };
+  /** 海上の自由な分かれ道（free_fork・late_free_fork）の脇に分かれ目の塔（sea_junction_tower）。道からいちばん離れる向きへ 30 単位（8 方向から選ぶ） */
+  function junctionTowers(D, taken) {
+    const out = [], lines = Object.values(D.segments).map((s) => s[3].map((id) => D.nodes[id]));
+    const far = (x, y) => Math.min(...lines.map((l) => { let m = 1e9; for (let i = 0; i < l.length - 1; i++) m = Math.min(m, dSeg(x, y, l[i], l[i + 1])); return m; }));
+    for (const [id, n] of Object.entries(D.nodes)) {
+      if (!/free_fork/.test(n[2]) || taken.has(id)) continue;
+      const fw = D.edges.filter((e) => e[0] === id && e[3] === 'forward'); if (fw.length < 2 || fw.some((e) => !isSurface(zoneOf(D, e[2])))) continue;
+      let best = null; for (let k = 0; k < 8; k++) { const a = (k / 8) * Math.PI * 2, x = n[0] + Math.cos(a) * 30, y = n[1] + Math.sin(a) * 30, d = far(x, y); if (!best || d > best.d) best = { d, off: [x - n[0], y - n[1]] }; }
+      out.push({ node: id, file: U(JT), w: 26, off: best.off, z: -30 });
+    }
+    return out;
+  }
   /** 道のデータの目印（設計の standin・Chapter 1 の代用）を正式の絵へ。UPPER_GATE が無いルートは螺旋塔の上り坂の入口に上り門 */
   function lm(D) {
     if (LM_CACHE.has(D)) return LM_CACHE.get(D);
     const M = Object.assign({}, LM_BASE, LM_ROUTE[D.route] || {}), out = [];
     for (const [node, v] of Object.entries(M)) if (D.nodes[node]) out.push({ node, file: U(v[0]), w: v[1], along: v[2] || 0, off: v[3] || undefined, z: -30, open: v[4] ? U(v[4]) : undefined });
+    out.push(...junctionTowers(D, new Set(Object.keys(M))));
     if (!D.nodes.UPPER_GATE || !M.UPPER_GATE) { const sp = Object.entries(D.segments).find(([sid]) => /ascent/.test(zoneOf(D, sid))); if (sp && D.nodes[sp[1][0]]) out.push({ node: sp[1][0], file: U('undersea_ascent_gate'), w: 36, along: -6, z: -30 }); }
     LM_CACHE.set(D, out); return out;
   }
@@ -201,7 +231,7 @@
     const lmNear = (x, y, r) => lms.some((L) => { const at = H.landmarkAt(D, L); return at && Math.hypot(at[0] - x, at[1] - y) < r + L.w * 0.5; });
     const gn = D.nodes.GOAL;
     const LAND = [[U('E02_small_coastal_palm'), 15, 0.42], [U('E02_white_coastal_flower_patch'), 11, 0.38], [U('coastal_rock_shells'), 18, 0.2]];
-    const SEA = [[U('E02_small_rocky_islet'), 22, 0.5], [U('E02_tidal_sea_stack'), 10, 0.5]];
+    const SEA = [[U('E02_small_rocky_islet'), 22, 0.35], [U('E02_tidal_sea_stack'), 10, 0.35], [U('coral_shoal_edge'), 34, 0.3]];
     const SEABED = [[U('coral_cluster'), 17, 0.22], [U('seagrass_cluster'), 14, 0.22], [U('E01_small_blue_coral'), 9, 0.18], [U('E01_undersea_mossy_rock'), 11, 0.18], [U('undersea_blue_crystal'), 14, 0.1], [U('sunken_columns'), 15, 0.1]];
     const pick = (L) => { let r = rnd(), acc = 0; for (const c of L) { acc += c[2]; if (r < acc) return c; } return L[L.length - 1]; };
     // 決まった景物：港町の家並み・会場への門・海底の洞窟（重ならない所だけ）
@@ -224,6 +254,13 @@
       }
       if (r1 < 0.03 && !nearRoad(px, py, 30)) { const c = pick(SEA); out.push({ file: c[0], x: px, y: py, w: c[1] * (0.8 + rnd() * 0.4) }); }   // 海の岩礁（まばら）
     }
+    // 2026-10-16 再送：島のふちの海の側（岸のすぐ外）に白い海岸の崖（陸の上に立てると石の台に見えた）・盆地のふち（海底の側）に海底の崖。道・目印から離れた所に間をあけて
+    const edgeAt = (P, step, inset, ok, push) => { let acc = step * 0.5; for (let i = 0; i < P.length; i++) { const a = P[i], b = P[(i + 1) % P.length], L = Math.hypot(b[0] - a[0], b[1] - a[1]); acc += L; if (acc < step) continue; acc = 0;
+      const nx = -(b[1] - a[1]) / (L || 1), ny = (b[0] - a[0]) / (L || 1), m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+      for (const sg of [1, -1]) { const x = m[0] + nx * inset * sg, y = m[1] + ny * inset * sg; if (ok(x, y)) { push(x, y); break; } } } };
+    for (const { r, P } of regs) { if (r.kind === 'arena' || r.id === 'town') continue;
+      edgeAt(P, 120, 12, (x, y) => !H.inPoly(P, x, y) && !H.inPoly(B, x, y) && !regs.some((q) => H.inPoly(q.P, x, y)) && !nearRoad(x, y, 24) && !lmNear(x, y, 26) && !nearTower(x, y, 12), (x, y) => out.push({ file: U('white_coastal_cliff_edge'), x, y, w: 30 + rnd() * 6 })); }
+    edgeAt(B, 150, 14, (x, y) => H.inPoly(B, x, y) && !nearRoad(x, y, 24) && !lmNear(x, y, 26) && !nearTower(x, y, 14), (x, y) => out.push({ file: U('undersea_cliff_edge'), x, y, w: 30 + rnd() * 6, h: -dep }));
     // 沈没遺跡の広場のまわりに沈んだ列柱と珊瑚（海底の地面に立つ）
     for (const R of (D.art.ruins || [])) {
       const n = D.nodes[R.at]; if (!n) continue;
@@ -411,7 +448,7 @@
     }
     /** モンスターの高さ（毎フレーム）：海底（−2 より下）にいる間は盆地の上の海面を薄く */
     // 海中の光（画面の上から差し込む光の筋）：モンスターが海底にいる間だけ。画面に固定の薄い層（押せない・視差を減らす設定では動かさない）
-    const view = plane.parentElement, rays = doc.createElement('div'); rays.className = 'rfs-rays'; rays.style.setProperty('--fx', `url(${FX})`); if (view) view.insertBefore(rays, plane.nextSibling);
+    const view = plane.parentElement, rays = doc.createElement('div'); rays.className = 'rfs-rays'; rays.style.setProperty('--fx', `url(${FX})`); rays.style.setProperty('--bub', `url(${BUB})`); if (view) view.insertBefore(rays, plane.nextSibling);
     let dived = null;
     function mon(h) { const u = (h || 0) < -2; if (u === dived) return; dived = u; wv.style.opacity = u ? String(1 - BASIN_UNDER) : String(BASIN_ALPHA); rays.classList.toggle('on', u); }
     mon(0);
@@ -428,8 +465,8 @@
 :is(#rfp,.wbv) .rfs-wall{opacity:.92}
 :is(#rfp,.wbv) .rfs-lamp{background:linear-gradient(180deg,#fff6c8,#e7c46a)}
 :is(#rfp,.wbv) .rfs-cap{position:absolute;left:0;top:0;transform-origin:0 0;border-radius:50%}
-:is(#rfp,.wbv) .rfs-rays{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .7s ease;mix-blend-mode:screen;background:var(--fx) 0 0/auto 100% repeat-x,linear-gradient(180deg,rgba(90,180,220,.12),rgba(20,60,90,0) 55%)}
-:is(#rfp,.wbv) .rfs-rays.on{opacity:1;animation:rfsRay 7s ease-in-out infinite alternate}@keyframes rfsRay{from{background-position:0 0,0 0}to{background-position:120px 0,0 0}}@media (prefers-reduced-motion:reduce){:is(#rfp,.wbv) .rfs-rays.on{animation:none}}
+:is(#rfp,.wbv) .rfs-rays{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .7s ease;mix-blend-mode:screen;background:var(--bub) 0 0/min(140vw,620px) auto repeat,var(--fx) 0 0/auto 100% repeat-x,linear-gradient(180deg,rgba(90,180,220,.12),rgba(20,60,90,0) 55%)}
+:is(#rfp,.wbv) .rfs-rays.on{opacity:1;animation:rfsRay 7s ease-in-out infinite alternate}@keyframes rfsRay{from{background-position:0 0,0 0,0 0}to{background-position:0 -180px,120px 0,0 0}}@media (prefers-reduced-motion:reduce){:is(#rfp,.wbv) .rfs-rays.on{animation:none}}
 :is(#rfp,.wbv) .rfs-glow{position:absolute;left:0;top:0;transform-origin:0 0;border-radius:50%;background:radial-gradient(circle,#fffbe0 0 30%,rgba(255,236,150,.55) 45%,rgba(255,236,150,0) 70%)}`;
     doc.head.appendChild(s);
   }

@@ -535,6 +535,20 @@
    "alpha_transparent_px": 139591
   },
   {
+   "name": "coral_shoal_edge.png",
+   "sha256": "5dde2354bb8adad04e971219923e43b3a3916d4378ae5367c5c531c605a50b51",
+   "mode": "RGBA",
+   "size": "1536x700",
+   "out": "coral_shoal_edge.webp",
+   "out_size": "640x168",
+   "out_bytes": 30794,
+   "out_sha256": "498e99fe0533ef397732c465dba14e8ab01b717ac17c25628dda1542255afd1b",
+   "trimmed": true,
+   "psnr_rgb": 32.91,
+   "alpha_maxdiff": 0,
+   "alpha_transparent_px": 63605
+  },
+  {
    "name": "glass_corridor_arch.png",
    "sha256": "05ff13c7dfb127fb10244a15157bce4cb02c81b05578168804f4941fc9f13476",
    "mode": "RGBA",
@@ -655,6 +669,48 @@
    "alpha_transparent_px": 80982
   },
   {
+   "name": "sea_bridge_railing_right.png",
+   "sha256": "3170f68ad60438a7155abe3230342f3ce732bb03fcedbe28b348026f9f635a32",
+   "mode": "RGBA",
+   "size": "1536x512",
+   "out": "sea_bridge_railing_right.webp",
+   "out_size": "640x190",
+   "out_bytes": 52774,
+   "out_sha256": "ca2f20175858eb34d0fbcc851c1217e26d6fa70dddbde460851824a6d2cffdcf",
+   "trimmed": true,
+   "psnr_rgb": 29.81,
+   "alpha_maxdiff": 0,
+   "alpha_transparent_px": 74420
+  },
+  {
+   "name": "sea_junction_tower.png",
+   "sha256": "445c09eef67e6ff2653ca00c9ba2182cb5b9e13bbec1d9fcb525e1c10bd6843d",
+   "mode": "RGBA",
+   "size": "1536x1536",
+   "out": "sea_junction_tower.webp",
+   "out_size": "267x640",
+   "out_bytes": 40432,
+   "out_sha256": "7996c3a4b3d15a2fb47b766577ce9ed48cc8d24a4b88c35d7e2cad42ed20f5d1",
+   "trimmed": true,
+   "psnr_rgb": 36.63,
+   "alpha_maxdiff": 0,
+   "alpha_transparent_px": 97056
+  },
+  {
+   "name": "sea_zone_nameplate.png",
+   "sha256": "5f888bc7e90fca538a7e6b049cfdbadb15ed8bb5b21e4c8f7501c45da5b2d596",
+   "mode": "RGBA",
+   "size": "1536x512",
+   "out": "sea_zone_nameplate.webp",
+   "out_size": "960x70",
+   "out_bytes": 18598,
+   "out_sha256": "89677f8e2e62a6577d17b16bd39df59425b72fdb691d509b0d472c6c24d81127",
+   "trimmed": true,
+   "psnr_rgb": 34.68,
+   "alpha_maxdiff": 0,
+   "alpha_transparent_px": 25435
+  },
+  {
    "name": "seagrass_cluster.png",
    "sha256": "cd75ffc214e526eee3ee5746a469d9e21202331741ca629f3c6e2acbfad7faf7",
    "mode": "RGBA",
@@ -679,6 +735,20 @@
    "out_sha256": "e1916c7cfb7c6fbf0fe10bf9a9b72f00e87eb69af8b4859b788d067e37186005",
    "trimmed": false,
    "psnr": 36.9
+  },
+  {
+   "name": "shore_foam_edge.png",
+   "sha256": "5f07313129bbd368a845b2fcdfcfc40d022de1a9ad3b6147bfc12835ac49e63a",
+   "mode": "RGBA",
+   "size": "1536x512",
+   "out": "shore_foam_edge.webp",
+   "out_size": "640x60",
+   "out_bytes": 17192,
+   "out_sha256": "1d416b8dc65fc7bdfe0e1d28b380b97fb95772e02db975f80bf9ebc5cb2687a2",
+   "trimmed": true,
+   "psnr_rgb": 36.3,
+   "alpha_maxdiff": 0,
+   "alpha_transparent_px": 2201
   },
   {
    "name": "sunken_columns.png",
@@ -775,6 +845,34 @@
    "alpha_transparent_px": 118583
   },
   {
+   "name": "undersea_bubble_light_fx.png",
+   "sha256": "3a2054515fb6148e50dee3ea71643bdb685de027553c3c1ec7f20267fe098898",
+   "mode": "RGBA",
+   "size": "1536x1024",
+   "out": "undersea_bubble_light_fx.webp",
+   "out_size": "1536x1024",
+   "out_bytes": 34514,
+   "out_sha256": "0d80ce029638230bc5c908988fdca2675a0cfed6f046999b6acc96496aafb302",
+   "trimmed": false,
+   "psnr_rgb": 37.7,
+   "alpha_maxdiff": 0,
+   "alpha_transparent_px": 1549738
+  },
+  {
+   "name": "undersea_cliff_edge.png",
+   "sha256": "9a403c64b2ce85dff4812adf4b26c502d2d4dc4e19a486cd7b9f0039857745f7",
+   "mode": "RGBA",
+   "size": "1536x700",
+   "out": "undersea_cliff_edge.webp",
+   "out_size": "640x254",
+   "out_bytes": 46100,
+   "out_sha256": "d81fdf27fa190266767b2a96cbe89ee7d95f175086adee4c7d2bd260a3ff3190",
+   "trimmed": true,
+   "psnr_rgb": 33.24,
+   "alpha_maxdiff": 0,
+   "alpha_transparent_px": 78892
+  },
+  {
    "name": "undersea_descent_gate.png",
    "sha256": "da0c73aef548a51450164b6abfc72c2621ffe45d1ed03b4fa936d5383fb5c140",
    "mode": "RGBA",
@@ -813,56 +911,21 @@
    "psnr_rgb": 34.59,
    "alpha_maxdiff": 0,
    "alpha_transparent_px": 70684
-  }
- ],
- "missing": [
-  {
-   "name": "coral_shoal_edge.png",
-   "size": "1536x700",
-   "mode": "RGBA",
-   "why": "ファイルが無い（Part04 の ZIP が途中で切れていた）"
-  },
-  {
-   "name": "sea_bridge_railing_right.png",
-   "size": "1536x512",
-   "mode": "RGBA",
-   "why": "ファイルが無い（Part04 の ZIP が途中で切れていた）"
-  },
-  {
-   "name": "sea_junction_tower.png",
-   "size": "1536x1536",
-   "mode": "RGBA",
-   "why": "ファイルが無い（Part04 の ZIP が途中で切れていた）"
-  },
-  {
-   "name": "sea_zone_nameplate.png",
-   "size": "1536x512",
-   "mode": "RGBA",
-   "why": "ファイルが無い（Part04 の ZIP が途中で切れていた）"
-  },
-  {
-   "name": "shore_foam_edge.png",
-   "size": "1536x512",
-   "mode": "RGBA",
-   "why": "ファイルが無い（Part04 の ZIP が途中で切れていた）"
-  },
-  {
-   "name": "undersea_bubble_light_fx.png",
-   "size": "1536x1024",
-   "mode": "RGBA",
-   "why": "ファイルが無い（Part04 の ZIP が途中で切れていた）"
-  },
-  {
-   "name": "undersea_cliff_edge.png",
-   "size": "1536x700",
-   "mode": "RGBA",
-   "why": "ファイルが無い（Part04 の ZIP が途中で切れていた）"
   },
   {
    "name": "white_coastal_cliff_edge.png",
-   "size": "1536x700",
+   "sha256": "bca070e109587e544c7dc8935028330fb0b37e1ecb36933a5588598d10634542",
    "mode": "RGBA",
-   "why": "ファイルが無い（Part04 の ZIP が途中で切れていた）"
+   "size": "1536x700",
+   "out": "white_coastal_cliff_edge.webp",
+   "out_size": "640x233",
+   "out_bytes": 47226,
+   "out_sha256": "901397650a9ec5d9b16512654d3a16a295d6718fdeadd41a9e3d5e26af0c28db",
+   "trimmed": true,
+   "psnr_rgb": 33.32,
+   "alpha_maxdiff": 0,
+   "alpha_transparent_px": 72173
   }
- ]
+ ],
+ "missing": []
 }

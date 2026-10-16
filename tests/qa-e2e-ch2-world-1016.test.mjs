@@ -28,7 +28,7 @@ for (const size of [[375, 667], [390, 844], [393, 852]]) for (const route of ['A
     const a = await pg.evaluate(() => ({ ch: S.m.raise.ch, route: S.m.raise.field.route, world: S.m.raise.field.world, tiles: MMWB.state().world.tiles, nm: document.querySelector('.chh-nm').textContent,
       tv: (document.getElementById('ch2tv') || {}).textContent || '', sea: !!document.querySelector('.rfw.sea'), sides: MMP8.diceSides(S.m), lim: S.m.raise.turnLimit }));
     assert.deepEqual([a.ch, a.route, a.world, a.tiles, a.nm, a.sea, a.sides, a.lim], [2, route, 1, COUNT[route], '潮風の海岸', true, 6, 40]);
-    assert.match(a.tv, /Ch2 試遊/); assert.match(a.tv, /2026-10-16-ch2art/);
+    assert.match(a.tv, /Ch2 試遊/); assert.match(a.tv, /2026-10-16-ch2art2/);
     // 正式美術の絵（art_1016）：画面に置いた絵はすべて読めている
     const imgs = await pg.evaluate(() => [...document.querySelectorAll('.rfw img')].filter((i) => /art_1016/.test(i.src)).map((i) => ({ s: i.src.split('/').pop(), ok: i.complete && i.naturalWidth > 0 })));
     assert.ok(imgs.length > 20, `正式美術の景物・目印（${imgs.length}）`); assert.deepEqual(imgs.filter((x) => !x.ok), [], '読めない絵が無い');

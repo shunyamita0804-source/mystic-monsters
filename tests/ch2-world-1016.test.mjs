@@ -5,6 +5,7 @@
 //  CW-03 通し（A／B／C 各 120回）：本物の流れでゴールか40ターンで終わる・ゴールまでにライバルは1回・道路データ不変・能力は 0〜999・保存→読み込みで同じ進み方
 //  CW-04 中身：固定報酬は道のデータの rewards（【仮】）・出来事は Chapter 2 の eventPool・能力マスは Chapter 2 の成長量・名前は道のデータの names／places・?ch2route の固定は1回
 //  CW-05 index.html の読み込み順・自動テストの既定（MM_QA_OLD_CH2）・Chapter 1 の MMWD は従来と同じ（STORY・handles）
+//  CW-06 正式美術 68点（Part01〜03＋Part04A／04B の再送）：派生 68 枚・欠品 0・台帳の SHA-256・描画が名前で参照する絵はすべてある・再送の8点の使い道
 // =========================================================
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -121,4 +122,26 @@ test('CW-05：index.html の読み込み順・自動テストの既定・Chapter
   const w = load(); assert.equal(w.MMWD.CH, 1); assert.equal(w.MMWD2.CH, 2); assert.ok(w.MMWD.STORY.length > w.MMWD2.STORY.length);
   assert.ok(w.MMWD2.STORY.every((e) => e.scope === 'save'), 'Chapter 2 の一言はチュートリアルだけ（Chapter 1 の景色の一言は出さない）');
   assert.equal(w.MMWD.DRIVER.handles(1), true); assert.equal(w.MMWD.DRIVER.handles(2), false);
+});
+
+test('CW-06：正式美術 68点の派生（欠品 0）・描画が参照する絵はすべてある・再送の8点の使い道', () => {
+  const dir = 'assets/fields/ch2/art_1016', d = JSON.parse(rd(dir + '/derive.json'));
+  assert.equal(d.assets.length, 68); assert.deepEqual(d.missing, []);
+  assert.equal(new Set(d.assets.map((a) => a.name)).size, 68, '重複なし');
+  for (const a of d.assets) {
+    assert.match(a.sha256, /^[0-9a-f]{64}$/);
+    assert.equal(createHash('sha256').update(readFileSync(path.join(ROOT, dir, a.out))).digest('hex'), a.out_sha256, a.out);
+  }
+  const have = new Set(d.assets.map((a) => a.out.replace(/\.webp$/, '')));
+  const w = {}; new Function('window', 'module', rd('js/proto/ch2-routes.js') + '\n' + rd('js/proto/ch2-world.js'))(w, undefined);
+  const S = w.MMRF_SEA;
+  const names = [...Object.values(S.TEX).map((t) => t[0]), ...Object.values(S.STRIPS), ...S.PLAZA, ...S.ALL_LM];
+  for (const n of names) assert.ok(have.has(n), '派生がある：' + n);
+  // 再送の8点：欄干の左右（海面の帯）・分かれ目の塔（海上の自由な分かれ道）・泡（海中の光の層）・ふちの景物・ゾーン名札（Chapter 2 の題字）
+  assert.equal(S.STRIPS.railL, 'sea_bridge_railing_left'); assert.equal(S.STRIPS.railR, 'sea_bridge_railing_right');
+  for (const r of ['A', 'B', 'C']) assert.ok(S.lm(w.MMRF_CH2[r]).some((L) => /sea_junction_tower/.test(L.file) && /free_fork/.test(w.MMRF_CH2[r].nodes[L.node][2])), r + ' 分かれ目の塔');
+  const src = rd('js/proto/ch2-world.js');
+  for (const n of ['undersea_bubble_light_fx', 'coral_shoal_edge', 'white_coastal_cliff_edge', 'undersea_cliff_edge']) assert.ok(src.includes(n), n);
+  assert.match(rd('js/chapter/world-board.js'), /plate: A2 \+ 'sea_zone_nameplate\.webp'/);
+  assert.ok(!src.includes("'shore_foam_edge'"), 'shore_foam_edge は波打ち際（E03）と同じ用途＝使わない');
 });

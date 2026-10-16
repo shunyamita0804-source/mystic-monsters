@@ -1,6 +1,6 @@
 # Chapter 2「潮風の海岸」正式美術（2026-10-16）の表示用派生
 
-ユーザー納品 ZIP「Mismon_Claude_Ch2_Assets_20261016_Part01〜04」の PNG（照合台帳＝InstructionQA の「全68点_画像仕様と採用版.tsv」）から作った表示用の WebP。**原本 PNG はリポジトリに置かない**（ユーザーが保管）。
+ユーザー納品 ZIP「Mismon_Claude_Ch2_Assets_20261016_Part01〜03＋Part04A／04B（再送）」の PNG（照合台帳＝InstructionQA の「全68点_画像仕様と採用版.tsv」）から作った表示用の WebP。**原本 PNG はリポジトリに置かない**（ユーザーが保管）。
 名前は納品のまま（拡張子だけ .webp）。作り方：`python3 -I tools/ch2art1016/derive.py <原本PNGのフォルダ> <台帳.tsv> assets/fields/ch2/art_1016`（同じ原本からは同じファイル）。この表は `python3 -I tools/ch2art1016/readme.py`。
 
 - 不透明の周期テクスチャ（RGB 13点）：絵はそのまま・等倍の縮小だけ（1024 → 512。周期のまま）。継ぎ目のつなぎ直し・描き足しはしない
@@ -8,18 +8,10 @@
 - 透過の景物（RGBA）：透明の余白を切る（足もと＝下端は切らない）→ 長い辺 640px（会場 960・港町 720・紋章 512・256 の小物はそのまま）。乗算済みのアルファで縮小（白・黒のふちを出さない）。アルファは原本どおり（市松・白の擬似透過は無い＝原本のアルファの最小 0 を確認）
 - 変換の前後：派生を同じ大きさの原本と比べた PSNR（RGB はアルファで重み付け）とアルファの最大差（0＝一致）は derive.json
 
-## 照合：60 / 68 点（SHA-256・寸法・モードが台帳と一致）
+## 照合：68 / 68 点（SHA-256・寸法・モードが台帳と一致・欠品 0）
 
-**届かなかった 8 点**（Part04 の ZIP が途中で切れていた＝8,720,779 バイトで終わり、中央ディレクトリが無い。27 番目の coral_shoal_edge.png の途中で切れた）：
+2026-10-16：最初の Part04 の ZIP は途中で切れていた（8 点が未着）→ 再送の Part04A／04B（2本で旧 Part04 の 33 点）で 68 点がそろった。旧 Part04 から取り出していた 25 点は再送版と同じ中身（SHA-256 一致）。
 
-- coral_shoal_edge.png（1536x700 RGBA）
-- sea_bridge_railing_right.png（1536x512 RGBA）
-- sea_junction_tower.png（1536x1536 RGBA）
-- sea_zone_nameplate.png（1536x512 RGBA）
-- shore_foam_edge.png（1536x512 RGBA）
-- undersea_bubble_light_fx.png（1536x1024 RGBA）
-- undersea_cliff_edge.png（1536x700 RGBA）
-- white_coastal_cliff_edge.png（1536x700 RGBA）
 
 ## 対応表
 
@@ -64,6 +56,7 @@
 | coastal_sand_base.png | 0dab4009d214c881ca6e3270e013f5c18940b26aaf188054a571ce67608a6f54 | coastal_sand_base.webp | 512x512 | 86068 | 37.36 | 島の白砂・港町の地面 |
 | coastal_white_stone_road.png | e8ef7798078e1cee02e0740672a3be1c90226ebdbb531fb5cd47281f61a701e6 | coastal_white_stone_road.webp | 512x512 | 77846 | 39.68 | 陸の上の道・会場の島の敷石・分かれ目の円（陸） |
 | coral_cluster.png | 3e57bbbcfbfc6967f086ed6672a7278ee54d45e0d3a23779fdbde14a1fda14c3 | coral_cluster.webp | 514x640 | 125224 | 33.17／0 | 海底の景物 |
+| coral_shoal_edge.png | 5dde2354bb8adad04e971219923e43b3a3916d4378ae5367c5c531c605a50b51 | coral_shoal_edge.webp | 640x168 | 30794 | 32.91／0 | 海の景物（珊瑚の浅瀬・まばら） |
 | glass_corridor_arch.png | 05ff13c7dfb127fb10244a15157bce4cb02c81b05578168804f4941fc9f13476 | glass_corridor_arch.webp | 640x386 | 59590 | 36.3／0 | ガラス回廊の入口（運命の分かれ道 Q） |
 | glass_corridor_floor.png | 9f6ea2c3a3755e626e5b05cbcc3bc35db36e5d2af2f8001f21047c348dffbd04 | glass_corridor_floor.webp | 512x512 | 58002 | 38.77 | ガラス回廊の床 |
 | harbor_start_gate.png | a2e61a387e715bb6a15114ba2bbdadd89a36f4632171848bb81f06a472c5d63d | harbor_start_gate.webp | 640x555 | 90510 | 31.28／0 | START の門 |
@@ -72,9 +65,13 @@
 | open_sea_water.png | 4d7f326c3b68fda4bad46cf62a94d0cca29e9d045e09b6fd0346725ebb5ae934 | open_sea_water.webp | 512x512 | 87944 | 37.21 | 外海の地面（区画の canvas）・盆地の上の海面・世界の外の海（apron）・正門前の海 |
 | rival_pass_gate.png | 68a297fe247bb4e940d19d1aa92994002ebe6a3a5a7cd5eba0d8b84dd1b05d67 | rival_pass_gate.webp | 381x640 | 43742 | 34.56／0 | ライバルの広場（RIVAL） |
 | sea_bridge_deck.png | ce8906595edc21fc5b2eee6fe32c96dc14b19333e3a1331fec30d7440bb1afc9 | sea_bridge_deck.webp | 512x512 | 100950 | 36.69 | 海の上の道（海上橋の石板）・分かれ目の円（海）＝**反復接合は未合格（継ぎ目が見える）** |
-| sea_bridge_railing_left.png | 459d965af565129d94778e542e94787288ebe64cc6076a6515bcbbb53cf601b4 | sea_bridge_railing_left.webp | 640x177 | 36238 | 32.3／0 | **未使用**（右の欄干が未着＝片側だけ出さない） |
+| sea_bridge_railing_left.png | 459d965af565129d94778e542e94787288ebe64cc6076a6515bcbbb53cf601b4 | sea_bridge_railing_left.webp | 640x177 | 36238 | 32.3／0 | 海上橋の欄干（進む向きの左・海の上だけ・海面の板に橋の縁の帯として描く。立てた板は細切れに崩れて見えた） |
+| sea_bridge_railing_right.png | 3170f68ad60438a7155abe3230342f3ce732bb03fcedbe28b348026f9f635a32 | sea_bridge_railing_right.webp | 640x190 | 52774 | 29.81／0 | 海上橋の欄干（進む向きの右・同上） |
+| sea_junction_tower.png | 445c09eef67e6ff2653ca00c9ba2182cb5b9e13bbec1d9fcb525e1c10bd6843d | sea_junction_tower.webp | 267x640 | 40432 | 36.63／0 | 海上の自由な分かれ道の脇の塔（A＝J0・H、B＝J0・J1、C＝H） |
+| sea_zone_nameplate.png | 5f888bc7e90fca538a7e6b049cfdbadb15ed8bb5b21e4c8f7501c45da5b2d596 | sea_zone_nameplate.webp | 960x70 | 18598 | 34.68／0 | Chapter 2 の題字（出発の中継カット）の下の飾り |
 | seagrass_cluster.png | cd75ffc214e526eee3ee5746a469d9e21202331741ca629f3c6e2acbfad7faf7 | seagrass_cluster.webp | 576x640 | 87092 | 34.52／0 | 海底の景物 |
 | shallow_turquoise_water.png | 2710280eef48005c243c602c294790e3fc763c62e7a4e3a8f0a60dbec0178ad7 | shallow_turquoise_water.webp | 512x512 | 79092 | 36.9 | 島のまわりの浅瀬（外へ薄く） |
+| shore_foam_edge.png | 5f07313129bbd368a845b2fcdfcfc40d022de1a9ad3b6147bfc12835ac49e63a | shore_foam_edge.webp | 640x60 | 17192 | 36.3／0 | **未使用**（波打ち際は指示の高優先マッピングどおり E03＝同じ用途を二重に敷かない） |
 | sunken_columns.png | 90410d5a8ee2c9d95af979ca84b0caf1624f798b4cb61af8996793b19cf354b7 | sunken_columns.webp | 411x640 | 77758 | 33.67／0 | 海底の景物・遺跡のまわり |
 | sunken_ruins_ground.png | b1dd82935d3da0a6ef3dc91cef3a310a1dc44a8c92d8afb8e1b705f7b909c147 | sunken_ruins_ground.webp | 512x512 | 125852 | 34.64 | 沈没遺跡の広場のまわりの地面 |
 | sunken_temple.png | 5fde79d4aea2515cf86d4573404bcd02305e55fcde7469deb21099cc67869545 | sunken_temple.webp | 604x640 | 136496 | 30.73／0 | **未使用** |
@@ -82,9 +79,12 @@
 | trial_monolith.png | 5a82ea3af168bf43c652ea279b9bc61badb91f79e4c7c92077005a7d5e5141a3 | trial_monolith.webp | 511x640 | 103382 | 34.49／0 | C の L_ALTAR（西の遺跡の修行の祭壇＝代わりの絵。専用の U-06 は無い） |
 | undersea_ascent_gate.png | 027b6ff2904c52622fe81fe1c5e2b763aa8cc0fc5d70b4a495dd2191e8d373bb | undersea_ascent_gate.webp | 324x640 | 70088 | 32.28／0 | 螺旋塔の上り坂の入口（A＝UPPER_GATE・B／C＝上り坂の始まり） |
 | undersea_blue_crystal.png | fb6b17a8526598a427bee5952fa19ae93314357849bf3c9fd6d0f76af6a3489a | undersea_blue_crystal.webp | 640x633 | 97938 | 35.77／0 | 海底の景物 |
+| undersea_bubble_light_fx.png | 3a2054515fb6148e50dee3ea71643bdb685de027553c3c1ec7f20267fe098898 | undersea_bubble_light_fx.webp | 1536x1024 | 34514 | 37.7／0 | 海中の泡（海底にいる間だけ、海中の光の筋と同じ層に重ねてゆっくり上へ） |
+| undersea_cliff_edge.png | 9a403c64b2ce85dff4812adf4b26c502d2d4dc4e19a486cd7b9f0039857745f7 | undersea_cliff_edge.webp | 640x254 | 46100 | 33.24／0 | 盆地のふちの海底の側の崖 |
 | undersea_descent_gate.png | da0c73aef548a51450164b6abfc72c2621ffe45d1ed03b4fa936d5383fb5c140 | undersea_descent_gate.webp | 397x640 | 71518 | 32.92／0 | 潮の塔（海底へ下りる門・LOWER_GATE） |
 | undersea_sand_base.png | 20a84ff81fa56997fcdc7c13baeadb3f9aa4adb0e464f43bbc2495322bbb85f1 | undersea_sand_base.webp | 512x512 | 103512 | 35.68 | 海底の地面（盆地の板） |
 | undersea_treasure_vault.png | 13f210e8c96f5554b6d22697c03b9bbb40eaebd8c4e5f1d048f5e40adaf8ec61 | undersea_treasure_vault.webp | 372x640 | 64540 | 34.59／0 | C の R_CHEST（宝物庫） |
+| white_coastal_cliff_edge.png | bca070e109587e544c7dc8935028330fb0b37e1ecb36933a5588598d10634542 | white_coastal_cliff_edge.webp | 640x233 | 47226 | 33.32／0 | 島のふちの海の側（岸のすぐ外）の白い崖 |
 
 ## 海上橋の石板（sea_bridge_deck.png）の反復接合
 

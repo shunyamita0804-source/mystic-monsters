@@ -36,7 +36,7 @@
   const chOf = (m) => { const mm = m || (gS() && gS().m); return mm && mm.raise && mm.raise.ch === 2 && root.MMWD2 ? 2 : 1; };
   const A2 = './assets/fields/ch2/art_1016/';
   const CHI = Object.freeze({ 1: { name: 'はじまりの草原', relay: './assets/fields/ch1a/intro/ch1_intro_overview.webp', gate: './assets/fields/ch1a/final/event/ch1_bg_15_event.webp' },
-    2: { name: '潮風の海岸', relay: A2 + 'chapter2_sea_medallion.webp', medal: true, gate: null, gateArt: A2 + 'arena_approach_gate.webp', gateSea: A2 + 'open_sea_water.webp' } });
+    2: { name: '潮風の海岸', relay: A2 + 'chapter2_sea_medallion.webp', medal: true, plate: A2 + 'sea_zone_nameplate.webp', gate: null, gateArt: A2 + 'arena_approach_gate.webp', gateSea: A2 + 'open_sea_water.webp' } });
   const chi = (m) => CHI[chOf(m)];
   const P8 = () => root.MMP8, WD = (m) => (chOf(m) === 2 ? root.MMWD2 : root.MMWD), C = () => root.MMRF_CORE;
   // 2026-10-14 B／C 独立ルート：その個体のルートの道のデータ（m を省くと今の個体＝S.m。route の無い配置＝A＝MMRF_DATA）
@@ -390,6 +390,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
 .wbw .wbrelay .wbr-orn{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;font-size:18px;line-height:1;color:#e8c66e;text-shadow:0 0 6px rgba(255,214,120,.6),0 1px 2px rgba(0,0,0,.7);opacity:0;transition:opacity .6s ease .9s}
 .wbw .wbrelay.ton .wbr-orn{opacity:1}
 .wbw .wbrelay .wbr-orn .wbr-ln{width:min(26vw,104px)}
+.wbw .wbrelay .wbr-orn.plate img{display:block;width:min(80vw,340px);height:auto}   /* 2026-10-16 Chapter 2：正式の名札 sea_zone_nameplate を題字の下の飾りに */
 .wbw .wbrelay .wbr-load{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 28px);transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;background:rgba(8,15,34,.72);border:1px solid rgba(217,180,101,.6);color:#f3e7c4;font-size:12.5px;font-weight:700}
 .wbw .wbrelay .wbr-load i{width:12px;height:12px;border-radius:50%;border:2px solid rgba(243,231,196,.35);border-top-color:#e8c66e;animation:wbrspin .9s linear infinite}
 .wbw .wbrelay .wbr-err{display:none;position:relative;flex-direction:column;align-items:center;gap:8px;padding:14px 16px;margin:0 16px;border-radius:14px;background:rgba(8,15,34,.9);border:1.5px solid #d9b465;color:#fff;text-align:center}
@@ -459,7 +460,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     const TITLE_CH = TITLE_CHOF(m), TITLE_NAME = TITLE_NAMEOF(m);
     const ch = (t, gap, base) => [...t].map((c, i) => `<i style="--d:${base + i * gap}ms">${c === ' ' ? '&nbsp;' : c}</i>`).join('');
     const a = ch(TITLE_CH, TITLE.gap, TITLE.lead), b = ch(TITLE_NAME, TITLE.nameGap, TITLE.lead + TITLE_CH.length * TITLE.gap + 140);
-    return `<div class="wbr-t" aria-label="${TITLE_CH} ${TITLE_NAME}"><small aria-hidden="true"><span class="wbr-ln"></span>${a}<span class="wbr-ln r"></span></small><b aria-hidden="true">${b}</b><span class="wbr-orn" aria-hidden="true"><span class="wbr-ln"></span>⚜<span class="wbr-ln r"></span></span></div>`;
+    return `<div class="wbr-t" aria-label="${TITLE_CH} ${TITLE_NAME}"><small aria-hidden="true"><span class="wbr-ln"></span>${a}<span class="wbr-ln r"></span></small><b aria-hidden="true">${b}</b>${chi(m).plate ? `<span class="wbr-orn plate" aria-hidden="true"><img src="${chi(m).plate}" alt="" draggable="false" decoding="async"></span>` : '<span class="wbr-orn" aria-hidden="true"><span class="wbr-ln"></span>⚜<span class="wbr-ln r"></span></span>'}</div>`;
   }
   function cover(m, withIntro) {
     if (V.cover) V.cover.remove();

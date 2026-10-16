@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""2026-10-16 Chapter 2「潮風の海岸」正式美術（ユーザー納品 ZIP Mismon_Claude_Ch2_Assets_20261016_Part01〜04）の表示用の派生 WebP を作る。
+"""2026-10-16 Chapter 2「潮風の海岸」正式美術（ユーザー納品 ZIP Mismon_Claude_Ch2_Assets_20261016_Part01〜03＋Part04A／04B の再送）の表示用の派生 WebP を作る。
 
   python3 -I tools/ch2art1016/derive.py <原本PNGのフォルダ> <照合台帳 全68点_画像仕様と採用版.tsv> <出力 assets/fields/ch2/art_1016>
 
@@ -31,6 +31,8 @@ PLAN = {
     'R08_seabed_basin_wall_tile.png': (KEEP, None), 'FX04_underwater_light_screen_strip.png': (KEEP, None),
     'U08_ruins_plaza_base.png': (KEEP, None), 'U08_ruins_plaza_cracked_a.png': (KEEP, None), 'U08_ruins_plaza_cracked_b.png': (KEEP, None),
     'ocean_arena.png': (PROP, 960), 'L01_harbor_town_cluster.png': (PROP, 720), 'chapter2_sea_medallion.png': (PROP, 512),
+    # 2026-10-16 Part04A／04B の再送で届いた8点：泡の FX は重ねる層＝大きさも切り出しもそのまま・ゾーン名札は UI＝くっきり
+    'undersea_bubble_light_fx.png': (KEEP, None), 'sea_zone_nameplate.png': (PROP, 960),
 }
 DEFAULT_PROP = 640     # そのほかの透過の景物（1536 の建物・景物は 640・256 の小物はそのまま）
 
@@ -74,7 +76,7 @@ def main(src, ledger, out):
     for r in rows:
         name = r['ファイル名']; p = os.path.join(src, name)
         if not os.path.exists(p):
-            missing.append({'name': name, 'size': r['仕様寸法'], 'mode': r['画像モード'], 'why': 'ファイルが無い（Part04 の ZIP が途中で切れていた）'}); continue
+            missing.append({'name': name, 'size': r['仕様寸法'], 'mode': r['画像モード'], 'why': 'ファイルが無い'}); continue
         h = sha(p); im = Image.open(p); im.load()
         if h != r['SHA256'] or f'{im.width}x{im.height}' != r['仕様寸法'] or im.mode != r['画像モード']:
             missing.append({'name': name, 'why': '台帳と一致しない', 'sha': h}); continue
