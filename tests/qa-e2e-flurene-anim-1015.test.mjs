@@ -3,7 +3,7 @@
 //  FA-B1（375×667・390×844・430×932）：歩行を確認＝front・back のコマが 12fps で実際に切り替わる・止めると front の1コマ目・
 //        体の高さと足が静止の立ち絵とそろう（跳ねない）・画面の中・白背景の原歩行シートは使わない
 //  FA-B2（390×844）：技アニメ No.01〜10＝本体（と効果）のコマが順に出て、終わると待機の立ち絵へ戻る（コマは残らない・本体が2つ重ならない）・
-//        09・10 は「FX追加待ち」・相手の HP は変わらない・OFF で貸した絵（IMG[5]・MMARENA.IDLE[5]）が消えて通常のセーブは同じ
+//        10 は「FX追加待ち」・09 は 2026-10-16 から「ルートドレイン」8コマ（QA の実戦 SK 58・プレビューでも同じ8コマ）・相手の HP は変わらない・OFF で貸した絵（IMG[5]・MMARENA.IDLE[5]）が消えて通常のセーブは同じ
 //  Playwright / Chromium が無い環境では省略（skip）する。
 // =========================================================
 import test from 'node:test';
@@ -66,13 +66,13 @@ for (const size of [H.SIZES.se, H.SIZES.base, H.SIZES.max]) {
   });
 }
 
-test('FA-B2（390×844）：技アニメ No.01〜10＝コマが順に出て待機の立ち絵へ戻る・09／10 は FX追加待ち・HP は変わらない・OFF で元どおり', { skip: SKIP }, async () => {
+test('FA-B2（390×844）：技アニメ No.01〜10＝コマが順に出て待機の立ち絵へ戻る・09＝ルートドレイン8コマ・10 は FX追加待ち・HP は変わらない・OFF で元どおり', { skip: SKIP }, async () => {
   const p = await openPage({ query: '?mmQaTrial=1', size: H.SIZES.base }); const pg = p.page; await qaOn(pg);
   const s0 = await pg.evaluate(() => localStorage.getItem('mr4v6')), img0 = await pg.evaluate(() => IMG.length);
   const cards = await pg.evaluate(() => [...document.querySelectorAll('#mmqa .qcard')].map((c) => ({ st: c.dataset.status, fx: (c.querySelector('.qfx') || {}).textContent || '' })));
-  assert.ok(cards.every((c) => c.st === 'preview'));
-  assert.deepEqual(cards.map((c) => /FX追加待ち/.test(c.fx)), [false, false, false, false, false, false, false, false, true, true]);
-  assert.equal(cards[8].fx, '本体 4・効果 2（FX追加待ち）'); assert.equal(cards[9].fx, '本体 5・効果 0（FX追加待ち）'); assert.equal(cards[4].fx, '本体 5・効果 5');
+  assert.deepEqual(cards.map((c) => c.st), ['preview', 'preview', 'preview', 'preview', 'preview', 'preview', 'preview', 'preview', 'battle', 'preview'], '09 ルートドレインだけ QA の実戦（SK 58）');
+  assert.deepEqual(cards.map((c) => /FX追加待ち/.test(c.fx)), [false, false, false, false, false, false, false, false, false, true]);
+  assert.equal(cards[8].fx, 'ルートドレイン 8コマ（試験実装）'); assert.equal(cards[9].fx, '本体 5・効果 0（FX追加待ち）'); assert.equal(cards[4].fx, '本体 5・効果 5');
   await pg.click('#mmqa .qcard[data-n="0"]'); await pg.click('#mmqa .qdet .qgo');
   await pg.waitForSelector('#bt.mmqa-prev'); await pg.waitForSelector('#mmqa-bar button');
   await pg.waitForFunction(() => /idle_flurene/.test((document.querySelector('#m0 .mma-idle') || {}).src || ''), null, { timeout: 15000 });
@@ -81,9 +81,9 @@ test('FA-B2（390×844）：技アニメ No.01〜10＝コマが順に出て待�
   await pg.waitForTimeout(3600);   // 最初の自動再生（No.01）が終わるまで
   const hp0 = await pg.evaluate(() => [BPL[0].hp, BPL[1].hp]);
   for (let no = 1; no <= 10; no++) {
-    const d = D[no], want = new Set(d.cuts.flatMap((c) => [c.f, c.fx]).concat(d.fx.map((c) => c.f)).filter(Boolean));
+    const RD = no === 9, d = D[no], want = RD ? new Set(['rd_01', 'rd_02', 'rd_03', 'rd_04', 'rd_05', 'rd_06', 'rd_07', 'rd_08'].map((f) => 'RD:' + f + '.webp')) : new Set(d.cuts.flatMap((c) => [c.f, c.fx]).concat(d.fx.map((c) => c.f)).filter(Boolean));
     await pg.evaluate((no) => { window.__flSeen = new Set(); window.__flMax = 0; window.__flBody = 0;
-      window.__flT = setInterval(() => { const im = [...document.querySelectorAll('#bt img.p25f')]; im.concat([...document.querySelectorAll('#bt .p25c > img')]).forEach((i) => { const m = (i.getAttribute('src') || '').match(/flurene_moves_1015\/(.+)$/), o = i.parentNode.classList.contains('p25c') ? i.parentNode : i; if (m && +getComputedStyle(o).opacity > 0.05) window.__flSeen.add(m[1]); });   // 2026-10-15 夜：相手へ飛ばす効果は切り出しの箱（.p25c）の中
+      window.__flT = setInterval(() => { const im = [...document.querySelectorAll('#bt img.p25f')]; im.concat([...document.querySelectorAll('#bt .p25c > img')]).forEach((i) => { const m = (i.getAttribute('src') || '').match(/flurene_moves_1015\/(.+)$/), r = (i.getAttribute('src') || '').match(/flurene_rootdrain_1016\/(.+)$/), o = i.parentNode.classList.contains('p25c') ? i.parentNode : i; if (m && +getComputedStyle(o).opacity > 0.05) window.__flSeen.add(m[1]); if (r && +getComputedStyle(o).opacity > 0.05) window.__flSeen.add('RD:' + r[1]); });   // 2026-10-15 夜：相手へ飛ばす効果は切り出しの箱（.p25c）の中
         const vb = im.filter((i) => /_b\d\d\.webp$/.test(i.getAttribute('src') || '') && +getComputedStyle(i).opacity > 0.98).length; window.__flBody = Math.max(window.__flBody, vb); }, 16);
       const b = [...document.querySelectorAll('#mmqa-bar button')].find((e) => e.textContent.startsWith(String(no).padStart(2, '0'))); b.click(); }, no);
     if (no === 6) { await pg.waitForTimeout(820); await pg.screenshot({ path: path.join(SHOT, 'b2_06_mid.png') }); }
@@ -91,13 +91,16 @@ test('FA-B2（390×844）：技アニメ No.01〜10＝コマが順に出て待�
     await pg.waitForTimeout(250);
     const r = await pg.evaluate(() => { clearInterval(window.__flT); return { seen: [...window.__flSeen], body: window.__flBody, me: +getComputedStyle(document.getElementById('m0')).opacity, idle: /idle_flurene/.test((document.querySelector('#m0 .mma-idle') || {}).src || '') }; });
     assert.deepEqual(r.seen.filter((f) => !want.has(f)), [], `${no}：ほかの技の絵を出さない`);
-    for (const c of d.cuts) assert.ok(r.seen.includes(c.f), `${no}：本体 ${c.f} が見えた`);
-    assert.ok(r.seen.filter((f) => /_fx/.test(f)).length >= Math.max(0, d.effects - 1), `${no}：効果 ${d.effects} 枚のうち見えた ${r.seen.filter((f) => /_fx/.test(f)).length}`);
+    if (RD) { assert.deepEqual(r.seen.sort(), [...want].sort(), '09：ルートドレインの8コマすべて'); }
+    else {
+      for (const c of d.cuts) assert.ok(r.seen.includes(c.f), `${no}：本体 ${c.f} が見えた`);
+      assert.ok(r.seen.filter((f) => /_fx/.test(f)).length >= Math.max(0, d.effects - 1), `${no}：効果 ${d.effects} 枚のうち見えた ${r.seen.filter((f) => /_fx/.test(f)).length}`);
+    }
     assert.ok(r.body <= 2, `${no}：本体の不透明なコマは切り替えの重なり（最大2）だけ＝${r.body}`);
     assert.ok(r.me > 0.95 && r.idle, `${no}：終わると待機の立ち絵へ戻る`);
   }
   assert.deepEqual(await pg.evaluate(() => [BPL[0].hp, BPL[1].hp]), hp0, '判定・ダメージなし（HP は変わらない）');
-  assert.match(await pg.textContent('#mmqa-bar'), /09\*[\s\S]*10\*[\s\S]*\* FX追加待ち/);
+  assert.match(await pg.textContent('#mmqa-bar'), /09(?!\*)[\s\S]*10\*[\s\S]*\* FX追加待ち/);
   await pg.evaluate(() => MMQA.endBattle()); await pg.waitForSelector('#mmqa .qcard', { state: 'visible', timeout: 60000 });
   assert.deepEqual(await pg.evaluate(() => [IMG.length, IMG[5], MMARENA.IDLE[5]]), [img0, undefined, undefined], 'QA 試合のあとは貸した絵を戻す');
   await pg.click('#mmqa .qoff'); await pg.waitForSelector('#app>.rn');

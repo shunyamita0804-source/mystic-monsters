@@ -29,10 +29,11 @@
   /** フルーネの技アニメの枚数（本体・効果）。効果が本体より少ない技＝『FX追加待ち』 */
   function animInfo(key, no) {
     if (key !== 'flurene') return null;
+    if (no === 9 && root.MMRD) return { rd: true, bodies: root.MMRD.FRAMES.length, effects: 0, wait: false };   // 2026-10-16：09 はルートドレインの8コマ（本体と効果が1枚）＝旧「生命のしずく」の枚数は出さない
     const d = FL() && FL()[no]; if (!d) return null;
     return { bodies: d.bodies, effects: d.effects, wait: d.effects < d.bodies };
   }
-  const animTxt = (a) => a ? `本体 ${a.bodies}・効果 ${a.effects}${a.wait ? '（FX追加待ち）' : ''}` : '';
+  const animTxt = (a) => a ? (a.rd ? `ルートドレイン ${a.bodies}コマ（試験実装）` : `本体 ${a.bodies}・効果 ${a.effects}${a.wait ? '（FX追加待ち）' : ''}`) : '';
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const G = (n) => { try { return (0, eval)(n); } catch (e) { return undefined; } };   // index.html の大域（S・SK・fight など）を呼ぶ時点で読む
   const M = () => root.MMP10M;
