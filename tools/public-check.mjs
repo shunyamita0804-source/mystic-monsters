@@ -285,7 +285,7 @@ try {
     const sw = await q.evaluate(() => !!document.getElementById('mmqa-sw'));
     await q.evaluate(() => { const b = document.getElementById('mmqa-sw'); if (b) b.click(); }); await sleep(800);
     const cat = await q.evaluate(async () => { const c = MMQA.catalog(); const urls = c.flatMap((x) => x.moves.map((m) => m.src)); const ok = await Promise.all(urls.map((u) => new Promise((r) => { const i = new Image(); i.onload = () => r(i.naturalWidth > 0); i.onerror = () => r(false); i.src = u; }))); return { tabs: document.querySelectorAll('#mmqa .qtab').length, n: urls.length, ok: ok.filter(Boolean).length, counts: MMQA.counts() }; });
-    rec('2026-10-15：QA 試遊モード（?mmQaTrial=1）＝牧場に切り替え → ON → 6体×10技（60）のカードが読める（実戦 50＝ジオルの正式10技を含む・プレビュー 10＝フルーネ・静止画 0）', sw && cat.tabs === 6 && cat.n === 60 && cat.ok === 60 && cat.counts.battle === 50 && cat.counts.preview === 10 && cat.counts.static === 0, JSON.stringify(cat));
+    rec('2026-10-15：QA 試遊モード（?mmQaTrial=1）＝牧場に切り替え → ON → 6体×10技（60）のカードが読める（実戦 51＝ジオルの正式10技・フルーネ09 ルートドレイン（QA の SK 58）を含む・プレビュー 9＝フルーネ・静止画 0）', sw && cat.tabs === 6 && cat.n === 60 && cat.ok === 60 && cat.counts.battle === 51 && cat.counts.preview === 9 && cat.counts.static === 0, JSON.stringify(cat));
     await q.evaluate(() => MMQA.battle(0, 1)); await q.waitForSelector('#bt .mmr .pl .nm', { timeout: 30000 }).catch(() => {});
     // 素早さが同じ（ソラモどうし）なら相手が先に動くことがある＝自分の番（STOP が押せる）になってからルーレットの技を読む（相手の番のルーレットは相手の技）
     await q.waitForFunction(() => { const g = document.getElementById('go'); return g && !g.disabled && !g.classList.contains('bk'); }, null, { timeout: 30000 }).catch(() => {}); await sleep(400);
