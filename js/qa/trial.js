@@ -235,7 +235,7 @@
     const old = v.querySelector('.qdet'); if (old) old.remove();
     const d = doc.createElement('div'); d.className = 'qdet';
     const stat = mv.type === 'support' ? '補助技（威力なし）' : mv.power != null ? `威力 ${mv.power}／命中 ${mv.accuracy}／クリ ${mv.critical}` : '性能：未決（データなし）';
-    const act = (mv.status === 'battle' || mv.status === 'preview' ? '<button class="qgo qsg1" type="button" data-nsfx="1">ステージで再生</button>' : '') + (mv.status === 'battle' ? '<button class="qgo qbt1" type="button" data-nsfx="1">この技で QA 試合</button>' : mv.status === 'preview' ? '<button class="qgo qbt1" type="button" data-nsfx="1">技アニメを再生（QA 画面）</button>' : '');
+    const act = (mv.status === 'battle' ? '<button class="qgo qbt1" type="button" data-nsfx="1">この技で QA 試合</button>' : mv.status === 'preview' ? '<button class="qgo qbt1" type="button" data-nsfx="1">技アニメを再生（QA 画面）</button>' : '') + (mv.status === 'battle' || mv.status === 'preview' ? '<button class="qgo qsg1" type="button" data-nsfx="1">ステージで再生</button>' : '');
     const pics = x.key === 'flurene' ? `<div class="qpics"><figure><img src="${esc(x.img)}" alt="">正式立ち絵</figure><figure><img src="${esc(x.idle)}" alt="">バトル待機絵</figure><figure><img src="${esc(root.MMCMP ? root.MMCMP.src(5) : '')}" alt="">比較画面の絵</figure></div>` : '';
     const what = mv.status === 'battle' ? 'ルーレットの6枠をすべてこの技にして、テスト相手（ランク E の練習試合の相手・ソラモ）と戦います。勝敗・G・ランクは保存されません。'
       : mv.status === 'preview' ? `${x.key === 'flurene' ? 'フルーネ' : 'ジオル'}の技は性能（威力・命中など）が未決のため実戦はありません。バトル画面で技アニメのコマだけを再生します（判定・ダメージなし）。${mv.anim ? `この技の絵＝${animTxt(mv.anim)}。${mv.anim.wait ? '効果の絵はまだ届いていません（作っていません）。' : ''}` : ''}`
@@ -306,7 +306,7 @@
     const play = (no) => { try { root.MM25D && root.MM25D.preview(x.key, no, 0); } catch (e) {} };
     const wait = () => { const b = doc.getElementById('bt'); if (!b) return void setTimeout(wait, 80); b.classList.add('mmqa-prev'); };
     wait();
-    bar(`QA：${x.name}の技アニメ`, x.moves.map((v) => ({ t: String(v.no).padStart(2, '0') + (v.anim && v.anim.wait ? '*' : ''), f: () => play(v.no), cur: v.no === mv.no })).concat(x.key === 'flurene' ? [{ t: '* FX追加待ち', f: () => {} }] : []));
+    bar(`QA：${x.name}の技アニメ`, x.moves.map((v) => ({ t: String(v.no).padStart(2, '0') + (v.anim && v.anim.wait ? '*' : ''), f: () => play(v.no), cur: v.no === mv.no })).concat(x.key === 'flurene' && x.moves.some((v) => v.anim && v.anim.wait) ? [{ t: '* FX追加待ち', f: () => {} }] : []));
     setTimeout(() => play(mv.no), 1600);
     return true;
   }

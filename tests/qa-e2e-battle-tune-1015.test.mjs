@@ -89,13 +89,15 @@ test('BTB-3：体格サイズ＝通常は今まで・?mmSize=1 のときだけ �
   for (const x of [...a, ...b]) assert.equal(x.foot, 0, '足もと（立ち絵の下端）は床＝箱の下端のまま');
 });
 
-test('BTB-4：はなビンタの絵文字・フルーネ技10 の着弾', { skip: SKIP, timeout: 240000 }, async () => {
+test('BTB-4：はなビンタの絵文字・フルーネ技10 の根と命中（専用7枚）', { skip: SKIP, timeout: 240000 }, async () => {
   const p = await battle('', 5, 1), pg = p.page;
   assert.notEqual(await pg.evaluate(() => SK[30][4]), '👃', 'はなビンタの絵文字は鼻でない');
   const r = await pg.evaluate(TRACE, -10);
-  const hit = r.out.flatMap((f) => f.els.filter((e) => /bc0[67]_/.test(e.src)));
-  assert.ok(hit.length >= 3, `共通演出の着弾が見える（${hit.length}）`);
-  assert.ok(hit.every((e) => Math.abs(e.cx - r.tgt.cx) < 40), '着弾は相手の位置');
+  // 2026-10-16（バトル最終統合）：技10 は専用の根4（相手の足もと）＋命中3（相手の被弾点）。共通演出の流用（bc06・bc07）はやめた
+  const hit = r.out.flatMap((f) => f.els.filter((e) => /f10_d0[5-7]_fx/.test(e.src))), roots = r.out.flatMap((f) => f.els.filter((e) => /f10_d0[1-4]_fx/.test(e.src)));
+  assert.ok(hit.length >= 3, `専用の命中が見える（${hit.length}）`); assert.ok(roots.length >= 3, `専用の根が見える（${roots.length}）`);
+  assert.ok(hit.concat(roots).every((e) => Math.abs(e.cx - r.tgt.cx) < 40), '根・命中は相手の位置');
+  assert.equal(r.out.flatMap((f) => f.els.filter((e) => /bc0[67]_/.test(e.src))).length, 0, '共通演出の流用は出さない');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
@@ -113,7 +115,7 @@ const MOUTHCHK = ({ k, s }) => new Promise((res) => {
     const f = s ? -1 : 1, out = [];
     els.filter((e) => e.dataset.mf).forEach((e) => {
       const p = first(e), w = parseFloat(e.style.width), h = parseFloat(e.style.height), o = e.style.transformOrigin;
-      const root = o.startsWith('4%') ? { x: p.x + w * 0.04, y: p.y + h / 2, kind: 'beam' } : o.startsWith('0') ? { x: p.x, y: p.y + h / 2, kind: 'stretch' } : { x: p.x + w / 2, y: p.y + h / 2, kind: 'launch' };
+      const root = e.dataset.ox ? { x: p.x + w * +e.dataset.ox, y: p.y + h * +e.dataset.oy, kind: 'sprbeam' } : o.startsWith('4%') ? { x: p.x + w * 0.04, y: p.y + h / 2, kind: 'beam' } : o.startsWith('0') ? { x: p.x, y: p.y + h / 2, kind: 'stretch' } : { x: p.x + w / 2, y: p.y + h / 2, kind: 'launch' };
       const c = D.find((q) => q.f === e.dataset.mf), M = MMTUNE.MOUTH[Object.keys(MMTUNE.MOUTH).find((key) => key.endsWith('/' + e.dataset.mf))];
       const body = els.find((b) => b.tagName === 'IMG' && (b.getAttribute('src') || '').endsWith('/' + e.dataset.mf));
       const bp = first(body), S = parseFloat(body.style.width) / c.w, mx = f > 0 ? M[0] : c.w - M[0];
@@ -263,31 +265,32 @@ test('BTB-10：SK19 V2 の実戦＝聖なる炎のあとの能力アップの印
 });
 
 // 2026-10-16（iPhone 6件 A2・A4）
-test('BTB-11：フレアレイの溜めの光は嘴の先（16_01 の口先）・スターダストレイの青い光線の試作（?sk08=blue）は口先から相手へ', { skip: SKIP, timeout: 300000 }, async () => {
+test('BTB-11：フレアレイの溜めの光は嘴の先（16_01 の口先）・スターダストレイの専用の光線2枚（2026-10-16 承認・A_01／A_02）は口先から相手へ', { skip: SKIP, timeout: 300000 }, async () => {
   let p = await battle('', 1, 0), pg = p.page;
   const a = await pg.evaluate(() => new Promise((ok) => { anim(16, 0); const seen = []; const iv = setInterval(() => { document.querySelectorAll('#bt .p25c[data-mf="16_01.webp"]').forEach((e) => { if (+getComputedStyle(e).opacity > 0.3) seen.push({ mx: +e.dataset.mx, my: +e.dataset.my, cut: e.dataset.cut }); }); }, 40); setTimeout(() => { clearInterval(iv); ok(seen); }, 2600); }));
   assert.ok(a.length >= 2, `溜めの光が嘴の先に出る（${a.length}）`);
   assert.ok(a.every((e) => e.cut === 'G16_1_fx'), '溜めの光＝素材の 16_01_fx を切り出したもの');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   await p.ctx.close(); OPEN.length = 0;
-  p = await battle('&sk08=blue', 0, 1); pg = p.page;
-  const b = await pg.evaluate(() => new Promise((ok) => { anim(8, 0); const seen = {}; const iv = setInterval(() => { document.querySelectorAll('#bt .sk08b').forEach((e) => { if (+getComputedStyle(e).opacity > 0.3) { const k = e.dataset.cut || e.className; (seen[k] = seen[k] || []).push({ mx: e.dataset.mx != null ? +e.dataset.mx : null, mf: e.dataset.mf || null }); } }); }, 40); setTimeout(() => { clearInterval(iv); ok({ seen, old: !!document.querySelector('#bt img[src*="05_03"]') }); }, 3200); }));
-  assert.ok(b.seen.SDR_BLUE_charge && b.seen.SDR_BLUE_charge.length, '口先の溜め');
-  assert.ok(b.seen.SDR_BLUE_beam && b.seen.SDR_BLUE_beam.length >= 3, '青い光線');
-  assert.ok(new Set(b.seen.SDR_BLUE_beam.map((e) => e.mf)).size >= 2, '光線は区切りごとのコマ（08_04・08_05）の口先から');
-  assert.ok(b.seen.SDR_BLUE_after, '余韻（光線が細くなって消える）');
+  p = await battle('', 0, 1); pg = p.page;
+  const b = await pg.evaluate(() => new Promise((ok) => { anim(8, 0); const seen = {}; const iv = setInterval(() => { document.querySelectorAll('#bt img.p25f[data-cut^="SDR_A0"]').forEach((e) => { if (+getComputedStyle(e).opacity > 0.3) { const r = e.getBoundingClientRect(); (seen[e.dataset.cut] = seen[e.dataset.cut] || []).push({ mx: +e.dataset.mx, my: +e.dataset.my, mf: e.dataset.mf, ox: +e.dataset.ox, w: r.width, src: e.getAttribute('src') }); } }); }, 40); setTimeout(() => { clearInterval(iv); ok({ seen, old: !!document.querySelector('#bt img[src*="05_03"]'), css: document.querySelectorAll('#bt .sk08b').length }); }, 3200); }));
+  assert.ok(b.seen.SDR_A01 && b.seen.SDR_A01.length, '伸びる光線（A_01＝08_a01_fx）');
+  assert.ok(b.seen.SDR_A02 && b.seen.SDR_A02.length, '最大の光線（A_02＝08_a02_fx）');
+  assert.ok(b.seen.SDR_A01.every((e) => e.mf === '08_04.webp' && /08_a01_fx/.test(e.src)) && b.seen.SDR_A02.every((e) => e.mf === '08_05.webp' && /08_a02_fx/.test(e.src)), '光線は区切りごとのコマ（08_04・08_05）の口先から');
+  assert.ok(Math.abs(b.seen.SDR_A01[0].ox - 215 / 2048) < 1e-6, '絵の発光点（x 215/2048）を口先へ');
+  assert.equal(b.old, false, 'ソラモビームの光線（05_03）の流用はしない'); assert.equal(b.css, 0, 'CSS の青い光線の試作は出さない');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
 // 2026-10-16：フルーネ技09「ルートドレイン」（QA 試遊だけの SK 58）
-test('BTB-12：ルートドレイン＝8コマが1枚ずつ順に・命中でダメージ1回・与えたダメージの50%（四捨五入・最大ライフまで）を1回だけ吸収・MISS は吸収しない・残らない', { skip: SKIP, timeout: 400000 }, async () => {
+test('BTB-12：ルートドレイン＝補修版10コマが1枚ずつ順に・命中でダメージ1回・与えたダメージの50%（四捨五入・最大ライフまで）を1回だけ吸収・MISS は吸収しない・残らない', { skip: SKIP, timeout: 400000 }, async () => {
   const p = await battle('', 5, 0), pg = p.page;
   await pg.evaluate(() => {
     BPL[0].eq = BPL[0].eq.map(() => 58); BPL[1].h = Math.max(BPL[1].h, 900);
     window.__r = []; const B = window.MMBattle;
     window.MMBattle = Object.freeze(Object.assign({}, B, { resolveAction(o) { if (o && o.session && o.attackerSide === 'A') o.session.currentLife.A = Math.min(o.session.currentLife.A, 40); const r = B.resolveAction(o); if (o && o.attackerSide === 'A') window.__r.push({ k: o.move && o.move.id, hit: r.hit, damage: r.damage, drained: r.drained, life: o.session.currentLife.A, max: o.session.participants.A.maxLife }); return r; } }));
     window.__seq = []; window.__pops = 0;
-    setInterval(() => { const v = [...document.querySelectorAll('#bt .mmrd')].filter((e) => +getComputedStyle(e).opacity > 0.5).map((e) => +e.dataset.cut.slice(3)); if (v.length) window.__seq.push(v); }, 30);
+    setInterval(() => { const v = [...document.querySelectorAll('#bt .mmrd')].filter((e) => +getComputedStyle(e).opacity > 0.5).map((e) => +e.dataset.cut.slice(4)); if (v.length) window.__seq.push(v); }, 30);
     new MutationObserver((l) => l.forEach((m) => m.addedNodes.forEach((n) => { if (n.nodeType === 1 && n.tagName === 'SPAN' && /^\+\d+$/.test(n.textContent) && n.parentNode && n.parentNode.id === 'f0') window.__pops++; }))).observe(document.getElementById('bt'), { childList: true, subtree: true });
   });
   let hits = 0, misses = 0;
@@ -305,10 +308,10 @@ test('BTB-12：ルートドレイン＝8コマが1枚ずつ順に・命中でダ
   for (const x of R.r.filter((y) => !y.hit)) assert.ok(!x.drained, 'MISS は吸収しない');
   assert.equal(R.drains.length, hit.length, '吸収の表示は当たった回数だけ（1回の行動で1回）');
   assert.equal(R.pops, R.drains.filter((d) => d.gain > 0).length, '回復の数字も1回ずつ');
-  // コマは 1→8 の順・同時に見えるのは前後の2枚まで（入れ替えの重なり）
+  // コマは 1→10 の順（01 02 03 04 05_prebeat 05 06_prebeat 06 07 08）・同時に見えるのは前後の2枚まで（入れ替えの重なり）
   const flat = R.seq.map((v) => Math.max(...v));
   assert.ok(R.seq.every((v) => v.length <= 2 && (v.length < 2 || v[1] - v[0] === 1)), '同時に見えるのは隣り合う2枚まで');
-  assert.ok(flat.includes(1) && flat.includes(4) && flat.includes(7) && flat.includes(8), '01・04・07・08 が見える');
+  assert.ok([1, 4, 5, 6, 7, 8, 9, 10].every((n) => flat.includes(n)), '01・04・2回の脈動（05_prebeat→05・06_prebeat→06）・07・08 が見える');
   assert.equal(R.left, 0, 'コマが残らない');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });

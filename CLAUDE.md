@@ -62,7 +62,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 | js/battle/regnas-moves-data.js、assets/battle/regnas_moves_1012/、tools/regnas1012/ | **レグナスの正式の技アニメ（2026-10-12・正式補正版 48枚）**：レグナス（IMG の 4）が技 20〜29 を使うとき js/battle/art25d.js の animOff が見せる（従来の静止ポーズ MMRP.anim は、コマが読めないときの代わり）。ライバル戦で使うのは初期の4技（20〜23）だけ＝変えていない。データ MMREMV_DATA。§3「レグナス・ジオルの技アニメ（2026-10-12）」 |
 | js/battle/jiol-moves-data.js、assets/battle/jiol_moves_1012/、tools/jiol1012/ | **ジオルの正式の技アニメ（2026-10-12・透過補正版 96枚＝本体48・効果48）**：データ MMJIMV_DATA（正式の技表の番号 1〜10）。**2026-10-15 から正式10技の SK 40〜49 で実戦でも使う（art25d.js の SRC_OF の 3）＝§3「ジオルの正式10技（2026-10-15）」**。開発用のプレビュー `MM25D.preview('jiol', 番号, 側)`（バトル画面が出ている間だけ）。§3「レグナス・ジオルの技アニメ（2026-10-12）」 |
 | js/battle/compare.js、assets/monsters/compare_1015/、tools/compare1015/ | **新しいパラメーター比較画面 `MMCMP`（2026-10-15）**：大会（p9CompareScr）・野生／レア／ライバル（bBattleGo の重ね画面 #cmp）の対戦前。左右に承認済みの肩上アップ6枚（右は CSS で反転）・6能力（実際の値・999 の同じ尺度・正式6色）・名前と「あなた／相手」・固有スキルの名前だけ・小さな VS の飾り・「対戦開始」。独立した VS の画面（tourVsShow）と fight() の導入は出さない。§3「新しいパラメーター比較・QA 試遊モード」 |
-| trial.html（作業ブランチ claude/claude-md-handoff-check-fcl9lb だけ） | **2026-10-16 試遊の入口**：iPhone から1回のタップで開く入口（QA の直接起動 `index.html?mmQaTrial=1&qaDirect=1`（qaMon=0〜5）・体格サイズ `&mmSize=1`・修正前の大きさ `&mmScale=old`・Chapter 2 試作 A／B／C・最初から）。リンクはすべて相対パス＝開いた場所の版。URL＝`https://raw.githack.com/shunyamita0804-source/mystic-monsters/claude/claude-md-handoff-check-fcl9lb/trial.html`（公開リポジトリのブランチを githack が配信する＝GitHub Pages・main とは別の場所・セーブも別。push のあと反映まで数分）。**main へ統合するときは trial.html を持ち込まない**（判断はユーザー） |
+| js/qa/battle-stage.js | **2026-10-16 常設バトル QA のステージ `MMQAS`**：?mmQaTrial=1 の QA 画面の「▶ バトル技ステージ」（開始画面の『QA を開く』からも）。6体（MMQA.catalog＝マスターデータの登録から）×10技を1技ずつ／全10技の連続再生・攻撃側・相手・体格（従来／案A／案B／1〜5＝?mmSize=1 を吸収）・背景（会場／黒／白／紺）・速さ（仮想の時計 window.__mmqaST＝stage.js の ST もこれを通る）・ループ・命中／回避／MISS（MMSTAGE.qaForce＝見せ方だけ）・一時停止・コマ送り。実戦と同じ描画（anim(k, s)・MM25D.preview）。保存しない（QA が ON の間だけ）。§3「バトル最終統合」。旧 trial.html（作業ブランチだけの試遊の入口）は main に持ち込まない＝削除 |
 | js/battle/sk19-v2-1016.js、assets/battle/gauru_sk19_v2_1016/、tools/sk19v2/、docs/sk19_v2_1016/（作業ブランチ claude/claude-md-handoff-check-fcl9lb だけ） | **2026-10-16 ガウル SK19「聖なる炎」承認演出 V2 の試験実装 `MMSK19V2`**：飛行2枚＋胸中心の放射4枚・既存の SK19 の時間枠のまま（当たり＝炎の外縁が相手の中心に届く時刻に1回）・`?sk19time=v2`＝試写と同じ実時間（QA の比較用）・`?sk19=v1`＝前回の演出。main 未統合・未公開・iPhone実機再検収待ち。§3「SK19 承認演出 V2」 |
 | js/qa/trial.js | **QA 試遊モード `MMQA`（2026-10-15）**：URL に ?mmQaTrial=1 のときだけ、牧場・ベースキャンプに『QA：全モンスター・全技試遊 ON/OFF』。ON＝6体×10技（実戦 50＝ジオルの正式10技を含む・技アニメのプレビュー 10＝フルーネ・静止画だけ 0。2026-10-15）・通常のセーブのキー（mr4…）への書き込みを止める・OFF／再読み込みで元どおり。§3「新しいパラメーター比較・QA 試遊モード」 |
 | js/battle/flurene-moves-data.js、assets/battle/flurene_moves_1015/、tools/flurene1015/、assets/monsters/walk_25d/flurene/、tools/walk25d/derive_flurene.py | **フルーネの技アニメ 77枚（本体 42＋効果 35）と 2.5D 歩行 16コマ（2026-10-15）**：未解禁＝本編には出ない。技アニメは QA 試遊モードのプレビュー（MM25D.preview('flurene', No)＝SK の番号なし・判定なし）だけ、歩行は ch1a.js の monsterSprites.flurene.dirs（QA の「歩行を確認」で再生）。§3「フルーネの技アニメ・歩行（2026-10-15）」 |
@@ -1015,6 +1015,18 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
   - テスト：C2-08（A 298・B 284・C 304）・実ブラウザ CP-B4
 - **2026-10-15 4回目の回答（夜の一括依頼の 01）**：到達率は**食事ありを基準**（食事なしは参考）・B 成功 2・失敗 18 を維持・寄り道 0% の C（A 比 +1.1pt）は許容・**食事あり・寄り道 25% の A 79.1／B 81.0／C 80.7% を設計基準として採用する方向**・旧 Chapter 2 のセーブの判定は了承。**「時間切れ → Chapter 3 へ進めない」規則は現状のまま**（恒久的な採否は別判断）＝救済案（案1 現状維持／案2 再挑戦1回／案3a onTimeUp 'tournament'／案3b C 昇格戦）を DESIGN.md §6.5 で比較だけ・実装していない。tools/ch2/sim.mjs に shortAtTimeUp（時間切れの個体の GOAL までの残り歩数＝中央値 7〜9）と CH2_LIMIT（比較用のターン上限・45T で 95〜97%）
 
+### バトル最終統合（2026-10-16。いまの正式＝ユーザー許可でバトルの範囲だけ PR → main 統合 → 公開。iPhone 実機の合格はユーザーの検収待ち）
+
+- 指示：00_Claudeへ送信_統合実装指示（Part01〜04）。新しい技の性能・体格の正式倍率（案A／B）・Chapter 2 の本編完成・未許諾の SE・容姿の変更は許可されていない＝入れていない
+- **SK08 スターダストレイ**＝ユーザー承認の専用の光線2枚（assets/battle/soramo_moves_1012/08_a01_fx・08_a02_fx＝A_01 extend・A_02 peak を 1024×256 に）。art25d の新しい置き方 `sprbeam`＝絵の発光点（x 215/2048・y 280/512）をそのコマ（08_04・08_05）の口先（MMTUNE.MOUTH）へ・縦横比のまま・A_02 の右端の平らな切り口は mask で溶かす。旧：ソラモビームの光線（05_03）の1.9倍の流用・?sk08=blue の CSS の試作（js/battle/sk08-blue-1016.js）＝やめた・削除
+- **SK31 ずつき**＝専用の本体2枚（nobiton_moves_1012/31_b01・31_b02。同じ切り出し＝足もと y 1140）。MOVES の cuts＝B01 溜め → B02 突進（move）→ B02 接触（contact・ヒットストップ 110・揺れ）→ B01 戻る。旧の本体 31_01〜04 はファイルだけ残す（使わない）
+- **フルーネ技10 ルートテンペスト**＝専用の根4＋命中3（flurene_moves_1015/f10_d01_fx〜d07_fx）。7区切り（MOVES の steps）・art25d の `root`（絵の根元＝下 7% を相手の足もとへ）・`hitc`（絵の中心を相手の被弾点へ・画面の端で切れない大きさ）。当たり＝D03 打撃と D05 開き。旧の共通演出 bc06／bc07 の流用はやめた
+- **フルーネ技09 ルートドレイン**＝補修版10コマ（assets/battle/flurene_rootdrain_v2_1016/rd2_01〜10＝01・02・03・04・05_prebeat・05・06_prebeat・06・07・08）。js/battle/rootdrain-1016.js（MMRD）を作り直し＝08 を正式の待機絵に合わせて全10枚同じ倍率・足もと（2560 の全幅の縮小はしない）・04〜08 の蔦の部分（派生の x ≥ 470）だけ横に伸縮して2つの接触点の中ほど（派生の 761, 210）を相手の被弾点へ・2回の脈動で相手が小さく震える・07 で回復の表示。共通演出を通るとき約2.9秒。**旧1536px・8コマ（flurene_rootdrain_1016）は失効＝削除**
+- **技カード3枚**（画像だけ）：gauru/06_fireball（SK 15）・nobiton/02_zutsuki（SK 31）・flurene/09_root_drain（技ID root_drain・旧 09_inochi_no_shizuku は削除）。move-cards.js の slotOf：フルーネ No.9 は QA で SK 58 が入っているときだけ 58
+- **常設バトル QA**：§2 の js/qa/battle-stage.js。**Chapter 2 試作**：?chapterBoard=roadfirst&rfData=ch2（ルートを省くと A）の上の帯に A／B／C の切り替え（.rf-c2sel・各 URL へ）
+- 素材の派生：`python3 -I tools/final1016/derive.py <Part01 の P01_ArtCards> <Part02 の RootDrain_v2_repaired>`（derive.json・各 README に原本と派生の sha256）
+- テスト：tests/qa-e2e-battle-final-1016.test.mjs（BF-B1〜B5）・BTB-4／5／11／12・CQ-03・FA-01・BT-07 を書き直し。MM_BUILD／version.json／MMTUNE.BUILD＝2026-10-16-final
+
 ### iPhone 実機8本の限定修正（2026-10-16。**ブランチ claude/claude-md-handoff-check-fcl9lb だけ＝main 未統合・未公開・全件 iPhone実機再検収待ち**）
 
 - 報告：docs/battle_fix_1016/REPORT.md（状態の表・原因・前後の画像）。技名・番号・性能・固有スキル・ルーレット・セーブ・BGM／SE の音源・fight() は変えていない
@@ -1529,7 +1541,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
   - **2026-10-16 iPhone 6件＋フルーネ09**：§3「iPhone 再試遊6件＋フルーネ09 ルートドレイン」・docs/ip6_fulune_1016/REPORT.md。体格案・青い光線・ルートドレインの素材・固有スキルはユーザーの判断待ち
   - **2026-10-16 SK19 承認演出 V2**：§3「SK19 承認演出 V2」・docs/sk19_v2_1016/REPORT.md。時間（いつもの長さ／試写と同じ実時間）と待機絵の違いはユーザーの判断待ち・iPhone実機再検収待ち
   - **2026-10-16 iPhone 8本の限定修正**：§3「iPhone 実機8本の限定修正」・docs/battle_fix_1016/REPORT.md。全件 iPhone実機再検収待ち・体格の候補はユーザーの承認待ち
-  - **2026-10-16 試遊の入口**：ブランチの版を iPhone で開く URL＝`https://raw.githack.com/shunyamita0804-source/mystic-monsters/claude/claude-md-handoff-check-fcl9lb/trial.html`（§2 の trial.html）
+  - **2026-10-16 試遊の入口**：（旧）ブランチの trial.html は main 統合のときに削除。いまの入口＝公開版の `?mmQaTrial=1`（開始画面の『QA を開く』→ バトル技ステージ）と `?chapterBoard=roadfirst&rfData=ch2`（A／B／C の切り替え）。§3「バトル最終統合」
   - **2026-10-15 夜（一括依頼）**：Chapter 2 の4回目の回答を反映（DESIGN.md §6.5 の救済案は比較だけ）・バトル技アニメ21件・体格サイズ1〜5（?mmSize=1）＝§3「バトル技アニメ 試遊修正21件」。同じブランチ・main 未統合
   - **2026-10-15 夕〜夜：Chapter 2 A／B／C の設計案と限定試作（論点 1〜5 反映・追補2・第3版＝食事ありのモデルの到達率・B 成功 2・失敗 18（284 地点）・旧セーブの判定・2.5D の海の世界のプレビュー）をブランチ claude/claude-md-handoff-check-fcl9lb に置いた（main 未改変・未公開・道路グラフと方向は基本了承・見た目と本実装は未承認）。設計の承認・素材制作（ChatGPT → 画像 AI）のあとに本実装へ（§3「Chapter 2 A／B／C 設計案」）。iPhone 実機のフルーネ・ジオルの QA 試遊の OK も引き続き待ち**
 

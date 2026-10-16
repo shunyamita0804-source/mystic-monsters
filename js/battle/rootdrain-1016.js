@@ -51,7 +51,7 @@
     const ext = Math.max(0.55, Math.min(2.4, Math.abs(tx - sx(XB)) / ((CONTACT[0] - XB) * sc)));
     const imgs = [];
     const mk = (u, i) => {
-      const box = document.createElement('div'); box.className = 'p25f mmrd'; box.dataset.cut = 'RD2_' + ORDER[i];
+      const box = document.createElement('div'); box.className = 'p25f mmrd'; box.dataset.cut = 'RD2_' + (i + 1); box.dataset.order = ORDER[i];
       box.style.cssText = `width:${W}px;height:${H}px;overflow:visible;transform-origin:50% 50%;z-index:7`;
       const slice = (x0, x1, e) => {
         const d = document.createElement('div');
