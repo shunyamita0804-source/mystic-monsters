@@ -124,7 +124,7 @@ const MOUTHCHK = ({ k, s }) => new Promise((res) => {
 });
 
 test('BTB-5：光線の根元・火球の生まれる所＝そのコマの口先（左右・体格プレビュー）', { skip: SKIP, timeout: 600000 }, async () => {
-  const cases = [['', 0, 0, 0, 5, 1], ['', 0, 0, 1, 5, 1], ['', 0, 0, 0, 8, 2], ['', 0, 0, 1, 8, 2], ['', 1, 0, 0, 15, 1], ['', 1, 1, 1, 15, 1], ['', 1, 0, 0, 16, 2], ['', 1, 1, 1, 16, 2], ['&mmSize=1', 0, 0, 0, 8, 2], ['&mmSize=1', 1, 0, 0, 16, 2]];
+  const cases = [['', 0, 0, 0, 5, 1], ['', 0, 0, 1, 5, 1], ['', 0, 0, 0, 8, 2], ['', 0, 0, 1, 8, 2], ['', 1, 0, 0, 15, 1], ['', 1, 1, 1, 15, 1], ['', 1, 0, 0, 16, 3], ['', 1, 1, 1, 16, 3], ['&mmSize=1', 0, 0, 0, 8, 2], ['&mmSize=1', 1, 0, 0, 16, 3]];   // 2026-10-16（iPhone 6件 A4）：フレアレイは溜めの光（16_01 の口先）＋光線2本
   for (const [q, me, foe, s, k, n] of cases) {
     const p = await battle(q, me, foe);
     const r = await p.page.evaluate(MOUTHCHK, { k, s });
@@ -135,7 +135,7 @@ test('BTB-5：光線の根元・火球の生まれる所＝そのコマの口先
       assert.ok(d < 2, `${tag} ${x.kind} ${x.mf}：根元 ${x.root.map((v) => v.toFixed(1))} と口先 ${x.mouth.map((v) => v.toFixed(1))} の差 ${d.toFixed(2)}px`);
       assert.equal(x.flip, s === 1, `${tag}：体の向き`);
     }
-    if (n === 2) assert.notEqual(r[0].mf, r[1].mf, `${tag}：区切りごとに別のコマの口先`);
+    if (n >= 2) assert.ok(new Set(r.map((x) => x.mf)).size >= 2, `${tag}：区切りごとに別のコマの口先`);
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
     await p.ctx.close(); OPEN.splice(OPEN.indexOf(p), 1);
   }
@@ -259,5 +259,22 @@ test('BTB-10：SK19 V2 の実戦＝聖なる炎のあとの能力アップの印
   const r = await pg.evaluate(() => { const L = MMSK19V2.log().filter((x) => x.s === 0); return { efb: window.__efb.filter((e) => e.p === 'f0' && L.some((x) => e.t >= x.t0 && e.t <= x.t0 + x.D + 1500)).length, all: window.__efb.length, eff: MMSK19V2.effLog().length }; });
   assert.equal(r.efb, 0, `聖なる炎の能力アップの印（.efb）は出ない（全体 ${r.all}）`);
   assert.ok(r.eff >= 1, `能力アップの処理は行われた（印だけ消した：${r.eff}）`);
+  assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+});
+
+// 2026-10-16（iPhone 6件 A2・A4）
+test('BTB-11：フレアレイの溜めの光は嘴の先（16_01 の口先）・スターダストレイの青い光線の試作（?sk08=blue）は口先から相手へ', { skip: SKIP, timeout: 300000 }, async () => {
+  let p = await battle('', 1, 0), pg = p.page;
+  const a = await pg.evaluate(() => new Promise((ok) => { anim(16, 0); const seen = []; const iv = setInterval(() => { document.querySelectorAll('#bt .p25c[data-mf="16_01.webp"]').forEach((e) => { if (+getComputedStyle(e).opacity > 0.3) seen.push({ mx: +e.dataset.mx, my: +e.dataset.my, cut: e.dataset.cut }); }); }, 40); setTimeout(() => { clearInterval(iv); ok(seen); }, 2600); }));
+  assert.ok(a.length >= 2, `溜めの光が嘴の先に出る（${a.length}）`);
+  assert.ok(a.every((e) => e.cut === 'G16_1_fx'), '溜めの光＝素材の 16_01_fx を切り出したもの');
+  assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+  await p.ctx.close(); OPEN.length = 0;
+  p = await battle('&sk08=blue', 0, 1); pg = p.page;
+  const b = await pg.evaluate(() => new Promise((ok) => { anim(8, 0); const seen = {}; const iv = setInterval(() => { document.querySelectorAll('#bt .sk08b').forEach((e) => { if (+getComputedStyle(e).opacity > 0.3) { const k = e.dataset.cut || e.className; (seen[k] = seen[k] || []).push({ mx: e.dataset.mx != null ? +e.dataset.mx : null, mf: e.dataset.mf || null }); } }); }, 40); setTimeout(() => { clearInterval(iv); ok({ seen, old: !!document.querySelector('#bt img[src*="05_03"]') }); }, 3200); }));
+  assert.ok(b.seen.SDR_BLUE_charge && b.seen.SDR_BLUE_charge.length, '口先の溜め');
+  assert.ok(b.seen.SDR_BLUE_beam && b.seen.SDR_BLUE_beam.length >= 3, '青い光線');
+  assert.ok(new Set(b.seen.SDR_BLUE_beam.map((e) => e.mf)).size >= 2, '光線は区切りごとのコマ（08_04・08_05）の口先から');
+  assert.ok(b.seen.SDR_BLUE_after, '余韻（光線が細くなって消える）');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });

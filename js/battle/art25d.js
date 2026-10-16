@@ -384,9 +384,9 @@
     // 光線は区切りごとにその区切りのコマの口先から出し直す（口先の分かるコマだけ。2つ目からは伸びきった長さで続ける＝途切れない）
     const fxList = [];
     (d.fx || []).forEach((c) => {
-      if ((c.at === 'beam' || c.at === 'stretch') && c.t[1] > c.t[0]) {
+      if ((c.at === 'beam' || c.at === 'stretch' || c.at === 'bluebeam') && c.t[1] > c.t[0]) {
         const ok = []; for (let i = c.t[0]; i <= c.t[1]; i++) { const q = at(i); ok.push(!!(q && mouthPt(q))); }
-        if (ok.every(Boolean)) { for (let i = c.t[0]; i <= c.t[1]; i++) fxList.push(Object.assign({}, c, { t: [i, i], seg: i - c.t[0] })); return; }
+        if (ok.every(Boolean)) { for (let i = c.t[0]; i <= c.t[1]; i++) fxList.push(Object.assign({}, c, { t: [i, i], seg: i - c.t[0], segLast: i === c.t[1] })); return; }
       }
       fxList.push(c);
     });
@@ -422,6 +422,23 @@
         const A0 = pose(st0), A1 = pose(st1);
         box.style.transformOrigin = '0 50%'; box.dataset.mx = Math.round(st0.x); box.dataset.my = Math.round(st0.y); if (m0) box.dataset.mf = qs.c.f;
         box.animate(kfWin(w0, w1, A0.b0 + ` scale(${c.seg ? A0.len / w : 0.12},${th})`, A1.b0 + ` scale(${A1.len / w},${th})`, false, last), { duration: D, fill: 'both' }).onfinish = () => box.remove();
+        return;
+      }
+      if (c.at === 'mouth') {   // 2026-10-16（iPhone 6件 A4）：体と同じ画面に描かれた溜めの光を切り出して、その区切りのコマの口先で育てる（動かない）
+        const q = at(c.t[0]), mp = q && mouthPt(q), mp1 = q && mouthPt(q, true); if (!mp) return;
+        const fb = c.fb || [0, 0, c.pw, c.ph], Sc = (c.ref ? (lay.find((z) => z.c.src === c.ref) || lay[0]).S : S0) * (c.ws || 1), g2 = c.grow || [0.5, 1];
+        const { box, w, h } = crop(c, fb, Sc); box.style.transformOrigin = '50% 50%';
+        box.dataset.mx = Math.round(mp.x); box.dataset.my = Math.round(mp.y); box.dataset.mf = q.c.f;
+        box.animate(kfWin(w0, w1, `translate(${mp.x - w / 2}px,${mp.y - h / 2}px) scaleX(${f}) scale(${g2[0]})`, `translate(${mp1.x - w / 2}px,${mp1.y - h / 2}px) scaleX(${f}) scale(${g2[1]})`, false, last), { duration: D, fill: 'both' }).onfinish = () => box.remove();
+        return;
+      }
+      if ((c.at === 'bluecharge' || c.at === 'bluebeam') && root.MMSK08B) {   // 2026-10-16（iPhone 6件 A2）：スターダストレイの青い専用光線の試作（js/battle/sk08-blue-1016.js）
+        const q = at(c.t[0]), m0 = q && mouthPt(q), m1 = q && (mouthPt(q, true) || m0); if (!m0) return;
+        const els = c.at === 'bluecharge'
+          ? root.MMSK08B.charge(v, { m: m0, R: L.idleH * 0.24, D, w0, w1 })
+          : root.MMSK08B.beam(v, { m0, m1, t: { x: T.x + f * T.w * 0.12, y: m0.y * 0.4 + T.cy * 0.6 }, H: Math.max(14, L.idleH * 0.09) * (c.thick || 1), D, w0, w1, seg: c.seg || 0, f, after: c.segLast && P.win[c.t[1] + 1] ? P.win[c.t[1] + 1] : null });
+        if (m0 && els[0]) els.forEach((e) => { if (!e.dataset.mf) e.dataset.mf = q.c.f; });
+        els.forEach((e) => imgs.push(e));
         return;
       }
       const im = document.createElement('img'); im.src = c.u || base + c.f; im.dataset.cut = c.src; put(im, 8);

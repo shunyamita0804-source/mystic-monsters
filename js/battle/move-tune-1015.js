@@ -56,7 +56,14 @@
     'gauru_moves_1012/15_02.webp': [567, 207],    // ファイアボール：嘴を開いて吐く
     'gauru_moves_1012/16_02.webp': [510, 221],    // フレアレイ：発射
     'gauru_moves_1012/16_03.webp': [500, 215],    // フレアレイ：撃ち続ける姿
+    // 2026-10-16（iPhone 6件 A4）：フレアレイの溜めの姿（嘴を閉じた先）＝溜めの光をここへ（素材の溜めの光は肩の位置に描かれている）
+    'gauru_moves_1012/16_01.webp': [532, 226],
+    // 2026-10-16（iPhone 6件 A2）：スターダストレイの溜めの姿（口の中央）＝青い光線の試作の溜め
+    'soramo_moves_1012/08_03.webp': [265, 200],
   });
+  const qs = (() => { try { return new URLSearchParams(root.location ? root.location.search : ''); } catch (e) { return null; } })();
+  /** 2026-10-16（iPhone 6件 A2）：スターダストレイの青い専用光線の試作（js/battle/sk08-blue-1016.js）＝?sk08=blue のときだけ。ユーザー承認前は従来の光線 */
+  const SK08_BLUE = !!(qs && qs.get('sk08') === 'blue');
   const mouthOf = (dir, f) => { const m = /([^/]+)\/$/.exec(dir || ''); return MOUTH[(m ? m[1] : 'soramo_moves_1012') + '/' + f] || null; };
 
   const C = './assets/battle/common/';
@@ -67,12 +74,16 @@
     'soramo_moves_1012/05_01.webp': { id: '01', stay: true, fxSet: { SORAMO_BEAM_3: { t: [1, 1] } } },
     // 02 スターダストレイ：技カード・資料（assets/moves/solamo/09_stardust_ray）は「口から極太の光線」。コマに光線が無い＝同じソラモの光線（05_03）を太く・長く
     //    【暫定】専用の光線（青白い星の光）は発注（報告書）
-    'soramo_moves_1012/08_01.webp': { id: '02', stay: true, addFx: [{ src: 'SDR_BEAM', f: '05_03.webp', at: 'beam', t: [3, 4], pw: 567, ph: 209, thick: 1.9 }] },
+    //    2026-10-16（iPhone 6件 A2）：?sk08=blue＝青い専用光線の試作（溜め＝口先の青い輪と星・光線＝深い青／水色／白の3層と流れる星・余韻＝星屑）
+    'soramo_moves_1012/08_01.webp': SK08_BLUE
+      ? { id: '02', stay: true, addFx: [{ src: 'SDR_BLUE_C', at: 'bluecharge', t: [2, 2], pw: 1, ph: 1 }, { src: 'SDR_BLUE', at: 'bluebeam', t: [3, 4], pw: 1, ph: 1, thick: 1.9 }] }
+      : { id: '02', stay: true, addFx: [{ src: 'SDR_BEAM', f: '05_03.webp', at: 'beam', t: [3, 4], pw: 567, ph: 209, thick: 1.9 }] },
     // 03 スターフォール：四角い切れ目は素材の修正（tools/battlefix1015/apply.py：絵の端で切れている光を端へ向けて透明に）
     // 04 ファイアボール：口元の火球を相手まで飛ばす（体当たりにしない）→ 着弾の爆発
     'gauru_moves_1012/15_01.webp': { id: '04', stay: true, detach: [{ cut: 'G15_2', at: 'launch', fb: [118, 134, 467, 320], t: [1, 1], fromMouth: true, grow: [0.3, 1.0] }] },   // 2026-10-16 iPhone 04：嘴の口先で小さく生まれて相手の胸へ
     // 05 フレアレイ：口から相手まで伸びる光線
-    'gauru_moves_1012/16_01.webp': { id: '05', stay: true, detach: [{ cut: 'G16_2', at: 'stretch', fb: [119, 175, 497, 233], t: [1, 2] }] },   // 2026-10-16 iPhone 05：根元＝区切りごとのコマの嘴の口先（MOUTH）
+    'gauru_moves_1012/16_01.webp': { id: '05', stay: true, detach: [{ cut: 'G16_2', at: 'stretch', fb: [119, 175, 497, 233], t: [1, 2] },   // 2026-10-16 iPhone 05：根元＝区切りごとのコマの嘴の口先（MOUTH）
+      { cut: 'G16_1', at: 'mouth', fb: [205, 98, 385, 288], t: [0, 0], grow: [0.45, 0.9] }] },   // 2026-10-16（iPhone 6件 A4）：溜めの光（素材では肩の位置）を嘴の先へ＝溜め → 発射が同じ点
     // 06 フェザーストーム：最後の渦巻き（18_05_fx）を出さない。羽根の嵐（18_04_fx）を余韻まで
     'gauru_moves_1012/18_01.webp': { id: '06', drop: ['G18_5_fx'], fxSet: { G18_4_fx: { t: [3, 4] } } },
     // 07 聖なる炎：相手へ動かない。その場で少し上昇 → 中心から赤・青・白の放射が広がる → 相手へ届いて命中 → 着地
@@ -231,5 +242,7 @@
   }
   if (root.document) { if (root.document.readyState !== 'loading') setTimeout(watchEmoji, 0); else root.addEventListener('DOMContentLoaded', () => setTimeout(watchEmoji, 0)); }
 
-  root.MMTUNE = Object.freeze({ SIZE, SIZE_K, SIZE_NAME, FINE, ANCHOR, MOVES, MOUTH, mouthOf, EMOJI_OFF, emojiLog: () => emojiLog.slice(), sizePreview, sizeOf, sizeK, patch, keyOf, onAnimStart, sfxLog: () => sfxLog.slice(), wrapSe });
+  // 2026-10-16：読み込んだ技アニメの JS の版（iPhone の QA 画面に出す＝配信のキャッシュで古い JS が混ざったかを見分ける）
+  const BUILD = '2026-10-16-ip6';
+  root.MMTUNE = Object.freeze({ BUILD, SIZE, SIZE_K, SIZE_NAME, FINE, ANCHOR, MOVES, MOUTH, mouthOf, EMOJI_OFF, emojiLog: () => emojiLog.slice(), sizePreview, sizeOf, sizeK, patch, keyOf, onAnimStart, sfxLog: () => sfxLog.slice(), wrapSe });
 })(typeof window !== 'undefined' ? window : globalThis);
