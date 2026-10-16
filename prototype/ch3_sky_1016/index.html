@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>天空素材 QA</title>
+<style>
+:root{--bg:#0d1830;--fg:#eef3ff;--mut:#a6b4cf;--card:#15244a;--line:rgba(255,255,255,.16);--gold:#f3c55a}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f3f0e7;--fg:#1c2433;--mut:#5a6377;--card:#fff;--line:rgba(0,0,0,.12)}}
+:root[data-theme="dark"]{--bg:#0d1830;--fg:#eef3ff;--mut:#a6b4cf;--card:#15244a;--line:rgba(255,255,255,.16)}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.55 "Noto Sans JP",system-ui,sans-serif}
+main{max-width:720px;margin:0 auto;padding:12px 16px 48px}
+h1{font-size:17px;margin:4px 0}h2{font-size:15px;margin:22px 0 6px}
+.sub,.note{color:var(--mut);font-size:12px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.tabs button{min-height:36px;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--fg);font:inherit}
+.tabs button.on{background:var(--gold);color:#13233a;border-color:var(--gold)}
+/* ジオラマ（Chapter 3 のボードではない＝大きさ・色・遠近の確かめ） */
+.sky{position:relative;width:100%;aspect-ratio:9/14;border-radius:12px;overflow:hidden;background:linear-gradient(#5aa8e6 0%,#9fd3f4 48%,#e3f2fb 78%,#f6efe0 100%);touch-action:pan-y}
+.sky img{position:absolute;transform:translate(-50%,-100%);pointer-events:none;user-select:none}
+.sky .lay{position:absolute;inset:0;will-change:transform}
+.sky .cap{position:absolute;left:8px;bottom:6px;font-size:11px;color:#123;background:rgba(255,255,255,.6);padding:1px 6px;border-radius:6px}
+@keyframes drift{from{transform:translateX(-3%)}to{transform:translateX(3%)}}
+.sky .l1{animation:drift 18s ease-in-out infinite alternate}.sky .l2{animation:drift 12s ease-in-out infinite alternate-reverse}.sky .l3{animation:drift 8s ease-in-out infinite alternate}
+@media (prefers-reduced-motion:reduce){.sky .lay{animation:none}}
+/* 海 → 空（参考・Chapter 3 の正式演出ではない） */
+.sea{position:relative;width:100%;aspect-ratio:9/16;border-radius:12px;overflow:hidden;background:linear-gradient(#4e9de0 0%,#a7d9f6 40%,#d9f0fb 52%,#2d77b8 54%,#155a96 100%)}
+.sea .water{position:absolute;left:0;right:0;top:53%;bottom:0;background:url(../../assets/fields/ch2/art_1016/open_sea_water.webp) center/320px repeat;opacity:.95}
+.sea img{position:absolute;transform:translate(-50%,-100%)}
+/* 一覧 */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.it{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px;font-size:11px;line-height:1.4}
+.it .th{aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.it .th img{max-width:92%;max-height:92%}
+.bg-check .th{background:repeating-conic-gradient(#c8c8c8 0 25%,#fff 0 50%) 0 0/14px 14px}.bg-dark .th{background:#0b1430}.bg-white .th{background:#fff}.bg-sky .th{background:linear-gradient(#5aa8e6,#e3f2fb)}
+.it b{display:block;font-size:11px;word-break:break-all}
+.warn{color:#e0784e}
+/* 縮小のギザギザ */
+.mini{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;background:linear-gradient(#5aa8e6,#e3f2fb);padding:10px;border-radius:10px}
+.mini figure{margin:0;text-align:center;font-size:10px;color:#123;max-width:100%}.mini img{max-width:100%;height:auto}
+/* UI */
+.ui{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;border-radius:12px;background:linear-gradient(#3b6fb4,#9fd3f4)}
+.ttl{text-align:center;color:#fff;font:600 12px/1.3 "Noto Sans JP",sans-serif;letter-spacing:.12em;text-shadow:0 1px 3px rgba(0,30,70,.8)}.ttl b{display:block;font:700 24px/1.3 "Shippori Mincho",serif;letter-spacing:.06em}.np{position:relative;width:min(100%,420px);margin-top:-18px}.np img{width:100%;display:block}.np span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 clamp(15px,4.6vw,22px)/1 "Shippori Mincho",serif;color:#fff;text-shadow:0 1px 3px rgba(0,30,70,.8)}
+.md{position:relative;width:132px}.md img{width:100%;display:block}.md span{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font:700 13px/1.1 "Noto Sans JP",sans-serif;text-shadow:0 1px 3px rgba(0,30,70,.85)}.md span b{font-size:30px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pair .it .th{background:linear-gradient(#5aa8e6,#e3f2fb)}
+table{border-collapse:collapse;width:100%;font-size:11px}td,th{border-bottom:1px solid var(--line);padding:4px;text-align:left;vertical-align:top}
+</style>
+</head>
+<body>
+<main>
+<h1>Chapter 3「天空の浮島」先行素材 18点 QA</h1>
+<p class="sub">ボード・道・マス・START／GOAL は未設計（ここでは決めない）。ジオラマは大きさ・色・遠近の確かめだけ。表示は派生 WebP（assets/fields/ch3/sky_1016/）。</p>
+
+<h2>1. ジオラマ（2.5D の重なり・ゆっくり流れる）</h2>
+<div class="sky" id="sky"></div>
+<p class="note">奥（小さく薄い）→ 中 → 手前（大きい・雲の霞）。道路・橋の床にあたる素材は今回の18点に無い（欄干・橋脚・崖は飾り）。</p>
+
+<h2>2. 海 → 空のつながり（参考・Chapter 3 の正式演出ではない）</h2>
+<div class="sea" id="sea"><div class="water"></div></div>
+<p class="note">下＝Chapter 2 の外海（open_sea_water）。水平線の上に雲と浮島。色の階調のつながりを見る参考。</p>
+
+<h2>3. Chapter 2 の似た素材と並べる（色・線の太さ・明るさ）</h2>
+<div class="pair" id="pair"></div>
+
+<h2>4. UI 2点（文字は HTML。画像に文字は無い）</h2>
+<div class="ui"><div class="md"><img src="../../assets/fields/ch3/sky_1016/C3_UI_sky_medallion.webp" alt=""></div><div class="ttl">CHAPTER 3<b>天空の浮島</b></div><div class="np"><img src="../../assets/fields/ch3/sky_1016/C3_UI_sky_nameplate.webp" alt=""></div></div>
+<p class="note">メダリオン＝中央に結晶の紋章（文字を重ねる場所ではない＝Chapter 2 の海のメダリオンと同じ使い方）。名札＝細い線の飾り（Chapter 2 の sea_zone_nameplate と同じく題字の下に敷く。文字を入れる板ではない）。名前「天空の浮島」は既存のデータ（js/phase7/progression.js の CHAPTER_DEFS）。HUD・能力6色・マス記号は置き換えていない。</p>
+
+<h2>5. 縮小したときの縁（ギザギザ・切れ）</h2>
+<div class="tabs" id="scale"><button class="on" data-k="0.25">25%</button><button data-k="0.125">12.5%</button><button data-k="0.5">50%</button></div>
+<div class="mini" id="mini"></div>
+
+<h2>6. 18点の一覧（検査結果）</h2>
+<div class="tabs" id="bgs"><button class="on" data-b="bg-check">市松</button><button data-b="bg-dark">濃紺</button><button data-b="bg-white">白</button><button data-b="bg-sky">空</button></div>
+<div class="grid bg-check" id="grid"></div>
+</main>
+<script>
+(function () {
+  'use strict';
+  const B = '../../assets/fields/ch3/sky_1016/', C2 = '../../assets/fields/ch2/art_1016/';
+  const u = (n) => B + n + '.webp';
+  // ジオラマの配置（x・y＝足もとの位置 %・w＝幅 %・l＝層 1 奥〜3 手前・o＝不透明度）。Chapter 3 の配置案ではない
+  const DIO = [
+    ['C3_ENV_cloud_bank_mid', 50, 40, 120, 1, .75], ['C3_ENV_floating_island_small_rock', 18, 30, 22, 1, .8], ['C3_ENV_floating_island_small_green', 82, 27, 24, 1, .85],
+    ['C3_FX_sky_waterfall_column', 66, 66, 16, 2, .9], ['C3_ENV_floating_island_medium', 68, 52, 52, 2, 1], ['C3_ARCH_sky_pavilion', 66, 38, 26, 2, 1],
+    ['C3_ENV_sky_flowering_tree', 84, 40, 14, 2, 1], ['C3_ENV_crystal_cluster_blue', 52, 41, 10, 2, 1],
+    ['C3_ENV_island_cliff_edge_piece', 30, 84, 74, 3, 1], ['C3_ARCH_ruined_colonnade', 22, 72, 36, 3, 1], ['C3_ARCH_white_column_single', 44, 74, 9, 3, 1],
+    ['C3_ARCH_white_bridge_arch_pier', 48, 98, 20, 3, 1], ['C3_ARCH_white_railing_segment', 40, 82, 34, 3, 1], ['C3_ENV_white_flower_patch', 12, 80, 12, 3, 1],
+    ['C3_ENV_cloud_puff_small', 88, 92, 30, 3, .95], ['C3_ENV_cloud_wisp_front', 40, 104, 110, 3, .85],
+  ];
+  const sky = document.getElementById('sky');
+  const lays = [1, 2, 3].map((k) => { const d = document.createElement('div'); d.className = 'lay l' + k; sky.appendChild(d); return d; });
+  for (const [n, x, y, w, l, o] of DIO) { const im = new Image(); im.src = u(n); im.alt = ''; im.decoding = 'async'; Object.assign(im.style, { left: x + '%', top: y + '%', width: w + '%', opacity: o }); lays[l - 1].appendChild(im); }
+  sky.insertAdjacentHTML('beforeend', '<span class="cap">試作の重なり（配置案ではない）</span>');
+  const sea = document.getElementById('sea');
+  for (const [n, x, y, w, o] of [['C3_ENV_cloud_bank_mid', 50, 56, 140, .9], ['C3_ENV_floating_island_medium', 62, 40, 44, 1], ['C3_ENV_floating_island_small_green', 22, 30, 20, .9], ['C3_FX_sky_waterfall_column', 60, 58, 12, .85], ['C3_ENV_cloud_wisp_front', 40, 48, 100, .7]]) { const im = new Image(); im.src = u(n); Object.assign(im.style, { left: x + '%', top: y + '%', width: w + '%', opacity: o }); sea.appendChild(im); }
+  const PAIR = [['C3_ARCH_white_bridge_arch_pier', 'L02_white_bridge_arch_pier'], ['C3_ARCH_white_railing_segment', 'sea_bridge_railing_left'], ['C3_ENV_white_flower_patch', 'E02_white_coastal_flower_patch'], ['C3_ENV_crystal_cluster_blue', 'undersea_blue_crystal'], ['C3_UI_sky_medallion', 'chapter2_sea_medallion'], ['C3_UI_sky_nameplate', 'sea_zone_nameplate']];
+  const pair = document.getElementById('pair');
+  for (const [a, b] of PAIR) pair.insertAdjacentHTML('beforeend', `<div class="it"><div class="th"><img src="${u(a)}" alt="" loading="lazy"></div><b>Ch3 ${a}</b></div><div class="it"><div class="th"><img src="${C2 + b}.webp" alt="" loading="lazy"></div><b>Ch2 ${b}</b></div>`);
+  const mini = document.getElementById('mini');
+  function drawMini(k) { mini.innerHTML = ''; fetchJ.then((j) => { for (const it of j.items) mini.insertAdjacentHTML('beforeend', `<figure><img src="${B + it.derived}" alt="" style="width:${Math.round(it.derived_size[0] * k / (window.devicePixelRatio || 1))}px"><figcaption>${it.file.replace(/^C3_|\.png$/g, '').slice(0, 18)}</figcaption></figure>`); }); }
+  const fetchJ = fetch(B + 'derive.json').then((r) => r.json());
+  document.querySelectorAll('#scale button').forEach((b) => b.addEventListener('click', () => { document.querySelectorAll('#scale button').forEach((x) => x.classList.toggle('on', x === b)); drawMini(Number(b.dataset.k)); }));
+  drawMini(0.25);
+  const grid = document.getElementById('grid');
+  fetchJ.then((j) => { for (const it of j.items) { const p = it.pad, low = Object.entries(p).filter(([, v]) => v < 0.08).map(([k]) => k);
+    grid.insertAdjacentHTML('beforeend', `<div class="it"><div class="th"><img src="${B + it.derived}" alt="" loading="lazy"></div><b>${it.file}</b>${it.size.join('×')}・${it.mode}・${(it.bytes / 1024).toFixed(0)}KB → ${(it.derived_bytes / 1024).toFixed(0)}KB<br>余白 左${(p.l * 100).toFixed(1)}% 上${(p.t * 100).toFixed(1)}% 右${(p.r * 100).toFixed(1)}% 下${(p.b * 100).toFixed(1)}%${low.length ? ` <span class="warn">（8% 未満：${low.join('・')}）</span>` : ''}${it.padded ? `<br><span class="warn">派生で透明の余白 ${it.padded.join('/')}px</span>` : ''}<br>半透明 ${(it.semi * 100).toFixed(1)}%${it.edge_touch ? '<br><span class="warn">外周に画素</span>' : ''}</div>`); } });
+  document.querySelectorAll('#bgs button').forEach((b) => b.addEventListener('click', () => { document.querySelectorAll('#bgs button').forEach((x) => x.classList.toggle('on', x === b)); grid.className = 'grid ' + b.dataset.b; }));
+})();
+</script>
+</body>
+</html>
