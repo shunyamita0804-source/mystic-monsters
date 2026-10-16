@@ -1025,6 +1025,17 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - **体格（項目08）**：動画はプレビュー ON と判断（高さ比 1.22 ≒ ?mmSize=1 の 1.25。通常は 1.02）。候補A（ジオル 106%／ソラモ 74%）・候補B（112%／68%）は提案だけ＝未実装
 - テスト：BT-07・BTB-5〜7（tests/battle-tune-1015・qa-e2e-battle-tune-1015）
 
+### iPhone 再試遊6件＋フルーネ09 ルートドレイン（2026-10-16。**ブランチ claude/claude-md-handoff-check-fcl9lb だけ＝main 未統合・未公開・iPhone実機再検収待ち**）
+
+- 依頼：ZIP Mismon_Claude_Combined_iPhone6_Fulune_20261016。報告：docs/ip6_fulune_1016/REPORT.md
+- 録画4本（12:06〜12:08）は c1035f7 より前の版の動き＝配信（raw.githack）のキャッシュで古い JS が混ざった可能性。QA 画面の見出しに「版：画面／技アニメ」を出す（MMTUNE.BUILD と MM_BUILD＝2026-10-16-ip6）
+- SK16 の溜めの光（16_01_fx の光の玉）を嘴の先へ（art25d の at:'mouth'・口先の表 16_01）。SK08 の青い専用光線の試作＝js/battle/sk08-blue-1016.js（CSS だけ・?sk08=blue のときだけ）
+- 体格サイズ 比較案 A／B：?mmSize=A｜B（MMTUNE.SIZE_PLAN・VIS_H＝見えている体の高さで割る）・?mmSizeAs＝比較用の読み替え。正式倍率ではない
+- WIN の帯＝青・LOSE の帯＝赤（arena.js の CSS だけ）
+- フルーネ技09 ルートドレイン：js/battle/rootdrain-1016.js（MMRD・8コマ・08 を正式待機絵に合わせる）・rules.js（QA 試遊のときだけ SK 58・与えたダメージの 50% を四捨五入で吸収・最大ライフまで・MISS／0 は吸収なし）。monsters.js：01 威力60・02 威力65・09 ルートドレイン 110／90／10%／吸収50%・10 威力120（ユーザー決定の項目だけ）。固有スキル「生命の芽吹き」は変えていない（資料との食い違いはユーザー判断待ち）
+- SK19 V2：聖なる炎のあとの能力アップの印（青い球＋▲）を出さない（ユーザー決定）
+- テスト：BTB-5・BTB-10〜12・D27-22・FL-01／02・CQ-03
+
 ### SK19 承認演出 V2（2026-10-16。**ブランチ claude/claude-md-handoff-check-fcl9lb だけ＝main 未統合・未公開・iPhone実機再検収待ち**）
 
 - 依頼：ZIP Mismon_Claude_SK19_Only_TestHandoff_20261016（SK19 だけ・ほかの技・SE・計算・体格・セーブは変えない）。報告：docs/sk19_v2_1016/REPORT.md
@@ -1515,6 +1526,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
   - ユーザーの確認待ち：iPhone 実機でのフルーネ（歩行・技アニメ）とジオル10技の QA 試遊。**ユーザーが実機で「OK」と言うまで Chapter 2 の設計に着手しない**
   - 素材待ち・残課題：フルーネの技 09（効果 2/4）・10（効果 0）の FX／歩行の白い縁取りと back_05・back_03・front_01 の見切れの可能性（原本のまま）／一部の効果（05 FX01・06 FX01／FX04・08 FX02／FX03）が不透明な白い面／大技で相手の固有スキルのカメラが技アニメの終わりに重なる（全種族共通・未変更）
   - 作業報告は ZIP でユーザーへ渡す（直近：Mismon_Report_20261015_Flurene_Jiol.zip）
+  - **2026-10-16 iPhone 6件＋フルーネ09**：§3「iPhone 再試遊6件＋フルーネ09 ルートドレイン」・docs/ip6_fulune_1016/REPORT.md。体格案・青い光線・ルートドレインの素材・固有スキルはユーザーの判断待ち
   - **2026-10-16 SK19 承認演出 V2**：§3「SK19 承認演出 V2」・docs/sk19_v2_1016/REPORT.md。時間（いつもの長さ／試写と同じ実時間）と待機絵の違いはユーザーの判断待ち・iPhone実機再検収待ち
   - **2026-10-16 iPhone 8本の限定修正**：§3「iPhone 実機8本の限定修正」・docs/battle_fix_1016/REPORT.md。全件 iPhone実機再検収待ち・体格の候補はユーザーの承認待ち
   - **2026-10-16 試遊の入口**：ブランチの版を iPhone で開く URL＝`https://raw.githack.com/shunyamita0804-source/mystic-monsters/claude/claude-md-handoff-check-fcl9lb/trial.html`（§2 の trial.html）
