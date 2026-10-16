@@ -57,6 +57,8 @@
 - **B**：https://raw.githack.com/shunyamita0804-source/mystic-monsters/claude/ch2-art-1016/index.html?ch2trial=B
 - **C**：https://raw.githack.com/shunyamita0804-source/mystic-monsters/claude/ch2-art-1016/index.html?ch2trial=C
 - 試作（従来の URL・維持）：…/index.html?chapterBoard=roadfirst&rfData=ch2&ch2route=A|B|C
+- raw.githack は最初に「One more step」の確認画面を出す＝**「Open the page」を押す**とゲームが開く（配信元の仕様。ゲームの不具合ではない）。
+- 配信の確認（このブランチ 150d44a・Chromium・390×844・2026-10-16）：A／B／C とも確認画面のあと約10秒で本編の盤（地点 298／284／304）・版の札「2026-10-16-ch2art・efbfbbf」・ページの例外 0・404 なし（中断された音の読み込みと広告だけ）。画像 `shots/remote_A|B|C_390x844.png`。
 - 順：①URL を開く → 中継カット（紋章と題字）→ 全景 → START ②画面の右上「Ch2 試遊 A B C ・版 …」で版（2026-10-16-ch2art）を確かめる（違う版なら再読み込み）③START でサイコロ → 港・白い橋（**石板の継ぎ目を見る**）→ 潮の塔で海底へ → ガラス回廊・遺跡 → ライバル → 螺旋塔を上る → ゴール → 大会受付 ④ルートを変えるときは右上の A／B／C。
 - 試遊は保存しない（再読み込みで元のセーブ・メニューの「試遊をやめて街へ戻る」）。raw.githack は github.io と別の場所＝今の試遊のセーブは見えない（新しいゲームの状態から入る）。
 
