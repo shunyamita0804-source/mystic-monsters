@@ -36,6 +36,10 @@
     // 2026-10-14 開発29（6）：後ろから追うカメラ（本編の Chapter 1 だけ・試作の既定は従来の北が上）。true＝進む向き（今の地点 → 先の数地点）が画面の上になるよう、地面の板を注視点のまわりで回す（yaw）。
     //   マス・景物・モンスターは立てたまま（project で同じ回転を通して置く）。回る速さ yawTau（ms）＝急に回らない・角を曲がるときもなめらか。止まっている間は最後の向きのまま
     visual: 'A',         // 2026-10-14 Chapter 1 B／C：景観のパターン（VISUAL の鍵。A＝従来のまま・B＝花と清流・C＝岩丘と遺跡。地点・道・判定は共通＝景物の混ぜ方と配置だけ）
+    // 2026-10-16 QA（C案カメラ・試作。URL の ?qaCam=c|ccut のときだけ js/chapter/world-board.js が渡す。null＝従来のまま）：
+    //   歩いている間は向き（yaw）と倍率を変えない（区間で安定）・止まったとき／分かれ道を選んだときだけ、進む向きとのずれが camTurnDeg 以上なら短く向きを変える
+    //   （'c'＝camTurnMs で回す・'ccut'＝盤を少し暗くして向きを切り替える）。止まったときの小さな注視点のずれ（camDz px 未満）は追わない
+    camMode: null, camTurnDeg: 50, camTurnMs: 600, camDz: 12,
     heading: false, yawTau: 420,        // 2026-10-13 開発27（11・15）：出さない目印の地点（例 ['START','LOWER_GATE','UPPER_GATE']＝門の飾りの絵だけを出さない。地点・道・門のマス・判定・イベントはそのまま。本編の Chapter 1 だけ）
   };
   // 第1便の絵（assets/proto/board_art_1010/README.md）。大きさは世界の単位
@@ -303,7 +307,10 @@
     const S = {
       cam: { tx: WORLD.w / 2, ty: WORLD.h / 2, s: 1, tilt: 0, P: o.persp, ax: 0, ay: 0, yaw: 0 }, goal: null, mon: null, monGoal: null, yawGoal: 0,
       raf: 0, last: 0, intro: null, view: null, frames: [], dead: false,
+      // 2026-10-16 QA：向きの回り方の計測（見た目は変えない＝数えるだけ）。deg＝回った角度の合計・ms＝回っている時間・turns＝回り始めた回数・stops＝止まった回数
+      qa: { deg: 0, ms: 0, turns: 0, rot: false, maxRate: 0, stops: 0, reorient: 0 }, yawTw: null, camOff: null,
     };
+    const CMODE = o.heading && (o.camMode === 'c' || o.camMode === 'ccut') ? o.camMode : null;
     // 2026-10-11：モンスターの足を地点に合わせる＝静止の立ち絵の実際の縦横比で上へずらす（旧：一律 0.92＝縦長・横長の絵で浮く・沈む）。読み込み前は 0.92
     { const mi = mon.firstChild, fit = () => { if (mi.naturalWidth) { S.monAh = (mi.naturalHeight / mi.naturalWidth) * (o.monFoot || 0.97); S.dirty = true; } }; if (mi.complete) fit(); else mi.addEventListener('load', fit, { once: true }); }
     function viewRect() { const v = o.view ? o.view() : null; const r = host.getBoundingClientRect(); return v || { W: r.width, H: r.height, top: 0, bottom: r.height, right: r.width }; }
@@ -460,6 +467,41 @@
       wrap.classList.remove('intro'); rootEl.classList.remove('rfw-intro');
       if (done) done();
     }
+    // 2026-10-16 QA C案カメラ（?qaCam=c|ccut のときだけ）。従来（CMODE が null）はここを通らない
+    let dimEl = null;
+    function dim(on) {
+      if (!dimEl) { dimEl = doc.createElement('div'); dimEl.className = 'rfw-qadim'; Object.assign(dimEl.style, { position: 'absolute', inset: '0', background: '#06101f', opacity: '0', pointerEvents: 'none', zIndex: '99999', transition: 'opacity .14s ease' }); wrap.appendChild(dimEl); }
+      dimEl.style.opacity = on ? '0.5' : '0';
+    }
+    function camC(info, n, pts, instant) {
+      const mh = hOf(info.node), moving = !!info.moving;
+      let want = null;
+      if (pts.length) { const k = pts.slice(0, 4), gx = k.reduce((a, p) => a + p[0], 0) / k.length - n[0], gy = k.reduce((a, p) => a + p[1], 0) / k.length - n[1]; if (Math.hypot(gx, gy) > 2) want = headingYaw(gx, gy); }
+      if (!S.cInit) { if (want != null) S.yawGoal = want; S.cInit = true; }
+      else if (!moving) {
+        if (S.cStop !== info.node) { S.cStop = info.node; S.qa.stops++; }
+        const d = want == null ? 0 : angDiff(S.yawGoal || 0, want);
+        if (Math.abs(d) >= o.camTurnDeg || (info.pick && Math.abs(d) >= 20)) {   // 止まったとき＝ずれが大きいときだけ・分かれ道を選んだとき＝選んだ道へ
+          S.yawGoal = (S.yawGoal || 0) + d; S.qa.reorient++;
+          if (!instant && !S.intro) {
+            const now = root.performance.now();
+            if (CMODE === 'ccut') { dim(true); S.yawTw = { from: S.cam.yaw || 0, to: S.yawGoal, t0: now + 150, dur: 1, cut: true }; }
+            else S.yawTw = { from: S.cam.yaw || 0, to: S.yawGoal, t0: now, dur: o.camTurnMs * Math.min(1.6, 0.6 + 0.4 * Math.abs(d) / 90) };   // 大きく向きを変えるほど少し長く（90°＝camTurnMs・180°＝1.4倍）＝速さの山を抑える
+          }
+        }
+      }
+      const g = followCam(S.view, n[0], n[1], pts, S.yawGoal || 0, mh), prev = S.goal;
+      if (moving && prev) {   // 歩いている間：向き・横の寄せ・倍率を止めたときのまま（足りなければ引くだけ。寄らない）
+        if (S.camOff) { g.tx = n[0] + S.camOff[0]; g.ty = n[1] + S.camOff[1]; }
+        g.s = Math.min(prev.s, g.s);
+      } else {
+        S.camOff = [g.tx - n[0], g.ty - n[1]];
+        if (prev && !instant && !S.yawTw && Math.abs(g.ax - prev.ax) < 1 && Math.abs(g.ay - prev.ay) < 1 && Math.abs(angDiff(prev.yaw || 0, g.yaw || 0)) < 0.01 && Math.abs(Math.log(g.s / prev.s)) < 0.06) {   // 止まったときの小さなずれは追わない（漂わない）
+          const a = project(prev, g.tx, g.ty); if (Math.hypot(a.x - prev.ax, a.y - prev.ay) < o.camDz) { S.camOff = [prev.tx - n[0], prev.ty - n[1]]; return; }
+        }
+      }
+      S.goal = g;
+    }
     function tick(now) {
       if (S.dead) return;
       if (!wrap.isConnected) { S.last = 0; S.raf = root.requestAnimationFrame(tick); return; }   // 2026-10-11：本編で別の画面へ移っている間（要素は残して戻ったら付け直す）は何もしない
@@ -482,8 +524,15 @@
       } else if (S.goal) {
         const f = 1 - Math.exp(-dt / 170), g = S.goal;
         for (const k of ['tx', 'ty', 'ax', 'ay', 'tilt']) S.cam[k] = lerp(S.cam[k], g[k], f);
-        if (o.heading) { const d = angDiff(S.cam.yaw || 0, g.yaw || 0); S.cam.yaw = Math.abs(d) < 0.05 ? (g.yaw || 0) : (S.cam.yaw || 0) + d * (1 - Math.exp(-dt / o.yawTau)); }   // 2026-10-14 開発29（6）：近いほうへなめらかに回る
+        const y0 = S.cam.yaw || 0;
+        if (CMODE) {   // 2026-10-16 QA C案：向きは止まったとき・分かれ道を選んだときに決めた分だけ、決まった時間で回して止める（指数の長い尾を引かない）
+          const tw = S.yawTw;
+          if (tw) { const u = Math.max(0, Math.min(1, (now - tw.t0) / tw.dur)); S.cam.yaw = tw.from + angDiff(tw.from, tw.to) * easeInOut(u); if (u >= 1) { S.cam.yaw = tw.to; S.yawTw = null; if (tw.cut) dim(false); } }
+          else S.cam.yaw = g.yaw || 0;
+        } else if (o.heading) { const d = angDiff(S.cam.yaw || 0, g.yaw || 0); S.cam.yaw = Math.abs(d) < 0.05 ? (g.yaw || 0) : (S.cam.yaw || 0) + d * (1 - Math.exp(-dt / o.yawTau)); }   // 2026-10-14 開発29（6）：近いほうへなめらかに回る
         S.cam.s = Math.exp(lerp(Math.log(S.cam.s), Math.log(g.s), (1 - Math.exp(-dt / o.zoomTau)) * 0.8));
+        { const q = S.qa, dy = Math.abs(angDiff(y0, S.cam.yaw || 0)), rate = dy / Math.max(1, dt) * 1000;   // 計測だけ（2°/秒より速く回っている時間）
+          q.deg += dy; const on = rate > 2; if (on) { q.ms += dt; if (!q.rot) q.turns++; if (rate > q.maxRate) q.maxRate = rate; } q.rot = on; }
       }
       if (S.monGoal) { if (!S.mon) S.mon = S.monGoal.slice(); const f = 1 - Math.exp(-dt / 70); S.mon[0] = lerp(S.mon[0], S.monGoal[0], f); S.mon[1] = lerp(S.mon[1], S.monGoal[1], f); S.mon[2] = lerp(S.mon[2] || 0, S.monGoal[2] || 0, f); }
       apply();
@@ -497,11 +546,15 @@
         S.monGoal = [n[0], n[1], hOf(info.node)]; if (instant || !S.mon) S.mon = S.monGoal.slice();
         S.view = viewRect();
         const pts = (info.ahead || []).filter((id) => D.nodes[id]).map((id) => [D.nodes[id][0], D.nodes[id][1], hOf(id)]);
+        if (CMODE) camC(info, n, pts, instant);
+        else {
         if (o.heading && pts.length) {   // 2026-10-14 開発29（6）：進む向き＝今の地点 → 先の地点（最大4つ）の重心（分かれ道の手前は両方の道の真ん中・行き止まりから戻る間は戻る向き）
           const k = pts.slice(0, 4), gx = k.reduce((a, p) => a + p[0], 0) / k.length - n[0], gy = k.reduce((a, p) => a + p[1], 0) / k.length - n[1];
           if (Math.hypot(gx, gy) > 2) { const y0 = headingYaw(gx, gy); S.yawGoal = (S.yawGoal || 0) + angDiff(S.yawGoal || 0, y0); }
         }
-        S.goal = followCam(S.view, n[0], n[1], pts, o.heading ? S.yawGoal : 0, hOf(info.node)); S.lastAhead = info.ahead || [];
+        S.goal = followCam(S.view, n[0], n[1], pts, o.heading ? S.yawGoal : 0, hOf(info.node));
+        }
+        S.lastAhead = info.ahead || [];
         if (instant && !S.intro) S.cam = Object.assign({}, S.goal);
         S.dirty = true;
         if ('denOpen' in info) for (const p of props) if (p.L && p.L.open) { const f = info.denOpen ? p.L.open : p.L.file; if (p.f !== f) { p.el.src = artUrl(o.art.base || './assets/proto/board_art_1010/', f); p.f = f; } }
@@ -550,6 +603,8 @@
       markerOff(id) { const i = props.findIndex((x) => x.mark === id); if (i >= 0) { props[i].el.remove(); props.splice(i, 1); } },
       goalApproach: () => apprIds.slice(),   // 2026-10-15 N10（確認用）
       yawGoal: () => (o.heading ? S.yawGoal || 0 : 0),
+      /** 2026-10-16 QA：向きの回り方の計測（reset＝0 に戻す）。camMode＝C案のときの方式（null＝従来） */
+      qa: (reset) => { const q = Object.assign({ camMode: CMODE }, S.qa); delete q.rot; if (reset) Object.assign(S.qa, { deg: 0, ms: 0, turns: 0, rot: false, maxRate: 0, stops: 0, reorient: 0 }); return q; },
       state: () => ({ yaw: S.cam.yaw || 0, yawGoal: S.yawGoal || 0, heading: !!o.heading, focus: o.focus ? veilSig.split(',').filter(Boolean) : null, cam: Object.assign({}, S.cam), goal: S.goal && Object.assign({}, S.goal), mon: S.mon && S.mon.slice(), view: S.view, intro: !!S.intro, introAnims: S.introAnims || 0, introResized: S.introResized || 0, ahead: S.lastAhead || [],
         visual: VIS.key, skin: SK ? SK.key : null, artSkin: art.ground ? { ground: !!art.ground._sk, road: !!(art.road && art.road._sk), strip: !!(art.strip && art.strip._sk), water: !!(art.water && art.water._sk) } : null, tiles: Object.keys(tiles).length, chunks: chunks.length, painted, res: o.res, tilt: o.tilt, props: props.length, art: !!(art.ground || art.road), rims: art.terrain ? art.terrain.rims.filter((r) => r.kind === 'valley').map((r) => r.pts.length) : null,
         rimKinds: art.terrain ? art.terrain.rims.reduce((a, r) => { a[r.kind] = (a[r.kind] || 0) + 1; return a; }, {}) : null }),

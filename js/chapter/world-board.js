@@ -80,7 +80,7 @@
     };
   }
   /** カメラ：今の地点と、この先の数地点（分かれ道では両方の道・行き止まりでは戻り道） */
-  function info(m, node) {
+  function info(m, node, ex) {
     const f = fieldOf(m), st = f.core, d = D(m), c = C(), at = node || st.node;
     const first = st.done || node ? null : c.options(d, st).map((e) => e.dst);
     // 2026-10-14 開発29（6）：歩いている途中（node を渡す）も、行き止まりから戻る区間の上なら戻る向きで先を見る（旧：途中は前向き＝行き止まりの側を向いてカメラが一瞬逆へ回っていた）
@@ -90,12 +90,18 @@
     const ahead = la(CAM.fit, CAM.fitPer), near = la(CAM.ahead, CAM.per);   // カメラが入れる地点（先の4・分かれ道の手前は各2）／明るく残す地点（先の5・各3）
     // 道筋＝直前の数地点・今の地点・先の地点（ここ以外のマスは薄く、地面は薄い幕＝選ばなかった道・遠くの道と見分ける）。表示だけ（ルート・セーブは変えない）
     const tr = (st.trail || []).slice(0, node ? Math.max(0, (st.trail || []).lastIndexOf(at)) : undefined).slice(-CAM.behind);
-    return { node: at, ahead, focus: [...new Set(tr.concat([at], near))], look: look(m), denOpen: !!st.randOpen };
+    return Object.assign({ node: at, ahead, focus: [...new Set(tr.concat([at], near))], look: look(m), denOpen: !!st.randOpen }, ex || {});   // ex＝{ moving }（歩いている途中）・{ pick }（分かれ道を選んだ）＝2026-10-16 QA C案カメラだけが読む
   }
   // 2026-10-12 試遊修正：カメラを近く（今の道で先の4地点・分かれ道の手前は両方の道を2地点ずつが入る倍率。明るく残す道筋は先の5地点・各3）・モンスター＝マスの幅の 1.2倍・道筋の強調
   // 2026-10-14 Chapter 1 A／B／C 高品質化：盤の絵＝正式13点の派生（MMRF_WORLD の SKIN 'hq1014'）。URL に ?boardSkin=1010（または window.MM_BOARD_SKIN='1010'）で従来の絵＝見比べ・戻すとき
   const skinKey = () => { let q = null; try { q = new URLSearchParams(root.location.search).get('boardSkin') || root.MM_BOARD_SKIN || null; } catch (e) {} return q === '1010' || q === 'old' ? null : 'hq1014'; };
   const CAM = { fit: 4, fitPer: 2, ahead: 5, per: 3, behind: 3, sMin: 2.2, sMax: 5.6, tilePx: [22, 84], monRatio: 1.2, zoomTau: 320 };
+  // 2026-10-16 QA（試作・未承認）：URL の ?qaCam= でカメラの方式を比べる。無い・old＝従来（後ろから追う・yawTau 600）／fixed＝向きを回さない（北が上）／
+  //  c＝C案（歩いている間は向き・倍率を変えない・止まったとき／分かれ道を選んだときだけ短く向きを変える）／ccut＝C案の向きの変え方を「少し暗くして切り替え」に。
+  //  qaCamDeg（向きを変えるずれの角度・既定 50）・qaCamMs（90° 回す時間・既定 600）で調整できる。通常の URL では何も変わらない
+  const QA_CAM = (() => { let q = null; try { q = new URLSearchParams(root.location.search); } catch (e) {} const v = q && q.get('qaCam'); const num = (k, d, lo, hi) => { const x = q ? Number(q.get(k)) : NaN; return Number.isFinite(x) && x >= lo && x <= hi ? x : d; };
+    return ['fixed', 'c', 'ccut'].includes(v) ? { mode: v, deg: num('qaCamDeg', 50, 10, 180), ms: num('qaCamMs', 600, 120, 2000) } : null; })();
+  const camOpts = () => (!QA_CAM ? { heading: true, yawTau: 600 } : QA_CAM.mode === 'fixed' ? { heading: false } : { heading: true, yawTau: 600, camMode: QA_CAM.mode, camTurnDeg: QA_CAM.deg, camTurnMs: QA_CAM.ms });
   function viewRect() {
     const w = V.el && V.el.querySelector('.wbv'); if (!w) return null;
     const r = w.getBoundingClientRect(), h = V.el.querySelector('.chh'), dk = V.el.querySelector('#wb-ui .chsheet') || V.el.querySelector('#chdock');   // 分かれ道・バトルのシートが出ている間はシートの上まで（モンスターと道の先をシートより上に）
@@ -412,16 +418,16 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     V.el = $('#wbw'); if (V.key !== key) V.lastMsg = ''; V.key = key;
     if (root.MMRF_WORLD) V.world = root.MMRF_WORLD.create(V.el.querySelector('.wbv'), D(m), root.MMRF_PLAY, { view: viewRect, monSrc: monSrc(m), art: { base: ART, road: 'strip' },
       focus: true, veil: false, xray: true, hideLm: chOf(m) === 1 ? ['START', 'LOWER_GATE', 'UPPER_GATE'] : null, ahead: CAM.ahead,   // 2026-10-13 開発27（11・15）：開始地点の門・中央の門2か所（下門・上門）の飾りの絵は出さない（マス・道・判定はそのまま）
-      sMin: CAM.sMin, sMax: CAM.sMax, tilePx: CAM.tilePx, monRatio: CAM.monRatio, zoomTau: CAM.zoomTau, heading: true, yawTau: 600, visual: vis, skin: skinKey() });   // visual＝景観のパターン（A／B／C。配置の中の visualPattern）   // 2026-10-14 開発29（6）：後ろから追うカメラ（進む向きが画面の上）   // 2026-10-14 実機試遊 Q12：曲がり角・分かれ道で向きが急に回らないよう、回る速さを少しゆっくりに（yawTau 420 → 600ms）
+      sMin: CAM.sMin, sMax: CAM.sMax, tilePx: CAM.tilePx, monRatio: CAM.monRatio, zoomTau: CAM.zoomTau, ...camOpts(), visual: vis, skin: skinKey() });   // visual＝景観のパターン（A／B／C。配置の中の visualPattern）   // 2026-10-14 開発29（6）：後ろから追うカメラ（進む向きが画面の上）   // 2026-10-14 実機試遊 Q12：曲がり角・分かれ道で向きが急に回らないよう、回る速さを少しゆっくりに（yawTau 420 → 600ms）
     V.el.querySelectorAll('.rfw-title').forEach((e) => e.remove());   // 2026-10-13 開発25 H：全景の地図の上に大きな題字を出さない（題字は中継カットの間だけ＝cover）。HUD の Chapter 表示は別（残す）
     sprSetup(m);
     return true;
   }
-  function paint(m, msg, node, instant) {
+  function paint(m, msg, node, instant, ex) {
     const ui = $('#wb-ui'); if (!ui) return;
     const ph = P8().boardPhase(m);
     ui.innerHTML = ph === 'goal' ? '' : hudHtml(m) + sheetHtml(m, ph) + deckHtml(m, ph, msg);
-    if (V.world) V.world.update(info(m, node), instant);
+    if (V.world) V.world.update(info(m, node, ex), instant);
   }
   function board(msg) {
     const S = gS(), m = S && S.m; if (!active(m)) return false;
@@ -693,7 +699,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
         if (!onBoard()) break;
         const before = m.raise.node, s = P8().step(S, m); doSave();
         if (m.raise.node !== before) V.path.push(m.raise.node);
-        if (m.raise.node !== before && V.world) { V.world.update(info(m, m.raise.node)); sprWalk(before, m.raise.node); progSet(m.raise.node); const c = $('#chfd'); if (c) c.textContent = placeName(m.raise.node); await wait(calm() ? 60 : STEP_MS); }
+        if (m.raise.node !== before && V.world) { V.world.update(info(m, m.raise.node, { moving: true })); sprWalk(before, m.raise.node); progSet(m.raise.node); const c = $('#chfd'); if (c) c.textContent = placeName(m.raise.node); await wait(calm() ? 60 : STEP_MS); }
         if (s && s.stage === 'branch') break;
       }
     } finally { sprStop(); busySet(false); }
@@ -707,7 +713,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     const before = m.raise.node, r = P8().chooseBranch(S, m, id); doSave(); if (!r.ok) return board();
     if (m.raise.node !== before) { V.path.push(m.raise.node); sprWalk(before, m.raise.node); }
     feel('branch.select', { id });
-    paint(m, '', m.raise.node); lock(); walk();
+    paint(m, '', m.raise.node, false, { pick: true }); lock(); walk();
   }
   async function rest() {
     const S = gS(), m = S && S.m; if (!active(m) || busyGet() || V.intro || !P8().canRest(m)) return;
