@@ -223,7 +223,7 @@
 
 ## 9. プレビュー（限定試作）
 
-- ブランチ：`claude/claude-md-handoff-check-fcl9lb`（基点＝main `a28837e`）。**main 未改変・公開なし・PR なし**。
+- ブランチ：`claude/claude-md-handoff-check-fcl9lb`。2026-10-16 の PR #46（バトル最終統合）で**試作だけ main に入り公開**（URL のフラグのときだけ動く・本編・セーブには触れない）。`?chapterBoard=roadfirst&rfData=ch2` は省略で A＋上の帯に A／B／C の切り替え。設計の承認・本実装はまだ。
 - 起動：ローカルの index.html に `?chapterBoard=roadfirst&rfData=ch2&ch2route=A|B|C`（既定で 2.5D の世界ビュー＋絵。`&rfView=plan`＝図面・`&rfArt=none`＝仮の色・`&rfSeed=数`・`&rfRand=open|closed`）。通常の URL では何も出ない。
 - 今回の変更：`tools/ch2/routes/spec_B.json`・`spec_C.json`（道）、`js/proto/ch2-routes.js`（生成物）、`js/proto/ch2-world.js`（海底の地面・ガラスの筒・遺跡の広場・光の筋）、`tools/ch2/build_ch2_routes.py`（art.ruins・案の比較用の環境変数）、`tools/ch2/sim.mjs`（seed のずらし・盤の絞り込み・**第3版：食事ありのモデル CH2_FOOD**・**4回目：時間切れの残り歩数 shortAtTimeUp とターン上限の比較用 CH2_LIMIT**）、`tools/ch2/out/`、`tests/`、`docs/ch2_abc_design_1015/`。
 - テスト：C2-01〜08（C2-08＝道のデータ・summary.json・設計書の数値の一致）、実ブラウザ CP-B1〜B4（3サイズ × A／B／C・保存の鍵・螺旋塔を実際に歩いて上る・海底では海中の光の筋・**B の成功の2歩を連続して歩く・先の4地点の見え方**）。
