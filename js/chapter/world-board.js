@@ -934,8 +934,9 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
   const vcue = (name) => { try { if (!root.MM_QA_NO_STORY && root.MMVOICE) root.MMVOICE.cue(name); } catch (e) {} };
   const DIE_TEXT = {
     Q: (e) => `運命の分かれ道：出目 ${e.die}（${e.die % 2 ? '奇数 → ← 左の道' : '偶数 → 右の道 →'}）`,   // 2026-10-15 N07：アイテムと紛らわしい「運命のサイコロ」から改名
-    CHALLENGE: (e) => `封印の遺跡門の挑戦：${e.die} → ${e.die >= 5 ? '成功！ 遺跡の道へ' : '失敗… 遠回りの道へ'}`,
+    CHALLENGE: (e) => (chOf() === 2 ? `${chalName()}の挑戦：${e.die} → ${e.die >= 5 ? '成功！ 近道へ' : '失敗… 遠回りの道へ'}` : `封印の遺跡門の挑戦：${e.die} → ${e.die >= 5 ? '成功！ 遺跡の道へ' : '失敗… 遠回りの道へ'}`),
   };
+  const chalName = () => placeName('CHALLENGE') || '封印の門';   // 2026-10-16 Chapter 2：特殊挑戦の場所の名前は道のデータ（西の海門・封印の扉・封印の間）
   /** 2026-10-13 開発27（18）：イベントのサイコロ（Q の左右・特殊挑戦）は、案内を出してプレイヤーが「サイコロを振る」を押してから1回だけ振る。
    *  出目・判定（奇数／偶数・5／6 で成功）は resolveLanding で決まって保存済み＝ここは見せ方だけ。自動テストの一言なし（MM_QA_NO_STORY）では待たない */
   const DIE_ASK = {
@@ -943,7 +944,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     CHALLENGE: { h: '封印の遺跡門の挑戦', p: 'サイコロを振って、5か6が出れば成功！ 遺跡の道へ進める。それ以外は遠回りの道へ。' },
   };
   function dieAsk(e) {
-    const ui = $('#wb-ui'), A = DIE_ASK[e.kind] || { h: 'イベントのサイコロ', p: 'サイコロを振ろう。' };
+    const ui = $('#wb-ui'), A = (e.kind === 'CHALLENGE' && chOf() === 2 ? { h: `${chalName()}の挑戦`, p: 'サイコロを振って、5か6が出れば成功！ 近道へ進める。それ以外は遠回りの道へ。' } : DIE_ASK[e.kind]) || { h: 'イベントのサイコロ', p: 'サイコロを振ろう。' };
     if (!ui || root.MM_QA_NO_STORY) return Promise.resolve();
     const b0 = $('#bmsg'); if (b0) b0.textContent = A.h;
     return new Promise((done) => {

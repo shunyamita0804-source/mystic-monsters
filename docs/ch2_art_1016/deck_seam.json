@@ -1,0 +1,12 @@
+{
+ "original_seam_ratio_x_y": [
+  3.67,
+  2.34
+ ],
+ "candidate_seam_ratio_x_y": [
+  0.97,
+  1.05
+ ],
+ "candidate_adopted": false,
+ "note": "1.0 前後＝継ぎ目が見えにくい・2 以上＝継ぎ目が見える。候補は採用していない（ゲームは原本の派生のまま）"
+}
