@@ -45,7 +45,9 @@ test('FA-01：技アニメ 77枚＝本体 42＋効果 35（09＝効果2・10＝�
     nb += d.bodies; nf += d.effects;
   }
   assert.deepEqual([nb, nf], [42, 35]);
-  const files = readdirSync(path.join(ROOT, 'assets/battle/flurene_moves_1015')).filter((f) => f.endsWith('.webp'));
+  // 2026-10-16（バトル最終統合）：技10 の専用の根4＋命中3（f10_d01_fx〜d07_fx）は別の便（Part01）＝js/battle/move-tune-1015.js の MOVES から使う。ここでは 77枚の便だけを数える
+  const all = readdirSync(path.join(ROOT, 'assets/battle/flurene_moves_1015')).filter((f) => f.endsWith('.webp')), files = all.filter((f) => !/^f10_d0[1-7]_fx\.webp$/.test(f));
+  assert.deepEqual(all.filter((f) => !files.includes(f)), ['f10_d01_fx.webp', 'f10_d02_fx.webp', 'f10_d03_fx.webp', 'f10_d04_fx.webp', 'f10_d05_fx.webp', 'f10_d06_fx.webp', 'f10_d07_fx.webp']);
   assert.equal(files.length, 77); assert.deepEqual([...used].sort(), files.sort(), '置いた絵はすべてデータから使う（余分な絵・自作の効果は無い）');
   assert.ok(!files.some((f) => /^f10_fx|^f09_fx0[34]/.test(f)), '10 の効果・09 の3〜4枚目は無い（届いていない）');
   const lines = rd('assets/battle/flurene_moves_1015/sha256.txt').trim().split('\n');

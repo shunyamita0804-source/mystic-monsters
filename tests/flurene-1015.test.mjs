@@ -91,7 +91,7 @@ test('FL-02：番号 5 はどの表とも重ならない（SPECIES 0〜3・レ�
   //  2026-10-15：技アニメのデータ（flurene-moves-data.js）と art25d.js の QA のプレビュー（preview('flurene')）・歩行の登録（ch1a.js の monsterSprites.flurene＝本編の盤は番号→キーの keyOf で引く＝5 は引けない）・index.html はそのデータの script の1行だけ
   //  2026-10-15 夜：技アニメの試遊修正（move-tune-1015.js＝QA のプレビューの技03／09／10 の修正）・体の面積の表（move-area-1015.js＝コマのファイル名）
   //  2026-10-16：技09 ルートドレイン（rootdrain-1016.js＝8コマ・rules.js＝QA 試遊のときだけ SK 58 と吸収）
-  assert.deepEqual(hits.sort(), ['index.html', 'js/battle/arena.js', 'js/battle/art25d.js', 'js/battle/compare.js', 'js/battle/flurene-moves-data.js', 'js/battle/move-area-1015.js', 'js/battle/move-cards.js', 'js/battle/move-tune-1015.js', 'js/battle/rootdrain-1016.js', 'js/battle/rules.js', 'js/chapter/configs/ch1a.js', 'js/phase10/monsters.js', 'js/qa/trial.js']);
+  assert.deepEqual(hits.sort(), ['index.html', 'js/battle/arena.js', 'js/battle/art25d.js', 'js/battle/compare.js', 'js/battle/flurene-moves-data.js', 'js/battle/move-area-1015.js', 'js/battle/move-cards.js', 'js/battle/move-tune-1015.js', 'js/battle/rootdrain-1016.js', 'js/battle/rules.js', 'js/chapter/configs/ch1a.js', 'js/phase10/monsters.js', 'js/qa/battle-stage.js', 'js/qa/trial.js']);
   assert.deepEqual(HTML.split('\n').filter((l) => l.length < 50000 && /flurene|フルーネ/i.test(l)), ['<script src="./js/battle/flurene-moves-data.js"></script>', '<script src="./js/battle/rootdrain-1016.js"></script><!-- 2026-10-16：フルーネ技09 ルートドレイン（QA 試遊だけ） -->'], 'index.html はデータの読み込みだけ');
   // 大会の参加者の種族は従来どおり（SP.length）
   assert.match(HTML, /MMP8L\.setSpeciesCount\(SP\.length\);/);

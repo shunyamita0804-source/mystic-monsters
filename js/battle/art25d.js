@@ -250,7 +250,7 @@
   /** 技のコマを順に見せる。引き受けたら true */
   function anim(k, s) {
     if (!handles(k, s)) return false;
-    if (rdOn(k, s)) { const g = geom(s), SK = G('SK'); if (!g) return false; style(); try { if (root.MMTUNE) root.MMTUNE.onAnimStart(k, s, null); } catch (er) { /* 無視 */ } return root.MMRD.play(k, s, g, root.MMRD.plan(viaStage(), !!(SK && SK[k] && SK[k][1] > 0))); }
+    if (rdOn(k, s)) { const g = geom(s), SK = G('SK'); if (!g) return false; style(); const P = root.MMRD.plan(viaStage(), !!(SK && SK[k] && SK[k][1] > 0)); try { if (root.MMTUNE) root.MMTUNE.onAnimStart(k, s, P); } catch (er) { /* 無視 */ } return root.MMRD.play(k, s, g, P); }
     if (offData(k, s)) return animOff(k, s);
     const v = $('.vs'), bt = document.getElementById('bt'), me = document.getElementById('m' + s), op = document.getElementById('m' + (1 - s));
     if (!v || !v.appendChild || !me || !op || !bt) return false;
@@ -388,7 +388,7 @@
     // 光線は区切りごとにその区切りのコマの口先から出し直す（口先の分かるコマだけ。2つ目からは伸びきった長さで続ける＝途切れない）
     const fxList = [];
     (d.fx || []).forEach((c) => {
-      if ((c.at === 'beam' || c.at === 'stretch' || c.at === 'bluebeam') && c.t[1] > c.t[0]) {
+      if ((c.at === 'beam' || c.at === 'stretch') && c.t[1] > c.t[0]) {
         const ok = []; for (let i = c.t[0]; i <= c.t[1]; i++) { const q = at(i); ok.push(!!(q && mouthPt(q))); }
         if (ok.every(Boolean)) { for (let i = c.t[0]; i <= c.t[1]; i++) fxList.push(Object.assign({}, c, { t: [i, i], seg: i - c.t[0], segLast: i === c.t[1] })); return; }
       }
@@ -436,15 +436,6 @@
         box.animate(kfWin(w0, w1, `translate(${mp.x - w / 2}px,${mp.y - h / 2}px) scaleX(${f}) scale(${g2[0]})`, `translate(${mp1.x - w / 2}px,${mp1.y - h / 2}px) scaleX(${f}) scale(${g2[1]})`, false, last), { duration: D, fill: 'both' }).onfinish = () => box.remove();
         return;
       }
-      if ((c.at === 'bluecharge' || c.at === 'bluebeam') && root.MMSK08B) {   // 2026-10-16（iPhone 6件 A2）：スターダストレイの青い専用光線の試作（js/battle/sk08-blue-1016.js）
-        const q = at(c.t[0]), m0 = q && mouthPt(q), m1 = q && (mouthPt(q, true) || m0); if (!m0) return;
-        const els = c.at === 'bluecharge'
-          ? root.MMSK08B.charge(v, { m: m0, R: L.idleH * 0.24, D, w0, w1 })
-          : root.MMSK08B.beam(v, { m0, m1, t: { x: T.x + f * T.w * 0.12, y: m0.y * 0.4 + T.cy * 0.6 }, H: Math.max(14, L.idleH * 0.09) * (c.thick || 1), D, w0, w1, seg: c.seg || 0, f, after: c.segLast && P.win[c.t[1] + 1] ? P.win[c.t[1] + 1] : null });
-        if (m0 && els[0]) els.forEach((e) => { if (!e.dataset.mf) e.dataset.mf = q.c.f; });
-        els.forEach((e) => imgs.push(e));
-        return;
-      }
       const im = document.createElement('img'); im.src = c.u || base + c.f; im.dataset.cut = c.src; put(im, 8);
       if (c.at === 'aura') {   // 2026-10-15：自分の胸から広がる放射（聖なる炎）
         // 2026-10-16（iPhone 06）：onBody＝その区切りのコマの体の範囲の中心（浮いた姿のガウルの体の中心から放射する＝相手へは飛ばさない）
@@ -461,6 +452,16 @@
         const sx = L.Ag.x + f * L.idleW * 0.45, sy = L.Ag.y - L.idleH * 0.55, ex = T.x, ey = T.cy;
         im.style.width = W + 'px'; im.style.height = H + 'px'; im.style.transformOrigin = '50% 50%';
         im.animate(kfWin(w0, w1, `translate(${sx - W / 2}px,${sy - H / 2}px) scaleX(${f}) scale(0.8)`, `translate(${ex - W / 2}px,${ey - H / 2}px) scaleX(${f}) scale(1)`, false, last), { duration: D, fill: 'both' }).onfinish = () => im.remove();
+        return;
+      }
+      if (c.at === 'root' || c.at === 'hitc') {
+        // 2026-10-16（バトル最終統合）フルーネ技10：根＝絵の根元（下 7%）を相手の足もとへ・高さ＝相手の体の約1.35倍。命中＝絵の中心を相手の被弾点へ・幅＝相手の体の約1.7倍
+        const isRoot = c.at === 'root', W = isRoot ? T.h * 1.35 / 0.85 : Math.min(Math.max(T.w, T.h) * 1.25, (f > 0 ? L.xmax - T.x : T.x - L.xmin) * 2.15), H = W * c.ph / c.pw;   // 命中の光は画面の端で切れない大きさまで
+        const cx = T.x, cy = isRoot ? L.Tg.y - H * 0.43 : T.cy;   // 根：絵の下 7%（中心から 0.43）が足もと
+        im.style.width = W + 'px'; im.style.height = H + 'px'; im.style.transformOrigin = isRoot ? '50% 93%' : '50% 50%';
+        im.dataset.cx = Math.round(cx); im.dataset.cy = Math.round(cy); if (isRoot) im.dataset.foot = Math.round(L.Tg.y);
+        const a = `translate(${cx - W / 2}px,${cy - H / 2}px) scaleX(${f}) scale(${isRoot ? '1,0.9' : '0.9'})`, z = `translate(${cx - W / 2}px,${cy - H / 2}px) scaleX(${f}) scale(1)`;
+        im.animate(kfWin(w0, w1, a, z, false, last), { duration: D, fill: 'both' }).onfinish = () => im.remove();
         return;
       }
       if (c.at === 'tgt' || c.at === 'self') {
@@ -480,6 +481,21 @@
         im.style.width = W + 'px'; im.style.height = H + 'px'; im.style.transformOrigin = '0% 50%';
         const ang = f > 0 ? th : th + 180, b0 = `translate(${sx}px,${sy - H / 2}px) rotate(${ang}deg) scaleX(${f})`;
         im.animate(kfWin(w0, w1, b0 + ' scale(0.2,1)', b0 + ' scale(1,1)', false, last), { duration: D, fill: 'both' }).onfinish = () => im.remove();
+        return;
+      }
+      if (c.at === 'sprbeam') {
+        // 2026-10-16（バトル最終統合）：専用の光線の絵（スターダストレイ A_01／A_02）。絵の発光点（ox・oy＝割合）をそのコマの口先へ・光の先（tip）を相手の奥へ。
+        //  縦横比はそのまま（太さを変えない）。seg＝前の区切りから続く（伸びきった長さで出す）・fadeR＝右端の平らな切り口を溶かす割合
+        const q = at(c.t[0]); if (!q) return;
+        const m0 = mouthPt(q), m1 = mouthPt(q, true) || m0; if (!m0) return;
+        const ex = T.x + f * T.w * 0.3, ey = m0.y * 0.4 + T.cy * 0.6;
+        const L0 = Math.max(Math.hypot(ex - m0.x, ey - m0.y), L.idleW * 1.1), W = L0 / ((c.tip || 0.95) - c.ox), H = W * c.ph / c.pw;
+        im.style.width = W + 'px'; im.style.height = H + 'px'; im.style.transformOrigin = `${c.ox * 100}% ${c.oy * 100}%`;
+        if (c.fadeR) { const g = `linear-gradient(to right,#000 ${(1 - c.fadeR) * 100}%,transparent 100%)`; im.style.webkitMaskImage = g; im.style.maskImage = g; }
+        im.dataset.mx = Math.round(m0.x); im.dataset.my = Math.round(m0.y); im.dataset.mf = q.c.f; im.dataset.ox = c.ox; im.dataset.oy = c.oy;
+        const pose = (pt) => { const ang = Math.atan2(ey - pt.y, ex - pt.x) * 180 / Math.PI;
+          return `translate(${pt.x - W * c.ox}px,${pt.y - H * c.oy}px) rotate(${f > 0 ? ang : ang + 180}deg) scaleX(${f})`; };
+        im.animate(kfWin(w0, w1, pose(m0) + (c.seg ? ' scale(1)' : ' scale(0.12,0.7)'), pose(m1) + ' scale(1)', false, last), { duration: D, fill: 'both' }).onfinish = () => im.remove();
         return;
       }
       if (c.at === 'beam') {
@@ -531,7 +547,7 @@
   function preloadOff(pl) { if (!pl) return; if (root.MMRD) [0, 1].forEach((s) => { if (pl[s] && (pl[s].eq || []).some((k) => root.MMRD.handles(k, pl[s].sp))) root.MMRD.warm(); }); [0, 1].forEach((s) => (pl[s] && pl[s].eq || []).forEach((k) => { const d = offData(k, s); if (d) warm(d); })); }
   /** 開発用のプレビュー（バトル画面が出ている間だけ）：kind＝'jiol'（正式No 1〜10）／'regnas'（正式No 1〜10）／'flurene'（登録の No 1〜10）。性能・番号の決まっていない技も、データのコマを順に見せるだけ（判定・ダメージ・セーブは触らない） */
   function preview(kind, no, s, opt) {
-    if (kind === 'flurene' && no === 9 && root.MMRD) { const g = geom(s || 0); if (!g) return false; style(); return root.MMRD.play(-1, s || 0, g, root.MMRD.plan(false, false)); }   // 2026-10-16：09＝ルートドレイン（旧「生命のしずく」の雨の演出には戻さない）
+    if (kind === 'flurene' && no === 9 && root.MMRD) { const g = geom(s || 0); if (!g) return false; style(); return root.MMRD.play(-1, s || 0, g, root.MMRD.plan(true, true)); }   // 2026-10-16：09＝ルートドレイン（旧「生命のしずく」の雨の演出には戻さない）
     const d = tuned(kind === 'jiol' ? JOFF()[no] : kind === 'regnas' ? ROFF()[20 + no - 1] : kind === 'flurene' ? FLOFF()[no] : null);
     if (!d || !usable(d)) return false;
     return animOff(-1, s || 0, d, Object.assign({ via: false, dmg: !!d.hit }, opt || {}));

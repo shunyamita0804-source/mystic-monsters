@@ -38,7 +38,8 @@
   const VIS_H = Object.freeze({ 0: 0.900, 1: 0.909, 2: 0.869, 3: 0.902, 4: 0.902, 5: 0.900 });
   const VIS_H3 = (VIS_H[1] + VIS_H[4] + VIS_H[5]) / 3;   // サイズ3（ガウル・レグナス・フルーネ）の平均＝100
   const qsz = () => { try { return new URLSearchParams(root.location.search); } catch (e) { return null; } };
-  const sizeMode = () => { const q = qsz(), v = q && q.get('mmSize'); return v === 'A' || v === 'B' ? v : v === '1' ? '1' : root.MM_SIZE_PREVIEW ? '1' : null; };
+  // 2026-10-16：常設バトル QA のステージ（js/qa/battle-stage.js）はページの中の切り替え window.MM_QA_SIZE（'old'＝従来・'A'・'B'・'1'）を URL より先に見る（本編の既定値は変えない）
+  const sizeMode = () => { const o = root.MM_QA_SIZE; if (o) return o === 'old' ? null : o; const q = qsz(), v = q && q.get('mmSize'); return v === 'A' || v === 'B' ? v : v === '1' ? '1' : root.MM_SIZE_PREVIEW ? '1' : null; };
   const sizeAs = () => { const q = qsz(), v = q && q.get('mmSizeAs'), m = {}; if (v) v.split(',').forEach((x) => { const [a, b] = x.split(':').map(Number); if (a >= 0 && b >= 1 && b <= 5) m[a] = b; }); return m; };
   const sizeOf = (sp) => sizeAs()[sp] || SIZE[sp] || 3;
   /** 待機立ち絵などに掛ける倍率（プレビューのときだけ。それ以外は 1＝今まで） */
@@ -71,12 +72,8 @@
     'gauru_moves_1012/16_03.webp': [500, 215],    // フレアレイ：撃ち続ける姿
     // 2026-10-16（iPhone 6件 A4）：フレアレイの溜めの姿（嘴を閉じた先）＝溜めの光をここへ（素材の溜めの光は肩の位置に描かれている）
     'gauru_moves_1012/16_01.webp': [532, 226],
-    // 2026-10-16（iPhone 6件 A2）：スターダストレイの溜めの姿（口の中央）＝青い光線の試作の溜め
-    'soramo_moves_1012/08_03.webp': [265, 200],
   });
   const qs = (() => { try { return new URLSearchParams(root.location ? root.location.search : ''); } catch (e) { return null; } })();
-  /** 2026-10-16（iPhone 6件 A2）：スターダストレイの青い専用光線の試作（js/battle/sk08-blue-1016.js）＝?sk08=blue のときだけ。ユーザー承認前は従来の光線 */
-  const SK08_BLUE = !!(qs && qs.get('sk08') === 'blue');
   const mouthOf = (dir, f) => { const m = /([^/]+)\/$/.exec(dir || ''); return MOUTH[(m ? m[1] : 'soramo_moves_1012') + '/' + f] || null; };
 
   const C = './assets/battle/common/';
@@ -85,12 +82,13 @@
     // 01 ソラモビーム：その場で口から撃つ（前へ出ない）・光線を次の区切り（反動の姿）まで残す
     //    2026-10-16 iPhone 01：光線の根元＝そのコマの口先（上の MOUTH）。口を閉じた反動の姿（05_04）では光線を出さない＝発射の姿（05_02）の区切りだけ
     'soramo_moves_1012/05_01.webp': { id: '01', stay: true, fxSet: { SORAMO_BEAM_3: { t: [1, 1] } } },
-    // 02 スターダストレイ：技カード・資料（assets/moves/solamo/09_stardust_ray）は「口から極太の光線」。コマに光線が無い＝同じソラモの光線（05_03）を太く・長く
-    //    【暫定】専用の光線（青白い星の光）は発注（報告書）
-    //    2026-10-16（iPhone 6件 A2）：?sk08=blue＝青い専用光線の試作（溜め＝口先の青い輪と星・光線＝深い青／水色／白の3層と流れる星・余韻＝星屑）
-    'soramo_moves_1012/08_01.webp': SK08_BLUE
-      ? { id: '02', stay: true, addFx: [{ src: 'SDR_BLUE_C', at: 'bluecharge', t: [2, 2], pw: 1, ph: 1 }, { src: 'SDR_BLUE', at: 'bluebeam', t: [3, 4], pw: 1, ph: 1, thick: 1.9 }] }
-      : { id: '02', stay: true, addFx: [{ src: 'SDR_BEAM', f: '05_03.webp', at: 'beam', t: [3, 4], pw: 567, ph: 209, thick: 1.9 }] },
+    // 02 スターダストレイ：2026-10-16（バトル最終統合）ユーザー承認の専用の青紫・星屑の光線2枚（Part01 の A_01 extend・A_02 peak）。
+    //    旧：ソラモビームの光線（05_03）の1.9倍の流用・?sk08=blue の CSS の試作＝やめた。発光点（絵の x 215/2048・y 280/512）をそのコマの口先（MOUTH）へ
+    //    区切り3（08_04＝本命の発射）＝extend が口から相手へ伸びる・区切り4（08_05＝撃ち続ける）＝peak（右端の平らな切り口は相手の奥で溶かす）
+    'soramo_moves_1012/08_01.webp': { id: '02', stay: true, addFx: [
+      { src: 'SDR_A01', f: '08_a01_fx.webp', at: 'sprbeam', t: [3, 3], pw: 1024, ph: 256, ox: 215 / 2048, oy: 280 / 512, tip: 0.955 },
+      { src: 'SDR_A02', f: '08_a02_fx.webp', at: 'sprbeam', t: [4, 4], pw: 1024, ph: 256, ox: 215 / 2048, oy: 280 / 512, tip: 0.86, fadeR: 0.12, seg: 1 },
+    ] },
     // 03 スターフォール：四角い切れ目は素材の修正（tools/battlefix1015/apply.py：絵の端で切れている光を端へ向けて透明に）
     // 04 ファイアボール：口元の火球を相手まで飛ばす（体当たりにしない）→ 着弾の爆発
     'gauru_moves_1012/15_01.webp': { id: '04', stay: true, detach: [{ cut: 'G15_2', at: 'launch', fb: [118, 134, 467, 320], t: [1, 1], fromMouth: true, grow: [0.3, 1.0] }] },   // 2026-10-16 iPhone 04：嘴の口先で小さく生まれて相手の胸へ
@@ -122,7 +120,14 @@
     },
     // 08 はなビンタ：命中のときの「本物の鼻」＝ダメージの数字の横の絵文字 👃（iPhone では写実的な鼻）→ js/battle/rules.js の絵文字を 💫 に（ここでは何もしない）
     // 10 ずつき：鼻で押すのではなく、頭を前に出して当てる＝当たる姿を前へ傾けて、頭の高さで相手に当てる（専用の頭突きの姿は発注）
-    'nobiton_moves_1012/31_01.webp': { id: '10', cutSet: { N31_3: { r: [0.26, 0.34], rot: 14, lift: 0.04 } } },
+    //    2026-10-16（バトル最終統合）：ユーザー承認の専用の本体2枚（Part01 の B_01 溜め・B_02 額から踏み込む突進＝鼻は顔の前から下へ1本）に差し替え。
+    //    溜め（B01）→ 額を低く前へ出して相手へ（B02・move）→ 当たり（B02・contact＝短いヒットストップと揺れ）→ 戻る（B01・back）→ 待機。2枚とも足もとは同じ（原本 y 1140）
+    'nobiton_moves_1012/31_01.webp': { id: '10', hs: 110, shakeAt: [2], fxSet: { N31_3_fx1: { ws: 0.55 } }, cuts: [
+      { src: 'N31_1', f: '31_b01.webp', name: 'B_01_nobiton_headbutt_windup.png', m: 'self', t: [0, 0], pw: 603, ph: 451, x: 0, y: 0, w: 603, h: 451, b: [9, 9, 569, 442] },
+      { src: 'N31_2', f: '31_b02.webp', name: 'B_02_nobiton_headbutt_contact.png', m: 'move', t: [1, 1], pw: 603, ph: 451, x: 0, y: 0, w: 603, h: 451, b: [35, 182, 594, 442] },
+      { src: 'N31_3', f: '31_b02.webp', name: 'B_02_nobiton_headbutt_contact.png', m: 'contact', t: [2, 2], pw: 603, ph: 451, x: 0, y: 0, w: 603, h: 451, b: [35, 182, 594, 442] },
+      { src: 'N31_4', f: '31_b01.webp', name: 'B_01_nobiton_headbutt_windup.png', m: 'back', t: [3, 3], pw: 603, ph: 451, x: 0, y: 0, w: 603, h: 451, b: [9, 9, 569, 442] },
+    ] },
     // 11 ひとやすみ：輪郭の松葉模様は素材の修正（apply.py）
     // 12〜14 ジオルの市松は素材の修正（apply.py）。13 のしかかり：跳んで相手の上へ着地 → 揺れ
     'jiol_moves_1012/j04_01.webp': { id: '13', cutSet: { J4_2: { m: 'move', r: [0.05, 0.62], arc: 0.6 }, J4_3: { m: 'contact', r: [0.72, 0.72] } }, shakeAt: [2] },
@@ -156,14 +161,24 @@
       addFx: [{ src: 'F9_impact', u: C + 'bc07_critical.webp', at: 'tgt', t: [3, 3], pw: 512, ph: 512, ws: 1.25 }],
       shakeAt: [3],
     },
-    // 21 フルーネ技10：相手の位置で見える着弾（共通演出の正式素材 bc06＋bc07）・被弾・ヒットストップ。【未完成】根の専用の絵は発注
+    // 21 フルーネ技10 ルートテンペスト：2026-10-16（バトル最終統合）ユーザー承認の専用の根4枚＋命中3枚（Part01 の D_01〜D_07）。旧：共通演出 bc06／bc07 の流用だけ＝やめた。
+    //    根（D01 出現 → D02 伸長 → D03 打撃 → D04 引き）は相手の足もとから（at 'root'＝絵の根元＝下 7% を相手の足もとへ・相手の前に重ねる）。
+    //    命中（D05 開く → D06 最大 → D07 消える）は相手の被弾点（at 'tgt'＝絵の中心）。当たり＝D03 の打撃と D05 の開き（1回）。技09 とは別の層・別の当たり
     'flurene_moves_1015/f10_b01.webp': {
-      id: '21', hit: 5, hs: 140,
-      addFx: [
-        { src: 'F10_hit', u: C + 'bc06_hit.webp', at: 'tgt', t: [3, 3], pw: 512, ph: 512, ws: 0.95 },
-        { src: 'F10_crit', u: C + 'bc07_critical.webp', at: 'tgt', t: [4, 4], pw: 512, ph: 512, ws: 1.3 },
+      id: '21', steps: 7, hit: 4, hs: 140,
+      cuts: [
+        { src: 'F10_1', t: [0, 0] }, { src: 'F10_2', t: [1, 1] }, { src: 'F10_3', t: [2, 2] }, { src: 'F10_4', t: [3, 4] }, { src: 'F10_5', t: [5, 6] },
       ],
-      shakeAt: [3, 4],
+      addFx: [
+        { src: 'F10_D01', f: 'f10_d01_fx.webp', at: 'root', t: [1, 1], pw: 512, ph: 512 },
+        { src: 'F10_D02', f: 'f10_d02_fx.webp', at: 'root', t: [2, 2], pw: 512, ph: 512 },
+        { src: 'F10_D03', f: 'f10_d03_fx.webp', at: 'root', t: [3, 3], pw: 512, ph: 512 },
+        { src: 'F10_D04', f: 'f10_d04_fx.webp', at: 'root', t: [4, 4], pw: 512, ph: 512 },
+        { src: 'F10_D05', f: 'f10_d05_fx.webp', at: 'hitc', t: [3, 3], pw: 512, ph: 512 },
+        { src: 'F10_D06', f: 'f10_d06_fx.webp', at: 'hitc', t: [4, 4], pw: 512, ph: 512 },
+        { src: 'F10_D07', f: 'f10_d07_fx.webp', at: 'hitc', t: [5, 5], pw: 512, ph: 512 },
+      ],
+      shakeAt: [3],
     },
   };
   // 共通演出の正式素材の大きさ（画素）＝読み込み前でも置き方が決まる
@@ -194,6 +209,7 @@
     const out = Object.assign({}, d, { cuts, fx, tune: t });
     if (t.hit != null) out.hit = t.hit;
     if (t.stay) out.stay = true;
+    if (t.steps) out.steps = t.steps;
     cache.set(d, out);
     return out;
   }
@@ -256,6 +272,6 @@
   if (root.document) { if (root.document.readyState !== 'loading') setTimeout(watchEmoji, 0); else root.addEventListener('DOMContentLoaded', () => setTimeout(watchEmoji, 0)); }
 
   // 2026-10-16：読み込んだ技アニメの JS の版（iPhone の QA 画面に出す＝配信のキャッシュで古い JS が混ざったかを見分ける）
-  const BUILD = '2026-10-16-ip6';
+  const BUILD = '2026-10-16-final';
   root.MMTUNE = Object.freeze({ BUILD, SIZE_PLAN, VIS_H, VIS_H3, sizeMode, sizeAs, SIZE, SIZE_K, SIZE_NAME, FINE, ANCHOR, MOVES, MOUTH, mouthOf, EMOJI_OFF, emojiLog: () => emojiLog.slice(), sizePreview, sizeOf, sizeK, patch, keyOf, onAnimStart, sfxLog: () => sfxLog.slice(), wrapSe });
 })(typeof window !== 'undefined' ? window : globalThis);

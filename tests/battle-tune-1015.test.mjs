@@ -94,7 +94,7 @@ test('BT-06：フェザーストーム・聖なる炎・射撃の技', () => {
 
 test('BT-07：口先の表・スターフォールの絵文字・聖なる炎・蒼刃乱舞の柱（2026-10-16）', () => {
   const get = (key) => { const x = all.find(({ d, dir }) => T.keyOf(d, dir) === key); return { p: T.patch(x.d, x.dir), dir: x.dir }; };
-  for (const [key, srcs] of [['soramo_moves_1012/05_01.webp', ['SORAMO_BEAM_3']], ['soramo_moves_1012/08_01.webp', ['SDR_BEAM']], ['gauru_moves_1012/15_01.webp', ['G15_2_fx']], ['gauru_moves_1012/16_01.webp', ['G16_2_fx']]]) {
+  for (const [key, srcs] of [['soramo_moves_1012/05_01.webp', ['SORAMO_BEAM_3']], ['soramo_moves_1012/08_01.webp', ['SDR_A01', 'SDR_A02']], ['gauru_moves_1012/15_01.webp', ['G15_2_fx']], ['gauru_moves_1012/16_01.webp', ['G16_2_fx']]]) {
     const { p, dir } = get(key);
     for (const src of srcs) {
       const c = p.fx.find((q) => q.src === src); assert.ok(c, `${key}：${src}`);

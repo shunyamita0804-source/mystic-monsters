@@ -13,7 +13,9 @@
 // 色を変える指定（CSS の色の加工）は使わない：被弾の光はモンスターの絵の形のマスクに白を重ねる。
 (function () {
   'use strict';
-  const ST = window.setTimeout.bind(window);
+  // 2026-10-16（バトル最終統合）：常設バトル QA のステージ（js/qa/battle-stage.js）の速さ・一時停止・コマ送りは仮想の時計（window.__mmqaST）。普段は無い＝ブラウザのタイマーのまま
+  const NATIVE_ST = window.setTimeout;
+  const ST = function () { return (window.__mmqaST || NATIVE_ST).apply(window, arguments); };
   const G = (name) => { try { return (0, eval)(name); } catch (e) { return undefined; } };
   const reduced = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
   const EASE = { out: 'cubic-bezier(.2,.8,.3,1)', in: 'cubic-bezier(.6,0,.9,.4)', back: 'cubic-bezier(.3,1.5,.5,1)', io: 'cubic-bezier(.45,0,.55,1)' };
@@ -82,7 +84,8 @@
 
   // act() の直後に置かれるタイマー（ダメージの表示 720ms・次のターン 1500／1900ms）を、この1回だけずらす
   let pend = null;
-  const nativeST = window.setTimeout;
+  let qaR = null;
+  const nativeST = ST;
   function patchedST(fn, ms) {
     const rest = Array.prototype.slice.call(arguments, 2);
     if (pend && performance.now() <= pend.until) {
@@ -184,6 +187,7 @@
       busy++;
       ensureWrap();
       const me2 = cur = {};
+      if (qaR) { me2.r = qaR; qaR = null; }   // 2026-10-16：常設バトル QA の「命中／回避」（判定は無い＝見せ方だけ）
       const p25 = !!(window.MM25D && MM25D.handles(k, s)), kind = p25 ? null : SPECIAL[k];   // コマで見せる技（ソラモ・ガウルの正式の技アニメ）は、補助技・聖なる炎・フェザーストームの専用の飾りを重ねない（2026-10-12：ガウルの95枚に嵐・オーラが描かれている）
       // 1 構え：少し沈んで後ろへ（攻撃側を少し大きく）
       const wind = anim(mon, [{ transform: 'none' }, { transform: `translateX(${-8 * f}px) scale(1.05,.94)`, offset: 0.6 }, { transform: `translateX(${-6 * f}px) scale(1.04,.96)` }], { duration: T0.windup, easing: EASE.out, fill: 'forwards' });
@@ -250,5 +254,5 @@
     }
   }
 
-  window.MMSTAGE = Object.freeze({ run, tierFor, rawTiming, TIER, SPECIAL, get busy() { return busy; } });
+  window.MMSTAGE = Object.freeze({ run, tierFor, rawTiming, TIER, SPECIAL, get busy() { return busy; }, qaForce: (r) => { qaR = r || null; } });
 })();

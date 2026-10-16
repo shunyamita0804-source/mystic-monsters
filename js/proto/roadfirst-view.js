@@ -21,7 +21,7 @@
   'use strict';
   const Q = (() => { try { return new URLSearchParams(root.location ? root.location.search : ''); } catch (e) { return new URLSearchParams(''); } })();
   const ON = Q.get('chapterBoard') === 'roadfirst';
-  // 2026-10-15 Chapter 2 A／B／C 設計案の限定試作：&rfData=ch2&ch2route=A|B|C（js/proto/ch2-routes.js＝MMRF_CH2）。Chapter 1 の試作（既定）とは別の鍵に保存＝互いに触れない。
+  // 2026-10-15 Chapter 2 A／B／C 設計案の限定試作：&rfData=ch2&ch2route=A|B|C（js/proto/ch2-routes.js＝MMRF_CH2）。2026-10-16：ルートを省くと A＋上の帯に A／B／C の切り替え（.rf-c2sel）。Chapter 1 の試作（既定）とは別の鍵に保存＝互いに触れない。
   //  本編（MMWD／MMWB・raising.js・セーブ v6／mr4v6）にはつながない。通常の URL では何もしない（従来どおり）
   const CH2 = ON && Q.get('rfData') === 'ch2' ? (['A', 'B', 'C'].includes(Q.get('ch2route')) ? Q.get('ch2route') : 'A') : null;
   const KEY = 'mmrf_proto_v1';
@@ -128,6 +128,7 @@
 #rfp .rf-top{position:absolute;left:8px;right:8px;top:calc(env(safe-area-inset-top,0px) + 8px);background:rgba(19,35,58,.9);color:#fff;border-radius:12px;padding:7px 10px;font-size:12px;line-height:1.45;z-index:5}
 #rfp .rf-top b{font-size:13px}#rfp .rf-top .rf-warn{color:#ffd27a;font-size:10.5px}
 #rfp .rf-top .rf-row{display:flex;gap:10px;flex-wrap:wrap}
+#rfp .rf-top .rf-c2sel{display:flex;align-items:center;gap:6px;margin:4px 0 2px;font-weight:700}#rfp .rf-top .rf-c2sel a{display:inline-block;min-width:40px;padding:5px 0;border:1.5px solid #ffd27a;border-radius:8px;color:#ffd27a;text-align:center;text-decoration:none;font-weight:900}#rfp .rf-top .rf-c2sel a.on{background:#ffd27a;color:#13233a}
 #rfp .rf-tools{position:absolute;right:8px;top:calc(env(safe-area-inset-top,0px) + 92px);display:flex;flex-direction:column;gap:6px;z-index:5}
 #rfp .rf-tools button{font:inherit;font-size:11.5px;padding:6px 8px;border-radius:9px;border:1px solid #13233a;background:rgba(255,255,255,.92);color:#13233a}
 #rfp .rf-bot{position:absolute;left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);z-index:5;display:flex;flex-direction:column;gap:8px}
@@ -201,7 +202,7 @@
     css();
     el = document.createElement('div'); el.id = 'rfp'; el.setAttribute('role', 'application');
     el.innerHTML = `<div class="rf-vp"><div class="rf-cam"><img src="${BG}" alt="" draggable="false">${svgLayer()}<div class="rf-mon"><img src="${monSrc()}" alt="モンスター" draggable="false"></div></div>${ZON ? '<div class="rf-zone" aria-hidden="true"></div>' : ''}</div>
-<div class="rf-top"><div><b>${CH2 ? `Chapter 2 ルート ${CH2}「${esc(D.name || '')}」設計案の試作` : 'Chapter 1 Pattern A 道路先行の試作'}</b> <span class="rf-warn">（試作・正式ではない／図面はブロックアウト）</span></div><div class="rf-row"><span class="rf-turn"></span><span class="rf-at"></span></div><div class="rf-row"><span class="rf-rw"></span><span class="rf-rand"></span><span class="rf-rule"></span></div><div class="rf-play"><span class="rf-fat"></span><span class="rf-gold"></span><span class="rf-gain"></span></div>${ZON ? '<div class="rf-zrow"></div>' : ''}</div>
+<div class="rf-top"><div><b>${CH2 ? `Chapter 2 ルート ${CH2}「${esc(D.name || '')}」設計案の試作` : 'Chapter 1 Pattern A 道路先行の試作'}</b> <span class="rf-warn">（試作・正式ではない／図面はブロックアウト）</span></div>${CH2 ? `<div class="rf-c2sel" role="navigation" aria-label="Chapter 2 のルートを選ぶ">ルート：${['A', 'B', 'C'].map((r) => `<a href="?chapterBoard=roadfirst&rfData=ch2&ch2route=${r}" data-r="${r}"${r === CH2 ? ' class="on" aria-current="page"' : ''}>${r}</a>`).join('')}</div>` : ''}<div class="rf-row"><span class="rf-turn"></span><span class="rf-at"></span></div><div class="rf-row"><span class="rf-rw"></span><span class="rf-rand"></span><span class="rf-rule"></span></div><div class="rf-play"><span class="rf-fat"></span><span class="rf-gold"></span><span class="rf-gain"></span></div>${ZON ? '<div class="rf-zrow"></div>' : ''}</div>
 <div class="rf-tools"><button type="button" data-a="stats">能力</button><button type="button" data-a="zoom">全体</button><button type="button" data-a="reset">最初から</button><button type="button" data-a="close">閉じる</button></div>
 <div class="rf-panel" role="dialog" aria-label="能力と記録"></div>
 <div class="rf-die"><span></span><small></small></div>

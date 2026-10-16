@@ -25,13 +25,13 @@
 | ガウル | 3 | GAURU_03_spiral_dive.png | 2560x1440 | 1ce52d14080097ce554b5dbc4496b2c4a6ca51e83e13fb2f1172f498447366b5 | gauru/03_spiral_dive.webp |
 | ガウル | 4 | GAURU_04_sonic_move.png | 2560x1440 | 47a925a4c50633c0e37a07b2ce8026833967c1ab8a21d93433cf47c76f9ca7a1 | gauru/04_sonic_move.webp |
 | ガウル | 5 | GAURU_05_kouyoku_slash.png | 2560x1440 | 0ba4c877573ec5945d2f5035cd97e50acdae9a9e5ba8f20958d9931631d8952a | gauru/05_kouyoku_slash.webp |
-| ガウル | 6 | GAURU_06_fireball.png | 2560x1440 | 3c078dadebc66da3e18d2ce6d5fdbea79253393abea2bbeafca9e55769ad807a | gauru/06_fireball.webp |
+| ガウル | 6 | 01_Gauru_06_Fireball_Card_Mouth.png（2026-10-16 差し替え・口から発射） | 1664x936 | 33c0d944c2b43701f18bc26918c49e719fa7f227a5cb55f97c91056e02f0fa16 | gauru/06_fireball.webp |
 | ガウル | 7 | GAURU_07_sky_rush.png | 2560x1440 | 6dec98d7cc0789f2dd4ef721c4bb24f289f5bc64141456230a15f9884350856e | gauru/07_sky_rush.webp |
 | ガウル | 8 | GAURU_08_flare_ray.png | 2560x1440 | 3a93810634d00e8f539a2733192577b9146439949155a04f4b2dccef6e013d47 | gauru/08_flare_ray.webp |
 | ガウル | 9 | GAURU_09_feather_storm.png | 2560x1440 | fc9c196f81a024cb1a4230ead43d8d499529677d040faecc4f466890ba1d4c23 | gauru/09_feather_storm.webp |
 | ガウル | 10 | GAURU_10_sacred_flame.png | 2560x1440 | 62a00c018acd09e94422af08994eb2865f9fc5651b9e8f330da9dc094cee0146 | gauru/10_seinaru_honoo.webp |
 | ノビトン | 1 | NOBITON_01_hana_binta.png | 2560x1440 | 05bfcc967dc1fd78a946f62bab7a9c4fbf7cb399840b9f84b509d2eac59cc3c4 | nobiton/01_hana_binta.webp |
-| ノビトン | 2 | NOBITON_02_zutsuki.png | 2560x1440 | a39859a584fa3849e0d0a83567960728ce44cb004950214962df2b91227a86bb | nobiton/02_zutsuki.webp |
+| ノビトン | 2 | 02_Nobiton_02_Headbutt_Card_Forehead.png（2026-10-16 差し替え・額で当てる） | 1664x936 | 4faf599bea769c7655218b4baf23cb63bf2b38076e934f3f4c1c21771efcd661 | nobiton/02_zutsuki.webp |
 | ノビトン | 3 | NOBITON_03_hana_mizu.png | 2560x1440 | 3768c37dbf4af5fa05918d7ec2ee99a163b1608fa7b8110d8a7f6264fb36132f | nobiton/03_hanamizu.webp |
 | ノビトン | 4 | NOBITON_04_hitoyasumi.png | 2560x1440 | 0fd3ce91944b4f8e763095cfecfd7e289ae86aff7f7d88bb9483a4cd6438fa29 | nobiton/04_hitoyasumi.webp |
 | ノビトン | 5 | NOBITON_05_makitsuku.png | 2560x1440 | da9978cd3befff4d24cc28b2bd3230e8c4fad0fe959931eae4c526e2a81a3d77 | nobiton/05_makitsuku.webp |
@@ -76,5 +76,12 @@
 | フルーネ | 6 | FLURENE_06_bloom_ray.png | 1664x936 | 5e25993812837f9608488cdd698d6f372d939aee635b838000c0c352dc5058aa | flurene/06_bloom_ray.webp |
 | フルーネ | 7 | FLURENE_07_shibari_zuru.png | 1664x936 | a7cf03f5bf598ee03b5efaa6026739c2280128d0e272b8a70c1b214e351aa0a1 | flurene/07_shibari_zuru.webp |
 | フルーネ | 8 | FLURENE_08_hanakage_no_mai.png | 1664x936 | 6ef92c09fc8d99b8012dd93ff17d9b94505bfbfcbe2a42f4d76a0e6a6fca4b6e | flurene/08_hanakage_no_mai.webp |
-| フルーネ | 9 | FLURENE_09_inochi_no_shizuku.png | 1664x936 | 44c97cd4b5e04fda9f5b38f8e962029de5b86096a865644ce1caadd761f4d385 | flurene/09_inochi_no_shizuku.webp |
+| フルーネ | 9 | 03_Fulune_09_RootDrain_Card_Absorb.png（2026-10-16 差し替え・旧「生命のしずく」のカードは削除） | 1664x936 | 325edfd8ae91c68e4f6749b706fc75cbc05af3cea1738307d5ca733a23325c9a | flurene/09_root_drain.webp |
 | フルーネ | 10 | FLURENE_10_root_tempest.png | 1664x936 | 63659d7d7a92f49edc887ce9b63d5a1196b834253298721ed73e14b28851fe69 | flurene/10_root_tempest.webp |
+
+## 2026-10-16 の差し替え3枚（ZIP Mismon_Battle_Final_Part01_Art の Cards_3approved・ユーザー正式承認）
+
+- 画像だけを差し替えた（技の性能・SK の番号・技アニメ・SE・カードの UI は変えていない）。変換は既存と同じ（幅 640px・WebP 品質84）。道具＝tools/final1016/derive.py
+- ガウル カード06 ファイアボール＝SK 15／ノビトン カード02 ずつき＝SK 31／フルーネ カード09 ルートドレイン（技ID root_drain・QA 試遊だけの SK 58）。カードの番号と SK の番号は別
+- 旧カード3枚（GAURU_06_fireball・NOBITON_02_zutsuki・FLURENE_09_inochi_no_shizuku）の原本の sha256 は git の履歴の README に残る
+
