@@ -59,9 +59,9 @@
 
 ## ⑥ iPhone で試す URL と順
 
-- **A**：https://raw.githack.com/shunyamita0804-source/mystic-monsters/claude/ch2-art-1016/index.html?ch2trial=A
-- **B**：https://raw.githack.com/shunyamita0804-source/mystic-monsters/claude/ch2-art-1016/index.html?ch2trial=B
-- **C**：https://raw.githack.com/shunyamita0804-source/mystic-monsters/claude/ch2-art-1016/index.html?ch2trial=C
+- **A**：https://raw.githack.com/shunyamita0804-source/mystic-monsters/3c3003ece4acad37fa5c9224d976bbd649149ecc/index.html?ch2trial=A
+- **B**：https://raw.githack.com/shunyamita0804-source/mystic-monsters/3c3003ece4acad37fa5c9224d976bbd649149ecc/index.html?ch2trial=B
+- **C**：https://raw.githack.com/shunyamita0804-source/mystic-monsters/3c3003ece4acad37fa5c9224d976bbd649149ecc/index.html?ch2trial=C
 - 試作（従来の URL・維持）：…/index.html?chapterBoard=roadfirst&rfData=ch2&ch2route=A|B|C
 - raw.githack は最初に「One more step」の確認画面を出す＝**「Open the page」を押す**とゲームが開く（配信元の仕様。ゲームの不具合ではない）。
 - 配信の確認（150d44a の時点・Chromium・390×844・2026-10-16）：A／B／C とも確認画面のあと約10秒で本編の盤（地点 298／284／304）・版の札「2026-10-16-ch2art・efbfbbf」・ページの例外 0・404 なし（中断された音の読み込みと広告だけ）。画像 `shots/remote_A|B|C_390x844.png`。
