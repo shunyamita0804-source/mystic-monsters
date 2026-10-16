@@ -66,7 +66,9 @@
       const inf = info(x.sp) || {}, md = moveData(x.key), cards = C ? C.list(x.key) : [];
       const moves = cards.map((c) => {
         const d = md.find((v) => v.no === c.no) || {};
-        return { no: c.no, id: c.id, name: c.name || d.name, slot: c.slot, src: c.src, status: statusOf(x.key, c.slot), anim: animInfo(x.key, c.no), type: d.type || null,
+        // 2026-10-16：フルーネ技09「ルートドレイン」は QA だけ SK 58（js/battle/rules.js）＝実戦で確認できる。名前は登録の新しい名前（カードの絵は旧「生命のしずく」のまま＝新しいカードは素材待ち）
+        const flu9 = x.key === 'flurene' && c.no === 9 && G('SK') && G('SK')[58] ? 58 : null, slot = c.slot != null ? c.slot : flu9;
+        return { no: c.no, id: c.id, name: x.key === 'flurene' ? d.name || c.name : c.name || d.name, slot, src: c.src, status: statusOf(x.key, slot), anim: animInfo(x.key, c.no), type: d.type || null,
           power: d.power == null ? null : d.power, accuracy: d.accuracy == null ? null : d.accuracy, critical: d.critical == null ? null : d.critical, desc: d.desc || null };
       });
       return { sp: x.sp, key: x.key, name: inf.name, note: inf.note, img: inf.img, idle: inf.idle, moves };

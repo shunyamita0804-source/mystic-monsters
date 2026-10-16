@@ -56,7 +56,10 @@
 
   function spOf(s) { const pl = G('BPL'); return pl && pl[s] ? pl[s].sp : null; }
   /** この技をこの側が使うとき新しいコマで見せるか */
+  // 2026-10-16：フルーネ技09「ルートドレイン」（QA 試遊だけの SK 58・js/battle/rootdrain-1016.js）
+  const rdOn = (k, s) => !!(root.MMRD && offOn() && root.MMRD.handles(k, spOf(s)));
   function handles(k, s) {
+    if (rdOn(k, s)) return true;
     if (offData(k, s)) return true;
     if (!on) return false;
     const d = DATA()[k];
@@ -80,7 +83,7 @@
     return { dur, body, step, win, hit };
   }
   const viaStage = () => !!(root.MMSTAGE && root.MMSTAGE.busy > 0);
-  function timing(k, s) { if (!handles(k, s)) return null; const od = offData(k, s), p = od ? planOff(k, true, od) : plan(k, true); return { hit: p.hit, dur: p.dur }; }
+  function timing(k, s) { if (rdOn(k, s)) { const SK = G('SK'), q = root.MMRD.plan(true, !!(SK && SK[k] && SK[k][1] > 0)); return { hit: q.hit, dur: q.dur }; } if (!handles(k, s)) return null; const od = offData(k, s), p = od ? planOff(k, true, od) : plan(k, true); return { hit: p.hit, dur: p.dur }; }
   /** 正式のソラモの技：区切り（steps）ごとの時間。重ねる層は同じ区切りに出す */
   function planOff(k, viaStage, dd, dmgOver) {
     const d = dd || OFF()[k] || GOFF()[k] || NOFF()[k] || ROFF()[k], n = d.steps;
@@ -247,6 +250,7 @@
   /** 技のコマを順に見せる。引き受けたら true */
   function anim(k, s) {
     if (!handles(k, s)) return false;
+    if (rdOn(k, s)) { const g = geom(s), SK = G('SK'); if (!g) return false; style(); try { if (root.MMTUNE) root.MMTUNE.onAnimStart(k, s, null); } catch (er) { /* 無視 */ } return root.MMRD.play(k, s, g, root.MMRD.plan(viaStage(), !!(SK && SK[k] && SK[k][1] > 0))); }
     if (offData(k, s)) return animOff(k, s);
     const v = $('.vs'), bt = document.getElementById('bt'), me = document.getElementById('m' + s), op = document.getElementById('m' + (1 - s));
     if (!v || !v.appendChild || !me || !op || !bt) return false;
@@ -524,9 +528,10 @@
   }
   /** 技のコマを先に読む。読めなかったコマがあれば、その技は従来の演出へ戻す（failed） */
   function warm(d) { if (d.tune && d.tune.v2 && root.MMSK19V2) root.MMSK19V2.warm(); d.cuts.concat(d.fx || []).forEach((c) => (c.u ? [c.u] : [c.f, c.fx].filter(Boolean).map((f) => (d.dir || OA) + f)).forEach((u) => { const i = new Image(); i.decoding = 'async'; i.onerror = () => failed.add(u); i.src = u; })); }
-  function preloadOff(pl) { if (!pl) return; [0, 1].forEach((s) => (pl[s] && pl[s].eq || []).forEach((k) => { const d = offData(k, s); if (d) warm(d); })); }
+  function preloadOff(pl) { if (!pl) return; if (root.MMRD) [0, 1].forEach((s) => { if (pl[s] && (pl[s].eq || []).some((k) => root.MMRD.handles(k, pl[s].sp))) root.MMRD.warm(); }); [0, 1].forEach((s) => (pl[s] && pl[s].eq || []).forEach((k) => { const d = offData(k, s); if (d) warm(d); })); }
   /** 開発用のプレビュー（バトル画面が出ている間だけ）：kind＝'jiol'（正式No 1〜10）／'regnas'（正式No 1〜10）／'flurene'（登録の No 1〜10）。性能・番号の決まっていない技も、データのコマを順に見せるだけ（判定・ダメージ・セーブは触らない） */
   function preview(kind, no, s, opt) {
+    if (kind === 'flurene' && no === 9 && root.MMRD) { const g = geom(s || 0); if (!g) return false; style(); return root.MMRD.play(-1, s || 0, g, root.MMRD.plan(false, false)); }   // 2026-10-16：09＝ルートドレイン（旧「生命のしずく」の雨の演出には戻さない）
     const d = tuned(kind === 'jiol' ? JOFF()[no] : kind === 'regnas' ? ROFF()[20 + no - 1] : kind === 'flurene' ? FLOFF()[no] : null);
     if (!d || !usable(d)) return false;
     return animOff(-1, s || 0, d, Object.assign({ via: false, dmg: !!d.hit }, opt || {}));

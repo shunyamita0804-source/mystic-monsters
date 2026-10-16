@@ -278,3 +278,37 @@ test('BTB-11：フレアレイの溜めの光は嘴の先（16_01 の口先）�
   assert.ok(b.seen.SDR_BLUE_after, '余韻（光線が細くなって消える）');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
+
+// 2026-10-16：フルーネ技09「ルートドレイン」（QA 試遊だけの SK 58）
+test('BTB-12：ルートドレイン＝8コマが1枚ずつ順に・命中でダメージ1回・与えたダメージの50%（四捨五入・最大ライフまで）を1回だけ吸収・MISS は吸収しない・残らない', { skip: SKIP, timeout: 400000 }, async () => {
+  const p = await battle('', 5, 0), pg = p.page;
+  await pg.evaluate(() => {
+    BPL[0].eq = BPL[0].eq.map(() => 58); BPL[1].h = Math.max(BPL[1].h, 900);
+    window.__r = []; const B = window.MMBattle;
+    window.MMBattle = Object.freeze(Object.assign({}, B, { resolveAction(o) { if (o && o.session && o.attackerSide === 'A') o.session.currentLife.A = Math.min(o.session.currentLife.A, 40); const r = B.resolveAction(o); if (o && o.attackerSide === 'A') window.__r.push({ k: o.move && o.move.id, hit: r.hit, damage: r.damage, drained: r.drained, life: o.session.currentLife.A, max: o.session.participants.A.maxLife }); return r; } }));
+    window.__seq = []; window.__pops = 0;
+    setInterval(() => { const v = [...document.querySelectorAll('#bt .mmrd')].filter((e) => +getComputedStyle(e).opacity > 0.5).map((e) => +e.dataset.cut.slice(3)); if (v.length) window.__seq.push(v); }, 30);
+    new MutationObserver((l) => l.forEach((m) => m.addedNodes.forEach((n) => { if (n.nodeType === 1 && n.tagName === 'SPAN' && /^\+\d+$/.test(n.textContent) && n.parentNode && n.parentNode.id === 'f0') window.__pops++; }))).observe(document.getElementById('bt'), { childList: true, subtree: true });
+  });
+  let hits = 0, misses = 0;
+  for (let i = 0; i < 10 && (hits < 2 || misses < 1); i++) {
+    await pg.evaluate(() => { const g = document.getElementById('go'); if (g) g.click(); }); await pg.waitForTimeout(400);
+    await pg.evaluate(() => { const g = document.getElementById('go'); if (g && !g.disabled) g.click(); });
+    for (let w = 0; w < 30; w++) { await pg.waitForTimeout(400); if (await pg.evaluate(() => { const g = document.getElementById('go'); return !g || (!g.disabled && !g.classList.contains('bk')); })) break; }
+    const r = await pg.evaluate(() => window.__r.filter((x) => x.k === 'sk58'));
+    hits = r.filter((x) => x.hit && x.damage > 0).length; misses = r.filter((x) => !x.hit).length;
+  }
+  const R = await pg.evaluate(() => ({ r: window.__r.filter((x) => x.k === 'sk58'), drains: MMRULES.drainLog(), seq: window.__seq, pops: window.__pops, left: document.querySelectorAll('#bt .mmrd').length }));
+  const hit = R.r.filter((x) => x.hit && x.damage > 0);
+  assert.ok(hit.length >= 1, `ルートドレインが当たった（${R.r.length} 回中 ${hit.length}）`);
+  for (const x of hit) assert.equal(x.drained, Math.min(x.max - 40, Math.round(x.damage * 0.5)), `与えた ${x.damage} → 吸収 ${x.drained}（ライフ 40 から・最大 ${x.max}）`);
+  for (const x of R.r.filter((y) => !y.hit)) assert.ok(!x.drained, 'MISS は吸収しない');
+  assert.equal(R.drains.length, hit.length, '吸収の表示は当たった回数だけ（1回の行動で1回）');
+  assert.equal(R.pops, R.drains.filter((d) => d.gain > 0).length, '回復の数字も1回ずつ');
+  // コマは 1→8 の順・同時に見えるのは前後の2枚まで（入れ替えの重なり）
+  const flat = R.seq.map((v) => Math.max(...v));
+  assert.ok(R.seq.every((v) => v.length <= 2 && (v.length < 2 || v[1] - v[0] === 1)), '同時に見えるのは隣り合う2枚まで');
+  assert.ok(flat.includes(1) && flat.includes(4) && flat.includes(7) && flat.includes(8), '01・04・07・08 が見える');
+  assert.equal(R.left, 0, 'コマが残らない');
+  assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
+});

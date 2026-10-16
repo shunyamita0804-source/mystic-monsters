@@ -220,6 +220,13 @@
       '#bt.mma-v24.mma-end>#ban{font-size:clamp(3.6rem,17vw,5rem)}',
       '#bt.mma-v24.mma-res-win>#ban{color:#fffaf0;text-shadow:0 2px 0 #7a3a00,0 0 18px rgba(255,236,170,.9),3px 4px 0 #4a2200}',
       '@keyframes mmaendb{from{opacity:0;transform:scaleY(.2)}to{opacity:1;transform:none}}',
+      // 2026-10-16（iPhone 6件 A6・ユーザー要望）：WIN の帯＝青・LOSE の帯＝赤（文字の WIN!／LOSE は残す＝色だけで勝敗を伝えない）。文字は白＋濃い縁取りで読みやすく。時刻・曲・もどる・結果は変えない
+      '#bt.mma-v24.mma-res-win .mma-endband{background:linear-gradient(90deg,rgba(6,30,96,0),rgba(14,58,170,.82) 14%,rgba(28,96,224,.92) 38%,rgba(52,128,246,.95) 50%,rgba(28,96,224,.92) 62%,rgba(14,58,170,.82) 86%,rgba(6,30,96,0))}',
+      '#bt.mma-v24.mma-res-win .mma-endband::after{background:linear-gradient(90deg,rgba(170,220,255,0),#a9d8ff 30%,#e6f4ff 50%,#a9d8ff 70%,rgba(170,220,255,0))}',
+      '#bt.mma-v24.mma-res-win>#ban{color:#ffffff!important;text-shadow:0 2px 0 #0a2a7a,0 0 16px rgba(150,205,255,.9),3px 4px 0 #061a52!important}',
+      '#bt.mma-v24.mma-res-lose .mma-endband{background:linear-gradient(90deg,rgba(90,6,12,0),rgba(150,16,28,.84) 14%,rgba(200,30,44,.92) 40%,rgba(222,48,58,.95) 50%,rgba(200,30,44,.92) 60%,rgba(150,16,28,.84) 86%,rgba(90,6,12,0))}',
+      '#bt.mma-v24.mma-res-lose .mma-endband::after{background:linear-gradient(90deg,rgba(255,190,190,0),#ffc2c2 30%,#ffe9e9 50%,#ffc2c2 70%,rgba(255,190,190,0))}',
+      '#bt.mma-v24.mma-res-lose>#ban{color:#ffffff!important;text-shadow:0 2px 0 #5a0008,0 0 14px rgba(255,170,170,.75),3px 4px 0 #3a0006!important}',
       '@media (prefers-reduced-motion:reduce){#bt.mma-v24 .mma-endband{animation:none;opacity:1}}',
       '#bt.mma-v24[data-mmprac="1"] .vs{translate:0 min(9.5dvh,82px)}',
       // ② ルーレット：アーチ・レールの位置を低い板に合わせる

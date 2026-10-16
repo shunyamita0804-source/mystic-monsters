@@ -31,9 +31,22 @@
     if (root.MM_SIZE_PREVIEW != null) return !!root.MM_SIZE_PREVIEW;
     try { return /[?&]mmSize=1(&|$)/.test(root.location.search); } catch (e) { return false; }
   };
-  const sizeOf = (sp) => SIZE[sp] || 3;
+  // 2026-10-16（iPhone 6件 A5）：比較案 A／B＝「サイズ3 の見えている体の高さを 100」とした目標の倍率（ユーザーの iPhone 判断まで正式ではない）。
+  //  URL の ?mmSize=A または ?mmSize=B のときだけ（?mmSize=1＝前回の暫定・なし＝従来）。?mmSizeAs=0:1,1:5＝比較のためだけに種族のサイズを読み替える（例：サイズ1 対 5 の並び）
+  const SIZE_PLAN = Object.freeze({ A: Object.freeze({ 1: 0.65, 2: 0.78, 3: 1.00, 4: 1.22, 5: 1.45 }), B: Object.freeze({ 1: 0.60, 2: 0.75, 3: 1.00, 4: 1.30, 5: 1.55 }) });
+  /** 見えている体の高さ（待機立ち絵の不透明な部分の高さ ÷ 絵の高さ × arena.js の SCALE）＝tools で測った値。種族の絵の高さの差を打ち消して、目標の比にそろえる */
+  const VIS_H = Object.freeze({ 0: 0.900, 1: 0.909, 2: 0.869, 3: 0.902, 4: 0.902, 5: 0.900 });
+  const VIS_H3 = (VIS_H[1] + VIS_H[4] + VIS_H[5]) / 3;   // サイズ3（ガウル・レグナス・フルーネ）の平均＝100
+  const qsz = () => { try { return new URLSearchParams(root.location.search); } catch (e) { return null; } };
+  const sizeMode = () => { const q = qsz(), v = q && q.get('mmSize'); return v === 'A' || v === 'B' ? v : v === '1' ? '1' : root.MM_SIZE_PREVIEW ? '1' : null; };
+  const sizeAs = () => { const q = qsz(), v = q && q.get('mmSizeAs'), m = {}; if (v) v.split(',').forEach((x) => { const [a, b] = x.split(':').map(Number); if (a >= 0 && b >= 1 && b <= 5) m[a] = b; }); return m; };
+  const sizeOf = (sp) => sizeAs()[sp] || SIZE[sp] || 3;
   /** 待機立ち絵などに掛ける倍率（プレビューのときだけ。それ以外は 1＝今まで） */
-  const sizeK = (sp) => (sizePreview() && SIZE[sp] ? SIZE_K[SIZE[sp]] * (FINE[sp] || 1) : 1);
+  const sizeK = (sp) => {
+    const mode = sizeMode(); if (!mode) return 1;
+    if (mode === 'A' || mode === 'B') { const z = sizeOf(sp); return VIS_H3 * SIZE_PLAN[mode][z] / (VIS_H[sp] || VIS_H3); }
+    return SIZE[sp] ? SIZE_K[sizeOf(sp)] * (FINE[sp] || 1) : 1;
+  };
 
   // ---- 体の目印（待機立ち絵に対する割合・右向き）。口＝光線・弾の出る所、頭＝頭突き、拳＝叩きつけ、胸＝着弾の中心 ----
   const ANCHOR = Object.freeze({
@@ -244,5 +257,5 @@
 
   // 2026-10-16：読み込んだ技アニメの JS の版（iPhone の QA 画面に出す＝配信のキャッシュで古い JS が混ざったかを見分ける）
   const BUILD = '2026-10-16-ip6';
-  root.MMTUNE = Object.freeze({ BUILD, SIZE, SIZE_K, SIZE_NAME, FINE, ANCHOR, MOVES, MOUTH, mouthOf, EMOJI_OFF, emojiLog: () => emojiLog.slice(), sizePreview, sizeOf, sizeK, patch, keyOf, onAnimStart, sfxLog: () => sfxLog.slice(), wrapSe });
+  root.MMTUNE = Object.freeze({ BUILD, SIZE_PLAN, VIS_H, VIS_H3, sizeMode, sizeAs, SIZE, SIZE_K, SIZE_NAME, FINE, ANCHOR, MOVES, MOUTH, mouthOf, EMOJI_OFF, emojiLog: () => emojiLog.slice(), sizePreview, sizeOf, sizeK, patch, keyOf, onAnimStart, sfxLog: () => sfxLog.slice(), wrapSe });
 })(typeof window !== 'undefined' ? window : globalThis);

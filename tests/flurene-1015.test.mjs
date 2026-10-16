@@ -41,13 +41,21 @@ test('FL-01：フルーネの登録の値（ユーザー提供の正式情報ど
   assert.equal(f.uniqueSkill.implemented, false, 'バトルには入れていない');
   assert.equal(f.uniqueSkill.params, null, '回復量の丸め・判定の順などは未確定＝数値を持たない');
   const exp = [['つるうち', 'initial'], ['たねとばし', 'initial'], ['はなのかおり', 'initial'], ['ねっこのまもり', 'initial'],
-    ['こんさいプレス', 'po'], ['ブルームレイ', 'in'], ['しばりづる', 'hi'], ['はなかげのまい', 'ev'], ['生命のしずく', 'de'], ['ルートテンペスト', 'de']];
+    ['こんさいプレス', 'po'], ['ブルームレイ', 'in'], ['しばりづる', 'hi'], ['はなかげのまい', 'ev'], ['ルートドレイン', 'de'], ['ルートテンペスト', 'de']];   // 2026-10-16：09 は「生命のしずく」→「ルートドレイン」（ユーザー承認）
   assert.deepEqual(J(f.moves.map((m) => [m.name, m.learn])), exp);
   assert.deepEqual(J(f.moves.map((m) => m.no)), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
   assert.equal(f.moves[8].deOrder, 1); assert.equal(f.moves[9].deOrder, 2); assert.equal(f.moves[9].finisher, true, 'ルートテンペスト＝必殺');
   assert.equal(f.moves.filter((m) => m.finisher).length, 1);
-  for (const m of f.moves) for (const k of ['power', 'accuracy', 'critical', 'effects', 'ailment', 'heal', 'slot', 'id', 'type'])
-    assert.ok(!(k in m), `${m.name} に ${k} を持たない（未提供の数値を作らない）`);
+  // 2026-10-16 ユーザー決定（技性能一覧）：01 威力60・02 威力65・10 威力120（威力だけ）／09 ルートドレイン＝威力110・命中90・CR10%・吸収50%。03〜08 は未承認＝数値を持たない
+  const OK = { 1: { power: 60 }, 2: { power: 65 }, 9: { power: 110, accuracy: 90, critical: 10, drain: 0.5 }, 10: { power: 120 } };
+  for (const m of f.moves) {
+    const ok = OK[m.no] || {};
+    for (const [k, v] of Object.entries(ok)) assert.equal(m[k], v, `${m.name} の ${k}`);
+    for (const k of ['power', 'accuracy', 'critical', 'effects', 'ailment', 'heal', 'slot', 'id', 'drain'])
+      if (!(k in ok)) assert.ok(!(k in m), `${m.name} に ${k} を持たない（未承認の数値を作らない）`);
+    if (m.no !== 9) assert.ok(!('type' in m), `${m.name} に type を持たない`);
+  }
+  assert.deepEqual(J(f.moves[8].formerNames), ['生命のしずく'], '旧名');
   assert.equal(f.unlocked, false); assert.equal(f.playerAvailable, false);
   assert.ok(Object.isFrozen(M.PENDING_SPECIES) && Object.isFrozen(f) && Object.isFrozen(f.moves));
 });
@@ -82,8 +90,9 @@ test('FL-02：番号 5 はどの表とも重ならない（SPECIES 0〜3・レ�
   walk('js'); if (/flurene|フルーネ/i.test(HTML)) hits.push('index.html');
   //  2026-10-15：技アニメのデータ（flurene-moves-data.js）と art25d.js の QA のプレビュー（preview('flurene')）・歩行の登録（ch1a.js の monsterSprites.flurene＝本編の盤は番号→キーの keyOf で引く＝5 は引けない）・index.html はそのデータの script の1行だけ
   //  2026-10-15 夜：技アニメの試遊修正（move-tune-1015.js＝QA のプレビューの技03／09／10 の修正）・体の面積の表（move-area-1015.js＝コマのファイル名）
-  assert.deepEqual(hits.sort(), ['index.html', 'js/battle/arena.js', 'js/battle/art25d.js', 'js/battle/compare.js', 'js/battle/flurene-moves-data.js', 'js/battle/move-area-1015.js', 'js/battle/move-cards.js', 'js/battle/move-tune-1015.js', 'js/chapter/configs/ch1a.js', 'js/phase10/monsters.js', 'js/qa/trial.js']);
-  assert.deepEqual(HTML.split('\n').filter((l) => l.length < 50000 && /flurene|フルーネ/i.test(l)), ['<script src="./js/battle/flurene-moves-data.js"></script>'], 'index.html はデータの読み込みだけ');
+  //  2026-10-16：技09 ルートドレイン（rootdrain-1016.js＝8コマ・rules.js＝QA 試遊のときだけ SK 58 と吸収）
+  assert.deepEqual(hits.sort(), ['index.html', 'js/battle/arena.js', 'js/battle/art25d.js', 'js/battle/compare.js', 'js/battle/flurene-moves-data.js', 'js/battle/move-area-1015.js', 'js/battle/move-cards.js', 'js/battle/move-tune-1015.js', 'js/battle/rootdrain-1016.js', 'js/battle/rules.js', 'js/chapter/configs/ch1a.js', 'js/phase10/monsters.js', 'js/qa/trial.js']);
+  assert.deepEqual(HTML.split('\n').filter((l) => l.length < 50000 && /flurene|フルーネ/i.test(l)), ['<script src="./js/battle/flurene-moves-data.js"></script>', '<script src="./js/battle/rootdrain-1016.js"></script><!-- 2026-10-16：フルーネ技09 ルートドレイン（QA 試遊だけ） -->'], 'index.html はデータの読み込みだけ');
   // 大会の参加者の種族は従来どおり（SP.length）
   assert.match(HTML, /MMP8L\.setSpeciesCount\(SP\.length\);/);
 });

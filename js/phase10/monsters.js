@@ -217,16 +217,20 @@
       uniqueSkill: fz({ id: 'unique_flurene', name: '生命の芽吹き', implemented: false, params: null,
         desc: '攻撃を受けた後、残りライフが最大ライフの50％以下になり、生き残っていた場合、1戦闘に1回だけ最大ライフの10％を回復する。' }),
       moves: fz([
-        fz({ no: 1, name: 'つるうち', learn: 'initial' }),
-        fz({ no: 2, name: 'たねとばし', learn: 'initial' }),
+        // 2026-10-16 ユーザー決定（ZIP Mismon_Claude_Combined_iPhone6_Fulune_20261016 の 03＝技性能一覧）：01・02・10 は威力だけ決定（命中・CR・効果は暫定＝ここに入れない）。
+        //  09 は「生命のしずく」→「ルートドレイン」に改名・威力110／命中90／CR10%／与えたダメージの50%を吸収（承認済み）。03〜08 の性能・固有スキルは未承認＝変えない
+        fz({ no: 1, name: 'つるうち', learn: 'initial', power: 60 }),
+        fz({ no: 2, name: 'たねとばし', learn: 'initial', power: 65 }),
         fz({ no: 3, name: 'はなのかおり', learn: 'initial' }),
         fz({ no: 4, name: 'ねっこのまもり', learn: 'initial' }),
         fz({ no: 5, name: 'こんさいプレス', learn: 'po' }),
         fz({ no: 6, name: 'ブルームレイ', learn: 'in' }),
         fz({ no: 7, name: 'しばりづる', learn: 'hi' }),
         fz({ no: 8, name: 'はなかげのまい', learn: 'ev' }),
-        fz({ no: 9, name: '生命のしずく', learn: 'de', deOrder: 1 }),
-        fz({ no: 10, name: 'ルートテンペスト', learn: 'de', deOrder: 2, finisher: true }),
+        fz({ no: 9, name: 'ルートドレイン', formerNames: fz(['生命のしずく']), learn: 'de', deOrder: 1, power: 110, accuracy: 90, critical: 10, drain: 0.5,
+          type: 'power',   // 【暫定・要確認】計算に使う能力（ちから／かしこさ）は一覧に無い＝蔦腕を突き刺す技なので ちから（QA の試遊だけで使う）
+          desc: '両腕の蔦を相手に突き刺し、与えたダメージの50%だけライフを回復する（命中してダメージがあるときだけ・最大ライフまで）。' }),
+        fz({ no: 10, name: 'ルートテンペスト', learn: 'de', deOrder: 2, finisher: true, power: 120 }),
       ]),
       image: fz({ src: './assets/monsters/2p5d/flurene.webp', w: 705, h: 720 }),
       battleIdle: fz({ src: './assets/battle/idle/idle_flurene.webp', w: 730, h: 720 }),

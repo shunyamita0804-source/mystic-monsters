@@ -5,7 +5,7 @@
 //  D27-18：イベントのサイコロ＝案内 → 「サイコロを振る」を押すまで振らない → 連打でも1回（DICE_CUBE 1回）・後ろに帯
 //  D27-21：ライバル＝登場の SE（RIVAL_APPEAR）1回・「よっ」なし・案内のシートなしでバトルへ → 勝ったらボードでリュウの会話（やるじゃん 1回）
 //  D27-22：HP の4段（名前 → バー → 数 → 札）＝札が増えても名前・バー・数は動かない（左右とも）
-//  D27-23：勝ち＝暖色の横帯・正式の勝利の絵だけ（旧のポーズの層は見えない）／負け＝寒色の横帯
+//  D27-23：勝ち＝横帯（2026-10-16 から青）・正式の勝利の絵だけ（旧のポーズの層は見えない）／負け＝横帯（2026-10-16 から赤）
 //  D27-14：サイコロはほぼ正面で止まる（2026-10-13 開発28：面取りが見える程度の斜め）・止まった目＝出目
 //  D27-28：対戦表（6体／8体 × 375・390）＝表が画面の中・名前が切れない・顔の枠は四角
 // =========================================================
@@ -139,7 +139,7 @@ async function battle(pg, sp, stats, bt = 'wild') {
   await pg.waitForSelector('#bt #m0 .mon', { timeout: 20000 });
 }
 
-test('D27-22・23：HP の4段（札が増えても動かない）・勝ち＝暖色の横帯と勝利の絵だけ／負け＝寒色の横帯', { skip: SKIP, timeout: 400000 }, async () => {
+test('D27-22・23：HP の4段（札が増えても動かない）・勝ち＝青い横帯と勝利の絵だけ／負け＝赤い横帯（2026-10-16）', { skip: SKIP, timeout: 400000 }, async () => {
   const p = await openPage({}); const pg = p.page;
   await battle(pg, 0, { li: 999, po: 999, in: 999, hi: 999, ev: 500, de: 999 });
   await pg.waitForTimeout(3500);
@@ -154,12 +154,12 @@ test('D27-22・23：HP の4段（札が増えても動かない）・勝ち＝�
   await fightToEnd(pg); await pg.waitForTimeout(1500);
   await pg.waitForSelector('#m0 .mon.mma-won .mma-win', { timeout: 4000 }).catch(() => {});
   const w = await pg.evaluate(() => { const bt = document.getElementById('bt'), band = bt.querySelector('.mma-endband'); const old = [...document.querySelectorAll('#m0 .mon > :not(.mma-win)')].filter((e) => getComputedStyle(e).visibility !== 'hidden' && +getComputedStyle(e).opacity > 0.01); return { cls: bt.className, bg: getComputedStyle(band).backgroundImage, win: !!document.querySelector('#m0 .mma-win'), old: old.length, h: band.getBoundingClientRect().height }; });
-  assert.match(w.cls, /mma-res-win/); assert.match(w.bg, /rgba\(250, 196, 84/, '暖色の横帯'); assert.ok(w.win, '正式の勝利の絵'); assert.equal(w.old, 0, '旧のポーズの層は見えない'); assert.ok(w.h < 160, '横帯（画面の下を覆う暗い面ではない）');
+  assert.match(w.cls, /mma-res-win/); assert.match(w.bg, /rgba\(52, 128, 246/, '青い横帯（2026-10-16 ユーザー要望）'); assert.ok(w.win, '正式の勝利の絵'); assert.equal(w.old, 0, '旧のポーズの層は見えない'); assert.ok(w.h < 160, '横帯（画面の下を覆う暗い面ではない）');
   const q = await openPage({}); const qg = q.page;
   await battle(qg, 0, { li: 10, po: 5, in: 5, hi: 5, ev: 1, de: 5 });
   await fightToEnd(qg); await qg.waitForTimeout(1500);
   const l = await qg.evaluate(() => ({ cls: document.getElementById('bt').className, bg: getComputedStyle(document.querySelector('#bt .mma-endband')).backgroundImage, ban: document.getElementById('ban').textContent }));
-  assert.match(l.cls, /mma-res-lose/); assert.match(l.bg, /rgba\(58, 92, 162/, '寒色の横帯'); assert.match(l.ban, /^LOSE/);
+  assert.match(l.cls, /mma-res-lose/); assert.match(l.bg, /rgba\(222, 48, 58/, '赤い横帯（2026-10-16 ユーザー要望）'); assert.match(l.ban, /^LOSE/);
   assert.deepEqual(p.errors, []); assert.deepEqual(q.errors, []);
 });
 

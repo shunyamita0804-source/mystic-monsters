@@ -75,11 +75,11 @@ test('CQ-03：フルーネの技カード10枚（番号・名前・ファイル�
   const ctx = ctxWith(['js/phase10/monsters.js', 'js/battle/move-cards.js']);
   const C = ctx.MMMVCARD, F = ctx.MMP10M.pendingSpecies('flurene');
   const L = J(C.list('flurene'));
-  const names = ['つるうち', 'たねとばし', 'はなのかおり', 'ねっこのまもり', 'こんさいプレス', 'ブルームレイ', 'しばりづる', 'はなかげのまい', '生命のしずく', 'ルートテンペスト'];
+  const names = ['つるうち', 'たねとばし', 'はなのかおり', 'ねっこのまもり', 'こんさいプレス', 'ブルームレイ', 'しばりづる', 'はなかげのまい', 'ルートドレイン', 'ルートテンペスト'];   // 2026-10-16：09 の新しい名前（カードの絵とファイル名 inochi_no_shizuku は旧のまま）
   const ids = ['tsuruuchi', 'tane_tobashi', 'hana_no_kaori', 'nekko_no_mamori', 'konsai_press', 'bloom_ray', 'shibari_zuru', 'hanakage_no_mai', 'inochi_no_shizuku', 'root_tempest'];
   assert.deepEqual(L.map((x) => x.no), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]); assert.deepEqual(L.map((x) => x.name), names); assert.deepEqual(L.map((x) => x.id), ids);
   assert.deepEqual(J(F.moves).map((x) => x.name), names, '登録の技の名前の並びと同じ');
-  assert.ok(F.moves.every((x) => !('id' in x) && !('power' in x)), '登録（monsters.js）には ID・性能を足していない');
+  assert.ok(F.moves.every((x) => !('id' in x) && ([1, 2, 9, 10].includes(x.no) ? x.power != null : !('power' in x))), '登録（monsters.js）には ID を足していない・性能はユーザー決定の 01・02・09・10 だけ（2026-10-16）');
   assert.ok(L.every((x) => x.slot === null), 'SK の番号なし＝技管理・ルーレットには出ない');
   const md = rd('assets/moves/cards_1014/README.md').split('## フルーネ')[1];
   L.forEach((x, i) => { const f = `assets/moves/cards_1014/flurene/${String(i + 1).padStart(2, '0')}_${ids[i]}.webp`; assert.equal(x.src, './' + f); assert.deepEqual(webpSize(f), [640, 360], f); assert.ok(md.includes(`FLURENE_${String(i + 1).padStart(2, '0')}_${ids[i]}.png`), f); });
