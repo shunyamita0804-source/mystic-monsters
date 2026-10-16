@@ -23,7 +23,8 @@
     try {
       const S = G('S');
       if (S.playerNamePending) { S.playerNamePending = false; if (!S.playerName) S.playerName = 'テスト'; }   // ページの中だけ（保存しない）
-      const mk = G('mk'), base = S.m ? JSON.parse(JSON.stringify(S.m)) : Object.assign(mk(0), { name: 'テスト' });
+      // 歩行の比較（?qaWalk=soramo5）はソラモだけ＝連れている子がソラモ以外ならソラモで始める（ページの中だけ・保存しない）
+      const mk = G('mk'), so = !!(root.MMQAW && root.MMQAW.active), base = S.m && !(so && S.m.sp !== 0) ? JSON.parse(JSON.stringify(S.m)) : Object.assign(mk(0), { name: so ? 'ソラモ' : 'テスト' });
       delete base.raise; root.MMP7.ensureProg(base); S.m = base; if (!(Array.isArray(S.inv.bag) && S.inv.bag.length)) { const SP = G('SUPPORT'); if (SP && SP.item) root.MMP7.bagAdd(S, SP.item, 10); }
       const c = root.MMP8.canDepart(S, base); if (!c.ok) throw new Error(c.reason || 'canDepart');
       root.MMWD.setRoute(route);

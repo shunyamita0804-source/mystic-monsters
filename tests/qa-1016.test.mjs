@@ -65,6 +65,7 @@ test('QW-04：盤につなぐのは ?qaWalk=soramo5 のソラモだけ（ほか�
   assert.match(wb, /SPR\.qa = !!\(root\.MMQAW && root\.MMQAW\.active && key === root\.MMQAW\.species\);/);
   assert.match(wb, /if \(SPR\.qa\) return qaWalk\(/);
   assert.match(rd('js/qa/walk5-1016.js'), /const ACTIVE = q === 'soramo5' \|\| q === '5dir';/);
+  assert.match(rd('js/qa/qa-board-1016.js'), /base = S\.m && !\(so && S\.m\.sp !== 0\) \? JSON\.parse\(JSON\.stringify\(S\.m\)\) : Object\.assign\(mk\(0\)/, '?qaWalk のときは連れている子がソラモ以外でもソラモで試遊（ページの中だけ）');
   assert.match(rd('index.html'), /<script src="\.\/js\/qa\/walk5-1016\.js"><\/script>/);
 });
 test('QW-05：URL の数の指定が無いときは既定の値（Number(null)＝0 にしない）', async () => {
