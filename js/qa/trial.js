@@ -15,6 +15,9 @@
   const doc = root.document;
   const qs = (() => { try { return new URLSearchParams(root.location && root.location.search || ''); } catch (e) { return null; } })();
   const ENABLED = !!(qs && qs.get('mmQaTrial') === '1');
+  // 2026-10-16：試遊の入口（trial.html）から直接 QA の画面へ＝?mmQaTrial=1&qaDirect=1（開始画面の上に QA を開く・qaMon=0〜5 で最初のタブ）。普段の URL では動かない
+  const DIRECT = ENABLED && qs.get('qaDirect') === '1';
+  const DIRECT_MON = (() => { const n = qs && parseInt(qs.get('qaMon'), 10); return n >= 0 && n <= 5 ? n : 0; })();
   // 6体（番号は表示の順。sp＝バトルの絵の番号＝IMG の番号。フルーネの 5 は予約＝バトルの絵は無い）
   const MONS = Object.freeze([
     Object.freeze({ sp: 0, key: 'solamo' }), Object.freeze({ sp: 1, key: 'gauru' }), Object.freeze({ sp: 2, key: 'nobiton' }),
@@ -371,6 +374,18 @@
     step();
   }
 
+  /** 入口（trial.html）から：開始画面が出て S ができたら、開始画面の曲を止めて QA を ON（OFF は牧場へ） */
+  function direct() {
+    let n = 0;
+    const tick = () => {
+      if (ST.on) return;
+      const app = doc.getElementById('app');
+      if (G('S') && app && app.firstElementChild) { try { root.MMAUDIO && root.MMAUDIO.stopBgm({ fade: 'quick' }); } catch (e) {} ST.mon = DIRECT_MON; on('ranch'); return; }
+      if (++n < 200) setTimeout(tick, 100);
+    };
+    setTimeout(tick, 300);
+  }
+
   // ---- 起動 ----
   if (ENABLED && doc) {
     const boot = () => {
@@ -380,12 +395,13 @@
       mo.observe(doc.body, { childList: true, subtree: false });
       if (app) mo.observe(app, { childList: true });
       syncSwitch();
+      if (DIRECT) direct();
     };
     if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', boot); else boot();
   }
 
   root.MMQA = Object.freeze({
-    ENABLED, MONS, SAVE_KEY_RE, catalog, counts, statusOf,
+    ENABLED, DIRECT, MONS, SAVE_KEY_RE, catalog, counts, statusOf,
     on, off, isOn: () => ST.on, active: () => ST.on, battling: () => ST.battling, snapshot: () => ST.snap,
     select: (i) => { ST.mon = Math.max(0, Math.min(5, i | 0)); ST.sel = null; render(); }, battle: (i, no) => { if (!ST.on) return false; const x = catalog()[i]; const mv = x && x.moves.find((v) => v.no === no); return x && mv ? (mv.status === 'battle' ? battle(x, mv) : mv.status === 'preview' ? preview(x, mv) : false) : false; },
     endBattle, makeMon, FOE, animInfo, walk: (i) => { if (!ST.on) return false; const x = catalog()[i]; if (!x || !walkSets(x.key)) return false; walk(x); return true; },
