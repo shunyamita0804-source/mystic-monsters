@@ -15,9 +15,31 @@
 
 ### iPhone で開く URL（コミット固定＝古いキャッシュが出ない）
 
-（__URLS__）
+共通の頭：`https://raw.githack.com/shunyamita0804-source/mystic-monsters/e1337acfbde7668f3fa709ae8635d7703cf40b6f/index.html`（以下「頭」）。raw.githack は最初に「One more step」の画面を出す＝**「Open the page」を押す**とゲームが開く。
 
-- 画面の左上の「QA」の札に版（`2026-10-16-qa-…`）とカメラの切り替え（従来／固定／C案／C案切替）が出る。版が違えば古い画面＝読み込み直す。
+**B カメラ（いちばん大事）**＝同じ盤で4つを見比べる。画面の左上の「QA」の札の「従来／固定／C案／C案切替」を押すと、その方式で読み込み直す。
+- 従来：頭`?ch1trial=A`
+- **C案**：頭`?ch1trial=A&qaCam=c`
+- C案・切替（暗くして向きを変える）：頭`?ch1trial=A&qaCam=ccut`
+- 固定（向きを回さない）：頭`?ch1trial=A&qaCam=fixed`
+- 道がいちばん曲がる盤（Chapter 2 B）：頭`?ch2trial=B&qaCam=c`（従来は `?ch2trial=B`）
+- 調整したいとき：`&qaCamDeg=70`（向きを変えるずれ 50°→70°＝回数が減る）・`&qaCamMs=900`（回る時間を長く）
+
+**C ソラモの歩行の向き**（連れている子がソラモ以外でも、この URL ではソラモで始まる）
+- 盤で：頭`?ch1trial=A&qaWalk=soramo5`（C案カメラと合わせる：`&qaCam=c`・従来の歩行：`?ch1trial=A`）
+- 歩行だけの確認画面（8方向・速さ・大きさ・今の正式の8コマとの比較）：`https://raw.githack.com/shunyamita0804-source/mystic-monsters/e1337acfbde7668f3fa709ae8635d7703cf40b6f/prototype/walk_1016/index.html`
+
+**A 道路の見た目**（道の近くまで寄るので、止まったときに道と足もとを見る）
+- 案1（くっきり・曲線に沿った帯）：頭`?ch1trial=A&qaRoad=1`
+- 案2（なじませる・ふちの影と草）：頭`?ch1trial=A&qaRoad=2`
+- 従来：頭`?ch1trial=A`
+- Chapter 2 の海上橋：頭`?ch2trial=A&qaRoad=1`（石板の鏡映し）／`&qaRoad=2`（白い橋帯 R01）／`?ch2trial=A`（従来）
+- 全部まとめて：頭`?ch1trial=A&qaCam=c&qaWalk=soramo5&qaRoad=1`
+
+**D 天空18点**（別ブランチ・本編につながない確認画面）
+- `https://raw.githack.com/shunyamita0804-source/mystic-monsters/c7c9304c6f3c13e6e5baff3463ccc0e77b48c39b/prototype/ch3_sky_1016/index.html`
+
+- 画面の左上の「QA」の札に版 **`2026-10-16-qa-a1`** とカメラの切り替え（従来／固定／C案／C案切替）・今の歩行と道路の方式が出る。版が違えば古い画面＝読み込み直す。Chapter 2 の右下の札の「ef677b0」は土台の Chapter 2 試遊の表示のまま（今回は触っていない）＝版は左上の QA の札で確かめる。
 - 試遊はセーブを書き換えない（Chapter 1 は `?ch1trial`・Chapter 2 は従来の `?ch2trial`＝TEST 大会と同じく保存しない。再読み込みで元のセーブ）。
 - 操作：START でサイコロ。分かれ道は好きな道。メニュー（☰）の「試遊をやめて街へ戻る」で終わる。
 
@@ -33,8 +55,10 @@
 
 | 工程 | ブランチ | 主なコミット |
 |---|---|---|
-| B・C・A | `claude/qa-bca-1016`（土台 `claude/ch2-art-1016` 5474405） | B 3612647・C 467108d／e3432a2／81211c4・A 5605e0f／（欄干・報告） |
-| D | `claude/qa-ch3-sky-1016`（土台 5474405・独立） | f6643b2 ほか |
+| B・C・A | `claude/qa-bca-1016`（土台 `claude/ch2-art-1016` 5474405） | B 3612647／23899ba（smoothstep）／6a3d07e（下の注意）・C 467108d／e3432a2／81211c4／e1337ac・A 5605e0f／50eabf6（欄干）・試遊の版＝**e1337ac** |
+| D | `claude/qa-ch3-sky-1016`（土台 5474405・独立） | f6643b2／c7c9304（試遊の版）／5d88635（報告） |
+
+- **注意（自分の不具合・直し済み）**：23899ba で roadfirst-world.js の1行の式の途中に注釈を入れ、ファイルが読めなくなっていた（このブランチで盤が出ない状態が約12分 push されていた）。6a3d07e で直し、以後は編集したファイルを `node --check` してからコミットしている。main・公開には関係しない。
 
 - 土台のブランチに入っている `tools/boardhq1014/__pycache__/derive.cpython-313.pyc` は消していない（指示 9＝別途判断）。
 - 変えたファイル（B・C・A）：index.html（読み込みの3行・版）・version.json・js/chapter/world-board.js・js/proto/roadfirst-world.js・js/proto/ch2-world.js・新しい js/qa/qa-board-1016.js・walk5-1016.js・road-1016.js・assets/qa/soramo_5dir_1016/・prototype/walk_1016/・tools/qa1016/・tests（新しい4ファイル・期待値の更新4ファイル）・docs/qa_bcad_1016/。
