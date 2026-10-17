@@ -65,7 +65,7 @@ export async function serve() {
 export async function launch() {
   const pw = loadPlaywright();
   const srv = await serve();
-  const browser = await pw.chromium.launch();
+  const browser = await pw.chromium.launch(process.env.QA_CHROME_ARGS ? { args: JSON.parse(process.env.QA_CHROME_ARGS) } : undefined);   // 2026-10-17：計測の道具だけが使う（GPU の描き方の比較など）。テストは使わない
   const pages = [];
   async function open(opt = {}) {
     const [w, h] = opt.size || SIZES.base;

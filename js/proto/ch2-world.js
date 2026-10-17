@@ -37,6 +37,10 @@
       const o = { tex: {}, strip: {}, plaza: [] }; let i = 0;
       keys.forEach((k) => { o[k] = a[i++]; }); o.town = a[i++];
       tk.forEach((k) => { o.tex[k] = a[i++]; }); sk.forEach((k) => { o.strip[k] = a[i++]; }); PLAZA.forEach(() => { o.plaza.push(a[i++]); });
+      // 2026-10-17 QA（道路画質・?qaRoadArt=raw|fix のときだけ）：外海・海上橋の石板・白い石畳・白い橋帯 R01・欄干は新しい素材（js/qa/road-art-1017.js）。読めなければ上の絵のまま
+      const QRA = root.MMQRA && root.MMQRA.mode ? root.MMQRA : null;
+      if (QRA) return Promise.all([...Object.entries(QRA.CH2.tex).map(([k, n]) => QRA.load(n).then((im) => { if (im) o.tex[k] = im; })),
+        ...Object.entries(QRA.CH2.strip).map(([k, n]) => QRA.load(n).then((im) => { if (im) o.strip[k] = im; }))]).then(() => { o.formal = Object.values(o.tex).filter(Boolean).length; return o; });
       o.formal = Object.values(o.tex).filter(Boolean).length;   // 読めた正式の地面の数（確認用）
       return o;
     });
@@ -144,10 +148,10 @@
     g.restore();
     if (deck) {
       g.strokeStyle = 'rgb(168,160,140)'; g.lineWidth = CURB_W; for (const P of pts) { pathOf(g, P); g.stroke(); }   // 縁石
-      // 2026-10-16 QA（A。URL の ?qaRoad=1|2 のときだけ）：1＝海上橋の石板を鏡映しで並べる（継ぎ目が消える・模様は山形）／2＝正式の白い橋帯 R01 を道に沿わせて敷く
+      // 2026-10-16 QA（A。URL の ?qaRoad=1|2 のときだけ）：1＝海上橋の石板を鏡映しで並べる（継ぎ目が消える・模様は山形）／2＝正式の白い橋帯 R01 を道に沿わせて敷く（2026-10-17：?qaRoadArt の新しい石板は継ぎ目が小さい＝鏡映しにしない）
       const QA = art.qaRoad && H.qa && H.qa(), walk = S.strip && S.strip.walk;
       if (QA && art.qaRoad === '2' && walk) for (const P of pts) QA.meshStrip(g, P, walk, ROAD_W * 128 / 62, bx);   // R01 の帯の見える所（行 33〜94＝62px）を道の幅 ROAD_W に
-      else if (QA && art.qaRoad === '1') { const mt = QA.mirrorTile(S.tex.deck), mp = mt ? H.pattern(g, mt, TEX.deck[1] * 2) : null; g.strokeStyle = mp || deck; g.lineWidth = ROAD_W; for (const P of pts) { pathOf(g, P); g.stroke(); } }
+      else if (QA && art.qaRoad === '1' && !(S.tex.deck && S.tex.deck._qra)) { const mt = QA.mirrorTile(S.tex.deck), mp = mt ? H.pattern(g, mt, TEX.deck[1] * 2) : null; g.strokeStyle = mp || deck; g.lineWidth = ROAD_W; for (const P of pts) { pathOf(g, P); g.stroke(); } }
       else { g.strokeStyle = deck; g.lineWidth = ROAD_W; for (const P of pts) { pathOf(g, P); g.stroke(); } }
       if (white) { g.save(); g.beginPath(); for (const { P } of regionsOf(D)) { P.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.closePath(); } g.clip();
         g.strokeStyle = white; g.lineWidth = ROAD_W; for (const P of pts) { pathOf(g, P); g.stroke(); } g.restore(); }
@@ -284,6 +288,18 @@
       out.push({ file: U('R05_spiral_tower_door'), x: t.c[0] + Math.cos(ang) * (t.r + 1), y: t.c[1] + Math.sin(ang) * (t.r + 1), w: 20, h: z0, z: -5 });
       out.push({ file: U('R05_spiral_tower_beacon'), x: t.c[0], y: t.c[1], w: 16, h: t.top, z: 5, cls: 'rfs-beacon' });
     }
+    // 2026-10-17 QA（道路画質・?qaRoadArt=…&qaArch=1 のときだけ）：新しい白い橋のアーチ（L02・正面寄りの絵）を、橋の本体へ結合せず「独立の門」として、
+    //  海上の道が島（陸）から海へ出る所（陸の最後の地点と海の最初の地点の間）に立てる。立てた絵（景物と同じ）＝カメラの向きで見え方が変わる＝それを試遊で確かめる
+    const QRA = root.MMQRA && root.MMQRA.mode && root.location && /[?&]qaArch=1/.test(root.location.search) ? root.MMQRA : null;
+    if (QRA) {
+      const onLand = (n) => regs.some((q) => q.r.kind !== 'arena' && H.inPoly(q.P, n[0], n[1]));
+      for (const [sid, sg] of Object.entries(D.segments)) {
+        if (!isSurface(zoneOf(D, sid))) continue;
+        const ids = sg[3];
+        for (let i = 0; i < ids.length - 1; i++) { const a = D.nodes[ids[i]], b = D.nodes[ids[i + 1]]; if (!a || !b || onLand(a) === onLand(b)) continue;
+          out.push({ file: QRA.BASE + 'ch2_L02_white_bridge_arch_pier.webp', x: (a[0] + b[0]) / 2, y: (a[1] + b[1]) / 2, w: 34, z: 6, cls: 'rfs-qarch' }); }
+      }
+    }
     return out;
   }
 
@@ -405,7 +421,7 @@
         const a = P[i], b = P[i + 1], dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2], Lxy = Math.hypot(dx, dy), L = Math.hypot(Lxy, dz); if (L < 0.2) continue;
         const U = [dx / L, dy / L, dz / L], side = [-dy / Lxy, dx / Lxy, 0];
         const T = [a[0] - side[0] * RW / 2, a[1] - side[1] * RW / 2, a[2] + 0.4];
-        quad(doc, g3, T, U, side, L + 0.5, RW, 'rfs-deck', stripUrl ? { backgroundImage: `url(${stripUrl})`, backgroundSize: `${RW * 960 / 128}px 100%`, backgroundPosition: `${-cum.toFixed(1)}px 0` } : null);
+        quad(doc, g3, T, U, side, L + 0.5, RW, 'rfs-deck', stripUrl ? { backgroundImage: `url(${stripUrl})`, backgroundSize: `${RW * (walk && walk._qra ? walk.naturalWidth / walk.naturalHeight : 960 / 128)}px 100%`, backgroundPosition: `${-cum.toFixed(1)}px 0` } : null);
         // 斜路の両側の壁（道のふち → 海底）。2 枚の板ごとに 1 枚（層の数を抑える）
         if (i % 2 === 0) for (const sg of [-1, 1]) {
           const E = [a[0] + side[0] * RW / 2 * sg, a[1] + side[1] * RW / 2 * sg, a[2] + 0.4], hh = a[2] + dep + 0.4;

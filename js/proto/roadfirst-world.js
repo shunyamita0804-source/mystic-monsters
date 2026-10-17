@@ -277,22 +277,25 @@
       // skin の絵 → 読めなければ従来の絵（im._u＝実際に読めた URL。草地の外の帯にも同じ絵）
       const load2 = (k, f) => (SK && SK[k] ? new Promise((res) => { const im = new root.Image(); im.onload = () => { im._sk = true; res(im); }; im.onerror = () => res(null); im.src = SK.base + SK[k]; }) : Promise.resolve(null))
         .then((im) => im || load(f));
+      // 2026-10-17 QA（道路画質・?qaRoadArt=raw|fix のときだけ）：草地・道の帯・敷石の円は新しい素材（js/qa/road-art-1017.js）→ 読めなければ上の skin → 従来の絵
+      const QRA = !SEA && root.MMQRA && root.MMQRA.mode ? root.MMQRA : null, q17 = QRA ? QRA.CH1[visualOf(o).key] || QRA.CH1.A : null;
+      const load3 = (k, f) => (q17 ? QRA.load(q17[k]).then((im) => (im ? Object.assign(im, { _sk: true }) : load2(k, f))) : load2(k, f));
       const T = ART.terrain;
       const EK = Object.keys(T.edges);
-      Promise.all([load2('ground', ART.ground.file), load2('road', ART.road.file), o.art.road === 'pattern' ? null : load2('strip', ART.strip.file),
+      Promise.all([load3('ground', ART.ground.file), load3('road', ART.road.file), o.art.road === 'pattern' ? null : load3('strip', ART.strip.file),
         load(T.valley.file), load2('water', T.water.file), load(T.cloud.file), ...EK.map((k) => load(T.edges[k].file)), SEA ? SEA.load(load, base) : null]).then(([gi, ri, si, vi, wi, ci, ...ei]) => {
         if (S.dead) return; art.ground = gi; art.road = ri; art.strip = si;
         if (SEA) { art.sea = ei.pop(); vi = null; S.sea3d = SEA.build3d({ doc, plane, D, o, art, H: HELP, base }); }   // 2026-10-15 Chapter 2：谷・雲海・森は使わない（海・海底の盆地・塔）
         else ei.pop();
-        if (ri && ri._sk) { art.roadTile = SK.roadTile; art.discCenter = !!SK.discCenter; }   // R の石の大きさ＝道の帯の石にそろえる
+        if (ri && ri._sk) { art.roadTile = SK ? SK.roadTile : 57.5; art.discCenter = SK ? !!SK.discCenter : true; }   // R の石の大きさ＝道の帯の石にそろえる
         if (vi) { art.terrain = terrainMasks(doc, D, o); art.valley = vi; art.water = wi; art.cloud = ci; art.edges = {}; EK.forEach((k, i) => { art.edges[k] = ei[i]; });
           if (art.edges.forest) art.canopy = canopyTile(doc, art.edges.forest); }
         if (gi || ri) { paint(); wrap.classList.add('art'); } else paint();
         artDone = true;
         // 世界の外（端へ寄ったときに見える所）も同じ草地で続ける：平面の中の安い背景（canvas は世界の中だけ）
         if (gi) { const ap = doc.createElement('div'); ap.className = 'rfw-apron'; const m = APRON;
-          Object.assign(ap.style, { left: -m + 'px', top: -m + 'px', width: WORLD.w + 2 * m + 'px', height: WORLD.h + 2 * m + 'px', backgroundImage: `url(${gi._sk ? SK.base + SK.ground : base + ART.ground.file})`,
-            backgroundSize: `${ART.ground.tile}px ${ART.ground.tile}px`, backgroundPosition: `${m % ART.ground.tile}px ${m % ART.ground.tile}px` });
+          Object.assign(ap.style, { left: -m + 'px', top: -m + 'px', width: WORLD.w + 2 * m + 'px', height: WORLD.h + 2 * m + 'px', backgroundImage: `url(${gi._qra ? gi.src : gi._sk ? SK.base + SK.ground : base + ART.ground.file})`,
+            backgroundSize: gi._ppu ? `${gi.naturalWidth / gi._ppu}px ${gi.naturalHeight / gi._ppu}px` : `${ART.ground.tile}px ${ART.ground.tile}px`, backgroundPosition: gi._ppu ? `${m % (gi.naturalWidth / gi._ppu)}px ${m % (gi.naturalHeight / gi._ppu)}px` : `${m % ART.ground.tile}px ${m % ART.ground.tile}px` });   // 2026-10-17 QA：新しい草地は _ppu の大きさで
           if (SEA) SEA.apron(ap, base, m);   // 世界の外も海
           plane.insertBefore(ap, plane.firstChild); } });
       const add = (file, x, y, w, z, cls, h) => { const d = doc.createElement('img'); d.className = 'rfw-prop' + (cls ? ' ' + cls : ''); d.alt = ''; d.draggable = false;
@@ -618,7 +621,7 @@
       project: (x, y) => project(S.cam, x, y),
       frames: (reset) => { const f = S.frames.slice(); if (reset) S.frames = []; return f; },
       destroy() { S.dead = true; root.cancelAnimationFrame(S.raf); if (HI) HI.destroy(); wrap.remove(); },
-      qaRoad: () => (HI ? { mode: o.qaRoad, res: HI.R, tiles: HI.count(), pending: HI.pending(), bytes: HI.bytes() } : null),
+      qaRoad: () => (HI ? { mode: o.qaRoad, res: HI.R, tiles: HI.count(), pending: HI.pending(), bytes: HI.bytes(), paintMs: HI.paintMs ? HI.paintMs() : null } : null),
       opts: o,
     };
     S.raf = root.requestAnimationFrame(tick);
@@ -626,9 +629,10 @@
   }
 
   // 仮の地面（絵が届いたら A 群のテクスチャ・B 群の縁に替える）：草地の色＋小さなまだら（決まった乱数）
-  function pattern(g, im, tile) { const p = g.createPattern(im, 'repeat'); if (p && p.setTransform && root.DOMMatrix) p.setTransform(new root.DOMMatrix().scale(tile / im.width)); return p; }
+  // 2026-10-17 QA（道路画質）：絵が _ppu（px／世界の1単位）を持つときはそれで倍率を決める（js/qa/road-art-1017.js の新しい素材だけ。従来の絵は持たない＝従来どおり）
+  function pattern(g, im, tile) { const p = g.createPattern(im, 'repeat'); if (p && p.setTransform && root.DOMMatrix) p.setTransform(new root.DOMMatrix().scale(im._ppu ? 1 / im._ppu : tile / im.width)); return p; }
   function drawGround(g, D, x0, y0, w, h, art) {
-    if (art && art.ground) { g.fillStyle = pattern(g, art.ground, ART.ground.tile); g.fillRect(x0, y0, w, h); return; }
+    if (art && art.ground) { g.fillStyle = pattern(g, art.ground, ART.ground.tile); g.fillRect(x0, y0, w, h); if (art.ground._qra && root.MMQRA) root.MMQRA.macro(g, x0, y0, w, h); return; }
     if (D.art && Array.isArray(D.art.regions)) return drawSeaBlockout(g, D, x0, y0, w, h);   // 2026-10-15 Chapter 2 の試作：絵なしのブロックアウト（海・陸・海底・ガラス回廊・塔・会場島の仮の色）
     g.fillStyle = '#86b65a'; g.fillRect(x0, y0, w, h);
     let a = ((Math.floor(x0) * 73856093) ^ (Math.floor(y0) * 19349663)) >>> 0;
@@ -657,7 +661,7 @@
     const disc = (id, r) => { const n = D.nodes[id]; g.beginPath(); g.arc(n[0], n[1], r, 0, 7); g.fill(); };
     const rt = (art && art.roadTile) || ART.road.tile, rp = art && art.road ? pattern(g, art.road, rt) : null;
     // skin：敷石の円は円の中心に R の中央を合わせる（円は R の1枚より小さい＝くり返しのつなぎ目が円の中に入らない）
-    const centre = (id) => { if (!art.discCenter || !rp || !rp.setTransform || !root.DOMMatrix) return; const n = D.nodes[id]; rp.setTransform(new root.DOMMatrix().translate(n[0] - rt / 2, n[1] - rt / 2).scale(rt / art.road.width)); g.fillStyle = rp; };
+    const centre = (id) => { if (!art.discCenter || !rp || !rp.setTransform || !root.DOMMatrix) return; const n = D.nodes[id], rw = art.road._ppu ? art.road.width / art.road._ppu : rt; rp.setTransform(new root.DOMMatrix().translate(n[0] - rw / 2, n[1] - rw / 2).scale(rw / art.road.width)); g.fillStyle = rp; };
     if (rp) { g.strokeStyle = 'rgba(40,52,20,.28)'; g.lineWidth = o.roadW + 9; for (const s of segs) { path(s[3]); g.stroke(); } }   // 草へ落ちる薄い影
     if (rp && art.strip) {   // 直線の石の道を道筋に沿って並べる（分かれ目・合流・行き止まりは敷石の円で覆う）
       if (art.terrain) {   // 谷の上を渡る石橋：下へ落ちる影（高さに見せる）

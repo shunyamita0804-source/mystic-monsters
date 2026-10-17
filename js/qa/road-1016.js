@@ -10,15 +10,21 @@
 //    Chapter 2 の海上橋の石板（sea_bridge_deck）は、継ぎ目の合わない1枚を上下左右に鏡映しで並べる（mirrorTile＝継ぎ目は消えるが模様が「く」の字の山形になる）。
 //  2「地面になじませる」：1 に加えて、道のふちに地面へ落ちる薄い影・ふちにかかる草・マスの足もとの接地の影（naturalize）。
 //    Chapter 2 の海上の道は、海上橋の石板の代わりに正式の白い橋帯 R01（道に沿う模様）を道に沿わせて敷く（欄干・縁石は従来のまま）。
-//  ?qaRoadRes＝近くの層の細かさ（px／単位・2〜8・既定 5）。
+//  ?qaRoadRes＝近くの層の細かさ（px／単位・2〜14・既定 5／新しい素材 10）・?qaRoadMB＝近くの層のメモリの上限（MB・既定 40）。
 // =========================================================
 (function (root) {
   'use strict';
   let P = null; try { P = new URLSearchParams(root.location.search); } catch (e) {}
   const q = P ? P.get('qaRoad') : null;
-  const MODE = q === '1' || q === '2' ? q : null;
+  // 2026-10-17：?qaRoadArt=raw|fix（js/qa/road-art-1017.js・新しい素材）のときは、?qaRoad が無くても 1（なめらかな帯・近くの層）で描く
+  const ART17 = root.MMQRA && root.MMQRA.mode;
+  const MODE = q === '1' || q === '2' ? q : ART17 ? '1' : null;
   const num = (k, d, lo, hi) => { const x = P && P.get(k) != null ? Number(P.get(k)) : NaN; return Number.isFinite(x) && x >= lo && x <= hi ? x : d; };
-  const RES = num('qaRoadRes', 5, 2, 8), TILE = 128, MAX = 14, BUDGET = 6;
+  //  近くの層の細かさ：従来 5px／単位（従来の素材は 4〜7px／単位）。新しい素材（12〜18px／単位）は既定 10px／単位。
+  //  区画は細かいほど小さく（64単位）・枚数はメモリの上限（?qaRoadMB・既定 40MB）で決める（遠い区画は遠近で小さく見える＝遠くの層のままでよい）
+  const RES = num('qaRoadRes', ART17 ? 10 : 5, 2, 14), TILE = num('qaRoadTile', RES > 6 ? 64 : 128, 16, 256);
+  const LAYER = !(P && P.get('qaRoadLayer') === '0');
+  const MB = num('qaRoadMB', 40, 8, 120), MAX = RES > 6 ? Math.max(6, Math.floor(MB * 1048576 / (Math.pow(Math.ceil(TILE * RES) + 2, 2) * 4))) : 14, BUDGET = 6;
 
   // ---- 三角形ごとのアフィン変換で、帯の絵の切れ端を台形の網へ貼る ----
   function tri(g, im, s0, s1, s2, d0, d1, d2) {
@@ -136,10 +142,14 @@
     function make(ix, iy) {
       const c = cfg.doc.createElement('canvas'), x0 = ix * T, y0 = iy * T, pw = Math.ceil(T * R) + 2;
       c.width = pw; c.height = pw; c.className = 'rfw-chunk rfw-hi'; c._x = x0 * R - 1; c._y = y0 * R - 1;
-      Object.assign(c.style, { left: (x0 - 1 / R) + 'px', top: (y0 - 1 / R) + 'px', width: pw / R + 'px', height: pw / R + 'px', visibility: 'hidden' });
+      // 2026-10-17：区画ごとに別の合成の層（will-change）にする＝3D に傾けた平面の層の中に描かれると、平面の層の低い倍率で描かれてから引き伸ばされ、
+      //  1単位 10px で描いても画面ではぼける（Chromium の GPU 描画で確認：層を分けると canvas の画素のまま合成される）。?qaRoadLayer=0 で従来（比較用）
+      Object.assign(c.style, { left: (x0 - 1 / R) + 'px', top: (y0 - 1 / R) + 'px', width: pw / R + 'px', height: pw / R + 'px', visibility: 'hidden', willChange: LAYER ? 'transform' : '' });
       cfg.parent.appendChild(c); return { c, ix, iy, done: false };
     }
-    function paint(t) { const g = t.c.getContext('2d'); g.setTransform(R, 0, 0, R, -t.c._x, -t.c._y); cfg.paintAt(g, [t.c._x / R, t.c._y / R, t.c.width / R, t.c.height / R]); t.done = true; t.c.style.visibility = ''; }
+    const paintMs = [];   // 区画1枚を描くのにかかった時間（確認用・最後の 60 枚）
+    function paint(t) { const t0 = root.performance.now(); const g = t.c.getContext('2d'); g.setTransform(R, 0, 0, R, -t.c._x, -t.c._y); cfg.paintAt(g, [t.c._x / R, t.c._y / R, t.c.width / R, t.c.height / R]); t.done = true; t.c.style.visibility = '';
+      paintMs.push(+(root.performance.now() - t0).toFixed(1)); if (paintMs.length > 60) paintMs.shift(); }
     /** 画面に入る区画（カメラの今の姿で地点を写して確かめる）。近い順に最大 MAX 枚 */
     function want() {
       const S = cfg.S, c = S.cam, v = S.view; if (!c || !v || c.s < 1) return [];
@@ -150,7 +160,10 @@
           const ps = [[0, 0], [1, 0], [0, 1], [1, 1]].map(([fx, fy]) => cfg.project(c, (ix + fx) * T, (iy + fy) * T));
           const ok = ps.filter((p) => p.k > 0 && p.k < 12);
           const hit = ok.length >= 2 && Math.max(...ok.map((p) => p.x)) > -40 && Math.min(...ok.map((p) => p.x)) < v.W + 40 && Math.max(...ok.map((p) => p.y)) > -40 && Math.min(...ok.map((p) => p.y)) < v.H + 40;
-          if (hit) out.push([ix, iy, Math.hypot((ix + 0.5) * T - c.tx, (iy + 0.5) * T - c.ty)]);
+          // 2026-10-17：優先＝画面に大きく映る区画から（旧：注視点に近い順＝注視点は画面の上寄り＝いちばん大きく見える手前の区画が漏れて、くっきりとぼけの境目が出ていた）
+          if (hit) { const cl = (p) => ({ x: Math.max(0, Math.min(v.W, p.x)), y: Math.max(0, Math.min(v.H, p.y)) }), q = (p0 => p0.some((p) => !(p.k > 0 && p.k < 12)) ? null : p0.map(cl))([ps[0], ps[1], ps[3], ps[2]]);
+            if (!q) { out.push([ix, iy, 1]); continue; }   // 角がカメラの後ろ＝面積を測れない区画はいちばん後回し
+            const ar = Math.abs(q.reduce((a, p, i) => { const r = q[(i + 1) % 4]; return a + p.x * r.y - r.x * p.y; }, 0)) / 2; out.push([ix, iy, -ar]); }
         }
       return out.sort((a, b) => a[2] - b[2]).slice(0, MAX);
     }
@@ -159,7 +172,8 @@
       const sig = [Math.round(c.tx / 16), Math.round(c.ty / 16), Math.round(c.s * 4), Math.round((c.yaw || 0) / 10)].join(',');
       if (sig !== lastSig) {
         lastSig = sig; const w = want(), keep = new Set(w.map(([ix, iy]) => ix + ':' + iy));
-        for (const [k, t] of tiles) if (!keep.has(k) && tiles.size > MAX) { t.c.remove(); tiles.delete(k); }
+        const add = w.filter(([ix, iy]) => !tiles.has(ix + ':' + iy)).length;   // 2026-10-17：上限（MAX）を超えないよう、画面に要らない区画から先に捨てる
+        for (const [k, t] of tiles) if (!keep.has(k) && tiles.size + add > MAX) { t.c.remove(); tiles.delete(k); }
         queue = w.filter(([ix, iy]) => !tiles.has(ix + ':' + iy) || !tiles.get(ix + ':' + iy).done).map(([ix, iy]) => ix + ':' + iy);
         for (const k of queue) if (!tiles.has(k)) { const [ix, iy] = k.split(':').map(Number); tiles.set(k, make(ix, iy)); }
       }
@@ -168,7 +182,7 @@
     }
     function bytes() { let b = 0; for (const t of tiles.values()) b += t.c.width * t.c.height * 4; return b; }
     function destroy() { for (const t of tiles.values()) t.c.remove(); tiles.clear(); }
-    return { tick, bytes, count: () => tiles.size, pending: () => queue.length, destroy, R, setS: (x) => { cfg.S = x; }, ready: () => !!cfg.S };
+    return { tick, bytes, count: () => tiles.size, pending: () => queue.length, paintMs: () => paintMs.slice(), destroy, R, setS: (x) => { cfg.S = x; }, ready: () => !!cfg.S };
   }
-  root.MMQAR = Object.freeze({ mode: MODE, RES, TILE, MAX, meshStrip, mirrorTile, edgeShade, edgeGrass, tileShadows, hiLayer });
+  root.MMQAR = Object.freeze({ mode: MODE, RES, TILE, MAX, LAYER, meshStrip, mirrorTile, edgeShade, edgeGrass, tileShadows, hiLayer });
 })(typeof window !== 'undefined' ? window : globalThis);

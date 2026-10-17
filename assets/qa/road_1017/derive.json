@@ -1,0 +1,523 @@
+{
+ "ch1_ground_a1": {
+  "src": "Ch1_01_grass_A1_bright.png",
+  "src_sha256": "5210e541b7be11cf9c18a3f91b355979173a532becde9fd8a41501097f1971ca",
+  "src_size": [
+   1536,
+   1536
+  ],
+  "src_mode": "RGB",
+  "kind": "tex",
+  "unit": 128,
+  "raw": {
+   "out": "ch1_ground_a1_raw.webp",
+   "size": [
+    1536,
+    1536
+   ],
+   "bytes": 1085678,
+   "sha256": "8db4039629e34e5e8f143cc5ab826c7ae9806d13680a0b1d5455d84a9d1a5700",
+   "seam": [
+    2.42,
+    3.14
+   ],
+   "sharp": 13.24,
+   "px_per_unit": 12.0
+  },
+  "fix": {
+   "out": "ch1_ground_a1_fix.webp",
+   "size": [
+    1189,
+    1178
+   ],
+   "bytes": 648424,
+   "sha256": "f03e442d3a0b69cea9ccc91b606ce6a892facd4d4311e7e17eaaede21160bf0c",
+   "seam": [
+    1.02,
+    0.91
+   ],
+   "sharp": 13.32,
+   "px_per_unit": 12.0
+  },
+  "src_seam": [
+   2.37,
+   3.1
+  ],
+  "src_sharp": 13.34
+ },
+ "ch1_ground_a2": {
+  "src": "Ch1_02_grass_A2_flower.png",
+  "src_sha256": "255a30fb91d3a737db6ee4cecd1f5e1709ac7dd8acf53a290a68bf3b8a015cd6",
+  "src_size": [
+   1536,
+   1536
+  ],
+  "src_mode": "RGB",
+  "kind": "tex",
+  "unit": 128,
+  "raw": {
+   "out": "ch1_ground_a2_raw.webp",
+   "size": [
+    1536,
+    1536
+   ],
+   "bytes": 1152034,
+   "sha256": "324678b36ad69a892f7247c9a4f02149aff278923d32a3dc849028d48a1de946",
+   "seam": [
+    1.88,
+    2.29
+   ],
+   "sharp": 15.16,
+   "px_per_unit": 12.0
+  },
+  "fix": {
+   "out": "ch1_ground_a2_fix.webp",
+   "size": [
+    1009,
+    1302
+   ],
+   "bytes": 653194,
+   "sha256": "7f2f1b724525ef4dcf2c2ec45175e514bfa8a4708d9ff8ca43687bebffeac007",
+   "seam": [
+    0.95,
+    0.97
+   ],
+   "sharp": 15.25,
+   "px_per_unit": 12.0
+  },
+  "src_seam": [
+   1.85,
+   2.25
+  ],
+  "src_sharp": 15.18
+ },
+ "ch1_ground_a3": {
+  "src": "Ch1_03_grass_A3_dry.png",
+  "src_sha256": "6a478b50db1b57493c54b79e78d3478612515de14a404774b74762011743f5b1",
+  "src_size": [
+   1536,
+   1536
+  ],
+  "src_mode": "RGB",
+  "kind": "tex",
+  "unit": 128,
+  "raw": {
+   "out": "ch1_ground_a3_raw.webp",
+   "size": [
+    1536,
+    1536
+   ],
+   "bytes": 1193090,
+   "sha256": "c83f0c766286360533262408e03f93afbd9a43d50ec7d902529763d9f584ef24",
+   "seam": [
+    1.93,
+    2.59
+   ],
+   "sharp": 16.66,
+   "px_per_unit": 12.0
+  },
+  "fix": {
+   "out": "ch1_ground_a3_fix.webp",
+   "size": [
+    1009,
+    1368
+   ],
+   "bytes": 688174,
+   "sha256": "9a251bdb6d54e49e824f96180e4f89fe6d68d3439ab8a4f64714ae778a6092df",
+   "seam": [
+    1.0,
+    1.13
+   ],
+   "sharp": 16.55,
+   "px_per_unit": 12.0
+  },
+  "src_seam": [
+   1.91,
+   2.58
+  ],
+  "src_sharp": 16.63
+ },
+ "ch1_road_r1": {
+  "src": "Ch1_04_stone_road_R1_standard.png",
+  "src_sha256": "c8a1c784454d822e6f4b3d02195f31e28a093ec4078cdd5847a4ec11ef59924c",
+  "src_size": [
+   1536,
+   1536
+  ],
+  "src_mode": "RGB",
+  "kind": "tex",
+  "unit": 57.5,
+  "raw": {
+   "out": "ch1_road_r1_raw.webp",
+   "size": [
+    1024,
+    1024
+   ],
+   "bytes": 416162,
+   "sha256": "0b0cdbe1b2e3d65bd9e49df625ebb3c111421ab9738dcddd60c0001c000a4cf9",
+   "seam": [
+    2.52,
+    4.32
+   ],
+   "sharp": 11.93,
+   "px_per_unit": 17.809
+  },
+  "fix": {
+   "out": "ch1_road_r1_fix.webp",
+   "size": [
+    831,
+    800
+   ],
+   "bytes": 266414,
+   "sha256": "1046fde326285d24c8c5da277772781d0876e5da9dda597e743a10c67e08f23e",
+   "seam": [
+    0.89,
+    0.94
+   ],
+   "sharp": 12.02,
+   "px_per_unit": 17.809
+  },
+  "src_seam": [
+   3.31,
+   5.77
+  ],
+  "src_sharp": 9.04
+ },
+ "ch1_road_r2": {
+  "src": "Ch1_05_stone_road_R2_premium.png",
+  "src_sha256": "d99dfb77e988a69ed8821b66ca7ee6001af89197ee63acd58da12d2e4fb534cd",
+  "src_size": [
+   1536,
+   1536
+  ],
+  "src_mode": "RGB",
+  "kind": "tex",
+  "unit": 57.5,
+  "raw": {
+   "out": "ch1_road_r2_raw.webp",
+   "size": [
+    1024,
+    1024
+   ],
+   "bytes": 318758,
+   "sha256": "8623fb354a796eee0cf607325dccc8847f0793907fccf1b686e6ef1af989fbc2",
+   "seam": [
+    1.45,
+    2.46
+   ],
+   "sharp": 7.24,
+   "px_per_unit": 17.809
+  },
+  "fix": {
+   "out": "ch1_road_r2_fix.webp",
+   "size": [
+    912,
+    912
+   ],
+   "bytes": 254880,
+   "sha256": "80346bcb19b6d7cb3bc58973b580f0d1d82a0d6cf64297d1ba9cca0f1a88c8ee",
+   "seam": [
+    1.1,
+    0.92
+   ],
+   "sharp": 7.25,
+   "px_per_unit": 17.809
+  },
+  "src_seam": [
+   1.69,
+   2.83
+  ],
+  "src_sharp": 6.13
+ },
+ "ch2_open_sea_water": {
+  "src": "Ch2_open_sea_water.png",
+  "src_sha256": "5bd0ae3aace2066d996fa112b8d54018920fc210d0e72ca2cb7a2365a80562e5",
+  "src_size": [
+   1536,
+   1536
+  ],
+  "src_mode": "RGB",
+  "kind": "tex",
+  "unit": 110,
+  "raw": {
+   "out": "ch2_open_sea_water_raw.webp",
+   "size": [
+    1536,
+    1536
+   ],
+   "bytes": 757250,
+   "sha256": "b84a0c5a4000d078b8a38f0103534c05e4aa0b7d3b77e24fcfd5645909f22dea",
+   "seam": [
+    2.33,
+    2.04
+   ],
+   "sharp": 7.08,
+   "px_per_unit": 13.964
+  },
+  "fix": {
+   "out": "ch2_open_sea_water_fix.webp",
+   "size": [
+    1368,
+    1368
+   ],
+   "bytes": 602764,
+   "sha256": "2e992fa75e13719efc96d0b11e927ef91a92ac4daccc53363097c571963fad89",
+   "seam": [
+    1.17,
+    1.18
+   ],
+   "sharp": 7.01,
+   "px_per_unit": 13.964
+  },
+  "src_seam": [
+   2.19,
+   1.96
+  ],
+  "src_sharp": 7.37
+ },
+ "ch2_sea_bridge_deck": {
+  "src": "Ch2_sea_bridge_deck.png",
+  "src_sha256": "0b43f792cb1ce7be81fbcd781e9a846f60fdebba4e10e425b7a7da7b98a6f7dc",
+  "src_size": [
+   1536,
+   1536
+  ],
+  "src_mode": "RGB",
+  "kind": "tex",
+  "unit": 72,
+  "raw": {
+   "out": "ch2_sea_bridge_deck_raw.webp",
+   "size": [
+    1280,
+    1280
+   ],
+   "bytes": 524614,
+   "sha256": "29ef1a729e02576c8602f87d1252a1622a53fc97650f7f634a89de4859a5fdfc",
+   "seam": [
+    1.44,
+    1.2
+   ],
+   "sharp": 7.85,
+   "px_per_unit": 17.778
+  },
+  "fix": {
+   "out": "ch2_sea_bridge_deck_fix.webp",
+   "size": [
+    1140,
+    1140
+   ],
+   "bytes": 419800,
+   "sha256": "60a3daf9f82357a9bcf81449230c5e8da5adeffbcd84ec20c8c6a32e41c2f6a5",
+   "seam": [
+    1.31,
+    0.7
+   ],
+   "sharp": 8.01,
+   "px_per_unit": 17.778
+  },
+  "src_seam": [
+   1.49,
+   1.28
+  ],
+  "src_sharp": 7.36
+ },
+ "ch2_coastal_white_stone_road": {
+  "src": "Ch2_coastal_white_stone_road.png",
+  "src_sha256": "e0e4d6fdd7a7729bd624b8d803e17009c29ad8990ac27876a0b62569375861de",
+  "src_size": [
+   1536,
+   1536
+  ],
+  "src_mode": "RGB",
+  "kind": "tex",
+  "unit": 56,
+  "raw": {
+   "out": "ch2_coastal_white_stone_road_raw.webp",
+   "size": [
+    1024,
+    1024
+   ],
+   "bytes": 432538,
+   "sha256": "4dccddda47924b76ba1ae31b69751890eeaac60c2540e58b3414e4846122f39b",
+   "seam": [
+    1.7,
+    2.62
+   ],
+   "sharp": 11.28,
+   "px_per_unit": 18.286
+  },
+  "fix": {
+   "out": "ch2_coastal_white_stone_road_fix.webp",
+   "size": [
+    803,
+    756
+   ],
+   "bytes": 250358,
+   "sha256": "a396c7f7d70e0ecf1065c8c404dca2b07cfba820b5fb8230661bf6d72f794eb5",
+   "seam": [
+    1.17,
+    0.91
+   ],
+   "sharp": 11.22,
+   "px_per_unit": 18.286
+  },
+  "src_seam": [
+   1.92,
+   3.09
+  ],
+  "src_sharp": 9.77
+ },
+ "ch2_R01_white_bridge_walkstrip": {
+  "src": "Ch2_R01_white_bridge_walkstrip.png",
+  "src_sha256": "4bbd9819b581b714ff2d1880585700d1fa2857d5b0577e575a28fdb6d4f28f00",
+  "src_size": [
+   1552,
+   656
+  ],
+  "src_mode": "RGBA",
+  "kind": "walk",
+  "unit": 22,
+  "band_px": 253,
+  "raw": {
+   "out": "ch2_R01_white_bridge_walkstrip_raw.webp",
+   "size": [
+    1552,
+    522
+   ],
+   "bytes": 107640,
+   "sha256": "cf4228591fae90b36bcc462b8f82b41ce67ab2bae7badb5de79cd51e244c250a",
+   "seam": [
+    2.13,
+    4.08
+   ],
+   "px_per_unit": 11.5
+  },
+  "fix": {
+   "out": "ch2_R01_white_bridge_walkstrip_fix.webp",
+   "size": [
+    1392,
+    522
+   ],
+   "bytes": 96556,
+   "sha256": "30e1bbce662e141a9d997bbe3ae5a20da1c4c6449c4cdbc3d4d38bd49e465016",
+   "seam": [
+    0.92,
+    4.05
+   ],
+   "px_per_unit": 11.5
+  }
+ },
+ "ch2_sea_bridge_railing_left": {
+  "src": "Ch2_sea_bridge_railing_left.png",
+  "src_sha256": "4f7eda206efe9c0c37ed51f4e75e348bfe0b9628da3d3fdda74a7ebdc231252f",
+  "src_size": [
+   1552,
+   656
+  ],
+  "src_mode": "RGBA",
+  "kind": "rail",
+  "unit": 8,
+  "raw": {
+   "out": "ch2_sea_bridge_railing_left.webp",
+   "size": [
+    529,
+    192
+   ],
+   "bytes": 38270,
+   "sha256": "1cfb880f669bc4204ed90a7f88cd05c787228edfbd0a434effb2cd1f6e1b01f2",
+   "px_per_unit": 24.0
+  }
+ },
+ "ch2_sea_bridge_railing_right": {
+  "src": "Ch2_sea_bridge_railing_right.png",
+  "src_sha256": "e431031776e83a71b9a6e213a8ce1d1a8d37173fda8868935ca12d3716c218fc",
+  "src_size": [
+   1552,
+   656
+  ],
+  "src_mode": "RGBA",
+  "kind": "rail",
+  "unit": 8,
+  "raw": {
+   "out": "ch2_sea_bridge_railing_right.webp",
+   "size": [
+    556,
+    192
+   ],
+   "bytes": 47042,
+   "sha256": "7293d2b72b6ecac7b61d3e4679507143a1b8c2eeee9d59f8fe9cd0d4db84bcae",
+   "px_per_unit": 24.0
+  }
+ },
+ "ch2_L02_white_bridge_arch_pier": {
+  "src": "Ch2_L02_white_bridge_arch_pier.png",
+  "src_sha256": "876bd40eed23261dfb27f282377f71279bf2795d0e7ecae83188490acfd8ed19",
+  "src_size": [
+   1024,
+   1024
+  ],
+  "src_mode": "RGBA",
+  "kind": "prop",
+  "unit": null,
+  "raw": {
+   "out": "ch2_L02_white_bridge_arch_pier.webp",
+   "size": [
+    640,
+    415
+   ],
+   "bytes": 55876,
+   "sha256": "0e2cd05f750e31b8f568d2e06910a8537636973f9b5fbc9acdca1d6d3e06c70b",
+   "px_per_unit": null
+  }
+ },
+ "ch1_strip_r1": {
+  "src": "ch1_road_r1＋assets/proto/board_art_1010/strip_road_stone.webp の縁石",
+  "kind": "strip",
+  "unit": 23,
+  "raw": {
+   "out": "ch1_strip_r1_raw.webp",
+   "size": [
+    2880,
+    384
+   ],
+   "bytes": 374530,
+   "sha256": "a52f0f724d54090783002a6db79a3bd4db2d4d58d6d6e6636f3d233d42c6890e",
+   "px_per_unit": 16.7
+  },
+  "fix": {
+   "out": "ch1_strip_r1_fix.webp",
+   "size": [
+    3116,
+    384
+   ],
+   "bytes": 416030,
+   "sha256": "3ad31d7861a6701cd986eccdedbbbafe902cc6aec564c830567eb3f8f1947d2c",
+   "px_per_unit": 16.7
+  }
+ },
+ "ch1_strip_r2": {
+  "src": "ch1_road_r2＋assets/proto/board_art_1010/strip_road_stone.webp の縁石",
+  "kind": "strip",
+  "unit": 23,
+  "raw": {
+   "out": "ch1_strip_r2_raw.webp",
+   "size": [
+    2880,
+    384
+   ],
+   "bytes": 315618,
+   "sha256": "bfa71b9c01a3b62c29473a6709d482b481051135bb0a78101e53325b6bf9262a",
+   "px_per_unit": 16.7
+  },
+  "fix": {
+   "out": "ch1_strip_r2_fix.webp",
+   "size": [
+    2565,
+    384
+   ],
+   "bytes": 290228,
+   "sha256": "5d12806c47be4ae2d75003153410e5a07e5f82f3b7f69ee79f8e86e26a523f3a",
+   "px_per_unit": 16.7
+  }
+ }
+}
