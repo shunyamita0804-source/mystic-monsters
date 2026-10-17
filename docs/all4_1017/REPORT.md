@@ -7,11 +7,11 @@
 
 | | URL | 中身 |
 |---|---|---|
-| ① QA | `{PUB}?qaTop=1` | 版・branch・元のコミット／Chapter 1・2 の A／B／C（カメラ・道路・歩行・seed・子を選ぶ）／7体×10技＝70枠の状態／QA 画面（`?mmQaTrial=1&qaDirect=1`＝全技の試合・バトル技ステージ・音声の試聴・新歩行） |
-| ② 初見プレイ（セーブ隔離） | `{PUB}?qaFresh=1`（最初から：`?qaFresh=reset`） | 本当のセーブ（mr4v6）を読まない・書かない。再読み込みで続きから |
-| ③ 一般プレイ | `{PUB}` | main の公開版 |
+| ① QA | `https://shunyamita0804-source.github.io/mystic-monsters/?qaTop=1` | 版・branch・元のコミット／Chapter 1・2 の A／B／C（カメラ・道路・歩行・seed・子を選ぶ）／7体×10技＝70枠の状態／QA 画面（`?mmQaTrial=1&qaDirect=1`＝全技の試合・バトル技ステージ・音声の試聴・新歩行） |
+| ② 初見プレイ（セーブ隔離） | `https://shunyamita0804-source.github.io/mystic-monsters/?qaFresh=1`（最初から：`?qaFresh=reset`） | 本当のセーブ（mr4v6）を読まない・書かない。再読み込みで続きから |
+| ③ 一般プレイ | `https://shunyamita0804-source.github.io/mystic-monsters/` | main の公開版 |
 
-- 公開の版：`{BUILD}`・main `{MAIN}`。コミット固定（iPhone のキャッシュ対策）：`https://raw.githack.com/shunyamita0804-source/mystic-monsters/{MAIN}/index.html`（①②は後ろに `?qaTop=1`・`?qaFresh=1`）
+- 公開の版：`2026-10-17-all4`・main `{MAIN}`。コミット固定（iPhone のキャッシュ対策）：`https://raw.githack.com/shunyamita0804-source/mystic-monsters/{MAIN}/index.html`（①②は後ろに `?qaTop=1`・`?qaFresh=1`）
 - ③に含めない（URL のフラグのときだけ）：新しい Chapter 2 の盤（`?ch2trial`）・C案カメラ（`?qaCam=c`）・道路の新しい絵（`?qaRoadArt=fix`）・新歩行（`?qaWalk=1017`）・ラズック／フルーネ（QA の7体だけ）。Chapter 3 は出さない。
 - 戻し方：main を公開前の `3d9a205`（`2026-10-16-final`）へ戻す（`git revert` のマージ）。
 
@@ -58,9 +58,11 @@ docs/qa_road_1017/REPORT.md の §8。Ch2 のぼけ＝preserve-3d の中の層�
 
 ## 5. テスト
 
-{TESTS}
+- ふだんの全件：`node --test tests/*.test.mjs`＝1866件（合格 1110・skip 756・**失敗 0**）
+- 実ブラウザの全件（94ファイルを1つずつ・`QA_E2E=1`）：1回目 682 合格／25 失敗（9ファイル）→ 原因はすべてテストの古い期待値（有料版ボイスの書き起こし・ラズックで7体／70枚・Chapter 2 の新しい盤は QA だけ・フィナのあいさつ5行）と、待ち方の揺れ＝テストを直してファイルごとに再実行し**全部合格**（battle-final 6/6・ch2-world 11/11・events 5/5・movecards 3/3・board-1008 9/9・gauru-moves 3/3・reactions 8/8・newgame-market 18/18・dev28 8/8）
+- **D28-B7**（全景 → 盤のズームの刻み ≤ 0.25秒）は不安定：main 3d9a205 でも同じ位置（開始から 0.35〜0.43秒）・同じ大きさ（0.28〜0.33秒）で落ちる（main 3/7・ブランチは最後のファイル全体の実行で合格）＝この変更の不具合ではない・既知として残す
 
-- D29-B2：{D29}
+- D29-B2：全件の実行で合格（main でも失敗していた既知の不安定なテスト・今回は再現せず）
 
 ## 6. 未完・判断待ち
 
