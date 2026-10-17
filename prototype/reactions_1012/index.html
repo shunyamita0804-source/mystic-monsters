@@ -59,7 +59,7 @@ figcaption b{color:var(--ink);font-weight:700}
   const RX_MS = { hit: 560, dodge: 520 };
   const status = (window.MM_RX_STATUS = {});
   const list = $('#list');
-  list.innerHTML = X.SPECIES.map((sp, n) => `<section class="sp" data-sp="${sp}"><h2>${X.NAME[sp]}<small>種族 ${n}</small><span class="try"><button data-k="hit">被弾を試す</button><button data-k="dodge">回避を試す</button></span></h2>
+  list.innerHTML = X.SPECIES.map((sp, n) => !sp ? '' : `<section class="sp" data-sp="${sp}"><h2>${X.NAME[sp]}<small>種族 ${n}</small><span class="try"><button data-k="hit">被弾を試す</button><button data-k="dodge">回避を試す</button></span></h2>
     <div class="grid">${X.KINDS.map((k, i) => { const f = X.info(sp, k); return `<figure data-k="${k}"><div class="cell"><img alt="${X.NAME[sp]} ${X.LABEL[k]}" src="${B}${f.src.slice(2)}" style="height:${(86 * f.hRel).toFixed(1)}%"></div><figcaption><b>${String(i + 1).padStart(2, '0')} ${X.LABEL[k]}</b><span class="st">…</span></figcaption></figure>`; }).join('')}</div>
     <div class="stage"><span class="tag">バトルの差し替え</span><div class="mon"><img class="idle" alt="" src="${B}assets/battle/idle/idle_${sp}.webp"></div></div></section>`).join('');
   // 読み込みの結果（読めた／読めない）
