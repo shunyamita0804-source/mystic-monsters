@@ -69,6 +69,7 @@ for (const cs of CASES) for (const [tag, q] of VAR) {
     res.push({ name, query, stops, saveUnchanged: save0 === save1, art, errors: p.errors, bad: p.bad });
   } catch (e) { res.push({ name, error: String(e && e.message || e) }); console.log('ERR', name, e.message); }
   await p.ctx.close();
+  writeFileSync(`${OUT}/result.json`, JSON.stringify(res, null, 1));   // 1ケースごとに残す（途中で止めても撮れた分は使える）
 }
 await L.close();
 writeFileSync(`${OUT}/result.json`, JSON.stringify(res, null, 1));
