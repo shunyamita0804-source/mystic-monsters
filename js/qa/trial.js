@@ -253,7 +253,7 @@
       + `<p class="qaudr" aria-live="polite"></p><button class="qno" type="button" data-nsfx="1">閉じる</button></div>`;
     const res = (t) => { const r = d.querySelector('.qaudr'); if (r) r.textContent = t; };
     const after = (id) => setTimeout(() => { const L = A && A.voiceLog ? A.voiceLog() : []; const e = [...L].reverse().find((x) => x.id === id); const p = A && A.playLog ? [...A.playLog()].reverse().find((x) => x.kind === 'voice' && x.name === id) : null; res(`${id}：${e ? e.result : '—'}${p ? `（${p.dur}ms・gain ${p.gain}）` : ''}`); }, 900);
-    d.querySelectorAll('.qcry').forEach((b) => { b.onclick = () => { if (!A || !A.cry) return; try { A.unlock && A.unlock(); } catch (e) {} A.cry(b.dataset.k, b.dataset.kind, { force: true, maxWaitMs: 3000 }); after(`cry_${b.dataset.k}_${b.dataset.kind}`); }; });
+    d.querySelectorAll('.qcry').forEach((b) => { b.onclick = () => { if (!A || !A.cry) return; try { A.unlock && A.unlock(); A.stopVoice && A.stopVoice(0); } catch (e) {} A.cry(b.dataset.k, b.dataset.kind, { force: true, maxWaitMs: 3000 }); after(`cry_${b.dataset.k}_${b.dataset.kind}`); }; });
     d.querySelectorAll('.qnpv').forEach((b) => { b.onclick = () => { if (!A || !A.voice) return; try { A.unlock && A.unlock(); } catch (e) {} A.voice(b.dataset.id, { qa: true, maxWaitMs: 3000 }); after(b.dataset.id); }; });
     d.querySelector('.qcwin').onchange = (e) => { root.MM_CRY_WIN = !!e.target.checked; };
     d.querySelector('.qno').onclick = () => { try { A && A.stopVoice && A.stopVoice(60); } catch (e) {} d.remove(); };

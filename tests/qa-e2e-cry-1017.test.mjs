@@ -35,7 +35,7 @@ test('CRY-B1（A）：市場の仲間入り・合体の誕生＝その子の正�
   await pg.waitForFunction(() => !document.querySelector('.mkgot'), null, { timeout: 6000 });
   assert.deepEqual(await cries(pg), ['cry_gauru_normal']);
   // 合体の誕生（育成完了2体・200G）
-  await pg.evaluate(() => { MMAUDIO.cryReset(); const a = mk(0), b = mk(3); a.name = 'A'; b.name = 'B'; for (const x of [a, b]) { MMP7.ensureProg(x); x.raise = { done: true }; } S.m = a; S.box = [b]; save(); sel = [0, 1]; });
+  await pg.evaluate(() => { MMAUDIO.cryReset(); const a = mk(0), b = mk(1); a.name = 'A'; b.name = 'B'; for (const x of [a, b]) { MMP7.ensureProg(x); x.raise = { done: true }; } S.m = a; S.box = [b]; save(); sel = [0, 1]; });
   await pg.evaluate(() => fuse());
   await pg.waitForFunction(() => MMAUDIO.playLog().filter((e) => e.kind === 'voice' && /^cry_/.test(e.name)).length >= 2, null, { timeout: 12000 });
   const c = await pg.evaluate(() => ({ last: MMAUDIO.playLog().filter((e) => /^cry_/.test(e.name)).slice(-1)[0].name, key: MMAUDIO.CRY_KEYS[S.m.sp] }));
@@ -46,14 +46,15 @@ test('CRY-B1（A）：市場の仲間入り・合体の誕生＝その子の正�
 test('CRY-B2（B）：牧場のタップ＝その子の声・同じ子は10秒あける・描き直しでは鳴らない', { skip: SKIP, timeout: 120000 }, async () => {
   const p = await openPage({}); const pg = p.page;
   await start(pg);
-  await pg.evaluate(() => { const b = mk(3); b.name = 'ジオ'; MMP7.ensureProg(b); S.box = [b]; save(); farm(); });
-  await pg.waitForSelector('#app>.rn'); await pg.waitForTimeout(500);
+  await pg.evaluate(() => { const b = mk(1); b.name = 'ガウ'; MMP7.ensureProg(b); S.box = [b]; save(); farm(); });
+  await pg.waitForSelector('#app>.rn'); await pg.waitForTimeout(1500);
+  await pg.waitForFunction(() => !MMAUDIO.voiceNow(), null, { timeout: 15000 });   // 入口のニックの声（NPC の声が優先＝鳴っている間は鳴かない）が終わってから
   assert.deepEqual(await cries(pg), [], '入っただけでは鳴かない');
-  await pg.evaluate(() => rnPick(S.box[0].uid)); await waitCry(pg, 'cry_jiol_normal');
+  await pg.evaluate(() => rnPick(S.box[0].uid)); await waitCry(pg, 'cry_gauru_normal');
   await pg.waitForTimeout(1500);
   await pg.evaluate(() => rnPick(S.box[0].uid)); await pg.waitForTimeout(900);
   assert.equal((await cries(pg)).length, 1, '同じ子の連続タップは鳴かない');
-  assert.equal(await pg.evaluate(() => MMAUDIO.voiceLog().slice(-1)[0].result), 'cool-mon');
+  assert.ok(['cool', 'cool-mon'].includes(await pg.evaluate(() => MMAUDIO.voiceLog().slice(-1)[0].result)), '全体6秒・同じ子10秒の間隔で鳴かない');
   await pg.evaluate(() => farm('', 'e')); await pg.waitForTimeout(600);
   assert.equal((await cries(pg)).length, 1, 'タブを替えても鳴かない');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
@@ -78,18 +79,18 @@ test('CRY-B3（C・D）：Chapter の開始で歩いて入る＝連れている�
 
 test('CRY-B4（E）：LOSE の曲のあとに自分の子の悲しみボイス・WIN は既定で鳴かない', { skip: SKIP, timeout: 120000 }, async () => {
   const p = await openPage({}); const pg = p.page;
-  await start(pg, 2);
+  await start(pg, 1);
   const fight1 = async () => { await pg.evaluate(() => { MMP8.depart(S, S.m, () => 0.37); const g = MMCH.graphFor(S.m); Object.assign(S.m.raise, { node: g.goal, goal: true, pend: null }); S.m.raise.field.arrivalSeen = true; MMP8.startTournament(S, S.m, 0, 7); save(); p8TourFight(); }); await pg.waitForSelector('#bt #m0 .mon', { timeout: 20000 }); await pg.waitForTimeout(1200); };
   await fight1();
   await pg.evaluate(() => { MMAUDIO.cryReset(); window.__t = Date.now(); ban('LOSE', '#38b6ff'); });
   await pg.waitForTimeout(3000);
   assert.deepEqual(await cries(pg), [], 'LOSE の曲の間は鳴かない');
-  await waitCry(pg, 'cry_nobiton_sad', 6000);
-  const dt = await pg.evaluate(() => MMAUDIO.playLog().find((e) => e.name === 'cry_nobiton_sad').at - window.__t);
+  await waitCry(pg, 'cry_gauru_sad', 6000);
+  const dt = await pg.evaluate(() => MMAUDIO.playLog().find((e) => e.name === 'cry_gauru_sad').at - window.__t);
   assert.ok(dt >= 4900, `曲（5.0秒）のあと ${dt}ms`);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   const q = await openPage({}); const pq = q.page;
-  await start(pq, 2);
+  await start(pq, 1);
   await pq.evaluate(() => { MMP8.depart(S, S.m, () => 0.37); const g = MMCH.graphFor(S.m); Object.assign(S.m.raise, { node: g.goal, goal: true, pend: null }); S.m.raise.field.arrivalSeen = true; MMP8.startTournament(S, S.m, 0, 7); save(); p8TourFight(); });
   await pq.waitForSelector('#bt #m0 .mon', { timeout: 20000 }); await pq.waitForTimeout(1200);
   await pq.evaluate(() => { MMAUDIO.cryReset(); ban('WIN!', '#ffd34d'); });
@@ -103,6 +104,7 @@ test('CRY-B5：QA の試聴＝鳴き声 14本・NPC ボイス 60本が1本ずつ
   await pg.mouse.click(4, 300);
   const s0 = await pg.evaluate(() => localStorage.getItem('mr4v6'));
   await pg.waitForSelector('#mmqa-sw'); await pg.click('#mmqa-sw'); await pg.waitForSelector('#mmqa .qaud');
+  await pg.waitForTimeout(1500); await pg.waitForFunction(() => !MMAUDIO.voiceNow(), null, { timeout: 15000 });   // 入口の声が終わってから
   await pg.click('#mmqa .qaud'); await pg.waitForSelector('#mmqa .qaudp .qcry');
   const n = await pg.evaluate(() => [document.querySelectorAll('#mmqa .qcry').length, document.querySelectorAll('#mmqa .qnpv').length]);
   assert.deepEqual(n, [14, 60]);

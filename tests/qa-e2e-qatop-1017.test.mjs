@@ -77,7 +77,7 @@ test('QT-B4：初見プレイ（?qaFresh=1）＝本当のセーブを触らな�
   const t = await pg.evaluate(() => ({ name: S.playerName || '', g: S.g, pend: !!S.playerNamePending }));
   assert.notEqual(t.name, 'ほんもの', '本当のセーブを読まない'); assert.notEqual(t.g, 777);
   await H.newGame(pg, 'しょけん'); await pg.evaluate(() => { S.g = 123; save(); });
-  const k = await pg.evaluate(() => ({ real: Storage.prototype.getItem.call(localStorage, 'mr4v6'), keys: Object.keys(localStorage).filter((x) => /qaF:/.test(x)) }));
+  const k = await pg.evaluate(() => ({ real: localStorage['mr4v6'], keys: Object.keys(localStorage).filter((x) => /qaF:/.test(x)) }));
   assert.equal(k.real, real, '本当のセーブは書き換わらない'); assert.ok(k.keys.includes('qaF:mr4v6'), JSON.stringify(k.keys));
   await pg.reload(); await pg.waitForFunction(() => window.MMQAF && MMQAF.on);
   assert.deepEqual(await pg.evaluate(() => [S.playerName, S.g]), ['しょけん', 123], '再読み込みで続きから');

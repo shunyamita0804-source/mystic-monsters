@@ -4730,7 +4730,8 @@ ${lantern(60)}${lantern(330)}
 const P10_SIGN=`<svg viewBox="0 0 240 92" width="200" height="77" aria-hidden="true"><path d="M60 0v14M180 0v14" stroke="#3a2618" stroke-width="3"/><rect x="18" y="12" width="204" height="74" rx="10" fill="#7a4a26" stroke="#3e2413" stroke-width="4"/><rect x="26" y="20" width="188" height="58" rx="7" fill="none" stroke="#e8b43a" stroke-opacity=".7" stroke-width="2"/>
 <g transform="translate(120 49)"><path d="M-40 10c-6-14-2-30 10-38M40 10c6-14 2-30-10-38" fill="none" stroke="#e8c26a" stroke-width="3"/>${[-1,1].map(s=>[0,1,2,3].map(i=>`<ellipse cx="${s*(34-i*3)}" cy="${6-i*10}" rx="5" ry="3" transform="rotate(${s*(60-i*12)} ${s*(34-i*3)} ${6-i*10})" fill="#e8c26a"/>`).join("")).join("")}<circle r="20" fill="#e8b43a" stroke="#6b3f08" stroke-width="2"/><circle r="14" fill="none" stroke="#fff3c4" stroke-opacity=".7"/><path d="M-7 5c0-7 14-7 14 0M-9-3a2.6 2.6 0 1 0 .1 0M9-3a2.6 2.6 0 1 0 .1 0M-3-9a2.4 2.4 0 1 0 .1 0M3-9a2.4 2.4 0 1 0 .1 0" fill="#6b3f08"/></g></svg>`;
 function p10Who(){const br=(S.br??-1)>=0?RN[S.br]:"ー";return `<div class="p10who"><span class="p10crest" aria-hidden="true">🐾</span><span class="p10wt"><b>${p11Esc(S.playerName||MMP11P.DEFAULT_NAME)}</b><small>ランク ${br}</small><span class="p10gold">${P10_COIN}<b id="p10g">${Number(S.g||0).toLocaleString()}</b><small>G</small></span></span></div>`}
-function market(msg,focus){if(p8Blocked())return;bgm("market");facVoice("market",npcFirstWill("market")||!window.MM_QA_NO_KAREN);p9Immersive(true);const cat=MMP10M.MARKET_CATALOG;
+let KAREN_FRESH=false;
+function market(msg,focus){if(p8Blocked())return;bgm("market");try{KAREN_FRESH=!(window.MMVOICE&&MMVOICE.visited().market)}catch(e){KAREN_FRESH=false}facVoice("market",npcFirstWill("market")||!window.MM_QA_NO_KAREN);p9Immersive(true);const cat=MMP10M.MARKET_CATALOG;
  if(typeof focus=="string"){const i=cat.findIndex(c=>c.key==focus);if(i>=0)P10_MK=i}else if(typeof focus=="number")P10_MK=Math.max(0,Math.min(cat.length-1,focus));
  P10_MK=Math.max(0,Math.min(cat.length-1,P10_MK));
  const MB=window.MMP12S&&MMP12S.MARKET_BG; // 市場の背景候補（台座付き）。無ければ従来の描画背景
@@ -5313,7 +5314,7 @@ window.addEventListener("unhandledrejection",rescue);
  *  ./version.json（小さな JSON。毎回取り直す）の build がこのページの MM_BUILD と違えば1回だけ reload（同じ版へは15分に1回まで＝読み込み直しを繰り返さない）。
  *  確かめる時：起動したとき・ページがメモリから戻ったとき（pageshow の persisted）・10分以上裏にいて表に戻ったとき。セーブ（mr4v6）には触れない（読み込み直しは iOS がタブを閉じたときと同じ＝つづきから）。
  *  公開するたびに MM_BUILD と version.json の build を同じ値に上げる（tests/dev24-1013.test.mjs で一致を確かめる） */
-const MM_BUILD="2026-10-17-qa-road1";
+const MM_BUILD="2026-10-17-all4";
 (function(){const K="mmbuildReload";let hidAt=0;
  const check=()=>{try{const x=new XMLHttpRequest();x.open("GET","./version.json?t="+Date.now(),true);x.timeout=8000;
   x.onload=()=>{try{if(x.status<200||x.status>=300)return;const b=(JSON.parse(x.responseText)||{}).build;if(!b||b===MM_BUILD)return;
@@ -6121,7 +6122,7 @@ function npcSrc(id,ex,view){return window.MMNPC&&MMNPC.srcOf?MMNPC.srcOf(id,ex,v
 function npcStand(id,ex){const st=window.MMNPC&&MMNPC.standOf?MMNPC.standOf(id,"closeup",ex):null;return st?`src="${st}" data-npc="${id}"`:`src="${npcSrc(id,ex)}"`}
 function npcWarm(id,views){try{if(window.MMNPC&&MMNPC.warm)MMNPC.warm(id,views)}catch(e){}}
 /** 市場の再訪：進行状態に合う一言か、一定の確率でふつうの一言（小さな窓）。無ければ何も出さない */
-function karenRevisit(){if(window.MM_QA_NO_KAREN)return;if(!window.MMNPCE)return karenAgain();const l=MMNPCE.revisit("market",npcCtx("market"));if(l)NPC_LAST.market=l.id;const W={npc:"karen",expression:"welcome",voice:"karen_welcome",voiceWait:2500,text:"いらっしゃい。"};karenSay(l?[W,{npc:"karen",expression:l.expression||"smile",text:l.text}]:[W],{presentation:"compact"})}   /* 2026-10-17：再訪の1行目＝カレン 002「いらっしゃい。」（声と字幕）・2行目＝状況の一言（無音・出ないこともある） */
+function karenRevisit(){if(window.MM_QA_NO_KAREN)return;if(!window.MMNPCE)return karenAgain();const l=MMNPCE.revisit("market",npcCtx("market"));if(l)NPC_LAST.market=l.id;if(!KAREN_FRESH){if(l)karenSay([{npc:"karen",expression:l.expression||"smile",text:l.text}],{presentation:"compact"});return}KAREN_FRESH=false;const W={npc:"karen",expression:"welcome",voice:"karen_welcome",voiceWait:2500,text:"いらっしゃい。"};karenSay(l?[W,{npc:"karen",expression:l.expression||"smile",text:l.text}]:[W],{presentation:"compact"})}   /* 2026-10-17：再訪の1行目＝カレン 002「いらっしゃい。」（声と字幕）・2行目＝状況の一言（無音・出ないこともある） */
 /** Chapter を終えてファームへ戻ったとき1回：ダン＋フィナの帰還イベント（Chapter ごとに文面が違う。次の Chapter があれば噂を1回だけ添える） */
 function farmReturn(m){if(window.MM_QA_NO_NPC||!window.MMNPCE||!window.MMNPC||!m||!m.raise)return false;const r=m.raise,last=(r.log||[]).slice(-1)[0];if(!last||!last.ch)return false;const seen=Array.isArray(r.evSeen)?r.evSeen:(r.evSeen=[]),key="ret"+last.ch;if(seen.includes(key))return false;
  const k=MMP8.nextChapterKey(m),nextName=k!=null&&k!=MMP8.FINAL&&MMP8.isPlayable(k)?MMP8.chapterName(k):null;

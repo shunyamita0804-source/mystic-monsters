@@ -770,7 +770,7 @@
     const r = w.getBoundingClientRect(), sc = (w.offsetHeight ? r.height / w.offsetHeight : 1) || 1;
     const dy = Math.max(120, ((root.innerHeight || 800) - r.top + 12) / sc);   // 画面の下の外（カメラの拡大を考えた距離）
     w.style.translate = `0 ${dy.toFixed(0)}px`; fw.classList.remove('chf-monwait'); w.dataset.enter = '1';
-    anim('walk', { speed: 1 }); feel('monster.enter'); { const S0 = root.S, mm = S0 && S0.m; if (!quick && mm) monCry(mm.sp, 'normal', 950, () => onField()); }   // 2026-10-17 C：Chapter の開始でモンスターが歩いて入る（4歩の音のあと・開始の演出のときだけ）   // 2026-10-06：画面の下から歩いて入る（正式の4歩の音を1回だけ。1マスごとには鳴らさない）
+    anim('walk', { speed: 1 }); feel('monster.enter'); { const S0 = gS(), mm = S0 && S0.m; if (!quick && mm) monCry(mm.sp, 'normal', 950, () => onField()); }   // 2026-10-17 C：Chapter の開始でモンスターが歩いて入る（4歩の音のあと・開始の演出のときだけ）   // 2026-10-06：画面の下から歩いて入る（正式の4歩の音を1回だけ。1マスごとには鳴らさない）
     const a = w.animate([{ translate: `0 ${dy.toFixed(0)}px` }, { translate: '0 0' }], { duration: quick ? 420 : MON_ENTER.ms, easing: 'cubic-bezier(.22,.62,.3,1)', fill: 'forwards' });
     try { await a.finished; } catch (e) {}
     w.style.translate = ''; try { a.cancel(); } catch (e) {} delete w.dataset.enter;
