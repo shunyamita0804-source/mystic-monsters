@@ -211,7 +211,7 @@ T('QA-NG3：名前は Enter キーでも決定できる（決定は1回だけ・
   const st = await H.storedSave(pg);
   assert.equal(st.playerName, 'エンター'); assert.ok(!st.playerNamePending); assert.deepEqual(st.npcFlags, { support: 1, finaIntro: 1 });
   const lines = await talkLines(pg);
-  assert.equal(lines.length, 3, 'あいさつは3行とも表示される');
+  assert.equal(lines.length, 5, 'あいさつは5行とも表示される（2026-10-17：フィナ 009 の書き起こし）');
   await pg.waitForSelector('.map');
   assert.equal(await pg.evaluate(() => document.querySelector('#msg').textContent.replace(/^フィナ/, '')), 'ようこそ、エンターさん！ まずは市場でモンスターを選ぼう。');   // 2026-09-30：案内はフィナの台詞（名前の札つき）
   noErrors(p);
