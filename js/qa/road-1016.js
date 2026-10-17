@@ -145,6 +145,8 @@
       // 2026-10-17：区画ごとに別の合成の層（will-change）にする＝3D に傾けた平面の層の中に描かれると、平面の層の低い倍率で描かれてから引き伸ばされ、
       //  1単位 10px で描いても画面ではぼける（Chromium の GPU 描画で確認：層を分けると canvas の画素のまま合成される）。?qaRoadLayer=0 で従来（比較用）
       Object.assign(c.style, { left: (x0 - 1 / R) + 'px', top: (y0 - 1 / R) + 'px', width: pw / R + 'px', height: pw / R + 'px', visibility: 'hidden', willChange: LAYER ? 'transform' : '' });
+      // 2026-10-17：3D の中（海の世界の preserve-3d の平面）では、層は CSS の箱の大きさ × 画素比で描かれる＝箱を canvas の画素 ÷ 画素比にして transform で世界の大きさへ縮める（canvas の画素のまま・それ以上は大きくしない＝層のメモリを増やさない）
+      if (cfg.big) { const qk = /[?&]qaHiK=([\d.]+)/.exec((root.location && root.location.search) || ''), k = qk ? +qk[1] : Math.max(1, root.devicePixelRatio || 1); Object.assign(c.style, { width: pw / k + 'px', height: pw / k + 'px', transformOrigin: '0 0', transform: `scale(${k / R})` }); }
       cfg.parent.appendChild(c); return { c, ix, iy, done: false };
     }
     const paintMs = [];   // 区画1枚を描くのにかかった時間（確認用・最後の 60 枚）

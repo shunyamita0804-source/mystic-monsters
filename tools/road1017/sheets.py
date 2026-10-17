@@ -19,8 +19,8 @@ except OSError:
 src, out = sys.argv[1], sys.argv[2]
 os.makedirs(out, exist_ok=True)
 res = json.load(open(os.path.join(src, 'result.json'), encoding='utf-8'))
-ORDER = ['old', 'fix_nolayer', 'old_hi', 'raw', 'fix', 'fix_r01']
-LABEL = {'old': '従来', 'fix_nolayer': 'fix（層分けなし）', 'old_hi': '旧素材+近くの層（層分け）', 'raw': '新素材 raw', 'fix': '新素材 fix', 'fix_r01': 'fix+白い橋帯R01+門'}
+ORDER = ['old', 'fix_nobig', 'fix_nolayer', 'old_hi', 'raw', 'fix', 'fix_r01']
+LABEL = {'old': '従来', 'fix_nobig': 'fix（3D の中・箱の修正なし）', 'fix_nolayer': 'fix（層分けなし）', 'old_hi': '旧素材+近くの層（層分け）', 'raw': '新素材 raw', 'fix': '新素材 fix', 'fix_r01': 'fix+白い橋帯R01+門'}
 cases = {}
 for r in res:
     if 'stops' not in r:

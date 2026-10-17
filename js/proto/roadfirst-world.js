@@ -248,7 +248,12 @@
     // 2026-10-16 QA（A）：カメラの近くだけ、地面と道を高い解像度で描き直す層（js/qa/road-1016.js）。従来（qaRoad が null）は作らない
     const QR = o.qaRoad && root.MMQAR ? root.MMQAR : null;
     if (QR) art.qaRoad = o.qaRoad;
-    const HI = QR ? QR.hiLayer({ doc, parent: gnd || plane, WORLD, project, S: null, paintAt: (g, bx) => { if (SEA) { SEA.ground(g, D, bx, art, HELP); SEA.roads(g, D, o, art, bx, HELP); } else { drawGround(g, D, bx[0], bx[1], bx[2], bx[3], art); drawTerrain(g, D, o, art, bx); drawRoads(g, D, o, art, bx); } } }) : null;
+    // 2026-10-17 QA（道路画質 P0・Ch2 がぼける原因＝確定）：海の世界の平面は preserve-3d（海底・塔のため）。3D の中の層は「CSS の箱の大きさ × 画素比」で描かれ、
+    //  カメラの倍率（最大 5.6）では描き直されない＝近くの区画（CSS 64px・canvas 642px）は約 190px に縮めて描かれてから 5.6倍に引き伸ばされていた（平面を flat にすると直る＝切り分けで確認）。
+    //  → 海の世界の近くの区画は平面へ直接置き、CSS の箱を canvas の画素 ÷ 画素比にして transform で縮める（js/qa/road-1016.js の big）＝canvas の画素のまま合成。
+    //  ?qaRoadHiBig=0 で従来（比較用）。.rfw-gnd（平らな入れ物）の中では箱を大きくしても入れ物の面に平たくまとめられる＝平面へ直接置く
+    const BIG = SEA && !/[?&]qaRoadHiBig=0/.test((root.location && root.location.search) || '');
+    const HI = QR ? QR.hiLayer({ doc, parent: BIG ? plane : (gnd || plane), big: BIG, WORLD, project, S: null, paintAt: (g, bx) => { if (SEA) { SEA.ground(g, D, bx, art, HELP); SEA.roads(g, D, o, art, bx, HELP); } else { drawGround(g, D, bx[0], bx[1], bx[2], bx[3], art); drawTerrain(g, D, o, art, bx); drawRoads(g, D, o, art, bx); } } }) : null;
     if (veil) plane.appendChild(veil);
     // マス（全地点・立てて置く）とモンスター
     // 2026-10-13 開発28（全景 → START へ寄るカメラのカクつき）：マス・景物・モンスターの大きさは、毎フレーム width を書き換えるのではなく
