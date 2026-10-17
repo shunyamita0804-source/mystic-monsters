@@ -288,7 +288,7 @@ try {
     const sw = await q.evaluate(() => !!document.getElementById('mmqa-sw'));
     await q.evaluate(() => { const b = document.getElementById('mmqa-sw'); if (b) b.click(); }); await sleep(800);
     const cat = await q.evaluate(async () => { const c = MMQA.catalog(); const urls = c.flatMap((x) => x.moves.map((m) => m.src)); const ok = await Promise.all(urls.map((u) => new Promise((r) => { const i = new Image(); i.onload = () => r(i.naturalWidth > 0); i.onerror = () => r(false); i.src = u; }))); return { tabs: document.querySelectorAll('#mmqa .qtab').length, n: urls.length, ok: ok.filter(Boolean).length, counts: MMQA.counts() }; });
-    rec('2026-10-15：QA 試遊モード（?mmQaTrial=1）＝牧場に切り替え → ON → 6体×10技（60）のカードが読める（実戦 51＝ジオルの正式10技・フルーネ09 ルートドレイン（QA の SK 58）を含む・プレビュー 9＝フルーネ・静止画 0）', sw && cat.tabs === 6 && cat.n === 60 && cat.ok === 60 && cat.counts.battle === 51 && cat.counts.preview === 9 && cat.counts.static === 0, JSON.stringify(cat));
+    rec('2026-10-15：QA 試遊モード（?mmQaTrial=1）＝牧場に切り替え → ON → 7体×10技（70。2026-10-17 ラズック）のカードが読める（実戦 61＝ジオルの正式10技・フルーネ09 ルートドレイン（QA の SK 58）・ラズック10技を含む・プレビュー 9＝フルーネ・静止画 0）', sw && cat.tabs === 7 && cat.n === 70 && cat.ok === 70 && cat.counts.battle === 61 && cat.counts.preview === 9 && cat.counts.static === 0, JSON.stringify(cat));
     await q.evaluate(() => MMQA.battle(0, 1)); await q.waitForSelector('#bt .mmr .pl .nm', { timeout: 30000 }).catch(() => {});
     // 素早さが同じ（ソラモどうし）なら相手が先に動くことがある＝自分の番（STOP が押せる）になってからルーレットの技を読む（相手の番のルーレットは相手の技）
     await q.waitForFunction(() => { const g = document.getElementById('go'); return g && !g.disabled && !g.classList.contains('bk'); }, null, { timeout: 30000 }).catch(() => {}); await sleep(400);
@@ -344,10 +344,11 @@ try {
     await t.waitForFunction(() => /ブランチ\s*main/.test((document.querySelector('#mmqat .qtv') || {}).textContent || ''), null, { timeout: 15000 }).catch(() => {});
     const qt = await t.evaluate(() => ({ cells: document.querySelectorAll('#mmqat .qtm td').length, b: document.querySelectorAll('#mmqat .qtm td.battle').length, links: document.querySelectorAll('#mmqat a.qtb[data-k]').length, v: (document.querySelector('#mmqat .qtv') || {}).textContent || '' }));
     await t.screenshot({ path: `${OUT}/qa_top_390.png` }).catch(() => {});
-    rec('2026-10-17：QA トップ＝70枠（実戦 61）・Chapter 1／2 の A／B／C の入口・版と branch', qt.cells === 70 && qt.b === 61 && qt.links === 6 && /main/.test(qt.v), JSON.stringify(qt));
+    rec('2026-10-17：QA トップ＝70枠（実戦 60〜61＝フルーネ09 は QA を ON にしたときだけ実戦）・Chapter 1／2 の A／B／C の入口・版と branch', qt.cells === 70 && qt.b >= 60 && qt.b <= 61 && qt.links === 6 && /main/.test(qt.v), JSON.stringify(qt));
+    const real0 = await t.evaluate(() => localStorage['mr4v6'] || null);   // QA トップのページは通常の起動（本当のセーブ）＝前後で比べる
     await t.goto(URL + '?qaFresh=1'); await t.waitForFunction(() => window.MMQAF && MMQAF.on, null, { timeout: 60000 }).catch(() => {});
     const qf = await t.evaluate(() => ({ on: !!(window.MMQAF && MMQAF.on), real: localStorage['mr4v6'] || null }));
-    rec('2026-10-17：初見プレイ（?qaFresh=1）が動く・本当のセーブの鍵に書かない', qf.on && qf.real == null, JSON.stringify(qf));
+    rec('2026-10-17：初見プレイ（?qaFresh=1）が動く・本当のセーブ（mr4v6）を書き換えない', qf.on && qf.real === real0, JSON.stringify({ on: qf.on, same: qf.real === real0 }));
     await t.close(); await ctxT.close();
   }
 

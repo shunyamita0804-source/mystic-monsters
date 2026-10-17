@@ -11,9 +11,10 @@
 | ② 初見プレイ（セーブ隔離） | `https://shunyamita0804-source.github.io/mystic-monsters/?qaFresh=1`（最初から：`?qaFresh=reset`） | 本当のセーブ（mr4v6）を読まない・書かない。再読み込みで続きから |
 | ③ 一般プレイ | `https://shunyamita0804-source.github.io/mystic-monsters/` | main の公開版 |
 
-- 公開の版：`2026-10-17-all4`・main `{MAIN}`。コミット固定（iPhone のキャッシュ対策）：`https://raw.githack.com/shunyamita0804-source/mystic-monsters/{MAIN}/index.html`（①②は後ろに `?qaTop=1`・`?qaFresh=1`）
+- 公開の版：`2026-10-17-all4`・main `a03c56e`。コミット固定（iPhone のキャッシュ対策）：`https://raw.githack.com/shunyamita0804-source/mystic-monsters/a03c56e/index.html`（①②は後ろに `?qaTop=1`・`?qaFresh=1`）
 - ③に含めない（URL のフラグのときだけ）：新しい Chapter 2 の盤（`?ch2trial`）・C案カメラ（`?qaCam=c`）・道路の新しい絵（`?qaRoadArt=fix`）・新歩行（`?qaWalk=1017`）・ラズック／フルーネ（QA の7体だけ）。Chapter 3 は出さない。
-- 戻し方：main を公開前の `3d9a205`（`2026-10-16-final`）へ戻す（`git revert` のマージ）。
+- 戻し方：main を公開前の `3d9a205`（`2026-10-16-final`）へ戻す（`git revert -m 1 a03c56e`）。
+- 公開確認（tools/public-check.mjs）：44項目すべて OK（1回目の NG 3件は確認の道具の古い期待値＝7体70枠・QA トップの実戦 60（フルーネ09 は QA を ON にしたときだけ実戦）・初見プレイの前後比較＝直して再実行）
 
 ## 1. 最終の表
 
