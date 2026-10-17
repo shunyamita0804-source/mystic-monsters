@@ -1,0 +1,147 @@
+{
+ "scale": 0.68182,
+ "idleCrop": [
+  122,
+  129,
+  1153,
+  1185
+ ],
+ "reactions": {
+  "joy": {
+   "w": 742,
+   "h": 831,
+   "hRel": 1.154,
+   "bottomPad": 87
+  },
+  "surprise": {
+   "w": 768,
+   "h": 842,
+   "hRel": 1.169,
+   "bottomPad": 86
+  },
+  "sad": {
+   "w": 684,
+   "h": 818,
+   "hRel": 1.136,
+   "bottomPad": 87
+  },
+  "eat": {
+   "w": 745,
+   "h": 836,
+   "hRel": 1.161,
+   "bottomPad": 86
+  },
+  "hit": {
+   "w": 832,
+   "h": 832,
+   "hRel": 1.156,
+   "bottomPad": 86
+  },
+  "dodge": {
+   "w": 805,
+   "h": 652,
+   "hRel": 0.906,
+   "bottomPad": 87
+  }
+ },
+ "originals": {
+  "idle": [
+   "Razuck_BattleIdle_FinalAlpha_Reference.png",
+   "aad94bf1ec6d37ddecd246f65d8e9a7b1645edb12a71c6e6e01c940423598b6d"
+  ],
+  "icon": [
+   "Razuck_CompareIcon_20261017.png",
+   "438336940a44c0185426f6844a7bbab6c1e51704f2ad9a001b18fefcbb5f4d67"
+  ],
+  "vs": [
+   "Razuck_VSIllustration_20261017.png",
+   "a7a75d1683ce7ee982d556068fb4ebe87cb1f01dd3383cdab75faf137c5db6f8"
+  ],
+  "01_joy": [
+   "Razuck_Reaction_01_Happy.png",
+   "10b413840f7d6c5032f085673150c40cb3e4175f94f1fa07660d661188ba86c6"
+  ],
+  "02_surprise": [
+   "Razuck_Reaction_02_Surprised.png",
+   "d1240b7f862a81ca5cb5c58a7c2a7af38978c2900aa4fbc6d34f76b64975956e"
+  ],
+  "03_sad": [
+   "Razuck_Reaction_03_Sad.png",
+   "014dc1a3d26cf354a5fc259f9fbc680f43a3e38f4ecc0be668b2271a192d6ec9"
+  ],
+  "04_eat": [
+   "Razuck_Reaction_04_Eat.png",
+   "d7def177e6699377179750aa784975968197d49baacc4369fadf91dd2680378a"
+  ],
+  "05_hit": [
+   "Razuck_Reaction_05_Hit.png",
+   "45e1d82222d00934c10bac87df65b39942a67e386b74618951a86255dbdf907d"
+  ],
+  "06_dodge": [
+   "Razuck_Reaction_06_Dodge.png",
+   "fbae0ce501efee0aa0f8090676e0339f3060b0aec057eb93ef538ce70501f320"
+  ],
+  "01_kamitsuki.png": [
+   "01_kamitsuki.png",
+   "caf20eba4e2eab88400f83954fcac1613e4ce0b5ea471ccb31b7621946b96340"
+  ],
+  "02_hikkaki.png": [
+   "02_hikkaki.png",
+   "faac0c4ab52ca84e372b73b45e26f5a6f519b1f7e28d0ba341f45b84759ed71b"
+  ],
+  "03_subayai_ichigeki.png": [
+   "03_subayai_ichigeki.png",
+   "1e164ca3de2b4b7f764f8cce843441541ff7cc676e84953960a0ae6c66f11147"
+  ],
+  "04_chokomaka.png": [
+   "04_chokomaka.png",
+   "352ce519dc0e90a10a9a988d9e3afac41bbd33057d606a0332bafa3b118af1f6"
+  ],
+  "05_gajigaji_rush.png": [
+   "05_gajigaji_rush.png",
+   "d7a96e62c34dd01a270faa3b9612651e0a4d9470f56ca4f6a171669166e6f77e"
+  ],
+  "06_trick_shot.png": [
+   "06_trick_shot.png",
+   "74f3830c53185c7bb382a03d3e45975900380e277040f6022ef321b8db23f4d3"
+  ],
+  "07_kakuran_step.png": [
+   "07_kakuran_step.png",
+   "f45af2dda6b2cf615ae6776faa3508a3b3c121d45fe26356da5a4afa4b576299"
+  ],
+  "08_shadow_bite.png": [
+   "08_shadow_bite.png",
+   "26f03c67ed6332b80861e950dc1623aefa9f7ffacc100e19c5a10ef84b3ef15f"
+  ],
+  "09_mirage_dash.png": [
+   "09_mirage_dash.png",
+   "029fc7ee7374711a033823fc3df2f5e7a9b14b2eb79ac6c598788acb970508d0"
+  ],
+  "10_razuck_rush.png": [
+   "10_razuck_rush.png",
+   "4aa53e03703c97a178f1315d54fb3b9f613906d14a897ddff1eb1ae1e30eca81"
+  ]
+ },
+ "derived": {
+  "assets/battle/idle/idle_razuck.webp": "da62a40f9b85399695cd40d0193d78fa8f95a9b1ad43f27bff065fb4f8a13474",
+  "assets/monsters/compare_1015/razuck.webp": "c9f8420a73c53feeb86dcb0bc8c2a059ca0cb3e576c1f405532918cebae7f421",
+  "assets/tournament/icons_1017/icon_razuck.webp": "cd1eaf359c961b891a53123a45136b9923b963a29cedc7788adb734a4b2add90",
+  "assets/tournament/vs_1017/vs_razuck.webp": "30bc810eea4ffe8b467296f44db4e41349679a9d5944b2c8b06a6ed6c156c1cc",
+  "assets/monsters/reactions_1017_razuck/01_joy.webp": "d6ef8c04c9a820949bf570955e91f64d61994637f6fec6200a83fbf06a257996",
+  "assets/monsters/reactions_1017_razuck/02_surprise.webp": "6b86fec9396d912db489f8719e93914330fa74c869c0ad12ac85e286577a4b2c",
+  "assets/monsters/reactions_1017_razuck/03_sad.webp": "ff932385c8e2968197be35da3e5f2dd07e1615076fe916e9cf0d204e5462ac3b",
+  "assets/monsters/reactions_1017_razuck/04_eat.webp": "91fb15034f1afb43a70dcf8d4c21ffe04e21f44aae36566417438c7cf8cefeb5",
+  "assets/monsters/reactions_1017_razuck/05_hit.webp": "6044e89ed9f378fb3518df5b20419d8a653552462dcfbc93a5137f750dca41cb",
+  "assets/monsters/reactions_1017_razuck/06_dodge.webp": "69e905f075f75f94780b3db2bdde382b8373cb3dfd55683f4e22f00e53559a05",
+  "assets/moves/cards_1014/razuck/01_kamitsuki.webp": "d61aa63473bd451c779e16d52a05ee174621ce9f69242dff6f55882ffb3f6d67",
+  "assets/moves/cards_1014/razuck/02_hikkaki.webp": "f00c868d6163b3b3107b7ae0df4b2ff1876cbecae55d7788accf647d8b81103a",
+  "assets/moves/cards_1014/razuck/03_subayai_ichigeki.webp": "095b8b61aa91167b322dab6266155f8d7b5081bb80d06a7dba8dfdad26d1884c",
+  "assets/moves/cards_1014/razuck/04_chokomaka.webp": "4013f6b7a6bfe72f469565b63036fd0fd6c46a046d66516a906b1ff7eec2e7b7",
+  "assets/moves/cards_1014/razuck/05_gajigaji_rush.webp": "bca7d5a348c8120299431dfee6c7f52ce81e21f131e592cb4e6e3a0c43b695ec",
+  "assets/moves/cards_1014/razuck/06_trick_shot.webp": "17f5c9c8fbdfc63065098db352e2e789ccca00a0eda06f70871f7a31a428bec1",
+  "assets/moves/cards_1014/razuck/07_kakuran_step.webp": "7920303bfffca55dee1b4b3104b9e13407fb28b62167f1db2e88d8c7516b5e02",
+  "assets/moves/cards_1014/razuck/08_shadow_bite.webp": "bc5679d6e66aae55911098059bd80f4f147c5c850cf47ccb980fd31dda37e33e",
+  "assets/moves/cards_1014/razuck/09_mirage_dash.webp": "3d0390d1004609dab92d631aa3dd0f02c16d703064aa73ccb1a403347057edb9",
+  "assets/moves/cards_1014/razuck/10_razuck_rush.webp": "b3722df166ee257fc7fd27400f060a7f5fb4b874bfa8ee10ec2ad1d9976ecea8"
+ }
+}

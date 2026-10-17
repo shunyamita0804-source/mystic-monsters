@@ -15,6 +15,7 @@
     3: Object.freeze({ f: 'jiol', fx: 0.78, fy: 0.46, k: 1.04 }),
     4: Object.freeze({ f: 'regnas', fx: 0.68, fy: 0.40, k: 1.05 }),
     5: Object.freeze({ f: 'flurene', fx: 0.64, fy: 0.46, k: 1.04 }),
+    6: Object.freeze({ f: 'razuck', fx: 0.70, fy: 0.36, k: 1.04 }),   // 2026-10-17：バトル待機の参考画像の上の部分（tools/razuck1017/derive_art.py）＝QA だけ
   });
   const KS = ['li', 'po', 'in', 'hi', 'ev', 'de'];
   const LAB = { li: 'ライフ', po: 'ちから', in: 'かしこさ', hi: '命中', ev: '回避', de: '丈夫さ' };
@@ -40,7 +41,7 @@
     const M = root.MMP10M; if (!M) return '';
     try {
       const k = M.skillText(sp); if (k) return k.name;
-      const p = portraitOf(sp), r = sp === 4 && p && M.rivalMonster ? M.rivalMonster(p.f) : sp === 5 && M.pendingSpecies ? M.pendingSpecies(5) : null;
+      const p = portraitOf(sp), r = sp === 4 && p && M.rivalMonster ? M.rivalMonster(p.f) : (sp === 5 || sp === 6) && M.pendingSpecies ? M.pendingSpecies(sp) : null;
       return r && r.uniqueSkill ? r.uniqueSkill.name : '';
     } catch (e) { return ''; }
   }

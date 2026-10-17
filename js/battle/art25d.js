@@ -24,7 +24,7 @@
   const SPK = { 0: 'soramo', 1: 'gauru' };
   /** 待機の立ち絵（新）と、今の立ち絵に対する高さの倍率（足元の位置はそのまま） */
   const IDLE = { 0: { src: A + 'soramo/idle.webp', h: 0.84 }, 1: { src: A + 'gauru/idle.webp', h: 0.9 } };
-  const owner = (k) => (k >= 0 && k <= 9 ? 0 : k >= 10 && k <= 19 ? 1 : k >= 30 && k <= 39 ? 2 : k >= 20 && k <= 29 ? 4 : k >= 40 && k <= 49 ? 3 : -1);   // 30〜39＝ノビトン（js/battle/rules.js が実行時に足す技）・20〜29＝レグナス（js/battle/rival-partner.js。IMG の 4）
+  const owner = (k) => (k >= 0 && k <= 9 ? 0 : k >= 10 && k <= 19 ? 1 : k >= 30 && k <= 39 ? 2 : k >= 20 && k <= 29 ? 4 : k >= 40 && k <= 49 ? 3 : k >= 60 && k <= 69 ? 6 : -1);   // 2026-10-17：60〜69＝ラズック（js/battle/rules.js。未解禁＝QA 試遊の個体だけ）   // 30〜39＝ノビトン（js/battle/rules.js が実行時に足す技）・20〜29＝レグナス（js/battle/rival-partner.js。IMG の 4）
   const DATA = () => root.MM25D_DATA || {};
   // 2026-10-12 正式：ソラモの技（SK の 0〜9）は修正納品の46コマ（assets/battle/soramo_moves_1012/・js/battle/soramo-moves-data.js）を通常のバトルで見せる。
   //   待機の立ち絵は変えない（2.5D の待機絵は従来どおり ?battleArt=2p5d のときだけ）。?battleArt=old で「旧」を選んでいる間だけ今までの演出（見比べ用）
@@ -45,7 +45,11 @@
   // 2026-10-15：ジオルの正式技（SK 40〜49＝40＋No−1・js/battle/rules.js）＝通常のバトルでも同じ 96枚（データは No. で引く＝SK の番号に読み替える）
   let JK = null;
   const JSK = () => { const D = JOFF(); if (!JK || JK.src !== D) { JK = { src: D, map: {} }; Object.keys(D).forEach((no) => { JK.map[39 + +no] = D[no]; }); } return JK.map; };
-  const SRC_OF = { 0: OFF, 1: GOFF, 2: NOFF, 3: JSK, 4: ROFF };
+  // 2026-10-17：ラズックの技（SK 60〜69＝60＋No−1）＝統合便の 81枚（assets/battle/razuck_moves_1017/・js/battle/razuck-moves-data.js）。データは No. で引く
+  const ZOFF = () => root.MMRZMV_DATA || {};
+  let ZK = null;
+  const ZSK = () => { const D = ZOFF(); if (!ZK || ZK.src !== D) { ZK = { src: D, map: {} }; Object.keys(D).forEach((no) => { ZK.map[59 + +no] = D[no]; }); } return ZK.map; };
+  const SRC_OF = { 0: OFF, 1: GOFF, 2: NOFF, 3: JSK, 4: ROFF, 6: ZSK };
   /** 読み込めなかったコマがある技（その技だけ従来の演出へ戻す）。キー＝dir＋ファイル名 */
   const failed = new Set();
   const usable = (d) => !!d && !d.cuts.concat(d.fx || []).some((c) => (c.u ? [c.u] : [c.f, c.fx].filter(Boolean).map((f) => (d.dir || OA) + f)).some((u) => failed.has(u)));
@@ -548,7 +552,7 @@
   /** 開発用のプレビュー（バトル画面が出ている間だけ）：kind＝'jiol'（正式No 1〜10）／'regnas'（正式No 1〜10）／'flurene'（登録の No 1〜10）。性能・番号の決まっていない技も、データのコマを順に見せるだけ（判定・ダメージ・セーブは触らない） */
   function preview(kind, no, s, opt) {
     if (kind === 'flurene' && no === 9 && root.MMRD) { const g = geom(s || 0); if (!g) return false; style(); return root.MMRD.play(-1, s || 0, g, root.MMRD.plan(true, true)); }   // 2026-10-16：09＝ルートドレイン（旧「生命のしずく」の雨の演出には戻さない）
-    const d = tuned(kind === 'jiol' ? JOFF()[no] : kind === 'regnas' ? ROFF()[20 + no - 1] : kind === 'flurene' ? FLOFF()[no] : null);
+    const d = tuned(kind === 'jiol' ? JOFF()[no] : kind === 'regnas' ? ROFF()[20 + no - 1] : kind === 'flurene' ? FLOFF()[no] : kind === 'razuck' ? ZOFF()[no] : null);
     if (!d || !usable(d)) return false;
     return animOff(-1, s || 0, d, Object.assign({ via: false, dmg: !!d.hit }, opt || {}));
   }

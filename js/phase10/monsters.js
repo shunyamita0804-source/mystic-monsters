@@ -35,6 +35,11 @@
     unique_jiol: fz({ id: 'unique_jiol', species: 3, speciesKey: 'jiol', name: '大地の守り', implemented: true,
       desc: '致命的なダメージを受けた際、確率で1度だけライフ1で耐えることがある。',
       params: fz({ chance: 0.1, surviveAtLife: 1, uses: 1 }), hiddenParams: fz(['chance']) }),
+    // 2026-10-17 ラズック（正式10技性能表 Mismon_Razuck_FinalSkillData_20261017 の確定版）：相手の攻撃を連続で回避するたび、戦闘中の自分のちからが上がる（1回 ×1.15・2回 ×1.30・3回以上 ×1.50）。
+    //  ダメージを受けたらリセット。表示は小さな「ちからUP」と倍率だけ（大きなカットインは入れない）。ラズックは未解禁＝QA 試遊の個体だけ（js/battle/rules.js）
+    unique_razuck: fz({ id: 'unique_razuck', species: 6, speciesKey: 'razuck', name: '調子に乗る', implemented: true,
+      desc: '相手の攻撃を連続で回避するたび、戦闘中の自分のちからが上がる（最大1.5倍）。ダメージを受けると元に戻る。',
+      params: fz({ trigger: 'evade_streak', multipliers: fz([1.15, 1.30, 1.50]), resetOnDamage: true }), hiddenParams: fz([]) }),
   });
 
   // ---- ライバル専用のモンスター（2026-10-05 正式）：リュウの相棒レグナス。プレイヤー用の SPECIES とは別の表＝市場・図鑑・合体・初期選択・特殊復元・牧場・野生の相手には出さない
@@ -128,6 +133,24 @@
       MV({ no: 9, id: 'geo_impact', name: 'ジオインパクト', type: 'power', power: 140, accuracy: 75, critical: 25, slot: 48, cuts: 12, learn: 'de', desc: null }),
       MV({ no: 10, id: 'crystal_nova', name: 'クリスタルノヴァ', type: 'wisdom', power: 145, accuracy: 90, critical: 20, slot: 49, cuts: 4, learn: 'de', desc: null }),
     ]) }),
+    // ラズック：2026-10-17 正式確定（Mismon_Razuck_FinalSkillData_20261017・ユーザー最終決定）。SK の番号＝60＋No−1（js/battle/rules.js が実行時に足す）。
+    //  習得：初期＝No.1〜4・ちから特訓 No.5・かしこさ特訓 No.6・命中特訓 No.7・回避特訓 No.8・丈夫さ特訓 No.9／No.10。命中 100% は必中ではない。追加効果は No.4・6・7 だけ
+    //  ラズックは未解禁（市場・野生・合体・大会に出ない）＝今は QA 試遊モード（?mmQaTrial=1）の個体だけが使う
+    razuck: fz({ style: '高回避・高命中の小型獣。連続回避で調子に乗る', list: fz([
+      MV({ no: 1, id: 'kamitsuki', name: 'かみつき', type: 'power', power: 65, accuracy: 95, critical: 5, slot: 60, cuts: 4, learn: 'initial', sheet: null, desc: null }),
+      MV({ no: 2, id: 'hikkaki', name: 'ひっかき', type: 'power', power: 60, accuracy: 100, critical: 10, slot: 61, cuts: 4, learn: 'initial', sheet: null, desc: null }),
+      MV({ no: 3, id: 'subayai_ichigeki', name: 'すばやい一撃', type: 'power', power: 75, accuracy: 100, critical: 10, slot: 62, cuts: 4, learn: 'initial', sheet: null, desc: null }),
+      MV({ no: 4, id: 'chokomaka', name: 'ちょこまか', type: 'support', accuracy: 100, slot: 63, cuts: 4, learn: 'initial', sheet: null, desc: '素早く動き回って、自分の回避を上げる（中・2ターン）。',
+        effects: [E('self', 'ev', 'up', 'medium', 2)] }),
+      MV({ no: 5, id: 'gajigaji_rush', name: 'ガジガジラッシュ', type: 'power', power: 85, accuracy: 90, critical: 15, slot: 64, cuts: 6, learn: 'po', sheet: null, desc: null }),
+      MV({ no: 6, id: 'trick_shot', name: 'トリックショット', type: 'wisdom', power: 90, accuracy: 95, critical: 10, slot: 65, cuts: 4, learn: 'in', sheet: null, desc: '攻撃が命中したら、相手の命中を少し下げる（1ターン）。',
+        effects: [E('opponent', 'hi', 'down', 'small', 1)] }),
+      MV({ no: 7, id: 'kakuran_step', name: 'かく乱ステップ', type: 'support', accuracy: 100, slot: 66, cuts: 4, learn: 'hi', sheet: null, desc: 'フェイントで相手の狙いを狂わせ、相手の命中を下げる（中・2ターン）。',
+        effects: [E('opponent', 'hi', 'down', 'medium', 2)] }),
+      MV({ no: 8, id: 'shadow_bite', name: 'シャドーバイト', type: 'power', power: 110, accuracy: 80, critical: 15, slot: 67, cuts: 5, learn: 'ev', sheet: null, desc: null }),
+      MV({ no: 9, id: 'mirage_dash', name: 'ミラージュダッシュ', type: 'power', power: 115, accuracy: 90, critical: 20, slot: 68, cuts: 6, learn: 'de', sheet: null, desc: null }),
+      MV({ no: 10, id: 'razuck_rush', name: 'ラズックラッシュ', type: 'power', power: 125, accuracy: 90, critical: 20, slot: 69, cuts: 10, learn: 'de', sheet: null, desc: null }),
+    ]) }),
     gauru: fz({ style: '高速・高火力・短期決戦型の両刀アタッカー', list: fz([
       MV({ no: 1, id: 'tsutsuku', name: 'つつく', type: 'power', power: 60, accuracy: 100, critical: 5, slot: 11, cuts: 4, desc: 'くちばしで素早くつつく。' }),
       MV({ no: 2, id: 'wind', name: 'ウィンド', type: 'wisdom', power: 65, accuracy: 95, critical: 5, slot: 12, cuts: 4, desc: '風をまとい、相手に風の力をぶつける。' }),
@@ -152,13 +175,13 @@
       return r ? r.moves.list.map((m) => ({ ...m, effects: m.effect ? [{ target: m.effect.target, stat: m.effect.stat, dir: 'up', size: m.effect.size, turns: m.effect.turns }] : [],
         ailment: null, heal: null, desc: null, slot: 19 + m.no, sheet: sheetOf('regnas', REGNAS_SHEET[m.id], m.id) })) : [];
     }
-    const s = typeof ref === 'string' ? byKey(ref) : byId(ref);
+    const s = typeof ref === 'string' ? (byKey(ref) || (ref === 'razuck' ? pendingSpecies(ref) : null)) : byId(ref);   // 2026-10-17：ラズック（登録のみの種族）も正式技の表を持つ
     const t = s && OFFICIAL_MOVES[s.key];
     return t ? t.list.map((m) => ({ ...m, sheet: m.sheet === null ? null : sheetOf(s.key, m.no, m.id) })) : [];   // sheet: null＝技辞典の資料なし（ノビトン No.5 まきつく＝旧資料はハンマーノーズのため使わない）
   }
   /** 技の番号（SK）→ 正式技（ソラモ・ガウルの 0〜19・レグナスの 20〜29）。無ければ null */
   function moveBySlot(k) {
-    for (const key of ['solamo', 'gauru', 'regnas', 'jiol']) { const m = movesOf(key).find((x) => x.slot === k); if (m) return { ...m, owner: key }; }
+    for (const key of ['solamo', 'gauru', 'regnas', 'jiol', 'razuck']) { const m = movesOf(key).find((x) => x.slot === k); if (m) return { ...m, owner: key }; }
     return null;
   }
 
@@ -235,6 +258,15 @@
       image: fz({ src: './assets/monsters/2p5d/flurene.webp', w: 705, h: 720 }),
       battleIdle: fz({ src: './assets/battle/idle/idle_flurene.webp', w: 730, h: 720 }),
       tourIcon: fz({ src: './assets/tournament/icons_1015/icon_flurene.webp', w: 256, h: 256 }) }),
+    // 2026-10-17 ラズック（正式10技性能表・ユーザー最終決定）：番号 6（予約）。能力・成長・素早さ・固有スキル・技は確定。入手・解禁は未決（unlocked:false）
+    //  絵：正式の 2.5D 立ち絵はリポジトリに無い＝バトル待機の参考画像（Razuck_BattleIdle_FinalAlpha_Reference.png・透過）から作った派生を QA だけで使う（art:'reference'）。
+    //  対戦表・VS・表情・技カードは制作候補（ユーザーの美術承認前）＝QA の比較だけ（tools/razuck1017/derive_art.py・README に sha256）
+    fz({ id: 6, key: 'razuck', name: 'ラズック', en: null, kind: '小型獣', personality: null, formerNames: fz([]), unlocked: false, playerAvailable: false, art: 'reference',
+      base: fz({ li: 100, po: 75, in: 75, hi: 115, ev: 120, de: 75 }), speed: 9, growth: G6('D', 'D', 'E', 'B', 'A', 'E'),
+      uniqueSkill: UNIQUE_SKILLS.unique_razuck,
+      image: fz({ src: './assets/battle/idle/idle_razuck.webp', w: 0, h: 0 }),
+      battleIdle: fz({ src: './assets/battle/idle/idle_razuck.webp', w: 0, h: 0 }),
+      tourIcon: fz({ src: './assets/tournament/icons_1015/icon_razuck.webp', w: 256, h: 256 }) }),
   ]);
   /** 登録のみの種族（番号でも文字IDでも）。無ければ null。画面の処理には使わない（解禁していない） */
   const pendingSpecies = (ref) => PENDING_SPECIES.find((x) => (typeof ref === 'string' ? x.key === ref : x.id === ref)) || null;

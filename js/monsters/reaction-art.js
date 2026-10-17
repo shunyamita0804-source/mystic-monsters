@@ -10,21 +10,23 @@
 (function (root) {
   'use strict';
   const DIR = './assets/monsters/reactions_1012/';
-  const SPECIES = Object.freeze(['soramo', 'gauru', 'nobiton', 'jiol', 'regnas']);   // 種族の番号 0〜4（IMG・SP と同じ）
+  const SPECIES = Object.freeze(['soramo', 'gauru', 'nobiton', 'jiol', 'regnas', null, 'razuck']);   // 種族の番号 0〜4（IMG・SP と同じ）・2026-10-17：6＝ラズック（登録のみ・表情6種は制作候補＝QA の試合だけで出る）
   const KINDS = Object.freeze(['joy', 'surprise', 'sad', 'eat', 'hit', 'dodge']);
   const LABEL = Object.freeze({ joy: '喜ぶ', surprise: '驚く', sad: 'しょんぼり', eat: '食べる', hit: '被弾', dodge: '回避' });
-  const NAME = Object.freeze({ soramo: 'ソラモ', gauru: 'ガウル', nobiton: 'ノビトン', jiol: 'ジオル', regnas: 'レグナス' });
-  const DATA = root.MMRXART_DATA || {};
-  const keyOf = (sp) => (typeof sp === 'number' ? SPECIES[sp] : SPECIES.includes(sp) ? sp : null);
+  const NAME = Object.freeze({ soramo: 'ソラモ', gauru: 'ガウル', nobiton: 'ノビトン', jiol: 'ジオル', regnas: 'レグナス', razuck: 'ラズック' });
+  // ラズックの表情6種（2026-10-17・tools/razuck1017/derive_art.py が測った大きさ＝待機絵と同じ倍率）。置き場所も別（reactions_1017_razuck）
+  const DATA = Object.assign({}, root.MMRXART_DATA || {}, { razuck: {"joy": {"w": 742, "h": 831, "hRel": 1.154}, "surprise": {"w": 768, "h": 842, "hRel": 1.169}, "sad": {"w": 684, "h": 818, "hRel": 1.136}, "eat": {"w": 745, "h": 836, "hRel": 1.161}, "hit": {"w": 832, "h": 832, "hRel": 1.156}, "dodge": {"w": 805, "h": 652, "hRel": 0.906}} });
+  const DIRS = { razuck: './assets/monsters/reactions_1017_razuck/' };
+  const keyOf = (sp) => (typeof sp === 'number' ? SPECIES[sp] || null : sp && SPECIES.includes(sp) ? sp : null);
   /** 画像の場所（種族は番号 0〜4 か キー）。無ければ null */
   function src(sp, kind) {
     const k = keyOf(sp), i = KINDS.indexOf(kind);
-    return k && i >= 0 && DATA[k] && DATA[k][kind] ? `${DIR}${k}/${String(i + 1).padStart(2, '0')}_${kind}.webp` : null;
+    return k && i >= 0 && DATA[k] && DATA[k][kind] ? (DIRS[k] ? `${DIRS[k]}${String(i + 1).padStart(2, '0')}_${kind}.webp` : `${DIR}${k}/${String(i + 1).padStart(2, '0')}_${kind}.webp`) : null;
   }
   /** { src, w, h, hRel }。無ければ null */
   function info(sp, kind) {
     const k = keyOf(sp), d = k && DATA[k] && DATA[k][kind];
     return d ? { src: src(k, kind), w: d.w, h: d.h, hRel: d.hRel } : null;
   }
-  root.MMRXART = Object.freeze({ DIR, SPECIES, KINDS, LABEL, NAME, src, info, keyOf, all: () => SPECIES.flatMap((s) => KINDS.map((k) => info(s, k)).filter(Boolean)) });
+  root.MMRXART = Object.freeze({ DIR, SPECIES, KINDS, LABEL, NAME, src, info, keyOf, all: () => SPECIES.filter(Boolean).flatMap((s) => KINDS.map((k) => info(s, k)).filter(Boolean)) });
 })(typeof window !== 'undefined' ? window : globalThis);
