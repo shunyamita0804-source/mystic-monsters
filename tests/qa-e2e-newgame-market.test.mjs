@@ -159,7 +159,7 @@ T('QA-NG2：開始ボタン → 名前登録画面（初期値「アルト」・
   await pg.waitForSelector('.mmtalk');
   const open = await pg.evaluate(() => window.__talkOpen);
   assert.match(open.img, /^assets\/npc\/fina\/(expr\/closeup\/|closeup\/)\S*smile\S*\.webp$/, '2026-10-04 G2：1行目は表情 smile の静止画（手を振り続けるアニメ wave はやめた）');
-  assert.deepEqual({ ...open, img: 'smile' }, { idx: 0, total: 3, name: 'フィナ', expr: 'smile', typing: true, text: '', nextShown: false, img: 'smile' },
+  assert.deepEqual({ ...open, img: 'smile' }, { idx: 0, total: 5, name: 'フィナ', expr: 'smile', typing: true, text: '', nextShown: false, img: 'smile' },
     '開いた直後：1行目を1文字ずつ表示中で、▼はまだ出ない');
   const st = await H.storedSave(pg);
   assert.equal(st.v, 6); assert.equal(st.playerName, 'ゆうしゃ'); assert.ok(!st.playerNamePending, '名前登録待ちは消える');
