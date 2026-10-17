@@ -36,6 +36,11 @@
     // 2026-10-14 開発29（6）：後ろから追うカメラ（本編の Chapter 1 だけ・試作の既定は従来の北が上）。true＝進む向き（今の地点 → 先の数地点）が画面の上になるよう、地面の板を注視点のまわりで回す（yaw）。
     //   マス・景物・モンスターは立てたまま（project で同じ回転を通して置く）。回る速さ yawTau（ms）＝急に回らない・角を曲がるときもなめらか。止まっている間は最後の向きのまま
     visual: 'A',         // 2026-10-14 Chapter 1 B／C：景観のパターン（VISUAL の鍵。A＝従来のまま・B＝花と清流・C＝岩丘と遺跡。地点・道・判定は共通＝景物の混ぜ方と配置だけ）
+    // 2026-10-16 QA（C案カメラ・試作。URL の ?qaCam=c|ccut のときだけ js/chapter/world-board.js が渡す。null＝従来のまま）：
+    //   歩いている間は向き（yaw）と倍率を変えない（区間で安定）・止まったとき／分かれ道を選んだときだけ、進む向きとのずれが camTurnDeg 以上なら短く向きを変える
+    //   （'c'＝camTurnMs で回す・'ccut'＝盤を少し暗くして向きを切り替える）。止まったときの小さな注視点のずれ（camDz px 未満）は追わない
+    camMode: null, camTurnDeg: 50, camTurnMs: 600, camDz: 12,
+    qaRoad: null,        // 2026-10-16 QA（A 道路の見た目・試作。URL の ?qaRoad=1|2 のときだけ js/chapter/world-board.js が渡す。null＝従来のまま）
     heading: false, yawTau: 420,        // 2026-10-13 開発27（11・15）：出さない目印の地点（例 ['START','LOWER_GATE','UPPER_GATE']＝門の飾りの絵だけを出さない。地点・道・門のマス・判定・イベントはそのまま。本編の Chapter 1 だけ）
   };
   // 第1便の絵（assets/proto/board_art_1010/README.md）。大きさは世界の単位
@@ -123,7 +128,7 @@
   // 2026-10-14 Chapter 1 B／C 独立ルート：道のデータに art（景観の区域 terrain・岩峰 peaks・目印 landmarks）があればそれを使う（js/proto/roadfirst-routes.js の B／C）。
   //   無ければ A の定義（上の TERRAIN・ART.landmarks・ART.peaks.at）＝A の盤は従来と同じ。目印の file が './' で始まるときはそのままの場所（B／C の目印は assets/fields/ch1a/landmarks_bc_1014/）
   const terrainOf = (D) => (D && D.art && D.art.terrain) || TERRAIN;
-  const lmOf = (D) => (D && D.art && D.art.landmarks) || ART.landmarks;
+  const lmOf = (D) => (D && D.art && D.art.sea3d && root.MMRF_SEA && root.MMRF_SEA.lm ? root.MMRF_SEA.lm(D) : null) || (D && D.art && D.art.landmarks) || ART.landmarks;   // 2026-10-16 Chapter 2：正式の目印（js/proto/ch2-world.js）
   const peaksBase = (D) => (D && D.art && D.art.peaks) || ART.peaks.at;
   const artUrl = (base, f) => (/^\.\//.test(f) ? f : base + f);
   const ROAD_LAND = 18;   // 道の中心から谷のふちまで（単位）＝道の両側に残す陸
@@ -191,17 +196,21 @@
     const ELEV = (D && D.art && D.art.elev) || null, hOf = (id) => (ELEV && ELEV[id]) || 0;
     const scl = (s) => (SEA ? `scale3d(${s},${s},${s})` : `scale(${s})`);   // 高さのある子（海底・塔）は z も同じ倍率で
     if (SEA) { wrap.classList.add('sea'); plane.style.transformStyle = 'preserve-3d'; }
+    const GA = (SEA && SEA.goal) || ART.goal;   // 大会会場の絵（2026-10-16 Chapter 2 は正式の ocean_arena）
     css(doc);
     const W = Math.ceil(WORLD.w * o.res), H = Math.ceil(WORLD.h * o.res);
     plane.style.width = WORLD.w + 'px'; plane.style.height = WORLD.h + 'px';
     // 地面と道を区画ごとの canvas に1回だけ描く（区画の大きさ chunk px）
     const chunks = [], art = {};
+    // 2026-10-16 Chapter 2：海の世界は平面が preserve-3d（海底・塔の板のため）＝地面の区画が1枚ずつ別の 3D の層になり、層ごとの解像度の違いで区画の境目が直線に見えていた。
+    //  地面の区画は平らな入れ物（.rfw-gnd）にまとめて1枚の層にする（Chapter 1 は平面が平ら＝従来どおり平面へ直接）
+    let gnd = null; if (SEA) { gnd = doc.createElement('div'); gnd.className = 'rfw-gnd'; Object.assign(gnd.style, { position: 'absolute', left: '0px', top: '0px', width: WORLD.w + 'px', height: WORLD.h + 'px' }); plane.appendChild(gnd); }
     for (let y = 0; y < H; y += o.chunk) for (let x = 0; x < W; x += o.chunk) {
       // 区画どうしを 1px 重ねる（境目に細い線が出ないように）
       const c = doc.createElement('canvas'); const cw = Math.min(o.chunk, W - x) + 2, ch = Math.min(o.chunk, H - y) + 2;
       c.width = cw; c.height = ch; c.className = 'rfw-chunk'; c._x = x - 1; c._y = y - 1;
       c.style.left = (x - 1) / o.res + 'px'; c.style.top = (y - 1) / o.res + 'px'; c.style.width = cw / o.res + 'px'; c.style.height = ch / o.res + 'px';
-      plane.appendChild(c); chunks.push(c);
+      (gnd || plane).appendChild(c); chunks.push(c);
     }
     // 2026-10-12：道筋のまわりだけを明るく残す薄い幕（地面の区画の上・マスや景物の下。世界の半分の細かさ）。o.focus のときだけ
     let veil = null, veilSig = '';
@@ -236,6 +245,15 @@
       if (idle) root.requestAnimationFrame(step);
     }
     if (!o.art) paint(true);   // 絵を貼るときは読み込みが終わってから1回だけ描く（失敗したら仮の色で描く）
+    // 2026-10-16 QA（A）：カメラの近くだけ、地面と道を高い解像度で描き直す層（js/qa/road-1016.js）。従来（qaRoad が null）は作らない
+    const QR = o.qaRoad && root.MMQAR ? root.MMQAR : null;
+    if (QR) art.qaRoad = o.qaRoad;
+    // 2026-10-17 QA（道路画質 P0・Ch2 がぼける原因＝確定）：海の世界の平面は preserve-3d（海底・塔のため）。3D の中の層は「CSS の箱の大きさ × 画素比」で描かれ、
+    //  カメラの倍率（最大 5.6）では描き直されない＝近くの区画（CSS 64px・canvas 642px）は約 190px に縮めて描かれてから 5.6倍に引き伸ばされていた（平面を flat にすると直る＝切り分けで確認）。
+    //  → 海の世界の近くの区画は平面へ直接置き、CSS の箱を canvas の画素 ÷ 画素比にして transform で縮める（js/qa/road-1016.js の big）＝canvas の画素のまま合成。
+    //  ?qaRoadHiBig=0 で従来（比較用）。.rfw-gnd（平らな入れ物）の中では箱を大きくしても入れ物の面に平たくまとめられる＝平面へ直接置く
+    const BIG = SEA && !/[?&]qaRoadHiBig=0/.test((root.location && root.location.search) || '');
+    const HI = QR ? QR.hiLayer({ doc, parent: BIG ? plane : (gnd || plane), big: BIG, WORLD, project, S: null, paintAt: (g, bx) => { if (SEA) { SEA.ground(g, D, bx, art, HELP); SEA.roads(g, D, o, art, bx, HELP); } else { drawGround(g, D, bx[0], bx[1], bx[2], bx[3], art); drawTerrain(g, D, o, art, bx); drawRoads(g, D, o, art, bx); } } }) : null;
     if (veil) plane.appendChild(veil);
     // マス（全地点・立てて置く）とモンスター
     // 2026-10-13 開発28（全景 → START へ寄るカメラのカクつき）：マス・景物・モンスターの大きさは、毎フレーム width を書き換えるのではなく
@@ -264,22 +282,25 @@
       // skin の絵 → 読めなければ従来の絵（im._u＝実際に読めた URL。草地の外の帯にも同じ絵）
       const load2 = (k, f) => (SK && SK[k] ? new Promise((res) => { const im = new root.Image(); im.onload = () => { im._sk = true; res(im); }; im.onerror = () => res(null); im.src = SK.base + SK[k]; }) : Promise.resolve(null))
         .then((im) => im || load(f));
+      // 2026-10-17 QA（道路画質・?qaRoadArt=raw|fix のときだけ）：草地・道の帯・敷石の円は新しい素材（js/qa/road-art-1017.js）→ 読めなければ上の skin → 従来の絵
+      const QRA = !SEA && root.MMQRA && root.MMQRA.mode ? root.MMQRA : null, q17 = QRA ? QRA.CH1[visualOf(o).key] || QRA.CH1.A : null;
+      const load3 = (k, f) => (q17 ? QRA.load(q17[k]).then((im) => (im ? Object.assign(im, { _sk: true }) : load2(k, f))) : load2(k, f));
       const T = ART.terrain;
       const EK = Object.keys(T.edges);
-      Promise.all([load2('ground', ART.ground.file), load2('road', ART.road.file), o.art.road === 'pattern' ? null : load2('strip', ART.strip.file),
+      Promise.all([load3('ground', ART.ground.file), load3('road', ART.road.file), o.art.road === 'pattern' ? null : load3('strip', ART.strip.file),
         load(T.valley.file), load2('water', T.water.file), load(T.cloud.file), ...EK.map((k) => load(T.edges[k].file)), SEA ? SEA.load(load, base) : null]).then(([gi, ri, si, vi, wi, ci, ...ei]) => {
         if (S.dead) return; art.ground = gi; art.road = ri; art.strip = si;
         if (SEA) { art.sea = ei.pop(); vi = null; S.sea3d = SEA.build3d({ doc, plane, D, o, art, H: HELP, base }); }   // 2026-10-15 Chapter 2：谷・雲海・森は使わない（海・海底の盆地・塔）
         else ei.pop();
-        if (ri && ri._sk) { art.roadTile = SK.roadTile; art.discCenter = !!SK.discCenter; }   // R の石の大きさ＝道の帯の石にそろえる
+        if (ri && ri._sk) { art.roadTile = SK ? SK.roadTile : 57.5; art.discCenter = SK ? !!SK.discCenter : true; }   // R の石の大きさ＝道の帯の石にそろえる
         if (vi) { art.terrain = terrainMasks(doc, D, o); art.valley = vi; art.water = wi; art.cloud = ci; art.edges = {}; EK.forEach((k, i) => { art.edges[k] = ei[i]; });
           if (art.edges.forest) art.canopy = canopyTile(doc, art.edges.forest); }
         if (gi || ri) { paint(); wrap.classList.add('art'); } else paint();
         artDone = true;
         // 世界の外（端へ寄ったときに見える所）も同じ草地で続ける：平面の中の安い背景（canvas は世界の中だけ）
         if (gi) { const ap = doc.createElement('div'); ap.className = 'rfw-apron'; const m = APRON;
-          Object.assign(ap.style, { left: -m + 'px', top: -m + 'px', width: WORLD.w + 2 * m + 'px', height: WORLD.h + 2 * m + 'px', backgroundImage: `url(${gi._sk ? SK.base + SK.ground : base + ART.ground.file})`,
-            backgroundSize: `${ART.ground.tile}px ${ART.ground.tile}px`, backgroundPosition: `${m % ART.ground.tile}px ${m % ART.ground.tile}px` });
+          Object.assign(ap.style, { left: -m + 'px', top: -m + 'px', width: WORLD.w + 2 * m + 'px', height: WORLD.h + 2 * m + 'px', backgroundImage: `url(${gi._qra ? gi.src : gi._sk ? SK.base + SK.ground : base + ART.ground.file})`,
+            backgroundSize: gi._ppu ? `${gi.naturalWidth / gi._ppu}px ${gi.naturalHeight / gi._ppu}px` : `${ART.ground.tile}px ${ART.ground.tile}px`, backgroundPosition: gi._ppu ? `${m % (gi.naturalWidth / gi._ppu)}px ${m % (gi.naturalHeight / gi._ppu)}px` : `${m % ART.ground.tile}px ${m % ART.ground.tile}px` });   // 2026-10-17 QA：新しい草地は _ppu の大きさで
           if (SEA) SEA.apron(ap, base, m);   // 世界の外も海
           plane.insertBefore(ap, plane.firstChild); } });
       const add = (file, x, y, w, z, cls, h) => { const d = doc.createElement('img'); d.className = 'rfw-prop' + (cls ? ' ' + cls : ''); d.alt = ''; d.draggable = false;
@@ -288,10 +309,10 @@
         else d.src = artUrl(base, file);
         bb.appendChild(d); props.push(p); };
       for (const q of (SEA ? SEA.scatter(D, o, HELP) : scatter(D, o))) add(q.file, q.x, q.y, q.w, q.z || 0, q.cls, q.h);
-      const gn = D.nodes.GOAL; if (gn) { add(ART.goal.file, gn[0], gn[1] + ART.goal.dy, ART.goal.w, -40, 'rfw-goal'); const gp = props[props.length - 1]; gp.solid = true;
+      const gn = D.nodes.GOAL; if (gn) { add(GA.file, gn[0], gn[1] + GA.dy, GA.w, -40, 'rfw-goal'); const gp = props[props.length - 1]; gp.solid = true;
         // 2026-10-14 実機試遊⑭：大会会場は立てた絵（いつもカメラの方を向く）なので、置く位置も「カメラから見て GOAL のすぐ奥」に合わせる＝正面の階段の下に GOAL の円盤が来る。
         //  地面を進む向きへ回す（heading）本編だけ：GOAL から画面の奥の向きへ back だけ下げた点（回したあとの画面で真上）。試作（北が上）は従来の dy のまま。GOAL の地点・歩数・判定は変えない
-        if (o.heading) gp.at = (c) => { const a = rad((c && c.yaw) || 0); return [gn[0] - ART.goal.back * Math.sin(a), gn[1] - ART.goal.back * Math.cos(a)]; }; }   // 2026-10-13 開発27（26）：大会会場（建物・門）は半透明にしない（xray で草地が透けて見えていた）
+        if (o.heading) gp.at = (c) => { const a = rad((c && c.yaw) || 0); return [gn[0] - GA.back * Math.sin(a), gn[1] - GA.back * Math.cos(a)]; }; }   // 2026-10-13 開発27（26）：大会会場（建物・門）は半透明にしない（xray で草地が透けて見えていた）
       for (const L of lmOf(D)) { if (o.hideLm && o.hideLm.includes(L.node)) continue; const at = landmarkAt(D, L); if (at) { add(L.file, at[0], at[1], L.w, L.z || 0, 'rfw-lm', hOf(L.node)); props[props.length - 1].L = L; } }
       for (const q of (SEA ? [] : waterProps(D, o))) add(q.file, q.x, q.y, q.w, q.z || 0, 'rfw-wp');   // 第4便：川の景物（B は密に）
       for (const [x, y, w] of peaksOf(D, o)) add(ART.peaks.file, x, y, w, -20, 'rfw-peak');   // 第4便：山の岩峰（C は足す）
@@ -299,7 +320,11 @@
     const S = {
       cam: { tx: WORLD.w / 2, ty: WORLD.h / 2, s: 1, tilt: 0, P: o.persp, ax: 0, ay: 0, yaw: 0 }, goal: null, mon: null, monGoal: null, yawGoal: 0,
       raf: 0, last: 0, intro: null, view: null, frames: [], dead: false,
+      // 2026-10-16 QA：向きの回り方の計測（見た目は変えない＝数えるだけ）。deg＝回った角度の合計・ms＝回っている時間・turns＝回り始めた回数・stops＝止まった回数
+      qa: { deg: 0, ms: 0, turns: 0, rot: false, maxRate: 0, stops: 0, reorient: 0 }, yawTw: null, camOff: null,
     };
+    if (HI) HI.setS(S);
+    const CMODE = o.heading && (o.camMode === 'c' || o.camMode === 'ccut') ? o.camMode : null;
     // 2026-10-11：モンスターの足を地点に合わせる＝静止の立ち絵の実際の縦横比で上へずらす（旧：一律 0.92＝縦長・横長の絵で浮く・沈む）。読み込み前は 0.92
     { const mi = mon.firstChild, fit = () => { if (mi.naturalWidth) { S.monAh = (mi.naturalHeight / mi.naturalWidth) * (o.monFoot || 0.97); S.dirty = true; } }; if (mi.complete) fit(); else mi.addEventListener('load', fit, { once: true }); }
     function viewRect() { const v = o.view ? o.view() : null; const r = host.getBoundingClientRect(); return v || { W: r.width, H: r.height, top: 0, bottom: r.height, right: r.width }; }
@@ -331,7 +356,7 @@
     }
     // 2026-10-15 N10：会場へ続く道のマス（GOAL から前向きの接続を逆にたどって、会場の絵の幅のうちにある地点）は、いつも会場の絵より手前に描く。
     //  道が曲がってカメラの向きと会場の向きがずれると、立てた会場の絵が GOAL の手前のマスを覆っていた（C の渦の中心など）。地点・道・GOAL の判定は変えない
-    const apprIds = (() => { const gn = D.nodes.GOAL; if (!gn || !ART.goal) return []; const R = ART.goal.w * 0.95, rev = {};
+    const apprIds = (() => { const gn = D.nodes.GOAL; if (!gn || !GA) return []; const R = GA.w * 0.95, rev = {};
       for (const e of D.edges) if (e[3] === 'forward') (rev[e[1]] = rev[e[1]] || []).push(e[0]);
       const seen = new Set(), q = ['GOAL'];
       for (let i = 0; i < q.length && i < 400; i++) for (const n of rev[q[i]] || []) { const v = D.nodes[n]; if (!seen.has(n) && v && Math.hypot(v[0] - gn[0], v[1] - gn[1]) <= R) { seen.add(n); q.push(n); } }
@@ -456,6 +481,41 @@
       wrap.classList.remove('intro'); rootEl.classList.remove('rfw-intro');
       if (done) done();
     }
+    // 2026-10-16 QA C案カメラ（?qaCam=c|ccut のときだけ）。従来（CMODE が null）はここを通らない
+    let dimEl = null;
+    function dim(on) {
+      if (!dimEl) { dimEl = doc.createElement('div'); dimEl.className = 'rfw-qadim'; Object.assign(dimEl.style, { position: 'absolute', inset: '0', background: '#06101f', opacity: '0', pointerEvents: 'none', zIndex: '99999', transition: 'opacity .14s ease' }); wrap.appendChild(dimEl); }
+      dimEl.style.opacity = on ? '0.5' : '0';
+    }
+    function camC(info, n, pts, instant) {
+      const mh = hOf(info.node), moving = !!info.moving;
+      let want = null;
+      if (pts.length) { const k = pts.slice(0, 4), gx = k.reduce((a, p) => a + p[0], 0) / k.length - n[0], gy = k.reduce((a, p) => a + p[1], 0) / k.length - n[1]; if (Math.hypot(gx, gy) > 2) want = headingYaw(gx, gy); }
+      if (!S.cInit) { if (want != null) S.yawGoal = want; S.cInit = true; }
+      else if (!moving) {
+        if (S.cStop !== info.node) { S.cStop = info.node; S.qa.stops++; }
+        const d = want == null ? 0 : angDiff(S.yawGoal || 0, want);
+        if (Math.abs(d) >= o.camTurnDeg || (info.pick && Math.abs(d) >= 20)) {   // 止まったとき＝ずれが大きいときだけ・分かれ道を選んだとき＝選んだ道へ
+          S.yawGoal = (S.yawGoal || 0) + d; S.qa.reorient++;
+          if (!instant && !S.intro) {
+            const now = root.performance.now();
+            if (CMODE === 'ccut') { dim(true); S.yawTw = { from: S.cam.yaw || 0, to: S.yawGoal, t0: now + 150, dur: 1, cut: true }; }
+            else S.yawTw = { from: S.cam.yaw || 0, to: S.yawGoal, t0: now, dur: o.camTurnMs * Math.min(1.6, 0.6 + 0.4 * Math.abs(d) / 90) };   // 大きく向きを変えるほど少し長く（90°＝camTurnMs・180°＝1.4倍）＝速さの山を抑える
+          }
+        }
+      }
+      const g = followCam(S.view, n[0], n[1], pts, S.yawGoal || 0, mh), prev = S.goal;
+      if (moving && prev) {   // 歩いている間：向き・横の寄せ・倍率を止めたときのまま（足りなければ引くだけ。寄らない）
+        if (S.camOff) { g.tx = n[0] + S.camOff[0]; g.ty = n[1] + S.camOff[1]; }
+        g.s = Math.min(prev.s, g.s);
+      } else {
+        S.camOff = [g.tx - n[0], g.ty - n[1]];
+        if (prev && !instant && !S.yawTw && Math.abs(g.ax - prev.ax) < 1 && Math.abs(g.ay - prev.ay) < 1 && Math.abs(angDiff(prev.yaw || 0, g.yaw || 0)) < 0.01 && Math.abs(Math.log(g.s / prev.s)) < 0.06) {   // 止まったときの小さなずれは追わない（漂わない）
+          const a = project(prev, g.tx, g.ty); if (Math.hypot(a.x - prev.ax, a.y - prev.ay) < o.camDz) { S.camOff = [prev.tx - n[0], prev.ty - n[1]]; return; }
+        }
+      }
+      S.goal = g;
+    }
     function tick(now) {
       if (S.dead) return;
       if (!wrap.isConnected) { S.last = 0; S.raf = root.requestAnimationFrame(tick); return; }   // 2026-10-11：本編で別の画面へ移っている間（要素は残して戻ったら付け直す）は何もしない
@@ -478,11 +538,19 @@
       } else if (S.goal) {
         const f = 1 - Math.exp(-dt / 170), g = S.goal;
         for (const k of ['tx', 'ty', 'ax', 'ay', 'tilt']) S.cam[k] = lerp(S.cam[k], g[k], f);
-        if (o.heading) { const d = angDiff(S.cam.yaw || 0, g.yaw || 0); S.cam.yaw = Math.abs(d) < 0.05 ? (g.yaw || 0) : (S.cam.yaw || 0) + d * (1 - Math.exp(-dt / o.yawTau)); }   // 2026-10-14 開発29（6）：近いほうへなめらかに回る
+        const y0 = S.cam.yaw || 0;
+        if (CMODE) {   // 2026-10-16 QA C案：向きは止まったとき・分かれ道を選んだときに決めた分だけ、決まった時間で回して止める（指数の長い尾を引かない）。緩急は smoothstep＝速さの山が平均の 1.5倍（二次の緩急は 2倍）
+          const tw = S.yawTw;
+          if (tw) { const u = Math.max(0, Math.min(1, (now - tw.t0) / tw.dur)); S.cam.yaw = tw.from + angDiff(tw.from, tw.to) * (u * u * (3 - 2 * u)); if (u >= 1) { S.cam.yaw = tw.to; S.yawTw = null; if (tw.cut) dim(false); } }
+          else S.cam.yaw = g.yaw || 0;
+        } else if (o.heading) { const d = angDiff(S.cam.yaw || 0, g.yaw || 0); S.cam.yaw = Math.abs(d) < 0.05 ? (g.yaw || 0) : (S.cam.yaw || 0) + d * (1 - Math.exp(-dt / o.yawTau)); }   // 2026-10-14 開発29（6）：近いほうへなめらかに回る
         S.cam.s = Math.exp(lerp(Math.log(S.cam.s), Math.log(g.s), (1 - Math.exp(-dt / o.zoomTau)) * 0.8));
+        { const q = S.qa, dy = Math.abs(angDiff(y0, S.cam.yaw || 0)), rate = dy / Math.max(1, dt) * 1000;   // 計測だけ（2°/秒より速く回っている時間）
+          q.deg += dy; const on = rate > 2; if (on) { q.ms += dt; if (!q.rot) q.turns++; if (rate > q.maxRate) q.maxRate = rate; } q.rot = on; }
       }
       if (S.monGoal) { if (!S.mon) S.mon = S.monGoal.slice(); const f = 1 - Math.exp(-dt / 70); S.mon[0] = lerp(S.mon[0], S.monGoal[0], f); S.mon[1] = lerp(S.mon[1], S.monGoal[1], f); S.mon[2] = lerp(S.mon[2] || 0, S.monGoal[2] || 0, f); }
       apply();
+      if (HI && !S.intro && artDone && painted) HI.tick();   // 2026-10-16 QA（A）：近くの高い解像度の区画（数フレームに分けて描く）
       S.raf = root.requestAnimationFrame(tick);
     }
     const api = {
@@ -493,11 +561,15 @@
         S.monGoal = [n[0], n[1], hOf(info.node)]; if (instant || !S.mon) S.mon = S.monGoal.slice();
         S.view = viewRect();
         const pts = (info.ahead || []).filter((id) => D.nodes[id]).map((id) => [D.nodes[id][0], D.nodes[id][1], hOf(id)]);
+        if (CMODE) camC(info, n, pts, instant);
+        else {
         if (o.heading && pts.length) {   // 2026-10-14 開発29（6）：進む向き＝今の地点 → 先の地点（最大4つ）の重心（分かれ道の手前は両方の道の真ん中・行き止まりから戻る間は戻る向き）
           const k = pts.slice(0, 4), gx = k.reduce((a, p) => a + p[0], 0) / k.length - n[0], gy = k.reduce((a, p) => a + p[1], 0) / k.length - n[1];
           if (Math.hypot(gx, gy) > 2) { const y0 = headingYaw(gx, gy); S.yawGoal = (S.yawGoal || 0) + angDiff(S.yawGoal || 0, y0); }
         }
-        S.goal = followCam(S.view, n[0], n[1], pts, o.heading ? S.yawGoal : 0, hOf(info.node)); S.lastAhead = info.ahead || [];
+        S.goal = followCam(S.view, n[0], n[1], pts, o.heading ? S.yawGoal : 0, hOf(info.node));
+        }
+        S.lastAhead = info.ahead || [];
         if (instant && !S.intro) S.cam = Object.assign({}, S.goal);
         S.dirty = true;
         if ('denOpen' in info) for (const p of props) if (p.L && p.L.open) { const f = info.denOpen ? p.L.open : p.L.file; if (p.f !== f) { p.el.src = artUrl(o.art.base || './assets/proto/board_art_1010/', f); p.f = f; } }
@@ -546,12 +618,15 @@
       markerOff(id) { const i = props.findIndex((x) => x.mark === id); if (i >= 0) { props[i].el.remove(); props.splice(i, 1); } },
       goalApproach: () => apprIds.slice(),   // 2026-10-15 N10（確認用）
       yawGoal: () => (o.heading ? S.yawGoal || 0 : 0),
+      /** 2026-10-16 QA：向きの回り方の計測（reset＝0 に戻す）。camMode＝C案のときの方式（null＝従来） */
+      qa: (reset) => { const q = Object.assign({ camMode: CMODE }, S.qa); delete q.rot; if (reset) Object.assign(S.qa, { deg: 0, ms: 0, turns: 0, rot: false, maxRate: 0, stops: 0, reorient: 0 }); return q; },
       state: () => ({ yaw: S.cam.yaw || 0, yawGoal: S.yawGoal || 0, heading: !!o.heading, focus: o.focus ? veilSig.split(',').filter(Boolean) : null, cam: Object.assign({}, S.cam), goal: S.goal && Object.assign({}, S.goal), mon: S.mon && S.mon.slice(), view: S.view, intro: !!S.intro, introAnims: S.introAnims || 0, introResized: S.introResized || 0, ahead: S.lastAhead || [],
         visual: VIS.key, skin: SK ? SK.key : null, artSkin: art.ground ? { ground: !!art.ground._sk, road: !!(art.road && art.road._sk), strip: !!(art.strip && art.strip._sk), water: !!(art.water && art.water._sk) } : null, tiles: Object.keys(tiles).length, chunks: chunks.length, painted, res: o.res, tilt: o.tilt, props: props.length, art: !!(art.ground || art.road), rims: art.terrain ? art.terrain.rims.filter((r) => r.kind === 'valley').map((r) => r.pts.length) : null,
         rimKinds: art.terrain ? art.terrain.rims.reduce((a, r) => { a[r.kind] = (a[r.kind] || 0) + 1; return a; }, {}) : null }),
       project: (x, y) => project(S.cam, x, y),
       frames: (reset) => { const f = S.frames.slice(); if (reset) S.frames = []; return f; },
-      destroy() { S.dead = true; root.cancelAnimationFrame(S.raf); wrap.remove(); },
+      destroy() { S.dead = true; root.cancelAnimationFrame(S.raf); if (HI) HI.destroy(); wrap.remove(); },
+      qaRoad: () => (HI ? { mode: o.qaRoad, res: HI.R, tiles: HI.count(), pending: HI.pending(), bytes: HI.bytes(), paintMs: HI.paintMs ? HI.paintMs() : null } : null),
       opts: o,
     };
     S.raf = root.requestAnimationFrame(tick);
@@ -559,9 +634,10 @@
   }
 
   // 仮の地面（絵が届いたら A 群のテクスチャ・B 群の縁に替える）：草地の色＋小さなまだら（決まった乱数）
-  function pattern(g, im, tile) { const p = g.createPattern(im, 'repeat'); if (p && p.setTransform && root.DOMMatrix) p.setTransform(new root.DOMMatrix().scale(tile / im.width)); return p; }
+  // 2026-10-17 QA（道路画質）：絵が _ppu（px／世界の1単位）を持つときはそれで倍率を決める（js/qa/road-art-1017.js の新しい素材だけ。従来の絵は持たない＝従来どおり）
+  function pattern(g, im, tile) { const p = g.createPattern(im, 'repeat'); if (p && p.setTransform && root.DOMMatrix) p.setTransform(new root.DOMMatrix().scale(im._ppu ? 1 / im._ppu : tile / im.width)); return p; }
   function drawGround(g, D, x0, y0, w, h, art) {
-    if (art && art.ground) { g.fillStyle = pattern(g, art.ground, ART.ground.tile); g.fillRect(x0, y0, w, h); return; }
+    if (art && art.ground) { g.fillStyle = pattern(g, art.ground, ART.ground.tile); g.fillRect(x0, y0, w, h); if (art.ground._qra && root.MMQRA) root.MMQRA.macro(g, x0, y0, w, h); return; }
     if (D.art && Array.isArray(D.art.regions)) return drawSeaBlockout(g, D, x0, y0, w, h);   // 2026-10-15 Chapter 2 の試作：絵なしのブロックアウト（海・陸・海底・ガラス回廊・塔・会場島の仮の色）
     g.fillStyle = '#86b65a'; g.fillRect(x0, y0, w, h);
     let a = ((Math.floor(x0) * 73856093) ^ (Math.floor(y0) * 19349663)) >>> 0;
@@ -590,16 +666,20 @@
     const disc = (id, r) => { const n = D.nodes[id]; g.beginPath(); g.arc(n[0], n[1], r, 0, 7); g.fill(); };
     const rt = (art && art.roadTile) || ART.road.tile, rp = art && art.road ? pattern(g, art.road, rt) : null;
     // skin：敷石の円は円の中心に R の中央を合わせる（円は R の1枚より小さい＝くり返しのつなぎ目が円の中に入らない）
-    const centre = (id) => { if (!art.discCenter || !rp || !rp.setTransform || !root.DOMMatrix) return; const n = D.nodes[id]; rp.setTransform(new root.DOMMatrix().translate(n[0] - rt / 2, n[1] - rt / 2).scale(rt / art.road.width)); g.fillStyle = rp; };
+    const centre = (id) => { if (!art.discCenter || !rp || !rp.setTransform || !root.DOMMatrix) return; const n = D.nodes[id], rw = art.road._ppu ? art.road.width / art.road._ppu : rt; rp.setTransform(new root.DOMMatrix().translate(n[0] - rw / 2, n[1] - rw / 2).scale(rw / art.road.width)); g.fillStyle = rp; };
     if (rp) { g.strokeStyle = 'rgba(40,52,20,.28)'; g.lineWidth = o.roadW + 9; for (const s of segs) { path(s[3]); g.stroke(); } }   // 草へ落ちる薄い影
     if (rp && art.strip) {   // 直線の石の道を道筋に沿って並べる（分かれ目・合流・行き止まりは敷石の円で覆う）
       if (art.terrain) {   // 谷の上を渡る石橋：下へ落ちる影（高さに見せる）
         g.strokeStyle = 'rgba(10,20,30,.42)'; g.lineWidth = ART.strip.w + 2;
         for (const id of terrainOf(D).flatMap((T) => T.bridges)) { const s = D.segments[id]; if (!s) continue; g.save(); g.translate(0, 10); path(s[3]); g.stroke(); g.restore(); }
       }
-      for (const s of segs) stripAlong(g, curvePts(s[3].map((id) => D.nodes[id])), art.strip, ART.strip.w, bx);
+      const QA = art.qaRoad && root.MMQAR, cps = QA ? segs.map((s) => curvePts(s[3].map((id) => D.nodes[id]))) : null;
+      if (QA && art.qaRoad === '2') QA.edgeShade(g, cps, ART.strip.w);
+      if (QA) for (const P of cps) QA.meshStrip(g, P, art.strip, ART.strip.w, bx);   // 2026-10-16 QA（A）：曲線に沿った網（曲がり角で折れない）
+      else for (const s of segs) stripAlong(g, curvePts(s[3].map((id) => D.nodes[id])), art.strip, ART.strip.w, bx);
       g.fillStyle = '#8f8573'; for (const id of hubs) disc(id, ART.strip.w * 0.62 + 1.5); for (const id of ends) disc(id, ART.strip.w * 0.6 + 1.5);
       g.fillStyle = rp; for (const id of hubs) { centre(id); disc(id, ART.strip.w * 0.62 - 1); } for (const id of ends) { centre(id); disc(id, ART.strip.w * 0.6 - 1); }
+      if (QA && art.qaRoad === '2') { QA.edgeGrass(g, cps, ART.strip.w, bx, 1016); QA.tileShadows(g, D, 11, bx); }   // 2026-10-16 QA（A 2）：ふちにかかる草・マスの足もとの影
       return;
     }
     g.strokeStyle = rp ? '#8f8573' : '#6f6248'; g.lineWidth = o.roadW + 4; for (const s of segs) { path(s[3]); g.stroke(); }
@@ -825,7 +905,7 @@
   }
 
   // 2026-10-15 Chapter 2 設計案の試作：js/proto/ch2-world.js（MMRF_SEA）へ渡す描画の部品（同じ帯・同じ曲線で描く）
-  const HELP = { WORLD, ART, pattern, stripAlong, curvePts, inPoly, distLine, mulberry, project, landmarkAt };
+  const HELP = { WORLD, ART, pattern, stripAlong, curvePts, inPoly, distLine, mulberry, project, landmarkAt, qa: () => root.MMQAR || null };
   let cssDone = false;
   function css(doc) {
     if (cssDone || doc.getElementById('rfw-css')) return; cssDone = true;

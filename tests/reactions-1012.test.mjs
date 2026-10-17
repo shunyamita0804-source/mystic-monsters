@@ -12,6 +12,7 @@ const ROOT = path.resolve(import.meta.dirname, '..');
 const DIR = path.join(ROOT, 'assets/monsters/reactions_1012');
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const load = () => { const ctx = {}; ctx.window = ctx; vm.runInNewContext(read('js/monsters/reaction-art.data.js') + '\n' + read('js/monsters/reaction-art.js'), ctx); return ctx.MMRXART; };
+const FIVE = ['soramo', 'gauru', 'nobiton', 'jiol', 'regnas'];   // 2026-10-12 の5体（reactions_1012）。2026-10-17：6＝ラズック（reactions_1017_razuck・RA-04）
 /** WebP（VP8X）の幅・高さと透過の有無 */
 function webp(f) {
   const b = fs.readFileSync(f);
@@ -22,7 +23,7 @@ function webp(f) {
 
 test('RA-01：30枚がそろう・透過 WebP・大きさがデータと同じ・原本の PNG は置かない・README と sha256 の表', () => {
   const X = load();
-  for (const sp of X.SPECIES) {
+  for (const sp of FIVE) {
     const files = fs.readdirSync(path.join(DIR, sp)).sort();
     assert.deepEqual(files, ['01_joy.webp', '02_surprise.webp', '03_sad.webp', '04_eat.webp', '05_hit.webp', '06_dodge.webp'], sp);
     for (const k of X.KINDS) {
@@ -43,9 +44,9 @@ test('RA-01：30枚がそろう・透過 WebP・大きさがデータと同じ�
 
 test('RA-02：データ＝5体 × 6種・hRel は待機立ち絵に近い範囲・src は番号順の名前・知らない種族は null', () => {
   const X = load();
-  assert.deepEqual([...X.SPECIES], ['soramo', 'gauru', 'nobiton', 'jiol', 'regnas']);
-  assert.equal(X.all().length, 30);
-  for (const sp of X.SPECIES) for (const [i, k] of X.KINDS.entries()) {
+  assert.deepEqual([...X.SPECIES], [...FIVE, null, 'razuck']);
+  assert.equal(X.all().length, 36);
+  for (const sp of FIVE) for (const [i, k] of X.KINDS.entries()) {
     const f = X.info(sp, k);
     assert.equal(f.src, `./assets/monsters/reactions_1012/${sp}/0${i + 1}_${k}.webp`);
     assert.ok(f.hRel >= 0.7 && f.hRel <= 1.15, `${sp} ${k} hRel ${f.hRel}`);
@@ -66,4 +67,16 @@ test('RA-03：読み込み順・バトルの差し替えは表示だけ（resolv
   assert.match(src, /'#bt \.mon\.mma-rxon>\.mma-idle\{visibility:hidden\}'/, '差し替えの間は待機立ち絵を隠す＝二重に見えない');
   assert.match(src, /'#bt \.mon:not\(\.mma-on\) \.mma-rx\{display:none\}'/, '技のコマが出ている間は出さない');
   assert.match(src, /hit: 560, dodge: 520/);
+});
+
+test('RA-04：ラズック（2026-10-17・制作候補＝QA だけ）＝6種・置き場所は reactions_1017_razuck・番号 6・番号 5（フルーネ）は null・大きさがデータと同じ', () => {
+  const X = load();
+  const files = fs.readdirSync(path.join(ROOT, 'assets/monsters/reactions_1017_razuck')).filter((f) => /\.webp$/.test(f)).sort();
+  assert.deepEqual(files, ['01_joy.webp', '02_surprise.webp', '03_sad.webp', '04_eat.webp', '05_hit.webp', '06_dodge.webp']);
+  for (const [i, k] of X.KINDS.entries()) {
+    const f = X.info(6, k); assert.equal(f.src, `./assets/monsters/reactions_1017_razuck/0${i + 1}_${k}.webp`);
+    const m = webp(path.join(ROOT, f.src)); assert.ok(m.alpha); assert.deepEqual([m.w, m.h], [f.w, f.h], k);
+    assert.ok(f.hRel >= 0.85 && f.hRel <= 1.2, `${k} hRel ${f.hRel}`);
+  }
+  assert.equal(X.src(5, 'hit'), null, 'フルーネの表情は無い');
 });

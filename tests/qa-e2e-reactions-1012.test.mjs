@@ -125,10 +125,10 @@ test('RX-B3：リアクションの絵が 404＝差し替えない・待機立�
 });
 
 for (const size of [H.SIZES.se, H.SIZES.base, H.SIZES.max]) {
-  test(`RX-B4（${size.join('×')}）：確認ページ＝30枚とも読める・横はみ出しなし`, { skip: SKIP, timeout: 60000 }, async () => {
+  test(`RX-B4（${size.join('×')}）：確認ページ＝36枚（2026-10-17：ラズックの6枚を含む）とも読める・横はみ出しなし`, { skip: SKIP, timeout: 60000 }, async () => {
     const p = await openPage({ size }); const pg = p.page;
     await pg.goto(L.url + 'prototype/reactions_1012/index.html');
-    await pg.waitForFunction(() => window.MM_RX_STATUS && Object.keys(MM_RX_STATUS).length === 30, null, { timeout: 20000 });
+    await pg.waitForFunction(() => window.MM_RX_STATUS && Object.keys(MM_RX_STATUS).length === 36, null, { timeout: 20000 });
     const r = await pg.evaluate(() => ({ bad: Object.entries(MM_RX_STATUS).filter(([, v]) => !v || v.w < 300 || v.h < 300).map(([k]) => k), sw: document.documentElement.scrollWidth, iw: innerWidth }));
     assert.deepEqual(r.bad, []); assert.ok(r.sw <= r.iw + 1, '横はみ出しなし');
     await pg.click('#side button[data-v="1"]'); await pg.click('.sp[data-sp="regnas"] .try button[data-k="dodge"]');

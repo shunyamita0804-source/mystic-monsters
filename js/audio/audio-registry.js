@@ -151,38 +151,102 @@
     CROWD_EVADE_LONG: { src: [CR + 'evade_boo_0p0_1p0_1000ms.ogg', CR + 'evade_boo_0p0_1p0_1000ms.m4a'], gain: 0.30 },                      // 同・1.0秒の版（-6.5 LUFS）
   };
 
-  // ---- NPC のボイス：2026-10-15 N04（ユーザー指示・最優先）で全停止＝新しい声の差し替え台帳（ファイルなし）----
-  //  2026-10-13〜14 の試遊ボイス（無料で作った声）は商用のゲームに使えない認識＝ファイルは公開サイトから外した（リポジトリの今の木にも無い）。
-  //  ここに残すのは id・話者・台詞・出しどころだけ（src は空＝鳴らない。MMAUDIO 側も VOICE_BLOCKED で全停止）。どこで鳴らすか（CUES・LINE_VOICE・会話の行の voice）は js/npc/voice-cues.js のまま。
-  //  新しい声（有料プランで作り直し・ライセンスと納品を確かめたもの）が届いたら、別の作業で src に新しいファイルを書き、gain をそろえ、MMAUDIO の VOICE_BLOCKED を外す。
-  //  旧い無料の声を「作り直したから」と戻さない。対応表は docs/voice-replacement-ledger.md
+  // ---- NPC のボイス（2026-10-17 正式：有料版 60本＝Mismon_NPC_PaidVoice60_GenshinV2_20261017 の 02_manifest_v2.tsv が正本・ゲンシン 001／002 は 2026-10-17 の差し替え版）----
+  //  ファイル＝assets/audio/voice/npc_paid_1017/（MP3 の原本をそのまま・名前だけ英字。README.md に原本の名前と sha256・書き起こし）。旧い無料の声は使わない（復活させない）。
+  //  gain＝聴感の音量（約 -19 LUFS）へそろえる再生の倍率（最大 2.5・ピークは -1 dBFS まで）。line＝実際の発話の書き起こし（faster-whisper large-v3＋目視の補正。字幕と同じ）。
+  //  enabled:false＝三伝説（場面が未実装＝鳴らさない）。alias＝今までの出しどころの id（js/npc/voice-cues.js・会話の行の voice）→ 新しいファイルの id。
+  //  起動時に一括で読まない：施設に入る前など必要な所で MMAUDIO.voiceWarm（圧縮のまま取得）・鳴らすときに1本ずつデコード（デコード済みは最大 6本＝古いものから捨てる）
+  const PV = './assets/audio/voice/npc_paid_1017/';
   const VOICE_REGISTRY = {
-    fina_hello:  { src: [], npc: 'fina', line: 'こんにちは' },      // 序盤の最初の声かけ（OPEN_TALK）・旧フィナの紹介
-    fina_yeah:   { src: [], npc: 'fina', line: 'やったね' },        // 初優勝・育成完了・封印の遺跡門の成功（cue fina.challengeOk）
-    fina_hmm:    { src: [], npc: 'fina', line: 'うーん' },          // 初めての大会で優勝できなかった・封印の遺跡門の失敗（cue fina.challengeNg）
-    fina_look:   { src: [], npc: 'fina', line: '見て見て' },        // 「見て、…」の行・世界のボードの宝の行き止まり／隠れ家（cue fina.discover）
-    fina_hey:    { src: [], npc: 'fina', line: 'もう' },            // 「もう、リュウったら……」
-    fina_giggle: { src: [], npc: 'fina', line: 'えへへ' },          // 名前を呼ぶ・最初の相棒
-    fina_yes:    { src: [], npc: 'fina', line: 'うん' },            // 「うん。」で始まる行
-    fina_wonder: { src: [], npc: 'fina', line: 'なんだろう？' },    // 初めてのレアのフィナの一言
-    dan_hello:     { src: [], npc: 'dan', line: 'よう、準備はできたか？' },   // ベースキャンプの入口（cue facility.farm）
-    nick_hello:    { src: [], npc: 'nick', line: '今日も元気そうだな' },      // 牧場の入口（cue facility.ranch）
-    berna_welcome: { src: [], npc: 'shop', line: 'いらっしゃい' },            // アイテム屋の入口（cue facility.shop）
-    karen_welcome: { src: [], npc: 'karen', line: 'いらっしゃい' },           // 市場の入口（cue facility.market）
-    elliot_hello_OPTIONAL: { src: [], npc: 'elliot', line: 'やあ' },          // 研究所の入口（cue facility.lab）
-    cedric_opening: { src: [], npc: 'cedric', line: 'さあ！いよいよ開幕です！' },   // 公式大会の開幕の会話の1行目（CEDRIC_EV.open）
-    serge_welcome:  { src: [], npc: 'serge', line: 'ようこそ' },         // 聖獣士登録の受付の1行目・聖獣士管理局の再訪の入口（cue facility.bureau）
-    genshin_ack:    { src: [], npc: 'genshin', line: 'うむ' },           // 特訓をやり終えたとき（cue genshin.ack）
-    vargas_ack:     { src: [], npc: 'vargas', line: 'うむ' },            // 闘技場（ロック中）でランクを認める一言（cue vargas.ack）
-    ryu_hello:      { src: [], npc: 'ryu', line: 'よっ！' },             // 不採用（2026-10-13 開発27・cue ryu.appear は off）
-    ryu_chuckle:    { src: [], npc: 'ryu', line: 'へへっ' },             // ライバル戦に負けたあとのボードの会話の行
-    ryu_praise:     { src: [], npc: 'ryu', line: 'やるじゃん' },         // ライバル戦に勝ったあとのボードの会話の行
-    leona_greet:      { src: [], npc: 'leona', line: 'よく来ましたね' },     // 【登録のみ】三伝説の場面が未実装
-    leona_prebattle:  { src: [], npc: 'leona', line: 'あなたの信念が本物なら、その力を私に示してみなさい' },   // 【登録のみ】
-    ragnas_greet:     { src: [], npc: 'ragnas', line: '来たか' },            // 【登録のみ】ラグナス（人。リュウの相棒のレグナスとは別）
-    ragnas_prebattle: { src: [], npc: 'ragnas', line: 'お前の力見せてみろ！' },   // 【登録のみ】
-    astrad_greet:     { src: [], npc: 'astrad', line: '待っていた' },        // 【登録のみ】
-    astrad_prebattle: { src: [], npc: 'astrad', line: '全力でこい！' },      // 【登録のみ】
+    astrad_001: { src: [PV + 'astrad_001.ogg', PV + 'astrad_001.m4a'], npc: 'astrad', gain: 0.91, enabled: false, line: '待っていたぞ。' },   // 1.228秒・-18.2 LUFS
+    astrad_002: { src: [PV + 'astrad_002.ogg', PV + 'astrad_002.m4a'], npc: 'astrad', gain: 0.52, enabled: false, line: '全力で来い！' },   // 1.228秒・-13.3 LUFS
+    elliot_001: { src: [PV + 'elliot_001.ogg', PV + 'elliot_001.m4a'], npc: 'elliot', gain: 0.93, line: 'おや、フィナさん。ちょうどいいところへ。この石板に刻まれた記号、並び方が実に面白くてね。ああ、失礼。初めまして、エリオットです。ここではモンスターの記録と新しい命が生まれる仕組みを研究しているんだ。君の相棒のこともぜひ教えてほしいな。' },   // 19.644秒・-18.4 LUFS
+    elliot_002: { src: [PV + 'elliot_002.ogg', PV + 'elliot_002.m4a'], npc: 'elliot', gain: 0.92, line: 'おや、来てくれたんだね。今日も何か新しい発見がありそうだ。' },   // 5.721秒・-18.3 LUFS
+    karen_001: { src: [PV + 'karen_001.ogg', PV + 'karen_001.m4a'], npc: 'karen', gain: 2.19, line: 'フィナ、いらっしゃい。もちろん。初めまして、私はカレン。ここにはいろんな個性のモンスターがいるよ。強さも大事だけど、何より自分が一緒に育てたいと思える子を選んでね。きっと素敵な相棒になるから。' },   // 15.569秒・-27.4 LUFS
+    karen_002: { src: [PV + 'karen_002.ogg', PV + 'karen_002.m4a'], npc: 'karen', gain: 2.29, line: 'いらっしゃい。' },   // 0.914秒・-26.2 LUFS
+    genshin_001: { src: [PV + 'genshin_001.ogg', PV + 'genshin_001.m4a'], npc: 'genshin', gain: 0.68, line: 'フィナか。特訓じゃな。強さに近道はない。己と向き合い、日々鍛えることじゃ。' },   // 9.639秒・-15.6 LUFS
+    genshin_002: { src: [PV + 'genshin_002.ogg', PV + 'genshin_002.m4a'], npc: 'genshin', gain: 0.55, line: '来たか。己と向き合うのじゃ。' },   // 4.049秒・-13.8 LUFS
+    cedric_001: { src: [PV + 'cedric_001.ogg', PV + 'cedric_001.m4a'], npc: 'cedric', gain: 0.81, line: 'さあ、いよいよ開幕です！' },   // 2.351秒・-17.2 LUFS
+    serge_001: { src: [PV + 'serge_001.ogg', PV + 'serge_001.m4a'], npc: 'serge', gain: 0.74, line: 'ようこそ。' },   // 1.228秒・-16.4 LUFS
+    dan_001: { src: [PV + 'dan_001.ogg', PV + 'dan_001.m4a'], npc: 'dan', gain: 0.77, line: 'お、フィナ。来るなら先に言ってくれよ。ま、いいけどな。そっちは初めましてだな。俺はダン。このベースキャンプじゃ、旅に出る前の準備や休息を手伝ってる。必要な時は気軽に頼ってくれよ。' },   // 16.431秒・-16.7 LUFS
+    dan_002: { src: [PV + 'dan_002.ogg', PV + 'dan_002.m4a'], npc: 'dan', gain: 0.72, line: 'お、来たな。少し休んでくか？出発の準備ならいつでも手伝うぞ。' },   // 5.956秒・-16.2 LUFS
+    nick_001: { src: [PV + 'nick_001.ogg', PV + 'nick_001.m4a'], npc: 'nick', gain: 0.56, line: 'おお、フィナ。元気そうだな。初めまして、俺はニックだ。この牧場じゃモンスターたちを預かって世話してる。どんな子にもそれぞれの良さがあるからな。安心して任せてくれ。しっかり面倒を見るからな。' },   // 16.117秒・-13.9 LUFS
+    nick_002: { src: [PV + 'nick_002.ogg', PV + 'nick_002.m4a'], npc: 'nick', gain: 0.57, line: 'おお、よく来たな。モンスターたちは今日も元気だぞ。' },   // 4.833秒・-14.1 LUFS
+    fina_001: { src: [PV + 'fina_001.ogg', PV + 'fina_001.m4a'], npc: 'fina', gain: 0.98, line: '次がある！' },   // 1.149秒・-18.8 LUFS
+    fina_002: { src: [PV + 'fina_002.ogg', PV + 'fina_002.m4a'], npc: 'fina', gain: 1.35, line: '悔しいね。でも大丈夫。次はどうすれば勝てるか一緒に考えてみよう。' },   // 6.426秒・-23.6 LUFS
+    fina_003: { src: [PV + 'fina_003.ogg', PV + 'fina_003.m4a'], npc: 'fina', gain: 2.43, line: '準備はできた？道中は何があるかわからないから、焦らず一緒に進んでいこう。' },   // 5.878秒・-27.5 LUFS
+    fina_004: { src: [PV + 'fina_004.ogg', PV + 'fina_004.m4a'], npc: 'fina', gain: 1.4, line: '見て見て！' },   // 1.071秒・-21.9 LUFS
+    fina_005: { src: [PV + 'fina_005.ogg', PV + 'fina_005.m4a'], npc: 'fina', gain: 1.3, line: 'やったね！' },   // 1.071秒・-21.3 LUFS
+    fina_006: { src: [PV + 'fina_006.ogg', PV + 'fina_006.m4a'], npc: 'fina', gain: 1.32, line: 'やったね！優勝だよ！あなたとこの子が頑張ってきた結果だね。本当におめでとう。' },   // 6.687秒・-22.0 LUFS
+    fina_007: { src: [PV + 'fina_007.ogg', PV + 'fina_007.m4a'], npc: 'fina', gain: 2.5, line: 'もう…' },   // 1.149秒・-30.1 LUFS
+    fina_008: { src: [PV + 'fina_008.ogg', PV + 'fina_008.m4a'], npc: 'fina', gain: 2.5, line: 'なんだろう？' },   // 1.149秒・-31.6 LUFS
+    fina_009: { src: [PV + 'fina_009.ogg', PV + 'fina_009.m4a'], npc: 'fina', gain: 2.16, line: 'はじめまして。私はフィナ。わからないことがあったら何でも聞いてね。これからよろしく。' },   // 6.687秒・-25.7 LUFS
+    fina_010: { src: [PV + 'fina_010.ogg', PV + 'fina_010.m4a'], npc: 'fina', gain: 2.5, line: 'すごいね。' },   // 1.306秒・-27.7 LUFS
+    fina_011: { src: [PV + 'fina_011.ogg', PV + 'fina_011.m4a'], npc: 'fina', gain: 2.5, line: 'うーん。' },   // 1.646秒・-31.6 LUFS
+    fina_012: { src: [PV + 'fina_012.ogg', PV + 'fina_012.m4a'], npc: 'fina', gain: 1.93, line: 'うん。' },   // 0.679秒・-24.7 LUFS
+    fina_013: { src: [PV + 'fina_013.ogg', PV + 'fina_013.m4a'], npc: 'fina', gain: 1.06, line: 'おめでとう！' },   // 0.993秒・-19.5 LUFS
+    fina_014: { src: [PV + 'fina_014.ogg', PV + 'fina_014.m4a'], npc: 'fina', gain: 2.5, line: 'えへへ' },   // 1.149秒・-31.5 LUFS
+    fina_015: { src: [PV + 'fina_015.ogg', PV + 'fina_015.m4a'], npc: 'fina', gain: 1.33, line: 'さあ、行こう！' },   // 1.306秒・-21.5 LUFS
+    fina_016: { src: [PV + 'fina_016.ogg', PV + 'fina_016.m4a'], npc: 'fina', gain: 1.3, line: 'こんにちは。' },   // 0.993秒・-21.3 LUFS
+    fina_017: { src: [PV + 'fina_017.ogg', PV + 'fina_017.m4a'], npc: 'fina', gain: 1.74, line: 'ここまで頑張って育ててきたんだもん。自信を持って。私も応援してるからね。' },   // 5.799秒・-23.8 LUFS
+    fina_018: { src: [PV + 'fina_018.ogg', PV + 'fina_018.m4a'], npc: 'fina', gain: 2.5, line: '大丈夫かな？' },   // 1.411秒・-30.4 LUFS
+    fina_019: { src: [PV + 'fina_019.ogg', PV + 'fina_019.m4a'], npc: 'fina', gain: 2.19, line: '無理しないでね。' },   // 1.306秒・-25.8 LUFS
+    fina_020: { src: [PV + 'fina_020.ogg', PV + 'fina_020.m4a'], npc: 'fina', gain: 1.72, line: 'この子が最初の相棒だね。これからどんな風に成長していくのか、私も楽しみだな。' },   // 6.609秒・-25.9 LUFS
+    fina_021: { src: [PV + 'fina_021.ogg', PV + 'fina_021.m4a'], npc: 'fina', gain: 2.07, line: 'カレン、モンスターたちの調子はどう？この人初めて市場に来たんだ。相棒選びを手伝ってくれない？' },   // 7.393秒・-26.9 LUFS
+    fina_022: { src: [PV + 'fina_022.ogg', PV + 'fina_022.m4a'], npc: 'fina', gain: 1.93, line: 'ニック、こんにちは。今日はこの人に牧場を見せてあげたいんだ。モンスターたちのこと教えてくれる？' },   // 7.314秒・-25.8 LUFS
+    fina_023: { src: [PV + 'fina_023.ogg', PV + 'fina_023.m4a'], npc: 'fina', gain: 2.04, line: 'ダン、また何か直してるの？ 今日はこの人の旅支度をお願いしたくてさ。ちょっと見てもらえる？' },   // 7.157秒・-27.2 LUFS
+    fina_024: { src: [PV + 'fina_024.ogg', PV + 'fina_024.m4a'], npc: 'fina', gain: 1.6, line: 'エリオット、その石板。また夢中になってる。あの、ちょっといい？今日はこの人に研究所を案内したいんだけど。' },   // 9.561秒・-28.0 LUFS
+    fina_025: { src: [PV + 'fina_025.ogg', PV + 'fina_025.m4a'], npc: 'fina', gain: 2.21, line: 'ヴァルガスさん、初めまして。闘技場での挑戦についてお話を伺ってもよろしいでしょうか？' },   // 7.628秒・-26.7 LUFS
+    fina_026: { src: [PV + 'fina_026.ogg', PV + 'fina_026.m4a'], npc: 'fina', gain: 2.09, line: 'ベルナさん、旅に必要な道具を揃えたいんだけど、この人、ここのお店は初めてなの。おすすめのアイテム、教えてもらえる？' },   // 9.247秒・-26.7 LUFS
+    fina_027: { src: [PV + 'fina_027.ogg', PV + 'fina_027.m4a'], npc: 'fina', gain: 2.37, line: 'ゲンシンさん、今日はこの人の相棒に特訓を受けさせたくて、ここでの鍛え方を教えてもらえますか？' },   // 7.889秒・-26.5 LUFS
+    berna_001: { src: [PV + 'berna_001.ogg', PV + 'berna_001.m4a'], npc: 'shop', gain: 1.05, line: 'おやおや、フィナちゃんじゃないかい。今日は新しいお客さんを連れてきたんだね。ここには冒険に役立つ道具などがたくさん揃っているよ。旅の支度は大事だからね。慌てずゆっくり見ておいき。' },   // 17.633秒・-19.4 LUFS
+    berna_002: { src: [PV + 'berna_002.ogg', PV + 'berna_002.m4a'], npc: 'shop', gain: 0.91, line: 'おや、また来てくれたのかい？今日もいろいろ揃えてあるよ。' },   // 4.833秒・-18.2 LUFS
+    ragnas_001: { src: [PV + 'ragnas_001.ogg', PV + 'ragnas_001.m4a'], npc: 'ragnas', gain: 0.77, enabled: false, line: 'ついに来たか。' },   // 1.724秒・-16.7 LUFS
+    ragnas_002: { src: [PV + 'ragnas_002.ogg', PV + 'ragnas_002.m4a'], npc: 'ragnas', gain: 0.6, enabled: false, line: 'お前の力、見せてみろ！' },   // 2.691秒・-14.6 LUFS
+    ryu_001: { src: [PV + 'ryu_001.ogg', PV + 'ryu_001.m4a'], npc: 'ryu', gain: 1.1, line: 'へぇ、やるじゃん。今回はお前の勝ちだ。でも、次はそう簡単にいかないからな。' },   // 7.471秒・-19.8 LUFS
+    ryu_002: { src: [PV + 'ryu_002.ogg', PV + 'ryu_002.m4a'], npc: 'ryu', gain: 0.95, line: '俺はリュウ。名前くらい覚えておいてな。' },   // 3.161秒・-18.6 LUFS
+    ryu_003: { src: [PV + 'ryu_003.ogg', PV + 'ryu_003.m4a'], npc: 'ryu', gain: 0.86, line: 'やるじゃん！' },   // 1.149秒・-17.7 LUFS
+    ryu_004: { src: [PV + 'ryu_004.ogg', PV + 'ryu_004.m4a'], npc: 'ryu', gain: 1.07, line: 'よう。' },   // 0.993秒・-19.6 LUFS
+    ryu_005: { src: [PV + 'ryu_005.ogg', PV + 'ryu_005.m4a'], npc: 'ryu', gain: 1.01, line: 'お、来たな。' },   // 1.567秒・-19.1 LUFS
+    ryu_006: { src: [PV + 'ryu_006.ogg', PV + 'ryu_006.m4a'], npc: 'ryu', gain: 0.98, line: 'さあ、勝負だ！' },   // 1.959秒・-18.8 LUFS
+    ryu_007: { src: [PV + 'ryu_007.ogg', PV + 'ryu_007.m4a'], npc: 'ryu', gain: 0.77, line: 'じゃあな。' },   // 0.993秒・-16.7 LUFS
+    ryu_008: { src: [PV + 'ryu_008.ogg', PV + 'ryu_008.m4a'], npc: 'ryu', gain: 0.97, line: 'へぇ、ここまで来たんだ。ちょうどいい。俺の相棒がどれだけ強くなったか、見せてやるよ。' },   // 7.967秒・-18.7 LUFS
+    ryu_009: { src: [PV + 'ryu_009.ogg', PV + 'ryu_009.m4a'], npc: 'ryu', gain: 2.14, line: 'へへ。' },   // 0.914秒・-25.6 LUFS
+    ryu_010: { src: [PV + 'ryu_010.ogg', PV + 'ryu_010.m4a'], npc: 'ryu', gain: 1.0, line: 'へへ、悪くなかったけど、まだまだだな。もっと強くなってから、また勝負しようぜ。' },   // 7.079秒・-19.0 LUFS
+    ryu_011: { src: [PV + 'ryu_011.ogg', PV + 'ryu_011.m4a'], npc: 'ryu', gain: 0.78, line: 'まだまだ、だな。' },   // 2.116秒・-16.8 LUFS
+    leona_001: { src: [PV + 'leona_001.ogg', PV + 'leona_001.m4a'], npc: 'leona', gain: 0.92, enabled: false, line: 'よくここまで来ましたね。' },   // 2.116秒・-18.3 LUFS
+    leona_002: { src: [PV + 'leona_002.ogg', PV + 'leona_002.m4a'], npc: 'leona', gain: 0.58, enabled: false, line: 'あなたの信念が本物なら、その力、私に示してみなさい！' },   // 5.486秒・-14.2 LUFS
+    vargas_001: { src: [PV + 'vargas_001.ogg', PV + 'vargas_001.m4a'], npc: 'vargas', gain: 0.86, line: 'ほう、ここまで来たか。見事だ。私はヴァルガス。この闘技場では特別な大会が開催される。しっかり鍛錬をして臨むことだ。' },   // 12.121秒・-17.7 LUFS
+    vargas_002: { src: [PV + 'vargas_002.ogg', PV + 'vargas_002.m4a'], npc: 'vargas', gain: 0.7, line: 'よく来たな、挑戦者。相棒の力を信じ、次の戦いへ進むがいい。' },   // 6.426秒・-15.9 LUFS
+    // ---- 今までの出しどころの id（会話の行・cue が使う名前）→ 新しいファイル ----
+    fina_hello: { alias: 'fina_016' },   // 序盤の最初の声かけ（OPEN_TALK）・旧フィナの紹介
+    fina_yeah: { alias: 'fina_005' },   // 初優勝・育成完了・封印の遺跡門の成功
+    fina_hmm: { alias: 'fina_011' },   // 初めての大会で優勝できなかった・封印の遺跡門の失敗
+    fina_look: { alias: 'fina_004' },   // （cue fina.discover：今は呼ぶ所なし）
+    fina_hey: { alias: 'fina_007' },   // 「もう、リュウったら……」
+    fina_giggle: { alias: 'fina_014' },   // 名前を呼ぶ・最初の相棒
+    fina_yes: { alias: 'fina_012' },   // 「うん。」で始まる行
+    fina_wonder: { alias: 'fina_008' },   // 初めてのレアのフィナの一言
+    dan_hello: { alias: 'dan_002' },   // ベースキャンプの再訪の入口
+    nick_hello: { alias: 'nick_002' },   // 牧場の再訪の入口
+    berna_welcome: { alias: 'berna_002' },   // アイテム屋の再訪の入口
+    karen_welcome: { alias: 'karen_002' },   // 市場の再訪の入口
+    elliot_hello_OPTIONAL: { alias: 'elliot_002' },   // 研究所の再訪の入口
+    cedric_opening: { alias: 'cedric_001' },   // 公式大会の開幕の会話の1行目
+    serge_welcome: { alias: 'serge_001' },   // 聖獣士登録の受付の1行目・聖獣士管理局の再訪の入口
+    ryu_hello: { alias: 'ryu_004' },   // 不採用（cue ryu.appear は off のまま）
+    ryu_chuckle: { alias: 'ryu_009' },   // ライバル戦に負けたあとのボードの会話の行
+    ryu_praise: { alias: 'ryu_003' },   // ライバル戦に勝ったあとのボードの会話の行
+    leona_greet: { alias: 'leona_001' },   // 【登録のみ】三伝説の場面が未実装
+    leona_prebattle: { alias: 'leona_002' },   // 【登録のみ】
+    ragnas_greet: { alias: 'ragnas_001' },   // 【登録のみ】ラグナス（人。レグナスとは別）
+    ragnas_prebattle: { alias: 'ragnas_002' },   // 【登録のみ】
+    astrad_greet: { alias: 'astrad_001' },   // 【登録のみ】
+    astrad_prebattle: { alias: 'astrad_002' },   // 【登録のみ】
+    genshin_train: { alias: 'genshin_002' },   // 特訓の再訪の入口（2026-10-17）
+    vargas_hello: { alias: 'vargas_002' },   // 闘技場の再訪（2026-10-17）
+    genshin_ack: { src: [], npc: 'genshin', line: 'うむ' },   // 新60本に「うむ」は無い＝鳴らない（長い初回の声を短い相づちに当てない＝v4 指示）
+    vargas_ack:  { src: [], npc: 'vargas', line: 'うむ' },    // 同上
   };
 
   // ---- 2026-10-13 開発25 追加便：BGM の【候補】（ユーザー提供の MP3 を OGG Vorbis q5 に変換しただけ・assets/audio/bgm/candidates_1013/）----
@@ -194,6 +258,26 @@
     LEGEND_BATTLE_CANDIDATE: { src: BGM_DIR + 'candidates_1013/legend_battle_candidate.ogg', gain: 0.35, for: 'LEGEND_BATTLE', note: 'レジェンド戦BGM.mp3（271.6秒・-8.9 LUFS）。三伝説との対戦は未実装＝公式大会・野生・レア・ライバルの曲には使わない' },
   };
 
-  root.MMAUDIO_REGISTRY = Object.freeze({ bgm: BGM_REGISTRY, se: SE_REGISTRY, voice: VOICE_REGISTRY, bgmCandidates: BGM_CANDIDATES });
+  // ---- 2026-10-17：モンスターの鳴き声 14本（7体×正式 normal／悲しみ sad・ユーザー納品の MP3 を OGG＋M4A にしただけ＝assets/audio/voice/monster_1017/README.md）。
+  //  gain＝聴感の音量をそろえる再生の補正（tools/monvoice1017/derive.py・sad は +3dB まで）。鳴らす場面は MMAUDIO.cry の呼び出し（index.html・js/chapter/world-board.js）
+  const PC = './assets/audio/voice/monster_1017/';
+  const CRY_REGISTRY = {
+    cry_solamo_normal: { src: [PC + 'solamo_normal.ogg', PC + 'solamo_normal.m4a'], npc: 'monster', gain: 0.912 },   // ソラモ・正式（-14.2 LUFS）
+    cry_solamo_sad: { src: [PC + 'solamo_sad.ogg', PC + 'solamo_sad.m4a'], npc: 'monster', gain: 1.413 },   // ソラモ・悲しみ（-22.5 LUFS）
+    cry_gauru_normal: { src: [PC + 'gauru_normal.ogg', PC + 'gauru_normal.m4a'], npc: 'monster', gain: 0.398 },   // ガウル・正式（-7.0 LUFS）
+    cry_gauru_sad: { src: [PC + 'gauru_sad.ogg', PC + 'gauru_sad.m4a'], npc: 'monster', gain: 0.661 },   // ガウル・悲しみ（-14.4 LUFS）
+    cry_nobiton_normal: { src: [PC + 'nobiton_normal.ogg', PC + 'nobiton_normal.m4a'], npc: 'monster', gain: 1.799 },   // ノビトン・正式（-20.1 LUFS）
+    cry_nobiton_sad: { src: [PC + 'nobiton_sad.ogg', PC + 'nobiton_sad.m4a'], npc: 'monster', gain: 0.462 },   // ノビトン・悲しみ（-11.3 LUFS）
+    cry_jiol_normal: { src: [PC + 'jiol_normal.ogg', PC + 'jiol_normal.m4a'], npc: 'monster', gain: 0.61 },   // ジオル・正式（-10.7 LUFS）
+    cry_jiol_sad: { src: [PC + 'jiol_sad.ogg', PC + 'jiol_sad.m4a'], npc: 'monster', gain: 0.531 },   // ジオル・悲しみ（-12.5 LUFS）
+    cry_regnas_normal: { src: [PC + 'regnas_normal.ogg', PC + 'regnas_normal.m4a'], npc: 'monster', gain: 0.653 },   // レグナス・正式（-11.3 LUFS）
+    cry_regnas_sad: { src: [PC + 'regnas_sad.ogg', PC + 'regnas_sad.m4a'], npc: 'monster', gain: 0.989 },   // レグナス・悲しみ（-17.9 LUFS）
+    cry_flurene_normal: { src: [PC + 'flurene_normal.ogg', PC + 'flurene_normal.m4a'], npc: 'monster', gain: 0.989 },   // フルーネ・正式（-15.6 LUFS）
+    cry_flurene_sad: { src: [PC + 'flurene_sad.ogg', PC + 'flurene_sad.m4a'], npc: 'monster', gain: 1.175 },   // フルーネ・悲しみ（-19.4 LUFS）
+    cry_razuck_normal: { src: [PC + 'razuck_normal.ogg', PC + 'razuck_normal.m4a'], npc: 'monster', gain: 0.473 },   // ラズック・正式（-8.5 LUFS）
+    cry_razuck_sad: { src: [PC + 'razuck_sad.ogg', PC + 'razuck_sad.m4a'], npc: 'monster', gain: 0.75 },   // ラズック・悲しみ（-15.5 LUFS）
+  };
+
+  root.MMAUDIO_REGISTRY = Object.freeze({ bgm: BGM_REGISTRY, se: SE_REGISTRY, voice: VOICE_REGISTRY, cry: CRY_REGISTRY, bgmCandidates: BGM_CANDIDATES });
   try { if (root.MMAUDIO && typeof root.MMAUDIO.registerAll === 'function') root.MMAUDIO.registerAll(root.MMAUDIO_REGISTRY); } catch (e) { /* 登録に失敗してもゲームは止めない（合成音で動く） */ }
 })(typeof window !== 'undefined' ? window : globalThis);

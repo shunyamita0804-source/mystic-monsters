@@ -145,7 +145,7 @@
   function dress() {
     const bt = doc.getElementById('bt'), BPL = G('BPL'); if (!bt || !BPL) return false;
     const C = cat(), atk = C[ST.mon], tgt = C[ST.target]; if (!atk || !tgt) return false;
-    if (atk.sp === 5 || tgt.sp === 5) root.MMQA._lend();
+    if (atk.sp >= 5 || tgt.sp >= 5) root.MMQA._lend();   // 5＝フルーネ・6＝ラズック（登録のみ＝QA の間だけ絵を貸す）
     const sides = ST.side ? [tgt.sp, atk.sp] : [atk.sp, tgt.sp];
     sides.forEach((sp, s) => {
       if (BPL[s]) BPL[s].sp = sp;

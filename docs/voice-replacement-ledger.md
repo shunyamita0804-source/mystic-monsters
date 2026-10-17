@@ -107,3 +107,9 @@ e6d314206f9b5f0b2785c7951cd8e156a8c36f0a8552feec4eff0275fd8926a4  ryu_praise.ogg
 411b947caf98485c058576915d7b527a3a58ebafbc389934314554999f5e2f31  vargas_ack.m4a
 16f17e474d306024ccbade8312bcc316140606b6d94153f8de8db5f04f07a197  vargas_ack.ogg
 ```
+
+## 2026-10-17：差し替え済み（有料版 60本）
+
+- ユーザーの 2026-10-17 の指示で、有料版の NPC ボイス 60本（`Mismon_NPC_PaidVoice60_GenshinV2_20261017`・`02_manifest_v2.tsv` が正本・ゲンシン 001／002 は差し替え版）を接続した。`VOICE_BLOCKED = false`。
+- ファイル＝`assets/audio/voice/npc_paid_1017/`（原本の MP3 から OGG＋M4A の派生・README.md に原本の sha256 と書き起こし）。上の 26 の id は alias で新しいファイルへ（`genshin_ack`・`vargas_ack`＝「うむ」は新60本に無い＝鳴らさない。三伝説は `enabled:false`）。
+- 旧い無料の声（上の 54本）は戻していない。

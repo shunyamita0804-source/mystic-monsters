@@ -102,7 +102,7 @@ test('NX-08：追加A（N09 の最新版）ルーレット＝新しい画面は�
 });
 
 test('NX-09：N10 会場へ続く道のマスは会場の絵より手前（GOAL・道・判定は不変）', () => {
-  assert.match(RW, /const apprIds = \(\(\) => \{ const gn = D\.nodes\.GOAL; if \(!gn \|\| !ART\.goal\) return \[\]; const R = ART\.goal\.w \* 0\.95/);
+  assert.match(RW, /const apprIds = \(\(\) => \{ const gn = D\.nodes\.GOAL; if \(!gn \|\| !GA\) return \[\]; const R = GA\.w \* 0\.95/);
   assert.match(RW, /const propZ = \(p\) => \(p\.solid && S\.goalZ != null \? Math\.min\(zOf\(p\.y, p\.z, p\.x\), S\.goalZ - 1, S\.apprZ - 1\) : zOf\(p\.y, p\.z, p\.x\)\);/);
   assert.equal((RW.match(/S\.apprZ = apprZ\(\);/g) || []).length, 2, '作るときと向きが変わったとき');
   assert.match(RW, /goal: \{ file: 'goal_arena\.webp', w: 150, dy: 14, back: 4 \}/, '会場の大きさ・位置は従来どおり');

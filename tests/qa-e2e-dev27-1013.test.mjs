@@ -55,7 +55,7 @@ test('D27-07：施設の入口＝背景だけ＋NPC のアップと一言（声�
   const a = await pg.evaluate(() => ({ npc: MMNPC.state().npc, view: MMNPC.state().view, scene: document.documentElement.getAttribute('data-mmscene'), app: getComputedStyle(document.getElementById('app')).visibility, txt: document.querySelector('.mmtalk-text').textContent, cue: MMVOICE.log().filter((x) => x.cue === 'facility.ranch').map((x) => x.result), entry: FAC_ENTRY_LOG.slice() }));
   assert.deepEqual([a.npc, a.view, a.scene, a.entry], ['nick', 'closeup', '1', ['ranch']], JSON.stringify(a));
   assert.equal(a.app, 'hidden', '一言の間は通常の画面（一覧・コマンド）を出さない');
-  assert.match(a.txt, /今日も元気そうだな/);
+  assert.match(a.txt, /モンスターたちは今日も元気だぞ/);   // 2026-10-17：ニック 002 の書き起こし
   assert.ok(a.cue.includes('entry') && a.cue.filter((x) => x !== 'entry').length === 1, `入口の声は1回 ${a.cue}`);
   await H.finishTalk(pg);
   await pg.waitForSelector('.rn2 .rngrid');
@@ -124,8 +124,8 @@ test('D27-21：ライバル＝SE 1回・「よっ」なし・シートなしで�
   assert.deepEqual([t.npc, t.board], ['ryu', true]);
   await pg.waitForTimeout(1500);
   // 2026-10-15 N04：声は全停止＝会話の行で「やるじゃん」を頼むが鳴らない（出しどころの設計は残す）
-  assert.deepEqual(await pg.evaluate((n) => MMAUDIO.voiceLog().slice(n).map((x) => x.id + ':' + x.result), v0), ['ryu_praise:blocked']);
-  assert.equal(await pg.evaluate(() => MMAUDIO.playLog().filter((x) => x.kind === 'voice').length), 0);
+  { const vl = await pg.evaluate((n) => MMAUDIO.voiceLog().slice(n).filter((x) => !x.late), v0); assert.deepEqual(vl.map((x) => x.id), ['ryu_praise']); assert.ok(['play', 'wait'].includes(vl[0].result), vl[0].result); }   // 2026-10-17：有料版（リュウ 003）
+  await pg.waitForFunction(() => MMAUDIO.playLog().filter((x) => x.kind === 'voice' && x.name === 'ryu_003').length === 1, null, { timeout: 6000 });
   await H.finishTalk(pg); await pg.waitForTimeout(800);
   assert.deepEqual(await pg.evaluate(() => RYU_WIN_LOG), [1], '会話は1回');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);

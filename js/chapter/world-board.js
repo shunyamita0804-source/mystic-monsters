@@ -32,9 +32,15 @@
   const G = (n) => { try { return (0, eval)(n); } catch (e) { return undefined; } };   // index.html の let／const（S・LAB・P9_LOBBY_BG・bBusy）
   const gS = () => G('S');
   const doSave = () => { try { root.save(); } catch (e) {} };
-  const P8 = () => root.MMP8, WD = () => root.MMWD, C = () => root.MMRF_CORE;
+  // 2026-10-16：Chapter 2「潮風の海岸」も同じ画面（進行は js/chapter/world-driver-ch2.js の MMWD2）。今の個体（S.m）の Chapter で進行と表示を選ぶ
+  const chOf = (m) => { const mm = m || (gS() && gS().m); return mm && mm.raise && mm.raise.ch === 2 && root.MMWD2 ? 2 : 1; };
+  const A2 = './assets/fields/ch2/art_1016/';
+  const CHI = Object.freeze({ 1: { name: 'はじまりの草原', relay: './assets/fields/ch1a/intro/ch1_intro_overview.webp', gate: './assets/fields/ch1a/final/event/ch1_bg_15_event.webp' },
+    2: { name: '潮風の海岸', relay: A2 + 'chapter2_sea_medallion.webp', medal: true, plate: A2 + 'sea_zone_nameplate.webp', gate: null, gateArt: A2 + 'arena_approach_gate.webp', gateSea: A2 + 'open_sea_water.webp' } });
+  const chi = (m) => CHI[chOf(m)];
+  const P8 = () => root.MMP8, WD = (m) => (chOf(m) === 2 ? root.MMWD2 : root.MMWD), C = () => root.MMRF_CORE;
   // 2026-10-14 B／C 独立ルート：その個体のルートの道のデータ（m を省くと今の個体＝S.m。route の無い配置＝A＝MMRF_DATA）
-  const D = (m) => { const W = WD(), mm = m || (gS() && gS().m); return (W && W.dataOf && mm ? W.dataOf(mm) : null) || root.MMRF_DATA; };
+  const D = (m) => { const W = WD(m), mm = m || (gS() && gS().m); return (W && W.dataOf && mm ? W.dataOf(mm) : null) || root.MMRF_DATA; };
   const cfg = () => (root.MMCH && root.MMCH.getConfig ? root.MMCH.getConfig(1) : null) || {};
   const calm = () => !!(root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const feel = (n, d) => { try { if (root.MMFEEL) root.MMFEEL.emit(n, d); } catch (e) {} };
@@ -45,7 +51,7 @@
   const busySet = (v) => { try { bBusy = v; } catch (e) {} };
   const V = { el: null, world: null, key: null, intro: false, path: [] };
   const onBoard = () => !!(V.el && V.el.isConnected);
-  const fieldOf = (m) => WD().fieldOf(m);
+  const fieldOf = (m) => WD(m).fieldOf(m);
   function monSrc(m) { const sp = root.MMP10M && root.MMP10M.byId ? root.MMP10M.byId(m.sp) : null; return sp && sp.image ? sp.image.src : './assets/monsters/2p5d/solamo.webp'; }
 
   // ---- マスの見た目（全地点）。役割の決まった地点は専用の絵、通常の地点は配置の中身（能力・イベント・休憩・野生・宝箱） ----
@@ -74,7 +80,7 @@
     };
   }
   /** カメラ：今の地点と、この先の数地点（分かれ道では両方の道・行き止まりでは戻り道） */
-  function info(m, node) {
+  function info(m, node, ex) {
     const f = fieldOf(m), st = f.core, d = D(m), c = C(), at = node || st.node;
     const first = st.done || node ? null : c.options(d, st).map((e) => e.dst);
     // 2026-10-14 開発29（6）：歩いている途中（node を渡す）も、行き止まりから戻る区間の上なら戻る向きで先を見る（旧：途中は前向き＝行き止まりの側を向いてカメラが一瞬逆へ回っていた）
@@ -84,12 +90,20 @@
     const ahead = la(CAM.fit, CAM.fitPer), near = la(CAM.ahead, CAM.per);   // カメラが入れる地点（先の4・分かれ道の手前は各2）／明るく残す地点（先の5・各3）
     // 道筋＝直前の数地点・今の地点・先の地点（ここ以外のマスは薄く、地面は薄い幕＝選ばなかった道・遠くの道と見分ける）。表示だけ（ルート・セーブは変えない）
     const tr = (st.trail || []).slice(0, node ? Math.max(0, (st.trail || []).lastIndexOf(at)) : undefined).slice(-CAM.behind);
-    return { node: at, ahead, focus: [...new Set(tr.concat([at], near))], look: look(m), denOpen: !!st.randOpen };
+    return Object.assign({ node: at, ahead, focus: [...new Set(tr.concat([at], near))], look: look(m), denOpen: !!st.randOpen }, ex || {});   // ex＝{ moving }（歩いている途中）・{ pick }（分かれ道を選んだ）＝2026-10-16 QA C案カメラだけが読む
   }
   // 2026-10-12 試遊修正：カメラを近く（今の道で先の4地点・分かれ道の手前は両方の道を2地点ずつが入る倍率。明るく残す道筋は先の5地点・各3）・モンスター＝マスの幅の 1.2倍・道筋の強調
   // 2026-10-14 Chapter 1 A／B／C 高品質化：盤の絵＝正式13点の派生（MMRF_WORLD の SKIN 'hq1014'）。URL に ?boardSkin=1010（または window.MM_BOARD_SKIN='1010'）で従来の絵＝見比べ・戻すとき
   const skinKey = () => { let q = null; try { q = new URLSearchParams(root.location.search).get('boardSkin') || root.MM_BOARD_SKIN || null; } catch (e) {} return q === '1010' || q === 'old' ? null : 'hq1014'; };
   const CAM = { fit: 4, fitPer: 2, ahead: 5, per: 3, behind: 3, sMin: 2.2, sMax: 5.6, tilePx: [22, 84], monRatio: 1.2, zoomTau: 320 };
+  // 2026-10-16 QA（試作・未承認）：URL の ?qaCam= でカメラの方式を比べる。無い・old＝従来（後ろから追う・yawTau 600）／fixed＝向きを回さない（北が上）／
+  //  c＝C案（歩いている間は向き・倍率を変えない・止まったとき／分かれ道を選んだときだけ短く向きを変える）／ccut＝C案の向きの変え方を「少し暗くして切り替え」に。
+  //  qaCamDeg（向きを変えるずれの角度・既定 50）・qaCamMs（90° 回す時間・既定 600）で調整できる。通常の URL では何も変わらない
+  const QA_CAM = (() => { let q = null; try { q = new URLSearchParams(root.location.search); } catch (e) {} const v = q && q.get('qaCam'); const num = (k, d, lo, hi) => { const x = q && q.get(k) != null ? Number(q.get(k)) : NaN; return Number.isFinite(x) && x >= lo && x <= hi ? x : d; };
+    return ['fixed', 'c', 'ccut'].includes(v) ? { mode: v, deg: num('qaCamDeg', 50, 10, 180), ms: num('qaCamMs', 600, 120, 2000) } : null; })();
+  // 2026-10-16 QA（A）：URL の ?qaRoad=1|2 で道の見た目の比較案（js/qa/road-1016.js）。無い＝従来
+  const QA_ROAD = () => (root.MMQAR && root.MMQAR.mode) || null;   // js/qa/road-1016.js はこのファイルのあとに読む＝盤を作るときに見る
+  const camOpts = () => (!QA_CAM ? { heading: true, yawTau: 600 } : QA_CAM.mode === 'fixed' ? { heading: false } : { heading: true, yawTau: 600, camMode: QA_CAM.mode, camTurnDeg: QA_CAM.deg, camTurnMs: QA_CAM.ms });
   function viewRect() {
     const w = V.el && V.el.querySelector('.wbv'); if (!w) return null;
     const r = w.getBoundingClientRect(), h = V.el.querySelector('.chh'), dk = V.el.querySelector('#wb-ui .chsheet') || V.el.querySelector('#chdock');   // 分かれ道・バトルのシートが出ている間はシートの上まで（モンスターと道の先をシートより上に）
@@ -99,7 +113,7 @@
 
   // ---- 画面の部品 ----
   const COIN = '<img class="chh-ic" src="./assets/ui/gold/coin.png" alt="" aria-hidden="true" draggable="false">';
-  function placeName(id, m) { const W = WD(), d = D(m), mm = m || (gS() && gS().m), pl = W.placeOf ? W.placeOf(id, W.routeOf ? W.routeOf(mm) : 'A') : W.PLACE && W.PLACE[id]; return pl || (d.nodes[id] && d.nodes[id][2] === 'fixed_reward_dead_end' ? '宝の行き止まり' : ''); }
+  function placeName(id, m) { const W = WD(m), d = D(m), mm = m || (gS() && gS().m), pl = W.placeOf ? W.placeOf(id, W.routeOf ? W.routeOf(mm) : 'A') : W.PLACE && W.PLACE[id]; return pl || (d.nodes[id] && d.nodes[id][2] === 'fixed_reward_dead_end' ? '宝の行き止まり' : ''); }
   // 2026-10-12 開発21（試遊 No.003・004＝D-4）：進行ラインの位置＝GOAL までの最短の地点数（接続を GOAL から逆にたどる・条件は見ない＝道として通れる最短。1回だけ計算）。
   //  P＝(D0 − Dcur) ÷ D0（D0＝START から、Dcur＝今の地点から）を 0〜1 に収める。寄り道・行き止まりで GOAL から遠ざかれば戻る。経過ターンでも最高到達でもない＝「ゴールへの進み具合の目安」
   const DIST = new WeakMap();   // 道のデータ（ルート）ごとに1回
@@ -118,7 +132,7 @@
   function hudHtml(m) {
     const r = m.raise, fat = Math.round(r.fatigue || 0), lv = fat > 80 ? 'hi' : fat >= 50 ? 'mid' : 'lo', S = gS() || {};   // 2026-10-12 D-2：81 以上で赤（80 までは通常）
     const ph = P8().boardPhase(m), pl = placeName(r.node, m), pc = Math.round(progressAt(r.node, m) * 1000) / 10, fs = faceSrc(m);
-    return `<header class="chh wbh"><div class="chh-top"><div class="chh-l chh-prog"><div class="chh-cap"><small>Chapter <b>1</b> / ${root.MMP7 ? root.MMP7.CHAPTER_COUNT : 4}</small><b class="chh-nm">はじまりの草原</b><span class="chh-fd" id="chfd">${esc(pl)}</span></div>
+    return `<header class="chh wbh"><div class="chh-top"><div class="chh-l chh-prog"><div class="chh-cap"><small>Chapter <b>${chOf(m)}</b> / ${root.MMP7 ? root.MMP7.CHAPTER_COUNT : 4}</small><b class="chh-nm">${chi(m).name}</b><span class="chh-fd" id="chfd">${esc(pl)}</span></div>
       <div class="chh-line" role="img" aria-label="ゴールまでの進み具合 ${Math.round(pc)}%"><span class="chh-se">START</span><div class="chh-track"><i class="chh-fill" style="width:${pc}%"></i><span class="chh-face" id="chface" style="left:${pc}%">${fs ? `<img src="${esc(fs)}" alt="" decoding="async">` : ''}</span></div><span class="chh-se g">GOAL</span></div></div>
       <button class="p9mbtn chh-menu" onclick="p9Menu()" aria-label="メニュー">☰</button></div>
       <div class="chh-r chh-chips"><div class="chh-turn chip">Turn <b id="chturn">${Math.min(r.turnsUsed + (ph === 'roll' ? 1 : 0), r.turnLimit)}</b><small> / ${r.turnLimit}</small></div>
@@ -138,7 +152,7 @@
     // 2026-10-14 実機試遊㉜：操作の案内（START でサイコロ…）は最初の数ターンだけ。そのあとは直前の結果（能力・空腹・遭遇・分岐・宝）を残し、空腹・残りターンの注意を優先する
     if (ph === 'roll') {
       const left = Math.max(0, (r.turnLimit || 40) - (r.turnsUsed || 0)), fat = r.fatigue || 0;
-      def = r.turnsUsed === 0 ? '<b>はじまりの草原</b>　大会会場を目指そう。START でサイコロ（1〜6）を振る。' : tired ? 'お腹がすいて動けない…食べさせるか、休もう。'
+      def = r.turnsUsed === 0 ? `<b>${chi(m).name}</b>　大会会場を目指そう。` + 'START でサイコロ（1〜6）を振る。' : tired ? 'お腹がすいて動けない…食べさせるか、休もう。'
         : fat >= 80 ? `空腹 ${fat}。そろそろアイテムで食べさせるか、休もう。` : left <= 5 ? `のこり${left}ターン！ 大会会場を目指そう。`
         : V.lastMsg ? esc(V.lastMsg) : r.turnsUsed < 3 ? 'START でサイコロを振る。休むこともできる。' : `のこり${left}ターン。`;
     }
@@ -156,7 +170,7 @@
     const r = m.raise;
     if (ph === 'branch') {
       const f = fieldOf(m), d = D(m);
-      return `<div class="chsheet chbr wbbr"><h3>分かれ道</h3>${WD().branchOptions(m).map((o) => {
+      return `<div class="chsheet chbr wbbr"><h3>分かれ道</h3>${WD(m).branchOptions(m).map((o) => {
         const end = o.seg && d.segments[o.seg] ? d.segments[o.seg][1] : null, got = o.spur && end && f.claimed[end] != null;
         const desc = o.spur ? (got ? '取得済み（行き止まり。帰りもサイコロ）' : '行き止まりの先に宝。帰りもサイコロで戻る') : '';
         return `<button class="chroute${o.spur ? ' spur' : ''}" data-id="${esc(o.id)}" onclick="MMWB.pick('${esc(o.id)}')"><b>${esc(o.name)}</b>${desc ? `<small>${esc(desc)}</small>` : ''}</button>`; }).join('')}</div>`;
@@ -371,6 +385,8 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
 .wbw .wbrelay{position:absolute;inset:0;z-index:9;background:#0b1636;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity .56s ease;pointer-events:auto}
 .wbw .wbrelay.out{opacity:0;pointer-events:none}
 .wbw .wbrelay .wbr-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.wbw .wbrelay.medal{background:radial-gradient(circle at 50% 40%,#1d6f9e,#0b2c4f 70%)}.wbw .wbrelay.medal .wbr-img{inset:auto;left:50%;top:max(9%,calc(env(safe-area-inset-top,0px) + 48px));width:min(46vw,210px);height:auto;transform:translateX(-50%);object-fit:contain;filter:drop-shadow(0 6px 18px rgba(0,0,0,.45))}
+.wbw .wb-arr.gate.sea{background-color:#0b3a63}
 .wbw .wbrelay .wbr-t{position:absolute;left:12px;right:12px;top:50%;transform:translateY(calc(-50% - 4dvh));text-align:center;color:#fff6dc;pointer-events:none;padding:18px 0 16px;background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(6,12,30,.66),rgba(6,12,30,0) 76%);transition:opacity .36s ease}
 .wbw .wbrelay .wbr-t i{display:inline-block;font-style:normal;opacity:0;transform:translateX(-14px);filter:blur(2px)}
 .wbw .wbrelay.ton .wbr-t i{opacity:1;transform:none;filter:none;transition:opacity .42s ease var(--d),transform .42s cubic-bezier(.2,.8,.3,1) var(--d),filter .42s ease var(--d)}
@@ -382,6 +398,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
 .wbw .wbrelay .wbr-orn{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;font-size:18px;line-height:1;color:#e8c66e;text-shadow:0 0 6px rgba(255,214,120,.6),0 1px 2px rgba(0,0,0,.7);opacity:0;transition:opacity .6s ease .9s}
 .wbw .wbrelay.ton .wbr-orn{opacity:1}
 .wbw .wbrelay .wbr-orn .wbr-ln{width:min(26vw,104px)}
+.wbw .wbrelay .wbr-orn.plate img{display:block;width:min(80vw,340px);height:auto}   /* 2026-10-16 Chapter 2：正式の名札 sea_zone_nameplate を題字の下の飾りに */
 .wbw .wbrelay .wbr-load{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 28px);transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;background:rgba(8,15,34,.72);border:1px solid rgba(217,180,101,.6);color:#f3e7c4;font-size:12.5px;font-weight:700}
 .wbw .wbrelay .wbr-load i{width:12px;height:12px;border-radius:50%;border:2px solid rgba(243,231,196,.35);border-top-color:#e8c66e;animation:wbrspin .9s linear infinite}
 .wbw .wbrelay .wbr-err{display:none;position:relative;flex-direction:column;align-items:center;gap:8px;padding:14px 16px;margin:0 16px;border-radius:14px;background:rgba(8,15,34,.9);border:1.5px solid #d9b465;color:#fff;text-align:center}
@@ -394,25 +411,25 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     + (root.MMREACT ? Object.entries(root.MMREACT.MOTIONS).map(([k, v]) => `.wbv .rfw-mon.mrx-${k} .mon,.wbw .wbcard figure.mrx-${k} .mon{animation:mrx-${k} ${v.ms}ms cubic-bezier(.4,0,.3,1)}`).join('') : '');
     document.head.appendChild(s);
   }
-  function release() { sprStop(); if (V.intro || V.cover) busySet(false); if (V.cover) { V.cover.remove(); V.cover = null; } if (V.world) { try { V.world.destroy(); } catch (e) {} } V.world = null; V.el = null; V.key = null; V.intro = false; }
+  function release() { sprStopNow(); if (V.intro || V.cover) busySet(false); if (V.cover) { V.cover.remove(); V.cover = null; } if (V.world) { try { V.world.destroy(); } catch (e) {} } V.world = null; V.el = null; V.key = null; V.intro = false; }
   function ensureView(m) {
-    const f = fieldOf(m), vis = root.MMWD && root.MMWD.visualOf ? root.MMWD.visualOf(m) : 'A', rt = root.MMWD && root.MMWD.routeOf ? root.MMWD.routeOf(m) : 'A', key = `${m.uid}:${f.layoutSeed}:${vis}:${rt}`, app = $('#app');   // 2026-10-14 B／C：ルートも鍵に   // 2026-10-14 Chapter 1 B／C：景観のパターンも鍵に
+    const f = fieldOf(m), W = WD(m), vis = W && W.visualOf ? W.visualOf(m) : 'A', rt = W && W.routeOf ? W.routeOf(m) : 'A', key = `${chOf(m)}:${m.uid}:${f.layoutSeed}:${vis}:${rt}`, app = $('#app');   // 2026-10-14 B／C：ルートも鍵に   // 2026-10-14 Chapter 1 B／C：景観のパターンも鍵に
     if (V.el && V.key === key) { if (!V.el.isConnected) { app.innerHTML = ''; app.appendChild(V.el); } return false; }
     release(); css();
     app.innerHTML = '<div class="chfw wbw" id="wbw"><div class="wbv" id="wbv"></div><div class="chf-ui" id="wb-ui"></div></div>';
     V.el = $('#wbw'); if (V.key !== key) V.lastMsg = ''; V.key = key;
     if (root.MMRF_WORLD) V.world = root.MMRF_WORLD.create(V.el.querySelector('.wbv'), D(m), root.MMRF_PLAY, { view: viewRect, monSrc: monSrc(m), art: { base: ART, road: 'strip' },
-      focus: true, veil: false, xray: true, hideLm: ['START', 'LOWER_GATE', 'UPPER_GATE'], ahead: CAM.ahead,   // 2026-10-13 開発27（11・15）：開始地点の門・中央の門2か所（下門・上門）の飾りの絵は出さない（マス・道・判定はそのまま）
-      sMin: CAM.sMin, sMax: CAM.sMax, tilePx: CAM.tilePx, monRatio: CAM.monRatio, zoomTau: CAM.zoomTau, heading: true, yawTau: 600, visual: vis, skin: skinKey() });   // visual＝景観のパターン（A／B／C。配置の中の visualPattern）   // 2026-10-14 開発29（6）：後ろから追うカメラ（進む向きが画面の上）   // 2026-10-14 実機試遊 Q12：曲がり角・分かれ道で向きが急に回らないよう、回る速さを少しゆっくりに（yawTau 420 → 600ms）
+      focus: true, veil: false, xray: true, hideLm: chOf(m) === 1 ? ['START', 'LOWER_GATE', 'UPPER_GATE'] : null, ahead: CAM.ahead,   // 2026-10-13 開発27（11・15）：開始地点の門・中央の門2か所（下門・上門）の飾りの絵は出さない（マス・道・判定はそのまま）
+      sMin: CAM.sMin, sMax: CAM.sMax, tilePx: CAM.tilePx, monRatio: CAM.monRatio, zoomTau: CAM.zoomTau, ...camOpts(), ...(QA_ROAD() ? { qaRoad: QA_ROAD() } : {}), visual: vis, skin: skinKey() });   // visual＝景観のパターン（A／B／C。配置の中の visualPattern）   // 2026-10-14 開発29（6）：後ろから追うカメラ（進む向きが画面の上）   // 2026-10-14 実機試遊 Q12：曲がり角・分かれ道で向きが急に回らないよう、回る速さを少しゆっくりに（yawTau 420 → 600ms）
     V.el.querySelectorAll('.rfw-title').forEach((e) => e.remove());   // 2026-10-13 開発25 H：全景の地図の上に大きな題字を出さない（題字は中継カットの間だけ＝cover）。HUD の Chapter 表示は別（残す）
     sprSetup(m);
     return true;
   }
-  function paint(m, msg, node, instant) {
+  function paint(m, msg, node, instant, ex) {
     const ui = $('#wb-ui'); if (!ui) return;
     const ph = P8().boardPhase(m);
     ui.innerHTML = ph === 'goal' ? '' : hudHtml(m) + sheetHtml(m, ph) + deckHtml(m, ph, msg);
-    if (V.world) V.world.update(info(m, node), instant);
+    if (V.world) V.world.update(info(m, node, ex), instant);
   }
   function board(msg) {
     const S = gS(), m = S && S.m; if (!active(m)) return false;
@@ -445,17 +462,18 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
   //  順＝導入の絵と題字 → 題字を消す（outMs）→ 地図の全景（クロスフェード）→ START へ寄る。地図の上には題字を残さない（全景の題字 .rfw-title は ensureView で外す）
   //  視差を減らす設定では動かさない（はじめから全部出す）。題字が出そろうまで（min）は覆いを外さない
   const TITLE = Object.freeze({ lead: 260, gap: 55, nameGap: 95, inMs: 420, hold: 650, outMs: 360, waitMs: 1500 });
-  const TITLE_CH = 'CHAPTER 1', TITLE_NAME = 'はじまりの草原';
-  const titleDone = () => TITLE.lead + TITLE_CH.length * TITLE.gap + 140 + TITLE_NAME.length * TITLE.nameGap + TITLE.inMs + TITLE.hold;
-  function titleHtml() {
+  const TITLE_CHOF = (m) => 'CHAPTER ' + chOf(m), TITLE_NAMEOF = (m) => chi(m).name;
+  const titleDone = (m) => TITLE.lead + TITLE_CHOF(m).length * TITLE.gap + 140 + TITLE_NAMEOF(m).length * TITLE.nameGap + TITLE.inMs + TITLE.hold;
+  function titleHtml(m) {
+    const TITLE_CH = TITLE_CHOF(m), TITLE_NAME = TITLE_NAMEOF(m);
     const ch = (t, gap, base) => [...t].map((c, i) => `<i style="--d:${base + i * gap}ms">${c === ' ' ? '&nbsp;' : c}</i>`).join('');
     const a = ch(TITLE_CH, TITLE.gap, TITLE.lead), b = ch(TITLE_NAME, TITLE.nameGap, TITLE.lead + TITLE_CH.length * TITLE.gap + 140);
-    return `<div class="wbr-t" aria-label="CHAPTER 1 はじまりの草原"><small aria-hidden="true"><span class="wbr-ln"></span>${a}<span class="wbr-ln r"></span></small><b aria-hidden="true">${b}</b><span class="wbr-orn" aria-hidden="true"><span class="wbr-ln"></span>⚜<span class="wbr-ln r"></span></span></div>`;
+    return `<div class="wbr-t" aria-label="${TITLE_CH} ${TITLE_NAME}"><small aria-hidden="true"><span class="wbr-ln"></span>${a}<span class="wbr-ln r"></span></small><b aria-hidden="true">${b}</b>${chi(m).plate ? `<span class="wbr-orn plate" aria-hidden="true"><img src="${chi(m).plate}" alt="" draggable="false" decoding="async"></span>` : '<span class="wbr-orn" aria-hidden="true"><span class="wbr-ln"></span>⚜<span class="wbr-ln r"></span></span>'}</div>`;
   }
   function cover(m, withIntro) {
     if (V.cover) V.cover.remove();
-    const el = document.createElement('div'); el.className = 'wbrelay' + (withIntro ? ' art' : ''); el.setAttribute('role', 'status');
-    el.innerHTML = (withIntro ? `<img class="wbr-img" src="${RELAY.src}" alt="" draggable="false" decoding="async">${titleHtml()}` : '')
+    const el = document.createElement('div'); el.className = 'wbrelay' + (withIntro ? ' art' : '') + (chi(m).medal ? ' medal' : ''); el.setAttribute('role', 'status');
+    el.innerHTML = (withIntro ? `<img class="wbr-img" src="${chi(m).relay}" alt="" draggable="false" decoding="async">${titleHtml(m)}` : '')
       + '<div class="wbr-load"><i aria-hidden="true"></i><span>読み込み中…</span></div><div class="wbr-err"><p>読み込みに時間がかかっています。</p><button class="p9btn" data-act="retry">もう一度読み込む</button><button class="p9btn2" data-act="back">タイトルへ戻る</button></div>';
     V.el.appendChild(el); V.cover = el; busySet(true); paint(m);   // 覆っている間は START・コマンドを押せない形で描き直す
     const calm = !!(root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -468,7 +486,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
       if (!img || (img.complete && img.naturalWidth)) on();
       else { img.addEventListener('load', () => { (img.decode ? img.decode().catch(() => {}) : Promise.resolve()).then(on); }, { once: true }); img.addEventListener('error', on, { once: true }); }
     });
-    const minMs = withIntro ? (calm ? RELAY.min : Math.max(RELAY.min, titleDone())) : 0;
+    const minMs = withIntro ? (calm ? RELAY.min : Math.max(RELAY.min, titleDone(m))) : 0;
     const world = V.world, slow = setTimeout(() => { if (V.cover === el) el.classList.add('slow'); }, RELAY.slow);
     el.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('button[data-act]'); if (!b || V.cover !== el) return;
       clearTimeout(slow); V.cover = null; busySet(false);
@@ -486,10 +504,12 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
       }, Math.max(0, minMs - (Date.now() - tStart)));
     });
   }
+  /** 2026-10-17：モンスターの鳴き声（MMAUDIO.cry）。ms 後・when() が真のときだけ。NPC の声が優先・全体の間隔は MMAUDIO 側 */
+  function monCry(sp, kind, ms, when, o) { try { const A = root.MMAUDIO; if (!A || !A.cry || sp == null) return; if (A.cryWarm) A.cryWarm(sp, [kind]); setTimeout(() => { try { if (when && !when()) return; A.cry(sp, kind, o || {}); } catch (e) {} }, ms || 0); } catch (e) {} }
   function intro(m) {
     const f = fieldOf(m); f.introSeen = true; doSave();   // 先に「見た」を保存（途中で再読み込みしても二度出ない）
     V.intro = true; V.el.classList.add('wb-intro'); busySet(true); paint(m);
-    V.world.intro(() => { V.intro = false; busySet(false); if (V.el) V.el.classList.remove('wb-intro'); feel('chapter.start'); if (onBoard() && active(m)) { paint(m); storyAt(m, 'start').then((shown) => { if (shown && onBoard()) paint(m); }); } });
+    V.world.intro(() => { V.intro = false; busySet(false); if (V.el) V.el.classList.remove('wb-intro'); feel('chapter.start'); if (m) monCry(m.sp, 'normal', 1300, () => onBoard() && active(m));   /* 2026-10-17 C：Chapter の開始の俯瞰のあと＝連れている子の正式ボイス（開始の SE のあと・START を押す前。再開・再読み込みでは出ない＝introSeen） */ if (onBoard() && active(m)) { paint(m); storyAt(m, 'start').then((shown) => { if (shown && onBoard()) paint(m); }); } });
   }
 
   // ---- 歩行アニメ（ch1a.js の monsterSprites＝その場歩行の絵。全コマを重ねて置き、見せるコマだけ切り替える＝src を差し替えない）。
@@ -530,13 +550,17 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     return { set, flip, lat };
   }
   function sprSetup(m) {
-    sprStop(); SPR.sets = {}; SPR.cur = null; SPR.flip = false; SPR.lat = false; SPR.frame = '';
+    sprStopNow(); SPR.sets = {}; SPR.cur = null; SPR.flip = false; SPR.lat = false; SPR.frame = '';
     const el = monEl(); if (!el) return;
     const st = el.querySelector('img'); if (!st) return;
     st.classList.add('st');
     const box = document.createElement('span'); box.className = 'mon'; el.insertBefore(box, st); box.appendChild(st);
     const P = root.MMP10M, key = P && P.keyOf ? P.keyOf(m.sp) : null, spr = key && cfg().monsterSprites ? cfg().monsterSprites[key] : null;
     SPR.sets = dirSets(spr); SPR.stand = (spr && spr.standFace) || 'none';
+    // 2026-10-16 QA（C）：URL の ?qaWalk=soramo5 のときだけ、ソラモを 5方向×4コマ（左右反転で 8方向）にする（js/qa/walk5-1016.js）。ほかの種族・通常の URL は従来のまま
+    //  2026-10-17：?qaWalk=1017＝7体の新歩行（5方向×4コマ・同じ 8方向の仕組み）
+    SPR.qa = !!(root.MMQAW && root.MMQAW.active && (root.MMQAW.has ? root.MMQAW.has(key) : key === root.MMQAW.species)); SPR.sector = null; SPR.turn = null; SPR.tok = (SPR.tok || 0) + 1;
+    if (SPR.qa) { SPR.sets = root.MMQAW.sets(key); SPR.sector = 4; el.dataset.qawalk = root.MMQAW.new7 ? '1017' : '1'; }
     // 2026-10-11：歩行のコマの高さ・足は「静止の立ち絵が実際に見えている高さ」に合わせる（横に広い立ち絵＝ガウルは箱より低く、上に寄せて置かれる）。--sth＝立ち絵の高さ ÷ 箱の高さ
     const fit = () => { const bh = box.offsetHeight, sh = st.offsetHeight; if (bh > 0 && sh > 0) box.style.setProperty('--sth', String(Math.min(1, sh / bh))); };
     if (st.complete) fit(); else st.addEventListener('load', fit, { once: true });
@@ -552,6 +576,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     next.classList.add('on'); SPR.frame = id;
   }
   function sprTick(now) {
+    if (SPR.qa && SPR.turn && now >= SPR.turn.until) qaTurnNext(now);
     const w = SPR.on && SPR.sets[SPR.cur]; if (!w) { SPR.raf = 0; return; }
     const dt = Math.min(100, now - (SPR.last || now)); SPR.last = now;
     SPR.phase += (dt / 1000) * w.fps; sprShow(SPR.cur, Math.floor(SPR.phase) % w.frames.length);
@@ -572,6 +597,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     const el = monEl(), d = D(), a = d.nodes[from], b = d.nodes[to]; if (!el || !a || !b || calm()) return;
     // 2026-10-14 開発29（6）：カメラが進む向きへ回っている＝画面の上での向きで選ぶ（世界の差をカメラの回転 yaw で回す）＝前へ進む1歩は後ろ姿の歩行（back）
     const yw = V.world && V.world.yawGoal ? V.world.yawGoal() * Math.PI / 180 : 0, ddx = b[0] - a[0], ddy = b[1] - a[1];
+    if (SPR.qa) return qaWalk(el, ddx * Math.cos(yw) - ddy * Math.sin(yw), ddx * Math.sin(yw) + ddy * Math.cos(yw));
     const r = pickDir(ddx * Math.cos(yw) - ddy * Math.sin(yw), ddx * Math.sin(yw) + ddy * Math.cos(yw), SPR.sets, { set: SPR.cur, flip: SPR.flip, lat: SPR.lat }, SPR.stand), w = r.set ? SPR.sets[r.set] : null;
     if (r.set !== SPR.cur) SPR.phase = 0;
     SPR.cur = r.set; SPR.flip = r.flip; SPR.lat = r.lat;
@@ -580,7 +606,30 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     if (w) { sprShow(r.set, Math.floor(SPR.phase) % w.frames.length); if (!SPR.on) { SPR.on = true; SPR.last = 0; if (!SPR.raf) SPR.raf = requestAnimationFrame(sprTick); } }
     else SPR.on = false;
   }
-  function sprStop() {
+  // ---- 2026-10-16 QA（C）：8方向の歩行。向きを変えるときは近いほうの回り方で間の向きを1つずつ通る（MMQAW.turnPath）・歩く位相は続ける ----
+  function qaFace(el, s) { const L = root.MMQAW.look(s); SPR.sector = L.sector; SPR.cur = L.set; SPR.flip = L.flip; el.classList.toggle('wk-flip', L.flip); el.dataset.dir = L.set; el.dataset.sector = String(L.sector); sprShow(L.set, Math.floor(SPR.phase) % SPR.sets[L.set].frames.length); }
+  function qaTurnNext(now) { const el = monEl(), t = SPR.turn; if (!el || !t) { SPR.turn = null; return; } const s = t.q.shift(); if (s != null) qaFace(el, s); SPR.turn = t.q.length ? { q: t.q, until: now + root.MMQAW.TURN_MS } : null; }
+  /** 間の向き。180° のときは前回の 180° と逆の回り方（来た向きへ戻るように回る） */
+  function qaPath(from, to) { const Q = root.MMQAW, half = Math.abs(Q.norm(to - from)) === 4, p = Q.turnPath(from, to, half && SPR.rot ? -SPR.rot : 1); if (half) SPR.rot = Q.rotOf(p, from); return p; }
+  function qaWalk(el, dx, dy) {
+    const Q = root.MMQAW, r = Q.pick8(dx, dy * TILT_COS, SPR.sector); if (!r) return;
+    const path = SPR.sector == null ? [] : qaPath(SPR.sector, r.sector);
+    el.classList.remove('wk-idle', 'bob', 'st-flip'); el.classList.add('wk-on');
+    if (path.length && Q.TURN_MS > 0) { SPR.turn = { q: path.concat([r.sector]), until: 0 }; qaTurnNext(root.performance.now()); }
+    else { SPR.turn = null; qaFace(el, r.sector); }
+    if (!SPR.on) { SPR.on = true; SPR.last = 0; if (!SPR.raf) SPR.raf = requestAnimationFrame(sprTick); }
+  }
+  /** 止まったら：正面（手前）へ、間の向きを1つずつ通って向き直る（その場で体を回す）。正面なら従来どおり */
+  function qaStopTurn() {
+    const el = monEl(), Q = root.MMQAW; if (!el || SPR.sector == null || SPR.sector === 4 || calm()) return false;
+    SPR.on = false; if (SPR.raf && root.cancelAnimationFrame) cancelAnimationFrame(SPR.raf); SPR.raf = 0; SPR.turn = null;
+    const tok = ++SPR.tok, seq = qaPath(SPR.sector, 4); let i = 0; SPR.phase = 0;
+    const step = () => { if (tok !== SPR.tok) return; const e = monEl(); if (!e) return; if (i < seq.length) { qaFace(e, seq[i++]); setTimeout(step, Math.max(40, Q.TURN_MS)); } else { SPR.sector = 4; sprStopNow(); } };
+    step(); return true;
+  }
+  function sprStop() { if (SPR.qa && qaStopTurn()) return; sprStopNow(); }
+  function sprStopNow() {
+    if (SPR.qa) { SPR.tok = (SPR.tok || 0) + 1; SPR.turn = null; SPR.sector = 4; const e = monEl(); if (e) e.dataset.sector = '4'; }   // 止まった姿＝正面（記録の向きもそろえる）
     SPR.on = false; if (SPR.raf && root.cancelAnimationFrame) cancelAnimationFrame(SPR.raf); SPR.raf = 0; SPR.phase = 0; SPR.last = 0; SPR.cur = null; SPR.flip = false; SPR.lat = false;
     const el = monEl(); if (el) { el.classList.remove('wk-on', 'bob', 'wk-flip', 'st-flip'); el.dataset.dir = ''; }
     sprIdle();
@@ -589,12 +638,12 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
 
   // ---- フィナの節目の一言・チュートリアル（MMWD.storyEvents）。見たら記録してから出す（途中で閉じても二度出ない） ----
   async function storyAt(m, trigger, ctx = {}) {
-    if (root.MM_QA_NO_STORY || !root.MMNPC || !onBoard() || !WD().storyEvents) return false;
+    if (root.MM_QA_NO_STORY || !root.MMNPC || !onBoard() || !WD(m).storyEvents) return false;
     const S = gS(); if (!S) return false;
     const flags = (S.npcFlags = isObjv(S.npcFlags) ? S.npcFlags : {});
-    const P = root.MMP10M, ev = WD().storyEvents(m, trigger, { ...ctx, flags, path: V.path, species: P && P.keyOf ? P.keyOf(m.sp) : null })[0];
+    const P = root.MMP10M, ev = WD(m).storyEvents(m, trigger, { ...ctx, flags, path: V.path, species: P && P.keyOf ? P.keyOf(m.sp) : null })[0];
     if (!ev) return false;
-    WD().markStory(m, ev.id, flags); doSave();
+    WD(m).markStory(m, ev.id, flags); doSave();
     const was = busyGet(); busySet(true);
     try {
       const lines = (ev.lines || []).map((l) => ({ npc: l.speaker || 'fina', expression: l.expression || 'normal', text: l.text, ...(l.voice ? { voice: l.voice } : {}) }));   // 2026-10-13：行の声
@@ -683,7 +732,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
         if (!onBoard()) break;
         const before = m.raise.node, s = P8().step(S, m); doSave();
         if (m.raise.node !== before) V.path.push(m.raise.node);
-        if (m.raise.node !== before && V.world) { V.world.update(info(m, m.raise.node)); sprWalk(before, m.raise.node); progSet(m.raise.node); const c = $('#chfd'); if (c) c.textContent = placeName(m.raise.node); await wait(calm() ? 60 : STEP_MS); }
+        if (m.raise.node !== before && V.world) { V.world.update(info(m, m.raise.node, { moving: true })); sprWalk(before, m.raise.node); progSet(m.raise.node); const c = $('#chfd'); if (c) c.textContent = placeName(m.raise.node); await wait(calm() ? 60 : STEP_MS); }
         if (s && s.stage === 'branch') break;
       }
     } finally { sprStop(); busySet(false); }
@@ -697,7 +746,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     const before = m.raise.node, r = P8().chooseBranch(S, m, id); doSave(); if (!r.ok) return board();
     if (m.raise.node !== before) { V.path.push(m.raise.node); sprWalk(before, m.raise.node); }
     feel('branch.select', { id });
-    paint(m, '', m.raise.node); lock(); walk();
+    paint(m, '', m.raise.node, false, { pick: true }); lock(); walk();
   }
   async function rest() {
     const S = gS(), m = S && S.m; if (!active(m) || busyGet() || V.intro || !P8().canRest(m)) return;
@@ -809,7 +858,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
       d.addEventListener('click', close); setTimeout(close, calm() ? Math.min(ms, 900) : ms);
     });
   }
-  const evDef = (id) => ((cfg().eventPool) || []).find((e) => e.id === id) || null;
+  const evDef = (id) => { let c = null; try { c = root.MMCH && root.MMCH.getConfig(chOf()); } catch (e) {} return ((c && c.eventPool) || cfg().eventPool || []).find((e) => e.id === id) || null; };   // 2026-10-16：その Chapter の出来事（Chapter 2＝ch2a の eventPool）
   async function talkLines(lines) {
     if (!lines || !lines.length || root.MM_QA_NO_STORY || !root.MMNPC || !onBoard()) return;
     const L = lines.map((l) => (root.MMEVT ? root.MMEVT.lineOf(l) : { npc: 'fina', expression: l.expression || 'normal', text: l.text }));
@@ -830,12 +879,13 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     let foe = null;
     // 2026-10-14 実機試遊㉔：影は、このあとバトルに出る相手と同じ正式の立ち絵（バトルの待機立ち絵 assets/battle/idle/・相手側と同じ向き＝MMARENA.flipOf(1, 種族)）から作る＝形・向きがそろう。
     //  （VS の勝負絵は翼や光が四角い端で切れていて、影にすると四角い塊になる＝使わない）。待機立ち絵の無い種族は正式の 2.5D 立ち絵
-    if (root.MMP10M && root.MMCH && root.MMCH.foeSpecies && typeof root.battleFoeCount === 'function') { const n = root.MMCH.foeSpecies(m, root.battleFoeCount()), sp = root.MMP10M.byId(n), A = root.MMARENA, idle = A && A.idleSrc ? A.idleSrc(n) : null; if (sp && sp.image) foe = { src: idle || sp.image.src, name: sp.name, fl: !!(idle && A.flipOf && A.flipOf(1, n)) }; }
+    if (root.MMP10M && root.MMCH && root.MMCH.foeSpecies && typeof root.battleFoeCount === 'function') { const n = root.MMCH.foeSpecies(m, root.battleFoeCount()), sp = root.MMP10M.byId(n), A = root.MMARENA, idle = A && A.idleSrc ? A.idleSrc(n) : null; if (sp && sp.image) foe = { src: idle || sp.image.src, name: sp.name, sp: n, fl: !!(idle && A.flipOf && A.flipOf(1, n)) }; }
     const sil = bt === 'wild' && !!foe, rare = bt === 'rare';
     ui.insertAdjacentHTML('beforeend', `<div class="chf-enc chf-enc2 wbx wbx-w${rare ? ' rare' : ''}${sil ? ' sil' : ''}" role="status" aria-label="${esc(text)}"><i class="wbx-veil"></i>
       <div class="wbx-stage${foe && foe.fl ? ' fl' : ''}"><i class="wbx-glow"></i>${foe ? `<img class="wbx-mon" src="${esc(foe.src)}" alt="${sil ? '？？？' : esc(foe.name)}" draggable="false">` : ''}${sil ? `<i class="wbx-sil" aria-hidden="true" style="-webkit-mask-image:url('${esc(foe.src)}');mask-image:url('${esc(foe.src)}')"></i>` : ''}</div>
       <div class="wbx-card"><small>${esc(text)}</small><div class="wbx-nm"><b>${sil || !foe ? '？？？' : esc(foe.name)}</b>${rare ? '<em>★ レア</em>' : ''}</div></div></div>`);
     const el = ui.querySelector('.wbx-w:last-child'); feel(cue, { battleType: bt });
+    if (foe && foe.sp != null) monCry(foe.sp, 'normal', 800, () => !!(el && el.isConnected));   // 2026-10-17 D：野生・レアの相手の正式ボイス（遭遇の SE のあと・バトルに入る前）
     await wait(1650);
     if (el) { el.classList.add('out'); await wait(240); el.remove(); }
   }
@@ -925,8 +975,9 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
   const vcue = (name) => { try { if (!root.MM_QA_NO_STORY && root.MMVOICE) root.MMVOICE.cue(name); } catch (e) {} };
   const DIE_TEXT = {
     Q: (e) => `運命の分かれ道：出目 ${e.die}（${e.die % 2 ? '奇数 → ← 左の道' : '偶数 → 右の道 →'}）`,   // 2026-10-15 N07：アイテムと紛らわしい「運命のサイコロ」から改名
-    CHALLENGE: (e) => `封印の遺跡門の挑戦：${e.die} → ${e.die >= 5 ? '成功！ 遺跡の道へ' : '失敗… 遠回りの道へ'}`,
+    CHALLENGE: (e) => (chOf() === 2 ? `${chalName()}の挑戦：${e.die} → ${e.die >= 5 ? '成功！ 近道へ' : '失敗… 遠回りの道へ'}` : `封印の遺跡門の挑戦：${e.die} → ${e.die >= 5 ? '成功！ 遺跡の道へ' : '失敗… 遠回りの道へ'}`),
   };
+  const chalName = () => placeName('CHALLENGE') || '封印の門';   // 2026-10-16 Chapter 2：特殊挑戦の場所の名前は道のデータ（西の海門・封印の扉・封印の間）
   /** 2026-10-13 開発27（18）：イベントのサイコロ（Q の左右・特殊挑戦）は、案内を出してプレイヤーが「サイコロを振る」を押してから1回だけ振る。
    *  出目・判定（奇数／偶数・5／6 で成功）は resolveLanding で決まって保存済み＝ここは見せ方だけ。自動テストの一言なし（MM_QA_NO_STORY）では待たない */
   const DIE_ASK = {
@@ -934,7 +985,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     CHALLENGE: { h: '封印の遺跡門の挑戦', p: 'サイコロを振って、5か6が出れば成功！ 遺跡の道へ進める。それ以外は遠回りの道へ。' },
   };
   function dieAsk(e) {
-    const ui = $('#wb-ui'), A = DIE_ASK[e.kind] || { h: 'イベントのサイコロ', p: 'サイコロを振ろう。' };
+    const ui = $('#wb-ui'), A = (e.kind === 'CHALLENGE' && chOf() === 2 ? { h: `${chalName()}の挑戦`, p: 'サイコロを振って、5か6が出れば成功！ 近道へ進める。それ以外は遠回りの道へ。' } : DIE_ASK[e.kind]) || { h: 'イベントのサイコロ', p: 'サイコロを振ろう。' };
     if (!ui || root.MM_QA_NO_STORY) return Promise.resolve();
     const b0 = $('#bmsg'); if (b0) b0.textContent = A.h;
     return new Promise((done) => {
@@ -1050,7 +1101,6 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     const S = gS() || {}, nm = root.MMP11P ? root.MMP11P.sanitize(S.playerName) : (S.playerName || 'アルト'), A = cfg().arrival || {};
     return (A.talk || []).map((l) => ({ ...l, text: String(l.text || '').split('{name}').join(nm) }));
   }
-  const GATE_BG = './assets/fields/ch1a/final/event/ch1_bg_15_event.webp';
   const playerName = () => { const S = gS() || {}; return root.MMP11P ? root.MMP11P.sanitize(S.playerName) : (S.playerName || 'アルト'); };
   // 2026-10-14 実機試遊⑮：到着の会話は2つに分ける（正門前＝着いた喜び・ロビー＝大会の説明）。本文は【暫定】
   const ARRIVE_GATE = Object.freeze([{ npc: 'fina', view: 'closeup', expression: 'happy', text: 'ようやく着いたね、{name}さん！' }, { npc: 'fina', view: 'closeup', expression: 'smile', text: 'ここが公式大会の会場だよ。さあ、中へ入ろう！' }]);
@@ -1068,7 +1118,8 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
       if (!fresh && !calm()) await wait(500);
       // 2026-10-14 実機試遊⑮：まず会場の正門前（白い大門と塔＝ch1_bg_15_event）を全画面に → フィナの顔を大きく「ようやく着いたね！」→ 扉の中へ（ロビーへクロスフェード）
       //  → ロビーで大会の説明（ランク E〜S）→ 大会受付。見た記録（arrivalSeen）は従来どおり最後に1回＝途中で閉じたら次も正門前から（二重には出ない）
-      V.el.insertAdjacentHTML('beforeend', `<div class="wb-arr gate" id="wbgate" style="background-image:url(${GATE_BG})"></div>`);
+      { const CI = chi(m), bg = CI.gate ? `url(${CI.gate})` : `url(${CI.gateArt}) center 62%/min(88vw,420px) auto no-repeat,linear-gradient(180deg,#9fd8f2 0%,#e8f5fb 46%,rgba(0,0,0,0) 47%),url(${CI.gateSea}) 0 0/180px 180px`;   // Chapter 2：会場への門（arena_approach_gate）を空と海の上に
+        V.el.insertAdjacentHTML('beforeend', `<div class="wb-arr gate${CI.gate ? '' : ' sea'}" id="wbgate" style="background:${bg}"></div>`); }
       const gate = $('#wbgate'); void gate.offsetWidth; gate.classList.add('on'); feel('tournament.arrive');
       await wait(calm() ? 0 : 950);
       const talkOk = root.MMNPC && !root.MM_QA_NO_ARRIVAL;
@@ -1081,6 +1132,6 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     const u2 = $('#wb-ui'); if (u2 && onBoard() && active(m) && P8().boardPhase(m) === 'goal') u2.innerHTML = receptionHtml(m);
   }
 
-  const active = (m) => !!(WD() && WD().active(m));
+  const active = (m) => !!(WD(m) && WD(m).active(m));
   root.MMWB = Object.freeze({ STEP_MS, skinKey, pickDir, dirSets, progressAt, active, board, release, roll, pick, rest, open, items, itemsClose, useItem, state: () => ({ key: V.key, intro: V.intro, world: V.world ? V.world.state() : null }), world: () => V.world });
 })(typeof window !== 'undefined' ? window : globalThis);

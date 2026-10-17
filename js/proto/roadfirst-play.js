@@ -101,7 +101,8 @@
     const calmSegs = (TUNING.calmByRoute && TUNING.calmByRoute[opts.route]) || TUNING.calmSegments, SB = opts.bias === true ? TUNING.statBias : null;   // 偏りは本編（world-driver の newField が bias:true）だけ＝試作の配置は従来どおり
     // 2026-10-15 Chapter 2 A／B／C 設計案の試作：道のデータが自分の「落ち着いた区間」「能力の道の偏り」「レアの候補」を持つときはそれを使う（Chapter 1 のデータには無い＝従来どおり）
     const CALM = D.calm || calmSegs, SBX = D.statLanes ? { weight: TUNING.statBias.weight, lanes: D.statLanes } : SB, RZ = D.rareZones || TUNING.rare.zones;
-    const evs = pool().filter(usableEvent), rec = pool().filter(isRecovery);
+    const PL = Array.isArray(opts.pool) ? opts.pool : pool();   // 2026-10-16：本編の Chapter 2 は Chapter 2 の出来事（js/chapter/configs/ch2a.js の eventPool）。無ければ従来（Chapter 1）
+    const evs = PL.filter(usableEvent), rec = PL.filter(isRecovery);
     let bag = [];
     const nextEvent = () => { if (!bag.length) { bag = evs.map((e) => e.id); for (let i = bag.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [bag[i], bag[j]] = [bag[j], bag[i]]; } } return bag.pop(); };
     for (const [sid, s] of Object.entries(D.segments)) {

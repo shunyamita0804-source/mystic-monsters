@@ -6,7 +6,7 @@
 //         ダメージの数字・技名・モンスターは見える。技が終われば戻る（最後に残らない）。決着（WIN!／LOSE）では消えたまま残らない
 //  D24-B3：観客の声＝命中＝歓声・ルーレットの MISS＝落胆・技をかわされた＝ブーイングが別々に・1行動1回・相手の攻撃にも。実際に再生を始めた（AudioContext running・OGG の1本だけ）
 //  D24-B4：野生・ライバルの練習試合（野外）は観客の声なし・1秒の版／控えめ／なしの切り替え・音量
-//  D24-B5：施設のボイス（市場＝カレン・牧場＝ニック・ベースキャンプ＝ダン・アイテム屋＝ベルナ）は訪問1回に1回・研究所は鳴らない・OFF／ミュートで鳴らない・
+//  D24-B5：施設のボイス（市場＝カレン・牧場＝ニック・ベースキャンプ＝ダン・アイテム屋＝ベルナ・研究所＝エリオット）は訪問1回に1回・OFF／ミュートで鳴らない・（2026-10-17 有料版）
 //         会話の行の声（フィナ）は会話を閉じたら止まる・ボイスの音源が 404 でも会話・進行は止まらない
 //  D24-B6：「バトル画面：旧」で従来の見た目（数値の板）に戻る・設定はセーブ（mr4v6）を変えない・再読み込みでも保たれる
 //  D24-B7：version.json の版が違えば1回だけ読み込み直す（同じ版へは繰り返さない）・同じなら何もしない
@@ -182,38 +182,41 @@ test('D24-B4：練習試合（野外）は観客なし・1秒／控えめ／な�
   assert.ok((await pg.evaluate(() => MMAUDIO.playLog().filter((x) => /^CROWD/.test(x.name)).length)) === n);
 });
 
-test('D24-B5（2026-10-15 N04 で書き直し）：施設の入口で声を頼むのは訪問1回に1回（出しどころの設計は残す）・実際には1本も鳴らない・設定 on／off・ミュートでも同じ・会話は止まらない・声のファイルは取りに行かない', { skip: SKIP, timeout: 180000 }, async () => {
+test('D24-B5（2026-10-17 有料版ボイスで書き直し）：施設の入口の声は訪問1回に1回・実際に鳴る・OFF／ミュートでは鳴らない（設定は残す）・会話を閉じたら声は止まる・設定の画面にボイスの切り替え', { skip: SKIP, timeout: 180000 }, async () => {
   const p = await openPage({ size: H.SIZES.base }); const pg = p.page;
-  const asked = []; pg.on('request', (r) => { if (/\/assets\/audio\/voice\//.test(r.url())) asked.push(r.url()); });
   await H.newGame(pg, 'テスト');
   await pg.evaluate(() => { const m = mk(0); m.name = 'テスト'; MMP7.ensureProg(m); S.m = m; save(); lobby(); });
   await pg.mouse.click(4, 300); await pg.waitForTimeout(400);
-  const visit = async (fn) => { const before = await pg.evaluate(() => MMAUDIO.voiceLog().length); await pg.evaluate(fn); await pg.waitForTimeout(650); return pg.evaluate((b) => { const p = MMAUDIO.playLog().filter((x) => x.kind === 'voice'); if (p.length) throw new Error('NPC の声が鳴った'); return MMAUDIO.voiceLog().slice(b).map((x) => x.id + ':' + x.result); }, before); };
-  assert.deepEqual(await visit(() => market()), ['karen_welcome:blocked'], '市場＝カレン（頼むが鳴らない）');
+  const OK = (r) => r === 'play' || r === 'wait';
+  const visit = async (fn) => { const before = await pg.evaluate(() => MMAUDIO.voiceLog().length); await pg.evaluate(fn); await pg.waitForTimeout(650); return pg.evaluate((b) => MMAUDIO.voiceLog().slice(b).filter((x) => x.result !== 'play' || !x.late).map((x) => [x.id, x.result]), before); };
+  const one = async (fn, id, msg) => { const v = await visit(fn); assert.equal(v.length, 1, msg + JSON.stringify(v)); assert.equal(v[0][0], id, msg); assert.ok(OK(v[0][1]), msg + v[0][1]); };
+  await one(() => market(), 'karen_welcome', '市場＝カレン');
   assert.deepEqual(await visit(() => market()), [], '市場の中で描き直しても繰り返さない');
   assert.deepEqual(await visit(() => lobby()), []);
-  assert.deepEqual(await visit(() => farm()), ['nick_hello:blocked'], '牧場＝ニック'); assert.deepEqual(await visit(() => farm('', 'e')), [], 'タブを替えても繰り返さない');
+  await one(() => farm(), 'nick_hello', '牧場＝ニック'); assert.deepEqual(await visit(() => farm('', 'e')), [], 'タブを替えても繰り返さない');
   assert.deepEqual(await visit(() => lobby()), []);
-  assert.deepEqual(await visit(() => hall('t')), ['dan_hello:blocked'], 'ベースキャンプ＝ダン'); assert.deepEqual(await visit(() => hall('st')), []); assert.deepEqual(await visit(() => hall('t')), [], 'ステータスから戻っても繰り返さない');
-  assert.deepEqual(await visit(() => shopScr()), ['berna_welcome:blocked'], 'アイテム屋＝ベルナ'); assert.deepEqual(await visit(() => shopScr('', false, 'buy')), []);
-  assert.deepEqual(await visit(() => museum()), ['elliot_hello_OPTIONAL:blocked'], '研究所＝エリオット'); assert.deepEqual(await visit(() => museum('book')), [], '研究所の中で機能を替えても繰り返さない');
-  // 設定 on／off・全体のミュートでも同じ（声は鳴らない・止まらない）
+  await one(() => hall('t'), 'dan_hello', 'ベースキャンプ＝ダン'); assert.deepEqual(await visit(() => hall('st')), []); assert.deepEqual(await visit(() => hall('t')), [], 'ステータスから戻っても繰り返さない');
+  await one(() => shopScr(), 'berna_welcome', 'アイテム屋＝ベルナ'); assert.deepEqual(await visit(() => shopScr('', false, 'buy')), []);
+  await one(() => museum(), 'elliot_hello_OPTIONAL', '研究所＝エリオット'); assert.deepEqual(await visit(() => museum('book')), [], '研究所の中で機能を替えても繰り返さない');
+  await pg.waitForFunction(() => MMAUDIO.playLog().some((x) => x.kind === 'voice' && x.name === 'elliot_002'), null, { timeout: 6000 });
+  // OFF・全体のミュート＝鳴らない（設定は残す）
   await pg.evaluate(() => { lobby(); MMAUDIO.setVoice({ on: false }); });
-  assert.deepEqual(await visit(() => market()), ['karen_welcome:blocked'], 'ボイス OFF でも同じ（鳴らない）');
+  assert.deepEqual(await visit(() => market()), [['karen_welcome', 'off']], 'ボイス OFF＝鳴らない');
   await pg.evaluate(() => { lobby(); MMAUDIO.setVoice({ on: true, vol: 0.5 }); sndToggle(); });
-  assert.deepEqual(await visit(() => market()), ['karen_welcome:blocked'], '全体のミュートでも同じ');
+  assert.deepEqual(await visit(() => market()), [['karen_welcome', 'muted']], '全体のミュート＝鳴らない');
   await pg.evaluate(() => { sndToggle(); lobby(); });
   assert.equal(await pg.evaluate(() => localStorage.getItem('mmvoice')), '{"on":true,"vol":0.5}', '設定は消さずに残す');
-  // 会話の行の声：頼むが鳴らない・会話は最後まで進む
-  const t = pg.evaluate(() => MMNPC.talk([{ npc: 'fina', expression: 'troubled', voice: 'fina_hey', text: 'もう、リュウったら……。' }, { text: '次の行' }]));
-  await pg.waitForFunction(() => MMAUDIO.voiceLog().some((e) => e.id === 'fina_hey' && e.result === 'blocked'), null, { timeout: 3000 });
-  assert.equal(await pg.evaluate(() => MMAUDIO.voiceNow()), null);
+  // 会話の行の声：鳴る・会話を閉じたら止まる
+  const t = pg.evaluate(() => MMNPC.talk([{ npc: 'fina', expression: 'troubled', voice: 'fina_hey', text: 'もう…' }, { text: '次の行' }]));
+  await pg.waitForFunction(() => MMAUDIO.voiceNow() === 'fina_007', null, { timeout: 4000 });
   await H.finishTalk(pg); await t;
-  // 設定の画面の「ボイス」は準備中の表示だけ
+  await pg.waitForFunction(() => MMAUDIO.voiceNow() === null, null, { timeout: 3000 });
+  // 設定の画面＝ボイスの切り替えがある（準備中の表示は無い）
   await pg.evaluate(() => confScr()); await pg.waitForTimeout(400);
-  const conf = await pg.evaluate(() => ({ note: (document.querySelector('.pfrow.tvoff') || {}).textContent || '', btn: [...document.querySelectorAll('.tseg button')].map((b) => b.getAttribute('onclick') || '').filter((x) => /trialSet\('(von|vvol)'/.test(x)).length }));
-  assert.match(conf.note, /ボイス.*準備中/); assert.equal(conf.btn, 0, 'ボイスの切り替えのボタンは出さない');
-  assert.deepEqual(asked, [], '声のファイルは1つも取りに行かない');
+  const conf = await pg.evaluate(() => ({ off: !!document.querySelector('.pfrow.tvoff'), btn: [...document.querySelectorAll('.tseg button')].map((b) => b.getAttribute('onclick') || '').filter((x) => /trialSet\('(von|vvol)'/.test(x)).length }));
+  assert.equal(conf.off, false); assert.ok(conf.btn >= 2, 'ボイスの切り替えのボタン');
+  const P = await pg.evaluate(() => MMAUDIO.playLog().filter((x) => x.kind === 'voice').map((x) => x.name));
+  assert.ok(P.length >= 5, '実際に鳴った ' + P);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 

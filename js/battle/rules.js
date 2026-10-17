@@ -20,19 +20,20 @@
     paralysis: Object.freeze({ label: 'まひ', turns: 3, failChance: 0.25 }),
     sleep: Object.freeze({ label: 'ねむり', turns: 2 }),
   });
-  const SPECIES = Object.freeze({ 0: 'solamo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas' });
+  const SPECIES = Object.freeze({ 0: 'solamo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas', 6: 'razuck' });   // 2026-10-17：6＝ラズック（登録のみ・QA 試遊の個体だけ）
   const SKILL = Object.freeze({   // 値は js/phase10/monsters.js の UNIQUE_SKILLS と同じ（そちらが無い環境の控え）
     solamo: { lifeRatioAtMost: 0.2, damageMultiplier: 1.25 },
     gauru: { turnsFromStart: 3, statUpRatio: 0.05 },
     nobiton: { statUpRatio: 0.05 },
     jiol: { chance: 0.1, surviveAtLife: 1 },
+    razuck: { multipliers: [1.15, 1.30, 1.50] },
   });
   const skillOf = (key) => {
     const U = root.MMP10M && root.MMP10M.UNIQUE_SKILLS, u = U && U['unique_' + key];
     return Object.assign({}, SKILL[key], u && u.params ? u.params : {});
   };
 
-  function newState() { return { ail: { A: {}, B: {} }, armed: { A: false, B: false }, used: { A: {}, B: {} }, block: null }; }
+  function newState() { return { ail: { A: {}, B: {} }, armed: { A: false, B: false }, used: { A: {}, B: {} }, block: null, streak: { A: 0, B: 0 } }; }
   /** 状態異常をかける（同じものは残りを最初の値に戻すだけ。足さない） */
   function applyAilment(st, side, kind) {
     const d = AILMENTS[kind]; if (!d) return false;
@@ -56,6 +57,8 @@
     const m = { power: 1, wisdom: 1, toughness: 1 }, key = SPECIES[sp];
     if (key === 'gauru') { const p = skillOf('gauru'); if (turn <= p.turnsFromStart) { m.power += p.statUpRatio; m.wisdom += p.statUpRatio; } }
     if (key === 'nobiton' && hasAilment(st, other(side))) { const p = skillOf('nobiton'); m.power += p.statUpRatio; m.wisdom += p.statUpRatio; m.toughness += p.statUpRatio; }
+    // 2026-10-17 ラズック「調子に乗る」：相手の攻撃を連続で回避した回数（最大3）でちからだけ ×1.15／×1.30／×1.50（ダメージを受けたら 0）
+    if (key === 'razuck') { const n = Math.min(3, (st.streak && st.streak[side]) | 0); if (n > 0) m.power *= skillOf('razuck').multipliers[n - 1]; }
     return m;
   }
 
@@ -90,6 +93,7 @@
     if (SPM && SPM.add) list.filter((m) => m.power >= 120).forEach((m) => SPM.add(NOBI_FIRST + m.no - 1));
     installJiol(SK, EFF, SKART, SFR, SKM, SPM);
     installFlureneQA(SK, SKART, SFR, SKM);
+    installRazuck(SK, EFF, SKART, SFR, SKM, SPM);
     // 純補助技（威力なし）＝ソラモ・ガウル・レグナスの補助技も同じ扱い（基本命中 100%）
     for (let k = 0; k < SK.length; k++) if (SK[k] && !SK[k][1] && !BEHAVIOR[k]) BEHAVIOR[k] = { support: true };
     hookGlobals();
@@ -119,6 +123,32 @@
     try {
       const P7 = root.MMP7, by = (l) => list.filter((m) => m.learn === l).map((m) => m.slot);
       if (P7 && P7.registerMoveset && !P7.getMoveset(3)) P7.registerMoveset(3, { initial: by('initial'), po: by('po'), in: by('in'), hi: by('hi'), ev: by('ev'), de: by('de') });
+    } catch (e) { /* 無視（習得の表は QA に関係しない） */ }
+    return true;
+  }
+  // ---- ラズックの正式技（2026-10-17 確定・SK の 60〜69＝60＋No−1。数値は js/phase10/monsters.js の OFFICIAL_MOVES.razuck の1か所） ----
+  //  ラズックは未解禁（市場・野生・合体・大会に出ない）＝QA 試遊モードの個体だけが使う。威力 120 以上の必殺技は無い（09・10 は 115・125＝10 だけ必殺技の扱い）
+  const RAZ_FIRST = 60;
+  const RAZ_VISUAL = { 1: 1, 2: 1, 3: 0, 4: 7, 5: 1, 6: 5, 7: 6, 8: 4, 9: 17, 10: 9 };   // 旧技の小さな絵を借りる（技アニメのコマ・技カードが無いときの控え）
+  const RAZ_EMOJI = ['🦷', '💢', '💨', '🌀', '😬', '🎯', '💫', '🌑', '👻', '⚡'];
+  function installRazuck(SK, EFF, SKART, SFR, SKM, SPM) {
+    const M = root.MMP10M, list = M && M.movesOf ? M.movesOf('razuck') : [];
+    if (!list.length || list.some((mv) => mv.slot !== RAZ_FIRST + mv.no - 1)) return false;
+    list.forEach((mv, i) => {
+      const k = mv.slot, dmg = mv.power != null;
+      SK[k] = [mv.name, dmg ? mv.power / 100 : 0, mv.power >= 120 ? 1 : 2.5, mv.power >= 120 ? '#c79cff' : '#e58ad2', RAZ_EMOJI[i], dmg ? 'a' : 'd', mv.desc || '',
+        mv.type === 'wisdom' ? 'i' : 'p', mv.accuracy, dmg ? mv.critical / 100 : 0];
+      if (mv.effects && mv.effects.length) EFF[k] = mv.effects.map((e) => ({ tg: e.target === 'self' ? 0 : 1, st: STATKEY[e.stat], lv: (e.dir === 'down' ? -1 : 1) * LV[e.size], t: e.turns }));
+      const v = RAZ_VISUAL[mv.no];
+      if (Array.isArray(SKART) && SKART[v] != null) SKART[k] = SKART[v];
+      if (SFR && SFR[v] != null) SFR[k] = SFR[v];
+      if (SKM && SKM[v] != null) SKM[k] = SKM[v];
+      if (!dmg) BEHAVIOR[k] = { owner: 'razuck', no: mv.no, support: true };
+    });
+    if (SPM && SPM.add) list.filter((m) => m.power >= 120).forEach((m) => SPM.add(m.slot));
+    try {
+      const P7 = root.MMP7, by = (l) => list.filter((m) => m.learn === l).map((m) => m.slot);
+      if (P7 && P7.registerMoveset && !P7.getMoveset(6)) P7.registerMoveset(6, { initial: by('initial'), po: by('po'), in: by('in'), hi: by('hi'), ev: by('ev'), de: by('de') });
     } catch (e) { /* 無視（習得の表は QA に関係しない） */ }
     return true;
   }
@@ -183,10 +213,16 @@
     if (bh.support) o2.rng = Object.assign({}, opts.rng || {}, { hitRng: () => 0 });   // 純補助技は必ず決まる（基本命中 100%）
     const r = base(o2);
     refreshSameEffects(sess, r);
+    // 2026-10-17 ラズック「調子に乗る」：相手の攻撃（威力のある技）をかわすたびに連続回避 +1（最大3）・ダメージを受けたら 0。表示は小さな札（ちからUP と倍率）だけ
+    const rzNotes = [];
+    if (SPECIES[spOf(pl, def)] === 'razuck' && !bh.support) {
+      if (!r.hit && opts.move && opts.move.power > 0) { st.streak[def] = Math.min(3, (st.streak[def] | 0) + 1); rzNotes.push({ side: def, badge: `ちからUP ×${skillOf('razuck').multipliers[st.streak[def] - 1].toFixed(2)}`, text: '' }); }
+      else if (r.hit && r.damage > 0 && st.streak[def] > 0) st.streak[def] = 0;
+    }
     // 2026-10-08 監査 M-13：レグナス「蒼銀の反撃」の上乗せダメージ（js/battle/rival-partner.js）は、固有スキルの判定（ソラモの構え・ジオルの耐え）より前に入れる
     //  （ライバル戦の外側の包みで後から足すと、上乗せで初めて20%以下になったソラモの構えが1行動遅れ、ジオルの耐えも打ち消される）
     try { const rp = root.MMRP; if (rp && typeof rp.counter === 'function') rp.counter(opts, r); } catch (e) { /* 演出の失敗でバトルを止めない */ }
-    const notes = [];
+    const notes = rzNotes;
     // 2026-10-13 開発27（30）：ガウル「紅翼の猛攻」・ノビトン「ふしぎな嗅覚」は能力の倍率が実際にこの行動の計算に入ったとき（各バトルの各側で最初の1回だけ）演出の印を付ける（効果・判定は上の statMul のまま）
     st.cut = st.cut || { A: {}, B: {} };
     ['A', 'B'].forEach((s) => {
@@ -606,7 +642,7 @@
   const surrendered = () => surrenderPl != null && surrenderPl === G('BPL');
 
   wrapBattle();
-  root.MMRULES = Object.freeze({ FLU_FIRST, flushDrain, drainLog: () => drainLog.slice(), AILMENTS, NOBI_FIRST, JIOL_FIRST, install, wrapBattle, swallow, cleanResult, battleStats, surrendered, refreshSameEffects, withSpeed, speedOfUnit, current: () => (cur && cur.pl === G('BPL') ? cur.sess : null), drawAil, skillCut, clearCuts, cutLog: () => cutLog.slice(), cutQueue: () => cutQueue.slice(), cutCamera, CUT, SKILL_FX, cutActive: () => !!cutEl, behavior: (k) => BEHAVIOR[k] || null,
+  root.MMRULES = Object.freeze({ FLU_FIRST, RAZ_FIRST, flushDrain, drainLog: () => drainLog.slice(), AILMENTS, NOBI_FIRST, JIOL_FIRST, install, wrapBattle, swallow, cleanResult, battleStats, surrendered, refreshSameEffects, withSpeed, speedOfUnit, current: () => (cur && cur.pl === G('BPL') ? cur.sess : null), drawAil, skillCut, clearCuts, cutLog: () => cutLog.slice(), cutQueue: () => cutQueue.slice(), cutCamera, CUT, SKILL_FX, cutActive: () => !!cutEl, behavior: (k) => BEHAVIOR[k] || null,
     // テスト用の純粋な処理
     newState, applyAilment, opportunity, cureAll, hasAilment, statMul, resolveWith, stateOf });
 })(typeof window !== 'undefined' ? window : globalThis);

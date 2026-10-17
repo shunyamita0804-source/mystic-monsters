@@ -159,7 +159,7 @@ T('QA-NG2：開始ボタン → 名前登録画面（初期値「アルト」・
   await pg.waitForSelector('.mmtalk');
   const open = await pg.evaluate(() => window.__talkOpen);
   assert.match(open.img, /^assets\/npc\/fina\/(expr\/closeup\/|closeup\/)\S*smile\S*\.webp$/, '2026-10-04 G2：1行目は表情 smile の静止画（手を振り続けるアニメ wave はやめた）');
-  assert.deepEqual({ ...open, img: 'smile' }, { idx: 0, total: 3, name: 'フィナ', expr: 'smile', typing: true, text: '', nextShown: false, img: 'smile' },
+  assert.deepEqual({ ...open, img: 'smile' }, { idx: 0, total: 5, name: 'フィナ', expr: 'smile', typing: true, text: '', nextShown: false, img: 'smile' },
     '開いた直後：1行目を1文字ずつ表示中で、▼はまだ出ない');
   const st = await H.storedSave(pg);
   assert.equal(st.v, 6); assert.equal(st.playerName, 'ゆうしゃ'); assert.ok(!st.playerNamePending, '名前登録待ちは消える');
@@ -169,9 +169,11 @@ T('QA-NG2：開始ボタン → 名前登録画面（初期値「アルト」・
   const lines = await talkLines(pg);
   assert.doesNotMatch(lines[0].img, /animations\/wave\//, '2026-10-04 G2：1行目も静止画（手を振り続けるアニメはやめた）');
   assert.deepEqual(lines.map((l) => [l.idx, l.name, l.expr, l.text, l.img, l.next]), [
-    [0, 'フィナ', 'smile', 'はじめまして。私はフィナです！', 'assets/npc/fina/closeup/smile.webp', true],
-    [1, 'フィナ', 'normal', 'これからあなたのモンスター育成をお手伝いしますね。', 'assets/npc/fina/closeup/normal.webp', true],
-    [2, 'フィナ', 'guide', 'まずは市場へ行って、一緒に育てるモンスターを迎えてみましょう！', 'assets/npc/fina/closeup/guide.webp', true],
+    [0, 'フィナ', 'smile', 'はじめまして。私はフィナ。', 'assets/npc/fina/closeup/smile.webp', true],   // 2026-10-17：フィナ 009 の書き起こし（声は1本・字幕は sub で進む）
+    [1, 'フィナ', 'smile', 'わからないことがあったら何でも聞いてね。', 'assets/npc/fina/closeup/smile.webp', true],
+    [2, 'フィナ', 'smile', 'これからよろしく。', 'assets/npc/fina/closeup/smile.webp', true],
+    [3, 'フィナ', 'normal', 'これからあなたのモンスター育成をお手伝いしますね。', 'assets/npc/fina/closeup/normal.webp', true],
+    [4, 'フィナ', 'guide', 'まずは市場へ行って、一緒に育てるモンスターを迎えてみましょう！', 'assets/npc/fina/closeup/guide.webp', true],
   ], '全文表示のあとに▼が出る');
   await pg.waitForFunction(() => !document.querySelector('.mmtalk'), null, { timeout: 3000 });   // 退場のフェード（約0.22秒）が終わって消える
   const after = await pg.evaluate(() => ({ n: document.querySelectorAll('.mmtalk').length, st: MMNPC.state() }));
@@ -209,7 +211,7 @@ T('QA-NG3：名前は Enter キーでも決定できる（決定は1回だけ・
   const st = await H.storedSave(pg);
   assert.equal(st.playerName, 'エンター'); assert.ok(!st.playerNamePending); assert.deepEqual(st.npcFlags, { support: 1, finaIntro: 1 });
   const lines = await talkLines(pg);
-  assert.equal(lines.length, 3, 'あいさつは3行とも表示される');
+  assert.equal(lines.length, 5, 'あいさつは5行とも表示される（2026-10-17：フィナ 009 の書き起こし）');
   await pg.waitForSelector('.map');
   assert.equal(await pg.evaluate(() => document.querySelector('#msg').textContent.replace(/^フィナ/, '')), 'ようこそ、エンターさん！ まずは市場でモンスターを選ぼう。');   // 2026-09-30：案内はフィナの台詞（名前の札つき）
   noErrors(p);

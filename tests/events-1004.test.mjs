@@ -103,8 +103,9 @@ test('EV-04：チュートリアル（config.story の scope "save"）：止ま�
 test('EV-05：施設の NPC イベント（MMNPCE）：初回訪問は5施設（市場・牧場・研究所・闘技場・ファーム）でフィナ ↔ NPC。カレンは「〜わよ」「〜だわ」を使わない。再訪は進行状態に合う一言が優先、ふつうの一言は確率、直前と同じ文は避ける', () => {
   const { NE } = load();
   assert.deepEqual(NE.FACILITIES, ['market', 'ranch', 'lab', 'arena', 'train', 'shop', 'farm'], '2026-10-04（追加アセット）：特訓（ゲンシン）・アイテム屋（おばあちゃん）の初回を追加');
-  for (const f of NE.FACILITIES) { const L = NE.first(f); assert.ok(L.length >= 2 && L.length <= (f === 'farm' ? 8 : 4), f);   /* 2026-10-13 開発27（08）：ベースキャンプの初回はダン ↔ フィナの2〜4往復 */ assert.ok(L.some((l) => l.npc === 'fina') && L.some((l) => l.npc !== 'fina'), `${f}：フィナと NPC`); for (const l of L) assert.ok(l.expression && l.text && l.side, `${f}：行の形`); }
-  assert.deepEqual(NE.first('market').map((l) => l.npc), ['fina', 'karen', 'fina', 'karen']); assert.deepEqual(NE.first('farm').map((l) => l.npc), ['fina', 'dan', 'dan', 'fina', 'dan', 'fina']);   // 2026-10-13 開発27（08）：ダン ↔ フィナの2〜3往復
+  for (const f of NE.FACILITIES) { const L = NE.first(f); assert.ok(L.length >= 3 && L.length <= 12, f);   /* 2026-10-17：有料版ボイスの書き起こし（1つの声の区切りは sub の行）＋フィナの締め */ assert.ok(L.some((l) => l.npc === 'fina') && L.some((l) => l.npc !== 'fina'), `${f}：フィナと NPC`); for (const l of L) assert.ok(l.expression && l.text && l.side, `${f}：行の形`); }
+  assert.deepEqual(NE.first('market').map((l) => l.npc), ['fina', 'fina', 'karen', 'karen', 'karen', 'karen', 'karen']); assert.deepEqual(NE.first('farm').map((l) => l.npc), ['fina', 'fina', 'dan', 'dan', 'dan', 'dan', 'fina']);   // 2026-10-17：フィナ 02x → NPC 001（有料版ボイス）
+  for (const f of NE.FACILITIES) { const v = NE.firstVoices(f); assert.equal(v.length, 2, f); assert.match(v[0], /^fina_02[1-7]$/, f); assert.match(v[1], /_001$/, f); }
   const karen = [...NE.first('market').filter((l) => l.npc === 'karen').map((l) => l.text), ...NE.REVISIT.market.lines.map((l) => l.text)];
   for (const t of karen) assert.doesNotMatch(t, /わよ|だわ/, t);
   assert.ok(!NE.first('lab').some((l) => /特殊復元/.test(l.text)), '特殊復元を説明しない');
@@ -148,7 +149,7 @@ test('EV-07：ライバル リュウ（MMRIVAL）：名前は正式に「リュ�
 test('EV-08：つなぎ（静的）：index.html は events.js・npc-events.js・rival.js を読み込み、施設の入口で npcFirst（市場・牧場・研究所・闘技場・ファーム）とファームの帰還 farmReturn を呼ぶ。画面側は 2択（choiceTalk）と出来事の会話（eventLines）を持つ。見た記録はセーブ v6 の任意項目（npcFlags・raise.evSeen）', () => {
   for (const f of ['./js/chapter/events.js', './js/npc/npc-events.js', './js/phase8/rival.js']) assert.ok(HTML.includes(`<script src="${f}"></script>`), f);
   assert.match(HTML, /function karenIntro\(\)\{const f=finaFlags\(\);if\(npcFirst\("market"/); assert.match(HTML, /if\(!tab\)setTimeout\(\(\)=>npcFirst\("lab"\),0\)/);
-  assert.match(HTML, /function townArena\(\)\{townLock\("闘技場は、まだ利用できません。"\);if\(!npcFirst\("arena"\)\)vgSay\(\)\}/);
+  assert.match(HTML, /function townArena\(\)\{townLock\("闘技場は、まだ利用できません。"\);if\(npcFirst\("arena"\)\)return;if\(facEntryOn\("arena"\)&&window\.MMVOICE&&!MMVOICE\.visited\(\)\.arena\)\{facVoice\("arena"\);return\}vgSay\(\)\}/);   // 2026-10-17：再訪の入口＝ヴァルガス 002
   assert.match(HTML, /if\(st=="none"\)npcFirst\("farm"\);else if\(st=="farm"\)farmReturn\(m\)/); assert.match(HTML, /npcLineX\("ranch",NICK_TALK\.ranch,"normal"\)/);
   assert.match(HTML, /function npcFirst\(fac,after\)\{if\(window\.MM_QA_NO_NPC\|\|!window\.MMNPCE\|\|!window\.MMNPC\)return false;/, '自動テストでは出さない');
   assert.match(HTML, /F\[fac\]=1;if\(fac=="market"\)finaFlags\(\)\.karenIntro=1;save\(\);/, '先に「表示済み」を保存');

@@ -114,7 +114,7 @@
     if (r.tour != null && !validTour(r.tour)) r.tour = null;
     if (!Number.isFinite(r.fatigue) || r.fatigue < 0 || r.fatigue > 100) r.fatigue = Number.isFinite(r.fatigue) ? Math.max(0, Math.min(100, Math.round(r.fatigue))) : 0;
     if (r.field != null && !isObj(r.field)) r.field = null;
-    { const sd = driverFor(r.ch) || DRIVER; if (sd && sd.sanitize) sd.sanitize(m); }   // エンジンの配置の検査（壊れた配置は null＝開始地点から作り直す）。その Chapter を受け持つドライバーで
+    { const sd = driverFor(r.ch, m) || DRIVER; if (sd && sd.sanitize) sd.sanitize(m); }   // エンジンの配置の検査（壊れた配置は null＝開始地点から作り直す）。その Chapter を受け持つドライバーで
     if (!r.log.every(isObj)) r.log = r.log.filter(isObj);                     // 記録の壊れた要素（null・数値など）は外す
     if (r.pend !== null && !validPend(r.pend)) r.pend = null;                   // 出目のターンは消費済みのまま（振り直しにはならない。ensureBoardPositionと同じ）
     if (r.trainRun !== null && !validTrainRun(r.trainRun)) r.trainRun = null;   // v5の読み込み（MMP7.normalizeV5）と同じく、読めない修行は取り消す
@@ -280,7 +280,8 @@
   const OVERRIDES = [];
   function registerChapterOverride(d) { if (!d || typeof d.handles !== 'function') throw new Error('Chapterドライバーが不正です'); const i = OVERRIDES.indexOf(d); if (i < 0) OVERRIDES.push(d); }
   function removeChapterOverride(d) { const i = OVERRIDES.indexOf(d); if (i >= 0) OVERRIDES.splice(i, 1); }
-  const driverFor = (key) => OVERRIDES.find((d) => d.handles(key)) || (DRIVER && DRIVER.handles(key) ? DRIVER : null);
+  // 2026-10-16：m（その個体）も渡す＝同じ Chapter でも個体ごとに受け持つドライバーを選べる（Chapter 2：旧 Chapter 2 の盤を持つ個体は従来のエンジン・それ以外は1枚の世界のボード）
+  const driverFor = (key, m) => OVERRIDES.find((d) => d.handles(key, m)) || (DRIVER && DRIVER.handles(key) ? DRIVER : null);
   const validTrack = (t) => isObj(t) && isObj(t.nodes) && isObj(t.conn) && !!t.start && !!t.nodes[t.start];
   function registerFinalBoard(track, meta) {
     if (!validTrack(track)) throw new Error('ボードデータが不正です');
@@ -288,7 +289,7 @@
   }
   /** Chapterのマップ（1〜4は MMP7.registerChapterBoard の登録、'final' は registerFinalBoard の登録） */
   function trackOf(key) { if (key === FINAL) return finalBoard ? finalBoard.track : null; const d = driverFor(key); if (d) return d.trackFor(null, key); const b = P7.getChapterBoard(key); return b ? b.track : null; }
-  function boardOf(m) { if (!m || !isObj(m.raise)) return null; const d = driverFor(m.raise.ch); return d ? d.trackFor(m, m.raise.ch) : trackOf(m.raise.ch); }
+  function boardOf(m) { if (!m || !isObj(m.raise)) return null; const d = driverFor(m.raise.ch, m); return d ? d.trackFor(m, m.raise.ch) : trackOf(m.raise.ch); }
   const isPlayable = (key) => !!trackOf(key);
   /** 次に出発するChapter（未育成ならChapter 1、Chapter間ファームなら記録済みの次Chapter。それ以外は null） */
   function nextChapterKey(m) { const st = P7.raiseState(m); return st === RAISE.NONE ? 1 : st === RAISE.FARM ? m.raise.ch : null; }
@@ -309,7 +310,7 @@
   function depart(S, m, rnd = Math.random) {
     const c = canDepart(S, m); if (!c.ok) return c;
     const fresh = m.raise.state === RAISE.NONE;   // 新しい育成の開始（未育成→Chapter 1）
-    const drv = driverFor(c.key);
+    const drv = driverFor(c.key, m);
     Object.assign(m.raise, { state: c.key === FINAL ? RAISE.FINAL : RAISE.BOARD, ch: c.key, node: null, turnsUsed: 0,
       turnLimit: drv ? drv.turnLimit(c.key) : chapterRule(c.key).turnLimit, pend: null, goal: false, tour: null, battle: null });
     delete m.raise.ate;   // 2026-10-12 P2：そのターンに食べた印（js/chapter/engine.js の useFatigueItem）は出発で消す
@@ -322,7 +323,7 @@
   /** ボードを開くときの補正：開始地点（node=null）をスタートへ。地図の無いChapterならChapter間ファームへ退避（7.1の救済と同じ考え方） */
   function ensureBoardPosition(S, m) {
     if (!m || !P7.inChapter(m)) return { changed: false };
-    const r = m.raise, drv = driverFor(r.ch);
+    const r = m.raise, drv = driverFor(r.ch, m);
     if (drv) { const e = drv.ensure(S, m); if (e.changed) return { changed: true }; }        // エンジンの配置が無い・壊れている（旧セーブなど）→ 開始地点から
     const trk = boardOf(m);
     if (!trk) { Object.assign(r, { state: RAISE.FARM, node: null, turnsUsed: 0, turnLimit: null, pend: null, goal: false, tour: null, battle: null }); return { changed: true, rescued: true }; }
@@ -365,42 +366,42 @@
   function canRoll(m) {
     if (!m || !P7.inChapter(m)) return false;
     const r = m.raise;
-    const d = driverFor(r.ch);
+    const d = driverFor(r.ch, m);
     return !r.pend && !r.goal && !r.tour && !r.battle && r.node != null && turnsLeft(m) > 0 && (!d || d.canRoll(m));   // エンジン：疲れ100ならサイコロ不可
   }
   /** サイコロの面の数：エンジンの Chapter は config（rules.diceSides）、それ以外（旧ボード）は従来の 1〜3 */
-  function diceSides(m) { const d = m && isObj(m.raise) ? driverFor(m.raise.ch) : null; const n = d && d.diceSides ? d.diceSides(m) : 0; return Number.isInteger(n) && n >= 1 ? n : P7.DICE_MAX - P7.DICE_MIN + 1; }
+  function diceSides(m) { const d = m && isObj(m.raise) ? driverFor(m.raise.ch, m) : null; const n = d && d.diceSides ? d.diceSides(m) : 0; return Number.isInteger(n) && n >= 1 ? n : P7.DICE_MAX - P7.DICE_MIN + 1; }
   /** サイコロを振る＝1ターン消費。出目（1〜面の数）はここで確定して pend に記録する */
   function roll(S, m, rnd = Math.random) {
     if (!canRoll(m)) return { ok: false };
     const value = P7.rollDie(diceSides(m), rnd), r = m.raise;
     r.turnsUsed += 1;
     r.pend = { roll: value, left: value, stage: 'move' };
-    const d = driverFor(r.ch); if (d) Object.assign(r.pend, d.onRoll(S, m, value));   // エンジン：出目が決まった時点で疲れを加算（停止地点では加算後の疲れで判定）
+    const d = driverFor(r.ch, m); if (d) Object.assign(r.pend, d.onRoll(S, m, value));   // エンジン：出目が決まった時点で疲れを加算（停止地点では加算後の疲れで判定）
     return { ok: true, value };
   }
   /** 休む（エンジンの Chapter だけ）：1ターン消費・移動なし・空腹（内部は疲れ）−10（2026-10-12 P2）。サイコロと同じく、ターンの途中・ゴール後・大会中・戦闘中は不可 */
   function canRest(m) {
     if (!m || !P7.inChapter(m)) return false;
-    const r = m.raise, d = driverFor(r.ch);
+    const r = m.raise, d = driverFor(r.ch, m);
     return !!d && d.canRest(m) && !r.pend && !r.goal && !r.tour && !r.battle && r.node != null && turnsLeft(m) > 0;
   }
   function rest(S, m) {
     if (!canRest(m)) return { ok: false };
     const r = m.raise; r.turnsUsed += 1;
-    const out = { ok: true, ...driverFor(r.ch).onRest(S, m) };
+    const out = { ok: true, ...driverFor(r.ch, m).onRest(S, m) };
     if (turnsLeft(m) !== 0) return out;
-    const d = driverFor(r.ch), x = d.onTurnsExhausted ? d.onTurnsExhausted(S, m) : null;   // 最後のターンを休んで終えたときも同じ規則（'tournament' なら大会へ）
+    const d = driverFor(r.ch, m), x = d.onTurnsExhausted ? d.onTurnsExhausted(S, m) : null;   // 最後のターンを休んで終えたときも同じ規則（'tournament' なら大会へ）
     if (x && x.toGoal) { r.goal = true; return { ...out, timeUp: true, goal: true }; }
     return { ...out, timeUp: true };
   }
   /** 通過専用の地点（エンジンの Chapter の config で決まる。止まれない＝出目に数えない）。旧ボードには無い */
-  const isWaypoint = (m, id) => { const d = m && isObj(m.raise) ? driverFor(m.raise.ch) : null; return !!(d && d.isWaypoint && d.isWaypoint(m, id)); };
+  const isWaypoint = (m, id) => { const d = m && isObj(m.raise) ? driverFor(m.raise.ch, m) : null; return !!(d && d.isWaypoint && d.isWaypoint(m, id)); };
   /** 強制停止のマス（マップの node.stop）：出目が残っていてもここで止まり、残りの移動は消える（ライバル・強敵などの必須イベント。マス側の設定だけで決まる） */
   const isStopNode = (trk, id) => !!(trk && id != null && trk.nodes[id] && trk.nodes[id].stop === true);
   /** 1マス進んだあと：止まる（残り0・ゴール・強制停止）なら resolve へ、通過なら onPass（通過したマスは効果を出さない） */
   function afterMove(S, m, trk, from) {
-    const r = m.raise, p = r.pend, d = driverFor(r.ch);
+    const r = m.raise, p = r.pend, d = driverFor(r.ch, m);
     if (d && d.onStep) d.onStep(S, m);
     if (p.left <= 0 || isGoalNode(trk, r.node) || isStopNode(trk, r.node)) { p.left = 0; p.stage = 'resolve'; }   // ゴール・強制停止に着いたら残り移動は消える
     else { p.stage = 'move'; if (d && d.onPass) d.onPass(S, m, r.node, from); }
@@ -409,7 +410,7 @@
   function step(S, m) {
     const r = m && m.raise, p = r && r.pend, trk = boardOf(m);
     if (!p || p.stage !== 'move' || !trk) return { stage: p ? p.stage : null };
-    { const d = driverFor(r.ch); if (d && d.step) return d.step(S, m); }   // 移動を自分で決めるドライバー（本編の Chapter 1）
+    { const d = driverFor(r.ch, m); if (d && d.step) return d.step(S, m); }   // 移動を自分で決めるドライバー（本編の Chapter 1）
     const opts = trk.conn[r.node] || [];
     if (p.left <= 0 || !opts.length) { p.left = 0; p.stage = 'resolve'; return { stage: 'resolve' }; }
     if (opts.length > 1) { p.stage = 'branch'; p.opts = [...opts]; return { stage: 'branch', opts: p.opts }; }
@@ -421,7 +422,7 @@
   function chooseBranch(S, m, id) {
     const r = m && m.raise, p = r && r.pend, trk = boardOf(m);
     if (!p || p.stage !== 'branch' || !Array.isArray(p.opts) || !p.opts.includes(id)) return { ok: false };
-    { const d = driverFor(r.ch); if (d && d.chooseBranch) return d.chooseBranch(S, m, id); }
+    { const d = driverFor(r.ch, m); if (d && d.chooseBranch) return d.chooseBranch(S, m, id); }
     const from = r.node; r.node = id; if (!isWaypoint(m, id)) p.left -= 1; delete p.opts;
     afterMove(S, m, trk, from);
     return { ok: true, stage: p.stage, node: id };
@@ -467,7 +468,7 @@
   function resolveLanding(S, m, rnd = Math.random) {
     const r = m && m.raise, p = r && r.pend;
     if (!p || p.stage !== 'resolve') return { ok: false };
-    const nd = ((boardOf(m) || {}).nodes || {})[r.node] || {}, d = driverFor(r.ch);
+    const nd = ((boardOf(m) || {}).nodes || {})[r.node] || {}, d = driverFor(r.ch, m);
     const fx = (d && d.resolve(S, m, r.node, rnd)) || (SQUARE_EFFECTS[nd.type] || SQUARE_EFFECTS.normal)(S, m, rnd);   // エンジン：配置で決まった種類（能力・イベント・宝箱・バトル）
     p.fx = fx;
     if (fx.kind === 'battle') { p.stage = 'battle'; return { ok: true, fx, wait: true }; }
@@ -476,7 +477,7 @@
   }
   /** 選択肢のある出来事で選んだあと（エンジンの Chapter だけ）：選んだ効果を適用してターンを終える */
   function resolveChoice(S, m, optId, rnd = Math.random) {
-    const r = m && m.raise, p = r && r.pend, d = r && driverFor(r.ch);
+    const r = m && m.raise, p = r && r.pend, d = r && driverFor(r.ch, m);
     if (!p || p.stage !== 'resolve' || !isObj(p.fx) || p.fx.kind !== 'choice' || !d || !d.resolveChoice) return { ok: false };
     const fx = d.resolveChoice(S, m, optId, rnd); if (!fx) return { ok: false };
     p.fx = fx;
@@ -487,7 +488,7 @@
     if (isGoalNode(boardOf(m), r.node)) { r.goal = true; return { goal: true }; }
     if (turnsLeft(m) !== 0) return {};
     // 最後のターンの停止処理まで終えてから：エンジンの Chapter は onTurnsExhausted で「そのまま大会へ（ゴール扱い）」にできる（既定・旧ボードは従来どおり timeup）
-    const d = driverFor(r.ch), x = d && d.onTurnsExhausted ? d.onTurnsExhausted(S, m) : null;
+    const d = driverFor(r.ch, m), x = d && d.onTurnsExhausted ? d.onTurnsExhausted(S, m) : null;
     if (x && x.toGoal) { r.goal = true; return { goal: true, timeUp: true }; }
     return { timeUp: true };
   }
@@ -526,7 +527,7 @@
     if (r.tour && r.tour.final && isObj(r.tour.prev)) { entry.finalTour = entry.tour; entry.tour = r.tour.prev; }   // 最終公式大会：tour＝その Chapter の通常の大会（A）、finalTour＝S
     r.log.push(entry);
     const nx = nextAfterChapter(m, key);
-    { const d = driverFor(key); if (d && d.onClose) d.onClose(S, m); }   // 配置はChapterごと（疲れは持ち越す）
+    { const d = driverFor(key, m); if (d && d.onClose) d.onClose(S, m); }   // 配置はChapterごと（疲れは持ち越す）
     Object.assign(r, { state: nx.state, ch: nx.ch, node: null, turnsUsed: 0, turnLimit: null, pend: null, goal: false, tour: null, battle: null });
     if (nx.state === RAISE.DONE) { r.endStats = statSnap(m); recordRaiseDone(S); }   // 育成完了1回につき1回だけ（売却額用に完了時の能力値も記録）
     return { ok: true, next: nx.next, entry };
@@ -571,7 +572,7 @@
     restore(m, 'fa', b.snap.fa); restore(m, 'st', b.snap.st);
     const out = { kind: b.kind, won };
     if (b.kind === 'practice') {
-      const d = driverFor(r.ch); if (d && d.onBattleFinished) Object.assign(out, d.onBattleFinished(S, m, b));   // エンジン：ボード上のバトルの後は疲れ +5（公式大会では増やさない）
+      const d = driverFor(r.ch, m); if (d && d.onBattleFinished) Object.assign(out, d.onBattleFinished(S, m, b));   // エンジン：ボード上のバトルの後は疲れ +5（公式大会では増やさない）
       if (r.pend && r.pend.stage === 'battle') Object.assign(out, finishTurn(S, m));
     }
     else if (BATTLE_KINDS[b.kind]) Object.assign(out, BATTLE_KINDS[b.kind].finish(S, m, b, won, rnd));
@@ -580,7 +581,7 @@
   }
   /** 【暫定】練習試合の相手の強さ＝個体の表示ランク（未クリアはE）。旧仕様の「現在ランク」に相当 */
   const practiceRank = (m) => Math.max(RANK_E, highestCleared(m));
-  Object.assign(API, { registerChapterDriver, registerChapterOverride, removeChapterOverride, driverFor, canRest, rest, turnsLeft, boardPhase, canRoll, diceSides, roll, step, chooseBranch, registerSquareEffect, resolveLanding, resolveChoice, skipBattleSquare,
+  Object.assign(API, { engineDriver: () => DRIVER, registerChapterDriver, registerChapterOverride, removeChapterOverride, driverFor, canRest, rest, turnsLeft, boardPhase, canRoll, diceSides, roll, step, chooseBranch, registerSquareEffect, resolveLanding, resolveChoice, skipBattleSquare,
     canEndChapter, endChapter, declineTournament, beginBattle, markBattleDone, finishBattle, practiceRank });
 
   // =========================================================

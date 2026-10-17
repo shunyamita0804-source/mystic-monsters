@@ -45,8 +45,8 @@ test('KR-3：セリフは KAREN_TALK にまとめ、使う表情はすべて登�
   assert.deepEqual([T.greet, T.ask, T.bought, T.nomoney, T.waiting].map((x) => x[0].expression), ['smile', 'normal', 'happy', 'troubled', 'guide']);
 });
 
-const AGAIN = ['いらっしゃい。またモンスターを見に来たの？', '新しい子が欲しくなったの？', '今日はどの子を見ていく？'];
-test('KR-7：2回目以降の来店のあいさつは3つから1つ（1行・smile）。初回の説明（2行）とは違う文。「〜わよ」「〜だわ」を使わない', () => {
+const AGAIN = ['またモンスターを見に来たの？', '新しい子が欲しくなったの？', '今日はどの子を見ていく？'];   // 2026-10-17：「いらっしゃい。」は再訪の声（カレン 002）の字幕として1行目に分けた
+test('KR-7：2回目以降の来店のあいさつ＝「いらっしゃい。」（カレン 002 の字幕・welcome）＋3つから1つ（smile）。初回の説明（2行）とは違う文。「〜わよ」「〜だわ」を使わない', () => {
   const line = HTML.split('\n').find((l) => l.startsWith('const KAREN_AGAIN='));
   assert.deepEqual(new Function(`${line}\nreturn KAREN_AGAIN;`)(), AGAIN);
   for (const t of AGAIN) assert.doesNotMatch(t, /わよ|だわ/);
@@ -55,7 +55,7 @@ test('KR-7：2回目以降の来店のあいさつは3つから1つ（1行・smi
   const fn = HTML.split('\n').find((l) => l.startsWith('function karenAgain('));
   const said = []; const run = new Function('window', 'karenSay', 'KAREN_AGAIN', `${fn}\nreturn karenAgain;`)({}, (ls) => said.push(ls), AGAIN);
   for (const r of [0, 0.34, 0.67, 0.9999]) run(() => r);
-  assert.deepEqual(said.map((ls) => [ls.length, ls[0].npc, ls[0].expression, ls[0].text]), [[1, 'karen', 'smile', AGAIN[0]], [1, 'karen', 'smile', AGAIN[1]], [1, 'karen', 'smile', AGAIN[2]], [1, 'karen', 'smile', AGAIN[2]]]);
+  assert.deepEqual(said.map((ls) => [ls.length, ls[0].expression, ls[0].text, ls[1].npc, ls[1].expression, ls[1].text]), [0, 1, 2, 2].map((i) => [2, 'welcome', 'いらっしゃい。', 'karen', 'smile', AGAIN[i]]));
 });
 
 test('KR-4：NPC同士の会話：行ごとに npc を切り替えると、名前・画像・表情が話者に切り替わり、左右（side）は話者ごとに覚える', () => {

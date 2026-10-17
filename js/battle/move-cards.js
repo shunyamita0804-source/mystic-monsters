@@ -16,6 +16,8 @@
     jiol: [[1, 'punch'], [2, 'kick'], [3, 'chikara_wo_tameru'], [4, 'noshikakari'], [5, 'ground_hammer'], [6, 'crystal_ray'], [7, 'ground_spike'], [8, 'rock_upper'], [9, 'geo_impact'], [10, 'crystal_nova']],
     // 2026-10-15：フルーネ（登録のみ・未解禁）＝納品の FLURENE_01〜10（tools/movecards1014/derive_flurene.py）。SK の番号なし＝技管理・ルーレットには出ない（QA の試遊と確認の一覧だけ）
     flurene: [[1, 'tsuruuchi'], [2, 'tane_tobashi'], [3, 'hana_no_kaori'], [4, 'nekko_no_mamori'], [5, 'konsai_press'], [6, 'bloom_ray'], [7, 'shibari_zuru'], [8, 'hanakage_no_mai'], [9, 'root_drain'], [10, 'root_tempest']],
+    // 2026-10-17：ラズック（登録のみ・未解禁・制作候補のカード＝ユーザーの美術承認前）＝QA の試遊だけ。SK＝60＋No−1（OFFICIAL_MOVES.razuck の slot）
+    razuck: [[1, 'kamitsuki'], [2, 'hikkaki'], [3, 'subayai_ichigeki'], [4, 'chokomaka'], [5, 'gajigaji_rush'], [6, 'trick_shot'], [7, 'kakuran_step'], [8, 'shadow_bite'], [9, 'mirage_dash'], [10, 'razuck_rush']],
     regnas: [[1, 'kirisaku'], [2, 'shippo_attack'], [3, 'ryugan_lock'], [4, 'zanei_step'], [5, 'dragon_crash'], [6, 'soukou_breath'], [7, 'snipe_fang'], [8, 'genei_claw'], [9, 'soujin_ranbu'], [10, 'tail_cyclone']],
   };
   const pad = (n) => (n < 10 ? '0' : '') + n;

@@ -207,7 +207,10 @@ try {
     await page.evaluate(() => lobby()); await sleep(500); await page.evaluate(() => hall('t')); await sleep(900); await drain(); await page.evaluate(() => shopScr()); await sleep(1400); await drain(); await sleep(300);   // アイテム屋の再訪（ベルナ「いらっしゃい」＋声）
     // 2026-10-15 N04：NPC のボイスは全停止＝施設の入口・会話の行でも声は鳴らない（設定が on のままでも）。台詞の会話は出る。旧い声のファイルは公開 URL で取れない（404）
     const vo = await page.evaluate(() => ({ play: MMAUDIO.playLog().filter((x) => x.kind === 'voice').map((x) => x.name), blocked: !!(MMAUDIO.voiceBlocked && MMAUDIO.voiceBlocked()), log: MMAUDIO.voiceLog().slice(-12).map((x) => x.id + ':' + x.result), entries: typeof FAC_ENTRY_LOG !== 'undefined' ? FAC_ENTRY_LOG.slice() : [] }));
-    rec('N04：NPC のボイスは鳴らない（施設の入口・会話の行・設定 on のまま）', vo.blocked && vo.play.length === 0 && !vo.log.some((x) => /:(play|wait)$/.test(x)), JSON.stringify(vo));
+    // 2026-10-17 統合便 v2：有料版ボイス 60本で全停止を解除＝施設の再訪（市場＝カレン 002・アイテム屋＝ベルナ 002）の声が実際に鳴る・旧い声のファイルは 404 のまま
+    rec('2026-10-17：NPC の有料ボイスが鳴る（再訪の入口＝カレン 002・ベルナ 002）', !vo.blocked && vo.play.includes('karen_002') && vo.play.includes('berna_002') && vo.play.every((x) => /^(fina|karen|nick|dan|elliot|berna|vargas|genshin|serge|cedric|ryu)_\d{3}$|^cry_/.test(x)), JSON.stringify(vo));
+    const vp = await page.evaluate(async () => { const out = []; for (const f of ['npc_paid_1017/fina_021.ogg', 'npc_paid_1017/karen_002.m4a', 'npc_paid_1017/genshin_001.ogg', 'monster_1017/razuck_sad.ogg', 'monster_1017/solamo_normal.m4a']) { const r = await fetch('./assets/audio/voice/' + f + '?cb=' + Date.now()); out.push([f, r.status]); } return out; });
+    rec('2026-10-17：有料版ボイス・鳴き声のファイルが公開 URL で 200', vp.every((x) => x[1] === 200), vp.map((x) => x.join(' ')).join(' / '));
     const old = ['fina_hello_new.ogg', 'fina_yes.m4a', 'karen_welcome.ogg', 'dan_hello.m4a', 'nick_hello.ogg', 'berna_welcome.ogg', 'ryu_praise.ogg', 'serge_welcome.m4a', 'leona_greet.ogg', 'astrad_greet.ogg'];
     const gone = [];
     for (const f of old) { try { const r = await fetch(URL + 'assets/audio/voice/npc_1013/' + f + '?cb=' + Date.now()); gone.push([f, r.status]); } catch (e) { gone.push([f, 'ERR']); } }
@@ -330,6 +333,22 @@ try {
     rec('2026-10-15：QA 試合（ソラモ No.01）→ OFF で通常のセーブは同じ・通常の牧場へ戻る', qb.bt && qb.names.every((x) => x === 'たいあたり') && s1.save === s0 && !s1.on && s1.rn, JSON.stringify({ qb, same: s1.save === s0, on: s1.on, rn: s1.rn }));
     await q.screenshot({ path: `${OUT}/qa_off_390.png` }).catch(() => {});
     await q.close(); await ctxQ.close();
+  }
+
+  // 2026-10-17 統合便 v2：QA トップ（?qaTop=1）・初見プレイの隔離セーブ（?qaFresh=1）＝別の保存領域で
+  {
+    const ctxT = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+    await ctxT.route('**/*', routeFn);
+    const t = await ctxT.newPage(); t.on('pageerror', (e) => errs.push('qatop: ' + String(e).slice(0, 200)));
+    await t.goto(URL + '?qaTop=1'); await t.waitForSelector('#mmqat .qtm', { timeout: 60000 }).catch(() => {});
+    await t.waitForFunction(() => /ブランチ\s*main/.test((document.querySelector('#mmqat .qtv') || {}).textContent || ''), null, { timeout: 15000 }).catch(() => {});
+    const qt = await t.evaluate(() => ({ cells: document.querySelectorAll('#mmqat .qtm td').length, b: document.querySelectorAll('#mmqat .qtm td.battle').length, links: document.querySelectorAll('#mmqat a.qtb[data-k]').length, v: (document.querySelector('#mmqat .qtv') || {}).textContent || '' }));
+    await t.screenshot({ path: `${OUT}/qa_top_390.png` }).catch(() => {});
+    rec('2026-10-17：QA トップ＝70枠（実戦 61）・Chapter 1／2 の A／B／C の入口・版と branch', qt.cells === 70 && qt.b === 61 && qt.links === 6 && /main/.test(qt.v), JSON.stringify(qt));
+    await t.goto(URL + '?qaFresh=1'); await t.waitForFunction(() => window.MMQAF && MMQAF.on, null, { timeout: 60000 }).catch(() => {});
+    const qf = await t.evaluate(() => ({ on: !!(window.MMQAF && MMQAF.on), real: localStorage['mr4v6'] || null }));
+    rec('2026-10-17：初見プレイ（?qaFresh=1）が動く・本当のセーブの鍵に書かない', qf.on && qf.real == null, JSON.stringify(qf));
+    await t.close(); await ctxT.close();
   }
 
 } catch (e) {

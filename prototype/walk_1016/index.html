@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>歩行方向 QA</title>
+<style>
+:root{--bg:#0e1a2e;--fg:#eef3ff;--mut:#a9b6cf;--gold:#f3c55a;--line:rgba(255,255,255,.18);--cell:#4d7a3e}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f4f1e8;--fg:#1d2433;--mut:#5b6476;--line:rgba(0,0,0,.15)}}
+:root[data-theme="dark"]{--bg:#0e1a2e;--fg:#eef3ff;--mut:#a9b6cf;--line:rgba(255,255,255,.18)}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 "Noto Sans JP",system-ui,sans-serif}
+main{max-width:640px;margin:0 auto;padding:12px 16px 40px}
+h1{font-size:17px;margin:4px 0 2px}
+.sub{color:var(--mut);font-size:12px;margin:0 0 10px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.cell{position:relative;aspect-ratio:1;border-radius:10px;background:var(--cell);overflow:hidden;border:1px solid var(--line);cursor:pointer;padding:0}
+.cell.center{background:#3c6431;cursor:default}
+.cell b{position:absolute;z-index:2;left:5px;top:3px;background:rgba(0,0,0,.35);padding:0 4px;border-radius:5px;font-size:11px;color:#fff;text-shadow:0 1px 2px #000;font-weight:600;pointer-events:none}
+.cell .an{position:absolute;left:8%;right:8%;bottom:calc(14% - 1px);height:0;border-top:1px dashed rgba(255,255,255,.75);display:none}
+body.anchor .cell .an{display:block}
+.spr{position:absolute;left:50%;bottom:14%;transform:translate(-50%,7.56%);height:calc(var(--sz) * 1px);width:auto;image-rendering:auto;pointer-events:none}
+.spr.flip{transform:translate(-50%,7.56%) scaleX(-1)}   /* 7.56%＝足の下の余白（26/344）＝足もとを点線に合わせる */
+.bg-dark .cell{background:#16243c}.bg-light .cell{background:#e8e2d0}.bg-check .cell{background:repeating-conic-gradient(#bbb 0 25%,#fff 0 50%) 0 0/16px 16px}
+.ctl{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;margin:12px 0}
+.ctl output{font-variant-numeric:tabular-nums;min-width:52px;text-align:right}
+.row{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+button.b{min-height:36px;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.08);color:var(--fg);font:inherit}
+button.b.on{background:var(--gold);color:#13233a;border-color:var(--gold)}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.cmp .cell{aspect-ratio:4/3}
+.log{font:12px/1.4 ui-monospace,monospace;color:var(--mut);white-space:pre-wrap;min-height:2.8em}
+.note{font-size:12px;color:var(--mut)}
+</style>
+</head>
+<body class="anchor">
+<main>
+<h1>ソラモ 5方向×4コマ 歩行 QA</h1>
+<p class="sub">試作の受領（v5 シート）＝本番の承認ではない。左向き3つは左右反転。点線＝足もとの基準（全コマ同じ高さ）。</p>
+<div class="grid" id="grid"></div>
+<div class="ctl">
+  <label for="fps">速さ（fps）</label><input id="fps" type="range" min="2" max="16" step="1" value="8"><output id="fpsv"></output>
+  <label for="turn">間の向き（ms）</label><input id="turn" type="range" min="0" max="300" step="10" value="70"><output id="turnv"></output>
+  <label for="sz">表示の高さ（px）</label><input id="sz" type="range" min="48" max="240" step="4" value="100"><output id="szv"></output>
+</div>
+<div class="row">
+  <button class="b" id="play">一時停止</button><button class="b" id="step">1コマ進む</button>
+  <button class="b" id="tour">8方向を順に</button><button class="b" id="rand">ランダムに曲がる</button><button class="b" id="stopT">止まる（正面へ）</button>
+</div>
+<div class="row">
+  <button class="b on" data-bg="">草</button><button class="b" data-bg="bg-dark">濃紺</button><button class="b" data-bg="bg-light">淡</button><button class="b" data-bg="bg-check">市松</button>
+  <button class="b on" id="anc">足もとの線</button>
+</div>
+<p class="log" id="log" aria-live="polite"></p>
+<h2 style="font-size:14px;margin:14px 0 4px">比較：正式の 8コマ（12fps・正面／背面）と試作の 4コマ</h2>
+<div class="cmp" id="cmp"></div>
+<p class="note">中央のマス＝「向きを変える」確認用。周りのマスを押すと、近いほうの回り方で間の向きを1コマずつ通ってその向きへ歩く（歩く位相は続ける・伸縮・回転・クロスフェードはしない）。ゲームの盤では URL に <code>?qaWalk=soramo5</code>。</p>
+</main>
+<script src="../../js/qa/walk5-1016.js"></script>
+<script>
+(function () {
+  'use strict';
+  const Q = window.MMQAW, B = '../../assets/qa/soramo_5dir_1016/', OLD = '../../assets/monsters/walk_25d/solamo/';
+  // 3×3 の並び（中央＝確認用）。sector 0＝上（奥へ＝背面）・時計回り
+  const LAYOUT = [-1, 0, 1, -2, null, 2, -3, 4, 3];
+  const NAME = { 0: '奥（背面）', 1: '右奥（斜め後ろ）', 2: '右（横）', 3: '右手前（斜め前）', 4: '手前（正面）', '-1': '左奥（反転）', '-2': '左（反転）', '-3': '左手前（反転）' };
+  const st = { fps: 8, turn: 70, sz: 100, play: true, phase: 0, last: 0, demo: { sector: 4, q: [], until: 0, walking: false } };
+  const pre = {}; for (const k of Q.KEYS) for (let i = 1; i <= 4; i++) { const im = new Image(); im.src = `${B}soramo_${k}_${i}.webp`; pre[k + i] = im; }
+  const grid = document.getElementById('grid'), cells = [];
+  for (const s of LAYOUT) {
+    const b = document.createElement(s == null ? 'div' : 'button'); b.className = 'cell' + (s == null ? ' center' : ''); if (s != null) { b.type = 'button'; b.dataset.s = s; b.setAttribute('aria-label', NAME[s] + 'へ向きを変える'); }
+    b.innerHTML = `<b>${s == null ? '向きを変える' : NAME[s]}</b><i class="an"></i><img class="spr" alt="" draggable="false">`;
+    grid.appendChild(b); cells.push({ el: b, img: b.querySelector('img'), s });
+    if (s != null) b.addEventListener('click', () => turnTo(s));
+  }
+  const center = cells[4];
+  const cmp = document.getElementById('cmp'), cmpC = [];
+  for (const [lab, kind, k] of [['正式 8コマ・正面', 'old', 'front'], ['試作 4コマ・正面', 'new', 'front'], ['正式 8コマ・背面', 'old', 'back'], ['試作 4コマ・背面', 'new', 'back']]) {
+    const d = document.createElement('div'); d.className = 'cell'; d.innerHTML = `<b>${lab}</b><i class="an"></i><img class="spr" alt="" draggable="false">`; cmp.appendChild(d); cmpC.push({ img: d.querySelector('img'), kind, k });
+  }
+  const log = document.getElementById('log');
+  function src(set, i) { return `${B}soramo_${set}_${(i % 4) + 1}.webp`; }
+  function setImg(img, set, flip, i) { const u = src(set, i); if (img.dataset.u !== u) { img.src = u; img.dataset.u = u; } img.classList.toggle('flip', !!flip); }
+  function turnTo(s) {
+    const d = st.demo, path = Q.turnPath(d.sector, s);
+    d.q = path.concat([s]); d.until = 0; d.walking = true;
+    log.textContent = `${NAME[d.sector]} → ${NAME[s]}\n通る向き：${path.length ? path.map((x) => NAME[x]).join(' → ') : '（なし＝隣の向き）'}`;
+  }
+  function frame(now) {
+    const dt = st.last ? Math.min(100, now - st.last) : 16; st.last = now;
+    if (st.play) st.phase += dt / 1000 * st.fps;
+    const i = Math.floor(st.phase);
+    for (const c of cells) if (c.s != null) { const L = Q.look(c.s); setImg(c.img, L.set, L.flip, i); }
+    const d = st.demo;
+    if (d.q.length && now >= d.until) { d.sector = d.q.shift(); d.until = now + (d.q.length ? st.turn : 0); if (!d.q.length && d.stopAfter) { d.walking = false; d.stopAfter = false; } }
+    { const L = Q.look(d.sector); setImg(center.img, L.set, L.flip, d.walking ? i : 0); }
+    const oi = Math.floor(st.phase / st.fps * 12);
+    for (const c of cmpC) { if (c.kind === 'new') setImg(c.img, c.k, false, i); else { const u = `${OLD}solamo_walk_${c.k}_0${(oi % 8) + 1}.webp`; if (c.img.dataset.u !== u) { c.img.src = u; c.img.dataset.u = u; } } }
+    requestAnimationFrame(frame);
+  }
+  const bind = (id, k, fmt) => { const e = document.getElementById(id), o = document.getElementById(id + 'v'); const f = () => { st[k] = Number(e.value); o.textContent = fmt(st[k]); document.documentElement.style.setProperty('--sz', st.sz); }; e.addEventListener('input', f); f(); };
+  bind('fps', 'fps', (v) => `${v}（1周 ${(4 / v).toFixed(2)}秒）`); bind('turn', 'turn', (v) => v + 'ms'); bind('sz', 'sz', (v) => v + 'px');
+  // 正式 8コマのセル（384 の中で体の高さ 約330）と試作（344 の中で体 約294）を同じ体の大きさで比べる
+  //  高さ＝体の高さをそろえる（0.855／0.859）・足の下の余白の差（試作 26/344・正式 23/384）だけ下へずらす
+  const fixCmp = () => cmpC.forEach((c) => { if (c.kind === 'old') { c.img.style.height = `calc(var(--sz) * ${(0.855 / 0.859).toFixed(4)} * 1px)`; c.img.style.transform = `translate(-50%, ${(23 / 384 * 100).toFixed(2)}%)`; } });
+  fixCmp();
+  document.getElementById('play').addEventListener('click', (e) => { st.play = !st.play; e.target.textContent = st.play ? '一時停止' : '再生'; });
+  document.getElementById('step').addEventListener('click', () => { st.play = false; document.getElementById('play').textContent = '再生'; st.phase = Math.floor(st.phase) + 1; });
+  let tourT = 0;
+  document.getElementById('tour').addEventListener('click', () => { clearInterval(tourT); let k = 0; const seq = [0, 1, 2, 3, 4, -3, -2, -1, 0]; turnTo(seq[k++]); tourT = setInterval(() => { if (k >= seq.length) return clearInterval(tourT); turnTo(seq[k++]); }, 1400); });
+  document.getElementById('rand').addEventListener('click', () => { clearInterval(tourT); tourT = setInterval(() => turnTo(Math.floor(Math.random() * 8) - 3), 900); });
+  document.getElementById('stopT').addEventListener('click', () => { clearInterval(tourT); turnTo(4); st.demo.stopAfter = true; });
+  document.querySelectorAll('[data-bg]').forEach((b) => b.addEventListener('click', () => { document.body.classList.remove('bg-dark', 'bg-light', 'bg-check'); if (b.dataset.bg) document.body.classList.add(b.dataset.bg); document.querySelectorAll('[data-bg]').forEach((x) => x.classList.toggle('on', x === b)); }));
+  document.getElementById('anc').addEventListener('click', (e) => { document.body.classList.toggle('anchor'); e.target.classList.toggle('on'); });
+  window.QAW_STATE = st;
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
