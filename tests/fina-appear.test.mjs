@@ -16,9 +16,9 @@ const fnSrc = (name) => { const i = HTML.indexOf(`function ${name}(`); if (i < 0
 const FT = new Function(`${HTML.slice(HTML.indexOf('const FINA_TALK='), HTML.indexOf('\nfunction finaFlags('))}\nreturn FINA_TALK;`)();
 const L = (k) => FT[k].map((x) => [x.expression, x.text]);
 
-test('FA-1：会話の文章と表情は指定どおり（あいさつ・育成開始〔初回／2回目以降〕・育成完了）', () => {
-  assert.deepEqual(L('intro'), [['smile', 'はじめまして。私はフィナです！'], ['normal', 'これからあなたのモンスター育成をお手伝いしますね。'], ['guide', 'まずは市場へ行って、一緒に育てるモンスターを迎えてみましょう！']]);
-  assert.deepEqual(FT.intro.map((x) => x.anim || null), [null, null, null], '2026-10-04 G2：街の案内は手を振り続けるアニメ（wave のループ）をやめ、行ごとの表情だけで見せる（実機で不自然）');
+test('FA-1：会話の文章と表情は指定どおり（あいさつ＝2026-10-17 有料版ボイス フィナ 009 の書き起こし・育成開始〔初回／2回目以降〕・育成完了）', () => {
+  assert.deepEqual(L('intro'), [['smile', 'はじめまして。私はフィナ。'], ['smile', 'わからないことがあったら何でも聞いてね。'], ['smile', 'これからよろしく。'], ['normal', 'これからあなたのモンスター育成をお手伝いしますね。'], ['guide', 'まずは市場へ行って、一緒に育てるモンスターを迎えてみましょう！']]);
+  assert.deepEqual(FT.intro.map((x) => x.anim || null), [null, null, null, null, null], '2026-10-04 G2：街の案内は手を振り続けるアニメ（wave のループ）をやめ、行ごとの表情だけで見せる（実機で不自然）');
   assert.deepEqual(L('raiseFirst'), [['serious', '育成を始めると、途中で街には戻れないから気をつけてね。'], ['normal', 'この子の育成を始める？']], '初回は説明のあと確認');
   assert.deepEqual(L('raiseAgain'), [['normal', 'この子の育成を始める？']], '2回目以降は確認だけ');
   const CH = [{ id: 'start', label: '始める' }, { id: 'cancel', label: 'まだやめておく' }];

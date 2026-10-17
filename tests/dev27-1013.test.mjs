@@ -40,8 +40,9 @@ test('D27-02：門の飾りだけ出さない・大会会場は透けない・�
 test('D27-03：声＝「よっ」の場面は止める・「やるじゃん」はボードの会話の行・施設の入口のアップと一言', () => {
   const w = {}; new Function('window', rd('js/npc/voice-cues.js'))(w); const V = w.MMVOICE;
   assert.equal(V.CUES['ryu.appear'].on, false); assert.ok(V.LINE_VOICE.ryu_praise);
-  assert.match(HTML, /const FAC_ENTRY=\{ranch:\{npc:"nick",expr:"gentle",text:"今日も元気そうだな。",bg:\(\)=>RANCH_BG\},farm:\{npc:"dan",expr:"cheer",text:"よう、準備はできたか？"/);
-  assert.match(HTML, /lab:\{npc:"elliot",expr:"smile",text:"やあ。",bg:\(\)=>LAB_BG\}/, '06：エリオットの「やあ」は笑顔');
+  // 2026-10-17：一言＝有料版ボイスの各 NPC 002 の書き起こし（tests/voice-paid-1017.test.mjs の VP-05）
+  assert.match(HTML, /const FAC_ENTRY=\{ranch:\{npc:"nick",expr:"gentle",text:"おお、よく来たな。モンスターたちは今日も元気だぞ。",bg:\(\)=>RANCH_BG\},farm:\{npc:"dan",expr:"cheer",text:"お、来たな。少し休んでくか？ 出発の準備ならいつでも手伝うぞ。"/);
+  assert.match(HTML, /lab:\{npc:"elliot",expr:"smile",text:"おや、来てくれたんだね。今日も何か新しい発見がありそうだ。",bg:\(\)=>LAB_BG\}/, '06：エリオットは笑顔');
   assert.match(HTML, /function facEntryOn\(fac\)\{return !!FAC_ENTRY\[fac\]&&!window\.MM_QA_NO_NPC/);
 });
 

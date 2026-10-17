@@ -88,7 +88,7 @@ test('D28-02：鳴らし方＝勝利の sfx(3) は BATTLE_WIN（旧 VICTORY は�
   assert.match(sfx, /if\(AU\.fight3==1\)\{setTimeout\(battleBgmGo,450\);return "BATTLE_START"\}return "BATTLE_WIN"\}/, 'バトル中の2回目の sfx(3)＝勝利＝BATTLE_WIN');
   assert.doesNotMatch(sfx.split('//')[0], /VICTORY/, 'コードの中では旧 VICTORY を返さない');
   const rj = lineOf(/^function resultJingle\(/);
-  assert.match(rj, /^function resultJingle\(win,b\)\{if\(!b\|\|b\.dataset\.rj\)return;b\.dataset\.rj=win\?"win":"lose";(?:try\{rjLock\(win,b\)\}catch\(e\)\{\})?try\{MMAUDIO\.stopBgm\(\{fade:"quick"\}\)\}catch\(e\)\{\}clearTimeout\(AU\.btT\);AU\.btT=null;AU\.btScene=null;if\(!win\)try\{MMAUDIO\.se\("BATTLE_LOSE"\)\}catch\(e\)\{\}\}/, '1回だけ（data-rj）・戦闘の BGM を短く止める・保留中の戦闘曲（battleBgmGo の予約）も取り消す・LOSE の曲');
+  assert.match(rj, /^function resultJingle\(win,b\)\{if\(!b\|\|b\.dataset\.rj\)return;b\.dataset\.rj=win\?"win":"lose";(?:try\{rjLock\(win,b\)\}catch\(e\)\{\})?try\{MMAUDIO\.stopBgm\(\{fade:"quick"\}\)\}catch\(e\)\{\}clearTimeout\(AU\.btT\);AU\.btT=null;AU\.btScene=null;if\(!win\)try\{MMAUDIO\.se\("BATTLE_LOSE"\)\}catch\(e\)\{\}[\s\S]*monCry\(sp,"sad",5050[\s\S]*\}/, '1回だけ（data-rj）・戦闘の BGM を短く止める・保留中の戦闘曲（battleBgmGo の予約）も取り消す・LOSE の曲');
   const ban = lineOf(/^function ban\(/);
   assert.match(ban, /resultJingle\(/, 'fight() の決着の帯（ban＝Phase 6 の外の関数）から呼ぶ');
   assert.match(ban, /"WIN!"/); assert.match(ban, /"LOSE"/);

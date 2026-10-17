@@ -159,10 +159,11 @@ test('AS-06：表情の切り替えはデータ：旧い表情名は新しい4�
 
 test('AS-07：初回の会話（特訓＝フィナ ↔ ゲンシン、アイテム屋＝フィナ ↔ おばあちゃん）と再訪の一言（アイテム屋は条件つきだけ・毎回は出さない）。記録は S.npcFlags.first の任意項目（セーブ形式は変えない）', () => {
   const { NE, P8 } = load();
-  const tr = NE.first('train'); assert.deepEqual(tr.map((l) => [l.npc, l.expression]), [['fina', 'normal'], ['genshin', 'guide'], ['genshin', 'guide'], ['fina', 'normal']]);
-  assert.equal(tr[1].text, '能力を伸ばすだけなら、道中でもできる。'); assert.equal(tr[2].text, 'ここで覚えるべきなのは、その子の力をどう引き出すかだ。');
-  const sh = NE.first('shop'); assert.deepEqual(sh.map((l) => [l.npc, l.expression]), [['fina', 'normal'], ['shop', 'smile'], ['fina', 'normal']]);
-  assert.equal(sh[1].text, 'いらっしゃい。旅に出るなら、無理をする前に準備しておきなさいね。');
+  // 2026-10-17：初回＝有料版ボイス（フィナ 027 → ゲンシン 001・フィナ 026 → ベルナ 001）の書き起こし。1つの声の中の区切りは sub（ms）で字幕だけ進む
+  const tr = NE.first('train'); assert.deepEqual(tr.map((l) => [l.npc, l.expression]), [['fina', 'normal'], ['fina', 'normal'], ['genshin', 'guide'], ['genshin', 'guide'], ['genshin', 'guide'], ['fina', 'normal']]);
+  assert.equal(tr[0].voice, 'fina_027'); assert.equal(tr[2].voice, 'genshin_001'); assert.equal(tr[2].text, 'フィナか。特訓じゃな。'); assert.equal(tr[3].sub, 3320);
+  const sh = NE.first('shop'); assert.deepEqual(sh.map((l) => [l.npc, l.expression]), [['fina', 'normal'], ['fina', 'normal'], ['shop', 'smile'], ['shop', 'smile'], ['shop', 'smile'], ['fina', 'normal']]);
+  assert.equal(sh[2].voice, 'berna_001'); assert.equal(sh[2].text, 'おやおや、フィナちゃんじゃないかい。今日は新しいお客さんを連れてきたんだね。');
   assert.equal(NE.REVISIT.shop.chance, 0, 'ふつうの一言は出さない（条件のときだけ）');
   assert.equal(NE.revisit('shop', { fatigue: 80 }, () => 0.5).expression, 'worry');
   assert.equal(NE.revisit('shop', { bag: 0, fatigue: 0 }, () => 0.5).expression, 'normal');

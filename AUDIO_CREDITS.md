@@ -519,3 +519,11 @@ ZIP の同梱の OGG／M4A をそのまま置いた（リポジトリの側で�
 - 対応：js/audio/audio-manager.js の `VOICE_BLOCKED = true`（設定に関係なく鳴らさない・取りに行かない）・js/audio/audio-registry.js の `VOICE_REGISTRY` は id・話者・台詞だけ（src は空）・assets/audio/voice/npc_1013/ の音声 54本を削除。
 - 止めていないもの（NPC のボイスとは別の素材）：BGM・SE・観客の声（Pixabay・CROWD_*）・固有スキルの音（Mixkit「Shot light energy flowing」）・サイコロの音・決着の曲。
 - 未解決：git の履歴には旧ファイルが残る（履歴の書き換えはしていない）。台帳は docs/voice-replacement-ledger.md。
+
+## 2026-10-17：NPC の有料ボイス 60本・モンスターの鳴き声 14本（全停止の解除）
+
+- NPC の有料ボイス 60本：ユーザー提供（有料プランで作成・商用利用はユーザー確認済み）。正本＝ZIP Mismon_NPC_PaidVoice60_GenshinV2_20261017 の 02_manifest_v2.tsv（ゲンシン 001／002 は差し替え版）。
+  MP3 を OGG Vorbis q5＋M4A AAC 128k に変換しただけ（原本の MP3 は置かない）。assets/audio/voice/npc_paid_1017/README.md に原本と派生の sha256・書き起こし・gain。`VOICE_BLOCKED = false`。旧い無料の声は使わない（戻していない）。
+- モンスターの鳴き声 14本（7体×正式／悲しみ）：ユーザー提供（ZIP Mismon_MonsterVoice_7x2_20261017_Claude・受領一覧と sha256 14/14 一致）。同じく OGG＋M4A に変換しただけ（無音の切り詰め・ノーマライズなし）。
+  再生の gain だけで聴感の音量をそろえた（normal −15・sad −18 LUFS の目安・sad の持ち上げは +3dB まで）＝assets/audio/voice/monster_1017/README.md・tools/monvoice1017/derive.py。作者表記は納品物に無い＝記載しない。
+- どちらも iPhone の実機での聴取は未確認。

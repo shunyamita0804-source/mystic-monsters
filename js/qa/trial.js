@@ -120,6 +120,7 @@
       '#mmqa .qtabs{flex:none;display:grid;grid-template-columns:repeat(6,1fr);gap:4px;padding:6px}',
       '#mmqa .qtab{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 2px;border:1.5px solid rgba(216,178,90,.5);border-radius:10px;background:#13224f;color:#fff3d6;font:700 10px/1.15 "Noto Sans JP",sans-serif;cursor:pointer;min-width:0}',
       '#mmqa .qtab img{width:100%;max-width:56px;aspect-ratio:1;object-fit:contain}',
+      '#mmqa .qaudg{display:grid;grid-template-columns:repeat(2,1fr);gap:5px}', '#mmqa .qaudg .qbt{display:flex;flex-direction:column;align-items:flex-start;text-align:left;font-size:11px;line-height:1.3;padding:6px}', '#mmqa .qaudg .qbt small{font-size:9.5px;opacity:.8}', '#mmqa .qaudp{overflow:auto}',
       '#mmqa .qtab.on{border-color:#ffde59;background:#24387a;box-shadow:0 0 0 2px rgba(255,222,89,.45)}',
       '#mmqa .qtab i{font-style:normal;font-size:9px;color:#cfd8ff}',
       '#mmqa .qbody{flex:1 1 auto;overflow:auto;-webkit-overflow-scrolling:touch;padding:4px 8px calc(env(safe-area-inset-bottom,0px) + 14px)}',
@@ -151,6 +152,7 @@
       '#bt.mmqa-prev .bui,#bt.mmqa-prev .mmr,#bt.mmqa-prev .gow,#bt.mmqa-prev #go{visibility:hidden!important}',
       '#mmqa .qfx{display:block;font-size:10px;color:#ffd27a}',
       '#mmqa .qwalk{position:fixed;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:10px;background:rgba(4,8,22,.88)}',
+      '#mmqa .qwalk.q7{justify-content:flex-start;overflow:auto;color:#fff3d6}', '#mmqa .qwalk.q7.light{background:rgba(232,236,226,.97);color:#13224f}', '#mmqa .q7g{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:100%;max-width:460px}', '#mmqa .q7c{margin:0;text-align:center;font-size:10px}', '#mmqa .q7c>div{position:relative;aspect-ratio:1;border:1px solid rgba(216,178,90,.4);border-radius:8px}', '#mmqa .q7c img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0}', '#mmqa .q7c img.on{opacity:1}', '#mmqa .q7c.fl img{transform:scaleX(-1)}',
       '#mmqa .qwst{position:relative;width:min(92vw,360px);height:min(46dvh,330px);border:2px solid #d8b25a;border-radius:12px;overflow:hidden;background:#1b2033}',
       '#mmqa .qwst.light{background:#e8e2d0}',
       '#mmqa .qwst i{position:absolute;left:8%;right:8%;bottom:14%;height:2px;background:rgba(255,222,89,.7)}',
@@ -221,16 +223,41 @@
     const cat = catalog(), x = cat[ST.mon] || cat[0];
     const sum = (mv) => mv.status === 'battle' ? '実戦可能' : mv.status === 'preview' ? '技アニメのプレビュー' : '未実装／要仕様確認';
     const monNote = x.key === 'jiol' && !x.moves.some((m) => m.status === 'battle') ? '技の性能が未決＝実戦は無し（技アニメのコマのプレビューだけ）' : x.key === 'flurene' ? (FL() ? '未解禁・技の性能は未承認＝実戦は無し（技アニメのプレビューと歩行の確認だけ）' : '未解禁・技の性能と技アニメは未承認＝静止カードと絵の確認だけ（未実装／要仕様確認）') : x.key === 'regnas' ? 'ライバル専用のモンスター＝QA だけの貸与（本番では使えない）' : x.key === 'razuck' ? '未解禁・正式10技（2026-10-17 確定）を QA 試合で確認できる。絵（待機・表情・カード・対戦表・VS）は参考画像の派生と制作候補＝ユーザーの美術承認前' : '全10技を QA 試合で確認できる';
-    v.innerHTML = `<div class="qh"><b>QA モード：全モンスター・全技試遊（ON）</b><small>試遊専用・通常のセーブには保存しません（OFF または再読み込みで元どおり）</small><small class="qver">版：画面 ${esc(String(G('MM_BUILD') || '?'))}／技アニメ ${esc(String((root.MMTUNE && root.MMTUNE.BUILD) || '古い版'))}${G('MM_BUILD') && root.MMTUNE && root.MMTUNE.BUILD === G('MM_BUILD') ? '' : '（一致しない＝再読み込みしてください）'}</small><button class="qstg" type="button" data-nsfx="1">▶ バトル技ステージ（1技ずつ／全10技を連続再生）</button><button class="qoff" type="button" data-nsfx="1">QA を OFF にして通常へ戻る</button></div>`
+    v.innerHTML = `<div class="qh"><b>QA モード：全モンスター・全技試遊（ON）</b><small>試遊専用・通常のセーブには保存しません（OFF または再読み込みで元どおり）</small><small class="qver">版：画面 ${esc(String(G('MM_BUILD') || '?'))}／技アニメ ${esc(String((root.MMTUNE && root.MMTUNE.BUILD) || '古い版'))}${G('MM_BUILD') && root.MMTUNE && root.MMTUNE.BUILD === G('MM_BUILD') ? '' : '（一致しない＝再読み込みしてください）'}</small><button class="qstg" type="button" data-nsfx="1">▶ バトル技ステージ（1技ずつ／全10技を連続再生）</button><button class="qstg qaud" type="button" data-nsfx="1">♪ 音声の試聴（NPC ボイス 60・モンスターの鳴き声 14）</button><button class="qoff" type="button" data-nsfx="1">QA を OFF にして通常へ戻る</button></div>`
       + `<div class="qtabs" role="tablist">${cat.map((c, i) => `<button class="qtab${i === ST.mon ? ' on' : ''}" type="button" data-i="${i}" data-nsfx="1" role="tab" aria-selected="${i === ST.mon}"><img src="${esc(c.img)}" alt="">${esc(c.name)}<i>${c.moves.filter((m) => m.status === 'battle').length ? '実戦' : c.moves.some((m) => m.status === 'preview') ? 'プレビュー' : '静止画'}</i></button>`).join('')}</div>`
-      + `<div class="qbody"><div class="qmon" data-key="${esc(x.key)}"><img src="${esc(x.img)}" alt=""><div><b>${esc(x.name)}${x.note ? `<small style="display:inline;margin-left:6px">${esc(x.note)}</small>` : ''}</b><small>${esc(monNote)}</small></div><div style="margin-left:auto;display:flex;flex-direction:column;gap:5px">${walkSets(x.key) ? '<button class="qbt qwk" type="button" data-nsfx="1">歩行を確認</button>' : ''}<button class="qbt qcmp" type="button" data-nsfx="1">比較画面を確認</button></div></div>`
+      + `<div class="qbody"><div class="qmon" data-key="${esc(x.key)}"><img src="${esc(x.img)}" alt=""><div><b>${esc(x.name)}${x.note ? `<small style="display:inline;margin-left:6px">${esc(x.note)}</small>` : ''}</b><small>${esc(monNote)}</small></div><div style="margin-left:auto;display:flex;flex-direction:column;gap:5px">${walkSets(x.key) ? '<button class="qbt qwk" type="button" data-nsfx="1">歩行を確認</button>' : ''}<button class="qbt qwk7" type="button" data-nsfx="1">新歩行 10-17（8方向）</button><button class="qbt qcmp" type="button" data-nsfx="1">比較画面を確認</button></div></div>`
       + `<div class="qgrid">${x.moves.map((mv, i) => `<button class="qcard${ST.sel === i ? ' on' : ''}" type="button" data-n="${i}" data-status="${mv.status}" data-nsfx="1"><img src="${esc(mv.src)}" alt="" loading="lazy" decoding="async"><b>${String(mv.no).padStart(2, '0')} ${esc(mv.name)}</b><span class="qst ${mv.status}">${sum(mv)}</span>${mv.anim ? `<span class="qfx">${esc(animTxt(mv.anim))}</span>` : ''}</button>`).join('')}</div></div>`;
     v.querySelector('.qoff').onclick = () => off();
-    v.querySelector('.qstg').onclick = () => stage(ST.mon, 1);
+    v.querySelector('.qstg:not(.qaud)').onclick = () => stage(ST.mon, 1);
+    v.querySelector('.qaud').onclick = () => audition();
     v.querySelectorAll('.qtab').forEach((b) => { b.onclick = () => { ST.mon = +b.dataset.i; ST.sel = null; render(); }; });
     v.querySelectorAll('.qcard').forEach((b) => { b.onclick = () => { ST.sel = +b.dataset.n; detail(); }; });
     v.querySelector('.qcmp').onclick = () => compare(x, null);
     const wk = v.querySelector('.qwk'); if (wk) wk.onclick = () => walk(x);
+    const wk7 = v.querySelector('.qwk7'); if (wk7) wk7.onclick = () => walk7(x);
+  }
+  // ---- 2026-10-17：音声の試聴（QA だけ）＝有料版 NPC ボイス 60本（三伝説の「登録のみ」も qa で1本ずつ）とモンスターの鳴き声 14本を単独で再生。
+  //  再生は本編と同じ経路（MMAUDIO.voice／cry・声の音量・声 OFF・ミュートに従う）。鳴き声の間隔（全体8秒・同じ子10秒）はここでは無視（force）
+  function audition() {
+    const v = doc.getElementById('mmqa'); if (!v) return;
+    const old = v.querySelector('.qaudp'); if (old) { old.remove(); return; }
+    const A = root.MMAUDIO, R = root.MMAUDIO_REGISTRY || {}, VR = R.voice || {}, CR = R.cry || {};
+    const npcs = Object.keys(VR).filter((k) => /_\d{3}$/.test(k)).sort();
+    const NAME = { solamo: 'ソラモ', gauru: 'ガウル', nobiton: 'ノビトン', jiol: 'ジオル', regnas: 'レグナス', flurene: 'フルーネ', razuck: 'ラズック' };
+    const d = doc.createElement('div'); d.className = 'qdet qaudp';
+    const vs = A && A.voiceSettings ? A.voiceSettings() : { on: true };
+    d.innerHTML = `<div><h3>音声の試聴</h3><small>声の設定：${vs.on ? 'オン' : 'オフ（設定でオンにすると鳴る）'}。iPhone では一度画面に触れてから。結果：play＝鳴った・wait＝読み込み中（すぐ鳴る）・disabled／off など＝鳴らない</small>`
+      + `<h3 style="margin-top:8px">モンスターの鳴き声 14本</h3><div class="qaudg">${Object.keys(CR).map((id) => { const m = /^cry_(\w+)_(normal|sad)$/.exec(id); return m ? `<button class="qbt qcry" type="button" data-nsfx="1" data-k="${m[1]}" data-kind="${m[2]}">${esc(NAME[m[1]] || m[1])}・${m[2] === 'sad' ? '悲しみ' : '正式'}<small>gain ${CR[id].gain}</small></button>` : ''; }).join('')}</div>`
+      + `<label style="display:block;margin:6px 0"><input type="checkbox" class="qcwin"${root.MM_CRY_WIN ? ' checked' : ''}> 勝ったときにも正式ボイス（QA の比較だけ・本番は無効）</label>`
+      + `<h3 style="margin-top:8px">NPC ボイス ${npcs.length}本</h3><div class="qaudg">${npcs.map((id) => `<button class="qbt qnpv" type="button" data-nsfx="1" data-id="${esc(id)}">${esc(id)}${VR[id].enabled === false ? '（登録のみ）' : ''}<small>${esc(VR[id].line || '')}</small></button>`).join('')}</div>`
+      + `<p class="qaudr" aria-live="polite"></p><button class="qno" type="button" data-nsfx="1">閉じる</button></div>`;
+    const res = (t) => { const r = d.querySelector('.qaudr'); if (r) r.textContent = t; };
+    const after = (id) => setTimeout(() => { const L = A && A.voiceLog ? A.voiceLog() : []; const e = [...L].reverse().find((x) => x.id === id); const p = A && A.playLog ? [...A.playLog()].reverse().find((x) => x.kind === 'voice' && x.name === id) : null; res(`${id}：${e ? e.result : '—'}${p ? `（${p.dur}ms・gain ${p.gain}）` : ''}`); }, 900);
+    d.querySelectorAll('.qcry').forEach((b) => { b.onclick = () => { if (!A || !A.cry) return; try { A.unlock && A.unlock(); } catch (e) {} A.cry(b.dataset.k, b.dataset.kind, { force: true, maxWaitMs: 3000 }); after(`cry_${b.dataset.k}_${b.dataset.kind}`); }; });
+    d.querySelectorAll('.qnpv').forEach((b) => { b.onclick = () => { if (!A || !A.voice) return; try { A.unlock && A.unlock(); } catch (e) {} A.voice(b.dataset.id, { qa: true, maxWaitMs: 3000 }); after(b.dataset.id); }; });
+    d.querySelector('.qcwin').onchange = (e) => { root.MM_CRY_WIN = !!e.target.checked; };
+    d.querySelector('.qno').onclick = () => { try { A && A.stopVoice && A.stopVoice(60); } catch (e) {} d.remove(); };
+    v.appendChild(d);
   }
   function detail() {
     const v = doc.getElementById('mmqa'); if (!v) return;
@@ -339,6 +366,28 @@
     try { const c = root.MMCH && root.MMCH.getConfig && root.MMCH.getConfig(1), sp = c && c.monsterSprites && c.monsterSprites[key]; return key === 'flurene' && sp && sp.dirs && sp.dirs.front && sp.dirs.back ? sp.dirs : null; } catch (e) { return null; }
   }
   const WK = { t: null };
+  // ---- 2026-10-17：新歩行（7体×5方向×4コマ・assets/monsters/walk_1017/）の確認（QA だけ・開いたときにその種族の20コマだけ読む）。
+  //  8方向＝5方向＋左右反転（左・左斜め後ろ・左斜め前）。旧 8コマの歩行（本編の盤の front／back）と並べて比べる。盤での確認は URL の ?qaWalk=1017
+  function walk7(x) {
+    const v = doc.getElementById('mmqa'); if (!v) return;
+    const old = v.querySelector('.qwalk'); if (old) old.remove();
+    const B = './assets/monsters/walk_1017/' + x.key + '/';
+    const CELLS = [['back', 0, '後ろ'], ['backd', 0, '右斜め後ろ'], ['side', 0, '右'], ['frontd', 0, '右斜め前'], ['front', 0, '前'], ['frontd', 1, '左斜め前（反転）'], ['side', 1, '左（反転）'], ['backd', 1, '左斜め後ろ（反転）']];
+    let OLD = null; try { const c = root.MMCH && root.MMCH.getConfig && root.MMCH.getConfig(1), sp = c && c.monsterSprites && c.monsterSprites[x.key]; OLD = sp && sp.dirs ? ['front', 'back'].filter((k) => sp.dirs[k] && sp.dirs[k].frames).map((k) => [k, sp.dirs[k].frames]) : null; } catch (e) {}
+    const cell = (d, fl, lab) => `<figure class="q7c${fl ? ' fl' : ''}"><div>${[1, 2, 3, 4].map((i) => `<img data-i="${i - 1}" src="${esc(B + d + '_' + i + '.webp')}" alt="" decoding="async">`).join('')}</div><figcaption>${esc(lab)}</figcaption></figure>`;
+    const oldCell = ([k, fr]) => `<figure class="q7c old"><div>${fr.map((f, i) => `<img data-i="${i}" src="${esc(f)}" alt="" decoding="async">`).join('')}</div><figcaption>旧 ${k}（${fr.length}コマ）</figcaption></figure>`;
+    const w = doc.createElement('div'); w.className = 'qwalk q7'; w.setAttribute('role', 'dialog'); w.setAttribute('aria-label', '新歩行の確認');
+    w.innerHTML = `<b>${esc(x.name)}：新歩行 10-17（5方向×4コマ・左は反転）</b><div class="q7g">${CELLS.map((c) => cell(c[0], c[1], c[2])).join('')}</div>`
+      + (OLD && OLD.length ? `<b>旧の歩行（本編の盤・比較用）</b><div class="q7g">${OLD.map(oldCell).join('')}</div>` : '<small>旧の 8コマの歩行は無い種族（本編の盤は静止の立ち絵）</small>')
+      + `<div class="qwbtn"><button type="button" data-a="play" data-nsfx="1">歩く／止める</button><button type="button" data-a="bg" data-nsfx="1">背景 濃／淡</button><button type="button" data-a="close" data-nsfx="1">閉じる</button></div><p class="qwnote">8fps（4コマで 0.5秒の1周）。止めると各向きの2コマ目（足をそろえた姿）。盤の上での確認は URL に ?qaWalk=1017。iPhone の実機は未確認。</p>`;
+    v.appendChild(w);
+    const st = { i: 0, play: true };
+    const draw = () => w.querySelectorAll('.q7c').forEach((c) => { const im = c.querySelectorAll('img'), n = im.length, k = st.play ? st.i % n : (c.classList.contains('old') ? 0 : 1); im.forEach((e, j) => e.classList.toggle('on', j === k)); });
+    draw(); if (WK.t) clearInterval(WK.t);
+    WK.t = setInterval(() => { if (!w.isConnected) { clearInterval(WK.t); WK.t = null; return; } if (st.play) { st.i++; draw(); } }, 125);
+    w.querySelector('.qwbtn').onclick = (e) => { const a = e.target && e.target.dataset && e.target.dataset.a; if (a === 'play') { st.play = !st.play; draw(); } else if (a === 'bg') w.classList.toggle('light'); else if (a === 'close') { clearInterval(WK.t); WK.t = null; w.remove(); } };
+  }
+
   function walk(x) {
     const v = doc.getElementById('mmqa'), D = walkSets(x.key); if (!v || !D) return;
     const old = v.querySelector('.qwalk'); if (old) old.remove();
@@ -426,7 +475,7 @@
     if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', boot); else boot();
   }
 
-  root.MMQA = Object.freeze({
+  root.MMQA = Object.freeze({ audition, walk7: (i) => { const x = catalog()[i]; if (!ST.on || !x) return false; walk7(x); return true; },
     ENABLED, DIRECT, MONS, SAVE_KEY_RE, catalog, counts, statusOf,
     on, off, isOn: () => ST.on, active: () => ST.on, battling: () => ST.battling, snapshot: () => ST.snap,
     select: (i) => { ST.mon = Math.max(0, Math.min(MONS.length - 1, i | 0)); ST.sel = null; render(); }, battle: (i, no) => { if (!ST.on) return false; const x = catalog()[i]; const mv = x && x.moves.find((v) => v.no === no); return x && mv ? (mv.status === 'battle' ? battle(x, mv) : mv.status === 'preview' ? preview(x, mv) : false) : false; },

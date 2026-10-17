@@ -12,9 +12,11 @@
   let P = null; try { P = new URLSearchParams(root.location.search); } catch (e) {}
   const get = (k) => (P ? P.get(k) : null);
   const R1 = ['A', 'B', 'C'].includes(get('ch1trial')) ? get('ch1trial') : null;
-  const QA = !!(R1 || get('ch2trial') || get('qaCam') || get('qaWalk') || get('qaRoad'));
+  const QA = !!(R1 || get('ch2trial') || get('qaCam') || get('qaWalk') || get('qaRoad') || get('qaRoadArt'));
   const G = (n) => { try { return (0, eval)(n); } catch (e) { return undefined; } };
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  /** 2026-10-17：?qaSeed＝出発の乱数を固定（同じ seed＝同じ配置。QA トップ）。無ければ Math.random */
+  function seedRng() { const n = /^\d{1,9}$/.test(get('qaSeed') || '') ? +get('qaSeed') : null; if (n == null) return Math.random; let a = n >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
   function startCh1(route) {
     route = ['A', 'B', 'C'].includes(route) ? route : 'A';
     if (G('TEST_MODE') === false || G('TEST_TOUR') || !root.MMP8 || !root.MMWD || !root.MMWD.isAttached()) return false;
@@ -24,11 +26,13 @@
       const S = G('S');
       if (S.playerNamePending) { S.playerNamePending = false; if (!S.playerName) S.playerName = 'テスト'; }   // ページの中だけ（保存しない）
       // 歩行の比較（?qaWalk=soramo5）はソラモだけ＝連れている子がソラモ以外ならソラモで始める（ページの中だけ・保存しない）
-      const mk = G('mk'), so = !!(root.MMQAW && root.MMQAW.active), base = S.m && !(so && S.m.sp !== 0) ? JSON.parse(JSON.stringify(S.m)) : Object.assign(mk(0), { name: so ? 'ソラモ' : 'テスト' });
+      // 2026-10-17：?qaMon＝0〜4（QA トップで選んだ子）・新歩行（?qaWalk=1017）は7体とも＝ソラモに固定しない
+      const mk = G('mk'), so = !!(root.MMQAW && root.MMQAW.active && !root.MMQAW.new7), qm = /^[0-4]$/.test(get('qaMon') || '') ? +get('qaMon') : null;
+      const base = qm != null ? Object.assign(mk(qm), { name: 'テスト' }) : S.m && !(so && S.m.sp !== 0) ? JSON.parse(JSON.stringify(S.m)) : Object.assign(mk(0), { name: so ? 'ソラモ' : 'テスト' });
       delete base.raise; root.MMP7.ensureProg(base); S.m = base; if (!(Array.isArray(S.inv.bag) && S.inv.bag.length)) { const SP = G('SUPPORT'); if (SP && SP.item) root.MMP7.bagAdd(S, SP.item, 10); }
       const c = root.MMP8.canDepart(S, base); if (!c.ok) throw new Error(c.reason || 'canDepart');
       root.MMWD.setRoute(route);
-      const r = root.MMP8.depart(S, base, Math.random); if (!r.ok || r.key !== 1) throw new Error(r.reason || 'depart');
+      const r = root.MMP8.depart(S, base, seedRng()); if (!r.ok || r.key !== 1) throw new Error(r.reason || 'depart');
       document.querySelectorAll('.tveil,.mmtitle').forEach((e) => e.remove());
       G('board')();
       return true;
@@ -46,6 +50,6 @@
 .qabv b{color:#f3c55a}.qabv small{font-weight:500;opacity:.9}.qabv a{pointer-events:auto;display:inline-block;margin-left:3px;padding:1px 4px;border-radius:6px;border:1px solid rgba(255,255,255,.45);color:#fff;text-decoration:none}.qabv a.on{background:#f3c55a;color:#13233a;border-color:#f3c55a}`;
     document.head.appendChild(s); document.body.appendChild(b);
   }
-  root.MMQAB = Object.freeze({ ch1: R1, qa: QA, startCh1, badge });
+  root.MMQAB = Object.freeze({ ch1: R1, qa: QA, startCh1, badge, seedRng });
   if (QA) root.addEventListener('load', () => setTimeout(() => { if (R1) startCh1(R1); badge(); }, 380));
 })(typeof window !== 'undefined' ? window : globalThis);

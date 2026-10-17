@@ -215,7 +215,7 @@ test('AUDIO-12：Web Audio が使えない環境でも止まらない（<audio> 
 
 /** registry（js/audio/audio-registry.js）を読む：MMAUDIO の偽物に登録させて中身を取り出す */
 function loadRegistry() {
-  const got = { bgm: {}, se: {}, voice: {} }, w = { MMAUDIO: { registerAll: (r) => { Object.assign(got.bgm, r.bgm); Object.assign(got.se, r.se); Object.assign(got.voice, r.voice || {}); } } };
+  const got = { bgm: {}, se: {}, voice: {} }, w = { MMAUDIO: { registerAll: (r) => { Object.assign(got.bgm, r.bgm); Object.assign(got.se, r.se); Object.assign(got.voice, r.voice || {}, r.cry || {}); } } };   // 2026-10-17：鳴き声（cry）も声と同じ規則（OGG＋M4A の対）
   new Function('window', rd('js/audio/audio-registry.js'))(w);
   return { got, REG: w.MMAUDIO_REGISTRY };
 }

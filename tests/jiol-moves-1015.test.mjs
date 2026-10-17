@@ -88,10 +88,10 @@ test('JM-02：実戦の表＝SK 40〜49（威力／100・p／i・命中・CR を
   assert.deepEqual(EFF[42], [{ tg: 0, st: 'atk', lv: 2, t: 2 }]);
   for (let k = 40; k <= 49; k++) if (k !== 42) assert.equal(EFF[k], undefined, `SK ${k}：追加効果なし`);
   const spm = vm.runInContext('[...SPECIAL_MOVES]', E.ctx);
-  assert.deepEqual(J(spm).filter((k) => k >= 40), [48, 49], '必殺技＝ジオインパクト・クリスタルノヴァ（従来の 120 以上の規則）');
+  assert.deepEqual(J(spm).filter((k) => k >= 40 && k <= 49), [48, 49], '必殺技＝ジオインパクト・クリスタルノヴァ（従来の 120 以上の規則）');
   assert.ok(SK[48][2] < SK[47][2] && SK[49][2] < SK[45][2], 'ルーレットの重みは従来の大技と同じ扱い');
   assert.deepEqual(J(vm.runInContext('MMP7.getMoveset(3)', E.ctx)), { initial: [40, 41, 42, 43], po: [44], in: [45], hi: [46], ev: [47], de: [48, 49] }, '初期4＋特訓6');
-  assert.equal(SK.length, 50);
+  assert.equal(SK.length, 70, '2026-10-17：60〜69＝ラズック（50〜59 は空き）');
 });
 
 test('JM-03：実際の計算＝No.6／10 はかしこさ・ほかはちから／No.3＝ダメージ 0・中UP（20%）2T・掛け直しても足さない／No.7＝命中100でも必中ではない', () => {
@@ -119,7 +119,7 @@ test('JM-03：実際の計算＝No.6／10 はかしこさ・ほかはちから�
 
 test('JM-04：技アニメ（SK 40〜49 → 96枚のデータ）・QA は実戦（静止画・プレビューではない）・本番は解禁しない', () => {
   const a = rd('js/battle/art25d.js');
-  assert.match(a, /k >= 40 && k <= 49 \? 3 : -1/); assert.match(a, /const SRC_OF = \{ 0: OFF, 1: GOFF, 2: NOFF, 3: JSK, 4: ROFF \};/);
+  assert.match(a, /k >= 40 && k <= 49 \? 3 : k >= 60 && k <= 69 \? 6 : -1/); assert.match(a, /const SRC_OF = \{ 0: OFF, 1: GOFF, 2: NOFF, 3: JSK, 4: ROFF, 6: ZSK \};/);
   assert.match(a, /JK\.map\[39 \+ \+no\] = D\[no\]/, 'データは No. → SK 40＋No−1');
   assert.match(a, /OFF_DUR = \{ 48: 2700/, 'ジオインパクト（12コマ）は長め');
   const D = (() => { const c = {}; c.window = c; vm.createContext(c); vm.runInContext(rd('js/battle/jiol-moves-data.js'), c); return c.MMJIMV_DATA; })();

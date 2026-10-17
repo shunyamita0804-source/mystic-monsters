@@ -8,7 +8,7 @@
 //  VB-5：フィナ「こんにちは」は新しい音（fina_hello_new.ogg）・ボイス OFF で今回の声はどれも鳴らない・会話を閉じたら止まる
 //  VB-6：音源の HTTP 200（新しい声 24ファイル・BGM の候補 3曲）・試聴ページで BGM の候補が読み込めて再生できる（長さ）・三伝説の声は読み込まない
 //  ★ 2026-10-15 N04：NPC のボイスは全停止（MMAUDIO の VOICE_BLOCKED・ファイルは削除）。このファイルは「声を頼む場面・順番・回数（出しどころの設計）は残っている」を
-//    MMAUDIO.voiceLog（頼まれた声の id・結果は blocked）で確かめ、実際には1本も鳴っていない（playLog に voice が無い）ことを毎回確かめる形に書き直した
+//    ★ 2026-10-17：有料版ボイス 60本で全停止を解除＝voiceLog（頼まれた声の id）で出しどころ・回数を確かめる（遅れて鳴った記録・鳴き声は数えない）
 // =========================================================
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -22,14 +22,14 @@ const OPEN = [];
 const openPage = async (o) => { const p = await L.open(o); OPEN.push(p); return p; };
 test.afterEach(async () => { for (const p of OPEN.splice(0)) await p.ctx.close().catch(() => {}); });
 const shot = (pg, n) => (process.env.MM_SHOT ? pg.screenshot({ path: `${process.env.MM_SHOT}/${n}.png` }) : null);
-/** 頼まれた声の id（2026-10-15 N04：結果はすべて blocked＝鳴っていない。鳴っていたら失敗にする） */
-const voices = (pg, from = 0) => pg.evaluate((b) => { const p = MMAUDIO.playLog().filter((x) => x.kind === 'voice'); if (p.length) throw new Error('NPC の声が鳴った ' + p.map((x) => x.name)); const L = MMAUDIO.voiceLog().slice(b); if (L.some((x) => x.result !== 'blocked')) throw new Error('blocked 以外 ' + JSON.stringify(L)); return L.map((x) => x.id); }, from);
+/** 頼まれた声の id（2026-10-17：有料版ボイスで実際に鳴る＝結果は play／wait など。遅れて鳴った記録（late）・モンスターの鳴き声は数えない） */
+const voices = (pg, from = 0) => pg.evaluate((b) => MMAUDIO.voiceLog().slice(b).filter((x) => !x.late && !x.cry).map((x) => x.id), from);
 const vcount = (pg) => pg.evaluate(() => MMAUDIO.voiceLog().length);
 const askedVoice = (pg, id) => pg.waitForFunction((x) => MMAUDIO.voiceLog().some((e) => e.id === x), id, { timeout: 4000 });
 const NEWV = ['cedric_opening', 'serge_welcome', 'genshin_ack', 'vargas_ack', 'ryu_hello', 'ryu_chuckle', 'ryu_praise', 'fina_hello'];
 async function ready(pg) {
   await pg.mouse.click(4, 300);
-  await pg.waitForFunction((ids) => { const s = MMAUDIO.voiceStatus(); return ids.every((k) => s[k] === 'blocked'); }, NEWV, { timeout: 20000 });   // 2026-10-15 N04：全停止
+  await pg.waitForFunction(() => MMAUDIO.context() && MMAUDIO.context().state === 'running', null, { timeout: 20000 });   // 2026-10-17：有料版ボイス（全停止は解除）
 }
 async function base(pg, stats) {
   await H.newGame(pg, 'テスト');
@@ -169,15 +169,15 @@ test('VB-4：リュウ＝（2026-10-13 開発27：遭遇の「よっ！」なし
   assert.deepEqual(q.errors, []); assert.deepEqual(q.bad, []);
 });
 
-test('VB-5（2026-10-15 N04 で書き直し）：フィナ「こんにちは」の行で声を頼むが鳴らない・ボイスの設定が on でも off でも鳴らない・会話は止まらない', { skip: SKIP, timeout: 120000 }, async () => {
+test('VB-5（2026-10-17 有料版で書き直し）：フィナ「こんにちは」の行で声が鳴る（フィナ 016）・ボイスの設定が on でも off でも出しどころは同じ・会話は止まらない', { skip: SKIP, timeout: 120000 }, async () => {
   const p = await openPage({ size: H.SIZES.base }); const pg = p.page;
   await base(pg);
   let n = await vcount(pg);
   await pg.evaluate(() => { MMNPC.talk(OPEN_TALK.first); });
   await askedVoice(pg, 'fina_hello');
-  assert.equal(await pg.evaluate(() => MMAUDIO.voiceNow()), null, '鳴っていない');
+  await pg.waitForFunction(() => MMAUDIO.voiceNow() === 'fina_016', null, { timeout: 4000 });   // 2026-10-17：フィナ 016「こんにちは。」が実際に鳴る
   await pg.waitForTimeout(400); await pg.evaluate(() => MMNPC.close());   // 1行目の最後に選択肢がある＝閉じる
-  assert.deepEqual(await voices(pg, n), ['fina_hello'], '台詞の行は従来どおり（声は頼むだけ）');
+  assert.deepEqual(await voices(pg, n), ['fina_hello'], '台詞の行は従来どおり');
   for (const on of [false, true]) {
     await pg.evaluate((v) => MMAUDIO.setVoice({ on: v }), on);
     n = await vcount(pg);
@@ -187,21 +187,20 @@ test('VB-5（2026-10-15 N04 で書き直し）：フィナ「こんにちは」�
     await pg.evaluate(() => trScr('', { kind: 'po' })); await pg.waitForTimeout(800);
     await pg.evaluate(() => lobby()); await pg.waitForTimeout(300);
     const v = await voices(pg, n);
-    assert.ok(v.length >= 3, `設定 ${on}：声は頼むが鳴らない ${v}`);
+    assert.ok(v.length >= 3, `設定 ${on}：出しどころは同じ ${v}`);
   }
-  assert.equal(await pg.evaluate(() => MMAUDIO.voiceBlocked()), true);
+  assert.equal(await pg.evaluate(() => MMAUDIO.voiceBlocked()), false);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
-test('VB-6（2026-10-15 N04 で書き直し）：旧い声のファイルは 404・声は1本も取りに行かない・BGM の候補は従来どおり 200 で試聴ページで再生できる', { skip: SKIP, timeout: 120000 }, async () => {
+test('VB-6（2026-10-17 有料版で書き直し）：旧い声のファイルは 404・取りに行くのは有料版の声だけ・BGM の候補は従来どおり 200 で試聴ページで再生できる', { skip: SKIP, timeout: 120000 }, async () => {
   const p = await openPage({ size: H.SIZES.base }); const pg = p.page;
   const asked = []; pg.on('request', (r) => { if (/\/assets\/audio\/voice\//.test(r.url())) asked.push(r.url()); });
   await base(pg);
   await pg.evaluate(() => { MMNPC.talk(OPEN_TALK.first); }); await pg.waitForTimeout(800); await pg.evaluate(() => MMNPC.close());
   await pg.evaluate(() => market()); await pg.waitForTimeout(800); await pg.evaluate(() => lobby());
-  assert.deepEqual(asked, [], 'ゲームは声のファイルを1つも取りに行かない');
-  const st = await pg.evaluate(() => MMAUDIO.voiceStatus());
-  assert.ok(Object.values(st).every((x) => x === 'blocked'));
+  assert.ok(asked.every((u) => /\/assets\/audio\/voice\/(npc_paid_1017|monster_1017)\//.test(u)), '声は有料版（npc_paid_1017）と鳴き声（monster_1017）だけを取りに行く ' + asked);
+  assert.ok(asked.length <= 8, `頼んだ声だけ（一括で読まない）${asked.length}`);
   const old = ['fina_hello_new', 'cedric_opening', 'serge_welcome', 'genshin_ack', 'vargas_ack', 'ryu_chuckle', 'ryu_praise', 'leona_greet', 'astrad_greet'].flatMap((k) => [`assets/audio/voice/npc_1013/${k}.ogg`, `assets/audio/voice/npc_1013/${k}.m4a`]);
   const bgm = ['title_candidate', 'arena_candidate', 'legend_battle_candidate'].map((k) => `assets/audio/bgm/candidates_1013/${k}.ogg`);
   const res = await pg.evaluate(async (fs) => Promise.all(fs.map(async (f) => { const r = await fetch('./' + f); const n = (await r.arrayBuffer()).byteLength; return [f, r.status, n]; })), old.concat(bgm));

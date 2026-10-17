@@ -95,6 +95,7 @@
     for (const [k, v] of Object.entries(r.bgm || r.BGM || {})) { const o = typeof v === 'string' ? { src: v } : (v || { silent: true }); registerBgm(k, o.srcs || o.src || [], o); out.bgm++; }
     for (const [k, v] of Object.entries(r.se || r.SE || {})) { const o = typeof v === 'string' ? { src: v } : (v || { silent: true }); registerSe(k, o.srcs || o.src || [], o); out.se++; }
     for (const [k, v] of Object.entries(r.voice || r.VOICE || {})) { const o = typeof v === 'string' ? { src: v } : (v || {}); try { registerVoice(k, o.srcs || o.src || [], o); out.voice = (out.voice || 0) + 1; } catch (e) { note('voice-reg', k); } }   // 2026-10-13：NPC のボイス
+    for (const [k, v] of Object.entries(r.cry || {})) { const o = v || {}; try { registerVoice(k, o.srcs || o.src || [], { ...o, cry: true }); out.cry = (out.cry || 0) + 1; } catch (e) { note('cry-reg', k); } }   // 2026-10-17：モンスターの鳴き声（同じボイスの経路＝声 OFF で一緒に止まる）
     return out;
   }
   function clearRegistry() { for (const k of Object.keys(BGM)) delete BGM[k]; for (const k of Object.keys(SEF)) delete SEF[k]; }
@@ -471,27 +472,31 @@
   //  利用者の設定（mmvoice の on）に関係なく一切鳴らさない・ファイルも取りに行かない（voice() は 'blocked' を返すだけ・prefetch／load もしない）。
   //  台詞・会話・声の出しどころ（js/npc/voice-cues.js の CUES・LINE_VOICE・会話の行の voice）とその順番・時刻はそのまま残す＝新しい声の差し替え台帳は docs/voice-replacement-ledger.md。
   //  新しい声を有効にするのは、そのライセンスと納品を確かめた別の作業（ここを false にし、VOICE_REGISTRY に新しいファイルを書く）。旧い無料の声を戻さない
-  const VOICE_BLOCKED = true;
-  const VOICE = {};
+  // 2026-10-17：有料版の NPC ボイス 60本（js/audio/audio-registry.js の VOICE_REGISTRY・ライセンスはユーザー確認済み）を接続＝全停止を解除。旧い無料の声は登録に無い（戻さない）
+  const VOICE_BLOCKED = false;
+  const VOICE = {}, VALIAS = {};   // VALIAS＝今までの出しどころの id → 新しいファイルの id（registry の alias）
+  const rid = (id) => (VALIAS[id] && VOICE[VALIAS[id]] ? VALIAS[id] : id);
+  const DECODED_MAX = 6, decoded = [];   // デコード済みの声は最大 6本（iPhone のメモリ）。古いものから捨てる（圧縮のデータもいったん捨てる＝次は取り直す・HTTP のキャッシュ）
   const vs = { on: VDEF.on, vol: VDEF.vol, cur: null, token: 0, wantId: null, ducked: false };
   try { const v = JSON.parse((root.localStorage && root.localStorage.getItem(VKEY)) || 'null'); if (v && typeof v === 'object') { if (typeof v.on === 'boolean') vs.on = v.on; if (Number.isFinite(v.vol)) vs.vol = clamp01(v.vol); } } catch (e) {}
   const vPersist = () => { try { root.localStorage && root.localStorage.setItem(VKEY, JSON.stringify({ on: vs.on, vol: vs.vol })); } catch (e) {} };
   const VOICE_LOG = [];
   function registerVoice(id, src, opts = {}) {
     if (typeof id !== 'string' || !id) throw new Error('MMAUDIO：ボイスの登録が不正です（id）');
+    if (typeof opts.alias === 'string' && opts.alias) { VALIAS[id] = opts.alias; return; }
     const srcs = srcList(src);   // 2026-10-15 N04：ファイルの無い登録（差し替え待ちの台帳＝pending）も受け付ける＝鳴らない
     const g = opts.gain != null ? Number(opts.gain) : 1;
-    VOICE[id] = { id, npc: opts.npc || '', srcs: fz(srcs), gain: Number.isFinite(g) ? Math.max(0, g) : 1, enabled: opts.enabled !== false && srcs.length > 0, pending: !srcs.length, data: null, buffer: null, src: '', failed: false, loading: false, decoding: false, want: null };
+    VOICE[id] = { id, npc: opts.npc || '', srcs: fz(srcs), gain: Number.isFinite(g) ? Math.max(0, g) : 1, enabled: opts.enabled !== false && srcs.length > 0, qaOnly: opts.enabled === false && srcs.length > 0, pre: !!opts.pre, line: typeof opts.line === 'string' ? opts.line : '', pending: !srcs.length, cry: !!opts.cry, data: null, buffer: null, src: '', failed: false, loading: false, decoding: false, want: null };
   }
-  function voiceLoad(id) {
+  function voiceLoad(id, noDecode) {
     if (VOICE_BLOCKED) return;
-    const v = VOICE[id]; if (!v || !v.enabled || v.loading || v.data || v.buffer || v.failed) return;
+    const v = VOICE[id]; if (!v || !(v.enabled || v.qaOnly) || v.loading || v.data || v.buffer || v.failed) return;
     const src = pickSrc(v.srcs); if (!src) { v.failed = true; return; }
     const X = root.XMLHttpRequest; if (typeof X !== 'function') return;
     v.loading = true; v.src = src;
     try {
       const x = new X(); x.open('GET', src, true); x.responseType = 'arraybuffer';
-      x.onload = () => { v.loading = false; if (x.status >= 200 && x.status < 300 && x.response) { v.data = x.response; voiceDecode(id); } else { note('voice-load', src); voiceNext(id, src); } };
+      x.onload = () => { v.loading = false; if (x.status >= 200 && x.status < 300 && x.response) { v.data = x.response; if (!noDecode || v.want) voiceDecode(id); } else { note('voice-load', src); voiceNext(id, src); } };   // noDecode＝圧縮のまま持つだけ（鳴らすときにデコード）
       x.onerror = () => { v.loading = false; note('voice-load', src); voiceNext(id, src); };
       x.send();
     } catch (e) { v.loading = false; v.failed = true; note('voice-load', e); }
@@ -500,11 +505,17 @@
   function voiceDecode(id) {
     const v = VOICE[id], c = st.ctx; if (!v || !c || !v.data || v.buffer || v.decoding) return;
     v.decoding = true;
-    const ok = (buf) => { v.decoding = false; v.data = null; v.buffer = buf; voiceWanted(v); }, ng = (e) => { v.decoding = false; v.data = null; note('voice-decode', id + ' ' + (e && e.message ? e.message : e)); voiceNext(id, v.src); };
+    const ok = (buf) => { v.decoding = false; v.data = null; v.buffer = buf; keepDecoded(v); voiceWanted(v); }, ng = (e) => { v.decoding = false; v.data = null; note('voice-decode', id + ' ' + (e && e.message ? e.message : e)); voiceNext(id, v.src); };
     try { const r = c.decodeAudioData(v.data.slice ? v.data.slice(0) : v.data, ok, ng); if (r && typeof r.then === 'function') r.then(ok, ng).catch(() => {}); } catch (e) { ng(e); }
   }
-  /** 有効な声を先に取ってくる（最初の操作の前は取得だけ・デコードは AudioContext ができてから） */
-  function voicePrefetch() { if (VOICE_BLOCKED || !vs.on) return; for (const id of Object.keys(VOICE)) { const v = VOICE[id]; if (!v.enabled) continue; if (!v.data && !v.buffer) voiceLoad(id); else voiceDecode(id); } }
+  function keepDecoded(v) {
+    const i = decoded.indexOf(v); if (i >= 0) decoded.splice(i, 1); decoded.push(v);
+    while (decoded.length > DECODED_MAX) { const o = decoded.find((x) => !(vs.cur && vs.cur.id === x.id) && x.want == null); if (!o) break; decoded.splice(decoded.indexOf(o), 1); o.buffer = null; }
+  }
+  /** 2026-10-17：起動時・最初の操作では声を一括で読まない（60本＝約 6MB）。登録で pre:true の声だけ（今は無し） */
+  function voicePrefetch() { if (VOICE_BLOCKED || !vs.on) return; for (const id of Object.keys(VOICE)) { const v = VOICE[id]; if (!v.enabled || !v.pre) continue; if (!v.data && !v.buffer) voiceLoad(id, true); } }
+  /** 2026-10-17：これから鳴らす声を圧縮のまま先に取ってくる（施設の入口・会話の前）。デコードは鳴らすとき（1本ずつ）。ids は今までの id でもよい */
+  function voiceWarm(ids) { if (VOICE_BLOCKED || !vs.on) return 0; let n = 0; (Array.isArray(ids) ? ids : [ids]).forEach((x) => { const v = VOICE[rid(x)]; if (v && v.enabled && !v.data && !v.buffer && !v.loading && !v.failed) { voiceLoad(v.id, true); n++; } }); return n; }
   const vlog = (id, result, extra) => { VOICE_LOG.push({ id, result, at: Date.now(), ...(extra || {}) }); if (VOICE_LOG.length > 60) VOICE_LOG.shift(); return result === 'play'; };
   function voiceWanted(v) {
     const w = v.want; v.want = null; if (!w) return;
@@ -520,7 +531,7 @@
     const g = c.createGain(), src = c.createBufferSource();
     g.gain.value = Math.max(0, v.gain * (opts && opts.volume != null ? opts.volume : 1));
     src.buffer = v.buffer; src.connect(g); g.connect(st.voiceGain || st.master);
-    const cur = { id: v.id, src, g, token: vs.token };
+    const cur = { id: v.id, src, g, token: vs.token, startAt: Date.now() + Math.max(0, (opts && opts.delay) || 0) * 1000 };   // startAt＝実際に鳴り始める時刻（字幕を声に合わせる＝js/npc/npc.js）
     src.onended = () => { try { src.disconnect(); g.disconnect(); } catch (e) {} if (vs.cur === cur) { vs.cur = null; duck(false); } };
     src.start(c.currentTime + Math.max(0, (opts && opts.delay) || 0));
     vs.cur = cur; duck(true);
@@ -530,9 +541,9 @@
   function voice(id, opts = {}) {
     try {
       if (VOICE_BLOCKED) return vlog(id, 'blocked');   // 2026-10-15 N04：全停止（設定の on／off に関係なく鳴らさない）
-      const v = VOICE[id];
+      const v = VOICE[rid(id)];
       if (!v) return vlog(id, 'unknown');
-      if (!v.enabled) return vlog(id, 'disabled');
+      if (!v.enabled && !(opts.qa && v.qaOnly)) return vlog(id, 'disabled');   // 2026-10-17：qa＝QA の試聴だけ（三伝説など場面の無い声も1本ずつ聞ける）
       if (!vs.on) return vlog(id, 'off');
       if (isMuted()) return vlog(id, 'muted');
       const c = st.ctx;
@@ -543,7 +554,7 @@
       if (v.failed || wait <= 0) return vlog(id, v.failed ? 'failed' : 'notready');
       stopVoice(40);
       const tok = ++vs.token; v.want = { tok, until: Date.now() + wait, opts }; vs.wantId = id;
-      if (!v.data) voiceLoad(id); else voiceDecode(id);
+      if (!v.data) voiceLoad(v.id); else voiceDecode(v.id);   // 2026-10-17：alias を解いた id で読む
       return vlog(id, 'wait');
     } catch (e) { note('voice', e); return false; }
   }
@@ -563,7 +574,31 @@
     if (st.voiceGain) rampParam(st.voiceGain.gain, vs.on && !VOICE_BLOCKED ? vs.vol : 0, FADE.quick);
     if (!vs.on) stopVoice(60); else voicePrefetch();
   }
+  // ---- 2026-10-17：モンスターの鳴き声 14本（7体×normal／sad）。NPC の声と同じ経路（voiceGain＝声 OFF・ミュートで一緒に止まる・同時に鳴るのは1本）。
+  //  優先＝NPC の声 ＞ 鳴き声：NPC の声が鳴っている・待っている間は鳴らさない（NPC の声が始まれば鳴き声は止まる＝voicePlay の stopVoice）。
+  //  全体の間隔 CRY_GAP_MS（8秒）・同じ個体の間隔は opts.perMs（牧場のタップ＝10秒）。読み込みが間に合わなければ鳴らさない（既定 0.6秒）＝遅れて鳴らない。
+  //  種族の番号（0〜6）か文字ID。表に無い種族（合体などで不明）は鳴らさない（別の種の声を流用しない）
+  const CRY_KEYS = fz(['solamo', 'gauru', 'nobiton', 'jiol', 'regnas', 'flurene', 'razuck']);
+  const CRY_GAP_MS = 8000, cs = { last: 0, per: {} };
+  function cry(sp, kind = 'normal', opts = {}) {
+    const key = typeof sp === 'number' ? CRY_KEYS[sp] : CRY_KEYS.includes(sp) ? sp : null;
+    const id = key && (kind === 'sad' ? 'sad' : kind === 'normal' ? 'normal' : null) ? `cry_${key}_${kind}` : null;
+    if (!id || !VOICE[id]) return vlog(id || 'cry_' + String(sp), 'unknown', { cry: true });
+    const now = Date.now();
+    if ((vs.cur && !/^cry_/.test(vs.cur.id)) || (vs.wantId && !/^cry_/.test(vs.wantId))) return vlog(id, 'npc', { cry: true });
+    if (!opts.force && now - cs.last < (opts.gapMs != null ? opts.gapMs : CRY_GAP_MS)) return vlog(id, 'cool', { cry: true });
+    if (!opts.force && opts.perMs && now - (cs.per[key] || 0) < opts.perMs) return vlog(id, 'cool-mon', { cry: true });
+    const ok = voice(id, { maxWaitMs: opts.maxWaitMs != null ? opts.maxWaitMs : 600, volume: opts.volume, delay: opts.delay });
+    const r = (VOICE_LOG[VOICE_LOG.length - 1] || {}).result;
+    if (ok || r === 'wait') { cs.last = now; cs.per[key] = now; }
+    return ok;
+  }
+  /** これから鳴らすかもしれない鳴き声を圧縮のまま先に取る（デコードは鳴らすとき） */
+  const cryWarm = (sp, kinds = ['normal']) => { const key = typeof sp === 'number' ? CRY_KEYS[sp] : sp; return key ? voiceWarm(kinds.map((k) => `cry_${key}_${k}`)) : 0; };
   const voiceSettings = () => ({ on: vs.on, vol: vs.vol });
+  /** 今鳴っている声の id（alias を解いたもの）と、鳴り始めてからの時間（ms）。鳴っていなければ null */
+  const voicePlaying = () => (vs.cur ? { id: vs.cur.id, ms: Math.max(0, Date.now() - vs.cur.startAt) } : null);
+  const voiceResolve = (id) => rid(id);
   const voiceStatus = () => Object.fromEntries(Object.keys(VOICE).map((k) => [k, VOICE_BLOCKED ? 'blocked' : VOICE[k].enabled ? (VOICE[k].buffer ? 'ready' : VOICE[k].failed ? 'failed' : 'loading') : 'disabled']));
 
   // ---- 音量・ミュート・自動再生の解除・表裏 ----
@@ -635,7 +670,7 @@
   const registryOf = (kind) => (kind === 'se' ? Object.fromEntries(Object.keys(SEF).map((k) => [k, { srcs: [...SEF[k].srcs], gain: SEF[k].gain, silent: !!SEF[k].silent, maxMs: SEF[k].maxMs }])) : Object.fromEntries(Object.keys(BGM).map((k) => [k, { ...BGM[k], srcs: [...BGM[k].srcs] }])));
 
   root.MMAUDIO = fz({ SCENES, SCENE_ALIAS, SE, FADE, registerBgm, registerSe, registerAll, clearRegistry, registryOf, prefetchSe, prefetchBgm, resetBgmPos, attachLegacy, resolveScene, resolveBgm, scene, stopBgm, bgmTime, seekBgm, se, setVolume, setMuted, unlock, wake, context, legacyInput, status, seLog: () => SE_LOG.slice(),
-    registerVoice, voice, stopVoice, setVoice, voiceSettings, voiceStatus, voicePrefetch, voiceBlocked: () => VOICE_BLOCKED, voiceNow: () => (vs.cur ? vs.cur.id : null), voiceLog: () => VOICE_LOG.slice(), playLog: () => PLAY_LOG.map((x) => ({ ...x })), VOICE_DEFAULT: VDEF });
+    registerVoice, voice, stopVoice, setVoice, voiceSettings, voiceStatus, voicePrefetch, voiceWarm, voicePlaying, voiceResolve, voiceAliases: () => ({ ...VALIAS }), voiceIds: () => Object.keys(VOICE).filter((k) => !VOICE[k].cry), cry, cryWarm, cryIds: () => Object.keys(VOICE).filter((k) => VOICE[k].cry), CRY_KEYS, cryReset: () => { cs.last = 0; cs.per = {}; }, voiceBlocked: () => VOICE_BLOCKED, voiceNow: () => (vs.cur ? vs.cur.id : null), voiceLog: () => VOICE_LOG.slice(), playLog: () => PLAY_LOG.map((x) => ({ ...x })), VOICE_DEFAULT: VDEF });
   try { if (root.document) { ['pointerdown', 'touchend', 'keydown'].forEach((e) => root.document.addEventListener(e, unlock, { passive: true })); root.document.addEventListener('visibilitychange', onVisibility); }
     if (root.addEventListener) { root.addEventListener('pageshow', () => { st.hidden = !!(root.document && root.document.hidden); wake(); }); root.addEventListener('focus', () => wake()); } } catch (e) {}
 })(typeof window !== 'undefined' ? window : globalThis);

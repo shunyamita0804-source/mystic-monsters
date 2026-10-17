@@ -169,9 +169,11 @@ T('QA-NG2：開始ボタン → 名前登録画面（初期値「アルト」・
   const lines = await talkLines(pg);
   assert.doesNotMatch(lines[0].img, /animations\/wave\//, '2026-10-04 G2：1行目も静止画（手を振り続けるアニメはやめた）');
   assert.deepEqual(lines.map((l) => [l.idx, l.name, l.expr, l.text, l.img, l.next]), [
-    [0, 'フィナ', 'smile', 'はじめまして。私はフィナです！', 'assets/npc/fina/closeup/smile.webp', true],
-    [1, 'フィナ', 'normal', 'これからあなたのモンスター育成をお手伝いしますね。', 'assets/npc/fina/closeup/normal.webp', true],
-    [2, 'フィナ', 'guide', 'まずは市場へ行って、一緒に育てるモンスターを迎えてみましょう！', 'assets/npc/fina/closeup/guide.webp', true],
+    [0, 'フィナ', 'smile', 'はじめまして。私はフィナ。', 'assets/npc/fina/closeup/smile.webp', true],   // 2026-10-17：フィナ 009 の書き起こし（声は1本・字幕は sub で進む）
+    [1, 'フィナ', 'smile', 'わからないことがあったら何でも聞いてね。', 'assets/npc/fina/closeup/smile.webp', true],
+    [2, 'フィナ', 'smile', 'これからよろしく。', 'assets/npc/fina/closeup/smile.webp', true],
+    [3, 'フィナ', 'normal', 'これからあなたのモンスター育成をお手伝いしますね。', 'assets/npc/fina/closeup/normal.webp', true],
+    [4, 'フィナ', 'guide', 'まずは市場へ行って、一緒に育てるモンスターを迎えてみましょう！', 'assets/npc/fina/closeup/guide.webp', true],
   ], '全文表示のあとに▼が出る');
   await pg.waitForFunction(() => !document.querySelector('.mmtalk'), null, { timeout: 3000 });   // 退場のフェード（約0.22秒）が終わって消える
   const after = await pg.evaluate(() => ({ n: document.querySelectorAll('.mmtalk').length, st: MMNPC.state() }));

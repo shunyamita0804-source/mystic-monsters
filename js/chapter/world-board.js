@@ -504,10 +504,12 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
       }, Math.max(0, minMs - (Date.now() - tStart)));
     });
   }
+  /** 2026-10-17：モンスターの鳴き声（MMAUDIO.cry）。ms 後・when() が真のときだけ。NPC の声が優先・全体の間隔は MMAUDIO 側 */
+  function monCry(sp, kind, ms, when, o) { try { const A = root.MMAUDIO; if (!A || !A.cry || sp == null) return; if (A.cryWarm) A.cryWarm(sp, [kind]); setTimeout(() => { try { if (when && !when()) return; A.cry(sp, kind, o || {}); } catch (e) {} }, ms || 0); } catch (e) {} }
   function intro(m) {
     const f = fieldOf(m); f.introSeen = true; doSave();   // 先に「見た」を保存（途中で再読み込みしても二度出ない）
     V.intro = true; V.el.classList.add('wb-intro'); busySet(true); paint(m);
-    V.world.intro(() => { V.intro = false; busySet(false); if (V.el) V.el.classList.remove('wb-intro'); feel('chapter.start'); if (onBoard() && active(m)) { paint(m); storyAt(m, 'start').then((shown) => { if (shown && onBoard()) paint(m); }); } });
+    V.world.intro(() => { V.intro = false; busySet(false); if (V.el) V.el.classList.remove('wb-intro'); feel('chapter.start'); if (m) monCry(m.sp, 'normal', 1300, () => onBoard() && active(m));   /* 2026-10-17 C：Chapter の開始の俯瞰のあと＝連れている子の正式ボイス（開始の SE のあと・START を押す前。再開・再読み込みでは出ない＝introSeen） */ if (onBoard() && active(m)) { paint(m); storyAt(m, 'start').then((shown) => { if (shown && onBoard()) paint(m); }); } });
   }
 
   // ---- 歩行アニメ（ch1a.js の monsterSprites＝その場歩行の絵。全コマを重ねて置き、見せるコマだけ切り替える＝src を差し替えない）。
@@ -556,8 +558,9 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     const P = root.MMP10M, key = P && P.keyOf ? P.keyOf(m.sp) : null, spr = key && cfg().monsterSprites ? cfg().monsterSprites[key] : null;
     SPR.sets = dirSets(spr); SPR.stand = (spr && spr.standFace) || 'none';
     // 2026-10-16 QA（C）：URL の ?qaWalk=soramo5 のときだけ、ソラモを 5方向×4コマ（左右反転で 8方向）にする（js/qa/walk5-1016.js）。ほかの種族・通常の URL は従来のまま
-    SPR.qa = !!(root.MMQAW && root.MMQAW.active && key === root.MMQAW.species); SPR.sector = null; SPR.turn = null; SPR.tok = (SPR.tok || 0) + 1;
-    if (SPR.qa) { SPR.sets = root.MMQAW.sets(); SPR.sector = 4; el.dataset.qawalk = '1'; }
+    //  2026-10-17：?qaWalk=1017＝7体の新歩行（5方向×4コマ・同じ 8方向の仕組み）
+    SPR.qa = !!(root.MMQAW && root.MMQAW.active && (root.MMQAW.has ? root.MMQAW.has(key) : key === root.MMQAW.species)); SPR.sector = null; SPR.turn = null; SPR.tok = (SPR.tok || 0) + 1;
+    if (SPR.qa) { SPR.sets = root.MMQAW.sets(key); SPR.sector = 4; el.dataset.qawalk = root.MMQAW.new7 ? '1017' : '1'; }
     // 2026-10-11：歩行のコマの高さ・足は「静止の立ち絵が実際に見えている高さ」に合わせる（横に広い立ち絵＝ガウルは箱より低く、上に寄せて置かれる）。--sth＝立ち絵の高さ ÷ 箱の高さ
     const fit = () => { const bh = box.offsetHeight, sh = st.offsetHeight; if (bh > 0 && sh > 0) box.style.setProperty('--sth', String(Math.min(1, sh / bh))); };
     if (st.complete) fit(); else st.addEventListener('load', fit, { once: true });
@@ -876,12 +879,13 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     let foe = null;
     // 2026-10-14 実機試遊㉔：影は、このあとバトルに出る相手と同じ正式の立ち絵（バトルの待機立ち絵 assets/battle/idle/・相手側と同じ向き＝MMARENA.flipOf(1, 種族)）から作る＝形・向きがそろう。
     //  （VS の勝負絵は翼や光が四角い端で切れていて、影にすると四角い塊になる＝使わない）。待機立ち絵の無い種族は正式の 2.5D 立ち絵
-    if (root.MMP10M && root.MMCH && root.MMCH.foeSpecies && typeof root.battleFoeCount === 'function') { const n = root.MMCH.foeSpecies(m, root.battleFoeCount()), sp = root.MMP10M.byId(n), A = root.MMARENA, idle = A && A.idleSrc ? A.idleSrc(n) : null; if (sp && sp.image) foe = { src: idle || sp.image.src, name: sp.name, fl: !!(idle && A.flipOf && A.flipOf(1, n)) }; }
+    if (root.MMP10M && root.MMCH && root.MMCH.foeSpecies && typeof root.battleFoeCount === 'function') { const n = root.MMCH.foeSpecies(m, root.battleFoeCount()), sp = root.MMP10M.byId(n), A = root.MMARENA, idle = A && A.idleSrc ? A.idleSrc(n) : null; if (sp && sp.image) foe = { src: idle || sp.image.src, name: sp.name, sp: n, fl: !!(idle && A.flipOf && A.flipOf(1, n)) }; }
     const sil = bt === 'wild' && !!foe, rare = bt === 'rare';
     ui.insertAdjacentHTML('beforeend', `<div class="chf-enc chf-enc2 wbx wbx-w${rare ? ' rare' : ''}${sil ? ' sil' : ''}" role="status" aria-label="${esc(text)}"><i class="wbx-veil"></i>
       <div class="wbx-stage${foe && foe.fl ? ' fl' : ''}"><i class="wbx-glow"></i>${foe ? `<img class="wbx-mon" src="${esc(foe.src)}" alt="${sil ? '？？？' : esc(foe.name)}" draggable="false">` : ''}${sil ? `<i class="wbx-sil" aria-hidden="true" style="-webkit-mask-image:url('${esc(foe.src)}');mask-image:url('${esc(foe.src)}')"></i>` : ''}</div>
       <div class="wbx-card"><small>${esc(text)}</small><div class="wbx-nm"><b>${sil || !foe ? '？？？' : esc(foe.name)}</b>${rare ? '<em>★ レア</em>' : ''}</div></div></div>`);
     const el = ui.querySelector('.wbx-w:last-child'); feel(cue, { battleType: bt });
+    if (foe && foe.sp != null) monCry(foe.sp, 'normal', 800, () => !!(el && el.isConnected));   // 2026-10-17 D：野生・レアの相手の正式ボイス（遭遇の SE のあと・バトルに入る前）
     await wait(1650);
     if (el) { el.classList.add('out'); await wait(240); el.remove(); }
   }

@@ -19,6 +19,10 @@
   const routeKey = (v) => (v === 'B' || v === 'C' ? v : 'A');
   /** その個体が旧 Chapter 2 の盤（従来のエンジンの配置）を持っているか */
   const oldBoard = (m) => !!(m && isObj(m.raise) && isObj(m.raise.field) && m.raise.field.chapterId === 2 && m.raise.field.world !== 1);
+  // 2026-10-17（main 統合の前の線引き）：新しい Chapter 2 の盤はユーザーの承認前＝通常のプレイには出さない。QA の URL（?ch2trial=A|B|C・?qaCh2=1）か window.MM_CH2_NEW のときだけ。
+  //  通常の URL の Chapter 2 は従来のエンジン（configs/ch2a.js＋field-view）。すでに新しい盤を持っている個体（field.world＝1・chapterId 2）はそのまま続ける
+  const qaOn = () => { if (root.MM_CH2_NEW) return true; try { return /[?&](ch2trial|qaCh2)=/.test(root.location ? root.location.search : ''); } catch (e) { return false; } };
+  const newBoard = (m) => !!(m && isObj(m.raise) && isObj(m.raise.field) && m.raise.field.chapterId === 2 && m.raise.field.world === 1);
   const dataOf = (k) => (root.MMRF_CH2 && root.MMRF_CH2[routeKey(k)]) || null;
   const pool = () => { try { const c = root.MMCH && root.MMCH.getConfig(2); if (c && Array.isArray(c.eventPool)) return c.eventPool; } catch (e) {} return null; };
   // フィナの一言：チュートリアル（このセーブで1回＝Chapter 1 で見ていれば出ない）だけを Chapter 1 と共通に使う。Chapter 1 の景色の一言（ch1_*・w_*）は出さない（Chapter 2 の一言は未承認＝作らない）
@@ -29,10 +33,10 @@
   const W = root.MMWD_MAKE({
     ch: 2, dataOf, pool, story: story(), storyLinesBy: linesBy(), forceVar: 'MM_CH2ROUTE', forceParam: 'ch2route', qaOld: 'MM_QA_OLD_CH2',
     ensureRoute: (f) => routeKey(f && f.route),   // 配置が壊れていたら同じルートの最初から（ルートが分からなければ A）
-    handles: (key, m) => key === 2 && !oldBoard(m),
+    handles: (key, m) => key === 2 && !oldBoard(m) && (qaOn() || newBoard(m)),
     routeName: (seg, k, d) => (d && d.names && d.names[seg]) || (/^D_/.test(seg) ? '寄り道' : 'このまま進む'),
     placeOf: (id, k, d) => (d && d.places && d.places[id]) || (root.MMWD && root.MMWD.PLACE && root.MMWD.PLACE[id]) || null,
     rewardTitle: (id, k, def, d) => (d && d.rewardTitles && d.rewardTitles[id]) || def,
   });
-  root.MMWD2 = Object.freeze(Object.assign({}, W, { oldBoard }));
+  root.MMWD2 = Object.freeze(Object.assign({}, W, { oldBoard, qaOn }));
 })(typeof window !== 'undefined' ? window : globalThis);

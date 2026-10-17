@@ -17,7 +17,10 @@
     'facility.ranch':  { voice: 'nick_hello', on: true },      // 牧場＝ニック
     'facility.shop':   { voice: 'berna_welcome', on: true },   // アイテム屋（補給所）＝ベルナ
     'facility.market': { voice: 'karen_welcome', on: true },   // 市場＝カレン
-    'facility.lab':    { voice: 'elliot_hello_OPTIONAL', on: true },    // 研究所＝エリオット（2026-10-13 開発25：ユーザー提供の「やあ」を再訪の挨拶に採用＝既定 ON。id は開発24 のまま）
+    'facility.lab':    { voice: 'elliot_hello_OPTIONAL', on: true },
+    // 2026-10-17（有料版 60本）：闘技場（ヴァルガス 002）・特訓（ゲンシン 002）の再訪の入口も1回。施設の初回はフィナ 021〜027 → 施設の NPC 001（js/npc/npc-events.js の FIRST の行の voice）
+    'facility.arena':  { voice: 'vargas_hello', on: true },
+    'facility.train':  { voice: 'genshin_train', on: true },    // 研究所＝エリオット（2026-10-13 開発25：ユーザー提供の「やあ」を再訪の挨拶に採用＝既定 ON。id は開発24 のまま）
     // Chapter 1 の世界のボード（フィナの短い反応。案内欄のフィナの顔が話す）
     'fina.discover':   { voice: 'fina_look', on: true, cooldown: 45000 },   // 宝箱・宝の行き止まり・隠れ家（2026-10-15 N06：宝箱のカットインからフィナを外した＝今は呼ぶ所なし。ID は差し替え台帳のために残す）
     'fina.challengeOk':  { voice: 'fina_yeah', on: true },                 // 封印の遺跡門の挑戦に成功
@@ -66,10 +69,12 @@
   /** keep 以外の訪問の記録を消す（街へ戻った・Chapter・バトルへ出た） */
   function visitReset(keep) { for (const k of Object.keys(visit)) if (!keep || !keep.includes(k)) delete visit[k]; }
   /** 会話の行の声（npc.js から） */
-  function line(id) {
-    if (!id || !LINE_VOICE[id]) { push({ line: id, result: 'line-off' }); return false; }
-    const a = A(); if (!a || typeof a.voice !== 'function') return false;
-    const ok = a.voice(id, { maxWaitMs: 350 });
+  function line(id, o) {
+    // 2026-10-17：LINE_VOICE に無い id でも、有料版 60本の登録（MMAUDIO の voiceIds）にあれば鳴らす（施設の初回の会話の行 fina_021 … など）。LINE_VOICE で false にした id は鳴らさない
+    const a = A(), known = !!(a && a.voiceIds && a.voiceIds().includes(a.voiceResolve ? a.voiceResolve(id) : id));
+    if (!id || LINE_VOICE[id] === false || (!LINE_VOICE[id] && !known)) { push({ line: id, result: 'line-off' }); return false; }
+    if (!a || typeof a.voice !== 'function') return false;
+    const ok = a.voice(id, { maxWaitMs: o && o.maxWaitMs != null ? o.maxWaitMs : 350 });
     push({ line: id, result: (a.voiceLog().slice(-1)[0] || {}).result || (ok ? 'play' : 'no') });
     return ok;
   }

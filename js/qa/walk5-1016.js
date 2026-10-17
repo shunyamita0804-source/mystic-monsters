@@ -14,7 +14,12 @@
   let P = null; try { P = new URLSearchParams(root.location.search); } catch (e) {}
   const q = P ? P.get('qaWalk') : null;
   const num = (k, d, lo, hi) => { const x = P && P.get(k) != null ? Number(P.get(k)) : NaN; return Number.isFinite(x) && x >= lo && x <= hi ? x : d; };
-  const ACTIVE = q === 'soramo5' || q === '5dir';
+  // 2026-10-17：?qaWalk=1017（または new7）＝7体の新歩行（2026-10-17 正式納品・5方向×4コマ＝assets/monsters/walk_1017/・tools/walk1017/derive.py）。
+  //  10-16 のソラモ試作（?qaWalk=soramo5）とは別の素材。どちらも QA の比較だけ＝通常の URL は従来の 8コマの歩行。読み込むのは盤に出ている種族の20コマだけ
+  const NEW7 = q === '1017' || q === 'new7';
+  const ACTIVE = q === 'soramo5' || q === '5dir' || NEW7;
+  const BASE7 = './assets/monsters/walk_1017/';
+  const SPEC7 = Object.freeze({"solamo": {"h": 1.258, "foot": 0.104}, "gauru": {"h": 1.32, "foot": 0.104}, "nobiton": {"h": 1.274, "foot": 0.104}, "jiol": {"h": 1.255, "foot": 0.102}, "regnas": {"h": 1.255, "foot": 0.102}, "flurene": {"h": 1.255, "foot": 0.102}, "razuck": {"h": 1.258, "foot": 0.102}});   // tools/walk1017/derive.json（h＝静止の立ち絵に対する箱の高さ・foot＝足の下の余白）
   const FPS = num('qaWalkFps', 8, 2, 24), TURN_MS = num('qaWalkTurn', 70, 0, 400);
   const BASE = './assets/qa/soramo_5dir_1016/';
   const KEYS = ['front', 'back', 'side', 'backd', 'frontd'];
@@ -23,11 +28,14 @@
   // 8つの向き（-3〜4。0＝上＝奥へ）→ 使う絵と左右反転
   const SECT = { 0: ['back', false], 1: ['backd', false], 2: ['side', false], 3: ['frontd', false], 4: ['front', false], '-1': ['backd', true], '-2': ['side', true], '-3': ['frontd', true] };
   const norm = (s) => { s = ((s % 8) + 8) % 8; return s > 4 ? s - 8 : s; };
-  function sets() {
+  function sets(key) {
     const o = {};
+    if (NEW7) { const sp = SPEC7[key || 'solamo']; if (!sp) return o; for (const k of KEYS) o[k] = { frames: [1, 2, 3, 4].map((i) => `${BASE7}${key || 'solamo'}/${k}_${i}.webp`), fps: FPS, idle: 1, h: sp.h, foot: sp.foot, face: k === 'front' || k === 'back' ? 'none' : 'right' }; return o; }
     for (const k of KEYS) o[k] = { frames: [1, 2, 3, 4].map((i) => `${BASE}soramo_${k}_${i}.webp`), fps: FPS, idle: 0, h: H, foot: FOOT, face: k === 'front' || k === 'back' ? 'none' : 'right' };
     return o;
   }
+  /** この種族を 8方向にするか（新歩行＝7体・ソラモの試作＝ソラモだけ） */
+  const has = (key) => ACTIVE && (NEW7 ? !!SPEC7[key] : key === 'solamo');
   /** 画面の上での向き（dx 右が正・sy 下が正）→ { sector, set, flip }。prev＝直前の sector（境目の近くでは保つ） */
   function pick8(dx, sy, prev) {
     if (!dx && !sy) return prev == null ? null : look(prev);
@@ -47,5 +55,5 @@
   }
   /** その回り方（1＝時計回り・-1＝反時計回り・0＝回らない） */
   const rotOf = (path, from) => (path.length ? Math.sign(norm(path[0] - from)) : 0);
-  root.MMQAW = Object.freeze({ rotOf, active: ACTIVE, species: 'solamo', FPS, TURN_MS, KEYS, BASE, H, FOOT, sets, pick8, look, turnPath, norm });
+  root.MMQAW = Object.freeze({ rotOf, active: ACTIVE, new7: NEW7, has, SPEC7, BASE7, species: 'solamo', FPS, TURN_MS, KEYS, BASE, H, FOOT, sets, pick8, look, turnPath, norm });
 })(typeof window !== 'undefined' ? window : globalThis);

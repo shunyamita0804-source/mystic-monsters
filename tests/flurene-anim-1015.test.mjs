@@ -100,7 +100,7 @@ test('FA-04：art25d.js の preview(\'flurene\')・index.html の読み込みの
   assert.ok(html.indexOf('js/battle/jiol-moves-data.js') < html.indexOf('js/battle/flurene-moves-data.js') && html.indexOf('js/battle/flurene-moves-data.js') < html.indexOf('js/battle/art25d.js'));
   const qa = rd('js/qa/trial.js');
   assert.match(qa, /if \(key === 'flurene' && FL\(\) && slot == null\) return 'preview';/);
-  assert.match(qa, /function lendFlurene\(\)/); assert.match(qa, /function unlendFlurene\(\)/);
+  assert.match(qa, /function lendFlurene\(sp\)/);   // 2026-10-17：ラズック（6）にも使う assert.match(qa, /function unlendFlurene\(\)/);
   assert.match(qa, /guardStorage\(false\); unlendFlurene\(\);/, 'OFF で貸した絵を戻す');
   assert.match(qa, /FX追加待ち/);
 });

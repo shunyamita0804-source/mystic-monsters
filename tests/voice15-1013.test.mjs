@@ -65,20 +65,23 @@ test('VC-01（2026-10-15 N04 で書き直し）：旧い声のファイルは今
   }
   for (const [id, h] of Object.entries(OLD)) { assert.ok(!existsSync(path.join(ROOT, VO, id + '.ogg')), id); assert.ok(ledger.includes(h + '  ' + id + '.ogg'), id + ' の sha256 は台帳に'); }
   const files = readdirSync(path.join(ROOT, 'assets/audio/voice'), { recursive: true }).map(String).filter((f) => /\.(ogg|m4a|mp3|wav)$/i.test(f));
-  assert.deepEqual(files, [], 'assets/audio/voice に音声ファイルは1つも無い');
+  assert.deepEqual(files.filter((f) => !f.startsWith('npc_paid_1017/') && !f.startsWith('monster_1017/')), [], '2026-10-17：声のファイルは有料版 60本（npc_paid_1017）だけ＝旧い声は無い');
   const { got } = loadRegistry(), V = got.voice;
   const ids = ['fina_hello', 'cedric_opening', 'serge_welcome', 'genshin_ack', 'vargas_ack', 'ryu_hello', 'ryu_chuckle', 'ryu_praise', 'fina_yeah', 'fina_hmm', 'fina_look', 'fina_hey', 'fina_giggle', 'fina_yes', 'fina_wonder', 'berna_welcome', 'nick_hello', 'dan_hello', 'karen_welcome', 'elliot_hello_OPTIONAL', 'leona_greet', 'leona_prebattle', 'ragnas_greet', 'ragnas_prebattle', 'astrad_greet', 'astrad_prebattle'];
-  assert.deepEqual(Object.keys(V).sort(), ids.slice().sort(), 'id は残す（新しい声の差し替え先）');
-  for (const id of ids) { assert.deepEqual(V[id].src, [], id + ' は src なし'); assert.ok(ledger.includes('`' + id + '`'), id + ' は台帳の表に'); }
-  assert.equal(V.ragnas_greet.npc, 'ragnas'); assert.equal(V.leona_greet.npc, 'leona'); assert.equal(V.astrad_greet.npc, 'astrad'); assert.equal(V.fina_look.line, '見て見て');
+  for (const id of ids) { assert.ok(V[id], id + ' は残す'); assert.ok(ledger.includes('`' + id + '`'), id + ' は台帳の表に'); }
+  // 2026-10-17：差し替え済み＝今までの id は新しいファイルへの alias（「うむ」の2つは新60本に無い＝ファイルなしのまま）
+  for (const id of ids) if (!/_ack$/.test(id)) assert.ok(V[id].alias && V[V[id].alias] && V[V[id].alias].src.length === 2, id + ' → ' + V[id].alias);
+  assert.deepEqual([V.genshin_ack.src, V.vargas_ack.src], [[], []]);
+  assert.equal(V[V.ragnas_greet.alias].npc, 'ragnas'); assert.equal(V[V.leona_greet.alias].npc, 'leona'); assert.equal(V[V.astrad_greet.alias].npc, 'astrad'); assert.equal(V[V.fina_look.alias].line, '見て見て！');
 });
 
 test('VC-02：アストラッドの旧音源は置いていない・登録していない・研究所「やあ」の二重登録は無い', () => {
   const { got } = loadRegistry();
   const all = readdirSync(path.join(ROOT, 'assets/audio'), { recursive: true }).map(String);
-  assert.deepEqual(all.filter((f) => /astrad|アストラッド/i.test(f) && /\.(ogg|m4a|mp3|wav)$/i.test(f)), [], 'アストラッドの声のファイルは無い（2026-10-15 全停止）');
-  assert.deepEqual(Object.keys(got.voice).filter((k) => /astrad/i.test(k)).sort(), ['astrad_greet', 'astrad_prebattle']);
-  assert.equal(Object.keys(got.voice).filter((k) => /elliot/.test(k)).length, 1, 'エリオットの声の id は1つだけ');
+  assert.deepEqual(all.filter((f) => /astrad|アストラッド/i.test(f) && /\.(ogg|m4a|mp3|wav)$/i.test(f)).sort(), ['voice/npc_paid_1017/astrad_001.m4a', 'voice/npc_paid_1017/astrad_001.ogg', 'voice/npc_paid_1017/astrad_002.m4a', 'voice/npc_paid_1017/astrad_002.ogg'], '2026-10-17：アストラッドは有料版の2本だけ（旧音源は無い）');
+  assert.deepEqual(Object.keys(got.voice).filter((k) => /astrad/i.test(k)).sort(), ['astrad_001', 'astrad_002', 'astrad_greet', 'astrad_prebattle']);
+  assert.equal(got.voice.astrad_001.enabled, false, '三伝説は場面が無い＝鳴らさない');
+  const files = Object.values(got.voice).flatMap((v) => v.src || []); assert.equal(new Set(files).size, files.length, '同じファイルを二重に登録しない（今までの id は alias）');
   const REG = rd('js/audio/audio-registry.js'); assert.doesNotMatch(REG, /astrad_(kitaka|chikara)|アストラッド「(来たか|お前の力)/);
   const OLD_ASTRAD = ['d3ad7bda81895d2c9dcbe5a32ced1abfa6dde42509d719c4343a95dbfd1ec552', '3f485d20eb83871cba3fbcb0d0071f410e238b1cca4a62f617793e25ea1938f5'];
   for (const f of all.filter((x) => /\.(mp3|ogg|m4a|wav)$/i.test(x))) assert.ok(!OLD_ASTRAD.includes(sha('assets/audio/' + f)), f);
@@ -87,7 +90,7 @@ test('VC-02：アストラッドの旧音源は置いていない・登録して
 
 test('VC-03：BGM の候補は MMAUDIO に登録しない・今の正式の BGM は変えていない', () => {
   const { got, REG } = loadRegistry();
-  assert.deepEqual(got.keys.sort(), ['bgm', 'bgmCandidates', 'se', 'voice']);
+  assert.deepEqual(got.keys.sort(), ['bgm', 'bgmCandidates', 'cry', 'se', 'voice']);   // 2026-10-17：モンスターの鳴き声（cry）
   const C = REG.bgmCandidates;
   assert.deepEqual(Object.keys(C).sort(), ['ARENA_CANDIDATE', 'LEGEND_BATTLE_CANDIDATE', 'TITLE_CANDIDATE']);
   const H = { TITLE_CANDIDATE: 'd032ae4f001caad1338fd8e1e29e32f443f9ee18736273e76bb9b88172afba25', ARENA_CANDIDATE: 'db1bbbd34c5b4774a282ad9cfc36eadd7befb17ce1f3fdf7eadb3d362157ec31', LEGEND_BATTLE_CANDIDATE: '28f56e01360c7887c7d92df0291af1de7c98ab3324a84456b44e3a27d060f542' };

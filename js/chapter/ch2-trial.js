@@ -24,13 +24,14 @@
     try {
       const S = G('S');
       if (S.playerNamePending) { S.playerNamePending = false; if (!S.playerName) S.playerName = 'テスト'; }   // ページの中だけ（保存しない＝終われば控えたセーブへ戻る）
-      const mk = G('mk'), base = S.m ? JSON.parse(JSON.stringify(S.m)) : Object.assign(mk(0), { name: 'テスト' });
+      let qm = null; try { const v = new URLSearchParams(root.location.search).get('qaMon'); qm = /^[0-4]$/.test(v || '') ? +v : null; } catch (e) {}   // 2026-10-17：?qaMon（QA トップ）
+      const mk = G('mk'), base = qm != null ? Object.assign(mk(qm), { name: 'テスト' }) : S.m ? JSON.parse(JSON.stringify(S.m)) : Object.assign(mk(0), { name: 'テスト' });
       delete base.raise; root.MMP7.ensureProg(base); S.m = base; if (!(Array.isArray(S.inv.bag) && S.inv.bag.length)) { const SP = G('SUPPORT'); if (SP && SP.item) root.MMP7.bagAdd(S, SP.item, 10); }   // 持ち物が無ければ新人支援と同じジャガイモ×10（ページの中だけ）
       const c = root.MMP8.canDepart(S, base); if (!c.ok) throw new Error(c.reason || 'canDepart');
       Object.assign(base.raise, { state: 'farm', ch: 2, log: [{ ch: 1, reachedGoal: true, turnsUsed: 30 }], field: null, fatigue: 0 });
       try { if (root.MMRF_SEA && root.MMRF_SEA.warm) root.MMRF_SEA.warm(); } catch (e) {}   // 正式美術を先に読む（出発の p7Depart と同じ）
       root.MMWD2.setRoute(route);
-      const r = root.MMP8.depart(S, base, Math.random); if (!r.ok || r.key !== 2) throw new Error(r.reason || 'depart');
+      const r = root.MMP8.depart(S, base, root.MMQAB && root.MMQAB.seedRng ? root.MMQAB.seedRng() : Math.random); if (!r.ok || r.key !== 2) throw new Error(r.reason || 'depart');   // 2026-10-17：?qaSeed
       document.querySelectorAll('.tveil,.mmtitle').forEach((e) => e.remove());
       G('board')();
       badge(route);

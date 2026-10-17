@@ -67,37 +67,38 @@ test('DV-01：registry＝観客の声 6本（OGG／M4A の対）・SE の名前�
   assert.match(got.se.CROWD_MISS.src[0], /miss_disappointment_0p5_1p2_700ms/); assert.match(got.se.CROWD_MISS_LONG.src[0], /miss_disappointment_0p5_1p5_1000ms/);
   assert.match(got.se.CROWD_EVADE.src[0], /evade_boo_0p0_0p6_600ms/); assert.match(got.se.CROWD_EVADE_LONG.src[0], /evade_boo_0p0_1p0_1000ms/);
   const ids = Object.keys(got.voice);
-  // 2026-10-15 N04：NPC のボイスは全停止＝id・話者・台詞だけの台帳（src は空・ファイルは削除）。詳しくは tests/voice-stop-1015.test.mjs
-  assert.equal(ids.length, 26);
-  for (const k of ids) { assert.deepEqual(got.voice[k].src, [], `${k} はファイルなし`); assert.ok(got.voice[k].npc && got.voice[k].line, `${k} の話者と台詞`); }
+  // 2026-10-17：有料版 60本（OGG＋M4A）＋今までの id 26（24 は新しいファイルへの alias・「うむ」の2つはファイルなし）。詳しくは tests/voice-paid-1017.test.mjs
+  assert.equal(ids.filter((k) => (got.voice[k].src || []).length === 2).length, 60);
+  assert.equal(ids.filter((k) => got.voice[k].alias).length, 26);
+  for (const k of ids) if (!got.voice[k].alias) assert.ok(got.voice[k].npc && got.voice[k].line, `${k} の話者と台詞`);
   const CR = rd('AUDIO_CREDITS.md'); for (const t of ['観客の声 3種', 'DRAGON-STUDIO', 'Universfield', 'pixabay.com/service/license-summary/', 'NPC のボイス', '利用規約・声の権利関係は、会話からは特定できていない']) assert.ok(CR.includes(t), `AUDIO_CREDITS.md：${t}`);
 });
 
-test('DV-02：ボイス（2026-10-15 N04 から全停止）＝設定 on／off・音量に関係なく鳴らない・取りに行かない・mmaudio は変えない・場面や裏に回っても投げない', async () => {
+test('DV-02：ボイス（2026-10-17 有料版を接続）＝設定 OFF は鳴らさず取りに行かない・ON に戻すと鳴る・mmaudio は変えない・場面や裏に回っても投げない', async () => {
   const { A, log, store, doc } = env();
   new Function('window', rd('js/audio/audio-registry.js'))(Object.assign({}, { MMAUDIO: A }));
-  A.registerVoice('x_file', ['./x.ogg', './x.m4a']);   // ファイルを書いた声でも鳴らない（VOICE_BLOCKED）
   A.unlock(); await tick(30);
-  assert.equal(A.voiceBlocked(), true);
-  assert.ok(Object.values(A.voiceStatus()).every((v) => v === 'blocked'));
-  for (const id of ['fina_yes', 'dan_hello', 'karen_welcome', 'x_file', 'nope']) { assert.equal(A.voice(id, { maxWaitMs: 900 }), false, id); assert.equal(A.voiceLog().slice(-1)[0].result, 'blocked', id); }
-  assert.equal(A.voiceNow(), null);
-  A.setVoice({ on: true, vol: 1 }); assert.equal(A.voice('fina_yes'), false);
-  assert.deepEqual(JSON.parse(store.getItem('mmvoice')), { on: true, vol: 1 }, '設定（mmvoice）は消さずに残す'); assert.equal(store.getItem('mmaudio'), null, 'BGM・SE の設定（mmaudio）は変えない');
-  A.voicePrefetch(); await tick(30);
-  assert.deepEqual(log.xhr.filter((u) => /voice|x\.(ogg|m4a)/.test(u)), [], '声のファイルは取りに行かない');
-  assert.equal(A.playLog().filter((x) => x.kind === 'voice').length, 0);
+  assert.equal(A.voiceBlocked(), false);
+  assert.deepEqual(log.xhr.filter((u) => /voice/.test(u)), [], '最初の操作では声を一括で取りに行かない');
+  A.setVoice({ on: false });
+  for (const id of ['fina_yes', 'dan_hello', 'karen_welcome']) { assert.equal(A.voice(id, { maxWaitMs: 900 }), false, id); assert.equal(A.voiceLog().slice(-1)[0].result, 'off', id); }
+  assert.equal(A.voice('nope'), false); assert.equal(A.voiceLog().slice(-1)[0].result, 'unknown');
+  assert.deepEqual(log.xhr.filter((u) => /voice/.test(u)), [], 'OFF の間は取りに行かない');
+  A.setVoice({ on: true, vol: 1 });
+  assert.deepEqual(JSON.parse(store.getItem('mmvoice')), { on: true, vol: 1 }); assert.equal(store.getItem('mmaudio'), null, 'BGM・SE の設定（mmaudio）は変えない');
+  A.voice('fina_yes', { maxWaitMs: 2000 }); await until(() => A.voiceNow() === 'fina_012');
+  assert.equal(A.playLog().filter((x) => x.kind === 'voice').length, 1);
   A.registerBgm('TOWN', './bgm/t.ogg'); A.registerBgm('MARKET', './bgm/m.ogg');
   assert.doesNotThrow(() => { A.scene('TOWN'); A.voice('karen_welcome'); A.scene('MARKET'); A.stopVoice(); doc.hidden = true; doc.emit('visibilitychange'); doc.hidden = false; doc.emit('visibilitychange'); });
   assert.equal(A.voiceNow(), null);
 });
 
-test('DV-02b：全停止の間は待ち（wait）にも入らない＝あとから遅れて鳴ることもない', async () => {
-  const { A, log } = env({ decodeDelay: 50 });
+test('DV-02b：読み込みが待ちの長さ（maxWaitMs）に間に合わない声は、あとから遅れて鳴らない', async () => {
+  const { A } = env({ decodeDelay: 300 });
   A.registerVoice('v', ['./a.ogg']); A.unlock();
-  assert.equal(A.voice('v', { maxWaitMs: 400 }), false); assert.equal(A.voiceLog().slice(-1)[0].result, 'blocked');
-  await tick(200);
-  assert.equal(A.playLog().length, 0); assert.deepEqual(log.xhr, []);
+  assert.equal(A.voice('v', { maxWaitMs: 100 }), false); assert.equal(A.voiceLog().slice(-1)[0].result, 'wait');
+  await tick(500);
+  assert.equal(A.playLog().filter((x) => x.kind === 'voice').length, 0, '期限を過ぎたら鳴らさない'); assert.equal(A.voiceLog().slice(-1)[0].result, 'drop');
 });
 
 test('DV-03：SE は OGG が読めない（404）→ M4A を1回だけ。どれも駄目なら鳴らさない（投げない）。playLog は start したものだけ（声は 2026-10-15 から全停止）', async () => {
@@ -134,13 +135,13 @@ test('DV-05：出しどころ＝施設は訪問1回に1回・CUES／LINE_VOICE �
   new Function('window', rd('js/npc/voice-cues.js'))(w);
   const V = w.MMVOICE;
   assert.deepEqual(Object.fromEntries(Object.entries(V.CUES).filter(([k]) => /^facility/.test(k)).map(([k, v]) => [k, [v.voice, v.on]])),
-    { 'facility.farm': ['dan_hello', true], 'facility.ranch': ['nick_hello', true], 'facility.shop': ['berna_welcome', true], 'facility.market': ['karen_welcome', true], 'facility.lab': ['elliot_hello_OPTIONAL', true], 'facility.bureau': ['serge_welcome', true] }, '施設と声の対応（市場＝カレン・アイテム屋＝ベルナ・牧場＝ニック・ベースキャンプ＝ダン）');
+    { 'facility.farm': ['dan_hello', true], 'facility.ranch': ['nick_hello', true], 'facility.shop': ['berna_welcome', true], 'facility.market': ['karen_welcome', true], 'facility.lab': ['elliot_hello_OPTIONAL', true], 'facility.bureau': ['serge_welcome', true], 'facility.arena': ['vargas_hello', true], 'facility.train': ['genshin_train', true] }, '施設と声の対応（市場＝カレン・アイテム屋＝ベルナ・牧場＝ニック・ベースキャンプ＝ダン・2026-10-17：闘技場＝ヴァルガス・特訓＝ゲンシン）');
   assert.equal(V.enter('market'), true); assert.equal(V.enter('market'), false, '同じ訪問の中では繰り返さない'); V.visitReset(); assert.equal(V.enter('market'), true, '街へ出て入り直したらまた');
   assert.equal(V.enter('lab'), true, '開発25：エリオットも再訪で鳴る'); assert.deepEqual(played, ['karen_welcome', 'karen_welcome', 'elliot_hello_OPTIONAL']);
   // 開発25 F：初回の案内の訪問は skip（鳴らさずに「この訪問は済み」）→ 同じ訪問では鳴らない・次の訪問で鳴る
   V.visitReset(); assert.equal(V.skip('ranch', 'first-visit'), true); assert.equal(V.enter('ranch'), false, '初回の案内の訪問は鳴らない'); V.visitReset(); assert.equal(V.enter('ranch'), true, '再訪で鳴る');
   // index.html：施設のグループ（ベースキャンプの中のアイテム屋は別の施設・ベースキャンプへ戻ってもダンは繰り返さない）
-  assert.match(HTML, /const FAC_GROUP=\{farm:\["farm"\],shop:\["farm","shop"\],ranch:\["ranch"\],market:\["market"\],lab:\["lab"\],bureau:\["bureau"\]\};/);
+  assert.match(HTML, /const FAC_GROUP=\{farm:\["farm"\],shop:\["farm","shop"\],train:\["farm","train"\],ranch:\["ranch"\],market:\["market"\],lab:\["lab"\],bureau:\["bureau"\],arena:\["arena"\]\};/);
   for (const [fn, fac] of [['function farm(msg,tab){', 'ranch'], ['function market(msg,focus){', 'market'], ['function fmScr(msg){', 'farm'], ['function shopScr(msg,bought,tab){', 'shop'], ['function museum(tab){', 'lab'], ['function bureauScr(tab){', 'bureau']]) {
     const line = HTML.slice(HTML.indexOf(fn), HTML.indexOf('\n', HTML.indexOf(fn))); assert.ok(line.includes(`facVoice("${fac}",`), `${fn} → ${fac}（開発25：初回の案内の訪問かを渡す）`);
   }

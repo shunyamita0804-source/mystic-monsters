@@ -74,8 +74,8 @@ test('FL-02：番号 5 はどの表とも重ならない（SPECIES 0〜3・レ�
   // バトルの表（0〜4）に 5 は無い
   const ar = rd('js/battle/arena.js');
   assert.match(ar, /const IDLE = \{ 0: 'idle_soramo', 1: 'idle_gauru', 2: 'idle_nobiton', 3: 'idle_jiol', 4: 'idle_regnas' \};/, 'arena の待機立ち絵に 5 を足していない');
-  assert.match(ar, /const SCALE = Object\.freeze\(\{ 0: 0\.91, 1: 0\.92, 2: 0\.88, 3: 0\.91, 4: 0\.91 \}\);/);
-  assert.match(rd('js/battle/rules.js'), /const SPECIES = Object\.freeze\(\{ 0: 'solamo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas' \}\);/, '固有スキルの発動の表に 5 は無い');
+  assert.match(ar, /const SCALE = Object\.freeze\(\{ 0: 0\.91, 1: 0\.92, 2: 0\.88, 3: 0\.91, 4: 0\.91, 6: 0\.91 \}\);/);   // 2026-10-17：6＝ラズック（QA だけ）＝5 は無い
+  assert.match(rd('js/battle/rules.js'), /const SPECIES = Object\.freeze\(\{ 0: 'solamo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas', 6: 'razuck' \}\);/, '固有スキルの発動の表に 5 は無い（6＝ラズック 2026-10-17）');
   assert.match(HTML, /\nconst VICTORY_IMG=\["solamo","gauru","nobiton","jiol","regnas"\];/, '勝利の絵は5体のまま');
   assert.match(HTML, /\nconst SP=\[\["ソラモ"[^\n]*\["ガウル"[^\n]*\]\]\];/, '旧 SP（バトルの相手・大会の参加者の種族の数）は2種のまま');
   assert.match(HTML, /\nconst IMG=MMP10M\.SPECIES\.map\(s=>s\.image\.src\);/, 'IMG は SPECIES（0〜3）＋レグナスの 4 だけ');
@@ -91,7 +91,8 @@ test('FL-02：番号 5 はどの表とも重ならない（SPECIES 0〜3・レ�
   //  2026-10-15：技アニメのデータ（flurene-moves-data.js）と art25d.js の QA のプレビュー（preview('flurene')）・歩行の登録（ch1a.js の monsterSprites.flurene＝本編の盤は番号→キーの keyOf で引く＝5 は引けない）・index.html はそのデータの script の1行だけ
   //  2026-10-15 夜：技アニメの試遊修正（move-tune-1015.js＝QA のプレビューの技03／09／10 の修正）・体の面積の表（move-area-1015.js＝コマのファイル名）
   //  2026-10-16：技09 ルートドレイン（rootdrain-1016.js＝8コマ・rules.js＝QA 試遊のときだけ SK 58 と吸収）
-  assert.deepEqual(hits.sort(), ['index.html', 'js/battle/arena.js', 'js/battle/art25d.js', 'js/battle/compare.js', 'js/battle/flurene-moves-data.js', 'js/battle/move-area-1015.js', 'js/battle/move-cards.js', 'js/battle/move-tune-1015.js', 'js/battle/rootdrain-1016.js', 'js/battle/rules.js', 'js/chapter/configs/ch1a.js', 'js/phase10/monsters.js', 'js/qa/battle-stage.js', 'js/qa/trial.js']);
+  //  2026-10-17：鳴き声の種族の表（audio-manager の CRY_KEYS・registry の CRY）・新歩行の表（walk5-1016 の SPEC7）・QA トップの説明文
+  assert.deepEqual(hits.sort(), ['index.html', 'js/audio/audio-manager.js', 'js/audio/audio-registry.js', 'js/battle/arena.js', 'js/battle/art25d.js', 'js/battle/compare.js', 'js/battle/flurene-moves-data.js', 'js/battle/move-area-1015.js', 'js/battle/move-cards.js', 'js/battle/move-tune-1015.js', 'js/battle/rootdrain-1016.js', 'js/battle/rules.js', 'js/chapter/configs/ch1a.js', 'js/phase10/monsters.js', 'js/qa/battle-stage.js', 'js/qa/qa-top-1017.js', 'js/qa/trial.js', 'js/qa/walk5-1016.js']);
   assert.deepEqual(HTML.split('\n').filter((l) => l.length < 50000 && /flurene|フルーネ/i.test(l)), ['<script src="./js/battle/flurene-moves-data.js"></script>', '<script src="./js/battle/rootdrain-1016.js"></script><!-- 2026-10-16：フルーネ技09 ルートドレイン（QA 試遊だけ） -->'], 'index.html はデータの読み込みだけ');
   // 大会の参加者の種族は従来どおり（SP.length）
   assert.match(HTML, /MMP8L\.setSpeciesCount\(SP\.length\);/);
@@ -113,7 +114,7 @@ test('FL-03：フルーネの画像2点＝表示用の派生（原本は置か�
 
 test('FL-04：対戦表の顔＝正式のイラスト6枚（6枚目＝フルーネ・レオナではない）・256×256・README の sha256・読めないときの代わり', () => {
   const ar = rd('js/battle/arena.js');
-  assert.match(ar, /const TOUR_ICON = Object\.freeze\(\{ 0: 'solamo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas', 5: 'flurene' \}\);/);
+  assert.match(ar, /const TOUR_ICON = Object\.freeze\(\{ 0: 'solamo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas', 5: 'flurene', 6: 'razuck' \}\);/);   // 6＝ラズック（2026-10-17・QA だけ）
   assert.equal(M.pendingSpecies('flurene').id, 5, 'TOUR_ICON の 5 は予約番号と一致');
   assert.doesNotMatch(ar.match(/const TOUR_ICON = [^\n]*/)[0], /leona|レオナ/i, 'レオナに割り当てない');
   const R = rd('assets/tournament/icons_1015/README.md');

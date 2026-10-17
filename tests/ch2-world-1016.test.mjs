@@ -19,7 +19,7 @@ const FILES = ['js/phase7/progression.js', 'js/phase8/league.js', 'js/phase8/rai
   'js/proto/roadfirst-data.js', 'js/proto/roadfirst-routes.js', 'js/proto/roadfirst-core.js', 'js/proto/roadfirst-play.js', 'js/proto/ch2-routes.js', 'js/chapter/world-driver.js', 'js/chapter/world-driver-ch2.js'];
 const SRC = Object.fromEntries(FILES.map((f) => [f, rd(f)]));
 function load(pre = {}) {
-  const w = { ...pre };
+  const w = { MM_CH2_NEW: true, ...pre };   // 2026-10-17：新しい盤は QA（?ch2trial・MM_CH2_NEW）のときだけ＝CW-07
   for (const f of FILES) new Function('window', 'module', SRC[f])(w, undefined);
   for (const c of w.MMP9C.CHAPTERS) w.MMP7.registerChapterBoard(c.no, c.track, { provisional: false });
   return w;
@@ -144,4 +144,13 @@ test('CW-06：正式美術 68点の派生（欠品 0）・描画が参照する�
   for (const n of ['undersea_bubble_light_fx', 'coral_shoal_edge', 'white_coastal_cliff_edge', 'undersea_cliff_edge']) assert.ok(src.includes(n), n);
   assert.match(rd('js/chapter/world-board.js'), /plate: A2 \+ 'sea_zone_nameplate\.webp'/);
   assert.ok(!src.includes("'shore_foam_edge'"), 'shore_foam_edge は波打ち際（E03）と同じ用途＝使わない');
+});
+
+test('CW-07（2026-10-17 main 統合の前の線引き）：通常の URL の Chapter 2 は従来のエンジン・QA の URL／MM_CH2_NEW のときだけ新しい盤・すでに新しい盤を持つ個体は続ける', () => {
+  const w = load({ MM_CH2_NEW: false, location: { search: '' } }), S = setup(w);
+  assert.equal(w.MMWD2.DRIVER.handles(2, S.m), false, '通常＝旧 Chapter 2');
+  const q = load({ MM_CH2_NEW: false, location: { search: '?ch2trial=B' } }); assert.equal(q.MMWD2.DRIVER.handles(2, setup(q).m), true, '?ch2trial＝新しい盤');
+  const m = { raise: { field: { chapterId: 2, world: 1 } } }; assert.equal(w.MMWD2.DRIVER.handles(2, m), true, '新しい盤を持つ個体はそのまま');
+  assert.equal(w.MMWD2.DRIVER.handles(2, { raise: { field: { chapterId: 2 } } }), false, '旧の盤は旧のまま');
+  assert.match(rd('tests/e2e/harness.mjs'), /MM_CH2_NEW = true/);
 });

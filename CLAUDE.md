@@ -66,6 +66,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 | js/qa/battle-stage.js | **2026-10-16 常設バトル QA のステージ `MMQAS`**：?mmQaTrial=1 の QA 画面の「▶ バトル技ステージ」（開始画面の『QA を開く』からも）。6体（MMQA.catalog＝マスターデータの登録から）×10技を1技ずつ／全10技の連続再生・攻撃側・相手・体格（従来／案A／案B／1〜5＝?mmSize=1 を吸収）・背景（会場／黒／白／紺）・速さ（仮想の時計 window.__mmqaST＝stage.js の ST もこれを通る）・ループ・命中／回避／MISS（MMSTAGE.qaForce＝見せ方だけ）・一時停止・コマ送り。実戦と同じ描画（anim(k, s)・MM25D.preview）。保存しない（QA が ON の間だけ）。§3「バトル最終統合」。旧 trial.html（作業ブランチだけの試遊の入口）は main に持ち込まない＝削除 |
 | js/battle/sk19-v2-1016.js、assets/battle/gauru_sk19_v2_1016/、tools/sk19v2/、docs/sk19_v2_1016/（作業ブランチ claude/claude-md-handoff-check-fcl9lb だけ） | **2026-10-16 ガウル SK19「聖なる炎」承認演出 V2 の試験実装 `MMSK19V2`**：飛行2枚＋胸中心の放射4枚・既存の SK19 の時間枠のまま（当たり＝炎の外縁が相手の中心に届く時刻に1回）・`?sk19time=v2`＝試写と同じ実時間（QA の比較用）・`?sk19=v1`＝前回の演出。main 未統合・未公開・iPhone実機再検収待ち。§3「SK19 承認演出 V2」 |
 | js/qa/trial.js | **QA 試遊モード `MMQA`（2026-10-15）**：URL に ?mmQaTrial=1 のときだけ、牧場・ベースキャンプに『QA：全モンスター・全技試遊 ON/OFF』。ON＝6体×10技（実戦 50＝ジオルの正式10技を含む・技アニメのプレビュー 10＝フルーネ・静止画だけ 0。2026-10-15）・通常のセーブのキー（mr4…）への書き込みを止める・OFF／再読み込みで元どおり。§3「新しいパラメーター比較・QA 試遊モード」 |
+| assets/audio/voice/npc_paid_1017/、assets/audio/voice/monster_1017/、assets/monsters/walk_1017/、js/qa/qa-top-1017.js、js/qa/fresh-1017.js、tools/monvoice1017/、tools/walk1017/ | **2026-10-17 統合便 v2**：NPC の有料ボイス 60本（本編で鳴る）・モンスターの鳴き声 14本（MMAUDIO.cry・出しどころ A〜E）・新歩行 7体×20コマ（?qaWalk=1017 の QA だけ）・QA トップ（?qaTop=1）・初見プレイの隔離セーブ（?qaFresh=1）。§3「2026-10-17 統合便 v2」 |
 | js/battle/flurene-moves-data.js、assets/battle/flurene_moves_1015/、tools/flurene1015/、assets/monsters/walk_25d/flurene/、tools/walk25d/derive_flurene.py | **フルーネの技アニメ 77枚（本体 42＋効果 35）と 2.5D 歩行 16コマ（2026-10-15）**：未解禁＝本編には出ない。技アニメは QA 試遊モードのプレビュー（MM25D.preview('flurene', No)＝SK の番号なし・判定なし）だけ、歩行は ch1a.js の monsterSprites.flurene.dirs（QA の「歩行を確認」で再生）。§3「フルーネの技アニメ・歩行（2026-10-15）」 |
 | js/battle/move-cards.js、assets/moves/cards_1014/、tools/movecards1014/、prototype/movecards_1014/ | **正式5体×10技＝50技の静止カード `MMMVCARD`（2026-10-14 開発30）**：技管理（バトルのルーレットの6枠＝横長の技カード1行・技の一覧・技の詳細）の技の絵。カードの番号→技ID→SK の番号は納品の対応表どおり（ソラモ・ガウル＝OFFICIAL_MOVES の slot・レグナス 20＋No−1・ノビトン 30＋No−1・ジオル＝SK なし）。バトル中のルーレット・技辞典・技データは変えない。確認ページ prototype/movecards_1014/（本編からつながない）。§3「開発30」 |
 | js/battle/movedex.js | **技辞典 `MMMOVEDEX`（2026-10-06）**：技アニメーションの正式資料（assets/moves/）と技の性能を見る画面。技管理の技の詳細・技の一覧・研究所の図鑑の詳細から開く。表示だけ |
@@ -1079,7 +1080,29 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - 暫定・素材待ち：02 スターダストレイの専用光線・07 聖なる炎の三色の弾と着弾・09 ずつきの技カード・10 頭突きの姿・20／21 フルーネの専用 FX（未完成）・市松を均した 37 枚の正しい透過の再納品
 - テスト：tests/battle-tune-1015.test.mjs（BT-01〜06）・実ブラウザ tests/qa-e2e-battle-tune-1015.test.mjs（BTB-1〜4）
 
-### NPC のボイス全停止（2026-10-15 N04。いまの正式。ユーザー指示＝無料で作った NPC の声は商用不可の認識・週末に有料プランで作り直す）
+### 2026-10-17 統合便 v2（道路・音声・歩行・ラズック・QA・初見プレイ。いまの正式。作業ブランチ claude/all4-1017・指示＝ZIP Mismon_Claude_All4Phases_PublicGO_VoicePlacement_20261017_v2）
+
+- **NPC の有料ボイス 60本（正本＝manifest_v2・ゲンシン 001＝9.639秒／002＝4.049秒の差し替え版）**：assets/audio/voice/npc_paid_1017/（OGG q5＋M4A 128k・README に原本と派生の sha256 と書き起こし）。js/audio/audio-manager.js の `VOICE_BLOCKED = false`。
+  registry（js/audio/audio-registry.js の VOICE_REGISTRY）＝60本＋今までの出しどころの id の `alias`（fina_hello→fina_016 など）。三伝説（レオナ・ラグナス・アストラッド）は `enabled:false`＝場面が無い＝QA の試聴だけ（voice(id, { qa:true })）。
+  「うむ」（genshin_ack・vargas_ack）は 60本に無い＝src 空＝鳴らない（長い声を短い相づちに当てない）。止めた cue（ryu.appear）は止めたまま。旧い無料の声は戻さない。
+  - 読み込み：起動・最初の操作では一括で読まない。`voiceWarm(ids)`＝圧縮のまま取る（施設の入口・会話の前）→ 鳴らすときにデコード・デコード済みは最大 6本。
+  - 施設の初回＝フィナ 021〜027 → 施設の NPC 001（市場カレン・牧場ニック・ベースキャンプ ダン・研究所エリオット・闘技場ヴァルガス・アイテム屋ベルナ・特訓ゲンシン）。js/npc/npc-events.js の FIRST＝書き起こしの字幕を区切り（`sub`＝声の頭からの ms）で並べた行＝**声は1本のまま字幕だけ進む**（js/npc/npc.js の sync＝100ms ごとに voicePlaying() を見て jump）。1行目は `voiceWait`（読み込みを最大 4秒待つ）。
+  - 再訪の入口＝各 NPC 002（FAC_ENTRY の一言＝書き起こし）。闘技場（ヴァルガス 002）・特訓（ゲンシン 002）を追加。カレンは来店の会話の1行目「いらっしゃい。」（カレン 002・voice karen_welcome）＋2行目＝状況の一言（無音）＝入口の声は別に鳴らさない。2回目以降のその訪問の中は無音。
+  - あいさつ（FINA_TALK.intro）＝フィナ 009 の書き起こし「はじめまして。私はフィナ。／わからないことがあったら何でも聞いてね。／これからよろしく。」。序盤の声かけの1行目は「こんにちは。」（フィナ 016）を頭に付けた。
+  - 部分一致（声は行の頭の語だけ・本文は従来）：セドリック開幕（001「さあ、いよいよ開幕です！」）・セルジュ受付（001「ようこそ。」）・リュウの勝ち負けの会話（003「やるじゃん！」／009「へへ。」）。未配置の候補＝リュウ 001・002・005〜008・010・011、フィナの残り。
+  - ボイス OFF＝待たずに進む。設定の画面の「ボイス」は切り替えあり（voiceBlocked が false）。
+- **モンスターの鳴き声 14本（7体×正式 normal／悲しみ sad）**：assets/audio/voice/monster_1017/（受領一覧と sha256 14/14 一致・OGG＋M4A・gain＝normal −15／sad −18 LUFS の目安・sad の持ち上げは +3dB まで＝tools/monvoice1017/derive.py）。
+  `MMAUDIO.cry(種族の番号か文字ID, 'normal'|'sad', opts)`＝NPC の声と同じ経路（声 OFF・ミュートで止まる）・**NPC の声が優先**（鳴っている／待っている間は鳴かない・NPC の声が始まれば止まる）・全体の間隔 8秒・同じ子 opts.perMs・読み込みは最大 0.6秒（遅れて鳴らない）・表に無い種族は鳴かない。
+  出しどころ（05_モンスターボイス配置設計）：A 市場の仲間入り（gotShow）・合体の誕生／B 牧場でモンスターをタップ（rnPick・同じ子10秒・全体6秒）／C Chapter の開始（Ch1＝俯瞰のあと・Ch2＝歩いて入る＝再開では鳴らない）／D 野生・レアの遭遇＝相手の声（ライバルは無し）／E LOSE の曲（5.0秒）のあと自分の子の悲しみ。**F＝対象場面なし**（悲しむリアクションの既存イベントはバトルの敗北＝E だけ）。WIN は既定で鳴かない（QA の比較だけ window.MM_CRY_WIN）。バトルの進行・サイコロでは鳴かない。
+- **QA**：?mmQaTrial=1 の QA 画面に「♪ 音声の試聴」（NPC 60本・鳴き声 14本を1本ずつ）と「新歩行 10-17（8方向）」。QA トップ `?qaTop=1`（js/qa/qa-top-1017.js：版・branch・元のコミット・Ch1／Ch2 A／B／C の入口＝カメラ・道路・歩行・`?qaSeed`・`?qaMon` を選ぶ・7体×10技＝70枠の状態・初見プレイ）。
+  初見プレイ `?qaFresh=1`（js/qa/fresh-1017.js＝index.html の最初のスクリプト）：mr4… の鍵をこのページの間だけ `qaF:` を付けた名前へ読み替える＝本当のセーブを読まない・書かない・消さない・再読み込みで続きから・`?qaFresh=reset` で最初から。
+- **新歩行 7体×5方向×4コマ（140）**：assets/monsters/walk_1017/<種族>/{front,back,side,backd,frontd}_1〜4.webp（384px・tools/walk1017/derive.py・README に原本と派生の sha256）。**QA の比較だけ＝`?qaWalk=1017`**（js/qa/walk5-1016.js の NEW7＝10-16 のソラモ試作と同じ 8方向の仕組み・左は反転・盤に出ている種族の20コマだけ読む・止まると front の2コマ目）。通常の URL は従来の 8コマの歩行。フルーネ・ラズックは盤に出せない（未解禁）＝QA 画面の確認だけ。
+- **ラズック**（PENDING_SPECIES の番号 6・SK 60〜69・固有スキル「調子に乗る」＝相手の攻撃を連続で回避 1／2／3回でちから ×1.15／1.30／1.50・被弾で元に戻る）：未解禁＝QA の7体目だけ。カード・表情・対戦表・VS は制作候補（QA の比較だけ）。技アニメ 81枚＝assets/battle/razuck_moves_1017/（tools/razuck1017/build.py）。
+- **Chapter 2 の道路のぼけ**：原因＝preserve-3d の中の層は CSS の箱の大きさで描かれる → 近くの区画の箱を canvas の画素 ÷ 画素比にして transform で縮める（docs/qa_road_1017/REPORT.md §8）。道路の新しい絵は QA だけ（?qaRoadArt）。
+- **main 統合の線引き**：新しい Chapter 2 の盤（js/chapter/world-driver-ch2.js）は QA の URL（?ch2trial・?qaCh2）か window.MM_CH2_NEW のときだけ＝通常のプレイの Chapter 2 は従来のエンジン（harness の worldCh2:true は MM_CH2_NEW を付ける）。C案カメラ・新しい道路の絵・新歩行も URL のフラグのときだけ。Chapter 3 は出さない。
+- テスト：tests/voice-paid-1017（VP-01〜06）・qa-e2e-voice-paid-1017（VPB-1〜3）・qa-e2e-cry-1017（CRY-B1〜B5）・qa-e2e-qatop-1017（QT-B1〜B4）・qa-e2e-razuck-1017（RZ-B1〜B3）・ch2-world-1016 の CW-07。声の全停止を前提にした voice15・dev24・dev25・dev27 の実ブラウザテストは実際に鳴る形に書き直した。
+
+### NPC のボイス全停止（2026-10-15 N04。**2026-10-17 に解除＝下の「統合便 v2」が優先**。ユーザー指示＝無料で作った NPC の声は商用不可の認識・週末に有料プランで作り直す）
 
 - **ゲームで NPC の声は一切鳴らさない**：js/audio/audio-manager.js の `VOICE_BLOCKED = true`（MMAUDIO.voice・voiceLoad・voicePrefetch は何もしない・voice() の結果は 'blocked'・設定がオンでも無音・voiceGain 0）。会話・字幕・合図（js/npc/voice-cues.js の CUES・LINE_VOICE・MMVOICE の呼び出し）と時刻・並びは従来どおり＝声を待たない
 - **声のファイル 27種（54ファイル＝assets/audio/voice/npc_1013/ の OGG・M4A）はリポジトリから削除**＝GitHub Pages で配信されない（公開 URL は 404）。git の履歴（72fbfbc〜2f0c748）には残る＝履歴の書き換え・強制 push はしていない（ユーザーの判断待ち）。CDN（max-age=600）と端末のキャッシュは時間で消える

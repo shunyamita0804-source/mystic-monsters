@@ -28,7 +28,7 @@ test('QB-01：C案カメラは ?qaCam= のときだけ・既定は従来のま�
 
 test('QB-02：QA の入口は QA の URL のときだけ・保存しない', () => {
   const s = rd('js/qa/qa-board-1016.js');
-  assert.match(s, /const QA = !!\(R1 \|\| get\('ch2trial'\) \|\| get\('qaCam'\) \|\| get\('qaWalk'\) \|\| get\('qaRoad'\)\);/);
+  assert.match(s, /const QA = !!\(R1 \|\| get\('ch2trial'\) \|\| get\('qaCam'\) \|\| get\('qaWalk'\) \|\| get\('qaRoad'\) \|\| get\('qaRoadArt'\)\);/);   // 2026-10-17：?qaRoadArt でも札
   assert.match(s, /if \(QA\) root\.addEventListener\('load'/);
   assert.match(s, /TEST_TOUR = \{ snap:/, '試遊の間は TEST_TOUR（save() は何もしない）');
   assert.ok(!/localStorage/.test(s), 'localStorage に書かない');
@@ -62,10 +62,11 @@ test('QW-03：素材＝v5 シート（sha256 一致）から同じ窓で切り�
 });
 test('QW-04：盤につなぐのは ?qaWalk=soramo5 のソラモだけ（ほかの種族・通常の URL は従来）', () => {
   const wb = rd('js/chapter/world-board.js');
-  assert.match(wb, /SPR\.qa = !!\(root\.MMQAW && root\.MMQAW\.active && key === root\.MMQAW\.species\);/);
+  assert.match(wb, /SPR\.qa = !!\(root\.MMQAW && root\.MMQAW\.active && \(root\.MMQAW\.has \? root\.MMQAW\.has\(key\) : key === root\.MMQAW\.species\)\);/);   // 2026-10-17：新歩行7体（?qaWalk=1017）も同じ仕組み
   assert.match(wb, /if \(SPR\.qa\) return qaWalk\(/);
-  assert.match(rd('js/qa/walk5-1016.js'), /const ACTIVE = q === 'soramo5' \|\| q === '5dir';/);
-  assert.match(rd('js/qa/qa-board-1016.js'), /base = S\.m && !\(so && S\.m\.sp !== 0\) \? JSON\.parse\(JSON\.stringify\(S\.m\)\) : Object\.assign\(mk\(0\)/, '?qaWalk のときは連れている子がソラモ以外でもソラモで試遊（ページの中だけ）');
+  assert.match(rd('js/qa/walk5-1016.js'), /const ACTIVE = q === 'soramo5' \|\| q === '5dir' \|\| NEW7;/);   // 2026-10-17：?qaWalk=1017＝7体の新歩行
+  assert.match(rd('js/qa/qa-board-1016.js'), /so = !!\(root\.MMQAW && root\.MMQAW\.active && !root\.MMQAW\.new7\)/);
+  assert.match(rd('js/qa/qa-board-1016.js'), /S\.m && !\(so && S\.m\.sp !== 0\) \? JSON\.parse\(JSON\.stringify\(S\.m\)\) : Object\.assign\(mk\(0\)/, '?qaWalk=soramo5 のときは連れている子がソラモ以外でもソラモで試遊（ページの中だけ）');
   assert.match(rd('index.html'), /<script src="\.\/js\/qa\/walk5-1016\.js"><\/script>/);
 });
 test('QW-05：URL の数の指定が無いときは既定の値（Number(null)＝0 にしない）', async () => {

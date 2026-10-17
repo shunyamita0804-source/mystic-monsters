@@ -770,7 +770,7 @@
     const r = w.getBoundingClientRect(), sc = (w.offsetHeight ? r.height / w.offsetHeight : 1) || 1;
     const dy = Math.max(120, ((root.innerHeight || 800) - r.top + 12) / sc);   // 画面の下の外（カメラの拡大を考えた距離）
     w.style.translate = `0 ${dy.toFixed(0)}px`; fw.classList.remove('chf-monwait'); w.dataset.enter = '1';
-    anim('walk', { speed: 1 }); feel('monster.enter');   // 2026-10-06：画面の下から歩いて入る（正式の4歩の音を1回だけ。1マスごとには鳴らさない）
+    anim('walk', { speed: 1 }); feel('monster.enter'); { const S0 = root.S, mm = S0 && S0.m; if (!quick && mm) monCry(mm.sp, 'normal', 950, () => onField()); }   // 2026-10-17 C：Chapter の開始でモンスターが歩いて入る（4歩の音のあと・開始の演出のときだけ）   // 2026-10-06：画面の下から歩いて入る（正式の4歩の音を1回だけ。1マスごとには鳴らさない）
     const a = w.animate([{ translate: `0 ${dy.toFixed(0)}px` }, { translate: '0 0' }], { duration: quick ? 420 : MON_ENTER.ms, easing: 'cubic-bezier(.22,.62,.3,1)', fill: 'forwards' });
     try { await a.finished; } catch (e) {}
     w.style.translate = ''; try { a.cancel(); } catch (e) {} delete w.dataset.enter;
@@ -1144,6 +1144,8 @@
    *  レア＝同じ作り＋淡い後光・光の粒・札、ライバル＝赤と金の差し色・RIVAL の帯・赤い魔法陣（リュウの正式な立ち絵は無い＝人物は描かない）
    *  絵と文は同じフレームで出し、その瞬間に音（野生 wild.alert／ライバル rival.appear）。読める間だけ見せて消えてからバトルの案内
    */
+  /** 2026-10-17：モンスターの鳴き声（MMAUDIO.cry）。ms 後・when() が真のときだけ（画面が変わっていたら鳴らさない）。NPC の声が優先・全体の間隔は MMAUDIO 側 */
+  function monCry(sp, kind, ms, when, o) { try { const A = root.MMAUDIO; if (!A || !A.cry || sp == null) return; if (A.cryWarm) A.cryWarm(sp, [kind]); setTimeout(() => { try { if (when && !when()) return; A.cry(sp, kind, o || {}); } catch (e) {} }, ms || 0); } catch (e) {} }
   async function encounterShow(BT, bt, m) {
     const ui = $('#chf-ui'), text = BT.encounter || '', rival = bt === 'rival', cue = rival ? 'rival.appear' : bt === 'rare' ? 'rare.alert' : 'wild.alert';   // 2026-10-06：野生・レア・ライバルは別の正式 SE
     if (!ui || V.calm || !text) { feel(cue, { battleType: bt }); if (text) setMsg(text); await wait(V.calm ? 300 : 600); return; }
@@ -1162,6 +1164,7 @@
       ${rival ? '' : `<div class="ce-band"><span>${label}</span></div>`}${BT.badge ? `<em class="ce-badge">${esc(BT.badge)}</em>` : ''}<b class="ce-tx">${esc(text)}</b></div>`);
     const el = ui.querySelector('.chf-enc2:last-child');   // 旧い名前 chf-enc も持つ（待ち合わせ・監査のテストが使う。見た目は .chf-enc2 だけ）
     feel(cue, { battleType: bt });   // 絵と文が出た瞬間
+    if (!rival && root.MMCH && MMCH.foeSpecies && typeof root.battleFoeCount === 'function') { const n = MMCH.foeSpecies(m, root.battleFoeCount()); monCry(n, 'normal', 800, () => !!(el && el.isConnected)); }   // 2026-10-17 D：野生・レアの相手の正式ボイス（遭遇の SE のあと・バトルに入る前）
     // 2026-10-13 開発27（20）：登場の「よっ！」（ryu.appear）は不採用＝鳴らさない（声のファイル・登録は残す）
     await wait(rival ? 1350 : 1500);   // 読める間（文＋絵）
     if (el) { el.classList.add('out'); await wait(220); el.remove(); }
