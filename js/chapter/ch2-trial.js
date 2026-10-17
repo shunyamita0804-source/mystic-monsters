@@ -10,7 +10,7 @@
 // =========================================================
 (function (root) {
   'use strict';
-  const SRC = 'ef677b0';   // この版の元になったコミット（画面の版表示用。コミットのたびに更新）
+  let SRC = '';   // 2026-10-17：元のコミットは version.json の base（手で書き換えない＝古いまま残らない）
   let q = null; try { q = new URLSearchParams(root.location.search).get('ch2trial'); } catch (e) {}
   const ROUTE = ['A', 'B', 'C'].includes(q) ? q : null;
   const G = (n) => { try { return (0, eval)(n); } catch (e) { return undefined; } };   // index.html の let／const（S・TEST_TOUR・TEST_MODE・MM_BUILD）
@@ -42,12 +42,13 @@
     if (document.getElementById('ch2tv')) return;
     const b = document.createElement('div'); b.id = 'ch2tv'; b.className = 'ch2tv';
     const url = (k) => { const u = new URL(root.location.href); u.searchParams.set('ch2trial', k); u.searchParams.delete('ch2route'); return u.pathname + u.search; };
-    b.innerHTML = `<span>Ch2 試遊</span>${['A', 'B', 'C'].map((k) => `<a href="${esc(url(k))}"${k === route ? ' class="on" aria-current="true"' : ''}>${k}</a>`).join('')}<small>版 ${esc(G('MM_BUILD') || '')}・${SRC}</small>`;
+    b.innerHTML = `<span>Ch2 試遊</span>${['A', 'B', 'C'].map((k) => `<a href="${esc(url(k))}"${k === route ? ' class="on" aria-current="true"' : ''}>${k}</a>`).join('')}<small>版 ${esc(G('MM_BUILD') || '')}<i class="ch2t-src"></i></small>`;
+    try { const x = new XMLHttpRequest(); x.open('GET', './version.json?t=' + Date.now(), true); x.onload = () => { try { const j = JSON.parse(x.responseText); SRC = String(j.base || ''); const e = b.querySelector('.ch2t-src'); if (e && SRC) e.textContent = '・' + SRC; } catch (er) {} }; x.send(); } catch (e) {}
     const s = document.createElement('style'); s.textContent = `.ch2tv{position:fixed;right:6px;top:calc(env(safe-area-inset-top,0px) + 104px);z-index:850;display:flex;align-items:center;gap:4px;padding:3px 6px;border-radius:9px;background:rgba(8,22,44,.72);color:#e8f2ff;font:600 10px/1.2 "Noto Sans JP",sans-serif;pointer-events:none}
 .ch2tv a{pointer-events:auto;display:inline-block;min-width:20px;padding:2px 4px;border-radius:6px;border:1px solid rgba(255,255,255,.45);color:#fff;text-align:center;text-decoration:none}.ch2tv a.on{background:#f3c55a;color:#13233a;border-color:#f3c55a}
 .ch2tv small{opacity:.85;font-weight:500}`;
     document.head.appendChild(s); document.body.appendChild(b);
   }
-  root.MMCH2T = Object.freeze({ route: ROUTE, SRC, start, badge });
+  root.MMCH2T = Object.freeze({ route: ROUTE, src: () => SRC, start, badge });
   if (ROUTE) root.addEventListener('load', () => setTimeout(() => start(ROUTE), 350));
 })(typeof window !== 'undefined' ? window : globalThis);
