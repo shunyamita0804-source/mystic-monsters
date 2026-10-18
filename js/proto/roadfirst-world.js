@@ -819,7 +819,9 @@
     if (D.art && D.art.sky) {   // 2026-10-18 Chapter 3：浮島のまわりの雲に落ちる影（島が浮いて見える）・雲海の明暗（くり返しを目立たなくする）
       tg.globalCompositeOperation = 'source-over'; tg.clearRect(bx[0], bx[1], bx[2], bx[3]); tg.lineJoin = tg.lineCap = 'round';
       for (const [lw, a] of [[70, 0.035], [56, 0.04], [44, 0.045], [32, 0.05], [22, 0.055], [12, 0.06]]) { tg.strokeStyle = `rgba(40,70,120,${a})`; tg.lineWidth = lw;
-        for (const r of m.rims) { if (r.kind !== 'cloud') continue; tg.beginPath(); r.pts.forEach((q, i) => (i ? tg.lineTo(q[0], q[1] + 6) : tg.moveTo(q[0], q[1] + 6))); tg.stroke(); } }
+        for (const r of m.rims) { if (r.kind !== 'cloud') continue; if (!r.bb) { const xs = r.pts.map((q) => q[0]), ys = r.pts.map((q) => q[1]); r.bb = [Math.min(...xs) - 40, Math.min(...ys) - 40, Math.max(...xs) + 40, Math.max(...ys) + 46]; }
+          if (r.bb[2] < bx[0] || r.bb[0] > bx[0] + bx[2] || r.bb[3] < bx[1] || r.bb[1] > bx[1] + bx[3]) continue;   // 区画にかからない輪郭は描かない（空の世界は輪郭が多い）
+          tg.beginPath(); r.pts.forEach((q, i) => (i ? tg.lineTo(q[0], q[1] + 6) : tg.moveTo(q[0], q[1] + 6))); tg.stroke(); } }
       clip(m.cloud);
       if (root.MMQRA && root.MMQRA.macro) root.MMQRA.macro(g, bx[0], bx[1], bx[2], bx[3]);
     }
