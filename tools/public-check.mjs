@@ -337,6 +337,11 @@ try {
 
   // 2026-10-17 統合便 v2：QA トップ（?qaTop=1）・初見プレイの隔離セーブ（?qaFresh=1）＝別の保存領域で
   {
+    // 2026-10-18 REV3：正式採用（新歩行・C案カメラ・体格 F）が通常の URL の既定・フルーネ正式10技（SK 50〜59）・フレアレイの光線・削除した旧背景は 404
+    const r3 = await page.evaluate(async () => { const st = async (u) => (await fetch(u + '?cb=' + Date.now())).status;
+      return { walk: !!(window.MMQAW && MMQAW.active && MMQAW.new7), size: window.MMTUNE ? MMTUNE.sizeMode() : null, flu: typeof SK !== 'undefined' && !!SK[50] && !!SK[59],
+        beam: await st('./assets/battle/gauru_moves_1012/16_beam_a.webp'), walk7: await st('./assets/monsters/walk_1017/jiol/front_2.webp'), gone: await st('./assets/fields/ch1a/road/01_journey_road.webp'), proto: await st('./prototype/camera-follow.html') }; });
+    rec('2026-10-18 REV3：新歩行・体格 F が既定・フルーネ正式10技・フレアレイの光線 200・削除した旧背景と試作ページは 404', r3.walk && r3.size === 'F' && r3.flu && r3.beam === 200 && r3.walk7 === 200 && r3.gone === 404 && r3.proto === 404, JSON.stringify(r3));
     const ctxT = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
     await ctxT.route('**/*', routeFn);
     const t = await ctxT.newPage(); t.on('pageerror', (e) => errs.push('qatop: ' + String(e).slice(0, 200)));
@@ -344,7 +349,7 @@ try {
     await t.waitForFunction(() => /ブランチ\s*main/.test((document.querySelector('#mmqat .qtv') || {}).textContent || ''), null, { timeout: 15000 }).catch(() => {});
     const qt = await t.evaluate(() => ({ cells: document.querySelectorAll('#mmqat .qtm td').length, b: document.querySelectorAll('#mmqat .qtm td.battle').length, links: document.querySelectorAll('#mmqat a.qtb[data-k]').length, v: (document.querySelector('#mmqat .qtv') || {}).textContent || '' }));
     await t.screenshot({ path: `${OUT}/qa_top_390.png` }).catch(() => {});
-    rec('2026-10-17：QA トップ＝70枠（実戦 60〜61＝フルーネ09 は QA を ON にしたときだけ実戦）・Chapter 1／2 の A／B／C の入口・版と branch', qt.cells === 70 && qt.b >= 60 && qt.b <= 61 && qt.links === 6 && /main/.test(qt.v), JSON.stringify(qt));
+    rec('2026-10-17：QA トップ＝70枠（2026-10-18 REV3：実戦 70＝フルーネ正式10技）・Chapter 1／2 の A／B／C の入口・版と branch', qt.cells === 70 && qt.b >= 60 && qt.b <= 70 && qt.links === 6 && /main/.test(qt.v), JSON.stringify(qt));
     const real0 = await t.evaluate(() => localStorage['mr4v6'] || null);   // QA トップのページは通常の起動（本当のセーブ）＝前後で比べる
     await t.goto(URL + '?qaFresh=1'); await t.waitForFunction(() => window.MMQAF && MMQAF.on, null, { timeout: 60000 }).catch(() => {});
     const qf = await t.evaluate(() => ({ on: !!(window.MMQAF && MMQAF.on), real: localStorage['mr4v6'] || null }));
