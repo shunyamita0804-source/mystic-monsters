@@ -33,6 +33,8 @@
 
 ## 4. 公開
 
+- main＝ba91bde（claude/prech3-1018 を統合）・公開の version.json＝2026-10-18-ch3 を確認・`tools/public-check.mjs` 47項目すべて OK（Chapter 1 の道路の新素材・Chapter 3 の試遊を含む・4xx/5xx なし・pageerror なし）
+
 - 本編：https://shunyamita0804-source.github.io/mystic-monsters/
 - QA トップ：https://shunyamita0804-source.github.io/mystic-monsters/?qaTop=1
 - Chapter 3 の試遊（保存しない）：`?ch3trial=A`・`?ch3trial=B`・`?ch3trial=C`（盤の左の「QA移動」で主な地点・バトル・ゴールの手前へ）
