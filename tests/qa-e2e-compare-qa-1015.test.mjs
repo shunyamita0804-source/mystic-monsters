@@ -157,8 +157,8 @@ test('CQ-B3：QA 試遊モード＝切り替えは牧場とベースキャンプ
     await pg.evaluate(() => MMQA.endBattle()); await pg.waitForSelector('#mmqa .qcard', { state: 'visible', timeout: 60000 });
     assert.equal(await pg.evaluate(() => !!document.getElementById('bt')), false, 'QA 試合のあとは QA の一覧へ');
   }
-  // 技アニメのプレビュー（判定・ダメージなし）＝2026-10-15 からフルーネ（ジオルは正式10技で実戦＝tests/qa-e2e-jiol-moves-1015.test.mjs）
-  await pg.click('#mmqa .qtab[data-i="5"]'); await pg.click('#mmqa .qcard[data-n="5"]'); await pg.click('#mmqa .qdet .qgo');
+  // 技アニメのコマだけの再生（判定・ダメージなし）＝QA の道具 MMQA.preview（2026-10-18 REV3：フルーネも正式10技＝カードの主ボタンは実戦）
+  await pg.click('#mmqa .qtab[data-i="5"]'); assert.ok(await pg.evaluate(() => MMQA.preview(5, 6)));
   await pg.waitForSelector('#bt.mmqa-prev'); await pg.waitForSelector('#mmqa-bar button');
   await pg.waitForFunction(() => [...document.querySelectorAll('#bt img')].some((i) => /flurene_moves_1015\//.test(i.getAttribute('src') || '')), null, { timeout: 8000 });
   await pg.screenshot({ path: path.join(SHOT, 'b3_preview.png') });
