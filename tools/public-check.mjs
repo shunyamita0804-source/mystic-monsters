@@ -75,7 +75,8 @@ const routeFn = async (route) => {
 };
 await ctx.route('**/*', routeFn);
 const page = await ctx.newPage();
-page.on('response', (r) => { if (r.status() >= 400 && !/fonts\.(googleapis|gstatic)/.test(r.url())) bad.push(`${r.status()} ${r.url().slice(0, 150)}`); });
+const GONE = /assets\/fields\/ch1a\/road\/01_journey_road\.webp|prototype\/camera-follow\.html/;   // 2026-10-18 REV3：削除した旧ボードを 404 と確かめる問い合わせ（下の REV3 の確認）は数えない
+page.on('response', (r) => { if (r.status() >= 400 && !/fonts\.(googleapis|gstatic)/.test(r.url()) && !GONE.test(r.url())) bad.push(`${r.status()} ${r.url().slice(0, 150)}`); });
 page.on('pageerror', (e) => errs.push(('pageerror ' + String(e) + ' | stack: ' + String(e && e.stack || '')).slice(0, 700)));
 
 // 会話（.mmtalk）を送る。選択肢が出たら 'choice'、閉じたら 'none'
@@ -220,6 +221,8 @@ try {
   await page.setViewportSize({ width: 390, height: 844 }); await sleep(300);
   await page.evaluate(() => { MMP8.depart(S, S.m); S.m.raise.field.introSeen = true; save(); board(); });
   await page.waitForSelector('#wbw #brollbtn', { timeout: 20000 }).catch(() => {}); await sleep(2500);
+  // 2026-10-18：初めての公開 URL では盤の絵（hq1014・新歩行）を通信で取る＝覆いが消えるまで待つ（最大 25秒）
+  await page.waitForFunction(() => { const w = window.MMWB && MMWB.state().world; return !!(w && w.art && w.painted); }, null, { timeout: 25000 }).catch(() => {});
   const wb = await page.evaluate(() => ({ on: !!document.querySelector('#wbw #brollbtn'), old: !!document.querySelector('#chf'), lim: S.m.raise.turnLimit, sides: MMP8.diceSides(S.m), w: window.MMWB && MMWB.state().world }));
   await page.screenshot({ path: `${OUT}/world_ch1_390.png` });
   rec('Chapter 1：1枚の世界のボード（40ターン・1〜6・絵が読める）', wb.on && !wb.old && wb.lim === 40 && wb.sides === 6 && !!wb.w && wb.w.art && wb.w.tiles === 299, JSON.stringify({ ...wb, w: wb.w && { art: wb.w.art, tiles: wb.w.tiles, painted: wb.w.painted } }));
@@ -278,7 +281,7 @@ try {
     const ctxQ = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });   // QA は別の保存領域（本筋の確認のセーブとは混ぜない）
     await ctxQ.route('**/*', routeFn);
     const q = await ctxQ.newPage();
-    q.on('response', (r) => { if (r.status() >= 400 && !/fonts\.(googleapis|gstatic)/.test(r.url())) bad.push(`${r.status()} ${r.url().slice(0, 150)}`); });
+    q.on('response', (r) => { if (r.status() >= 400 && !/fonts\.(googleapis|gstatic)/.test(r.url()) && !GONE.test(r.url())) bad.push(`${r.status()} ${r.url().slice(0, 150)}`); });
     q.on('pageerror', (e) => errs.push(('pageerror(QA) ' + String(e)).slice(0, 400)));
     await q.goto(URL + (URL.includes('?') ? '&' : '?') + 'mmQaTrial=1', { waitUntil: 'load', timeout: 120000 });
     await q.waitForFunction(() => window.MMQA && typeof S === 'object' && S, null, { timeout: 120000 }); await sleep(1500);
@@ -288,7 +291,7 @@ try {
     const sw = await q.evaluate(() => !!document.getElementById('mmqa-sw'));
     await q.evaluate(() => { const b = document.getElementById('mmqa-sw'); if (b) b.click(); }); await sleep(800);
     const cat = await q.evaluate(async () => { const c = MMQA.catalog(); const urls = c.flatMap((x) => x.moves.map((m) => m.src)); const ok = await Promise.all(urls.map((u) => new Promise((r) => { const i = new Image(); i.onload = () => r(i.naturalWidth > 0); i.onerror = () => r(false); i.src = u; }))); return { tabs: document.querySelectorAll('#mmqa .qtab').length, n: urls.length, ok: ok.filter(Boolean).length, counts: MMQA.counts() }; });
-    rec('2026-10-15：QA 試遊モード（?mmQaTrial=1）＝牧場に切り替え → ON → 7体×10技（70。2026-10-17 ラズック）のカードが読める（実戦 61＝ジオルの正式10技・フルーネ09 ルートドレイン（QA の SK 58）・ラズック10技を含む・プレビュー 9＝フルーネ・静止画 0）', sw && cat.tabs === 7 && cat.n === 70 && cat.ok === 70 && cat.counts.battle === 61 && cat.counts.preview === 9 && cat.counts.static === 0, JSON.stringify(cat));
+    rec('2026-10-15：QA 試遊モード（?mmQaTrial=1）＝牧場に切り替え → ON → 7体×10技（70。2026-10-17 ラズック）のカードが読める（2026-10-18 REV3：実戦 70＝フルーネも正式10技・プレビュー 0・静止画 0）', sw && cat.tabs === 7 && cat.n === 70 && cat.ok === 70 && cat.counts.battle === 70 && cat.counts.preview === 0 && cat.counts.static === 0, JSON.stringify(cat));
     await q.evaluate(() => MMQA.battle(0, 1)); await q.waitForSelector('#bt .mmr .pl .nm', { timeout: 30000 }).catch(() => {});
     // 素早さが同じ（ソラモどうし）なら相手が先に動くことがある＝自分の番（STOP が押せる）になってからルーレットの技を読む（相手の番のルーレットは相手の技）
     await q.waitForFunction(() => { const g = document.getElementById('go'); return g && !g.disabled && !g.classList.contains('bk'); }, null, { timeout: 30000 }).catch(() => {}); await sleep(400);
@@ -320,7 +323,7 @@ try {
       const a = await Promise.all(urls.map(ld)), b = await Promise.all(wk.map(ld));
       return { anim: urls.length, animOk: a.filter(Boolean).length, walk: wk.length, walkOk: b.filter(Boolean).length };
     });
-    await q.evaluate(() => MMQA.battle(5, 7)); await q.waitForSelector('#bt.mmqa-prev', { timeout: 30000 }).catch(() => {});
+    await q.evaluate(() => MMQA.preview(5, 7));   // 2026-10-18 REV3：フルーネは正式10技（実戦）＝コマだけの再生は QA の道具 MMQA.preview await q.waitForSelector('#bt.mmqa-prev', { timeout: 30000 }).catch(() => {});
     await q.waitForFunction(() => [...document.querySelectorAll('#bt img')].some((i) => /flurene_moves_1015\//.test(i.getAttribute('src') || '')), null, { timeout: 12000 }).catch(() => {});
     const flb = await q.evaluate(() => ({ prev: !!document.querySelector('#bt.mmqa-prev'), sp: typeof BPL !== 'undefined' && BPL[0] && BPL[0].sp, cut: [...document.querySelectorAll('#bt img')].some((i) => /flurene_moves_1015\//.test(i.getAttribute('src') || '')), idle: /idle_flurene/.test((document.querySelector('#m0 .mma-idle') || {}).src || '') }));
     await q.screenshot({ path: `${OUT}/qa_flurene_anim_390.png` }).catch(() => {});
