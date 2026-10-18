@@ -77,6 +77,7 @@
       '#mmqas{position:fixed;z-index:70;left:0;right:0;bottom:0;padding:6px 6px calc(env(safe-area-inset-bottom,0px) + 6px);background:rgba(8,14,38,.94);border-top:3px solid #ffde59;color:#fff3d6;font:700 11px/1.2 "Noto Sans JP",sans-serif}',
       '#mmqas .qsh{display:flex;align-items:center;gap:6px;margin-bottom:5px}',
       '#mmqas .qsh img{width:68px;aspect-ratio:16/9;object-fit:contain;background:#000;border-radius:5px;flex:none}',
+      '#mmqas .qsh .qinfo{color:#bfe3ff;font-size:9px;line-height:1.3;word-break:break-all}',
       '#mmqas .qsh b{font:900 14px/1.2 "Noto Sans JP",sans-serif;color:#fff}#mmqas .qsh small{display:block;font-size:10px;color:#ffd27a;margin-top:2px}',
       '#mmqas .qsg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}',
       '#mmqas label{display:flex;flex-direction:column;gap:1px;min-width:0;font-size:9.5px;color:#cfd8ff}',
@@ -99,7 +100,7 @@
     let p = doc.getElementById('mmqas'); if (!p) { p = doc.createElement('div'); p.id = 'mmqas'; p.setAttribute('role', 'region'); p.setAttribute('aria-label', 'バトル技 QA'); doc.body.appendChild(p); }
     const C = cat(), x = C[ST.mon], mv = moveOf(ST.mon, ST.no);
     const sel = (n, label, inner) => `<label>${label}<select data-k="${n}">${inner}</select></label>`;
-    p.innerHTML = `<div class="qsh"><img src="${esc(mv && mv.src)}" alt=""><div><b>${esc(x ? x.name : '')} ${mv ? String(mv.no).padStart(2, '0') + ' ' + esc(mv.name) : ''}</b><small>${esc(statusTxt(mv))}${mv && mv.slot != null ? '・SK ' + mv.slot : ''}${ST.auto ? '・全10技 連続再生中' : ''}</small></div></div>`
+    p.innerHTML = `<div class="qsh"><img src="${esc(mv && mv.src)}" alt=""><div><b>${esc(x ? x.name : '')} ${mv ? String(mv.no).padStart(2, '0') + ' ' + esc(mv.name) : ''}</b><small>${esc(statusTxt(mv))}${mv && mv.slot != null ? '・SK ' + mv.slot : ''}${ST.auto ? '・全10技 連続再生中' : ''}</small><small class="qinfo" id="mmqas-info"></small></div></div>`
       + '<div class="qsg">'
       + sel('mon', 'モンスター', opt(C.map((c, i) => [i, c.name]), ST.mon))
       + sel('no', '技', opt((x ? x.moves : []).map((m) => [m.no, String(m.no).padStart(2, '0') + ' ' + m.name + (playable(m) ? '' : '（静止）')]), ST.no))
@@ -118,8 +119,19 @@
       + '<button type="button" data-a="step" data-nsfx="1">コマ送り</button>'
       + `<button type="button" data-a="auto" data-nsfx="1" class="${ST.auto ? 'on' : ''}">全10技</button>`
       + '</div><div class="qsb" style="grid-template-columns:1fr"><button type="button" class="x" data-a="close" data-nsfx="1">QA 一覧へ戻る（保存しない）</button></div>';
+    showInfo(mv);
     p.querySelectorAll('select').forEach((s) => { s.onchange = () => change(s.dataset.k, s.value); });
     p.querySelectorAll('.qsb button').forEach((b) => { b.onclick = (e) => { e.stopPropagation(); act(b.dataset.a); }; });
+  }
+  // 2026-10-18 REV3 A6：今の技が実際に使うデータ（MM25D.info）・最初のコマのファイルと sha256（先頭12＝読み込んだファイルそのもの）・モード・控えに落ちたか。QA の画面だけ
+  const SHA = {};
+  function showInfo(mv) {
+    const el = doc.getElementById('mmqas-info'); if (!el) return;
+    const I = mv && mv.slot != null && root.MM25D && root.MM25D.info ? root.MM25D.info(mv.slot, ST.side) : null;
+    if (!I) { el.textContent = 'データ：（技の番号なし）'; return; }
+    const f = I.first || '', put = () => { el.textContent = `データ：${I.mode}${I.set ? '・' + I.set : ''}${I.tune ? '・修正 ' + I.tune : ''}${I.fallback ? '・控え（' + (I.why || '') + '）' : ''}${f ? '／' + f.replace(/^\.\/assets\/battle\//, '') + '（' + (SHA[f] || '…') + '）' : ''}・本体 ${I.cuts}・効果 ${I.fx}`; el.dataset.mode = I.mode; el.dataset.first = f; el.dataset.sha = SHA[f] || ''; };
+    put();
+    if (f && !SHA[f] && root.fetch && root.crypto && root.crypto.subtle) root.fetch(f).then((r) => r.arrayBuffer()).then((b) => root.crypto.subtle.digest('SHA-256', b)).then((h) => { SHA[f] = [...new Uint8Array(h)].map((x) => x.toString(16).padStart(2, '0')).join('').slice(0, 12); if (doc.getElementById('mmqas-info') === el) put(); }).catch(() => {});
   }
   function change(k, v) {
     if (k === 'mon') { ST.mon = +v; ST.no = 1; ST.auto = false; }

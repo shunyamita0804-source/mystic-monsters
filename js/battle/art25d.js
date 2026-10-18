@@ -24,7 +24,7 @@
   const SPK = { 0: 'soramo', 1: 'gauru' };
   /** 待機の立ち絵（新）と、今の立ち絵に対する高さの倍率（足元の位置はそのまま） */
   const IDLE = { 0: { src: A + 'soramo/idle.webp', h: 0.84 }, 1: { src: A + 'gauru/idle.webp', h: 0.9 } };
-  const owner = (k) => (k >= 0 && k <= 9 ? 0 : k >= 10 && k <= 19 ? 1 : k >= 30 && k <= 39 ? 2 : k >= 20 && k <= 29 ? 4 : k >= 40 && k <= 49 ? 3 : k >= 60 && k <= 69 ? 6 : -1);   // 2026-10-17：60〜69＝ラズック（js/battle/rules.js。未解禁＝QA 試遊の個体だけ）   // 30〜39＝ノビトン（js/battle/rules.js が実行時に足す技）・20〜29＝レグナス（js/battle/rival-partner.js。IMG の 4）
+  const owner = (k) => (k >= 0 && k <= 9 ? 0 : k >= 10 && k <= 19 ? 1 : k >= 30 && k <= 39 ? 2 : k >= 20 && k <= 29 ? 4 : k >= 40 && k <= 49 ? 3 : k >= 60 && k <= 69 ? 6 : k >= 50 && k <= 59 ? 5 : -1);   // 2026-10-17：60〜69＝ラズック（js/battle/rules.js。未解禁＝QA 試遊の個体だけ）   // 30〜39＝ノビトン（js/battle/rules.js が実行時に足す技）・20〜29＝レグナス（js/battle/rival-partner.js。IMG の 4）
   const DATA = () => root.MM25D_DATA || {};
   // 2026-10-12 正式：ソラモの技（SK の 0〜9）は修正納品の46コマ（assets/battle/soramo_moves_1012/・js/battle/soramo-moves-data.js）を通常のバトルで見せる。
   //   待機の立ち絵は変えない（2.5D の待機絵は従来どおり ?battleArt=2p5d のときだけ）。?battleArt=old で「旧」を選んでいる間だけ今までの演出（見比べ用）
@@ -49,7 +49,10 @@
   const ZOFF = () => root.MMRZMV_DATA || {};
   let ZK = null;
   const ZSK = () => { const D = ZOFF(); if (!ZK || ZK.src !== D) { ZK = { src: D, map: {} }; Object.keys(D).forEach((no) => { ZK.map[59 + +no] = D[no]; }); } return ZK.map; };
-  const SRC_OF = { 0: OFF, 1: GOFF, 2: NOFF, 3: JSK, 4: ROFF, 6: ZSK };
+  // 2026-10-18 REV3 F0-4：フルーネの正式10技（SK 50〜59＝50＋No−1）＝同じ 77枚（データは No. で引く）。No.9 ルートドレインは従来どおり MMRD（補修版10コマ）
+  let FK = null;
+  const FSK = () => { const D = FLOFF(); if (!FK || FK.src !== D) { FK = { src: D, map: {} }; Object.keys(D).forEach((no) => { FK.map[49 + +no] = D[no]; }); } return FK.map; };
+  const SRC_OF = { 0: OFF, 1: GOFF, 2: NOFF, 3: JSK, 4: ROFF, 5: FSK, 6: ZSK };
   /** 読み込めなかったコマがある技（その技だけ従来の演出へ戻す）。キー＝dir＋ファイル名 */
   const failed = new Set();
   const usable = (d) => !!d && !d.cuts.concat(d.fx || []).some((c) => (c.u ? [c.u] : [c.f, c.fx].filter(Boolean).map((f) => (d.dir || OA) + f)).some((u) => failed.has(u)));
@@ -590,5 +593,14 @@
     if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
   }
 
-  root.MM25D = Object.freeze({ anim, handles, timing, layout, idleSrc, idleScale, set, syncIdle, get on() { return on; }, get offered() { return offered; }, owner, plan, planOff, offData, preview, warm, failed, IDLE, OFF_ASSET: OA });
+  /** 2026-10-18 REV3 A6：QA の画面に出す「この技が実際に使うデータ」（通常の画面には出さない）。mode＝MMRD（ルートドレインの補修版）／コマ（2.5D）／従来の絵（控え） */
+  function info(k, s) {
+    try {
+      if (rdOn(k, s)) { const F = root.MMRD.FRAMES || []; return { mode: 'MMRD（ルートドレイン補修版10コマ）', set: 'rootdrain-1016', first: F[0] || null, cuts: F.length, fx: 0, tune: null, fallback: false }; }
+      const o = owner(k), d = offData(k, s);
+      if (d) return { mode: 'コマ（2.5D の技アニメ）', set: ({ 0: 'soramo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas', 5: 'flurene', 6: 'razuck' })[o] || '', first: (d.dir || OA) + d.cuts[0].f, cuts: d.cuts.length, fx: (d.fx || []).length, tune: d.tune ? d.tune.id : null, fallback: false };
+      return { mode: '従来の絵（SKART・控え）', set: null, first: null, cuts: 0, fx: 0, tune: null, fallback: true, why: !offOn() ? 'battleArt=old' : SRC_OF[o] ? '読めないコマ／攻撃側の種族が違う' : 'コマのデータなし' };
+    } catch (e) { return { mode: '（不明）', fallback: true }; }
+  }
+  root.MM25D = Object.freeze({ info, anim, handles, timing, layout, idleSrc, idleScale, set, syncIdle, get on() { return on; }, get offered() { return offered; }, owner, plan, planOff, offData, preview, warm, failed, IDLE, OFF_ASSET: OA });
 })(typeof window !== 'undefined' ? window : globalThis);

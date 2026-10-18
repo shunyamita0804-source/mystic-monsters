@@ -14,6 +14,7 @@ for (const k of ks) {
     const mk1 = (sp) => { const m = MMQA.makeMon(sp); m.speed = side ? 1 : 10; return m; };
     const m = mk1(me); m.sk = [k]; m.eq = [k, k, k, k, k, k];
     m.raise = { battle: { kind: 'practice', rank: 0, done: false, qa: true, snap: { g: S.g, wins: S.wins, br: S.br, rk: m.rk, fa: m.fa, st: m.st } } }; S.m = m;
+    if (me >= 5 && MMQA._lend) MMQA._lend(me);   // 未解禁の種族（フルーネ 5・ラズック 6）は QA と同じく絵を貸す（ページの中だけ）
     battleDress({ rank: 0, label: 'QA', name: '相手' }); battleFoeOnce(foe); TB_SKIP_INTRO = true; fight(0); battleDressDom();
   }, { me: +me, foe: +foe, k, side });
   await pg.waitForSelector('#bt #m0 .mon .mma-idle');
