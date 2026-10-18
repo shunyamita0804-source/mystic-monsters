@@ -131,7 +131,11 @@
     if (!I) { el.textContent = 'データ：（技の番号なし）'; return; }
     const f = I.first || '', put = () => { el.textContent = `データ：${I.mode}${I.set ? '・' + I.set : ''}${I.tune ? '・修正 ' + I.tune : ''}${I.fallback ? '・控え（' + (I.why || '') + '）' : ''}${f ? '／' + f.replace(/^\.\/assets\/battle\//, '') + '（' + (SHA[f] || '…') + '）' : ''}・本体 ${I.cuts}・効果 ${I.fx}`; el.dataset.mode = I.mode; el.dataset.first = f; el.dataset.sha = SHA[f] || ''; };
     put();
-    if (f && !SHA[f] && root.fetch && root.crypto && root.crypto.subtle) root.fetch(f).then((r) => r.arrayBuffer()).then((b) => root.crypto.subtle.digest('SHA-256', b)).then((h) => { SHA[f] = [...new Uint8Array(h)].map((x) => x.toString(16).padStart(2, '0')).join('').slice(0, 12); if (doc.getElementById('mmqas-info') === el) put(); }).catch(() => {});
+    if (f && !SHA[f] && root.XMLHttpRequest && root.crypto && root.crypto.subtle) {   // 読み込んだファイルそのものの sha256（XHR＝本体のスクリプトは fetch を使わない約束）
+      const x = new root.XMLHttpRequest(); x.open('GET', f); x.responseType = 'arraybuffer';
+      x.onload = () => { if (x.status !== 200 || !x.response) return; root.crypto.subtle.digest('SHA-256', x.response).then((h) => { SHA[f] = [...new Uint8Array(h)].map((v) => v.toString(16).padStart(2, '0')).join('').slice(0, 12); if (doc.getElementById('mmqas-info') === el) put(); }).catch(() => {}); };
+      x.send();
+    }
   }
   function change(k, v) {
     if (k === 'mon') { ST.mon = +v; ST.no = 1; ST.auto = false; }
