@@ -76,6 +76,7 @@
   //   B＝「花と清流の草原」：小花・茂み・木が多く針葉樹と岩が少ない。川の景物（睡蓮・渓流の岩・葦）を密に。
   //   C＝「岩丘と遺跡の草原」：岩・苔岩・石柱・遺跡の柱（rock_pillar）・岩棚（cliff_grass_chunk）が多く、道から離れた所に岩峰を足す。
   //   どれも既存の素材だけ（新しい絵は作らない）。道・地点・マス・固定の報酬・目印・大会会場・谷・雲海・森の範囲は共通。密度 density＝残す割合（大きいほど多い）・far＝道からの最大の距離
+  const SKY3 = './assets/fields/ch3/sky_1016/';
   const VISUAL = {
     A: { key: 'A', name: 'はじまりの草原', desc: 'いまの草原のまま', seed: 0x1010, density: 0.62, far: 66, props: ART.props, water: { every: 34, reedEvery: 3 }, peaks: null },
     B: { key: 'B', name: '花と清流の草原', desc: '小花と清流が多い、明るい緑の草原', seed: 0x1021, density: 0.70, far: 72,
@@ -87,7 +88,13 @@
       props: [{ key: 'rock', file: 'prop_rock.webp', w: 24, p: 0.24 }, { key: 'mossy', file: 'prop_mossy_rock.webp', w: 17, p: 0.16 }, { key: 'pillar', file: 'prop_pillar.webp', w: 12, p: 0.14 },
         { key: 'ruin', file: 'rock_pillar.webp', w: 20, p: 0.08 }, { key: 'ledge', file: 'cliff_grass_chunk.webp', w: 24, p: 0.06 }, { key: 'tree', file: 'prop_tree.webp', w: 28, p: 0.12 },
         { key: 'conifer', file: 'prop_conifer.webp', w: 17, p: 0.10 }, { key: 'shrub', file: 'prop_shrub.webp', w: 16, p: 0.07 }, { key: 'flowers', file: 'prop_flowers.webp', w: 13, p: 0.03 }],
-      water: { every: 34, reedEvery: 3 }, peaks: { n: 7, w: [44, 60], far: 92, gap: 110, seed: 0x1033 } },   // peaks＝道から far 以上・谷／雲海／森の外・目印と岩峰から離れた所に n 個を足す（決まった乱数）
+      water: { every: 34, reedEvery: 3 }, peaks: { n: 7, w: [44, 60], far: 92, gap: 110, seed: 0x1033 } },
+    // 2026-10-18 Chapter 3「天空の浮島」：浮島の上の景物（ユーザー納品の Chapter 3 の正式素材 assets/fields/ch3/sky_1016/＋Chapter 1 の茂み・小花）。雲海の中には小さな浮島と雲（skyProps）
+    S: { key: 'S', name: '天空の浮島', desc: '雲海に浮かぶ島々と白い空の橋', seed: 0x3031, density: 0.58, far: 64,
+      props: [{ key: 'tree', file: SKY3 + 'C3_ENV_sky_flowering_tree.webp', w: 24, p: 0.24 }, { key: 'wflowers', file: SKY3 + 'C3_ENV_white_flower_patch.webp', w: 13, p: 0.28 },
+        { key: 'crystal', file: SKY3 + 'C3_ENV_crystal_cluster_blue.webp', w: 13, p: 0.12 }, { key: 'column', file: SKY3 + 'C3_ARCH_white_column_single.webp', w: 8, p: 0.10 },
+        { key: 'shrub', file: 'prop_shrub.webp', w: 15, p: 0.14 }, { key: 'flowers', file: 'prop_flowers.webp', w: 12, p: 0.12 }],
+      water: { every: 34, reedEvery: 3 }, peaks: null, sky: true },   // peaks＝道から far 以上・谷／雲海／森の外・目印と岩峰から離れた所に n 個を足す（決まった乱数）
   };
   const visualOf = (o) => VISUAL[o && o.visual] || VISUAL.A;
   // 2026-10-14 Chapter 1 A／B／C 高品質化（skin 'hq1014'）：正式13点の派生（assets/fields/ch1a/board_hq_1014/・tools/boardhq1014/derive.py）で
@@ -186,7 +193,7 @@
     const bb = doc.createElement('div'); bb.className = 'rfw-bb';
     const title = doc.createElement('div'); title.className = 'rfw-title';
     const TT = D.art && D.art.title;   // 2026-10-15 Chapter 2 の試作（js/proto/ch2-routes.js）だけ題字を持つ。無ければ従来どおり Chapter 1
-    title.innerHTML = TT ? `<small>${TT.small}</small>${TT.name}<em>全体マップ（設計案・試作）</em>` : '<small>CHAPTER 1</small>はじまりの草原<em>全体マップ</em>';
+    title.innerHTML = TT ? `<small>${TT.small}</small>${TT.name}<em>全体マップ${D.art && D.art.sky ? '' : '（設計案・試作）'}</em>` : '<small>CHAPTER 1</small>はじまりの草原<em>全体マップ</em>';
     wrap.appendChild(plane); wrap.appendChild(bb); wrap.appendChild(title); host.appendChild(wrap);
     const VIS = visualOf(o); wrap.dataset.visual = VIS.key;   // 2026-10-14 Chapter 1 B／C：景観のパターン（A＝従来）
     const SK = skinOf(o); if (SK) wrap.dataset.skin = SK.key;   // 2026-10-14 A／B／C 高品質化：絵の差し替え（無ければ従来の絵）
@@ -196,6 +203,7 @@
     const ELEV = (D && D.art && D.art.elev) || null, hOf = (id) => (ELEV && ELEV[id]) || 0;
     const scl = (s) => (SEA ? `scale3d(${s},${s},${s})` : `scale(${s})`);   // 高さのある子（海底・塔）は z も同じ倍率で
     if (SEA) { wrap.classList.add('sea'); plane.style.transformStyle = 'preserve-3d'; }
+    if (D && D.art && D.art.sky) wrap.classList.add('sky');   // 2026-10-18 Chapter 3（空の世界）
     const GA = (SEA && SEA.goal) || ART.goal;   // 大会会場の絵（2026-10-16 Chapter 2 は正式の ocean_arena）
     css(doc);
     const W = Math.ceil(WORLD.w * o.res), H = Math.ceil(WORLD.h * o.res);
@@ -302,6 +310,7 @@
           Object.assign(ap.style, { left: -m + 'px', top: -m + 'px', width: WORLD.w + 2 * m + 'px', height: WORLD.h + 2 * m + 'px', backgroundImage: `url(${gi._qra ? gi.src : gi._sk ? SK.base + SK.ground : base + ART.ground.file})`,
             backgroundSize: gi._ppu ? `${gi.naturalWidth / gi._ppu}px ${gi.naturalHeight / gi._ppu}px` : `${ART.ground.tile}px ${ART.ground.tile}px`, backgroundPosition: gi._ppu ? `${m % (gi.naturalWidth / gi._ppu)}px ${m % (gi.naturalHeight / gi._ppu)}px` : `${m % ART.ground.tile}px ${m % ART.ground.tile}px` });   // 2026-10-17 QA：新しい草地は _ppu の大きさで
           if (SEA) SEA.apron(ap, base, m);   // 世界の外も海
+          else if (D.art && D.art.sky) Object.assign(ap.style, { backgroundImage: `url(${base + ART.terrain.cloud.file})`, backgroundSize: `${ART.terrain.cloud.tile}px ${ART.terrain.cloud.tile}px`, backgroundPosition: `${m % ART.terrain.cloud.tile}px ${m % ART.terrain.cloud.tile}px` });   // 2026-10-18 Chapter 3：世界の外も雲海
           plane.insertBefore(ap, plane.firstChild); } });
       const add = (file, x, y, w, z, cls, h) => { const d = doc.createElement('img'); d.className = 'rfw-prop' + (cls ? ' ' + cls : ''); d.alt = ''; d.draggable = false;
         const sub = SK && SK.props[file], p = { el: d, x, y, w: sub ? w * sub[1] : w, z: z || 0, h: h || 0 };
@@ -309,6 +318,7 @@
         else d.src = artUrl(base, file);
         bb.appendChild(d); props.push(p); };
       for (const q of (SEA ? SEA.scatter(D, o, HELP) : scatter(D, o))) add(q.file, q.x, q.y, q.w, q.z || 0, q.cls, q.h);
+      if (D.art && D.art.sky) for (const q of skyProps(D, o)) add(q.file, q.x, q.y, q.w, q.z || 0, 'rfw-sky');   // 2026-10-18 Chapter 3：雲海の中の小さな浮島・雲
       const gn = D.nodes.GOAL; if (gn) { add(GA.file, gn[0], gn[1] + GA.dy, GA.w, -40, 'rfw-goal'); const gp = props[props.length - 1]; gp.solid = true;
         // 2026-10-14 実機試遊⑭：大会会場は立てた絵（いつもカメラの方を向く）なので、置く位置も「カメラから見て GOAL のすぐ奥」に合わせる＝正面の階段の下に GOAL の円盤が来る。
         //  地面を進む向きへ回す（heading）本編だけ：GOAL から画面の奥の向きへ back だけ下げた点（回したあとの画面で真上）。試作（北が上）は従来の dy のまま。GOAL の地点・歩数・判定は変えない
@@ -667,9 +677,13 @@
     const rt = (art && art.roadTile) || ART.road.tile, rp = art && art.road ? pattern(g, art.road, rt) : null;
     // skin：敷石の円は円の中心に R の中央を合わせる（円は R の1枚より小さい＝くり返しのつなぎ目が円の中に入らない）
     const centre = (id) => { if (!art.discCenter || !rp || !rp.setTransform || !root.DOMMatrix) return; const n = D.nodes[id], rw = art.road._ppu ? art.road.width / art.road._ppu : rt; rp.setTransform(new root.DOMMatrix().translate(n[0] - rw / 2, n[1] - rw / 2).scale(rw / art.road.width)); g.fillStyle = rp; };
-    if (rp) { g.strokeStyle = 'rgba(40,52,20,.28)'; g.lineWidth = o.roadW + 9; for (const s of segs) { path(s[3]); g.stroke(); } }   // 草へ落ちる薄い影
+    const SKYB = !!(D.art && D.art.sky);   // 2026-10-18 Chapter 3：雲海の上の道は空の橋
+    if (rp && !SKYB) { g.strokeStyle = 'rgba(40,52,20,.28)'; g.lineWidth = o.roadW + 9; for (const s of segs) { path(s[3]); g.stroke(); } }   // 草へ落ちる薄い影
     if (rp && art.strip) {   // 直線の石の道を道筋に沿って並べる（分かれ目・合流・行き止まりは敷石の円で覆う）
-      if (art.terrain) {   // 谷の上を渡る石橋：下へ落ちる影（高さに見せる）
+      if (art.terrain && SKYB) {   // 2026-10-18 Chapter 3：空の橋の影は遠くの雲海へ薄くやわらかく落ちる
+        for (const [dy, lw, a] of [[22, ART.strip.w + 26, 0.05], [18, ART.strip.w + 14, 0.07], [15, ART.strip.w + 4, 0.08]]) { g.strokeStyle = `rgba(30,60,110,${a})`; g.lineWidth = lw;
+          for (const s of segs) { g.save(); g.translate(0, dy); path(s[3]); g.stroke(); g.restore(); } }
+      } else if (art.terrain) {   // 谷の上を渡る石橋：下へ落ちる影（高さに見せる）
         g.strokeStyle = 'rgba(10,20,30,.42)'; g.lineWidth = ART.strip.w + 2;
         for (const id of terrainOf(D).flatMap((T) => T.bridges)) { const s = D.segments[id]; if (!s) continue; g.save(); g.translate(0, 10); path(s[3]); g.stroke(); g.restore(); }
       }
@@ -677,8 +691,12 @@
       if (QA && art.qaRoad === '2') QA.edgeShade(g, cps, ART.strip.w);
       if (QA) for (const P of cps) QA.meshStrip(g, P, art.strip, ART.strip.w, bx);   // 2026-10-16 QA（A）：曲線に沿った網（曲がり角で折れない）
       else for (const s of segs) stripAlong(g, curvePts(s[3].map((id) => D.nodes[id])), art.strip, ART.strip.w, bx);
-      g.fillStyle = '#8f8573'; for (const id of hubs) disc(id, ART.strip.w * 0.62 + 1.5); for (const id of ends) disc(id, ART.strip.w * 0.6 + 1.5);
-      g.fillStyle = rp; for (const id of hubs) { centre(id); disc(id, ART.strip.w * 0.62 - 1); } for (const id of ends) { centre(id); disc(id, ART.strip.w * 0.6 - 1); }
+      // 2026-10-18 iPhone 試遊（分岐の灰色の輪がチープ）：灰色の塗りの輪をやめ、道の帯と同じ縁石を円に沿って並べた「円形の広場」にする。
+      //  道が入ってくる所は縁石を切る（道の縁石と広場の縁石がつながる）・中は R の敷石・外側に草へ落ちる薄い影
+      const dirs = plazaDirs(D, segs);
+      for (const id of hubs) plaza(g, D.nodes[id], ART.strip.w * 0.8, dirs[id] || [], art.strip, rp, () => centre(id), bx);
+      for (const id of ends) plaza(g, D.nodes[id], ART.strip.w * 0.7, dirs[id] || [], art.strip, rp, () => centre(id), bx);
+      if (SKYB && art.terrain) skyRails(g, D, segs, art, bx);   // 2026-10-18 Chapter 3：雲海の上だけ白い欄干と支柱（橋に見せる）
       if (QA && art.qaRoad === '2') { QA.edgeGrass(g, cps, ART.strip.w, bx, 1016); QA.tileShadows(g, D, 11, bx); }   // 2026-10-16 QA（A 2）：ふちにかかる草・マスの足もとの影
       return;
     }
@@ -709,9 +727,11 @@
   /** その点が谷か（純粋な関数＝景物の置き場所・テスト用。道のまわり ROAD_LAND は陸。石橋の区間のまわりは谷のまま） */
   function inValley(D, x, y) {
     const TR = terrainOf(D), segs = Object.entries(D.segments), bridges = new Set(TR.flatMap((T) => T.bridges));
+    const IS = D.art && D.art.islands;   // 2026-10-18 Chapter 3：浮島の上は陸（雲海ではない）
     for (const T of TR) {
       const hit = inPoly(loopPoly(D, T), x, y) || T.arms.some((A) => distLine(A.line, x, y) <= A.w / 2);
       if (!hit) continue;
+      if (IS && T.kind === 'cloud' && IS.some((P) => inPoly(P, x, y))) continue;
       const nearRoad = segs.some(([id, s]) => !bridges.has(id) && distLine(s[3].map((n) => D.nodes[n]), x, y) < ROAD_LAND);
       if (!nearRoad) return T.id;
     }
@@ -727,7 +747,9 @@
       for (const A of T.arms) { g.lineWidth = A.w; g.beginPath(); A.line.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.stroke(); } }
     for (const [kind, cv] of Object.entries(M)) {   // 道のまわりは陸（谷だけ石橋の区間は谷の上を渡る）
       const g = cv.getContext('2d'); g.globalCompositeOperation = 'destination-out'; g.lineCap = g.lineJoin = 'round'; g.lineWidth = ROAD_LAND * 2;
-      for (const [id, s] of Object.entries(D.segments)) { if (kind === 'valley' && bridges.has(id)) continue; const P = curvePts(s[3].map((n) => D.nodes[n])); g.beginPath(); P.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.stroke(); }
+      const SKYB = !!(D.art && D.art.sky);   // 2026-10-18 Chapter 3：雲海の上の道はすべて空の橋（道のまわりを陸にしない）。浮島（D.art.islands）だけが陸
+      if (SKYB && kind === 'cloud') { g.fillStyle = '#000'; for (const P of D.art.islands || []) { g.beginPath(); P.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.closePath(); g.fill(); } }
+      for (const [id, s] of Object.entries(D.segments)) { if ((kind === 'valley' || (SKYB && kind === 'cloud')) && bridges.has(id)) continue; const P = curvePts(s[3].map((n) => D.nodes[n])); g.beginPath(); P.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.stroke(); }
       if (kind !== 'valley') {   // 雲海・森：目印（石像・祭壇など）のまわりは岩棚・空き地にする。森は谷にかからない
         g.fillStyle = '#000'; for (const L of lmOf(D)) { const at = landmarkAt(D, L); if (at) { g.beginPath(); g.arc(at[0], at[1] - L.w * 0.18, L.w * 0.62, 0, 7); g.fill(); } }
         if (kind === 'forest') g.drawImage(M.valley, 0, 0);
@@ -793,7 +815,17 @@
       for (const r of m.rims) { if (r.kind !== 'valley') continue; tg.beginPath(); r.pts.forEach((q, i) => (i ? tg.lineTo(q[0], q[1]) : tg.moveTo(q[0], q[1]))); tg.stroke(); } }
     clip(m.valley);
     edgesOf('valley');
-    layer(art.cloud, ART.terrain.cloud.tile, m.cloud); edgesOf('cloud');
+    layer(art.cloud, ART.terrain.cloud.tile, m.cloud);
+    if (D.art && D.art.sky) {   // 2026-10-18 Chapter 3：浮島のまわりの雲に落ちる影（島が浮いて見える）・雲海の明暗（くり返しを目立たなくする）
+      tg.globalCompositeOperation = 'source-over'; tg.clearRect(bx[0], bx[1], bx[2], bx[3]); tg.lineJoin = tg.lineCap = 'round';
+      for (const [lw, a] of [[70, 0.035], [56, 0.04], [44, 0.045], [32, 0.05], [22, 0.055], [12, 0.06]]) { tg.strokeStyle = `rgba(40,70,120,${a})`; tg.lineWidth = lw;
+        for (const r of m.rims) { if (r.kind !== 'cloud') continue; if (!r.bb) { const xs = r.pts.map((q) => q[0]), ys = r.pts.map((q) => q[1]); r.bb = [Math.min(...xs) - 40, Math.min(...ys) - 40, Math.max(...xs) + 40, Math.max(...ys) + 46]; }
+          if (r.bb[2] < bx[0] || r.bb[0] > bx[0] + bx[2] || r.bb[3] < bx[1] || r.bb[1] > bx[1] + bx[3]) continue;   // 区画にかからない輪郭は描かない（空の世界は輪郭が多い）
+          tg.beginPath(); r.pts.forEach((q, i) => (i ? tg.lineTo(q[0], q[1] + 6) : tg.moveTo(q[0], q[1] + 6))); tg.stroke(); } }
+      clip(m.cloud);
+      if (root.MMQRA && root.MMQRA.macro) root.MMQRA.macro(g, bx[0], bx[1], bx[2], bx[3]);
+    }
+    edgesOf('cloud');
     if (art.canopy) layer(art.canopy.cv, art.canopy.tile, m.forest); edgesOf('forest');
   }
   /** 森の樹冠のくり返し（B3 の帯を段に重ねる。横は帯のくり返し・縦は段の間隔でつながる） */
@@ -816,6 +848,63 @@
       for (let k = 1; k <= n; k++) { const t = k / n, u = 1 - t;
         out.push([u * u * u * b[0] + 3 * u * u * t * c1[0] + 3 * u * t * t * c2[0] + t * t * t * c[0], u * u * u * b[1] + 3 * u * u * t * c1[1] + 3 * u * t * t * c2[1] + t * t * t * c[1]]); } }
     return out;
+  }
+  /** 2026-10-18 Chapter 3：空の橋の欄干（道の両ふちの白い手すりと支柱）。雲海の上だけ（浮島の上は描かない＝雲海の範囲の画像で切り抜く） */
+  let RAIL_TMP = null;
+  function skyRails(g, D, segs, art, bx) {
+    const m = art.terrain; if (!m || !m.cloud) return;
+    if (!RAIL_TMP) RAIL_TMP = g.canvas.ownerDocument.createElement('canvas');
+    const tmp = RAIL_TMP; if (tmp.width !== g.canvas.width || tmp.height !== g.canvas.height) { tmp.width = g.canvas.width; tmp.height = g.canvas.height; }
+    const tg = tmp.getContext('2d'); tg.setTransform(g.getTransform()); tg.globalCompositeOperation = 'source-over'; tg.clearRect(bx[0] - 2, bx[1] - 2, bx[2] + 4, bx[3] + 4);
+    const off = ART.strip.w / 2 + 0.6;
+    for (const sg of segs) {
+      const P = curvePts(sg[3].map((id) => D.nodes[id])); if (bx && !P.some((q) => q[0] > bx[0] - 30 && q[0] < bx[0] + bx[2] + 30 && q[1] > bx[1] - 30 && q[1] < bx[1] + bx[3] + 30)) continue;
+      for (const sd of [-1, 1]) {
+        const L = P.map((q, i) => { const a = P[Math.max(0, i - 1)], b = P[Math.min(P.length - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], k = Math.hypot(dx, dy) || 1; return [q[0] - dy / k * off * sd, q[1] + dx / k * off * sd]; });
+        const line = (w, c, dy) => { tg.strokeStyle = c; tg.lineWidth = w; tg.beginPath(); L.forEach((q, i) => (i ? tg.lineTo(q[0], q[1] + dy) : tg.moveTo(q[0], q[1] + dy))); tg.stroke(); };
+        tg.lineCap = tg.lineJoin = 'round';
+        line(2.6, 'rgba(60,70,92,.45)', 0.9); line(1.7, '#f6f1e3', 0); line(0.55, 'rgba(214,176,92,.9)', -0.35);   // 手すり（影・白・金の細い縁）
+        let acc = 0; for (let i = 1; i < L.length; i++) { acc += Math.hypot(L[i][0] - L[i - 1][0], L[i][1] - L[i - 1][1]); if (acc < 7.5) continue; acc = 0;   // 支柱
+          tg.fillStyle = 'rgba(60,70,92,.5)'; tg.beginPath(); tg.arc(L[i][0], L[i][1] + 0.8, 1.35, 0, 7); tg.fill();
+          tg.fillStyle = '#fbf7ea'; tg.beginPath(); tg.arc(L[i][0], L[i][1], 1.05, 0, 7); tg.fill(); }
+      }
+    }
+    const sx = Math.max(0, Math.floor(bx[0])), sy = Math.max(0, Math.floor(bx[1])), sw = Math.min(WORLD.w, Math.ceil(bx[0] + bx[2])) - sx, sh = Math.min(WORLD.h, Math.ceil(bx[1] + bx[3])) - sy;
+    tg.globalCompositeOperation = 'destination-in'; if (sw > 0 && sh > 0) tg.drawImage(m.cloud, sx, sy, sw, sh, sx, sy, sw, sh);
+    g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(tmp, 0, 0); g.restore();
+  }
+  /** 2026-10-18：地点に入ってくる道の向き（地点 → 道の先の点・ラジアン）。区間の始点と終点だけ */
+  function plazaDirs(D, segs) {
+    const out = {}, put = (id, a, b) => { (out[id] = out[id] || []).push(Math.atan2(b[1] - a[1], b[0] - a[0])); };
+    for (const sg of segs) { const ids = sg[3]; if (!ids || ids.length < 2) continue; const P = curvePts(ids.map((id) => D.nodes[id])), at = (k) => P[Math.min(P.length - 1, Math.max(0, k))];
+      put(ids[0], P[0], at(3)); put(ids[ids.length - 1], P[P.length - 1], at(P.length - 4)); }
+    return out;
+  }
+  /** 2026-10-18：円形の広場（分かれ目・合流・行き止まり）。r＝縁石の外側の半径（単位）・dirs＝道が入ってくる向き・strip＝道の帯の絵（上の縁石の段を使う） */
+  function plaza(g, n, r, dirs, strip, rp, centre, bx) {
+    if (!n) return; const x = n[0], y = n[1];
+    if (bx && (x + r + 6 < bx[0] || x - r - 6 > bx[0] + bx[2] || y + r + 6 < bx[1] || y - r - 6 > bx[1] + bx[3])) return;
+    const CURB = 0.18, ppu = strip ? strip.height / ART.strip.w : 0, th = ART.strip.w * CURB, half = ART.strip.w / 2;
+    // 外側の薄い影（草へ落ちる）
+    const sh = g.createRadialGradient(x, y, r - 1, x, y, r + 4.5); sh.addColorStop(0, 'rgba(30,40,14,.34)'); sh.addColorStop(1, 'rgba(30,40,14,0)');
+    g.fillStyle = sh; g.beginPath(); g.arc(x, y, r + 4.5, 0, 7); g.fill();
+    // 中の敷石（R の中央を広場の中心に）
+    if (rp) { centre(); if (g.fillStyle !== rp) g.fillStyle = rp; } else g.fillStyle = '#d8ccb0';
+    g.beginPath(); g.arc(x, y, r - th * 0.5, 0, 7); g.fill();
+    // 内側のふちの陰（縁石の足もと）
+    const ao = g.createRadialGradient(x, y, r * 0.55, x, y, r - th * 0.5); ao.addColorStop(0, 'rgba(60,46,24,0)'); ao.addColorStop(1, 'rgba(60,46,24,.22)');
+    g.fillStyle = ao; g.beginPath(); g.arc(x, y, r - th * 0.5, 0, 7); g.fill();
+    if (!strip) return;
+    // 縁石：道の入口（道の半幅ぶん）を切った円弧に、帯の上の縁石の段を短い切れ端で並べる
+    const gap = Math.asin(Math.min(0.98, (half - th * 0.35) / (r - th / 2)));
+    const blocked = (a) => dirs.some((d) => { let z = Math.abs(((a - d) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI); return z < gap; });
+    const rm = r - th / 2, seg = 2.2, N = Math.max(12, Math.ceil(Math.PI * 2 * rm / seg)), sh2 = Math.round(strip.height * CURB);
+    for (let i = 0; i < N; i++) {
+      const a = (i + 0.5) / N * Math.PI * 2; if (blocked(a)) continue;
+      const L = Math.PI * 2 * rm / N, sx = ((i * L * ppu) % (strip.width - L * ppu - 2)) || 0;
+      g.save(); g.translate(x + Math.cos(a) * rm, y + Math.sin(a) * rm); g.rotate(a + Math.PI / 2);
+      g.drawImage(strip, sx, 0, Math.max(1, L * ppu), sh2, -L / 2 - 0.25, -th / 2, L + 0.5, th); g.restore();
+    }
   }
   /** 横長の帯の絵を点の列に沿って細い切れ端で並べる（帯の高さ＝幅 w・くり返す） */
   function stripAlong(g, pts, im, w, bx, shift) {
@@ -859,6 +948,28 @@
       });
     }
     return out;
+  }
+  /** 2026-10-18 Chapter 3：雲海の中の景物（小さな浮島・雲・滝）。決まった乱数・道と浮島から離す */
+  const SKYP_CACHE = new Map();
+  function skyProps(D) {
+    const ck = 'sky:' + (D.route || 'A'); if (SKYP_CACHE.has(ck)) return SKYP_CACHE.get(ck);
+    const segs = Object.values(D.segments).map((s) => s[3].map((n) => D.nodes[n])), IS = D.art.islands || [], rnd = mulberry(0x3077 + (D.route || 'A').charCodeAt(0)), out = [];
+    const KINDS = [['C3_ENV_floating_island_small_green.webp', 34, 0.30], ['C3_ENV_floating_island_small_rock.webp', 26, 0.22], ['C3_ENV_floating_island_medium.webp', 50, 0.14], ['C3_ENV_cloud_puff_small.webp', 46, 0.34]];
+    for (let y = 40; y < WORLD.h - 20; y += 78) for (let x = 30; x < WORLD.w; x += 78) {
+      const px = x + (rnd() - 0.5) * 50, py = y + (rnd() - 0.5) * 50, r = rnd(), pick = rnd();
+      if (r > 0.42) continue;
+      if (segs.some((l) => distLine(l, px, py) < 44)) continue;
+      if (IS.some((P) => inPoly(P, px, py) || P.some((q) => Math.hypot(q[0] - px, q[1] - py) < 34))) continue;
+      const gn = D.nodes.GOAL; if (gn && Math.hypot(gn[0] - px, gn[1] - py) < ART.goal.w * 0.7) continue;
+      if (out.some((q) => Math.hypot(q.x - px, q.y - py) < 70)) continue;
+      let acc = 0, K = KINDS[KINDS.length - 1]; for (const k of KINDS) { acc += k[2]; if (pick < acc) { K = k; break; } }
+      out.push({ file: SKY3 + K[0], x: Math.round(px), y: Math.round(py), w: Math.round(K[1] * (0.8 + rnd() * 0.4)), z: -24 });
+    }
+    // 浮島のふちから雲海へ落ちる滝（大きめの浮島のいくつか）
+    let n = 0; for (const P of IS) { if (n >= 7) break; const c = P.reduce((a, q) => [a[0] + q[0] / P.length, a[1] + q[1] / P.length], [0, 0]); const r = Math.max(...P.map((q) => Math.hypot(q[0] - c[0], q[1] - c[1])));
+      if (r < 44 || rnd() > 0.5) continue; const lo = P.reduce((a, q) => (q[1] > a[1] ? q : a)); if (segs.some((l) => distLine(l, lo[0], lo[1] + 14) < 30)) continue;
+      out.push({ file: SKY3 + 'C3_FX_sky_waterfall_column.webp', x: Math.round(lo[0]), y: Math.round(lo[1] + 26), w: 14, z: -26 }); n++; }
+    SKYP_CACHE.set(ck, out); return out;
   }
   /** 道の外に木と岩を散らす（決まった乱数・道とマスから離す・道の近くだけ）。第1便の検証用 */
   function scatter(D, o) {
@@ -911,6 +1022,7 @@
     if (cssDone || doc.getElementById('rfw-css')) return; cssDone = true;
     const s = doc.createElement('style'); s.id = 'rfw-css';
     s.textContent = `:is(#rfp,.wbv) .rfw{position:absolute;inset:0;overflow:hidden;background:#86b65a;z-index:1}
+:is(#rfp,.wbv) .rfw.sky{background:#bcd8f0}
 :is(#rfp,.wbv) .rfw-plane{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
 :is(#rfp,.wbv) .rfw-chunk{position:absolute;display:block}
 :is(#rfp,.wbv) .rfw-bb{position:absolute;inset:0;pointer-events:none}
@@ -949,8 +1061,8 @@
     if (pre || !root.Image) return pre; base = base || './assets/proto/board_art_1010/';
     const K = SKIN[skin], sk = K ? [...new Set(['A', 'B', 'C'].flatMap((v) => [K[v].ground, K[v].road, K[v].strip, K[v].water, ...Object.values(K[v].props).map((q) => q[0])]))].map((f) => K.base + f) : [];
     const T = ART.terrain, files = [ART.ground.file, ART.road.file, ART.strip.file, ART.goal.file, ART.peaks.file, T.valley.file, T.water.file, T.cloud.file, ...Object.values(T.edges).map((e) => e.file),
-      ...Object.values(VISUAL).flatMap((v) => v.props.map((p) => p.file)), ...ART.landmarks.map((l) => l.file), ...Object.values(ART.water).filter((w) => w && w.file).map((w) => w.file)];
-    pre = [...[...new Set(files)].map((f) => base + f), ...sk].map((u) => { const im = new root.Image(); im.decoding = 'async'; im.src = u; return im; });
+      ...Object.values(VISUAL).filter((v) => !v.sky).flatMap((v) => v.props.map((p) => p.file)),   /* 2026-10-18：Chapter 3 の空の景物は Chapter 1 の出発では読まない */ ...ART.landmarks.map((l) => l.file), ...Object.values(ART.water).filter((w) => w && w.file).map((w) => w.file)];
+    pre = [...[...new Set(files)].map((f) => artUrl(base, f)), ...sk].map((u) => { const im = new root.Image(); im.decoding = 'async'; im.src = u; return im; });
     return pre;
   }
   const api = { DEF, WORLD, ART, TERRAIN, VISUAL, SKIN, skinOf, visualOf, peaksOf, project, fitZoom, lookahead, headingYaw, angDiff, create, scatter, waterProps, curvePts, landmarkAt, inValley, loopPoly, warmArt };

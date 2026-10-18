@@ -226,6 +226,8 @@ try {
   const wb = await page.evaluate(() => ({ on: !!document.querySelector('#wbw #brollbtn'), old: !!document.querySelector('#chf'), lim: S.m.raise.turnLimit, sides: MMP8.diceSides(S.m), w: window.MMWB && MMWB.state().world }));
   await page.screenshot({ path: `${OUT}/world_ch1_390.png` });
   rec('Chapter 1：1枚の世界のボード（40ターン・1〜6・絵が読める）', wb.on && !wb.old && wb.lim === 40 && wb.sides === 6 && !!wb.w && wb.w.art && wb.w.tiles === 299, JSON.stringify({ ...wb, w: wb.w && { art: wb.w.art, tiles: wb.w.tiles, painted: wb.w.painted } }));
+  { const ra = await page.evaluate(() => ({ mode: window.MMQRA && MMQRA.mode, loaded: window.MMQRA ? MMQRA.loaded().map((x) => x[0]) : [] }));
+    rec('2026-10-18：Chapter 1 の道路は新素材 fix が既定（草地・石畳・道の帯が読める）', ra.mode === 'fix' && [/^ch1_ground_a/, /^ch1_road_r/, /^ch1_strip_r/].every((re) => ra.loaded.some((k) => re.test(k))), JSON.stringify(ra)); }
 
   // 2026-10-13 開発24：公式大会（E）の実戦（上の Chapter 1 の出発のあと）：新しい画面・技の発動中の表示・観客の声（命中・ルーレットの MISS・かわされた）
   {
@@ -352,7 +354,13 @@ try {
     await t.waitForFunction(() => /ブランチ\s*main/.test((document.querySelector('#mmqat .qtv') || {}).textContent || ''), null, { timeout: 15000 }).catch(() => {});
     const qt = await t.evaluate(() => ({ cells: document.querySelectorAll('#mmqat .qtm td').length, b: document.querySelectorAll('#mmqat .qtm td.battle').length, links: document.querySelectorAll('#mmqat a.qtb[data-k]').length, v: (document.querySelector('#mmqat .qtv') || {}).textContent || '' }));
     await t.screenshot({ path: `${OUT}/qa_top_390.png` }).catch(() => {});
-    rec('2026-10-17：QA トップ＝70枠（2026-10-18 REV3：実戦 70＝フルーネ正式10技）・Chapter 1／2 の A／B／C の入口・版と branch', qt.cells === 70 && qt.b >= 60 && qt.b <= 70 && qt.links === 6 && /main/.test(qt.v), JSON.stringify(qt));
+    rec('2026-10-17：QA トップ＝70枠（2026-10-18 REV3：実戦 70＝フルーネ正式10技）・Chapter 1／2 の A／B／C の入口・版と branch', qt.cells === 70 && qt.b >= 60 && qt.b <= 70 && qt.links === 9 && /main/.test(qt.v), JSON.stringify(qt));   // 2026-10-18：Chapter 3 の A／B／C を足して 9
+    // 2026-10-18：Chapter 3「天空の浮島」の試遊（?ch3trial=B）＝空の世界の盤・299地点・QA 移動のボタン・保存しない
+    await t.goto(URL + '?ch3trial=B'); await t.waitForSelector('#wbw #brollbtn', { timeout: 60000 }).catch(() => {});
+    await t.waitForFunction(() => { const w = window.MMWB && MMWB.state().world; return !!(w && w.art && w.painted); }, null, { timeout: 30000 }).catch(() => {});
+    const c3 = await t.evaluate(() => ({ ch: S.m && S.m.raise && S.m.raise.ch, route: S.m && S.m.raise.field && S.m.raise.field.route, sky: !!document.querySelector('.rfw.sky'), tiles: (MMWB.state().world || {}).tiles, qa: !!document.getElementById('qajb'), nm: (document.querySelector('.chh-nm') || {}).textContent }));
+    await t.screenshot({ path: `${OUT}/ch3_trial_390.png` }).catch(() => {});
+    rec('2026-10-18：Chapter 3「天空の浮島」の試遊（B）＝空の世界・299地点・QA 移動', c3.ch === 3 && c3.route === 'B' && c3.sky && c3.tiles === 299 && c3.qa && c3.nm === '天空の浮島', JSON.stringify(c3));
     const real0 = await t.evaluate(() => localStorage['mr4v6'] || null);   // QA トップのページは通常の起動（本当のセーブ）＝前後で比べる
     await t.goto(URL + '?qaFresh=1'); await t.waitForFunction(() => window.MMQAF && MMQAF.on, null, { timeout: 60000 }).catch(() => {});
     const qf = await t.evaluate(() => ({ on: !!(window.MMQAF && MMQAF.on), real: localStorage['mr4v6'] || null }));

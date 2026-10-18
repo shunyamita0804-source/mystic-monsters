@@ -24,7 +24,7 @@
   //  区画は細かいほど小さく（64単位）・枚数はメモリの上限（?qaRoadMB・既定 40MB）で決める（遠い区画は遠近で小さく見える＝遠くの層のままでよい）
   const RES = num('qaRoadRes', ART17 ? 10 : 5, 2, 14), TILE = num('qaRoadTile', RES > 6 ? 64 : 128, 16, 256);
   const LAYER = !(P && P.get('qaRoadLayer') === '0');
-  const MB = num('qaRoadMB', 40, 8, 120), MAX = RES > 6 ? Math.max(6, Math.floor(MB * 1048576 / (Math.pow(Math.ceil(TILE * RES) + 2, 2) * 4))) : 14, BUDGET = 6;
+  const MB = num('qaRoadMB', root.MMQRA && !root.MMQRA.urlMode && !(q === '1' || q === '2') ? 32 : 40, 8, 120)   /* 2026-10-18：本編の既定（URL なし）は 32MB＝iPhone のメモリに余裕を残す */, MAX = RES > 6 ? Math.max(6, Math.floor(MB * 1048576 / (Math.pow(Math.ceil(TILE * RES) + 2, 2) * 4))) : 14, BUDGET = 6;
 
   // ---- 三角形ごとのアフィン変換で、帯の絵の切れ端を台形の網へ貼る ----
   function tri(g, im, s0, s1, s2, d0, d1, d2) {

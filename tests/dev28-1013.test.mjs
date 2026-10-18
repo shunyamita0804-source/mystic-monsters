@@ -266,7 +266,7 @@ test('D28-08：固有スキルのカメラ＝cutCamera（全身が切れない�
 
 test('D28-09：MM_BUILD と version.json は同じ値（公開のたびに上げる。2026-10-14 Chapter 1 A／B／C 高品質化＝2026-10-14-ch1hq → 進入時のクラッシュ対策＝2026-10-14-ch1fix → 実機試遊47項目＝2026-10-14-play47 → 研究所の一言の重なり＝2026-10-14-play47b → NPC のボイスの全停止＝2026-10-15-next12 → 比較画面・QA 試遊＝2026-10-15-cmpqa → フルーネの技アニメ・歩行＝2026-10-15-flanim → ジオルの正式10技＝2026-10-15-jiol10 → 作業ブランチの iPhone 6件＝2026-10-16-ip6 → 夜間 QA B＝2026-10-16-qa-b1 → C＝2026-10-16-qa-c1 → A＝2026-10-16-qa-a1）', () => {
   const b = /const MM_BUILD="([^"]+)";/.exec(HTML); assert.ok(b);
-  { const v = JSON.parse(rd('version.json')); assert.equal(v.build, b[1]); assert.deepEqual(Object.keys(v).filter((k) => !['build', 'branch', 'base'].includes(k)), []); } assert.equal(b[1], '2026-10-18-rev3');   // 2026-10-18 REV3   // 2026-10-17 統合便 v2（version.json に branch・base＝元のコミット＝QA トップの表示）。   // 2026-10-17 道路画質 QA の作業ブランチ（claude/qa-road-1017）。2026-10-16 夜間 QA の作業ブランチ（claude/qa-bca-1016）
+  { const v = JSON.parse(rd('version.json')); assert.equal(v.build, b[1]); assert.deepEqual(Object.keys(v).filter((k) => !['build', 'branch', 'base'].includes(k)), []); } assert.equal(b[1], '2026-10-18-ch3');   // 2026-10-18 Pre-Ch3 修正＋Chapter 3   // 2026-10-18 REV3   // 2026-10-17 統合便 v2（version.json に branch・base＝元のコミット＝QA トップの表示）。   // 2026-10-17 道路画質 QA の作業ブランチ（claude/qa-road-1017）。2026-10-16 夜間 QA の作業ブランチ（claude/qa-bca-1016）
 });
 
 // ---- js/battle/rules.js を Node で動かす（tests/battle-rules-1006.test.mjs と同じ組み立て） ----

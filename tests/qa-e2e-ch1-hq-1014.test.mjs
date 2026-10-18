@@ -15,7 +15,8 @@ let L = null;
 test.before(async () => { if (!SKIP) L = await H.launch(); });
 test.after(async () => { if (L) await L.close(); });
 const OPEN = [];
-const openPage = async (o = {}) => { const p = await L.open({ worldCh1: true, ...o }); OPEN.push(p); return p; };
+// 2026-10-18：本編の Chapter 1 の既定の道路は新素材 fix（js/qa/road-art-1017.js）。このファイルは hq1014 の絵を確かめる＝?qaRoadArt=old を付ける
+const openPage = async (o = {}) => { const p = await L.open({ worldCh1: true, ...o, query: (o.query ? o.query + '&' : '?') + 'qaRoadArt=old' }); OPEN.push(p); return p; };
 test.afterEach(async () => { for (const p of OPEN.splice(0)) await p.ctx.close().catch(() => {}); });
 const idle = (pg) => pg.waitForFunction(() => !bBusy && !MMCHD.isLocked() && !document.querySelector('.wbrelay,.wb-pop,.chf-enc2,.mmtalk,.chdz') && !MMWB.state().intro, null, { timeout: 40000 }).then(() => pg.waitForTimeout(300));
 const depart = async (pg, v) => {

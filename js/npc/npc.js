@@ -259,10 +259,10 @@
       fig.appendChild(img); { const orn = h('i', 'mmtalk-orn'); orn.setAttribute('aria-hidden', 'true'); win.append(orn); } win.append(nm, tx, ch, nx); stage.append(fig, win); ov.appendChild(stage); document.body.appendChild(ov);
       const onKey = (e) => { if (e.key === 'Enter' || e.key === ' ') { if (e.target && e.target.closest && e.target.closest('.mmtalk-choices')) return;   // 選択肢のボタン上ではボタンの操作に任せる
         e.preventDefault(); c.tap(); } };
-      let lineIdx = -1, txLine = -1, txFull = null, txShown = 0, txChars = [], voiced = false, grp = null, syncT = null;   // grp＝今の声の字幕のまとまり { id, i0 }
+      let lineIdx = -1, txLine = -1, txFull = null, txShown = 0, txChars = [], voiced = false, grp = null, syncT = null;   let autoJ = false;   // 2026-10-18：声に合わせた自動の字幕送り（sync）の間だけ true＝プレイヤーのタップで送ったときは声を止める   // grp＝今の声の字幕のまとまり { id, i0 }
       // 2026-10-17：声に合わせて字幕を進める（声が実際に鳴っている間だけ。声 OFF・鳴らないときはタップで進む）。字幕の行を飛ばしても声は鳴らし直さない
       const sync = () => { try { const A = root.MMAUDIO; if (!grp || !A || !A.voicePlaying) return; const p = A.voicePlaying(); if (!p || p.id !== A.voiceResolve(grp.id)) return;
-        const s = c.state(), L2 = c.lines; let j = s.idx; for (let k = s.idx + 1; k < L2.length && L2[k].sub != null && L2[k].sub <= p.ms; k++) j = k; if (j > s.idx) c.jump(j); } catch (e) {} };
+        const s = c.state(), L2 = c.lines; let j = s.idx; for (let k = s.idx + 1; k < L2.length && L2[k].sub != null && L2[k].sub <= p.ms; k++) j = k; if (j > s.idx) { autoJ = true; try { c.jump(j); } finally { autoJ = false; } } } catch (e) {} };
       let keyT = null;   // keydown を受け付け始めるタイマー（会話を開いたキー操作そのものは会話に届けない）
       const c = createTalk(lines, {
         openGuardMs: OPEN_GUARD_MS,   // ダブルタップの2打目（会話を開いたタップの続き）などで、1行目の文字送りを飛ばさない
@@ -270,7 +270,8 @@
           if (s.ended) return;
           if (s.idx !== lineIdx) { lineIdx = s.idx; if (typeof opts.onLine === 'function') { try { opts.onLine(s.idx, s); } catch (e) {} }
             // 2026-10-13 開発24：この行に声があれば、行が出た瞬間に1回（声が無い行へ進んだら前の声は止める＝会話とずれない）
-            try { const V = root.MMVOICE; if (V) { if (s.voice) { grp = { id: s.voice }; if (V.line(s.voice, s.voiceWait != null ? { maxWaitMs: s.voiceWait } : undefined)) voiced = true; else if (s.voiceWait != null) voiced = true; } else if (s.sub != null && grp) { /* 続きの字幕：声はそのまま */ } else { grp = null; if (voiced) { V.stop(90); voiced = false; } } } } catch (e) {}
+            /* 2026-10-18 iPhone 試遊：タップで次の行へ送ったら、前の声（鳴っている声・読み込み待ちの声）は必ずすぐ止める。声に合わせた自動の字幕送り（sync）のときだけ声をそのまま続ける */
+            try { const V = root.MMVOICE; if (V) { const first = lineIdx === 0 && !voiced && !grp; if (s.sub != null && grp && autoJ) { /* 続きの字幕（声に合わせた自動送り）：声はそのまま */ } else { if (!first) V.stop(40); voiced = false; grp = null; if (s.voice) { grp = { id: s.voice }; if (V.line(s.voice, s.voiceWait != null ? { maxWaitMs: s.voiceWait } : undefined)) voiced = true; else voiced = true; } } } } catch (e) {}
             if (grp && !syncT) syncT = setInterval(sync, 100); else if (!grp && syncT) { clearInterval(syncT); syncT = null; } }   // 2026-10-05：行が変わったとき（世界地図のカメラを会話に合わせて動かす等）
           ov.dataset.npc = s.npc || ''; stage.dataset.side = s.side || 'left'; const stand = !s.frames && s.img ? standOf(s.npc, s.view || 'closeup', s.expr) : null; fig.className = 'mmtalk-fig ' + (s.view || 'closeup') + (stand ? ' stand' : ''); fig.hidden = !(s.img || s.frames);   // アニメーションだけのNPCでも立ち絵を隠さない
           const key = s.frames ? `${s.idx}:${s.anim}` : '';

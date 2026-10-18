@@ -374,7 +374,8 @@
   /** サイコロを振る＝1ターン消費。出目（1〜面の数）はここで確定して pend に記録する */
   function roll(S, m, rnd = Math.random) {
     if (!canRoll(m)) return { ok: false };
-    const value = P7.rollDie(diceSides(m), rnd), r = m.raise;
+    // 2026-10-18 QA（js/qa/qa-jump-1018.js・試遊の URL のときだけ）：次の出目を固定（window.MM_QA_DIE＝1〜面の数。1回使ったら消える）
+    const qd = root.MM_QA_DIE, sides = diceSides(m), value = Number.isInteger(qd) && qd >= 1 && qd <= sides ? (root.MM_QA_DIE = null, qd) : P7.rollDie(sides, rnd), r = m.raise;
     r.turnsUsed += 1;
     r.pend = { roll: value, left: value, stage: 'move' };
     const d = driverFor(r.ch, m); if (d) Object.assign(r.pend, d.onRoll(S, m, value));   // エンジン：出目が決まった時点で疲れを加算（停止地点では加算後の疲れで判定）

@@ -15,7 +15,10 @@
   'use strict';
   let P = null; try { P = new URLSearchParams(root.location.search); } catch (e) {}
   const q = P ? P.get('qaRoadArt') : null;
-  const MODE = q === 'raw' || q === 'fix' ? q : null;
+  //  2026-10-18（iPhone 試遊・ユーザー指示「Chapter 1 の道路画質改善」）：本編の Chapter 1 は既定で fix（継ぎ目を直した新素材）。?qaRoadArt=old で従来の絵（比較用）。
+  //  Chapter 2 の新しい素材は従来どおり URL のときだけ（URL_MODE＝未承認の Chapter 2 の道は本編へ入れない）
+  const URL_MODE = q === 'raw' || q === 'fix' ? q : null;
+  const MODE = q === 'old' ? null : URL_MODE || 'fix';
   const MACRO = MODE && !(P && P.get('qaRoadMacro') === '0');
   const BASE = './assets/qa/road_1017/';
   // 名前 → px／単位（tools/road1017/derive.py の derive.json と同じ値）。strip・walk・rail は帯の高さ＝幅で決まる（null）
@@ -25,7 +28,8 @@
   const file = (name) => BASE + name + (PPU[name] || VARIANT[name] ? '_' + MODE : '') + '.webp';
   /** Chapter 1：skin の鍵（ground・road・strip）→ 新しい絵の名前（景色 A／B／C） */
   const CH1 = { A: { ground: 'ch1_ground_a1', road: 'ch1_road_r1', strip: 'ch1_strip_r1' }, B: { ground: 'ch1_ground_a2', road: 'ch1_road_r1', strip: 'ch1_strip_r1' },
-    C: { ground: 'ch1_ground_a3', road: 'ch1_road_r2', strip: 'ch1_strip_r2' } };
+    C: { ground: 'ch1_ground_a3', road: 'ch1_road_r2', strip: 'ch1_strip_r2' },
+    S: { ground: 'ch1_ground_a2', road: 'ch1_road_r2', strip: 'ch1_strip_r2' } };   // 2026-10-18 Chapter 3（天空の浮島）：明るい草地と白っぽい石畳 R2
   /** Chapter 2：js/proto/ch2-world.js の TEX・STRIPS の鍵 → 新しい絵の名前 */
   const CH2 = { tex: { sea: 'ch2_open_sea_water', deck: 'ch2_sea_bridge_deck', white: 'ch2_coastal_white_stone_road' },
     strip: { walk: 'ch2_R01_white_bridge_walkstrip', railL: 'ch2_sea_bridge_railing_left', railR: 'ch2_sea_bridge_railing_right' } };
@@ -62,5 +66,5 @@
     if (p.setTransform && root.DOMMatrix) p.setTransform(new root.DOMMatrix().translate(-131, -77).scale(900 / t.width));
     g.save(); g.globalAlpha = 0.55; g.fillStyle = p; g.fillRect(x0, y0, w, h); g.restore();
   }
-  root.MMQRA = Object.freeze({ mode: MODE, macroOn: !!MACRO, BASE, PPU, CH1, CH2, file, load, macro, loaded: () => loaded.slice() });
+  root.MMQRA = Object.freeze({ mode: MODE, urlMode: URL_MODE, macroOn: !!MACRO, BASE, PPU, CH1, CH2, file, load, macro, loaded: () => loaded.slice() });
 })(typeof window !== 'undefined' ? window : globalThis);

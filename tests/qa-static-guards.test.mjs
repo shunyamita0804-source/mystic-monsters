@@ -88,8 +88,8 @@ const SCRIPTS = [
   'js/battle/fit.js',   // 2026-09-30：バトル画面の表示だけの補正（fight()・.bt 系 CSS は変えない）
   'js/battle/fx.js',    // 2026-10-03：バトル共通演出の正式素材（fight()・.bt 系 CSS は変えない。外から見て重ねる）
   'js/battle/rival-partner.js', 'js/battle/official-moves.js', 'js/battle/rules.js', 'js/battle/move-cards.js', 'js/monsters/reaction-art.data.js', 'js/monsters/reaction-art.js', 'js/battle/crowd.js', 'js/battle/arena.js', 'js/battle/compare.js', 'js/qa/trial.js', 'js/qa/battle-stage.js', 'js/battle/stage.js', 'js/battle/art25d-data.js', 'js/battle/soramo-moves-data.js', 'js/battle/gauru-moves-data.js', 'js/battle/nobiton-moves-data.js', 'js/battle/regnas-moves-data.js', 'js/battle/jiol-moves-data.js', 'js/battle/flurene-moves-data.js', 'js/battle/razuck-moves-data.js', 'js/battle/move-area-1015.js', 'js/battle/move-tune-1015.js', 'js/battle/rootdrain-1016.js', 'js/battle/sk19-v2-1016.js', 'js/battle/art25d.js', 'js/battle/movedex.js', // 2026-10-15 夜：技アニメの試遊修正（move-tune-1015.js）。2026-10-15：新しいパラメーター比較画面（compare.js）・QA 試遊モード（qa/trial.js＝?mmQaTrial=1 のときだけ）。2026-10-08：ソラモ・ガウルの 2.5D バトル素材の比較試遊（?battleArt=2p5d のときだけ）。2026-10-06：正式技（ソラモ・ガウルの SK を実行時に入れ替え）・バトルの共通演出・技辞典。2026-10-05：ライバルの相棒（レグナス）の正式技・固有スキル・技の演出（fight() は変えない＝外から差し込む）
-  'js/fx/sequence.js', 'js/proto/roadfirst-data.js', 'js/proto/roadfirst-routes.js', 'js/proto/roadfirst-core.js', 'js/proto/roadfirst-play.js', 'js/proto/roadfirst-zones.js', 'js/proto/roadfirst-world.js', 'js/proto/ch2-routes.js', 'js/proto/ch2-world.js', 'js/proto/roadfirst-view.js',  // 2026-10-09：Chapter 1 Pattern A 道路先行の試作（?chapterBoard=roadfirst のときだけ）。2026-10-03：連続コマの演出の再生器（野生聖獣の遭遇の正式8コマ。今はどこからも呼ばない＝将来つなぐ準備）
-  'js/chapter/world-driver.js', 'js/chapter/world-driver-ch2.js', 'js/chapter/world-board.js', 'js/chapter/ch2-trial.js', 'js/qa/road-art-1017.js', 'js/qa/road-1016.js', 'js/qa/walk5-1016.js', 'js/qa/qa-board-1016.js', 'js/qa/qa-top-1017.js',   // 2026-10-11：本編の Chapter 1＝1枚の世界のボード（進行 MMWD・画面 MMWB）
+  'js/fx/sequence.js', 'js/proto/roadfirst-data.js', 'js/proto/roadfirst-routes.js', 'js/proto/ch3-routes.js', 'js/proto/roadfirst-core.js', 'js/proto/roadfirst-play.js', 'js/proto/roadfirst-zones.js', 'js/proto/roadfirst-world.js', 'js/proto/ch2-routes.js', 'js/proto/ch2-world.js', 'js/proto/roadfirst-view.js',  // 2026-10-09：Chapter 1 Pattern A 道路先行の試作（?chapterBoard=roadfirst のときだけ）。2026-10-03：連続コマの演出の再生器（野生聖獣の遭遇の正式8コマ。今はどこからも呼ばない＝将来つなぐ準備）
+  'js/chapter/world-driver.js', 'js/chapter/world-driver-ch2.js', 'js/chapter/world-driver-ch3.js', 'js/chapter/world-board.js', 'js/chapter/ch2-trial.js', 'js/chapter/ch3-trial.js', 'js/qa/qa-jump-1018.js', 'js/qa/road-art-1017.js', 'js/qa/road-1016.js', 'js/qa/walk5-1016.js', 'js/qa/qa-board-1016.js', 'js/qa/qa-top-1017.js',   // 2026-10-11：本編の Chapter 1＝1枚の世界のボード（進行 MMWD・画面 MMWB）
   'js/prologue/prologue.js',  // 2026-10-03：プロローグ（MMPRO。新しいゲームの最初に1回。2026-10-05 から正式の4枚）
   'js/opening/worldmap.js',   // 2026-10-05：世界地図（MMMAP。序盤の出身地の会話・聖獣士管理局の「世界地図」）
 ];
@@ -462,7 +462,7 @@ test('QA-C9：育成ボード：通常Chapterは20ターン、サイコロは1�
   assert.equal(P7.rollDice(() => 0.999999), 3);
   assert.deepEqual(C.CHAPTERS.map((c) => [c.no, c.theme]), [[1, 'meadow'], [2, 'coast'], [3, 'sky'], [4, 'volcano']]);
   // ボードのサイコロ：エンジンの Chapter は config の面の数（rules.diceSides）、旧ボード（Chapter 2〜4）は従来の 1〜3（MMP7.DICE_MAX）
-  assert.match(rd('js/phase8/raising.js'), /const value = P7\.rollDie\(diceSides\(m\), rnd\)/, 'ボードのサイコロは MMP7.rollDie（面の数はドライバ／既定 1〜3）');
+  assert.match(rd('js/phase8/raising.js'), /: P7\.rollDie\(sides, rnd\)/, 'ボードのサイコロは MMP7.rollDie（面の数はドライバ／既定 1〜3）');
   const w = {}; for (const f of ['js/phase7/progression.js', 'js/phase8/league.js', 'js/phase8/raising.js']) new Function('window', rd(f))(w);
   assert.equal(w.MMP8.diceSides({ raise: { ch: 2 } }), 3, 'エンジンが担当しない Chapter は 1〜3');
   assert.deepEqual([0, 0.5, 0.999].map((x) => w.MMP7.rollDie(6, () => x)), [1, 4, 6]);

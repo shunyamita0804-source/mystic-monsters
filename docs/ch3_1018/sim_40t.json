@@ -1,0 +1,133 @@
+{
+ "N": 600,
+ "out": {
+  "0:Ch1-A": {
+   "runs": 9000,
+   "stuck": 0,
+   "goal": 67.1,
+   "turnsAtGoal": 34.3,
+   "gain": 288.7,
+   "rewards": 0.37,
+   "statStops": 14.6,
+   "stops": {
+    "event": 4.01,
+    "stat": 14.57,
+    "treasure": 1.33,
+    "rest": 1.39,
+    "wild": 1.64
+   }
+  },
+  "0:A": {
+   "runs": 9000,
+   "stuck": 0,
+   "goal": 67.1,
+   "turnsAtGoal": 34.3,
+   "gain": 288.7,
+   "rewards": 0.37,
+   "statStops": 14.6,
+   "stops": {
+    "event": 4.01,
+    "stat": 14.57,
+    "treasure": 1.33,
+    "rest": 1.39,
+    "wild": 1.64
+   }
+  },
+  "0:B": {
+   "runs": 9000,
+   "stuck": 0,
+   "goal": 67.7,
+   "turnsAtGoal": 34.4,
+   "gain": 282.2,
+   "rewards": 0.37,
+   "statStops": 14.3,
+   "stops": {
+    "stat": 14.27,
+    "event": 3.89,
+    "rest": 1.42,
+    "wild": 1.68,
+    "treasure": 1.45
+   }
+  },
+  "0:C": {
+   "runs": 9000,
+   "stuck": 0,
+   "goal": 67.6,
+   "turnsAtGoal": 34.3,
+   "gain": 283.8,
+   "rewards": 0.37,
+   "statStops": 14.3,
+   "stops": {
+    "event": 3.89,
+    "stat": 14.3,
+    "treasure": 1.4,
+    "wild": 1.71,
+    "rest": 1.43
+   }
+  },
+  "1:Ch1-A": {
+   "runs": 9000,
+   "stuck": 0,
+   "goal": 67.1,
+   "turnsAtGoal": 34.3,
+   "gain": 285.5,
+   "rewards": 0.37,
+   "statStops": 14.6,
+   "stops": {
+    "event": 4.01,
+    "stat": 14.57,
+    "treasure": 1.33,
+    "rest": 1.39,
+    "wild": 1.64
+   }
+  },
+  "1:A": {
+   "runs": 9000,
+   "stuck": 0,
+   "goal": 67.1,
+   "turnsAtGoal": 34.3,
+   "gain": 285.5,
+   "rewards": 0.37,
+   "statStops": 14.6,
+   "stops": {
+    "event": 4.01,
+    "stat": 14.57,
+    "treasure": 1.33,
+    "rest": 1.39,
+    "wild": 1.64
+   }
+  },
+  "1:B": {
+   "runs": 9000,
+   "stuck": 0,
+   "goal": 67.7,
+   "turnsAtGoal": 34.4,
+   "gain": 278.9,
+   "rewards": 0.37,
+   "statStops": 14.3,
+   "stops": {
+    "stat": 14.27,
+    "event": 3.89,
+    "rest": 1.42,
+    "wild": 1.68,
+    "treasure": 1.45
+   }
+  },
+  "1:C": {
+   "runs": 9000,
+   "stuck": 0,
+   "goal": 67.6,
+   "turnsAtGoal": 34.3,
+   "gain": 280.9,
+   "rewards": 0.37,
+   "statStops": 14.3,
+   "stops": {
+    "event": 3.89,
+    "stat": 14.3,
+    "treasure": 1.4,
+    "wild": 1.71,
+    "rest": 1.43
+   }
+  }
+ }
+}
