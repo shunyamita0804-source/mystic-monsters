@@ -3,7 +3,7 @@
 //  R3-B1（390×844・375×667）：通常の URL（フラグなし）の Chapter 1＝新歩行（walk_1017・7体の 5方向×4コマ）と C案カメラ・止まると正面（front_2）
 //  R3-B2：通常の Chapter 2（従来の画面）＝新歩行（歩く間は後ろ姿・止まると正面）／?qaWalk=old で従来の静止の絵
 //  R3-B3（375×667・390×844・393×852）：体格（正式 F）＝ジオル＞ガウル＞ソラモ・HP の帯・技名・画面の左右に重ならない
-//  R3-B4：Chapter の開始では鳴かない（intro:true）・能力マスで連れている子が1回鳴く（cryAfter）
+//  R3-B4：本編の Chapter 1 の開始では鳴かない（intro:true。イベントの1回は qa-e2e-cry-1017 の CRY-B3）
 //  R3-B5：特訓の初回の会話の背景＝特訓場（Farm の札の絵ではない）・特訓メニューの「クリア」の行が切れない（375×667）
 //  R3-B6：QA のバトル技ステージに「実際に使うデータ」（モード・最初のコマ・sha256）が出る・通常の画面には出ない
 //  R3-B7（opening:true）：初対面でフィナ 009 を頼む（1回）
@@ -94,19 +94,15 @@ T('R3-B3：体格（正式 F）＝ジオル＞ガウル＞ソラモ・HP の帯�
   }
 });
 
-T('R3-B4：Chapter の開始では鳴かない・能力マスで連れている子が1回鳴く（NPC の声のあと）', async () => {
+T('R3-B4：本編の Chapter 1（世界のボード）の開始では鳴かない（intro:true）', async () => {
   const p = await openPage({ worldCh1: true, intro: true }); const pg = p.page;
   await H.newGame(pg, 'テスト');
-  await pg.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); save(); board(); });
-  await pg.waitForSelector('#wbw #brollbtn'); await pg.waitForFunction(() => !MMWB.state().intro, null, { timeout: 30000 }); await pg.waitForTimeout(2500);
-  assert.equal(await pg.evaluate(() => MMAUDIO.voiceLog().filter((x) => x.cry).length), 0, 'Chapter の開始では鳴き声を頼まない');
-  // 能力マス：配置の中で最初の能力マスへ置いて止まる処理を流す
-  const node = await pg.evaluate(() => { const f = S.m.raise.field, id = Object.keys(f.tiles).find((k) => f.tiles[k] && f.tiles[k].t === 'stat' && !(f.used || {})[k]); return id; });
-  assert.ok(node, '能力マスがある');
-  await pg.evaluate((node) => { const r = S.m.raise, c = r.field.core; r.node = node; c.node = node; c.trail.push(node); c.moveLeft = 0; c.back = null; c.exclude = null; r.pend = { stage: 'resolve' }; save(); MMAUDIO.cryReset(); board(); }, node);
-  await pg.waitForFunction(() => MMAUDIO.voiceLog().some((x) => x.cry && /^cry_solamo_normal$/.test(x.id)), null, { timeout: 15000 });
-  const log = await pg.evaluate(() => MMAUDIO.voiceLog().filter((x) => x.cry).map((x) => [x.id, x.result]));
-  assert.equal(log.filter(([id]) => id === 'cry_solamo_normal').length, 1, `1回だけ（${JSON.stringify(log)}）`);
+  await pg.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; save(); lobby(); });
+  await pg.mouse.click(4, 300); await pg.waitForFunction(() => MMAUDIO.context() && MMAUDIO.context().state === 'running', null, { timeout: 10000 });
+  await pg.evaluate(() => { MMNPC.close(); MMAUDIO.stopVoice(0); MMAUDIO.cryReset(); MMP8.depart(S, S.m, () => 0.37); save(); board(); });
+  await pg.waitForSelector('#wbw #brollbtn'); await pg.waitForFunction(() => !MMWB.state().intro, null, { timeout: 40000 }); await pg.waitForTimeout(3000);
+  assert.deepEqual(await pg.evaluate(() => MMAUDIO.voiceLog().filter((x) => x.cry).map((x) => x.id)), [], 'Chapter の開始では鳴き声を頼まない（俯瞰のあとも）');
+  assert.ok(await pg.evaluate(() => typeof MMAUDIO.cryAfter === 'function'));
   assert.deepEqual(p.errors, []);
 });
 
@@ -140,7 +136,8 @@ T('R3-B7：新しいゲームの初対面でフィナ 009 の自己紹介（声�
   await pg.click('.p15start');
   await pg.waitForFunction(() => window.MMNPC && MMNPC.state() && /聖獣士登録をする予定/.test(MMNPC.state().full), null, { timeout: 30000 });
   await H.chooseTalk(pg, 'yes');
-  await pg.waitForFunction(() => window.MMNPC && MMNPC.state() && /はじめまして。私はフィナ。/.test(MMNPC.state().full), null, { timeout: 20000 });
+  for (let i = 0; i < 60; i++) { const f = await pg.evaluate(() => (window.MMNPC && MMNPC.state() ? MMNPC.state().full : '')); if (/はじめまして。私はフィナ。/.test(f)) break; await pg.waitForTimeout(450); await pg.click('.mmtalk:not(.mmtalk-out)', { force: true }).catch(() => {}); }
+  assert.match(await pg.evaluate(() => MMNPC.state().full), /はじめまして。私はフィナ。/);
   const v = await pg.evaluate(() => MMAUDIO.voiceLog().filter((x) => x.id === 'fina_009').map((x) => x.result));
   assert.ok(v.length >= 1, `fina_009 を頼んだ（${JSON.stringify(v)}）`);
 });

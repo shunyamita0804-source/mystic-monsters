@@ -79,13 +79,17 @@ test('WQ-B2：C案カメラ（?qaCam=c）と組み合わせても動く', { skip
   } finally { await L.close(); }
 });
 
-test('WQ-B3：フラグなし＝従来（正面・背面の 8コマだけ）', { skip, timeout: 600000 }, async () => {
+test('WQ-B3：2026-10-18 REV3＝フラグなしは新歩行（5方向×4コマ）・?qaWalk=old で従来（正面・背面の 8コマだけ）', { skip, timeout: 600000 }, async () => {
   const L = await H.launch();
   try {
     const p = await open(L, '?ch1trial=A', [390, 844]), pg = p.page;
     const sets = await pg.evaluate(() => [...new Set([...document.querySelectorAll('.rfw-mon img.wk')].map((i) => i.dataset.s))].sort());
-    assert.deepEqual(sets, ['back', 'front']); assert.equal(await pg.evaluate(() => document.querySelector('.rfw-mon').dataset.qawalk || ''), '');
+    assert.deepEqual(sets, ['back', 'backd', 'front', 'frontd', 'side']); assert.equal(await pg.evaluate(() => document.querySelector('.rfw-mon').dataset.qawalk || ''), '1017');
     await p.ctx.close();
+    const q = await open(L, '?ch1trial=A&qaWalk=old', [390, 844]), qg = q.page;
+    assert.deepEqual(await qg.evaluate(() => [...new Set([...document.querySelectorAll('.rfw-mon img.wk')].map((i) => i.dataset.s))].sort()), ['back', 'front']);
+    assert.equal(await qg.evaluate(() => document.querySelector('.rfw-mon').dataset.qawalk || ''), '');
+    await q.ctx.close();
   } finally { await L.close(); }
 });
 
