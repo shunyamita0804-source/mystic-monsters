@@ -38,7 +38,7 @@ const landOn = (pg, ev) => pg.evaluate((ev) => {
 }, ev);
 const talkOn = (pg, re) => pg.waitForFunction((src) => { const t = document.querySelector('.mmtalk:not(.mmtalk-out)'); return !!t && new RegExp(src).test(t.textContent); }, re, { timeout: 15000 });
 /** 共通会話を最後まで送り、行ごとの［名前・立ち絵の src］を集める */
-async function collectTalk(pg, max = 80) {
+async function collectTalk(pg, max = 240) {   // 2026-10-18：10-17 の施設の初回は字幕を区切った長い会話＝harness の finishTalk と同じ回数
   const seen = [];
   for (let i = 0; i < max; i++) {
     const s = await pg.evaluate(() => { const o = document.querySelector('.mmtalk:not(.mmtalk-out)'); if (!o) return null; const im = o.querySelector('.mmtalk-fig img'); return { name: (o.querySelector('.mmtalk-name') || {}).textContent || '', src: im ? im.getAttribute('src') : '' }; });
