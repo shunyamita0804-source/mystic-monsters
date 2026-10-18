@@ -1,0 +1,32 @@
+{
+ "16_beam_a": {
+  "from": "assets/battle/2p5d/gauru/16_03.webp",
+  "src_sha256": "c141464cc67f07fa9969d431e7744e087c357a09baa542030ad5970afd03d7a6",
+  "out_sha256": "32e179dbbe506a0c6c2669bff4c3063ccc6f3df12809683c2a5827283badf671",
+  "crop": [
+   226,
+   20,
+   498,
+   316
+  ],
+  "size": [
+   272,
+   296
+  ]
+ },
+ "16_beam_b": {
+  "from": "assets/battle/2p5d/gauru/16_05.webp",
+  "src_sha256": "be99e05449a8459985701d188b9c61bd27a421b4f1872e1d04f87422f84eb101",
+  "out_sha256": "1df4fda9ca860fcc31d880785f705a20981cbf8240842df01d88f1e6478ad0ee",
+  "crop": [
+   182,
+   10,
+   476,
+   316
+  ],
+  "size": [
+   294,
+   306
+  ]
+ }
+}
