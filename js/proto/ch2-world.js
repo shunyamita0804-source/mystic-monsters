@@ -38,7 +38,7 @@
       keys.forEach((k) => { o[k] = a[i++]; }); o.town = a[i++];
       tk.forEach((k) => { o.tex[k] = a[i++]; }); sk.forEach((k) => { o.strip[k] = a[i++]; }); PLAZA.forEach(() => { o.plaza.push(a[i++]); });
       // 2026-10-17 QA（道路画質・?qaRoadArt=raw|fix のときだけ）：外海・海上橋の石板・白い石畳・白い橋帯 R01・欄干は新しい素材（js/qa/road-art-1017.js）。読めなければ上の絵のまま
-      const QRA = root.MMQRA && root.MMQRA.mode ? root.MMQRA : null;
+      const QRA = root.MMQRA && root.MMQRA.urlMode ? root.MMQRA : null;
       if (QRA) return Promise.all([...Object.entries(QRA.CH2.tex).map(([k, n]) => QRA.load(n).then((im) => { if (im) o.tex[k] = im; })),
         ...Object.entries(QRA.CH2.strip).map(([k, n]) => QRA.load(n).then((im) => { if (im) o.strip[k] = im; }))]).then(() => { o.formal = Object.values(o.tex).filter(Boolean).length; return o; });
       o.formal = Object.values(o.tex).filter(Boolean).length;   // 読めた正式の地面の数（確認用）
@@ -290,7 +290,7 @@
     }
     // 2026-10-17 QA（道路画質・?qaRoadArt=…&qaArch=1 のときだけ）：新しい白い橋のアーチ（L02・正面寄りの絵）を、橋の本体へ結合せず「独立の門」として、
     //  海上の道が島（陸）から海へ出る所（陸の最後の地点と海の最初の地点の間）に立てる。立てた絵（景物と同じ）＝カメラの向きで見え方が変わる＝それを試遊で確かめる
-    const QRA = root.MMQRA && root.MMQRA.mode && root.location && /[?&]qaArch=1/.test(root.location.search) ? root.MMQRA : null;
+    const QRA = root.MMQRA && root.MMQRA.urlMode && root.location && /[?&]qaArch=1/.test(root.location.search) ? root.MMQRA : null;
     if (QRA) {
       const onLand = (n) => regs.some((q) => q.r.kind !== 'arena' && H.inPoly(q.P, n[0], n[1]));
       for (const [sid, sg] of Object.entries(D.segments)) {

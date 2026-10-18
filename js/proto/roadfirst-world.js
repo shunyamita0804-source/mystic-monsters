@@ -677,8 +677,11 @@
       if (QA && art.qaRoad === '2') QA.edgeShade(g, cps, ART.strip.w);
       if (QA) for (const P of cps) QA.meshStrip(g, P, art.strip, ART.strip.w, bx);   // 2026-10-16 QA（A）：曲線に沿った網（曲がり角で折れない）
       else for (const s of segs) stripAlong(g, curvePts(s[3].map((id) => D.nodes[id])), art.strip, ART.strip.w, bx);
-      g.fillStyle = '#8f8573'; for (const id of hubs) disc(id, ART.strip.w * 0.62 + 1.5); for (const id of ends) disc(id, ART.strip.w * 0.6 + 1.5);
-      g.fillStyle = rp; for (const id of hubs) { centre(id); disc(id, ART.strip.w * 0.62 - 1); } for (const id of ends) { centre(id); disc(id, ART.strip.w * 0.6 - 1); }
+      // 2026-10-18 iPhone 試遊（分岐の灰色の輪がチープ）：灰色の塗りの輪をやめ、道の帯と同じ縁石を円に沿って並べた「円形の広場」にする。
+      //  道が入ってくる所は縁石を切る（道の縁石と広場の縁石がつながる）・中は R の敷石・外側に草へ落ちる薄い影
+      const dirs = plazaDirs(D, segs);
+      for (const id of hubs) plaza(g, D.nodes[id], ART.strip.w * 0.8, dirs[id] || [], art.strip, rp, () => centre(id), bx);
+      for (const id of ends) plaza(g, D.nodes[id], ART.strip.w * 0.7, dirs[id] || [], art.strip, rp, () => centre(id), bx);
       if (QA && art.qaRoad === '2') { QA.edgeGrass(g, cps, ART.strip.w, bx, 1016); QA.tileShadows(g, D, 11, bx); }   // 2026-10-16 QA（A 2）：ふちにかかる草・マスの足もとの影
       return;
     }
@@ -816,6 +819,39 @@
       for (let k = 1; k <= n; k++) { const t = k / n, u = 1 - t;
         out.push([u * u * u * b[0] + 3 * u * u * t * c1[0] + 3 * u * t * t * c2[0] + t * t * t * c[0], u * u * u * b[1] + 3 * u * u * t * c1[1] + 3 * u * t * t * c2[1] + t * t * t * c[1]]); } }
     return out;
+  }
+  /** 2026-10-18：地点に入ってくる道の向き（地点 → 道の先の点・ラジアン）。区間の始点と終点だけ */
+  function plazaDirs(D, segs) {
+    const out = {}, put = (id, a, b) => { (out[id] = out[id] || []).push(Math.atan2(b[1] - a[1], b[0] - a[0])); };
+    for (const sg of segs) { const ids = sg[3]; if (!ids || ids.length < 2) continue; const P = curvePts(ids.map((id) => D.nodes[id])), at = (k) => P[Math.min(P.length - 1, Math.max(0, k))];
+      put(ids[0], P[0], at(3)); put(ids[ids.length - 1], P[P.length - 1], at(P.length - 4)); }
+    return out;
+  }
+  /** 2026-10-18：円形の広場（分かれ目・合流・行き止まり）。r＝縁石の外側の半径（単位）・dirs＝道が入ってくる向き・strip＝道の帯の絵（上の縁石の段を使う） */
+  function plaza(g, n, r, dirs, strip, rp, centre, bx) {
+    if (!n) return; const x = n[0], y = n[1];
+    if (bx && (x + r + 6 < bx[0] || x - r - 6 > bx[0] + bx[2] || y + r + 6 < bx[1] || y - r - 6 > bx[1] + bx[3])) return;
+    const CURB = 0.18, ppu = strip ? strip.height / ART.strip.w : 0, th = ART.strip.w * CURB, half = ART.strip.w / 2;
+    // 外側の薄い影（草へ落ちる）
+    const sh = g.createRadialGradient(x, y, r - 1, x, y, r + 4.5); sh.addColorStop(0, 'rgba(30,40,14,.34)'); sh.addColorStop(1, 'rgba(30,40,14,0)');
+    g.fillStyle = sh; g.beginPath(); g.arc(x, y, r + 4.5, 0, 7); g.fill();
+    // 中の敷石（R の中央を広場の中心に）
+    if (rp) { centre(); if (g.fillStyle !== rp) g.fillStyle = rp; } else g.fillStyle = '#d8ccb0';
+    g.beginPath(); g.arc(x, y, r - th * 0.5, 0, 7); g.fill();
+    // 内側のふちの陰（縁石の足もと）
+    const ao = g.createRadialGradient(x, y, r * 0.55, x, y, r - th * 0.5); ao.addColorStop(0, 'rgba(60,46,24,0)'); ao.addColorStop(1, 'rgba(60,46,24,.22)');
+    g.fillStyle = ao; g.beginPath(); g.arc(x, y, r - th * 0.5, 0, 7); g.fill();
+    if (!strip) return;
+    // 縁石：道の入口（道の半幅ぶん）を切った円弧に、帯の上の縁石の段を短い切れ端で並べる
+    const gap = Math.asin(Math.min(0.98, (half - th * 0.35) / (r - th / 2)));
+    const blocked = (a) => dirs.some((d) => { let z = Math.abs(((a - d) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI); return z < gap; });
+    const rm = r - th / 2, seg = 2.2, N = Math.max(12, Math.ceil(Math.PI * 2 * rm / seg)), sh2 = Math.round(strip.height * CURB);
+    for (let i = 0; i < N; i++) {
+      const a = (i + 0.5) / N * Math.PI * 2; if (blocked(a)) continue;
+      const L = Math.PI * 2 * rm / N, sx = ((i * L * ppu) % (strip.width - L * ppu - 2)) || 0;
+      g.save(); g.translate(x + Math.cos(a) * rm, y + Math.sin(a) * rm); g.rotate(a + Math.PI / 2);
+      g.drawImage(strip, sx, 0, Math.max(1, L * ppu), sh2, -L / 2 - 0.25, -th / 2, L + 0.5, th); g.restore();
+    }
   }
   /** 横長の帯の絵を点の列に沿って細い切れ端で並べる（帯の高さ＝幅 w・くり返す） */
   function stripAlong(g, pts, im, w, bx, shift) {

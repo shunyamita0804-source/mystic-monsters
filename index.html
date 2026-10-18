@@ -1223,7 +1223,7 @@ html:has(#app>.chfw),html:has(#app>.chfw) body{background:#0b1636}
 /* 歩行スプライト（config.monsterSprites。その場歩行の絵を切り替えるだけ・位置は field-view が動かす）：足元を影の位置（箱の94%）にそろえる。上下動・前傾は絵に任せる */
 .chf-mon.spr .mon{position:relative}
 .chf-mon.spr .chf-spr{position:absolute;left:0;right:0;bottom:calc((var(--sprb,.06) - var(--sprf,0) * var(--sprh,.9)) * 100%);height:calc(var(--sprh,.9) * 100%);pointer-events:none;user-select:none}
-.chf-mon.spr .chf-spr img{position:absolute;left:50%;bottom:0;height:100%;width:auto;max-width:none;transform:translateX(-50%);visibility:hidden;-webkit-user-drag:none}
+.chf-mon.spr .chf-spr img{position:absolute;left:50%;bottom:0;height:100%;width:auto;max-width:none;max-height:none;object-fit:contain;transform:translateX(-50%);visibility:hidden;-webkit-user-drag:none}
 .chf-mon.spr .chf-spr img.on{visibility:visible}
 .chf-mon.spr.walk .chf-bob,.chf-mon.spr.walk .chf-msh{animation:none}
 .chf-mon.walk .chf-bob{animation:chfbob calc(.26s / var(--spd,1)) ease-in-out infinite}
@@ -4561,7 +4561,8 @@ const OPEN_TALK={
 // 2026-10-12 開発21（試遊 No.005・F 案＝試遊用の仮の台詞・最終確定ではない）：少し生意気で自信家・軽く煽るが嫌味すぎない。旧知の掛け合い（フィナと同じ町の出身）は残して重複をなくす。
 //  返答3択はリュウの一言だけが分かれて共通の会話へ戻る（報酬・セーブの進行に差はない）。最後の「先に『はじまりの草原』へ」は Chapter 1 のライバル戦（tut_rival）へつながる
 // 2026-10-18 REV3 D4：初対面の自己紹介＝リュウ 002（有料ボイス）。字幕は声の書き起こし「俺はリュウ。名前くらい覚えておいてな。」（旧「ま、…覚えておいてよ。」から語尾だけ＝声と字幕を一致させる）
-OPEN_TALK.ryu=n=>[{npc:"ryu",expression:"surprise",text:"あれ？ フィナじゃないか！"},{npc:"fina",expression:"surprised",text:"リュウ！？ どうしてミストリアにいるの？"},
+OPEN_TALK.ryu=n=>[{npc:"ryu",expression:"surprise",voice:"ryu_004",voiceWait:1500,text:"よう。……って、あれ？ フィナじゃないか！"},   /* 2026-10-18 iPhone 試遊：リュウは最初の一言から声（ryu_004「よう。」＝行の頭と同じ）＝途中から急に喋らない */
+ {npc:"fina",expression:"surprised",text:"リュウ！？ どうしてミストリアにいるの？"},
  {npc:"ryu",expression:"confident",text:"へえ、君が今日登録した新人？ ちゃんと大会まで来られるのか？"},{npc:"fina",expression:"troubled",text:"リュウ！ 初対面からそんな言い方しないの。"},
  {npc:"fina",expression:"guide",text:`${n}さん、この人はリュウ。私と同じ町の出身で、小さい頃からの知り合いなの。`},
  {npc:"ryu",expression:"soft_smile",voice:"ryu_002",text:"俺はリュウ。名前くらい覚えておいてな。",choices:[{id:"a",label:"絶対に追いついてみせる！"},{id:"b",label:"勝負はやってみないと分からないよ"},{id:"c",label:"ずいぶん自信があるんだね"}]}];

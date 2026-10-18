@@ -278,7 +278,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
 @keyframes wbpopout{to{opacity:0;transform:translate(-50%,-52%) scale(.97)}}
 .wbv .rfw-mon .mon{display:block;position:relative;width:100%!important;height:auto!important}   /* 2026-10-12 試遊：index.html の共通の .mon{width:96px;height:96px} が効いて、絵が箱より大きく右下へずれていた（マスの上に立たない） */
 .wbv .rfw-mon .mon>img{display:block;width:100%;height:auto;filter:drop-shadow(0 3px 2px rgba(0,0,0,.45))}
-:is(#rfp,.wbv) .rfw-mon .mon>img.wk{position:absolute;left:50%;bottom:calc((1 - var(--sth,1)) * 100%);width:auto;height:calc(100% * var(--wkh,1) * var(--sth,1));max-width:none;translate:-50% calc(var(--wkf,0) * 100%);opacity:0;animation:none}
+:is(#rfp,.wbv) .rfw-mon .mon>img.wk{position:absolute;left:50%;bottom:calc((1 - var(--sth,1)) * 100%);width:auto;height:calc(100% * var(--wkh,1) * var(--sth,1));max-width:none;max-height:none;min-width:0;object-fit:contain;translate:-50% calc(var(--wkf,0) * 100%);opacity:0;animation:none}
 :is(#rfp,.wbv) .rfw-mon:is(.wk-on,.wk-idle) .mon:has(>img.wk.on)>img.st{opacity:0}
 :is(#rfp,.wbv) .rfw-mon:is(.wk-on,.wk-idle) .mon>img.wk.on{opacity:1}
 .wbv .rfw-mon.wk-flip .mon>img.wk{scale:-1 1}
@@ -575,6 +575,8 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     requestAnimationFrame(fit);
     box.insertAdjacentHTML('beforeend', Object.entries(SPR.sets).map(([k, w]) => w.frames.map((src, i) =>
       `<img class="wk" data-s="${k}" data-i="${i}" style="--wkh:${w.h};--wkf:${w.foot}" src="${esc(src)}" alt="" draggable="false" decoding="async">`).join('')).join(''));
+    // 2026-10-18 iPhone 試遊（歩行のモンスターが縦に伸びて見える）：歩行のコマの縦横比を絵の実際の比で固定する（aspect-ratio＋object-fit:contain＝箱が縦長になっても絵は伸びない）
+    for (const im of box.querySelectorAll('img.wk')) { const ar = () => { if (im.naturalWidth > 0 && im.naturalHeight > 0) im.style.aspectRatio = im.naturalWidth + ' / ' + im.naturalHeight; }; if (im.complete) ar(); else im.addEventListener('load', ar, { once: true }); }
     sprIdle();
   }
   function sprShow(k, i) {
