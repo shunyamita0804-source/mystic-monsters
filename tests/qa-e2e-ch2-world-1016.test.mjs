@@ -65,12 +65,12 @@ test('CWB-3：旧 Chapter 2 の途中のセーブ → 旧のボードのまま',
   const o = await L.open({}); OPEN.push(o); const po = o.page;   // 既定（MM_QA_OLD_CH2）＝旧エンジンで Chapter 2 へ出発したセーブを作る
   await H.newGame(po, 'テスト');
   const save = await po.evaluate(() => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; MMP8.canDepart(S, m); Object.assign(m.raise, { state: 'farm', ch: 2, log: [{ ch: 1, reachedGoal: true, turnsUsed: 30 }], field: null });
-    MMP8.depart(S, m, Math.random); save(); return JSON.parse(localStorage.getItem('mr4v6')); });
+    MMP8.depart(S, m, Math.random); m.raise.turnsUsed = 1; save(); return JSON.parse(localStorage.getItem('mr4v6')); });   // 2026-10-18 v2：1ターン以上使った旧い盤だけ旧いまま（0ターンは新しい盤へ＝qa-e2e-fix-1018v2 の FX-B2）
   assert.equal(save.m.raise.field.world, undefined); assert.equal(save.m.raise.field.chapterId, 2);
   const p = await openPage({ save }); const pg = p.page;   // 新しいコード（Chapter 2 の盤あり）で読み込む
   await pg.waitForSelector('.p15start'); await pg.click('.p15start');
   await pg.waitForSelector('#chf', { timeout: 60000 });
   const s = await pg.evaluate(() => ({ old: MMWD2.oldBoard(S.m), wb: !!document.querySelector('#wbw'), sides: MMP8.diceSides(S.m), field: S.m.raise.field.world }));
-  assert.deepEqual(s, { old: true, wb: false, sides: 3, field: undefined });
+  assert.deepEqual(s, { old: true, wb: false, sides: 3, field: undefined });   // 旧い盤の途中
   assert.deepEqual(p.errors, []);
 });

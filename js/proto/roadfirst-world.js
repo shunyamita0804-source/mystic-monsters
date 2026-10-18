@@ -316,6 +316,9 @@
         const sub = SK && SK.props[file], p = { el: d, x, y, w: sub ? w * sub[1] : w, z: z || 0, h: h || 0 };
         if (sub) { d.dataset.k = file; d.addEventListener('error', () => { d.src = base + file; p.w = w; p.base = 0; S.dirty = true; }, { once: true }); d.src = SK.base + sub[0]; }   // 読めなければ従来の絵・従来の幅
         else d.src = artUrl(base, file);
+        // 2026-10-18 v2（iPhone 本編試遊・修正4・7）：建物（目印・門・塔・オベリスク・像・会場・岩峰）は半透明にしない＝実体は不透明のまま（透けるのは絵のアルファの所だけ）。
+        //  半透明（xray）は木・岩・茂みなどの自然の景物だけ（マス・モンスターを隠すとき）
+        p.arch = /rfw-lm|rfw-goal|rfw-peak/.test(cls || '') || /gate|tower|town|arch|pavilion|colonnade|column|pier|statue|obelisk|temple|shrine|lm_|L\d\d_/i.test(file);
         bb.appendChild(d); props.push(p); };
       for (const q of (SEA ? SEA.scatter(D, o, HELP) : scatter(D, o))) add(q.file, q.x, q.y, q.w, q.z || 0, q.cls, q.h);
       if (D.art && D.art.sky) for (const q of skyProps(D, o)) add(q.file, q.x, q.y, q.w, q.z || 0, 'rfw-sky');   // 2026-10-18 Chapter 3：雲海の中の小さな浮島・雲
@@ -414,7 +417,7 @@
         if (!p.base) propBase(p);
         p.el.style.transform = `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * (p.ah || 0.92)).toFixed(1)}px) scale(${(w / p.base).toFixed(4)})`;
         if (p.zi == null) { p.zi = propZ(p); p.el.style.zIndex = String(p.zi); }   // 2026-10-13 開発27（26）：半透明にしない大会会場は GOAL のマスより奥（マスを隠さない）。順は世界の y で1回だけ
-        if (o.xray && !p.mark && !p.solid) {   // 手前の景物がマス・モンスターを隠す＝その景物だけ半透明（重なった面積がマス・モンスターの 22% 以上）
+        if (o.xray && !p.mark && !p.solid && !p.arch) {   // 手前の景物がマス・モンスターを隠す＝その景物だけ半透明（重なった面積がマス・モンスターの 22% 以上）
           const pz = Math.round(q.y) + (p.z || 0), x0 = q.x - w / 2, x1 = q.x + w / 2, y0 = q.y - w * (p.ah || 0.92), y1 = q.y;
           let thru = false;
           if (c.s >= 1) for (const r of xr) { if (r[4] >= pz) continue; const ow = Math.min(x1, r[2]) - Math.max(x0, r[0]), oh = Math.min(y1, r[3]) - Math.max(y0, r[1]); if (ow > 0 && oh > 0 && ow * oh > r[5] * 0.22) { thru = true; break; } }

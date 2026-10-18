@@ -46,7 +46,7 @@
     const cam = get('qaCam') || '', walk = get('qaWalk') || '', ra = get('qaRoadArt') || '', rl = get('qaRoad') || '', road = [ra ? '新素材 ' + ra : '', rl ? '層 ' + rl : ''].filter(Boolean).join('＋');
     const b = document.createElement('div'); b.id = 'qabv'; b.className = 'qabv';
     b.innerHTML = `<b>QA</b><small>版 ${esc(G('MM_BUILD') || '')}</small><span class="qabv-r">カメラ ${CAMS.map(([v, n]) => `<a href="${esc(url('qaCam', v))}"${v === cam ? ' class="on" aria-current="true"' : ''}>${n}</a>`).join('')}</span>`
-      + `<span class="qabv-r">歩行 ${esc(walk || '新（正式）')}・道路 ${esc(road || '従来')}</span>`;
+      + `<span class="qabv-r">歩行 ${esc(walk || '新（正式）')}・道路 ${esc(road || (root.MMQRA && root.MMQRA.mode ? '新素材 fix（正式）' : '従来'))}</span>`;
     const s = document.createElement('style'); s.textContent = `.qabv{position:fixed;left:6px;top:calc(env(safe-area-inset-top,0px) + 132px);z-index:850;display:flex;flex-direction:column;gap:2px;padding:3px 6px;border-radius:9px;background:rgba(8,22,44,.72);color:#e8f2ff;font:600 10px/1.25 "Noto Sans JP",sans-serif;pointer-events:none;max-width:62vw}
 .qabv b{color:#f3c55a}.qabv small{font-weight:500;opacity:.9}.qabv a{pointer-events:auto;display:inline-block;margin-left:3px;padding:1px 4px;border-radius:6px;border:1px solid rgba(255,255,255,.45);color:#fff;text-decoration:none}.qabv a.on{background:#f3c55a;color:#13233a;border-color:#f3c55a}`;
     document.head.appendChild(s); document.body.appendChild(b);

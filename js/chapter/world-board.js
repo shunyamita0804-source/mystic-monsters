@@ -105,7 +105,9 @@
     if (v === 'old') return null;
     return { mode: ['fixed', 'c', 'ccut'].includes(v) ? v : 'c', deg: num('qaCamDeg', 50, 10, 180), ms: num('qaCamMs', 600, 120, 2000) }; })();
   // 2026-10-16 QA（A）：URL の ?qaRoad=1|2 で道の見た目の比較案（js/qa/road-1016.js）。無い＝従来
-  const QA_ROAD = () => (root.MMQAR && root.MMQAR.mode) || null;   // js/qa/road-1016.js はこのファイルのあとに読む＝盤を作るときに見る
+  const QA_ROAD = () => (root.MMQAR && root.MMQAR.mode) || null;
+  //  2026-10-18 v2：Chapter 2 は既定で 2（縁石つきの白い橋帯 R01 を道と広場に＝Chapter 2 の正式素材）。URL の ?qaRoad=1|2 があればそれ（比較用）
+  const roadFor = (m) => { const q = QA_ROAD(); if (!q) return null; let u = null; try { u = new URLSearchParams(root.location.search).get('qaRoad'); } catch (e) {} return chOf(m) === 2 && !u ? '2' : q; };   // js/qa/road-1016.js はこのファイルのあとに読む＝盤を作るときに見る
   const camOpts = () => (!QA_CAM ? { heading: true, yawTau: 600 } : QA_CAM.mode === 'fixed' ? { heading: false } : { heading: true, yawTau: 600, camMode: QA_CAM.mode, camTurnDeg: QA_CAM.deg, camTurnMs: QA_CAM.ms });
   function viewRect() {
     const w = V.el && V.el.querySelector('.wbv'); if (!w) return null;
@@ -258,8 +260,11 @@
 html:has(#wb-ui .wbcard) .mmtalk .mmtalk-fig{display:none}   /* 挿絵カードの間はフィナの立ち絵を出さない（挿絵を隠さない・名前の札と会話の窓は出す） */
 /* 2026-10-14 実機試遊②：小さい画面で2択の大きな会話窓が挿絵の下半分と題名を覆っていた → 挿絵カードの間は会話窓を画面の下（押せない操作欄の上）へ下げ、
    挿絵は残りの高さに収まる大きさ（縦横比 3:2 のまま・切らない）。選択肢は安全領域の中 */
-html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-inset-bottom,0px) + 10px)!important}
-.wbw .wbcard{top:calc(env(safe-area-inset-top,0px) + 86px);width:min(92%,384px,max(220px,(100dvh - 86px - 300px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)) * 1.5))}
+/* 2026-10-18 v2（iPhone 本編試遊・修正6）：会話窓は操作欄（案内の行を含む）の上に置く＝START・コマンドと重ねない。挿絵は残りの高さに収まる大きさ（3:2・切らない）。選択肢のある会話はもう一段小さく */
+html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(clamp(136px,20.6dvh,180px) + 26px + env(safe-area-inset-bottom,0px) + 4px)!important}
+.wbw .wbcard{top:calc(env(safe-area-inset-top,0px) + 86px);width:min(92%,384px,max(180px,(100dvh - 86px - clamp(136px,20.6dvh,180px) - 26px - 214px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)) * 1.5))}
+html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100dvh - 86px - clamp(136px,20.6dvh,180px) - 26px - 300px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)) * 1.5))}
+.wbw .wbcard figure.side .mon{left:auto;right:3%;bottom:2%;height:50%;max-width:42%;translate:0 0}
 @media (prefers-reduced-motion:reduce){.wbw .wbcard,.wbw .wbcard-dim{animation:none}.wbw .wbcard .sbar .tr i{transition:none}}
 .wbw .wb-pop img.art{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:10px;margin:0 0 8px}
 .wbtr .wbtr-mon{position:absolute;left:max(6px,calc(50% - min(30vw,125px) - min(26vw,108px)));top:36%;height:min(24vw,104px);width:auto;z-index:2;pointer-events:none;filter:drop-shadow(0 4px 5px rgba(0,0,0,.45));opacity:0;transform:translateY(-30%);transition:opacity .25s ease,transform .25s ease}.wbtr.open .wbtr-mon,.wbtr.calm .wbtr-mon{opacity:1;transform:translateY(-40%)} /* 2026-10-18 REV3 D3：宝箱の場面に連れている子（正式の立ち絵・正面） */
@@ -424,7 +429,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     V.el = $('#wbw'); if (V.key !== key) V.lastMsg = ''; V.key = key;
     if (root.MMRF_WORLD) V.world = root.MMRF_WORLD.create(V.el.querySelector('.wbv'), D(m), root.MMRF_PLAY, { view: viewRect, monSrc: monSrc(m), art: { base: ART, road: 'strip' },
       focus: true, veil: false, xray: true, hideLm: chOf(m) === 1 ? ['START', 'LOWER_GATE', 'UPPER_GATE'] : null, ahead: CAM.ahead,   // 2026-10-13 開発27（11・15）：開始地点の門・中央の門2か所（下門・上門）の飾りの絵は出さない（マス・道・判定はそのまま）
-      sMin: CAM.sMin, sMax: CAM.sMax, tilePx: CAM.tilePx, monRatio: CAM.monRatio, zoomTau: CAM.zoomTau, ...camOpts(), ...(QA_ROAD() ? { qaRoad: QA_ROAD() } : {}), visual: vis, skin: skinKey() });   // visual＝景観のパターン（A／B／C。配置の中の visualPattern）   // 2026-10-14 開発29（6）：後ろから追うカメラ（進む向きが画面の上）   // 2026-10-14 実機試遊 Q12：曲がり角・分かれ道で向きが急に回らないよう、回る速さを少しゆっくりに（yawTau 420 → 600ms）
+      sMin: CAM.sMin, sMax: CAM.sMax, tilePx: CAM.tilePx, monRatio: CAM.monRatio, zoomTau: CAM.zoomTau, ...camOpts(), ...(roadFor(m) ? { qaRoad: roadFor(m) } : {}), visual: vis, skin: skinKey() });   // visual＝景観のパターン（A／B／C。配置の中の visualPattern）   // 2026-10-14 開発29（6）：後ろから追うカメラ（進む向きが画面の上）   // 2026-10-14 実機試遊 Q12：曲がり角・分かれ道で向きが急に回らないよう、回る速さを少しゆっくりに（yawTau 420 → 600ms）
     V.el.querySelectorAll('.rfw-title').forEach((e) => e.remove());   // 2026-10-13 開発25 H：全景の地図の上に大きな題字を出さない（題字は中継カットの間だけ＝cover）。HUD の Chapter 表示は別（残す）
     sprSetup(m);
     return true;
@@ -789,7 +794,10 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
   };
   const PH = { stat: './assets/fields/ch1a/formal_1008/ch1a_scene_01.webp', react: './assets/fields/ch1a/formal_1008/ch1a_scene_02.webp', event: './assets/fields/ch1a/formal_1008/ch1a_scene_03.webp' };
   const BAR_FILL = { li: 'b31_ability_bar_fill_yellow', po: 'b30_ability_bar_fill_red', in: 'b29_ability_bar_fill_green', hi: 'b28_ability_bar_fill_pink', ev: 'b26_ability_bar_fill_lightblue', de: 'b27_ability_bar_fill_darkblue' };
-  const evCardOpt = (m, fx, e) => ({ art: e.image || CARD_ART.event, ph: PH.event, mon: e.image ? '' : monSrc(m), title: fx.title || e.title || '' });
+  // 2026-10-18 v2（修正6）：挿絵のある出来事も連れている子を挿絵の右下に出す（side。挿絵を隠さない大きさ）。表示した瞬間に1回だけ鳴く（evCardOpen）
+  const evCardOpt = (m, fx, e) => ({ art: e.image || CARD_ART.event, ph: PH.event, mon: monSrc(m), side: !!e.image, title: fx.title || e.title || '' });
+  /** 出来事の挿絵カードを開いて、連れている子が1回鳴く（カードが閉じたら鳴かない・NPC の声が優先＝重ねない）。会話はそのあと少し間をおいて始める */
+  async function evCardOpen(m, fx, e) { const d = cardOpen(evCardOpt(m, fx, e)); if (d) { evCry(m, 120, () => d.isConnected); await wait(calm() ? 0 : 520); } return d; }
   /** 挿絵カード：{ art（挿絵）, ph（挿絵が無いときの仮の背景）, mon（モンスターを大きく中央に）, title } → カードの要素（.res に結果を入れる） */
   function cardOpen(o) {
     const ui = $('#wb-ui'); if (!ui) return null;
@@ -797,7 +805,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     const dim = document.createElement('div'); dim.className = 'wbcard-dim'; ui.appendChild(dim);
     const d = document.createElement('div'); d.className = 'wbcard'; d.setAttribute('role', 'status');
     const bg = o.art || o.ph || '';
-    d.innerHTML = `<figure class="${o.art ? 'art' : 'ph'}">${bg ? `<img class="bg" src="${esc(bg)}" alt="" decoding="async">` : ''}${o.mon ? `<img class="mon" src="${esc(o.mon)}" alt="" draggable="false" decoding="async">` : ''}</figure>${o.title ? `<div class="cap">${esc(o.title)}</div>` : ''}<div class="res"></div>`;
+    d.innerHTML = `<figure class="${o.art ? 'art' : 'ph'}${o.side ? ' side' : ''}">${bg ? `<img class="bg" src="${esc(bg)}" alt="" decoding="async">` : ''}${o.mon ? `<img class="mon" src="${esc(o.mon)}" alt="" draggable="false" decoding="async">` : ''}</figure>${o.title ? `<div class="cap">${esc(o.title)}</div>` : ''}<div class="res"></div>`;
     ui.appendChild(d); d._dim = dim;
     return d;
   }
@@ -1063,7 +1071,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
       }
       if (fx.kind === 'choice') {
         feel('event', { ev: fx.ev });
-        card = cardOpen(evCardOpt(m, fx, evDef(fx.ev) || {}));   // 2026-10-12 試遊：2択も挿絵を出したまま選ぶ
+        card = await evCardOpen(m, fx, evDef(fx.ev) || {});   // 2026-10-12 試遊：2択も挿絵を出したまま選ぶ
         const id = await choose(fx);
         let r2 = P8().resolveChoice(S, m, id); if (!r2.ok) r2 = P8().resolveChoice(S, m, (fx.options[0] || {}).id); doSave();
         if (r2.ok) { Object.assign(r, r2); fx = r2.fx || {}; }
@@ -1073,11 +1081,11 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
         await wait(calm() ? 0 : 160); await statCard(m, fx.key, fx.amount); tail = `${labOf(fx.key)} +${fx.amount}`;   // 2026-10-12 試遊：挿絵カード＋能力のバー（旧 trainAct＋小さな窓）
       } else if (fx.kind === 'treasure') {
         feel(['normal', 'rare', 'special'].includes(fx.tier) ? `chest.open.${fx.tier}` : 'chest.open', { tier: fx.tier });
-        await treasureCut(fx, { cap: `${fx.tier === 'rare' ? '珍しい宝箱' : '宝箱'}を見つけた！`, chest: fx.tier === 'rare' ? null : CHEST.normal, face: fx.tier === 'rare' ? 'surprised' : 'happy', ms: 2300, m, mon: monSrc(m) });   // 2026-10-14 実機試遊④：宝箱の開封のアニメ＋フィナの大きな顔＋「見て見て！」（声と同時）→ 中身
+        await treasureCut(fx, { cap: `${fx.tier === 'rare' ? '珍しい宝箱' : '宝箱'}を見つけた！`, chest: fx.tier === 'rare' ? null : CHEST.normal, face: fx.tier === 'rare' ? 'surprised' : 'happy', ms: 2300 });   // 2026-10-18 v2（修正5）：金貨・宝箱の報酬演出にはモンスターの立ち絵と鳴き声を出さない（金貨・+G・効果音・報酬の処理はそのまま）   // 2026-10-14 実機試遊④：宝箱の開封のアニメ＋フィナの大きな顔＋「見て見て！」（声と同時）→ 中身
         tail = plainOf(fx);
       } else if (fx.kind === 'reward') {
         feel('chest.open.special', { tier: 'special' });
-        await treasureCut(fx, { cap: fx.den ? '隠れ家の宝を見つけた！' : '宝の行き止まりにたどり着いた！', title: fx.title || '', chest: CHEST.special, face: 'happy', ms: 2700, m, mon: monSrc(m) });
+        await treasureCut(fx, { cap: fx.den ? '隠れ家の宝を見つけた！' : '宝の行き止まりにたどり着いた！', title: fx.title || '', chest: CHEST.special, face: 'happy', ms: 2700 });   // 2026-10-18 v2（修正5）：金貨・宝箱の報酬演出にはモンスターの立ち絵と鳴き声を出さない（金貨・+G・効果音・報酬の処理はそのまま）
         tail = `${fx.title || ''}　${plainOf(fx)}`.trim();
       } else if (fx.kind === 'meal') {
         // 2026-10-12 正式：食事・焚き火のマス＝フィナが野外の岩に座る景色（assets/chapter/meal_1012）に、連れている子の正式画像。プレイヤーは台詞で参加を示す（顔の素材は無い＝描かない）
@@ -1091,11 +1099,11 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
         const e = evDef(fx.ev) || {};
         if (fx.recovery) feel('rest.recover'); else if (!card) feel('event', { ev: fx.ev });
         // 2026-10-12 試遊：出来事は挿絵カード（挿絵が無ければ仮の背景にモンスターを大きく）を出したまま会話 → 結果もカードの中
-        if (!card) card = cardOpen(evCardOpt(m, fx, e));
+        if (!card) card = await evCardOpen(m, fx, e);
         await talkLines(fx.choice ? [] : fx.lines);
         await goldBurst(fx.gold);
         const body = `${fx.text ? `<p>${esc(fx.text)}</p>` : ''}${rowsHtml(fx)}`;
-        cardRes(card, body); { const c0 = card; evCry(m, 150, () => c0.isConnected); } await cardHold(card, 300, body ? 1900 : 900); await cardClose(card); card = null;
+        cardRes(card, body); await cardHold(card, 300, body ? 1900 : 900); await cardClose(card); card = null;
         tail = plainOf(fx) || fx.title || '';
       } else if (fx.kind === 'battle') { V.autoBt = battleGo = true; await encounter(m, fx.battleType); }   // 2026-10-14 実機試遊⑩：野生・レア・ライバルとも演出のあと案内のシートを出さずにそのままバトルへ（旧 2026-10-13 開発27（21）はライバルだけ）
       else if (fx.note === 'claimed') tail = `${fx.title || '宝'}はもう手に入れている。`;

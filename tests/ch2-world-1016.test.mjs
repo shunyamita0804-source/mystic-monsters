@@ -146,11 +146,14 @@ test('CW-06：正式美術 68点の派生（欠品 0）・描画が参照する�
   assert.ok(!src.includes("'shore_foam_edge'"), 'shore_foam_edge は波打ち際（E03）と同じ用途＝使わない');
 });
 
-test('CW-07（2026-10-17 main 統合の前の線引き）：通常の URL の Chapter 2 は従来のエンジン・QA の URL／MM_CH2_NEW のときだけ新しい盤・すでに新しい盤を持つ個体は続ける', () => {
-  const w = load({ MM_CH2_NEW: false, location: { search: '' } }), S = setup(w);
-  assert.equal(w.MMWD2.DRIVER.handles(2, S.m), false, '通常＝旧 Chapter 2');
-  const q = load({ MM_CH2_NEW: false, location: { search: '?ch2trial=B' } }); assert.equal(q.MMWD2.DRIVER.handles(2, setup(q).m), true, '?ch2trial＝新しい盤');
+test('CW-07（2026-10-18 v2：QA と通常本編は同一の正式ボード）：通常の URL の Chapter 2 も新しい盤・旧い盤の途中（1ターン以上）は旧いまま・0ターンの旧い盤は新しい盤へ', () => {
+  const w = load({ location: { search: '' } }), S = setup(w);
+  assert.equal(w.MMWD2.DRIVER.handles(2, S.m), true, '通常の URL＝新しい盤');
+  const q = load({ location: { search: '?ch2trial=B' } }); assert.equal(q.MMWD2.DRIVER.handles(2, setup(q).m), true, '?ch2trial も同じ');
   const m = { raise: { field: { chapterId: 2, world: 1 } } }; assert.equal(w.MMWD2.DRIVER.handles(2, m), true, '新しい盤を持つ個体はそのまま');
-  assert.equal(w.MMWD2.DRIVER.handles(2, { raise: { field: { chapterId: 2 } } }), false, '旧の盤は旧のまま');
-  assert.match(rd('tests/e2e/harness.mjs'), /MM_CH2_NEW = true/);
+  assert.equal(w.MMWD2.DRIVER.handles(2, { raise: { turnsUsed: 3, field: { chapterId: 2 } } }), false, '旧の盤の途中（1ターン以上）は旧のまま＝巻き戻さない');
+  assert.equal(w.MMWD2.DRIVER.handles(2, { raise: { turnsUsed: 0, field: { chapterId: 2 } } }), true, '旧の盤でも0ターン（出発した直後）＝新しい盤の START（失う進み具合なし）');
+  assert.equal(w.MMWD2.DRIVER.handles(2, { raise: { turnsUsed: 0, pend: { stage: 'move' }, field: { chapterId: 2 } } }), false, '途中の状態があれば旧のまま');
+  const o = load({ MM_QA_OLD_CH2: true }); assert.equal(o.MMWD2.isAttached(), false, '自動テストの旧エンジン指定（MM_QA_OLD_CH2）');
+  assert.doesNotMatch(rd('tests/e2e/harness.mjs'), /MM_CH2_NEW = true/, 'MM_CH2_NEW は要らない');
 });

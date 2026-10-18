@@ -87,7 +87,7 @@ export async function launch() {
     if (!opt.intro) await ctx.addInitScript(() => { window.MM_QA_NO_INTRO = true; });
     if (!opt.worldCh1) await ctx.addInitScript(() => { window.MM_QA_OLD_CH1 = true; });   // 2026-10-11：本編の Chapter 1 は1枚の世界のボード（js/chapter/world-driver.js）。旧い14枚の Chapter 1 を前提にしたテストは既定で旧ボード。新ボードは worldCh1:true
     if (!opt.worldCh2) await ctx.addInitScript(() => { window.MM_QA_OLD_CH2 = true; });
-    if (opt.worldCh2) await ctx.addInitScript(() => { window.MM_CH2_NEW = true; });
+    // 2026-10-18 v2：通常のプレイの Chapter 2 も新しい盤＝MM_CH2_NEW は要らない（worldCh2:true は旧エンジンの指定 MM_QA_OLD_CH2 を外すだけ＝本番と同じ条件）
     if (!opt.worldCh3) await ctx.addInitScript(() => { window.MM_QA_OLD_CH3 = true; });   // 2026-10-18：本編の Chapter 3 は1枚の世界のボード（js/chapter/world-driver-ch3.js）。旧い Chapter 3（phase9 の空の道）を前提にした実ブラウザテストは既定のまま。新しい盤は open({ worldCh3:true })
     if (opt.worldCh3 && opt.route3 !== 'random') await ctx.addInitScript((r) => { window.MM_CH3ROUTE = r; }, opt.route3 || 'A');   // 2026-10-17：新しい Chapter 2 の盤は QA の URL か MM_CH2_NEW のときだけ（通常のプレイは旧 Chapter 2）   // 2026-10-16：本編の Chapter 2 も1枚の世界のボード（js/chapter/world-driver-ch2.js）。旧 Chapter 2 を前提にした実ブラウザテストは既定で旧ボード。新しい盤は open({ worldCh2:true })（ルートは open({ route2:'B' })・既定 A）
     if (opt.worldCh2 && opt.route2 !== 'random') await ctx.addInitScript((r) => { window.MM_CH2ROUTE = r; }, opt.route2 || 'A');

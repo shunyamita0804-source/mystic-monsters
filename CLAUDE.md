@@ -1027,6 +1027,18 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
   - テスト：C2-08（A 298・B 284・C 304）・実ブラウザ CP-B4
 - **2026-10-15 4回目の回答（夜の一括依頼の 01）**：到達率は**食事ありを基準**（食事なしは参考）・B 成功 2・失敗 18 を維持・寄り道 0% の C（A 比 +1.1pt）は許容・**食事あり・寄り道 25% の A 79.1／B 81.0／C 80.7% を設計基準として採用する方向**・旧 Chapter 2 のセーブの判定は了承。**「時間切れ → Chapter 3 へ進めない」規則は現状のまま**（恒久的な採否は別判断）＝救済案（案1 現状維持／案2 再挑戦1回／案3a onTimeUp 'tournament'／案3b C 昇格戦）を DESIGN.md §6.5 で比較だけ・実装していない。tools/ch2/sim.mjs に shortAtTimeUp（時間切れの個体の GOAL までの残り歩数＝中央値 7〜9）と CH2_LIMIT（比較用のターン上限・45T で 95〜97%）
 
+### 本編試遊の緊急修正 v2（2026-10-18。いまの正式。指示＝ZIP Mismon_Claude_本編試遊不具合のみ緊急修正_v2_Ch3道路とQA本編統一・作業ブランチ claude/fix-1018v2・基準 main 48081ad）
+
+- **方針（ユーザー正式）**：Chapter 1／2／3 とも、QA と通常本編は同じ正式ボード・同じ地形と道路の描画・同じ素材。QA だけに残すのは試験の操作（A／B／C の切り替え・QA 移動・比較リンク）。各 Chapter の独自のデザインは保つ（Chapter 1 の道路を他章へ横流しして統一しない）
+- **本編の Chapter 2＝新しい A／B／C の盤**（js/chapter/world-driver-ch2.js の handles。旧：QA の URL か MM_CH2_NEW のときだけ＝本編は旧い1本道）。旧い盤の個体：0ターン（出発しただけ・途中の状態・大会・バトルが無い）は新しい盤の START へ（ルートはそこで抽選・空腹などはそのまま）、1ターン以上は育成の終わりまで旧い盤のまま（巻き戻し・消去をしない）。旧 Chapter 2 のコード・素材は旧セーブの互換で残す。harness は MM_CH2_NEW を入れない（worldCh2:true は MM_QA_OLD_CH2 を外すだけ）
+- **Chapter 2 の道路**：新素材（road_1017 の Ch2）を既定に（ch2-world.js の MMQRA.mode・?qaRoadArt=old で比較）。world-board.js の roadFor＝Chapter 2 は qaRoad '2'＝縁石つきの白い橋帯 R01 を陸と海の道に敷く。分かれ目・合流・行き止まりは R01 の縁石（青いモザイク＋金の線・行 128〜174）と R01 の白い石（行 174〜348 を積んだ床）の円い広場（plazasR01）
+- **建物は半透明にしない**（roadfirst-world.js の p.arch＝目印 rfw-lm・会場・岩峰・門／塔／像などの名前の絵）。xray（マス・モンスターを隠す景物を 0.32 に）は木・岩・茂みだけ
+- **宝箱・金貨の演出（treasureCut）にモンスターの立ち絵・鳴き声を出さない**（金貨・+G・効果音・報酬はそのまま）
+- **挿絵の出来事**：挿絵の右下に連れている子（figure.side）・カードを開いた瞬間に1回だけ鳴く（evCardOpen・カードが閉じたら鳴かない）・会話窓は操作欄（案内の行を含む）の上・挿絵は残りの高さに収まる（選択肢のある会話は一段小さく）
+- **帰還のフィナは半身**（MMNPC.talk の opts.closeup＝重要な会話でも全身にしない。farmReturn だけ）
+- **未完成（画像待ち）**：Chapter 3 の道路・床・橋の床・広場・浮島の地面（今は Chapter 1 の ch1_road_r2・ch1_strip_r2・ch1_ground_a2 と ground_cloud の流用。納品済みの Chapter 3 の18点に該当なし）＝docs/fix_1018v2/REPORT.md §4 の C3-R1／R2／B1／B2／G1／G2。ソラモの新歩行 20コマは絵が立ち絵より細い（表示は正しい）＝§5。EV05 の金貨の絵に市松の焼き込み
+- 報告：docs/fix_1018v2/REPORT.md。テスト：tests/qa-e2e-fix-1018v2.test.mjs（FX-B1〜B6）。MM_BUILD／version.json／MMTUNE.BUILD＝2026-10-18-fix2
+
 ### Pre-Chapter3 修正5点＋Chapter 3「天空の浮島」（2026-10-18。いまの正式。指示＝ZIP Mismon_Claude_PreCh3_修正後一括完成GO・作業ブランチ claude/prech3-1018・基準 main de43edd）
 
 - **リュウの初登場の声**：最初の一言から声（OPEN_TALK.ryu の1行目＝ryu_004「よう。」＋「……って、あれ？ フィナじゃないか！」＝行の頭と声が同じ・voiceWait 1500）。名前の行は従来どおり ryu_002
@@ -1590,7 +1602,12 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - 全体QA（2026-09-29）：QA_AUDIT.md に監査結果・修正内容・保留事項・今後の推奨をまとめた。
 - Stage 3（2026-09-29、安全軽量化・テスト正常化）：古いテスト3件の更新・MS-B6 の安定化・未使用の埋め込み画像10件の削除。QA_AUDIT.md の「14」
 - 次の予定：未指示（要確認）。技術面の推奨は QA_AUDIT.md の「10. 今後の修正の推奨」
-- **引き継ぎ（2026-10-18 夜・Chapter 3 の統合後。新しいセッションはここから読む＝下の記述より優先）**：
+- **引き継ぎ（2026-10-18 深夜・緊急修正 v2 の統合後。新しいセッションはここから読む＝下の記述より優先）**：
+  - main＝claude/fix-1018v2 を統合・build `2026-10-18-fix2`・中身は §3「本編試遊の緊急修正 v2」・報告 docs/fix_1018v2/REPORT.md
+  - 本編の Chapter 1〜3 は QA と同じ盤（Chapter 2 も通常の起動から A／B／C）。Chapter 4 は未着手（次の指令待ち＝Chapter 4 の設計図）
+  - ユーザー判断・画像待ち：Chapter 3 の道路素材（REPORT §4）・ソラモの歩行の描き直し（§5）・EV05 の市松・iPhone 実機の確認
+  - 戻し方：統合のマージを revert（統合前は 48081ad・2026-10-18-ch3）
+- **引き継ぎ（2026-10-18 夜・Chapter 3 の統合後＝旧）**：
   - main＝Pre-Chapter3 修正5点＋Chapter 3「天空の浮島」を claude/prech3-1018 から統合・build `2026-10-18-ch3`・version.json の base＝de43edd（統合前の main）。中身は §3「Pre-Chapter3 修正5点＋Chapter 3」・報告 docs/prech3_1018/REPORT.md・設計 docs/ch3_1018/DESIGN.md
   - 本編の Chapter 1〜3 は通常のアプリ起動から遊べる（Chapter 2 は従来の盤＝新しい盤は未承認のまま QA だけ）。QA＝`?qaTop=1`・`?ch3trial=A|B|C`
   - 戻し方：統合のマージを revert（統合前は de43edd・2026-10-18-rev3）。iPhone 実機はどれも未確認

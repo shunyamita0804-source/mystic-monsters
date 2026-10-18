@@ -48,7 +48,7 @@ test('QU-03：立ち絵つきの一言（.nst）＝正式の半身（closeup）�
   assert.match(HTML, /function finaStandSrc\(\)\{const im=window\.MMNPC&&MMNPC\.imageOf\("fina","closeup","guide"\)/);
   for (const [k, v] of [['VARGAS_STAND', 'assets/npc/vargas/closeup/stern.webp'], ['NICK_STAND', 'assets/npc/nick/closeup/smile.webp'], ['ELLIOT_STAND', 'assets/npc/elliot/closeup/guide.webp']]) { assert.ok(HTML.includes(`${k}="${v}"`), k); assert.ok(existsSync(path.join(ROOT, v)), v); }
   assert.match(HTML, /\.mmtalk-fig\.closeup\{height:min\(52vh,470px\);height:min\(52dvh,470px\)\}/, '会話の半身を大きく');
-  const N = rd('js/npc/npc.js'); assert.match(N, /if \(pres === 'major'\) lines = preferFullbody\(lines\);/);
+  const N = rd('js/npc/npc.js'); assert.match(N, /const full = pres === 'major' && !opts\.closeup;[^\n]*\n\s*if \(full\) lines = preferFullbody\(lines\);/);
   for (const e of ['normal', 'smile', 'happy', 'surprised', 'troubled', 'worried', 'serious', 'guide', 'wave', 'greet']) assert.ok(existsSync(path.join(ROOT, `assets/npc/fina/fullbody/${e}.webp`)), e);
   assert.match(HTML, /const FINA_PRES=\{raiseAgain:"compact",done:"major"\}/, '育成完了は重要な会話（全身）');
 });
