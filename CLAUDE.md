@@ -1578,7 +1578,12 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - 全体QA（2026-09-29）：QA_AUDIT.md に監査結果・修正内容・保留事項・今後の推奨をまとめた。
 - Stage 3（2026-09-29、安全軽量化・テスト正常化）：古いテスト3件の更新・MS-B6 の安定化・未使用の埋め込み画像10件の削除。QA_AUDIT.md の「14」
 - 次の予定：未指示（要確認）。技術面の推奨は QA_AUDIT.md の「10. 今後の修正の推奨」
-- **引き継ぎ（2026-10-17 時点の現在地。新しいセッションはここから読む＝下の 2026-10-16 の記述より優先）**：
+- **引き継ぎ（2026-10-18 時点の現在地。新しいセッションはここから読む＝下の 2026-10-17・10-16 の記述より優先）**：
+  - **main＝REV3 を claude/rev3-1018 から --no-ff で統合**（基準 2108dca）・build＝`2026-10-18-rev3`・version.json＝{ build, branch main, base 2108dca }・公開済み
+  - 中身は §3「2026-10-18 REV3」・報告は docs/rev3_1018/REPORT.md（(1)〜(10)・台帳 voice_ledger.tsv／moves70.tsv／adopted.tsv／delete_ledger.tsv・道路の比較 road/）。通常プレイに入ったもの＝新歩行 140枚・C案カメラ・体格 F・フルーネ正式10技（QA の個体だけ）・技アニメ4件の修正・特訓の画面・声の再設計
+  - QA だけのまま＝新しい Chapter 2 の盤（?ch2trial）・道路の新素材（?qaRoadArt）・ラズック・体格の A／B 案。**Chapter 3 は未着手**
+  - 既知の失敗テスト：qa-e2e-dev24-1013 の D24-B2（2108dca でも失敗）・qa-e2e-dev28-1013 の D28-B7・qa-e2e-dev29-1014 の D29-B2。**iPhone 実機はどれも未確認**。戻し方＝REV3 のマージを revert（公開前は 2108dca・2026-10-17-all4）
+- **引き継ぎ（2026-10-17 時点の現在地。旧）**：
   - **main＝a03c56e**（統合便 v2 をブランチ claude/all4-1017 から --no-ff で統合・GitHub の PR は作れなかった＝MCP の接続失敗）・build＝`2026-10-17-all4`・version.json＝{ build, branch main, base dbdbd9e }・公開済み・public-check 44項目すべて OK
   - 中身は §3「2026-10-17 統合便 v2」・報告は docs/all4_1017/REPORT.md。一般プレイに入ったもの＝NPC 有料ボイス 60本・モンスターの鳴き声 14本・初見プレイの隔離セーブ（?qaFresh=1）。QA だけ（URL のフラグ）＝QA トップ ?qaTop=1・新しい Chapter 2 の盤（?ch2trial）・C案カメラ（?qaCam=c）・道路の新しい絵（?qaRoadArt）・新歩行（?qaWalk=1017）・ラズック（QA の7体目）
   - 既知の不安定なテスト：qa-e2e-dev28-1013 の D28-B7（全景 → 盤のズームの刻み）＝main 3d9a205 でも同じ位置・同じ大きさで落ちる。**iPhone 実機はどれも未確認**。戻し方＝a03c56e のマージを revert（公開前は 3d9a205・2026-10-16-final）
