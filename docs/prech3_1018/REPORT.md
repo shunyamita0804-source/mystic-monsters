@@ -27,8 +27,8 @@
 
 ## 3. テスト
 
-- ふだんの実行（`node --test tests/*.test.mjs`）：（統合の直前の結果を下に記入）
-- 実ブラウザ（`QA_E2E=1`・1ファイルずつ）：（下に記入）
+- ふだんの実行（`node --test tests/*.test.mjs`）：1889件・合格 1114・skip 775・失敗 0
+- 実ブラウザ（`QA_E2E=1`・1ファイルずつ・変更に関係する20ファイル）：ch3-1018 12/12・ch1-hq 5/5・ch1-crash 6/6・road-1017 3/3・world-ch1 9/9・ch2-world 11/11・raising-late 9/9（旧 Chapter 3）・qatop 5/5（Chapter 3 の入口で 9 に直した）・lab-prep 7/7・dice-world 4/4・ch1-visual 5/5・board-1012 5/5・tech-screens 14/14・voice-paid 4/4・voice15 8/8・next-1005 15/15（リュウの3択を含む）・walk25d 8/8・rev3 7/7。dev29 は 5/6＝D29-B2 だけ失敗（統合前の main でも失敗する既知・今回と無関係）
 - 目視（GPU 描画・390×844・画素比 2〜3）：Chapter 1 の直線・分岐、Chapter 3 A／B／C の盤・導入（紋章と題字 → 全景）・ライバルの遭遇とバトル・野生のバトル・ゴール → 雲海の上の会場 → ロビー → 大会受付
 
 ## 4. 公開
