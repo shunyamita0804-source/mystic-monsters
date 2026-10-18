@@ -4,7 +4,7 @@
 Chapter 4・新機能・戦闘・経済・40ターン・固定マス・分岐規則・NPC の台詞・セーブ形式（v6／mr4v6）は変えていない。
 
 - 変更前：main `48081ad`・版 `2026-10-18-ch3`
-- 変更後：main（下の「公開」）・版 `2026-10-18-fix2`
+- 変更後：main `95bbe4b`（作業ブランチ claude/fix-1018v2 を統合）・版 `2026-10-18-fix2`
 - **iPhone 実機は未確認**です。確認は Chromium（390×844・375×667、画素比 2）だけです。
 
 ## 1. 変更前に記録した実装の分かれ道（本編と QA）
@@ -140,4 +140,10 @@ Chapter 4・新機能・戦闘・経済・40ターン・固定マス・分岐規
 
 ## 7. 公開
 
-（下に追記）
+- main `95bbe4b` を push。GitHub Pages の version.json が `2026-10-18-fix2` になったことを確認した。
+- 公開の確認（tools/public-check.mjs）：**48項目すべて OK**（NG 0・4xx／5xx なし・pageerror なし）。
+  - 新しい確認：通常の本編の Chapter 2＝新しい A／B／C の盤（旧い1本道ではない）・R01 の帯（`?qaFresh=1` の隔離セーブで確認。QA の URL ではない）。
+- 本編：https://shunyamita0804-source.github.io/mystic-monsters/
+- QA トップ：https://shunyamita0804-source.github.io/mystic-monsters/?qaTop=1
+- 試遊：`?ch1trial=A|B|C`・`?ch2trial=A|B|C`・`?ch3trial=A|B|C`（本編と同じ盤・同じ素材。保存しない）
+- 戻し方：`95bbe4b` のマージを revert（統合前は 48081ad・2026-10-18-ch3）。
