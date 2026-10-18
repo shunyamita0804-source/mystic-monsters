@@ -42,7 +42,8 @@
   function badge() {
     if (!QA || document.getElementById('qabv')) return;
     const url = (k, v) => { const u = new URL(root.location.href); if (v) u.searchParams.set(k, v); else u.searchParams.delete(k); return u.pathname + u.search; };
-    const cam = get('qaCam') || '', walk = get('qaWalk') || '', road = get('qaRoad') || '';
+    // 2026-10-18 REV3 B1：道路は ?qaRoadArt（新しい素材 raw／fix）と ?qaRoad（近くの層・白い橋帯）の両方を出す（旧：qaRoad だけ＝新素材でも「道路 従来」と出ていた）
+    const cam = get('qaCam') || '', walk = get('qaWalk') || '', ra = get('qaRoadArt') || '', rl = get('qaRoad') || '', road = [ra ? '新素材 ' + ra : '', rl ? '層 ' + rl : ''].filter(Boolean).join('＋');
     const b = document.createElement('div'); b.id = 'qabv'; b.className = 'qabv';
     b.innerHTML = `<b>QA</b><small>版 ${esc(G('MM_BUILD') || '')}</small><span class="qabv-r">カメラ ${CAMS.map(([v, n]) => `<a href="${esc(url('qaCam', v))}"${v === cam ? ' class="on" aria-current="true"' : ''}>${n}</a>`).join('')}</span>`
       + `<span class="qabv-r">歩行 ${esc(walk || '新（正式）')}・道路 ${esc(road || '従来')}</span>`;
