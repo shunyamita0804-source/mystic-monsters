@@ -28,7 +28,8 @@
   const file = (name) => BASE + name + (PPU[name] || VARIANT[name] ? '_' + MODE : '') + '.webp';
   /** Chapter 1：skin の鍵（ground・road・strip）→ 新しい絵の名前（景色 A／B／C） */
   const CH1 = { A: { ground: 'ch1_ground_a1', road: 'ch1_road_r1', strip: 'ch1_strip_r1' }, B: { ground: 'ch1_ground_a2', road: 'ch1_road_r1', strip: 'ch1_strip_r1' },
-    C: { ground: 'ch1_ground_a3', road: 'ch1_road_r2', strip: 'ch1_strip_r2' } };
+    C: { ground: 'ch1_ground_a3', road: 'ch1_road_r2', strip: 'ch1_strip_r2' },
+    S: { ground: 'ch1_ground_a2', road: 'ch1_road_r2', strip: 'ch1_strip_r2' } };   // 2026-10-18 Chapter 3（天空の浮島）：明るい草地と白っぽい石畳 R2
   /** Chapter 2：js/proto/ch2-world.js の TEX・STRIPS の鍵 → 新しい絵の名前 */
   const CH2 = { tex: { sea: 'ch2_open_sea_water', deck: 'ch2_sea_bridge_deck', white: 'ch2_coastal_white_stone_road' },
     strip: { walk: 'ch2_R01_white_bridge_walkstrip', railL: 'ch2_sea_bridge_railing_left', railR: 'ch2_sea_bridge_railing_right' } };

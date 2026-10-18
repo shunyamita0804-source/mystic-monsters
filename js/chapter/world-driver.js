@@ -83,7 +83,7 @@
   //   無い・知らない値＝A。旧セーブで景観 B／C のまま A の道を進んでいる個体は、その育成の終わりまで「B／C の景観＋A の道」（route が無い＝A）
   const VISUALS = ROUTES;
   const visualKey = (v) => (VISUALS.includes(v) ? v : 'A');
-  const visualOf = (m) => { const f = fieldOf(m); return visualKey(f && f.visualPattern); };
+  const visualOf = (m) => { if (cfg.visual) return cfg.visual; const f = fieldOf(m); return visualKey(f && f.visualPattern); };   // 2026-10-18 Chapter 3＝空の景観 'S'（js/proto/roadfirst-world.js の VISUAL.S）
   let pendingRoute = null;
   /** 次の出発のルートを固定（テスト・確認用。null＝本番の抽選）。1回の出発で使ったら戻す */
   function setRoute(v) { pendingRoute = ROUTES.includes(v) ? v : null; return pendingRoute; }

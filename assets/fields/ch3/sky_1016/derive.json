@@ -1,0 +1,663 @@
+{
+ "count": 18,
+ "missing": [],
+ "extra": [],
+ "items": [
+  {
+   "file": "C3_ARCH_ruined_colonnade.png",
+   "size": [
+    768,
+    768
+   ],
+   "mode": "RGBA",
+   "spec_ok": true,
+   "kind": "ARCH",
+   "sha256": "7a7b1bf1a610c59ecd54a38fba94772606a34c9403c512d3a9983bc957b430ee",
+   "bytes": 829304,
+   "bbox": [
+    94,
+    21,
+    677,
+    746
+   ],
+   "pad": {
+    "l": 0.122,
+    "t": 0.027,
+    "r": 0.118,
+    "b": 0.029
+   },
+   "edge_touch": false,
+   "alpha0": 0.6,
+   "alpha255": 0.371,
+   "semi": 0.029,
+   "dup_of": null,
+   "derived": "C3_ARCH_ruined_colonnade.webp",
+   "derived_size": [
+    768,
+    768
+   ],
+   "derived_bytes": 141084,
+   "derived_sha256": "62c9e225f5f700510aa0abe8cc0e5b5eca490cade0e5753ea1c5ce8290eee63c"
+  },
+  {
+   "file": "C3_ARCH_sky_pavilion.png",
+   "size": [
+    768,
+    768
+   ],
+   "mode": "RGBA",
+   "spec_ok": true,
+   "kind": "ARCH",
+   "sha256": "06e5c4815c874572c00a0a280cf337fc057b8d38c7010b8406a049f79a4fcb6b",
+   "bytes": 624355,
+   "bbox": [
+    113,
+    18,
+    653,
+    737
+   ],
+   "pad": {
+    "l": 0.147,
+    "t": 0.023,
+    "r": 0.15,
+    "b": 0.04
+   },
+   "edge_touch": false,
+   "alpha0": 0.679,
+   "alpha255": 0.302,
+   "semi": 0.019,
+   "dup_of": null,
+   "derived": "C3_ARCH_sky_pavilion.webp",
+   "derived_size": [
+    768,
+    768
+   ],
+   "derived_bytes": 81778,
+   "derived_sha256": "07d88c6e953b2db700cb3398d8b530593c126ed3aa7c0b6736da4f5cdc50329a"
+  },
+  {
+   "file": "C3_ARCH_white_bridge_arch_pier.png",
+   "size": [
+    512,
+    768
+   ],
+   "mode": "RGBA",
+   "spec_ok": true,
+   "kind": "ARCH",
+   "sha256": "7404a853ebeec664573ef9e29f0b11c25d36d4c037ba249901e787ffd8802ae3",
+   "bytes": 376211,
+   "bbox": [
+    40,
+    65,
+    474,
+    714
+   ],
+   "pad": {
+    "l": 0.078,
+    "t": 0.085,
+    "r": 0.074,
+    "b": 0.07
+   },
+   "edge_touch": false,
+   "alpha0": 0.753,
+   "alpha255": 0.231,
+   "semi": 0.017,
+   "dup_of": null,
+   "derived": "C3_ARCH_white_bridge_arch_pier.webp",
+   "derived_size": [
+    512,
+    768
+   ],
+   "derived_bytes": 47152,
+   "derived_sha256": "22f9cb9c6d5b5b3d524c427087d126d705eb0732fe03bf257957dc7c8e8c33f8"
+  },
+  {
+   "file": "C3_ARCH_white_column_single.png",
+   "size": [
+    384,
+    768
+   ],
+   "mode": "RGBA",
+   "spec_ok": true,
+   "kind": "ARCH",
+   "sha256": "a6b8e6ad521c027e5df97d8da1675914132b277cdd5687d35344e3d2aaf93baa",
+   "bytes": 203554,
+   "bbox": [
+    133,
+    39,
+    250,
+    730
+   ],
+   "pad": {
+    "l": 0.346,
+    "t": 0.051,
+    "r": 0.349,
+    "b": 0.049
+   },
+   "edge_touch": false,
+   "alpha0": 0.851,
+   "alpha255": 0.138,
+   "semi": 0.011,
+   "dup_of": null,
+   "derived": "C3_ARCH_white_column_single.webp",
+   "derived_size": [
+    384,
+    768
+   ],
+   "derived_bytes": 18488,
+   "derived_sha256": "339d5527820cecf74c08dd11f8a56d018431c2129f8d75b8b9168a9b376a53d6"
+  },
+  {
+   "file": "C3_ARCH_white_railing_segment.png",
+   "size": [
+    1024,
+    256
+   ],
+   "mode": "RGBA",
+   "spec_ok": true,
+   "kind": "ARCH",
+   "sha256": "953a13a2435ace16d7cd8e1fdafa20c4c64da335ee03a95f66fdfb1d50cf9672",
+   "bytes": 280058,
+   "bbox": [
+    19,
+    1,
+    1004,
+    218
+   ],
+   "pad": {
+    "l": 0.019,
+    "t": 0.004,
+    "r": 0.02,
+    "b": 0.148
+   },
+   "edge_touch": false,
+   "alpha0": 0.671,
+   "alpha255": 0.273,
+   "semi": 0.056,
+   "dup_of": null,
+   "padded": [
+    0,
+    11,
+    0,
+    0
+   ],
+   "derived": "C3_ARCH_white_railing_segment.webp",
+   "derived_size": [
+    1024,
+    267
+   ],
+   "derived_bytes": 48574,
+   "derived_sha256": "3c30ee38245f59e8d077aadd40954b083d9316a2799dd1c185bbd4ba60b7d95b"
+  },
+  {
+   "file": "C3_ENV_cloud_bank_mid.png",
+   "size": [
+    1024,
+    512
+   ],
+   "mode": "RGBA",
+   "spec_ok": true,
+   "kind": "ENV",
+   "sha256": "246ed46e6c35eb8995dc5d3f4c73f98d2e2bef313c222f15b62c0ae3684cca16",
+   "bytes": 563845,
+   "bbox": [
+    42,
+    41,
+    982,
+    481
+   ],
+   "pad": {
+    "l": 0.041,
+    "t": 0.08,
+    "r": 0.041,
+    "b": 0.061
+   },
+   "edge_touch": false,
+   "alpha0": 0.582,
+   "alpha255": 0.302,
+   "semi": 0.116,
+   "dup_of": null,
+   "derived": "C3_ENV_cloud_bank_mid.webp",
+   "derived_size": [
+    1024,
+    512
+   ],
+   "derived_bytes": 90404,
+   "derived_sha256": "9c6704d8effefe1a6a463b0659dc67970ee3eca36b8da7549d4672562cb5e228"
+  },
+  {
+   "file": "C3_ENV_cloud_puff_small.png",
+   "size": [
+    512,
+    512
+   ],
+   "mode": "RGBA",
+   "spec_ok": true,
+   "kind": "ENV",
+   "sha256": "8d7b760be5798a3e0e4d9075314b2bc6d5134d178a9a3c35b09ed9b8eade4cc2",
+   "bytes": 275425,
+   "bbox": [
+    31,
+    67,
+    484,
+    449
+   ],
+   "pad": {
+    "l": 0.061,
+    "t": 0.131,
+    "r": 0.055,
+    "b": 0.123
+   },
+   "edge_touch": false,
+   "alpha0": 0.605,
+   "alpha255": 0.259,
+   "semi": 0.136,
+   "dup_of": null,
+   "derived": "C3_ENV_cloud_puff_small.webp",
+   "derived_size": [
+    512,
+    512
+   ],
+   "derived_bytes": 38784,
+   "derived_sha256": "aef60fe09536e46f274b7046f09eb55b7eb301de453f0ea1adcd36b1b630fff1"
+  },
+  {
+   "file": "C3_ENV_cloud_wisp_front.png",
+   "size": [
+    1024,
+    512
+   ],
+   "mode": "RGBA",
+   "spec_ok": true,
+   "kind": "ENV",
+   "sha256": "84987e929095177580855d22f540ce55be557c141f54ded1f635cfe3ef8ae99e",
+   "bytes": 342319,
+   "bbox": [
+    20,
+    172,
+    1006,
+    325
+   ],
+   "pad": {
+    "l": 0.02,
+    "t": 0.336,
+    "r": 0.018,
+    "b": 0.365
+   },
+   "edge_touch": false,
+   "alpha0": 0.843,
+   "alpha255": 0.04,
+   "semi": 0.117,
+   "dup_of": null,
+   "derived": "C3_ENV_cloud_wisp_front.webp",
+   "derived_size": [
+    1024,
+    512
+   ],
+   "derived_bytes": 67808,
+   "derived_sha256": "81ef098860b1e844fae5f6f531808635ce251a64dd4b817721cbfc2494ea124c"
+  },
+  {
+   "file": "C3_ENV_crystal_cluster_blue.png",
+   "size": [
+    512,
+    512
+   ],
+   "mode": "RGBA",
+   "spec_ok": true,
+   "kind": "ENV",
+   "sha256": "f8cd0471f665ca092eae0235fd4d8a7031be5c49afdbcf262f5c7712d7d1eb81",
+   "bytes": 297736,
+   "bbox": [
+    116,
+    29,
+    395,
+    485
+   ],
+   "pad": {
+    "l": 0.227,
+    "t": 0.057,
+    "r": 0.229,
+    "b": 0.053
+   },
+   "edge_touch": false,
+   "alpha0": 0.693,
+   "alpha255": 0.294,
+   "semi": 0.012,
+   "dup_of": null,
+   "derived": "C3_ENV_crystal_cluster_blue.webp",
+   "derived_size": [
+    512,
+    512
+   ],
+   "derived_bytes": 40596,
+   "derived_sha256": "74c4fecd1ddcbd33d69637e3cdfee92d0152e730f444a529c52c2357ddb8c426"
+  },
+  {
+   "file": "C3_ENV_floating_island_medium.png",
+   "size": [
+    768,
+    768
+   ],
+   "mode": "RGBA",
+   "spec_ok": true,
+   "kind": "ENV",
+   "sha256": "ffc3eb911f2670b0e35d2241a9f0b3a0f2e1c4d0a71e8fd7ca436835b1e4f06d",
+   "bytes": 751438,
+   "bbox": [
+    32,
+    61,
+    732,
+    717
+   ],
+   "pad": {
+    "l": 0.042,
+    "t": 0.079,
+    "r": 0.047,
+    "b": 0.066
+   },
+   "edge_touch": false,
+   "alpha0": 0.541,
+   "alpha255": 0.431,
+   "semi": 0.028,
+   "dup_of": null,
+   "derived": "C3_ENV_floating_island_medium.webp",
+   "derived_size": [
+    768,
+    768
+   ],
+   "derived_bytes": 158114,
+   "derived_sha256": "c46d35473952e84915a0a5d4f27bbb3b8ecd65df063f6f43d0209ac0688b9e4d"
+  },
+  {
+   "file": "C3_ENV_floating_island_small_green.png",
+   "size": [
+    512,
+    512
+   ],
+   "mode": "RGBA",
+   "spec_ok": true,
+   "kind": "ENV",
+   "sha256": "9b7b513db290c793e6e1bbd8b693633e558c70a2582ce7af83e338d25e5a57ef",
+   "bytes": 387224,
+   "bbox": [
+    52,
+    25,
+    458,
+    477
+   ],
+   "pad": {
+    "l": 0.102,
+    "t": 0.049,
+    "r": 0.105,
+    "b": 0.068
+   },
+   "edge_touch": false,
+   "alpha0": 0.602,
+   "alpha255": 0.376,
+   "semi": 0.022,
+   "dup_of": null,
+   "derived": "C3_ENV_floating_island_small_green.webp",
+   "derived_size": [
+    512,
+    512
+   ],
+   "derived_bytes": 67598,
+   "derived_sha256": "526b2379ca97f421be06aac7450d83834bf6cc499bc74967ccf7590f7041f966"
+  },
+  {
+   "file": "C3_ENV_floating_island_small_rock.png",
+   "size": [
+    512,
+    512
+   ],
+   "mode": "RGBA",
+   "spec_ok": true,
+   "kind": "ENV",
+   "sha256": "f4ca06210ab6150aa6dc2f84c37245cea1bde0fb42955f7d82ba5d364554e6ed",
+   "bytes": 297251,
+   "bbox": [
+    121,
+    20,
+    390,
+    488
+   ],
+   "pad": {
+    "l": 0.236,
+    "t": 0.039,
+    "r": 0.238,
+    "b": 0.047
+   },
+   "edge_touch": false,
+   "alpha0": 0.725,
+   "alpha255": 0.262,
+   "semi": 0.014,
+   "dup_of": null,
+   "derived": "C3_ENV_floating_island_small_rock.webp",
+   "derived_size": [
+    512,
+    512
+   ],
+   "derived_bytes": 45806,
+   "derived_sha256": "7bdde57794d310c92bb828f3e9c018d727cbf7135a8a6c599e16ac6a7fa9aa1c"
+  },
+  {
+   "file": "C3_ENV_island_cliff_edge_piece.png",
+   "size": [
+    1024,
+    512
+   ],
+   "mode": "RGBA",
+   "spec_ok": true,
+   "kind": "ENV",
+   "sha256": "74f6c63c74efa0b78d0fa29230cfc3180d2ede0ca916d006dc708dbb01ddb197",
+   "bytes": 661008,
+   "bbox": [
+    162,
+    20,
+    860,
+    493
+   ],
+   "pad": {
+    "l": 0.158,
+    "t": 0.039,
+    "r": 0.16,
+    "b": 0.037
+   },
+   "edge_touch": false,
+   "alpha0": 0.649,
+   "alpha255": 0.331,
+   "semi": 0.02,
+   "dup_of": null,
+   "derived": "C3_ENV_island_cliff_edge_piece.webp",
+   "derived_size": [
+    1024,
+    512
+   ],
+   "derived_bytes": 111756,
+   "derived_sha256": "443d8a6cdba2b1cceb795e16d46aadab3b92b2928e49a88b9637b4b115982212"
+  },
+  {
+   "file": "C3_ENV_sky_flowering_tree.png",
+   "size": [
+    512,
+    768
+   ],
+   "mode": "RGBA",
+   "spec_ok": true,
+   "kind": "ENV",
+   "sha256": "b7a19db392f1409265c5ec7ab84a95d607892eb72671a6dbadd589cb2f39208a",
+   "bytes": 608853,
+   "bbox": [
+    16,
+    36,
+    495,
+    729
+   ],
+   "pad": {
+    "l": 0.031,
+    "t": 0.047,
+    "r": 0.033,
+    "b": 0.051
+   },
+   "edge_touch": false,
+   "alpha0": 0.628,
+   "alpha255": 0.269,
+   "semi": 0.103,
+   "dup_of": null,
+   "derived": "C3_ENV_sky_flowering_tree.webp",
+   "derived_size": [
+    512,
+    768
+   ],
+   "derived_bytes": 139028,
+   "derived_sha256": "85831fefef399d9ca7165937547daecdc454e6d18f1e8a9c3fc47f3ee1214193"
+  },
+  {
+   "file": "C3_ENV_white_flower_patch.png",
+   "size": [
+    384,
+    384
+   ],
+   "mode": "RGBA",
+   "spec_ok": true,
+   "kind": "ENV",
+   "sha256": "52de41167c584f4b6251a09b83eebdf31c1b71afd8f0a3043d9489bd57a8b2d3",
+   "bytes": 282508,
+   "bbox": [
+    22,
+    20,
+    367,
+    364
+   ],
+   "pad": {
+    "l": 0.057,
+    "t": 0.052,
+    "r": 0.044,
+    "b": 0.052
+   },
+   "edge_touch": false,
+   "alpha0": 0.538,
+   "alpha255": 0.378,
+   "semi": 0.083,
+   "dup_of": null,
+   "derived": "C3_ENV_white_flower_patch.webp",
+   "derived_size": [
+    384,
+    384
+   ],
+   "derived_bytes": 60086,
+   "derived_sha256": "e550c1e79b5666003490f2dd5a88556a853d81165dc970a287e608f93adab49e"
+  },
+  {
+   "file": "C3_FX_sky_waterfall_column.png",
+   "size": [
+    512,
+    1024
+   ],
+   "mode": "RGBA",
+   "spec_ok": true,
+   "kind": "FX",
+   "sha256": "c0ff84e451a8ae8f399f3e25eecd757e76ec2a102ed2733b7704e3f3dd2bf3c1",
+   "bytes": 399802,
+   "bbox": [
+    176,
+    20,
+    340,
+    1009
+   ],
+   "pad": {
+    "l": 0.344,
+    "t": 0.02,
+    "r": 0.336,
+    "b": 0.015
+   },
+   "edge_touch": false,
+   "alpha0": 0.838,
+   "alpha255": 0.002,
+   "semi": 0.16,
+   "dup_of": null,
+   "derived": "C3_FX_sky_waterfall_column.webp",
+   "derived_size": [
+    512,
+    1024
+   ],
+   "derived_bytes": 77664,
+   "derived_sha256": "60887864bfb8a4f40753655ccae92ce92520a1e0d335f2fe48a3eafa57601f8f"
+  },
+  {
+   "file": "C3_UI_sky_medallion.png",
+   "size": [
+    1024,
+    1024
+   ],
+   "mode": "RGBA",
+   "spec_ok": true,
+   "kind": "UI",
+   "sha256": "206d8317f5a5deff7a3b4ba085de21c72a2c5212390270881ea40ba1fdfa1b0e",
+   "bytes": 1664359,
+   "bbox": [
+    69,
+    31,
+    950,
+    962
+   ],
+   "pad": {
+    "l": 0.067,
+    "t": 0.03,
+    "r": 0.072,
+    "b": 0.061
+   },
+   "edge_touch": false,
+   "alpha0": 0.572,
+   "alpha255": 0.398,
+   "semi": 0.03,
+   "dup_of": null,
+   "derived": "C3_UI_sky_medallion.webp",
+   "derived_size": [
+    1024,
+    1024
+   ],
+   "derived_bytes": 224824,
+   "derived_sha256": "2e38057745cddc33ca16a6ea9445b74241d237a7fa77da849d911f61dfb37922"
+  },
+  {
+   "file": "C3_UI_sky_nameplate.png",
+   "size": [
+    1536,
+    512
+   ],
+   "mode": "RGBA",
+   "spec_ok": true,
+   "kind": "UI",
+   "sha256": "bb5e5c0a1c113f6980e542e7d38ae1f78fcd3a24fbfcdc6879f3ca64770e4735",
+   "bytes": 331398,
+   "bbox": [
+    47,
+    168,
+    1489,
+    303
+   ],
+   "pad": {
+    "l": 0.031,
+    "t": 0.328,
+    "r": 0.031,
+    "b": 0.408
+   },
+   "edge_touch": false,
+   "alpha0": 0.853,
+   "alpha255": 0.133,
+   "semi": 0.014,
+   "dup_of": null,
+   "derived": "C3_UI_sky_nameplate.webp",
+   "derived_size": [
+    1536,
+    512
+   ],
+   "derived_bytes": 29232,
+   "derived_sha256": "1cdfc3e45da335b5f30c9d0550037d0f3023833229b72f2e07fd5df3245f9eac"
+  }
+ ],
+ "total_png_bytes": 9176648,
+ "total_webp_bytes": 1488776
+}

@@ -33,12 +33,13 @@
   const gS = () => G('S');
   const doSave = () => { try { root.save(); } catch (e) {} };
   // 2026-10-16：Chapter 2「潮風の海岸」も同じ画面（進行は js/chapter/world-driver-ch2.js の MMWD2）。今の個体（S.m）の Chapter で進行と表示を選ぶ
-  const chOf = (m) => { const mm = m || (gS() && gS().m); return mm && mm.raise && mm.raise.ch === 2 && root.MMWD2 ? 2 : 1; };
-  const A2 = './assets/fields/ch2/art_1016/';
+  const chOf = (m) => { const mm = m || (gS() && gS().m); const c = mm && mm.raise && mm.raise.ch; return c === 3 && root.MMWD3 ? 3 : c === 2 && root.MMWD2 ? 2 : 1; };   // 2026-10-18 Chapter 3「天空の浮島」（MMWD3）
+  const A2 = './assets/fields/ch2/art_1016/', A3 = './assets/fields/ch3/sky_1016/';
   const CHI = Object.freeze({ 1: { name: 'はじまりの草原', relay: './assets/fields/ch1a/intro/ch1_intro_overview.webp', gate: './assets/fields/ch1a/final/event/ch1_bg_15_event.webp' },
-    2: { name: '潮風の海岸', relay: A2 + 'chapter2_sea_medallion.webp', medal: true, plate: A2 + 'sea_zone_nameplate.webp', gate: null, gateArt: A2 + 'arena_approach_gate.webp', gateSea: A2 + 'open_sea_water.webp' } });
+    2: { name: '潮風の海岸', relay: A2 + 'chapter2_sea_medallion.webp', medal: true, plate: A2 + 'sea_zone_nameplate.webp', gate: null, gateArt: A2 + 'arena_approach_gate.webp', gateSea: A2 + 'open_sea_water.webp' },
+    3: { name: '天空の浮島', relay: A3 + 'C3_UI_sky_medallion.webp', medal: true, sky: true, plate: A3 + 'C3_UI_sky_nameplate.webp', gate: null, gateArt: './assets/proto/board_art_1010/goal_arena.webp', gateSea: './assets/proto/board_art_1010/ground_cloud.webp' } });
   const chi = (m) => CHI[chOf(m)];
-  const P8 = () => root.MMP8, WD = (m) => (chOf(m) === 2 ? root.MMWD2 : root.MMWD), C = () => root.MMRF_CORE;
+  const P8 = () => root.MMP8, WD = (m) => { const c = chOf(m); return c === 3 ? root.MMWD3 : c === 2 ? root.MMWD2 : root.MMWD; }, C = () => root.MMRF_CORE;
   // 2026-10-14 B／C 独立ルート：その個体のルートの道のデータ（m を省くと今の個体＝S.m。route の無い配置＝A＝MMRF_DATA）
   const D = (m) => { const W = WD(m), mm = m || (gS() && gS().m); return (W && W.dataOf && mm ? W.dataOf(mm) : null) || root.MMRF_DATA; };
   const cfg = () => (root.MMCH && root.MMCH.getConfig ? root.MMCH.getConfig(1) : null) || {};
@@ -868,7 +869,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
       d.addEventListener('click', close); setTimeout(close, calm() ? Math.min(ms, 900) : ms);
     });
   }
-  const evDef = (id) => { let c = null; try { c = root.MMCH && root.MMCH.getConfig(chOf()); } catch (e) {} return ((c && c.eventPool) || cfg().eventPool || []).find((e) => e.id === id) || null; };   // 2026-10-16：その Chapter の出来事（Chapter 2＝ch2a の eventPool）
+  const evDef = (id) => { let c = null; try { c = chOf() === 3 ? null : root.MMCH && root.MMCH.getConfig(chOf()); } catch (e) {} const e = ((c && c.eventPool) || cfg().eventPool || []).find((x) => x.id === id) || null; return e && chOf() === 3 && e.id === 'tailwind' ? JSON.parse(JSON.stringify(e).replace(/草原/g, '雲海')) : e; };   // 2026-10-18 Chapter 3：Chapter 1 の出来事の表（草原の言葉だけ雲海に）   // 2026-10-16：その Chapter の出来事（Chapter 2＝ch2a の eventPool）
   async function talkLines(lines) {
     if (!lines || !lines.length || root.MM_QA_NO_STORY || !root.MMNPC || !onBoard()) return;
     const L = lines.map((l) => (root.MMEVT ? root.MMEVT.lineOf(l) : { npc: 'fina', expression: l.expression || 'normal', text: l.text }));
@@ -985,7 +986,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
   const vcue = (name) => { try { if (!root.MM_QA_NO_STORY && root.MMVOICE) root.MMVOICE.cue(name); } catch (e) {} };
   const DIE_TEXT = {
     Q: (e) => `運命の分かれ道：出目 ${e.die}（${e.die % 2 ? '奇数 → ← 左の道' : '偶数 → 右の道 →'}）`,   // 2026-10-15 N07：アイテムと紛らわしい「運命のサイコロ」から改名
-    CHALLENGE: (e) => (chOf() === 2 ? `${chalName()}の挑戦：${e.die} → ${e.die >= 5 ? '成功！ 近道へ' : '失敗… 遠回りの道へ'}` : `封印の遺跡門の挑戦：${e.die} → ${e.die >= 5 ? '成功！ 遺跡の道へ' : '失敗… 遠回りの道へ'}`),
+    CHALLENGE: (e) => (chOf() >= 2 ? `${chalName()}の挑戦：${e.die} → ${e.die >= 5 ? '成功！ 近道へ' : '失敗… 遠回りの道へ'}` : `封印の遺跡門の挑戦：${e.die} → ${e.die >= 5 ? '成功！ 遺跡の道へ' : '失敗… 遠回りの道へ'}`),
   };
   const chalName = () => placeName('CHALLENGE') || '封印の門';   // 2026-10-16 Chapter 2：特殊挑戦の場所の名前は道のデータ（西の海門・封印の扉・封印の間）
   /** 2026-10-13 開発27（18）：イベントのサイコロ（Q の左右・特殊挑戦）は、案内を出してプレイヤーが「サイコロを振る」を押してから1回だけ振る。
@@ -995,7 +996,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     CHALLENGE: { h: '封印の遺跡門の挑戦', p: 'サイコロを振って、5か6が出れば成功！ 遺跡の道へ進める。それ以外は遠回りの道へ。' },
   };
   function dieAsk(e) {
-    const ui = $('#wb-ui'), A = (e.kind === 'CHALLENGE' && chOf() === 2 ? { h: `${chalName()}の挑戦`, p: 'サイコロを振って、5か6が出れば成功！ 近道へ進める。それ以外は遠回りの道へ。' } : DIE_ASK[e.kind]) || { h: 'イベントのサイコロ', p: 'サイコロを振ろう。' };
+    const ui = $('#wb-ui'), A = (e.kind === 'CHALLENGE' && chOf() >= 2 ? { h: `${chalName()}の挑戦`, p: 'サイコロを振って、5か6が出れば成功！ 近道へ進める。それ以外は遠回りの道へ。' } : DIE_ASK[e.kind]) || { h: 'イベントのサイコロ', p: 'サイコロを振ろう。' };
     if (!ui || root.MM_QA_NO_STORY) return Promise.resolve();
     const b0 = $('#bmsg'); if (b0) b0.textContent = A.h;
     return new Promise((done) => {
