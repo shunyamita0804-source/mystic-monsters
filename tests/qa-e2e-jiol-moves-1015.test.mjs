@@ -60,7 +60,8 @@ test('JB-1（390×844）：ジオルの10技を QA の実戦で＝その技の�
     assert.equal(b.sp, 3); assert.deepEqual(b.eq, Array(6).fill(39 + no), `${no}：6枠すべて SK ${39 + no}`); assert.equal(want.slot, 39 + no);
     assert.ok(b.names.length >= 4 && b.names.every((x) => x === want.name), `${no}：ルーレット＝${want.name}`);
     const r = await useMove(pg, no);
-    const body = D[no].cuts.map((c) => c.f);
+    // 2026-10-18 REV3 A3：表示は MMTUNE.patch の写し（ロックアッパーの小さく見えた j08_03 は j08_02 に置き換え）
+    const body = await pg.evaluate((no) => { const d = MMJIMV_DATA[no]; return MMTUNE.patch(d, d.dir || 'jiol_moves_1012').cuts.map((c) => c.f); }, no);
     assert.ok(r.ok, `${no}：本当に効いた（${JSON.stringify(r.last)}・${r.tries}回）`);
     for (const f of body) assert.ok(r.seen.includes(f), `${no}：本体 ${f}`);
     assert.ok(r.seen.filter((f) => /_fx/.test(f)).length >= 1, `${no}：効果の層も出る`);

@@ -1582,7 +1582,10 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
   - **main＝REV3 を claude/rev3-1018 から --no-ff で統合**（基準 2108dca）・build＝`2026-10-18-rev3`・version.json＝{ build, branch main, base 2108dca }・公開済み
   - 中身は §3「2026-10-18 REV3」・報告は docs/rev3_1018/REPORT.md（(1)〜(10)・台帳 voice_ledger.tsv／moves70.tsv／adopted.tsv／delete_ledger.tsv・道路の比較 road/）。通常プレイに入ったもの＝新歩行 140枚・C案カメラ・体格 F・フルーネ正式10技（QA の個体だけ）・技アニメ4件の修正・特訓の画面・声の再設計
   - QA だけのまま＝新しい Chapter 2 の盤（?ch2trial）・道路の新素材（?qaRoadArt）・ラズック・体格の A／B 案。**Chapter 3 は未着手**
-  - 既知の失敗テスト：qa-e2e-dev24-1013 の D24-B2（2108dca でも失敗）・qa-e2e-dev28-1013 の D28-B7・qa-e2e-dev29-1014 の D29-B2。**iPhone 実機はどれも未確認**。戻し方＝REV3 のマージを revert（公開前は 2108dca・2026-10-17-all4）
+  - テスト：ふだんの実行 1873件・失敗 0。実ブラウザは 95ファイルすべてを1つずつ（古い期待値はテスト側を直した）。public-check 45項目 OK
+  - 既知の失敗テスト（REV3 の前の 2108dca でも失敗＝今回と無関係）：qa-e2e-dev24-1013 の D24-B2・qa-e2e-dice-cube-1012 の DCB-1（比較デモ）。重い実行で時刻が揺れて落ちることがある（単独では合格）：feel FE-1／FE-5・dice-lock DL-B1・board-1008 BB-1・dev28 D28-B1／B7・reactions RX-B1・dev29 D29-B2。**iPhone 実機はどれも未確認**。戻し方＝REV3 のマージを revert（公開前は 2108dca・2026-10-17-all4）
+  - ユーザー判断待ち：iPhone 実機の確認（REPORT (7) の一覧）・リュウ 002 の字幕の承認・道路の素材の作り直し（R1／R2 の帯・白い橋の側面・海上橋の石板）・新しい Chapter 2 の盤の採用・体格 A／B（未承認。F を推奨）・フルーネ固有スキル「生命の芽吹き」の資料の食い違い・未配置の声 17本。**Chapter 3 は未着手**（次の作業はユーザーの指示を待つ）
+  - 新しいセッションは main から始める（作業ブランチ claude/rev3-1018 は main に統合済み）
 - **引き継ぎ（2026-10-17 時点の現在地。旧）**：
   - **main＝a03c56e**（統合便 v2 をブランチ claude/all4-1017 から --no-ff で統合・GitHub の PR は作れなかった＝MCP の接続失敗）・build＝`2026-10-17-all4`・version.json＝{ build, branch main, base dbdbd9e }・公開済み・public-check 44項目すべて OK
   - 中身は §3「2026-10-17 統合便 v2」・報告は docs/all4_1017/REPORT.md。一般プレイに入ったもの＝NPC 有料ボイス 60本・モンスターの鳴き声 14本・初見プレイの隔離セーブ（?qaFresh=1）。QA だけ（URL のフラグ）＝QA トップ ?qaTop=1・新しい Chapter 2 の盤（?ch2trial）・C案カメラ（?qaCam=c）・道路の新しい絵（?qaRoadArt）・新歩行（?qaWalk=1017）・ラズック（QA の7体目）

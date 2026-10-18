@@ -104,7 +104,8 @@ for (const size of SIZES) {
     for (const [kind, side] of [['regnas', 1], ['jiol', 0]]) {
       for (let no = 1; no <= 10; no++) {
         const r = await playOne(pg, `MM25D.preview('${kind}', ${no}, ${side})`, side);
-        const d = await pg.evaluate(({ kind, no }) => (kind === 'jiol' ? MMJIMV_DATA[no] : MMREMV_DATA[20 + no - 1]), { kind, no });
+        // 2026-10-18 REV3：表示は MMTUNE.patch の写し（A4 ジオインパクト＝円錐の衝撃波 J9_8_cone・A3 ロックアッパー＝j08_02）
+        const d = await pg.evaluate(({ kind, no }) => { const d0 = kind === 'jiol' ? MMJIMV_DATA[no] : MMREMV_DATA[20 + no - 1]; return window.MMTUNE ? MMTUNE.patch(d0, d0.dir) : d0; }, { kind, no });
         assert.equal(r.ok, true, `${kind} ${no}`);
         assert.deepEqual([...r.cut].sort(), filesOf(d).sort(), `${kind} ${no}（${d.name}）の全コマ`);
         assert.ok(r.endOpacity > 0.95, `${kind} ${no}：待機に戻る`); assert.equal(r.left, 0, `${kind} ${no}：残らない`); assert.ok(r.onScreen, `${kind} ${no}：画面の中`);
