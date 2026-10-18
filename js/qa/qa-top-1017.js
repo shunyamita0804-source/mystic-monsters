@@ -2,7 +2,7 @@
 // 2026-10-17 QA トップ `MMQAT`（URL に ?qaTop=1 のときだけ・QA 用。通常の URL では何もしない）
 //  ・版（MM_BUILD）・version.json（build・branch・base＝元のコミット）を表示＝iPhone で古いキャッシュと取り違えない
 //  ・Chapter 1／2 の A／B／C をすぐに試遊（?ch1trial／?ch2trial＝セーブを控えて保存しない）。カメラ（従来／C案）・道路（従来／新）・歩行（従来／新 10-17）・
-//    固定の seed（?qaSeed＝出発の乱数）・連れていく子（?qaMon＝0〜4）を選んでから開く。Chapter 3 は未完成（このブランチに盤が無い＝出さない）
+//    固定の seed（?qaSeed＝出発の乱数）・連れていく子（?qaMon＝0〜4）を選んでから開く。Chapter 3（2026-10-18・?ch3trial）
 //  ・全7体×10技＝70枠の状態（実戦／プレビュー／未実装）・音声の試聴（NPC 60・鳴き声 14）・バトル技ステージ＝?mmQaTrial=1 の QA 画面
 //  ・初見プレイ（?qaFresh=1＝セーブを別の名前へ読み替え・本当のセーブは触らない）・やり直し（?qaFresh=reset）・QA を出る（通常の URL）
 // =========================================================
@@ -16,7 +16,7 @@
   const base = () => root.location.pathname;
   function href(kind, route) {
     const u = new URLSearchParams();
-    if (kind === 'ch1') u.set('ch1trial', route); else if (kind === 'ch2') u.set('ch2trial', route);
+    if (kind === 'ch1') u.set('ch1trial', route); else if (kind === 'ch2') u.set('ch2trial', route); else if (kind === 'ch3') u.set('ch3trial', route);
     if (OPT.cam) u.set('qaCam', OPT.cam); if (OPT.road) u.set('qaRoadArt', OPT.road); if (OPT.walk) u.set('qaWalk', OPT.walk);
     if (OPT.seed) u.set('qaSeed', OPT.seed); if (OPT.mon && OPT.mon !== '0') u.set('qaMon', OPT.mon);
     return base() + '?' + u.toString();
@@ -36,12 +36,12 @@
       <p class="qtv">版 <b>${esc(G('MM_BUILD') || '?')}</b>${V.build && V.build !== G('MM_BUILD') ? `（公開中の version.json＝${esc(V.build)}・一致しない＝再読み込み）` : ''}<br>ブランチ ${esc(V.branch || '—')}・元のコミット ${esc(V.base || '—')}</p>
       <h3>Chapter をすぐに試遊（セーブを控えて保存しない）</h3>
       <label>カメラ</label>${seg('cam', [['', 'C案（正式）'], ['old', '従来（比較）']])}
-      <label>道路の絵</label>${seg('road', [['', '従来'], ['fix', '新（10-17）']])}
+      <label>道路の絵</label>${seg('road', [['', '新（正式・2026-10-18）'], ['old', '従来（比較）']])}
       <label>歩行</label>${seg('walk', [['', '新（正式・8方向）'], ['old', '従来 8コマ（比較）']])}
       <label>連れていく子</label>${seg('mon', [['0', 'ソラモ'], ['1', 'ガウル'], ['2', 'ノビトン'], ['3', 'ジオル'], ['4', 'レグナス']])}
       <label>出発の乱数（seed・空＝毎回ちがう）</label><input class="qtseed" inputmode="numeric" value="${esc(OPT.seed)}" placeholder="例 42">
-      <div class="qtl">${['A', 'B', 'C'].map((r) => `<a class="qtb" data-k="ch1" data-r="${r}" href="${esc(href('ch1', r))}">Chapter 1 ・ ${r}</a>`).join('')}${['A', 'B', 'C'].map((r) => `<a class="qtb" data-k="ch2" data-r="${r}" href="${esc(href('ch2', r))}">Chapter 2 ・ ${r}</a>`).join('')}</div>
-      <small>Chapter 3 は未完成（このブランチに盤が無い）＝ここには出さない。フルーネ・ラズックは盤に出せない（未解禁）＝新歩行は QA 画面の「新歩行 10-17」で確認</small>
+      <div class="qtl">${['A', 'B', 'C'].map((r) => `<a class="qtb" data-k="ch1" data-r="${r}" href="${esc(href('ch1', r))}">Chapter 1 ・ ${r}</a>`).join('')}${['A', 'B', 'C'].map((r) => `<a class="qtb" data-k="ch2" data-r="${r}" href="${esc(href('ch2', r))}">Chapter 2 ・ ${r}（新しい盤＝未承認）</a>`).join('')}${['A', 'B', 'C'].map((r) => `<a class="qtb" data-k="ch3" data-r="${r}" href="${esc(href('ch3', r))}">Chapter 3 ・ ${r}</a>`).join('')}</div>
+      <small>盤の左の「QA移動」で、分かれ道・門・橋・ライバル・封印の門・寄り道・野生／レア・宝箱・ゴールの手前へ直接移れます（次の出目も固定できる）。Chapter 3 の A＝白亜の大橋・B＝雲海の螺旋・C＝風の浮島めぐり。フルーネ・ラズックは盤に出せない（未解禁）＝新歩行は QA 画面の「新歩行 10-17」で確認</small>
       <h3>全7体×10技＝${mv.total} 枠</h3>${mv.html}
       <div class="qtl"><a class="qtb" href="${esc(base() + '?mmQaTrial=1&qaDirect=1')}">QA 画面（全技の試合・バトル技ステージ・音声の試聴・新歩行）</a></div>
       <h3>初見プレイ（本当のセーブは触らない）</h3>
