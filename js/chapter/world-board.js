@@ -100,7 +100,9 @@
   //  c＝C案（歩いている間は向き・倍率を変えない・止まったとき／分かれ道を選んだときだけ短く向きを変える）／ccut＝C案の向きの変え方を「少し暗くして切り替え」に。
   //  qaCamDeg（向きを変えるずれの角度・既定 50）・qaCamMs（90° 回す時間・既定 600）で調整できる。通常の URL では何も変わらない
   const QA_CAM = (() => { let q = null; try { q = new URLSearchParams(root.location.search); } catch (e) {} const v = q && q.get('qaCam'); const num = (k, d, lo, hi) => { const x = q && q.get(k) != null ? Number(q.get(k)) : NaN; return Number.isFinite(x) && x >= lo && x <= hi ? x : d; };
-    return ['fixed', 'c', 'ccut'].includes(v) ? { mode: v, deg: num('qaCamDeg', 50, 10, 180), ms: num('qaCamMs', 600, 120, 2000) } : null; })();
+    // 2026-10-18 REV3 F0-2：C案カメラは正式採用＝通常プレイの既定。?qaCam=old＝従来（後ろから追う・QA の比較だけ）・fixed／ccut は QA の比較のまま
+    if (v === 'old') return null;
+    return { mode: ['fixed', 'c', 'ccut'].includes(v) ? v : 'c', deg: num('qaCamDeg', 50, 10, 180), ms: num('qaCamMs', 600, 120, 2000) }; })();
   // 2026-10-16 QA（A）：URL の ?qaRoad=1|2 で道の見た目の比較案（js/qa/road-1016.js）。無い＝従来
   const QA_ROAD = () => (root.MMQAR && root.MMQAR.mode) || null;   // js/qa/road-1016.js はこのファイルのあとに読む＝盤を作るときに見る
   const camOpts = () => (!QA_CAM ? { heading: true, yawTau: 600 } : QA_CAM.mode === 'fixed' ? { heading: false } : { heading: true, yawTau: 600, camMode: QA_CAM.mode, camTurnDeg: QA_CAM.deg, camTurnMs: QA_CAM.ms });
@@ -259,6 +261,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
 .wbw .wbcard{top:calc(env(safe-area-inset-top,0px) + 86px);width:min(92%,384px,max(220px,(100dvh - 86px - 300px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)) * 1.5))}
 @media (prefers-reduced-motion:reduce){.wbw .wbcard,.wbw .wbcard-dim{animation:none}.wbw .wbcard .sbar .tr i{transition:none}}
 .wbw .wb-pop img.art{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:10px;margin:0 0 8px}
+.wbtr .wbtr-mon{position:absolute;left:max(6px,calc(50% - min(30vw,125px) - min(26vw,108px)));top:36%;height:min(24vw,104px);width:auto;z-index:2;pointer-events:none;filter:drop-shadow(0 4px 5px rgba(0,0,0,.45));opacity:0;transform:translateY(-30%);transition:opacity .25s ease,transform .25s ease}.wbtr.open .wbtr-mon,.wbtr.calm .wbtr-mon{opacity:1;transform:translateY(-40%)} /* 2026-10-18 REV3 D3：宝箱の場面に連れている子（正式の立ち絵・正面） */
 .wbw .wb-pop .wbmeal{position:relative;width:100%;aspect-ratio:3/2;border-radius:10px;overflow:hidden;margin:0 0 8px}.wbw .wb-pop .wbmeal .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .wbw .wb-pop .wbmeal .mon{position:absolute;right:4%;bottom:3%;height:52%;width:auto;filter:drop-shadow(0 4px 4px rgba(0,0,0,.35));animation:wbmeal 1.1s ease-in-out infinite alternate}@keyframes wbmeal{to{transform:translateY(-3%)}}
 @media (prefers-reduced-motion:reduce){.wbw .wb-pop .wbmeal .mon{animation:none}}
@@ -506,10 +509,15 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
   }
   /** 2026-10-17：モンスターの鳴き声（MMAUDIO.cry）。ms 後・when() が真のときだけ。NPC の声が優先・全体の間隔は MMAUDIO 側 */
   function monCry(sp, kind, ms, when, o) { try { const A = root.MMAUDIO; if (!A || !A.cry || sp == null) return; if (A.cryWarm) A.cryWarm(sp, [kind]); setTimeout(() => { try { if (when && !when()) return; A.cry(sp, kind, o || {}); } catch (e) {} }, ms || 0); } catch (e) {} }
+  /** 2026-10-18 REV3 D3：イベントで連れている子が画面に出たとき1回鳴く（NPC の声が鳴っていれば終わってから＝MMAUDIO.cryAfter。待てるのは1つだけ＝二重に鳴かない）。
+   *  鳴く時刻は種類ごと：能力マス＝バーが伸びた瞬間／出来事・冒険リアクション＝会話のあと結果が出た瞬間／宝箱・宝の行き止まり＝開ききった瞬間／食事＝食べている絵が出た瞬間／
+   *  分かれ道＝道を選んだ瞬間。野生・レア＝相手の鳴き声だけ（連れている子は鳴かない＝重ねない）・ライバル・Chapter の開始・ゴール＝鳴かない */
+  function evCry(m, ms, when) { try { const A = root.MMAUDIO; if (!A || !A.cryAfter || !m || m.sp == null) return; if (A.cryWarm) A.cryWarm(m.sp, ['normal']);
+    A.cryAfter(m.sp, 'normal', { delay: ms || 0, when: () => onBoard() && active(m) && (!when || when()) }); } catch (e) { /* 鳴き声は飾り */ } }
   function intro(m) {
     const f = fieldOf(m); f.introSeen = true; doSave();   // 先に「見た」を保存（途中で再読み込みしても二度出ない）
     V.intro = true; V.el.classList.add('wb-intro'); busySet(true); paint(m);
-    V.world.intro(() => { V.intro = false; busySet(false); if (V.el) V.el.classList.remove('wb-intro'); feel('chapter.start'); if (m) monCry(m.sp, 'normal', 1300, () => onBoard() && active(m));   /* 2026-10-17 C：Chapter の開始の俯瞰のあと＝連れている子の正式ボイス（開始の SE のあと・START を押す前。再開・再読み込みでは出ない＝introSeen） */ if (onBoard() && active(m)) { paint(m); storyAt(m, 'start').then((shown) => { if (shown && onBoard()) paint(m); }); } });
+    V.world.intro(() => { V.intro = false; busySet(false); if (V.el) V.el.classList.remove('wb-intro'); feel('chapter.start');   /* 2026-10-18 REV3 D2：Chapter の開始では鳴かない（フィナの説明・開始の SE と重ねない。旧 2026-10-17 C の鳴き声は外した） */ if (onBoard() && active(m)) { paint(m); storyAt(m, 'start').then((shown) => { if (shown && onBoard()) paint(m); }); } });
   }
 
   // ---- 歩行アニメ（ch1a.js の monsterSprites＝その場歩行の絵。全コマを重ねて置き、見せるコマだけ切り替える＝src を差し替えない）。
@@ -668,7 +676,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     const res = R.apply(gS(), m, ev, id == null ? 0 : +id); doSave();
     const nm = (k) => { const d = root.MMP7 && root.MMP7.getItemDef(k); return d ? d.name : k; };
     if (res.kind === 'fatigue' && res.fatigue < 0) feel('rest.recover');
-    R.play(el, res.kind === 'none' ? (ev.sp === 3 ? 'stoneReaction' : 'happy') : 'happy');
+    R.play(el, res.kind === 'none' ? (ev.sp === 3 ? 'stoneReaction' : 'happy') : 'happy'); evCry(m, 150);   // 2026-10-18 REV3 D3：会話のあと結果が出る瞬間に1回
     const eff = res.kind === 'stat' ? `${labOf(res.key)} +${res.amount}` : res.kind === 'fatigue' ? `空腹 ${res.fatigue < 0 ? '−' : '+'}${Math.abs(res.fatigue)}` : res.kind === 'item' ? `${nm(res.item)} を見つけた！${res.to === 'vault' ? '（バッグがいっぱいなので保管庫へ）' : ''}` : '';
     paint(m); lock();
     if (card && card.isConnected) {
@@ -745,7 +753,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     const S = gS(), m = S && S.m; if (!active(m) || busyGet()) return;
     const before = m.raise.node, r = P8().chooseBranch(S, m, id); doSave(); if (!r.ok) return board();
     if (m.raise.node !== before) { V.path.push(m.raise.node); sprWalk(before, m.raise.node); }
-    feel('branch.select', { id });
+    feel('branch.select', { id }); evCry(m, 250);
     paint(m, '', m.raise.node, false, { pick: true }); lock(); walk();
   }
   async function rest() {
@@ -824,7 +832,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     const bar = d.querySelector('.sbar'), num = d.querySelector('.sbar .v');
     if (!calm() && A && mon && mon.animate) { try { mon.animate(A.mon, { duration: A.ms, easing: 'ease-in-out' }); if (tool && tool.animate) tool.animate(A.tk, { duration: A.ms, easing: 'ease-in-out', fill: 'forwards' }); } catch (e) { /* 動きは飾り */ } }
     await wait(calm() ? 0 : Math.min(700, A ? A.ms * 0.55 : 500));
-    void bar.offsetWidth; bar.classList.add('on'); feel('stat.up', { key, amount });
+    void bar.offsetWidth; bar.classList.add('on'); feel('stat.up', { key, amount }); evCry(m, 120, () => d.isConnected);
     if (calm()) num.textContent = String(to);
     else {
       const t0 = performance.now();
@@ -911,7 +919,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
     const C = './assets/chests/', ch = o.chest, still = calm(), big = (fx.gold || 0) >= GOLD_BIG;
     const chestHtml = ch ? `<div class="wbtr-chest">${[`${ch}_base`, `${ch}_anim_01`, `${ch}_anim_02`, `${ch}_anim_03`, `${ch}_anim_04`].map((f, i) => `<img class="f${i}${still && i === 4 ? ' on' : (!still && i === 0 ? ' on' : '')}" src="${C}${f}.webp" alt="" draggable="false" decoding="async">`).join('')}</div>` : '<div class="wbtr-chest none"><i class="wbtr-star"></i></div>';
     ui.insertAdjacentHTML('beforeend', `<div class="wbtr${still ? ' calm' : ''}" role="status" aria-label="${esc(o.cap)}"><i class="wbtr-veil"></i>${big ? `<img class="wbtr-gold" src="${esc(FXF.gold)}" alt="" draggable="false">` : ''}<i class="wbtr-burst"></i>
-      ${chestHtml}
+      ${chestHtml}${o.mon ? `<img class="wbtr-mon" src="${esc(o.mon)}" alt="" draggable="false" decoding="async">` : ''}
       <div class="wbtr-card"><small>${esc(o.cap)}</small>${o.title ? `<b class="t">${esc(o.title)}</b>` : ''}${rowsHtml(fx)}</div></div>`);
     const el = ui.querySelector('.wbtr:last-child');
     return new Promise((done) => {
@@ -919,7 +927,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
       const close = () => { if (closed) return; closed = true; T.forEach(clearTimeout); el.classList.add('out'); setTimeout(() => { el.remove(); done(); }, still ? 0 : 240); };
       const frame = (i) => { const im = el.querySelectorAll('.wbtr-chest img'); im.forEach((x, k) => x.classList.toggle('on', k === i)); };
       if (!still && ch) [1, 2, 3, 4].forEach((i) => T.push(setTimeout(() => frame(i), 360 + i * 110)));
-      T.push(setTimeout(() => { el.classList.add('open'); if (big) feel('gold.get', { amount: fx.gold }); }, still ? 0 : 820));   // 開ききった瞬間に光（2026-10-15 N06：フィナの「見て見て！」と声の合図 fina.discover は出さない）
+      T.push(setTimeout(() => { el.classList.add('open'); if (big) feel('gold.get', { amount: fx.gold }); if (o.m) evCry(o.m, 80, () => el.isConnected); }, still ? 0 : 820));   // 開ききった瞬間に光（2026-10-15 N06：フィナの「見て見て！」と声の合図 fina.discover は出さない）
       T.push(setTimeout(() => el.classList.add('res'), still ? 0 : 1050));
       T.push(setTimeout(close, still ? Math.min(o.ms, 1400) : o.ms));
       el.addEventListener('click', () => { if (Date.now() - t0 > 900) close(); });
@@ -1062,17 +1070,18 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
         await wait(calm() ? 0 : 160); await statCard(m, fx.key, fx.amount); tail = `${labOf(fx.key)} +${fx.amount}`;   // 2026-10-12 試遊：挿絵カード＋能力のバー（旧 trainAct＋小さな窓）
       } else if (fx.kind === 'treasure') {
         feel(['normal', 'rare', 'special'].includes(fx.tier) ? `chest.open.${fx.tier}` : 'chest.open', { tier: fx.tier });
-        await treasureCut(fx, { cap: `${fx.tier === 'rare' ? '珍しい宝箱' : '宝箱'}を見つけた！`, chest: fx.tier === 'rare' ? null : CHEST.normal, face: fx.tier === 'rare' ? 'surprised' : 'happy', ms: 2300 });   // 2026-10-14 実機試遊④：宝箱の開封のアニメ＋フィナの大きな顔＋「見て見て！」（声と同時）→ 中身
+        await treasureCut(fx, { cap: `${fx.tier === 'rare' ? '珍しい宝箱' : '宝箱'}を見つけた！`, chest: fx.tier === 'rare' ? null : CHEST.normal, face: fx.tier === 'rare' ? 'surprised' : 'happy', ms: 2300, m, mon: monSrc(m) });   // 2026-10-14 実機試遊④：宝箱の開封のアニメ＋フィナの大きな顔＋「見て見て！」（声と同時）→ 中身
         tail = plainOf(fx);
       } else if (fx.kind === 'reward') {
         feel('chest.open.special', { tier: 'special' });
-        await treasureCut(fx, { cap: fx.den ? '隠れ家の宝を見つけた！' : '宝の行き止まりにたどり着いた！', title: fx.title || '', chest: CHEST.special, face: 'happy', ms: 2700 });
+        await treasureCut(fx, { cap: fx.den ? '隠れ家の宝を見つけた！' : '宝の行き止まりにたどり着いた！', title: fx.title || '', chest: CHEST.special, face: 'happy', ms: 2700, m, mon: monSrc(m) });
         tail = `${fx.title || ''}　${plainOf(fx)}`.trim();
       } else if (fx.kind === 'meal') {
         // 2026-10-12 正式：食事・焚き火のマス＝フィナが野外の岩に座る景色（assets/chapter/meal_1012）に、連れている子の正式画像。プレイヤーは台詞で参加を示す（顔の素材は無い＝描かない）
         feel('rest.recover');
         const nm = root.S && root.S.playerName ? root.S.playerName : '';
         await talkLines([{ expression: 'smile', text: 'ちょうどいい場所だね。ここでひと休みして、みんなでごはんにしよう！' }, { expression: 'happy', text: `${nm ? nm + 'さん' : 'みんな'}も、${m.name || 'この子'}も、たくさん食べてね。` }]);
+        evCry(m, 450);
         await popup(`<div class="wbmeal"><img class="bg" src="./assets/chapter/meal_1012/meal_fina.webp" alt="" decoding="async"><img class="mon" src="${esc(monSrc(m))}" alt="" decoding="async"></div><b>${esc(fx.title || '')}</b>${rowsHtml(fx)}`, 2400);
         tail = plainOf(fx) || fx.title || '';
       } else if (fx.kind === 'event') {
@@ -1083,7 +1092,7 @@ html:has(#wb-ui .wbcard) .mmtalk .mmtalk-stage{margin-bottom:calc(env(safe-area-
         await talkLines(fx.choice ? [] : fx.lines);
         await goldBurst(fx.gold);
         const body = `${fx.text ? `<p>${esc(fx.text)}</p>` : ''}${rowsHtml(fx)}`;
-        cardRes(card, body); await cardHold(card, 300, body ? 1900 : 900); await cardClose(card); card = null;
+        cardRes(card, body); { const c0 = card; evCry(m, 150, () => c0.isConnected); } await cardHold(card, 300, body ? 1900 : 900); await cardClose(card); card = null;
         tail = plainOf(fx) || fx.title || '';
       } else if (fx.kind === 'battle') { V.autoBt = battleGo = true; await encounter(m, fx.battleType); }   // 2026-10-14 実機試遊⑩：野生・レア・ライバルとも演出のあと案内のシートを出さずにそのままバトルへ（旧 2026-10-13 開発27（21）はライバルだけ）
       else if (fx.note === 'claimed') tail = `${fx.title || '宝'}はもう手に入れている。`;

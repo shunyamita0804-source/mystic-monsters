@@ -58,7 +58,7 @@ for (const [si, size] of [...SIZES, [430, 932]].entries()) {   // 2026-10-12：3
     const ans = si ? 'no' : 'yes';
     await choose(pg, ans);
     const after = await readTalk(pg);
-    assert.match(after.map((x) => x.full).join('|'), ans === 'yes' ? /話は聞いてるよ.*管理局まで案内する/ : /えっ、違うの.*管理局で確認してみよっか/, `「${ans}」の続き（どちらも管理局へ）`);
+    assert.match(after.map((x) => x.full).join('|'), ans === 'yes' ? /話は聞いてるよ.*はじめまして。私はフィナ。.*わからないことがあったら何でも聞いてね。.*これからよろしく。.*管理局まで案内する/ : /えっ、違うの.*はじめまして。私はフィナ。.*これからよろしく。.*管理局で確認してみよっか/, `「${ans}」の続き（2026-10-18 REV3 D5：どちらも fina_009 の自己紹介 → 管理局へ）`);
     await pg.waitForSelector('.tlow.on');
     assert.match(await pg.textContent('.tlow'), /聖獣士管理局は、あの光っている建物/);
     const ps = await pins(pg);
@@ -140,7 +140,7 @@ for (const [si, size] of [...SIZES, [430, 932]].entries()) {   // 2026-10-12：3
     const ry = await readTalk(pg);
     assert.ok(ry.some((x) => x.npc === 'ryu' && x.name === 'リュウ') && ry.some((x) => x.npc === 'fina'), 'リュウとフィナの会話');
     assert.deepEqual(ry[ry.length - 1].choices, ['a', 'b', 'c'], '返答の3択');
-    assert.match(ry.map((x) => x.full).join('|'), /あれ？ フィナじゃないか.*君が今日登録した新人.*初対面からそんな言い方しないの.*同じ町の出身.*俺はリュウ。ま、名前くらい/);
+    assert.match(ry.map((x) => x.full).join('|'), /あれ？ フィナじゃないか.*君が今日登録した新人.*初対面からそんな言い方しないの.*同じ町の出身.*俺はリュウ。名前くらい覚えておいてな/);   // 2026-10-18 REV3 D4：ryu_002 の書き起こし
     await choose(pg, si ? 'c' : 'a');
     const ry2 = await readTalk(pg);
     const rj = ry2.map((x) => x.full).join('|');
@@ -271,7 +271,7 @@ T('MO-B1：短いイベント＝最初の相棒を迎えた直後にフィナの
   await H.finishTalk(pg);   // カレン（購入成功）
   await pg.waitForSelector('.map.town');
   await pg.waitForFunction(() => { const s = window.MMNPC && MMNPC.state(); return !!s && /最初の相棒/.test(s.full); }, null, { timeout: 5000 });
-  assert.match(await pg.evaluate(() => MMNPC.state().full), /いちばんが、最初の相棒だね/);
+  assert.match(await pg.evaluate(() => MMNPC.state().full), /この子が最初の相棒だね/);   // 2026-10-18 REV3 D5：fina_020 の書き起こし
   await H.finishTalk(pg);
   assert.equal((await H.storedSave(pg)).npcFlags.moment.partner, 1);
   await pg.evaluate(() => adopt(1, 'にばん')); await H.finishTalk(pg); await pg.waitForSelector('.map.town'); await pg.waitForTimeout(900);

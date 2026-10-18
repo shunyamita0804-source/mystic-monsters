@@ -38,7 +38,7 @@ test('QB-02：QA の入口は QA の URL のときだけ・保存しない', () 
 // ---- C（ソラモ 5方向×4コマ・?qaWalk=soramo5）----
 test('QW-01：8つの向きの選び方（画面の上＝奥＝背面・時計回り・左は反転・境目の近くは直前を保つ）', async () => {
   await import('../js/qa/walk5-1016.js');
-  const Q = globalThis.MMQAW; assert.equal(Q.active, false, 'URL が無ければ無効');
+  const Q = globalThis.MMQAW; assert.equal(Q.active, true, '2026-10-18 REV3 F0-1：URL が無くても有効（新歩行が正式）'); assert.equal(Q.new7, true); assert.equal(Q.legacy, false);
   const at = (deg, prev) => { const r = deg * Math.PI / 180; return Q.pick8(Math.sin(r), -Math.cos(r), prev); };
   assert.deepEqual([0, 45, 90, 135, 180, -135, -90, -45].map((d) => { const x = at(d); return [x.sector, x.set, x.flip]; }),
     [[0, 'back', false], [1, 'backd', false], [2, 'side', false], [3, 'frontd', false], [4, 'front', false], [-3, 'frontd', true], [-2, 'side', true], [-1, 'backd', true]]);
@@ -60,11 +60,11 @@ test('QW-03：素材＝v5 シート（sha256 一致）から同じ窓で切り�
   assert.equal(J.frames.length, 20); assert.deepEqual(J.box, [84, 92, 428, 436]);
   for (const f of J.frames) { const b = readFileSync(path.join(ROOT, 'assets/qa/soramo_5dir_1016', f.file)); assert.equal(b.toString('ascii', 12, 16), 'VP8X'); assert.deepEqual([1 + b.readUIntLE(24, 3), 1 + b.readUIntLE(27, 3)], [344, 344], f.file); }
 });
-test('QW-04：盤につなぐのは ?qaWalk=soramo5 のソラモだけ（ほかの種族・通常の URL は従来）', () => {
+test('QW-04：盤の歩行＝2026-10-18 REV3 から新歩行（7体）が通常の既定・?qaWalk=old で従来・?qaWalk=soramo5 はソラモの試作', () => {
   const wb = rd('js/chapter/world-board.js');
   assert.match(wb, /SPR\.qa = !!\(root\.MMQAW && root\.MMQAW\.active && \(root\.MMQAW\.has \? root\.MMQAW\.has\(key\) : key === root\.MMQAW\.species\)\);/);   // 2026-10-17：新歩行7体（?qaWalk=1017）も同じ仕組み
   assert.match(wb, /if \(SPR\.qa\) return qaWalk\(/);
-  assert.match(rd('js/qa/walk5-1016.js'), /const ACTIVE = q === 'soramo5' \|\| q === '5dir' \|\| NEW7;/);   // 2026-10-17：?qaWalk=1017＝7体の新歩行
+  assert.match(rd('js/qa/walk5-1016.js'), /const LEGACY = q === 'old' \|\| q === 'legacy';\n  const NEW7 = !LEGACY && q !== 'soramo5' && q !== '5dir';\n  const ACTIVE = !LEGACY;/);   // 2026-10-18 REV3：新歩行が正式
   assert.match(rd('js/qa/qa-board-1016.js'), /so = !!\(root\.MMQAW && root\.MMQAW\.active && !root\.MMQAW\.new7\)/);
   assert.match(rd('js/qa/qa-board-1016.js'), /S\.m && !\(so && S\.m\.sp !== 0\) \? JSON\.parse\(JSON\.stringify\(S\.m\)\) : Object\.assign\(mk\(0\)/, '?qaWalk=soramo5 のときは連れている子がソラモ以外でもソラモで試遊（ページの中だけ）');
   assert.match(rd('index.html'), /<script src="\.\/js\/qa\/walk5-1016\.js"><\/script>/);

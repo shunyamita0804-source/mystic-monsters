@@ -55,12 +55,12 @@ test('BF-B1：?mmQaTrial=1 → 開始画面の『QA を開く』→ バトル技
   assert.equal(r2.kind, 'anim'); assert.ok(r2.ms > r1.ms * 1.5, `0.5倍は長い（${r1.ms} → ${r2.ms}ms）`);
   const r3 = await pg.evaluate(async () => { MMQAS.change('result', 'miss'); MMQAS.change('speed', '1'); return await MMQAS.play(); });
   assert.equal(r3.kind, 'miss');
-  // フルーネの全10技（09＝実戦の描画・ほか＝技アニメのプレビュー）
+  // フルーネの全10技（2026-10-18 REV3：正式の10技＝SK 50〜59＝すべて実戦の描画）
   await pg.evaluate(() => { MMQAS.change('result', 'hit'); MMQAS.change('side', '0'); MMQAS.change('size', 'old'); MMQAS.change('mon', '5'); MMQAS.act('auto'); });
   await pg.waitForFunction(() => !MMQAS.state().auto, null, { timeout: 120000 });
   const log = await pg.evaluate(() => MMQAS.log().slice(-10).map((r) => [r.no, r.kind, r.err || null]));
   assert.deepEqual(log.map((x) => x[0]), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-  assert.deepEqual(log.map((x) => x[1]), ['preview', 'preview', 'preview', 'preview', 'preview', 'preview', 'preview', 'preview', 'anim', 'preview']);
+  assert.deepEqual(log.map((x) => x[1]), Array(10).fill('anim'));
   assert.ok(log.every((x) => !x[2]));
   // 一時停止・コマ送り
   const ps = await pg.evaluate(async () => { MMQAS.change('no', '10'); const pr = MMQAS.play(); await new Promise((r) => setTimeout(r, 800)); MMQAS.act('pause'); const a = MMQAS.state().paused; MMQAS.act('step'); const b = MMQAS.state().paused; MMQAS.act('pause'); await pr; return [a, b]; });

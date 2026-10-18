@@ -1,0 +1,71 @@
+種族	No	技名	SK	分類	コマのデータ	本体の枚数	効果の枚数	最初のコマ	sha256（先頭12）	表示の修正（MMTUNE）	備考
+solamo	1	たいあたり	0	正式実装（通常のバトル）	MMSOMV_DATA	4	0	assets/battle/soramo_moves_1012/00_01.webp	7da5dee7364a		
+solamo	2	ひっかき	1	正式実装（通常のバトル）	MMSOMV_DATA	4	0	assets/battle/soramo_moves_1012/01_01.webp	2fb7fb55bf7c		
+solamo	3	しっぽアタック	2	正式実装（通常のバトル）	MMSOMV_DATA	4	0	assets/battle/soramo_moves_1012/02_01.webp	da69c0f5cad1		
+solamo	4	スタークラッシュ	4	正式実装（通常のバトル）	MMSOMV_DATA	6	0	assets/battle/soramo_moves_1012/04_01.webp	3c7e79537967		
+solamo	5	ほしのまもり	7	正式実装（通常のバトル）	MMSOMV_DATA	4	0	assets/battle/soramo_moves_1012/07_01.webp	caa52454857c		
+solamo	6	吠える	3	正式実装（通常のバトル）	MMSOMV_DATA	4	0	assets/battle/soramo_moves_1012/03_01.webp	d187a2b5bba8		
+solamo	7	ソラモビーム	5	正式実装（通常のバトル）	MMSOMV_DATA	3	1	assets/battle/soramo_moves_1012/05_01.webp	80b59ddb8002	01	
+solamo	8	すなかけ	6	正式実装（通常のバトル）	MMSOMV_DATA	4	0	assets/battle/soramo_moves_1012/06_01.webp	6c19912f798f		
+solamo	9	スターダストレイ	8	正式実装（通常のバトル）	MMSOMV_DATA	6	0	assets/battle/soramo_moves_1012/08_01.webp	ab7918036b15	02	
+solamo	10	スターフォール	9	正式実装（通常のバトル）	MMSOMV_DATA	3	3	assets/battle/soramo_moves_1012/09_01.webp	bf03934c1097		
+gauru	1	つつく	11	正式実装（通常のバトル）	MMGAMV_DATA	4	4	assets/battle/gauru_moves_1012/11_01.webp	c0e25cb8bedb		
+gauru	2	ウィンド	12	正式実装（通常のバトル）	MMGAMV_DATA	4	4	assets/battle/gauru_moves_1012/12_01.webp	13cf8b23d1a7		
+gauru	3	スパイラルダイブ	10	正式実装（通常のバトル）	MMGAMV_DATA	4	4	assets/battle/gauru_moves_1012/10_01.webp	3b4771ab088b		
+gauru	4	ソニックムーブ	13	正式実装（通常のバトル）	MMGAMV_DATA	4	5	assets/battle/gauru_moves_1012/13_01.webp	bbe6fe4bb576	A2	2026-10-18 REV3 A2：終わりの光（sp_buff）を出さない
+gauru	5	紅翼スラッシュ	14	正式実装（通常のバトル）	MMGAMV_DATA	4	4	assets/battle/gauru_moves_1012/14_01.webp	486fa313f957		
+gauru	6	ファイアボール	15	正式実装（通常のバトル）	MMGAMV_DATA	4	4	assets/battle/gauru_moves_1012/15_01.webp	9591297705be	04	
+gauru	7	スカイラッシュ	17	正式実装（通常のバトル）	MMGAMV_DATA	6	6	assets/battle/gauru_moves_1012/17_01.webp	e8f718c90c70		
+gauru	8	フレアレイ	16	正式実装（通常のバトル）	MMGAMV_DATA	4	4	assets/battle/gauru_moves_1012/16_01.webp	bf443bd9000b	05	2026-10-18 REV3 A1：赤い炎の光線（16_beam_a／b）
+gauru	9	フェザーストーム	18	正式実装（通常のバトル）	MMGAMV_DATA	6	6	assets/battle/gauru_moves_1012/18_01.webp	1b17b56f21cb	06	
+gauru	10	聖なる炎	19	正式実装（通常のバトル）	MMGAMV_DATA	6	9	assets/battle/gauru_moves_1012/19_01.webp	ca44725f613c	07	
+nobiton	1	はなビンタ	30	QA実戦（市場は入荷待ち＝通常プレイに出ない）	MMNOMV_DATA	4	0	assets/battle/nobiton_moves_1012/30_01.webp	38b7c66d48dc		
+nobiton	2	ずつき	31	QA実戦（市場は入荷待ち＝通常プレイに出ない）	MMNOMV_DATA	4	1	assets/battle/nobiton_moves_1012/31_01.webp	99467787a591	10	
+nobiton	3	はなみず	32	QA実戦（市場は入荷待ち＝通常プレイに出ない）	MMNOMV_DATA	4	2	assets/battle/nobiton_moves_1012/32_01.webp	2e1d4be9c3d2		
+nobiton	4	ひとやすみ	33	QA実戦（市場は入荷待ち＝通常プレイに出ない）	MMNOMV_DATA	4	0	assets/battle/nobiton_moves_1012/33_01.webp	63f7d927243f		
+nobiton	5	まきつく	34	QA実戦（市場は入荷待ち＝通常プレイに出ない）	MMNOMV_DATA	5	1	assets/battle/nobiton_moves_1012/34_01.webp	b4da82ee8c73		
+nobiton	6	ノーズウェーブ	35	QA実戦（市場は入荷待ち＝通常プレイに出ない）	MMNOMV_DATA	5	1	assets/battle/nobiton_moves_1012/35_01.webp	ec05663bc11e		
+nobiton	7	しびれ突き	36	QA実戦（市場は入荷待ち＝通常プレイに出ない）	MMNOMV_DATA	4	1	assets/battle/nobiton_moves_1012/36_01.webp	a71a02500d7a		
+nobiton	8	ミラージュノーズ	37	QA実戦（市場は入荷待ち＝通常プレイに出ない）	MMNOMV_DATA	5	1	assets/battle/nobiton_moves_1012/37_01.webp	b5ed34e4a681		
+nobiton	9	ダウナーミスト	38	QA実戦（市場は入荷待ち＝通常プレイに出ない）	MMNOMV_DATA	4	3	assets/battle/nobiton_moves_1012/38_01.webp	30d3b0ff6887		
+nobiton	10	ギガントノーズ	39	QA実戦（市場は入荷待ち＝通常プレイに出ない）	MMNOMV_DATA	6	4	assets/battle/nobiton_moves_1012/39_01.webp	5eced57e7e61		
+jiol	1	パンチ	40	QA実戦（未解禁）	MMJIMV_DATA	4	4	assets/battle/jiol_moves_1012/j01_01.webp	b2cfada402cf		
+jiol	2	キック	41	QA実戦（未解禁）	MMJIMV_DATA	4	4	assets/battle/jiol_moves_1012/j02_01.webp	c9e98525fb7d		
+jiol	3	力をためる	42	QA実戦（未解禁）	MMJIMV_DATA	4	4	assets/battle/jiol_moves_1012/j03_01.webp	e025475a8d53		
+jiol	4	のしかかり	43	QA実戦（未解禁）	MMJIMV_DATA	4	4	assets/battle/jiol_moves_1012/j04_01.webp	28267d6e3746	13	
+jiol	5	グランドハンマー	44	QA実戦（未解禁）	MMJIMV_DATA	4	4	assets/battle/jiol_moves_1012/j05_01.webp	0b6cc7d58b88	14	
+jiol	6	クリスタルレイ	45	QA実戦（未解禁）	MMJIMV_DATA	4	4	assets/battle/jiol_moves_1012/j06_01.webp	9bcfdf4bb639	15	
+jiol	7	グランドスパイク	46	QA実戦（未解禁）	MMJIMV_DATA	4	4	assets/battle/jiol_moves_1012/j07_01.webp	fab312b53be4		
+jiol	8	ロックアッパー	47	QA実戦（未解禁）	MMJIMV_DATA	4	4	assets/battle/jiol_moves_1012/j08_01.webp	c4958a5e05ae	A3	2026-10-18 REV3 A3：小さい姿（j08_03）を使わない
+jiol	9	ジオインパクト	48	QA実戦（未解禁）	MMJIMV_DATA	12	12	assets/battle/jiol_moves_1012/j09_01.webp	25556eee920b	A4	2026-10-18 REV3 A4：衝撃波は前の拳から
+jiol	10	クリスタルノヴァ	49	QA実戦（未解禁）	MMJIMV_DATA	4	4	assets/battle/jiol_moves_1012/j10_01.webp	d3f11efee540		
+regnas	1	きりさく	20	正式実装（ライバル戦の初期4技）	MMREMV_DATA	4	0	assets/battle/regnas_moves_1012/20_01.webp	4e4f22fcda97		
+regnas	2	しっぽアタック	21	正式実装（ライバル戦の初期4技）	MMREMV_DATA	4	0	assets/battle/regnas_moves_1012/21_01.webp	74d5b80de95d		
+regnas	3	竜眼ロック	22	正式実装（ライバル戦の初期4技）	MMREMV_DATA	4	0	assets/battle/regnas_moves_1012/22_01.webp	d63282ddf81d		
+regnas	4	残影ステップ	23	正式実装（ライバル戦の初期4技）	MMREMV_DATA	4	0	assets/battle/regnas_moves_1012/23_01.webp	3cc723095ab3		
+regnas	5	ドラゴンクラッシュ	24	QA実戦（ライバル専用＝レグナスの残り6技は通常プレイで使われない）	MMREMV_DATA	4	0	assets/battle/regnas_moves_1012/24_01.webp	7c7cfef9b322		
+regnas	6	蒼光ブレス	25	QA実戦（ライバル専用＝レグナスの残り6技は通常プレイで使われない）	MMREMV_DATA	4	0	assets/battle/regnas_moves_1012/25_01.webp	a7aa7f3aa0ff		
+regnas	7	スナイプファング	26	QA実戦（ライバル専用＝レグナスの残り6技は通常プレイで使われない）	MMREMV_DATA	4	0	assets/battle/regnas_moves_1012/26_01.webp	fdaf93e666c1		
+regnas	8	幻影クロー	27	QA実戦（ライバル専用＝レグナスの残り6技は通常プレイで使われない）	MMREMV_DATA	4	0	assets/battle/regnas_moves_1012/27_01.webp	a9e74df522ee		
+regnas	9	蒼刃乱舞	28	QA実戦（ライバル専用＝レグナスの残り6技は通常プレイで使われない）	MMREMV_DATA	8	0	assets/battle/regnas_moves_1012/28_01.webp	6b6c50a85c29	18	
+regnas	10	テイルサイクロン	29	QA実戦（ライバル専用＝レグナスの残り6技は通常プレイで使われない）	MMREMV_DATA	8	0	assets/battle/regnas_moves_1012/29_01.webp	3dba0bcfb7fc		
+flurene	1	つるうち	50	QA実戦（未解禁）	MMFLMV_DATA	4	4	assets/battle/flurene_moves_1015/f01_b01.webp	a561bf1ebb24		
+flurene	2	たねとばし	51	QA実戦（未解禁）	MMFLMV_DATA	4	4	assets/battle/flurene_moves_1015/f02_b01.webp	354ca3ca72ce		
+flurene	3	はなのかおり	52	QA実戦（未解禁）	MMFLMV_DATA	4	4	assets/battle/flurene_moves_1015/f03_b01.webp	ae31f346095b	19	
+flurene	4	ねっこのまもり	53	QA実戦（未解禁）	MMFLMV_DATA	4	4	assets/battle/flurene_moves_1015/f04_b01.webp	5c2180c282dc		
+flurene	5	こんさいプレス	54	QA実戦（未解禁）	MMFLMV_DATA	5	5	assets/battle/flurene_moves_1015/f05_b01.webp	02ffc4f456e3		
+flurene	6	ブルームレイ	55	QA実戦（未解禁）	MMFLMV_DATA	4	4	assets/battle/flurene_moves_1015/f06_b01.webp	cf6810676023		
+flurene	7	しばりづる	56	QA実戦（未解禁）	MMFLMV_DATA	4	4	assets/battle/flurene_moves_1015/f07_b01.webp	230312d18757		
+flurene	8	はなかげのまい	57	QA実戦（未解禁）	MMFLMV_DATA	4	4	assets/battle/flurene_moves_1015/f08_b01.webp	c893565ac870		
+flurene	9	ルートドレイン	58	QA実戦（未解禁）	MMFLMV_DATA	4	2	assets/battle/flurene_moves_1015/f09_b01.webp	19d59af5949e	20	ルートドレイン＝補修版10コマ（js/battle/rootdrain-1016.js・MMRD）
+flurene	10	ルートテンペスト	59	QA実戦（未解禁）	MMFLMV_DATA	5	0	assets/battle/flurene_moves_1015/f10_b01.webp	44b6ca6fd358	21	専用の根4＋命中3（MMTUNE の steps）
+razuck	1	かみつき	60	QA実戦（未解禁・美術は一部未承認）	MMRZMV_DATA	4	0	assets/battle/razuck_moves_1017/z01_01.webp	ae2b809f5c81		
+razuck	2	ひっかき	61	QA実戦（未解禁・美術は一部未承認）	MMRZMV_DATA	5	2	assets/battle/razuck_moves_1017/z02_01.webp	b4d90e5dd71e		
+razuck	3	すばやい一撃	62	QA実戦（未解禁・美術は一部未承認）	MMRZMV_DATA	4	2	assets/battle/razuck_moves_1017/z03_01.webp	d47d51ec87d3		
+razuck	4	ちょこまか	63	QA実戦（未解禁・美術は一部未承認）	MMRZMV_DATA	4	3	assets/battle/razuck_moves_1017/z04_01.webp	e9185dcf4ed2		
+razuck	5	ガジガジラッシュ	64	QA実戦（未解禁・美術は一部未承認）	MMRZMV_DATA	6	3	assets/battle/razuck_moves_1017/z05_01.webp	205f96c1d1cf		
+razuck	6	トリックショット	65	QA実戦（未解禁・美術は一部未承認）	MMRZMV_DATA	4	4	assets/battle/razuck_moves_1017/z06_01.webp	4343755e6957		
+razuck	7	かく乱ステップ	66	QA実戦（未解禁・美術は一部未承認）	MMRZMV_DATA	4	3	assets/battle/razuck_moves_1017/z07_01.webp	c1fc07fcea66		
+razuck	8	シャドーバイト	67	QA実戦（未解禁・美術は一部未承認）	MMRZMV_DATA	5	3	assets/battle/razuck_moves_1017/z08_01.webp	acb69b5856bc		
+razuck	9	ミラージュダッシュ	68	QA実戦（未解禁・美術は一部未承認）	MMRZMV_DATA	6	4	assets/battle/razuck_moves_1017/z09_01.webp	8ecc67bcf7b6		
+razuck	10	ラズックラッシュ	69	QA実戦（未解禁・美術は一部未承認）	MMRZMV_DATA	10	9	assets/battle/razuck_moves_1017/z10_01.webp	45e32ebd06e3		

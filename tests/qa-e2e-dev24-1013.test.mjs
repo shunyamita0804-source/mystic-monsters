@@ -89,7 +89,7 @@ for (const size of SIZES) {
         st: bt.querySelectorAll('.mmr .pl .st').length, plates: [...bt.querySelectorAll('.mmr .pl img.bgp')].map((i) => i.getAttribute('src')),
         nmVis: [...bt.querySelectorAll('.mmr .pl:not(.ms) .nm')].map((n) => +getComputedStyle(n).opacity), goHit: hitEl === go || go.contains(hitEl),
         k: [getComputedStyle(bt.querySelector('#m0 .mon')).getPropertyValue('--mma-k'), getComputedStyle(bt.querySelector('#m1 .mon')).getPropertyValue('--mma-k')].map(Number),
-        sw: document.documentElement.scrollWidth, iw: innerWidth, ih: innerHeight };
+        kw: [0.91 * MMTUNE.sizeK(0), 0.92 * MMTUNE.sizeK(1)], sw: document.documentElement.scrollWidth, iw: innerWidth, ih: innerHeight };
     });
     assert.ok(r.v24, '新しい画面が既定');
     const oldH = r.pw * (360 / 229) * 1.16 + 28; const cut = 1 - r.mmr.h / oldH;
@@ -98,10 +98,10 @@ for (const size of SIZES) {
     assert.ok(r.nmVis.length >= 4 && r.nmVis.filter((o) => o > 0.5).length >= 1, '2026-10-15 追加A：技カードは帯に技名（中央だけでなく画面の中のカードも）');   // 旧：技名は中央の板だけ
     const sw = Math.round(Math.min(r.W * 0.62, 270)); assert.ok(Math.abs(r.go.w - sw) <= 1 && r.go.h >= sw * 268 / 720 - 2, `STOP の押せる所は従来の大きさ ${r.go.w}×${r.go.h}`);
     assert.ok(r.goHit, 'STOP の真ん中を押すと #go'); assert.ok(r.go.b <= r.ih && r.stop.b <= r.ih + 1, 'STOP は画面の中');
-    assert.deepEqual(r.k, [0.91, 0.92], '大きさ（ソラモ 0.91・ガウル 0.92）');
+    r.k.forEach((k, i) => assert.ok(Math.abs(k - r.kw[i]) < 1e-6, `大きさ（ソラモ 0.91・ガウル 0.92 × 2026-10-18 REV3 の正式の体格 F）${r.k} / ${r.kw}`));
     for (const k of ['i0', 'i1']) assert.ok(r[k].t >= r.hpr.b - 4 && r[k].b <= r.mmr.t + 2 && r[k].l >= -2 && r[k].r <= r.iw + 2, `${k} は HUD の下・ルーレットの上・画面の中 ${JSON.stringify(r[k])}`);
     assert.ok(Math.abs(r.i0.b - r.i1.b) < 3, '左右の足もとがそろう');
-    assert.ok(r.i0.t - r.hpr.b < r.ih * 0.28, `上に大きな空きを作らない（${Math.round(r.i0.t - r.hpr.b)}px）`);   // 2026-10-14 実機試遊⑱：足もとを円形の床の中央へ下げた（公式ランク戦の戦場 min(21.5dvh,210px)）＝背の高い画面では上の空き（会場の客席）が少し増える（430×932 で約26%）
+    { const top = Math.min(r.i0.t, r.i1.t); assert.ok(top - r.hpr.b < r.ih * 0.28, `上に大きな空きを作らない（背の高いほうのモンスターで ${Math.round(top - r.hpr.b)}px＝2026-10-18 REV3 の体格 F でソラモ（サイズ2）は小さい）`); }   // 2026-10-14 実機試遊⑱：足もとを円形の床の中央へ下げた（公式ランク戦の戦場 min(21.5dvh,210px)）＝背の高い画面では上の空き（会場の客席）が少し増える（430×932 で約26%）
     assert.ok(r.sw <= r.iw + 1, '横はみ出しなし');
     // STOP で止まったら：中央の板＝止まった行（その技名が読める）
     await pg.click('#go');

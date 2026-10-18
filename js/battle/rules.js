@@ -92,7 +92,7 @@
     const SPM = G('SPECIAL_MOVES');
     if (SPM && SPM.add) list.filter((m) => m.power >= 120).forEach((m) => SPM.add(NOBI_FIRST + m.no - 1));
     installJiol(SK, EFF, SKART, SFR, SKM, SPM);
-    installFlureneQA(SK, SKART, SFR, SKM);
+    installFlurene(SK, EFF, SKART, SFR, SKM, SPM);
     installRazuck(SK, EFF, SKART, SFR, SKM, SPM);
     // 純補助技（威力なし）＝ソラモ・ガウル・レグナスの補助技も同じ扱い（基本命中 100%）
     for (let k = 0; k < SK.length; k++) if (SK[k] && !SK[k][1] && !BEHAVIOR[k]) BEHAVIOR[k] = { support: true };
@@ -152,20 +152,30 @@
     } catch (e) { /* 無視（習得の表は QA に関係しない） */ }
     return true;
   }
-  // ---- フルーネ技09「ルートドレイン」（2026-10-16 ユーザー承認：威力110・命中90・CR10%・与えたダメージの50%を吸収）＝QA 試遊（?mmQaTrial=1）のときだけ SK 58（50＋No−1）に入れる ----
-  //  フルーネは未解禁（市場・野生・合体・大会に出ない）。ほかの9技は性能が未承認＝入れない
+  // ---- フルーネの正式技（2026-10-18 REV3 F0-4 正式採用・SK の 50〜59＝50＋No−1。数値は js/phase10/monsters.js の OFFICIAL_MOVES.flurene の1か所） ----
+  //  フルーネは未解禁（市場・野生・合体・大会に出ない）＝今は QA 試遊モードの個体だけが使う。No.7 しばりづる＝25% でまひ・No.9 ルートドレイン＝50% 吸収・No.10＝必殺技（120）
   const FLU_FIRST = 50;
-  function installFlureneQA(SK, SKART, SFR, SKM) {
-    let qa = false; try { qa = /[?&]mmQaTrial=1(&|$)/.test(root.location.search); } catch (e) { /* 下へ */ }
-    const M = root.MMP10M, f = qa && M && M.pendingSpecies ? M.pendingSpecies('flurene') : null, mv = f && f.moves.find((m) => m.no === 9);
-    if (!mv || mv.power == null || !mv.drain) return false;
-    const k = FLU_FIRST + mv.no - 1;
-    SK[k] = [mv.name, mv.power / 100, 2.5, '#9be37a', '🌿', 'a', mv.desc || '', mv.type === 'wisdom' ? 'i' : 'p', mv.accuracy, mv.critical / 100];
-    const v = 1;   // 旧技の小さな絵を借りる（技アニメのコマは js/battle/rootdrain-1016.js）
-    if (Array.isArray(SKART) && SKART[v] != null) SKART[k] = SKART[v];
-    if (SFR && SFR[v] != null) SFR[k] = SFR[v];
-    if (SKM && SKM[v] != null) SKM[k] = SKM[v];
-    BEHAVIOR[k] = { owner: 'flurene', no: mv.no, drain: mv.drain };
+  const FLU_VISUAL = { 1: 1, 2: 5, 3: 3, 4: 7, 5: 4, 6: 5, 7: 6, 8: 7, 9: 1, 10: 9 };   // 旧技の小さな絵を借りる（技アニメのコマ・技カードが無いときの控え）
+  const FLU_EMOJI = ['🌿', '🌱', '🌸', '🪴', '🌳', '🌼', '➰', '🍃', '🌿', '🌪️'];
+  function installFlurene(SK, EFF, SKART, SFR, SKM, SPM) {
+    const M = root.MMP10M, list = M && M.movesOf ? M.movesOf('flurene') : [];
+    if (!list.length || list.some((mv) => mv.slot !== FLU_FIRST + mv.no - 1)) return false;
+    list.forEach((mv, i) => {
+      const k = mv.slot, dmg = mv.power != null;
+      SK[k] = [mv.name, dmg ? mv.power / 100 : 0, mv.power >= 120 ? 1 : 2.5, mv.power >= 120 ? '#c79cff' : '#9be37a', FLU_EMOJI[i], dmg ? 'a' : 'd', mv.desc || '',
+        mv.type === 'wisdom' ? 'i' : 'p', mv.accuracy, dmg ? mv.critical / 100 : 0];
+      if (mv.effects && mv.effects.length) EFF[k] = mv.effects.map((e) => ({ tg: e.target === 'self' ? 0 : 1, st: STATKEY[e.stat], lv: (e.dir === 'down' ? -1 : 1) * LV[e.size], t: e.turns }));
+      const v = FLU_VISUAL[mv.no];
+      if (Array.isArray(SKART) && SKART[v] != null) SKART[k] = SKART[v];
+      if (SFR && SFR[v] != null) SFR[k] = SFR[v];
+      if (SKM && SKM[v] != null) SKM[k] = SKM[v];
+      BEHAVIOR[k] = { owner: 'flurene', no: mv.no, ailment: mv.ailment || null, drain: mv.drain || null, support: !dmg };
+    });
+    if (SPM && SPM.add) list.filter((m) => m.power >= 120).forEach((m) => SPM.add(m.slot));
+    try {
+      const P7 = root.MMP7, by = (l) => list.filter((m) => m.learn === l).map((m) => m.slot);
+      if (P7 && P7.registerMoveset && !P7.getMoveset(5)) P7.registerMoveset(5, { initial: by('initial'), po: by('po'), in: by('in'), hi: by('hi'), ev: by('ev'), de: by('de') });
+    } catch (e) { /* 無視（習得の表は QA に関係しない） */ }
     return true;
   }
   const kOf = (move) => { const m = /^sk(\d+)$/.exec((move && move.id) || ''); return m ? +m[1] : -1; };

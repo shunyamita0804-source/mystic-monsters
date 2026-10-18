@@ -73,7 +73,7 @@
       const moves = cards.map((c) => {
         const d = md.find((v) => v.no === c.no) || {};
         // 2026-10-16：フルーネ技09「ルートドレイン」は QA だけ SK 58（js/battle/rules.js）＝実戦で確認できる。名前は登録の新しい名前（カードの絵は旧「生命のしずく」のまま＝新しいカードは素材待ち）
-        const flu9 = x.key === 'flurene' && c.no === 9 && G('SK') && G('SK')[58] ? 58 : null, slot = c.slot != null ? c.slot : flu9;
+        const fl = x.key === 'flurene' && G('SK') && G('SK')[50 + c.no - 1] ? 50 + c.no - 1 : null, slot = c.slot != null ? c.slot : fl;
         return { no: c.no, id: c.id, name: x.key === 'flurene' ? d.name || c.name : c.name || d.name, slot, src: c.src, status: statusOf(x.key, slot), anim: animInfo(x.key, c.no), type: d.type || null,
           power: d.power == null ? null : d.power, accuracy: d.accuracy == null ? null : d.accuracy, critical: d.critical == null ? null : d.critical, desc: d.desc || null };
       });
@@ -479,6 +479,8 @@
     ENABLED, DIRECT, MONS, SAVE_KEY_RE, catalog, counts, statusOf,
     on, off, isOn: () => ST.on, active: () => ST.on, battling: () => ST.battling, snapshot: () => ST.snap,
     select: (i) => { ST.mon = Math.max(0, Math.min(MONS.length - 1, i | 0)); ST.sel = null; render(); }, battle: (i, no) => { if (!ST.on) return false; const x = catalog()[i]; const mv = x && x.moves.find((v) => v.no === no); return x && mv ? (mv.status === 'battle' ? battle(x, mv) : mv.status === 'preview' ? preview(x, mv) : false) : false; },
+    // 2026-10-18 REV3：フルーネは正式10技（実戦）になった＝技アニメのコマだけの再生（判定なし）は QA の道具として残す
+    preview: (i, no) => { if (!ST.on) return false; const x = catalog()[i]; const mv = x && x.moves.find((v) => v.no === no); return x && mv && mv.status !== 'static' ? preview(x, mv) : false; },
     endBattle, makeMon, FOE, animInfo, stage, _start: (m, prev) => start(m, prev), _lend: (sp) => lendFlurene(sp), _unlend: () => unlendFlurene(), show, walk: (i) => { if (!ST.on) return false; const x = catalog()[i]; if (!x || !walkSets(x.key)) return false; walk(x); return true; },
   });
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -42,7 +42,8 @@ test('G2-1：ファームの背景は正式背景 FARM_BG（assets/farm/farm_mai
   const f = HTML.slice(HTML.indexOf('function p9FarmScr('), HTML.indexOf('\n// ---- Phase 8：育成中の画面遷移'));
   assert.match(f, /<div class="fm fm2 bc fm-\$\{st\}\$\{st=="farm"\?" p9farm p15f":""\}" style="--bc-bg:url\(\$\{BC_BG\}\)">/, '2026-10-04 PHASE H2：ベースキャンプの画面は正式背景マスター BC_BG（ファームの各画面のぼかし背景は FARM_BG のまま）');
   assert.match(HTML, /const FARM_BG="assets\/farm\/farm_prep_main\.jpg";/); assert.ok(existsSync(path.join(ROOT, 'assets/farm/farm_prep_main.jpg')));   // 2026-10-03：冒険準備の拠点（正式参照画像）。旧背景 farm_main.jpg はファイルだけ残す assert.ok(existsSync(path.join(ROOT, 'assets/farm/README.md')));
-  assert.equal((HTML.match(/<div class="dbg" style="background-image:url\(\$\{FARM_BG\}\)"><\/div>/g) || []).length, 2, 'ステータス・技管理・特訓メニュー（dscr）と出発準備・アイテム屋（p7Shell）のぼかし背景も正式背景');
+  assert.equal((HTML.match(/<div class="dbg" style="background-image:url\(\$\{FARM_BG\}\)"><\/div>/g) || []).length, 1, '出発準備・アイテム屋（p7Shell）のぼかし背景も正式背景');
+  assert.match(HTML, /<div class="dbg" style="background-image:url\(\$\{id=="s"\?TRAIN_SCENE_BG:FARM_BG\}\)"><\/div>/, 'ステータス・技管理（dscr）は FARM_BG・特訓メニューは特訓場（2026-10-18 REV3 C1：Farm の札の絵を出さない）');
   assert.doesNotMatch(HTML, /class="dbg" style="background-image:url\(\$\{TRIMG2\}\)"/, '旧ロゴ入りの旧背景をぼかし背景に使わない');
   assert.doesNotMatch(f, /FARMIMG/, 'Chapter間ファームでは旧画像を使わない');
   assert.match(HTML, /const FARMIMG="assets\/embedded\/farmimg_ranch\.jpg";/, '旧ファーム画像のデータは残す（外部化：assets/embedded/）'); assert.ok(existsSync(path.join(ROOT, 'assets/embedded/farmimg_ranch.jpg'))); assert.match(line('function farm(msg,tab){') + HTML.slice(HTML.indexOf('function farm(msg,tab){'), HTML.indexOf('function farm(msg,tab){') + 4000), /RANCH_BG/, '街の牧場は正式背景（assets/ranch/ranch_main.jpg）'); assert.match(HTML, /const RANCH_BG="assets\/ranch\/ranch_main\.jpg";/); assert.ok(existsSync(path.join(ROOT, 'assets/ranch/ranch_main.jpg')));

@@ -38,8 +38,8 @@
   const slotOf = (sp, mv) => {
     if (sp === 'regnas') return 20 + mv.no - 1;
     if (sp === 'nobiton') return ((root.MMRULES && root.MMRULES.NOBI_FIRST) || 30) + mv.no - 1;
-    // フルーネ：SK の番号は無い（未解禁・性能未定）。2026-10-16：技09 ルートドレインだけ QA 試遊で SK 58（js/battle/rules.js の FLU_FIRST＋No−1）が入っているときはその番号
-    if (sp === 'flurene') { const G = (n) => { try { return (0, eval)(n); } catch (e) { return null; } }, SK = G('SK'), k = ((root.MMRULES && root.MMRULES.FLU_FIRST) || 50) + mv.no - 1; return mv.no === 9 && SK && SK[k] ? k : null; }
+    // フルーネ：2026-10-18 REV3 正式10技＝SK 50〜59（js/battle/rules.js の FLU_FIRST＋No−1）。未解禁＝QA 試遊の個体だけが使う
+    if (sp === 'flurene') { const G = (n) => { try { return (0, eval)(n); } catch (e) { return null; } }, SK = G('SK'), k = ((root.MMRULES && root.MMRULES.FLU_FIRST) || 50) + mv.no - 1; return SK && SK[k] ? k : null; }
     return mv.slot == null ? null : mv.slot;
   };
   const idOf = (sp, mv) => mv.id || ((CARDS[sp] || []).find((x) => x[0] === mv.no) || [])[1] || null;

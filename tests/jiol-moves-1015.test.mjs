@@ -119,7 +119,7 @@ test('JM-03：実際の計算＝No.6／10 はかしこさ・ほかはちから�
 
 test('JM-04：技アニメ（SK 40〜49 → 96枚のデータ）・QA は実戦（静止画・プレビューではない）・本番は解禁しない', () => {
   const a = rd('js/battle/art25d.js');
-  assert.match(a, /k >= 40 && k <= 49 \? 3 : k >= 60 && k <= 69 \? 6 : -1/); assert.match(a, /const SRC_OF = \{ 0: OFF, 1: GOFF, 2: NOFF, 3: JSK, 4: ROFF, 6: ZSK \};/);
+  assert.match(a, /k >= 40 && k <= 49 \? 3 : k >= 60 && k <= 69 \? 6 : k >= 50 && k <= 59 \? 5 : -1/); assert.match(a, /const SRC_OF = \{ 0: OFF, 1: GOFF, 2: NOFF, 3: JSK, 4: ROFF, 5: FSK, 6: ZSK \};/);   // 2026-10-18 REV3：5＝フルーネ
   assert.match(a, /JK\.map\[39 \+ \+no\] = D\[no\]/, 'データは No. → SK 40＋No−1');
   assert.match(a, /OFF_DUR = \{ 48: 2700/, 'ジオインパクト（12コマ）は長め');
   const D = (() => { const c = {}; c.window = c; vm.createContext(c); vm.runInContext(rd('js/battle/jiol-moves-data.js'), c); return c.MMJIMV_DATA; })();

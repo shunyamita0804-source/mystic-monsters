@@ -19,7 +19,7 @@ let L = null;
 test.before(async () => { if (!SKIP) L = await H.launch(); });
 test.after(async () => { if (L) await L.close(); });
 const OPEN = [];
-const openPage = async (o = {}) => { const p = await L.open(o); OPEN.push(p); return p; };
+const openPage = async (o = {}) => { const p = await L.open({ query: '?qaWalk=old&qaCam=old', ...o }); OPEN.push(p); return p; };   // 2026-10-18 REV3：新歩行・C案カメラが既定＝このファイルは従来の 8コマの歩行と従来のカメラ（比較の経路）を確かめる。新歩行は qa-e2e-rev3-1018・qa-e2e-walk5-1016
 test.afterEach(async () => { for (const p of OPEN.splice(0)) await p.ctx.close().catch(() => {}); });
 const SHOT = path.join(os.tmpdir(), 'mm-walk25d-1011');
 const idle = (pg) => pg.waitForFunction(() => !bBusy && !MMCHD.isLocked() && !document.querySelector('.wb-pop,.chf-enc2,.mmtalk,.chdz'), null, { timeout: 30000 }).then(() => pg.waitForTimeout(300));

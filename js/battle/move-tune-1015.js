@@ -22,7 +22,8 @@
   // ---- 体格サイズ（A2・A3）----
   const SIZE_NAME = Object.freeze({ 1: '極小型', 2: '小型', 3: '中型', 4: '大型', 5: '規格外' });
   /** 種族（バトルの番号）→ 体格サイズ。ラズック（1）は未登録＝ここには入れない（マスターデータ案は報告書）。5 は予約（今は誰もいない） */
-  const SIZE = Object.freeze({ 0: 2, 1: 3, 2: 2, 3: 4, 4: 3, 5: 3 });
+  //  2026-10-18 REV3 F0-3（正式）：ラズック1・ソラモ2・ノビトン2・ガウル3・フルーネ3・レグナス3・ジオル4（5＝厄災級だけ＝今は誰もいない）
+  const SIZE = Object.freeze({ 0: 2, 1: 3, 2: 2, 3: 4, 4: 3, 5: 3, 6: 1 });
   /** 表示の倍率（今の一律の表示＝100%）。【暫定・プレビュー専用】ユーザーの iPhone 確認のあとで決める */
   const SIZE_K = Object.freeze({ 1: 0.70, 2: 0.80, 3: 0.90, 4: 1.00, 5: 1.15 });
   /** 見かけの大きさの微調整（翼・角・葉が外へ大きく出る絵は、同じ倍率だと大きく見える）【暫定】 */
@@ -33,19 +34,23 @@
   };
   // 2026-10-16（iPhone 6件 A5）：比較案 A／B＝「サイズ3 の見えている体の高さを 100」とした目標の倍率（ユーザーの iPhone 判断まで正式ではない）。
   //  URL の ?mmSize=A または ?mmSize=B のときだけ（?mmSize=1＝前回の暫定・なし＝従来）。?mmSizeAs=0:1,1:5＝比較のためだけに種族のサイズを読み替える（例：サイズ1 対 5 の並び）
-  const SIZE_PLAN = Object.freeze({ A: Object.freeze({ 1: 0.65, 2: 0.78, 3: 1.00, 4: 1.22, 5: 1.45 }), B: Object.freeze({ 1: 0.60, 2: 0.75, 3: 1.00, 4: 1.30, 5: 1.55 }) });
+  //  2026-10-18 REV3 F0-3：F＝正式の既定（A／B は未承認の比較案のまま）。サイズ3＝今までの大きさ（100）。A案の比をもとに、390×844・375×667・393×852 の
+  //   公式戦・練習試合で HP の帯・技名・画面の左右の枠に重ならない範囲で決めた値（実測は tools/rev3_1018/size_fit.mjs）
+  const SIZE_PLAN = Object.freeze({ A: Object.freeze({ 1: 0.65, 2: 0.78, 3: 1.00, 4: 1.22, 5: 1.45 }), B: Object.freeze({ 1: 0.60, 2: 0.75, 3: 1.00, 4: 1.30, 5: 1.55 }),
+    F: Object.freeze({ 1: 0.70, 2: 0.84, 3: 1.00, 4: 1.14, 5: 1.30 }) });
   /** 見えている体の高さ（待機立ち絵の不透明な部分の高さ ÷ 絵の高さ × arena.js の SCALE）＝tools で測った値。種族の絵の高さの差を打ち消して、目標の比にそろえる */
-  const VIS_H = Object.freeze({ 0: 0.900, 1: 0.909, 2: 0.869, 3: 0.902, 4: 0.902, 5: 0.900 });
+  const VIS_H = Object.freeze({ 0: 0.900, 1: 0.909, 2: 0.869, 3: 0.902, 4: 0.902, 5: 0.900, 6: 0.900 });
   const VIS_H3 = (VIS_H[1] + VIS_H[4] + VIS_H[5]) / 3;   // サイズ3（ガウル・レグナス・フルーネ）の平均＝100
   const qsz = () => { try { return new URLSearchParams(root.location.search); } catch (e) { return null; } };
   // 2026-10-16：常設バトル QA のステージ（js/qa/battle-stage.js）はページの中の切り替え window.MM_QA_SIZE（'old'＝従来・'A'・'B'・'1'）を URL より先に見る（本編の既定値は変えない）
-  const sizeMode = () => { const o = root.MM_QA_SIZE; if (o) return o === 'old' ? null : o; const q = qsz(), v = q && q.get('mmSize'); return v === 'A' || v === 'B' ? v : v === '1' ? '1' : root.MM_SIZE_PREVIEW ? '1' : null; };
+  //  2026-10-18 REV3：URL に何も無い＝正式（F）。?mmSize=old＝従来の一律の大きさ（比較だけ）・A／B／1＝未承認の比較案
+  const sizeMode = () => { const o = root.MM_QA_SIZE; if (o) return o === 'old' ? null : o; const q = qsz(), v = q && q.get('mmSize'); return v === 'old' ? null : v === 'A' || v === 'B' || v === 'F' ? v : v === '1' ? '1' : root.MM_SIZE_PREVIEW ? '1' : 'F'; };
   const sizeAs = () => { const q = qsz(), v = q && q.get('mmSizeAs'), m = {}; if (v) v.split(',').forEach((x) => { const [a, b] = x.split(':').map(Number); if (a >= 0 && b >= 1 && b <= 5) m[a] = b; }); return m; };
   const sizeOf = (sp) => sizeAs()[sp] || SIZE[sp] || 3;
   /** 待機立ち絵などに掛ける倍率（プレビューのときだけ。それ以外は 1＝今まで） */
   const sizeK = (sp) => {
     const mode = sizeMode(); if (!mode) return 1;
-    if (mode === 'A' || mode === 'B') { const z = sizeOf(sp); return VIS_H3 * SIZE_PLAN[mode][z] / (VIS_H[sp] || VIS_H3); }
+    if (SIZE_PLAN[mode]) { const z = sizeOf(sp); return VIS_H3 * SIZE_PLAN[mode][z] / (VIS_H[sp] || VIS_H3); }
     return SIZE[sp] ? SIZE_K[sizeOf(sp)] * (FINE[sp] || 1) : 1;
   };
 
@@ -72,6 +77,8 @@
     'gauru_moves_1012/16_03.webp': [500, 215],    // フレアレイ：撃ち続ける姿
     // 2026-10-16（iPhone 6件 A4）：フレアレイの溜めの姿（嘴を閉じた先）＝溜めの光をここへ（素材の溜めの光は肩の位置に描かれている）
     'gauru_moves_1012/16_01.webp': [532, 226],
+    // 2026-10-18 REV3 A4：ジオインパクトの吹き飛ばしの姿の前の拳（衝撃波の根元）
+    'jiol_moves_1012/j09_08.webp': [470, 290],
   });
   const qs = (() => { try { return new URLSearchParams(root.location ? root.location.search : ''); } catch (e) { return null; } })();
   const mouthOf = (dir, f) => { const m = /([^/]+)\/$/.exec(dir || ''); return MOUTH[(m ? m[1] : 'soramo_moves_1012') + '/' + f] || null; };
@@ -93,8 +100,20 @@
     // 04 ファイアボール：口元の火球を相手まで飛ばす（体当たりにしない）→ 着弾の爆発
     'gauru_moves_1012/15_01.webp': { id: '04', stay: true, detach: [{ cut: 'G15_2', at: 'launch', fb: [118, 134, 467, 320], t: [1, 1], fromMouth: true, grow: [0.3, 1.0] }] },   // 2026-10-16 iPhone 04：嘴の口先で小さく生まれて相手の胸へ
     // 05 フレアレイ：口から相手まで伸びる光線
-    'gauru_moves_1012/16_01.webp': { id: '05', stay: true, detach: [{ cut: 'G16_2', at: 'stretch', fb: [119, 175, 497, 233], t: [1, 2] },   // 2026-10-16 iPhone 05：根元＝区切りごとのコマの嘴の口先（MOUTH）
-      { cut: 'G16_1', at: 'mouth', fb: [205, 98, 385, 288], t: [0, 0], grow: [0.45, 0.9] }] },   // 2026-10-16（iPhone 6件 A4）：溜めの光（素材では肩の位置）を嘴の先へ＝溜め → 発射が同じ点
+    // 2026-10-18 REV3 A1：iPhone 実機で「古い黄色い細いレーザー」（16_02_fx）＝最終余白調整版（1012）の効果の層そのものが黄色の細線だった。
+    //    ユーザー採用の見た目＝技カード 08_flare_ray・2.5D 完全版（2p5d/gauru/16_02〜06＝納品シート g08／g08b）の「嘴から放射される赤い炎の光線」。
+    //    → 黄色の細線（G16_2_fx）は出さない。光線＝2.5D 完全版の g08_3（16_03）・g08b_2（16_05）から嘴の先より右を切り出した層（tools/rev3_1018/derive_flare.py・絵は描き直していない）を、
+    //      区切りごとの嘴の口先（MOUTH）から相手の奥まで伸ばす（sprbeam＝縦横比のまま）。区切り1＝発射（16_beam_a）・区切り2＝撃ち続ける（16_beam_b・seg）
+    'gauru_moves_1012/16_01.webp': { id: '05', stay: true, detach: [{ cut: 'G16_2', at: 'stretch', fb: [119, 175, 497, 233], t: [1, 2] },
+      { cut: 'G16_1', at: 'mouth', fb: [205, 98, 385, 288], t: [0, 0], grow: [0.45, 0.9] }],   // 2026-10-16（iPhone 6件 A4）：溜めの光（素材では肩の位置）を嘴の先へ＝溜め → 発射が同じ点
+      drop: ['G16_2_fx'],
+      addFx: [
+        { src: 'G16_beamA', f: '16_beam_a.webp', at: 'sprbeam', t: [1, 1], pw: 272, ph: 296, ox: 0.02, oy: 0.53, tip: 0.9 },
+        { src: 'G16_beamB', f: '16_beam_b.webp', at: 'sprbeam', t: [2, 2], pw: 294, ph: 306, ox: 0.02, oy: 0.52, tip: 0.92, fadeR: 0.08, seg: 1 },
+      ] },
+    // 2026-10-18 REV3 A2：ソニックムーブ（SK13・技04）の最後に出ていた黄色と青のキラキラ（sp_buff＝バフの特殊エフェクト）を出さない。
+    //    命中の見せ場（13_02〜13_04 の本体と効果）・回避アップの判定・能力の印（fight() の efBurst）は変えない
+    'gauru_moves_1012/13_01.webp': { id: 'A2', drop: ['G13_buff'] },
     // 06 フェザーストーム：最後の渦巻き（18_05_fx）を出さない。羽根の嵐（18_04_fx）を余韻まで
     'gauru_moves_1012/18_01.webp': { id: '06', drop: ['G18_5_fx'], fxSet: { G18_4_fx: { t: [3, 4] } } },
     // 07 聖なる炎：相手へ動かない。その場で少し上昇 → 中心から赤・青・白の放射が広がる → 相手へ届いて命中 → 着地
@@ -135,8 +154,14 @@
     'jiol_moves_1012/j05_01.webp': { id: '14', cutSet: { J5_2: { m: 'move', r: [0.0, 0.42], arc: 0.45 }, J5_3: { m: 'contact', r: [0.46, 0.46] }, J5_4: { m: 'contact', r: [0.46, 0.46] } }, shakeAt: [2, 3] },
     // 15 クリスタルレイ：その場で撃つ・光線を相手の先まで長く・着弾まで残す
     'jiol_moves_1012/j06_01.webp': { id: '15', stay: true, fxSet: { J6_3_fx: { t: [2, 3], over: 0.4 } } },
-    // 16 ロックアッパー：突き上げの姿（j08_03）は元の絵で体が小さく描かれている＝そのコマだけ体の大きさをそろえる
-    'jiol_moves_1012/j08_01.webp': { id: '16' },   // 共通スケール（体の面積をそろえる＝art25d.js の areaScales）で j08_03 は自動で約1.4倍＝個別の値は要らない
+    // 16 ロックアッパー
+    // 2026-10-18 REV3 A3：3コマ目 j08_03（拳を突き上げる）は体の面積が他のコマの約半分＝共通スケールの上限で縮み、小さい旧ジオルに見えた
+    //  → 当たりのコマは同じ技の打ち上げの姿（j08_02）を相手の手前で見せる。岩柱（j08_03_fx）は相手の足もとのまま
+    // 2026-10-18 REV3 A4 ジオインパクト：円錐の衝撃波（j09_08_fx＝左に土煙の尾・右が尖った先）を相手の中心に置いていた＝尾がジオルの背中に重なり「背中から出る」ように見えた
+    //  → 尾の端をジオルの前の拳に・尖った先を相手の奥へ（sprbeam・縦横比のまま）
+    'jiol_moves_1012/j09_01.webp': { id: 'A4', drop: ['J9_8_fx'],
+      addFx: [{ src: 'J9_8_cone', f: 'j09_08_fx.webp', at: 'sprbeam', t: [7, 7], pw: 608, ph: 312, ox: 0.03, oy: 0.5, tip: 0.97 }] },
+    'jiol_moves_1012/j08_01.webp': { id: 'A3', cutSet: { J8_3: { f: 'j08_02.webp', b: [110, 26, 471, 402] } } },
     // 17 竜眼ロック：照準の緑は素材の修正（apply.py）
     // 18 蒼刃乱舞：最後の決めの斬撃（7 枚目）に合わせて斬撃の音と揺れ
     'regnas_moves_1012/28_01.webp': { id: '18', sfxAt: [[6, 'BATTLE_CRIT']], shakeAt: [6] },
@@ -272,6 +297,6 @@
   if (root.document) { if (root.document.readyState !== 'loading') setTimeout(watchEmoji, 0); else root.addEventListener('DOMContentLoaded', () => setTimeout(watchEmoji, 0)); }
 
   // 2026-10-16：読み込んだ技アニメの JS の版（iPhone の QA 画面に出す＝配信のキャッシュで古い JS が混ざったかを見分ける）
-  const BUILD = '2026-10-17-all4';
+  const BUILD = '2026-10-18-rev3';
   root.MMTUNE = Object.freeze({ BUILD, SIZE_PLAN, VIS_H, VIS_H3, sizeMode, sizeAs, SIZE, SIZE_K, SIZE_NAME, FINE, ANCHOR, MOVES, MOUTH, mouthOf, EMOJI_OFF, emojiLog: () => emojiLog.slice(), sizePreview, sizeOf, sizeK, patch, keyOf, onAnimStart, sfxLog: () => sfxLog.slice(), wrapSe });
 })(typeof window !== 'undefined' ? window : globalThis);

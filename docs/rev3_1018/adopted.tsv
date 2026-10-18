@@ -1,0 +1,18 @@
+項目	採用日	出典	現在のパス（代表）	sha256（先頭16）	本編（フラグなし）	QA（比較）
+新歩行 7体×5方向×4コマ（140）	2026-10-17 納品・2026-10-18 正式採用	Mismon_Claude_All4Phases…_v2	assets/monsters/walk_1017	140枚	Ch1 の盤・Ch2（奥へ＝後ろ姿）	?qaWalk=old で従来
+C案カメラ	2026-10-16 試作・2026-10-18 正式	docs/qa_bcad_1016/B_CAMERA.md	js/chapter/world-board.js	ed370e15767a2254	Ch1 の盤の既定（mode c）	?qaCam=old／fixed／ccut
+体格の分類と倍率 F	2026-10-18 分類は正式・倍率は推奨値	REV3 F0-3	js/battle/move-tune-1015.js	d36fc39bbf4a80fa	バトルの既定（sizeMode F）	?mmSize=old／A／B／1
+フルーネ正式10技	2026-10-18 正式	REV3 10／11	js/phase10/monsters.js	a83a10349dff1232	未解禁（性能は正式）	QA の実戦（SK 50〜59）
+フルーネ技アニメ 77枚	2026-10-15	Mismon_Flurene_SkillAnim	assets/battle/flurene_moves_1015	84枚	未解禁	QA の実戦
+ルートドレイン補修版10コマ	2026-10-16	Part02 RootDrain_v2	assets/battle/flurene_rootdrain_v2_1016	10枚	未解禁	QA の実戦
+フレアレイの赤い炎の光線	2026-10-18（2p5d の 16_03／16_05 の派生）	assets/battle/2p5d/gauru	assets/battle/gauru_moves_1012/16_beam_a.webp	32e179dbbe506a0c	通常のバトル	—
+SK08 スターダストレイの光線	2026-10-16	Part01	assets/battle/soramo_moves_1012/08_a01_fx.webp	7ba0fa0a5c32c318	通常のバトル	—
+SK31 ずつき 本体2枚	2026-10-16	Part01	assets/battle/nobiton_moves_1012/31_b01.webp	a1c4ddb971f21e15	（ノビトンは入荷待ち）	QA の実戦
+SK19 聖なる炎 V2	2026-10-16	SK19 承認演出	assets/battle/gauru_sk19_v2_1016	6枚	通常のバトル	?sk19=v1 で前回
+技カード 正式70枚	2026-10-14〜17	cards_1014	assets/moves/cards_1014	70枚	技管理・ルーレット	—
+2.5D 立ち絵（5体）	2026-10-11	2.5D_5Monsters	assets/monsters/2p5d	7枚	全画面	—
+バトル待機立ち絵	2026-10-07	idle	assets/battle/idle	7枚	バトル	—
+比較画面の肩上アップ6枚	2026-10-15	compare_1015	assets/monsters/compare_1015	7枚	比較画面	—
+NPC 有料ボイス 60本	2026-10-17	npc_paid_1017	assets/audio/voice/npc_paid_1017	0枚	発火台帳 voice_ledger.tsv	QA の試聴
+モンスターの鳴き声 14本	2026-10-17	monster_1017	assets/audio/voice/monster_1017	0枚	購入・合体・牧場・遭遇・イベント・LOSE	QA の試聴
+特訓場の正式背景（特訓の会話）	2026-10-18（Phase 12 の正式背景を流用）	assets/scenes	assets/scenes/train_po.jpg	fa8ed194584fa6c2	特訓の会話・メニュー	—

@@ -2,7 +2,7 @@
 // 2026-10-17 モンスターの鳴き声 14本（実ブラウザ・QA_E2E=1 のときだけ）＝配置設計（05_モンスターボイス配置設計）の A〜E
 //  CRY-B1 A：市場で仲間入り（手に入れた！の演出）＝その子の正式ボイス・合体の誕生＝子の正式ボイス
 //  CRY-B2 B：牧場でモンスターをタップ＝その子の正式ボイス・同じ子は10秒あける・描き直し／タブでは鳴らない
-//  CRY-B3 C・D：Chapter の開始で歩いて入る＝連れている子の正式ボイス（4歩の音のあと）・野生の遭遇＝相手の正式ボイス（バトルに入る前）
+//  CRY-B3 C・D：Chapter の開始では鳴かない（2026-10-18 REV3 D2）・能力マスで連れている子（REV3 D3）・野生の遭遇＝相手の正式ボイス（バトルに入る前）
 //  CRY-B4 E：LOSE＝曲（5.0秒）のあとに自分の子の悲しみボイス・WIN は既定で鳴かない
 //  CRY-B5 QA の試聴：鳴き声 14本・NPC ボイス 60本が1本ずつ鳴る（?mmQaTrial=1 のときだけ・通常のセーブを書き換えない）
 // =========================================================
@@ -60,13 +60,17 @@ test('CRY-B2（B）：牧場のタップ＝その子の声・同じ子は10秒�
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
-test('CRY-B3（C・D）：Chapter の開始で歩いて入る＝連れている子・野生の遭遇＝相手（バトルの前）', { skip: SKIP, timeout: 180000 }, async () => {
+test('CRY-B3（C・D）：Chapter の開始では鳴かない（2026-10-18 REV3 D2）・能力マスで連れている子が1回（REV3 D3）・野生の遭遇＝相手（バトルの前）', { skip: SKIP, timeout: 180000 }, async () => {
   const p = await openPage({ intro: true }); const pg = p.page;
   await start(pg, 1);
   await pg.evaluate(() => { MMP8.depart(S, S.m, () => 0.37); save(); board(); });
-  await waitCry(pg, 'cry_gauru_normal', 20000);
-  const t = await pg.evaluate(() => { const L = MMAUDIO.playLog(), c = L.find((e) => e.name === 'cry_gauru_normal'), se = MMAUDIO.seLog(); return { cry: c.at, seMon: se.includes('MONSTER_ENTRY') }; });
-  assert.ok(t.seMon, '4歩の音（MONSTER_ENTRY）のあと');
+  await pg.waitForFunction(() => MMAUDIO.seLog().includes('MONSTER_ENTRY'), null, { timeout: 20000 }); await pg.waitForTimeout(3000);
+  assert.deepEqual(await cries(pg), [], 'Chapter の開始（歩いて入る）では鳴かない');
+  // D3：能力マス＝成長の表示の瞬間に連れている子が1回（NPC の声のあと）
+  await pg.evaluate(() => { MMAUDIO.cryReset(); const g = MMCH.graphFor(S.m), a = S.m.raise.field.nodeAssignments; const id = g.order.find((x) => a[x] && a[x].t === 'stat'); const r = S.m.raise; r.node = id; r.pend = { roll: 1, left: 0, stage: 'resolve' }; save(); board(); });
+  await waitCry(pg, 'cry_gauru_normal', 15000);
+  await pg.waitForFunction(() => !bBusy && !document.querySelector('.chpop'), null, { timeout: 20000 }).catch(() => {}); await pg.waitForTimeout(1500);
+  assert.deepEqual(await cries(pg), ['cry_gauru_normal'], '1回だけ');
   // D：野生の遭遇（相手の種族の声）
   await pg.waitForTimeout(800);
   await pg.evaluate(() => { MMAUDIO.cryReset(); const g = MMCH.graphFor(S.m), a = S.m.raise.field.nodeAssignments; const id = g.order.find((x) => a[x] && a[x].t === 'battle' && a[x].bt === 'wild'); const r = S.m.raise; r.node = id; r.pend = { roll: 1, left: 0, stage: 'resolve' }; save(); board(); });

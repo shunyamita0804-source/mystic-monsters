@@ -46,16 +46,20 @@ test('FL-01：フルーネの登録の値（ユーザー提供の正式情報ど
   assert.deepEqual(J(f.moves.map((m) => m.no)), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
   assert.equal(f.moves[8].deOrder, 1); assert.equal(f.moves[9].deOrder, 2); assert.equal(f.moves[9].finisher, true, 'ルートテンペスト＝必殺');
   assert.equal(f.moves.filter((m) => m.finisher).length, 1);
-  // 2026-10-16 ユーザー決定（技性能一覧）：01 威力60・02 威力65・10 威力120（威力だけ）／09 ルートドレイン＝威力110・命中90・CR10%・吸収50%。03〜08 は未承認＝数値を持たない
-  const OK = { 1: { power: 60 }, 2: { power: 65 }, 9: { power: 110, accuracy: 90, critical: 10, drain: 0.5 }, 10: { power: 120 } };
-  for (const m of f.moves) {
-    const ok = OK[m.no] || {};
-    for (const [k, v] of Object.entries(ok)) assert.equal(m[k], v, `${m.name} の ${k}`);
-    for (const k of ['power', 'accuracy', 'critical', 'effects', 'ailment', 'heal', 'slot', 'id', 'drain'])
-      if (!(k in ok)) assert.ok(!(k in m), `${m.name} に ${k} を持たない（未承認の数値を作らない）`);
-    if (m.no !== 9) assert.ok(!('type' in m), `${m.name} に type を持たない`);
-  }
-  assert.deepEqual(J(f.moves[8].formerNames), ['生命のしずく'], '旧名');
+  // 2026-10-18 REV3 F0-4 正式採用（ZIP の 10／11＝技性能表）：全10技の性能・SK 50〜59。命中 100% は必中ではない・小＝10%・中＝20%
+  const OK = [[1, 'power', 60, 100, 5], [2, 'wisdom', 65, 95, 10], [3, 'support', null, 100, null], [4, 'support', null, 100, null], [5, 'power', 100, 85, 10],
+    [6, 'wisdom', 110, 90, 10], [7, 'wisdom', 70, 90, 5], [8, 'support', null, 100, null], [9, 'power', 110, 90, 10], [10, 'wisdom', 120, 85, 20]];
+  for (const [no, type, power, acc, cr] of OK) { const m = f.moves[no - 1];
+    assert.deepEqual([m.type, m.power ?? null, m.accuracy, m.critical ?? null, m.slot], [type, power, acc, cr, 49 + no], `${m.name} の性能・SK`); }
+  const ef = (no) => J(f.moves[no - 1].effects);
+  assert.deepEqual(ef(3), [{ target: 'opponent', stat: 'atk', dir: 'down', size: 'small', turns: 2 }], 'はなのかおり＝相手ちから 10%DOWN 2T');
+  assert.deepEqual(ef(4), [{ target: 'self', stat: 'de', dir: 'up', size: 'medium', turns: 2 }], 'ねっこのまもり＝自分丈夫さ 20%UP 2T');
+  assert.deepEqual(ef(8), [{ target: 'self', stat: 'ev', dir: 'up', size: 'medium', turns: 2 }], 'はなかげのまい＝自分回避 20%UP 2T');
+  assert.deepEqual(J(f.moves[6].ailment), { kind: 'paralysis', label: 'まひ', chance: 0.25 }, 'しばりづる＝命中時 25% でまひ');
+  assert.equal(f.moves[8].drain, 0.5, 'ルートドレイン＝与ダメ 50% 吸収');
+  for (const no of [1, 2, 5, 6, 10]) assert.deepEqual([ef(no), f.moves[no - 1].ailment, f.moves[no - 1].drain ?? null], [[], null, null], `${f.moves[no - 1].name} は追加効果なし`);
+  assert.deepEqual(J(M.movesOf('flurene')).map((m) => m.slot), [50, 51, 52, 53, 54, 55, 56, 57, 58, 59]);
+  assert.deepEqual(J(f.moves[8].formerNames), ['生命のしずく', 'いのちのしずく'], '旧名（使わない）');
   assert.equal(f.unlocked, false); assert.equal(f.playerAvailable, false);
   assert.ok(Object.isFrozen(M.PENDING_SPECIES) && Object.isFrozen(f) && Object.isFrozen(f.moves));
 });
@@ -82,7 +86,7 @@ test('FL-02：番号 5 はどの表とも重ならない（SPECIES 0〜3・レ�
   // 市場・固有スキル・技の表
   assert.ok(!M.MARKET_CATALOG.some((c) => c.key === 'flurene' || c.sp === 5));
   assert.ok(!Object.values(M.UNIQUE_SKILLS).some((u) => u.speciesKey === 'flurene' || u.species === 5));
-  assert.ok(!('flurene' in M.OFFICIAL_MOVES));
+  assert.ok('flurene' in M.OFFICIAL_MOVES, '2026-10-18 REV3：正式10技の表（未解禁のまま＝SPECIES・市場には入らない）'); assert.equal(M.OFFICIAL_MOVES.flurene.list, f.moves, '登録の技は正式の表と同じもの');
   // 画面のコードは 'flurene' を名前で参照しない（番号 5 の顔の対応表 arena の TOUR_ICON と登録の monsters.js だけ）。
   //  2026-10-15：比較画面の肩上アップの表（compare.js の PORTRAIT・番号 5）・技カード10枚の表（move-cards.js・技管理には出ない）・QA 試遊モード（qa/trial.js・?mmQaTrial=1 のときだけ）も例外
   const hits = [];

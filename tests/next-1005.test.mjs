@@ -43,7 +43,7 @@ test('NX5-03：序盤の導線＝フィナの2択（どちらも管理局へ）�
   assert.match(first, /こんにちは。あの……もしかして、今日ミストリアで聖獣士登録をする予定の方ですか？",choices:\[\{id:"yes",label:"はい"\},\{id:"no",label:"いいえ"\}\]/);
   const before = first.slice(0, first.indexOf(' confirm:'));
   assert.doesNotMatch(before, /\$\{n\}/, '登録より前の会話に名前は入らない');
-  assert.match(fnOf('opTownTalk'), /branches:\{yes:OPEN_TALK\.firstYes,no:OPEN_TALK\.firstNo\}/);
+  assert.match(fnOf('opTownTalk'), /branches:\{yes:OPEN_TALK\.firstYes\.concat\(OPEN_TALK\.firstHello,OPEN_TALK\.firstGo\.yes\),no:OPEN_TALK\.firstNo\.concat\(OPEN_TALK\.firstHello,OPEN_TALK\.firstGo\.no\)\}/);   // 2026-10-18 REV3 D5：どちらのあとも fina_009 の自己紹介
   assert.match(fnOf('opGuide'), /c\[3\]=="townGuild\(\)"\?"go":"lk"/, '登録前は管理局だけ');
   assert.match(fnOf('opConfirm'), /MMP11P\.confirmName\(S,n\)/, '保存先は従来どおり');
   const N = rd('js/npc/npc.js'); assert.match(N, /const SERGE = 'assets\/npc\/serge\/full_normal\.webp'/); assert.match(N, /register\('serge', \{ name: 'セルジュ'/);

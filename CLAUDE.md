@@ -136,7 +136,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 | assets/battle/common/ | バトル共通演出の正式素材（ZIP mystic_monsters_battle_common_30.zip。2026-10-03）：original/＝30枚の元ファイル（JPEG・バイト単位で同一・名前だけ bcNN_時刻.jpeg。#1〜#30＝ユーザーの対応表の番号）、bcNN_用途.webp＝ゲームで使う11枚（市松模様を取り除いた透過 WebP。ユーザー承認）。未使用の19枚（#1〜#5・#8・#10〜#14・#21〜#27・#30）は保存だけ（別の用途へ転用しない）。README.md に対応表・透過化の手順・限界 |
 | assets/scenes/、assets/fields/、assets/dice/ | 背景・フィールド・サイコロの素材 |
 | assets/embedded/ | index.html の base64 から安全に外部化した既存画像の置き場（元データとバイト単位で同一。無加工）。ファイル名は「定数名_番号またはキー_用途」。第1段階：FT（ft_*）・TABS（tabs_*）、第2段階：FARMIMG・TRIMG2・NPI.b。Phase 6 の画像（SFR・BTB・SFXL・STOPART・SKART・AS.spr）は外部化しない |
-| prototype/camera-follow.html | 【試作】Chapterボードの「モンスター移動＋カメラ追従」の検証ページ（2026-10-01 夜。ゲーム本体とは完全に独立した1ページ・正式実装ではない。背景は2枚＝背景A assets/fields/proto/cam_test_road_a.webp → 背景B cam_test_road_b.webp（ユーザー提供の別々の画像。各6マス＝通し12マス。A の6マス目から B の1マス目へ、B を A の道の先から広げてフェードで切り替え、カメラ追従は連続）。旧 cam_test_road.webp はファイルだけ残す。公開URLの …/prototype/camera-follow.html で試せる。消しても本体に影響なし） |
+| （削除）prototype/camera-follow.html | 2026-10-18 REV3 で削除（参照ゼロの試作ページ。docs/rev3_1018/delete_ledger.tsv） |
 | tests/*.test.mjs | 自動テスト |
 | tools/public-check.mjs | push 後の公開URLの確認（§7） |
 | AUDIO_CREDITS.md | 音源の作者・配布元・ライセンス・商用利用条件・クレジット要否・使用したファイル（場面・gain）。素材を足したら更新する |
@@ -1080,6 +1080,19 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - 暫定・素材待ち：02 スターダストレイの専用光線・07 聖なる炎の三色の弾と着弾・09 ずつきの技カード・10 頭突きの姿・20／21 フルーネの専用 FX（未完成）・市松を均した 37 枚の正しい透過の再納品
 - テスト：tests/battle-tune-1015.test.mjs（BT-01〜06）・実ブラウザ tests/qa-e2e-battle-tune-1015.test.mjs（BTB-1〜4）
 
+### 2026-10-18 REV3（iPhone 実機 QA の修正・正式採用の本編反映。いまの正式。指示＝ZIP Mismon_Claude_PreCh3_…_REV3_20261018 の 01・作業ブランチ claude/rev3-1018・基準 main 2108dca）
+
+- **正式採用を通常プレイへ（QA フラグだけにしない）**：
+  - 新歩行（7体×5方向×4コマ＝140枚・assets/monsters/walk_1017/）＝本編の Chapter 1 の盤（js/qa/walk5-1016.js の MMQAW＝既定で有効・`?qaWalk=old` で従来の8コマ・`?qaWalk=soramo5` は 10-16 の試作）。通常の Chapter 2（従来の画面 field-view・ch2a.js の monsterSprites＝walk に new7・loop・foot・base）＝歩く間は後ろ姿（back_1〜4）・止まると正面（front_2）。field-view の歩行コマは loop（歩く間に回すコマ）と foot／base（足もと）を読む
+  - C案カメラ＝本編の盤の既定（js/chapter/world-board.js の QA_CAM＝URL が無ければ mode 'c'・`?qaCam=old` で従来・fixed／ccut は比較）
+  - 体格＝正式の分類 ラズック1・ソラモ2・ノビトン2・ガウル3・フルーネ3・レグナス3・ジオル4（5＝厄災級だけ）。倍率は js/battle/move-tune-1015.js の SIZE_PLAN.F（1 0.70・2 0.84・3 1.00・4 1.14・5 1.30＝サイズ3＝今までの大きさ）が既定（sizeMode）。A／B は未承認の比較案のまま・`?mmSize=old` で従来の一律。3サイズ×公式戦／練習試合×種族の組で HP の帯・技名・左右に重ならないことを実測（tools/rev3_1018/size_fit.mjs・最小の余白 13px＝375×667 の練習試合のジオル）。大会の比較画面は肩上アップ＝体格の差は出ない（VS の画面は通常の流れに無い）
+  - フルーネ正式10技＝js/phase10/monsters.js の OFFICIAL_MOVES.flurene（SK 50〜59・PENDING_SPECIES の moves は同じ表）。js/battle/rules.js の installFlurene（効果・まひ 25%・吸収 50%・必殺技 120）・art25d.js の SRC_OF 5（技アニメ 77枚・No.9 は従来どおり MMRD）。未解禁のまま（QA の個体だけ）
+- **技アニメ（P0-A）**：A1 フレアレイ（SK16）＝採用済みの赤い炎の光線（assets/battle/2p5d/gauru/16_03・16_05 から派生した 16_beam_a／b・tools/rev3_1018/derive_flare.py）を嘴から相手へ（sprbeam）。旧い黄色い細い光線（G16_2_fx）は出さない。「10/17付修正原本」はリポジトリに無い＝別の原本があれば要送付。A2 ソニックムーブ（SK13）＝終わりの光（G13_buff）を出さない。A3 ロックアッパー（SK47）＝小さく見えた j08_03（体の面積が他の約半分＝共通スケールの上限で縮む）の代わりに打ち上げの姿 j08_02。A4 ジオインパクト（SK48）＝円錐の衝撃波 j09_08_fx を前の拳（MOUTH 'jiol_moves_1012/j09_08.webp' [470, 290]）から相手の奥へ（sprbeam）。A5＝70枠の監査表 docs/rev3_1018/moves70.tsv（tools/rev3_1018/moves70.mjs）。A6＝QA のバトル技ステージに「実際に使うデータ」（MM25D.info・最初のコマ・sha256・モード・控え）
+- **特訓（C1・C2）**：初回の会話の背景＝特訓場（TRAIN_SCENE_BG＝assets/scenes/train_po.jpg。旧 FARM_BG は左上に「Farm」の札が描き込まれていた）・特訓メニューのぼかし背景も特訓場・見出しの旧い絵（「修行」の文字入り TABS[2]）はゲンシンの顔・カードは中身の高さまで伸ばす（375×667 で「クリア」の行が切れていた）
+- **声（P0-D）**：Chapter の開始では鳴かない（world-board の俯瞰のあと・field-view の歩いて入るの鳴き声を外した）。イベントで連れている子が1回鳴く＝MMAUDIO.cryAfter（NPC の声が鳴っていれば終わってから・待てるのは1つだけ・when が偽なら鳴らさない・最大7秒）＝能力マス（バーが伸びた瞬間）・出来事／冒険リアクション（会話のあと結果）・宝箱／宝の行き止まり（開ききった瞬間・宝箱の場面に連れている子の立ち絵）・食事・分かれ道（選んだ瞬間）・大会の優勝。野生・レア＝相手の鳴き声だけ・ライバル・ゴールは鳴かない。フィナ 009＝初対面の自己紹介（OPEN_TALK.firstHello・はい／いいえのどちらのあとも）・フィナ 020＝最初の相棒（MMNPCE の moment partner）・リュウ 002＝初対面の自己紹介（字幕は声の書き起こし「俺はリュウ。名前くらい覚えておいてな。」）。発火台帳＝docs/rev3_1018/voice_ledger.tsv（tools/rev3_1018/voice_ledger.mjs・NPC 60本のうち使用 36・未配置 17・三伝説の登録のみ 6・意図的に未使用 1）
+- **旧ボードの削除（P0-F）**：参照ゼロの旧 Chapter 1 背景（field 10・road 15・journey 13・bg_01〜03・env 7）とカメラ試作ページ（prototype/camera-follow.html＋assets/fields/proto）を削除（docs/rev3_1018/delete_ledger.tsv＝パス・sha256・復元は git の 92a75aa）。残したもの＝ch2a/road（旧セーブの互換のテストが参照）・js/phase13/field.js（読み込まれている）・14枚の正式ボード（formal_1008＝自動テストの旧 Chapter 1 と互換）・roadfirst-*（現行）
+- 道具：tools/rev3_1018/（capmove.mjs＝技アニメを本番の描画で時刻ごとに撮る・strip.py・size_fit.mjs・moves70.mjs・voice_ledger.mjs・unref.mjs）。テスト：tests/qa-e2e-rev3-1018.test.mjs（R3-B1〜B7）。MM_BUILD／version.json／MMTUNE.BUILD＝2026-10-18-rev3
+
 ### 2026-10-17 統合便 v2（道路・音声・歩行・ラズック・QA・初見プレイ。いまの正式。作業ブランチ claude/all4-1017・指示＝ZIP Mismon_Claude_All4Phases_PublicGO_VoicePlacement_20261017_v2）
 
 - **NPC の有料ボイス 60本（正本＝manifest_v2・ゲンシン 001＝9.639秒／002＝4.049秒の差し替え版）**：assets/audio/voice/npc_paid_1017/（OGG q5＋M4A 128k・README に原本と派生の sha256 と書き起こし）。js/audio/audio-manager.js の `VOICE_BLOCKED = false`。
@@ -1565,7 +1578,12 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - 全体QA（2026-09-29）：QA_AUDIT.md に監査結果・修正内容・保留事項・今後の推奨をまとめた。
 - Stage 3（2026-09-29、安全軽量化・テスト正常化）：古いテスト3件の更新・MS-B6 の安定化・未使用の埋め込み画像10件の削除。QA_AUDIT.md の「14」
 - 次の予定：未指示（要確認）。技術面の推奨は QA_AUDIT.md の「10. 今後の修正の推奨」
-- **引き継ぎ（2026-10-17 時点の現在地。新しいセッションはここから読む＝下の 2026-10-16 の記述より優先）**：
+- **引き継ぎ（2026-10-18 時点の現在地。新しいセッションはここから読む＝下の 2026-10-17・10-16 の記述より優先）**：
+  - **main＝REV3 を claude/rev3-1018 から --no-ff で統合**（基準 2108dca）・build＝`2026-10-18-rev3`・version.json＝{ build, branch main, base 2108dca }・公開済み
+  - 中身は §3「2026-10-18 REV3」・報告は docs/rev3_1018/REPORT.md（(1)〜(10)・台帳 voice_ledger.tsv／moves70.tsv／adopted.tsv／delete_ledger.tsv・道路の比較 road/）。通常プレイに入ったもの＝新歩行 140枚・C案カメラ・体格 F・フルーネ正式10技（QA の個体だけ）・技アニメ4件の修正・特訓の画面・声の再設計
+  - QA だけのまま＝新しい Chapter 2 の盤（?ch2trial）・道路の新素材（?qaRoadArt）・ラズック・体格の A／B 案。**Chapter 3 は未着手**
+  - 既知の失敗テスト：qa-e2e-dev24-1013 の D24-B2（2108dca でも失敗）・qa-e2e-dev28-1013 の D28-B7・qa-e2e-dev29-1014 の D29-B2。**iPhone 実機はどれも未確認**。戻し方＝REV3 のマージを revert（公開前は 2108dca・2026-10-17-all4）
+- **引き継ぎ（2026-10-17 時点の現在地。旧）**：
   - **main＝a03c56e**（統合便 v2 をブランチ claude/all4-1017 から --no-ff で統合・GitHub の PR は作れなかった＝MCP の接続失敗）・build＝`2026-10-17-all4`・version.json＝{ build, branch main, base dbdbd9e }・公開済み・public-check 44項目すべて OK
   - 中身は §3「2026-10-17 統合便 v2」・報告は docs/all4_1017/REPORT.md。一般プレイに入ったもの＝NPC 有料ボイス 60本・モンスターの鳴き声 14本・初見プレイの隔離セーブ（?qaFresh=1）。QA だけ（URL のフラグ）＝QA トップ ?qaTop=1・新しい Chapter 2 の盤（?ch2trial）・C案カメラ（?qaCam=c）・道路の新しい絵（?qaRoadArt）・新歩行（?qaWalk=1017）・ラズック（QA の7体目）
   - 既知の不安定なテスト：qa-e2e-dev28-1013 の D28-B7（全景 → 盤のズームの刻み）＝main 3d9a205 でも同じ位置・同じ大きさで落ちる。**iPhone 実機はどれも未確認**。戻し方＝a03c56e のマージを revert（公開前は 3d9a205・2026-10-16-final）
