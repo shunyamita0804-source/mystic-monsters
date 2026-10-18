@@ -27,10 +27,10 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
       b: document.querySelectorAll('#mmqat .qtm td.battle').length, pv: document.querySelectorAll('#mmqat .qtm td.preview').length, links: [...document.querySelectorAll('#mmqat a.qtb[data-k]')].map((a) => a.getAttribute('href')), wide: document.documentElement.scrollWidth <= innerWidth }));
     assert.equal(r.build, r.mb); assert.equal(r.rows, 7); assert.equal(r.cells, 70); assert.ok(r.b >= 59, `実戦 ${r.b}`); assert.equal(r.b + r.pv + (70 - r.b - r.pv), 70);
     assert.equal(r.links.length, 6); assert.ok(r.links[0].includes('ch1trial=A') && r.links[5].includes('ch2trial=C')); assert.ok(r.wide);
-    await pg.click('#mmqat .qts[data-k="cam"] button[data-v="c"]'); await pg.click('#mmqat .qts[data-k="walk"] button[data-v="1017"]'); await pg.click('#mmqat .qts[data-k="mon"] button[data-v="3"]');
+    await pg.click('#mmqat .qts[data-k="cam"] button[data-v="old"]'); await pg.click('#mmqat .qts[data-k="walk"] button[data-v="old"]'); await pg.click('#mmqat .qts[data-k="mon"] button[data-v="3"]');   // 2026-10-18 REV3：C案・新歩行が正式の既定＝比較は「従来」
     await pg.fill('#mmqat .qtseed', '42'); await pg.press('#mmqat .qtseed', 'Tab');
     const h = await pg.getAttribute('#mmqat a.qtb[data-k="ch1"][data-r="B"]', 'href');
-    for (const k of ['ch1trial=B', 'qaCam=c', 'qaWalk=1017', 'qaMon=3', 'qaSeed=42']) assert.ok(h.includes(k), `${k} ${h}`);
+    for (const k of ['ch1trial=B', 'qaCam=old', 'qaWalk=old', 'qaMon=3', 'qaSeed=42']) assert.ok(h.includes(k), `${k} ${h}`);
     await shot(pg, `qt_top_${size.join('x')}`);
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   });
