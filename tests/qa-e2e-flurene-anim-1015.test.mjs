@@ -70,10 +70,11 @@ test('FA-B2（390×844）：技アニメ No.01〜10＝コマが順に出て待�
   const p = await openPage({ query: '?mmQaTrial=1', size: H.SIZES.base }); const pg = p.page; await qaOn(pg);
   const s0 = await pg.evaluate(() => localStorage.getItem('mr4v6')), img0 = await pg.evaluate(() => IMG.length);
   const cards = await pg.evaluate(() => [...document.querySelectorAll('#mmqa .qcard')].map((c) => ({ st: c.dataset.status, fx: (c.querySelector('.qfx') || {}).textContent || '' })));
-  assert.deepEqual(cards.map((c) => c.st), ['preview', 'preview', 'preview', 'preview', 'preview', 'preview', 'preview', 'preview', 'battle', 'preview'], '09 ルートドレインだけ QA の実戦（SK 58）');
+  assert.deepEqual(cards.map((c) => c.st), Array(10).fill('battle'), '2026-10-18 REV3：フルーネの正式10技＝すべて QA の実戦（SK 50〜59）');
   assert.deepEqual(cards.map((c) => /FX追加待ち/.test(c.fx)), [false, false, false, false, false, false, false, false, false, false], '2026-10-16：10 は専用の根と命中7枚が届いた');
   assert.equal(cards[8].fx, 'ルートドレイン 10コマ（補修版）'); assert.equal(cards[9].fx, '本体 5・効果 7'); assert.equal(cards[4].fx, '本体 5・効果 5');
-  await pg.click('#mmqa .qcard[data-n="0"]'); await pg.click('#mmqa .qdet .qgo');
+  // 技アニメのコマだけの再生（判定なし）＝QA の道具 MMQA.preview（2026-10-18 REV3：カードの主ボタンは実戦）
+  assert.ok(await pg.evaluate(() => MMQA.preview(MMQA.catalog().findIndex((x) => x.sp === 5), 1)));
   await pg.waitForSelector('#bt.mmqa-prev'); await pg.waitForSelector('#mmqa-bar button');
   await pg.waitForFunction(() => /idle_flurene/.test((document.querySelector('#m0 .mma-idle') || {}).src || ''), null, { timeout: 15000 });
   assert.deepEqual(await pg.evaluate(() => [BPL[0].sp, IMG[5], MMARENA.IDLE[5]]), [5, './assets/monsters/2p5d/flurene.webp', 'idle_flurene'], 'QA の間だけフルーネの絵を貸す');

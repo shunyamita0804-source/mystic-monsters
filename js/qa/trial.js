@@ -479,6 +479,8 @@
     ENABLED, DIRECT, MONS, SAVE_KEY_RE, catalog, counts, statusOf,
     on, off, isOn: () => ST.on, active: () => ST.on, battling: () => ST.battling, snapshot: () => ST.snap,
     select: (i) => { ST.mon = Math.max(0, Math.min(MONS.length - 1, i | 0)); ST.sel = null; render(); }, battle: (i, no) => { if (!ST.on) return false; const x = catalog()[i]; const mv = x && x.moves.find((v) => v.no === no); return x && mv ? (mv.status === 'battle' ? battle(x, mv) : mv.status === 'preview' ? preview(x, mv) : false) : false; },
+    // 2026-10-18 REV3：フルーネは正式10技（実戦）になった＝技アニメのコマだけの再生（判定なし）は QA の道具として残す
+    preview: (i, no) => { if (!ST.on) return false; const x = catalog()[i]; const mv = x && x.moves.find((v) => v.no === no); return x && mv && mv.status !== 'static' ? preview(x, mv) : false; },
     endBattle, makeMon, FOE, animInfo, stage, _start: (m, prev) => start(m, prev), _lend: (sp) => lendFlurene(sp), _unlend: () => unlendFlurene(), show, walk: (i) => { if (!ST.on) return false; const x = catalog()[i]; if (!x || !walkSets(x.key)) return false; walk(x); return true; },
   });
 })(typeof window !== 'undefined' ? window : globalThis);
