@@ -2,7 +2,7 @@
 // 2026-10-16 夜間 QA（B）：C案カメラ（?qaCam=c|ccut|fixed）の実ブラウザ確認（作業ブランチ claude/qa-bca-1016 だけ・試作）
 //  QC-B1 Chapter 1 A × 3サイズ（375×667・390×844・393×852）：C案は歩いている間に向き（yaw の目標）を変えない・止まったときに先の地点が画面の空いている所に入る・
 //        従来より回っている時間が短い・試遊はセーブを書き換えない・エラー／404 なし
-//  QC-B2 フラグなし：従来どおり（heading・yawTau 600・C案は無効）・QA の札は出ない
+//  QC-B2 フラグなし：2026-10-18 REV3 から C案カメラ・新歩行が正式の既定（従来は ?qaCam=old）・通常の URL では QA の札は出ない
 //  QC-B3 Chapter 2 B・C（390×844）：C案でも止まったときに先の地点が見える・エラーなし
 //  QC-B4 ?qaCam=fixed：向きを回さない（yaw 0 のまま）
 // =========================================================
@@ -69,20 +69,20 @@ test('QC-B1：C案（Chapter 1 A・3サイズ）＝歩く間は向きを変え�
       await p.ctx.close();
     }
     // 従来との比較（390×844）：同じ出目で、従来は回っている時間が長い
-    const p = await openTrial(L, 1, 'A', '', [390, 844]); const old = await walk(p.page, DICE.length); await p.ctx.close();
+    const p = await openTrial(L, 1, 'A', 'old', [390, 844]); const old = await walk(p.page, DICE.length); await p.ctx.close();   // 2026-10-18 REV3：従来は ?qaCam=old（フラグなし＝C案が正式）
     const p2 = await openTrial(L, 1, 'A', 'c', [390, 844]); const c = await walk(p2.page, DICE.length); await p2.ctx.close();
     assert.ok(c.qa.ms < old.qa.ms * 0.5, `C案の回る時間 ${c.qa.ms} < 従来 ${old.qa.ms} の半分`);
     assert.ok(c.qa.turns <= old.qa.turns, `回り始めた回数 C ${c.qa.turns} ≤ 従来 ${old.qa.turns}`);
   } finally { await L.close(); }
 });
 
-test('QC-B2：フラグなし＝従来どおり（後ろから追う・yawTau 600・C案なし・QA の札なし）', { skip, timeout: 600000 }, async () => {
+test('QC-B2：フラグなし＝C案（2026-10-18 REV3 で正式）・新歩行・通常の URL では QA の札なし', { skip, timeout: 600000 }, async () => {
   const L = await H.launch();
   try {
     const p = await L.open({ worldCh1: true, worldCh2: true, route2: 'A', query: '?ch2trial=A' }), pg = p.page;
     await pg.waitForFunction(() => window.MMWB && MMWB.world() && MMWB.world().isReady(), null, { timeout: 90000 });
     const o = await pg.evaluate(() => { const W = MMWB.world(); return { heading: W.opts.heading, yawTau: W.opts.yawTau, camMode: W.opts.camMode, qa: W.qa().camMode, badge: !!document.getElementById('qabv'), walk: !!(window.MMQAW && MMQAW.active) }; });
-    assert.deepEqual(o, { heading: true, yawTau: 600, camMode: null, qa: null, badge: true, walk: false }, JSON.stringify(o));   // ch2trial は QA の札を出す（版の確認用）
+    assert.deepEqual(o, { heading: true, yawTau: 600, camMode: 'c', qa: 'c', badge: true, walk: true }, JSON.stringify(o));   // ch2trial は QA の札を出す（版の確認用）・2026-10-18 REV3：C案カメラと新歩行が既定
     await p.ctx.close();
     const p2 = await L.open({ worldCh1: true }), pg2 = p2.page;
     assert.equal(await pg2.evaluate(() => !!document.getElementById('qabv') || !!(window.MMQAB && MMQAB.qa)), false, '通常の URL では QA の札も試遊も出ない');
