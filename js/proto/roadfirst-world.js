@@ -1059,8 +1059,8 @@
     if (pre || !root.Image) return pre; base = base || './assets/proto/board_art_1010/';
     const K = SKIN[skin], sk = K ? [...new Set(['A', 'B', 'C'].flatMap((v) => [K[v].ground, K[v].road, K[v].strip, K[v].water, ...Object.values(K[v].props).map((q) => q[0])]))].map((f) => K.base + f) : [];
     const T = ART.terrain, files = [ART.ground.file, ART.road.file, ART.strip.file, ART.goal.file, ART.peaks.file, T.valley.file, T.water.file, T.cloud.file, ...Object.values(T.edges).map((e) => e.file),
-      ...Object.values(VISUAL).flatMap((v) => v.props.map((p) => p.file)), ...ART.landmarks.map((l) => l.file), ...Object.values(ART.water).filter((w) => w && w.file).map((w) => w.file)];
-    pre = [...[...new Set(files)].map((f) => base + f), ...sk].map((u) => { const im = new root.Image(); im.decoding = 'async'; im.src = u; return im; });
+      ...Object.values(VISUAL).filter((v) => !v.sky).flatMap((v) => v.props.map((p) => p.file)),   /* 2026-10-18：Chapter 3 の空の景物は Chapter 1 の出発では読まない */ ...ART.landmarks.map((l) => l.file), ...Object.values(ART.water).filter((w) => w && w.file).map((w) => w.file)];
+    pre = [...[...new Set(files)].map((f) => artUrl(base, f)), ...sk].map((u) => { const im = new root.Image(); im.decoding = 'async'; im.src = u; return im; });
     return pre;
   }
   const api = { DEF, WORLD, ART, TERRAIN, VISUAL, SKIN, skinOf, visualOf, peaksOf, project, fitZoom, lookahead, headingYaw, angDiff, create, scatter, waterProps, curvePts, landmarkAt, inValley, loopPoly, warmArt };
