@@ -2,7 +2,7 @@
 // 2026-10-15 夜（PHASE B）：技アニメの試遊修正・体格サイズの比較プレビュー（実ブラウザ・390×844）
 //  BTB-1：ソラモビーム＝その場で撃つ（体の前の端が待機立ち絵の前の端を大きく越えない）・光線が相手まで届く
 //  BTB-2：ファイアボール＝火球（切り出した効果）が口元から相手へ動く
-//  BTB-3：体格サイズ＝通常は今までの倍率（SCALE）・?mmSize=1 のときだけ ジオル 100%／ソラモ 80%（足もとは床のまま）
+//  BTB-3：体格サイズ＝通常は正式 F（2026-10-18 REV3）・?mmSize=old で今までの倍率（SCALE）・?mmSize=1 のときだけ ジオル 100%／ソラモ 80%（足もとは床のまま）
 //  BTB-4：はなビンタの絵文字は鼻でない・フルーネ技10 は相手の位置に着弾の絵（共通演出）
 //  2026-10-16 iPhone 8本の修正：
 //  BTB-5：ソラモビーム・スターダストレイ・ファイアボール・フレアレイ＝光線の根元／火球の生まれる所＝同じ区切りの体のコマの口先（MMTUNE.MOUTH）。
@@ -79,14 +79,16 @@ test('BTB-2：ファイアボール＝火球が口元から相手へ動く', { s
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
-test('BTB-3：体格サイズ＝通常は今まで・?mmSize=1 のときだけ ジオル 100%／ソラモ 80%（足もとは床）', { skip: SKIP, timeout: 300000 }, async () => {
+test('BTB-3：体格サイズ＝通常は正式（F）・?mmSize=old で今まで・?mmSize=1 のときだけ ジオル 100%／ソラモ 80%（足もとは床）', { skip: SKIP, timeout: 300000 }, async () => {
   const k = async (q) => { const p = await battle(q, 3, 0); const v = await p.page.evaluate(() => ['#m0', '#m1'].map((s) => { const mon = document.querySelector(`#bt ${s} .mon`), im = mon.querySelector('.mma-idle').getBoundingClientRect(), mr = mon.getBoundingClientRect(); return { k: +mon.style.getPropertyValue('--mma-k'), h: im.height, foot: Math.round(im.bottom - mr.bottom) }; })); assert.deepEqual(p.errors, []); return v; };
-  const a = await k(''), b = await k('&mmSize=1');
-  assert.ok(Math.abs(a[0].k - 0.91) < 1e-6 && Math.abs(a[1].k - 0.91) < 1e-6, `通常は今までの倍率（${a[0].k}・${a[1].k}）`);
+  // 2026-10-18 REV3：体格サイズ（ラズック1・ソラモ2・ノビトン2・ガウル3・フルーネ3・レグナス3・ジオル4）は正式採用＝通常のプレイで F
+  const f = await k(''), a = await k('&mmSize=old'), b = await k('&mmSize=1');
+  assert.ok(f[0].k > f[1].k * 1.25, `通常は正式＝ジオル（4）がソラモ（2）より大きい（${f[0].k}・${f[1].k}）`);
+  assert.ok(Math.abs(a[0].k - 0.91) < 1e-6 && Math.abs(a[1].k - 0.91) < 1e-6, `?mmSize=old は今までの倍率（${a[0].k}・${a[1].k}）`);
   assert.ok(Math.abs(b[0].k - 0.91) < 1e-6, `ジオル（サイズ4）＝100%（${b[0].k}）`);
   assert.ok(Math.abs(b[1].k - 0.91 * 0.8) < 1e-6, `ソラモ（サイズ2）＝80%（${b[1].k}）`);
   assert.ok(Math.abs(b[1].h / a[1].h - 0.8) < 0.02, `ソラモの立ち絵の高さ 80%（${(b[1].h / a[1].h).toFixed(3)}）`);
-  for (const x of [...a, ...b]) assert.equal(x.foot, 0, '足もと（立ち絵の下端）は床＝箱の下端のまま');
+  for (const x of [...f, ...a, ...b]) assert.equal(x.foot, 0, '足もと（立ち絵の下端）は床＝箱の下端のまま');
 });
 
 test('BTB-4：はなビンタの絵文字・フルーネ技10 の根と命中（専用7枚）', { skip: SKIP, timeout: 240000 }, async () => {
