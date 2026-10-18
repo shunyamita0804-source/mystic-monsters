@@ -150,8 +150,10 @@ test('VP-06：モンスターの鳴き声 14本（7体×normal／sad）＝派生
   assert.match(HTML, /document\.body\.appendChild\(el\);monCry\(x\.sp,"normal",650,/, 'A：市場で仲間入り');
   assert.match(HTML, /が生まれた！`\);try\{monCry\(c\.sp,"normal",350\)\}catch\(e\)\{\}/, 'A：合体の誕生');
   assert.match(HTML, /function rnPick\(uid\)\{[^\n]*monCry\(x\.sp,"normal",120,[^\n]*\{perMs:10000,gapMs:6000\}\)\}/, 'B：牧場のタップ（同じ子10秒）');
-  assert.match(rd('js/chapter/world-board.js'), /feel\('chapter\.start'\); if \(m\) monCry\(m\.sp, 'normal', 1300,/, 'C：Chapter 1 の開始の俯瞰のあと');
-  assert.match(rd('js/chapter/field-view.js'), /feel\('monster\.enter'\); \{ const S0 = gS\(\), mm = S0 && S0\.m; if \(!quick && mm\) monCry\(mm\.sp, 'normal', 950,/, 'C：Chapter 2 の歩いて入る');
+  // 2026-10-18 REV3 D2：Chapter の開始では鳴かない（Ch1 の俯瞰のあと・Ch2 の歩いて入るの鳴き声は外した）。D3：イベントで1回（cryAfter＝NPC の声のあと）
+  assert.doesNotMatch(rd('js/chapter/world-board.js'), /feel\('chapter\.start'\); if \(m\) monCry/, 'C：Chapter 1 の開始では鳴かない');
+  assert.doesNotMatch(rd('js/chapter/field-view.js'), /feel\('monster\.enter'\); \{ const S0 = gS\(\), mm = S0 && S0\.m; if \(!quick && mm\) monCry/, 'C：Chapter 2 の歩いて入るでも鳴かない');
+  for (const f of ['js/chapter/world-board.js', 'js/chapter/field-view.js']) assert.match(rd(f), /A\.cryAfter\(/, `${f}：イベントの鳴き声は cryAfter`);
   assert.match(rd('js/chapter/world-board.js'), /if \(foe && foe\.sp != null\) monCry\(foe\.sp, 'normal', 800,/, 'D：野生・レアの相手（ライバルは無し）');
   assert.match(HTML, /if\(!win\)monCry\(sp,"sad",5050,\(\)=>b\.isConnected&&b\.dataset\.rj==="lose",\{gapMs:0\}\);else if\(window\.MM_CRY_WIN\)/, 'E：LOSE の曲のあと・WIN は既定で無し');
   for (const f of ['js/battle/stage.js', 'js/battle/art25d.js', 'js/battle/rules.js', 'js/chapter/dice-cube.js', 'js/chapter/dice-renderer.js']) assert.doesNotMatch(rd(f), /\.cry\(|monCry/, `${f}：バトルの進行・サイコロでは鳴かない`);

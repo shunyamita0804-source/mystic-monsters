@@ -593,6 +593,22 @@
     if (ok || r === 'wait') { cs.last = now; cs.per[key] = now; }
     return ok;
   }
+  // 2026-10-18 REV3 D3・D7：イベントの鳴き声＝NPC の声が鳴っている・待っている間は待って、終わってから1回（最大 queueMs＝既定 7秒・過ぎたら鳴らさない）。
+  //  待てるのは1つだけ（新しい依頼が古い依頼を取り消す＝二重に鳴かない・古いタイマーで遅れて鳴かない）。when() が偽になったら（画面が変わった）鳴らさない。
+  //  戻り値＝取り消す関数。鳴らした・やめた結果は VOICE_LOG（cry: true）
+  const cq = { tok: 0 };
+  function cryAfter(sp, kind = 'normal', opts = {}) {
+    const tok = ++cq.tok, t0 = Date.now(), qms = opts.queueMs != null ? opts.queueMs : 7000, when = typeof opts.when === 'function' ? opts.when : null;
+    const npcBusy = () => (vs.cur && !/^cry_/.test(vs.cur.id)) || (vs.wantId && !/^cry_/.test(vs.wantId));
+    const tick = () => {
+      if (tok !== cq.tok) return;
+      try { if (when && !when()) return vlog('cry_' + String(sp), 'gone', { cry: true }); } catch (e) { return; }
+      if (npcBusy()) { if (Date.now() - t0 > qms) return vlog('cry_' + String(sp), 'queue-timeout', { cry: true }); return void setTimeout(tick, 120); }
+      cry(sp, kind, Object.assign({ gapMs: 3000 }, opts, { delay: undefined }));
+    };
+    setTimeout(tick, Math.max(0, opts.delay || 0));
+    return () => { if (tok === cq.tok) cq.tok++; };
+  }
   /** これから鳴らすかもしれない鳴き声を圧縮のまま先に取る（デコードは鳴らすとき） */
   const cryWarm = (sp, kinds = ['normal']) => { const key = typeof sp === 'number' ? CRY_KEYS[sp] : sp; return key ? voiceWarm(kinds.map((k) => `cry_${key}_${k}`)) : 0; };
   const voiceSettings = () => ({ on: vs.on, vol: vs.vol });
@@ -670,7 +686,7 @@
   const registryOf = (kind) => (kind === 'se' ? Object.fromEntries(Object.keys(SEF).map((k) => [k, { srcs: [...SEF[k].srcs], gain: SEF[k].gain, silent: !!SEF[k].silent, maxMs: SEF[k].maxMs }])) : Object.fromEntries(Object.keys(BGM).map((k) => [k, { ...BGM[k], srcs: [...BGM[k].srcs] }])));
 
   root.MMAUDIO = fz({ SCENES, SCENE_ALIAS, SE, FADE, registerBgm, registerSe, registerAll, clearRegistry, registryOf, prefetchSe, prefetchBgm, resetBgmPos, attachLegacy, resolveScene, resolveBgm, scene, stopBgm, bgmTime, seekBgm, se, setVolume, setMuted, unlock, wake, context, legacyInput, status, seLog: () => SE_LOG.slice(),
-    registerVoice, voice, stopVoice, setVoice, voiceSettings, voiceStatus, voicePrefetch, voiceWarm, voicePlaying, voiceResolve, voiceAliases: () => ({ ...VALIAS }), voiceIds: () => Object.keys(VOICE).filter((k) => !VOICE[k].cry), cry, cryWarm, cryIds: () => Object.keys(VOICE).filter((k) => VOICE[k].cry), CRY_KEYS, cryReset: () => { cs.last = 0; cs.per = {}; }, voiceBlocked: () => VOICE_BLOCKED, voiceNow: () => (vs.cur ? vs.cur.id : null), voiceLog: () => VOICE_LOG.slice(), playLog: () => PLAY_LOG.map((x) => ({ ...x })), VOICE_DEFAULT: VDEF });
+    registerVoice, voice, cryAfter, stopVoice, setVoice, voiceSettings, voiceStatus, voicePrefetch, voiceWarm, voicePlaying, voiceResolve, voiceAliases: () => ({ ...VALIAS }), voiceIds: () => Object.keys(VOICE).filter((k) => !VOICE[k].cry), cry, cryWarm, cryIds: () => Object.keys(VOICE).filter((k) => VOICE[k].cry), CRY_KEYS, cryReset: () => { cs.last = 0; cs.per = {}; }, voiceBlocked: () => VOICE_BLOCKED, voiceNow: () => (vs.cur ? vs.cur.id : null), voiceLog: () => VOICE_LOG.slice(), playLog: () => PLAY_LOG.map((x) => ({ ...x })), VOICE_DEFAULT: VDEF });
   try { if (root.document) { ['pointerdown', 'touchend', 'keydown'].forEach((e) => root.document.addEventListener(e, unlock, { passive: true })); root.document.addEventListener('visibilitychange', onVisibility); }
     if (root.addEventListener) { root.addEventListener('pageshow', () => { st.hidden = !!(root.document && root.document.hidden); wake(); }); root.addEventListener('focus', () => wake()); } } catch (e) {}
 })(typeof window !== 'undefined' ? window : globalThis);

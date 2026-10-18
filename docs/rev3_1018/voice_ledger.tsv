@@ -1,0 +1,77 @@
+id	話者	台詞（書き起こし）	状態	使う場所（コードの行）
+astrad_001	astrad	待っていたぞ。	登録のみ（場面が未実装）	
+astrad_002	astrad	全力で来い！	登録のみ（場面が未実装）	
+elliot_001	elliot	おや、フィナさん。ちょうどいいところへ。この石板に刻まれた記号、並び方が実に面白くてね。ああ、失礼。初めまして、エリオットです。ここではモンスターの記録と新しい命が生まれる仕組みを研究しているんだ。君の相棒のこともぜひ教えてほしいな。	使用中	js/npc/npc-events.js:26
+elliot_002	elliot	おや、来てくれたんだね。今日も何か新しい発見がありそうだ。	使用中	js/npc/voice-cues.js:20
+karen_001	karen	フィナ、いらっしゃい。もちろん。初めまして、私はカレン。ここにはいろんな個性のモンスターがいるよ。強さも大事だけど、何より自分が一緒に育てたいと思える子を選んでね。きっと素敵な相棒になるから。	使用中	js/npc/npc-events.js:20
+karen_002	karen	いらっしゃい。	使用中	index.html:6093 index.html:6137 js/npc/voice-cues.js:19
+genshin_001	genshin	フィナか。特訓じゃな。強さに近道はない。己と向き合い、日々鍛えることじゃ。	使用中	js/npc/npc-events.js:32
+genshin_002	genshin	来たか。己と向き合うのじゃ。	使用中	js/npc/voice-cues.js:23
+cedric_001	cedric	さあ、いよいよ開幕です！	使用中	index.html:5788
+serge_001	serge	ようこそ。	使用中	index.html:4546 js/npc/voice-cues.js:30
+dan_001	dan	お、フィナ。来るなら先に言ってくれよ。ま、いいけどな。そっちは初めましてだな。俺はダン。このベースキャンプじゃ、旅に出る前の準備や休息を手伝ってる。必要な時は気軽に頼ってくれよ。	使用中	js/npc/npc-events.js:39
+dan_002	dan	お、来たな。少し休んでくか？出発の準備ならいつでも手伝うぞ。	使用中	js/npc/voice-cues.js:16
+nick_001	nick	おお、フィナ。元気そうだな。初めまして、俺はニックだ。この牧場じゃモンスターたちを預かって世話してる。どんな子にもそれぞれの良さがあるからな。安心して任せてくれ。しっかり面倒を見るからな。	使用中	js/npc/npc-events.js:23
+nick_002	nick	おお、よく来たな。モンスターたちは今日も元気だぞ。	使用中	js/npc/voice-cues.js:17
+fina_001	fina	次がある！	未配置（意味の合う場面なし）	
+fina_002	fina	悔しいね。でも大丈夫。次はどうすれば勝てるか一緒に考えてみよう。	未配置（意味の合う場面なし）	
+fina_003	fina	準備はできた？道中は何があるかわからないから、焦らず一緒に進んでいこう。	未配置（意味の合う場面なし）	
+fina_004	fina	見て見て！	使用中	js/npc/voice-cues.js:25 js/chapter/configs/ch1a.js:215 js/chapter/configs/ch1a.js:263
+fina_005	fina	やったね！	使用中	index.html:6108 js/npc/npc-events.js:154 js/npc/voice-cues.js:26
+fina_006	fina	やったね！優勝だよ！あなたとこの子が頑張ってきた結果だね。本当におめでとう。	未配置（意味の合う場面なし）	
+fina_007	fina	もう…	使用中	index.html:4570
+fina_008	fina	なんだろう？	使用中	js/chapter/world-driver.js:214 js/chapter/configs/ch1a.js:260
+fina_009	fina	はじめまして。私はフィナ。わからないことがあったら何でも聞いてね。これからよろしく。	使用中	index.html:4543 index.html:6105
+fina_010	fina	すごいね。	未配置（意味の合う場面なし）	
+fina_011	fina	うーん。	使用中	index.html:4541 js/npc/npc-events.js:155 js/npc/voice-cues.js:27
+fina_012	fina	うん。	使用中	js/npc/npc-events.js:121 js/chapter/configs/ch1a.js:205
+fina_013	fina	おめでとう！	未配置（意味の合う場面なし）	
+fina_014	fina	えへへ	使用中	index.html:4551 index.html:4555
+fina_015	fina	さあ、行こう！	未配置（意味の合う場面なし）	
+fina_016	fina	こんにちは。	使用中	index.html:4539
+fina_017	fina	ここまで頑張って育ててきたんだもん。自信を持って。私も応援してるからね。	未配置（意味の合う場面なし）	
+fina_018	fina	大丈夫かな？	未配置（意味の合う場面なし）	
+fina_019	fina	無理しないでね。	未配置（意味の合う場面なし）	
+fina_020	fina	この子が最初の相棒だね。これからどんな風に成長していくのか、私も楽しみだな。	使用中	js/npc/npc-events.js:150
+fina_021	fina	カレン、モンスターたちの調子はどう？この人初めて市場に来たんだ。相棒選びを手伝ってくれない？	使用中	js/npc/npc-events.js:19
+fina_022	fina	ニック、こんにちは。今日はこの人に牧場を見せてあげたいんだ。モンスターたちのこと教えてくれる？	使用中	js/npc/npc-events.js:22
+fina_023	fina	ダン、また何か直してるの？ 今日はこの人の旅支度をお願いしたくてさ。ちょっと見てもらえる？	使用中	js/npc/npc-events.js:38
+fina_024	fina	エリオット、その石板。また夢中になってる。あの、ちょっといい？今日はこの人に研究所を案内したいんだけど。	使用中	js/npc/npc-events.js:25
+fina_025	fina	ヴァルガスさん、初めまして。闘技場での挑戦についてお話を伺ってもよろしいでしょうか？	使用中	js/npc/npc-events.js:28
+fina_026	fina	ベルナさん、旅に必要な道具を揃えたいんだけど、この人、ここのお店は初めてなの。おすすめのアイテム、教えてもらえる？	使用中	js/npc/npc-events.js:34
+fina_027	fina	ゲンシンさん、今日はこの人の相棒に特訓を受けさせたくて、ここでの鍛え方を教えてもらえますか？	使用中	js/npc/npc-events.js:31
+berna_001	shop	おやおや、フィナちゃんじゃないかい。今日は新しいお客さんを連れてきたんだね。ここには冒険に役立つ道具などがたくさん揃っているよ。旅の支度は大事だからね。慌てずゆっくり見ておいき。	使用中	js/npc/npc-events.js:35
+berna_002	shop	おや、また来てくれたのかい？今日もいろいろ揃えてあるよ。	使用中	js/npc/voice-cues.js:18
+ragnas_001	ragnas	ついに来たか。	登録のみ（場面が未実装）	
+ragnas_002	ragnas	お前の力、見せてみろ！	登録のみ（場面が未実装）	
+ryu_001	ryu	へぇ、やるじゃん。今回はお前の勝ちだ。でも、次はそう簡単にいかないからな。	未配置（意味の合う場面なし）	
+ryu_002	ryu	俺はリュウ。名前くらい覚えておいてな。	使用中	index.html:4567
+ryu_003	ryu	やるじゃん！	使用中	index.html:5893 js/npc/voice-cues.js:33
+ryu_004	ryu	よう。	意図的に未使用（cue off）	
+ryu_005	ryu	お、来たな。	未配置（意味の合う場面なし）	
+ryu_006	ryu	さあ、勝負だ！	未配置（意味の合う場面なし）	
+ryu_007	ryu	じゃあな。	未配置（意味の合う場面なし）	
+ryu_008	ryu	へぇ、ここまで来たんだ。ちょうどいい。俺の相棒がどれだけ強くなったか、見せてやるよ。	未配置（意味の合う場面なし）	
+ryu_009	ryu	へへ。	使用中	index.html:5894 js/npc/voice-cues.js:32
+ryu_010	ryu	へへ、悪くなかったけど、まだまだだな。もっと強くなってから、また勝負しようぜ。	未配置（意味の合う場面なし）	
+ryu_011	ryu	まだまだ、だな。	未配置（意味の合う場面なし）	
+leona_001	leona	よくここまで来ましたね。	登録のみ（場面が未実装）	
+leona_002	leona	あなたの信念が本物なら、その力、私に示してみなさい！	登録のみ（場面が未実装）	
+vargas_001	vargas	ほう、ここまで来たか。見事だ。私はヴァルガス。この闘技場では特別な大会が開催される。しっかり鍛錬をして臨むことだ。	使用中	js/npc/npc-events.js:29
+vargas_002	vargas	よく来たな、挑戦者。相棒の力を信じ、次の戦いへ進むがいい。	使用中	js/npc/voice-cues.js:22
+genshin_ack	genshin	うむ	音源なし（有料 60本に無い「うむ」＝鳴らない）	js/npc/voice-cues.js:34
+vargas_ack	vargas	うむ	音源なし（有料 60本に無い「うむ」＝鳴らない）	js/npc/voice-cues.js:35
+cry_solamo_normal	モンスター（solamo）	正式	使用中	市場の仲間入り（index.html gotShow）・合体の誕生（fuse）・牧場でタップ（rnPick）・野生／レアの遭遇＝相手（world-board encounter・field-view）・イベント＝能力マス／出来事／冒険リアクション／宝箱／宝の行き止まり／食事／分かれ道（world-board evCry・field-view evCry）・大会の優勝（p9VictoryShow）。Chapter の開始では鳴かない（REV3 D2）
+cry_solamo_sad	モンスター（solamo）	悲しみ	使用中	バトルの LOSE の曲のあと（index.html resultJingle）
+cry_gauru_normal	モンスター（gauru）	正式	使用中	市場の仲間入り（index.html gotShow）・合体の誕生（fuse）・牧場でタップ（rnPick）・野生／レアの遭遇＝相手（world-board encounter・field-view）・イベント＝能力マス／出来事／冒険リアクション／宝箱／宝の行き止まり／食事／分かれ道（world-board evCry・field-view evCry）・大会の優勝（p9VictoryShow）。Chapter の開始では鳴かない（REV3 D2）
+cry_gauru_sad	モンスター（gauru）	悲しみ	使用中	バトルの LOSE の曲のあと（index.html resultJingle）
+cry_nobiton_normal	モンスター（nobiton）	正式	使用中	市場の仲間入り（index.html gotShow）・合体の誕生（fuse）・牧場でタップ（rnPick）・野生／レアの遭遇＝相手（world-board encounter・field-view）・イベント＝能力マス／出来事／冒険リアクション／宝箱／宝の行き止まり／食事／分かれ道（world-board evCry・field-view evCry）・大会の優勝（p9VictoryShow）。Chapter の開始では鳴かない（REV3 D2）
+cry_nobiton_sad	モンスター（nobiton）	悲しみ	使用中	バトルの LOSE の曲のあと（index.html resultJingle）
+cry_jiol_normal	モンスター（jiol）	正式	使用中	市場の仲間入り（index.html gotShow）・合体の誕生（fuse）・牧場でタップ（rnPick）・野生／レアの遭遇＝相手（world-board encounter・field-view）・イベント＝能力マス／出来事／冒険リアクション／宝箱／宝の行き止まり／食事／分かれ道（world-board evCry・field-view evCry）・大会の優勝（p9VictoryShow）。Chapter の開始では鳴かない（REV3 D2）
+cry_jiol_sad	モンスター（jiol）	悲しみ	使用中	バトルの LOSE の曲のあと（index.html resultJingle）
+cry_regnas_normal	モンスター（regnas）	正式	使用中（ライバルの相棒＝相手として鳴くのは野生・レアだけ＝今は鳴る場面なし）	市場の仲間入り（index.html gotShow）・合体の誕生（fuse）・牧場でタップ（rnPick）・野生／レアの遭遇＝相手（world-board encounter・field-view）・イベント＝能力マス／出来事／冒険リアクション／宝箱／宝の行き止まり／食事／分かれ道（world-board evCry・field-view evCry）・大会の優勝（p9VictoryShow）。Chapter の開始では鳴かない（REV3 D2）
+cry_regnas_sad	モンスター（regnas）	悲しみ	使用中（ライバルの相棒＝相手として鳴くのは野生・レアだけ＝今は鳴る場面なし）	バトルの LOSE の曲のあと（index.html resultJingle）
+cry_flurene_normal	モンスター（flurene）	正式	登録のみ（未解禁＝QA の試聴だけ）	市場の仲間入り（index.html gotShow）・合体の誕生（fuse）・牧場でタップ（rnPick）・野生／レアの遭遇＝相手（world-board encounter・field-view）・イベント＝能力マス／出来事／冒険リアクション／宝箱／宝の行き止まり／食事／分かれ道（world-board evCry・field-view evCry）・大会の優勝（p9VictoryShow）。Chapter の開始では鳴かない（REV3 D2）
+cry_flurene_sad	モンスター（flurene）	悲しみ	登録のみ（未解禁＝QA の試聴だけ）	バトルの LOSE の曲のあと（index.html resultJingle）
+cry_razuck_normal	モンスター（razuck）	正式	登録のみ（未解禁＝QA の試聴だけ）	市場の仲間入り（index.html gotShow）・合体の誕生（fuse）・牧場でタップ（rnPick）・野生／レアの遭遇＝相手（world-board encounter・field-view）・イベント＝能力マス／出来事／冒険リアクション／宝箱／宝の行き止まり／食事／分かれ道（world-board evCry・field-view evCry）・大会の優勝（p9VictoryShow）。Chapter の開始では鳴かない（REV3 D2）
+cry_razuck_sad	モンスター（razuck）	悲しみ	登録のみ（未解禁＝QA の試聴だけ）	バトルの LOSE の曲のあと（index.html resultJingle）

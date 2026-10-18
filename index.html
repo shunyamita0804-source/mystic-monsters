@@ -4537,8 +4537,11 @@ const opLock=()=>!!S.playerNamePending&&opOn();
 function opGuide(c,m){if(S.playerNamePending&&opOn())return c[3]=="townGuild()"?"go":"lk";if(!m&&!S.box.length&&finaFlags().op=="done"&&c[3]=="market()")return "go";return ""}
 const OPEN_TALK={
  first:[{npc:"fina",expression:"normal",voice:"fina_hello",text:"こんにちは。あの……もしかして、今日ミストリアで聖獣士登録をする予定の方ですか？",choices:[{id:"yes",label:"はい"},{id:"no",label:"いいえ"}]}],
- firstYes:[{npc:"fina",expression:"happy",text:"やっぱり！ 話は聞いてるよ。"},{expression:"guide",text:"私はフィナ。まずは聖獣士管理局まで案内するね。"}],
- firstNo:[{npc:"fina",expression:"surprised",text:"えっ、違うの？"},{expression:"troubled",voice:"fina_hmm",text:"……話は聞いてるんだけどな。"},{expression:"smile",text:"まあ、一度管理局で確認してみよっか。"}],
+ firstYes:[{npc:"fina",expression:"happy",text:"やっぱり！ 話は聞いてるよ。"}],
+ firstNo:[{npc:"fina",expression:"surprised",text:"えっ、違うの？"},{expression:"troubled",voice:"fina_hmm",text:"……話は聞いてるんだけどな。"}],
+ // 2026-10-18 REV3 D5：はじめての対面の自己紹介＝フィナ 009（有料ボイス・書き起こしのまま・字幕は声の区切りに合わせる）。はい／いいえのどちらのあとも1回だけ（新しいゲームの序盤だけ＝登録済みの古いセーブには出ない）
+ firstHello:[{npc:"fina",expression:"smile",voice:"fina_009",text:"はじめまして。私はフィナ。"},{expression:"smile",sub:2440,text:"わからないことがあったら何でも聞いてね。"},{expression:"smile",sub:5300,text:"これからよろしく。"}],
+ firstGo:{yes:[{npc:"fina",expression:"guide",text:"まずは聖獣士管理局まで案内するね。"}],no:[{npc:"fina",expression:"smile",text:"まあ、一度管理局で確認してみよっか。"}]},
  hint:"聖獣士管理局は、あの光っている建物だよ。タップしてね！",
  serge:[{npc:"serge",voice:"serge_welcome",text:"ようこそ、聖獣士管理局へ。登録を担当しております、セルジュです。"},{npc:"fina",expression:"smile",text:"セルジュさん、今日登録の人を連れてきたよ！"},{npc:"serge",text:"ありがとうございます、フィナさん。"},{npc:"serge",text:"それでは、聖獣士の登録を行います。こちらの登録証に、お名前をご記入ください。"}],
  confirm:n=>[{npc:"serge",text:`「${n}」さん、ですね。このお名前で登録してよろしいですか？`,choices:[{id:"ok",label:"はい"},{id:"fix",label:"いいえ"}]}],
@@ -4557,10 +4560,11 @@ const OPEN_TALK={
 // 2026-10-08：リュウの正式の表情5種（台詞は変えない）＝驚き → 自信 → 柔らかい笑み → 真剣 → 自信
 // 2026-10-12 開発21（試遊 No.005・F 案＝試遊用の仮の台詞・最終確定ではない）：少し生意気で自信家・軽く煽るが嫌味すぎない。旧知の掛け合い（フィナと同じ町の出身）は残して重複をなくす。
 //  返答3択はリュウの一言だけが分かれて共通の会話へ戻る（報酬・セーブの進行に差はない）。最後の「先に『はじまりの草原』へ」は Chapter 1 のライバル戦（tut_rival）へつながる
+// 2026-10-18 REV3 D4：初対面の自己紹介＝リュウ 002（有料ボイス）。字幕は声の書き起こし「俺はリュウ。名前くらい覚えておいてな。」（旧「ま、…覚えておいてよ。」から語尾だけ＝声と字幕を一致させる）
 OPEN_TALK.ryu=n=>[{npc:"ryu",expression:"surprise",text:"あれ？ フィナじゃないか！"},{npc:"fina",expression:"surprised",text:"リュウ！？ どうしてミストリアにいるの？"},
  {npc:"ryu",expression:"confident",text:"へえ、君が今日登録した新人？ ちゃんと大会まで来られるのか？"},{npc:"fina",expression:"troubled",text:"リュウ！ 初対面からそんな言い方しないの。"},
  {npc:"fina",expression:"guide",text:`${n}さん、この人はリュウ。私と同じ町の出身で、小さい頃からの知り合いなの。`},
- {npc:"ryu",expression:"soft_smile",text:"俺はリュウ。ま、名前くらい覚えておいてよ。",choices:[{id:"a",label:"絶対に追いついてみせる！"},{id:"b",label:"勝負はやってみないと分からないよ"},{id:"c",label:"ずいぶん自信があるんだね"}]}];
+ {npc:"ryu",expression:"soft_smile",voice:"ryu_002",text:"俺はリュウ。名前くらい覚えておいてな。",choices:[{id:"a",label:"絶対に追いついてみせる！"},{id:"b",label:"勝負はやってみないと分からないよ"},{id:"c",label:"ずいぶん自信があるんだね"}]}];
 OPEN_TALK.ryuReply={a:[{npc:"ryu",expression:"confident",text:"へえ、言うじゃん！ その言葉、覚えとくよ。"}],b:[{npc:"ryu",expression:"soft_smile",text:"いいね、その度胸。ちょっとは楽しめそうだ。"}],c:[{npc:"ryu",expression:"serious",text:"自信じゃないさ。勝つつもりでいるだけだよ。"}]};
 OPEN_TALK.ryuEnd=n=>[{npc:"ryu",expression:"serious",text:"俺は先にSランクまで駆け上がって、その先のレジェンドにも挑戦する。"},{npc:"ryu",expression:"confident",text:"先に『はじまりの草原』へ行ってる。次に会うときは、もう少し歯ごたえがあるといいな。じゃあな！"},
  {npc:"fina",expression:"troubled",voice:"fina_hey",text:"もう、リュウったら……。昔からああなの。でも、実力は本物なんだよ。"},{npc:"fina",expression:"smile",text:"私たちも負けてられないね！"}];
@@ -4596,7 +4600,7 @@ let OP_TALKING=false;
 /** 街：登録前の導入。フィナの声かけ（まだなら）→ 管理局を光らせ、案内の一言（名前は呼ばない） */
 function opTownTalk(){if(!S.playerNamePending||OP_TALKING)return;const f=finaFlags(),hint=()=>{const w=$(".tlow"),b=$("#msg");if(!w||!b)return;w.classList.add("on");const d=w.querySelector(".dlg");if(d){d.className="dlg fina nst r";if(!d.querySelector(".nstf"))d.insertAdjacentHTML("afterbegin",`<img class="nstf" src="${finaStandSrc()}" alt="" decoding="async">`);const i=d.querySelector(".dsys");if(i)i.remove()}b.innerHTML=`<span class="dnm">フィナ</span>${finaMsg(OPEN_TALK.hint)}`};
  if(f.op=="guide"){opCurtainOff();return hint()}
- OP_TALKING=true;const cur=!!$("#opcur");setTimeout(()=>{if(!$(".map.town")){OP_TALKING=false;opCurtainOff();return}const t=MMNPC.talk(OPEN_TALK.first,{kind:"fina",presentation:"standard",big:true,scene:TOWN_BG,branches:{yes:OPEN_TALK.firstYes,no:OPEN_TALK.firstNo}});opCurtainOff();t.then(()=>{OP_TALKING=false;f.op="guide";save();hint()})},cur?0:350)}
+ OP_TALKING=true;const cur=!!$("#opcur");setTimeout(()=>{if(!$(".map.town")){OP_TALKING=false;opCurtainOff();return}const t=MMNPC.talk(OPEN_TALK.first,{kind:"fina",presentation:"standard",big:true,scene:TOWN_BG,branches:{yes:OPEN_TALK.firstYes.concat(OPEN_TALK.firstHello,OPEN_TALK.firstGo.yes),no:OPEN_TALK.firstNo.concat(OPEN_TALK.firstHello,OPEN_TALK.firstGo.no)}});opCurtainOff();t.then(()=>{OP_TALKING=false;f.op="guide";save();hint()})},cur?0:350)}
 /** 聖獣士管理局（登録前）：セルジュが登録を受け付ける → 聖獣士登録（名前） */
 function opBureau(){bgm("bureau");p9Immersive(true);
  $("#app").innerHTML=`<div class="bu opbu" style="--bu-bg:url(${BUREAU_BG})"><div class="bubg" aria-hidden="true"></div><header class="buhd"><button class="burb" data-nav="back" onclick="lobby()" aria-label="街にもどる">←</button><div class="buplq"><b>聖獣士管理局</b></div><span class="burb sp" aria-hidden="true"></span></header></div>`;
@@ -5799,7 +5803,7 @@ function p9VictoryShow(m,rank){return new Promise(res=>{const k=m&&VICTORY_IMG[m
  document.body.appendChild(d);const im=d.querySelector(".vicmon"),T=[];let done=false;const t0=performance.now();
  const fin=()=>{if(done)return;done=true;T.forEach(clearTimeout);d.classList.add("out");setTimeout(()=>{d.remove();res()},calm?0:320)};
  d.onclick=()=>{if(performance.now()-t0>350)fin()};
- Promise.race([im.decode?im.decode().catch(()=>{}):Promise.resolve(),new Promise(r=>setTimeout(r,1200))]).then(()=>{if(done)return;d.classList.add("go");T.push(setTimeout(fin,calm?1200:2200))})})}
+ Promise.race([im.decode?im.decode().catch(()=>{}):Promise.resolve(),new Promise(r=>setTimeout(r,1200))]).then(()=>{if(done)return;d.classList.add("go");T.push(setTimeout(fin,calm?1200:2200));try{window.MMAUDIO&&MMAUDIO.cryAfter&&MMAUDIO.cryAfter(m.sp,"normal",{delay:350,when:()=>d.isConnected})}catch(e){} /* 2026-10-18 REV3 D3：優勝の絵が出た瞬間に1回（NPC の声のあと） */})})}
 async function p9TourOpen(k){const on=cedricOn();if(on)bgm("cedric");await p9TourIntro(k,on); /* 2026-10-09 試遊（セドリックの導入の曲の鳴り始めが遅い）：ランク開始の演出（E は約4秒）と同時に CEDRIC を鳴らす（旧：演出が終わってセドリックの会話を出すとき） */
  if(on){const f=finaFlags(),first=!f.cedricWelcome;if(first){f.cedricWelcome=1;save()}let drawn=false;try{await MMNPC.talk(CEDRIC_EV.open(k,first),{kind:"event",big:true,scene:CED_SCENE(k,"booth"),noFig:true,onClose:()=>{drawn=true;P9_ENTER=true;board()}})}catch(e){}if(drawn)return} // 2026-10-07：大会前の導入の曲（CEDRIC）→ 対戦表で対戦表の曲 // 2026-10-07 試遊：閉じ始めに対戦表を下に描く（会話のフェードの間に受付の画面が一瞬見えていた）
  P9_ENTER=true;board()}

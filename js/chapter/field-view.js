@@ -772,7 +772,7 @@
     const r = w.getBoundingClientRect(), sc = (w.offsetHeight ? r.height / w.offsetHeight : 1) || 1;
     const dy = Math.max(120, ((root.innerHeight || 800) - r.top + 12) / sc);   // 画面の下の外（カメラの拡大を考えた距離）
     w.style.translate = `0 ${dy.toFixed(0)}px`; fw.classList.remove('chf-monwait'); w.dataset.enter = '1';
-    anim('walk', { speed: 1 }); feel('monster.enter'); { const S0 = gS(), mm = S0 && S0.m; if (!quick && mm) monCry(mm.sp, 'normal', 950, () => onField()); }   // 2026-10-17 C：Chapter の開始でモンスターが歩いて入る（4歩の音のあと・開始の演出のときだけ）   // 2026-10-06：画面の下から歩いて入る（正式の4歩の音を1回だけ。1マスごとには鳴らさない）
+    anim('walk', { speed: 1 }); feel('monster.enter');   // 2026-10-18 REV3 D2：Chapter の開始では鳴かない（旧 2026-10-17 C の鳴き声は外した＝フィナの説明・開始の SE と重ねない）   // 2026-10-06：画面の下から歩いて入る（正式の4歩の音を1回だけ。1マスごとには鳴らさない）
     const a = w.animate([{ translate: `0 ${dy.toFixed(0)}px` }, { translate: '0 0' }], { duration: quick ? 420 : MON_ENTER.ms, easing: 'cubic-bezier(.22,.62,.3,1)', fill: 'forwards' });
     try { await a.finished; } catch (e) {}
     w.style.translate = ''; try { a.cancel(); } catch (e) {} delete w.dataset.enter;
@@ -951,7 +951,7 @@
   }
   function chfPick(id) {
     const m = gS() && gS().m; if (!chfActive(m) || busyGet()) return;
-    const r = P8().chooseBranch(gS(), m, id); if (!r.ok) return chfBoard(); doSave(); feel('branch.select', { id });   // 2026-10-06：道を選んだ瞬間（BRANCH_SELECT）
+    const r = P8().chooseBranch(gS(), m, id); if (!r.ok) return chfBoard(); doSave(); feel('branch.select', { id }); evCry(250);   // 2026-10-06：道を選んだ瞬間（BRANCH_SELECT）
     const sh = $('#chf-ui .chbr'); if (sh) sh.remove(); document.querySelectorAll('#chf .chf-brhint,#chf .chf-brgate').forEach((e) => e.remove());
     V.camLoose = 0;   // シートが消えたので、カメラは画像の中へ戻る（追従でなめらかに）
     const fb = MMCH.fieldOf(m).branch || V.g.nodes[id].branch;   // 選んだ道（f.branch は最初の1歩で記録される）
@@ -1147,6 +1147,8 @@
    *  絵と文は同じフレームで出し、その瞬間に音（野生 wild.alert／ライバル rival.appear）。読める間だけ見せて消えてからバトルの案内
    */
   /** 2026-10-17：モンスターの鳴き声（MMAUDIO.cry）。ms 後・when() が真のときだけ（画面が変わっていたら鳴らさない）。NPC の声が優先・全体の間隔は MMAUDIO 側 */
+  /** 2026-10-18 REV3 D3：イベントで連れている子が1回鳴く（NPC の声のあと・待てるのは1つだけ＝MMAUDIO.cryAfter）。world-board の evCry と同じ規則 */
+  function evCry(ms) { try { const A = root.MMAUDIO, S0 = gS(), m = S0 && S0.m; if (!A || !A.cryAfter || !m || m.sp == null) return; if (A.cryWarm) A.cryWarm(m.sp, ['normal']); A.cryAfter(m.sp, 'normal', { delay: ms || 0, when: () => onField() }); } catch (e) { /* 鳴き声は飾り */ } }
   function monCry(sp, kind, ms, when, o) { try { const A = root.MMAUDIO; if (!A || !A.cry || sp == null) return; if (A.cryWarm) A.cryWarm(sp, [kind]); setTimeout(() => { try { if (when && !when()) return; A.cry(sp, kind, o || {}); } catch (e) {} }, ms || 0); } catch (e) {} }
   async function encounterShow(BT, bt, m) {
     const ui = $('#chf-ui'), text = BT.encounter || '', rival = bt === 'rival', cue = rival ? 'rival.appear' : bt === 'rare' ? 'rare.alert' : 'wild.alert';   // 2026-10-06：野生・レア・ライバルは別の正式 SE
@@ -1214,7 +1216,7 @@
         await trainAct(fx.key, `${labOf(fx.key)} +${fx.amount}`);   // 2026-10-06：能力に対応する道具をそばに置き、モンスターが短い特訓の動き（0.8〜1.5秒）→ 実際に上がった能力名・値 → 既存の成長演出
         // 2026-10-04 PHASE E：成長演出（能力のアイコンが浮く → 「ちから +5」→ 正式色のゲージが伸びる（999 を最大とした目盛り）→ 粒子）。枠は正式素材 frame_stat_up のまま。0.6〜1.2秒・タップで短縮
         const gains = [{ key: fx.key, amount: fx.amount }];
-        feel('stat.up', { key: fx.key, amount: fx.amount });   // 2026-10-06：能力UPの表示が出る瞬間（TRAINING_SUCCESS）。道具が出た瞬間は trainAct の train.item
+        feel('stat.up', { key: fx.key, amount: fx.amount }); evCry(150);   // 2026-10-06：能力UPの表示が出る瞬間（TRAINING_SUCCESS）。道具が出た瞬間は trainAct の train.item
         await popup(`<small>${esc(labOf(fx.key))}のマス</small>${growRows(m, gains)}`, `${T.c} grow`, Math.min(holdOf(3, 800), 300), T.frame ? effectAsset(T.frame) : null, (d) => growPlay(d, gains));
         tail = T.t;
       } else if (fx.kind === 'treasure') {
@@ -1223,7 +1225,7 @@
         const P = objPoint(obj); if (P) camFocus(P, 0.45, CA().zoom.focus);
         if (obj && obj.classList.contains('hid')) { obj.classList.remove('hid'); await wait(V.calm ? 0 : 300); }
         if (obj) { obj.classList.add('shake'); await wait(V.calm ? 0 : 320); obj.classList.remove('shake'); const im = obj.querySelector('img[data-open]'); await chestFrames(im); if (im && im.dataset.open) im.src = im.dataset.open; obj.classList.add('open', 'hit'); }
-        feel(['normal', 'rare', 'special'].includes(fx.tier) ? `chest.open.${fx.tier}` : 'chest.open', { tier: fx.tier }); monReact('treasure'); /* 2026-10-06：段階ごとに1つだけ（TREASURE_TIER_1〜3） */ chestSparks(obj);   // 2026-10-04 PHASE E：開封の光の粒
+        feel(['normal', 'rare', 'special'].includes(fx.tier) ? `chest.open.${fx.tier}` : 'chest.open', { tier: fx.tier }); monReact('treasure'); evCry(300); /* 2026-10-06：段階ごとに1つだけ（TREASURE_TIER_1〜3） */ chestSparks(obj);   // 2026-10-04 PHASE E：開封の光の粒
         setMsg(T.t);
         await popup(T.h, T.c, holdOf(3, 900), null, async (d) => { await wait(V.calm ? 0 : 260); if (gold > 0) await goldToHud(g0, g1, d.querySelector('b') || d); });
         if (obj) { obj.classList.remove('hit'); obj.classList.add('used'); }
@@ -1237,6 +1239,7 @@
         await eventLines(fx, card);   // 2026-10-04：出来事の会話（挿絵があれば共通会話の小さな窓、無ければフィナの吹き出し。eventPool[].lines）→ 結果
         await evCardClose(card); card = null;   // 挿絵を消してから能力UP・疲れの演出
         if (fx.kind === 'stat' || fx.kind === 'multi') monReact(fx.amount < 0 ? 'down' : 'up'); else if (fx.kind === 'fatigue') { monReact('rest'); restVeil(); }
+        evCry(150);   // 2026-10-18 REV3 D3：出来事の会話のあと結果が出る瞬間に1回
         setMsg(T.t);
         // 2026-10-04（追加アセット）：休むマス＝焚き火（疲れの回復。ライフではない）、ほかの出来事＝共通の結果の紋章。文は実際の効果（T.h の値）
         { const eff = (T.t || '').slice(String(fx.text || '').length).trim(); if (restTile) { feel('rest.recover'); await resultFx('rest', `空腹 −${fx.recovered}`); } else if (eff) await resultFx('event', eff); }
