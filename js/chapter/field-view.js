@@ -46,11 +46,12 @@
   const gS = () => { try { return S; } catch (e) { return undefined; } };
   const doSave = () => { try { save(); } catch (e) {} };
   // 歩行スプライトの種族は全コマを重ねて置き、見せるコマだけ切り替える（src を差し替えない＝再読み込み・ちらつきなし。停止の絵が先頭）
-  const monHtml = (m) => { const sp = spriteSetOf(m); if (sp) { const I = sp.idle || 0, ord = [I, ...sp.frames.map((_, i) => i).filter((i) => i !== I)]; return `<span class="chf-spr" data-f="${I + 1}" style="--sprh:${sp.h || 0.9}">${ord.map((i) => `<img src="${esc(sp.frames[i])}" data-i="${i}" class="${i === I ? 'on' : ''}" alt="" draggable="false" decoding="async">`).join('')}</span>`; } try { return msv(m); } catch (e) { return ''; } };
+  const monHtml = (m) => { const sp = spriteSetOf(m); if (sp) { const I = sp.idle || 0, ord = [I, ...sp.frames.map((_, i) => i).filter((i) => i !== I)]; return `<span class="chf-spr" data-f="${I + 1}" style="--sprh:${sp.h || 0.9}${sp.foot != null ? `;--sprf:${sp.foot}` : ''}${sp.base != null ? `;--sprb:${sp.base}` : ''}">${ord.map((i) => `<img src="${esc(sp.frames[i])}" data-i="${i}" class="${i === I ? 'on' : ''}" alt="" draggable="false" decoding="async">`).join('')}</span>`; } try { return msv(m); } catch (e) { return ''; } };
   /** 歩行スプライト（config.monsterSprites[種族キー].walk＝{ frames:[…], fps, idle, h, noFlip }）。無い種族は従来の画像＋CSS の上下動 */
   function spriteSetOf(m) {
     const cfg = V.cfg || (root.MMCH && m ? MMCH.configFor(m) : null), P = root.MMP10M, key = P && m ? P.keyOf(m.sp) : null;
     const set = cfg && cfg.monsterSprites && key ? cfg.monsterSprites[key] : null;
+    if (set && set.walk && set.walk.new7 && root.MMQAW && root.MMQAW.legacy) return null;   // 2026-10-18 REV3：?qaWalk=old＝従来（静止の絵）の比較
     return set && set.walk && Array.isArray(set.walk.frames) && set.walk.frames.length ? set.walk : null;
   }
   const labOf = (k) => { try { return LAB[k] || k; } catch (e) { return k; } };
@@ -375,7 +376,8 @@
     const set = SPR.set; if (!set) { SPR.raf = 0; return; }
     const dt = Math.min(100, now - (SPR.last || now)); SPR.last = now;
     SPR.phase += (dt / 1000) * (set.fps || 12) * (0.55 + 0.45 * clamp(SPR.speed, 0, 1));
-    sprShow(Math.floor(SPR.phase) % set.frames.length);
+    const lp = set.loop || null;   // 2026-10-18 REV3：loop＝歩く間に回すコマ（止まっている姿＝idle は正面・歩くのは後ろ姿）
+    sprShow(lp ? lp[Math.floor(SPR.phase) % lp.length] : Math.floor(SPR.phase) % set.frames.length);
     SPR.raf = requestAnimationFrame(sprTick);
   }
   function sprStop() { if (SPR.raf) cancelAnimationFrame(SPR.raf); SPR.raf = 0; SPR.phase = 0; SPR.last = 0; if (SPR.set) sprShow(SPR.set.idle || 0); }

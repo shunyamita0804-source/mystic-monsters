@@ -1222,7 +1222,7 @@ html:has(#app>.chfw),html:has(#app>.chfw) body{background:#0b1636}
 .chf-mon .mon{width:100%;height:100%}
 /* 歩行スプライト（config.monsterSprites。その場歩行の絵を切り替えるだけ・位置は field-view が動かす）：足元を影の位置（箱の94%）にそろえる。上下動・前傾は絵に任せる */
 .chf-mon.spr .mon{position:relative}
-.chf-mon.spr .chf-spr{position:absolute;left:0;right:0;bottom:6%;height:calc(var(--sprh,.9) * 100%);pointer-events:none;user-select:none}
+.chf-mon.spr .chf-spr{position:absolute;left:0;right:0;bottom:calc((var(--sprb,.06) - var(--sprf,0) * var(--sprh,.9)) * 100%);height:calc(var(--sprh,.9) * 100%);pointer-events:none;user-select:none}
 .chf-mon.spr .chf-spr img{position:absolute;left:50%;bottom:0;height:100%;width:auto;max-width:none;transform:translateX(-50%);visibility:hidden;-webkit-user-drag:none}
 .chf-mon.spr .chf-spr img.on{visibility:visible}
 .chf-mon.spr.walk .chf-bob,.chf-mon.spr.walk .chf-msh{animation:none}
@@ -2074,6 +2074,11 @@ button.p15tab.on{color:#3a2410;border-color:#7a4d0c;background:linear-gradient(#
 .p12tr .dcard{background:rgba(18,12,8,.72);border-color:var(--ac)}
 .p12tr .bmsg{background:rgba(255,248,232,.94);color:#3a2410;border-color:var(--ac)}
 .dcardb.p12tc{border-color:var(--ac)}
+/* 2026-10-18 REV3 C2：特訓メニュー＝カードは中身の高さまで伸ばす（375×667 で説明が1文字だけ折り返し・「クリア」の行が下で切れていた）。見出しの旧い絵（「修行」の文字入り）はゲンシンの顔に */
+.ds-s button.dcardb.p12tc{height:auto;min-height:92px}
+.ds-s .djc .rkt{position:relative!important;left:auto;right:auto;top:auto;transform:none;padding:8px 74px 8px 12px}
+.ds-s .rkt span{font-size:.72rem;line-height:1.35;word-break:keep-all;overflow-wrap:anywhere;text-wrap:balance}
+.ds-s .dtitle img.dtface{border-radius:12px;object-fit:cover;background:#2a1a0c}
 .dcardb.p12tc img{filter:none}
 .p12tc::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.74),rgba(0,0,0,.42) 58%,rgba(0,0,0,.12));pointer-events:none;z-index:1}
 .p12tc .rkt,.p12tc .rkgo{z-index:2}
@@ -2547,6 +2552,7 @@ html[data-mmev] #app{pointer-events:none!important}
 html[data-mmscene] #app,html[data-mmscene] #snd{visibility:hidden!important}
 .mmtalk.mmtalk-scene{background:#0b1636}
 .mmtalk-scene>.mmtalk-scenebg{position:absolute;inset:0;z-index:0;background:#0b1636 center/cover no-repeat;pointer-events:none}
+.mmtalk-scene>.mmtalk-scenebg[style*="train_po"]{background-position:62% 35%} /* 2026-10-18 REV3 C1：特訓場（横長）は施設の中心（MMP12S の focus）を見せる */
 .mmtalk-scene>.mmtalk-scenebg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,12,30,.08) 0%,rgba(6,12,30,0) 40%,rgba(6,12,30,.45) 100%)}
 .mmtalk-scene>.mmtalk-stage{position:relative;z-index:1}
 /* 2026-10-06（試遊修正）：街の上の会話（フィナの案内・短いイベント）は下のバーに重ならないよう、会話窓と立ち絵をバーの上へ（施設の背景つきの会話＝data-mmscene は従来どおり） */
@@ -5020,7 +5026,7 @@ function dscr(id,msg){if(id=="b")return hall("t"); // Phase 8：旧「腕試し�
   const n=m.eq.filter(x=>x>=0&&SK[x]).length;
   c=`<div class="dcard"><div class="dh">バトルのルーレット <small>${n} / 6 セット中</small></div><div class="dhint">枠をタップして選び、下の技をタップしてセット</div><div class="drl">${rows}</div></div>
   <div class="dcard"><div class="dh">技の一覧 <small>${own.length} / ${skl(m).length} 習得</small>${window.MMMOVEDEX&&MMMOVEDEX.listOf(m.sp).length?`<button class="dmvall" onclick="MMMOVEDEX.open(${m.sp})">📖 技辞典</button>`:""}</div><div class="dflt">${[["a","すべて"],["p","✊ ちから"],["i","📖 かしこさ"]].map(([v,l])=>`<button class="${wflt==v?"on":""}" onclick="wflt='${v}';hall('w')">${l}</button>`).join("")}</div><div class="dskg n01">${cards}</div></div>`}
- $("#app").innerHTML=`<div class="ds ds-${id}" style="--dc:${D[3]}"><div class="dbg" style="background-image:url(${FARM_BG})"></div><div class="dtop"><button class="dback" data-nav="back" onclick="lastSk=-1;hall('t')">${S.m&&MMP7.inChapter(S.m)?"◀ ボードへ":"◀ ベースキャンプ"}</button><div class="dmoney">${GCOIN} ${S.g}G</div></div><div class="dtitle"><img src="${TABS[D[2]]}" alt=""><div><b>${D[0]}</b><small>${D[1]}</small></div></div>${msg?`<div class="dmsg"><span>${msg}</span></div>`:""}<div class="dbody">${c}</div></div>`;
+ $("#app").innerHTML=`<div class="ds ds-${id}" style="--dc:${D[3]}"><div class="dbg" style="background-image:url(${id=="s"?TRAIN_SCENE_BG:FARM_BG})"></div><div class="dtop"><button class="dback" data-nav="back" onclick="lastSk=-1;hall('t')">${S.m&&MMP7.inChapter(S.m)?"◀ ボードへ":"◀ ベースキャンプ"}</button><div class="dmoney">${GCOIN} ${S.g}G</div></div><div class="dtitle"><img src="${id=="s"?GENSHIN_FACE:TABS[D[2]]}" alt=""${id=="s"?' class="dtface"':""}><div><b>${D[0]}</b><small>${D[1]}</small></div></div>${msg?`<div class="dmsg"><span>${msg}</span></div>`:""}<div class="dbody">${c}</div></div>`;
  if(id=="s")tapHold($("#app .dbody"),350); // 特訓メニューを出したタップの2打目で、特訓（チケット1枚）を始めない
  if(id=="w"&&lastSk>=0&&document.body.insertAdjacentHTML)document.body.insertAdjacentHTML("beforeend",`<div id="dsh">${skSheet(lastSk,m)}</div>`);try{window.scrollTo(0,0)}catch(e){}}
 // ---- 2026-10-05：正式のステータス画面（デザイン基準＝正式採用のステータス画像。画像1枚を貼らず HTML/CSS で再現）----
@@ -6107,7 +6113,9 @@ function npcFlagsFirst(){const f=finaFlags();if(!f.first||typeof f.first!="objec
 function npcFirst(fac,after){if(window.MM_QA_NO_NPC||!window.MMNPCE||!window.MMNPC)return false;const F=npcFlagsFirst();if(F[fac])return false;const lines=MMNPCE.first(fac);if(!lines)return false;try{window.MMAUDIO&&MMAUDIO.voiceWarm&&MMNPCE.firstVoices&&MMAUDIO.voiceWarm(MMNPCE.firstVoices(fac))}catch(e){}F[fac]=1;if(fac=="market")finaFlags().karenIntro=1;save();
  const o={kind:"npc",presentation:"standard",big:true,scene:npcScene(fac)},pr=fac=="market"?karenSay(lines,o):MMNPC.talk(lines,o);pr.then(()=>{if(after)after()});return true}
 /** 2026-10-06：施設の初回イベントの背景（施設の正式背景。会話の間は下の画面を隠す＝MMNPC.talk の scene）。市場はカレンの会話の仕組み（karenSay）が操作 UI とモンスターを隠す */
-const npcScene=fac=>({ranch:RANCH_BG,lab:LAB_BG,arena:TOWN_BG,farm:BC_BG,shop:SHOP_BG,train:FARM_BG})[fac]||""; // 呼ぶときに読む（定義の順に依らない）
+const npcScene=fac=>({ranch:RANCH_BG,lab:LAB_BG,arena:TOWN_BG,farm:BC_BG,shop:SHOP_BG,train:TRAIN_SCENE_BG})[fac]||""; // 呼ぶときに読む（定義の順に依らない）
+/** 2026-10-18 REV3 C1：特訓の会話の背景＝特訓場の正式背景（旧：FARM_BG＝ベースキャンプの絵で、左上に「Farm」の札が描き込まれていた） */
+const TRAIN_SCENE_BG="./assets/scenes/train_po.jpg";
 /** 再訪の一言の材料（進行状態）。last＝その施設で直前に出した一言の id（ページの中だけの記憶。セーブには入れない＝保存とメモリの食い違いを作らない） */
 const NPC_LAST={};
 function npcCtx(fac){const m=S.m,f=finaFlags(),box=S.box.length,st=m?MMP7.raiseState(m):"none",can=m&&st=="farm"?MMP8.canDepart(S,m):{ok:false},inv=S.inv||{};

@@ -35,9 +35,9 @@
     el.innerHTML = `<div class="qtw"><h2>ミスモン QA トップ</h2>
       <p class="qtv">版 <b>${esc(G('MM_BUILD') || '?')}</b>${V.build && V.build !== G('MM_BUILD') ? `（公開中の version.json＝${esc(V.build)}・一致しない＝再読み込み）` : ''}<br>ブランチ ${esc(V.branch || '—')}・元のコミット ${esc(V.base || '—')}</p>
       <h3>Chapter をすぐに試遊（セーブを控えて保存しない）</h3>
-      <label>カメラ</label>${seg('cam', [['', '従来'], ['c', 'C案']])}
+      <label>カメラ</label>${seg('cam', [['', 'C案（正式）'], ['old', '従来（比較）']])}
       <label>道路の絵</label>${seg('road', [['', '従来'], ['fix', '新（10-17）']])}
-      <label>歩行</label>${seg('walk', [['', '従来（8コマ）'], ['1017', '新（10-17・8方向）']])}
+      <label>歩行</label>${seg('walk', [['', '新（正式・8方向）'], ['old', '従来 8コマ（比較）']])}
       <label>連れていく子</label>${seg('mon', [['0', 'ソラモ'], ['1', 'ガウル'], ['2', 'ノビトン'], ['3', 'ジオル'], ['4', 'レグナス']])}
       <label>出発の乱数（seed・空＝毎回ちがう）</label><input class="qtseed" inputmode="numeric" value="${esc(OPT.seed)}" placeholder="例 42">
       <div class="qtl">${['A', 'B', 'C'].map((r) => `<a class="qtb" data-k="ch1" data-r="${r}" href="${esc(href('ch1', r))}">Chapter 1 ・ ${r}</a>`).join('')}${['A', 'B', 'C'].map((r) => `<a class="qtb" data-k="ch2" data-r="${r}" href="${esc(href('ch2', r))}">Chapter 2 ・ ${r}</a>`).join('')}</div>

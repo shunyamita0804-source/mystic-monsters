@@ -13,11 +13,11 @@
   const doc = root.document;
   const G = (n) => { try { return (0, eval)(n); } catch (e) { return undefined; } };
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const SIZES = Object.freeze([['old', '従来'], ['A', '案A'], ['B', '案B'], ['1', '1〜5']]);
+  const SIZES = Object.freeze([['F', '正式'], ['old', '従来'], ['A', '案A'], ['B', '案B'], ['1', '1〜5']]);   // 2026-10-18 REV3：正式（F）が既定
   const BGS = Object.freeze([['arena', '会場'], ['black', '黒'], ['white', '白'], ['navy', '紺']]);
   const SPEEDS = Object.freeze([1, 0.5, 0.25]);
   const RESULTS = Object.freeze([['hit', '命中'], ['evade', '回避'], ['miss', 'MISS']]);
-  const ST = { open: false, mon: 0, no: 1, side: 0, target: 0, size: 'old', bg: 'arena', speed: 1, loop: false, result: 'hit', auto: false, busy: false, seq: 0, log: [] };
+  const ST = { open: false, mon: 0, no: 1, side: 0, target: 0, size: 'F', bg: 'arena', speed: 1, loop: false, result: 'hit', auto: false, busy: false, seq: 0, log: [] };
 
   // ---- 仮想の時計（速さ・一時停止・コマ送り）。開いている間だけ window.setTimeout／clearTimeout を差し替える ----
   const VC = { on: false, rate: 1, paused: false, vt: 0, last: 0, q: [], id: 1e9, raf: 0, st: null, ct: null };
@@ -208,7 +208,7 @@
     const m = Q.makeMon(C[ST.mon].sp === 5 ? 0 : C[ST.mon].sp); if (!m) return false;
     m.sk = [0]; m.eq = [0, 0, 0, 0, 0, 0]; m.speed = 10;   // ルーレット・STOP は隠す（技は使わない）。先にこちらの番＝相手は動かない
     if (!Q._start(m, true)) return false;
-    const sm = root.MMTUNE && root.MMTUNE.sizeMode ? root.MMTUNE.sizeMode() : null; ST.size = sm || 'old';   // ?mmQaTrial=1&mmSize=1（従来の体格プレビュー）はここに吸収
+    const sm = root.MMTUNE && root.MMTUNE.sizeMode ? root.MMTUNE.sizeMode() : null; ST.size = sm || 'old';   // sizeMode は正式の既定で 'F'・?mmSize=old で従来・?mmSize=1 は従来の体格プレビュー
     ST.open = true; ST.auto = false; css(); vcStart(); VC.rate = ST.speed; VC.paused = false;
     const ready = () => { const b = doc.getElementById('bt'), g = doc.getElementById('go'); if (!ST.open) return; if (!b || !g || g.disabled) return void root.requestAnimationFrame(ready); dress(); panel(); };
     ready();

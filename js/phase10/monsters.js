@@ -151,6 +151,27 @@
       MV({ no: 9, id: 'mirage_dash', name: 'ミラージュダッシュ', type: 'power', power: 115, accuracy: 90, critical: 20, slot: 68, cuts: 6, learn: 'de', sheet: null, desc: null }),
       MV({ no: 10, id: 'razuck_rush', name: 'ラズックラッシュ', type: 'power', power: 125, accuracy: 90, critical: 20, slot: 69, cuts: 10, learn: 'de', sheet: null, desc: null }),
     ]) }),
+    // フルーネ：2026-10-18 REV3 F0-4 正式採用（ZIP Mismon_Claude_PreCh3_…_REV3_20261018 の 10／11＝技性能表）。SK の番号＝50＋No−1（js/battle/rules.js が実行時に足す）。
+    //  習得：初期＝No.1〜4・ちから特訓 No.5・かしこさ特訓 No.6・命中特訓 No.7・回避特訓 No.8・丈夫さ特訓 No.9（①）／No.10（②）。命中 100% は必中ではない。小＝10%・中＝20%
+    //  No.9 ルートドレイン＝与えたダメージの50%を吸収（最大ライフまで）・No.7 しばりづる＝命中したとき25%で「まひ」（既存の3回）。旧「いのちのしずく／生命のしずく」は使わない
+    //  フルーネは未解禁（市場・野生・合体・大会に出ない）＝今は QA 試遊モードの個体だけが使う
+    flurene: fz({ style: '高ライフ・かしこさ寄りの植物系', list: fz([
+      MV({ no: 1, id: 'tsuruuchi', name: 'つるうち', type: 'power', power: 60, accuracy: 100, critical: 5, slot: 50, cuts: 4, learn: 'initial', sheet: null, desc: null }),
+      MV({ no: 2, id: 'tane_tobashi', name: 'たねとばし', type: 'wisdom', power: 65, accuracy: 95, critical: 10, slot: 51, cuts: 4, learn: 'initial', sheet: null, desc: null }),
+      MV({ no: 3, id: 'hana_no_kaori', name: 'はなのかおり', type: 'support', accuracy: 100, slot: 52, cuts: 4, learn: 'initial', sheet: null, desc: '甘い香りで、相手のちからを少し下げる（2ターン）。',
+        effects: [E('opponent', 'atk', 'down', 'small', 2)] }),
+      MV({ no: 4, id: 'nekko_no_mamori', name: 'ねっこのまもり', type: 'support', accuracy: 100, slot: 53, cuts: 4, learn: 'initial', sheet: null, desc: '根を張って、自分の丈夫さを上げる（中・2ターン）。',
+        effects: [E('self', 'de', 'up', 'medium', 2)] }),
+      MV({ no: 5, id: 'konsai_press', name: 'こんさいプレス', type: 'power', power: 100, accuracy: 85, critical: 10, slot: 54, cuts: 5, learn: 'po', sheet: null, desc: null }),
+      MV({ no: 6, id: 'bloom_ray', name: 'ブルームレイ', type: 'wisdom', power: 110, accuracy: 90, critical: 10, slot: 55, cuts: 4, learn: 'in', sheet: null, desc: null }),
+      MV({ no: 7, id: 'shibari_zuru', name: 'しばりづる', type: 'wisdom', power: 70, accuracy: 90, critical: 5, slot: 56, cuts: 4, learn: 'hi', sheet: null, desc: 'つるで縛りつける。命中したとき25%で相手を「まひ」にする。',
+        ailment: fz({ kind: 'paralysis', label: 'まひ', chance: 0.25 }) }),
+      MV({ no: 8, id: 'hanakage_no_mai', name: 'はなかげのまい', type: 'support', accuracy: 100, slot: 57, cuts: 4, learn: 'ev', sheet: null, desc: '花の影で舞い、自分の回避を上げる（中・2ターン）。',
+        effects: [E('self', 'ev', 'up', 'medium', 2)] }),
+      MV({ no: 9, id: 'root_drain', name: 'ルートドレイン', formerNames: fz(['生命のしずく', 'いのちのしずく']), type: 'power', power: 110, accuracy: 90, critical: 10, slot: 58, cuts: 10, learn: 'de', deOrder: 1, drain: 0.5, sheet: null,
+        desc: '両腕の蔦を相手に突き刺し、与えたダメージの50%だけライフを回復する（命中してダメージがあるときだけ・最大ライフまで）。' }),
+      MV({ no: 10, id: 'root_tempest', name: 'ルートテンペスト', type: 'wisdom', power: 120, accuracy: 85, critical: 20, slot: 59, cuts: 5, learn: 'de', deOrder: 2, finisher: true, sheet: null, desc: null }),
+    ]) }),
     gauru: fz({ style: '高速・高火力・短期決戦型の両刀アタッカー', list: fz([
       MV({ no: 1, id: 'tsutsuku', name: 'つつく', type: 'power', power: 60, accuracy: 100, critical: 5, slot: 11, cuts: 4, desc: 'くちばしで素早くつつく。' }),
       MV({ no: 2, id: 'wind', name: 'ウィンド', type: 'wisdom', power: 65, accuracy: 95, critical: 5, slot: 12, cuts: 4, desc: '風をまとい、相手に風の力をぶつける。' }),
@@ -175,13 +196,13 @@
       return r ? r.moves.list.map((m) => ({ ...m, effects: m.effect ? [{ target: m.effect.target, stat: m.effect.stat, dir: 'up', size: m.effect.size, turns: m.effect.turns }] : [],
         ailment: null, heal: null, desc: null, slot: 19 + m.no, sheet: sheetOf('regnas', REGNAS_SHEET[m.id], m.id) })) : [];
     }
-    const s = typeof ref === 'string' ? (byKey(ref) || (ref === 'razuck' ? pendingSpecies(ref) : null)) : byId(ref);   // 2026-10-17：ラズック（登録のみの種族）も正式技の表を持つ
+    const s = typeof ref === 'string' ? (byKey(ref) || (ref === 'razuck' || ref === 'flurene' ? pendingSpecies(ref) : null)) : byId(ref);   // 2026-10-17：ラズック・2026-10-18 フルーネ（登録のみの種族）も正式技の表を持つ
     const t = s && OFFICIAL_MOVES[s.key];
     return t ? t.list.map((m) => ({ ...m, sheet: m.sheet === null ? null : sheetOf(s.key, m.no, m.id) })) : [];   // sheet: null＝技辞典の資料なし（ノビトン No.5 まきつく＝旧資料はハンマーノーズのため使わない）
   }
   /** 技の番号（SK）→ 正式技（ソラモ・ガウルの 0〜19・レグナスの 20〜29）。無ければ null */
   function moveBySlot(k) {
-    for (const key of ['solamo', 'gauru', 'regnas', 'jiol', 'razuck']) { const m = movesOf(key).find((x) => x.slot === k); if (m) return { ...m, owner: key }; }
+    for (const key of ['solamo', 'gauru', 'regnas', 'jiol', 'razuck', 'flurene']) { const m = movesOf(key).find((x) => x.slot === k); if (m) return { ...m, owner: key }; }
     return null;
   }
 
@@ -239,22 +260,7 @@
       base: fz({ li: 150, po: 70, in: 110, hi: 90, ev: 60, de: 70 }), speed: 4, growth: G6('A', 'E', 'C', 'D', 'E', 'D'),
       uniqueSkill: fz({ id: 'unique_flurene', name: '生命の芽吹き', implemented: false, params: null,
         desc: '攻撃を受けた後、残りライフが最大ライフの50％以下になり、生き残っていた場合、1戦闘に1回だけ最大ライフの10％を回復する。' }),
-      moves: fz([
-        // 2026-10-16 ユーザー決定（ZIP Mismon_Claude_Combined_iPhone6_Fulune_20261016 の 03＝技性能一覧）：01・02・10 は威力だけ決定（命中・CR・効果は暫定＝ここに入れない）。
-        //  09 は「生命のしずく」→「ルートドレイン」に改名・威力110／命中90／CR10%／与えたダメージの50%を吸収（承認済み）。03〜08 の性能・固有スキルは未承認＝変えない
-        fz({ no: 1, name: 'つるうち', learn: 'initial', power: 60 }),
-        fz({ no: 2, name: 'たねとばし', learn: 'initial', power: 65 }),
-        fz({ no: 3, name: 'はなのかおり', learn: 'initial' }),
-        fz({ no: 4, name: 'ねっこのまもり', learn: 'initial' }),
-        fz({ no: 5, name: 'こんさいプレス', learn: 'po' }),
-        fz({ no: 6, name: 'ブルームレイ', learn: 'in' }),
-        fz({ no: 7, name: 'しばりづる', learn: 'hi' }),
-        fz({ no: 8, name: 'はなかげのまい', learn: 'ev' }),
-        fz({ no: 9, name: 'ルートドレイン', formerNames: fz(['生命のしずく']), learn: 'de', deOrder: 1, power: 110, accuracy: 90, critical: 10, drain: 0.5,
-          type: 'power',   // 【暫定・要確認】計算に使う能力（ちから／かしこさ）は一覧に無い＝蔦腕を突き刺す技なので ちから（QA の試遊だけで使う）
-          desc: '両腕の蔦を相手に突き刺し、与えたダメージの50%だけライフを回復する（命中してダメージがあるときだけ・最大ライフまで）。' }),
-        fz({ no: 10, name: 'ルートテンペスト', learn: 'de', deOrder: 2, finisher: true, power: 120 }),
-      ]),
+      moves: OFFICIAL_MOVES.flurene.list,   // 2026-10-18 REV3 F0-4：正式10技（上の OFFICIAL_MOVES.flurene の1か所）
       image: fz({ src: './assets/monsters/2p5d/flurene.webp', w: 705, h: 720 }),
       battleIdle: fz({ src: './assets/battle/idle/idle_flurene.webp', w: 730, h: 720 }),
       tourIcon: fz({ src: './assets/tournament/icons_1015/icon_flurene.webp', w: 256, h: 256 }) }),

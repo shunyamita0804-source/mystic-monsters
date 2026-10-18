@@ -22,7 +22,8 @@
   // ---- 体格サイズ（A2・A3）----
   const SIZE_NAME = Object.freeze({ 1: '極小型', 2: '小型', 3: '中型', 4: '大型', 5: '規格外' });
   /** 種族（バトルの番号）→ 体格サイズ。ラズック（1）は未登録＝ここには入れない（マスターデータ案は報告書）。5 は予約（今は誰もいない） */
-  const SIZE = Object.freeze({ 0: 2, 1: 3, 2: 2, 3: 4, 4: 3, 5: 3 });
+  //  2026-10-18 REV3 F0-3（正式）：ラズック1・ソラモ2・ノビトン2・ガウル3・フルーネ3・レグナス3・ジオル4（5＝厄災級だけ＝今は誰もいない）
+  const SIZE = Object.freeze({ 0: 2, 1: 3, 2: 2, 3: 4, 4: 3, 5: 3, 6: 1 });
   /** 表示の倍率（今の一律の表示＝100%）。【暫定・プレビュー専用】ユーザーの iPhone 確認のあとで決める */
   const SIZE_K = Object.freeze({ 1: 0.70, 2: 0.80, 3: 0.90, 4: 1.00, 5: 1.15 });
   /** 見かけの大きさの微調整（翼・角・葉が外へ大きく出る絵は、同じ倍率だと大きく見える）【暫定】 */
@@ -33,19 +34,23 @@
   };
   // 2026-10-16（iPhone 6件 A5）：比較案 A／B＝「サイズ3 の見えている体の高さを 100」とした目標の倍率（ユーザーの iPhone 判断まで正式ではない）。
   //  URL の ?mmSize=A または ?mmSize=B のときだけ（?mmSize=1＝前回の暫定・なし＝従来）。?mmSizeAs=0:1,1:5＝比較のためだけに種族のサイズを読み替える（例：サイズ1 対 5 の並び）
-  const SIZE_PLAN = Object.freeze({ A: Object.freeze({ 1: 0.65, 2: 0.78, 3: 1.00, 4: 1.22, 5: 1.45 }), B: Object.freeze({ 1: 0.60, 2: 0.75, 3: 1.00, 4: 1.30, 5: 1.55 }) });
+  //  2026-10-18 REV3 F0-3：F＝正式の既定（A／B は未承認の比較案のまま）。サイズ3＝今までの大きさ（100）。A案の比をもとに、390×844・375×667・393×852 の
+  //   公式戦・練習試合で HP の帯・技名・画面の左右の枠に重ならない範囲で決めた値（実測は tools/rev3_1018/size_fit.mjs）
+  const SIZE_PLAN = Object.freeze({ A: Object.freeze({ 1: 0.65, 2: 0.78, 3: 1.00, 4: 1.22, 5: 1.45 }), B: Object.freeze({ 1: 0.60, 2: 0.75, 3: 1.00, 4: 1.30, 5: 1.55 }),
+    F: Object.freeze({ 1: 0.70, 2: 0.84, 3: 1.00, 4: 1.14, 5: 1.30 }) });
   /** 見えている体の高さ（待機立ち絵の不透明な部分の高さ ÷ 絵の高さ × arena.js の SCALE）＝tools で測った値。種族の絵の高さの差を打ち消して、目標の比にそろえる */
-  const VIS_H = Object.freeze({ 0: 0.900, 1: 0.909, 2: 0.869, 3: 0.902, 4: 0.902, 5: 0.900 });
+  const VIS_H = Object.freeze({ 0: 0.900, 1: 0.909, 2: 0.869, 3: 0.902, 4: 0.902, 5: 0.900, 6: 0.900 });
   const VIS_H3 = (VIS_H[1] + VIS_H[4] + VIS_H[5]) / 3;   // サイズ3（ガウル・レグナス・フルーネ）の平均＝100
   const qsz = () => { try { return new URLSearchParams(root.location.search); } catch (e) { return null; } };
   // 2026-10-16：常設バトル QA のステージ（js/qa/battle-stage.js）はページの中の切り替え window.MM_QA_SIZE（'old'＝従来・'A'・'B'・'1'）を URL より先に見る（本編の既定値は変えない）
-  const sizeMode = () => { const o = root.MM_QA_SIZE; if (o) return o === 'old' ? null : o; const q = qsz(), v = q && q.get('mmSize'); return v === 'A' || v === 'B' ? v : v === '1' ? '1' : root.MM_SIZE_PREVIEW ? '1' : null; };
+  //  2026-10-18 REV3：URL に何も無い＝正式（F）。?mmSize=old＝従来の一律の大きさ（比較だけ）・A／B／1＝未承認の比較案
+  const sizeMode = () => { const o = root.MM_QA_SIZE; if (o) return o === 'old' ? null : o; const q = qsz(), v = q && q.get('mmSize'); return v === 'old' ? null : v === 'A' || v === 'B' || v === 'F' ? v : v === '1' ? '1' : root.MM_SIZE_PREVIEW ? '1' : 'F'; };
   const sizeAs = () => { const q = qsz(), v = q && q.get('mmSizeAs'), m = {}; if (v) v.split(',').forEach((x) => { const [a, b] = x.split(':').map(Number); if (a >= 0 && b >= 1 && b <= 5) m[a] = b; }); return m; };
   const sizeOf = (sp) => sizeAs()[sp] || SIZE[sp] || 3;
   /** 待機立ち絵などに掛ける倍率（プレビューのときだけ。それ以外は 1＝今まで） */
   const sizeK = (sp) => {
     const mode = sizeMode(); if (!mode) return 1;
-    if (mode === 'A' || mode === 'B') { const z = sizeOf(sp); return VIS_H3 * SIZE_PLAN[mode][z] / (VIS_H[sp] || VIS_H3); }
+    if (SIZE_PLAN[mode]) { const z = sizeOf(sp); return VIS_H3 * SIZE_PLAN[mode][z] / (VIS_H[sp] || VIS_H3); }
     return SIZE[sp] ? SIZE_K[sizeOf(sp)] * (FINE[sp] || 1) : 1;
   };
 

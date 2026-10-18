@@ -100,7 +100,9 @@
   //  c＝C案（歩いている間は向き・倍率を変えない・止まったとき／分かれ道を選んだときだけ短く向きを変える）／ccut＝C案の向きの変え方を「少し暗くして切り替え」に。
   //  qaCamDeg（向きを変えるずれの角度・既定 50）・qaCamMs（90° 回す時間・既定 600）で調整できる。通常の URL では何も変わらない
   const QA_CAM = (() => { let q = null; try { q = new URLSearchParams(root.location.search); } catch (e) {} const v = q && q.get('qaCam'); const num = (k, d, lo, hi) => { const x = q && q.get(k) != null ? Number(q.get(k)) : NaN; return Number.isFinite(x) && x >= lo && x <= hi ? x : d; };
-    return ['fixed', 'c', 'ccut'].includes(v) ? { mode: v, deg: num('qaCamDeg', 50, 10, 180), ms: num('qaCamMs', 600, 120, 2000) } : null; })();
+    // 2026-10-18 REV3 F0-2：C案カメラは正式採用＝通常プレイの既定。?qaCam=old＝従来（後ろから追う・QA の比較だけ）・fixed／ccut は QA の比較のまま
+    if (v === 'old') return null;
+    return { mode: ['fixed', 'c', 'ccut'].includes(v) ? v : 'c', deg: num('qaCamDeg', 50, 10, 180), ms: num('qaCamMs', 600, 120, 2000) }; })();
   // 2026-10-16 QA（A）：URL の ?qaRoad=1|2 で道の見た目の比較案（js/qa/road-1016.js）。無い＝従来
   const QA_ROAD = () => (root.MMQAR && root.MMQAR.mode) || null;   // js/qa/road-1016.js はこのファイルのあとに読む＝盤を作るときに見る
   const camOpts = () => (!QA_CAM ? { heading: true, yawTau: 600 } : QA_CAM.mode === 'fixed' ? { heading: false } : { heading: true, yawTau: 600, camMode: QA_CAM.mode, camTurnDeg: QA_CAM.deg, camTurnMs: QA_CAM.ms });
