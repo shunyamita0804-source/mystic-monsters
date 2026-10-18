@@ -2,7 +2,7 @@
 // 2026-10-17 QA トップ・初見プレイの隔離・新歩行（実ブラウザ・QA_E2E=1 のときだけ）
 //  QT-B1 ?qaTop=1＝版・7体×10技＝70枠の状態・Chapter 1／2 の A／B／C の入口（カメラ・道路・歩行・seed・子を選ぶと URL に入る）
 //  QT-B2 ?ch1trial=B&qaWalk=1017&qaMon=1&qaSeed=42＝ガウルで Chapter 1 の B・新歩行（8方向・20コマだけ読む）・同じ seed なら同じ配置・セーブを書き換えない
-//  QT-B3 新しい Chapter 2 の盤は QA（?ch2trial・MM_CH2_NEW）のときだけ＝通常の出発は旧 Chapter 2
+//  QT-B3 新しい Chapter 2 の盤は通常の出発でも QA でも同じ（2026-10-18 v2）
 //  QT-B4 ?qaFresh=1＝本当のセーブ（mr4v6）を読まない・書かない／別の名前で保存され再読み込みで続きから／?qaFresh=reset で最初から
 // =========================================================
 import test from 'node:test';
@@ -55,14 +55,14 @@ test('QT-B2：新歩行 7体（?qaWalk=1017）＝ガウルで Chapter 1 の B・
   assert.equal(tiles[0], tiles[1], '同じ seed＝同じ配置');
 });
 
-test('QT-B3：新しい Chapter 2 の盤は QA のときだけ＝通常の出発は旧 Chapter 2', { skip: SKIP, timeout: 120000 }, async () => {
+test('QT-B3（2026-10-18 v2）：通常の出発も QA も新しい Chapter 2 の盤（QA と通常本編は同一の正式ボード）', { skip: SKIP, timeout: 120000 }, async () => {
   const p = await openPage({ worldCh2: true }); const pg = p.page;
   await H.newGame(pg, 'テスト');
   const r = await pg.evaluate(() => {
     const go = (qa) => { window.MM_CH2_NEW = qa; const m = mk(0); m.name = 'テスト'; MMP7.ensureProg(m); S.m = m; MMP8.depart(S, m, () => 0.37); m.raise.field = null; Object.assign(m.raise, { state: 'farm', ch: 2, log: [{ ch: 1, reachedGoal: true, turnsUsed: 30 }], pend: null }); const d = MMP8.depart(S, m, () => 0.37); return { ok: d.ok, key: d.key, world: m.raise.field && m.raise.field.world, chapterId: m.raise.field && m.raise.field.chapterId }; };
     return { normal: go(false), qa: go(true) };
   });
-  assert.equal(r.normal.key, 2); assert.notEqual(r.normal.world, 1, '通常＝旧 Chapter 2 ' + JSON.stringify(r));
+  assert.equal(r.normal.key, 2); assert.equal(r.normal.world, 1, '通常＝新しい盤 ' + JSON.stringify(r));
   assert.equal(r.qa.world, 1, 'QA＝新しい盤');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });

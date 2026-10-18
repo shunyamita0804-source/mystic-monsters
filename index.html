@@ -5325,7 +5325,7 @@ window.addEventListener("unhandledrejection",rescue);
  *  ./version.json（小さな JSON。毎回取り直す）の build がこのページの MM_BUILD と違えば1回だけ reload（同じ版へは15分に1回まで＝読み込み直しを繰り返さない）。
  *  確かめる時：起動したとき・ページがメモリから戻ったとき（pageshow の persisted）・10分以上裏にいて表に戻ったとき。セーブ（mr4v6）には触れない（読み込み直しは iOS がタブを閉じたときと同じ＝つづきから）。
  *  公開するたびに MM_BUILD と version.json の build を同じ値に上げる（tests/dev24-1013.test.mjs で一致を確かめる） */
-const MM_BUILD="2026-10-18-ch3";
+const MM_BUILD="2026-10-18-fix2";
 (function(){const K="mmbuildReload";let hidAt=0;
  const check=()=>{try{const x=new XMLHttpRequest();x.open("GET","./version.json?t="+Date.now(),true);x.timeout=8000;
   x.onload=()=>{try{if(x.status<200||x.status>=300)return;const b=(JSON.parse(x.responseText)||{}).build;if(!b||b===MM_BUILD)return;
@@ -6140,7 +6140,7 @@ function karenRevisit(){if(window.MM_QA_NO_KAREN)return;if(!window.MMNPCE)return
 function farmReturn(m){if(window.MM_QA_NO_NPC||!window.MMNPCE||!window.MMNPC||!m||!m.raise)return false;const r=m.raise,last=(r.log||[]).slice(-1)[0];if(!last||!last.ch)return false;const seen=Array.isArray(r.evSeen)?r.evSeen:(r.evSeen=[]),key="ret"+last.ch;if(seen.includes(key))return false;
  const k=MMP8.nextChapterKey(m),nextName=k!=null&&k!=MMP8.FINAL&&MMP8.isPlayable(k)?MMP8.chapterName(k):null;
  const ev=MMNPCE.returnEvent(last.ch,{reachedGoal:!!last.reachedGoal,declined:!!last.declined,won:!!(last.tour&&last.tour.won),placed:last.tour?last.tour.place:null,nextName,rumor:!seen.includes("rumor")});if(!ev)return false;
- seen.push(key);if(ev.rumor)seen.push("rumor");save();MMNPC.talk(ev.lines,{kind:"event",presentation:"major",big:true,scene:BC_BG});return true}
+ seen.push(key);if(ev.rumor)seen.push("rumor");save();MMNPC.talk(ev.lines,{kind:"event",presentation:"major",big:true,closeup:true,scene:BC_BG});return true} /* 2026-10-18 v2（修正8）：帰還のフィナは正式の半身（closeup）＝表情が分かるアップ（旧：全身） */
 const FINA_PRES={raiseAgain:"compact",done:"major"}; // 会話の見せ方（短い確認は小さな窓・育成完了は重要イベント。ほかは通常）
 function finaTalk(key,branches,extra){return window.MMNPC&&FINA_TALK[key]?MMNPC.talk(FINA_TALK[key],{kind:"fina",presentation:FINA_PRES[key]||"standard",big:FINA_BIG.has(key),scene:finaScene(key),...(branches?{branches}:{}),...(extra||{})}):Promise.resolve(null)}
 const finaScene=k=>k=="intro"?TOWN_BG:k=="done"||k=="raiseFirst"||k=="raiseAgain"?BC_BG:""; /* 2026-10-06：育成開始の確認・フィナ ↔ ダンの掛け合いもベースキャンプの背景だけ（後ろのコマンド・パネルを出さない） */ // 2026-10-06：大型の会話（街の案内・育成完了）は施設の背景だけを後ろに（下の画面を隠す）

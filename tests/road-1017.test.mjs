@@ -48,11 +48,11 @@ test('RQ-03：継ぎ目は fix で 1.35 以下・raw と同じ細かさ', () => 
   assert.ok(Math.max(...J.ch1_road_r1.src_seam) > 5, '原本の R1 の上下の継ぎ目（5.77）');
 });
 
-test('RQ-04：差し込み口（Chapter 2 は ?qaRoadArt のときだけ）', () => {
+test('RQ-04：差し込み口（2026-10-18 v2：Chapter 2 も既定で新素材）', () => {
   const rw = rd('js/proto/roadfirst-world.js'), c2 = rd('js/proto/ch2-world.js'), r16 = rd('js/qa/road-1016.js');
   assert.match(rw, /scale\(im\._ppu \? 1 \/ im\._ppu : tile \/ im\.width\)/, '_ppu の無い従来の絵は従来の倍率');
   assert.match(rw, /const QRA = !SEA && root\.MMQRA && root\.MMQRA\.mode \? root\.MMQRA : null/);
-  assert.match(c2, /const QRA = root\.MMQRA && root\.MMQRA\.urlMode \? root\.MMQRA : null;\n\s*if \(QRA\) return/);
+  assert.match(c2, /const QRA = root\.MMQRA && root\.MMQRA\.mode \? root\.MMQRA : null;\n\s*if \(QRA\) return/);
   assert.match(c2, /qaArch=1/, 'アーチは &qaArch=1 のときだけ');
   assert.match(r16, /const MODE = q === '1' \|\| q === '2' \? q : ART17 \? '1' : null;/);
 });

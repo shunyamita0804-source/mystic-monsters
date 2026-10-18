@@ -365,6 +365,13 @@ try {
     await t.goto(URL + '?qaFresh=1'); await t.waitForFunction(() => window.MMQAF && MMQAF.on, null, { timeout: 60000 }).catch(() => {});
     const qf = await t.evaluate(() => ({ on: !!(window.MMQAF && MMQAF.on), real: localStorage['mr4v6'] || null }));
     rec('2026-10-17：初見プレイ（?qaFresh=1）が動く・本当のセーブ（mr4v6）を書き換えない', qf.on && qf.real === real0, JSON.stringify({ on: qf.on, same: qf.real === real0 }));
+    // 2026-10-18 v2：通常の本編の Chapter 2 も新しい A／B／C の盤（QA の URL・フラグなし。?qaFresh＝本当のセーブを書き換えない隔離だけ）
+    const c2 = await t.evaluate(async () => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; MMP8.canDepart(S, m);
+      Object.assign(m.raise, { state: 'farm', ch: 2, log: [{ ch: 1, reachedGoal: true, turnsUsed: 30 }], field: null, evSeen: ['ret1'] }); const r = MMP8.depart(S, m, Math.random); board();
+      for (let i = 0; i < 120 && !(window.MMWB && MMWB.state().world && MMWB.state().world.painted); i++) await new Promise((ok) => setTimeout(ok, 250));
+      return { key: r && r.key, world: m.raise.field && m.raise.field.world, route: m.raise.field && m.raise.field.route, tiles: (MMWB.state().world || {}).tiles, old: !!document.getElementById('chf'), road: (MMWB.world().qaRoad() || {}).mode, q: location.search }; }).catch((e) => ({ err: String(e) }));
+    await t.screenshot({ path: `${OUT}/ch2_main_390.png` }).catch(() => {});
+    rec('2026-10-18 v2：通常の本編の Chapter 2＝新しい A／B／C の盤（旧い1本道ではない）・縁石つきの白い橋帯 R01', c2.world === 1 && ['A', 'B', 'C'].includes(c2.route) && c2.tiles === { A: 298, B: 284, C: 304 }[c2.route] && !c2.old && c2.road === '2', JSON.stringify(c2));
     await t.close(); await ctxT.close();
   }
 

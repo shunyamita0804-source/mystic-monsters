@@ -38,7 +38,8 @@
       keys.forEach((k) => { o[k] = a[i++]; }); o.town = a[i++];
       tk.forEach((k) => { o.tex[k] = a[i++]; }); sk.forEach((k) => { o.strip[k] = a[i++]; }); PLAZA.forEach(() => { o.plaza.push(a[i++]); });
       // 2026-10-17 QA（道路画質・?qaRoadArt=raw|fix のときだけ）：外海・海上橋の石板・白い石畳・白い橋帯 R01・欄干は新しい素材（js/qa/road-art-1017.js）。読めなければ上の絵のまま
-      const QRA = root.MMQRA && root.MMQRA.urlMode ? root.MMQRA : null;
+      // 2026-10-18 v2（ユーザー指示「Chapter 2 の正式が旧道路を指さない」）：既定（URL なし）でも新しい素材（MMQRA.mode＝fix）。?qaRoadArt=old で従来の絵（比較用）
+      const QRA = root.MMQRA && root.MMQRA.mode ? root.MMQRA : null;
       if (QRA) return Promise.all([...Object.entries(QRA.CH2.tex).map(([k, n]) => QRA.load(n).then((im) => { if (im) o.tex[k] = im; })),
         ...Object.entries(QRA.CH2.strip).map(([k, n]) => QRA.load(n).then((im) => { if (im) o.strip[k] = im; }))]).then(() => { o.formal = Object.values(o.tex).filter(Boolean).length; return o; });
       o.formal = Object.values(o.tex).filter(Boolean).length;   // 読めた正式の地面の数（確認用）
@@ -146,7 +147,12 @@
     g.save(); g.translate(0, 7); g.strokeStyle = 'rgba(6,30,52,.38)'; g.lineWidth = CURB_W;
     for (const P of pts) { pathOf(g, P); g.stroke(); }
     g.restore();
+    // 2026-10-18 v2（iPhone 本編試遊・修正3）：白い橋帯 R01（縁石つきの帯）を陸の道にも敷く＝Chapter 2 の正式素材の縁石で道がつながる（旧：平たい灰色の縁石の線＋白い石畳の塗り）。
+    //  分かれ目・合流・行き止まりは R01 の縁石を円に沿って並べた広場（plazaR01）。R01 が読めない・?qaRoad=1 のときは従来の描き方
+    const QA0 = art.qaRoad && H.qa && H.qa(), R01 = QA0 && art.qaRoad === '2' && S.strip && S.strip.walk ? S.strip.walk : null;
     if (deck) {
+      if (R01) for (const P of pts) QA0.meshStrip(g, P, R01, ROAD_W * 128 / 62, bx);
+      else {
       g.strokeStyle = 'rgb(168,160,140)'; g.lineWidth = CURB_W; for (const P of pts) { pathOf(g, P); g.stroke(); }   // 縁石
       // 2026-10-16 QA（A。URL の ?qaRoad=1|2 のときだけ）：1＝海上橋の石板を鏡映しで並べる（継ぎ目が消える・模様は山形）／2＝正式の白い橋帯 R01 を道に沿わせて敷く（2026-10-17：?qaRoadArt の新しい石板は継ぎ目が小さい＝鏡映しにしない）
       const QA = art.qaRoad && H.qa && H.qa(), walk = S.strip && S.strip.walk;
@@ -156,6 +162,7 @@
       if (white) { g.save(); g.beginPath(); for (const { P } of regionsOf(D)) { P.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.closePath(); } g.clip();
         g.strokeStyle = white; g.lineWidth = ROAD_W; for (const P of pts) { pathOf(g, P); g.stroke(); } g.restore(); }
       g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 1; for (const P of pts) for (const sg of [-1, 1]) edgeLine(g, P, ROAD_W / 2 * sg);   // 縁の光
+      }
       // 2026-10-16 再送：海上橋の欄干（左右）＝海の上だけ・分かれ目の円のまわりは描かない。進む向きの左に left・右に right（絵の上側が橋の外）
       const rl = S.strip && S.strip.railL, rr = S.strip && S.strip.railR;
       if (rl && rr) {
@@ -165,13 +172,50 @@
         for (const [id, n] of Object.entries(D.nodes)) if ((outE[id] || 0) > 1 || (inn[id] || 0) > 1 || /dead_end/.test(n[2])) { g.moveTo(n[0] + 24, n[1]); g.arc(n[0], n[1], 24, 0, Math.PI * 2); }
         g.clip('evenodd');
         const sh = -(CURB_W / 2) - RAIL.w / 2 + 1;
-        if (QA) for (const P of pts) { QA.meshStrip(g, P, rl, RAIL.w, bx, sh); QA.meshStrip(g, P.slice().reverse(), rr, RAIL.w, bx, sh); }   // 2026-10-16 QA（A）：欄干も曲線に沿った帯（直線の切れ端を回して並べるとふちがのこぎり状になる）
+        if (QA0) for (const P of pts) { QA0.meshStrip(g, P, rl, RAIL.w, bx, sh); QA0.meshStrip(g, P.slice().reverse(), rr, RAIL.w, bx, sh); }   // 2026-10-16 QA（A）：欄干も曲線に沿った帯（直線の切れ端を回して並べるとふちがのこぎり状になる）
         else for (const P of pts) { H.stripAlong(g, P, rl, RAIL.w, bx, sh); H.stripAlong(g, P.slice().reverse(), rr, RAIL.w, bx, sh); }
         g.restore();
       }
     } else if (art.strip) for (const P of pts) H.stripAlong(g, P, art.strip, H.ART.strip.w, bx);
     else { g.strokeStyle = '#d9cfb0'; g.lineWidth = 18; for (const P of pts) { pathOf(g, P); g.stroke(); } }
-    hubs(g, D, (sid) => isSurface(zoneOf(D, sid)), art, H, (n) => (onLand(D, H, n[0], n[1]) ? white || deck : deck));
+    if (deck && R01) plazasR01(g, D, segs, R01, white || deck, H, bx);
+    else hubs(g, D, (sid) => isSurface(zoneOf(D, sid)), art, H, (n) => (onLand(D, H, n[0], n[1]) ? white || deck : deck));
+  }
+  /** 2026-10-18 v2：R01 の縁石の段（行 130〜176 / 522＝帯の外側のふち）を円に沿って並べた広場。中は白い石畳（無ければ橋床）・道の入口は縁石を切る */
+  const R01_KERB = [128, 174], R01_IN = [174, 348];   // 縁石の段（青いモザイク＋金の線）・中の白い石の段（行・522px の fix）
+  const R01_TILE = new WeakMap();
+  /** 広場の中の床：R01 の中の白い石の段を縦に積んだ模様（段の間に細い目地）。道の床と同じ石・同じ細かさ */
+  function r01Floor(strip) { if (R01_TILE.has(strip)) return R01_TILE.get(strip); let c = null;
+    try { const h = R01_IN[1] - R01_IN[0]; c = root.document.createElement('canvas'); c.width = strip.width; c.height = h + 2; const x = c.getContext('2d');
+      x.drawImage(strip, 0, R01_IN[0], strip.width, h, 0, 0, strip.width, h); x.fillStyle = 'rgb(178,174,160)'; x.fillRect(0, h, strip.width, 2); } catch (e) { c = null; }
+    R01_TILE.set(strip, c); return c; }
+  function plazasR01(g, D, segs, strip, fill, H, bx) {
+    const dirs = {}, put = (id, a, b) => { (dirs[id] = dirs[id] || []).push(Math.atan2(b[1] - a[1], b[0] - a[0])); };
+    for (const [, sg] of segs) { const ids = sg[3]; if (!ids || ids.length < 2) continue; const P = H.curvePts(ids.map((id) => D.nodes[id])), at = (k) => P[Math.min(P.length - 1, Math.max(0, k))];
+      put(ids[0], P[0], at(3)); put(ids[ids.length - 1], P[P.length - 1], at(P.length - 4)); }
+    const out = {}, inn = {}; for (const e of D.edges) if (e[3] === 'forward') { out[e[0]] = (out[e[0]] || 0) + 1; inn[e[1]] = (inn[e[1]] || 0) + 1; }
+    const full = ROAD_W * 128 / 62, ppu = strip.height / full, th = (R01_KERB[1] - R01_KERB[0]) / ppu, half = ROAD_W / 2;
+    for (const id of Object.keys(dirs)) {
+      const n = D.nodes[id], dead = /dead_end/.test(n[2]); if (!((out[id] || 0) > 1 || (inn[id] || 0) > 1 || dead)) continue;
+      const x = n[0], y = n[1], r = ROAD_W * (dead ? 0.78 : 0.95);
+      if (bx && (x + r + 6 < bx[0] || x - r - 6 > bx[0] + bx[2] || y + r + 6 < bx[1] || y - r - 6 > bx[1] + bx[3])) continue;
+      const sh = g.createRadialGradient(x, y, r - 1, x, y, r + 4.5); sh.addColorStop(0, 'rgba(20,34,44,.32)'); sh.addColorStop(1, 'rgba(20,34,44,0)');
+      g.fillStyle = sh; g.beginPath(); g.arc(x, y, r + 4.5, 0, 7); g.fill();
+      const fl = r01Floor(strip), fp = fl ? g.createPattern(fl, 'repeat') : null;
+      if (fp && fp.setTransform && root.DOMMatrix) fp.setTransform(new root.DOMMatrix().scale(1 / ppu));
+      g.save(); g.translate(x, y); g.fillStyle = fp || fill || '#e6e1d4'; g.beginPath(); g.arc(0, 0, r - th * 0.5, 0, 7); g.fill(); g.restore();
+      const ao = g.createRadialGradient(x, y, r * 0.55, x, y, r - th * 0.5); ao.addColorStop(0, 'rgba(40,46,56,0)'); ao.addColorStop(1, 'rgba(40,46,56,.2)');
+      g.fillStyle = ao; g.beginPath(); g.arc(x, y, r - th * 0.5, 0, 7); g.fill();
+      const ds = dirs[id], gap = Math.asin(Math.min(0.98, (half - th * 0.35) / (r - th / 2)));
+      const blocked = (a) => ds.some((d) => Math.abs(((a - d) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI) < gap);
+      const rm = r - th / 2, N = Math.max(12, Math.ceil(Math.PI * 2 * rm / 2.2)), L = Math.PI * 2 * rm / N, kh = R01_KERB[1] - R01_KERB[0];
+      for (let i = 0; i < N; i++) {
+        const a = (i + 0.5) / N * Math.PI * 2; if (blocked(a)) continue;
+        const sx = ((i * L * ppu) % (strip.width - L * ppu - 2)) || 0;
+        g.save(); g.translate(x + Math.cos(a) * rm, y + Math.sin(a) * rm); g.rotate(a + Math.PI / 2);
+        g.drawImage(strip, sx, R01_KERB[0], Math.max(1, L * ppu), kh, -L / 2 - 0.25, -th / 2, L + 0.5, th); g.restore();
+      }
+    }
   }
   function edgeLine(g, P, off) { g.beginPath(); P.forEach((p, i) => { const q = P[Math.min(i + 1, P.length - 1)], r0 = P[Math.max(i - 1, 0)], dx = q[0] - r0[0], dy = q[1] - r0[1], L = Math.hypot(dx, dy) || 1, x = p[0] - dy / L * off, y = p[1] + dx / L * off; i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.stroke(); }
   /** 分かれ目・合流・行き止まりの敷石の円（その板の区間だけ）。fillOf(n)＝塗り（正式の模様）。無ければ従来の敷石 */

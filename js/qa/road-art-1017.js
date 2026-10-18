@@ -16,7 +16,7 @@
   let P = null; try { P = new URLSearchParams(root.location.search); } catch (e) {}
   const q = P ? P.get('qaRoadArt') : null;
   //  2026-10-18（iPhone 試遊・ユーザー指示「Chapter 1 の道路画質改善」）：本編の Chapter 1 は既定で fix（継ぎ目を直した新素材）。?qaRoadArt=old で従来の絵（比較用）。
-  //  Chapter 2 の新しい素材は従来どおり URL のときだけ（URL_MODE＝未承認の Chapter 2 の道は本編へ入れない）
+  //  2026-10-18 v2：Chapter 2 も既定で新しい素材（QA と本編は同じ正式ボード＝ユーザー指示）。urlMode は「URL で選んだか」の確認用に残す
   const URL_MODE = q === 'raw' || q === 'fix' ? q : null;
   const MODE = q === 'old' ? null : URL_MODE || 'fix';
   const MACRO = MODE && !(P && P.get('qaRoadMacro') === '0');
