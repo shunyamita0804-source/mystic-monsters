@@ -1,3 +1,5 @@
+> 2026-10-18 REV3（旧ボードの削除）：参照ゼロの旧背景 field/（10）・road/（15）・journey/（13）・bg_01〜03・env/ の7枚を削除（元の JPEG の original/ は残す）。一覧と復元の方法は docs/rev3_1018/delete_ledger.tsv（git の 92a75aa に残る）。
+
 # Chapter 1「はじまりの草原」Pattern A「大橋と清流の草原」の素材
 
 2026-10-01（夜）：正式は field/（新しい背景10枚。field/README.md）と intro/ch1_intro_overview.webp。下の road/・journey/・俯瞰図 pattern1〜3 は参照しない（ファイルだけ残す）。
