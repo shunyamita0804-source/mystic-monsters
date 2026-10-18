@@ -236,7 +236,8 @@ function smooth(samples, tag) {   // 60ms ごとの回りの量：急に跳ね�
 
 test('D29-B4：Chapter 1 の後ろから追うカメラ（横の道・曲がり角・分かれ道・行き止まりからの折り返し）× 3サイズ', { skip: SKIP, timeout: 900000 }, async () => {
   for (const size of [[390, 844], [375, 667], [430, 932]]) {
-    const p = await openPage({ worldCh1: true }); const pg = p.page; const tag0 = size.join('x');
+    // 2026-10-18 REV3：通常の盤は C案カメラ＋新歩行が既定＝この試験は開発29 の「後ろから追うカメラ」と従来の歩行（比較用に残した）を確かめる
+    const p = await openPage({ worldCh1: true, query: '?qaCam=old&qaWalk=old' }); const pg = p.page; const tag0 = size.join('x');
     await pg.setViewportSize({ width: size[0], height: size[1] });
     await toWorld(pg);
     const ui0 = await rectsUI(pg);
