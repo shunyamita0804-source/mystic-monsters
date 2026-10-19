@@ -57,14 +57,15 @@ test('ELI-4：表示場所は研究所の図鑑一覧（museum）と図鑑の詳
   assert.ok(mu.startsWith('function museum(tab){if(p8Blocked())return;bgm("lab");'), '研究所の入口の制限はそのまま');
   // 2026-10-03 品質向上：正式な研究所の背景（assets/lab/lab_main.webp）が届いた＝入口（エリオットの半身・機能のカード）と図鑑の一覧の背景を差し替え（AS.mkt のデータは消さない）
   assert.ok(mu.includes('${(l=>`<div class="labnpc nst r"><img class="nstf" ${npcStand("elliot",l?l.expression:"normal")} alt="" decoding="async"><div class="tx"><b>エリオット</b>${l?l.text:""}</div></div>`)(npcLineX("lab",ELLIOT_TALK.lab,"normal"))}'), '入口：エリオットの半身＋会話窓（2026-10-04：進行状態に合う一言と表情）');
-  assert.ok(HTML.includes('function labShell(cls,back,plq,body,cur){return `<div class="lab ${cls}"><div class="labbg" style="background-image:url(${LAB_BG})"></div>'), '図鑑・合体・配合表も研究所の正式背景（labShell）'); assert.ok(HTML.includes('"mkt":"data:image/jpeg;base64,'), 'AS.mkt のデータは残す');
+  assert.ok(HTML.includes('function labShell(cls,back,plq,body,cur){return `<div class="lab ${cls}"><div class="labbg" style="background-image:url(${LAB_BG})"></div>'), '図鑑・合体・配合表も研究所の正式背景（labShell）'); assert.ok(HTML.includes('"mkt":"assets/inline/lab_card/lab_card_market.jpg"'), 'AS.mkt のデータは残す（2026-10-19 から assets/inline/ のファイル）');
   { const bk = HTML.slice(HTML.indexOf('function labBook('), HTML.indexOf('\nfunction musd(')); assert.ok(bk.includes('<b>モンスター図鑑</b><small>発見 ${n} / ${tot}</small>') && bk.includes('<div class="lbgrid">'), '2026-10-04：図鑑はデザイン参考 06（濃紺＋金・2列）。エリオットの一言は入口だけ'); }
   assert.ok(HTML.includes('<b class="lbnm">ノビトン</b><div class="lbim"><span class="q">?</span><em>近日公開</em></div>'), '「近日公開」（ロック表示）はシステム表示のまま（2026-10-04：図鑑のカード labBook）');
   const md = lineOf('function musd(');
   assert.ok(md.startsWith('function musd(i){if(p8Blocked())return;'));
   const mdAll = HTML.slice(HTML.indexOf('function musd('), HTML.indexOf('\nfunction ', HTML.indexOf('function musd(') + 10));
   assert.ok(mdAll.includes('<small class="lbno">No.${String(i+1).padStart(3,"0")}</small><b class="lbnm">${x[0]}</b>') && mdAll.includes('${p10Img(i)}') && !mdAll.includes('pcard'), '2026-10-04：図鑑の詳細＝正式画像・ゲージ・成長適性・初期の技（旧 base64 のカードと一言は出さない）');
-  assert.ok(HTML.includes('"soL":"data:image/jpeg;base64,') || HTML.includes('"soL":"data:image/'), 'プロフィールカードのデータ（base64 の AS.*L／AS.*R）は互換のため残す（表示はしない）');
+  // 2026-10-19：base64 の埋め込み画像は assets/inline/ のファイルへ出した（中身は同じ）
+  assert.ok(HTML.includes('"soL":"assets/inline/lab_card/lab_card_soramo_left.jpg"'), 'プロフィールカードのデータ（AS.*L／AS.*R＝assets/inline/lab_card/）は互換のため残す（表示はしない）');
   assert.equal((HTML.match(/elSay\(/g) || []).length, 3, '2026-10-04：elSay は定義＋合体・配合表の一言（表情＝思考・分析）。図鑑の一覧・詳細には出さない');
   for (const f of ['function labBook(', 'function musd(']) { const i = HTML.indexOf(f); assert.doesNotMatch(HTML.slice(i, HTML.indexOf('\nfunction ', i + 10)), /elSay/, f); }
   for (const f of ['function farm(', 'function market(', 'function _hall(', 'function p9TourResult(']) {

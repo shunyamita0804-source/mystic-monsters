@@ -53,7 +53,7 @@ test('NICK-3：牧場の吹き出し：通知（msg）は名前・顔なし。�
 test('NICK-4：旧データ NP.f・NPI.f は互換のため残す（名前「ダン」とセリフ4行はそのまま）', () => {
   const NP = new Function(`${lineOf('const NP=')}\nreturn NP;`)();
   assert.equal(NP.f.n, 'ダン'); assert.equal(NP.f.t.length, 4);
-  assert.match(lineOf('const NPI='), /,f:"data:image\/png;base64,/);
+  assert.match(lineOf('const NPI='), /,f:"assets\/inline\/npc_old\/npi_f_dan_ranch\.png"/);   // 2026-10-19：base64 から assets/inline/ へ（中身は同じ）
 });
 
 test('NICK-5：一言は NICK_TALK.ranch。ニックの口調（やぁ・〜だな・心配するな）で、ダンの一言とは違う。「〜だぜ」・若者言葉・寿命・疲労は使わない', () => {
