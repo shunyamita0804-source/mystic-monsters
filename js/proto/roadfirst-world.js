@@ -293,7 +293,7 @@
       const load2 = (k, f) => (SK && SK[k] ? new Promise((res) => { const im = new root.Image(); im.onload = () => { im._sk = true; res(im); }; im.onerror = () => res(null); im.src = SK.base + SK[k]; }) : Promise.resolve(null))
         .then((im) => im || load(f));
       // 2026-10-17 QA（道路画質・?qaRoadArt=raw|fix のときだけ）：草地・道の帯・敷石の円は新しい素材（js/qa/road-art-1017.js）→ 読めなければ上の skin → 従来の絵
-      const QRA = !SEA && root.MMQRA && root.MMQRA.mode ? root.MMQRA : null, q17 = QRA ? QRA.CH1[visualOf(o).key] || QRA.CH1.A : null;
+      const QRA = !SEA && root.MMQRA && (root.MMQRA.mode || VIS.sky) ? root.MMQRA : null, q17 = QRA ? QRA.CH1[visualOf(o).key] || QRA.CH1.A : null;
       const load3 = (k, f) => (q17 ? QRA.load(q17[k]).then((im) => (im ? Object.assign(im, { _sk: true }) : load2(k, f))) : load2(k, f));
       const T = ART.terrain;
       const EK = Object.keys(T.edges);

@@ -1,6 +1,6 @@
 // 2026-10-18 夜間 GO：PHASE 1 の修正の実ブラウザテスト（390×844）
-//  NT-B1（B02・B03）：ライバルに負けた＝LOSE の曲（5.0秒）を最後まで・悲しい声は結果の画面に居るときだけ1回・曲のあとに次の画面の曲（Chapter）が鳴る（もどるを待つ間に無音の穴を作らない）
-//  NT-B2（B03）：LOSE の曲の途中で「もどる」を押す（rjlock なし）＝悲しい声は鳴らない（ボードで遅れて鳴らない）
+//  NT-B1（2026-10-19 改）：ライバルに負けた＝LOSE の曲（5.0秒）を最後まで → 結果の画面は保持音（無音にしない・Chapter の曲を鳴らし直さない）→ もどる → ボードで悲しい声1回 → リュウの一言
+//  NT-B2（2026-10-19 改）：LOSE の曲の途中で「もどる」＝悲しい声はボードで1回だけ（二重・遅れなし）
 //  NT-B3（B06）：ライバルの遭遇＝フィナの一言のあとにリュウの正式ボイス 008 → 006（字幕＝声の書き起こし）
 //  NT-B4（PHASE 2）：本編の盤の歩行＝walk_1018（止まると正面 front_2・歩く間は 1018 のコマ）
 import test from 'node:test'; import assert from 'node:assert/strict';
@@ -26,28 +26,34 @@ async function surrender(pg) {
 }
 const WEAK = { li: 60, po: 10, in: 10, hi: 10, ev: 1, de: 1 };
 
-test('NT-B1：LOSE の曲を最後まで → 悲しい声1回（結果の画面で）→ 次の画面の曲が鳴る（無音の穴なし）', { skip: SKIP, timeout: 240000 }, async () => {
+test('NT-B1：ライバルに負け＝LOSE の曲を最後まで → 結果の画面では保持音（Chapter の曲を鳴らし直さない・悲しい声なし）→ もどる → ボードで悲しい声1回 → リュウの一言', { skip: SKIP, timeout: 240000 }, async () => {
   const p = await openPage({ worldCh1: true, npc: true, rjlock: true }); const pg = p.page;
   await toWorld(pg, WEAK); await toRival(pg); await surrender(pg);
   const v0 = await pg.evaluate(() => MMAUDIO.voiceLog().length), t0 = Date.now(), rows = [];
-  while (Date.now() - t0 < 8000) { await pg.waitForTimeout(250); rows.push(await pg.evaluate(() => { const s = MMAUDIO.status(); return { t: 0, scene: s.scene, playing: s.playing, bt: !!document.getElementById('bt'), v: (MMAUDIO.voicePlaying() || {}).id || null }; })); rows[rows.length - 1].t = Date.now() - t0; }
+  while (Date.now() - t0 < 8000) { await pg.waitForTimeout(250); rows.push(await pg.evaluate(() => { const s = MMAUDIO.status(); return { t: 0, scene: s.scene, playing: s.playing, hold: MMAUDIO.holding(), bt: !!document.getElementById('bt'), v: (MMAUDIO.voicePlaying() || {}).id || null }; })); rows[rows.length - 1].t = Date.now() - t0; }
   const lose = await pg.evaluate(() => MMAUDIO.playLog().filter((x) => x.name === 'BATTLE_LOSE').slice(-1)[0]);
   assert.ok(lose && lose.dur >= 4950, `LOSE の曲は 5.0秒を最後まで（${lose && lose.dur}ms）`);
-  const sad = rows.filter((r) => r.v === 'cry_solamo_sad'); assert.ok(sad.length >= 1 && sad.every((r) => r.bt), '悲しい声は結果の画面に居るあいだ');
-  const firstMusic = rows.find((r) => r.playing && r.scene === 'CHAPTER_1'); assert.ok(firstMusic && firstMusic.bt && firstMusic.t < 7500, `もどるを待つ間に次の曲（${JSON.stringify(firstMusic)}）`);
-  assert.equal(await pg.evaluate((n) => MMAUDIO.voiceLog().slice(n).filter((x) => x.id === 'cry_solamo_sad' && x.result === 'play').length, v0), 1);
-  await pg.click('#go'); await pg.waitForTimeout(1500);
-  assert.deepEqual(await pg.evaluate(() => [MMAUDIO.status().scene, MMAUDIO.status().playing]), ['CHAPTER_1', true], 'ボードへ戻っても同じ曲のまま（鳴らし直さない）');
+  assert.ok(rows.every((r) => r.bt), '8秒間は結果の画面のまま（rjlock）');
+  assert.ok(!rows.some((r) => r.v === 'cry_solamo_sad'), 'ライバル戦の悲しい声は結果の画面では鳴らない');
+  assert.ok(!rows.some((r) => r.playing && /^CHAPTER/.test(r.scene || '')), `結果の画面で Chapter の曲を鳴らし直さない ${JSON.stringify(rows.filter((r) => r.playing))}`);
+  const h = rows.find((r) => r.hold); assert.ok(h && h.t < 6500 && rows.filter((r) => r.t > 6000).every((r) => r.hold), `LOSE の曲のあとは保持音で無音にしない（${JSON.stringify(h)}）`);
+  await pg.click('#go'); await pg.waitForTimeout(1200);
+  assert.equal(await pg.evaluate(() => MMAUDIO.holding()), false, 'もどるで保持音は止まる');
+  await pg.waitForFunction(() => document.querySelector('.mmtalk:not(.mmtalk-out)'), null, { timeout: 20000 });
+  const a = await pg.evaluate((n) => ({ vl: MMAUDIO.voiceLog().slice(n), log: RYU_WIN_LOG.slice(), scene: MMAUDIO.status().scene }), v0);
+  assert.equal(a.vl.filter((x) => x.id === 'cry_solamo_sad' && x.result === 'play').length, 1, `ボードへ戻ってから悲しい声1回 ${JSON.stringify(a.vl)}`);
+  assert.ok(a.log.includes('lose1') && a.log.includes('sad0'), JSON.stringify(a.log)); assert.equal(a.scene, 'CHAPTER_1');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
-test('NT-B2：LOSE の途中で「もどる」＝悲しい声はボードで遅れて鳴らない', { skip: SKIP, timeout: 240000 }, async () => {
+test('NT-B2：LOSE の途中で「もどる」＝結果の画面の保持音は始まらない・悲しい声はボードで1回だけ（遅れて二重に鳴らない）', { skip: SKIP, timeout: 240000 }, async () => {
   const p = await openPage({ worldCh1: true, npc: true }); const pg = p.page;
   await toWorld(pg, WEAK); await toRival(pg); await surrender(pg);
   const v0 = await pg.evaluate(() => MMAUDIO.voiceLog().length);
   await pg.waitForTimeout(1200); await pg.click('#go'); await pg.waitForTimeout(6500);
   const vl = await pg.evaluate((n) => MMAUDIO.voiceLog().slice(n), v0);
-  assert.equal(vl.filter((x) => /^cry_/.test(x.id) && x.result === 'play').length, 0, `ボードで悲しい声が鳴らない ${JSON.stringify(vl)}`);
+  assert.equal(vl.filter((x) => x.id === 'cry_solamo_sad' && x.result === 'play').length, 1, `悲しい声はボードで1回 ${JSON.stringify(vl)}`);
+  assert.equal(await pg.evaluate(() => MMAUDIO.holding()), false);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 

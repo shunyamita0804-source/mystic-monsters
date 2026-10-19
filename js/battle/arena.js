@@ -81,6 +81,7 @@
       // 被弾／回避のリアクション：待機立ち絵と同じ置き方（足もと・中央・反転）。高さ＝待機立ち絵 × --rh（体の大きさがそろう倍率）
       '#bt .mon .mma-rx{position:absolute;left:50%;bottom:0;height:calc(118% * var(--rh,1));width:auto;max-width:none;transform:translateX(-50%);pointer-events:none;filter:drop-shadow(0 8px 6px rgba(0,0,0,.45))}',
       '#bt .mon .mma-rx.fl{transform:translateX(-50%) scaleX(-1)}',
+      '#bt .mon :is(.mma-idle,.mma-rx,.mma-win,.mma-fin){margin-left:var(--mma-dx,0px)}',   // 2026-10-19：画面の端で体が切れないように横へずらす量（keepIn が測って入れる。例：カルシェルの待機・被弾・回避が左の端で切れていた）
       '#bt .mon.mma-rxon>.mma-idle{visibility:hidden}',
       '#bt .mon:not(.mma-on) .mma-rx{display:none}',
       // HUD（名前・HP）：濃紺＋細い金の縁
@@ -616,7 +617,24 @@
     }).observe(bt, { childList: true });
     const go = $('#go', bt); if (go) new MutationObserver(() => { if (go.classList.contains('bk')) off(); }).observe(go, { attributes: true, attributeFilter: ['class'] });
   }
+  /** 2026-10-19（次便一括・第1工程）：自分・相手の立ち絵（待機・被弾／回避・勝利・決着）が画面の左右の端からはみ出したら、はみ出した分だけ内側へずらす（--mma-dx）。
+   *  絵の大きさ・足もと・向きは変えない（横の位置だけ）。絵が読めた瞬間・差し替えた直後・画面の大きさが変わったときに測り直す */
+  const EDGE_PAD = 4;
+  function keepIn(bt) {
+    bt = bt || document.getElementById('bt'); if (!bt) return;
+    const W = (root.innerWidth || bt.clientWidth || 0);
+    bt.querySelectorAll('.mon :is(.mma-idle,.mma-rx,.mma-win,.mma-fin)').forEach((im) => {
+      if (!im.naturalWidth || !im.isConnected) return;
+      im.style.setProperty('--mma-dx', '0px'); const r = im.getBoundingClientRect(); if (!r.width) return;
+      const dx = r.width > W - 2 * EDGE_PAD ? 0 : r.left < EDGE_PAD ? EDGE_PAD - r.left : r.right > W - EDGE_PAD ? W - EDGE_PAD - r.right : 0;
+      im.style.setProperty('--mma-dx', Math.round(dx) + 'px'); if (dx) keepLog.push({ c: im.className, dx: Math.round(dx) });
+    });
+    if (keepLog.length > 40) keepLog.splice(0, keepLog.length - 40);
+  }
+  const keepLog = [];
+  const keepSoon = (bt) => { try { (root.requestAnimationFrame || setTimeout)(() => keepIn(bt)); } catch (e) {} };
   function setup(bt) {
+    if (!bt.__keepIn) { bt.__keepIn = true; bt.addEventListener('load', (e) => { if (e.target && e.target.tagName === 'IMG') keepSoon(bt); }, true); try { new MutationObserver(() => keepSoon(bt)).observe(bt, { subtree: true, childList: true, attributeFilter: ['class'] }); } catch (e) {} }
     style();
     turnSide = -1; rMiss = null;
     if (v24()) bt.classList.add('mma-v24');
@@ -662,7 +680,8 @@
     new MutationObserver((muts) => { for (const mu of muts) for (const n of mu.addedNodes) if (n && n.id === 'bt') setup(n); }).observe(document.body, { childList: true });
   }
   if (typeof document !== 'undefined') { if (document.body) watch(); else document.addEventListener('DOMContentLoaded', watch); }
-  root.MMARENA = Object.freeze({ R, IDLE, FACE, SCALE, GEO, UI_KEY, v24, setUi, crowdLog: () => crowdLog.slice(), endLog: () => endLog.slice(), finLog: () => finLog.slice(), rankOf, arenaSrc, fieldSrc, FIELD_BG, idleSrc, flipOf, setup, react, warmCards, cardReady, RX_MS, rxLog: () => rxLog.slice(), DEFEAT_ART, TOUR_ICON, TOUR_ICON_BG, tourIconSrc, tourIconBg: (sp) => TOUR_ICON_BG[sp] || null, faceSrc: (sp) => (IDLE[sp] ? `./assets/tournament/faces_25d/face_${IDLE[sp].slice(5)}.webp` : null),
+  try { root.addEventListener('resize', () => keepSoon()); } catch (e) {}
+  root.MMARENA = Object.freeze({ keepIn, keepLog: () => keepLog.slice(), R, IDLE, FACE, SCALE, GEO, UI_KEY, v24, setUi, crowdLog: () => crowdLog.slice(), endLog: () => endLog.slice(), finLog: () => finLog.slice(), rankOf, arenaSrc, fieldSrc, FIELD_BG, idleSrc, flipOf, setup, react, warmCards, cardReady, RX_MS, rxLog: () => rxLog.slice(), DEFEAT_ART, TOUR_ICON, TOUR_ICON_BG, tourIconSrc, tourIconBg: (sp) => TOUR_ICON_BG[sp] || null, faceSrc: (sp) => (IDLE[sp] ? `./assets/tournament/faces_25d/face_${IDLE[sp].slice(5)}.webp` : null),
     // 2026-10-11：対戦表の顔＝2.5D の横顔（faces_25d）。読めなかったときは従来の丸い顔（faces）へ（index.html の tbIcon の onerror）
     faceOldSrc: (sp) => (IDLE[sp] ? `./assets/tournament/faces/face_${IDLE[sp].slice(5)}.webp` : null) });
 })(typeof window !== 'undefined' ? window : globalThis);

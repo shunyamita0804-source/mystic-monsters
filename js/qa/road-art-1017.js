@@ -29,13 +29,46 @@
   /** Chapter 1：skin の鍵（ground・road・strip）→ 新しい絵の名前（景色 A／B／C） */
   const CH1 = { A: { ground: 'ch1_ground_a1', road: 'ch1_road_r1', strip: 'ch1_strip_r1' }, B: { ground: 'ch1_ground_a2', road: 'ch1_road_r1', strip: 'ch1_strip_r1' },
     C: { ground: 'ch1_ground_a3', road: 'ch1_road_r2', strip: 'ch1_strip_r2' },
-    S: { ground: 'ch1_ground_a2', road: 'ch1_road_r2', strip: 'ch1_strip_r2' } };   // 2026-10-18 Chapter 3（天空の浮島）：明るい草地と白っぽい石畳 R2
+    S: { ground: 'ch1_ground_a2', road: 'gen:sky_road', strip: 'gen:sky_strip' } };   // 2026-10-18 Chapter 3（天空の浮島）：明るい草地。2026-10-19（次便一括・第1工程）：道は Chapter 1 の石畳 R2 を流用しない＝白亜の石板と金の縁石を描画で作る（下の GEN。Chapter 3 の正式の道路素材 C3-R1／R2 が届いたら差し替え）
   /** Chapter 2：js/proto/ch2-world.js の TEX・STRIPS の鍵 → 新しい絵の名前 */
   const CH2 = { tex: { sea: 'ch2_open_sea_water', deck: 'ch2_sea_bridge_deck', white: 'ch2_coastal_white_stone_road' },
     strip: { walk: 'ch2_R01_white_bridge_walkstrip', railL: 'ch2_sea_bridge_railing_left', railR: 'ch2_sea_bridge_railing_right' } };
   const loaded = [];   // 読めた絵（確認用：名前・大きさ）
+  // ---- 2026-10-19 Chapter 3 の道（白亜の石板＋金の縁石）を描画で作る＝新しい絵は描いていない（色と目地だけの canvas）。周期の端で目地がそろう（継ぎ目なし） ----
+  const lcgOf = (seed) => { let x = seed >>> 0; return () => { x = (Math.imul(x, 1664525) + 1013904223) >>> 0; return x / 4294967296; }; };
+  function slabs(g, x0, y0, W, H, sw, sh, seed) {   // 白亜の石板（段ごとに半分ずらす・1枚ずつ明るさが少し違う・上のふちに光・目地）
+    const r = lcgOf(seed);
+    for (let row = 0, y = y0; y < y0 + H; row++, y += sh) {
+      const off = row % 2 ? sw / 2 : 0;
+      for (let x = x0 - off; x < x0 + W; x += sw) {
+        const t = Math.round(236 + (r() - 0.5) * 14), cool = Math.round((r() - 0.5) * 6);
+        g.fillStyle = `rgb(${t},${t - 4 + cool},${t - 14})`; g.fillRect(x, y, sw, sh);
+        g.fillStyle = 'rgba(255,255,255,.32)'; g.fillRect(x + 2, y + 2, sw - 4, 2);
+        g.strokeStyle = 'rgba(176,164,138,.35)'; g.lineWidth = 1; g.beginPath(); const vx = x + r() * sw; g.moveTo(vx, y + 3); g.quadraticCurveTo(vx + (r() - 0.5) * sw * 0.6, y + sh / 2, vx + (r() - 0.5) * sw * 0.4, y + sh - 3); g.stroke();   // 大理石の筋
+        g.strokeStyle = 'rgba(138,124,96,.62)'; g.lineWidth = 2; g.strokeRect(x + 1, y + 1, sw - 2, sh - 2);
+        // 横の端をまたぐ石は反対側にも同じ石を描く（周期の端で目地がそろう）
+        if (x < x0) { g.save(); g.translate(W, 0); g.fillStyle = `rgb(${t},${t - 4 + cool},${t - 14})`; g.fillRect(x, y, sw, sh); g.fillStyle = 'rgba(255,255,255,.32)'; g.fillRect(x + 2, y + 2, sw - 4, 2); g.strokeStyle = 'rgba(138,124,96,.62)'; g.lineWidth = 2; g.strokeRect(x + 1, y + 1, sw - 2, sh - 2); g.restore(); }
+      }
+    }
+  }
+  function curb(g, y, h, down) {   // 縁石：白い石の段＋内側の金の線＋外側の陰
+    const gr = g.createLinearGradient(0, y, 0, y + h); gr.addColorStop(0, down ? '#ddd3bd' : '#c9bea4'); gr.addColorStop(1, down ? '#c9bea4' : '#ddd3bd');
+    g.fillStyle = gr; g.fillRect(0, y, g.canvas.width, h);
+    for (let x = 0; x < g.canvas.width; x += 64) { g.fillStyle = 'rgba(120,104,76,.5)'; g.fillRect(x, y, 2, h); }
+    const gy = down ? y + 3 : y + h - 7; g.fillStyle = '#c9a24a'; g.fillRect(0, gy, g.canvas.width, 4); g.fillStyle = 'rgba(255,236,170,.75)'; g.fillRect(0, gy, g.canvas.width, 1);
+    g.fillStyle = 'rgba(90,76,52,.55)'; g.fillRect(0, down ? y + h - 3 : y, g.canvas.width, 3);
+  }
+  const GEN = {
+    sky_road: () => { const c = root.document.createElement('canvas'); c.width = c.height = 512; const g = c.getContext('2d'); slabs(g, 0, 0, 512, 512, 128, 64, 1019); c._ppu = 512 / 57.5; return c; },
+    sky_strip: () => { const c = root.document.createElement('canvas'); c.width = 1024; c.height = 256; const g = c.getContext('2d'); slabs(g, 0, 46, 1024, 164, 128, 82, 2019); curb(g, 0, 46, false); curb(g, 210, 46, true); return c; },
+  };
+  const GEN_CACHE = {};
   /** 新しい絵を読む（_ppu・_qra を付ける）。読めなければ null（呼ぶ側が従来の絵へ） */
   function load(name) {
+    if (name && /^gen:/.test(name)) {   // 2026-10-19：描画で作る道（Chapter 3）。?qaRoadArt=old でも Chapter 1 の石畳には戻さない
+      const k = name.slice(4); try { if (!GEN_CACHE[k] && GEN[k] && root.document) { const c = GEN[k](); c._qra = name; c._gen = true; GEN_CACHE[k] = c; loaded.push([name, c.width, c.height]); } } catch (e) {}
+      return Promise.resolve(GEN_CACHE[k] || null);
+    }
     return new Promise((res) => {
       if (!MODE || !name || !root.Image) { res(null); return; }
       const im = new root.Image(); im.decoding = 'async';
@@ -66,5 +99,5 @@
     if (p.setTransform && root.DOMMatrix) p.setTransform(new root.DOMMatrix().translate(-131, -77).scale(900 / t.width));
     g.save(); g.globalAlpha = 0.55; g.fillStyle = p; g.fillRect(x0, y0, w, h); g.restore();
   }
-  root.MMQRA = Object.freeze({ mode: MODE, urlMode: URL_MODE, macroOn: !!MACRO, BASE, PPU, CH1, CH2, file, load, macro, loaded: () => loaded.slice() });
+  root.MMQRA = Object.freeze({ GEN: Object.keys(GEN), mode: MODE, urlMode: URL_MODE, macroOn: !!MACRO, BASE, PPU, CH1, CH2, file, load, macro, loaded: () => loaded.slice() });
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -356,6 +356,7 @@
    *  opts.fade：'normal'（既定・約0.7秒のクロスフェード）／'quick'（遭遇など）／'none'。ファイルが無い（または再生できない）場面は合成音（legacy）で鳴らす
    */
   function scene(name, opts = {}) {
+    holdStop(400);   // 2026-10-19：敗北の保持音は次の場面で止める
     const key = resolveScene(name);
     if (!key) { note('scene', name); return false; }
     if (st.scene === key && st.source !== 'none') return false;   // 同じ場面（無音の場面を含む）は何もしない
@@ -377,7 +378,27 @@
   function bgmTime(key) { const b = st.bb; if (b && b.active && (!key || resolveScene(key) === b.scene)) return bufPos(b); const c = st.cur; if (!c || !c.active || (key && resolveScene(key) !== c.scene)) return null; try { const t = c.el.currentTime; return c.el.paused || !Number.isFinite(t) ? null : t; } catch (e) { return null; } }
   /** 今鳴っているファイルの BGM の位置を合わせる（秒）。鳴らしていなければ何もしない */
   function seekBgm(sec, key) { const c = st.cur; if (!c || !c.active || (key && resolveScene(key) !== c.scene) || !Number.isFinite(sec)) return false; try { c.el.currentTime = Math.max(0, sec); return true; } catch (e) { note('bgm-seek', e); return false; } }
-  function stopBgm(opts = {}) { stopFiles(FADE[opts.fade || 'normal'] != null ? FADE[opts.fade || 'normal'] : FADE.normal); legacyStop(); st.scene = null; st.source = 'none'; st.pendingScene = null; }
+  // ---- 2026-10-19（次便一括・第1工程）：敗北の画面の「保持音」＝決着の曲（LOSE 5.0秒）のあと、もどるを押すまで無音にしない低負荷の音 ----
+  //  ファイルは使わない（新しい音源を足さない）：正弦波2つ（A2・E3）＋ゆっくりした揺れ＝BGM の音量・ミュートに従う（bgmGain → master）。長い曲・Chapter の曲には切り替えない。
+  //  scene()／stopBgm()／holdStop() で止まる。Web Audio が無い環境では何もしない
+  const hd = { nodes: null };
+  function holdStart(opts = {}) {
+    const c = context(); if (!c || !st.bgmGain || hd.nodes) return false;
+    try {
+      const out = c.createGain(), now = c.currentTime, peak = Math.max(0, Math.min(0.2, opts.gain != null ? opts.gain : 0.05));
+      out.gain.setValueAtTime(0, now); out.gain.linearRampToValueAtTime(peak, now + (opts.fadeIn != null ? opts.fadeIn : 1.4)); out.connect(st.bgmGain);
+      const lfo = c.createOscillator(), lg = c.createGain(); lfo.frequency.value = 0.18; lg.gain.value = peak * 0.35; lfo.connect(lg); lg.connect(out.gain);
+      const os = [[110, 0.6], [164.81, 0.4], [220.5, 0.12]].map(([f, a]) => { const o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.value = f; g.gain.value = a; o.connect(g); g.connect(out); o.start(now); return o; });
+      lfo.start(now); hd.nodes = { out, os, lfo, t0: Date.now() }; return true;
+    } catch (e) { hd.nodes = null; return false; }
+  }
+  function holdStop(ms = 600) {
+    const n = hd.nodes; if (!n) return; hd.nodes = null;
+    try { const c = st.ctx, now = c.currentTime; n.out.gain.cancelScheduledValues(now); n.out.gain.setValueAtTime(n.out.gain.value, now); n.out.gain.linearRampToValueAtTime(0, now + ms / 1000);
+      const end = now + ms / 1000 + 0.05; n.os.forEach((o) => o.stop(end)); n.lfo.stop(end); setTimeout(() => { try { n.out.disconnect(); } catch (e) {} }, ms + 200); } catch (e) {}
+  }
+  const holding = () => !!hd.nodes;
+  function stopBgm(opts = {}) { holdStop(250); stopFiles(FADE[opts.fade || 'normal'] != null ? FADE[opts.fade || 'normal'] : FADE.normal); legacyStop(); st.scene = null; st.source = 'none'; st.pendingScene = null; }
 
   // ---- ファイル SE：XMLHttpRequest → decodeAudioData → AudioBuffer ----
   function loadSe(name) {
@@ -690,7 +711,7 @@
     slots: st.slots.map((s) => ({ i: s.i, src: s.src, scene: s.scene, active: s.active, paused: !!s.el.paused, loop: s.loopRange ? [s.loopRange.start, s.loopRange.end] : null, waiting: !!s.waiting, time: Number.isFinite(s.el.currentTime) ? Math.round(s.el.currentTime * 100) / 100 : null, gain: s.gain ? s.gain.gain.value : s.el.volume })) });
   const registryOf = (kind) => (kind === 'se' ? Object.fromEntries(Object.keys(SEF).map((k) => [k, { srcs: [...SEF[k].srcs], gain: SEF[k].gain, silent: !!SEF[k].silent, maxMs: SEF[k].maxMs }])) : Object.fromEntries(Object.keys(BGM).map((k) => [k, { ...BGM[k], srcs: [...BGM[k].srcs] }])));
 
-  root.MMAUDIO = fz({ SCENES, SCENE_ALIAS, SE, FADE, registerBgm, registerSe, registerAll, clearRegistry, registryOf, prefetchSe, prefetchBgm, resetBgmPos, attachLegacy, resolveScene, resolveBgm, scene, stopBgm, bgmTime, seekBgm, se, setVolume, setMuted, unlock, wake, context, legacyInput, status, seLog: () => SE_LOG.slice(),
+  root.MMAUDIO = fz({ SCENES, SCENE_ALIAS, SE, FADE, registerBgm, registerSe, registerAll, clearRegistry, registryOf, prefetchSe, prefetchBgm, resetBgmPos, attachLegacy, resolveScene, resolveBgm, scene, stopBgm, holdStart, holdStop, holding, bgmTime, seekBgm, se, setVolume, setMuted, unlock, wake, context, legacyInput, status, seLog: () => SE_LOG.slice(),
     registerVoice, voice, cryAfter, stopVoice, setVoice, voiceSettings, voiceStatus, voicePrefetch, voiceWarm, voicePlaying, voiceResolve, voiceLine, voiceAliases: () => ({ ...VALIAS }), voiceIds: () => Object.keys(VOICE).filter((k) => !VOICE[k].cry), cry, cryWarm, cryIds: () => Object.keys(VOICE).filter((k) => VOICE[k].cry), CRY_KEYS, cryReset: () => { cs.last = 0; cs.per = {}; }, voiceBlocked: () => VOICE_BLOCKED, voiceNow: () => (vs.cur ? vs.cur.id : null), voiceLog: () => VOICE_LOG.slice(), playLog: () => PLAY_LOG.map((x) => ({ ...x })), VOICE_DEFAULT: VDEF });
   try { if (root.document) { ['pointerdown', 'touchend', 'keydown'].forEach((e) => root.document.addEventListener(e, unlock, { passive: true })); root.document.addEventListener('visibilitychange', onVisibility); }
     if (root.addEventListener) { root.addEventListener('pageshow', () => { st.hidden = !!(root.document && root.document.hidden); wake(); }); root.addEventListener('focus', () => wake()); } } catch (e) {}

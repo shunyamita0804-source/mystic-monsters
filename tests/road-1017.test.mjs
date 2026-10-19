@@ -31,7 +31,8 @@ test('RQ-02：台帳と js の px／単位・ファイル', async () => {
       const b = readFileSync(path.join(ROOT, DIR, r.out)); assert.equal(b.toString('ascii', 8, 12), 'WEBP', r.out); }
   }
   for (const k of ['ch1_strip_r1', 'ch1_strip_r2', 'ch2_R01_white_bridge_walkstrip']) for (const t of ['raw', 'fix']) assert.ok(existsSync(path.join(ROOT, DIR, J[k][t].out)), k + t);
-  for (const v of Object.values(A.CH1)) for (const n of Object.values(v)) assert.ok(J[n], n);
+  for (const v of Object.values(A.CH1)) for (const n of Object.values(v)) assert.ok(J[n] || (/^gen:/.test(n) && A.GEN.includes(n.slice(4))), n);   // 2026-10-19：Chapter 3（S）の道は描画で作る（gen:）＝Chapter 1 の石畳を流用しない
+  assert.ok(!/ch1_(road|strip)/.test(Object.values(A.CH1.S).join(' ')), 'Chapter 3 の道に Chapter 1 の石畳を使わない');
   for (const g of Object.values(A.CH2)) for (const n of Object.values(g)) assert.ok(J[n], n);
   assert.equal(J.ch1_strip_r1.raw.size[1], 384, '道の帯は高さ 384（従来 128）');
   assert.equal(J.ch2_R01_white_bridge_walkstrip.band_px, 253, 'R01 の帯の見える所');
@@ -51,7 +52,7 @@ test('RQ-03：継ぎ目は fix で 1.35 以下・raw と同じ細かさ', () => 
 test('RQ-04：差し込み口（2026-10-18 v2：Chapter 2 も既定で新素材）', () => {
   const rw = rd('js/proto/roadfirst-world.js'), c2 = rd('js/proto/ch2-world.js'), r16 = rd('js/qa/road-1016.js');
   assert.match(rw, /scale\(im\._ppu \? 1 \/ im\._ppu : tile \/ im\.width\)/, '_ppu の無い従来の絵は従来の倍率');
-  assert.match(rw, /const QRA = !SEA && root\.MMQRA && root\.MMQRA\.mode \? root\.MMQRA : null/);
+  assert.match(rw, /const QRA = !SEA && root\.MMQRA && \(root\.MMQRA\.mode \|\| VIS\.sky\) \? root\.MMQRA : null/);
   assert.match(c2, /const QRA = root\.MMQRA && root\.MMQRA\.mode \? root\.MMQRA : null;\n\s*if \(QRA\) return/);
   assert.match(c2, /qaArch=1/, 'アーチは &qaArch=1 のときだけ');
   assert.match(r16, /const MODE = q === '1' \|\| q === '2' \? q : ART17 \? '1' : null;/);
