@@ -115,7 +115,8 @@ test('MY-02：隔離＝byId／byKey／keyOf では引けない・SPECIES／市�
   assert.equal((HTML.match(/myurol/g) || []).length, 1, 'index.html は技アニメのデータの script 1行だけ');
   assert.match(HTML, /<script src="\.\/js\/battle\/kalshell-moves-data\.js"><\/script>[^\n]*\n<script src="\.\/js\/battle\/myurol-moves-data\.js"><\/script>/, 'カルシェルのデータの直後');
   assert.ok(HTML.indexOf('myurol-moves-data.js') < HTML.indexOf('js/battle/art25d.js"'), 'art25d より先に読む');
-  for (const f of ['CLAUDE.md', 'js/chapter/world-board.js', 'js/chapter/configs/ch1a.js', 'js/chapter/configs/ch2a.js', 'js/battle-bridge.js', 'js/integration/adapter.js', 'js/chapter/world-driver.js'])
+  // CLAUDE.md は親のセッションが §3 に記録する（docs/next_1019/claude_md_myurol.md）＝ここでは見ない
+  for (const f of ['js/chapter/world-board.js', 'js/chapter/configs/ch1a.js', 'js/chapter/configs/ch2a.js', 'js/battle-bridge.js', 'js/integration/adapter.js', 'js/chapter/world-driver.js'])
     assert.ok(!rd(f).includes('myurol'), `${f}：触れていない（本編の盤・野生・Phase 6）`);
   const arena = rd('js/battle/arena.js');
   assert.match(arena, /const IDLE = \{ 0: 'idle_soramo', 1: 'idle_gauru', 2: 'idle_nobiton', 3: 'idle_jiol', 4: 'idle_regnas' \};/, 'バトルの待機絵の表には入れない（QA の間だけ貸す）');
