@@ -623,11 +623,15 @@
   function keepIn(bt) {
     bt = bt || document.getElementById('bt'); if (!bt) return;
     const W = (root.innerWidth || bt.clientWidth || 0);
-    bt.querySelectorAll('.mon :is(.mma-idle,.mma-rx,.mma-win,.mma-fin)').forEach((im) => {
-      if (!im.naturalWidth || !im.isConnected) return;
-      im.style.setProperty('--mma-dx', '0px'); const r = im.getBoundingClientRect(); if (!r.width) return;
+    //  ずらす量はモンスターごとに1つ（.mon の --mma-dx）＝待機の立ち絵で測り、被弾・回避・勝利の絵も同じだけずらす（差し替えの瞬間に横へ跳ねない）。
+    //  待機の絵が無いときだけ、ある絵で測る
+    bt.querySelectorAll('.mon').forEach((mon) => {
+      const ims = [...mon.querySelectorAll(':scope>:is(.mma-idle,.mma-rx,.mma-win,.mma-fin)')].filter((im) => im.naturalWidth && im.isConnected);
+      ims.forEach((im) => im.style.removeProperty('--mma-dx'));
+      const ref = ims.find((im) => im.classList.contains('mma-idle')) || ims[0]; if (!ref) return;
+      mon.style.setProperty('--mma-dx', '0px'); const r = ref.getBoundingClientRect(); if (!r.width) return;
       const dx = r.width > W - 2 * EDGE_PAD ? 0 : r.left < EDGE_PAD ? EDGE_PAD - r.left : r.right > W - EDGE_PAD ? W - EDGE_PAD - r.right : 0;
-      im.style.setProperty('--mma-dx', Math.round(dx) + 'px'); if (dx) keepLog.push({ c: im.className, dx: Math.round(dx) });
+      mon.style.setProperty('--mma-dx', Math.round(dx) + 'px'); if (dx) keepLog.push({ c: ref.className, dx: Math.round(dx) });
     });
     if (keepLog.length > 40) keepLog.splice(0, keepLog.length - 40);
   }

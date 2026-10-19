@@ -280,6 +280,6 @@
   if (root.document) { if (root.document.readyState !== 'loading') setTimeout(watchEmoji, 0); else root.addEventListener('DOMContentLoaded', () => setTimeout(watchEmoji, 0)); }
 
   // 2026-10-16：読み込んだ技アニメの JS の版（iPhone の QA 画面に出す＝配信のキャッシュで古い JS が混ざったかを見分ける）
-  const BUILD = '2026-10-19-next2';
+  const BUILD = '2026-10-19-next3';
   root.MMTUNE = Object.freeze({ BUILD, VIS_H, VIS_H3, sizeMode, sizeOf, SIZE, SIZE_K, SIZE_NAME, ANCHOR, MOVES, MOUTH, mouthOf, EMOJI_OFF, emojiLog: () => emojiLog.slice(), sizeK, patch, keyOf, onAnimStart, sfxLog: () => sfxLog.slice(), wrapSe });
 })(typeof window !== 'undefined' ? window : globalThis);

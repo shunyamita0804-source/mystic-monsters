@@ -1038,7 +1038,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - **退役（第0工程）**：監査と削除の記録＝docs/next_1019/RETIRE.md。旧 Chapter 4 の盤（20ターン）は「旧盤の途中のセーブ」だけ・index.html の `_hall` の到達しない後半（旧「〇〇の修行」・旧ランク大会のボタン）を削除・比較の URL の読み取りを撤去（コードだけ・素材ファイルは残す）。セーブ v6／mr4v6 は変えていない・ユーザーのデータは消さない。
 - **比較の URL の撤去（第2工程）**：カメラは C案だけ（?qaCam・?qaCamDeg・?qaCamMs）・道路は正式（?qaRoad・?qaRoadArt・?boardSkin・?qaArch は効かない）・歩行は walk_1018 だけ（?qaWalk・?qaWalkFps・?qaWalkTurn）・体格は正式のサイズ1〜5の倍率だけ（MMTUNE.SIZE_K＝1 0.70・2 0.84・3 1.00・4 1.14・5 1.30／案A・案B・暫定 70〜115%・?mmSize・?mmSizeAs・MM_QA_SIZE・MM_SIZE_PREVIEW は撤去）。QA トップ（?qaTop=1）からカメラ・道路・歩行の選択を外した。**残した比較（QA の URL だけ・通常プレイは通らない）**＝?battleArt・?mmScale・?sk19・?sk19time・設定の「バトル画面：旧」（localStorage mmbattleui）＝撤去するかはユーザーの判断待ち。
 - **40ターン・停止の規則**：Chapter 1〜4 の盤は 40ターン・サイコロ 1〜6（Chapter 4 も）。休む −10 は P2 の暫定値（シミュレーションの仮の値を正式とはしない＝報告）。
-- **第1工程の修正**：ソラモ・ガウルの特訓で覚える技を登録（js/battle/official-moves.js の TRAIN_LEARN＝従来の習得の枠どおり。ノビトンは未確認＝登録していない・特訓のカードは「覚える技は準備中（能力は伸びる）」）・敗北（LOSE 5.0秒）のあとは結果の画面に居る間だけ低い持続音（MMAUDIO.holdStart／holdStop＝bgmGain の発振器・無音の穴を作らない・Chapter の曲は鳴らし直さない）・ライバル戦の負けで悲しい声を決着の画面で出さない（盤へ戻ってから）・カルシェルなど大きな体がバトルの画面の端で切れない（MMARENA.keepIn＝--mma-dx）・Chapter 3 の道を Chapter 1 の石畳の流用から描画の白い大理石＋金の縁へ（js/qa/road-art-1017.js の GEN＝正式素材 C3-R1〜G2 は未着）。
+- **第1工程の修正**：ソラモ・ガウルの特訓で覚える技を登録（js/battle/official-moves.js の TRAIN_LEARN＝従来の習得の枠どおり。ノビトンは未確認＝登録していない・特訓のカードは「覚える技は準備中（能力は伸びる）」）・敗北（LOSE 5.0秒）のあとは結果の画面に居る間だけ低い持続音（MMAUDIO.holdStart／holdStop＝bgmGain の発振器・無音の穴を作らない・Chapter の曲は鳴らし直さない）・ライバル戦の負けで悲しい声を決着の画面で出さない（盤へ戻ってから）・カルシェルなど大きな体がバトルの画面の端で切れない（MMARENA.keepIn＝モンスターごとに1つの --mma-dx＝待機の立ち絵で測り、被弾・回避・勝利の絵も同じだけずらす）・Chapter 3 の道を Chapter 1 の石畳の流用から描画の白い大理石＋金の縁へ（js/qa/road-art-1017.js の GEN＝正式素材 C3-R1〜G2 は未着）。
 - テスト：tests/next-1019.test.mjs（NX19-01〜03）・tests/unify-1019.test.mjs（UN-01〜03）・比較の URL を前提にした実ブラウザテスト（walk5・walk25d・dev29・ch1-hq・road-1017・qaroad・qatop・battle-tune・rev3・battle-final・qacam）は「撤去した URL を付けても正式のまま」を確かめる形に書き直した（件数は減らしていない）。MM_BUILD／version.json／MMTUNE.BUILD＝2026-10-19-next
 
 ### Chapter 4「灼熱の火山」本編（2026-10-19。いまの正式。下の「Chapter 4 設計案」の道路グラフをそのまま本編にした）
@@ -1672,7 +1672,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - Stage 3（2026-09-29、安全軽量化・テスト正常化）：古いテスト3件の更新・MS-B6 の安定化・未使用の埋め込み画像10件の削除。QA_AUDIT.md の「14」
 - 次の予定：未指示（要確認）。技術面の推奨は QA_AUDIT.md の「10. 今後の修正の推奨」
 - **引き継ぎ（2026-10-19 昼・次便一括の統合後。新しいセッションはここから読む＝下の記述より優先）**：
-  - main＝claude/next-1019 を統合（fast-forward）・build `2026-10-19-next2`（追加指令＝巨大火山・分岐の見た目の口まで）・中身は §3「次便一括」「Chapter 4「灼熱の火山」本編」「ミュロル」・退役の記録 docs/next_1019/RETIRE.md・報告 docs/next_1019/REPORT.md
+  - main＝claude/next-1019 を統合（fast-forward）・build `2026-10-19-next3`（追加指令＝巨大火山・分岐の見た目の口まで＋被弾・回避の差し替えで横へ跳ねない修正）・中身は §3「次便一括」「Chapter 4「灼熱の火山」本編」「ミュロル」・退役の記録 docs/next_1019/RETIRE.md・報告 docs/next_1019/REPORT.md
   - 本編の Chapter 1〜4 はすべて 1枚の世界の盤（40ターン・1〜6）。ミュロルは登録のみ（QA の9体目）。比較の URL（カメラ・道路・歩行・体格）は撤去
   - ユーザー判断待ち：巨大火山の4分割原画・溶岩・C4 の目印の素材・ノビトンの特訓の技・残した比較（?battleArt・?mmScale・?sk19・バトル画面：旧）の撤去・ミュロルの種族表示名／入手方法・しめったはだの「ちから」だけの下げ・iPhone 実機の確認
   - 戻し方：main を c34bc0b へ戻す revert（統合前は 2026-10-19-night）
