@@ -3,7 +3,8 @@
 //  1) manifest の175ファイルをすべてページから読み、404 が無い・画像として読める（naturalWidth>0）
 //  2) 主要画面（開始・街・牧場・市場・研究所・Chapter 1・大会・バトル＝新／旧の画面）で、表示中の assets/inline の <img> がすべて読めている・404 が無い
 //  3) 先読み（MMINL）：開始・街などでは何も読まない／大会の対戦表で、そのバトルの絵を読み終えている＝バトルの開始の瞬間に表示中の絵がすべて読めている
-//  5) 回線を遅くした状態（4倍遅い CPU・下り 1.6Mbps・往復 150ms）で、開始画面が出るまでの時間を外部化の前と比べ、対戦表を3秒見てからのバトル開始で絵が読めている
+//  5) 回線を遅くした状態（4倍遅い CPU・下り 1.6Mbps・往復 150ms）で、対戦表を3秒見てからのバトル開始で絵が読めている（起動の時間は boot-timing.mjs）
+//  6) 対戦表で先読みしたあと回線を切ってもバトルの絵が出る
 //  4) 動かない画面（開始・街・研究所の図鑑・大会の対戦表）を外部化の前の index.html（git の HEAD~ の版を一時ファイルに）と画素で比べる（任意：環境変数 ORIG に元の index.html のパス）
 import { writeFileSync, readFileSync, rmSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
@@ -115,41 +116,33 @@ for (const [ui, query] of [['new', ''], ['old', '?battleArt=old']]) {
   await p.ctx.close();
 }
 
-// 4) 外部化の前と画素で比べる
+// 4) 外部化の前と画素で比べる（画面ごとに新しいページで同じ手順＝撮る順の違いを入れない）
 if (ORIG) {
-  const cap = async (file) => {
+  const steps = {
+    title: async () => {},
+    town: async (pg) => { await H.newGame(pg, 'テスト'); },
+    lab: async (pg) => { await H.newGame(pg, 'テスト'); await pg.evaluate(() => { S.m = mk(0); S.m.name = 'ソラ'; MMP7.ensureProg(S.m); save(); museum('book'); }); },
+    tour: async (pg) => { await H.newGame(pg, 'テスト'); await pg.evaluate(() => { S.m = mk(0); S.m.name = 'ソラ'; MMP7.ensureProg(S.m); save(); const m = S.m; Object.assign(m, { po: 999 }); MMP8.depart(S, m, () => 0.37); const g = MMCH.graphFor(m); Object.assign(m.raise, { node: g.goal, goal: true, pend: null }); m.raise.field.arrivalSeen = true; save(); MMP8.startTournament(S, S.m, 0, 7); save(); board(); }); await pg.waitForSelector('.tb1 .tbgo'); },
+  };
+  const cap = async (file, k) => {
     const p = await L.open({ size: H.SIZES.base }); const pg = p.page;
     if (file) { await pg.goto(L.url + file); await pg.waitForFunction(() => typeof window.MMP8 === 'object' && typeof S === 'object'); }
     await pg.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important}' });
-    const out = {};
-    await pg.waitForTimeout(1200); out.title = await pg.screenshot();
-    await H.newGame(pg, 'テスト'); await pg.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important}' }); await pg.waitForTimeout(1200); out.town = await pg.screenshot();
-    await pg.evaluate(() => { S.m = mk(0); S.m.name = 'ソラ'; MMP7.ensureProg(S.m); save(); museum('book'); }); await pg.waitForTimeout(1500); out.lab = await pg.screenshot();
-    await pg.evaluate(() => { const m = S.m; Object.assign(m, { po: 999 }); MMP8.depart(S, m, () => 0.37); const g = MMCH.graphFor(m); Object.assign(m.raise, { node: g.goal, goal: true, pend: null }); m.raise.field.arrivalSeen = true; save(); MMP8.startTournament(S, S.m, 0, 7); save(); board(); });
-    await pg.waitForSelector('.tb1 .tbgo'); await pg.waitForTimeout(2500); out.tour = await pg.screenshot();
-    await p.ctx.close(); return out;
+    await steps[k](pg); await pg.waitForTimeout(2500);
+    const b = await pg.screenshot(); await p.ctx.close(); return b;
   };
-  const a = await cap(null), b = await cap(ORIG_NAME);
-  for (const k of Object.keys(a)) {
-    const same = Buffer.compare(a[k], b[k]) === 0;
-    writeFileSync(path.join(OUT, `cmp_${k}_new.png`), a[k]); writeFileSync(path.join(OUT, `cmp_${k}_orig.png`), b[k]);
+  for (const k of Object.keys(steps)) {
+    const a = await cap(null, k), b = await cap(ORIG_NAME, k);
+    const same = Buffer.compare(a, b) === 0;
+    writeFileSync(path.join(OUT, `cmp_${k}_new.png`), a); writeFileSync(path.join(OUT, `cmp_${k}_orig.png`), b);
     ok(`4) 外部化の前と同じ画素（${k}）`, same, same ? '' : 'スクリーンショットが違う（cmp_*.png を見る）');
   }
-  rmSync(path.join(H.ROOT, ORIG_NAME), { force: true });
 }
+
 // 5) 回線を遅くした状態（iPhone のモバイル回線の想定）
 {
   const slow = async (pg) => { const c = await pg.context().newCDPSession(pg); await c.send('Network.enable'); await c.send('Network.emulateNetworkConditions', { offline: false, latency: 150, downloadThroughput: 1.6e6 / 8, uploadThroughput: 0.75e6 / 8 }); await c.send('Emulation.setCPUThrottlingRate', { rate: 4 }); return c; };
-  const timing = async (file) => {
-    const p = await L.open({ size: H.SIZES.base }); const pg = p.page; await slow(pg);
-    await pg.goto(L.url + (file || 'index.html'), { waitUntil: 'load', timeout: 300000 });
-    await pg.waitForFunction(() => typeof window.MMP8 === 'object' && typeof S === 'object', null, { timeout: 300000 });
-    const t = await pg.evaluate(() => { const n = performance.getEntriesByType('navigation')[0]; return { html: Math.round(n.responseEnd), dcl: Math.round(n.domContentLoadedEventEnd), load: Math.round(n.loadEventEnd), bytes: n.encodedBodySize }; });
-    await p.ctx.close(); return t;
-  };
-  const tNew = await timing(null);
-  ok('5) 遅い回線：今の index.html の読み込み', true, JSON.stringify(tNew));
-  if (ORIG) { const tOld = await timing(ORIG_NAME); ok('5) 遅い回線：外部化の前の index.html の読み込み', true, JSON.stringify(tOld)); ok('5) 遅い回線：開始までの時間が短くなった（DOMContentLoaded）', tNew.dcl < tOld.dcl, `${tOld.dcl}ms → ${tNew.dcl}ms`); }
+  // 起動の時間の比較は tools/inline-images/boot-timing.mjs
   // 対戦表を3秒見てからバトル（遅い回線のまま）
   const p = await L.open({ size: H.SIZES.base }); const pg = p.page;
   await H.newGame(pg, 'テスト');
@@ -176,6 +169,7 @@ if (ORIG) {
   await p.ctx.close();
 }
 await L.close();
+if (ORIG) rmSync(path.join(H.ROOT, ORIG_NAME), { force: true });
 const ng = res.filter((r) => r[0] === 'NG');
 console.log(`\n${res.length - ng.length}/${res.length} OK`);
 process.exit(ng.length ? 1 : 0);
