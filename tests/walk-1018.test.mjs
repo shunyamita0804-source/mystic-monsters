@@ -1,12 +1,13 @@
 // 2026-10-18 夜間 GO PHASE 2：ボード用の歩行 7体×5方向×4コマ（assets/monsters/walk_1018/・tools/walk1018/derive.py）
 //  WK18-01：140コマが実在・RGBA の正方形・四隅は透明・不透明の体は1つの正方形に収まる（端に触れない）・種族ごとに同じキャンバス
 //  WK18-02：本編の既定＝walk_1018（MMQAW.BASE7・SPEC7＝derive.json）・?qaWalk=1017 で前の素材・Chapter 2 の旧い盤も同じ素材
-//  WK18-03：README に原本 7枚の sha256 と 140 行
+//  WK18-03：README に原本 7枚の sha256 と 140 行（＋2026-10-19 ミュロル 20 行＝160）
+//  2026-10-19：ミュロル（tools/myurol1019/derive_art.py・透過 PNG 20枚から同じ置き方）を 8体目に足した＝KEYS に myurol（旧 walk_1017 には無い＝KEYS7）
 import test from 'node:test'; import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs'; import path from 'node:path'; import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const rd = (p) => readFileSync(path.join(ROOT, p), 'utf8');
-const KEYS = ['solamo', 'gauru', 'nobiton', 'jiol', 'regnas', 'flurene', 'razuck'], DIRS = ['front', 'back', 'side', 'backd', 'frontd'];
+const KEYS7 = ['solamo', 'gauru', 'nobiton', 'jiol', 'regnas', 'flurene', 'razuck'], KEYS = KEYS7.concat(['myurol']), DIRS = ['front', 'back', 'side', 'backd', 'frontd'];
 // WebP（VP8L／VP8X）の幅・高さ・alpha の有無だけを読む
 function webpInfo(buf) {
   assert.equal(buf.toString('ascii', 0, 4), 'RIFF'); assert.equal(buf.toString('ascii', 8, 12), 'WEBP');
@@ -36,10 +37,10 @@ test('WK18-02：本編の既定は walk_1018・?qaWalk=1017 で前の素材・Ch
   assert.match(Q.sets('solamo').front.frames[1], /walk_1018\/solamo\/front_2\.webp$/);
   const js = rd('js/qa/walk5-1016.js'); assert.match(js, /const SET = q === '1017' \|\| q === 'new7' \? '1017' : '1018';/);
   assert.match(rd('js/chapter/configs/ch2a.js'), /const W7 = old17 \? '\.\/assets\/monsters\/walk_1017\/' : '\.\/assets\/monsters\/walk_1018\/'/);
-  for (const k of KEYS) assert.ok(existsSync(path.join(ROOT, 'assets/monsters/walk_1017', k, 'front_1.webp')), `旧 1017 の素材はファイルだけ残す（${k}）`);
+  for (const k of KEYS7) assert.ok(existsSync(path.join(ROOT, 'assets/monsters/walk_1017', k, 'front_1.webp')), `旧 1017 の素材はファイルだけ残す（${k}）`);
 });
 test('WK18-03：README に原本 7枚の sha256・140 行', () => {
   const r = rd('assets/monsters/walk_1018/README.md');
   for (const h of ['6690B006-792F-4DE9-AEB8-9C21ACC88167.jpeg', 'D2947742-BEE2-468D-8479-5C2F42E67848.jpeg']) assert.ok(r.includes(h), h);
-  assert.equal((r.match(/\| assets\/monsters\/walk_1018\/[a-z]+\/[a-z]+_[1-4]\.webp \|/g) || []).length, 140);
+  assert.equal((r.match(/\| assets\/monsters\/walk_1018\/[a-z]+\/[a-z]+_[1-4]\.webp \|/g) || []).length, 160);   // 7体×20＋ミュロル 20
 });

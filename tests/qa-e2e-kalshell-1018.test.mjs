@@ -19,7 +19,7 @@ test('KS-B1〜B3：カルシェルの QA（一覧・ステージで全10技×両
     await pg.waitForSelector('#mmqa-sw'); await pg.click('#mmqa-sw'); await pg.waitForSelector('#mmqa .qcard');
     // RZ-B1
     const cat = await pg.evaluate(() => { const c = MMQA.catalog(); return { n: c.length, last: c[7] && { key: c[7].key, sp: c[7].sp, name: c[7].name, moves: c[7].moves.map((m) => [m.no, m.name, m.slot, m.status, m.power, m.accuracy, m.critical]) } }; });
-    assert.equal(cat.n, 8, '8体（8体目＝カルシェル）'); assert.deepEqual([cat.last.key, cat.last.sp, cat.last.name], ['kalshell', 7, 'カルシェル']);
+    assert.equal(cat.n, 9, '9体（8体目＝カルシェル・2026-10-19：9体目＝ミュロル）'); assert.deepEqual([cat.last.key, cat.last.sp, cat.last.name], ['kalshell', 7, 'カルシェル']);
     assert.deepEqual(cat.last.moves, [[1, 'はさむ', 70, 'battle', 70, 95, 5], [2, 'シェルタックル', 71, 'battle', 80, 85, 10], [3, 'あわだま', 72, 'battle', 60, 95, 5], [4, 'からにこもる', 73, 'battle', null, 100, null],
       [5, 'クラッシュクロー', 74, 'battle', 105, 85, 15], [6, 'アクアバースト', 75, 'battle', 95, 90, 10], [7, 'コーラルスピア', 76, 'battle', 95, 100, 10], [8, 'しおのステップ', 77, 'battle', null, 100, null], [9, 'シェルブレイカー', 78, 'battle', 120, 80, 15], [10, 'タイダルクラッシュ', 79, 'battle', 125, 85, 20]]);
     await pg.click('#mmqa .qtab[data-i="7"]');

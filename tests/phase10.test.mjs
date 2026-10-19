@@ -158,9 +158,10 @@ test('M3-1：種族の文字ID（solamo・gauru・nobiton・jiol）と既存の�
   const S = P8.newSave(); S.m = P8.initIndividual(S, mon(P7, { sp: 1 }));
   assert.equal(S.m.sp, 1); assert.ok(!('key' in S.m) && !('speciesKey' in S.m), '個体データに文字IDは保存しない（番号が既存互換の保存形式）');
   const T = P8.migrateSave(j(S)); assert.equal(M.keyOf(T.m.sp), 'gauru', '既存セーブの番号から文字IDを引ける');
-  assert.deepEqual(Object.keys(M.UNIQUE_SKILLS), ['unique_solamo', 'unique_gauru', 'unique_nobiton', 'unique_jiol', 'unique_razuck', 'unique_kalshell']);   // 2026-10-17：ラズック・2026-10-18：カルシェル（登録のみ・SPECIES には入れない）
+  assert.deepEqual(Object.keys(M.UNIQUE_SKILLS), ['unique_solamo', 'unique_gauru', 'unique_nobiton', 'unique_jiol', 'unique_razuck', 'unique_kalshell', 'unique_myurol']);   // 2026-10-17：ラズック・2026-10-18：カルシェル・2026-10-19：ミュロル（登録のみ・SPECIES には入れない）
   assert.equal(M.byKey('razuck'), null); assert.equal(M.keyOf(6), null);
   assert.equal(M.byKey('kalshell'), null); assert.equal(M.keyOf(7), null);
+  assert.equal(M.byKey('myurol'), null); assert.equal(M.keyOf(8), null);
 });
 
 test('M3-2：4原種の正式画像は 2.5D の表示用（assets/monsters/2p5d/<文字ID>.webp・透過）で、画面は正式マスターから画像を取る', () => {

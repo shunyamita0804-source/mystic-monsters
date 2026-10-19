@@ -44,8 +44,8 @@ test('RA-01：30枚がそろう・透過 WebP・大きさがデータと同じ�
 
 test('RA-02：データ＝5体 × 6種・hRel は待機立ち絵に近い範囲・src は番号順の名前・知らない種族は null', () => {
   const X = load();
-  assert.deepEqual([...X.SPECIES], [...FIVE, null, 'razuck', 'kalshell']);   // 2026-10-18：7＝カルシェル（tests/kalshell-1018.test.mjs）
-  assert.equal(X.all().length, 42);
+  assert.deepEqual([...X.SPECIES], [...FIVE, null, 'razuck', 'kalshell', 'myurol']);   // 2026-10-18：7＝カルシェル（tests/kalshell-1018.test.mjs）・2026-10-19：8＝ミュロル（tests/myurol-1019.test.mjs）
+  assert.equal(X.all().length, 48);
   for (const sp of FIVE) for (const [i, k] of X.KINDS.entries()) {
     const f = X.info(sp, k);
     assert.equal(f.src, `./assets/monsters/reactions_1012/${sp}/0${i + 1}_${k}.webp`);
