@@ -1,0 +1,1114 @@
+{
+ "key": "A",
+ "name": "主登山道",
+ "concept": "麓の村 → 登山口の分かれ道（灰の原の尾根／黒曜の原）→ 中腹の広場 → 黒曜の門 → つづら折りの登山道（急な石段の近道あり）→ 噴石丘の運命の分かれ道（西の道／東の道）→ 火口下の広場でライバル → 最後の分かれ道（火口壁の石段／火の神殿の特殊挑戦／噴気孔の棚）→ 火口縁の闘技場。見通しと安定の王道",
+ "anchors": {
+  "START": [
+   512,
+   1486,
+   "start",
+   0
+  ],
+  "J0": [
+   512,
+   1412,
+   "free_fork",
+   4
+  ],
+  "EL1": [
+   372,
+   1360,
+   "route_anchor",
+   10
+  ],
+  "EL2": [
+   262,
+   1262,
+   "route_anchor",
+   16
+  ],
+  "EL3": [
+   300,
+   1140,
+   "route_anchor",
+   26
+  ],
+  "L_CHEST": [
+   120,
+   1296,
+   "fixed_reward_dead_end",
+   14
+  ],
+  "L_ALTAR": [
+   156,
+   1056,
+   "fixed_reward_dead_end",
+   28
+  ],
+  "ER1": [
+   652,
+   1360,
+   "route_anchor",
+   10
+  ],
+  "ER2": [
+   762,
+   1262,
+   "route_anchor",
+   16
+  ],
+  "ER3": [
+   724,
+   1140,
+   "route_anchor",
+   26
+  ],
+  "R_CHEST": [
+   790,
+   1150,
+   "fixed_reward_dead_end",
+   20
+  ],
+  "P": [
+   512,
+   1060,
+   "early_merge",
+   38
+  ],
+  "LOWER_GATE": [
+   512,
+   996,
+   "lower_walk_through_gate",
+   44
+  ],
+  "Q": [
+   512,
+   850,
+   "parity_forced_fork",
+   62
+  ],
+  "QL1": [
+   392,
+   796,
+   "route_anchor",
+   68
+  ],
+  "QL2": [
+   350,
+   722,
+   "route_anchor",
+   74
+  ],
+  "QL3": [
+   404,
+   656,
+   "route_anchor",
+   80
+  ],
+  "QR1": [
+   632,
+   796,
+   "route_anchor",
+   68
+  ],
+  "QR2": [
+   674,
+   722,
+   "route_anchor",
+   74
+  ],
+  "QR3": [
+   620,
+   656,
+   "route_anchor",
+   80
+  ],
+  "R": [
+   512,
+   612,
+   "parity_rejoin",
+   86
+  ],
+  "RIVAL": [
+   512,
+   552,
+   "mandatory_rival",
+   92
+  ],
+  "H": [
+   512,
+   500,
+   "late_free_fork",
+   96
+  ],
+  "CHALLENGE": [
+   330,
+   456,
+   "challenge_d6_5_6",
+   98
+  ],
+  "FAIL_L": [
+   262,
+   498,
+   "challenge_failure_route",
+   96
+  ],
+  "SUCCESS_L1": [
+   304,
+   400,
+   "challenge_success_route",
+   102
+  ],
+  "L_MERGE": [
+   334,
+   346,
+   "route_anchor",
+   106
+  ],
+  "L_LATE_ALTAR": [
+   214,
+   388,
+   "fixed_reward_dead_end",
+   102
+  ],
+  "HR1": [
+   640,
+   522,
+   "route_anchor",
+   98
+  ],
+  "STATUE": [
+   724,
+   470,
+   "rare_zone_candidate",
+   102
+  ],
+  "HR3": [
+   668,
+   404,
+   "route_anchor",
+   106
+  ],
+  "REWARD5": [
+   728,
+   544,
+   "fixed_reward_dead_end",
+   100
+  ],
+  "R_SPECIAL": [
+   700,
+   340,
+   "fixed_reward_dead_end",
+   108
+  ],
+  "RANDOM_DEN": [
+   668,
+   600,
+   "optional_random_unlock_dead_end",
+   92
+  ],
+  "FINAL": [
+   512,
+   392,
+   "final_merge",
+   108
+  ],
+  "GOAL": [
+   512,
+   296,
+   "goal",
+   112
+  ],
+  "Z": [
+   512,
+   900,
+   "route_anchor",
+   56
+  ]
+ },
+ "segs": {
+  "S01": [
+   "START",
+   "J0",
+   "main_stairs",
+   []
+  ],
+  "EL01": [
+   "J0",
+   "EL1",
+   "main_left",
+   [
+    [
+     440,
+     1398
+    ]
+   ]
+  ],
+  "EL02": [
+   "EL1",
+   "EL2",
+   "main_left",
+   [
+    [
+     300,
+     1316
+    ]
+   ]
+  ],
+  "EL03": [
+   "EL2",
+   "EL3",
+   "main_left",
+   [
+    [
+     246,
+     1200
+    ]
+   ]
+  ],
+  "EL03B": [
+   "EL2",
+   "EL3",
+   "main_left",
+   [
+    [
+     330,
+     1236
+    ],
+    [
+     352,
+     1180
+    ]
+   ]
+  ],
+  "EL04": [
+   "EL3",
+   "P",
+   "main_left",
+   [
+    [
+     370,
+     1092
+    ],
+    [
+     440,
+     1070
+    ]
+   ]
+  ],
+  "D_LC": [
+   "EL2",
+   "L_CHEST",
+   "reward_spur",
+   [
+    [
+     221.9,
+     1251.4
+    ],
+    [
+     195.6,
+     1298.1
+    ],
+    [
+     150.9,
+     1268.4
+    ]
+   ],
+   10
+  ],
+  "D_LA": [
+   "EL3",
+   "L_ALTAR",
+   "reward_spur",
+   [
+    [
+     276.7,
+     1097.3
+    ],
+    [
+     215.3,
+     1119.7
+    ],
+    [
+     204.7,
+     1055.3
+    ]
+   ],
+   12
+  ],
+  "ER01": [
+   "J0",
+   "ER1",
+   "main_right",
+   [
+    [
+     584,
+     1398
+    ]
+   ]
+  ],
+  "ER02": [
+   "ER1",
+   "ER2",
+   "main_right",
+   [
+    [
+     724,
+     1316
+    ]
+   ]
+  ],
+  "ER03": [
+   "ER2",
+   "ER3",
+   "main_right",
+   [
+    [
+     778,
+     1200
+    ]
+   ]
+  ],
+  "ER03B": [
+   "ER2",
+   "ER3",
+   "main_right",
+   [
+    [
+     694,
+     1236
+    ],
+    [
+     672,
+     1180
+    ]
+   ]
+  ],
+  "ER04": [
+   "ER3",
+   "P",
+   "main_right",
+   [
+    [
+     654,
+     1092
+    ],
+    [
+     584,
+     1070
+    ]
+   ]
+  ],
+  "D_RC": [
+   "ER2",
+   "R_CHEST",
+   "reward_spur",
+   [
+    [
+     800,
+     1290
+    ],
+    [
+     814,
+     1226
+    ]
+   ]
+  ],
+  "C01": [
+   "P",
+   "LOWER_GATE",
+   "central_main",
+   []
+  ],
+  "ZIG": [
+   "LOWER_GATE",
+   "Z",
+   "switchback",
+   [
+    [
+     440,
+     980
+    ],
+    [
+     350,
+     970
+    ],
+    [
+     340,
+     920
+    ],
+    [
+     400,
+     904
+    ]
+   ]
+  ],
+  "ZIG_CUT": [
+   "LOWER_GATE",
+   "Z",
+   "steep_stairs",
+   [
+    [
+     594,
+     1002
+    ],
+    [
+     668,
+     968
+    ],
+    [
+     676,
+     922
+    ],
+    [
+     620,
+     906
+    ]
+   ]
+  ],
+  "C02": [
+   "Z",
+   "Q",
+   "central_main",
+   []
+  ],
+  "Q_L1": [
+   "Q",
+   "QL1",
+   "parity_left",
+   []
+  ],
+  "Q_L2": [
+   "QL1",
+   "QL2",
+   "parity_left",
+   []
+  ],
+  "Q_L3": [
+   "QL2",
+   "QL3",
+   "parity_left",
+   []
+  ],
+  "Q_L4": [
+   "QL3",
+   "R",
+   "parity_left",
+   [
+    [
+     452,
+     620
+    ]
+   ]
+  ],
+  "QL_IN": [
+   "QL1",
+   "QL3",
+   "parity_left",
+   [
+    [
+     436,
+     750
+    ],
+    [
+     448,
+     700
+    ]
+   ]
+  ],
+  "Q_R1": [
+   "Q",
+   "QR1",
+   "parity_right",
+   []
+  ],
+  "Q_R2": [
+   "QR1",
+   "QR2",
+   "parity_right",
+   []
+  ],
+  "Q_R3": [
+   "QR2",
+   "QR3",
+   "parity_right",
+   []
+  ],
+  "Q_R4": [
+   "QR3",
+   "R",
+   "parity_right",
+   [
+    [
+     572,
+     620
+    ]
+   ]
+  ],
+  "QR_IN": [
+   "QR1",
+   "QR3",
+   "parity_right",
+   [
+    [
+     588,
+     750
+    ],
+    [
+     576,
+     700
+    ]
+   ]
+  ],
+  "C03": [
+   "R",
+   "RIVAL",
+   "central_main",
+   []
+  ],
+  "C04": [
+   "RIVAL",
+   "H",
+   "central_main",
+   [
+    [
+     499.0,
+     539.0
+    ],
+    [
+     525.0,
+     526.0
+    ],
+    [
+     499.0,
+     513.0
+    ]
+   ],
+   5
+  ],
+  "LATE_SAFE": [
+   "H",
+   "FINAL",
+   "late_safe",
+   [
+    [
+     582.5,
+     464.0
+    ],
+    [
+     441.5,
+     428.0
+    ]
+   ],
+   16
+  ],
+  "LATE_L1": [
+   "H",
+   "CHALLENGE",
+   "late_challenge_entry",
+   [
+    [
+     470.0,
+     474.6
+    ],
+    [
+     417.5,
+     492.4
+    ],
+    [
+     379.0,
+     452.6
+    ]
+   ],
+   11
+  ],
+  "LATE_L_FAIL": [
+   "CHALLENGE",
+   "FAIL_L",
+   "challenge_fail",
+   []
+  ],
+  "LATE_L_FAIL_JOIN": [
+   "FAIL_L",
+   "L_MERGE",
+   "challenge_fail",
+   [
+    [
+     190,
+     470
+    ],
+    [
+     160,
+     400
+    ],
+    [
+     200,
+     330
+    ],
+    [
+     280,
+     316
+    ]
+   ]
+  ],
+  "LATE_L_SUCCESS1": [
+   "CHALLENGE",
+   "SUCCESS_L1",
+   "challenge_success",
+   []
+  ],
+  "LATE_L_SUCCESS_JOIN": [
+   "SUCCESS_L1",
+   "L_MERGE",
+   "challenge_success",
+   []
+  ],
+  "D_LLA": [
+   "SUCCESS_L1",
+   "L_LATE_ALTAR",
+   "reward_spur",
+   [
+    [
+     284.6,
+     373.5
+    ],
+    [
+     255.9,
+     417.5
+    ],
+    [
+     239.6,
+     367.5
+    ]
+   ],
+   9
+  ],
+  "LATE_L_DONE": [
+   "L_MERGE",
+   "FINAL",
+   "late_challenge_return",
+   [
+    [
+     400,
+     330
+    ],
+    [
+     460,
+     336
+    ]
+   ]
+  ],
+  "LATE_R1": [
+   "H",
+   "HR1",
+   "late_right",
+   [
+    [
+     541.0,
+     523.2
+    ],
+    [
+     579.0,
+     493.3
+    ],
+    [
+     605.0,
+     534.2
+    ]
+   ],
+   9
+  ],
+  "LATE_R2": [
+   "HR1",
+   "STATUE",
+   "late_right",
+   [
+    [
+     665.8,
+     516.7
+    ],
+    [
+     677.2,
+     488.3
+    ],
+    [
+     707.8,
+     490.7
+    ]
+   ],
+   6
+  ],
+  "LATE_R3": [
+   "STATUE",
+   "HR3",
+   "late_right",
+   [
+    [
+     712,
+     430
+    ]
+   ]
+  ],
+  "LATE_R_DONE": [
+   "HR3",
+   "FINAL",
+   "late_right",
+   [
+    [
+     610,
+     372
+    ]
+   ]
+  ],
+  "D_R5": [
+   "STATUE",
+   "REWARD5",
+   "reward_spur",
+   [
+    [
+     750.4,
+     487.1
+    ],
+    [
+     700.6,
+     508.4
+    ],
+    [
+     752.4,
+     524.1
+    ]
+   ],
+   9
+  ],
+  "D_RS": [
+   "HR3",
+   "R_SPECIAL",
+   "reward_spur",
+   [
+    [
+     717.7,
+     402.2
+    ],
+    [
+     650.3,
+     341.8
+    ]
+   ],
+   10
+  ],
+  "D_RAND": [
+   "HR1",
+   "RANDOM_DEN",
+   "optional_random_spur",
+   [
+    [
+     620.5,
+     551.0
+    ],
+    [
+     680.5,
+     551.5
+    ],
+    [
+     634.5,
+     590.0
+    ]
+   ],
+   10
+  ],
+  "S_END": [
+   "FINAL",
+   "GOAL",
+   "main_stairs",
+   [],
+   4
+  ]
+ },
+ "names": {
+  "EL01": "左の道（灰の原の尾根）",
+  "ER01": "右の道（黒曜の原）",
+  "EL03B": "灰の原の小道（探索路）",
+  "ER03B": "黒曜の岩場めぐり（探索路）",
+  "ZIG": "西のつづら折り",
+  "ZIG_CUT": "東の急な石段",
+  "QL_IN": "噴石丘の内回り",
+  "QR_IN": "噴石丘の内回り",
+  "Q_L2": "噴石丘の西の道",
+  "Q_R2": "噴石丘の東の道",
+  "LATE_SAFE": "火口壁の石段（まっすぐ会場へ）",
+  "LATE_L1": "火の神殿への道（特殊挑戦）",
+  "LATE_R1": "噴気孔の棚への道",
+  "D_LC": "寄り道：見張り塔の宝",
+  "D_LA": "寄り道：灰の祭壇",
+  "D_RC": "寄り道：黒曜の宝物庫",
+  "D_LLA": "寄り道：火の神殿の祭壇",
+  "D_R5": "寄り道：火の像の足もと",
+  "D_RS": "寄り道：溶岩の泉の秘宝",
+  "D_RAND": "寄り道：噴気の隠れ家"
+ },
+ "places": {
+  "START": "麓の村",
+  "J0": "登山口の分かれ道",
+  "P": "中腹の広場",
+  "LOWER_GATE": "黒曜の門",
+  "Q": "噴石丘の分かれ道（運命の分かれ道）",
+  "R": "噴石丘の上の合流",
+  "RIVAL": "火口下の広場",
+  "H": "最後の分かれ道",
+  "CHALLENGE": "火の神殿の門",
+  "STATUE": "火の像（噴気孔の棚）",
+  "FINAL": "闘技場の前の広場",
+  "GOAL": "火口縁の闘技場",
+  "Z": "見晴らし台"
+ },
+ "rewardTitles": {
+  "L_CHEST": "見張り塔の宝",
+  "R_CHEST": "黒曜の宝物庫",
+  "L_ALTAR": "灰の祭壇",
+  "L_LATE_ALTAR": "火の神殿の祭壇",
+  "REWARD5": "火の像の恵み",
+  "R_SPECIAL": "溶岩の泉の秘宝",
+  "RANDOM_DEN": "噴気の隠れ家"
+ },
+ "zones": {
+  "foot_dusk": [
+   "S01",
+   "EL01",
+   "EL02",
+   "EL03",
+   "EL03B",
+   "EL04",
+   "D_LC",
+   "D_LA",
+   "ER01",
+   "ER02",
+   "ER03",
+   "ER03B",
+   "ER04",
+   "D_RC",
+   "C01"
+  ],
+  "slope_twilight": [
+   "ZIG",
+   "ZIG_CUT",
+   "Q_L1",
+   "Q_L2",
+   "Q_L3",
+   "Q_L4",
+   "QL_IN",
+   "Q_R1",
+   "Q_R2",
+   "Q_R3",
+   "Q_R4",
+   "QR_IN",
+   "C03",
+   "C04",
+   "C02"
+  ],
+  "rim_night": [
+   "LATE_SAFE",
+   "LATE_L1",
+   "LATE_L_FAIL",
+   "LATE_L_FAIL_JOIN",
+   "LATE_L_SUCCESS1",
+   "LATE_L_SUCCESS_JOIN",
+   "D_LLA",
+   "LATE_L_DONE",
+   "LATE_R1",
+   "LATE_R2",
+   "LATE_R3",
+   "LATE_R_DONE",
+   "D_R5",
+   "D_RS",
+   "D_RAND",
+   "S_END"
+  ]
+ },
+ "skyPhase": {
+  "dusk": [
+   0,
+   40
+  ],
+  "twilight": [
+   40,
+   84
+  ],
+  "night": [
+   84,
+   120
+  ]
+ },
+ "explore": {
+  "EL03B": {
+   "name": "灰の原の小道",
+   "kind": "lane",
+   "lean": [
+    "li",
+    "ev"
+   ],
+   "note": "灰の原の尾根と並ぶ小道（+2歩）。ライフと回避が伸びやすい"
+  },
+  "ER03B": {
+   "name": "黒曜の岩場めぐり",
+   "kind": "lane",
+   "lean": [
+    "hi",
+    "ev"
+   ],
+   "note": "黒曜の原の岩場を回る道（+2歩）。命中と回避"
+  },
+  "ZIG_CUT": {
+   "name": "東の急な石段",
+   "kind": "lane",
+   "lean": [
+    "po",
+    "ev"
+   ],
+   "note": "西のつづら折りと並ぶ東の石段（同じ長さ）。ちからと回避"
+  },
+  "QL_IN": {
+   "name": "噴石丘の内回り（西）",
+   "kind": "lane",
+   "lean": [
+    "li",
+    "de"
+   ],
+   "note": "運命の左の道の中の分かれ道。ライフと丈夫さ"
+  },
+  "QR_IN": {
+   "name": "噴石丘の内回り（東）",
+   "kind": "lane",
+   "lean": [
+    "po",
+    "in"
+   ],
+   "note": "運命の右の道の中の分かれ道。ちからとかしこさ"
+  }
+ },
+ "lanes": {
+  "EL01": [
+   "po",
+   "de"
+  ],
+  "EL02": [
+   "po",
+   "de"
+  ],
+  "EL03": [
+   "po",
+   "de"
+  ],
+  "EL04": [
+   "po",
+   "de"
+  ],
+  "EL03B": [
+   "li",
+   "ev"
+  ],
+  "ER01": [
+   "in",
+   "hi"
+  ],
+  "ER02": [
+   "in",
+   "hi"
+  ],
+  "ER03": [
+   "in",
+   "hi"
+  ],
+  "ER04": [
+   "in",
+   "hi"
+  ],
+  "ER03B": [
+   "hi",
+   "ev"
+  ],
+  "ZIG": [
+   "li",
+   "de"
+  ],
+  "ZIG_CUT": [
+   "po",
+   "ev"
+  ],
+  "QL_IN": [
+   "li",
+   "de"
+  ],
+  "QR_IN": [
+   "po",
+   "in"
+  ],
+  "LATE_L1": [
+   "po",
+   "in"
+  ],
+  "LATE_L_FAIL": [
+   "po",
+   "in"
+  ],
+  "LATE_L_FAIL_JOIN": [
+   "po",
+   "in"
+  ],
+  "LATE_L_SUCCESS1": [
+   "po",
+   "in"
+  ],
+  "LATE_L_SUCCESS_JOIN": [
+   "po",
+   "in"
+  ],
+  "LATE_L_DONE": [
+   "po",
+   "in"
+  ],
+  "LATE_SAFE": [
+   "li",
+   "ev"
+  ],
+  "LATE_R1": [
+   "hi",
+   "ev"
+  ],
+  "LATE_R2": [
+   "hi",
+   "ev"
+  ],
+  "LATE_R3": [
+   "hi",
+   "ev"
+  ],
+  "LATE_R_DONE": [
+   "hi",
+   "ev"
+  ]
+ },
+ "rewards": {
+  "L_CHEST": "gold150",
+  "R_CHEST": "gold150",
+  "L_ALTAR": "all10",
+  "L_LATE_ALTAR": "all15",
+  "REWARD5": "food",
+  "R_SPECIAL": "best30",
+  "RANDOM_DEN": "gold200"
+ },
+ "calm": [
+  "S01",
+  "EL01",
+  "ER01"
+ ],
+ "rareZones": {
+  "Z1": [
+   "ER02",
+   "ER03"
+  ],
+  "Z2": [
+   "LATE_R2",
+   "LATE_R3"
+  ]
+ }
+}

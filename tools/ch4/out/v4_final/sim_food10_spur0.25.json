@@ -1,0 +1,380 @@
+{
+ "N": 12000,
+ "SPUR": 0.25,
+ "REST_AT": 86,
+ "FOOD": 10,
+ "LIMIT": 40,
+ "SEED0": 0,
+ "seedRule": "(i+SEED0)*7919+13, i=1..N; policy rng seed^0x2CE2; choice rng seed^0xC0FFEE",
+ "monsters": [
+  "ソラモ",
+  "ガウル"
+ ],
+ "out": {
+  "Ch1-A（基準）": {
+   "nodes": 299,
+   "runs": 24000,
+   "goal": 73.5,
+   "avgTurns": 33.4,
+   "p10": 28,
+   "p50": 34,
+   "p90": 39,
+   "gain": 301,
+   "gainP10": 209,
+   "gainP90": 397,
+   "statStops": 15.07,
+   "emptyStops": 0,
+   "stops": {
+    "event": 4.03,
+    "stat": 15.07,
+    "rest": 1.37,
+    "treasure": 1.41,
+    "wild": 1.76
+   },
+   "rewards": 0.58,
+   "rewardRate": 8.2,
+   "rewardEach": {
+    "L_CHEST": 13,
+    "R_CHEST": 12.6,
+    "L_ALTAR": 12.6,
+    "L_LATE_ALTAR": 2.3,
+    "REWARD5": 7.8,
+    "R_SPECIAL": 5.6,
+    "RANDOM_DEN": 3.8
+   },
+   "spurOpp": 3.06,
+   "rests": 0.02,
+   "ate": 5.22,
+   "fatEnd": 72,
+   "visited": 113.1,
+   "rivalRate": 99.9,
+   "rivalRateAtGoal": 100,
+   "rivalTurnP50": 24,
+   "rare": {
+    "none": 89.9,
+    "one": 10.1,
+    "more": 0,
+    "fought": 1.1
+   },
+   "challenge": {
+    "entered": 32.4,
+    "success": 33.7,
+    "fail": 66.3
+   },
+   "parity": {
+    "odd": 50.4,
+    "even": 49.6,
+    "none": 0
+   },
+   "stuck": 0,
+   "guardOut": 0,
+   "timeUpAt": "LATE_R_DONE 6.1%・D_RS 3.5%・LATE_L_DONE 3.3%",
+   "shortAtTimeUp": {
+    "p25": 7,
+    "p50": 15,
+    "p90": 28,
+    "within6": 6.2
+   }
+  },
+  "Ch2-A（参考）": {
+   "nodes": 298,
+   "runs": 24000,
+   "goal": 79.1,
+   "avgTurns": 33.7,
+   "p10": 28,
+   "p50": 34,
+   "p90": 39,
+   "gain": 299,
+   "gainP10": 205,
+   "gainP90": 399,
+   "statStops": 14.78,
+   "emptyStops": 0,
+   "stops": {
+    "event": 4.03,
+    "stat": 14.78,
+    "rest": 1.44,
+    "treasure": 1.46,
+    "wild": 1.81
+   },
+   "rewards": 0.61,
+   "rewardRate": 8.7,
+   "rewardEach": {
+    "L_CHEST": 13,
+    "R_CHEST": 12.6,
+    "L_ALTAR": 12.7,
+    "L_LATE_ALTAR": 2.6,
+    "REWARD5": 7.8,
+    "R_SPECIAL": 8,
+    "RANDOM_DEN": 4
+   },
+   "spurOpp": 3.18,
+   "rests": 0.02,
+   "ate": 5.09,
+   "fatEnd": 72,
+   "visited": 113.8,
+   "rivalRate": 100,
+   "rivalRateAtGoal": 100,
+   "rivalTurnP50": 22,
+   "rare": {
+    "none": 89.9,
+    "one": 10.1,
+    "more": 0,
+    "fought": 1.1
+   },
+   "challenge": {
+    "entered": 33.1,
+    "success": 33.1,
+    "fail": 66.9
+   },
+   "parity": {
+    "odd": 50.4,
+    "even": 49.6,
+    "none": 0
+   },
+   "stuck": 0,
+   "guardOut": 0,
+   "timeUpAt": "LATE_L_DONE 4.5%・S_END 4.3%・LATE_L_FAIL_JOIN 3.6%",
+   "shortAtTimeUp": {
+    "p25": 4,
+    "p50": 9,
+    "p90": 21,
+    "within6": 7.7
+   }
+  },
+  "Ch4-A": {
+   "nodes": 320,
+   "runs": 24000,
+   "goal": 77.5,
+   "avgTurns": 33.7,
+   "p10": 28,
+   "p50": 34,
+   "p90": 39,
+   "gain": 295,
+   "gainP10": 204,
+   "gainP90": 389,
+   "statStops": 14.64,
+   "emptyStops": 0,
+   "stops": {
+    "stat": 14.64,
+    "event": 4.04,
+    "wild": 1.87,
+    "treasure": 1.5,
+    "rest": 1.52
+   },
+   "rewards": 0.58,
+   "rewardRate": 8.3,
+   "rewardEach": {
+    "L_CHEST": 13,
+    "R_CHEST": 12.6,
+    "L_ALTAR": 12.4,
+    "L_LATE_ALTAR": 2.6,
+    "REWARD5": 7.4,
+    "R_SPECIAL": 6.1,
+    "RANDOM_DEN": 3.9
+   },
+   "spurOpp": 3.08,
+   "rests": 0.02,
+   "ate": 5.06,
+   "fatEnd": 72,
+   "visited": 112.2,
+   "rivalRate": 99.8,
+   "rivalRateAtGoal": 100,
+   "rivalTurnP50": 23,
+   "rare": {
+    "none": 89.9,
+    "one": 10.1,
+    "more": 0,
+    "fought": 1
+   },
+   "challenge": {
+    "entered": 33.1,
+    "success": 33.2,
+    "fail": 66.8
+   },
+   "parity": {
+    "odd": 49.3,
+    "even": 50.7,
+    "none": 0
+   },
+   "stuck": 0,
+   "guardOut": 0,
+   "timeUpAt": "S_END 3.6%・LATE_L_DONE 3.5%・LATE_L_FAIL_JOIN 2.7%",
+   "shortAtTimeUp": {
+    "p25": 6,
+    "p50": 12,
+    "p90": 23,
+    "within6": 6.4
+   },
+   "vsCh1": {
+    "goalPP": 4,
+    "gainPct": -2,
+    "rewardPP": 0.1
+   },
+   "vsCh2A": {
+    "goalPP": -1.6,
+    "gainPct": -1.3,
+    "rewardPP": -0.4
+   }
+  },
+  "Ch4-B": {
+   "nodes": 301,
+   "runs": 24000,
+   "goal": 80.9,
+   "avgTurns": 34,
+   "p10": 29,
+   "p50": 34,
+   "p90": 39,
+   "gain": 311,
+   "gainP10": 222,
+   "gainP90": 402,
+   "statStops": 15.44,
+   "emptyStops": 0,
+   "stops": {
+    "event": 4.06,
+    "stat": 15.44,
+    "rest": 1.29,
+    "wild": 1.66,
+    "treasure": 1.33
+   },
+   "rewards": 0.66,
+   "rewardRate": 9.4,
+   "rewardEach": {
+    "L_CHEST": 8.3,
+    "R_CHEST": 11.9,
+    "L_ALTAR": 12.5,
+    "L_LATE_ALTAR": 4,
+    "REWARD5": 12,
+    "R_SPECIAL": 10.7,
+    "RANDOM_DEN": 6.1
+   },
+   "spurOpp": 3.58,
+   "rests": 0.01,
+   "ate": 4.95,
+   "fatEnd": 73,
+   "visited": 111.7,
+   "rivalRate": 99.8,
+   "rivalRateAtGoal": 100,
+   "rivalTurnP50": 23,
+   "rare": {
+    "none": 89.9,
+    "one": 10.1,
+    "more": 0,
+    "fought": 1.4
+   },
+   "challenge": {
+    "entered": 49.7,
+    "success": 34.1,
+    "fail": 65.9
+   },
+   "parity": {
+    "odd": 50.9,
+    "even": 49.1,
+    "none": 0
+   },
+   "stuck": 0,
+   "guardOut": 0,
+   "timeUpAt": "S_END 6.5%・D_RS 2.8%・LATE_L_DONE 2.7%",
+   "shortAtTimeUp": {
+    "p25": 5,
+    "p50": 10,
+    "p90": 22,
+    "within6": 6.5
+   },
+   "vsCh1": {
+    "goalPP": 7.4,
+    "gainPct": 3.3,
+    "rewardPP": 1.2
+   },
+   "vsCh2A": {
+    "goalPP": 1.8,
+    "gainPct": 4,
+    "rewardPP": 0.7
+   },
+   "vsCh4A": {
+    "goalPP": 3.4,
+    "gainPct": 5.4,
+    "rewardPP": 1.1
+   }
+  },
+  "Ch4-C": {
+   "nodes": 294,
+   "runs": 24000,
+   "goal": 80.2,
+   "avgTurns": 34.8,
+   "p10": 30,
+   "p50": 35,
+   "p90": 39,
+   "gain": 298,
+   "gainP10": 213,
+   "gainP90": 389,
+   "statStops": 14.67,
+   "emptyStops": 0,
+   "stops": {
+    "stat": 14.67,
+    "event": 4.02,
+    "wild": 1.83,
+    "rest": 1.48,
+    "treasure": 1.49
+   },
+   "rewards": 0.72,
+   "rewardRate": 10.3,
+   "rewardEach": {
+    "L_CHEST": 12.1,
+    "R_CHEST": 12.7,
+    "L_ALTAR": 12,
+    "L_LATE_ALTAR": 4.2,
+    "REWARD5": 12.1,
+    "R_SPECIAL": 12.4,
+    "RANDOM_DEN": 6.3
+   },
+   "spurOpp": 3.88,
+   "rests": 0.01,
+   "ate": 5.09,
+   "fatEnd": 73,
+   "visited": 114.7,
+   "rivalRate": 100,
+   "rivalRateAtGoal": 100,
+   "rivalTurnP50": 20,
+   "rare": {
+    "none": 89.9,
+    "one": 10.1,
+    "more": 0,
+    "fought": 1
+   },
+   "challenge": {
+    "entered": 48.9,
+    "success": 33.9,
+    "fail": 66.1
+   },
+   "parity": {
+    "odd": 50.4,
+    "even": 49.6,
+    "none": 0
+   },
+   "stuck": 0,
+   "guardOut": 0,
+   "timeUpAt": "LATE_SAFE 4.8%・S_END 4.6%・LATE_L_FAIL_JOIN 3.8%",
+   "shortAtTimeUp": {
+    "p25": 4,
+    "p50": 8,
+    "p90": 20,
+    "within6": 8.2
+   },
+   "vsCh1": {
+    "goalPP": 6.7,
+    "gainPct": -1,
+    "rewardPP": 2.1
+   },
+   "vsCh2A": {
+    "goalPP": 1.1,
+    "gainPct": -0.3,
+    "rewardPP": 1.6
+   },
+   "vsCh4A": {
+    "goalPP": 2.7,
+    "gainPct": 1,
+    "rewardPP": 2
+   }
+  }
+ }
+}

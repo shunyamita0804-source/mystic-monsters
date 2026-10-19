@@ -1,0 +1,6842 @@
+{
+ "chapter": 4,
+ "route": "B",
+ "name": "溶岩渓谷",
+ "concept": "麓の村 → 登山口の分かれ道（渓谷への近道／黒曜の原回り）→ 渓谷の入口 → 渓谷の門 → 溶岩橋のたもとで運命の分かれ道（西岸の崖道／黒曜の双橋で東岸へ）→ 渓谷の上の広場でライバル → 最後の分かれ道（火口壁の回り道／崩れた急坂の特殊挑戦）→ 火口縁の闘技場。溶岩のきわを登る挑戦と危険の道",
+ "size": [
+  1024,
+  1536
+ ],
+ "nodes": {
+  "START": {
+   "x": 512,
+   "y": 1486,
+   "role": "start",
+   "segment": null,
+   "elev": 0
+  },
+  "S01_01": {
+   "x": 521.6,
+   "y": 1472.8,
+   "role": "ordinary_tile",
+   "segment": "S01",
+   "elev": 0.8
+  },
+  "S01_02": {
+   "x": 531.2,
+   "y": 1459.6,
+   "role": "ordinary_tile",
+   "segment": "S01",
+   "elev": 1.6
+  },
+  "S01_03": {
+   "x": 540.8,
+   "y": 1446.4,
+   "role": "ordinary_tile",
+   "segment": "S01",
+   "elev": 2.4
+  },
+  "S01_04": {
+   "x": 550.4,
+   "y": 1433.2,
+   "role": "ordinary_tile",
+   "segment": "S01",
+   "elev": 3.2
+  },
+  "J0": {
+   "x": 560,
+   "y": 1420,
+   "role": "free_fork",
+   "segment": null,
+   "elev": 4.0
+  },
+  "SA_01": {
+   "x": 573.75,
+   "y": 1408.75,
+   "role": "ordinary_tile",
+   "segment": "SA",
+   "elev": 5.14
+  },
+  "SA_02": {
+   "x": 587.49,
+   "y": 1397.51,
+   "role": "ordinary_tile",
+   "segment": "SA",
+   "elev": 6.27
+  },
+  "SA_03": {
+   "x": 601.24,
+   "y": 1386.26,
+   "role": "ordinary_tile",
+   "segment": "SA",
+   "elev": 7.41
+  },
+  "SA_04": {
+   "x": 614.61,
+   "y": 1374.57,
+   "role": "ordinary_tile",
+   "segment": "SA",
+   "elev": 8.55
+  },
+  "SA_05": {
+   "x": 627.88,
+   "y": 1362.77,
+   "role": "ordinary_tile",
+   "segment": "SA",
+   "elev": 9.68
+  },
+  "SA_06": {
+   "x": 639.57,
+   "y": 1350.52,
+   "role": "ordinary_tile",
+   "segment": "SA",
+   "elev": 10.77
+  },
+  "SA_07": {
+   "x": 634.59,
+   "y": 1333.47,
+   "role": "ordinary_tile",
+   "segment": "SA",
+   "elev": 11.9
+  },
+  "SA_08": {
+   "x": 629.62,
+   "y": 1316.42,
+   "role": "ordinary_tile",
+   "segment": "SA",
+   "elev": 13.04
+  },
+  "SA_09": {
+   "x": 629.41,
+   "y": 1300.59,
+   "role": "ordinary_tile",
+   "segment": "SA",
+   "elev": 14.05
+  },
+  "SA_10": {
+   "x": 641.97,
+   "y": 1288.03,
+   "role": "ordinary_tile",
+   "segment": "SA",
+   "elev": 15.19
+  },
+  "SA_11": {
+   "x": 654.53,
+   "y": 1275.47,
+   "role": "ordinary_tile",
+   "segment": "SA",
+   "elev": 16.33
+  },
+  "SA_12": {
+   "x": 668.08,
+   "y": 1264.07,
+   "role": "ordinary_tile",
+   "segment": "SA",
+   "elev": 17.46
+  },
+  "SA_13": {
+   "x": 682.41,
+   "y": 1253.57,
+   "role": "ordinary_tile",
+   "segment": "SA",
+   "elev": 18.6
+  },
+  "SA_14": {
+   "x": 697.61,
+   "y": 1244.58,
+   "role": "ordinary_tile",
+   "segment": "SA",
+   "elev": 19.73
+  },
+  "SA_15": {
+   "x": 713.8,
+   "y": 1237.29,
+   "role": "ordinary_tile",
+   "segment": "SA",
+   "elev": 20.86
+  },
+  "P": {
+   "x": 730,
+   "y": 1230,
+   "role": "early_merge",
+   "segment": null,
+   "elev": 22.0
+  },
+  "SA_B_01": {
+   "x": 577.45,
+   "y": 1421.4,
+   "role": "ordinary_tile",
+   "segment": "SA_B",
+   "elev": 5.0
+  },
+  "SA_B_02": {
+   "x": 594.89,
+   "y": 1422.79,
+   "role": "ordinary_tile",
+   "segment": "SA_B",
+   "elev": 6.01
+  },
+  "SA_B_03": {
+   "x": 612.34,
+   "y": 1423.83,
+   "role": "ordinary_tile",
+   "segment": "SA_B",
+   "elev": 7.01
+  },
+  "SA_B_04": {
+   "x": 629.79,
+   "y": 1422.59,
+   "role": "ordinary_tile",
+   "segment": "SA_B",
+   "elev": 8.01
+  },
+  "SA_B_05": {
+   "x": 647.25,
+   "y": 1421.34,
+   "role": "ordinary_tile",
+   "segment": "SA_B",
+   "elev": 9.02
+  },
+  "SA_B_06": {
+   "x": 664.71,
+   "y": 1420.09,
+   "role": "ordinary_tile",
+   "segment": "SA_B",
+   "elev": 10.02
+  },
+  "SA_B_07": {
+   "x": 676.44,
+   "y": 1407.61,
+   "role": "ordinary_tile",
+   "segment": "SA_B",
+   "elev": 11.0
+  },
+  "SA_B_08": {
+   "x": 687.71,
+   "y": 1394.22,
+   "role": "ordinary_tile",
+   "segment": "SA_B",
+   "elev": 12.01
+  },
+  "SA_B_09": {
+   "x": 697.88,
+   "y": 1380.48,
+   "role": "ordinary_tile",
+   "segment": "SA_B",
+   "elev": 12.99
+  },
+  "SA_B_10": {
+   "x": 696.54,
+   "y": 1363.03,
+   "role": "ordinary_tile",
+   "segment": "SA_B",
+   "elev": 13.99
+  },
+  "SA_B_11": {
+   "x": 695.2,
+   "y": 1345.58,
+   "role": "ordinary_tile",
+   "segment": "SA_B",
+   "elev": 14.99
+  },
+  "SA_B_12": {
+   "x": 694.88,
+   "y": 1328.34,
+   "role": "ordinary_tile",
+   "segment": "SA_B",
+   "elev": 15.98
+  },
+  "SA_B_13": {
+   "x": 703.07,
+   "y": 1312.88,
+   "role": "ordinary_tile",
+   "segment": "SA_B",
+   "elev": 16.98
+  },
+  "SA_B_14": {
+   "x": 711.25,
+   "y": 1297.41,
+   "role": "ordinary_tile",
+   "segment": "SA_B",
+   "elev": 17.99
+  },
+  "SA_B_15": {
+   "x": 716.19,
+   "y": 1280.65,
+   "role": "ordinary_tile",
+   "segment": "SA_B",
+   "elev": 18.99
+  },
+  "SA_B_16": {
+   "x": 720.79,
+   "y": 1263.77,
+   "role": "ordinary_tile",
+   "segment": "SA_B",
+   "elev": 19.99
+  },
+  "SA_B_17": {
+   "x": 725.4,
+   "y": 1246.88,
+   "role": "ordinary_tile",
+   "segment": "SA_B",
+   "elev": 21.0
+  },
+  "EB01_01": {
+   "x": 571.38,
+   "y": 1433.91,
+   "role": "ordinary_tile",
+   "segment": "EB01",
+   "elev": 4.29
+  },
+  "EB01_02": {
+   "x": 582.77,
+   "y": 1447.83,
+   "role": "ordinary_tile",
+   "segment": "EB01",
+   "elev": 4.57
+  },
+  "EB01_03": {
+   "x": 594.15,
+   "y": 1461.74,
+   "role": "ordinary_tile",
+   "segment": "EB01",
+   "elev": 4.86
+  },
+  "EB01_04": {
+   "x": 610.99,
+   "y": 1465.44,
+   "role": "ordinary_tile",
+   "segment": "EB01",
+   "elev": 5.13
+  },
+  "EB01_05": {
+   "x": 628.89,
+   "y": 1467.16,
+   "role": "ordinary_tile",
+   "segment": "EB01",
+   "elev": 5.42
+  },
+  "EB01_06": {
+   "x": 646.78,
+   "y": 1468.88,
+   "role": "ordinary_tile",
+   "segment": "EB01",
+   "elev": 5.71
+  },
+  "EB01_07": {
+   "x": 664.68,
+   "y": 1470.6,
+   "role": "ordinary_tile",
+   "segment": "EB01",
+   "elev": 5.99
+  },
+  "EB01_08": {
+   "x": 682.57,
+   "y": 1472.32,
+   "role": "ordinary_tile",
+   "segment": "EB01",
+   "elev": 6.28
+  },
+  "EB01_09": {
+   "x": 700.41,
+   "y": 1473.78,
+   "role": "ordinary_tile",
+   "segment": "EB01",
+   "elev": 6.57
+  },
+  "EB01_10": {
+   "x": 716.33,
+   "y": 1465.43,
+   "role": "ordinary_tile",
+   "segment": "EB01",
+   "elev": 6.85
+  },
+  "EB01_11": {
+   "x": 732.25,
+   "y": 1457.07,
+   "role": "ordinary_tile",
+   "segment": "EB01",
+   "elev": 7.14
+  },
+  "EB01_12": {
+   "x": 748.17,
+   "y": 1448.71,
+   "role": "ordinary_tile",
+   "segment": "EB01",
+   "elev": 7.43
+  },
+  "EB01_13": {
+   "x": 764.08,
+   "y": 1440.36,
+   "role": "ordinary_tile",
+   "segment": "EB01",
+   "elev": 7.71
+  },
+  "EB1": {
+   "x": 780,
+   "y": 1432,
+   "role": "route_anchor",
+   "segment": null,
+   "elev": 8.0
+  },
+  "EB02_01": {
+   "x": 782.97,
+   "y": 1414.16,
+   "role": "ordinary_tile",
+   "segment": "EB02",
+   "elev": 9.17
+  },
+  "EB02_02": {
+   "x": 785.95,
+   "y": 1396.32,
+   "role": "ordinary_tile",
+   "segment": "EB02",
+   "elev": 10.33
+  },
+  "EB02_03": {
+   "x": 788.92,
+   "y": 1378.48,
+   "role": "ordinary_tile",
+   "segment": "EB02",
+   "elev": 11.5
+  },
+  "EB02_04": {
+   "x": 791.89,
+   "y": 1360.64,
+   "role": "ordinary_tile",
+   "segment": "EB02",
+   "elev": 12.67
+  },
+  "EB02_05": {
+   "x": 784.6,
+   "y": 1344.21,
+   "role": "ordinary_tile",
+   "segment": "EB02",
+   "elev": 13.83
+  },
+  "EB02_06": {
+   "x": 776.92,
+   "y": 1327.84,
+   "role": "ordinary_tile",
+   "segment": "EB02",
+   "elev": 15.0
+  },
+  "EB02_07": {
+   "x": 769.25,
+   "y": 1311.46,
+   "role": "ordinary_tile",
+   "segment": "EB02",
+   "elev": 16.16
+  },
+  "EB02_08": {
+   "x": 761.56,
+   "y": 1295.09,
+   "role": "ordinary_tile",
+   "segment": "EB02",
+   "elev": 17.33
+  },
+  "EB02_09": {
+   "x": 753.67,
+   "y": 1278.82,
+   "role": "ordinary_tile",
+   "segment": "EB02",
+   "elev": 18.5
+  },
+  "EB02_10": {
+   "x": 745.78,
+   "y": 1262.55,
+   "role": "ordinary_tile",
+   "segment": "EB02",
+   "elev": 19.67
+  },
+  "EB02_11": {
+   "x": 737.89,
+   "y": 1246.27,
+   "role": "ordinary_tile",
+   "segment": "EB02",
+   "elev": 20.83
+  },
+  "D_LC_01": {
+   "x": 795.72,
+   "y": 1442.66,
+   "role": "ordinary_tile",
+   "segment": "D_LC",
+   "elev": 7.77
+  },
+  "D_LC_02": {
+   "x": 811.44,
+   "y": 1453.32,
+   "role": "ordinary_tile",
+   "segment": "D_LC",
+   "elev": 7.55
+  },
+  "D_LC_03": {
+   "x": 813.63,
+   "y": 1460.82,
+   "role": "ordinary_tile",
+   "segment": "D_LC",
+   "elev": 7.45
+  },
+  "D_LC_04": {
+   "x": 794.81,
+   "y": 1463.41,
+   "role": "ordinary_tile",
+   "segment": "D_LC",
+   "elev": 7.23
+  },
+  "D_LC_05": {
+   "x": 776.0,
+   "y": 1466.0,
+   "role": "ordinary_tile",
+   "segment": "D_LC",
+   "elev": 7.0
+  },
+  "D_LC_06": {
+   "x": 757.19,
+   "y": 1468.59,
+   "role": "ordinary_tile",
+   "segment": "D_LC",
+   "elev": 6.77
+  },
+  "D_LC_07": {
+   "x": 738.37,
+   "y": 1471.18,
+   "role": "ordinary_tile",
+   "segment": "D_LC",
+   "elev": 6.55
+  },
+  "D_LC_08": {
+   "x": 740.56,
+   "y": 1478.68,
+   "role": "ordinary_tile",
+   "segment": "D_LC",
+   "elev": 6.45
+  },
+  "D_LC_09": {
+   "x": 756.28,
+   "y": 1489.34,
+   "role": "ordinary_tile",
+   "segment": "D_LC",
+   "elev": 6.23
+  },
+  "L_CHEST": {
+   "x": 772,
+   "y": 1500,
+   "role": "fixed_reward_dead_end",
+   "segment": null,
+   "elev": 6.0
+  },
+  "C01_01": {
+   "x": 736.5,
+   "y": 1214.0,
+   "role": "ordinary_tile",
+   "segment": "C01",
+   "elev": 23.5
+  },
+  "C01_02": {
+   "x": 743.0,
+   "y": 1198.0,
+   "role": "ordinary_tile",
+   "segment": "C01",
+   "elev": 25.0
+  },
+  "C01_03": {
+   "x": 749.5,
+   "y": 1182.0,
+   "role": "ordinary_tile",
+   "segment": "C01",
+   "elev": 26.5
+  },
+  "LOWER_GATE": {
+   "x": 756,
+   "y": 1166,
+   "role": "lower_walk_through_gate",
+   "segment": null,
+   "elev": 28.0
+  },
+  "C02_01": {
+   "x": 761.0,
+   "y": 1149.5,
+   "role": "ordinary_tile",
+   "segment": "C02",
+   "elev": 29.5
+  },
+  "C02_02": {
+   "x": 766.0,
+   "y": 1133.0,
+   "role": "ordinary_tile",
+   "segment": "C02",
+   "elev": 31.0
+  },
+  "C02_03": {
+   "x": 771.0,
+   "y": 1116.5,
+   "role": "ordinary_tile",
+   "segment": "C02",
+   "elev": 32.5
+  },
+  "Q": {
+   "x": 776,
+   "y": 1100,
+   "role": "parity_forced_fork",
+   "segment": null,
+   "elev": 34.0
+  },
+  "Q_L1_01": {
+   "x": 761.67,
+   "y": 1091.67,
+   "role": "ordinary_tile",
+   "segment": "Q_L1",
+   "elev": 35.33
+  },
+  "Q_L1_02": {
+   "x": 747.33,
+   "y": 1083.33,
+   "role": "ordinary_tile",
+   "segment": "Q_L1",
+   "elev": 36.67
+  },
+  "Q_L1_03": {
+   "x": 733.0,
+   "y": 1075.0,
+   "role": "ordinary_tile",
+   "segment": "Q_L1",
+   "elev": 38.0
+  },
+  "Q_L1_04": {
+   "x": 718.67,
+   "y": 1066.67,
+   "role": "ordinary_tile",
+   "segment": "Q_L1",
+   "elev": 39.33
+  },
+  "Q_L1_05": {
+   "x": 704.33,
+   "y": 1058.33,
+   "role": "ordinary_tile",
+   "segment": "Q_L1",
+   "elev": 40.67
+  },
+  "QL1": {
+   "x": 690,
+   "y": 1050,
+   "role": "route_anchor",
+   "segment": null,
+   "elev": 42.0
+  },
+  "Q_L2_01": {
+   "x": 676.63,
+   "y": 1037.7,
+   "role": "ordinary_tile",
+   "segment": "Q_L2",
+   "elev": 43.13
+  },
+  "Q_L2_02": {
+   "x": 663.26,
+   "y": 1025.4,
+   "role": "ordinary_tile",
+   "segment": "Q_L2",
+   "elev": 44.25
+  },
+  "Q_L2_03": {
+   "x": 649.89,
+   "y": 1013.1,
+   "role": "ordinary_tile",
+   "segment": "Q_L2",
+   "elev": 45.38
+  },
+  "Q_L2_04": {
+   "x": 643.21,
+   "y": 1000.53,
+   "role": "ordinary_tile",
+   "segment": "Q_L2",
+   "elev": 46.26
+  },
+  "Q_L2_05": {
+   "x": 655.56,
+   "y": 987.2,
+   "role": "ordinary_tile",
+   "segment": "Q_L2",
+   "elev": 47.39
+  },
+  "Q_L2_06": {
+   "x": 667.9,
+   "y": 973.87,
+   "role": "ordinary_tile",
+   "segment": "Q_L2",
+   "elev": 48.51
+  },
+  "Q_L2_07": {
+   "x": 680.24,
+   "y": 960.54,
+   "role": "ordinary_tile",
+   "segment": "Q_L2",
+   "elev": 49.64
+  },
+  "Q_L2_08": {
+   "x": 688.04,
+   "y": 946.74,
+   "role": "ordinary_tile",
+   "segment": "Q_L2",
+   "elev": 50.62
+  },
+  "Q_L2_09": {
+   "x": 678.69,
+   "y": 931.16,
+   "role": "ordinary_tile",
+   "segment": "Q_L2",
+   "elev": 51.75
+  },
+  "Q_L2_10": {
+   "x": 669.35,
+   "y": 915.58,
+   "role": "ordinary_tile",
+   "segment": "Q_L2",
+   "elev": 52.87
+  },
+  "QL2": {
+   "x": 660,
+   "y": 900,
+   "role": "route_anchor",
+   "segment": null,
+   "elev": 54.0
+  },
+  "QL_ALT_01": {
+   "x": 672.64,
+   "y": 1052.89,
+   "role": "ordinary_tile",
+   "segment": "QL_ALT",
+   "elev": 42.87
+  },
+  "QL_ALT_02": {
+   "x": 655.27,
+   "y": 1055.79,
+   "role": "ordinary_tile",
+   "segment": "QL_ALT",
+   "elev": 43.75
+  },
+  "QL_ALT_03": {
+   "x": 637.91,
+   "y": 1058.68,
+   "role": "ordinary_tile",
+   "segment": "QL_ALT",
+   "elev": 44.62
+  },
+  "QL_ALT_04": {
+   "x": 625.71,
+   "y": 1051.42,
+   "role": "ordinary_tile",
+   "segment": "QL_ALT",
+   "elev": 45.33
+  },
+  "QL_ALT_05": {
+   "x": 617.84,
+   "y": 1035.68,
+   "role": "ordinary_tile",
+   "segment": "QL_ALT",
+   "elev": 46.2
+  },
+  "QL_ALT_06": {
+   "x": 609.97,
+   "y": 1019.93,
+   "role": "ordinary_tile",
+   "segment": "QL_ALT",
+   "elev": 47.08
+  },
+  "QL_ALT_07": {
+   "x": 602.09,
+   "y": 1004.19,
+   "role": "ordinary_tile",
+   "segment": "QL_ALT",
+   "elev": 47.95
+  },
+  "QL_ALT_08": {
+   "x": 604.49,
+   "y": 987.88,
+   "role": "ordinary_tile",
+   "segment": "QL_ALT",
+   "elev": 48.77
+  },
+  "QL_ALT_09": {
+   "x": 610.6,
+   "y": 971.38,
+   "role": "ordinary_tile",
+   "segment": "QL_ALT",
+   "elev": 49.64
+  },
+  "QL_ALT_10": {
+   "x": 616.72,
+   "y": 954.87,
+   "role": "ordinary_tile",
+   "segment": "QL_ALT",
+   "elev": 50.52
+  },
+  "QL_ALT_11": {
+   "x": 625.35,
+   "y": 939.85,
+   "role": "ordinary_tile",
+   "segment": "QL_ALT",
+   "elev": 51.38
+  },
+  "QL_ALT_12": {
+   "x": 636.9,
+   "y": 926.57,
+   "role": "ordinary_tile",
+   "segment": "QL_ALT",
+   "elev": 52.25
+  },
+  "QL_ALT_13": {
+   "x": 648.45,
+   "y": 913.28,
+   "role": "ordinary_tile",
+   "segment": "QL_ALT",
+   "elev": 53.13
+  },
+  "Q_L3_01": {
+   "x": 674.65,
+   "y": 890.23,
+   "role": "ordinary_tile",
+   "segment": "Q_L3",
+   "elev": 54.93
+  },
+  "Q_L3_02": {
+   "x": 689.3,
+   "y": 880.47,
+   "role": "ordinary_tile",
+   "segment": "Q_L3",
+   "elev": 55.87
+  },
+  "Q_L3_03": {
+   "x": 703.95,
+   "y": 870.7,
+   "role": "ordinary_tile",
+   "segment": "Q_L3",
+   "elev": 56.8
+  },
+  "Q_L3_04": {
+   "x": 718.6,
+   "y": 860.93,
+   "role": "ordinary_tile",
+   "segment": "Q_L3",
+   "elev": 57.73
+  },
+  "Q_L3_05": {
+   "x": 707.04,
+   "y": 850.74,
+   "role": "ordinary_tile",
+   "segment": "Q_L3",
+   "elev": 58.55
+  },
+  "Q_L3_06": {
+   "x": 692.71,
+   "y": 840.51,
+   "role": "ordinary_tile",
+   "segment": "Q_L3",
+   "elev": 59.49
+  },
+  "Q_L3_07": {
+   "x": 678.38,
+   "y": 830.27,
+   "role": "ordinary_tile",
+   "segment": "Q_L3",
+   "elev": 60.42
+  },
+  "Q_L3_08": {
+   "x": 664.05,
+   "y": 820.04,
+   "role": "ordinary_tile",
+   "segment": "Q_L3",
+   "elev": 61.35
+  },
+  "Q_L3_09": {
+   "x": 650.25,
+   "y": 809.77,
+   "role": "ordinary_tile",
+   "segment": "Q_L3",
+   "elev": 62.27
+  },
+  "Q_L3_10": {
+   "x": 663.12,
+   "y": 797.76,
+   "role": "ordinary_tile",
+   "segment": "Q_L3",
+   "elev": 63.2
+  },
+  "Q_L3_11": {
+   "x": 675.99,
+   "y": 785.74,
+   "role": "ordinary_tile",
+   "segment": "Q_L3",
+   "elev": 64.13
+  },
+  "Q_L3_12": {
+   "x": 688.16,
+   "y": 773.03,
+   "role": "ordinary_tile",
+   "segment": "Q_L3",
+   "elev": 65.07
+  },
+  "QL3": {
+   "x": 700,
+   "y": 760,
+   "role": "route_anchor",
+   "segment": null,
+   "elev": 66.0
+  },
+  "Q_L4_01": {
+   "x": 713.77,
+   "y": 749.67,
+   "role": "ordinary_tile",
+   "segment": "Q_L4",
+   "elev": 68.4
+  },
+  "Q_L4_02": {
+   "x": 727.54,
+   "y": 739.35,
+   "role": "ordinary_tile",
+   "segment": "Q_L4",
+   "elev": 70.8
+  },
+  "Q_L4_03": {
+   "x": 740.91,
+   "y": 728.64,
+   "role": "ordinary_tile",
+   "segment": "Q_L4",
+   "elev": 73.2
+  },
+  "Q_L4_04": {
+   "x": 750.45,
+   "y": 714.32,
+   "role": "ordinary_tile",
+   "segment": "Q_L4",
+   "elev": 75.6
+  },
+  "R": {
+   "x": 760,
+   "y": 700,
+   "role": "parity_rejoin",
+   "segment": null,
+   "elev": 78.0
+  },
+  "D_LA_01": {
+   "x": 646.06,
+   "y": 887.1,
+   "role": "ordinary_tile",
+   "segment": "D_LA",
+   "elev": 53.8
+  },
+  "D_LA_02": {
+   "x": 632.12,
+   "y": 874.2,
+   "role": "ordinary_tile",
+   "segment": "D_LA",
+   "elev": 53.6
+  },
+  "D_LA_03": {
+   "x": 618.17,
+   "y": 861.29,
+   "role": "ordinary_tile",
+   "segment": "D_LA",
+   "elev": 53.4
+  },
+  "D_LA_04": {
+   "x": 604.23,
+   "y": 848.39,
+   "role": "ordinary_tile",
+   "segment": "D_LA",
+   "elev": 53.2
+  },
+  "D_LA_05": {
+   "x": 590.3,
+   "y": 835.52,
+   "role": "ordinary_tile",
+   "segment": "D_LA",
+   "elev": 53.0
+  },
+  "D_LA_06": {
+   "x": 592.24,
+   "y": 854.41,
+   "role": "ordinary_tile",
+   "segment": "D_LA",
+   "elev": 52.8
+  },
+  "D_LA_07": {
+   "x": 594.18,
+   "y": 873.31,
+   "role": "ordinary_tile",
+   "segment": "D_LA",
+   "elev": 52.6
+  },
+  "D_LA_08": {
+   "x": 596.12,
+   "y": 892.21,
+   "role": "ordinary_tile",
+   "segment": "D_LA",
+   "elev": 52.4
+  },
+  "D_LA_09": {
+   "x": 598.06,
+   "y": 911.1,
+   "role": "ordinary_tile",
+   "segment": "D_LA",
+   "elev": 52.2
+  },
+  "L_ALTAR": {
+   "x": 600,
+   "y": 930,
+   "role": "fixed_reward_dead_end",
+   "segment": null,
+   "elev": 52.0
+  },
+  "Q_R1_01": {
+   "x": 791.78,
+   "y": 1091.88,
+   "role": "ordinary_tile",
+   "segment": "Q_R1",
+   "elev": 34.75
+  },
+  "Q_R1_02": {
+   "x": 807.56,
+   "y": 1083.77,
+   "role": "ordinary_tile",
+   "segment": "Q_R1",
+   "elev": 35.5
+  },
+  "Q_R1_03": {
+   "x": 823.34,
+   "y": 1075.65,
+   "role": "ordinary_tile",
+   "segment": "Q_R1",
+   "elev": 36.25
+  },
+  "Q_R1_04": {
+   "x": 839.12,
+   "y": 1067.54,
+   "role": "ordinary_tile",
+   "segment": "Q_R1",
+   "elev": 37.0
+  },
+  "Q_R1_05": {
+   "x": 855.5,
+   "y": 1060.83,
+   "role": "ordinary_tile",
+   "segment": "Q_R1",
+   "elev": 37.75
+  },
+  "Q_R1_06": {
+   "x": 872.33,
+   "y": 1055.22,
+   "role": "ordinary_tile",
+   "segment": "Q_R1",
+   "elev": 38.5
+  },
+  "Q_R1_07": {
+   "x": 889.17,
+   "y": 1049.61,
+   "role": "ordinary_tile",
+   "segment": "Q_R1",
+   "elev": 39.25
+  },
+  "QR1": {
+   "x": 906,
+   "y": 1044,
+   "role": "route_anchor",
+   "segment": null,
+   "elev": 40.0
+  },
+  "Q_R2_01": {
+   "x": 918.32,
+   "y": 1031.1,
+   "role": "ordinary_tile",
+   "segment": "Q_R2",
+   "elev": 41.44
+  },
+  "Q_R2_02": {
+   "x": 930.63,
+   "y": 1018.2,
+   "role": "ordinary_tile",
+   "segment": "Q_R2",
+   "elev": 42.88
+  },
+  "Q_R2_03": {
+   "x": 942.95,
+   "y": 1005.29,
+   "role": "ordinary_tile",
+   "segment": "Q_R2",
+   "elev": 44.33
+  },
+  "Q_R2_04": {
+   "x": 948.33,
+   "y": 989.48,
+   "role": "ordinary_tile",
+   "segment": "Q_R2",
+   "elev": 45.68
+  },
+  "Q_R2_05": {
+   "x": 948.89,
+   "y": 971.66,
+   "role": "ordinary_tile",
+   "segment": "Q_R2",
+   "elev": 47.12
+  },
+  "Q_R2_06": {
+   "x": 949.44,
+   "y": 953.83,
+   "role": "ordinary_tile",
+   "segment": "Q_R2",
+   "elev": 48.56
+  },
+  "QR2": {
+   "x": 950,
+   "y": 936,
+   "role": "route_anchor",
+   "segment": null,
+   "elev": 50.0
+  },
+  "QR_ALT_01": {
+   "x": 903.57,
+   "y": 1026.2,
+   "role": "ordinary_tile",
+   "segment": "QR_ALT",
+   "elev": 41.27
+  },
+  "QR_ALT_02": {
+   "x": 901.15,
+   "y": 1008.4,
+   "role": "ordinary_tile",
+   "segment": "QR_ALT",
+   "elev": 42.55
+  },
+  "QR_ALT_03": {
+   "x": 899.06,
+   "y": 990.57,
+   "role": "ordinary_tile",
+   "segment": "QR_ALT",
+   "elev": 43.82
+  },
+  "QR_ALT_04": {
+   "x": 897.27,
+   "y": 972.69,
+   "role": "ordinary_tile",
+   "segment": "QR_ALT",
+   "elev": 45.1
+  },
+  "QR_ALT_05": {
+   "x": 900.76,
+   "y": 957.89,
+   "role": "ordinary_tile",
+   "segment": "QR_ALT",
+   "elev": 46.18
+  },
+  "QR_ALT_06": {
+   "x": 917.17,
+   "y": 950.59,
+   "role": "ordinary_tile",
+   "segment": "QR_ALT",
+   "elev": 47.45
+  },
+  "QR_ALT_07": {
+   "x": 933.59,
+   "y": 943.3,
+   "role": "ordinary_tile",
+   "segment": "QR_ALT",
+   "elev": 48.73
+  },
+  "Q_R3_01": {
+   "x": 943.59,
+   "y": 918.05,
+   "role": "ordinary_tile",
+   "segment": "Q_R3",
+   "elev": 51.67
+  },
+  "Q_R3_02": {
+   "x": 937.18,
+   "y": 900.09,
+   "role": "ordinary_tile",
+   "segment": "Q_R3",
+   "elev": 53.33
+  },
+  "Q_R3_03": {
+   "x": 930.76,
+   "y": 882.14,
+   "role": "ordinary_tile",
+   "segment": "Q_R3",
+   "elev": 55.0
+  },
+  "Q_R3_04": {
+   "x": 926.94,
+   "y": 863.49,
+   "role": "ordinary_tile",
+   "segment": "Q_R3",
+   "elev": 56.67
+  },
+  "Q_R3_05": {
+   "x": 923.47,
+   "y": 844.75,
+   "role": "ordinary_tile",
+   "segment": "Q_R3",
+   "elev": 58.33
+  },
+  "STATUE": {
+   "x": 920,
+   "y": 826,
+   "role": "rare_zone_candidate",
+   "segment": null,
+   "elev": 60.0
+  },
+  "Q_R4_01": {
+   "x": 927.81,
+   "y": 809.72,
+   "role": "ordinary_tile",
+   "segment": "Q_R4",
+   "elev": 61.44
+  },
+  "Q_R4_02": {
+   "x": 935.63,
+   "y": 793.44,
+   "role": "ordinary_tile",
+   "segment": "Q_R4",
+   "elev": 62.88
+  },
+  "Q_R4_03": {
+   "x": 943.44,
+   "y": 777.16,
+   "role": "ordinary_tile",
+   "segment": "Q_R4",
+   "elev": 64.32
+  },
+  "Q_R4_04": {
+   "x": 931.24,
+   "y": 765.13,
+   "role": "ordinary_tile",
+   "segment": "Q_R4",
+   "elev": 65.68
+  },
+  "Q_R4_05": {
+   "x": 917.49,
+   "y": 753.42,
+   "role": "ordinary_tile",
+   "segment": "Q_R4",
+   "elev": 67.12
+  },
+  "Q_R4_06": {
+   "x": 903.75,
+   "y": 741.71,
+   "role": "ordinary_tile",
+   "segment": "Q_R4",
+   "elev": 68.56
+  },
+  "QR3": {
+   "x": 890,
+   "y": 730,
+   "role": "route_anchor",
+   "segment": null,
+   "elev": 70.0
+  },
+  "Q_R5_01": {
+   "x": 874.41,
+   "y": 723.12,
+   "role": "ordinary_tile",
+   "segment": "Q_R5",
+   "elev": 71.0
+  },
+  "Q_R5_02": {
+   "x": 858.82,
+   "y": 716.24,
+   "role": "ordinary_tile",
+   "segment": "Q_R5",
+   "elev": 72.0
+  },
+  "Q_R5_03": {
+   "x": 843.23,
+   "y": 709.37,
+   "role": "ordinary_tile",
+   "segment": "Q_R5",
+   "elev": 73.01
+  },
+  "Q_R5_04": {
+   "x": 827.64,
+   "y": 702.49,
+   "role": "ordinary_tile",
+   "segment": "Q_R5",
+   "elev": 74.01
+  },
+  "Q_R5_05": {
+   "x": 811.12,
+   "y": 700.0,
+   "role": "ordinary_tile",
+   "segment": "Q_R5",
+   "elev": 74.99
+  },
+  "Q_R5_06": {
+   "x": 794.08,
+   "y": 700.0,
+   "role": "ordinary_tile",
+   "segment": "Q_R5",
+   "elev": 76.0
+  },
+  "Q_R5_07": {
+   "x": 777.04,
+   "y": 700.0,
+   "role": "ordinary_tile",
+   "segment": "Q_R5",
+   "elev": 77.0
+  },
+  "D_RC_01": {
+   "x": 967.75,
+   "y": 942.77,
+   "role": "ordinary_tile",
+   "segment": "D_RC",
+   "elev": 49.33
+  },
+  "D_RC_02": {
+   "x": 985.49,
+   "y": 949.54,
+   "role": "ordinary_tile",
+   "segment": "D_RC",
+   "elev": 48.67
+  },
+  "D_RC_03": {
+   "x": 1003.19,
+   "y": 956.34,
+   "role": "ordinary_tile",
+   "segment": "D_RC",
+   "elev": 48.0
+  },
+  "D_RC_04": {
+   "x": 996.79,
+   "y": 974.23,
+   "role": "ordinary_tile",
+   "segment": "D_RC",
+   "elev": 47.33
+  },
+  "D_RC_05": {
+   "x": 990.4,
+   "y": 992.11,
+   "role": "ordinary_tile",
+   "segment": "D_RC",
+   "elev": 46.67
+  },
+  "R_CHEST": {
+   "x": 984,
+   "y": 1010,
+   "role": "fixed_reward_dead_end",
+   "segment": null,
+   "elev": 46.0
+  },
+  "D_R5_01": {
+   "x": 938.49,
+   "y": 821.6,
+   "role": "ordinary_tile",
+   "segment": "D_R5",
+   "elev": 59.77
+  },
+  "D_R5_02": {
+   "x": 956.98,
+   "y": 817.2,
+   "role": "ordinary_tile",
+   "segment": "D_R5",
+   "elev": 59.53
+  },
+  "D_R5_03": {
+   "x": 975.47,
+   "y": 812.8,
+   "role": "ordinary_tile",
+   "segment": "D_R5",
+   "elev": 59.3
+  },
+  "D_R5_04": {
+   "x": 993.97,
+   "y": 808.4,
+   "role": "ordinary_tile",
+   "segment": "D_R5",
+   "elev": 59.06
+  },
+  "D_R5_05": {
+   "x": 1001.29,
+   "y": 815.52,
+   "role": "ordinary_tile",
+   "segment": "D_R5",
+   "elev": 58.94
+  },
+  "D_R5_06": {
+   "x": 997.47,
+   "y": 834.14,
+   "role": "ordinary_tile",
+   "segment": "D_R5",
+   "elev": 58.7
+  },
+  "D_R5_07": {
+   "x": 993.64,
+   "y": 852.76,
+   "role": "ordinary_tile",
+   "segment": "D_R5",
+   "elev": 58.47
+  },
+  "D_R5_08": {
+   "x": 989.82,
+   "y": 871.38,
+   "role": "ordinary_tile",
+   "segment": "D_R5",
+   "elev": 58.23
+  },
+  "REWARD5": {
+   "x": 986,
+   "y": 890,
+   "role": "fixed_reward_dead_end",
+   "segment": null,
+   "elev": 58.0
+  },
+  "C03_01": {
+   "x": 750.0,
+   "y": 680.0,
+   "role": "ordinary_tile",
+   "segment": "C03",
+   "elev": 81.0
+  },
+  "RIVAL": {
+   "x": 740,
+   "y": 660,
+   "role": "mandatory_rival",
+   "segment": null,
+   "elev": 84.0
+  },
+  "C04_01": {
+   "x": 730.0,
+   "y": 647.5,
+   "role": "ordinary_tile",
+   "segment": "C04",
+   "elev": 85.0
+  },
+  "C04_02": {
+   "x": 720.0,
+   "y": 635.0,
+   "role": "ordinary_tile",
+   "segment": "C04",
+   "elev": 86.0
+  },
+  "C04_03": {
+   "x": 710.0,
+   "y": 622.5,
+   "role": "ordinary_tile",
+   "segment": "C04",
+   "elev": 87.0
+  },
+  "H": {
+   "x": 700,
+   "y": 610,
+   "role": "late_free_fork",
+   "segment": null,
+   "elev": 88.0
+  },
+  "LATE_L1_01": {
+   "x": 718.09,
+   "y": 605.48,
+   "role": "ordinary_tile",
+   "segment": "LATE_L1",
+   "elev": 88.82
+  },
+  "LATE_L1_02": {
+   "x": 736.18,
+   "y": 600.96,
+   "role": "ordinary_tile",
+   "segment": "LATE_L1",
+   "elev": 89.64
+  },
+  "LATE_L1_03": {
+   "x": 740.0,
+   "y": 585.29,
+   "role": "ordinary_tile",
+   "segment": "LATE_L1",
+   "elev": 90.36
+  },
+  "LATE_L1_04": {
+   "x": 740.0,
+   "y": 566.65,
+   "role": "ordinary_tile",
+   "segment": "LATE_L1",
+   "elev": 91.18
+  },
+  "CHALLENGE": {
+   "x": 740,
+   "y": 548,
+   "role": "challenge_d6_5_6",
+   "segment": null,
+   "elev": 92.0
+  },
+  "LATE_L_FAIL_01": {
+   "x": 723.33,
+   "y": 558.0,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_FAIL",
+   "elev": 91.33
+  },
+  "LATE_L_FAIL_02": {
+   "x": 706.67,
+   "y": 568.0,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_FAIL",
+   "elev": 90.67
+  },
+  "FAIL_L": {
+   "x": 690,
+   "y": 578,
+   "role": "challenge_failure_route",
+   "segment": null,
+   "elev": 90.0
+  },
+  "LATE_L_FAIL_JOIN_01": {
+   "x": 674.74,
+   "y": 569.61,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_FAIL_JOIN",
+   "elev": 90.94
+  },
+  "LATE_L_FAIL_JOIN_02": {
+   "x": 659.48,
+   "y": 561.21,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_FAIL_JOIN",
+   "elev": 91.88
+  },
+  "LATE_L_FAIL_JOIN_03": {
+   "x": 646.34,
+   "y": 550.5,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_FAIL_JOIN",
+   "elev": 92.79
+  },
+  "LATE_L_FAIL_JOIN_04": {
+   "x": 636.67,
+   "y": 536.01,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_FAIL_JOIN",
+   "elev": 93.73
+  },
+  "LATE_L_FAIL_JOIN_05": {
+   "x": 627.01,
+   "y": 521.52,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_FAIL_JOIN",
+   "elev": 94.67
+  },
+  "LATE_L_FAIL_JOIN_06": {
+   "x": 619.97,
+   "y": 505.87,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_FAIL_JOIN",
+   "elev": 95.6
+  },
+  "LATE_L_FAIL_JOIN_07": {
+   "x": 615.74,
+   "y": 488.97,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_FAIL_JOIN",
+   "elev": 96.54
+  },
+  "LATE_L_FAIL_JOIN_08": {
+   "x": 611.52,
+   "y": 472.07,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_FAIL_JOIN",
+   "elev": 97.48
+  },
+  "LATE_L_FAIL_JOIN_09": {
+   "x": 613.97,
+   "y": 455.57,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_FAIL_JOIN",
+   "elev": 98.38
+  },
+  "LATE_L_FAIL_JOIN_10": {
+   "x": 620.17,
+   "y": 439.29,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_FAIL_JOIN",
+   "elev": 99.32
+  },
+  "LATE_L_FAIL_JOIN_11": {
+   "x": 626.85,
+   "y": 423.38,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_FAIL_JOIN",
+   "elev": 100.25
+  },
+  "LATE_L_FAIL_JOIN_12": {
+   "x": 640.9,
+   "y": 413.08,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_FAIL_JOIN",
+   "elev": 101.19
+  },
+  "LATE_L_FAIL_JOIN_13": {
+   "x": 654.94,
+   "y": 402.78,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_FAIL_JOIN",
+   "elev": 102.12
+  },
+  "LATE_L_FAIL_JOIN_14": {
+   "x": 671.37,
+   "y": 397.2,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_FAIL_JOIN",
+   "elev": 103.06
+  },
+  "L_MERGE": {
+   "x": 688,
+   "y": 392,
+   "role": "route_anchor",
+   "segment": null,
+   "elev": 104.0
+  },
+  "LATE_L_SUCCESS1_01": {
+   "x": 745.27,
+   "y": 529.57,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_SUCCESS1",
+   "elev": 93.22
+  },
+  "LATE_L_SUCCESS1_02": {
+   "x": 750.53,
+   "y": 511.14,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_SUCCESS1",
+   "elev": 94.43
+  },
+  "LATE_L_SUCCESS1_03": {
+   "x": 744.58,
+   "y": 494.34,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_SUCCESS1",
+   "elev": 95.57
+  },
+  "LATE_L_SUCCESS1_04": {
+   "x": 734.29,
+   "y": 478.17,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_SUCCESS1",
+   "elev": 96.78
+  },
+  "SUCCESS_L1": {
+   "x": 724,
+   "y": 462,
+   "role": "challenge_success_route",
+   "segment": null,
+   "elev": 98.0
+  },
+  "LATE_L_SUCCESS_JOIN_01": {
+   "x": 719.39,
+   "y": 442.4,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_SUCCESS_JOIN",
+   "elev": 99.51
+  },
+  "LATE_L_SUCCESS_JOIN_02": {
+   "x": 712.72,
+   "y": 423.79,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_SUCCESS_JOIN",
+   "elev": 100.99
+  },
+  "LATE_L_SUCCESS_JOIN_03": {
+   "x": 700.36,
+   "y": 407.89,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_SUCCESS_JOIN",
+   "elev": 102.49
+  },
+  "D_LLA_01": {
+   "x": 737.24,
+   "y": 449.86,
+   "role": "ordinary_tile",
+   "segment": "D_LLA",
+   "elev": 98.81
+  },
+  "D_LLA_02": {
+   "x": 747.29,
+   "y": 436.7,
+   "role": "ordinary_tile",
+   "segment": "D_LLA",
+   "elev": 99.56
+  },
+  "D_LLA_03": {
+   "x": 743.53,
+   "y": 419.13,
+   "role": "ordinary_tile",
+   "segment": "D_LLA",
+   "elev": 100.37
+  },
+  "D_LLA_04": {
+   "x": 739.76,
+   "y": 401.57,
+   "role": "ordinary_tile",
+   "segment": "D_LLA",
+   "elev": 101.19
+  },
+  "L_LATE_ALTAR": {
+   "x": 736,
+   "y": 384,
+   "role": "fixed_reward_dead_end",
+   "segment": null,
+   "elev": 102.0
+  },
+  "LATE_L_DONE_01": {
+   "x": 671.85,
+   "y": 382.92,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_DONE",
+   "elev": 104.33
+  },
+  "LATE_L_DONE_02": {
+   "x": 655.68,
+   "y": 374.11,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_DONE",
+   "elev": 104.67
+  },
+  "LATE_L_DONE_03": {
+   "x": 638.1,
+   "y": 379.97,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_DONE",
+   "elev": 105.0
+  },
+  "LATE_L_DONE_04": {
+   "x": 620.53,
+   "y": 385.82,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_DONE",
+   "elev": 105.33
+  },
+  "LATE_L_DONE_05": {
+   "x": 602.27,
+   "y": 388.95,
+   "role": "ordinary_tile",
+   "segment": "LATE_L_DONE",
+   "elev": 105.67
+  },
+  "FINAL": {
+   "x": 584,
+   "y": 392,
+   "role": "final_merge",
+   "segment": null,
+   "elev": 106.0
+  },
+  "LATE_R1_01": {
+   "x": 683.7,
+   "y": 618.47,
+   "role": "ordinary_tile",
+   "segment": "LATE_R1",
+   "elev": 88.0
+  },
+  "LATE_R1_02": {
+   "x": 667.41,
+   "y": 626.95,
+   "role": "ordinary_tile",
+   "segment": "LATE_R1",
+   "elev": 88.0
+  },
+  "LATE_R1_03": {
+   "x": 651.11,
+   "y": 635.42,
+   "role": "ordinary_tile",
+   "segment": "LATE_R1",
+   "elev": 88.0
+  },
+  "LATE_R1_04": {
+   "x": 634.11,
+   "y": 629.64,
+   "role": "ordinary_tile",
+   "segment": "LATE_R1",
+   "elev": 88.0
+  },
+  "LATE_R1_05": {
+   "x": 617.05,
+   "y": 622.82,
+   "role": "ordinary_tile",
+   "segment": "LATE_R1",
+   "elev": 88.0
+  },
+  "HR1": {
+   "x": 600,
+   "y": 616,
+   "role": "route_anchor",
+   "segment": null,
+   "elev": 88.0
+  },
+  "LATE_R2_01": {
+   "x": 585.16,
+   "y": 604.53,
+   "role": "ordinary_tile",
+   "segment": "LATE_R2",
+   "elev": 88.89
+  },
+  "LATE_R2_02": {
+   "x": 570.32,
+   "y": 593.07,
+   "role": "ordinary_tile",
+   "segment": "LATE_R2",
+   "elev": 89.78
+  },
+  "LATE_R2_03": {
+   "x": 555.71,
+   "y": 581.42,
+   "role": "ordinary_tile",
+   "segment": "LATE_R2",
+   "elev": 90.67
+  },
+  "LATE_R2_04": {
+   "x": 547.32,
+   "y": 564.64,
+   "role": "ordinary_tile",
+   "segment": "LATE_R2",
+   "elev": 91.56
+  },
+  "LATE_R2_05": {
+   "x": 538.94,
+   "y": 547.87,
+   "role": "ordinary_tile",
+   "segment": "LATE_R2",
+   "elev": 92.45
+  },
+  "LATE_R2_06": {
+   "x": 530.55,
+   "y": 531.1,
+   "role": "ordinary_tile",
+   "segment": "LATE_R2",
+   "elev": 93.34
+  },
+  "LATE_R2_07": {
+   "x": 535.73,
+   "y": 513.44,
+   "role": "ordinary_tile",
+   "segment": "LATE_R2",
+   "elev": 94.22
+  },
+  "LATE_R2_08": {
+   "x": 541.87,
+   "y": 495.72,
+   "role": "ordinary_tile",
+   "segment": "LATE_R2",
+   "elev": 95.11
+  },
+  "HR2": {
+   "x": 548,
+   "y": 478,
+   "role": "route_anchor",
+   "segment": null,
+   "elev": 96.0
+  },
+  "LATE_R2B_01": {
+   "x": 600.0,
+   "y": 598.25,
+   "role": "ordinary_tile",
+   "segment": "LATE_R2B",
+   "elev": 88.89
+  },
+  "LATE_R2B_02": {
+   "x": 600.0,
+   "y": 580.49,
+   "role": "ordinary_tile",
+   "segment": "LATE_R2B",
+   "elev": 89.78
+  },
+  "LATE_R2B_03": {
+   "x": 600.0,
+   "y": 562.74,
+   "role": "ordinary_tile",
+   "segment": "LATE_R2B",
+   "elev": 90.67
+  },
+  "LATE_R2B_04": {
+   "x": 597.05,
+   "y": 545.27,
+   "role": "ordinary_tile",
+   "segment": "LATE_R2B",
+   "elev": 91.56
+  },
+  "LATE_R2B_05": {
+   "x": 593.57,
+   "y": 527.86,
+   "role": "ordinary_tile",
+   "segment": "LATE_R2B",
+   "elev": 92.45
+  },
+  "LATE_R2B_06": {
+   "x": 590.09,
+   "y": 510.45,
+   "role": "ordinary_tile",
+   "segment": "LATE_R2B",
+   "elev": 93.34
+  },
+  "LATE_R2B_07": {
+   "x": 576.25,
+   "y": 499.52,
+   "role": "ordinary_tile",
+   "segment": "LATE_R2B",
+   "elev": 94.22
+  },
+  "LATE_R2B_08": {
+   "x": 562.12,
+   "y": 488.76,
+   "role": "ordinary_tile",
+   "segment": "LATE_R2B",
+   "elev": 95.11
+  },
+  "LATE_R3_01": {
+   "x": 534.41,
+   "y": 465.21,
+   "role": "ordinary_tile",
+   "segment": "LATE_R3",
+   "elev": 97.26
+  },
+  "LATE_R3_02": {
+   "x": 520.81,
+   "y": 452.41,
+   "role": "ordinary_tile",
+   "segment": "LATE_R3",
+   "elev": 98.51
+  },
+  "LATE_R3_03": {
+   "x": 518.79,
+   "y": 438.01,
+   "role": "ordinary_tile",
+   "segment": "LATE_R3",
+   "elev": 99.49
+  },
+  "LATE_R3_04": {
+   "x": 528.4,
+   "y": 422.01,
+   "role": "ordinary_tile",
+   "segment": "LATE_R3",
+   "elev": 100.74
+  },
+  "HR3": {
+   "x": 538,
+   "y": 406,
+   "role": "route_anchor",
+   "segment": null,
+   "elev": 102.0
+  },
+  "LATE_R_DONE_01": {
+   "x": 550.95,
+   "y": 417.71,
+   "role": "ordinary_tile",
+   "segment": "LATE_R_DONE",
+   "elev": 103.18
+  },
+  "LATE_R_DONE_02": {
+   "x": 567.47,
+   "y": 404.85,
+   "role": "ordinary_tile",
+   "segment": "LATE_R_DONE",
+   "elev": 104.59
+  },
+  "D_RS_01": {
+   "x": 534.27,
+   "y": 387.35,
+   "role": "ordinary_tile",
+   "segment": "D_RS",
+   "elev": 102.2
+  },
+  "D_RS_02": {
+   "x": 529.66,
+   "y": 370.68,
+   "role": "ordinary_tile",
+   "segment": "D_RS",
+   "elev": 102.39
+  },
+  "D_RS_03": {
+   "x": 513.34,
+   "y": 380.46,
+   "role": "ordinary_tile",
+   "segment": "D_RS",
+   "elev": 102.59
+  },
+  "D_RS_04": {
+   "x": 497.02,
+   "y": 390.23,
+   "role": "ordinary_tile",
+   "segment": "D_RS",
+   "elev": 102.8
+  },
+  "D_RS_05": {
+   "x": 480.7,
+   "y": 400.0,
+   "role": "ordinary_tile",
+   "segment": "D_RS",
+   "elev": 103.0
+  },
+  "D_RS_06": {
+   "x": 483.01,
+   "y": 381.11,
+   "role": "ordinary_tile",
+   "segment": "D_RS",
+   "elev": 103.2
+  },
+  "D_RS_07": {
+   "x": 485.32,
+   "y": 362.23,
+   "role": "ordinary_tile",
+   "segment": "D_RS",
+   "elev": 103.41
+  },
+  "D_RS_08": {
+   "x": 487.63,
+   "y": 343.35,
+   "role": "ordinary_tile",
+   "segment": "D_RS",
+   "elev": 103.61
+  },
+  "D_RS_09": {
+   "x": 470.56,
+   "y": 345.85,
+   "role": "ordinary_tile",
+   "segment": "D_RS",
+   "elev": 103.8
+  },
+  "R_SPECIAL": {
+   "x": 452,
+   "y": 350,
+   "role": "fixed_reward_dead_end",
+   "segment": null,
+   "elev": 104.0
+  },
+  "D_RAND_01": {
+   "x": 529.09,
+   "y": 475.97,
+   "role": "ordinary_tile",
+   "segment": "D_RAND",
+   "elev": 95.51
+  },
+  "D_RAND_02": {
+   "x": 513.5,
+   "y": 477.65,
+   "role": "ordinary_tile",
+   "segment": "D_RAND",
+   "elev": 95.11
+  },
+  "D_RAND_03": {
+   "x": 513.5,
+   "y": 496.67,
+   "role": "ordinary_tile",
+   "segment": "D_RAND",
+   "elev": 94.62
+  },
+  "D_RAND_04": {
+   "x": 513.5,
+   "y": 515.69,
+   "role": "ordinary_tile",
+   "segment": "D_RAND",
+   "elev": 94.13
+  },
+  "D_RAND_05": {
+   "x": 504.91,
+   "y": 521.11,
+   "role": "ordinary_tile",
+   "segment": "D_RAND",
+   "elev": 93.87
+  },
+  "D_RAND_06": {
+   "x": 487.73,
+   "y": 512.93,
+   "role": "ordinary_tile",
+   "segment": "D_RAND",
+   "elev": 93.38
+  },
+  "D_RAND_07": {
+   "x": 470.55,
+   "y": 504.75,
+   "role": "ordinary_tile",
+   "segment": "D_RAND",
+   "elev": 92.89
+  },
+  "D_RAND_08": {
+   "x": 462.31,
+   "y": 518.05,
+   "role": "ordinary_tile",
+   "segment": "D_RAND",
+   "elev": 92.49
+  },
+  "RANDOM_DEN": {
+   "x": 456,
+   "y": 536,
+   "role": "optional_random_unlock_dead_end",
+   "segment": null,
+   "elev": 92.0
+  },
+  "S_END_01": {
+   "x": 573.71,
+   "y": 378.29,
+   "role": "ordinary_tile",
+   "segment": "S_END",
+   "elev": 106.86
+  },
+  "S_END_02": {
+   "x": 563.43,
+   "y": 364.57,
+   "role": "ordinary_tile",
+   "segment": "S_END",
+   "elev": 107.71
+  },
+  "S_END_03": {
+   "x": 553.14,
+   "y": 350.86,
+   "role": "ordinary_tile",
+   "segment": "S_END",
+   "elev": 108.57
+  },
+  "S_END_04": {
+   "x": 542.86,
+   "y": 337.14,
+   "role": "ordinary_tile",
+   "segment": "S_END",
+   "elev": 109.43
+  },
+  "S_END_05": {
+   "x": 532.57,
+   "y": 323.43,
+   "role": "ordinary_tile",
+   "segment": "S_END",
+   "elev": 110.29
+  },
+  "S_END_06": {
+   "x": 522.29,
+   "y": 309.71,
+   "role": "ordinary_tile",
+   "segment": "S_END",
+   "elev": 111.14
+  },
+  "GOAL": {
+   "x": 512,
+   "y": 296,
+   "role": "goal",
+   "segment": null,
+   "elev": 112.0
+  }
+ },
+ "segments": {
+  "S01": {
+   "from": "START",
+   "to": "J0",
+   "kind": "main_stairs",
+   "steps": 5,
+   "nodes": [
+    "START",
+    "S01_01",
+    "S01_02",
+    "S01_03",
+    "S01_04",
+    "J0"
+   ],
+   "zone": "foot_dusk",
+   "condition": "always",
+   "spur": false,
+   "bridge": false
+  },
+  "SA": {
+   "from": "J0",
+   "to": "P",
+   "kind": "main_short",
+   "steps": 16,
+   "nodes": [
+    "J0",
+    "SA_01",
+    "SA_02",
+    "SA_03",
+    "SA_04",
+    "SA_05",
+    "SA_06",
+    "SA_07",
+    "SA_08",
+    "SA_09",
+    "SA_10",
+    "SA_11",
+    "SA_12",
+    "SA_13",
+    "SA_14",
+    "SA_15",
+    "P"
+   ],
+   "zone": "foot_dusk",
+   "condition": "always",
+   "spur": false,
+   "bridge": false
+  },
+  "SA_B": {
+   "from": "J0",
+   "to": "P",
+   "kind": "main_short",
+   "steps": 18,
+   "nodes": [
+    "J0",
+    "SA_B_01",
+    "SA_B_02",
+    "SA_B_03",
+    "SA_B_04",
+    "SA_B_05",
+    "SA_B_06",
+    "SA_B_07",
+    "SA_B_08",
+    "SA_B_09",
+    "SA_B_10",
+    "SA_B_11",
+    "SA_B_12",
+    "SA_B_13",
+    "SA_B_14",
+    "SA_B_15",
+    "SA_B_16",
+    "SA_B_17",
+    "P"
+   ],
+   "zone": "foot_dusk",
+   "condition": "always",
+   "spur": false,
+   "bridge": false
+  },
+  "EB01": {
+   "from": "J0",
+   "to": "EB1",
+   "kind": "main_long",
+   "steps": 14,
+   "nodes": [
+    "J0",
+    "EB01_01",
+    "EB01_02",
+    "EB01_03",
+    "EB01_04",
+    "EB01_05",
+    "EB01_06",
+    "EB01_07",
+    "EB01_08",
+    "EB01_09",
+    "EB01_10",
+    "EB01_11",
+    "EB01_12",
+    "EB01_13",
+    "EB1"
+   ],
+   "zone": "foot_dusk",
+   "condition": "always",
+   "spur": false,
+   "bridge": false
+  },
+  "EB02": {
+   "from": "EB1",
+   "to": "P",
+   "kind": "main_long",
+   "steps": 12,
+   "nodes": [
+    "EB1",
+    "EB02_01",
+    "EB02_02",
+    "EB02_03",
+    "EB02_04",
+    "EB02_05",
+    "EB02_06",
+    "EB02_07",
+    "EB02_08",
+    "EB02_09",
+    "EB02_10",
+    "EB02_11",
+    "P"
+   ],
+   "zone": "foot_dusk",
+   "condition": "always",
+   "spur": false,
+   "bridge": false
+  },
+  "D_LC": {
+   "from": "EB1",
+   "to": "L_CHEST",
+   "kind": "reward_spur",
+   "steps": 10,
+   "nodes": [
+    "EB1",
+    "D_LC_01",
+    "D_LC_02",
+    "D_LC_03",
+    "D_LC_04",
+    "D_LC_05",
+    "D_LC_06",
+    "D_LC_07",
+    "D_LC_08",
+    "D_LC_09",
+    "L_CHEST"
+   ],
+   "zone": "foot_dusk",
+   "condition": "always",
+   "spur": true,
+   "bridge": false
+  },
+  "C01": {
+   "from": "P",
+   "to": "LOWER_GATE",
+   "kind": "central_main",
+   "steps": 4,
+   "nodes": [
+    "P",
+    "C01_01",
+    "C01_02",
+    "C01_03",
+    "LOWER_GATE"
+   ],
+   "zone": "foot_dusk",
+   "condition": "always",
+   "spur": false,
+   "bridge": false
+  },
+  "C02": {
+   "from": "LOWER_GATE",
+   "to": "Q",
+   "kind": "central_main",
+   "steps": 4,
+   "nodes": [
+    "LOWER_GATE",
+    "C02_01",
+    "C02_02",
+    "C02_03",
+    "Q"
+   ],
+   "zone": "gorge_twilight",
+   "condition": "always",
+   "spur": false,
+   "bridge": false
+  },
+  "Q_L1": {
+   "from": "Q",
+   "to": "QL1",
+   "kind": "parity_left",
+   "steps": 6,
+   "nodes": [
+    "Q",
+    "Q_L1_01",
+    "Q_L1_02",
+    "Q_L1_03",
+    "Q_L1_04",
+    "Q_L1_05",
+    "QL1"
+   ],
+   "zone": "gorge_twilight",
+   "condition": "Q_odd_only",
+   "spur": false,
+   "bridge": false
+  },
+  "Q_L2": {
+   "from": "QL1",
+   "to": "QL2",
+   "kind": "parity_left",
+   "steps": 11,
+   "nodes": [
+    "QL1",
+    "Q_L2_01",
+    "Q_L2_02",
+    "Q_L2_03",
+    "Q_L2_04",
+    "Q_L2_05",
+    "Q_L2_06",
+    "Q_L2_07",
+    "Q_L2_08",
+    "Q_L2_09",
+    "Q_L2_10",
+    "QL2"
+   ],
+   "zone": "gorge_twilight",
+   "condition": "Q_odd_only",
+   "spur": false,
+   "bridge": false
+  },
+  "QL_ALT": {
+   "from": "QL1",
+   "to": "QL2",
+   "kind": "parity_left",
+   "steps": 14,
+   "nodes": [
+    "QL1",
+    "QL_ALT_01",
+    "QL_ALT_02",
+    "QL_ALT_03",
+    "QL_ALT_04",
+    "QL_ALT_05",
+    "QL_ALT_06",
+    "QL_ALT_07",
+    "QL_ALT_08",
+    "QL_ALT_09",
+    "QL_ALT_10",
+    "QL_ALT_11",
+    "QL_ALT_12",
+    "QL_ALT_13",
+    "QL2"
+   ],
+   "zone": "gorge_twilight",
+   "condition": "Q_odd_only",
+   "spur": false,
+   "bridge": false
+  },
+  "Q_L3": {
+   "from": "QL2",
+   "to": "QL3",
+   "kind": "parity_left",
+   "steps": 13,
+   "nodes": [
+    "QL2",
+    "Q_L3_01",
+    "Q_L3_02",
+    "Q_L3_03",
+    "Q_L3_04",
+    "Q_L3_05",
+    "Q_L3_06",
+    "Q_L3_07",
+    "Q_L3_08",
+    "Q_L3_09",
+    "Q_L3_10",
+    "Q_L3_11",
+    "Q_L3_12",
+    "QL3"
+   ],
+   "zone": "gorge_twilight",
+   "condition": "Q_odd_only",
+   "spur": false,
+   "bridge": false
+  },
+  "Q_L4": {
+   "from": "QL3",
+   "to": "R",
+   "kind": "parity_left",
+   "steps": 5,
+   "nodes": [
+    "QL3",
+    "Q_L4_01",
+    "Q_L4_02",
+    "Q_L4_03",
+    "Q_L4_04",
+    "R"
+   ],
+   "zone": "gorge_twilight",
+   "condition": "Q_odd_only",
+   "spur": false,
+   "bridge": false
+  },
+  "D_LA": {
+   "from": "QL2",
+   "to": "L_ALTAR",
+   "kind": "reward_spur",
+   "steps": 10,
+   "nodes": [
+    "QL2",
+    "D_LA_01",
+    "D_LA_02",
+    "D_LA_03",
+    "D_LA_04",
+    "D_LA_05",
+    "D_LA_06",
+    "D_LA_07",
+    "D_LA_08",
+    "D_LA_09",
+    "L_ALTAR"
+   ],
+   "zone": "gorge_twilight",
+   "condition": "always",
+   "spur": true,
+   "bridge": false
+  },
+  "Q_R1": {
+   "from": "Q",
+   "to": "QR1",
+   "kind": "parity_right_bridge",
+   "steps": 8,
+   "nodes": [
+    "Q",
+    "Q_R1_01",
+    "Q_R1_02",
+    "Q_R1_03",
+    "Q_R1_04",
+    "Q_R1_05",
+    "Q_R1_06",
+    "Q_R1_07",
+    "QR1"
+   ],
+   "zone": "gorge_twilight",
+   "condition": "Q_even_only",
+   "spur": false,
+   "bridge": true
+  },
+  "Q_R2": {
+   "from": "QR1",
+   "to": "QR2",
+   "kind": "parity_right",
+   "steps": 7,
+   "nodes": [
+    "QR1",
+    "Q_R2_01",
+    "Q_R2_02",
+    "Q_R2_03",
+    "Q_R2_04",
+    "Q_R2_05",
+    "Q_R2_06",
+    "QR2"
+   ],
+   "zone": "gorge_twilight",
+   "condition": "Q_even_only",
+   "spur": false,
+   "bridge": false
+  },
+  "QR_ALT": {
+   "from": "QR1",
+   "to": "QR2",
+   "kind": "parity_right",
+   "steps": 8,
+   "nodes": [
+    "QR1",
+    "QR_ALT_01",
+    "QR_ALT_02",
+    "QR_ALT_03",
+    "QR_ALT_04",
+    "QR_ALT_05",
+    "QR_ALT_06",
+    "QR_ALT_07",
+    "QR2"
+   ],
+   "zone": "gorge_twilight",
+   "condition": "Q_even_only",
+   "spur": false,
+   "bridge": false
+  },
+  "Q_R3": {
+   "from": "QR2",
+   "to": "STATUE",
+   "kind": "parity_right",
+   "steps": 6,
+   "nodes": [
+    "QR2",
+    "Q_R3_01",
+    "Q_R3_02",
+    "Q_R3_03",
+    "Q_R3_04",
+    "Q_R3_05",
+    "STATUE"
+   ],
+   "zone": "gorge_twilight",
+   "condition": "Q_even_only",
+   "spur": false,
+   "bridge": false
+  },
+  "Q_R4": {
+   "from": "STATUE",
+   "to": "QR3",
+   "kind": "parity_right",
+   "steps": 7,
+   "nodes": [
+    "STATUE",
+    "Q_R4_01",
+    "Q_R4_02",
+    "Q_R4_03",
+    "Q_R4_04",
+    "Q_R4_05",
+    "Q_R4_06",
+    "QR3"
+   ],
+   "zone": "gorge_twilight",
+   "condition": "Q_even_only",
+   "spur": false,
+   "bridge": false
+  },
+  "Q_R5": {
+   "from": "QR3",
+   "to": "R",
+   "kind": "parity_right_bridge",
+   "steps": 8,
+   "nodes": [
+    "QR3",
+    "Q_R5_01",
+    "Q_R5_02",
+    "Q_R5_03",
+    "Q_R5_04",
+    "Q_R5_05",
+    "Q_R5_06",
+    "Q_R5_07",
+    "R"
+   ],
+   "zone": "gorge_twilight",
+   "condition": "Q_even_only",
+   "spur": false,
+   "bridge": true
+  },
+  "D_RC": {
+   "from": "QR2",
+   "to": "R_CHEST",
+   "kind": "reward_spur",
+   "steps": 6,
+   "nodes": [
+    "QR2",
+    "D_RC_01",
+    "D_RC_02",
+    "D_RC_03",
+    "D_RC_04",
+    "D_RC_05",
+    "R_CHEST"
+   ],
+   "zone": "gorge_twilight",
+   "condition": "always",
+   "spur": true,
+   "bridge": false
+  },
+  "D_R5": {
+   "from": "STATUE",
+   "to": "REWARD5",
+   "kind": "reward_spur",
+   "steps": 9,
+   "nodes": [
+    "STATUE",
+    "D_R5_01",
+    "D_R5_02",
+    "D_R5_03",
+    "D_R5_04",
+    "D_R5_05",
+    "D_R5_06",
+    "D_R5_07",
+    "D_R5_08",
+    "REWARD5"
+   ],
+   "zone": "gorge_twilight",
+   "condition": "always",
+   "spur": true,
+   "bridge": false
+  },
+  "C03": {
+   "from": "R",
+   "to": "RIVAL",
+   "kind": "central_main",
+   "steps": 2,
+   "nodes": [
+    "R",
+    "C03_01",
+    "RIVAL"
+   ],
+   "zone": "gorge_twilight",
+   "condition": "always",
+   "spur": false,
+   "bridge": false
+  },
+  "C04": {
+   "from": "RIVAL",
+   "to": "H",
+   "kind": "central_main",
+   "steps": 4,
+   "nodes": [
+    "RIVAL",
+    "C04_01",
+    "C04_02",
+    "C04_03",
+    "H"
+   ],
+   "zone": "rim_night",
+   "condition": "always",
+   "spur": false,
+   "bridge": false
+  },
+  "LATE_L1": {
+   "from": "H",
+   "to": "CHALLENGE",
+   "kind": "late_challenge_entry",
+   "steps": 5,
+   "nodes": [
+    "H",
+    "LATE_L1_01",
+    "LATE_L1_02",
+    "LATE_L1_03",
+    "LATE_L1_04",
+    "CHALLENGE"
+   ],
+   "zone": "rim_night",
+   "condition": "always",
+   "spur": false,
+   "bridge": false
+  },
+  "LATE_L_FAIL": {
+   "from": "CHALLENGE",
+   "to": "FAIL_L",
+   "kind": "challenge_fail",
+   "steps": 3,
+   "nodes": [
+    "CHALLENGE",
+    "LATE_L_FAIL_01",
+    "LATE_L_FAIL_02",
+    "FAIL_L"
+   ],
+   "zone": "rim_night",
+   "condition": "CHALLENGE_1_4",
+   "spur": false,
+   "bridge": false
+  },
+  "LATE_L_FAIL_JOIN": {
+   "from": "FAIL_L",
+   "to": "L_MERGE",
+   "kind": "challenge_fail",
+   "steps": 15,
+   "nodes": [
+    "FAIL_L",
+    "LATE_L_FAIL_JOIN_01",
+    "LATE_L_FAIL_JOIN_02",
+    "LATE_L_FAIL_JOIN_03",
+    "LATE_L_FAIL_JOIN_04",
+    "LATE_L_FAIL_JOIN_05",
+    "LATE_L_FAIL_JOIN_06",
+    "LATE_L_FAIL_JOIN_07",
+    "LATE_L_FAIL_JOIN_08",
+    "LATE_L_FAIL_JOIN_09",
+    "LATE_L_FAIL_JOIN_10",
+    "LATE_L_FAIL_JOIN_11",
+    "LATE_L_FAIL_JOIN_12",
+    "LATE_L_FAIL_JOIN_13",
+    "LATE_L_FAIL_JOIN_14",
+    "L_MERGE"
+   ],
+   "zone": "rim_night",
+   "condition": "CHALLENGE_1_4",
+   "spur": false,
+   "bridge": false
+  },
+  "LATE_L_SUCCESS1": {
+   "from": "CHALLENGE",
+   "to": "SUCCESS_L1",
+   "kind": "challenge_success",
+   "steps": 5,
+   "nodes": [
+    "CHALLENGE",
+    "LATE_L_SUCCESS1_01",
+    "LATE_L_SUCCESS1_02",
+    "LATE_L_SUCCESS1_03",
+    "LATE_L_SUCCESS1_04",
+    "SUCCESS_L1"
+   ],
+   "zone": "rim_night",
+   "condition": "CHALLENGE_5_6",
+   "spur": false,
+   "bridge": false
+  },
+  "LATE_L_SUCCESS_JOIN": {
+   "from": "SUCCESS_L1",
+   "to": "L_MERGE",
+   "kind": "challenge_success",
+   "steps": 4,
+   "nodes": [
+    "SUCCESS_L1",
+    "LATE_L_SUCCESS_JOIN_01",
+    "LATE_L_SUCCESS_JOIN_02",
+    "LATE_L_SUCCESS_JOIN_03",
+    "L_MERGE"
+   ],
+   "zone": "rim_night",
+   "condition": "CHALLENGE_5_6",
+   "spur": false,
+   "bridge": false
+  },
+  "D_LLA": {
+   "from": "SUCCESS_L1",
+   "to": "L_LATE_ALTAR",
+   "kind": "reward_spur",
+   "steps": 5,
+   "nodes": [
+    "SUCCESS_L1",
+    "D_LLA_01",
+    "D_LLA_02",
+    "D_LLA_03",
+    "D_LLA_04",
+    "L_LATE_ALTAR"
+   ],
+   "zone": "rim_night",
+   "condition": "always",
+   "spur": true,
+   "bridge": false
+  },
+  "LATE_L_DONE": {
+   "from": "L_MERGE",
+   "to": "FINAL",
+   "kind": "late_challenge_return",
+   "steps": 6,
+   "nodes": [
+    "L_MERGE",
+    "LATE_L_DONE_01",
+    "LATE_L_DONE_02",
+    "LATE_L_DONE_03",
+    "LATE_L_DONE_04",
+    "LATE_L_DONE_05",
+    "FINAL"
+   ],
+   "zone": "rim_night",
+   "condition": "always",
+   "spur": false,
+   "bridge": false
+  },
+  "LATE_R1": {
+   "from": "H",
+   "to": "HR1",
+   "kind": "late_safe",
+   "steps": 6,
+   "nodes": [
+    "H",
+    "LATE_R1_01",
+    "LATE_R1_02",
+    "LATE_R1_03",
+    "LATE_R1_04",
+    "LATE_R1_05",
+    "HR1"
+   ],
+   "zone": "rim_night",
+   "condition": "always",
+   "spur": false,
+   "bridge": false
+  },
+  "LATE_R2": {
+   "from": "HR1",
+   "to": "HR2",
+   "kind": "late_safe",
+   "steps": 9,
+   "nodes": [
+    "HR1",
+    "LATE_R2_01",
+    "LATE_R2_02",
+    "LATE_R2_03",
+    "LATE_R2_04",
+    "LATE_R2_05",
+    "LATE_R2_06",
+    "LATE_R2_07",
+    "LATE_R2_08",
+    "HR2"
+   ],
+   "zone": "rim_night",
+   "condition": "always",
+   "spur": false,
+   "bridge": false
+  },
+  "LATE_R2B": {
+   "from": "HR1",
+   "to": "HR2",
+   "kind": "late_safe",
+   "steps": 9,
+   "nodes": [
+    "HR1",
+    "LATE_R2B_01",
+    "LATE_R2B_02",
+    "LATE_R2B_03",
+    "LATE_R2B_04",
+    "LATE_R2B_05",
+    "LATE_R2B_06",
+    "LATE_R2B_07",
+    "LATE_R2B_08",
+    "HR2"
+   ],
+   "zone": "rim_night",
+   "condition": "always",
+   "spur": false,
+   "bridge": false
+  },
+  "LATE_R3": {
+   "from": "HR2",
+   "to": "HR3",
+   "kind": "late_safe",
+   "steps": 5,
+   "nodes": [
+    "HR2",
+    "LATE_R3_01",
+    "LATE_R3_02",
+    "LATE_R3_03",
+    "LATE_R3_04",
+    "HR3"
+   ],
+   "zone": "rim_night",
+   "condition": "always",
+   "spur": false,
+   "bridge": false
+  },
+  "LATE_R_DONE": {
+   "from": "HR3",
+   "to": "FINAL",
+   "kind": "late_safe",
+   "steps": 3,
+   "nodes": [
+    "HR3",
+    "LATE_R_DONE_01",
+    "LATE_R_DONE_02",
+    "FINAL"
+   ],
+   "zone": "rim_night",
+   "condition": "always",
+   "spur": false,
+   "bridge": false
+  },
+  "D_RS": {
+   "from": "HR3",
+   "to": "R_SPECIAL",
+   "kind": "reward_spur",
+   "steps": 10,
+   "nodes": [
+    "HR3",
+    "D_RS_01",
+    "D_RS_02",
+    "D_RS_03",
+    "D_RS_04",
+    "D_RS_05",
+    "D_RS_06",
+    "D_RS_07",
+    "D_RS_08",
+    "D_RS_09",
+    "R_SPECIAL"
+   ],
+   "zone": "rim_night",
+   "condition": "always",
+   "spur": true,
+   "bridge": false
+  },
+  "D_RAND": {
+   "from": "HR2",
+   "to": "RANDOM_DEN",
+   "kind": "optional_random_spur",
+   "steps": 9,
+   "nodes": [
+    "HR2",
+    "D_RAND_01",
+    "D_RAND_02",
+    "D_RAND_03",
+    "D_RAND_04",
+    "D_RAND_05",
+    "D_RAND_06",
+    "D_RAND_07",
+    "D_RAND_08",
+    "RANDOM_DEN"
+   ],
+   "zone": "rim_night",
+   "condition": "unlock_random_event",
+   "spur": true,
+   "bridge": false
+  },
+  "S_END": {
+   "from": "FINAL",
+   "to": "GOAL",
+   "kind": "main_stairs",
+   "steps": 7,
+   "nodes": [
+    "FINAL",
+    "S_END_01",
+    "S_END_02",
+    "S_END_03",
+    "S_END_04",
+    "S_END_05",
+    "S_END_06",
+    "GOAL"
+   ],
+   "zone": "rim_night",
+   "condition": "always",
+   "spur": false,
+   "bridge": false
+  }
+ },
+ "edges": [
+  {
+   "from": "START",
+   "to": "S01_01",
+   "segment": "S01",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "S01_01",
+   "to": "S01_02",
+   "segment": "S01",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "S01_02",
+   "to": "S01_03",
+   "segment": "S01",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "S01_03",
+   "to": "S01_04",
+   "segment": "S01",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "S01_04",
+   "to": "J0",
+   "segment": "S01",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "J0",
+   "to": "SA_01",
+   "segment": "SA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_01",
+   "to": "SA_02",
+   "segment": "SA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_02",
+   "to": "SA_03",
+   "segment": "SA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_03",
+   "to": "SA_04",
+   "segment": "SA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_04",
+   "to": "SA_05",
+   "segment": "SA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_05",
+   "to": "SA_06",
+   "segment": "SA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_06",
+   "to": "SA_07",
+   "segment": "SA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_07",
+   "to": "SA_08",
+   "segment": "SA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_08",
+   "to": "SA_09",
+   "segment": "SA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_09",
+   "to": "SA_10",
+   "segment": "SA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_10",
+   "to": "SA_11",
+   "segment": "SA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_11",
+   "to": "SA_12",
+   "segment": "SA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_12",
+   "to": "SA_13",
+   "segment": "SA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_13",
+   "to": "SA_14",
+   "segment": "SA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_14",
+   "to": "SA_15",
+   "segment": "SA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_15",
+   "to": "P",
+   "segment": "SA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "J0",
+   "to": "SA_B_01",
+   "segment": "SA_B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_B_01",
+   "to": "SA_B_02",
+   "segment": "SA_B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_B_02",
+   "to": "SA_B_03",
+   "segment": "SA_B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_B_03",
+   "to": "SA_B_04",
+   "segment": "SA_B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_B_04",
+   "to": "SA_B_05",
+   "segment": "SA_B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_B_05",
+   "to": "SA_B_06",
+   "segment": "SA_B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_B_06",
+   "to": "SA_B_07",
+   "segment": "SA_B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_B_07",
+   "to": "SA_B_08",
+   "segment": "SA_B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_B_08",
+   "to": "SA_B_09",
+   "segment": "SA_B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_B_09",
+   "to": "SA_B_10",
+   "segment": "SA_B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_B_10",
+   "to": "SA_B_11",
+   "segment": "SA_B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_B_11",
+   "to": "SA_B_12",
+   "segment": "SA_B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_B_12",
+   "to": "SA_B_13",
+   "segment": "SA_B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_B_13",
+   "to": "SA_B_14",
+   "segment": "SA_B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_B_14",
+   "to": "SA_B_15",
+   "segment": "SA_B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_B_15",
+   "to": "SA_B_16",
+   "segment": "SA_B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_B_16",
+   "to": "SA_B_17",
+   "segment": "SA_B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "SA_B_17",
+   "to": "P",
+   "segment": "SA_B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "J0",
+   "to": "EB01_01",
+   "segment": "EB01",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB01_01",
+   "to": "EB01_02",
+   "segment": "EB01",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB01_02",
+   "to": "EB01_03",
+   "segment": "EB01",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB01_03",
+   "to": "EB01_04",
+   "segment": "EB01",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB01_04",
+   "to": "EB01_05",
+   "segment": "EB01",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB01_05",
+   "to": "EB01_06",
+   "segment": "EB01",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB01_06",
+   "to": "EB01_07",
+   "segment": "EB01",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB01_07",
+   "to": "EB01_08",
+   "segment": "EB01",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB01_08",
+   "to": "EB01_09",
+   "segment": "EB01",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB01_09",
+   "to": "EB01_10",
+   "segment": "EB01",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB01_10",
+   "to": "EB01_11",
+   "segment": "EB01",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB01_11",
+   "to": "EB01_12",
+   "segment": "EB01",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB01_12",
+   "to": "EB01_13",
+   "segment": "EB01",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB01_13",
+   "to": "EB1",
+   "segment": "EB01",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB1",
+   "to": "EB02_01",
+   "segment": "EB02",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB02_01",
+   "to": "EB02_02",
+   "segment": "EB02",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB02_02",
+   "to": "EB02_03",
+   "segment": "EB02",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB02_03",
+   "to": "EB02_04",
+   "segment": "EB02",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB02_04",
+   "to": "EB02_05",
+   "segment": "EB02",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB02_05",
+   "to": "EB02_06",
+   "segment": "EB02",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB02_06",
+   "to": "EB02_07",
+   "segment": "EB02",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB02_07",
+   "to": "EB02_08",
+   "segment": "EB02",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB02_08",
+   "to": "EB02_09",
+   "segment": "EB02",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB02_09",
+   "to": "EB02_10",
+   "segment": "EB02",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB02_10",
+   "to": "EB02_11",
+   "segment": "EB02",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB02_11",
+   "to": "P",
+   "segment": "EB02",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "EB1",
+   "to": "D_LC_01",
+   "segment": "D_LC",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_LC_01",
+   "to": "D_LC_02",
+   "segment": "D_LC",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_LC_02",
+   "to": "D_LC_03",
+   "segment": "D_LC",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_LC_03",
+   "to": "D_LC_04",
+   "segment": "D_LC",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_LC_04",
+   "to": "D_LC_05",
+   "segment": "D_LC",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_LC_05",
+   "to": "D_LC_06",
+   "segment": "D_LC",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_LC_06",
+   "to": "D_LC_07",
+   "segment": "D_LC",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_LC_07",
+   "to": "D_LC_08",
+   "segment": "D_LC",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_LC_08",
+   "to": "D_LC_09",
+   "segment": "D_LC",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_LC_09",
+   "to": "L_CHEST",
+   "segment": "D_LC",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "L_CHEST",
+   "to": "D_LC_09",
+   "segment": "D_LC",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_LC_09",
+   "to": "D_LC_08",
+   "segment": "D_LC",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_LC_08",
+   "to": "D_LC_07",
+   "segment": "D_LC",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_LC_07",
+   "to": "D_LC_06",
+   "segment": "D_LC",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_LC_06",
+   "to": "D_LC_05",
+   "segment": "D_LC",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_LC_05",
+   "to": "D_LC_04",
+   "segment": "D_LC",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_LC_04",
+   "to": "D_LC_03",
+   "segment": "D_LC",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_LC_03",
+   "to": "D_LC_02",
+   "segment": "D_LC",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_LC_02",
+   "to": "D_LC_01",
+   "segment": "D_LC",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_LC_01",
+   "to": "EB1",
+   "segment": "D_LC",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "P",
+   "to": "C01_01",
+   "segment": "C01",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "C01_01",
+   "to": "C01_02",
+   "segment": "C01",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "C01_02",
+   "to": "C01_03",
+   "segment": "C01",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "C01_03",
+   "to": "LOWER_GATE",
+   "segment": "C01",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LOWER_GATE",
+   "to": "C02_01",
+   "segment": "C02",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "C02_01",
+   "to": "C02_02",
+   "segment": "C02",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "C02_02",
+   "to": "C02_03",
+   "segment": "C02",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "C02_03",
+   "to": "Q",
+   "segment": "C02",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "Q",
+   "to": "Q_L1_01",
+   "segment": "Q_L1",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L1_01",
+   "to": "Q_L1_02",
+   "segment": "Q_L1",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L1_02",
+   "to": "Q_L1_03",
+   "segment": "Q_L1",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L1_03",
+   "to": "Q_L1_04",
+   "segment": "Q_L1",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L1_04",
+   "to": "Q_L1_05",
+   "segment": "Q_L1",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L1_05",
+   "to": "QL1",
+   "segment": "Q_L1",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "QL1",
+   "to": "Q_L2_01",
+   "segment": "Q_L2",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L2_01",
+   "to": "Q_L2_02",
+   "segment": "Q_L2",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L2_02",
+   "to": "Q_L2_03",
+   "segment": "Q_L2",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L2_03",
+   "to": "Q_L2_04",
+   "segment": "Q_L2",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L2_04",
+   "to": "Q_L2_05",
+   "segment": "Q_L2",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L2_05",
+   "to": "Q_L2_06",
+   "segment": "Q_L2",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L2_06",
+   "to": "Q_L2_07",
+   "segment": "Q_L2",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L2_07",
+   "to": "Q_L2_08",
+   "segment": "Q_L2",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L2_08",
+   "to": "Q_L2_09",
+   "segment": "Q_L2",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L2_09",
+   "to": "Q_L2_10",
+   "segment": "Q_L2",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L2_10",
+   "to": "QL2",
+   "segment": "Q_L2",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "QL1",
+   "to": "QL_ALT_01",
+   "segment": "QL_ALT",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "QL_ALT_01",
+   "to": "QL_ALT_02",
+   "segment": "QL_ALT",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "QL_ALT_02",
+   "to": "QL_ALT_03",
+   "segment": "QL_ALT",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "QL_ALT_03",
+   "to": "QL_ALT_04",
+   "segment": "QL_ALT",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "QL_ALT_04",
+   "to": "QL_ALT_05",
+   "segment": "QL_ALT",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "QL_ALT_05",
+   "to": "QL_ALT_06",
+   "segment": "QL_ALT",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "QL_ALT_06",
+   "to": "QL_ALT_07",
+   "segment": "QL_ALT",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "QL_ALT_07",
+   "to": "QL_ALT_08",
+   "segment": "QL_ALT",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "QL_ALT_08",
+   "to": "QL_ALT_09",
+   "segment": "QL_ALT",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "QL_ALT_09",
+   "to": "QL_ALT_10",
+   "segment": "QL_ALT",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "QL_ALT_10",
+   "to": "QL_ALT_11",
+   "segment": "QL_ALT",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "QL_ALT_11",
+   "to": "QL_ALT_12",
+   "segment": "QL_ALT",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "QL_ALT_12",
+   "to": "QL_ALT_13",
+   "segment": "QL_ALT",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "QL_ALT_13",
+   "to": "QL2",
+   "segment": "QL_ALT",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "QL2",
+   "to": "Q_L3_01",
+   "segment": "Q_L3",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L3_01",
+   "to": "Q_L3_02",
+   "segment": "Q_L3",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L3_02",
+   "to": "Q_L3_03",
+   "segment": "Q_L3",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L3_03",
+   "to": "Q_L3_04",
+   "segment": "Q_L3",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L3_04",
+   "to": "Q_L3_05",
+   "segment": "Q_L3",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L3_05",
+   "to": "Q_L3_06",
+   "segment": "Q_L3",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L3_06",
+   "to": "Q_L3_07",
+   "segment": "Q_L3",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L3_07",
+   "to": "Q_L3_08",
+   "segment": "Q_L3",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L3_08",
+   "to": "Q_L3_09",
+   "segment": "Q_L3",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L3_09",
+   "to": "Q_L3_10",
+   "segment": "Q_L3",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L3_10",
+   "to": "Q_L3_11",
+   "segment": "Q_L3",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L3_11",
+   "to": "Q_L3_12",
+   "segment": "Q_L3",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L3_12",
+   "to": "QL3",
+   "segment": "Q_L3",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "QL3",
+   "to": "Q_L4_01",
+   "segment": "Q_L4",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L4_01",
+   "to": "Q_L4_02",
+   "segment": "Q_L4",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L4_02",
+   "to": "Q_L4_03",
+   "segment": "Q_L4",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L4_03",
+   "to": "Q_L4_04",
+   "segment": "Q_L4",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "Q_L4_04",
+   "to": "R",
+   "segment": "Q_L4",
+   "dir": "forward",
+   "condition": "Q_odd_only"
+  },
+  {
+   "from": "QL2",
+   "to": "D_LA_01",
+   "segment": "D_LA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_LA_01",
+   "to": "D_LA_02",
+   "segment": "D_LA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_LA_02",
+   "to": "D_LA_03",
+   "segment": "D_LA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_LA_03",
+   "to": "D_LA_04",
+   "segment": "D_LA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_LA_04",
+   "to": "D_LA_05",
+   "segment": "D_LA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_LA_05",
+   "to": "D_LA_06",
+   "segment": "D_LA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_LA_06",
+   "to": "D_LA_07",
+   "segment": "D_LA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_LA_07",
+   "to": "D_LA_08",
+   "segment": "D_LA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_LA_08",
+   "to": "D_LA_09",
+   "segment": "D_LA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_LA_09",
+   "to": "L_ALTAR",
+   "segment": "D_LA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "L_ALTAR",
+   "to": "D_LA_09",
+   "segment": "D_LA",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_LA_09",
+   "to": "D_LA_08",
+   "segment": "D_LA",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_LA_08",
+   "to": "D_LA_07",
+   "segment": "D_LA",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_LA_07",
+   "to": "D_LA_06",
+   "segment": "D_LA",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_LA_06",
+   "to": "D_LA_05",
+   "segment": "D_LA",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_LA_05",
+   "to": "D_LA_04",
+   "segment": "D_LA",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_LA_04",
+   "to": "D_LA_03",
+   "segment": "D_LA",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_LA_03",
+   "to": "D_LA_02",
+   "segment": "D_LA",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_LA_02",
+   "to": "D_LA_01",
+   "segment": "D_LA",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_LA_01",
+   "to": "QL2",
+   "segment": "D_LA",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "Q",
+   "to": "Q_R1_01",
+   "segment": "Q_R1",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R1_01",
+   "to": "Q_R1_02",
+   "segment": "Q_R1",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R1_02",
+   "to": "Q_R1_03",
+   "segment": "Q_R1",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R1_03",
+   "to": "Q_R1_04",
+   "segment": "Q_R1",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R1_04",
+   "to": "Q_R1_05",
+   "segment": "Q_R1",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R1_05",
+   "to": "Q_R1_06",
+   "segment": "Q_R1",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R1_06",
+   "to": "Q_R1_07",
+   "segment": "Q_R1",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R1_07",
+   "to": "QR1",
+   "segment": "Q_R1",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "QR1",
+   "to": "Q_R2_01",
+   "segment": "Q_R2",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R2_01",
+   "to": "Q_R2_02",
+   "segment": "Q_R2",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R2_02",
+   "to": "Q_R2_03",
+   "segment": "Q_R2",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R2_03",
+   "to": "Q_R2_04",
+   "segment": "Q_R2",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R2_04",
+   "to": "Q_R2_05",
+   "segment": "Q_R2",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R2_05",
+   "to": "Q_R2_06",
+   "segment": "Q_R2",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R2_06",
+   "to": "QR2",
+   "segment": "Q_R2",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "QR1",
+   "to": "QR_ALT_01",
+   "segment": "QR_ALT",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "QR_ALT_01",
+   "to": "QR_ALT_02",
+   "segment": "QR_ALT",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "QR_ALT_02",
+   "to": "QR_ALT_03",
+   "segment": "QR_ALT",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "QR_ALT_03",
+   "to": "QR_ALT_04",
+   "segment": "QR_ALT",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "QR_ALT_04",
+   "to": "QR_ALT_05",
+   "segment": "QR_ALT",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "QR_ALT_05",
+   "to": "QR_ALT_06",
+   "segment": "QR_ALT",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "QR_ALT_06",
+   "to": "QR_ALT_07",
+   "segment": "QR_ALT",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "QR_ALT_07",
+   "to": "QR2",
+   "segment": "QR_ALT",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "QR2",
+   "to": "Q_R3_01",
+   "segment": "Q_R3",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R3_01",
+   "to": "Q_R3_02",
+   "segment": "Q_R3",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R3_02",
+   "to": "Q_R3_03",
+   "segment": "Q_R3",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R3_03",
+   "to": "Q_R3_04",
+   "segment": "Q_R3",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R3_04",
+   "to": "Q_R3_05",
+   "segment": "Q_R3",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R3_05",
+   "to": "STATUE",
+   "segment": "Q_R3",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "STATUE",
+   "to": "Q_R4_01",
+   "segment": "Q_R4",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R4_01",
+   "to": "Q_R4_02",
+   "segment": "Q_R4",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R4_02",
+   "to": "Q_R4_03",
+   "segment": "Q_R4",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R4_03",
+   "to": "Q_R4_04",
+   "segment": "Q_R4",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R4_04",
+   "to": "Q_R4_05",
+   "segment": "Q_R4",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R4_05",
+   "to": "Q_R4_06",
+   "segment": "Q_R4",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R4_06",
+   "to": "QR3",
+   "segment": "Q_R4",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "QR3",
+   "to": "Q_R5_01",
+   "segment": "Q_R5",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R5_01",
+   "to": "Q_R5_02",
+   "segment": "Q_R5",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R5_02",
+   "to": "Q_R5_03",
+   "segment": "Q_R5",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R5_03",
+   "to": "Q_R5_04",
+   "segment": "Q_R5",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R5_04",
+   "to": "Q_R5_05",
+   "segment": "Q_R5",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R5_05",
+   "to": "Q_R5_06",
+   "segment": "Q_R5",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R5_06",
+   "to": "Q_R5_07",
+   "segment": "Q_R5",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "Q_R5_07",
+   "to": "R",
+   "segment": "Q_R5",
+   "dir": "forward",
+   "condition": "Q_even_only"
+  },
+  {
+   "from": "QR2",
+   "to": "D_RC_01",
+   "segment": "D_RC",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_RC_01",
+   "to": "D_RC_02",
+   "segment": "D_RC",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_RC_02",
+   "to": "D_RC_03",
+   "segment": "D_RC",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_RC_03",
+   "to": "D_RC_04",
+   "segment": "D_RC",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_RC_04",
+   "to": "D_RC_05",
+   "segment": "D_RC",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_RC_05",
+   "to": "R_CHEST",
+   "segment": "D_RC",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "R_CHEST",
+   "to": "D_RC_05",
+   "segment": "D_RC",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_RC_05",
+   "to": "D_RC_04",
+   "segment": "D_RC",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_RC_04",
+   "to": "D_RC_03",
+   "segment": "D_RC",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_RC_03",
+   "to": "D_RC_02",
+   "segment": "D_RC",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_RC_02",
+   "to": "D_RC_01",
+   "segment": "D_RC",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_RC_01",
+   "to": "QR2",
+   "segment": "D_RC",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "STATUE",
+   "to": "D_R5_01",
+   "segment": "D_R5",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_R5_01",
+   "to": "D_R5_02",
+   "segment": "D_R5",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_R5_02",
+   "to": "D_R5_03",
+   "segment": "D_R5",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_R5_03",
+   "to": "D_R5_04",
+   "segment": "D_R5",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_R5_04",
+   "to": "D_R5_05",
+   "segment": "D_R5",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_R5_05",
+   "to": "D_R5_06",
+   "segment": "D_R5",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_R5_06",
+   "to": "D_R5_07",
+   "segment": "D_R5",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_R5_07",
+   "to": "D_R5_08",
+   "segment": "D_R5",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_R5_08",
+   "to": "REWARD5",
+   "segment": "D_R5",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "REWARD5",
+   "to": "D_R5_08",
+   "segment": "D_R5",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_R5_08",
+   "to": "D_R5_07",
+   "segment": "D_R5",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_R5_07",
+   "to": "D_R5_06",
+   "segment": "D_R5",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_R5_06",
+   "to": "D_R5_05",
+   "segment": "D_R5",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_R5_05",
+   "to": "D_R5_04",
+   "segment": "D_R5",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_R5_04",
+   "to": "D_R5_03",
+   "segment": "D_R5",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_R5_03",
+   "to": "D_R5_02",
+   "segment": "D_R5",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_R5_02",
+   "to": "D_R5_01",
+   "segment": "D_R5",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_R5_01",
+   "to": "STATUE",
+   "segment": "D_R5",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "R",
+   "to": "C03_01",
+   "segment": "C03",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "C03_01",
+   "to": "RIVAL",
+   "segment": "C03",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "RIVAL",
+   "to": "C04_01",
+   "segment": "C04",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "C04_01",
+   "to": "C04_02",
+   "segment": "C04",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "C04_02",
+   "to": "C04_03",
+   "segment": "C04",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "C04_03",
+   "to": "H",
+   "segment": "C04",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "H",
+   "to": "LATE_L1_01",
+   "segment": "LATE_L1",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_L1_01",
+   "to": "LATE_L1_02",
+   "segment": "LATE_L1",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_L1_02",
+   "to": "LATE_L1_03",
+   "segment": "LATE_L1",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_L1_03",
+   "to": "LATE_L1_04",
+   "segment": "LATE_L1",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_L1_04",
+   "to": "CHALLENGE",
+   "segment": "LATE_L1",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "CHALLENGE",
+   "to": "LATE_L_FAIL_01",
+   "segment": "LATE_L_FAIL",
+   "dir": "forward",
+   "condition": "CHALLENGE_1_4"
+  },
+  {
+   "from": "LATE_L_FAIL_01",
+   "to": "LATE_L_FAIL_02",
+   "segment": "LATE_L_FAIL",
+   "dir": "forward",
+   "condition": "CHALLENGE_1_4"
+  },
+  {
+   "from": "LATE_L_FAIL_02",
+   "to": "FAIL_L",
+   "segment": "LATE_L_FAIL",
+   "dir": "forward",
+   "condition": "CHALLENGE_1_4"
+  },
+  {
+   "from": "FAIL_L",
+   "to": "LATE_L_FAIL_JOIN_01",
+   "segment": "LATE_L_FAIL_JOIN",
+   "dir": "forward",
+   "condition": "CHALLENGE_1_4"
+  },
+  {
+   "from": "LATE_L_FAIL_JOIN_01",
+   "to": "LATE_L_FAIL_JOIN_02",
+   "segment": "LATE_L_FAIL_JOIN",
+   "dir": "forward",
+   "condition": "CHALLENGE_1_4"
+  },
+  {
+   "from": "LATE_L_FAIL_JOIN_02",
+   "to": "LATE_L_FAIL_JOIN_03",
+   "segment": "LATE_L_FAIL_JOIN",
+   "dir": "forward",
+   "condition": "CHALLENGE_1_4"
+  },
+  {
+   "from": "LATE_L_FAIL_JOIN_03",
+   "to": "LATE_L_FAIL_JOIN_04",
+   "segment": "LATE_L_FAIL_JOIN",
+   "dir": "forward",
+   "condition": "CHALLENGE_1_4"
+  },
+  {
+   "from": "LATE_L_FAIL_JOIN_04",
+   "to": "LATE_L_FAIL_JOIN_05",
+   "segment": "LATE_L_FAIL_JOIN",
+   "dir": "forward",
+   "condition": "CHALLENGE_1_4"
+  },
+  {
+   "from": "LATE_L_FAIL_JOIN_05",
+   "to": "LATE_L_FAIL_JOIN_06",
+   "segment": "LATE_L_FAIL_JOIN",
+   "dir": "forward",
+   "condition": "CHALLENGE_1_4"
+  },
+  {
+   "from": "LATE_L_FAIL_JOIN_06",
+   "to": "LATE_L_FAIL_JOIN_07",
+   "segment": "LATE_L_FAIL_JOIN",
+   "dir": "forward",
+   "condition": "CHALLENGE_1_4"
+  },
+  {
+   "from": "LATE_L_FAIL_JOIN_07",
+   "to": "LATE_L_FAIL_JOIN_08",
+   "segment": "LATE_L_FAIL_JOIN",
+   "dir": "forward",
+   "condition": "CHALLENGE_1_4"
+  },
+  {
+   "from": "LATE_L_FAIL_JOIN_08",
+   "to": "LATE_L_FAIL_JOIN_09",
+   "segment": "LATE_L_FAIL_JOIN",
+   "dir": "forward",
+   "condition": "CHALLENGE_1_4"
+  },
+  {
+   "from": "LATE_L_FAIL_JOIN_09",
+   "to": "LATE_L_FAIL_JOIN_10",
+   "segment": "LATE_L_FAIL_JOIN",
+   "dir": "forward",
+   "condition": "CHALLENGE_1_4"
+  },
+  {
+   "from": "LATE_L_FAIL_JOIN_10",
+   "to": "LATE_L_FAIL_JOIN_11",
+   "segment": "LATE_L_FAIL_JOIN",
+   "dir": "forward",
+   "condition": "CHALLENGE_1_4"
+  },
+  {
+   "from": "LATE_L_FAIL_JOIN_11",
+   "to": "LATE_L_FAIL_JOIN_12",
+   "segment": "LATE_L_FAIL_JOIN",
+   "dir": "forward",
+   "condition": "CHALLENGE_1_4"
+  },
+  {
+   "from": "LATE_L_FAIL_JOIN_12",
+   "to": "LATE_L_FAIL_JOIN_13",
+   "segment": "LATE_L_FAIL_JOIN",
+   "dir": "forward",
+   "condition": "CHALLENGE_1_4"
+  },
+  {
+   "from": "LATE_L_FAIL_JOIN_13",
+   "to": "LATE_L_FAIL_JOIN_14",
+   "segment": "LATE_L_FAIL_JOIN",
+   "dir": "forward",
+   "condition": "CHALLENGE_1_4"
+  },
+  {
+   "from": "LATE_L_FAIL_JOIN_14",
+   "to": "L_MERGE",
+   "segment": "LATE_L_FAIL_JOIN",
+   "dir": "forward",
+   "condition": "CHALLENGE_1_4"
+  },
+  {
+   "from": "CHALLENGE",
+   "to": "LATE_L_SUCCESS1_01",
+   "segment": "LATE_L_SUCCESS1",
+   "dir": "forward",
+   "condition": "CHALLENGE_5_6"
+  },
+  {
+   "from": "LATE_L_SUCCESS1_01",
+   "to": "LATE_L_SUCCESS1_02",
+   "segment": "LATE_L_SUCCESS1",
+   "dir": "forward",
+   "condition": "CHALLENGE_5_6"
+  },
+  {
+   "from": "LATE_L_SUCCESS1_02",
+   "to": "LATE_L_SUCCESS1_03",
+   "segment": "LATE_L_SUCCESS1",
+   "dir": "forward",
+   "condition": "CHALLENGE_5_6"
+  },
+  {
+   "from": "LATE_L_SUCCESS1_03",
+   "to": "LATE_L_SUCCESS1_04",
+   "segment": "LATE_L_SUCCESS1",
+   "dir": "forward",
+   "condition": "CHALLENGE_5_6"
+  },
+  {
+   "from": "LATE_L_SUCCESS1_04",
+   "to": "SUCCESS_L1",
+   "segment": "LATE_L_SUCCESS1",
+   "dir": "forward",
+   "condition": "CHALLENGE_5_6"
+  },
+  {
+   "from": "SUCCESS_L1",
+   "to": "LATE_L_SUCCESS_JOIN_01",
+   "segment": "LATE_L_SUCCESS_JOIN",
+   "dir": "forward",
+   "condition": "CHALLENGE_5_6"
+  },
+  {
+   "from": "LATE_L_SUCCESS_JOIN_01",
+   "to": "LATE_L_SUCCESS_JOIN_02",
+   "segment": "LATE_L_SUCCESS_JOIN",
+   "dir": "forward",
+   "condition": "CHALLENGE_5_6"
+  },
+  {
+   "from": "LATE_L_SUCCESS_JOIN_02",
+   "to": "LATE_L_SUCCESS_JOIN_03",
+   "segment": "LATE_L_SUCCESS_JOIN",
+   "dir": "forward",
+   "condition": "CHALLENGE_5_6"
+  },
+  {
+   "from": "LATE_L_SUCCESS_JOIN_03",
+   "to": "L_MERGE",
+   "segment": "LATE_L_SUCCESS_JOIN",
+   "dir": "forward",
+   "condition": "CHALLENGE_5_6"
+  },
+  {
+   "from": "SUCCESS_L1",
+   "to": "D_LLA_01",
+   "segment": "D_LLA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_LLA_01",
+   "to": "D_LLA_02",
+   "segment": "D_LLA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_LLA_02",
+   "to": "D_LLA_03",
+   "segment": "D_LLA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_LLA_03",
+   "to": "D_LLA_04",
+   "segment": "D_LLA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_LLA_04",
+   "to": "L_LATE_ALTAR",
+   "segment": "D_LLA",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "L_LATE_ALTAR",
+   "to": "D_LLA_04",
+   "segment": "D_LLA",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_LLA_04",
+   "to": "D_LLA_03",
+   "segment": "D_LLA",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_LLA_03",
+   "to": "D_LLA_02",
+   "segment": "D_LLA",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_LLA_02",
+   "to": "D_LLA_01",
+   "segment": "D_LLA",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_LLA_01",
+   "to": "SUCCESS_L1",
+   "segment": "D_LLA",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "L_MERGE",
+   "to": "LATE_L_DONE_01",
+   "segment": "LATE_L_DONE",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_L_DONE_01",
+   "to": "LATE_L_DONE_02",
+   "segment": "LATE_L_DONE",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_L_DONE_02",
+   "to": "LATE_L_DONE_03",
+   "segment": "LATE_L_DONE",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_L_DONE_03",
+   "to": "LATE_L_DONE_04",
+   "segment": "LATE_L_DONE",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_L_DONE_04",
+   "to": "LATE_L_DONE_05",
+   "segment": "LATE_L_DONE",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_L_DONE_05",
+   "to": "FINAL",
+   "segment": "LATE_L_DONE",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "H",
+   "to": "LATE_R1_01",
+   "segment": "LATE_R1",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R1_01",
+   "to": "LATE_R1_02",
+   "segment": "LATE_R1",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R1_02",
+   "to": "LATE_R1_03",
+   "segment": "LATE_R1",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R1_03",
+   "to": "LATE_R1_04",
+   "segment": "LATE_R1",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R1_04",
+   "to": "LATE_R1_05",
+   "segment": "LATE_R1",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R1_05",
+   "to": "HR1",
+   "segment": "LATE_R1",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "HR1",
+   "to": "LATE_R2_01",
+   "segment": "LATE_R2",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R2_01",
+   "to": "LATE_R2_02",
+   "segment": "LATE_R2",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R2_02",
+   "to": "LATE_R2_03",
+   "segment": "LATE_R2",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R2_03",
+   "to": "LATE_R2_04",
+   "segment": "LATE_R2",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R2_04",
+   "to": "LATE_R2_05",
+   "segment": "LATE_R2",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R2_05",
+   "to": "LATE_R2_06",
+   "segment": "LATE_R2",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R2_06",
+   "to": "LATE_R2_07",
+   "segment": "LATE_R2",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R2_07",
+   "to": "LATE_R2_08",
+   "segment": "LATE_R2",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R2_08",
+   "to": "HR2",
+   "segment": "LATE_R2",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "HR1",
+   "to": "LATE_R2B_01",
+   "segment": "LATE_R2B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R2B_01",
+   "to": "LATE_R2B_02",
+   "segment": "LATE_R2B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R2B_02",
+   "to": "LATE_R2B_03",
+   "segment": "LATE_R2B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R2B_03",
+   "to": "LATE_R2B_04",
+   "segment": "LATE_R2B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R2B_04",
+   "to": "LATE_R2B_05",
+   "segment": "LATE_R2B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R2B_05",
+   "to": "LATE_R2B_06",
+   "segment": "LATE_R2B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R2B_06",
+   "to": "LATE_R2B_07",
+   "segment": "LATE_R2B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R2B_07",
+   "to": "LATE_R2B_08",
+   "segment": "LATE_R2B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R2B_08",
+   "to": "HR2",
+   "segment": "LATE_R2B",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "HR2",
+   "to": "LATE_R3_01",
+   "segment": "LATE_R3",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R3_01",
+   "to": "LATE_R3_02",
+   "segment": "LATE_R3",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R3_02",
+   "to": "LATE_R3_03",
+   "segment": "LATE_R3",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R3_03",
+   "to": "LATE_R3_04",
+   "segment": "LATE_R3",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R3_04",
+   "to": "HR3",
+   "segment": "LATE_R3",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "HR3",
+   "to": "LATE_R_DONE_01",
+   "segment": "LATE_R_DONE",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R_DONE_01",
+   "to": "LATE_R_DONE_02",
+   "segment": "LATE_R_DONE",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "LATE_R_DONE_02",
+   "to": "FINAL",
+   "segment": "LATE_R_DONE",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "HR3",
+   "to": "D_RS_01",
+   "segment": "D_RS",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_RS_01",
+   "to": "D_RS_02",
+   "segment": "D_RS",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_RS_02",
+   "to": "D_RS_03",
+   "segment": "D_RS",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_RS_03",
+   "to": "D_RS_04",
+   "segment": "D_RS",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_RS_04",
+   "to": "D_RS_05",
+   "segment": "D_RS",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_RS_05",
+   "to": "D_RS_06",
+   "segment": "D_RS",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_RS_06",
+   "to": "D_RS_07",
+   "segment": "D_RS",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_RS_07",
+   "to": "D_RS_08",
+   "segment": "D_RS",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_RS_08",
+   "to": "D_RS_09",
+   "segment": "D_RS",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "D_RS_09",
+   "to": "R_SPECIAL",
+   "segment": "D_RS",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "R_SPECIAL",
+   "to": "D_RS_09",
+   "segment": "D_RS",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_RS_09",
+   "to": "D_RS_08",
+   "segment": "D_RS",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_RS_08",
+   "to": "D_RS_07",
+   "segment": "D_RS",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_RS_07",
+   "to": "D_RS_06",
+   "segment": "D_RS",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_RS_06",
+   "to": "D_RS_05",
+   "segment": "D_RS",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_RS_05",
+   "to": "D_RS_04",
+   "segment": "D_RS",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_RS_04",
+   "to": "D_RS_03",
+   "segment": "D_RS",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_RS_03",
+   "to": "D_RS_02",
+   "segment": "D_RS",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_RS_02",
+   "to": "D_RS_01",
+   "segment": "D_RS",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "D_RS_01",
+   "to": "HR3",
+   "segment": "D_RS",
+   "dir": "reverse",
+   "condition": "always"
+  },
+  {
+   "from": "HR2",
+   "to": "D_RAND_01",
+   "segment": "D_RAND",
+   "dir": "forward",
+   "condition": "unlock_random_event"
+  },
+  {
+   "from": "D_RAND_01",
+   "to": "D_RAND_02",
+   "segment": "D_RAND",
+   "dir": "forward",
+   "condition": "unlock_random_event"
+  },
+  {
+   "from": "D_RAND_02",
+   "to": "D_RAND_03",
+   "segment": "D_RAND",
+   "dir": "forward",
+   "condition": "unlock_random_event"
+  },
+  {
+   "from": "D_RAND_03",
+   "to": "D_RAND_04",
+   "segment": "D_RAND",
+   "dir": "forward",
+   "condition": "unlock_random_event"
+  },
+  {
+   "from": "D_RAND_04",
+   "to": "D_RAND_05",
+   "segment": "D_RAND",
+   "dir": "forward",
+   "condition": "unlock_random_event"
+  },
+  {
+   "from": "D_RAND_05",
+   "to": "D_RAND_06",
+   "segment": "D_RAND",
+   "dir": "forward",
+   "condition": "unlock_random_event"
+  },
+  {
+   "from": "D_RAND_06",
+   "to": "D_RAND_07",
+   "segment": "D_RAND",
+   "dir": "forward",
+   "condition": "unlock_random_event"
+  },
+  {
+   "from": "D_RAND_07",
+   "to": "D_RAND_08",
+   "segment": "D_RAND",
+   "dir": "forward",
+   "condition": "unlock_random_event"
+  },
+  {
+   "from": "D_RAND_08",
+   "to": "RANDOM_DEN",
+   "segment": "D_RAND",
+   "dir": "forward",
+   "condition": "unlock_random_event"
+  },
+  {
+   "from": "RANDOM_DEN",
+   "to": "D_RAND_08",
+   "segment": "D_RAND",
+   "dir": "reverse",
+   "condition": "unlock_random_event"
+  },
+  {
+   "from": "D_RAND_08",
+   "to": "D_RAND_07",
+   "segment": "D_RAND",
+   "dir": "reverse",
+   "condition": "unlock_random_event"
+  },
+  {
+   "from": "D_RAND_07",
+   "to": "D_RAND_06",
+   "segment": "D_RAND",
+   "dir": "reverse",
+   "condition": "unlock_random_event"
+  },
+  {
+   "from": "D_RAND_06",
+   "to": "D_RAND_05",
+   "segment": "D_RAND",
+   "dir": "reverse",
+   "condition": "unlock_random_event"
+  },
+  {
+   "from": "D_RAND_05",
+   "to": "D_RAND_04",
+   "segment": "D_RAND",
+   "dir": "reverse",
+   "condition": "unlock_random_event"
+  },
+  {
+   "from": "D_RAND_04",
+   "to": "D_RAND_03",
+   "segment": "D_RAND",
+   "dir": "reverse",
+   "condition": "unlock_random_event"
+  },
+  {
+   "from": "D_RAND_03",
+   "to": "D_RAND_02",
+   "segment": "D_RAND",
+   "dir": "reverse",
+   "condition": "unlock_random_event"
+  },
+  {
+   "from": "D_RAND_02",
+   "to": "D_RAND_01",
+   "segment": "D_RAND",
+   "dir": "reverse",
+   "condition": "unlock_random_event"
+  },
+  {
+   "from": "D_RAND_01",
+   "to": "HR2",
+   "segment": "D_RAND",
+   "dir": "reverse",
+   "condition": "unlock_random_event"
+  },
+  {
+   "from": "FINAL",
+   "to": "S_END_01",
+   "segment": "S_END",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "S_END_01",
+   "to": "S_END_02",
+   "segment": "S_END",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "S_END_02",
+   "to": "S_END_03",
+   "segment": "S_END",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "S_END_03",
+   "to": "S_END_04",
+   "segment": "S_END",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "S_END_04",
+   "to": "S_END_05",
+   "segment": "S_END",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "S_END_05",
+   "to": "S_END_06",
+   "segment": "S_END",
+   "dir": "forward",
+   "condition": "always"
+  },
+  {
+   "from": "S_END_06",
+   "to": "GOAL",
+   "segment": "S_END",
+   "dir": "forward",
+   "condition": "always"
+  }
+ ],
+ "fixed": {
+  "START": "START",
+  "GOAL": "GOAL",
+  "Q": "Q",
+  "CHALLENGE": "CHALLENGE",
+  "RIVAL": "RIVAL",
+  "LOWER_GATE": "LOWER_GATE",
+  "rewards": [
+   "L_CHEST",
+   "R_CHEST",
+   "L_ALTAR",
+   "L_LATE_ALTAR",
+   "REWARD5",
+   "R_SPECIAL"
+  ],
+  "den": "RANDOM_DEN",
+  "rare": "STATUE"
+ },
+ "rewards": {
+  "L_CHEST": {
+   "title": "溶岩流のほとりの宝",
+   "key": "gold150",
+   "eff": [
+    {
+     "gold": 150
+    }
+   ]
+  },
+  "R_CHEST": {
+   "title": "東岸の宝物庫",
+   "key": "gold150",
+   "eff": [
+    {
+     "gold": 150
+    }
+   ]
+  },
+  "L_ALTAR": {
+   "title": "崖の祭壇",
+   "key": "all10",
+   "eff": [
+    {
+     "statAll": 10
+    }
+   ]
+  },
+  "L_LATE_ALTAR": {
+   "title": "急坂の上の祭壇",
+   "key": "all15",
+   "eff": [
+    {
+     "statAll": 15
+    }
+   ]
+  },
+  "REWARD5": {
+   "title": "火の像の恵み",
+   "key": "food",
+   "eff": [
+    {
+     "fat": -50
+    },
+    {
+     "gold": 100
+    }
+   ]
+  },
+  "R_SPECIAL": {
+   "title": "溶岩の泉の秘宝",
+   "key": "best30",
+   "eff": [
+    {
+     "best": 30
+    }
+   ]
+  },
+  "RANDOM_DEN": {
+   "title": "火口壁の隠れ家",
+   "key": "gold200",
+   "eff": [
+    {
+     "gold": 200
+    }
+   ]
+  }
+ },
+ "statLanes": {
+  "SA": [
+   "po",
+   "ev"
+  ],
+  "SA_B": [
+   "li",
+   "de"
+  ],
+  "EB01": [
+   "in",
+   "de"
+  ],
+  "EB02": [
+   "in",
+   "de"
+  ],
+  "Q_L1": [
+   "po",
+   "de"
+  ],
+  "Q_L2": [
+   "po",
+   "de"
+  ],
+  "Q_L3": [
+   "po",
+   "de"
+  ],
+  "Q_L4": [
+   "po",
+   "de"
+  ],
+  "QL_ALT": [
+   "hi",
+   "ev"
+  ],
+  "Q_R2": [
+   "in",
+   "hi"
+  ],
+  "Q_R3": [
+   "in",
+   "hi"
+  ],
+  "Q_R4": [
+   "in",
+   "hi"
+  ],
+  "QR_ALT": [
+   "po",
+   "de"
+  ],
+  "LATE_L1": [
+   "po",
+   "in"
+  ],
+  "LATE_L_FAIL": [
+   "po",
+   "in"
+  ],
+  "LATE_L_FAIL_JOIN": [
+   "po",
+   "in"
+  ],
+  "LATE_L_SUCCESS1": [
+   "po",
+   "in"
+  ],
+  "LATE_L_SUCCESS_JOIN": [
+   "po",
+   "in"
+  ],
+  "LATE_L_DONE": [
+   "po",
+   "in"
+  ],
+  "LATE_R1": [
+   "li",
+   "ev"
+  ],
+  "LATE_R2": [
+   "li",
+   "ev"
+  ],
+  "LATE_R2B": [
+   "in",
+   "hi"
+  ],
+  "LATE_R3": [
+   "li",
+   "ev"
+  ],
+  "LATE_R_DONE": [
+   "li",
+   "ev"
+  ]
+ },
+ "calm": [
+  "S01",
+  "SA",
+  "SA_B",
+  "EB01"
+ ],
+ "rareZones": {
+  "Z1": [
+   "Q_R2_01",
+   "Q_R2_02",
+   "Q_R2_03",
+   "Q_R2_04",
+   "Q_R2_05",
+   "Q_R2_06",
+   "Q_R3_01",
+   "Q_R3_02",
+   "Q_R3_03",
+   "Q_R3_04",
+   "Q_R3_05"
+  ],
+  "Z2": [
+   "Q_L3_01",
+   "Q_L3_02",
+   "Q_L3_03",
+   "Q_L3_04",
+   "Q_L3_05",
+   "Q_L3_06",
+   "Q_L3_07",
+   "Q_L3_08",
+   "Q_L3_09",
+   "Q_L3_10",
+   "Q_L3_11",
+   "Q_L3_12",
+   "Q_L4_01",
+   "Q_L4_02",
+   "Q_L4_03",
+   "Q_L4_04"
+  ]
+ },
+ "mainRoutes": [
+  {
+   "segs": [
+    "S01",
+    "SA",
+    "C01",
+    "C02",
+    "Q_L1",
+    "Q_L2",
+    "Q_L3",
+    "Q_L4",
+    "C03",
+    "C04",
+    "LATE_L1",
+    "LATE_L_FAIL",
+    "LATE_L_FAIL_JOIN",
+    "LATE_L_DONE",
+    "S_END"
+   ],
+   "total": 106,
+   "rival": 66,
+   "rivalRatio": 0.623
+  },
+  {
+   "segs": [
+    "S01",
+    "SA",
+    "C01",
+    "C02",
+    "Q_L1",
+    "Q_L2",
+    "Q_L3",
+    "Q_L4",
+    "C03",
+    "C04",
+    "LATE_L1",
+    "LATE_L_SUCCESS1",
+    "LATE_L_SUCCESS_JOIN",
+    "LATE_L_DONE",
+    "S_END"
+   ],
+   "total": 97,
+   "rival": 66,
+   "rivalRatio": 0.68
+  },
+  {
+   "segs": [
+    "S01",
+    "SA",
+    "C01",
+    "C02",
+    "Q_L1",
+    "Q_L2",
+    "Q_L3",
+    "Q_L4",
+    "C03",
+    "C04",
+    "LATE_R1",
+    "LATE_R2",
+    "LATE_R3",
+    "LATE_R_DONE",
+    "S_END"
+   ],
+   "total": 100,
+   "rival": 66,
+   "rivalRatio": 0.66
+  },
+  {
+   "segs": [
+    "S01",
+    "SA",
+    "C01",
+    "C02",
+    "Q_L1",
+    "Q_L2",
+    "Q_L3",
+    "Q_L4",
+    "C03",
+    "C04",
+    "LATE_R1",
+    "LATE_R2B",
+    "LATE_R3",
+    "LATE_R_DONE",
+    "S_END"
+   ],
+   "total": 100,
+   "rival": 66,
+   "rivalRatio": 0.66
+  },
+  {
+   "segs": [
+    "S01",
+    "SA",
+    "C01",
+    "C02",
+    "Q_L1",
+    "QL_ALT",
+    "Q_L3",
+    "Q_L4",
+    "C03",
+    "C04",
+    "LATE_L1",
+    "LATE_L_FAIL",
+    "LATE_L_FAIL_JOIN",
+    "LATE_L_DONE",
+    "S_END"
+   ],
+   "total": 109,
+   "rival": 69,
+   "rivalRatio": 0.633
+  },
+  {
+   "segs": [
+    "S01",
+    "SA",
+    "C01",
+    "C02",
+    "Q_L1",
+    "QL_ALT",
+    "Q_L3",
+    "Q_L4",
+    "C03",
+    "C04",
+    "LATE_L1",
+    "LATE_L_SUCCESS1",
+    "LATE_L_SUCCESS_JOIN",
+    "LATE_L_DONE",
+    "S_END"
+   ],
+   "total": 100,
+   "rival": 69,
+   "rivalRatio": 0.69
+  },
+  {
+   "segs": [
+    "S01",
+    "SA",
+    "C01",
+    "C02",
+    "Q_L1",
+    "QL_ALT",
+    "Q_L3",
+    "Q_L4",
+    "C03",
+    "C04",
+    "LATE_R1",
+    "LATE_R2",
+    "LATE_R3",
+    "LATE_R_DONE",
+    "S_END"
+   ],
+   "total": 103,
+   "rival": 69,
+   "rivalRatio": 0.67
+  },
+  {
+   "segs": [
+    "S01",
+    "SA",
+    "C01",
+    "C02",
+    "Q_L1",
+    "QL_ALT",
+    "Q_L3",
+    "Q_L4",
+    "C03",
+    "C04",
+    "LATE_R1",
+    "LATE_R2B",
+    "LATE_R3",
+    "LATE_R_DONE",
+    "S_END"
+   ],
+   "total": 103,
+   "rival": 69,
+   "rivalRatio": 0.67
+  },
+  {
+   "segs": [
+    "S01",
+    "SA",
+    "C01",
+    "C02",
+    "Q_R1",
+    "Q_R2",
+    "Q_R3",
+    "Q_R4",
+    "Q_R5",
+    "C03",
+    "C04",
+    "LATE_L1",
+    "LATE_L_FAIL",
+    "LATE_L_FAIL_JOIN",
+    "LATE_L_DONE",
+    "S_END"
+   ],
+   "total": 107,
+   "rival": 67,
+   "rivalRatio": 0.626
+  },
+  {
+   "segs": [
+    "S01",
+    "SA",
+    "C01",
+    "C02",
+    "Q_R1",
+    "Q_R2",
+    "Q_R3",
+    "Q_R4",
+    "Q_R5",
+    "C03",
+    "C04",
+    "LATE_L1",
+    "LATE_L_SUCCESS1",
+    "LATE_L_SUCCESS_JOIN",
+    "LATE_L_DONE",
+    "S_END"
+   ],
+   "total": 98,
+   "rival": 67,
+   "rivalRatio": 0.684
+  },
+  {
+   "segs": [
+    "S01",
+    "SA",
+    "C01",
+    "C02",
+    "Q_R1",
+    "Q_R2",
+    "Q_R3",
+    "Q_R4",
+    "Q_R5",
+    "C03",
+    "C04",
+    "LATE_R1",
+    "LATE_R2",
+    "LATE_R3",
+    "LATE_R_DONE",
+    "S_END"
+   ],
+   "total": 101,
+   "rival": 67,
+   "rivalRatio": 0.663
+  },
+  {
+   "segs": [
+    "S01",
+    "SA",
+    "C01",
+    "C02",
+    "Q_R1",
+    "Q_R2",
+    "Q_R3",
+    "Q_R4",
+    "Q_R5",
+    "C03",
+    "C04",
+    "LATE_R1",
+    "LATE_R2B",
+    "LATE_R3",
+    "LATE_R_DONE",
+    "S_END"
+   ],
+   "total": 101,
+   "rival": 67,
+   "rivalRatio": 0.663
+  },
+  {
+   "segs": [
+    "S01",
+    "SA",
+    "C01",
+    "C02",
+    "Q_R1",
+    "QR_ALT",
+    "Q_R3",
+    "Q_R4",
+    "Q_R5",
+    "C03",
+    "C04",
+    "LATE_L1",
+    "LATE_L_FAIL",
+    "LATE_L_FAIL_JOIN",
+    "LATE_L_DONE",
+    "S_END"
+   ],
+   "total": 108,
+   "rival": 68,
+   "rivalRatio": 0.63
+  },
+  {
+   "segs": [
+    "S01",
+    "SA",
+    "C01",
+    "C02",
+    "Q_R1",
+    "QR_ALT",
+    "Q_R3",
+    "Q_R4",
+    "Q_R5",
+    "C03",
+    "C04",
+    "LATE_L1",
+    "LATE_L_SUCCESS1",
+    "LATE_L_SUCCESS_JOIN",
+    "LATE_L_DONE",
+    "S_END"
+   ],
+   "total": 99,
+   "rival": 68,
+   "rivalRatio": 0.687
+  },
+  {
+   "segs": [
+    "S01",
+    "SA",
+    "C01",
+    "C02",
+    "Q_R1",
+    "QR_ALT",
+    "Q_R3",
+    "Q_R4",
+    "Q_R5",
+    "C03",
+    "C04",
+    "LATE_R1",
+    "LATE_R2",
+    "LATE_R3",
+    "LATE_R_DONE",
+    "S_END"
+   ],
+   "total": 102,
+   "rival": 68,
+   "rivalRatio": 0.667
+  },
+  {
+   "segs": [
+    "S01",
+    "SA",
+    "C01",
+    "C02",
+    "Q_R1",
+    "QR_ALT",
+    "Q_R3",
+    "Q_R4",
+    "Q_R5",
+    "C03",
+    "C04",
+    "LATE_R1",
+    "LATE_R2B",
+    "LATE_R3",
+    "LATE_R_DONE",
+    "S_END"
+   ],
+   "total": 102,
+   "rival": 68,
+   "rivalRatio": 0.667
+  },
+  {
+   "segs": [
+    "S01",
+    "SA_B",
+    "C01",
+    "C02",
+    "Q_L1",
+    "Q_L2",
+    "Q_L3",
+    "Q_L4",
+    "C03",
+    "C04",
+    "LATE_L1",
+    "LATE_L_FAIL",
+    "LATE_L_FAIL_JOIN",
+    "LATE_L_DONE",
+    "S_END"
+   ],
+   "total": 108,
+   "rival": 68,
+   "rivalRatio": 0.63
+  },
+  {
+   "segs": [
+    "S01",
+    "SA_B",
+    "C01",
+    "C02",
+    "Q_L1",
+    "Q_L2",
+    "Q_L3",
+    "Q_L4",
+    "C03",
+    "C04",
+    "LATE_L1",
+    "LATE_L_SUCCESS1",
+    "LATE_L_SUCCESS_JOIN",
+    "LATE_L_DONE",
+    "S_END"
+   ],
+   "total": 99,
+   "rival": 68,
+   "rivalRatio": 0.687
+  },
+  {
+   "segs": [
+    "S01",
+    "SA_B",
+    "C01",
+    "C02",
+    "Q_L1",
+    "Q_L2",
+    "Q_L3",
+    "Q_L4",
+    "C03",
+    "C04",
+    "LATE_R1",
+    "LATE_R2",
+    "LATE_R3",
+    "LATE_R_DONE",
+    "S_END"
+   ],
+   "total": 102,
+   "rival": 68,
+   "rivalRatio": 0.667
+  },
+  {
+   "segs": [
+    "S01",
+    "SA_B",
+    "C01",
+    "C02",
+    "Q_L1",
+    "Q_L2",
+    "Q_L3",
+    "Q_L4",
+    "C03",
+    "C04",
+    "LATE_R1",
+    "LATE_R2B",
+    "LATE_R3",
+    "LATE_R_DONE",
+    "S_END"
+   ],
+   "total": 102,
+   "rival": 68,
+   "rivalRatio": 0.667
+  },
+  {
+   "segs": [
+    "S01",
+    "SA_B",
+    "C01",
+    "C02",
+    "Q_L1",
+    "QL_ALT",
+    "Q_L3",
+    "Q_L4",
+    "C03",
+    "C04",
+    "LATE_L1",
+    "LATE_L_FAIL",
+    "LATE_L_FAIL_JOIN",
+    "LATE_L_DONE",
+    "S_END"
+   ],
+   "total": 111,
+   "rival": 71,
+   "rivalRatio": 0.64
+  },
+  {
+   "segs": [
+    "S01",
+    "SA_B",
+    "C01",
+    "C02",
+    "Q_L1",
+    "QL_ALT",
+    "Q_L3",
+    "Q_L4",
+    "C03",
+    "C04",
+    "LATE_L1",
+    "LATE_L_SUCCESS1",
+    "LATE_L_SUCCESS_JOIN",
+    "LATE_L_DONE",
+    "S_END"
+   ],
+   "total": 102,
+   "rival": 71,
+   "rivalRatio": 0.696
+  },
+  {
+   "segs": [
+    "S01",
+    "SA_B",
+    "C01",
+    "C02",
+    "Q_L1",
+    "QL_ALT",
+    "Q_L3",
+    "Q_L4",
+    "C03",
+    "C04",
+    "LATE_R1",
+    "LATE_R2",
+    "LATE_R3",
+    "LATE_R_DONE",
+    "S_END"
+   ],
+   "total": 105,
+   "rival": 71,
+   "rivalRatio": 0.676
+  },
+  {
+   "segs": [
+    "S01",
+    "SA_B",
+    "C01",
+    "C02",
+    "Q_L1",
+    "QL_ALT",
+    "Q_L3",
+    "Q_L4",
+    "C03",
+    "C04",
+    "LATE_R1",
+    "LATE_R2B",
+    "LATE_R3",
+    "LATE_R_DONE",
+    "S_END"
+   ],
+   "total": 105,
+   "rival": 71,
+   "rivalRatio": 0.676
+  },
+  {
+   "segs": [
+    "S01",
+    "SA_B",
+    "C01",
+    "C02",
+    "Q_R1",
+    "Q_R2",
+    "Q_R3",
+    "Q_R4",
+    "Q_R5",
+    "C03",
+    "C04",
+    "LATE_L1",
+    "LATE_L_FAIL",
+    "LATE_L_FAIL_JOIN",
+    "LATE_L_DONE",
+    "S_END"
+   ],
+   "total": 109,
+   "rival": 69,
+   "rivalRatio": 0.633
+  },
+  {
+   "segs": [
+    "S01",
+    "SA_B",
+    "C01",
+    "C02",
+    "Q_R1",
+    "Q_R2",
+    "Q_R3",
+    "Q_R4",
+    "Q_R5",
+    "C03",
+    "C04",
+    "LATE_L1",
+    "LATE_L_SUCCESS1",
+    "LATE_L_SUCCESS_JOIN",
+    "LATE_L_DONE",
+    "S_END"
+   ],
+   "total": 100,
+   "rival": 69,
+   "rivalRatio": 0.69
+  },
+  {
+   "segs": [
+    "S01",
+    "SA_B",
+    "C01",
+    "C02",
+    "Q_R1",
+    "Q_R2",
+    "Q_R3",
+    "Q_R4",
+    "Q_R5",
+    "C03",
+    "C04",
+    "LATE_R1",
+    "LATE_R2",
+    "LATE_R3",
+    "LATE_R_DONE",
+    "S_END"
+   ],
+   "total": 103,
+   "rival": 69,
+   "rivalRatio": 0.67
+  },
+  {
+   "segs": [
+    "S01",
+    "SA_B",
+    "C01",
+    "C02",
+    "Q_R1",
+    "Q_R2",
+    "Q_R3",
+    "Q_R4",
+    "Q_R5",
+    "C03",
+    "C04",
+    "LATE_R1",
+    "LATE_R2B",
+    "LATE_R3",
+    "LATE_R_DONE",
+    "S_END"
+   ],
+   "total": 103,
+   "rival": 69,
+   "rivalRatio": 0.67
+  },
+  {
+   "segs": [
+    "S01",
+    "SA_B",
+    "C01",
+    "C02",
+    "Q_R1",
+    "QR_ALT",
+    "Q_R3",
+    "Q_R4",
+    "Q_R5",
+    "C03",
+    "C04",
+    "LATE_L1",
+    "LATE_L_FAIL",
+    "LATE_L_FAIL_JOIN",
+    "LATE_L_DONE",
+    "S_END"
+   ],
+   "total": 110,
+   "rival": 70,
+   "rivalRatio": 0.636
+  },
+  {
+   "segs": [
+    "S01",
+    "SA_B",
+    "C01",
+    "C02",
+    "Q_R1",
+    "QR_ALT",
+    "Q_R3",
+    "Q_R4",
+    "Q_R5",
+    "C03",
+    "C04",
+    "LATE_L1",
+    "LATE_L_SUCCESS1",
+    "LATE_L_SUCCESS_JOIN",
+    "LATE_L_DONE",
+    "S_END"
+   ],
+   "total": 101,
+   "rival": 70,
+   "rivalRatio": 0.693
+  },
+  {
+   "segs": [
+    "S01",
+    "SA_B",
+    "C01",
+    "C02",
+    "Q_R1",
+    "QR_ALT",
+    "Q_R3",
+    "Q_R4",
+    "Q_R5",
+    "C03",
+    "C04",
+    "LATE_R1",
+    "LATE_R2",
+    "LATE_R3",
+    "LATE_R_DONE",
+    "S_END"
+   ],
+   "total": 104,
+   "rival": 70,
+   "rivalRatio": 0.673
+  },
+  {
+   "segs": [
+    "S01",
+    "SA_B",
+    "C01",
+    "C02",
+    "Q_R1",
+    "QR_ALT",
+    "Q_R3",
+    "Q_R4",
+    "Q_R5",
+    "C03",
+    "C04",
+    "LATE_R1",
+    "LATE_R2B",
+    "LATE_R3",
+    "LATE_R_DONE",
+    "S_END"
+   ],
+   "total": 104,
+   "rival": 70,
+   "rivalRatio": 0.673
+  },
+  {
+   "segs": [
+    "S01",
+    "EB01",
+    "EB02",
+    "C01",
+    "C02",
+    "Q_L1",
+    "Q_L2",
+    "Q_L3",
+    "Q_L4",
+    "C03",
+    "C04",
+    "LATE_L1",
+    "LATE_L_FAIL",
+    "LATE_L_FAIL_JOIN",
+    "LATE_L_DONE",
+    "S_END"
+   ],
+   "total": 116,
+   "rival": 76,
+   "rivalRatio": 0.655
+  },
+  {
+   "segs": [
+    "S01",
+    "EB01",
+    "EB02",
+    "C01",
+    "C02",
+    "Q_L1",
+    "Q_L2",
+    "Q_L3",
+    "Q_L4",
+    "C03",
+    "C04",
+    "LATE_L1",
+    "LATE_L_SUCCESS1",
+    "LATE_L_SUCCESS_JOIN",
+    "LATE_L_DONE",
+    "S_END"
+   ],
+   "total": 107,
+   "rival": 76,
+   "rivalRatio": 0.71
+  },
+  {
+   "segs": [
+    "S01",
+    "EB01",
+    "EB02",
+    "C01",
+    "C02",
+    "Q_L1",
+    "Q_L2",
+    "Q_L3",
+    "Q_L4",
+    "C03",
+    "C04",
+    "LATE_R1",
+    "LATE_R2",
+    "LATE_R3",
+    "LATE_R_DONE",
+    "S_END"
+   ],
+   "total": 110,
+   "rival": 76,
+   "rivalRatio": 0.691
+  },
+  {
+   "segs": [
+    "S01",
+    "EB01",
+    "EB02",
+    "C01",
+    "C02",
+    "Q_L1",
+    "Q_L2",
+    "Q_L3",
+    "Q_L4",
+    "C03",
+    "C04",
+    "LATE_R1",
+    "LATE_R2B",
+    "LATE_R3",
+    "LATE_R_DONE",
+    "S_END"
+   ],
+   "total": 110,
+   "rival": 76,
+   "rivalRatio": 0.691
+  },
+  {
+   "segs": [
+    "S01",
+    "EB01",
+    "EB02",
+    "C01",
+    "C02",
+    "Q_L1",
+    "QL_ALT",
+    "Q_L3",
+    "Q_L4",
+    "C03",
+    "C04",
+    "LATE_L1",
+    "LATE_L_FAIL",
+    "LATE_L_FAIL_JOIN",
+    "LATE_L_DONE",
+    "S_END"
+   ],
+   "total": 119,
+   "rival": 79,
+   "rivalRatio": 0.664
+  },
+  {
+   "segs": [
+    "S01",
+    "EB01",
+    "EB02",
+    "C01",
+    "C02",
+    "Q_L1",
+    "QL_ALT",
+    "Q_L3",
+    "Q_L4",
+    "C03",
+    "C04",
+    "LATE_L1",
+    "LATE_L_SUCCESS1",
+    "LATE_L_SUCCESS_JOIN",
+    "LATE_L_DONE",
+    "S_END"
+   ],
+   "total": 110,
+   "rival": 79,
+   "rivalRatio": 0.718
+  },
+  {
+   "segs": [
+    "S01",
+    "EB01",
+    "EB02",
+    "C01",
+    "C02",
+    "Q_L1",
+    "QL_ALT",
+    "Q_L3",
+    "Q_L4",
+    "C03",
+    "C04",
+    "LATE_R1",
+    "LATE_R2",
+    "LATE_R3",
+    "LATE_R_DONE",
+    "S_END"
+   ],
+   "total": 113,
+   "rival": 79,
+   "rivalRatio": 0.699
+  },
+  {
+   "segs": [
+    "S01",
+    "EB01",
+    "EB02",
+    "C01",
+    "C02",
+    "Q_L1",
+    "QL_ALT",
+    "Q_L3",
+    "Q_L4",
+    "C03",
+    "C04",
+    "LATE_R1",
+    "LATE_R2B",
+    "LATE_R3",
+    "LATE_R_DONE",
+    "S_END"
+   ],
+   "total": 113,
+   "rival": 79,
+   "rivalRatio": 0.699
+  },
+  {
+   "segs": [
+    "S01",
+    "EB01",
+    "EB02",
+    "C01",
+    "C02",
+    "Q_R1",
+    "Q_R2",
+    "Q_R3",
+    "Q_R4",
+    "Q_R5",
+    "C03",
+    "C04",
+    "LATE_L1",
+    "LATE_L_FAIL",
+    "LATE_L_FAIL_JOIN",
+    "LATE_L_DONE",
+    "S_END"
+   ],
+   "total": 117,
+   "rival": 77,
+   "rivalRatio": 0.658
+  },
+  {
+   "segs": [
+    "S01",
+    "EB01",
+    "EB02",
+    "C01",
+    "C02",
+    "Q_R1",
+    "Q_R2",
+    "Q_R3",
+    "Q_R4",
+    "Q_R5",
+    "C03",
+    "C04",
+    "LATE_L1",
+    "LATE_L_SUCCESS1",
+    "LATE_L_SUCCESS_JOIN",
+    "LATE_L_DONE",
+    "S_END"
+   ],
+   "total": 108,
+   "rival": 77,
+   "rivalRatio": 0.713
+  },
+  {
+   "segs": [
+    "S01",
+    "EB01",
+    "EB02",
+    "C01",
+    "C02",
+    "Q_R1",
+    "Q_R2",
+    "Q_R3",
+    "Q_R4",
+    "Q_R5",
+    "C03",
+    "C04",
+    "LATE_R1",
+    "LATE_R2",
+    "LATE_R3",
+    "LATE_R_DONE",
+    "S_END"
+   ],
+   "total": 111,
+   "rival": 77,
+   "rivalRatio": 0.694
+  },
+  {
+   "segs": [
+    "S01",
+    "EB01",
+    "EB02",
+    "C01",
+    "C02",
+    "Q_R1",
+    "Q_R2",
+    "Q_R3",
+    "Q_R4",
+    "Q_R5",
+    "C03",
+    "C04",
+    "LATE_R1",
+    "LATE_R2B",
+    "LATE_R3",
+    "LATE_R_DONE",
+    "S_END"
+   ],
+   "total": 111,
+   "rival": 77,
+   "rivalRatio": 0.694
+  },
+  {
+   "segs": [
+    "S01",
+    "EB01",
+    "EB02",
+    "C01",
+    "C02",
+    "Q_R1",
+    "QR_ALT",
+    "Q_R3",
+    "Q_R4",
+    "Q_R5",
+    "C03",
+    "C04",
+    "LATE_L1",
+    "LATE_L_FAIL",
+    "LATE_L_FAIL_JOIN",
+    "LATE_L_DONE",
+    "S_END"
+   ],
+   "total": 118,
+   "rival": 78,
+   "rivalRatio": 0.661
+  },
+  {
+   "segs": [
+    "S01",
+    "EB01",
+    "EB02",
+    "C01",
+    "C02",
+    "Q_R1",
+    "QR_ALT",
+    "Q_R3",
+    "Q_R4",
+    "Q_R5",
+    "C03",
+    "C04",
+    "LATE_L1",
+    "LATE_L_SUCCESS1",
+    "LATE_L_SUCCESS_JOIN",
+    "LATE_L_DONE",
+    "S_END"
+   ],
+   "total": 109,
+   "rival": 78,
+   "rivalRatio": 0.716
+  },
+  {
+   "segs": [
+    "S01",
+    "EB01",
+    "EB02",
+    "C01",
+    "C02",
+    "Q_R1",
+    "QR_ALT",
+    "Q_R3",
+    "Q_R4",
+    "Q_R5",
+    "C03",
+    "C04",
+    "LATE_R1",
+    "LATE_R2",
+    "LATE_R3",
+    "LATE_R_DONE",
+    "S_END"
+   ],
+   "total": 112,
+   "rival": 78,
+   "rivalRatio": 0.696
+  },
+  {
+   "segs": [
+    "S01",
+    "EB01",
+    "EB02",
+    "C01",
+    "C02",
+    "Q_R1",
+    "QR_ALT",
+    "Q_R3",
+    "Q_R4",
+    "Q_R5",
+    "C03",
+    "C04",
+    "LATE_R1",
+    "LATE_R2B",
+    "LATE_R3",
+    "LATE_R_DONE",
+    "S_END"
+   ],
+   "total": 112,
+   "rival": 78,
+   "rivalRatio": 0.696
+  }
+ ],
+ "skyPhase": {
+  "dusk": [
+   0,
+   30
+  ],
+  "twilight": [
+   30,
+   84
+  ],
+  "night": [
+   84,
+   120
+  ]
+ }
+}
