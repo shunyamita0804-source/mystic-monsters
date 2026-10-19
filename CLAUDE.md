@@ -21,7 +21,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 
 | ファイル | 役割 |
 |---|---|
-| index.html | 画面・CSS・ゲーム本体（旧Artifact版から続く部分を含む）。base64 画像の巨大な行がある（下の「検索・調査のルール」） |
+| index.html | 画面・CSS・ゲーム本体（旧Artifact版から続く部分を含む）。埋め込みだった base64 画像は assets/inline/ のファイル（index.html に base64 の画像は無い） |
 | js/battle-bridge.js、js/integration/adapter.js、js/systems/ | バトルエンジン（Phase 6 保護対象） |
 | legacy/index.original.html | 旧版の原本（保護対象・変更禁止） |
 | js/phase7/progression.js | 育成の共通処理（特訓・アイテム・バッグ・ランク記録）`MMP7` |
@@ -75,6 +75,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 | js/battle/movedex.js | 技辞典 `MMMOVEDEX` |
 | js/battle/move-cards.js | 技カード `MMMVCARD` |
 | js/battle/art25d.js、js/battle/art25d-data.js | 技アニメの再生 `MM25D` |
+| js/battle/inline-preload.js | assets/inline/ のバトルの絵をバトルの直前に読み、描画の前に data URI へ差し替える `MMINL` |
 | js/battle/*-moves-data.js | 種族ごとの技アニメのデータ（生成物） |
 | js/battle/move-tune-1015.js、js/battle/move-area-1015.js | 技アニメの表示の調整 `MMTUNE`・体の面積（生成物） |
 | js/battle/rootdrain-1016.js | フルーネ技09 ルートドレインの演出 `MMRD` |
@@ -121,6 +122,8 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 | assets/audio/ | 音源（出どころ・ライセンスは AUDIO_CREDITS.md） |
 | assets/scenes/、assets/fields/、assets/dice/ | 背景・フィールド・サイコロの素材 |
 | assets/embedded/ | index.html の base64 から外部化した既存画像（元データとバイト単位で同一） |
+| assets/inline/ | index.html の base64 画像 175件を外へ出したもの（元データとバイト単位で同一・Phase 6 の絵を含む・manifest.json・README.md） |
+| tools/inline-images/ | base64 画像の外部化と確認の道具（extract・restore・usage・battle-timing・screen-check） |
 | tools/ | 素材の派生・道の生成・シミュレーション（各フォルダの README・コメント） |
 | tests/*.test.mjs | 自動テスト |
 | tools/public-check.mjs | push 後の公開URLの確認（§7） |
@@ -174,6 +177,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 ### 検索・調査のルール（開発負荷の監査で追加。base64 の巨大行で会話の文脈を埋めないため）
 
 - index.html と legacy/index.original.html には、base64 画像の巨大な行がある（index.html は1883〜2129行目付近の7行に集中。1行最大約2.6MB。index.html 全体は約7.9MB（7,874,018バイト）で、そのうち base64 画像が176件・約7.5MB。2026-09-29 の Stage 3 で未使用の10件を削除した後の実測）。そのまま検索・表示すると数MBの出力になる（例：index.html を「hp」で rg すると約7.5MB）。
+- （2026-10-19：index.html の base64 画像 175件は assets/inline/ のファイルへ出した＝index.html は約1MB で巨大な行は無い。上の行の行番号・大きさは外部化の前の記録。legacy/index.original.html には今も巨大な行がある）
 - 通常の全文検索では legacy/ を対象にしない。リポジトリ直下の .ignore に `legacy/` を書いてあり、rg（Claude の Grep を含む）は自動で除外する。Git の追跡・GitHub Pages・テスト（sha256 照合）には影響しない。
 - legacy/ が必要な調査では、パスを明示して対象にする（例：`rg -M 500 -n 語 legacy/index.original.html`。ディレクトリ全体を検索するなら `rg --no-ignore`）。
 - index.html はゲーム本体なので検索対象から外さない。ただし rg／grep の結果に巨大な行をそのまま出さない：

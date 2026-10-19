@@ -24,7 +24,7 @@ const inlineReq = (pg, list) => pg.on('response', (r) => { if (r.url().includes(
 
 async function imgState(pg) {
   return pg.evaluate(() => {
-    const im = [...document.querySelectorAll('img')].filter((i) => (i.getAttribute('src') || '').includes('assets/inline/'));
+    const im = [...document.querySelectorAll('img')].filter((i) => /assets\/inline\/|^data:image\//.test(i.getAttribute('src') || ''));   // MMINL が差し替えたあとは data URI
     const bg = [...document.querySelectorAll('*')].map((e) => getComputedStyle(e).backgroundImage).filter((b) => b.includes('assets/inline/'));
     return { n: im.length, bad: im.filter((i) => !(i.complete && i.naturalWidth > 0)).map((i) => i.getAttribute('src')), bg: bg.length };
   });
@@ -78,7 +78,7 @@ for (const [ui, query] of [['new', ''], ['old', '?battleArt=old']]) {
     if (sp === 0) { await shot(pg, `08_tournament_${ui}`); const s = await waitImgs(pg); ok('2) 大会の対戦表' + tag, !s.bad.length, JSON.stringify(s)); }
     const kitOk = await pg.evaluate(() => new Promise((ok) => { const t0 = Date.now(); const k = () => { const S0 = S, m = S0.m, t = m.raise.tour, pm = MMP8.tourNext(m), ev = MMP8L.entrantView(t.league, pm.opp); const U = MMINL.kit(m, t.rank, ev.sp, true); const r = U.filter((u) => !MMINL.isReady(u)); if (!r.length || Date.now() - t0 > 3000) ok({ n: U.length, notReady: r }); else setTimeout(k, 50); }; k(); }));
     ok(`3) 大会の対戦表でそのバトルの絵を読み終えている sp${sp}` + tag, kitOk.n > 0 && !kitOk.notReady.length, JSON.stringify(kitOk));
-    const first = await pg.evaluate(() => new Promise((ok) => { p8TourFight(); requestAnimationFrame(() => { const im = [...document.querySelectorAll('#bt img')].filter((i) => (i.getAttribute('src') || '').includes('assets/inline/')); ok({ n: im.length, bad: im.filter((i) => !(i.complete && i.naturalWidth > 0)).map((i) => i.getAttribute('src')) }); }); }));
+    const first = await pg.evaluate(() => new Promise((ok) => { p8TourFight(); requestAnimationFrame(() => { const im = [...document.querySelectorAll('#bt img')].filter((i) => /assets\/inline\/|^data:image\//.test(i.getAttribute('src') || '')); ok({ n: im.length, bad: im.filter((i) => !(i.complete && i.naturalWidth > 0)).map((i) => i.getAttribute('src')) }); }); }));
     ok(`3) バトル開始の最初のフレームで外へ出した絵がすべて読めている sp${sp}` + tag, first.n > 0 && !first.bad.length, JSON.stringify(first));
     await pg.waitForSelector('#bt', { timeout: 15000 });
     await pg.waitForTimeout(1500); await shot(pg, `09_battle_${ui}_${sp}`);
@@ -156,7 +156,7 @@ if (ORIG) {
   await slow(pg);
   await pg.evaluate(() => { const m = mk(1); m.name = 'ガウ'; Object.assign(m, { po: 999, in: 999, hi: 999, li: 999 }); MMP7.ensureProg(m); S.m = m; save(); MMP8.depart(S, m, () => 0.37); const g = MMCH.graphFor(m); Object.assign(m.raise, { node: g.goal, goal: true, pend: null }); m.raise.field.arrivalSeen = true; save(); MMP8.startTournament(S, S.m, 0, 7); save(); board(); });
   await pg.waitForSelector('.tb1 .tbgo', { timeout: 60000 }); await pg.waitForTimeout(3000);
-  const first = await pg.evaluate(() => new Promise((ok) => { p8TourFight(); requestAnimationFrame(() => { const im = [...document.querySelectorAll('#bt img')].filter((i) => (i.getAttribute('src') || '').includes('assets/inline/')); ok({ n: im.length, bad: im.filter((i) => !(i.complete && i.naturalWidth > 0)).map((i) => i.getAttribute('src')) }); }); }));
+  const first = await pg.evaluate(() => new Promise((ok) => { p8TourFight(); requestAnimationFrame(() => { const im = [...document.querySelectorAll('#bt img')].filter((i) => /assets\/inline\/|^data:image\//.test(i.getAttribute('src') || '')); ok({ n: im.length, bad: im.filter((i) => !(i.complete && i.naturalWidth > 0)).map((i) => i.getAttribute('src')) }); }); }));
   ok('5) 遅い回線：対戦表を3秒見てからのバトル開始の最初のフレームで絵がすべて読めている', first.n > 0 && !first.bad.length, JSON.stringify(first));
   await p.ctx.close();
 }
