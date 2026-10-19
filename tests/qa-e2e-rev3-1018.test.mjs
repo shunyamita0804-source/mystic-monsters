@@ -35,7 +35,7 @@ T('R3-B1：通常の Chapter 1＝新歩行（7体）と C案カメラが既定�
     assert.equal(a.search, '', 'フラグなしの URL');
     assert.deepEqual(a.qw, [true, true, false], '新歩行が既定');
     assert.equal(a.cam, 'c', 'C案カメラが既定');
-    assert.equal(a.walk, '1017');
+    assert.equal(a.walk, '1018');   // 2026-10-18 夜間 GO：本編の既定の素材は walk_1018
     assert.deepEqual(a.on, ['./assets/monsters/walk_1018/gauru/front_2.webp'], `止まっている姿は正面（${size}）`);
     await pg.evaluate(() => { window.__mr = Math.random; Math.random = () => 0.99; });
     await pg.click('#brollbtn'); await pg.evaluate(() => { Math.random = window.__mr; });
