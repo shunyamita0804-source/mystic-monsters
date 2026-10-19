@@ -136,6 +136,9 @@
   }
   // ---- 近くの高い解像度の層 ----
   //  cfg＝{ doc, parent（区画を入れる親）, paintAt(g, bx)（従来と同じ描画）, S（カメラの状態）, project, WORLD }
+  //  2026-10-19 P0（iPhone：開始の地点だけ道がぼける）：海の世界（3D の平面）では近くの区画を地面（.rfw-gnd・高さ 0）より 0.05 単位だけ上に置く。
+  //   同じ高さの層どうしは、Safari では見る向きによって前後が入れ替わり、ぼけた遠くの層が上に出ていた（画面では 0.2px 未満のずれ＝見た目は変わらない）。海面（0.3）より下
+  const LIFT = 0.05;
   function hiLayer(cfg) {
     const tiles = new Map(); let queue = [], lastSig = '';
     const R = RES, T = TILE;
@@ -146,7 +149,7 @@
       //  1単位 10px で描いても画面ではぼける（Chromium の GPU 描画で確認：層を分けると canvas の画素のまま合成される）。?qaRoadLayer=0 で従来（比較用）
       Object.assign(c.style, { left: (x0 - 1 / R) + 'px', top: (y0 - 1 / R) + 'px', width: pw / R + 'px', height: pw / R + 'px', visibility: 'hidden', willChange: LAYER ? 'transform' : '' });
       // 2026-10-17：3D の中（海の世界の preserve-3d の平面）では、層は CSS の箱の大きさ × 画素比で描かれる＝箱を canvas の画素 ÷ 画素比にして transform で世界の大きさへ縮める（canvas の画素のまま・それ以上は大きくしない＝層のメモリを増やさない）
-      if (cfg.big) { const qk = /[?&]qaHiK=([\d.]+)/.exec((root.location && root.location.search) || ''), k = qk ? +qk[1] : Math.max(1, root.devicePixelRatio || 1); Object.assign(c.style, { width: pw / k + 'px', height: pw / k + 'px', transformOrigin: '0 0', transform: `scale(${k / R})` }); }
+      if (cfg.big) { const qk = /[?&]qaHiK=([\d.]+)/.exec((root.location && root.location.search) || ''), k = qk ? +qk[1] : Math.max(1, root.devicePixelRatio || 1); Object.assign(c.style, { width: pw / k + 'px', height: pw / k + 'px', transformOrigin: '0 0', transform: `translateZ(${LIFT}px) scale(${k / R})` }); }
       cfg.parent.appendChild(c); return { c, ix, iy, done: false };
     }
     const paintMs = [];   // 区画1枚を描くのにかかった時間（確認用・最後の 60 枚）

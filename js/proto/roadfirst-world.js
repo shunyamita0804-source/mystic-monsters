@@ -204,6 +204,11 @@
     const SEA = plugOf(D), SEA3 = !!(SEA && !SEA.flat);
     const ELEV = (SEA3 && D.art.elev) || (!SEA && D && D.art && D.art.elev) || null, hOf = (id) => (ELEV && ELEV[id]) || 0;
     const scl = (s) => (SEA3 ? `scale3d(${s},${s},${s})` : `scale(${s})`);   // 高さのある子（海底・塔）は z も同じ倍率で
+    // 2026-10-19 P0（iPhone 試遊「道とマスがくっついていない」）：海の世界（preserve-3d の平面）は、遠近を親（wrap）の perspective ではなく平面の transform の perspective() に入れる。
+    //  iPhone（Safari）では親の perspective が 3D の平面に効かず、奥ほど地面がマス・モンスター（project の式＝遠近あり）より遠くへずれていた（手前だけ合う）。
+    //  translate(注視点) perspective(P) … は「perspective-origin＝注視点」の親の perspective と同じ行列（Chromium では描画が変わらない）。平らな平面（Chapter 1・3・4）は従来どおり
+    const planeTf = (c) => `translate(${c.ax}px,${c.ay}px) ${SEA3 ? `perspective(${c.P}px) ` : ''}rotateX(${c.tilt}deg) ${scl(c.s)} rotate(${(c.yaw || 0).toFixed(3)}deg) translate(${-c.tx}px,${-c.ty}px)`;
+    const wrapPersp = (P, ax, ay) => { wrap.style.perspective = SEA3 ? 'none' : P + 'px'; if (!SEA3) wrap.style.perspectiveOrigin = `${ax}px ${ay}px`; };
     if (SEA3) { wrap.classList.add('sea'); plane.style.transformStyle = 'preserve-3d'; }
     if (D && D.art && D.art.sky) wrap.classList.add('sky');   // 2026-10-18 Chapter 3（空の世界）
     const GA = (SEA && SEA.goal) || ART.goal;   // 大会会場の絵（2026-10-16 Chapter 2 は正式の ocean_arena）
@@ -396,8 +401,8 @@
       const sig = [c.tx, c.ty, c.s * 100, c.tilt * 10, (c.yaw || 0) * 10, c.ax, c.ay, S.mon ? S.mon[0] : 0, S.mon ? S.mon[1] : 0, S.dirty ? 1 : 0].map((x) => Math.round(x * 10)).join(',');
       if (sig === S.sig) return; S.sig = sig; S.dirty = false;
       // 平面：注視点を原点に移して → 倍率 → 傾き → 画面の位置へ（project と同じ式。perspective-origin＝注視点の画面位置）
-      wrap.style.perspective = c.P + 'px'; wrap.style.perspectiveOrigin = `${c.ax}px ${c.ay}px`;
-      plane.style.transform = `translate(${c.ax}px,${c.ay}px) rotateX(${c.tilt}deg) ${scl(c.s)} rotate(${(c.yaw || 0).toFixed(3)}deg) translate(${-c.tx}px,${-c.ty}px)`;
+      wrapPersp(c.P, c.ax, c.ay);
+      plane.style.transform = planeTf(c);
       const v = S.view, Wd = v ? v.W : 400, Hd = v ? v.H : 800, xr = [];
       if (o.xray && S.mon) { const q = project(c, S.mon[0], S.mon[1], S.mon[2]), w = o.monRatio > 0 ? Math.max(c.s < 1 ? 14 : 30, Math.max(c.s < 1 ? 2 : o.tilePx[0], Math.min(o.tilePx[1], o.tileW * c.s * q.k)) * o.monRatio) : Math.max(c.s < 1 ? 14 : 40, Math.min(100, 24 * c.s * q.k)), h = w * (S.monAh || 0.92);
         xr.push([q.x - w / 2, q.y - h, q.x + w / 2, q.y, q.y + 2, w * h * 0.5]); }   // モンスターの箱（重なりの判定は半分で＝少しでも隠れたら）
@@ -447,8 +452,8 @@
       zSync(to.yaw);   // 寄り終わりの向きで前後の順を決めておく（寄る間は小さい＝順の違いは見えない）
       const anims = [], can = typeof plane.animate === 'function';
       const run = (el, kf) => { if (!can) return; try { anims.push(el.animate(kf, { duration: dur, easing: 'linear', fill: 'forwards' })); } catch (e) { /* 動かせない要素は最後の姿へ */ } };
-      wrap.style.perspective = o.persp + 'px'; wrap.style.perspectiveOrigin = `${to.ax}px ${to.ay}px`;
-      run(plane, cams.map((c, i) => ({ transform: `translate(${c.ax}px,${c.ay}px) rotateX(${c.tilt}deg) ${scl(c.s)} rotate(${(c.yaw || 0).toFixed(3)}deg) translate(${-c.tx}px,${-c.ty}px)`, offset: i / INTRO_SAMPLES })));
+      wrapPersp(o.persp, to.ax, to.ay);
+      run(plane, cams.map((c, i) => ({ transform: planeTf(c), offset: i / INTRO_SAMPLES })));
       const tileW = (c, q) => Math.max(c.s < 1 ? 2 : o.tilePx[0], Math.min(o.tilePx[1], o.tileW * c.s * q.k));
       const onScreen = (q, w) => q.x > -w && q.x < Wd + w && q.y > -w && q.y < Hd + w;
       // 2026-10-14 Chapter 1 進入時のクラッシュ対策（iPhone で題字 → 全景の瞬間に落ちる）：寄る間は全要素が別々の層になる。
