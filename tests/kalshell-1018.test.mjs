@@ -116,7 +116,7 @@ test('KS-02：隔離＝byId／byKey／keyOf では引けない・SPECIES／市�
   assert.equal((HTML.match(/kalshell/g) || []).length, 1, 'index.html は技アニメのデータの script 1行だけ');
   assert.match(HTML, /<script src="\.\/js\/battle\/razuck-moves-data\.js"><\/script>[^\n]*\n<script src="\.\/js\/battle\/kalshell-moves-data\.js"><\/script>/, 'ラズックのデータの直後');
   assert.ok(HTML.indexOf('kalshell-moves-data.js') < HTML.indexOf('js/battle/art25d.js"'), 'art25d より先に読む');
-  for (const f of ['js/chapter/world-board.js', 'js/qa/walk5-1016.js', 'CLAUDE.md', 'js/battle-bridge.js', 'js/integration/adapter.js']) assert.ok(!rd(f).includes('kalshell'), `${f}：触れていない`);
+  for (const f of ['js/chapter/world-board.js', 'js/qa/walk5-1016.js', 'js/battle-bridge.js', 'js/integration/adapter.js'])   /* CLAUDE.md は親のセッションが §3 に記録した（2026-10-19） */ assert.ok(!rd(f).includes('kalshell'), `${f}：触れていない`);
   const arena = rd('js/battle/arena.js');
   assert.match(arena, /const IDLE = \{ 0: 'idle_soramo', 1: 'idle_gauru', 2: 'idle_nobiton', 3: 'idle_jiol', 4: 'idle_regnas' \};/, 'バトルの待機絵の表には入れない（QA の間だけ貸す）');
   assert.match(arena, /const FACE = \{ 0: 'R', 1: 'R', 2: 'R', 3: 'R', 4: 'R' \};/, '待機絵は右向き（既定）＝反転の表に足さない');
