@@ -45,7 +45,7 @@ test('QT-B2：新歩行 7体（?qaWalk=1017）＝ガウルで Chapter 1 の B・
     await pg.waitForFunction(() => window.MMWB && MMWB.world() && MMWB.world().isReady && MMWB.world().isReady() && document.querySelector('.rfw-mon[data-qawalk="1017"]'), null, { timeout: 60000 });
     const r = await pg.evaluate(() => ({ sp: S.m.sp, route: S.m.raise.field.route, tiles: JSON.stringify(S.m.raise.field.tiles), imgs: [...document.querySelectorAll('.rfw-mon img.wk')].map((i) => i.getAttribute('src')) }));
     assert.equal(r.sp, 1); assert.equal(r.route, 'B'); assert.equal(r.imgs.length, 20, '盤に出ている種族の20コマだけ');
-    assert.ok(r.imgs.every((s) => s.includes('walk_1018/gauru/')), r.imgs[0]);
+    assert.ok(r.imgs.every((s) => s.includes('walk_1017/gauru/')), r.imgs[0]);   // ?qaWalk=1017＝前の素材の比較
     tiles.push(r.tiles);
     if (k === 0) { await pg.waitForTimeout(1500); await shot(pg, 'qt_walk1017'); }
     assert.equal(await pg.evaluate(() => localStorage.getItem('mr4v6')), s0, '試遊は保存しない');
