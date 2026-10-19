@@ -140,8 +140,9 @@
   /** 海面の道（桟橋・橋・島の道）：海の上＝海上橋の石板（sea_bridge_deck）・陸の上＝白石の道。下に影（橋に見せる）。海底・斜路の区間は描かない */
   function roads(g, D, o, art, bx, H) {
     const S = art.sea || {};
-    const segs = Object.entries(D.segments).filter(([sid]) => isSurface(zoneOf(D, sid)));
-    const pts = segs.map(([, s]) => H.curvePts(s[3].map((id) => D.nodes[id])));
+    // 2026-10-20：区間のつなぎ目（分かれ目でない地点）では切らずに1本の道として描く（H.roadChains）
+    const segs = H.roadChains(D, Object.entries(D.segments).filter(([sid]) => isSurface(zoneOf(D, sid)))).map((c) => [c.sids[0], [c.ids[0], c.ids[c.ids.length - 1], '', c.ids]]);
+    const pts = segs.map(([, s]) => H.roadPts(D, s[3], 16));   // 曲がりの半径 16 未満は丸める（帯の見える幅の半分 12.3）
     const deck = tp(g, H, S, 'deck'), white = tp(g, H, S, 'white');
     g.lineCap = g.lineJoin = 'round';
     // 2026-10-19 P0（iPhone 試遊「影が別方向・異常に長い」）：道の影は世界の南へ 7 単位ずらしていた＝カメラが回ると道からはみ出す長い帯に見えた → 道のすぐ下に細く（1.5 単位・少し薄く）
@@ -153,7 +154,7 @@
     //  分かれ目・合流・行き止まりは R01 の縁石を円に沿って並べた広場（plazaR01）。R01 が読めない・?qaRoad=1 のときは従来の描き方
     const QA0 = art.qaRoad && H.qa && H.qa(), R01 = QA0 && art.qaRoad === '2' && S.strip && S.strip.walk ? S.strip.walk : null;
     if (deck) {
-      if (R01) for (const P of pts) QA0.meshStrip(g, P, R01, ROAD_W * 128 / 62, bx);
+      if (R01) { roadsR01(g, D, segs, pts, R01, white || deck, H, bx, QA0); return; }
       else {
       g.strokeStyle = 'rgb(168,160,140)'; g.lineWidth = CURB_W; for (const P of pts) { pathOf(g, P); g.stroke(); }   // 縁石
       // 2026-10-16 QA（A。URL の ?qaRoad=1|2 のときだけ）：1＝海上橋の石板を鏡映しで並べる（継ぎ目が消える・模様は山形）／2＝正式の白い橋帯 R01 を道に沿わせて敷く（2026-10-17：?qaRoadArt の新しい石板は継ぎ目が小さい＝鏡映しにしない）
@@ -169,60 +170,67 @@
       //  海面に平たい帯として描いていたため、道から離れた水の上に小さな杭が並んで見えた（橋につながった欄干に見えない）。素材の読み込みは残す
     } else if (art.strip) for (const P of pts) H.stripAlong(g, P, art.strip, H.ART.strip.w, bx);
     else { g.strokeStyle = '#d9cfb0'; g.lineWidth = 18; for (const P of pts) { pathOf(g, P); g.stroke(); } }
-    if (deck && R01) plazasR01(g, D, segs, R01, white || deck, H, bx);
-    else hubs(g, D, (sid) => isSurface(zoneOf(D, sid)), art, H, (n) => (onLand(D, H, n[0], n[1]) ? white || deck : deck));
+    hubs(g, D, (sid) => isSurface(zoneOf(D, sid)), art, H, (n) => (onLand(D, H, n[0], n[1]) ? white || deck : deck));
   }
   /** 2026-10-18 v2：R01 の縁石の段（行 130〜176 / 522＝帯の外側のふち）を円に沿って並べた広場。中は白い石畳（無ければ橋床）・道の入口は縁石を切る */
-  const R01_KERB = [128, 174], R01_IN = [174, 348];   // 縁石の段（青いモザイク＋金の線）・中の白い石の段（行・522px の fix）
+  const R01_KERB = [128, 174], R01_IN = [174, 348], R01_VIS = [118, 404];   // 縁石の段（青いモザイク＋金の線）・中の白い石の段（行・522px の fix）
   const R01_TILE = new WeakMap();
   /** 広場の中の床：R01 の中の白い石の段を縦に積んだ模様（段の間に細い目地）。道の床と同じ石・同じ細かさ */
   function r01Floor(strip) { if (R01_TILE.has(strip)) return R01_TILE.get(strip); let c = null;
     try { const h = R01_IN[1] - R01_IN[0]; c = root.document.createElement('canvas'); c.width = strip.width; c.height = h + 2; const x = c.getContext('2d');
       x.drawImage(strip, 0, R01_IN[0], strip.width, h, 0, 0, strip.width, h); x.fillStyle = 'rgb(178,174,160)'; x.fillRect(0, h, strip.width, 2); } catch (e) { c = null; }
     R01_TILE.set(strip, c); return c; }
-  function plazasR01(g, D, segs, strip, fill, H, bx) {
+  /** 2026-10-20（IMG_5997〜6004）：R01 の道と広場を「縁石 → 床」の2回に分けて描く。
+   *  1回目＝全部の道の帯（縁石つき）と広場の縁石の輪、2回目＝全部の道の床と広場の床。重なった道・広場の内側の縁石は床が覆う＝外のふちだけに縁石が残る
+   *  （狭い角度で集まる道も、広場を大きくせずに1つの舗装につながる。旧：広場の半径を最大 44 まで広げて、広場の中に隣のマスが並んでいた）。
+   *  広場の縁石の輪は、縁石の段だけの帯を円に沿って1本の網で貼る（旧：2.2 単位の切れ端を回して並べていた＝細い切れ目が櫛の歯のように見えた） */
+  const R01_CROP = new WeakMap();
+  function r01Crop(strip, rows) { let m = R01_CROP.get(strip); if (!m) { m = {}; R01_CROP.set(strip, m); } const k = rows.join(':'); if (k in m) return m[k];
+    let c = null; try { const f = strip.height / 522, y0 = Math.round(rows[0] * f), y1 = Math.round(rows[1] * f); c = root.document.createElement('canvas'); c.width = strip.width; c.height = Math.max(1, y1 - y0);
+      c.getContext('2d').drawImage(strip, 0, y0, strip.width, y1 - y0, 0, 0, strip.width, y1 - y0); c._rows = [y0 / f, y1 / f]; } catch (e) { c = null; }
+    m[k] = c; return c; }
+  function plazaList(D, segs, H) {
+    if (PLAZA_CACHE.has(D)) return PLAZA_CACHE.get(D);
     const dirs = {}, put = (id, a, b) => { (dirs[id] = dirs[id] || []).push(Math.atan2(b[1] - a[1], b[0] - a[0])); };
     for (const [, sg] of segs) { const ids = sg[3]; if (!ids || ids.length < 2) continue; const P = H.curvePts(ids.map((id) => D.nodes[id])), at = (k) => P[Math.min(P.length - 1, Math.max(0, k))];
       put(ids[0], P[0], at(3)); put(ids[ids.length - 1], P[P.length - 1], at(P.length - 4)); }
     const out = {}, inn = {}; for (const e of D.edges) if (e[3] === 'forward') { out[e[0]] = (out[e[0]] || 0) + 1; inn[e[1]] = (inn[e[1]] || 0) + 1; }
-    const full = ROAD_W * 128 / 62, ppu = strip.height / full, th = (R01_KERB[1] - R01_KERB[0]) / ppu, half = ROAD_W / 2;
-    // 2026-10-19 P0：広場の一覧を先に作る（区画の外の広場も＝隣の広場の内側の判定が区画ごとに変わらない）。床を全部描いてから縁石（隣の広場の床の内側には縁石を描かない）
     const PL = [];
     for (const id of Object.keys(dirs)) {
-      const n = D.nodes[id], dead = /dead_end/.test(n[2]); if (!((out[id] || 0) > 1 || (inn[id] || 0) > 1 || dead)) continue;
-      // 2026-10-19 P0（iPhone 試遊「道が重なりすぎ」）：狭い角度で集まる道は、縁石つきの帯どうしが広場の外まで重なっていた。
-      //  広場の半径を「いちばん狭い2本の帯（外のふち＝縁石の半分）が離れる距離」まで広げる（最大 44 単位）。広場は道の後に描く＝重なった所を覆う
-      const ds0 = dirs[id].slice().sort((a, b) => a - b); let amin = Math.PI;
-      for (let i = 0; i < ds0.length; i++) { const d = ((i + 1 < ds0.length ? ds0[i + 1] : ds0[0] + Math.PI * 2) - ds0[i]); if (ds0.length > 1 && d > 1e-3) amin = Math.min(amin, d); }
-      const x = n[0], y = n[1], r = Math.min(44, Math.max(ROAD_W * (dead ? 0.78 : 0.95), (CURB_W / 2) / Math.sin(amin / 2) + 2));
-      PL.push({ id, x, y, r });
+      const n = D.nodes[id], dead = /dead_end/.test(n[2]), start = n[2] === 'start'; if (!((out[id] || 0) > 1 || (inn[id] || 0) > 1 || dead || start)) continue;
+      // 半径＝縁石の外のふちまで 27 単位（道の縁石の幅と同じ＝60° 離れた道どうしの間にも縁石の輪が残る）・行き止まりは 0.78 倍。
+      //  中は中心の1マスだけ＝隣のマスは道の上（tools/ch2/build_ch2_routes.py の CLEAR＝中心から 38 単位）
+      PL.push({ id, x: n[0], y: n[1], r: dead ? ROAD_W * 0.78 : PLAZA_R });
     }
+    PLAZA_CACHE.set(D, PL); return PL;
+  }
+  const PLAZA_CACHE = new WeakMap(), PLAZA_R = 27;
+  function roadsR01(g, D, segs, pts, strip, fill, H, bx, QA) {
+    const full = ROAD_W * 128 / 62, ppu = strip.height / full, PL = plazaList(D, segs, H);
+    const kerb = r01Crop(strip, R01_KERB), floor = r01Crop(strip, R01_IN), th = (R01_KERB[1] - R01_KERB[0]) * strip.height / 522 / ppu;
+    const wF = floor ? floor.height / ppu : 0;
     const vis = (P) => !(bx && (P.x + P.r + 6 < bx[0] || P.x - P.r - 6 > bx[0] + bx[2] || P.y + P.r + 6 < bx[1] || P.y - P.r - 6 > bx[1] + bx[3]));
-    for (const P of PL) {   // 影（隣の広場の床の上に影の輪が出ないよう、床より先に全部）
+    for (const P of PL) {   // 広場の外の薄い影（道の帯より先＝道の上に影の輪が出ない）
       if (!vis(P)) continue; const { x, y, r } = P;
       const sh = g.createRadialGradient(x, y, r - 1, x, y, r + 4.5); sh.addColorStop(0, 'rgba(20,34,44,.32)'); sh.addColorStop(1, 'rgba(20,34,44,0)');
       g.fillStyle = sh; g.beginPath(); g.arc(x, y, r + 4.5, 0, 7); g.fill();
     }
-    for (const P of PL) {
-      if (!vis(P)) continue; const { x, y, r } = P;
-      const fl = r01Floor(strip), fp = fl ? g.createPattern(fl, 'repeat') : null;
-      if (fp && fp.setTransform && root.DOMMatrix) fp.setTransform(new root.DOMMatrix().scale(1 / ppu));
-      g.save(); g.translate(x, y); g.fillStyle = fp || fill || '#e6e1d4'; g.beginPath(); g.arc(0, 0, r - th * 0.5, 0, 7); g.fill(); g.restore();
-      const ao = g.createRadialGradient(x, y, r * 0.55, x, y, r - th * 0.5); ao.addColorStop(0, 'rgba(40,46,56,0)'); ao.addColorStop(1, 'rgba(40,46,56,.2)');
-      g.fillStyle = ao; g.beginPath(); g.arc(x, y, r - th * 0.5, 0, 7); g.fill();
+    // 1回目：道の帯（縁石つき）。帯の絵の透明な上下（行 0〜118・404〜522）は切る＝曲がりの内側で帯の幅の半分が曲がりの半径を超えて折り返さない
+    const vis0 = r01Crop(strip, R01_VIS), wV = vis0 ? vis0.height / ppu : full;
+    for (const P of pts) QA.meshStrip(g, P, vis0 || strip, wV, bx);
+    if (kerb) for (const P of PL) {   // 広場の縁石の輪（外のふちが円の外周＝道の縁石の外のふちと同じ位置）
+      if (!vis(P)) continue; const rm = P.r - th / 2, N = Math.max(24, Math.ceil(Math.PI * 2 * rm / 1.5)), ring = [];
+      for (let i = 0; i <= N + 2; i++) { const a = (i / N) * Math.PI * 2; ring.push([P.x + Math.cos(a) * rm, P.y + Math.sin(a) * rm]); }
+      QA.meshStrip(g, ring, kerb, th, bx);
     }
-    for (const P of PL) {
-      if (!vis(P)) continue; const { id, x, y, r } = P;
-      const ds = dirs[id], gap = Math.asin(Math.min(0.98, (half - th * 0.35) / (r - th / 2)));
-      const blocked = (a) => ds.some((d) => Math.abs(((a - d) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI) < gap);
-      const rm = r - th / 2, N = Math.max(12, Math.ceil(Math.PI * 2 * rm / 2.2)), L = Math.PI * 2 * rm / N, kh = R01_KERB[1] - R01_KERB[0];
-      for (let i = 0; i < N; i++) {
-        const a = (i + 0.5) / N * Math.PI * 2; if (blocked(a)) continue;
-        const kx = x + Math.cos(a) * rm, ky = y + Math.sin(a) * rm; if (PL.some((Q) => Q !== P && Math.hypot(kx - Q.x, ky - Q.y) < Q.r - th * 0.5)) continue;   // 隣の広場の床の上
-        const sx = ((i * L * ppu) % (strip.width - L * ppu - 2)) || 0;
-        g.save(); g.translate(x + Math.cos(a) * rm, y + Math.sin(a) * rm); g.rotate(a + Math.PI / 2);
-        g.drawImage(strip, sx, R01_KERB[0], Math.max(1, L * ppu), kh, -L / 2 - 0.25, -th / 2, L + 0.5, th); g.restore();
-      }
+    if (floor) for (const P of pts) QA.meshStrip(g, P, floor, wF, bx);   // 2回目：道の床（重なった道・広場の入口の縁石を覆う）
+    const fl = r01Floor(strip), fp = fl ? g.createPattern(fl, 'repeat') : null;
+    if (fp && fp.setTransform && root.DOMMatrix) fp.setTransform(new root.DOMMatrix().scale(1 / ppu));
+    for (const P of PL) {   // 広場の床（道の床より上＝中心の1マスのまわりは広場の石畳）
+      if (!vis(P)) continue; const { x, y, r } = P;
+      g.fillStyle = fp || fill || '#e6e1d4'; g.beginPath(); g.arc(x, y, r - th, 0, 7); g.fill();
+      const ao = g.createRadialGradient(x, y, r * 0.55, x, y, r - th); ao.addColorStop(0, 'rgba(40,46,56,0)'); ao.addColorStop(1, 'rgba(40,46,56,.16)');
+      g.fillStyle = ao; g.beginPath(); g.arc(x, y, r - th, 0, 7); g.fill();
     }
   }
   function edgeLine(g, P, off) { g.beginPath(); P.forEach((p, i) => { const q = P[Math.min(i + 1, P.length - 1)], r0 = P[Math.max(i - 1, 0)], dx = q[0] - r0[0], dy = q[1] - r0[1], L = Math.hypot(dx, dy) || 1, x = p[0] - dy / L * off, y = p[1] + dx / L * off; i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.stroke(); }
@@ -246,18 +254,24 @@
   //  2026-10-19 P0（iPhone 試遊・ユーザー判断「道の上のまま大きさを直す」「角度をつけず道に対して正面に」）：START の港の門は正面向きの派生
   //   （正式の harbor_start_gate の左半分＝左の柱とアーチの半分を、アーチの中心で左右に折り返した絵。色は変えない・右の小屋は無い＝art_1019/harbor_start_gate_front）。
   //   アーチの口（絵の幅の 41%・中央）が道幅 22 より少し広い 24 単位になる幅 58。階段が START のマスにかからないよう 14 単位先。side＝6番目（進む向きの右へ）
+  //  2026-10-20（IMG_6003「狭い切り貼りの門・柱と植え込みと階段が道をふさぐ」）：植え込みと階段（絵の行 376 から下）を切った派生 art_1020/harbor_start_gate_open（柱は地面から立つ・色は変えない。盤の景物の足もと＝絵の幅の 92% の高さ＝上に透明の余白 64px）。
+  //   アーチの口が縁石の外のふち（27 単位）より広い 29.5 単位になる幅 72・START の広場の出口（27 単位先）。向きは START から本線の最初のマス S01_01（7番目）＝ルート C のように
+  //   START が分かれ道でも、本線（港の大通り）の上に門。探索路（岸壁）は門をくぐらない。
+  //   前後（z＝8番目）は 0＝門の地面の位置で決める（旧 −30＝いつもマスより奥＝門の先のマスが柱の手前に重なり、柱が宙に浮いて見えた）
   const JT = 'sea_junction_tower', EDGE_PROPS = ['coral_shoal_edge', 'white_coastal_cliff_edge', 'undersea_cliff_edge'];
   const LM_BASE = {
-    START: ['./assets/fields/ch2/art_1019/harbor_start_gate_front.webp', 58, 14], LOWER_GATE: ['undersea_descent_gate', 40, 6], RIVAL: ['rival_pass_gate', 34, 10], Q: ['glass_corridor_arch', 50, 4],
+    START: ['./assets/fields/ch2/art_1020/harbor_start_gate_open.webp', 72, 27, null, null, 0, 'S01_01', 0], LOWER_GATE: ['undersea_descent_gate', 40, 6], RIVAL: ['rival_pass_gate', 34, 10], Q: ['glass_corridor_arch', 50, 4],
     STATUE: ['L07_winged_sea_god_statue', 30, 0, [-34, -20]], RANDOM_DEN: ['L11_sunken_ship_den_closed', 44, 20, null, 'L11_sunken_ship_den_open'],
     REWARD5: ['coastal_rock_shells', 40, 20], R_SPECIAL: ['L10_coral_treasure_landmark', 34, 20],
   };
   const LM_ROUTE = {
     A: { CHALLENGE: ['L09_western_sealed_sea_gate', 48, 14], L_CHEST: ['coastal_lighthouse', 30, 20], R_CHEST: ['L04_shell_shrine', 32, 20], L_ALTAR: ['L05_temple_island_altar', 50, 20], L_LATE_ALTAR: ['L08_western_white_tower', 34, 20], UPPER_GATE: ['undersea_ascent_gate', 36, 4] },
     B: { CHALLENGE: ['U03_sunken_temple_gate', 38, 14], L_CHEST: ['coastal_lighthouse', 30, 20], R_CHEST: ['L05_temple_island_altar', 50, 20], L_ALTAR: ['L08_western_white_tower', 34, 20], L_LATE_ALTAR: ['U05_sealed_chamber_altar', 40, 20] },
-    C: { CHALLENGE: ['U03_sunken_temple_gate', 38, 14], L_CHEST: ['L04_shell_shrine', 32, 20], R_CHEST: ['undersea_treasure_vault', 32, 20], L_ALTAR: ['trial_monolith', 40, 20], L_LATE_ALTAR: ['U05_sealed_chamber_altar', 40, 20] },
+    // 2026-10-20：C の START は分かれ道（港の大通り S01・岸壁 S01B が狭い角度で出る）＝START の出口に門を置くと柱が岸壁の道にかかる。
+    //  大通りが岸壁の道から約 50 単位離れる S01_02 の 11 単位先に、少し細い門（幅 68・アーチの口 28＝縁石の外のふち 27 より広い）
+    C: { START: null, S01_02: ['./assets/fields/ch2/art_1020/harbor_start_gate_open.webp', 68, 11, null, null, 0, null, 0], CHALLENGE: ['U03_sunken_temple_gate', 38, 14], L_CHEST: ['L04_shell_shrine', 32, 20], R_CHEST: ['undersea_treasure_vault', 32, 20], L_ALTAR: ['trial_monolith', 40, 20], L_LATE_ALTAR: ['U05_sealed_chamber_altar', 40, 20] },
   };
-  const ALL_LM = [...new Set([...Object.values(LM_BASE), ...Object.values(LM_ROUTE).flatMap(Object.values)].flatMap((v) => [v[0], v[4]].filter(Boolean)).concat(['ocean_arena', 'R05_spiral_tower_door', 'R05_spiral_tower_beacon', 'arena_approach_gate', 'L01_harbor_town_cluster', 'chapter2_sea_medallion', 'sea_zone_nameplate', JT, ...EDGE_PROPS]))];
+  const ALL_LM = [...new Set([...Object.values(LM_BASE), ...Object.values(LM_ROUTE).flatMap(Object.values)].filter(Boolean).flatMap((v) => [v[0], v[4]].filter(Boolean)).concat(['ocean_arena', 'R05_spiral_tower_door', 'R05_spiral_tower_beacon', 'arena_approach_gate', 'L01_harbor_town_cluster', 'chapter2_sea_medallion', 'sea_zone_nameplate', JT, ...EDGE_PROPS]))];
   const LM_CACHE = new WeakMap();
   const dSeg = (x, y, a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], L2 = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / L2)); return Math.hypot(a[0] + dx * t - x, a[1] + dy * t - y); };
   /** 海上の自由な分かれ道（free_fork・late_free_fork）の脇に分かれ目の塔（sea_junction_tower）。道からいちばん離れる向きへ 30 単位（8 方向から選ぶ） */
@@ -267,7 +281,11 @@
     for (const [id, n] of Object.entries(D.nodes)) {
       if (!/free_fork/.test(n[2]) || taken.has(id)) continue;
       const fw = D.edges.filter((e) => e[0] === id && e[3] === 'forward'); if (fw.length < 2 || fw.some((e) => !isSurface(zoneOf(D, e[2])))) continue;
-      let best = null; for (let k = 0; k < 8; k++) { const a = (k / 8) * Math.PI * 2, x = n[0] + Math.cos(a) * 30, y = n[1] + Math.sin(a) * 30, d = far(x, y); if (!best || d > best.d) best = { d, off: [x - n[0], y - n[1]] }; }
+      // 2026-10-20：入ってくる道の向き（カメラはその後ろから見る）より前（奥）の向きだけ＝手前に立ってマスやモンスターを隠さない
+      const ie = D.edges.find((e) => e[1] === id && e[3] === 'forward'), pv = ie ? D.nodes[ie[0]] : null, ix = pv ? n[0] - pv[0] : 0, iy = pv ? n[1] - pv[1] : -1, il = Math.hypot(ix, iy) || 1;
+      let best = null; for (let k = 0; k < 16; k++) { const a = (k / 16) * Math.PI * 2, cx = Math.cos(a), cy = Math.sin(a); if ((cx * ix + cy * iy) / il < -0.1) continue;
+        const x = n[0] + cx * 38, y = n[1] + cy * 38, d = far(x, y); if (!best || d > best.d) best = { d, off: [x - n[0], y - n[1]] }; }
+      if (!best) continue;
       // 2026-10-19 P0（iPhone 試遊：道の集まる広場の真ん中に塔が立っていた）：道から塔の半分の幅＋道の半分（約 26 単位）離せる所が無ければ立てない
       if (best.d < 26) continue;
       out.push({ node: id, file: U(JT), w: 26, off: best.off, z: -30 });
@@ -278,7 +296,7 @@
   function lm(D) {
     if (LM_CACHE.has(D)) return LM_CACHE.get(D);
     const M = Object.assign({}, LM_BASE, LM_ROUTE[D.route] || {}), out = [];
-    for (const [node, v] of Object.entries(M)) if (D.nodes[node]) out.push({ node, file: U(v[0]), w: v[1], along: v[2] || 0, off: v[3] || undefined, side: v[5] || 0, z: -30, open: v[4] ? U(v[4]) : undefined });
+    for (const [node, v] of Object.entries(M)) if (v && D.nodes[node]) out.push({ node, file: U(v[0]), w: v[1], along: v[2] || 0, off: v[3] || undefined, side: v[5] || 0, z: v[7] != null ? v[7] : -30, open: v[4] ? U(v[4]) : undefined, aim: v[6] && D.nodes[v[6]] ? v[6] : undefined });
     out.push(...junctionTowers(D, new Set(Object.keys(M))));
     if (!D.nodes.UPPER_GATE || !M.UPPER_GATE) { const sp = Object.entries(D.segments).find(([sid]) => /ascent/.test(zoneOf(D, sid))); if (sp && D.nodes[sp[1][0]]) out.push({ node: sp[1][0], file: U('undersea_ascent_gate'), w: 36, along: -6, z: -30 }); }
     LM_CACHE.set(D, out); return out;
@@ -428,8 +446,8 @@
     });
     // 海底の道：ガラス回廊（床 glass_corridor_floor＋天井 U01）／遺跡の通路（sunken_temple_road）。どちらも海底の地面に接した道（橋脚・下への影なし）
     const under = Object.entries(D.segments).filter(([sid]) => zoneOf(D, sid) === 'undersea');
-    const glassL = under.filter(([sid]) => isGlass(D, sid)).map(([, s]) => H.curvePts(s[3].map((id) => D.nodes[id])));
-    const templeL = under.filter(([sid]) => !isGlass(D, sid)).map(([, s]) => H.curvePts(s[3].map((id) => D.nodes[id])));
+    const chainL = (ok) => H.roadChains(D, under.filter(([sid]) => ok(sid))).map((c) => H.roadPts(D, c.ids, 18));   // 2026-10-20：つなぎ目で切らない
+    const glassL = chainL((sid) => isGlass(D, sid)), templeL = chainL((sid) => !isGlass(D, sid));
     const gp = tp(g, H, S, 'glass'), tr = tp(g, H, S, 'temple'), roof = S.strip && S.strip.roof;
     g.lineCap = g.lineJoin = 'round';
     if (gp || tr) {

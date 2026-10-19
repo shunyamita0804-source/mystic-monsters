@@ -95,7 +95,7 @@
     const k = ROUTES.includes(route) ? route : drawRoute(rnd), d = dataOf(k) || BASE(), rk = d === BASE() ? 'A' : k;
     const s = Number.isInteger(seed) ? seed >>> 0 : ((Math.floor(rnd() * 0x7fffffff) >>> 0) || 1);
     const core = C().create(d, { seed: s, turnLimit: TURN_LIMIT });
-    return { world: 1, chapterId: CH, patternId: 'W', layoutSeed: s, core, tiles: P().layout(d, s, { route: rk, bias: true, pool: cfg.pool ? cfg.pool() : undefined }), used: {}, claimed: {}, rivalMet: false, introSeen: false, arrivalSeen: false, route: rk, visualPattern: rk };
+    return { world: 1, chapterId: CH, patternId: 'W', layoutSeed: s, core, tiles: P().layout(d, s, { route: rk, bias: true, pool: cfg.pool ? cfg.pool() : undefined, ch: CH }), used: {}, claimed: {}, rivalMet: false, introSeen: false, arrivalSeen: false, route: rk, visualPattern: rk };
   }
   const clampFat = (v) => Math.max(0, Math.min(T().fatigueMax, Math.round(Number(v) || 0)));
   const carry = (f) => (root.MMCH && root.MMCH.carryFatigue ? root.MMCH.carryFatigue(f) : Math.max(0, (Number(f) || 0) - 50));
@@ -336,7 +336,7 @@
   /** この個体の今の Chapter がこのボードか（画面の切り替え用） */
   const active = (m) => attached && !!m && isObj(m.raise) && m.raise.ch === CH && !!root.MMP7 && root.MMP7.inChapter(m) && !!fieldOf(m);
 
-  const API = Object.freeze({ CH, TURN_LIMIT, DICE, ROUTES, ROUTE_NAME, ROUTE_NAME_BY, PLACE, PLACE_BY, REWARD_TITLE_BY, STORY, STORY_LINES_BY, DRIVER, VISUALS, storyEvents, markStory, segOf, attach, detach, active, fieldOf, valid, newField, track, routeName, placeOf, rewardTitle, branchOptions,
+  const API = Object.freeze({ pool: () => poolOf(), CH, TURN_LIMIT, DICE, ROUTES, ROUTE_NAME, ROUTE_NAME_BY, PLACE, PLACE_BY, REWARD_TITLE_BY, STORY, STORY_LINES_BY, DRIVER, VISUALS, storyEvents, markStory, segOf, attach, detach, active, fieldOf, valid, newField, track, routeName, placeOf, rewardTitle, branchOptions,
     routeOf, routeKey, dataOf: (m) => D(m), routeData: dataOf, drawRoute, setRoute, forcedRoute, visualOf, isAttached: () => attached });
   if (cfg.attach !== false) attach();
   return API;

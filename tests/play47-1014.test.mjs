@@ -39,11 +39,11 @@ test('P47-01：牧場は最大20体（2026-10-14 ユーザー正式）・所持�
 
 test('P47-02：育成バランス⑲＝Chapter ごとの成長量（Chapter 1 は1回の上昇を下げ、2→3→4 と穏やかに上げる）・Chapter 1 の配置は能力マスを増やし無地を減らす', () => {
   const M = loadMon();
-  assert.deepEqual(JSON.parse(JSON.stringify(M.GROWTH_GAIN_BY_CH)), { 1: { A: 17, B: 15, C: 14, D: 10, E: 8 }, 2: { A: 25, B: 23, C: 20, D: 16, E: 12 }, 3: { A: 29, B: 27, C: 23, D: 18, E: 14 }, 4: { A: 33, B: 30, C: 26, D: 20, E: 15 } });
+  assert.deepEqual(JSON.parse(JSON.stringify(M.GROWTH_GAIN_BY_CH)), { 1: { A: 17, B: 15, C: 14, D: 10, E: 8 }, 2: { A: 19, B: 17, C: 15, D: 12, E: 9 }, 3: { A: 21, B: 19, C: 16, D: 13, E: 10 }, 4: { A: 22, B: 20, C: 17, D: 14, E: 11 } });   // 2026-10-20 通し試遊の品質改善（適性 A がおおむね 300・旧 2: A25 3: A29 4: A33）
   for (const g of ['A', 'B', 'C', 'D', 'E']) for (let c = 1; c < 4; c++) assert.ok(M.GROWTH_GAIN_BY_CH[c + 1][g] > M.GROWTH_GAIN_BY_CH[c][g], `${g}：Chapter ${c} → ${c + 1} で上がる`);
   assert.deepEqual({ ...M.GROWTH_GAIN }, { A: 25, B: 21, C: 18, D: 14, E: 11 }, 'Chapter の分からない所の控えは従来の表');
   const mon = (ch, sp = 3) => ({ sp, raise: ch == null ? null : { ch } });
-  assert.equal(M.growthGain(mon(1), 'po'), 17); assert.equal(M.growthGain(mon(2), 'po'), 25); assert.equal(M.growthGain(mon(3), 'po'), 29); assert.equal(M.growthGain(mon(4), 'po'), 33);
+  assert.equal(M.growthGain(mon(1), 'po'), 17); assert.equal(M.growthGain(mon(2), 'po'), 19); assert.equal(M.growthGain(mon(3), 'po'), 21); assert.equal(M.growthGain(mon(4), 'po'), 22);
   assert.equal(M.growthGain(mon(1), 'in'), 8, 'ジオルのかしこさ E＝Chapter 1 の +8（2026-10-15 追加B）'); assert.equal(M.growthGain(mon(null), 'po'), 25, '育成の外＝控えの表');
   const w = {}; for (const f of ['js/phase10/monsters.js', 'js/chapter/engine.js', 'js/chapter/configs/ch1a.js', 'js/proto/roadfirst-data.js', 'js/proto/roadfirst-routes.js', 'js/proto/roadfirst-core.js', 'js/proto/roadfirst-play.js']) new Function('window', rd(f))(w);
   assert.deepEqual({ ...w.MMRF_PLAY.TUNING.density }, { stat: 0.53, event: 0.15, rest: 0.06, wild: 0.08, treasure: 0.06 });   // 2026-10-15 追加B（旧 stat 0.45）

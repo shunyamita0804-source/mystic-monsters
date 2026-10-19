@@ -129,7 +129,8 @@
   const bridgeSet = (D) => new Set(D.art.bridges || []);
   function roads(g, D, o, art, bx, H) {
     const S = art.volc || {}, br = bridgeSet(D), QA = H.qa && H.qa();
-    const segs = Object.entries(D.segments), pts = segs.map(([sid, s]) => [sid, H.curvePts(s[3].map((id) => D.nodes[id]))]);
+    // 2026-10-20：区間のつなぎ目（分かれ目でない地点）では切らずに1本の道として描く（陸と橋はつながない）
+    const pts = H.roadChains(D, Object.entries(D.segments), (a, b) => br.has(a) === br.has(b)).map((c) => [c.sids[0], H.roadPts(D, c.ids, ROAD_W / 2 + CURB_W + 3)]);
     const land = pts.filter(([sid]) => !br.has(sid)), brg = pts.filter(([sid]) => br.has(sid));
     g.lineCap = g.lineJoin = 'round';
     // 道の影（地面に落ちる）→ 道の石畳 → 両側の縁石（曲線に沿った帯）
@@ -139,6 +140,8 @@
     const cl = S.strip && S.strip.curbL, cr = S.strip && S.strip.curbR, sh = ROAD_W / 2 + CURB_W / 2;
     if (QA && cl && cr) for (const [, P] of land) { QA.meshStrip(g, P, cl, CURB_W, bx, -sh); QA.meshStrip(g, P, cr, CURB_W, bx, sh); }
     else { g.strokeStyle = 'rgba(30,22,20,.7)'; g.lineWidth = 1.4; for (const [, P] of land) for (const s of [-1, 1]) edge(g, P, s * (ROAD_W / 2 + CURB_W)); }
+    // 2026-10-20（運命の分かれ道の近くで道どうしが重なると、片方の縁石がもう片方の石畳の上に V の字で出ていた）：縁石の後に石畳（縁石の内側の幅）をもう一度＝重なった所は外のふちだけに縁石
+    if (QA && cl && cr) { g.strokeStyle = rp || '#4a4440'; g.lineWidth = ROAD_W - 0.6; for (const [, P] of land) { pathOf(g, P); g.stroke(); } }
     // 溶岩の上の橋（B の運命が偶数のときの双橋）：下に深い影 → 橋の床（曲線に沿った帯）→ 左右の欄干
     for (const [, P] of brg) {
       g.save(); g.translate(0, 9); g.strokeStyle = 'rgba(20,4,0,.5)'; g.lineWidth = ROAD_W + 10; pathOf(g, P); g.stroke(); g.restore();
@@ -155,7 +158,7 @@
     const S = art.volc || {}, pz = S.img && S.img.plaza, eb = S.img && S.img.base, out = {}, inn = {};
     for (const e of D.edges) if (e[3] === 'forward') { out[e[0]] = (out[e[0]] || 0) + 1; inn[e[1]] = (inn[e[1]] || 0) + 1; }
     for (const [id, n] of Object.entries(D.nodes)) {
-      const hub = (out[id] || 0) > 1 || (inn[id] || 0) > 1 || /dead_end/.test(n[2]);
+      const hub = (out[id] || 0) > 1 || (inn[id] || 0) > 1 || /dead_end/.test(n[2]) || n[2] === 'start';   // 2026-10-20：START も広場（開始の広場 → 道）
       if (hub) { if (pz) { const s = PLAZA_D, k = pz.height / pz.width; g.drawImage(pz, n[0] - s / 2, n[1] - (s * k) / 2, s, s * k); } else { g.fillStyle = '#4a4440'; g.beginPath(); g.arc(n[0], n[1], PLAZA_D / 2.4, 0, 7); g.fill(); } }
       if (eb && KEY_IDS.includes(id) && id !== 'START' && id !== 'GOAL') { const s = BASE_D, k = eb.height / eb.width; g.drawImage(eb, n[0] - s / 2, n[1] - (s * k) / 2, s, s * k); }
     }

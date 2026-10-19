@@ -40,7 +40,7 @@ test('QR-B1：Chapter 1 A（3サイズ × フラグなし／撤去した ?qaRoad
       const tag = `${size.join('x')} ${v || 'フラグなし'}`, p = await open(L, 1, '?ch1trial=A' + (v ? `&qaRoad=${v}` : ''), size), pg = p.page;
       await roll(pg, 2); await pg.waitForTimeout(800);
       const h = await hiOf(pg);
-      assert.equal(h.q.mode, '1', tag); const MAX = await pg.evaluate(() => MMQAR.MAX); assert.ok(h.q.tiles >= 1 && h.q.tiles <= MAX && h.q.pending === 0, `${tag}：${JSON.stringify(h.q)}`); assert.equal(h.dom, h.q.tiles);   // 2026-10-17 から新素材は 10px／単位・64単位の区画＝枚数の上限は MMQAR.MAX（メモリ 40MB）
+      assert.equal(h.q.mode, '1', tag); const LIM = await pg.evaluate(() => ({ MAX: MMQAR.MAX, BYTES: MMQAR.BYTES })); assert.ok(h.q.tiles >= 1 && h.q.tiles <= 96 && h.q.bytes <= LIM.BYTES && h.q.pending === 0, `${tag}：${JSON.stringify(h.q)}`);   // 2026-10-20：遠くの区画は半分の細かさ＝枚数ではなくメモリの上限（MMQAR.BYTES）で決める assert.equal(h.dom, h.q.tiles);   // 2026-10-17 から新素材は 10px／単位・64単位の区画＝枚数の上限は MMQAR.MAX（メモリ 40MB）
       assert.ok(h.q.bytes <= 32 * 1048576, `${tag}：メモリの上限（本編の 32MB）${h.q.bytes}`);
       assert.equal(await pg.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, tag);
       assert.deepEqual(p.errors, [], tag); assert.deepEqual(p.bad, [], tag);

@@ -49,7 +49,7 @@ test('AD-02：Chapter 4 の目印は Chapter 1 の目印を使わない（A／B�
 
 test('AD-03：Chapter 2 の目印は Chapter 2 の正式美術（art_1016）だけ', () => {
   const w = load(['js/proto/ch2-routes.js', 'js/proto/ch2-world.js']), S = w.MMRF_SEA;
-  for (const r of ['A', 'B', 'C']) for (const x of S.lm(w.MMRF_CH2[r])) assert.ok(/assets\/fields\/ch2\/art_10(16|19)\//.test(x.file) && !/board_art_1010|ch1a/.test(x.file), `${r} ${x.node}：${x.file}`);   // art_1019＝正式の港の門の正面向きの派生（2026-10-19 P0）
+  for (const r of ['A', 'B', 'C']) for (const x of S.lm(w.MMRF_CH2[r])) assert.ok(/assets\/fields\/ch2\/art_10(16|19|20)\//.test(x.file) && !/board_art_1010|ch1a/.test(x.file), `${r} ${x.node}：${x.file}`);   // art_1019＝正式の港の門の正面向きの派生（2026-10-19 P0）・art_1020＝その植え込みと階段を切った派生（2026-10-20）
 });
 
 test('AD-04：分岐の見た目の差し替えの口（Chapter 1〜4・未採用は null＝何も足さない）', () => {

@@ -28,7 +28,10 @@
   //  旧 Chapter 2 の盤の途中のセーブ（oldBoard）だけは、その育成の終わりまで従来のエンジン（巻き戻し・消去をしない＝案1）。qaOn は QA の表示の確認用に残す
   const qaOn = () => { if (root.MM_CH2_NEW) return true; try { return /[?&](ch2trial|qaCh2)=/.test(root.location ? root.location.search : ''); } catch (e) { return false; } };
   const dataOf = (k) => (root.MMRF_CH2 && root.MMRF_CH2[routeKey(k)]) || null;
-  const pool = () => { try { const c = root.MMCH && root.MMCH.getConfig(2); if (c && Array.isArray(c.eventPool)) return c.eventPool; } catch (e) {} return null; };
+  // 2026-10-20：出来事の題・本文・背景は Chapter の舞台に合わせる（js/chapter/event-themes.js の MMEVTH＝効果は変えない）
+  const themed = (p) => (p && root.MMEVTH ? root.MMEVTH.themed(2, p) : p);
+  const pool = () => themed(pool0());
+  const pool0 = () => { try { const c = root.MMCH && root.MMCH.getConfig(2); if (c && Array.isArray(c.eventPool)) return c.eventPool; } catch (e) {} return null; };
   // フィナの一言：チュートリアル（このセーブで1回＝Chapter 1 で見ていれば出ない）だけを Chapter 1 と共通に使う。Chapter 1 の景色の一言（ch1_*・w_*）は出さない（Chapter 2 の一言は未承認＝作らない）
   const story = () => (root.MMWD && root.MMWD.STORY ? root.MMWD.STORY.filter((e) => e.scope === 'save') : []);
   const L = (expression, text) => ({ expression, text });

@@ -4095,7 +4095,7 @@ html:has(#app>.chfw.wbw) .mmtalk:not(.mmtalk-big):not(.mmtalk-scene) .mmtalk-sta
 <script src="./js/fx/sequence.js"></script>
 <script src="./js/proto/roadfirst-data.js"></script><script src="./js/proto/roadfirst-routes.js"></script><script src="./js/proto/ch3-routes.js"></script><script src="./js/proto/ch4-routes.js"></script><script src="./js/proto/roadfirst-core.js"></script><script src="./js/proto/roadfirst-play.js"></script><script src="./js/proto/roadfirst-zones.js"></script><script src="./js/proto/roadfirst-world.js"></script><script src="./js/proto/ch2-routes.js"></script>
 <script src="./js/proto/ch2-world.js"></script><script src="./js/proto/ch4-world.js"></script><script src="./js/proto/roadfirst-view.js"></script><!-- 2026-10-09：Chapter 1 Pattern A 道路先行の試作（?chapterBoard=roadfirst のときだけ。通常の URL では何もしない）。2026-10-15：Chapter 2 A／B／C 設計案のデータ（ch2-routes.js＝&rfData=ch2&ch2route=A|B|C の試作だけが読む。本編にはつながない） -->
-<script src="./js/chapter/world-driver.js"></script><script src="./js/chapter/world-driver-ch2.js"></script><script src="./js/chapter/world-driver-ch3.js"></script><script src="./js/chapter/world-driver-ch4.js"></script><script src="./js/chapter/world-board.js"></script><script src="./js/chapter/ch2-trial.js"></script><script src="./js/chapter/ch3-trial.js"></script><script src="./js/chapter/ch4-trial.js"></script><script src="./js/qa/qa-jump-1018.js"></script><script src="./js/qa/road-art-1017.js"></script><script src="./js/qa/road-1016.js"></script><script src="./js/qa/walk5-1016.js"></script><script src="./js/qa/qa-board-1016.js"></script><script src="./js/qa/qa-top-1017.js"></script><!-- 2026-10-11：本編の Chapter 1＝1枚の世界のボード（299地点。進行 MMWD・画面 MMWB） -->
+<script src="./js/chapter/world-driver.js"></script><script src="./js/chapter/event-themes.js"></script><script src="./js/chapter/world-driver-ch2.js"></script><script src="./js/chapter/world-driver-ch3.js"></script><script src="./js/chapter/world-driver-ch4.js"></script><script src="./js/chapter/world-board.js"></script><script src="./js/chapter/ch2-trial.js"></script><script src="./js/chapter/ch3-trial.js"></script><script src="./js/chapter/ch4-trial.js"></script><script src="./js/qa/qa-jump-1018.js"></script><script src="./js/qa/road-art-1017.js"></script><script src="./js/qa/road-1016.js"></script><script src="./js/qa/walk5-1016.js"></script><script src="./js/qa/qa-board-1016.js"></script><script src="./js/qa/qa-top-1017.js"></script><!-- 2026-10-11：本編の Chapter 1＝1枚の世界のボード（299地点。進行 MMWD・画面 MMWB） -->
 <script src="./js/prologue/prologue.js"></script>
 <script src="./js/opening/worldmap.js"></script>
 <script>
@@ -5329,7 +5329,7 @@ window.addEventListener("unhandledrejection",rescue);
  *  ./version.json（小さな JSON。毎回取り直す）の build がこのページの MM_BUILD と違えば1回だけ reload（同じ版へは15分に1回まで＝読み込み直しを繰り返さない）。
  *  確かめる時：起動したとき・ページがメモリから戻ったとき（pageshow の persisted）・10分以上裏にいて表に戻ったとき。セーブ（mr4v6）には触れない（読み込み直しは iOS がタブを閉じたときと同じ＝つづきから）。
  *  公開するたびに MM_BUILD と version.json の build を同じ値に上げる（tests/dev24-1013.test.mjs で一致を確かめる） */
-const MM_BUILD="2026-10-19-p0b3";
+const MM_BUILD="2026-10-20-full1";
 (function(){const K="mmbuildReload";let hidAt=0;
  const check=()=>{try{const x=new XMLHttpRequest();x.open("GET","./version.json?t="+Date.now(),true);x.timeout=8000;
   x.onload=()=>{try{if(x.status<200||x.status>=300)return;const b=(JSON.parse(x.responseText)||{}).build;if(!b||b===MM_BUILD)return;
