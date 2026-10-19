@@ -45,6 +45,12 @@
     unique_kalshell: fz({ id: 'unique_kalshell', species: 7, speciesKey: 'kalshell', name: 'かたい貝殻', implemented: true,
       desc: '被ダメージ時に20%の確率で、そのダメージを25%軽減する。',
       params: fz({ trigger: 'on_damaged', chance: 0.2, damageCut: 0.25, uses: null }), hiddenParams: fz(['chance']) }),
+    // 2026-10-19 ミュロル（正式納品「ミュロル 正式素材・仕様マスター」2026-10-19・ユーザー承認済み）：相手の攻撃でダメージを受けた際、20%の確率で攻撃した相手のちからを小ダウン（−10%・2ターン）。
+    //  被弾ごとに独立の抽選・発動回数の上限なし・同じ効果は重複せず再発動で残りターンを更新。js/battle/rules.js の resolveWith（実際に受けたダメージのあと）。
+    //  「ちから」の下げは既存の効果の区分 atk（＝攻撃系：ちから・かしこさの両方の計算に効く。フルーネ「はなのかおり」と同じ扱い）。表示は小さな札＋fight() の「〇〇の攻撃力が下がった！」
+    unique_myurol: fz({ id: 'unique_myurol', species: 8, speciesKey: 'myurol', name: 'しめったはだ', implemented: true,
+      desc: '相手の攻撃でダメージを受けた際、20%の確率で攻撃した相手のちからを小ダウン（-10%・2ターン）させる。',
+      params: fz({ trigger: 'on_damaged', chance: 0.2, target: 'attacker', stat: 'atk', dir: 'down', size: 'small', turns: 2, stack: false, uses: null }), hiddenParams: fz(['chance']) }),
   });
 
   // ---- ライバル専用のモンスター（2026-10-05 正式）：リュウの相棒レグナス。プレイヤー用の SPECIES とは別の表＝市場・図鑑・合体・初期選択・特殊復元・牧場・野生の相手には出さない
@@ -195,6 +201,24 @@
       MV({ no: 9, id: 'shell_breaker', name: 'シェルブレイカー', type: 'power', power: 120, accuracy: 80, critical: 15, slot: 78, cuts: 6, learn: 'de', deOrder: 1, finisher: true, sheet: null, desc: null }),
       MV({ no: 10, id: 'tidal_crash', name: 'タイダルクラッシュ', type: 'power', power: 125, accuracy: 85, critical: 20, slot: 79, cuts: 8, learn: 'de', deOrder: 2, finisher: true, sheet: null, desc: null }),
     ]) }),
+    // ミュロル：2026-10-19 正式納品（ミュロル 正式素材・仕様マスター §3＝ユーザー承認済み・独断変更不可）。SK の番号＝80＋No−1（js/battle/rules.js の installMyurol が実行時に足す）。
+    //  習得：初期＝No.1〜4・ちから特訓 No.5・かしこさ特訓 No.6・命中特訓 No.7・回避特訓 No.8・丈夫さ特訓 No.9（①）／No.10（②）。命中 100% は必中ではない。追加効果は No.4・8 だけ（自分へ 10%＝小・2ターン）。
+    //  No.3 の正式名は「タックル」（旧名「ぷにタックル」は不採用）。No.10 マリンストリーム＝必殺技（威力 120 以上）・技アニメは津波 V2（背後から立ち上がる波・口先の水流の旧版は不採用）。
+    //  ミュロルは未解禁（入手方法・出現場所は未決＝市場・野生・合体・大会に出ない）＝QA 試遊モード（?mmQaTrial=1）の個体だけが使う。cuts＝技アニメの本体のコマ数（js/battle/myurol-moves-data.js）
+    myurol: fz({ style: 'ライフ・かしこさ・命中・回避がそろった水陸両用のかしこさ寄り。しめったはだで相手のちからを削ぐ', list: fz([
+      MV({ no: 1, id: 'shippo_uchi', name: 'しっぽうち', type: 'power', power: 65, accuracy: 100, critical: 5, slot: 80, cuts: 4, learn: 'initial', sheet: null, desc: null }),
+      MV({ no: 2, id: 'mizudeppo', name: 'みずでっぽう', type: 'wisdom', power: 70, accuracy: 95, critical: 5, slot: 81, cuts: 4, learn: 'initial', sheet: null, desc: null }),
+      MV({ no: 3, id: 'tackle', name: 'タックル', type: 'power', power: 80, accuracy: 90, critical: 10, slot: 82, cuts: 4, learn: 'initial', sheet: null, desc: null }),
+      MV({ no: 4, id: 'awa_no_mamori', name: 'あわのまもり', type: 'support', accuracy: 100, slot: 83, cuts: 4, learn: 'initial', sheet: null, desc: '泡の膜で身を包み、自分の丈夫さを少し上げる（2ターン）。',
+        effects: [E('self', 'de', 'up', 'small', 2)] }),
+      MV({ no: 5, id: 'tail_swing', name: 'テールスイング', type: 'power', power: 100, accuracy: 85, critical: 15, slot: 84, cuts: 5, learn: 'po', sheet: null, desc: null }),
+      MV({ no: 6, id: 'aqua_bubble', name: 'アクアバブル', type: 'wisdom', power: 100, accuracy: 90, critical: 10, slot: 85, cuts: 5, learn: 'in', sheet: null, desc: null }),
+      MV({ no: 7, id: 'bubble_snipe', name: 'バブルスナイプ', type: 'wisdom', power: 90, accuracy: 100, critical: 10, slot: 86, cuts: 5, learn: 'hi', sheet: null, desc: null }),
+      MV({ no: 8, id: 'suisui_step', name: 'すいすいステップ', type: 'support', accuracy: 100, slot: 87, cuts: 4, learn: 'ev', sheet: null, desc: '水の流れに乗ってすいすい動き、自分の回避を少し上げる（2ターン）。',
+        effects: [E('self', 'ev', 'up', 'small', 2)] }),
+      MV({ no: 9, id: 'spiral_tail', name: 'スパイラルテール', type: 'power', power: 115, accuracy: 85, critical: 15, slot: 88, cuts: 7, learn: 'de', deOrder: 1, sheet: null, desc: null }),
+      MV({ no: 10, id: 'marine_stream', name: 'マリンストリーム', type: 'wisdom', power: 125, accuracy: 85, critical: 20, slot: 89, cuts: 8, learn: 'de', deOrder: 2, finisher: true, sheet: null, desc: null }),
+    ]) }),
     gauru: fz({ style: '高速・高火力・短期決戦型の両刀アタッカー', list: fz([
       MV({ no: 1, id: 'tsutsuku', name: 'つつく', type: 'power', power: 60, accuracy: 100, critical: 5, slot: 11, cuts: 4, desc: 'くちばしで素早くつつく。' }),
       MV({ no: 2, id: 'wind', name: 'ウィンド', type: 'wisdom', power: 65, accuracy: 95, critical: 5, slot: 12, cuts: 4, desc: '風をまとい、相手に風の力をぶつける。' }),
@@ -219,13 +243,13 @@
       return r ? r.moves.list.map((m) => ({ ...m, effects: m.effect ? [{ target: m.effect.target, stat: m.effect.stat, dir: 'up', size: m.effect.size, turns: m.effect.turns }] : [],
         ailment: null, heal: null, desc: null, slot: 19 + m.no, sheet: sheetOf('regnas', REGNAS_SHEET[m.id], m.id) })) : [];
     }
-    const s = typeof ref === 'string' ? (byKey(ref) || (ref === 'razuck' || ref === 'flurene' || ref === 'kalshell' ? pendingSpecies(ref) : null)) : byId(ref);   // 2026-10-17：ラズック・2026-10-18 フルーネ（登録のみの種族）も正式技の表を持つ
+    const s = typeof ref === 'string' ? (byKey(ref) || (ref === 'razuck' || ref === 'flurene' || ref === 'kalshell' || ref === 'myurol' ? pendingSpecies(ref) : null)) : byId(ref);   // 2026-10-17：ラズック・2026-10-18 フルーネ（登録のみの種族）も正式技の表を持つ
     const t = s && OFFICIAL_MOVES[s.key];
     return t ? t.list.map((m) => ({ ...m, sheet: m.sheet === null ? null : sheetOf(s.key, m.no, m.id) })) : [];   // sheet: null＝技辞典の資料なし（ノビトン No.5 まきつく＝旧資料はハンマーノーズのため使わない）
   }
   /** 技の番号（SK）→ 正式技（ソラモ・ガウルの 0〜19・レグナスの 20〜29）。無ければ null */
   function moveBySlot(k) {
-    for (const key of ['solamo', 'gauru', 'regnas', 'jiol', 'razuck', 'flurene', 'kalshell']) { const m = movesOf(key).find((x) => x.slot === k); if (m) return { ...m, owner: key }; }
+    for (const key of ['solamo', 'gauru', 'regnas', 'jiol', 'razuck', 'flurene', 'kalshell', 'myurol']) { const m = movesOf(key).find((x) => x.slot === k); if (m) return { ...m, owner: key }; }
     return null;
   }
 
@@ -309,6 +333,20 @@
       battleIdle: fz({ src: './assets/battle/idle/idle_kalshell.webp', w: 859, h: 720 }),
       tourIcon: fz({ src: './assets/tournament/icons_1015/icon_kalshell.webp', w: 256, h: 256 }),
       vsArt: fz({ src: './assets/tournament/vs_1017/vs_kalshell.webp', w: 512, h: 512 }),
+      profileImage: null }),
+    // 2026-10-19 ミュロル（正式納品「ミュロル 開発本体向け 正式素材仕様一式」PART01〜07・ユーザー承認済みの仕様マスターと採用状態一覧）：番号 8（予約）。
+    //  能力・成長適性・素早さ・サイズ 2・固有スキル「しめったはだ」・10技（OFFICIAL_MOVES.myurol＝SK 80〜89）は確定。**入手方法は未決**（仕様マスターの「出現想定：Chapter2 野生モンスター」は想定だけ＝出現させない）＝unlocked:false・
+    //  市場・野生・合体・大会・初期所持・図鑑には出ない（byId／byKey では引けない）。種族表示名「水棲種」は［要確認／仮置き］＝kind は null（確定表示しない・候補は kindCandidate）。
+    //  プロフィール画像は納品に無い（全モンスター一括制作の予定）＝profileImage null（捏造しない）。絵・声の派生＝tools/myurol1019/（各 README に原本と派生の sha256）。体格サイズ 2（js/battle/move-tune-1015.js の SIZE）
+    fz({ id: 8, key: 'myurol', name: 'ミュロル', en: null, kind: null, kindCandidate: '水棲種【要確認／仮置き】', motif: 'ウーパールーパー系の水陸両用モンスター', size: 2, personality: null, formerNames: fz([]),
+      unlocked: false, playerAvailable: false, obtain: null,
+      base: fz({ li: 110, po: 70, in: 105, hi: 100, ev: 95, de: 80 }), speed: 6, growth: G6('C', 'E', 'C', 'B', 'C', 'E'),
+      uniqueSkill: UNIQUE_SKILLS.unique_myurol,
+      moves: OFFICIAL_MOVES.myurol.list,
+      image: fz({ src: './assets/monsters/2p5d/myurol.webp', w: 720, h: 646 }),
+      battleIdle: fz({ src: './assets/battle/idle/idle_myurol.webp', w: 928, h: 720 }),
+      tourIcon: fz({ src: './assets/tournament/icons_1015/icon_myurol.webp', w: 256, h: 256 }),
+      vsArt: fz({ src: './assets/tournament/vs_1017/vs_myurol.webp', w: 512, h: 512 }),
       profileImage: null }),
   ]);
   /** 登録のみの種族（番号でも文字IDでも）。無ければ null。画面の処理には使わない（解禁していない） */

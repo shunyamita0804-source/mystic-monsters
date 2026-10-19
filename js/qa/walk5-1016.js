@@ -24,7 +24,7 @@
   const SET = q === '1017' || q === 'new7' ? '1017' : '1018';
   const BASE7 = SET === '1017' ? './assets/monsters/walk_1017/' : './assets/monsters/walk_1018/';
   const SPEC1017 = Object.freeze({"solamo": {"h": 1.258, "foot": 0.104}, "gauru": {"h": 1.32, "foot": 0.104}, "nobiton": {"h": 1.274, "foot": 0.104}, "jiol": {"h": 1.255, "foot": 0.102}, "regnas": {"h": 1.255, "foot": 0.102}, "flurene": {"h": 1.255, "foot": 0.102}, "razuck": {"h": 1.258, "foot": 0.102}});   // tools/walk1017/derive.json
-  const SPEC1018 = Object.freeze({"solamo": {"h": 1.358, "foot": 0.045}, "gauru": {"h": 1.312, "foot": 0.046}, "nobiton": {"h": 1.376, "foot": 0.046}, "jiol": {"h": 1.296, "foot": 0.044}, "regnas": {"h": 1.21, "foot": 0.046}, "flurene": {"h": 1.242, "foot": 0.046}, "razuck": {"h": 1.209, "foot": 0.045}});   // tools/walk1018/derive.json（h＝正面2コマ目の体の高さに対するキャンバスの比・foot＝基線の下の余白）
+  const SPEC1018 = Object.freeze({"solamo": {"h": 1.358, "foot": 0.045}, "gauru": {"h": 1.312, "foot": 0.046}, "nobiton": {"h": 1.376, "foot": 0.046}, "jiol": {"h": 1.296, "foot": 0.044}, "regnas": {"h": 1.21, "foot": 0.046}, "flurene": {"h": 1.242, "foot": 0.046}, "razuck": {"h": 1.209, "foot": 0.045}, "myurol": {"h": 1.149, "foot": 0.045}});   // tools/walk1018/derive.json（h＝正面2コマ目の体の高さに対するキャンバスの比・foot＝基線の下の余白）。2026-10-19：myurol＝ミュロル（tools/myurol1019/derive_art.py・登録のみ＝本編の盤には出ない・QA の新歩行の確認だけ）
   const SPEC7 = SET === '1017' ? SPEC1017 : SPEC1018;
   const FPS = num('qaWalkFps', 8, 2, 24), TURN_MS = num('qaWalkTurn', 70, 0, 400);
   const BASE = './assets/qa/soramo_5dir_1016/';

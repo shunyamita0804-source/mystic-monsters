@@ -280,6 +280,9 @@
     // 2026-10-18 カルシェル（正式納品 07_audio の公式ボイス／悲しいボイス＝tools/kalshell1018/derive_art.py。登録のみ＝本編に出る場面は無い・QA の試聴と QA 試合だけ）
     cry_kalshell_normal: { src: [PC + 'kalshell_normal.ogg', PC + 'kalshell_normal.m4a'], npc: 'monster', gain: 1.189 },   // カルシェル・正式（-16.5 LUFS）
     cry_kalshell_sad: { src: [PC + 'kalshell_sad.ogg', PC + 'kalshell_sad.m4a'], npc: 'monster', gain: 1.109 },   // カルシェル・悲しみ（-18.9 LUFS）
+    // 2026-10-19 ミュロル（正式納品 07_audio の通常ボイス／悲しいボイス＝仕様マスター §5 の対応・tools/myurol1019/derive_art.py。登録のみ＝本編に出る場面は無い・QA の試聴と QA 試合だけ）
+    cry_myurol_normal: { src: [PC + 'myurol_normal.ogg', PC + 'myurol_normal.m4a'], npc: 'monster', gain: 1.758 },   // ミュロル・通常（-19.9 LUFS）
+    cry_myurol_sad: { src: [PC + 'myurol_sad.ogg', PC + 'myurol_sad.m4a'], npc: 'monster', gain: 1.413 },   // ミュロル・悲しみ（-22.6 LUFS・持ち上げは +3dB まで）
   };
 
   root.MMAUDIO_REGISTRY = Object.freeze({ bgm: BGM_REGISTRY, se: SE_REGISTRY, voice: VOICE_REGISTRY, cry: CRY_REGISTRY, bgmCandidates: BGM_CANDIDATES });
