@@ -93,3 +93,15 @@ test('C4B-4：旧 Chapter 4 の途中のセーブ → 旧のボードのまま',
   assert.deepEqual(s, { old: true, wb: false, sides: 3 });
   assert.deepEqual(p.errors, []);
 });
+
+test('C4B-5：通信の失敗＝Chapter 4 の正式素材がすべて読めなくても盤は動く（仮の塗り・エラーなし）・1ターン進む', { skip: SKIP, timeout: 180000 }, async () => {
+  const p = await openPage({ query: '?ch4trial=B' }); const pg = p.page;
+  await pg.route('**/assets/fields/ch4/**', (r) => r.fulfill({ status: 404, body: '' }));
+  await pg.reload(); await pg.waitForSelector('#wbw #brollbtn', { timeout: 90000 }); await idle(pg);
+  assert.equal(await pg.evaluate(() => [S.m.raise.ch, MMWB.state().world.tiles, !!document.querySelector('.rfw.volc')].join(':')), '4:301:true');
+  await roll(pg, 3); await idle(pg);
+  for (let i = 0; i < 6 && await pg.$('.wbbr .chroute'); i++) { await pg.click('.wbbr .chroute'); await idle(pg); }
+  assert.equal(await pg.evaluate(() => S.m.raise.turnsUsed), 1);
+  assert.deepEqual(p.errors, [], 'スクリプトのエラーなし（404 は素材だけ）');
+  assert.ok(p.bad.every((b) => /assets\/fields\/ch4\//.test(b)), `404 は Chapter 4 の素材だけ ${JSON.stringify(p.bad.slice(0, 4))}`);
+});

@@ -202,9 +202,13 @@
     wrap.insertBefore(sky, wrap.firstChild);
     const tint = doc.createElement('div'); tint.className = 'rfv-tint'; wrap.insertBefore(tint, plane.nextSibling);
     css(doc); wrap.classList.add('volc');
-    let ph = '';
+    let ph = '', last = null;
+    const ids = Object.keys(D.nodes), EL = D.art.elev || {};
+    /** モンスターの居る所の高さ＝いちばん近い地点の設計の高さ（art.elev。無ければ等高線から見積もる）。4単位以上動いたときだけ探す */
+    const elevNear = (x, y) => { let best = null, bd = 1e9; for (const id of ids) { const n = D.nodes[id], d = (n[0] - x) * (n[0] - x) + (n[1] - y) * (n[1] - y); if (d < bd) { bd = d; best = id; } } return best && EL[best] != null ? EL[best] : elevAt(D, x, y); };
     function mon(h, M) {
-      if (!M) return; const p = phaseOf(D, elevAt(D, M[0], M[1])); if (p === ph) return; ph = p;
+      if (!M || (last && Math.abs(last[0] - M[0]) + Math.abs(last[1] - M[1]) < 4)) return; last = [M[0], M[1]];
+      const p = phaseOf(D, elevNear(M[0], M[1])); if (p === ph) return; ph = p;
       wrap.classList.toggle('twi', p === 'twi'); wrap.classList.toggle('night', p === 'night'); wrap.dataset.phase = p;
     }
     return { occl: () => false, mon, el: null, phase: () => ph };

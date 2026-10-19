@@ -115,6 +115,8 @@ test('C4W-04：描画の部品・正式素材・読み込み順・設計書の B
   assert.ok(existsSync(path.join(ROOT, 'assets/fields/ch4/intro/ch4_overview.webp')));
   const d = JSON.parse(rd('tools/ch4art1019/derive.json')); assert.ok(!Object.keys(d.originals).some((k) => /EVENT_BASE_v2/.test(k))); assert.ok(d.originals['C4_UI_01_EVENT_BASE_v3_ALPHA.png']);
   // 高さ（art.elev）で夕暮れ → 薄暮 → 夜
-  const w = load(); for (const k of 'ABC') { const D = w.MMRF_CH4[k]; const ph = (id) => V.phaseOf(D, V.elevAt(D, D.nodes[id][0], D.nodes[id][1])); assert.equal(ph('START'), 'dusk'); assert.equal(ph('GOAL'), 'night', k); }
+  const w = load(); for (const k of 'ABC') { const D = w.MMRF_CH4[k]; const ph = (id) => V.phaseOf(D, D.art.elev[id]); assert.equal(ph('START'), 'dusk'); assert.equal(ph('GOAL'), 'night', k);
+    const z = D.art.zoneOf, P = { foot_dusk: 'dusk', slope_twilight: 'twi', gorge_twilight: 'twi', rim_night: 'night' }; let ok = 0, n = 0; for (const [id, nd] of Object.entries(D.nodes)) { if (!nd[3] || !z[nd[3]]) continue; n++; if (ph(id) === P[z[nd[3]]]) ok++; } assert.ok(ok / n > 0.8, `${k}：空の色は設計の区域と合う（${ok}/${n}）`); }
+  assert.match(rd('js/proto/ch4-world.js'), /EL\[best\] != null \? EL\[best\]/, '盤では地点の設計の高さ（art.elev）で決める');
   const md = rd('docs/ch4/DESIGN.md'); assert.ok(!/能力の伸び・報酬の取得が3ルートで最も大きい/.test(md), 'B の文は実測（報酬の取得率は C が最も高い）に合わせる');
 });
