@@ -49,7 +49,7 @@ export async function serve() {
     if (!f.startsWith(ROOT)) { res.writeHead(403); return res.end(); }
     try {
       const s = await stat(f); if (!s.isFile()) throw new Error('not file');
-      res.writeHead(200, { 'content-type': TYPES[path.extname(f)] || 'application/octet-stream', 'cache-control': 'no-store' });
+      res.writeHead(200, { 'content-type': TYPES[path.extname(f)] || 'application/octet-stream', 'cache-control': process.env.QA_CACHE_CONTROL || 'no-store' });   // 2026-10-19：QA_CACHE_CONTROL＝本番（GitHub Pages）と同じキャッシュで確かめる道具だけが使う（例 max-age=600）。テストは既定の no-store
       res.end(await readFile(f));
     } catch (e) { res.writeHead(404); res.end('not found'); }
   });

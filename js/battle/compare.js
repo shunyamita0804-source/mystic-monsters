@@ -152,7 +152,7 @@
     let pressed = false;
     const p = new Promise((res) => {
       const b = d.querySelector('.c2go'), t0 = Date.now();
-      b.addEventListener('click', () => { if (pressed || Date.now() - t0 < 350) return; pressed = true; b.dataset.go = '1'; res(d); });
+      b.addEventListener('click', () => { if (pressed || Date.now() - t0 < 350) return; pressed = true; b.dataset.go = '1'; const w = root.MMINL && root.MMINL.beforePractice ? root.MMINL.beforePractice() : null; if (w && w.then) w.then(() => res(d)); else res(d); });   // 2026-10-19：外へ出したバトルの絵（assets/inline/）がそろうまで比較画面のまま待つ（そろっていればすぐ・最大3秒＝js/battle/inline-preload.js）
     });
     return { el: d, pressed: p, close: (ms) => { if (!d.isConnected) return; d.classList.add('out'); setTimeout(() => d.remove(), ms == null ? 220 : ms); } };
   }
