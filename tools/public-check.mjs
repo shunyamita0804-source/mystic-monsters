@@ -354,7 +354,7 @@ try {
     await t.waitForFunction(() => /ブランチ\s*main/.test((document.querySelector('#mmqat .qtv') || {}).textContent || ''), null, { timeout: 15000 }).catch(() => {});
     const qt = await t.evaluate(() => ({ cells: document.querySelectorAll('#mmqat .qtm td').length, b: document.querySelectorAll('#mmqat .qtm td.battle').length, links: document.querySelectorAll('#mmqat a.qtb[data-k]').length, v: (document.querySelector('#mmqat .qtv') || {}).textContent || '' }));
     await t.screenshot({ path: `${OUT}/qa_top_390.png` }).catch(() => {});
-    rec('2026-10-17：QA トップ＝90枠（2026-10-18：カルシェル・2026-10-19：ミュロルを足して 9体＝実戦 90）・Chapter 1／2／3 の A／B／C の入口・版と branch', qt.cells === 90 && qt.b >= 80 && qt.b <= 90 && qt.links === 9 && /main/.test(qt.v), JSON.stringify(qt));   // 2026-10-18：Chapter 3 の A／B／C を足して 9
+    rec('2026-10-17：QA トップ＝90枠（2026-10-18：カルシェル・2026-10-19：ミュロルを足して 9体＝実戦 90）・Chapter 1〜4 の A／B／C の入口（2026-10-19：Chapter 4）・版と branch', qt.cells === 90 && qt.b >= 80 && qt.b <= 90 && qt.links === 12 && /main/.test(qt.v), JSON.stringify(qt));   // 2026-10-18：Chapter 3 の A／B／C を足して 9
     // 2026-10-18：Chapter 3「天空の浮島」の試遊（?ch3trial=B）＝空の世界の盤・299地点・QA 移動のボタン・保存しない
     await t.goto(URL + '?ch3trial=B'); await t.waitForSelector('#wbw #brollbtn', { timeout: 60000 }).catch(() => {});
     await t.waitForFunction(() => { const w = window.MMWB && MMWB.state().world; return !!(w && w.art && w.painted); }, null, { timeout: 30000 }).catch(() => {});
@@ -372,6 +372,13 @@ try {
       return { key: r && r.key, world: m.raise.field && m.raise.field.world, route: m.raise.field && m.raise.field.route, tiles: (MMWB.state().world || {}).tiles, old: !!document.getElementById('chf'), road: (MMWB.world().qaRoad() || {}).mode, q: location.search }; }).catch((e) => ({ err: String(e) }));
     await t.screenshot({ path: `${OUT}/ch2_main_390.png` }).catch(() => {});
     rec('2026-10-18 v2：通常の本編の Chapter 2＝新しい A／B／C の盤（旧い1本道ではない）・縁石つきの白い橋帯 R01', c2.world === 1 && ['A', 'B', 'C'].includes(c2.route) && c2.tiles === { A: 298, B: 284, C: 304 }[c2.route] && !c2.old && c2.road === '2', JSON.stringify(c2));
+    // 2026-10-19 次便：通常の本編の Chapter 4＝新しい A／B／C の盤（40ターン・1〜6・火山の描画・旧い20ターンの盤ではない）
+    const c4 = await t.evaluate(async () => { const m = mk(0); m.name = 'ソラ'; MMP7.ensureProg(m); S.m = m; MMP8.canDepart(S, m);
+      Object.assign(m.raise, { state: 'farm', ch: 4, log: [1, 2, 3].map((ch) => ({ ch, reachedGoal: true, turnsUsed: 30 })), field: null, evSeen: ['ret1', 'ret2', 'ret3'] }); MMP7.recordRankClear(S, m, 3); const r = MMP8.depart(S, m, Math.random); board();
+      for (let i = 0; i < 160 && !(window.MMWB && MMWB.state().world && MMWB.state().world.painted); i++) await new Promise((ok) => setTimeout(ok, 250));
+      return { key: r && r.key, why: r && r.reason, world: m.raise.field && m.raise.field.world, route: m.raise.field && m.raise.field.route, limit: m.raise.turnLimit, tiles: (MMWB.state().world || {}).tiles, volc: !!document.querySelector('.rfw.volc'), nm: (document.querySelector('.chh-nm') || {}).textContent }; }).catch((e) => ({ err: String(e) }));
+    await t.screenshot({ path: `${OUT}/ch4_main_390.png` }).catch(() => {});
+    rec('2026-10-19：通常の本編の Chapter 4「灼熱の火山」＝A／B／C の盤・40ターン・火山の描画', c4.key === 4 && c4.world === 1 && ['A', 'B', 'C'].includes(c4.route) && c4.limit === 40 && c4.tiles === { A: 320, B: 301, C: 294 }[c4.route] && c4.volc, JSON.stringify(c4));
     await t.close(); await ctxT.close();
   }
 
