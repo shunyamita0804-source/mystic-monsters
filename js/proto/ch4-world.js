@@ -164,12 +164,19 @@
     Object.assign(el.style, { backgroundImage: `linear-gradient(rgba(20,10,14,.35),rgba(20,10,14,.35)),url(${U(TEX.ground[0])})`, backgroundSize: `auto,${TEX.ground[1]}px ${TEX.ground[1]}px`, backgroundPosition: `0 0,${m % TEX.ground[1]}px ${m % TEX.ground[1]}px` });
   }
   // ---- 目印（固定の地点の建物）：C4 専用の目印（C4_LM_*）は未着＝火山に合う代わりの絵（README と報告書に「画像待ち」）----
-  const LM_SUB = { L_CHEST: { file: 'lm_watchpost.webp', w: 40 }, R_CHEST: { file: U('rock_cliff'), w: 54 }, R_SPECIAL: { file: U('lava_ridge'), w: 50 }, CHALLENGE: { file: U('goal_gate'), w: 40 } };   // 火の神殿の門＝C4 の門（Chapter 1 の白い蔦の門は火山に合わない）
+  // 2026-10-19 追加指令の監査：Chapter 1 の目印（白い蔦の門・獅子像・苔の塔・森の祭壇・虹の滝・見張りの像・隠れ家）は火山に合わない＝すべて Chapter 4 の正式素材へ置き換える。
+  //  C4 専用の建物（C4_LM_*）は未着＝門は C4 の門（goal_gate）・祭壇は C4 の出来事の台座（event_base）・そのほかは岩の崖／溶岩の尾根（景物の正式素材）。隠れ家の「開いた」絵は無い＝開いても同じ岩
+  const LM_SUB = { CHALLENGE: { file: U('goal_gate'), w: 40 }, STATUE: { file: U('lava_ridge'), w: 40 }, RANDOM_DEN: { file: U('rock_cliff'), open: U('rock_cliff'), w: 46 },
+    L_CHEST: { file: U('rock_cliff'), w: 50 }, R_CHEST: { file: U('rock_cliff'), w: 54 }, L_ALTAR: { file: U('event_base'), w: 40 }, L_LATE_ALTAR: { file: U('event_base'), w: 40 },
+    REWARD5: { file: U('lava_ridge'), w: 46 }, R_SPECIAL: { file: U('lava_ridge'), w: 50 } };
   function lm(D) {
-    return (D.art.landmarks || []).filter((L) => L.node !== 'GOAL' && L.node !== 'START' && L.node !== 'LOWER_GATE')   // 下の門も Chapter 1 の白い門＝出さない（Chapter 1 も中央の門の飾りは出さない）   // 会場は goal（C4 の門）・スタートの門は Chapter 1 の白い門＝火山に合わない（Chapter 1 も START の飾りは出さない）.map((L) => (LM_SUB[L.node] ? Object.assign({}, L, LM_SUB[L.node]) : L));
+    // 会場は goal（C4 の門）・スタートと下の門は Chapter 1 の白い門＝火山に合わない＝出さない（Chapter 1 も START・中央の門の飾りは出さない）
+    //  2026-10-19 追加指令の監査：以前は .map が行末のコメントの中に入っていて LM_SUB が効かず、Chapter 1 の白い蔦の門などが出ていた＝コメントを外へ出して直した
+    return (D.art.landmarks || []).filter((L) => L.node !== 'GOAL' && L.node !== 'START' && L.node !== 'LOWER_GATE')
+      .map((L) => (LM_SUB[L.node] ? Object.assign({}, L, LM_SUB[L.node]) : L));
   }
   const goal = Object.freeze({ file: U('goal_gate'), w: 96, dy: 10, back: 6 });
-  // ---- 景物：斜面の岩の崖・溶岩の尾根（道・溶岩・区域の芯から離す）・噴煙（噴気の棚・火口のふち）・道しるべ（自由な分かれ道）。決まった乱数＝毎回同じ ----
+  // ---- 景物：斜面の岩の崖・溶岩の尾根（道・溶岩・区域の芯から離す）・噴煙（噴気の棚・火口のふち）。決まった乱数＝毎回同じ ----
   const CACHE = new Map();
   function scatter(D, o, H) {
     const ck = 'v:' + (D.route || 'A'); if (CACHE.has(ck)) return CACHE.get(ck);
@@ -191,14 +198,14 @@
     if (fum) { const c = fum.poly.reduce((s, p) => [s[0] + p[0] / fum.poly.length, s[1] + p[1] / fum.poly.length], [0, 0]); spots.push([c[0] + 30, c[1] - 10, 70], [c[0] - 70, c[1] + 30, 54]); }
     if (cr) for (const t of [3.6, 5.2, 0.2]) spots.push([cr.c[0] + Math.cos(t) * (cr.rx - 30), cr.c[1] + Math.sin(t) * (cr.ry - 20), 90]);
     for (const [x, y, w] of spots) if (!nearRoad(x, y, 18)) out.push({ file: U('smoke_back'), x: Math.round(x), y: Math.round(y), w, z: -30, cls: 'rfv-smoke' });
-    // 道しるべ：自由な分かれ道（J0・H）の脇
-    for (const id of ['J0', 'H']) { const n = D.nodes[id]; if (!n) continue; const s = [[30, 0], [-30, 0], [0, 26]].find(([dx, dy]) => !nearRoad(n[0] + dx, n[1] + dy, 14)); if (s) out.push({ file: U('signpost'), x: n[0] + s[0], y: n[1] + s[1], w: 15, z: 4 }); }
+    // 道しるべ（signpost）は 2026-10-19 から Chapter ごとの分岐の見た目（world-board.js の BRANCH_SKIN・MMRF_WORLD.branchMarks）で置く
+
     CACHE.set(ck, out); return out;
   }
   // ---- 空と光（夕暮れの START → 夜の GOAL）：盤の後ろの空（STD_C4_BG_01／02）と、地面にかける薄い色の層。モンスターの居る所の標高で切り替える ----
   function build3d(ctx) {
     const { doc, plane, D } = ctx, wrap = plane.parentNode;
-    const sky = doc.createElement('div'); sky.className = 'rfv-sky'; sky.innerHTML = `<i style="background-image:url(${U('sky_dusk')})"></i><i class="n" style="background-image:url(${U('sky_night')})"></i>`;
+    const sky = doc.createElement('div'); sky.className = 'rfv-sky'; sky.innerHTML = `<i style="background-image:url(${U('sky_dusk')})"></i><i class="n" style="background-image:url(${U('sky_night')})"></i><b style="background-image:url(${U('volcano_1440')})"></b>`;   // 2026-10-19 追加指令：巨大火山（正式4分割の復元）を空の地平に立てる遠景
     wrap.insertBefore(sky, wrap.firstChild);
     const tint = doc.createElement('div'); tint.className = 'rfv-tint'; wrap.insertBefore(tint, plane.nextSibling);
     css(doc); wrap.classList.add('volc');
@@ -223,6 +230,7 @@
 :is(#rfp,.wbv) .rfv-sky{position:absolute;inset:0;z-index:0;pointer-events:none}
 :is(#rfp,.wbv) .rfv-sky i{position:absolute;inset:0;background-size:cover;background-position:center top;transition:opacity 1.6s ease}
 :is(#rfp,.wbv) .rfv-sky i.n{opacity:0}
+:is(#rfp,.wbv) .rfv-sky b{position:absolute;left:50%;bottom:6%;width:min(150vw,900px);aspect-ratio:1440/1422;transform:translateX(-50%);background:center bottom/contain no-repeat;filter:drop-shadow(0 0 18px rgba(255,90,30,.35))}
 :is(#rfp,.wbv) .rfw.volc.night .rfv-sky i.n{opacity:1}
 :is(#rfp,.wbv) .rfw.volc .rfw-plane{z-index:1}
 :is(#rfp,.wbv) .rfv-tint{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(255,120,60,.10),rgba(255,140,80,.06));transition:background 1.6s ease}

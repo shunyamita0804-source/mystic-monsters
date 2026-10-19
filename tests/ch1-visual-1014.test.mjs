@@ -150,6 +150,6 @@ test('VP-05：index.html＝出発準備の景色の選択ボタンは無い・ro
   assert.doesNotMatch(H, /PP_VISUAL|ppVisualHtml|class="ppvis"|\.ppvb\{/, '選択ボタン・その CSS は無い');
   assert.match(H, /<b>\$\{chName\|\|"ー"\}<\/b>\$\{art\}\$\{note\}/);
   assert.match(H, /<script src="\.\/js\/proto\/roadfirst-data\.js"><\/script><script src="\.\/js\/proto\/roadfirst-routes\.js"><\/script>/);
-  const WB = rd('js/chapter/world-board.js'); assert.match(WB, /visual: vis, skin: skinKey\(\) \}\);/); assert.match(WB, /W = WD\(m\), vis = W && W\.visualOf \? W\.visualOf\(m\) : 'A'/);   // 2026-10-16：Chapter 2 も同じ画面（WD(m)＝その個体の Chapter の進行） assert.match(WB, /MMRF_WORLD\.create\(V\.el\.querySelector\('\.wbv'\), D\(m\)/);
+  const WB = rd('js/chapter/world-board.js'); assert.match(WB, /visual: vis, skin: skinKey\(\)(, branchSkin: branchSkin\(m\))? \}\);/); assert.match(WB, /W = WD\(m\), vis = W && W\.visualOf \? W\.visualOf\(m\) : 'A'/);   // 2026-10-16：Chapter 2 も同じ画面（WD(m)＝その個体の Chapter の進行） assert.match(WB, /MMRF_WORLD\.create\(V\.el\.querySelector\('\.wbv'\), D\(m\)/);
   const RW = rd('js/proto/roadfirst-world.js'); assert.doesNotMatch(RW.slice(RW.indexOf('const VISUAL = {'), RW.indexOf('const visualOf')), /filter|hue|tint/, '景観は景物の混ぜ方と配置だけ');
 });

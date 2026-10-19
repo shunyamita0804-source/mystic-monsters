@@ -67,7 +67,7 @@ test('HQ-03：配置は変えない（skin を渡しても同じ出力・VP-01 �
 
 test('HQ-04：本編だけが skin を渡す（いつも hq1014・2026-10-19 から比較の切り替えなし）・先読み・読めないときは従来の絵', () => {
   const WB = rd('js/chapter/world-board.js'), W = rd('js/proto/roadfirst-world.js'), IX = rd('index.html');
-  assert.match(WB, /visual: vis, skin: skinKey\(\) \}\);/);
+  assert.match(WB, /visual: vis, skin: skinKey\(\)(, branchSkin: branchSkin\(m\))? \}\);/);
   assert.match(WB, /const skinKey = \(\) => 'hq1014';/, '2026-10-19：?boardSkin=1010 の比較は撤去＝いつも正式の hq1014');
   assert.match(IX, /MMRF_WORLD\.warmArt\(null,MMWB\.skinKey&&MMWB\.skinKey\(\)\)/);
   assert.match(W, /\.then\(\(im\) => im \|\| load\(f\)\)/, '地面・道・水：読めなければ従来の絵');

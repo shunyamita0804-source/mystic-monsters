@@ -35,11 +35,20 @@
   // 2026-10-16：Chapter 2「潮風の海岸」も同じ画面（進行は js/chapter/world-driver-ch2.js の MMWD2）。今の個体（S.m）の Chapter で進行と表示を選ぶ
   const chOf = (m) => { const mm = m || (gS() && gS().m); const c = mm && mm.raise && mm.raise.ch; return c === 4 && root.MMWD4 ? 4 : c === 3 && root.MMWD3 ? 3 : c === 2 && root.MMWD2 ? 2 : 1; };   // 2026-10-19 Chapter 4「灼熱の火山」（MMWD4）   // 2026-10-18 Chapter 3「天空の浮島」（MMWD3）
   const A2 = './assets/fields/ch2/art_1016/', A3 = './assets/fields/ch3/sky_1016/', A4 = './assets/fields/ch4/art_1019/';
+  // 2026-10-19 追加指令：Chapter ごとの分岐の見た目（差し替えの口）。junction＝分岐地点の印・merge＝合流地点の印・post＝分かれ道の脇の道標（物理的な目印）・board＝ルートを選ぶ看板（タップする所＝下の .wbbr の
+  //  ボタンの地の絵。文字・矢印・選んだ状態は HTML／CSS で描く）。画像 AI に依頼中（Chapter 1〜4 × 4点）＝ユーザーが採用するまでは null（今の見た目のまま）。
+  //  Chapter 4 の post だけは正式素材（C4 の STD_C4_UI_02＝signpost）で、以前から J0・H の脇に立てていたもの。QA と本編は同じ表を使う
+  const BRANCH_SKIN = Object.freeze({
+    1: Object.freeze({ junction: null, merge: null, post: null, board: null }),
+    2: Object.freeze({ junction: null, merge: null, post: null, board: null }),
+    3: Object.freeze({ junction: null, merge: null, post: null, board: null }),
+    4: Object.freeze({ junction: null, merge: null, post: './assets/fields/ch4/art_1019/signpost.webp', board: null }) });
+  const branchSkin = (m) => BRANCH_SKIN[chOf(m)] || BRANCH_SKIN[1];
   const CHI = Object.freeze({ 1: { name: 'はじまりの草原', relay: './assets/fields/ch1a/intro/ch1_intro_overview.webp', gate: './assets/fields/ch1a/final/event/ch1_bg_15_event.webp' },
     2: { name: '潮風の海岸', relay: A2 + 'chapter2_sea_medallion.webp', medal: true, plate: A2 + 'sea_zone_nameplate.webp', gate: null, gateArt: A2 + 'arena_approach_gate.webp', gateSea: A2 + 'open_sea_water.webp' },
     3: { name: '天空の浮島', relay: A3 + 'C3_UI_sky_medallion.webp', medal: true, sky: true, plate: A3 + 'C3_UI_sky_nameplate.webp', gate: null, gateArt: './assets/proto/board_art_1010/goal_arena.webp', gateSea: './assets/proto/board_art_1010/ground_cloud.webp' },
-    4: { name: '灼熱の火山', relay: A4 + 'sky_dusk.webp', medal: false, volc: true, gate: null, gateArt: A4 + 'goal_gate.webp', gateSea: A4 + 'ground_basalt.webp',   // 2026-10-19：専用のメダル・名札は未着＝題字は HTML・中継は夕暮れの空（正式素材）
-      gateBg: `url(${A4}goal_gate.webp) center 66%/min(70vw,330px) auto no-repeat,url(${A4}sky_night.webp) center top/cover no-repeat,#140c18` } });
+    4: { name: '灼熱の火山', relay: A4 + 'sky_dusk.webp', relayFg: A4 + 'volcano_1440.webp', medal: false, volc: true, gate: null, gateArt: A4 + 'goal_gate.webp', gateSea: A4 + 'ground_basalt.webp',   // 2026-10-19：専用のメダル・名札は未着＝題字は HTML・中継は夕暮れの空（正式素材）
+      gateBg: `url(${A4}goal_gate.webp) center 66%/min(70vw,330px) auto no-repeat,url(${A4}volcano_720.webp) center 38%/min(130vw,620px) auto no-repeat,url(${A4}sky_night.webp) center top/cover no-repeat,#140c18` } });   // 2026-10-19 追加指令：門の奥に巨大火山
   const chi = (m) => CHI[chOf(m)];
   const P8 = () => root.MMP8, WD = (m) => { const c = chOf(m); return c === 4 ? root.MMWD4 : c === 3 ? root.MMWD3 : c === 2 ? root.MMWD2 : root.MMWD; }, C = () => root.MMRF_CORE;
   // 2026-10-14 B／C 独立ルート：その個体のルートの道のデータ（m を省くと今の個体＝S.m。route の無い配置＝A＝MMRF_DATA）
@@ -173,7 +182,8 @@
     const r = m.raise;
     if (ph === 'branch') {
       const f = fieldOf(m), d = D(m);
-      return `<div class="chsheet chbr wbbr"><h3>分かれ道</h3>${WD(m).branchOptions(m).map((o) => {
+      const bs = branchSkin(m);
+      return `<div class="chsheet chbr wbbr" data-ch="${chOf(m)}"${bs.board ? ` data-bskin="1" style="--wbbr-board:url(${esc(bs.board)})"` : ''}><h3>分かれ道</h3>${WD(m).branchOptions(m).map((o) => {
         const end = o.seg && d.segments[o.seg] ? d.segments[o.seg][1] : null, got = o.spur && end && f.claimed[end] != null;
         const desc = o.spur ? (got ? '取得済み（行き止まり。帰りもサイコロ）' : '行き止まりの先に宝。帰りもサイコロで戻る') : '';
         return `<button class="chroute${o.spur ? ' spur' : ''}" data-id="${esc(o.id)}" onclick="MMWB.pick('${esc(o.id)}')"><b>${esc(o.name)}</b>${desc ? `<small>${esc(desc)}</small>` : ''}</button>`; }).join('')}</div>`;
@@ -239,6 +249,7 @@
 /* 2026-10-15 N03：イベント名の札（古い訓練跡・出来事・〇〇のマス）＝会話の名前の札と同じ控えめな名札（正式の空欄の札 name_label_blank・濃い文字）。紺の楕円＋金枠の見た目は会話の選択肢へ移した（index.html の N03） */
 .wbw .wbcard .cap{margin:-15px auto 0;position:relative;z-index:4;display:inline-block;max-width:86%;min-width:104px;box-sizing:border-box;padding:6px 28px 7px;border:0;border-radius:0;background:url(./assets/ui/recovery_1006/talk/name_label_blank.png) center/100% 100% no-repeat;color:#1d2442;font:700 14px/1.25 "Shippori Mincho",var(--mm-font-title,serif);letter-spacing:.12em;text-shadow:0 1px 0 rgba(255,250,235,.7);filter:drop-shadow(0 3px 5px rgba(0,0,0,.42))}
 .wbw .wbbr .chroute{align-items:center;text-align:center;min-height:48px;border-radius:26px;border:1.5px solid #e0b861;background:linear-gradient(#1c3373,#0d1a45);box-shadow:0 3px 8px rgba(0,0,0,.4)}
+.wbw .wbbr[data-bskin] .chroute{background:var(--wbbr-board) center/100% 100% no-repeat;border-color:transparent;box-shadow:none;text-shadow:0 1px 2px rgba(0,0,0,.85)}   /* 2026-10-19：Chapter ごとのルート選択の看板（採用されたら BRANCH_SKIN の board に1行） */
 .wbw .wbcard .res{margin:8px auto 0;padding:9px 12px 10px;border-radius:12px;background:linear-gradient(180deg,rgba(20,36,82,.96),rgba(8,18,46,.96));border:1.5px solid #d9b465;box-shadow:0 6px 16px rgba(0,0,0,.45)}
 .wbw .wbcard .res:empty{display:none}
 .wbw .wbcard .res p{margin:0 0 4px;font-size:13px;line-height:1.5}
@@ -392,6 +403,7 @@ html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100
 .wbw .wbrelay{position:absolute;inset:0;z-index:9;background:#0b1636;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity .56s ease;pointer-events:auto}
 .wbw .wbrelay.out{opacity:0;pointer-events:none}
 .wbw .wbrelay .wbr-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.wbw .wbrelay .wbr-fg{position:absolute;left:50%;bottom:max(-4%,-30px);width:min(135vw,640px);height:auto;transform:translateX(-50%);pointer-events:none;filter:drop-shadow(0 0 22px rgba(255,90,30,.4))}   /* 2026-10-19 追加指令：Chapter 4 の題字の後ろに巨大火山（正式4分割の復元） */
 .wbw .wbrelay.medal{background:radial-gradient(circle at 50% 40%,#1d6f9e,#0b2c4f 70%)}.wbw .wbrelay.medal .wbr-img{inset:auto;left:50%;top:max(9%,calc(env(safe-area-inset-top,0px) + 48px));width:min(46vw,210px);height:auto;transform:translateX(-50%);object-fit:contain;filter:drop-shadow(0 6px 18px rgba(0,0,0,.45))}
 .wbw .wb-arr.gate.sea{background-color:#0b3a63}
 .wbw .wbrelay .wbr-t{position:absolute;left:12px;right:12px;top:50%;transform:translateY(calc(-50% - 4dvh));text-align:center;color:#fff6dc;pointer-events:none;padding:18px 0 16px;background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(6,12,30,.66),rgba(6,12,30,0) 76%);transition:opacity .36s ease}
@@ -427,7 +439,7 @@ html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100
     V.el = $('#wbw'); if (V.key !== key) V.lastMsg = ''; V.key = key;
     if (root.MMRF_WORLD) V.world = root.MMRF_WORLD.create(V.el.querySelector('.wbv'), D(m), root.MMRF_PLAY, { view: viewRect, monSrc: monSrc(m), art: { base: ART, road: 'strip' },
       focus: true, veil: false, xray: true, hideLm: chOf(m) === 1 ? ['START', 'LOWER_GATE', 'UPPER_GATE'] : null, ahead: CAM.ahead,   // 2026-10-13 開発27（11・15）：開始地点の門・中央の門2か所（下門・上門）の飾りの絵は出さない（マス・道・判定はそのまま）
-      sMin: CAM.sMin, sMax: CAM.sMax, tilePx: CAM.tilePx, monRatio: CAM.monRatio, zoomTau: CAM.zoomTau, ...camOpts(), ...(roadFor(m) ? { qaRoad: roadFor(m) } : {}), visual: vis, skin: skinKey() });   // visual＝景観のパターン（A／B／C。配置の中の visualPattern）   // 2026-10-14 開発29（6）：後ろから追うカメラ（進む向きが画面の上）   // 2026-10-14 実機試遊 Q12：曲がり角・分かれ道で向きが急に回らないよう、回る速さを少しゆっくりに（yawTau 420 → 600ms）
+      sMin: CAM.sMin, sMax: CAM.sMax, tilePx: CAM.tilePx, monRatio: CAM.monRatio, zoomTau: CAM.zoomTau, ...camOpts(), ...(roadFor(m) ? { qaRoad: roadFor(m) } : {}), visual: vis, skin: skinKey(), branchSkin: branchSkin(m) });   // visual＝景観のパターン（A／B／C。配置の中の visualPattern）   // 2026-10-14 開発29（6）：後ろから追うカメラ（進む向きが画面の上）   // 2026-10-14 実機試遊 Q12：曲がり角・分かれ道で向きが急に回らないよう、回る速さを少しゆっくりに（yawTau 420 → 600ms）
     V.el.querySelectorAll('.rfw-title').forEach((e) => e.remove());   // 2026-10-13 開発25 H：全景の地図の上に大きな題字を出さない（題字は中継カットの間だけ＝cover）。HUD の Chapter 表示は別（残す）
     sprSetup(m);
     return true;
@@ -480,7 +492,7 @@ html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100
   function cover(m, withIntro) {
     if (V.cover) V.cover.remove();
     const el = document.createElement('div'); el.className = 'wbrelay' + (withIntro ? ' art' : '') + (chi(m).medal ? ' medal' : ''); el.setAttribute('role', 'status');
-    el.innerHTML = (withIntro ? `<img class="wbr-img" src="${chi(m).relay}" alt="" draggable="false" decoding="async">${titleHtml(m)}` : '')
+    el.innerHTML = (withIntro ? `<img class="wbr-img" src="${chi(m).relay}" alt="" draggable="false" decoding="async">${chi(m).relayFg ? `<img class="wbr-fg" src="${chi(m).relayFg}" alt="" draggable="false" decoding="async">` : ''}${titleHtml(m)}` : '')
       + '<div class="wbr-load"><i aria-hidden="true"></i><span>読み込み中…</span></div><div class="wbr-err"><p>読み込みに時間がかかっています。</p><button class="p9btn" data-act="retry">もう一度読み込む</button><button class="p9btn2" data-act="back">タイトルへ戻る</button></div>';
     V.el.appendChild(el); V.cover = el; busySet(true); paint(m);   // 覆っている間は START・コマンドを押せない形で描き直す
     const calm = !!(root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -1163,5 +1175,5 @@ html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100
   }
 
   const active = (m) => !!(WD(m) && WD(m).active(m));
-  root.MMWB = Object.freeze({ STEP_MS, skinKey, pickDir, dirSets, progressAt, active, board, release, roll, pick, rest, open, items, itemsClose, useItem, state: () => ({ key: V.key, intro: V.intro, world: V.world ? V.world.state() : null }), world: () => V.world });
+  root.MMWB = Object.freeze({ STEP_MS, skinKey, BRANCH_SKIN, branchSkin, pickDir, dirSets, progressAt, active, board, release, roll, pick, rest, open, items, itemsClose, useItem, state: () => ({ key: V.key, intro: V.intro, world: V.world ? V.world.state() : null }), world: () => V.world });
 })(typeof window !== 'undefined' ? window : globalThis);

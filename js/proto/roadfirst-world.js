@@ -329,6 +329,7 @@
         //  地面を進む向きへ回す（heading）本編だけ：GOAL から画面の奥の向きへ back だけ下げた点（回したあとの画面で真上）。試作（北が上）は従来の dy のまま。GOAL の地点・歩数・判定は変えない
         if (o.heading) gp.at = (c) => { const a = rad((c && c.yaw) || 0); return [gn[0] - GA.back * Math.sin(a), gn[1] - GA.back * Math.cos(a)]; }; }   // 2026-10-13 開発27（26）：大会会場（建物・門）は半透明にしない（xray で草地が透けて見えていた）
       for (const L of lmOf(D)) { if (o.hideLm && o.hideLm.includes(L.node)) continue; const at = landmarkAt(D, L); if (at) { add(L.file, at[0], at[1], L.w, L.z || 0, 'rfw-lm', hOf(L.node)); props[props.length - 1].L = L; } }
+      for (const q of branchMarks(D, o)) add(q.file, q.x, q.y, q.w, q.z, q.cls);   // 2026-10-19 追加指令：Chapter ごとの分岐の道標・印（未採用のあいだは無し）
       for (const q of (SEA ? [] : waterProps(D, o))) add(q.file, q.x, q.y, q.w, q.z || 0, 'rfw-wp');   // 第4便：川の景物（B は密に）
       for (const [x, y, w] of peaksOf(D, o)) add(ART.peaks.file, x, y, w, -20, 'rfw-peak');   // 第4便：山の岩峰（C は足す）
     }
@@ -1021,6 +1022,26 @@
   }
 
   // 2026-10-15 Chapter 2 設計案の試作：js/proto/ch2-world.js（MMRF_SEA）へ渡す描画の部品（同じ帯・同じ曲線で描く）
+  // ---- 2026-10-19 追加指令：Chapter ごとの分岐の見た目（o.branchSkin＝{ junction, merge, post }。画像 AI に依頼中＝未採用のあいだは null＝何も足さない）----
+  //  物理的な道標（post）＝プレイヤーが選ぶ分かれ道（free_fork・late_free_fork）の脇。分岐の印（junction）＝分かれ道（運命の分かれ道を含む）の脇・合流の印（merge）＝合流の脇。
+  //  道の上には置かない（道の中心線から離れた側を選ぶ）＝マス・モンスターを隠さない。道の形・つなぎ方・進み方は変えない（絵を立てるだけ）
+  const FORK_FREE = ['free_fork', 'late_free_fork'], FORK_ALL = ['free_fork', 'late_free_fork', 'parity_forced_fork'], MERGES = ['early_merge', 'parity_rejoin', 'final_merge'];
+  function branchMarks(D, o) {
+    const B = o && o.branchSkin; if (!B || !(B.post || B.junction || B.merge)) return [];
+    const lines = Object.values(D.segments).map((s) => s[3].map((id) => D.nodes[id]));
+    const nearRoad = (x, y, d) => lines.some((L) => distLine(L, x, y) < d);
+    const dirs = [[1, 0], [-1, 0], [0, 0.86], [0.7, -0.7], [-0.7, -0.7], [0.7, 0.7], [-0.7, 0.7], [0, -1]];
+    const side = (n, d) => { for (const k of [1, 1.4, 1.8]) { const s = dirs.find(([ax, ay]) => !nearRoad(n[0] + ax * d * k, n[1] + ay * d * k, 14)); if (s) return [s[0] * d * k, s[1] * d * k]; } return null; };   // 近い所が道なら少し遠くへ
+    const out = [];
+    for (const [id, n] of Object.entries(D.nodes)) {
+      const role = n[2];
+      const put = (file, w, d, cls) => { const s = side(n, d); if (s) out.push({ node: id, file, x: Math.round(n[0] + s[0]), y: Math.round(n[1] + s[1]), w, z: 4, cls }); };
+      if (B.post && FORK_FREE.includes(role)) put(B.post, B.postW || 15, 30, 'rfw-bpost');
+      if (B.junction && FORK_ALL.includes(role)) put(B.junction, B.junctionW || 18, 40, 'rfw-bmark');
+      if (B.merge && MERGES.includes(role)) put(B.merge, B.mergeW || 18, 40, 'rfw-bmark');
+    }
+    return out;
+  }
   const HELP = { WORLD, ART, pattern, stripAlong, curvePts, inPoly, distLine, mulberry, project, landmarkAt, qa: () => root.MMQAR || null };
   let cssDone = false;
   function css(doc) {
@@ -1070,6 +1091,6 @@
     pre = [...[...new Set(files)].map((f) => artUrl(base, f)), ...sk].map((u) => { const im = new root.Image(); im.decoding = 'async'; im.src = u; return im; });
     return pre;
   }
-  const api = { DEF, WORLD, ART, TERRAIN, VISUAL, SKIN, skinOf, visualOf, peaksOf, project, fitZoom, lookahead, headingYaw, angDiff, create, scatter, waterProps, curvePts, landmarkAt, inValley, loopPoly, warmArt };
+  const api = { DEF, WORLD, ART, TERRAIN, VISUAL, SKIN, skinOf, visualOf, peaksOf, branchMarks, project, fitZoom, lookahead, headingYaw, angDiff, create, scatter, waterProps, curvePts, landmarkAt, inValley, loopPoly, warmArt };
   if (typeof module === 'object' && module.exports) module.exports = api; else root.MMRF_WORLD = api;
 })(typeof window !== 'undefined' ? window : globalThis);
