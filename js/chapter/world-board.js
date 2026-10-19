@@ -574,7 +574,7 @@ html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100
     // 2026-10-16 QA（C）：URL の ?qaWalk=soramo5 のときだけ、ソラモを 5方向×4コマ（左右反転で 8方向）にする（js/qa/walk5-1016.js）。ほかの種族・通常の URL は従来のまま
     //  2026-10-17：?qaWalk=1017＝7体の新歩行（5方向×4コマ・同じ 8方向の仕組み）
     SPR.qa = !!(root.MMQAW && root.MMQAW.active && (root.MMQAW.has ? root.MMQAW.has(key) : key === root.MMQAW.species)); SPR.sector = null; SPR.turn = null; SPR.tok = (SPR.tok || 0) + 1;
-    if (SPR.qa) { SPR.sets = root.MMQAW.sets(key); SPR.sector = 4; el.dataset.qawalk = root.MMQAW.new7 ? '1017' : '1'; }
+    if (SPR.qa) { SPR.sets = root.MMQAW.sets(key); SPR.sector = 4; el.dataset.qawalk = root.MMQAW.new7 ? (root.MMQAW.set || '1017') : '1'; }
     // 2026-10-11：歩行のコマの高さ・足は「静止の立ち絵が実際に見えている高さ」に合わせる（横に広い立ち絵＝ガウルは箱より低く、上に寄せて置かれる）。--sth＝立ち絵の高さ ÷ 箱の高さ
     const fit = () => { const bh = box.offsetHeight, sh = st.offsetHeight; if (bh > 0 && sh > 0) box.style.setProperty('--sth', String(Math.min(1, sh / bh))); };
     if (st.complete) fit(); else st.addEventListener('load', fit, { once: true });
@@ -893,7 +893,7 @@ html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100
     const ui = $('#wb-ui'), B = (cfg().battleTypes || {})[bt] || {}, text = B.encounter || '', rival = bt === 'rival', cue = rival ? 'rival.appear' : bt === 'rare' ? 'rare.alert' : 'wild.alert';
     if (!ui || calm() || !text) { feel(cue, { battleType: bt }); await wait(calm() ? 300 : 500); return; }
     await wait(380);
-    if (rival) return rivalCut(ui, B, text, cue);
+    if (rival) return rivalCut(ui, B, text, cue);   // 2026-10-18 夜間 B06：リュウの一言（rivalGreet）はフィナの節目の一言（storyAt 'land'）のあと＝下の land の流れで
     // 2026-10-11 野生・レアの遭遇（EV03 の構図＝大きな相手＋下の札。参考画像の仮の名前・Lv は使わない＝実際の種族から作る。Lv は無い）
     let foe = null;
     // 2026-10-14 実機試遊㉔：影は、このあとバトルに出る相手と同じ正式の立ち絵（バトルの待機立ち絵 assets/battle/idle/・相手側と同じ向き＝MMARENA.flipOf(1, 種族)）から作る＝形・向きがそろう。
@@ -909,7 +909,19 @@ html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100
     if (el) { el.classList.add('out'); await wait(240); el.remove(); }
   }
   /** ライバル（リュウ）：EV01 の「RIVAL」の幕 → 正式のリュウ（＋相棒のレグナス）→ 最後の約0.3秒に赤と青の X（EV06＝既存 bc05 の派生）を1回 */
+  // 2026-10-18 夜間 B06：ライバルの遭遇＝リュウの正式ボイス（有料版 60本のうち未配置だった 005／006／008）を、声の書き起こし（VOICE_REGISTRY の line）どおりの字幕で。Chapter 1＝008「へぇ、ここまで来たんだ。…」→ 006「さあ、勝負だ！」・Chapter 2 以降＝005「お、来たな。」→ 006。
+  //  自動テストの既定（MM_QA_NO_STORY／MM_QA_NO_NPC）では出さない。声が読めない・声 OFF でも字幕の会話は出る（進行は止めない）
+  const RYU_GREET = Object.freeze({ 1: ['ryu_008', 'ryu_006'], other: ['ryu_005', 'ryu_006'] });
+  const ryuGreetIds = (ch) => RYU_GREET[ch] || RYU_GREET.other;
+  async function rivalGreet(m) {
+    if (root.MM_QA_NO_STORY || root.MM_QA_NO_NPC || !root.MMNPC || !onBoard() || !active(m)) return;
+    const A = root.MMAUDIO, ids = ryuGreetIds(chOf(m));
+    const lines = ids.map((id, i) => ({ npc: 'ryu', expression: i ? 'confident' : 'surprise', text: (A && A.voiceLine && A.voiceLine(id)) || '', voice: id, voiceWait: i ? 900 : 1500 })).filter((l) => l.text);
+    if (!lines.length) return;
+    try { await root.MMNPC.talk(lines, { kind: 'event' }); } catch (e) { /* 会話が開けなくても進行は止めない */ }
+  }
   async function rivalCut(ui, B, text, cue) {
+    try { const A = root.MMAUDIO; if (A && A.voiceWarm && !root.MM_QA_NO_STORY) A.voiceWarm(ryuGreetIds(chOf())); } catch (e) {}   // 幕の間に声を読んでおく
     const A = cfg().assets || {}, fig = B.encounterFigure ? A[B.encounterFigure] : null, part = B.encounterPartner ? A[B.encounterPartner] : null;
     ui.insertAdjacentHTML('beforeend', `<div class="chf-enc chf-enc2 wbx wbx-r" role="status" aria-label="${esc(text)}"><img class="wbx-rbg" src="${esc(FXF.rivalBg)}" alt="" draggable="false">
       <div class="wbx-rstage">${part ? `<img class="wbx-partner" src="${esc(part)}" alt="" draggable="false">` : ''}${fig ? `<img class="wbx-ryu" src="${esc(fig)}" alt="${esc(B.name || 'リュウ')}" draggable="false">` : ''}</div>
@@ -1108,6 +1120,7 @@ html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100
       } else if (fx.kind === 'battle') { V.autoBt = battleGo = true; await encounter(m, fx.battleType); }   // 2026-10-14 実機試遊⑩：野生・レア・ライバルとも演出のあと案内のシートを出さずにそのままバトルへ（旧 2026-10-13 開発27（21）はライバルだけ）
       else if (fx.note === 'claimed') tail = `${fx.title || '宝'}はもう手に入れている。`;
       const told = await storyAt(m, 'land', { fx, goal: !!r.goal });
+      if (battleGo && fx.battleType === 'rival') await rivalGreet(m);   // 2026-10-18 夜間 B06：フィナの「あっ、リュウ！…」のあとにリュウの正式ボイスの一言 → バトル
       if (!told && fx.kind === 'none' && fx.note === 'normal' && !r.goal && !r.timeUp) tail = (await reactionAt(m)) || tail;
       if (r.goal) tail = `${tail}　大会会場に着いた！`.trim(); else if (r.timeUp) tail = `${tail}　ターンを使い切った…`.trim();
     } finally { if (card) cardClose(card, true); busySet(false); }

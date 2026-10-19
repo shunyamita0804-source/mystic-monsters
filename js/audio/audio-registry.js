@@ -92,7 +92,8 @@
     // ---- Chapter ----
     CHAPTER_START: { src: AKSE + 'fx_2.ogg', gain: 3.0 },              // 第3弾試遊候補：alkakrab Fx 2（2秒・低くふくらんで消える音）。元が小さい（-28 LUFS）
     DICE_THROW: { src: MMO + '01_dice_large_full.ogg', gain: 0.95 },   // 2026-10-06 正式：投げる → 着地 → 短く転がる → 停止 を1本にした完成 SE（2.05秒）。投げ始めに1回だけ（1ロール1回）。下の LAND／ROLL／STOP は鳴らさない（同じ音を重ねない）
-    DICE_CUBE:  { src: SE_DIR + 'dice_1014/dice_cube_throw_land2.ogg', gain: 0.9 },   // 2026-10-14 実機試遊⑤：投げ出しの瞬間に正式 DICE_THROW（01_dice_large_full）の投げる音（0〜0.50秒）を戻し、回る間は無音 → 現行の着地の足音「トンッ、ト、トン」。1本の完成した音＝1ロールに1回（tools/dice1014/se_throw.py・原本は変えない）
+    DICE_CUBE:  { src: SE_DIR + 'dice_1013/dice_cube_throw_land.ogg', gain: 0.9 },   // 2026-10-18 夜間 GO B04（ユーザーの最新の方針「ダイスの開始・回転は無音、着地音だけ」）：着地の足音だけの 1013 版に戻す（着地 0.855秒〜＝時刻は同じ）。投げる音つきの dice_1014 版はファイルだけ残す
+    // （旧 2026-10-14 実機試遊⑤）dice_1014/dice_cube_throw_land2.ogg＝投げ出しに投げる音を戻した版   // 2026-10-14 実機試遊⑤：投げ出しの瞬間に正式 DICE_THROW（01_dice_large_full）の投げる音（0〜0.50秒）を戻し、回る間は無音 → 現行の着地の足音「トンッ、ト、トン」。1本の完成した音＝1ロールに1回（tools/dice1014/se_throw.py・原本は変えない）
     // DICE_CUBE（2026-10-13 開発27（17）〜2026-10-14）：dice_1013/dice_cube_throw_land.ogg＝着地の足音だけ（投げる風・止まる光の「ヒュイン」を外した版）。ファイルは残す
     // DICE_CUBE（旧・2026-10-12）：2026-10-12 開発23 B 正式採用：立体サイコロ（MMDICE3D・tempo long＝1.30秒で止まる）の1本（風 → 回る → トンッ、ト、トン → 止まる光）。Pixabay の A1／B4／C1 と正式 SE 05 の足音を編集・合成（AUDIO_CREDITS.md）。DICE_THROW（旧サイコロ・特訓）とは別＝二重に鳴らない
     DICE_LAND:  { silent: true },   // 2026-10-06：着地の音は DICE_THROW の完成 SE に含まれる（鳴らさない）。サイコロが地面に最初に触れた：2026-10-03 第4弾の試遊で NG → 無音（代わりの音は選ばない）
@@ -134,7 +135,7 @@
     // 2026-10-13 開発28：バトルの決着の短い曲（野生・レア・ライバル・大会・修行で共通。index.html の resultJingle＝WIN!／LOSE の帯と同時に1回だけ・そのとき戦闘の BGM は止める）。
     //  src は [OGG, M4A]＝そのブラウザで再生できる形式を1つだけ（二重に鳴らさない）。gain＝約 -15 LUFS にそろえる（WIN -9.1 LUFS・LOSE -11.1 LUFS）
     BATTLE_WIN:       { src: [RES + 'win_fanfare12_4s.ogg', RES + 'win_fanfare12_4s.m4a'], gain: 0.5 },     // red bears「ファンファーレ12」先頭 4.00秒（ユーザー提供の完成ファイル）
-    BATTLE_LOSE:      { src: [RES + 'lose_gameover2_5s.ogg', RES + 'lose_gameover2_5s.m4a'], gain: 0.63 }, // ポケットサウンド「ゲームオーバー＃2」先頭 5.00秒（公式サイトから取得・切り出し。クレジット必須＝AUDIO_CREDITS.md・README）
+    BATTLE_LOSE:      { src: [RES + 'lose_gameover2_5s.ogg', RES + 'lose_gameover2_5s.m4a'], gain: 0.63, keepSec: 5.2 },   // 2026-10-18 夜間 B02：5.00秒を最後まで（SE の既定は 4秒で切る） // ポケットサウンド「ゲームオーバー＃2」先頭 5.00秒（公式サイトから取得・切り出し。クレジット必須＝AUDIO_CREDITS.md・README）
     CHAPTER_CLEAR:    { src: UI + 'confirm_style_6_004.ogg', gain: 0.8 },
     TOURNAMENT_START: { src: UI + 'confirm_style_1_001.ogg', gain: 0.65 },
     UNLOCK:           { src: UI + 'confirm_style_6_002.ogg', gain: 1.3 },
@@ -276,6 +277,9 @@
     cry_flurene_sad: { src: [PC + 'flurene_sad.ogg', PC + 'flurene_sad.m4a'], npc: 'monster', gain: 1.175 },   // フルーネ・悲しみ（-19.4 LUFS）
     cry_razuck_normal: { src: [PC + 'razuck_normal.ogg', PC + 'razuck_normal.m4a'], npc: 'monster', gain: 0.473 },   // ラズック・正式（-8.5 LUFS）
     cry_razuck_sad: { src: [PC + 'razuck_sad.ogg', PC + 'razuck_sad.m4a'], npc: 'monster', gain: 0.75 },   // ラズック・悲しみ（-15.5 LUFS）
+    // 2026-10-18 カルシェル（正式納品 07_audio の公式ボイス／悲しいボイス＝tools/kalshell1018/derive_art.py。登録のみ＝本編に出る場面は無い・QA の試聴と QA 試合だけ）
+    cry_kalshell_normal: { src: [PC + 'kalshell_normal.ogg', PC + 'kalshell_normal.m4a'], npc: 'monster', gain: 1.189 },   // カルシェル・正式（-16.5 LUFS）
+    cry_kalshell_sad: { src: [PC + 'kalshell_sad.ogg', PC + 'kalshell_sad.m4a'], npc: 'monster', gain: 1.109 },   // カルシェル・悲しみ（-18.9 LUFS）
   };
 
   root.MMAUDIO_REGISTRY = Object.freeze({ bgm: BGM_REGISTRY, se: SE_REGISTRY, voice: VOICE_REGISTRY, cry: CRY_REGISTRY, bgmCandidates: BGM_CANDIDATES });

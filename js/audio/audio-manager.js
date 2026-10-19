@@ -38,7 +38,7 @@
     'BATTLE_WIN', 'BATTLE_LOSE', 'SKILL_ACTIVATE',
     'DICE_CUBE']);
   /** フェードの長さ（ms）。通常の切り替えと、遭遇などの急な切り替え */
-  const FADE = fz({ normal: 700, quick: 220, none: 0 });
+  const FADE = fz({ normal: 700, quick: 220, slow: 1600, none: 0 });   // 2026-10-18 夜間 B02：slow＝決着の曲のあとに次の曲をゆっくり始める
   const DEF_VOL = fz({ bgm: 0.8, se: 0.9 });
   const KEY = 'mmaudio';
   /** 拡張子 → canPlayType に渡す MIME（再生できる形式だけを選ぶ。iPhone Safari で Ogg Vorbis が再生できない版は合成音へ落ちる） */
@@ -85,8 +85,8 @@
     if (opts.silent) { SEF[name] = { srcs: fz([]), gain: 0, silent: true, data: null, buffer: null, failed: false, loading: false }; return; }   // この出来事は鳴らさない（合成音も鳴らさない）
     const srcs = srcList(src); if (!srcs.length) throw new Error('MMAUDIO：SE の登録が不正です（ファイルか silent が要る）');
     const g = opts.gain != null ? opts.gain : (opts.volume != null ? opts.volume : 1);
-    const mx = Number(opts.maxMs), fd = Number(opts.fadeMs);   // maxMs：再生する長さ（ms。長い余韻の素材を、ファイルを変えずに短く鳴らす）、fadeMs：最後に音量を下げる長さ
-    SEF[name] = { name, srcs: fz(srcs), gain: Number.isFinite(g) ? Math.max(0, g) : 1, maxMs: Number.isFinite(mx) && mx > 0 ? mx : 0, fadeMs: Number.isFinite(fd) && fd > 0 ? fd : 300, data: null, buffer: null, failed: false, loading: false };
+    const mx = Number(opts.maxMs), fd = Number(opts.fadeMs), ks = Number(opts.keepSec);   // maxMs：再生する長さ（ms。長い余韻の素材を、ファイルを変えずに短く鳴らす）、fadeMs：最後に音量を下げる長さ、keepSec：デコードしたまま持つ長さ（秒。既定 SE_MAX_SECONDS＝4。決着の曲 LOSE 5.0秒だけ長く＝2026-10-18 夜間 B02）
+    SEF[name] = { name, srcs: fz(srcs), gain: Number.isFinite(g) ? Math.max(0, g) : 1, maxMs: Number.isFinite(mx) && mx > 0 ? mx : 0, fadeMs: Number.isFinite(fd) && fd > 0 ? fd : 300, keepSec: Number.isFinite(ks) && ks > 0 ? ks : 0, data: null, buffer: null, failed: false, loading: false };
     loadSe(name);
   }
   /** registry をまとめて登録する（js/audio/audio-registry.js から）。値は文字列（ファイル）か { src|srcs, gain, loop, fallback } */
@@ -404,7 +404,7 @@
   function decodeSe(name) {
     const f = SEF[name], c = st.ctx; if (!f || !c || !f.data || f.buffer || f.decoding) return;
     f.decoding = true;
-    const ok = (buf) => { f.decoding = false; f.data = null; f.buffer = trimTail(buf); playWanted(f); }, ng = (e) => { f.decoding = false; f.data = null; note('se-decode', name + ' ' + (e && e.message ? e.message : e)); seNextSrc(name, f.src); };
+    const ok = (buf) => { f.decoding = false; f.data = null; f.buffer = trimTail(buf, f); playWanted(f); }, ng = (e) => { f.decoding = false; f.data = null; note('se-decode', name + ' ' + (e && e.message ? e.message : e)); seNextSrc(name, f.src); };
     try {
       const r = c.decodeAudioData(f.data.slice ? f.data.slice(0) : f.data, ok, ng);   // callback 形式（古い Safari）。Promise も返れば両方に備える
       if (r && typeof r.then === 'function') r.then(ok, ng).catch(() => {});
@@ -413,12 +413,12 @@
   /** se(name, { wait }) で予約した音：デコードが終わったら、期限内なら1回だけ鳴らす（最初のタップ＝unlock と同時にデコードが始まる音。2026-10-04 TITLE_START） */
   function playWanted(f) { const w = f.want; f.want = null; if (!w || Date.now() > w.until || isMuted() || !st.ctx) return; try { playBuffer(f, w.opts); } catch (e) { note('se', e); } }
   /** 末尾の無音を切り落とす（Interface SFX Pack は1つ6秒の器に短い音が入っている。素材ファイルは変えない） */
-  function trimTail(buf) {
+  function trimTail(buf, f) {
     try {
       const c = st.ctx, ch = buf.numberOfChannels, sr = buf.sampleRate, len = buf.length; let end = 0;
       for (let k = 0; k < ch; k++) { const d = buf.getChannelData(k); for (let i = len - 1; i > end; i--) { if (Math.abs(d[i]) > 0.0008) { if (i > end) end = i; break; } } }
       let keep = Math.min(len, end + Math.round(sr * 0.06));
-      keep = Math.min(keep, Math.round(sr * SE_MAX_SECONDS));
+      keep = Math.min(keep, Math.round(sr * ((f && f.keepSec) || SE_MAX_SECONDS)));   // 2026-10-18 夜間 B02：登録の keepSec があればその長さまで（LOSE の曲 5.0秒が 4秒で切れていた）
       if (keep >= len * 0.97 || keep < 16 || !c.createBuffer) return buf;
       const out = c.createBuffer(ch, keep, sr);
       for (let k = 0; k < ch; k++) { const s = buf.getChannelData(k).subarray(0, keep); if (out.copyToChannel) out.copyToChannel(s, k); else out.getChannelData(k).set(s); }
@@ -520,6 +520,8 @@
   function voiceWanted(v) {
     const w = v.want; v.want = null; if (!w) return;
     if (w.tok !== vs.token || Date.now() > w.until || !vs.on || isMuted() || !st.ctx || st.hidden) { vlog(v.id, 'drop'); if (vs.wantId === v.id) vs.wantId = null; return; }
+    // 2026-10-18 夜間 B03：読み込みを待っていた声は、鳴らす直前にもう一度 when() を見る（結果の画面を出た・ボードへ移った＝遅れて鳴らさない）
+    if (w.opts && typeof w.opts.when === 'function') { let ok = true; try { ok = !!w.opts.when(); } catch (e) { ok = false; } if (!ok) { vlog(v.id, 'gone'); if (vs.wantId === v.id) vs.wantId = null; return; } }
     vs.wantId = null; try { voicePlay(v, w.opts); vlog(v.id, 'play', { late: true }); } catch (e) { note('voice', e); }
   }
   function duck(on) {
@@ -546,6 +548,7 @@
       if (!v.enabled && !(opts.qa && v.qaOnly)) return vlog(id, 'disabled');   // 2026-10-17：qa＝QA の試聴だけ（三伝説など場面の無い声も1本ずつ聞ける）
       if (!vs.on) return vlog(id, 'off');
       if (isMuted()) return vlog(id, 'muted');
+      if (typeof opts.when === 'function') { let ok = true; try { ok = !!opts.when(); } catch (e) { ok = false; } if (!ok) return vlog(id, 'gone'); }   // 2026-10-18 夜間 B03：鳴らす条件（画面がまだそこにある）
       const c = st.ctx;
       if (!c || st.hidden) return vlog(id, 'noctx');
       if (v.buffer && (c.state === 'running' || (st.resuming && c.state === 'suspended'))) { vs.token++; vs.wantId = null; voicePlay(v, opts); return vlog(id, 'play'); }
@@ -578,7 +581,7 @@
   //  優先＝NPC の声 ＞ 鳴き声：NPC の声が鳴っている・待っている間は鳴らさない（NPC の声が始まれば鳴き声は止まる＝voicePlay の stopVoice）。
   //  全体の間隔 CRY_GAP_MS（8秒）・同じ個体の間隔は opts.perMs（牧場のタップ＝10秒）。読み込みが間に合わなければ鳴らさない（既定 0.6秒）＝遅れて鳴らない。
   //  種族の番号（0〜6）か文字ID。表に無い種族（合体などで不明）は鳴らさない（別の種の声を流用しない）
-  const CRY_KEYS = fz(['solamo', 'gauru', 'nobiton', 'jiol', 'regnas', 'flurene', 'razuck']);
+  const CRY_KEYS = fz(['solamo', 'gauru', 'nobiton', 'jiol', 'regnas', 'flurene', 'razuck', 'kalshell']);   // 2026-10-18：7＝カルシェル（登録のみ）
   const CRY_GAP_MS = 8000, cs = { last: 0, per: {} };
   function cry(sp, kind = 'normal', opts = {}) {
     const key = typeof sp === 'number' ? CRY_KEYS[sp] : CRY_KEYS.includes(sp) ? sp : null;
@@ -588,7 +591,7 @@
     if ((vs.cur && !/^cry_/.test(vs.cur.id)) || (vs.wantId && !/^cry_/.test(vs.wantId))) return vlog(id, 'npc', { cry: true });
     if (!opts.force && now - cs.last < (opts.gapMs != null ? opts.gapMs : CRY_GAP_MS)) return vlog(id, 'cool', { cry: true });
     if (!opts.force && opts.perMs && now - (cs.per[key] || 0) < opts.perMs) return vlog(id, 'cool-mon', { cry: true });
-    const ok = voice(id, { maxWaitMs: opts.maxWaitMs != null ? opts.maxWaitMs : 600, volume: opts.volume, delay: opts.delay });
+    const ok = voice(id, { maxWaitMs: opts.maxWaitMs != null ? opts.maxWaitMs : 600, volume: opts.volume, delay: opts.delay, when: opts.when });
     const r = (VOICE_LOG[VOICE_LOG.length - 1] || {}).result;
     if (ok || r === 'wait') { cs.last = now; cs.per[key] = now; }
     return ok;
@@ -615,6 +618,8 @@
   /** 今鳴っている声の id（alias を解いたもの）と、鳴り始めてからの時間（ms）。鳴っていなければ null */
   const voicePlaying = () => (vs.cur ? { id: vs.cur.id, ms: Math.max(0, Date.now() - vs.cur.startAt) } : null);
   const voiceResolve = (id) => rid(id);
+  /** 2026-10-18 夜間 B06：声の書き起こし（VOICE_REGISTRY の line）。字幕を声と同じ文にするため */
+  const voiceLine = (id) => { const v = VOICE[rid(id)]; return v && v.line ? v.line : null; };
   const voiceStatus = () => Object.fromEntries(Object.keys(VOICE).map((k) => [k, VOICE_BLOCKED ? 'blocked' : VOICE[k].enabled ? (VOICE[k].buffer ? 'ready' : VOICE[k].failed ? 'failed' : 'loading') : 'disabled']));
 
   // ---- 音量・ミュート・自動再生の解除・表裏 ----
@@ -686,7 +691,7 @@
   const registryOf = (kind) => (kind === 'se' ? Object.fromEntries(Object.keys(SEF).map((k) => [k, { srcs: [...SEF[k].srcs], gain: SEF[k].gain, silent: !!SEF[k].silent, maxMs: SEF[k].maxMs }])) : Object.fromEntries(Object.keys(BGM).map((k) => [k, { ...BGM[k], srcs: [...BGM[k].srcs] }])));
 
   root.MMAUDIO = fz({ SCENES, SCENE_ALIAS, SE, FADE, registerBgm, registerSe, registerAll, clearRegistry, registryOf, prefetchSe, prefetchBgm, resetBgmPos, attachLegacy, resolveScene, resolveBgm, scene, stopBgm, bgmTime, seekBgm, se, setVolume, setMuted, unlock, wake, context, legacyInput, status, seLog: () => SE_LOG.slice(),
-    registerVoice, voice, cryAfter, stopVoice, setVoice, voiceSettings, voiceStatus, voicePrefetch, voiceWarm, voicePlaying, voiceResolve, voiceAliases: () => ({ ...VALIAS }), voiceIds: () => Object.keys(VOICE).filter((k) => !VOICE[k].cry), cry, cryWarm, cryIds: () => Object.keys(VOICE).filter((k) => VOICE[k].cry), CRY_KEYS, cryReset: () => { cs.last = 0; cs.per = {}; }, voiceBlocked: () => VOICE_BLOCKED, voiceNow: () => (vs.cur ? vs.cur.id : null), voiceLog: () => VOICE_LOG.slice(), playLog: () => PLAY_LOG.map((x) => ({ ...x })), VOICE_DEFAULT: VDEF });
+    registerVoice, voice, cryAfter, stopVoice, setVoice, voiceSettings, voiceStatus, voicePrefetch, voiceWarm, voicePlaying, voiceResolve, voiceLine, voiceAliases: () => ({ ...VALIAS }), voiceIds: () => Object.keys(VOICE).filter((k) => !VOICE[k].cry), cry, cryWarm, cryIds: () => Object.keys(VOICE).filter((k) => VOICE[k].cry), CRY_KEYS, cryReset: () => { cs.last = 0; cs.per = {}; }, voiceBlocked: () => VOICE_BLOCKED, voiceNow: () => (vs.cur ? vs.cur.id : null), voiceLog: () => VOICE_LOG.slice(), playLog: () => PLAY_LOG.map((x) => ({ ...x })), VOICE_DEFAULT: VDEF });
   try { if (root.document) { ['pointerdown', 'touchend', 'keydown'].forEach((e) => root.document.addEventListener(e, unlock, { passive: true })); root.document.addEventListener('visibilitychange', onVisibility); }
     if (root.addEventListener) { root.addEventListener('pageshow', () => { st.hidden = !!(root.document && root.document.hidden); wake(); }); root.addEventListener('focus', () => wake()); } } catch (e) {}
 })(typeof window !== 'undefined' ? window : globalThis);

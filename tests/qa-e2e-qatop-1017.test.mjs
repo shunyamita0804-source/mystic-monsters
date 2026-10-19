@@ -25,7 +25,7 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     await pg.waitForFunction(() => /ブランチ/.test(document.querySelector('#mmqat .qtv').textContent));
     const r = await pg.evaluate(() => ({ build: document.querySelector('#mmqat .qtv b').textContent, mb: MM_BUILD, rows: document.querySelectorAll('#mmqat .qtm tr').length, cells: document.querySelectorAll('#mmqat .qtm td').length,
       b: document.querySelectorAll('#mmqat .qtm td.battle').length, pv: document.querySelectorAll('#mmqat .qtm td.preview').length, links: [...document.querySelectorAll('#mmqat a.qtb[data-k]')].map((a) => a.getAttribute('href')), wide: document.documentElement.scrollWidth <= innerWidth }));
-    assert.equal(r.build, r.mb); assert.equal(r.rows, 7); assert.equal(r.cells, 70); assert.ok(r.b >= 59, `実戦 ${r.b}`); assert.equal(r.b + r.pv + (70 - r.b - r.pv), 70);
+    assert.equal(r.build, r.mb); assert.equal(r.rows, 8); assert.equal(r.cells, 80); assert.ok(r.b >= 69, `実戦 ${r.b}`); assert.equal(r.b + r.pv + (80 - r.b - r.pv), 80);   // 2026-10-18 カルシェル（8体目）
     assert.equal(r.links.length, 9); assert.ok(r.links[0].includes('ch1trial=A') && r.links[5].includes('ch2trial=C') && r.links[8].includes('ch3trial=C'));   // 2026-10-18：Chapter 3 の A／B／C を追加 assert.ok(r.wide);
     await pg.click('#mmqat .qts[data-k="cam"] button[data-v="old"]'); await pg.click('#mmqat .qts[data-k="walk"] button[data-v="old"]'); await pg.click('#mmqat .qts[data-k="mon"] button[data-v="3"]');   // 2026-10-18 REV3：C案・新歩行が正式の既定＝比較は「従来」
     await pg.fill('#mmqat .qtseed', '42'); await pg.press('#mmqat .qtseed', 'Tab');
@@ -45,7 +45,7 @@ test('QT-B2：新歩行 7体（?qaWalk=1017）＝ガウルで Chapter 1 の B・
     await pg.waitForFunction(() => window.MMWB && MMWB.world() && MMWB.world().isReady && MMWB.world().isReady() && document.querySelector('.rfw-mon[data-qawalk="1017"]'), null, { timeout: 60000 });
     const r = await pg.evaluate(() => ({ sp: S.m.sp, route: S.m.raise.field.route, tiles: JSON.stringify(S.m.raise.field.tiles), imgs: [...document.querySelectorAll('.rfw-mon img.wk')].map((i) => i.getAttribute('src')) }));
     assert.equal(r.sp, 1); assert.equal(r.route, 'B'); assert.equal(r.imgs.length, 20, '盤に出ている種族の20コマだけ');
-    assert.ok(r.imgs.every((s) => s.includes('walk_1017/gauru/')), r.imgs[0]);
+    assert.ok(r.imgs.every((s) => s.includes('walk_1017/gauru/')), r.imgs[0]);   // ?qaWalk=1017＝前の素材の比較
     tiles.push(r.tiles);
     if (k === 0) { await pg.waitForTimeout(1500); await shot(pg, 'qt_walk1017'); }
     assert.equal(await pg.evaluate(() => localStorage.getItem('mr4v6')), s0, '試遊は保存しない');

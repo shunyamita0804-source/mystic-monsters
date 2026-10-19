@@ -26,8 +26,8 @@
   // ---- 2026-10-15 N12：大会の対戦表の顔＝正式のイラスト6枚（assets/tournament/icons_1015/・薄い灰色の背景つきの正方形・左向き）----
   //  番号：0〜3＝SPECIES・4＝レグナス（バトルの絵の番号）・5＝フルーネ（MMP10M.PENDING_SPECIES の予約番号＝登録のみ・大会には出ない）。
   //  読めないときは従来の 2.5D の横顔（faces_25d）→ 丸い顔（faces）の順（index.html の tbIcon・tbIconFb）。bg＝その絵の背景の色（丸い枠の地に敷く）
-  const TOUR_ICON = Object.freeze({ 0: 'solamo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas', 5: 'flurene', 6: 'razuck' });   // 2026-10-17：6＝ラズック（登録のみ・制作候補の絵＝QA だけ）
-  const TOUR_ICON_BG = Object.freeze({ 0: '#d4d7dc', 1: '#cccfd5', 2: '#cfd3db', 3: '#d2d2d1', 4: '#c7c9d1', 5: '#cecfd0', 6: '#cdd1dd' });
+  const TOUR_ICON = Object.freeze({ 0: 'solamo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas', 5: 'flurene', 6: 'razuck', 7: 'kalshell' });   // 2026-10-17：6＝ラズック（登録のみ・制作候補の絵＝QA だけ）・2026-10-18：7＝カルシェル（正式採用の絵・登録のみ＝大会には出ない）
+  const TOUR_ICON_BG = Object.freeze({ 0: '#d4d7dc', 1: '#cccfd5', 2: '#cfd3db', 3: '#d2d2d1', 4: '#c7c9d1', 5: '#cecfd0', 6: '#cdd1dd', 7: '#e1e1e1' });
   const tourIconSrc = (sp) => (TOUR_ICON[sp] ? `./assets/tournament/icons_1015/icon_${TOUR_ICON[sp]}.webp` : null);
   const RANKS = 'EDCBAS';
   /** ルーレットの見た目（中央を 0 とした |d| ごとの値。間は直線補間） */
@@ -40,7 +40,7 @@
   const v24 = () => { try { return !(root.localStorage && root.localStorage.getItem(UI_KEY) === 'old'); } catch (e) { return true; } };
   const setUi = (mode) => { try { if (root.localStorage) root.localStorage.setItem(UI_KEY, mode === 'old' ? 'old' : 'new'); } catch (e) {} return v24() ? 'new' : 'old'; };
   /** モンスターの大きさ（従来の待機立ち絵に対する比）。ソラモ＝四足・ガウル＝腕2足2翼2・ノビトン＝横に長い・ジオル・レグナス */
-  const SCALE = Object.freeze({ 0: 0.91, 1: 0.92, 2: 0.88, 3: 0.91, 4: 0.91, 6: 0.91 });   // 6＝ラズック（QA だけ・体格の正式倍率は未決）
+  const SCALE = Object.freeze({ 0: 0.91, 1: 0.92, 2: 0.88, 3: 0.91, 4: 0.91, 6: 0.91, 7: 0.91 });   // 6＝ラズック（QA だけ・体格の正式倍率は未決）・7＝カルシェル（QA だけ・サイズ 3）
   /** 2026-10-15 夜：体格サイズ 1〜5 の比較プレビュー（js/battle/move-tune-1015.js の MMTUNE.sizeK＝URL に ?mmSize=1 のときだけ。通常は 1＝今までの大きさ）。
    *  待機立ち絵・被弾／回避・勝利の絵は同じ --mma-k を使い、技のコマ（art25d）は待機立ち絵の矩形から作る＝技の途中で大きさが変わらない */
   const kOf = (sp) => (SCALE[sp] || 0.91) * (root.MMTUNE && root.MMTUNE.sizeK ? root.MMTUNE.sizeK(sp) : 1);
@@ -157,7 +157,7 @@
       // 08：勝ったときは正式の勝利画像（assets/tournament/victory/）。「WIN!」の演出は残し、下の「勝利！」の文字は出さない
       '#bt .mon.mma-won>img:not(.mma-win){opacity:0!important}',
       '#bt .mon .mma-win{position:absolute;left:50%;bottom:-2%;height:132%;width:auto;max-width:none;transform:translateX(-50%);pointer-events:none;filter:drop-shadow(0 8px 6px rgba(0,0,0,.45));animation:mmawin .5s cubic-bezier(.2,1.4,.4,1) both}',
-      '@keyframes mmawin{from{opacity:0;transform:translateX(-50%) translateY(8%) scale(.92)}to{opacity:1;transform:translateX(-50%)}}',
+      '@keyframes mmawin{from{opacity:.45;transform:translateX(-50%) translateY(8%) scale(.92)}to{opacity:1;transform:translateX(-50%)}}',   // 2026-10-19 夜間 D29-B2：0 から始めると決着の瞬間に主役が1フレーム消える＝半透明から
       // ---- 2026-10-13 開発24（#bt.mma-v24）----
       // ① 大きさ：待機立ち絵・被弾／回避・勝利の絵を同じ倍率（--mma-k）で。足もと（bottom:0）は動かさない＝床に立ったまま。技のコマ（art25d）は待機立ち絵の大きさから作るので同じだけ小さくなる
       '#bt.mma-v24 .mon .mma-idle{height:calc(118% * var(--mma-k,1))}',
@@ -444,16 +444,20 @@
   // 2026-10-13 開発28 B（監査）：WIN のあと fight() が決着のポーズを描き直す（#m0 .mon の子を入れ替える）と、足した勝利の絵も一緒に消え、次の帯の描き直しまで約0.6〜1.2秒 主役が空白だった
   //  → 勝利の絵はバトルごとに1枚だけ作って持ち、消されたら同じ絵（読み込み済み）をすぐ戻す（登場の動きはくり返さない）。fight()・判定・結果は変えない
   const WIN_IMG = new WeakMap();   // #bt → { im, loaded, failed, mo }
+  const WIN_PRE = new Map();   // 勝利の絵の先読み（src → デコード済みの Image）
+  function winPreload() { try { const pl = G('BPL'), sp = pl && pl[0] ? pl[0].sp : null; if (!VICTORY[sp]) return; const src = `./assets/tournament/victory/${VICTORY[sp]}_victory.webp`; if (WIN_PRE.has(src)) return; const im = new Image(); im.decoding = 'async'; im.onload = () => { if (im.decode) im.decode().catch(() => {}); }; im.src = src; WIN_PRE.set(src, im); } catch (e) {} }
   function won(bt) {
     const pl = G('BPL'), sp = pl && pl[0] ? pl[0].sp : null;
     if (!VICTORY[sp] || !$('#m0 .mon', bt)) return;
     let w = WIN_IMG.get(bt);
     if (!w) {
-      const im = new Image(); im.className = 'mma-win'; im.alt = ''; im.decoding = 'async';
-      w = { im, loaded: false, failed: false, mo: null }; WIN_IMG.set(bt, w);
+      // 2026-10-19 夜間 D29-B2：バトルの開始で先に読んだ勝利の絵（winPreload）があればそれを使う＝WIN! の瞬間から勝利の絵（読み込みの間に待機立ち絵が見えない）
+      const src = `./assets/tournament/victory/${VICTORY[sp]}_victory.webp`, pre = WIN_PRE.get(src);
+      const im = pre && pre.complete && pre.naturalWidth ? pre : new Image(); im.className = 'mma-win'; im.alt = ''; im.decoding = 'async';
+      w = { im, loaded: im === pre, failed: false, mo: null }; WIN_IMG.set(bt, w); if (im === pre) WIN_PRE.delete(src);
       im.onload = () => { w.loaded = true; const m = $('#m0 .mon', bt); if (m && im.parentNode === m) m.classList.add('mma-won'); };
       im.onerror = () => { w.failed = true; im.remove(); };
-      im.src = `./assets/tournament/victory/${VICTORY[sp]}_victory.webp`;
+      if (im !== pre) im.src = src;
       const side = $('#m0', bt);
       if (side) { w.mo = new MutationObserver(() => { if (!bt.isConnected) { w.mo.disconnect(); return; } placeWin(bt, w, true); }); w.mo.observe(side, { childList: true, subtree: true }); }
     }
@@ -489,7 +493,12 @@
       const loser = win ? 1 : 0;
       arr = [0, 1].map((s) => {
         const sp = pl[s] && pl[s].sp, la = s === loser ? loseArt(s, sp) : null, src = la ? la.src : idleSrc(sp); if (!src) return null;
-        const im = new Image(); im.className = 'mma-fin' + (la ? ' mma-lose' : '') + (flipOf(s, sp) ? ' fl' : ''); im.alt = ''; im.decoding = 'sync'; im.src = src;
+        // 2026-10-19 夜間 D29-B2：決着の瞬間に絵が1フレーム消えていた＝新しく作った <img> は読み込みが終わるまで幅 0（CSS は旧の絵をもう隠している）。
+        //  先に読んでデコード済みの要素を使う＝しょんぼりは rxImg の要素そのもの・待機立ち絵はその側に出ている読み込み済みの待機絵の写し。無ければ従来どおり新しく作る
+        const pre = la && la.kind === 'sad' ? rxImg[`${s}:sad`] : null, idleEl = !la ? $(`#m${s} .mon img.mma-idle`, bt) : null;
+        const im = pre ? pre : idleEl && idleEl.complete && idleEl.naturalWidth && idleEl.getAttribute('src') === src ? idleEl.cloneNode(false) : new Image();
+        if (pre) delete rxImg[`${s}:sad`];
+        im.removeAttribute('style'); im.className = 'mma-fin' + (la ? ' mma-lose' : '') + (flipOf(s, sp) ? ' fl' : ''); im.alt = ''; im.decoding = 'sync'; if (im.getAttribute('src') !== src) im.src = src;
         if (la) { im.style.setProperty('--rh', String(la.hRel)); im.dataset.kind = la.kind; }
         if (s === loser && finLog.length) finLog[finLog.length - 1].lose = la ? { side: s, kind: la.kind } : { side: s, kind: 'idle' };
         const mon = $(`#m${s} .mon`, bt); if (mon && bt.classList.contains('mma-v24') && (SCALE[sp] || IDLE[sp])) mon.style.setProperty('--mma-k', String(kOf(sp)));
@@ -613,7 +622,7 @@
     if (v24()) bt.classList.add('mma-v24');
     try { if (root.MMCROWD) root.MMCROWD.prefetch(bt); } catch (e) { /* 音だけ */ }
     try { setupCine(bt); } catch (e) { /* 見た目だけ */ }
-    try { lastAct = null; rxWrap(); rxPreload(); rxWatch(bt); } catch (e) { /* 見た目だけ */ }
+    try { lastAct = null; rxWrap(); rxPreload(); winPreload(); rxWatch(bt); } catch (e) { /* 見た目だけ */ }
     try { const pl = G('BPL'); if (pl) [0, 1].forEach((i) => pl[i] && warmCards(pl[i].eq)); } catch (e) { /* 見た目だけ */ }
     try { setupChips(bt); } catch (e) { /* 見た目だけ */ }
     try { setupText(bt); } catch (e) { /* 見た目だけ */ }

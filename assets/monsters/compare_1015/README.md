@@ -15,3 +15,12 @@ ZIP「Mismon_CompareScreen_And_QA_Instructions_20261015」の 02_ComparePortrait
 | ジオル（3） | 04_Jiol.png | 1254x1254 | d86d34dd047010744848e55976b781122b157e8bced41771668c0df5d6c0eed3 | jiol.webp | 4266a8c453e55b6f1b4a705312683db12fc6eb19c9eba47c61907846d7c7a0f1 |
 | レグナス（4・ライバル専用） | 05_Regnas.png | 1254x1254 | b8ad1a9764a14d6f7d04ef61f0fa6162a4ab1108a79a1592f296a3819d4e0882 | regnas.webp | ce766d68883eaf48f5314fb8f7852f4adb015bed2ffa2df9971c036f16b504a5 |
 | フルーネ（予約 5・未解禁） | 06_Flurene.png | 1254x1254 | 76baf7789377e1bfccf0e7a281f020c74bf0b7adf95e33daa11903004789b3bf | flurene.webp | 1e9c6cd44fb2fc6f30788cacfe3c1537a2194b1d6584d0fe9f3b7c6f2bd3008e |
+
+## カルシェル（2026-10-18・登録のみ・未解禁＝QA 試遊だけ）
+
+- 正式納品 Kalshell_DevAssets_Part01〜07（Mismon_Kalshell_OfficialPackage_ForDev_20261018・ユーザー承認済み）。原本（PNG／MP3）はリポジトリに置かない＝表示用の派生だけ。道具＝tools/kalshell1018/derive_art.py（PIL＋numpy・数値は tools/kalshell1018/derive_art.json）
+- **代替（仮案）**：専用の肩上アップは納品に無い。対戦表の顔は灰色の背景つきで透過の比較画面に合わないため、**正式の待機絵（右向き）の顔を中心に切った正方形**（待機絵の画素 x 341・y 195・一辺 539・高さの 62%）を 640×640 にした（反転していない）。正式の肩上アップが届いたら差し替える。js/battle/compare.js の `PORTRAIT[7]`。
+
+| 種族（番号） | 元 | sha256（元） | 表示用 | sha256（表示用） |
+|---|---|---|---|---|
+| カルシェル（予約 7・未解禁）・代替 | 01_art/01_透過微修正版/Kalshell_BattleIdle_Review_20261018.png（待機絵） | f61973da4e0083e5c0ce983ad3c5f49f9ec07a9d92cd34001daedd76fdc1b8bb | kalshell.webp | b2a8bf7064b9439e1d5106730f06861d20dc24c7512b79f70e27a493911c1017 |

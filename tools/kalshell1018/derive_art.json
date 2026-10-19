@@ -1,0 +1,327 @@
+{
+ "scale2p5d": 0.64286,
+ "scaleIdle": 0.82854,
+ "size2p5d": [
+  720,
+  680
+ ],
+ "sizeIdle": [
+  859,
+  720
+ ],
+ "idleCrop": [
+  132,
+  213,
+  1169,
+  1082
+ ],
+ "portraitBox": [
+  341,
+  195,
+  539
+ ],
+ "reactions": {
+  "joy": {
+   "w": 830,
+   "h": 782,
+   "hRel": 1.086,
+   "label": "喜ぶ"
+  },
+  "surprise": {
+   "w": 885,
+   "h": 860,
+   "hRel": 1.194,
+   "label": "驚く"
+  },
+  "sad": {
+   "w": 882,
+   "h": 873,
+   "hRel": 1.212,
+   "label": "しょんぼり"
+  },
+  "eat": {
+   "w": 822,
+   "h": 822,
+   "hRel": 1.142,
+   "label": "食べる"
+  },
+  "hit": {
+   "w": 979,
+   "h": 972,
+   "hRel": 1.35,
+   "label": "被弾"
+  },
+  "dodge": {
+   "w": 991,
+   "h": 996,
+   "hRel": 1.383,
+   "label": "回避"
+  }
+ },
+ "walk": {
+  "h": 1.395,
+  "foot": 0.144,
+  "bodyHeight": [
+   [
+    1101,
+    1080,
+    1082,
+    1056,
+    1127,
+    1107,
+    1106,
+    1136
+   ],
+   [
+    1123,
+    1104,
+    1085,
+    1139,
+    1123,
+    1116,
+    1071,
+    1080
+   ]
+  ],
+  "bottom": [
+   [
+    1315,
+    1326,
+    1299,
+    1294,
+    1324,
+    1329,
+    1285,
+    1317
+   ],
+   [
+    1321,
+    1304,
+    1286,
+    1335,
+    1311,
+    1317,
+    1277,
+    1284
+   ]
+  ]
+ },
+ "iconBg": "#e1e1e1",
+ "voice": [
+  {
+   "id": "cry_kalshell_normal",
+   "kind": "normal",
+   "orig": "カルシェル公式ボイス.mp3",
+   "origSha": "c7a0f955ae145e02eb52c7dfcf47bfe52868ca1fc3df7e3a3c481102af5f6670",
+   "I": -16.5,
+   "peak": -3.5,
+   "gain": 1.189
+  },
+  {
+   "id": "cry_kalshell_sad",
+   "kind": "sad",
+   "orig": "カルシェル悲しい.mp3",
+   "origSha": "7c182b58c5bc3b44b1a40ecaf944f4364221b6561b02c3e4063328a4ccf8f7ad",
+   "I": -18.9,
+   "peak": -2.3,
+   "gain": 1.109
+  }
+ ],
+ "originals": {
+  "2p5d": {
+   "file": "01_art/01_透過微修正版/Kalshell_Official_2p5D_20261017.png",
+   "sha256": "8995fb1eb46d7e9fbc4625f580b4e1b63ba46ef66ebb563169f8b733763b48ae"
+  },
+  "idle": {
+   "file": "01_art/01_透過微修正版/Kalshell_BattleIdle_Review_20261018.png",
+   "sha256": "f61973da4e0083e5c0ce983ad3c5f49f9ec07a9d92cd34001daedd76fdc1b8bb"
+  },
+  "reaction_joy": {
+   "file": "02_reactions/Kalshell_Reaction_01_Happy.png",
+   "sha256": "e3fc6a7d8df1dafb183c3868138ab80ba8e73bd6a22939d1e832001153292c17"
+  },
+  "reaction_surprise": {
+   "file": "02_reactions/Kalshell_Reaction_02_Surprise.png",
+   "sha256": "4c8b27140dbd12f5c9ee122bab8ca0a438116719086e56751222b1008962f0c0"
+  },
+  "reaction_sad": {
+   "file": "02_reactions/Kalshell_Reaction_03_Sad.png",
+   "sha256": "54dd69ec4d60b52066358bde04f09b9d03902ae1c32ad26be36154e08c211b05"
+  },
+  "reaction_eat": {
+   "file": "02_reactions/Kalshell_Reaction_04_Eat.png",
+   "sha256": "65c6975b616d1e64a0299656c2367c5ef4cb2d184b0d5dda238318724dc362e6"
+  },
+  "reaction_hit": {
+   "file": "02_reactions/Kalshell_Reaction_05_Hit.png",
+   "sha256": "2cdc267b7b04722d872a1c356810e30db23e92b112926021f229e967d9d900da"
+  },
+  "reaction_dodge": {
+   "file": "02_reactions/Kalshell_Reaction_06_Dodge.png",
+   "sha256": "cd507c69eb4608d30b7025f4a582d99dd0aa233f6ab4079538f13f294fcf8b0d"
+  },
+  "walk_front_01": {
+   "file": "03_walk/FRONT/FRONT_01.png",
+   "sha256": "31babb4261fd1a2e361b04cadfb98f3a67d180222a2d295d1a734e89617e7a10"
+  },
+  "walk_front_02": {
+   "file": "03_walk/FRONT/FRONT_02.png",
+   "sha256": "5420e0f4d4de3c3e58d60e6b002eabfd95551c0fb096836cfb7bfa68da20fd73"
+  },
+  "walk_front_03": {
+   "file": "03_walk/FRONT/FRONT_03.png",
+   "sha256": "e3ee892f3eca7d398734749ae18f28d0a9504422cdf65b512ec56880d950e7f6"
+  },
+  "walk_front_04": {
+   "file": "03_walk/FRONT/FRONT_04.png",
+   "sha256": "65035dc33ed922d12f5f34cb681833201708fdf0ed9b10bff4508058c18ee821"
+  },
+  "walk_front_05": {
+   "file": "03_walk/FRONT/FRONT_05.png",
+   "sha256": "ead6d6e413a4338db82cf9ff379f5718c489c346ef59f687dc3e3ecd11e15aa9"
+  },
+  "walk_front_06": {
+   "file": "03_walk/FRONT/FRONT_06.png",
+   "sha256": "bb2314f2bf113ec2a091785254b0b99dbfc8804a2ed1ecf1e53268977d5fb933"
+  },
+  "walk_front_07": {
+   "file": "03_walk/FRONT/FRONT_07.png",
+   "sha256": "738f8e290d61962836f82c5fb14cb4b12d1ae9b300bb3b747d3f25e7dc436cee"
+  },
+  "walk_front_08": {
+   "file": "03_walk/FRONT/FRONT_08.png",
+   "sha256": "edc2a0bc50fe8bba80a8b31d327be44bd9ea2e8ae980b0f7d51c11f64acb1db4"
+  },
+  "walk_back_01": {
+   "file": "03_walk/BACK/BACK_01.png",
+   "sha256": "ce054eecf73132025d6e7c760307648786807a1b9dda385219bcc492e90209f0"
+  },
+  "walk_back_02": {
+   "file": "03_walk/BACK/BACK_02.png",
+   "sha256": "a8fe88f5b6ee66ba09cf7cc28709e0fcf75fe9755314fc09fb6856a96f47394c"
+  },
+  "walk_back_03": {
+   "file": "03_walk/BACK/BACK_03.png",
+   "sha256": "6d7da3603383b0494f663f6320a5f59215a778c1f70a026fcd39d7a857a482d5"
+  },
+  "walk_back_04": {
+   "file": "03_walk/BACK/BACK_04.png",
+   "sha256": "406cdb076ae9c070c794044cc4af7a8218cb5b7d43e35e20553533bc81caf9cb"
+  },
+  "walk_back_05": {
+   "file": "03_walk/BACK/BACK_05.png",
+   "sha256": "70072f0105fc9a4c769bf6f53cbc022601fe9641c4b62c0e6c9dce7877fc881e"
+  },
+  "walk_back_06": {
+   "file": "03_walk/BACK/BACK_06.png",
+   "sha256": "93cb9b3af2904dc761b7831f00c5e79e25a6eee3e7899956be53d8d772cc0ab3"
+  },
+  "walk_back_07": {
+   "file": "03_walk/BACK/BACK_07.png",
+   "sha256": "5b8d7f5bcb7384a7ae196092ec58bdb2611f55b8e1e6ea06abfeaeddea810409"
+  },
+  "walk_back_08": {
+   "file": "03_walk/BACK/BACK_08.png",
+   "sha256": "56f2dcde43b84c32675b83331752ea2125cea4afb9912d4c71e941347dbb6507"
+  },
+  "card_01": {
+   "file": "04_skill_cards/DELIVERY_10CARDS/01_PNG/01_Hasamu.png",
+   "sha256": "a1ed54b26ecc3558464499a3934504a31f773416b361efde92e96bb5182222fc"
+  },
+  "card_02": {
+   "file": "04_skill_cards/DELIVERY_10CARDS/01_PNG/02_ShellTackle.png",
+   "sha256": "65a96cee46bf1d30b8fd32f5cfd76323d205455ce844d366df4b4b064124e33b"
+  },
+  "card_03": {
+   "file": "04_skill_cards/DELIVERY_10CARDS/01_PNG/03_Awadama.png",
+   "sha256": "095250972dfc21012483a1b18c3cf7083f2f4144d4ab20a4600006af2248c3e9"
+  },
+  "card_04": {
+   "file": "04_skill_cards/DELIVERY_10CARDS/01_PNG/04_KaraNiKomoru.png",
+   "sha256": "14f028b3c34c9a2e706d7b35959a816d7afa45ffdcf1cb5e25aa42483be145e6"
+  },
+  "card_05": {
+   "file": "04_skill_cards/DELIVERY_10CARDS/01_PNG/05_CrashClaw.png",
+   "sha256": "4a021a369b7d54ca0e941b6f4a8e18181f37762f370d307d20c2dc4ba311e101"
+  },
+  "card_06": {
+   "file": "04_skill_cards/DELIVERY_10CARDS/01_PNG/06_AquaBurst.png",
+   "sha256": "99a70a49d5f934094641908c5f78dd3533d2a1c1452e1a95623ee8c0d65c7aa0"
+  },
+  "card_07": {
+   "file": "04_skill_cards/DELIVERY_10CARDS/01_PNG/07_CoralSpear.png",
+   "sha256": "c9b989906cffc4754daedcb1ad13f27df6b00f35adf69ba91d8eb41a3a828dde"
+  },
+  "card_08": {
+   "file": "04_skill_cards/DELIVERY_10CARDS/01_PNG/08_ShioNoStep.png",
+   "sha256": "bac6f450ea0d8d41e60b76f1cc9eab8b4b92dcf890e267902bc387da4960570c"
+  },
+  "card_09": {
+   "file": "04_skill_cards/DELIVERY_10CARDS/01_PNG/09_ShellBreaker.png",
+   "sha256": "6c4b6c7768ac6b4b73f113994d2e5626328e31a2b365418200d93ddef419e7b1"
+  },
+  "card_10": {
+   "file": "04_skill_cards/DELIVERY_10CARDS/01_PNG/10_TidalCrash.png",
+   "sha256": "ba03848fa46fd7ec15f4a285774188106a8734a3a81673284317b88ec19b2994"
+  },
+  "icon": {
+   "file": "06_icons/Mismon_Kalshell_Official_Icon_VS_20261018/01_Kalshell_TournamentIcon_OFFICIAL_1254.png",
+   "sha256": "75a1d893db4ad4f148e9a74fd0b0855d878f20fa6d998bd69841d9d4eb2ebbc2"
+  },
+  "vs": {
+   "file": "06_icons/Mismon_Kalshell_Official_Icon_VS_20261018/02_Kalshell_VSArt_OFFICIAL_1254.png",
+   "sha256": "2f63605934c98ce3e3d502b98ff04cc01a6e7a8cd16e6df6a04fff879d83cd1b"
+  },
+  "voice_normal": {
+   "file": "07_audio/カルシェル公式ボイス.mp3",
+   "sha256": "c7a0f955ae145e02eb52c7dfcf47bfe52868ca1fc3df7e3a3c481102af5f6670"
+  },
+  "voice_sad": {
+   "file": "07_audio/カルシェル悲しい.mp3",
+   "sha256": "7c182b58c5bc3b44b1a40ecaf944f4364221b6561b02c3e4063328a4ccf8f7ad"
+  }
+ },
+ "derived": {
+  "assets/monsters/2p5d/kalshell.webp": "ece6d856bc69fd13f16eab411b7f08005b9c984f506dba48346473fe25322af7",
+  "assets/battle/idle/idle_kalshell.webp": "6b45adc0c89b0a3d54f08706eac78c44fd4fdac4fbecfaac86b1e3380be4c56f",
+  "assets/monsters/reactions_1012/kalshell/01_joy.webp": "134e6de0da4a9f83ae12602453ca6cd9bf5ae45fdb1669867b210ad2ea7ade8f",
+  "assets/monsters/reactions_1012/kalshell/02_surprise.webp": "4467172627bb990238884dac5735fa6df4c0c0f86e6e36a559b295ea3a499558",
+  "assets/monsters/reactions_1012/kalshell/03_sad.webp": "81dfdc510dea6f76072e7bc4b3b9f29dea4147d4cefaec0347cb06238ecafac4",
+  "assets/monsters/reactions_1012/kalshell/04_eat.webp": "b7f0f55b35238c3cd202d087ec3302d6974ef92cd741557e642b81ac37efdd1d",
+  "assets/monsters/reactions_1012/kalshell/05_hit.webp": "f18c1204efec8c3a6aa24189682be7c7d1286635a5d97b303289feb81858cc09",
+  "assets/monsters/reactions_1012/kalshell/06_dodge.webp": "7969a4e557f29a64685e19d1f472814dc8a5aa0995a0e9fea54d0d7c2c9cc6af",
+  "assets/monsters/walk_25d/kalshell/kalshell_walk_front_01.webp": "c51d5108613c6edd78edee5aee3c03fff1ee816e8d6c924d26861e7ccc81abb0",
+  "assets/monsters/walk_25d/kalshell/kalshell_walk_front_02.webp": "a276d51c584f5eb1e969a24dd20e24906e4599bd5c4b69cbdf697d3a6655a91e",
+  "assets/monsters/walk_25d/kalshell/kalshell_walk_front_03.webp": "c95a06863b9a87899d6696b31674cda030d1cf76a1c24cec2a3d0693ae151a32",
+  "assets/monsters/walk_25d/kalshell/kalshell_walk_front_04.webp": "69db4b65c24548a2979a642660c802e7378f00db6c50ea633b2c703b54ec69fd",
+  "assets/monsters/walk_25d/kalshell/kalshell_walk_front_05.webp": "3eddd692b286516f9a6e5bb470cc7b4e6ac1a814d3bb0b46c34bee0f9632438e",
+  "assets/monsters/walk_25d/kalshell/kalshell_walk_front_06.webp": "d5671b0079912a857a7dfc0bc7cba47e4e32341b16dba484073d046ac6b8d826",
+  "assets/monsters/walk_25d/kalshell/kalshell_walk_front_07.webp": "35da85ea557d2a76a5535e53aaf2e12ea38dc591674fdc9896de085cd37d2000",
+  "assets/monsters/walk_25d/kalshell/kalshell_walk_front_08.webp": "541269bcdc37c044c94764a765afb8e81b98a29dc85a6b27fe1c0c60db4039ec",
+  "assets/monsters/walk_25d/kalshell/kalshell_walk_back_01.webp": "289a27ffa7ec9e3962d0c8b24b52e1cf56671854ef2858c128dbb11239be0d03",
+  "assets/monsters/walk_25d/kalshell/kalshell_walk_back_02.webp": "dab2e1bfcd359fed8732527269143953120d4876fb47d81d58fb1f433b091d49",
+  "assets/monsters/walk_25d/kalshell/kalshell_walk_back_03.webp": "facc275c68a08f5f17b09e07d9444db50a44eb0b983c7a034cc6592ba3771559",
+  "assets/monsters/walk_25d/kalshell/kalshell_walk_back_04.webp": "8ceaa7c6433110a5871a42b70d49ee33b78d872f18bb4534fa70b32c30eac312",
+  "assets/monsters/walk_25d/kalshell/kalshell_walk_back_05.webp": "41fde3aab8697b65865d06870e45811744ad4e13db6cff7ca79c6f3a6b7fe4f9",
+  "assets/monsters/walk_25d/kalshell/kalshell_walk_back_06.webp": "5d8e1299eb58d87ee80c02ac5d19f3e6715e8b14fe3eb95e43f82b42ec7c96d5",
+  "assets/monsters/walk_25d/kalshell/kalshell_walk_back_07.webp": "d2097735c272ae54dcbaac5cbcd5fb63a31fe766c6cdc08b33d966e29d8f535e",
+  "assets/monsters/walk_25d/kalshell/kalshell_walk_back_08.webp": "19510ffa0997e8da39e2a0e487695b8a1bb0bb9c4e467777cbe1da1293a1c1ba",
+  "assets/moves/cards_1014/kalshell/01_hasamu.webp": "323169bdb8487500205fdbab19b9fcefa5eddda8642c0bbee97f94a956ed626c",
+  "assets/moves/cards_1014/kalshell/02_shell_tackle.webp": "ec621b3fcfc6be0e67699b9fd7aaf568542719d957a47dab10c879e53bfaba01",
+  "assets/moves/cards_1014/kalshell/03_awadama.webp": "2d407633f5127ef99ffd15482873f3ea637007f5f664313f98d1e465119320ae",
+  "assets/moves/cards_1014/kalshell/04_kara_ni_komoru.webp": "ff58ae04a580492672bf6248236efb0ee3746a399590a11e6fb178e3e0986fec",
+  "assets/moves/cards_1014/kalshell/05_crash_claw.webp": "5bbc71c0a35d6ddbc1e08d36ae65e82a9d0717123e599246eda37cf737bc6338",
+  "assets/moves/cards_1014/kalshell/06_aqua_burst.webp": "eaf296b779ebf065e60aedea917f00e10098828c06a1ccc466dfe936ecdd3399",
+  "assets/moves/cards_1014/kalshell/07_coral_spear.webp": "9d012452d3980d909e23b31c22ea1277596d240e17892695acd73d94fe4fea88",
+  "assets/moves/cards_1014/kalshell/08_shio_no_step.webp": "b8753c231f7efacae5f3249c6feefb976f21d6163ac4364d2802e2606ed0ade1",
+  "assets/moves/cards_1014/kalshell/09_shell_breaker.webp": "cd4720a425a7fafb0da0728f29ae07c4c37bbe30334a779e5fa25ad41bb30d6b",
+  "assets/moves/cards_1014/kalshell/10_tidal_crash.webp": "addbb5a0c47d53c1dddc1cb7b1553aa35e22b19f307a045215227fe1796d3dd2",
+  "assets/tournament/icons_1015/icon_kalshell.webp": "77d0dc7a1579f15de1145c7aa4e057c4ad229ec98ccb880823160ea80a3384b8",
+  "assets/tournament/vs_1017/vs_kalshell.webp": "e154eab18734d019958d0e199421ebe948d06f087ab8c25a77769924df8813d4",
+  "assets/monsters/compare_1015/kalshell.webp": "b2a8bf7064b9439e1d5106730f06861d20dc24c7512b79f70e27a493911c1017",
+  "assets/audio/voice/monster_1017/kalshell_normal.ogg": "ced3fa7067bf471a3a27e1f9a3cc7320f1d4bd2324f3dee997eb854139d35a73",
+  "assets/audio/voice/monster_1017/kalshell_normal.m4a": "42b77e8ce2f4a1aedf6197239aa86206b3ead6dbe6aa53af204dbf2b9709bd12",
+  "assets/audio/voice/monster_1017/kalshell_sad.ogg": "d357588d6582e26d2f5b8aead6da1f78df6e3cb2e092b3567b73c969af10cdb9",
+  "assets/audio/voice/monster_1017/kalshell_sad.m4a": "274b87fa638abed1f10c9a12f05927c3e871a16ef0134bb79dcbaac86d50c708"
+ }
+}

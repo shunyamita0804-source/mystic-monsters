@@ -16,6 +16,7 @@
     4: Object.freeze({ f: 'regnas', fx: 0.68, fy: 0.40, k: 1.05 }),
     5: Object.freeze({ f: 'flurene', fx: 0.64, fy: 0.46, k: 1.04 }),
     6: Object.freeze({ f: 'razuck', fx: 0.70, fy: 0.36, k: 1.04 }),   // 2026-10-17：バトル待機の参考画像の上の部分（tools/razuck1017/derive_art.py）＝QA だけ
+    7: Object.freeze({ f: 'kalshell', fx: 0.60, fy: 0.50, k: 1.04 }),   // 2026-10-18：カルシェル＝専用の肩上アップは未納＝正式の待機絵（右向き）の顔を中心に切った代替（tools/kalshell1018/derive_art.py）＝QA だけ
   });
   const KS = ['li', 'po', 'in', 'hi', 'ev', 'de'];
   const LAB = { li: 'ライフ', po: 'ちから', in: 'かしこさ', hi: '命中', ev: '回避', de: '丈夫さ' };
@@ -41,7 +42,7 @@
     const M = root.MMP10M; if (!M) return '';
     try {
       const k = M.skillText(sp); if (k) return k.name;
-      const p = portraitOf(sp), r = sp === 4 && p && M.rivalMonster ? M.rivalMonster(p.f) : (sp === 5 || sp === 6) && M.pendingSpecies ? M.pendingSpecies(sp) : null;
+      const p = portraitOf(sp), r = sp === 4 && p && M.rivalMonster ? M.rivalMonster(p.f) : sp >= 5 && M.pendingSpecies ? M.pendingSpecies(sp) : null;   // 5〜＝登録のみの種族（フルーネ・ラズック・カルシェル）
       return r && r.uniqueSkill ? r.uniqueSkill.name : '';
     } catch (e) { return ''; }
   }

@@ -85,3 +85,20 @@
 - ガウル カード06 ファイアボール＝SK 15／ノビトン カード02 ずつき＝SK 31／フルーネ カード09 ルートドレイン（技ID root_drain・QA 試遊だけの SK 58）。カードの番号と SK の番号は別
 - 旧カード3枚（GAURU_06_fireball・NOBITON_02_zutsuki・FLURENE_09_inochi_no_shizuku）の原本の sha256 は git の履歴の README に残る
 
+## カルシェル（2026-10-18・登録のみ・未解禁＝QA 試遊だけ）
+
+- 正式納品 Kalshell_DevAssets_Part01〜07（Mismon_Kalshell_OfficialPackage_ForDev_20261018・ユーザー承認済み）。原本（PNG／MP3）はリポジトリに置かない＝表示用の派生だけ。道具＝tools/kalshell1018/derive_art.py（PIL＋numpy・数値は tools/kalshell1018/derive_art.json）
+- 幅 640px・WebP 品質84（既存と同じ変換）。SK＝70＋No−1（js/battle/rules.js の installKalshell）。QA 試遊の個体だけが使う。
+
+| 原本 | sha256（原本） | 派生 | sha256（派生） | SK |
+|---|---|---|---|---|
+| 04_skill_cards/DELIVERY_10CARDS/01_PNG/01_Hasamu.png | a1ed54b26ecc3558464499a3934504a31f773416b361efde92e96bb5182222fc | assets/moves/cards_1014/kalshell/01_hasamu.webp | 323169bdb8487500205fdbab19b9fcefa5eddda8642c0bbee97f94a956ed626c | SK 70 |
+| 04_skill_cards/DELIVERY_10CARDS/01_PNG/02_ShellTackle.png | 65a96cee46bf1d30b8fd32f5cfd76323d205455ce844d366df4b4b064124e33b | assets/moves/cards_1014/kalshell/02_shell_tackle.webp | ec621b3fcfc6be0e67699b9fd7aaf568542719d957a47dab10c879e53bfaba01 | SK 71 |
+| 04_skill_cards/DELIVERY_10CARDS/01_PNG/03_Awadama.png | 095250972dfc21012483a1b18c3cf7083f2f4144d4ab20a4600006af2248c3e9 | assets/moves/cards_1014/kalshell/03_awadama.webp | 2d407633f5127ef99ffd15482873f3ea637007f5f664313f98d1e465119320ae | SK 72 |
+| 04_skill_cards/DELIVERY_10CARDS/01_PNG/04_KaraNiKomoru.png | 14f028b3c34c9a2e706d7b35959a816d7afa45ffdcf1cb5e25aa42483be145e6 | assets/moves/cards_1014/kalshell/04_kara_ni_komoru.webp | ff58ae04a580492672bf6248236efb0ee3746a399590a11e6fb178e3e0986fec | SK 73 |
+| 04_skill_cards/DELIVERY_10CARDS/01_PNG/05_CrashClaw.png | 4a021a369b7d54ca0e941b6f4a8e18181f37762f370d307d20c2dc4ba311e101 | assets/moves/cards_1014/kalshell/05_crash_claw.webp | 5bbc71c0a35d6ddbc1e08d36ae65e82a9d0717123e599246eda37cf737bc6338 | SK 74 |
+| 04_skill_cards/DELIVERY_10CARDS/01_PNG/06_AquaBurst.png | 99a70a49d5f934094641908c5f78dd3533d2a1c1452e1a95623ee8c0d65c7aa0 | assets/moves/cards_1014/kalshell/06_aqua_burst.webp | eaf296b779ebf065e60aedea917f00e10098828c06a1ccc466dfe936ecdd3399 | SK 75 |
+| 04_skill_cards/DELIVERY_10CARDS/01_PNG/07_CoralSpear.png | c9b989906cffc4754daedcb1ad13f27df6b00f35adf69ba91d8eb41a3a828dde | assets/moves/cards_1014/kalshell/07_coral_spear.webp | 9d012452d3980d909e23b31c22ea1277596d240e17892695acd73d94fe4fea88 | SK 76 |
+| 04_skill_cards/DELIVERY_10CARDS/01_PNG/08_ShioNoStep.png | bac6f450ea0d8d41e60b76f1cc9eab8b4b92dcf890e267902bc387da4960570c | assets/moves/cards_1014/kalshell/08_shio_no_step.webp | b8753c231f7efacae5f3249c6feefb976f21d6163ac4364d2802e2606ed0ade1 | SK 77 |
+| 04_skill_cards/DELIVERY_10CARDS/01_PNG/09_ShellBreaker.png | 6c4b6c7768ac6b4b73f113994d2e5626328e31a2b365418200d93ddef419e7b1 | assets/moves/cards_1014/kalshell/09_shell_breaker.webp | cd4720a425a7fafb0da0728f29ae07c4c37bbe30334a779e5fa25ad41bb30d6b | SK 78 |
+| 04_skill_cards/DELIVERY_10CARDS/01_PNG/10_TidalCrash.png | ba03848fa46fd7ec15f4a285774188106a8734a3a81673284317b88ec19b2994 | assets/moves/cards_1014/kalshell/10_tidal_crash.webp | addbb5a0c47d53c1dddc1cb7b1553aa35e22b19f307a045215227fe1796d3dd2 | SK 79 |

@@ -40,6 +40,11 @@
     unique_razuck: fz({ id: 'unique_razuck', species: 6, speciesKey: 'razuck', name: '調子に乗る', implemented: true,
       desc: '相手の攻撃を連続で回避するたび、戦闘中の自分のちからが上がる（最大1.5倍）。ダメージを受けると元に戻る。',
       params: fz({ trigger: 'evade_streak', multipliers: fz([1.15, 1.30, 1.50]), resetOnDamage: true }), hiddenParams: fz([]) }),
+    // 2026-10-18 カルシェル（正式納品 Mismon_Kalshell_OfficialPackage_ForDev_20261018・ユーザー承認済み）：被ダメージ時に20%の確率でそのダメージを25%軽減（被弾ごとに独立の抽選・発動回数の上限なし）。
+    //  js/battle/rules.js の resolveWith（攻撃側の上乗せのあと・実際に受けるダメージに掛ける）。表示は小さな札だけ。カルシェルは未解禁（入手方法は未決）＝QA 試遊の個体だけ
+    unique_kalshell: fz({ id: 'unique_kalshell', species: 7, speciesKey: 'kalshell', name: 'かたい貝殻', implemented: true,
+      desc: '被ダメージ時に20%の確率で、そのダメージを25%軽減する。',
+      params: fz({ trigger: 'on_damaged', chance: 0.2, damageCut: 0.25, uses: null }), hiddenParams: fz(['chance']) }),
   });
 
   // ---- ライバル専用のモンスター（2026-10-05 正式）：リュウの相棒レグナス。プレイヤー用の SPECIES とは別の表＝市場・図鑑・合体・初期選択・特殊復元・牧場・野生の相手には出さない
@@ -172,6 +177,24 @@
         desc: '両腕の蔦を相手に突き刺し、与えたダメージの50%だけライフを回復する（命中してダメージがあるときだけ・最大ライフまで）。' }),
       MV({ no: 10, id: 'root_tempest', name: 'ルートテンペスト', type: 'wisdom', power: 120, accuracy: 85, critical: 20, slot: 59, cuts: 5, learn: 'de', deOrder: 2, finisher: true, sheet: null, desc: null }),
     ]) }),
+    // カルシェル：2026-10-18 正式納品（Mismon_Kalshell_OfficialPackage_ForDev_20261018 の 00_docs/01_正式素材仕様マスター＝ユーザー承認済み・独断変更不可）。SK の番号＝70＋No−1（js/battle/rules.js が実行時に足す）。
+    //  習得：初期＝No.1〜4・ちから特訓 No.5・かしこさ特訓 No.6・命中特訓 No.7・回避特訓 No.8・丈夫さ特訓 No.9（①）／No.10（②）。命中 100% は必中ではない。追加効果は No.3・4・8 だけ（10%＝小）。No.9・10＝必殺技（威力 120 以上）
+    //  カルシェルは未解禁（入手方法・出現場所は未決＝市場・野生・合体・大会に出ない）＝今は QA 試遊モード（?mmQaTrial=1）の個体だけが使う。cuts＝技アニメの本体のコマ数（js/battle/kalshell-moves-data.js）
+    kalshell: fz({ style: '高い丈夫さと命中。殻で受け止める防御寄りのパワータイプ', list: fz([
+      MV({ no: 1, id: 'hasamu', name: 'はさむ', type: 'power', power: 70, accuracy: 95, critical: 5, slot: 70, cuts: 4, learn: 'initial', sheet: null, desc: null }),
+      MV({ no: 2, id: 'shell_tackle', name: 'シェルタックル', type: 'power', power: 80, accuracy: 85, critical: 10, slot: 71, cuts: 4, learn: 'initial', sheet: null, desc: null }),
+      MV({ no: 3, id: 'awadama', name: 'あわだま', type: 'wisdom', power: 60, accuracy: 95, critical: 5, slot: 72, cuts: 4, learn: 'initial', sheet: null, desc: '泡を飛ばして、相手の命中を少し下げる（1ターン）。',
+        effects: [E('opponent', 'hi', 'down', 'small', 1)] }),
+      MV({ no: 4, id: 'kara_ni_komoru', name: 'からにこもる', type: 'support', accuracy: 100, slot: 73, cuts: 4, learn: 'initial', sheet: null, desc: '殻にこもって、自分の丈夫さを少し上げる（2ターン）。',
+        effects: [E('self', 'de', 'up', 'small', 2)] }),
+      MV({ no: 5, id: 'crash_claw', name: 'クラッシュクロー', type: 'power', power: 105, accuracy: 85, critical: 15, slot: 74, cuts: 5, learn: 'po', sheet: null, desc: null }),
+      MV({ no: 6, id: 'aqua_burst', name: 'アクアバースト', type: 'wisdom', power: 95, accuracy: 90, critical: 10, slot: 75, cuts: 5, learn: 'in', sheet: null, desc: null }),
+      MV({ no: 7, id: 'coral_spear', name: 'コーラルスピア', type: 'power', power: 95, accuracy: 100, critical: 10, slot: 76, cuts: 5, learn: 'hi', sheet: null, desc: null }),
+      MV({ no: 8, id: 'shio_no_step', name: 'しおのステップ', type: 'support', accuracy: 100, slot: 77, cuts: 4, learn: 'ev', sheet: null, desc: '潮のように素早く動いて、自分の回避を少し上げる（2ターン）。',
+        effects: [E('self', 'ev', 'up', 'small', 2)] }),
+      MV({ no: 9, id: 'shell_breaker', name: 'シェルブレイカー', type: 'power', power: 120, accuracy: 80, critical: 15, slot: 78, cuts: 6, learn: 'de', deOrder: 1, finisher: true, sheet: null, desc: null }),
+      MV({ no: 10, id: 'tidal_crash', name: 'タイダルクラッシュ', type: 'power', power: 125, accuracy: 85, critical: 20, slot: 79, cuts: 8, learn: 'de', deOrder: 2, finisher: true, sheet: null, desc: null }),
+    ]) }),
     gauru: fz({ style: '高速・高火力・短期決戦型の両刀アタッカー', list: fz([
       MV({ no: 1, id: 'tsutsuku', name: 'つつく', type: 'power', power: 60, accuracy: 100, critical: 5, slot: 11, cuts: 4, desc: 'くちばしで素早くつつく。' }),
       MV({ no: 2, id: 'wind', name: 'ウィンド', type: 'wisdom', power: 65, accuracy: 95, critical: 5, slot: 12, cuts: 4, desc: '風をまとい、相手に風の力をぶつける。' }),
@@ -196,13 +219,13 @@
       return r ? r.moves.list.map((m) => ({ ...m, effects: m.effect ? [{ target: m.effect.target, stat: m.effect.stat, dir: 'up', size: m.effect.size, turns: m.effect.turns }] : [],
         ailment: null, heal: null, desc: null, slot: 19 + m.no, sheet: sheetOf('regnas', REGNAS_SHEET[m.id], m.id) })) : [];
     }
-    const s = typeof ref === 'string' ? (byKey(ref) || (ref === 'razuck' || ref === 'flurene' ? pendingSpecies(ref) : null)) : byId(ref);   // 2026-10-17：ラズック・2026-10-18 フルーネ（登録のみの種族）も正式技の表を持つ
+    const s = typeof ref === 'string' ? (byKey(ref) || (ref === 'razuck' || ref === 'flurene' || ref === 'kalshell' ? pendingSpecies(ref) : null)) : byId(ref);   // 2026-10-17：ラズック・2026-10-18 フルーネ（登録のみの種族）も正式技の表を持つ
     const t = s && OFFICIAL_MOVES[s.key];
     return t ? t.list.map((m) => ({ ...m, sheet: m.sheet === null ? null : sheetOf(s.key, m.no, m.id) })) : [];   // sheet: null＝技辞典の資料なし（ノビトン No.5 まきつく＝旧資料はハンマーノーズのため使わない）
   }
   /** 技の番号（SK）→ 正式技（ソラモ・ガウルの 0〜19・レグナスの 20〜29）。無ければ null */
   function moveBySlot(k) {
-    for (const key of ['solamo', 'gauru', 'regnas', 'jiol', 'razuck', 'flurene']) { const m = movesOf(key).find((x) => x.slot === k); if (m) return { ...m, owner: key }; }
+    for (const key of ['solamo', 'gauru', 'regnas', 'jiol', 'razuck', 'flurene', 'kalshell']) { const m = movesOf(key).find((x) => x.slot === k); if (m) return { ...m, owner: key }; }
     return null;
   }
 
@@ -273,6 +296,20 @@
       image: fz({ src: './assets/battle/idle/idle_razuck.webp', w: 0, h: 0 }),
       battleIdle: fz({ src: './assets/battle/idle/idle_razuck.webp', w: 0, h: 0 }),
       tourIcon: fz({ src: './assets/tournament/icons_1015/icon_razuck.webp', w: 256, h: 256 }) }),
+    // 2026-10-18 カルシェル（正式納品 Mismon_Kalshell_OfficialPackage_ForDev_20261018＝Kalshell_DevAssets_Part01〜07・ユーザー承認済みの仕様と素材）：番号 7（予約）。
+    //  能力・成長適性・素早さ・固有スキル「かたい貝殻」・10技（OFFICIAL_MOVES.kalshell＝SK 70〜79）は確定。**入手方法・出現場所は未決**（ユーザーが後日決める）＝unlocked:false・
+    //  市場・野生・合体・大会・初期所持・図鑑には出ない（byId／byKey では引けない）。種族表示名「甲殻種」は【要確認／仮置き】＝kind は null（確定表示しない・候補は kindCandidate）。
+    //  プロフィール画像は納品に無い（全モンスター一括制作の予定）＝profileImage null（捏造しない）。絵・声の派生＝tools/kalshell1018/（各 README に原本と派生の sha256）。体格サイズ 3（js/battle/move-tune-1015.js の SIZE）
+    fz({ id: 7, key: 'kalshell', name: 'カルシェル', en: null, kind: null, kindCandidate: '甲殻種【要確認／仮置き】', motif: 'ヤドカリ＋巻き貝＋海系', size: 3, personality: null, formerNames: fz([]),
+      unlocked: false, playerAvailable: false, obtain: null,
+      base: fz({ li: 105, po: 90, in: 70, hi: 100, ev: 65, de: 130 }), speed: 4, growth: G6('C', 'C', 'D', 'C', 'D', 'A'),
+      uniqueSkill: UNIQUE_SKILLS.unique_kalshell,
+      moves: OFFICIAL_MOVES.kalshell.list,
+      image: fz({ src: './assets/monsters/2p5d/kalshell.webp', w: 720, h: 680 }),
+      battleIdle: fz({ src: './assets/battle/idle/idle_kalshell.webp', w: 859, h: 720 }),
+      tourIcon: fz({ src: './assets/tournament/icons_1015/icon_kalshell.webp', w: 256, h: 256 }),
+      vsArt: fz({ src: './assets/tournament/vs_1017/vs_kalshell.webp', w: 512, h: 512 }),
+      profileImage: null }),
   ]);
   /** 登録のみの種族（番号でも文字IDでも）。無ければ null。画面の処理には使わない（解禁していない） */
   const pendingSpecies = (ref) => PENDING_SPECIES.find((x) => (typeof ref === 'string' ? x.key === ref : x.id === ref)) || null;

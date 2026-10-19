@@ -19,7 +19,7 @@ test('RZ-B1〜B3：ラズックの QA（一覧・ステージで全10技×両側
     await pg.waitForSelector('#mmqa-sw'); await pg.click('#mmqa-sw'); await pg.waitForSelector('#mmqa .qcard');
     // RZ-B1
     const cat = await pg.evaluate(() => { const c = MMQA.catalog(); return { n: c.length, last: c[6] && { key: c[6].key, sp: c[6].sp, name: c[6].name, moves: c[6].moves.map((m) => [m.no, m.name, m.slot, m.status, m.power, m.accuracy, m.critical]) } }; });
-    assert.equal(cat.n, 7, '7体');
+    assert.equal(cat.n, 8, '8体（2026-10-18：カルシェルを足した＝ラズックは7体目のまま）');
     assert.deepEqual(cat.last.moves, [[1, 'かみつき', 60, 'battle', 65, 95, 5], [2, 'ひっかき', 61, 'battle', 60, 100, 10], [3, 'すばやい一撃', 62, 'battle', 75, 100, 10], [4, 'ちょこまか', 63, 'battle', null, 100, null],
       [5, 'ガジガジラッシュ', 64, 'battle', 85, 90, 15], [6, 'トリックショット', 65, 'battle', 90, 95, 10], [7, 'かく乱ステップ', 66, 'battle', null, 100, null], [8, 'シャドーバイト', 67, 'battle', 110, 80, 15], [9, 'ミラージュダッシュ', 68, 'battle', 115, 90, 20], [10, 'ラズックラッシュ', 69, 'battle', 125, 90, 20]]);
     await pg.click('#mmqa .qtab[data-i="6"]');

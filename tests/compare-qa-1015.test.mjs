@@ -44,7 +44,10 @@ test('CQ-01：比較画面の肩上アップ6枚（番号 → 絵・派生 640×
   // 2026-10-17：6＝ラズック（バトル待機の参考画像の上の部分＝tools/razuck1017/derive_art.py の派生・QA だけ）
   assert.equal(C.PORTRAIT[6].f, 'razuck'); assert.deepEqual(webpSize('assets/monsters/compare_1015/razuck.webp'), [640, 640]);
   assert.equal(JSON.parse(rd('tools/razuck1017/derive_art.json')).derived['assets/monsters/compare_1015/razuck.webp'], sha('assets/monsters/compare_1015/razuck.webp'));
-  assert.equal(C.src(7), null, '肩上アップの無い番号は null（待機の立ち絵へ）');
+  // 2026-10-18：7＝カルシェル（専用の肩上アップは未納＝正式の待機絵の顔を中心に切った代替・tools/kalshell1018/derive_art.py・QA だけ）
+  assert.equal(C.PORTRAIT[7].f, 'kalshell'); assert.deepEqual(webpSize('assets/monsters/compare_1015/kalshell.webp'), [640, 640]);
+  assert.equal(JSON.parse(rd('tools/kalshell1018/derive_art.json')).derived['assets/monsters/compare_1015/kalshell.webp'], sha('assets/monsters/compare_1015/kalshell.webp'));
+  assert.equal(C.src(8), null, '肩上アップの無い番号は null（待機の立ち絵へ）');
   assert.ok(!existsSync(path.join(ROOT, 'assets/monsters/compare_1015/01_CompareLayout_Reference.png')), 'レイアウトの見本はゲームに置かない');
   const js = rd('js/battle/compare.js');
   assert.doesNotMatch(js, /\b(159|130|108|109|127|126)\b/, '見本の数値を固定で出さない');
@@ -85,7 +88,7 @@ test('CQ-03：フルーネの技カード10枚（番号・名前・ファイル�
   assert.deepEqual(J(F.moves).map((x) => x.id), ids, '2026-10-18 REV3：正式10技の ID＝技カードの ID と同じ');
   assert.deepEqual(J(F.moves).map((x) => x.slot), [50, 51, 52, 53, 54, 55, 56, 57, 58, 59], '2026-10-18 REV3：正式10技＝SK 50〜59');
   assert.ok(L.every((x) => x.slot === null), 'この読み込み（index.html の SK が無い）では SK の番号なし');
-  const md = rd('assets/moves/cards_1014/README.md').split('## フルーネ')[1];
+  const md = rd('assets/moves/cards_1014/README.md').split('## カルシェル')[0].split('## フルーネ')[1];   // 2026-10-18：カルシェルの節は tests/kalshell-1018.test.mjs
   L.forEach((x, i) => { const f = `assets/moves/cards_1014/flurene/${String(i + 1).padStart(2, '0')}_${ids[i]}.webp`; assert.equal(x.src, './' + f); assert.deepEqual(webpSize(f), [640, 360], f); assert.ok(md.includes(i === 8 ? '03_Fulune_09_RootDrain_Card_Absorb.png' : `FLURENE_${String(i + 1).padStart(2, '0')}_${ids[i]}.png`), f); });
   assert.equal((md.match(/\b[0-9a-f]{64}\b/g) || []).length, 10);
   // 既存の50枚：SK の番号 → カード（ソラモ・ガウル 0〜19・レグナス 20〜29・ノビトン 30〜39）は変えていない＝フルーネは入らない
@@ -105,11 +108,12 @@ test('CQ-04：QA 試遊モード＝?mmQaTrial=1 のときだけ・通常のセ�
   for (const k of ['mr4v6', 'mr4', 'mr4s1', 'mr4s3', 'mr4s2t', 'mr4ng']) assert.ok(Q.SAVE_KEY_RE.test(k), k + '：通常のセーブ（止める）');
   for (const k of ['mr4a', 'mmaudio', 'mmvoice', 'mmcrowd', 'mmbattleui', 'mr4v6x']) assert.ok(!Q.SAVE_KEY_RE.test(k), k + '：設定（止めない）');
   // SK（index.html の技の表）があるときの状態：ソラモ・ガウル 0〜19・レグナス 20〜29・ノビトン 30〜39・ジオル 40〜49（2026-10-15）
-  ctx.SK = Array.from({ length: 70 }, (_, i) => ['技' + i]);   // 2026-10-17：60〜69＝ラズック・2026-10-18 REV3：50〜59＝フルーネの正式10技
+  ctx.SK = Array.from({ length: 80 }, (_, i) => ['技' + i]);   // 2026-10-17：60〜69＝ラズック・2026-10-18 REV3：50〜59＝フルーネの正式10技・2026-10-18：70〜79＝カルシェル
   const cat = J(Q.catalog());
-  assert.deepEqual(cat.map((x) => x.key), ['solamo', 'gauru', 'nobiton', 'jiol', 'regnas', 'flurene', 'razuck']);
-  assert.ok(cat.every((x) => x.moves.length === 10 && x.moves.every((m) => m.src)), '7体×10技＝70 のカード（2026-10-17：ラズック）');
-  assert.deepEqual(J(Q.counts()), { battle: 70, preview: 0, static: 0, total: 70 });
+  assert.deepEqual(cat.map((x) => x.key), ['solamo', 'gauru', 'nobiton', 'jiol', 'regnas', 'flurene', 'razuck', 'kalshell']);
+  assert.ok(cat.every((x) => x.moves.length === 10 && x.moves.every((m) => m.src)), '8体×10技＝80 のカード（2026-10-17：ラズック・2026-10-18：カルシェル）');
+  assert.deepEqual(J(Q.counts()), { battle: 80, preview: 0, static: 0, total: 80 });
+  assert.deepEqual(cat[7].moves.map((m) => [m.status, m.slot]), Array.from({ length: 10 }, (_, i) => ['battle', 70 + i]), '2026-10-18：カルシェル＝正式10技で実戦（SK 70〜79・QA だけ）');
   assert.deepEqual(cat[6].moves.map((m) => [m.status, m.slot]), Array.from({ length: 10 }, (_, i) => ['battle', 60 + i]), '2026-10-17：ラズック＝正式10技で実戦（SK 60〜69・QA だけ）');
   assert.deepEqual(cat[3].moves.map((m) => [m.status, m.slot]), Array.from({ length: 10 }, (_, i) => ['battle', 40 + i]), '2026-10-15：ジオル＝正式10技で実戦（SK 40〜49）');
   assert.deepEqual(cat[5].moves.map((m) => [m.status, m.slot]), Array.from({ length: 10 }, (_, i) => ['battle', 50 + i]), '2026-10-18 REV3：フルーネ＝正式10技で実戦（SK 50〜59・QA だけ）');

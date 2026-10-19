@@ -82,7 +82,7 @@ test('P47-04：前後の順①㉒＝回したあとの奥行き（x·sinθ＋y·
 
 test('P47-05：音⑤⑨⑫＝立体サイコロの投げる音つきの1本（1ロール1回）・まだ読めていない SE はデコードしだい鳴らす（合成音へ落とさない）・固有スキルの発動の音（Mixkit 3.500秒）', () => {
   const R = rd('js/audio/audio-registry.js');
-  assert.match(R, /DICE_CUBE:\s*\{ src: SE_DIR \+ 'dice_1014\/dice_cube_throw_land2\.ogg', gain: 0\.9 \}/);
+  assert.match(R, /DICE_CUBE:\s*\{ src: SE_DIR \+ 'dice_1013\/dice_cube_throw_land\.ogg', gain: 0\.9 \}/);
   assert.equal(sha('assets/audio/se/dice_1014/dice_cube_throw_land2.ogg'), 'd7bc60c14e735c5fc3d5edb65846038d35241267d62b55ac924bb6b2d2aff45b');
   assert.ok(rd('assets/audio/se/dice_1014/README.md').includes('d7bc60c14e735c5fc3d5edb65846038d35241267d62b55ac924bb6b2d2aff45b'));
   assert.match(rd('tools/dice1014/se_throw.py'), /01_dice_large_full\.ogg/);
@@ -101,8 +101,8 @@ test('P47-06：バトル⑥⑪⑬⑯⑰＝LOSE は 4.6秒で「もどる」（WI
   assert.match(HTML, /RJ_MS=\{win:4000,lose:4600\}/);
   assert.match(rd('js/battle/arena.js'), /'#bt\[data-rj\] \.gow,#bt\[data-rj\] #go\{transition:opacity \.3s ease-out\}'/);
   assert.match(rd('js/battle/rules.js'), /const CUT = Object\.freeze\(\{ in: 270, hold: 1740, out: 330,/);
-  assert.match(HTML, /const RYU_WIN_TALK=\{1:\[\{npc:"ryu",expression:"soft_smile",text:"やるじゃん！ でも、次は負けないからな。",voice:"ryu_praise"\},\{npc:"fina"/);
-  assert.match(HTML, /const RYU_LOSE_TALK=\{1:\[\{npc:"ryu",expression:"confident",text:"へへっ、今日は俺の勝ちだな！",voice:"ryu_chuckle"\},\{npc:"fina"/);
+  assert.match(HTML, /const RYU_WIN_TALK=\{1:\[\{npc:"ryu",expression:"soft_smile",text:"へぇ、やるじゃん。[^"]*",voice:"ryu_001",voiceWait:1500\},\{npc:"fina"/);   // 2026-10-18 夜間 B06
+  assert.match(HTML, /const RYU_LOSE_TALK=\{1:\[\{npc:"ryu",expression:"confident",text:"へへ、悪くなかったけど[^"]*",voice:"ryu_010",voiceWait:1500\},\{npc:"fina"/);
   assert.match(HTML, /if\(bt=="rival"&&!f\.interrupted\)rivalWinTalk\(S\.m,!f\.won\);/);
   const ban = HTML.slice(HTML.indexOf('function ban(t,c,keep,sm){'), HTML.indexOf('\nfunction ', HTML.indexOf('function ban(t,c,keep,sm){') + 10)).replace(/\/\*[\s\S]*?\*\//g, '');
   assert.doesNotMatch(ban, /MMVOICE/, '決着の帯では声を出さない');

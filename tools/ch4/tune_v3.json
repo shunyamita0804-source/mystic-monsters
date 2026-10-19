@@ -1,0 +1,5 @@
+{
+ "A": {"D_LC": 10, "D_LA": 12, "D_RC": 10, "D_LLA": 9, "D_R5": 9, "D_RS": 10, "D_RAND": 10, "LATE_SAFE": 18, "LATE_R_DONE": 10, "LATE_L_DONE": 12, "S_END": 6},
+ "B": {"D_LC": 10, "D_LA": 10, "D_RC": 9, "D_R5": 9, "D_LLA": 9, "D_RS": 10, "D_RAND": 10},
+ "C": {"D_LC": 7, "D_LA": 7, "D_RC": 7, "D_R5": 6, "D_RAND": 8, "D_LLA": 7, "D_RS": 8}
+}

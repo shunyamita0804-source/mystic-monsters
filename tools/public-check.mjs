@@ -293,7 +293,7 @@ try {
     const sw = await q.evaluate(() => !!document.getElementById('mmqa-sw'));
     await q.evaluate(() => { const b = document.getElementById('mmqa-sw'); if (b) b.click(); }); await sleep(800);
     const cat = await q.evaluate(async () => { const c = MMQA.catalog(); const urls = c.flatMap((x) => x.moves.map((m) => m.src)); const ok = await Promise.all(urls.map((u) => new Promise((r) => { const i = new Image(); i.onload = () => r(i.naturalWidth > 0); i.onerror = () => r(false); i.src = u; }))); return { tabs: document.querySelectorAll('#mmqa .qtab').length, n: urls.length, ok: ok.filter(Boolean).length, counts: MMQA.counts() }; });
-    rec('2026-10-15：QA 試遊モード（?mmQaTrial=1）＝牧場に切り替え → ON → 7体×10技（70。2026-10-17 ラズック）のカードが読める（2026-10-18 REV3：実戦 70＝フルーネも正式10技・プレビュー 0・静止画 0）', sw && cat.tabs === 7 && cat.n === 70 && cat.ok === 70 && cat.counts.battle === 70 && cat.counts.preview === 0 && cat.counts.static === 0, JSON.stringify(cat));
+    rec('2026-10-15：QA 試遊モード（?mmQaTrial=1）＝牧場に切り替え → ON → 8体×10技（80。2026-10-17 ラズック・2026-10-18 カルシェル）のカードが読める（実戦 80・プレビュー 0・静止画 0）', sw && cat.tabs === 8 && cat.n === 80 && cat.ok === 80 && cat.counts.battle === 80 && cat.counts.preview === 0 && cat.counts.static === 0, JSON.stringify(cat));
     await q.evaluate(() => MMQA.battle(0, 1)); await q.waitForSelector('#bt .mmr .pl .nm', { timeout: 30000 }).catch(() => {});
     // 素早さが同じ（ソラモどうし）なら相手が先に動くことがある＝自分の番（STOP が押せる）になってからルーレットの技を読む（相手の番のルーレットは相手の技）
     await q.waitForFunction(() => { const g = document.getElementById('go'); return g && !g.disabled && !g.classList.contains('bk'); }, null, { timeout: 30000 }).catch(() => {}); await sleep(400);
@@ -345,7 +345,7 @@ try {
     // 2026-10-18 REV3：正式採用（新歩行・C案カメラ・体格 F）が通常の URL の既定・フルーネ正式10技（SK 50〜59）・フレアレイの光線・削除した旧背景は 404
     const r3 = await page.evaluate(async () => { const st = async (u) => (await fetch(u + '?cb=' + Date.now())).status;
       return { walk: !!(window.MMQAW && MMQAW.active && MMQAW.new7), size: window.MMTUNE ? MMTUNE.sizeMode() : null, flu: typeof SK !== 'undefined' && !!SK[50] && !!SK[59],
-        beam: await st('./assets/battle/gauru_moves_1012/16_beam_a.webp'), walk7: await st('./assets/monsters/walk_1017/jiol/front_2.webp'), gone: await st('./assets/fields/ch1a/road/01_journey_road.webp'), proto: await st('./prototype/camera-follow.html') }; });
+        beam: await st('./assets/battle/gauru_moves_1012/16_beam_a.webp'), walk7: await st('./assets/monsters/walk_1018/jiol/front_2.webp'), gone: await st('./assets/fields/ch1a/road/01_journey_road.webp'), proto: await st('./prototype/camera-follow.html') }; });
     rec('2026-10-18 REV3：新歩行・体格 F が既定・フルーネ正式10技・フレアレイの光線 200・削除した旧背景と試作ページは 404', r3.walk && r3.size === 'F' && r3.flu && r3.beam === 200 && r3.walk7 === 200 && r3.gone === 404 && r3.proto === 404, JSON.stringify(r3));
     const ctxT = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
     await ctxT.route('**/*', routeFn);
@@ -354,7 +354,7 @@ try {
     await t.waitForFunction(() => /ブランチ\s*main/.test((document.querySelector('#mmqat .qtv') || {}).textContent || ''), null, { timeout: 15000 }).catch(() => {});
     const qt = await t.evaluate(() => ({ cells: document.querySelectorAll('#mmqat .qtm td').length, b: document.querySelectorAll('#mmqat .qtm td.battle').length, links: document.querySelectorAll('#mmqat a.qtb[data-k]').length, v: (document.querySelector('#mmqat .qtv') || {}).textContent || '' }));
     await t.screenshot({ path: `${OUT}/qa_top_390.png` }).catch(() => {});
-    rec('2026-10-17：QA トップ＝70枠（2026-10-18 REV3：実戦 70＝フルーネ正式10技）・Chapter 1／2 の A／B／C の入口・版と branch', qt.cells === 70 && qt.b >= 60 && qt.b <= 70 && qt.links === 9 && /main/.test(qt.v), JSON.stringify(qt));   // 2026-10-18：Chapter 3 の A／B／C を足して 9
+    rec('2026-10-17：QA トップ＝80枠（2026-10-18：カルシェルを足して 8体＝実戦 80）・Chapter 1／2／3 の A／B／C の入口・版と branch', qt.cells === 80 && qt.b >= 70 && qt.b <= 80 && qt.links === 9 && /main/.test(qt.v), JSON.stringify(qt));   // 2026-10-18：Chapter 3 の A／B／C を足して 9
     // 2026-10-18：Chapter 3「天空の浮島」の試遊（?ch3trial=B）＝空の世界の盤・299地点・QA 移動のボタン・保存しない
     await t.goto(URL + '?ch3trial=B'); await t.waitForSelector('#wbw #brollbtn', { timeout: 60000 }).catch(() => {});
     await t.waitForFunction(() => { const w = window.MMWB && MMWB.state().world; return !!(w && w.art && w.painted); }, null, { timeout: 30000 }).catch(() => {});

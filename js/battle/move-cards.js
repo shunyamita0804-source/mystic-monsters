@@ -19,6 +19,8 @@
     // 2026-10-17：ラズック（登録のみ・未解禁・制作候補のカード＝ユーザーの美術承認前）＝QA の試遊だけ。SK＝60＋No−1（OFFICIAL_MOVES.razuck の slot）
     razuck: [[1, 'kamitsuki'], [2, 'hikkaki'], [3, 'subayai_ichigeki'], [4, 'chokomaka'], [5, 'gajigaji_rush'], [6, 'trick_shot'], [7, 'kakuran_step'], [8, 'shadow_bite'], [9, 'mirage_dash'], [10, 'razuck_rush']],
     regnas: [[1, 'kirisaku'], [2, 'shippo_attack'], [3, 'ryugan_lock'], [4, 'zanei_step'], [5, 'dragon_crash'], [6, 'soukou_breath'], [7, 'snipe_fang'], [8, 'genei_claw'], [9, 'soujin_ranbu'], [10, 'tail_cyclone']],
+    // 2026-10-18：カルシェル（登録のみ・未解禁・正式納品の技カード10枚＝tools/kalshell1018/derive_art.py）＝QA の試遊だけ。SK＝70＋No−1（OFFICIAL_MOVES.kalshell の slot）
+    kalshell: [[1, 'hasamu'], [2, 'shell_tackle'], [3, 'awadama'], [4, 'kara_ni_komoru'], [5, 'crash_claw'], [6, 'aqua_burst'], [7, 'coral_spear'], [8, 'shio_no_step'], [9, 'shell_breaker'], [10, 'tidal_crash']],
   };
   const pad = (n) => (n < 10 ? '0' : '') + n;
   const srcOf = (sp, id) => {

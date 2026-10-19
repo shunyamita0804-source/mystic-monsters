@@ -330,7 +330,7 @@
 
   // ダン：ファーム担当（旧「コウ」の表示を置き換え。アップ画像のみで運用）。正式素材（透過PNG）を assets/npc/dan/closeup/ に置いている（README.md に元画像との対応）
   const DAN = 'assets/npc/dan/closeup/', DE = ['normal', 'smile', 'guide', 'serious', 'troubled', 'happy'];
-  register('dan', { name: 'ダン', role: 'ファーム担当', board: false, defaultView: 'closeup', defaultExpr: 'normal',
+  register('dan', { name: 'ダン', role: 'ベースキャンプ担当', board: false, defaultView: 'closeup', defaultExpr: 'normal',
     views: { closeup: Object.fromEntries(DE.map((e) => [e, `${DAN}${e}.webp`])) } });
 
   // ニック：牧場の管理者（アップ画像のみで運用）。正式素材（描き込まれた市松模様の背景を透明にした透過PNG）を assets/npc/nick/closeup/ に置いている（README.md に元画像との対応）

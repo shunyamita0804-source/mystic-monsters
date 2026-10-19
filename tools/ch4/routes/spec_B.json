@@ -1,0 +1,974 @@
+{
+ "key": "B",
+ "name": "溶岩渓谷",
+ "concept": "麓の村 → 登山口の分かれ道（渓谷への近道／黒曜の原回り）→ 渓谷の入口 → 渓谷の門 → 溶岩橋のたもとで運命の分かれ道（西岸の崖道／黒曜の双橋で東岸へ）→ 渓谷の上の広場でライバル → 最後の分かれ道（火口壁の回り道／崩れた急坂の特殊挑戦）→ 火口縁の闘技場。溶岩のきわを登る挑戦と危険の道",
+ "step": 18,
+ "anchors": {
+  "START": [
+   512,
+   1486,
+   "start",
+   0
+  ],
+  "J0": [
+   560,
+   1420,
+   "free_fork",
+   4
+  ],
+  "EB1": [
+   780,
+   1432,
+   "route_anchor",
+   8
+  ],
+  "L_CHEST": [
+   772,
+   1500,
+   "fixed_reward_dead_end",
+   6
+  ],
+  "P": [
+   730,
+   1230,
+   "early_merge",
+   22
+  ],
+  "LOWER_GATE": [
+   756,
+   1166,
+   "lower_walk_through_gate",
+   28
+  ],
+  "Q": [
+   776,
+   1100,
+   "parity_forced_fork",
+   34
+  ],
+  "QL1": [
+   690,
+   1050,
+   "route_anchor",
+   42
+  ],
+  "QL2": [
+   660,
+   900,
+   "route_anchor",
+   54
+  ],
+  "QL3": [
+   700,
+   760,
+   "route_anchor",
+   66
+  ],
+  "L_ALTAR": [
+   600,
+   930,
+   "fixed_reward_dead_end",
+   52
+  ],
+  "QR1": [
+   906,
+   1044,
+   "route_anchor",
+   40
+  ],
+  "QR2": [
+   950,
+   936,
+   "route_anchor",
+   50
+  ],
+  "STATUE": [
+   920,
+   826,
+   "rare_zone_candidate",
+   60
+  ],
+  "QR3": [
+   890,
+   730,
+   "route_anchor",
+   70
+  ],
+  "R_CHEST": [
+   984,
+   1010,
+   "fixed_reward_dead_end",
+   46
+  ],
+  "REWARD5": [
+   986,
+   890,
+   "fixed_reward_dead_end",
+   58
+  ],
+  "R": [
+   760,
+   700,
+   "parity_rejoin",
+   78
+  ],
+  "RIVAL": [
+   740,
+   660,
+   "mandatory_rival",
+   84
+  ],
+  "H": [
+   700,
+   610,
+   "late_free_fork",
+   88
+  ],
+  "CHALLENGE": [
+   740,
+   548,
+   "challenge_d6_5_6",
+   92
+  ],
+  "FAIL_L": [
+   690,
+   578,
+   "challenge_failure_route",
+   90
+  ],
+  "SUCCESS_L1": [
+   724,
+   462,
+   "challenge_success_route",
+   98
+  ],
+  "L_MERGE": [
+   688,
+   392,
+   "route_anchor",
+   104
+  ],
+  "L_LATE_ALTAR": [
+   736,
+   384,
+   "fixed_reward_dead_end",
+   102
+  ],
+  "HR1": [
+   600,
+   616,
+   "route_anchor",
+   88
+  ],
+  "HR2": [
+   548,
+   478,
+   "route_anchor",
+   96
+  ],
+  "HR3": [
+   538,
+   406,
+   "route_anchor",
+   102
+  ],
+  "R_SPECIAL": [
+   452,
+   350,
+   "fixed_reward_dead_end",
+   104
+  ],
+  "RANDOM_DEN": [
+   456,
+   536,
+   "optional_random_unlock_dead_end",
+   92
+  ],
+  "FINAL": [
+   584,
+   392,
+   "final_merge",
+   106
+  ],
+  "GOAL": [
+   512,
+   296,
+   "goal",
+   112
+  ]
+ },
+ "segs": {
+  "S01": [
+   "START",
+   "J0",
+   "main_stairs",
+   []
+  ],
+  "SA": [
+   "J0",
+   "P",
+   "main_short",
+   [
+    [
+     604,
+     1384
+    ],
+    [
+     640,
+     1352
+    ],
+    [
+     626,
+     1304
+    ],
+    [
+     660,
+     1270
+    ],
+    [
+     690,
+     1248
+    ]
+   ]
+  ],
+  "SA_B": [
+   "J0",
+   "P",
+   "main_short",
+   [
+    [
+     610,
+     1424
+    ],
+    [
+     666,
+     1420
+    ],
+    [
+     698,
+     1382
+    ],
+    [
+     694,
+     1330
+    ],
+    [
+     712,
+     1296
+    ]
+   ]
+  ],
+  "EB01": [
+   "J0",
+   "EB1",
+   "main_long",
+   [
+    [
+     596,
+     1464
+    ],
+    [
+     700,
+     1474
+    ]
+   ]
+  ],
+  "EB02": [
+   "EB1",
+   "P",
+   "main_long",
+   [
+    [
+     792,
+     1360
+    ],
+    [
+     762,
+     1296
+    ]
+   ]
+  ],
+  "D_LC": [
+   "EB1",
+   "L_CHEST",
+   "reward_spur",
+   [
+    [
+     821.0,
+     1459.8
+    ],
+    [
+     731.0,
+     1472.2
+    ]
+   ],
+   10
+  ],
+  "C01": [
+   "P",
+   "LOWER_GATE",
+   "central_main",
+   []
+  ],
+  "C02": [
+   "LOWER_GATE",
+   "Q",
+   "central_main",
+   []
+  ],
+  "Q_L1": [
+   "Q",
+   "QL1",
+   "parity_left",
+   []
+  ],
+  "Q_L2": [
+   "QL1",
+   "QL2",
+   "parity_left",
+   [
+    [
+     640,
+     1004
+    ],
+    [
+     690,
+     950
+    ]
+   ]
+  ],
+  "QL_ALT": [
+   "QL1",
+   "QL2",
+   "parity_left",
+   [
+    [
+     630,
+     1060
+    ],
+    [
+     600,
+     1000
+    ],
+    [
+     620,
+     946
+    ]
+   ]
+  ],
+  "Q_L3": [
+   "QL2",
+   "QL3",
+   "parity_left",
+   [
+    [
+     720,
+     860
+    ],
+    [
+     650,
+     810
+    ],
+    [
+     680,
+     782
+    ]
+   ]
+  ],
+  "Q_L4": [
+   "QL3",
+   "R",
+   "parity_left",
+   [
+    [
+     740,
+     730
+    ]
+   ]
+  ],
+  "D_LA": [
+   "QL2",
+   "L_ALTAR",
+   "reward_spur",
+   [
+    [
+     590.3,
+     835.5
+    ]
+   ],
+   10
+  ],
+  "Q_R1": [
+   "Q",
+   "QR1",
+   "parity_right_bridge",
+   [
+    [
+     846,
+     1064
+    ]
+   ]
+  ],
+  "Q_R2": [
+   "QR1",
+   "QR2",
+   "parity_right",
+   [
+    [
+     948,
+     1000
+    ]
+   ]
+  ],
+  "QR_ALT": [
+   "QR1",
+   "QR2",
+   "parity_right",
+   [
+    [
+     900,
+     1000
+    ],
+    [
+     896,
+     960
+    ]
+   ]
+  ],
+  "Q_R3": [
+   "QR2",
+   "STATUE",
+   "parity_right",
+   [
+    [
+     930,
+     880
+    ]
+   ]
+  ],
+  "Q_R4": [
+   "STATUE",
+   "QR3",
+   "parity_right",
+   [
+    [
+     944,
+     776
+    ]
+   ]
+  ],
+  "Q_R5": [
+   "QR3",
+   "R",
+   "parity_right_bridge",
+   [
+    [
+     822,
+     700
+    ]
+   ]
+  ],
+  "D_RC": [
+   "QR2",
+   "R_CHEST",
+   "reward_spur",
+   [
+    [
+     1003.2,
+     956.3
+    ]
+   ],
+   6
+  ],
+  "D_R5": [
+   "STATUE",
+   "REWARD5",
+   "reward_spur",
+   [
+    [
+     1003.2,
+     806.2
+    ]
+   ],
+   9
+  ],
+  "C03": [
+   "R",
+   "RIVAL",
+   "central_main",
+   []
+  ],
+  "C04": [
+   "RIVAL",
+   "H",
+   "central_main",
+   []
+  ],
+  "LATE_L1": [
+   "H",
+   "CHALLENGE",
+   "late_challenge_entry",
+   [
+    [
+     740,
+     600
+    ]
+   ]
+  ],
+  "LATE_L_FAIL": [
+   "CHALLENGE",
+   "FAIL_L",
+   "challenge_fail",
+   []
+  ],
+  "LATE_L_FAIL_JOIN": [
+   "FAIL_L",
+   "L_MERGE",
+   "challenge_fail",
+   [
+    [
+     650,
+     556
+    ],
+    [
+     622,
+     514
+    ],
+    [
+     610,
+     466
+    ],
+    [
+     626,
+     424
+    ],
+    [
+     656,
+     402
+    ]
+   ]
+  ],
+  "LATE_L_SUCCESS1": [
+   "CHALLENGE",
+   "SUCCESS_L1",
+   "challenge_success",
+   [
+    [
+     752,
+     506
+    ]
+   ]
+  ],
+  "LATE_L_SUCCESS_JOIN": [
+   "SUCCESS_L1",
+   "L_MERGE",
+   "challenge_success",
+   [
+    [
+     716,
+     428
+    ]
+   ]
+  ],
+  "D_LLA": [
+   "SUCCESS_L1",
+   "L_LATE_ALTAR",
+   "reward_spur",
+   [
+    [
+     748,
+     440
+    ]
+   ]
+  ],
+  "LATE_L_DONE": [
+   "L_MERGE",
+   "FINAL",
+   "late_challenge_return",
+   [
+    [
+     656,
+     374
+    ],
+    [
+     620,
+     386
+    ]
+   ]
+  ],
+  "LATE_R1": [
+   "H",
+   "HR1",
+   "late_safe",
+   [
+    [
+     650,
+     636
+    ]
+   ]
+  ],
+  "LATE_R2": [
+   "HR1",
+   "HR2",
+   "late_safe",
+   [
+    [
+     556,
+     582
+    ],
+    [
+     530,
+     530
+    ]
+   ]
+  ],
+  "LATE_R2B": [
+   "HR1",
+   "HR2",
+   "late_safe",
+   [
+    [
+     600,
+     560
+    ],
+    [
+     590,
+     510
+    ]
+   ]
+  ],
+  "LATE_R3": [
+   "HR2",
+   "HR3",
+   "late_safe",
+   [
+    [
+     514,
+     446
+    ]
+   ]
+  ],
+  "LATE_R_DONE": [
+   "HR3",
+   "FINAL",
+   "late_safe",
+   [
+    [
+     548,
+     420
+    ]
+   ]
+  ],
+  "D_RS": [
+   "HR3",
+   "R_SPECIAL",
+   "reward_spur",
+   [
+    [
+     530.8,
+     370.0
+    ],
+    [
+     480.7,
+     400.0
+    ],
+    [
+     487.8,
+     342.0
+    ]
+   ],
+   10
+  ],
+  "D_RAND": [
+   "HR2",
+   "RANDOM_DEN",
+   "optional_random_spur",
+   [
+    [
+     513.5,
+     474.3
+    ],
+    [
+     513.5,
+     525.2
+    ],
+    [
+     467.5,
+     503.3
+    ]
+   ],
+   9
+  ],
+  "S_END": [
+   "FINAL",
+   "GOAL",
+   "main_stairs",
+   []
+  ]
+ },
+ "names": {
+  "SA": "渓谷への近道",
+  "SA_B": "黒曜の原のふち（探索路）",
+  "EB01": "黒曜の原回り",
+  "EB02": "黒曜の原回り",
+  "Q_L1": "西岸の崖道",
+  "Q_R1": "黒曜の双橋（東岸へ）",
+  "QL_ALT": "黒曜の崖の回り道（探索路）",
+  "QR_ALT": "東岸の岩棚（探索路）",
+  "LATE_L1": "崩れた急坂（特殊挑戦）",
+  "LATE_R1": "火口壁の回り道",
+  "LATE_R2B": "火口壁の近い回り道（探索路）",
+  "D_LC": "寄り道：溶岩流のほとりの宝",
+  "D_LA": "寄り道：崖の祭壇",
+  "D_RC": "寄り道：東岸の宝物庫",
+  "D_R5": "寄り道：火の像の足もと",
+  "D_LLA": "寄り道：急坂の上の祭壇",
+  "D_RS": "寄り道：溶岩の泉の秘宝",
+  "D_RAND": "寄り道：火口壁の隠れ家"
+ },
+ "places": {
+  "START": "麓の村",
+  "J0": "登山口の分かれ道",
+  "P": "渓谷の入口",
+  "LOWER_GATE": "渓谷の門",
+  "Q": "溶岩橋のたもと（運命の分かれ道）",
+  "R": "渓谷の上の合流",
+  "RIVAL": "渓谷の上の広場",
+  "H": "最後の分かれ道",
+  "CHALLENGE": "崩れた急坂の下",
+  "STATUE": "東岸の火の像",
+  "FINAL": "闘技場の前の広場",
+  "GOAL": "火口縁の闘技場"
+ },
+ "rewardTitles": {
+  "L_CHEST": "溶岩流のほとりの宝",
+  "R_CHEST": "東岸の宝物庫",
+  "L_ALTAR": "崖の祭壇",
+  "L_LATE_ALTAR": "急坂の上の祭壇",
+  "REWARD5": "火の像の恵み",
+  "R_SPECIAL": "溶岩の泉の秘宝",
+  "RANDOM_DEN": "火口壁の隠れ家"
+ },
+ "zones": {
+  "foot_dusk": [
+   "S01",
+   "SA",
+   "SA_B",
+   "EB01",
+   "EB02",
+   "D_LC",
+   "C01"
+  ],
+  "gorge_twilight": [
+   "C02",
+   "Q_L1",
+   "Q_L2",
+   "QL_ALT",
+   "Q_L3",
+   "Q_L4",
+   "D_LA",
+   "Q_R1",
+   "Q_R2",
+   "QR_ALT",
+   "Q_R3",
+   "Q_R4",
+   "Q_R5",
+   "D_RC",
+   "D_R5",
+   "C03"
+  ],
+  "rim_night": [
+   "C04",
+   "LATE_L1",
+   "LATE_L_FAIL",
+   "LATE_L_FAIL_JOIN",
+   "LATE_L_SUCCESS1",
+   "LATE_L_SUCCESS_JOIN",
+   "D_LLA",
+   "LATE_L_DONE",
+   "LATE_R1",
+   "LATE_R2",
+   "LATE_R2B",
+   "LATE_R3",
+   "LATE_R_DONE",
+   "D_RS",
+   "D_RAND",
+   "S_END"
+  ]
+ },
+ "skyPhase": {
+  "dusk": [
+   0,
+   30
+  ],
+  "twilight": [
+   30,
+   84
+  ],
+  "night": [
+   84,
+   120
+  ]
+ },
+ "explore": {
+  "SA_B": {
+   "name": "黒曜の原のふち",
+   "kind": "lane",
+   "lean": [
+    "li",
+    "de"
+   ],
+   "note": "渓谷への近道と並ぶ道（ほぼ同じ長さ）。ライフと丈夫さ"
+  },
+  "QL_ALT": {
+   "name": "黒曜の崖の回り道",
+   "kind": "loop",
+   "lean": [
+    "hi",
+    "ev"
+   ],
+   "note": "西岸の崖道の途中で崖の上を回る道（少し長い）。命中と回避"
+  },
+  "QR_ALT": {
+   "name": "東岸の岩棚",
+   "kind": "lane",
+   "lean": [
+    "po",
+    "de"
+   ],
+   "note": "東岸の道の途中で岩棚を通る道（ほぼ同じ長さ）。ちからと丈夫さ"
+  },
+  "LATE_R2B": {
+   "name": "火口壁の近い回り道",
+   "kind": "lane",
+   "lean": [
+    "in",
+    "hi"
+   ],
+   "note": "火口壁の回り道の内側を通る道（少し短い）。かしこさと命中"
+  }
+ },
+ "lanes": {
+  "SA": [
+   "po",
+   "ev"
+  ],
+  "SA_B": [
+   "li",
+   "de"
+  ],
+  "EB01": [
+   "in",
+   "de"
+  ],
+  "EB02": [
+   "in",
+   "de"
+  ],
+  "Q_L1": [
+   "po",
+   "de"
+  ],
+  "Q_L2": [
+   "po",
+   "de"
+  ],
+  "Q_L3": [
+   "po",
+   "de"
+  ],
+  "Q_L4": [
+   "po",
+   "de"
+  ],
+  "QL_ALT": [
+   "hi",
+   "ev"
+  ],
+  "Q_R2": [
+   "in",
+   "hi"
+  ],
+  "Q_R3": [
+   "in",
+   "hi"
+  ],
+  "Q_R4": [
+   "in",
+   "hi"
+  ],
+  "QR_ALT": [
+   "po",
+   "de"
+  ],
+  "LATE_L1": [
+   "po",
+   "in"
+  ],
+  "LATE_L_FAIL": [
+   "po",
+   "in"
+  ],
+  "LATE_L_FAIL_JOIN": [
+   "po",
+   "in"
+  ],
+  "LATE_L_SUCCESS1": [
+   "po",
+   "in"
+  ],
+  "LATE_L_SUCCESS_JOIN": [
+   "po",
+   "in"
+  ],
+  "LATE_L_DONE": [
+   "po",
+   "in"
+  ],
+  "LATE_R1": [
+   "li",
+   "ev"
+  ],
+  "LATE_R2": [
+   "li",
+   "ev"
+  ],
+  "LATE_R2B": [
+   "in",
+   "hi"
+  ],
+  "LATE_R3": [
+   "li",
+   "ev"
+  ],
+  "LATE_R_DONE": [
+   "li",
+   "ev"
+  ]
+ },
+ "rewards": {
+  "L_CHEST": "gold150",
+  "R_CHEST": "gold150",
+  "L_ALTAR": "all10",
+  "L_LATE_ALTAR": "all15",
+  "REWARD5": "food",
+  "R_SPECIAL": "best30",
+  "RANDOM_DEN": "gold200"
+ },
+ "calm": [
+  "S01",
+  "SA",
+  "SA_B",
+  "EB01"
+ ],
+ "rareZones": {
+  "Z1": [
+   "Q_R2",
+   "Q_R3"
+  ],
+  "Z2": [
+   "Q_L3",
+   "Q_L4"
+  ]
+ }
+}

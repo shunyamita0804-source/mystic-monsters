@@ -1,0 +1,178 @@
+{
+ "A": {
+  "D_LC": {
+   "before": 6,
+   "after": 10,
+   "target": 10,
+   "side": 1,
+   "bends": 3
+  },
+  "D_LA": {
+   "before": 7,
+   "after": 12,
+   "target": 12,
+   "side": 1,
+   "bends": 3
+  },
+  "D_RC": {
+   "before": 8,
+   "after": 8,
+   "target": 10,
+   "note": "候補が検査を通らない＝元のまま"
+  },
+  "D_LLA": {
+   "before": 4,
+   "after": 9,
+   "target": 9,
+   "side": 1,
+   "bends": 3
+  },
+  "D_R5": {
+   "before": 4,
+   "after": 9,
+   "target": 9,
+   "side": -1,
+   "bends": 3
+  },
+  "D_RS": {
+   "before": 4,
+   "after": 10,
+   "target": 10,
+   "side": 1,
+   "bends": 2
+  },
+  "D_RAND": {
+   "before": 5,
+   "after": 10,
+   "target": 10,
+   "side": 1,
+   "bends": 3
+  },
+  "LATE_SAFE": {
+   "before": 14,
+   "after": 16,
+   "target": 18,
+   "side": 1,
+   "bends": 2
+  },
+  "LATE_R_DONE": {
+   "before": 7,
+   "after": 7,
+   "target": 10,
+   "note": "候補が検査を通らない＝元のまま"
+  },
+  "LATE_L_DONE": {
+   "before": 9,
+   "after": 9,
+   "target": 12,
+   "note": "候補が検査を通らない＝元のまま"
+  },
+  "S_END": {
+   "before": 4,
+   "after": 4,
+   "target": 6,
+   "note": "候補が検査を通らない＝元のまま"
+  }
+ },
+ "B": {
+  "D_LC": {
+   "before": 8,
+   "after": 10,
+   "target": 10,
+   "side": -1,
+   "bends": 2
+  },
+  "D_LA": {
+   "before": 6,
+   "after": 10,
+   "target": 10,
+   "side": 1,
+   "bends": 1
+  },
+  "D_RC": {
+   "before": 5,
+   "after": 6,
+   "target": 9,
+   "side": -1,
+   "bends": 1
+  },
+  "D_R5": {
+   "before": 6,
+   "after": 9,
+   "target": 9,
+   "side": -1,
+   "bends": 1
+  },
+  "D_LLA": {
+   "before": 5,
+   "after": 5,
+   "target": 9,
+   "note": "候補が検査を通らない＝元のまま"
+  },
+  "D_RS": {
+   "before": 6,
+   "after": 10,
+   "target": 10,
+   "side": 1,
+   "bends": 3
+  },
+  "D_RAND": {
+   "before": 7,
+   "after": 9,
+   "target": 10,
+   "side": 1,
+   "bends": 3
+  }
+ },
+ "C": {
+  "D_LC": {
+   "before": 6,
+   "after": 7,
+   "target": 7,
+   "side": 1,
+   "bends": 3
+  },
+  "D_LA": {
+   "before": 5,
+   "after": 7,
+   "target": 7,
+   "side": 1,
+   "bends": 3
+  },
+  "D_RC": {
+   "before": 6,
+   "after": 7,
+   "target": 7,
+   "side": 1,
+   "bends": 3
+  },
+  "D_R5": {
+   "before": 4,
+   "after": 6,
+   "target": 6,
+   "side": 1,
+   "bends": 3
+  },
+  "D_RAND": {
+   "before": 7,
+   "after": 8,
+   "target": 8,
+   "side": 1,
+   "bends": 3
+  },
+  "D_LLA": {
+   "before": 3,
+   "after": 7,
+   "target": 7,
+   "side": 1,
+   "bends": 3
+  },
+  "D_RS": {
+   "before": 5,
+   "after": 8,
+   "target": 8,
+   "side": 1,
+   "bends": 1
+  }
+ }
+}

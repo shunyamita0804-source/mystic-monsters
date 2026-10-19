@@ -148,8 +148,12 @@
     // 2026-10-18 REV3 F0-1：新歩行（正式採用・assets/monsters/walk_1017/）。この Chapter の従来の画面（背景を順に進む）は奥へ進むだけ＝歩く間は後ろ姿（back_1〜4）・止まると正面（front_2）。
     //  h＝箱に対する高さ（新歩行の箱 ÷ 静止の立ち絵 × 立ち絵が箱の中で見えている高さ）・foot＝絵の下の余白・base＝立ち絵の足もと（箱の下からの割合）。?qaWalk=old で従来（静止の絵）
     monsterSprites: (() => {
-      const W7 = './assets/monsters/walk_1017/', o = {};
-      const SPEC = { solamo: [1.258, 0.104, 0.956], gauru: [1.32, 0.104, 0.921], nobiton: [1.274, 0.104, 0.912], jiol: [1.255, 0.102, 0.926] };
+      // 2026-10-18 夜間 GO PHASE 2：素材は本編の盤と同じ walk_1018（js/qa/walk5-1016.js の SPEC1018 と同じ h・foot）。?qaWalk=1017 のときだけ前の 10-17 の素材
+      let q = null; try { q = new URLSearchParams(location.search).get('qaWalk'); } catch (e) {}
+      const old17 = q === '1017' || q === 'new7';
+      const W7 = old17 ? './assets/monsters/walk_1017/' : './assets/monsters/walk_1018/', o = {};
+      const SPEC = old17 ? { solamo: [1.258, 0.104, 0.956], gauru: [1.32, 0.104, 0.921], nobiton: [1.274, 0.104, 0.912], jiol: [1.255, 0.102, 0.926] }
+        : { solamo: [1.358, 0.045, 0.956], gauru: [1.312, 0.046, 0.921], nobiton: [1.376, 0.046, 0.912], jiol: [1.296, 0.044, 0.926] };
       for (const [k, [h, f, r]] of Object.entries(SPEC)) o[k] = { walk: { new7: true, frames: [W7 + k + '/front_2.webp', ...[1, 2, 3, 4].map((i) => `${W7}${k}/back_${i}.webp`)], loop: [1, 2, 3, 4], idle: 0, fps: 8, h: +(h * r).toFixed(3), foot: f, base: +((1 - r) / 2).toFixed(3), noFlip: true } };
       return o;
     })(),
