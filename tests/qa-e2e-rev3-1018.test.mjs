@@ -1,6 +1,6 @@
 // =========================================================
 // 実ブラウザ：2026-10-18 REV3（iPhone 実機 QA の修正・正式採用の本編反映）
-//  R3-B1（390×844・375×667）：通常の URL（フラグなし）の Chapter 1＝新歩行（walk_1017・7体の 5方向×4コマ）と C案カメラ・止まると正面（front_2）
+//  R3-B1（390×844・375×667）：通常の URL（フラグなし）の Chapter 1＝新歩行（walk_1018・7体の 5方向×4コマ）と C案カメラ・止まると正面（front_2）
 //  R3-B2：通常の Chapter 2（従来の画面）＝新歩行（歩く間は後ろ姿・止まると正面）／?qaWalk=old で従来の静止の絵
 //  R3-B3（375×667・390×844・393×852）：体格（正式 F）＝ジオル＞ガウル＞ソラモ・HP の帯・技名・画面の左右に重ならない
 //  R3-B4：本編の Chapter 1 の開始では鳴かない（intro:true。イベントの1回は qa-e2e-cry-1017 の CRY-B3）
@@ -36,14 +36,14 @@ T('R3-B1：通常の Chapter 1＝新歩行（7体）と C案カメラが既定�
     assert.deepEqual(a.qw, [true, true, false], '新歩行が既定');
     assert.equal(a.cam, 'c', 'C案カメラが既定');
     assert.equal(a.walk, '1017');
-    assert.deepEqual(a.on, ['./assets/monsters/walk_1017/gauru/front_2.webp'], `止まっている姿は正面（${size}）`);
+    assert.deepEqual(a.on, ['./assets/monsters/walk_1018/gauru/front_2.webp'], `止まっている姿は正面（${size}）`);
     await pg.evaluate(() => { window.__mr = Math.random; Math.random = () => 0.99; });
     await pg.click('#brollbtn'); await pg.evaluate(() => { Math.random = window.__mr; });
     const seen = new Set(); const t0 = Date.now();
     while (Date.now() - t0 < 8000) { const s = await pg.evaluate(() => [...document.querySelectorAll('.rfw-mon img.wk.on')].map((i) => i.getAttribute('src'))); s.forEach((x) => seen.add(x)); if (await pg.evaluate(() => !bBusy && !MMCHD.isLocked() && !document.querySelector('.d3w'))) break; await pg.waitForTimeout(60); }
-    assert.ok([...seen].some((x) => /walk_1017\/gauru\/(back|backd|side|front|frontd)_[1-4]\.webp/.test(x) && !/front_2/.test(x)), `歩く間は新歩行のコマ（${[...seen].join(' ')}）`);
+    assert.ok([...seen].some((x) => /walk_1018\/gauru\/(back|backd|side|front|frontd)_[1-4]\.webp/.test(x) && !/front_2/.test(x)), `歩く間は新歩行のコマ（${[...seen].join(' ')}）`);
     await idle(pg);
-    assert.deepEqual(await pg.evaluate(() => [...document.querySelectorAll('.rfw-mon img.wk.on')].map((i) => i.getAttribute('src'))), ['./assets/monsters/walk_1017/gauru/front_2.webp'], '止まったら正面');
+    assert.deepEqual(await pg.evaluate(() => [...document.querySelectorAll('.rfw-mon img.wk.on')].map((i) => i.getAttribute('src'))), ['./assets/monsters/walk_1018/gauru/front_2.webp'], '止まったら正面');
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   }
 });
@@ -57,12 +57,12 @@ async function toCh2(pg) {
 T('R3-B2：通常の Chapter 2（従来の画面）＝新歩行・止まると正面・歩くと後ろ姿／?qaWalk=old は従来', async () => {
   const p = await openPage(); const pg = p.page; await toCh2(pg);
   const on = () => pg.evaluate(() => [...document.querySelectorAll('#bmonw .chf-spr img.on')].map((i) => i.getAttribute('src')));
-  assert.deepEqual(await on(), ['./assets/monsters/walk_1017/solamo/front_2.webp'], '止まっている姿は正面');
+  assert.deepEqual(await on(), ['./assets/monsters/walk_1018/solamo/front_2.webp'], '止まっている姿は正面');
   await pg.evaluate(() => { window.__mr = Math.random; Math.random = () => 0.9; }); await pg.click('#brollbtn'); await pg.evaluate(() => { Math.random = window.__mr; });
   await pg.waitForFunction(() => document.querySelector('#bmonw.walk'), null, { timeout: 15000 }); await pg.waitForTimeout(200);
-  assert.match((await on())[0], /walk_1017\/solamo\/back_[1-4]\.webp$/, '歩く間は後ろ姿');
+  assert.match((await on())[0], /walk_1018\/solamo\/back_[1-4]\.webp$/, '歩く間は後ろ姿');
   await pg.waitForFunction(() => !document.querySelector('#bmonw.walk') && !bBusy, null, { timeout: 30000 }); await pg.waitForTimeout(400);
-  assert.deepEqual(await on(), ['./assets/monsters/walk_1017/solamo/front_2.webp'], '止まったら正面');
+  assert.deepEqual(await on(), ['./assets/monsters/walk_1018/solamo/front_2.webp'], '止まったら正面');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   const q = await openPage({ query: '?qaWalk=old' }); await toCh2(q.page);
   assert.equal(await q.page.evaluate(() => document.querySelectorAll('#bmonw .chf-spr').length), 0, '?qaWalk=old＝従来の静止の絵');

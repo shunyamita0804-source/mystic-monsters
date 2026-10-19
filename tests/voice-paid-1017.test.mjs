@@ -155,6 +155,6 @@ test('VP-06：モンスターの鳴き声 14本（7体×normal／sad）＝派生
   assert.doesNotMatch(rd('js/chapter/field-view.js'), /feel\('monster\.enter'\); \{ const S0 = gS\(\), mm = S0 && S0\.m; if \(!quick && mm\) monCry/, 'C：Chapter 2 の歩いて入るでも鳴かない');
   for (const f of ['js/chapter/world-board.js', 'js/chapter/field-view.js']) assert.match(rd(f), /A\.cryAfter\(/, `${f}：イベントの鳴き声は cryAfter`);
   assert.match(rd('js/chapter/world-board.js'), /if \(foe && foe\.sp != null\) monCry\(foe\.sp, 'normal', 800,/, 'D：野生・レアの相手（ライバルは無し）');
-  assert.match(HTML, /if\(!win\)monCry\(sp,"sad",5050,\(\)=>b\.isConnected&&b\.dataset\.rj==="lose",\{gapMs:0\}\);else if\(window\.MM_CRY_WIN\)/, 'E：LOSE の曲のあと・WIN は既定で無し');
+  assert.match(HTML, /if\(!win\)monCry\(sp,"sad",5000,here,\{gapMs:0,when:here\}\);else if\(window\.MM_CRY_WIN\)/, 'E：LOSE の曲（5.0秒）のあと・結果の画面に居るときだけ（2026-10-18 夜間 B03）・WIN は既定で無し');
   for (const f of ['js/battle/stage.js', 'js/battle/art25d.js', 'js/battle/rules.js', 'js/chapter/dice-cube.js', 'js/chapter/dice-renderer.js']) assert.doesNotMatch(rd(f), /\.cry\(|monCry/, `${f}：バトルの進行・サイコロでは鳴かない`);
 });

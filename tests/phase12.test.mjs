@@ -67,7 +67,7 @@ test('G3-2：修行ボードは修行の種類ごとの正式背景をはっき�
   assert.match(tr, /<div class="p12stage" role="img" aria-label="\$\{T\.name\}" style="background-image:url\(\$\{T\.image\.src\}\);background-position:\$\{T\.image\.focus\}">/);
   assert.doesNotMatch(tr, /TRIMG2|class="dbg"/, '修行ボードでは旧背景・ぼかし背景を使わない');
   for (const id of ['id="p7msg"', 'id="p7dice"', 'id="p7roll"', 'onclick="trRoll()"', 'class="p7tr"']) assert.ok(tr.includes(id), id);
-  assert.match(tr, /\$\{LAB\[K\]\}特訓/); assert.match(tr, /15マス・ゴールで技を覚える/); assert.match(tr, /\$\{P7_SQ_ICON\[K\]\}=\$\{LAB\[K\]\}＋ライフ　・=何も起きない/); assert.doesNotMatch(tr, /💖=ライフ/, '独立したライフマスは無い');
+  assert.match(tr, /\$\{LAB\[K\]\}特訓/); assert.match(tr, /15マス・\$\{MMP7\.getMoveset\(m\.sp\)\?"ゴールで技を覚える":"専用マスで能力が伸びる"\}/);   // 2026-10-18 夜間：技の無い種族は「技を覚える」と言わない assert.match(tr, /\$\{P7_SQ_ICON\[K\]\}=\$\{LAB\[K\]\}＋ライフ　・=何も起きない/); assert.doesNotMatch(tr, /💖=ライフ/, '独立したライフマスは無い');
   const css = HTML.match(/\n\.p12stage\{[^}]*\}/)[0]; assert.doesNotMatch(css, /filter|blur|brightness/);
   assert.match(HTML, /const TRIMG2="assets\/embedded\/trimg2_farm_bg\.jpg";/, '旧背景のデータは他の画面で使うため残す（外部化：assets/embedded/）'); assert.ok(existsSync(path.join(ROOT, 'assets/embedded/trimg2_farm_bg.jpg')));
 });

@@ -73,7 +73,7 @@ test('D25-E：正式サイコロ＝6面とも正式の絵・出目どおり（�
       await pg.waitForFunction(() => !document.querySelector('.d3z'), null, { timeout: 8000 });
       const se = await pg.evaluate((n0) => MMAUDIO.playLog().filter((x) => x.name === 'DICE_CUBE').slice(n0), n0);
       assert.equal(se.length, 1, 'DICE_CUBE は1回');
-      assert.ok(/dice_1014\/dice_cube_throw_land2\.ogg$/.test(se[0].src), se[0].src);   // 2026-10-14 実機試遊⑤：投げる音つきの1本
+      assert.ok(/dice_1013\/dice_cube_throw_land\.ogg$/.test(se[0].src), se[0].src);   // 2026-10-18 夜間 B04：着地音だけ   // 2026-10-14 実機試遊⑤：投げる音つきの1本
       assert.equal(await pg.evaluate(() => MMAUDIO.playLog().filter((x) => /^DICE_(THROW|LAND|ROLL|STOP)$/.test(x.name)).length), 0, '旧サイコロの音は鳴らない');
       for (let k = 0; k < 20; k++) { const b = await pg.$('.wb-pop button, .chsheet button, .mmtalk'); if (!b) break; await b.click().catch(() => {}); await pg.waitForTimeout(400); }
     }

@@ -371,13 +371,13 @@
   function walk7(x) {
     const v = doc.getElementById('mmqa'); if (!v) return;
     const old = v.querySelector('.qwalk'); if (old) old.remove();
-    const B = './assets/monsters/walk_1017/' + x.key + '/';
+    const B = ((root.MMQAW && root.MMQAW.BASE7) || './assets/monsters/walk_1018/') + x.key + '/';   // 2026-10-18 夜間 GO：本編と同じ素材（既定 walk_1018・?qaWalk=1017 で前の素材）
     const CELLS = [['back', 0, '後ろ'], ['backd', 0, '右斜め後ろ'], ['side', 0, '右'], ['frontd', 0, '右斜め前'], ['front', 0, '前'], ['frontd', 1, '左斜め前（反転）'], ['side', 1, '左（反転）'], ['backd', 1, '左斜め後ろ（反転）']];
     let OLD = null; try { const c = root.MMCH && root.MMCH.getConfig && root.MMCH.getConfig(1), sp = c && c.monsterSprites && c.monsterSprites[x.key]; OLD = sp && sp.dirs ? ['front', 'back'].filter((k) => sp.dirs[k] && sp.dirs[k].frames).map((k) => [k, sp.dirs[k].frames]) : null; } catch (e) {}
     const cell = (d, fl, lab) => `<figure class="q7c${fl ? ' fl' : ''}"><div>${[1, 2, 3, 4].map((i) => `<img data-i="${i - 1}" src="${esc(B + d + '_' + i + '.webp')}" alt="" decoding="async">`).join('')}</div><figcaption>${esc(lab)}</figcaption></figure>`;
     const oldCell = ([k, fr]) => `<figure class="q7c old"><div>${fr.map((f, i) => `<img data-i="${i}" src="${esc(f)}" alt="" decoding="async">`).join('')}</div><figcaption>旧 ${k}（${fr.length}コマ）</figcaption></figure>`;
     const w = doc.createElement('div'); w.className = 'qwalk q7'; w.setAttribute('role', 'dialog'); w.setAttribute('aria-label', '新歩行の確認');
-    w.innerHTML = `<b>${esc(x.name)}：新歩行 10-17（5方向×4コマ・左は反転）</b><div class="q7g">${CELLS.map((c) => cell(c[0], c[1], c[2])).join('')}</div>`
+    w.innerHTML = `<b>${esc(x.name)}：歩行 ${root.MMQAW && root.MMQAW.set === '1017' ? '10-17' : '10-18'}（5方向×4コマ・左は反転）</b><div class="q7g">${CELLS.map((c) => cell(c[0], c[1], c[2])).join('')}</div>`
       + (OLD && OLD.length ? `<b>旧の歩行（本編の盤・比較用）</b><div class="q7g">${OLD.map(oldCell).join('')}</div>` : '<small>旧の 8コマの歩行は無い種族（本編の盤は静止の立ち絵）</small>')
       + `<div class="qwbtn"><button type="button" data-a="play" data-nsfx="1">歩く／止める</button><button type="button" data-a="bg" data-nsfx="1">背景 濃／淡</button><button type="button" data-a="close" data-nsfx="1">閉じる</button></div><p class="qwnote">8fps（4コマで 0.5秒の1周）。止めると各向きの2コマ目（足をそろえた姿）。盤の上での確認は URL に ?qaWalk=1017。iPhone の実機は未確認。</p>`;
     v.appendChild(w);

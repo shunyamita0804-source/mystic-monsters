@@ -155,8 +155,9 @@ test('DV-05：出しどころ＝施設は訪問1回に1回・CUES／LINE_VOICE �
   assert.ok(lines.length >= 10, `声の付いた行 ${lines.length}`);
   // 2026-10-13 開発25 追加便：フィナの8種＋セドリック（開幕の1行目）・セルジュ（受付の1行目）＝台詞の頭と声が同じ行だけ
   assert.ok(Object.values(V.LINE_VOICE).every(Boolean) && Object.keys(V.LINE_VOICE).length === 12, '2026-10-13 開発27（24）：リュウ「やるじゃん」（ライバル戦の勝利のあとのボードの会話の行）・2026-10-14 実機試遊⑬：リュウ「へへっ」（負けたあとのボードの会話の行）を足して12');
-  assert.match(HTML, /const RYU_LOSE_TALK=\{1:\[\{npc:"ryu",expression:"\w+",text:"へへっ/, 'ryu_chuckle の行は「へへっ」で始まる（声の発音と同じ）');
-  assert.match(HTML, /const RYU_WIN_TALK=\{1:\[\{npc:"ryu",expression:"soft_smile",text:"やるじゃん！/, 'ryu_praise の行は「やるじゃん！」で始まる');
+  // 2026-10-18 夜間 B06：字幕＝声の書き起こしと同じ文（勝ち ryu_001・負け ryu_010）
+  assert.match(HTML, /const RYU_LOSE_TALK=\{1:\[\{npc:"ryu",expression:"\w+",text:"へへ、悪くなかったけど、まだまだだな。もっと強くなってから、また勝負しようぜ。",voice:"ryu_010"/, '負けの行＝ryu_010 の書き起こし');
+  assert.match(HTML, /const RYU_WIN_TALK=\{1:\[\{npc:"ryu",expression:"soft_smile",text:"へぇ、やるじゃん。今回はお前の勝ちだ。でも、次はそう簡単にいかないからな。",voice:"ryu_001"/, '勝ちの行＝ryu_001 の書き起こし');
   const NPCL = [...SRC.matchAll(/\{npc:"(cedric|serge)",(?:expression:"\w+",)?voice:"(\w+)",text:["`]([^"`]*)/g)].map((m) => [m[2], m[3]]);
   assert.deepEqual(NPCL.map((x) => x[0]).sort(), ['cedric_opening', 'serge_welcome'], '声の付いた NPC の行は2つだけ');
   for (const [id, t] of NPCL) assert.match(t, id === 'cedric_opening' ? /^さあ、いよいよ/ : /^ようこそ/, `${id} の行の始まり：${t}`);

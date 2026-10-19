@@ -20,8 +20,12 @@
   const LEGACY = q === 'old' || q === 'legacy';
   const NEW7 = !LEGACY && q !== 'soramo5' && q !== '5dir';
   const ACTIVE = !LEGACY;
-  const BASE7 = './assets/monsters/walk_1017/';
-  const SPEC7 = Object.freeze({"solamo": {"h": 1.258, "foot": 0.104}, "gauru": {"h": 1.32, "foot": 0.104}, "nobiton": {"h": 1.274, "foot": 0.104}, "jiol": {"h": 1.255, "foot": 0.102}, "regnas": {"h": 1.255, "foot": 0.102}, "flurene": {"h": 1.255, "foot": 0.102}, "razuck": {"h": 1.258, "foot": 0.102}});   // tools/walk1017/derive.json（h＝静止の立ち絵に対する箱の高さ・foot＝足の下の余白）
+  // 2026-10-18 夜間 GO PHASE 2：本編の既定＝ユーザー納品の白背景シート 7枚から切り出した 1018 の素材（assets/monsters/walk_1018/・tools/walk1018/derive.py）。?qaWalk=1017＝前の 10-17 の素材（比較だけ・ファイルは残す）
+  const SET = q === '1017' || q === 'new7' ? '1017' : '1018';
+  const BASE7 = SET === '1017' ? './assets/monsters/walk_1017/' : './assets/monsters/walk_1018/';
+  const SPEC1017 = Object.freeze({"solamo": {"h": 1.258, "foot": 0.104}, "gauru": {"h": 1.32, "foot": 0.104}, "nobiton": {"h": 1.274, "foot": 0.104}, "jiol": {"h": 1.255, "foot": 0.102}, "regnas": {"h": 1.255, "foot": 0.102}, "flurene": {"h": 1.255, "foot": 0.102}, "razuck": {"h": 1.258, "foot": 0.102}});   // tools/walk1017/derive.json
+  const SPEC1018 = Object.freeze({"solamo": {"h": 1.358, "foot": 0.045}, "gauru": {"h": 1.312, "foot": 0.046}, "nobiton": {"h": 1.376, "foot": 0.046}, "jiol": {"h": 1.296, "foot": 0.044}, "regnas": {"h": 1.21, "foot": 0.046}, "flurene": {"h": 1.242, "foot": 0.046}, "razuck": {"h": 1.209, "foot": 0.045}});   // tools/walk1018/derive.json（h＝正面2コマ目の体の高さに対するキャンバスの比・foot＝基線の下の余白）
+  const SPEC7 = SET === '1017' ? SPEC1017 : SPEC1018;
   const FPS = num('qaWalkFps', 8, 2, 24), TURN_MS = num('qaWalkTurn', 70, 0, 400);
   const BASE = './assets/qa/soramo_5dir_1016/';
   const KEYS = ['front', 'back', 'side', 'backd', 'frontd'];
@@ -57,5 +61,5 @@
   }
   /** その回り方（1＝時計回り・-1＝反時計回り・0＝回らない） */
   const rotOf = (path, from) => (path.length ? Math.sign(norm(path[0] - from)) : 0);
-  root.MMQAW = Object.freeze({ rotOf, active: ACTIVE, new7: NEW7, legacy: LEGACY, has, SPEC7, BASE7, species: 'solamo', FPS, TURN_MS, KEYS, BASE, H, FOOT, sets, pick8, look, turnPath, norm });
+  root.MMQAW = Object.freeze({ rotOf, active: ACTIVE, new7: NEW7, legacy: LEGACY, set: SET, has, SPEC7, BASE7, species: 'solamo', FPS, TURN_MS, KEYS, BASE, H, FOOT, sets, pick8, look, turnPath, norm });
 })(typeof window !== 'undefined' ? window : globalThis);

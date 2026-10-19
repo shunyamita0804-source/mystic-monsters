@@ -345,7 +345,7 @@ try {
     // 2026-10-18 REV3：正式採用（新歩行・C案カメラ・体格 F）が通常の URL の既定・フルーネ正式10技（SK 50〜59）・フレアレイの光線・削除した旧背景は 404
     const r3 = await page.evaluate(async () => { const st = async (u) => (await fetch(u + '?cb=' + Date.now())).status;
       return { walk: !!(window.MMQAW && MMQAW.active && MMQAW.new7), size: window.MMTUNE ? MMTUNE.sizeMode() : null, flu: typeof SK !== 'undefined' && !!SK[50] && !!SK[59],
-        beam: await st('./assets/battle/gauru_moves_1012/16_beam_a.webp'), walk7: await st('./assets/monsters/walk_1017/jiol/front_2.webp'), gone: await st('./assets/fields/ch1a/road/01_journey_road.webp'), proto: await st('./prototype/camera-follow.html') }; });
+        beam: await st('./assets/battle/gauru_moves_1012/16_beam_a.webp'), walk7: await st('./assets/monsters/walk_1018/jiol/front_2.webp'), gone: await st('./assets/fields/ch1a/road/01_journey_road.webp'), proto: await st('./prototype/camera-follow.html') }; });
     rec('2026-10-18 REV3：新歩行・体格 F が既定・フルーネ正式10技・フレアレイの光線 200・削除した旧背景と試作ページは 404', r3.walk && r3.size === 'F' && r3.flu && r3.beam === 200 && r3.walk7 === 200 && r3.gone === 404 && r3.proto === 404, JSON.stringify(r3));
     const ctxT = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
     await ctxT.route('**/*', routeFn);

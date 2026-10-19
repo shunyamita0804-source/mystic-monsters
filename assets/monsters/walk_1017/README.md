@@ -1,4 +1,4 @@
-# ボード用 新歩行 7体×5方向×4コマ（2026-10-17・QA の比較だけ＝URL の ?qaWalk=1017）
+# ボード用 新歩行 7体×5方向×4コマ（2026-10-17 納品。**2026-10-18 夜間 GO から本編の既定は assets/monsters/walk_1018/＝このフォルダは ?qaWalk=1017 の比較だけ・ファイルは残す**）
 
 - 原本＝ZIP Mismon_BoardWalk_20261017_A_Soramo_Gauru_Nobiton／B_Jiol_Regnas_Fulune／C_Razuck の frames/<種族>/00〜19.png（512×512 RGBA）。一覧シート・GIF は使わない（同時に読み込まない）・リポジトリに置かない
 - 派生＝384×384 の WebP（品質 88）。縮小だけ（切り出しの窓は原本のまま＝全コマ足もとが同じ）。行＝front・back・side（右横）・backd（右斜め後ろ）・frontd（右斜め前）。左向きは盤で左右反転
