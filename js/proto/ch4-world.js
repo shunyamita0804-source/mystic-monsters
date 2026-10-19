@@ -164,9 +164,9 @@
     Object.assign(el.style, { backgroundImage: `linear-gradient(rgba(20,10,14,.35),rgba(20,10,14,.35)),url(${U(TEX.ground[0])})`, backgroundSize: `auto,${TEX.ground[1]}px ${TEX.ground[1]}px`, backgroundPosition: `0 0,${m % TEX.ground[1]}px ${m % TEX.ground[1]}px` });
   }
   // ---- 目印（固定の地点の建物）：C4 専用の目印（C4_LM_*）は未着＝火山に合う代わりの絵（README と報告書に「画像待ち」）----
-  const LM_SUB = { L_CHEST: { file: 'lm_watchpost.webp', w: 40 }, R_CHEST: { file: U('rock_cliff'), w: 54 }, R_SPECIAL: { file: U('lava_ridge'), w: 50 } };
+  const LM_SUB = { L_CHEST: { file: 'lm_watchpost.webp', w: 40 }, R_CHEST: { file: U('rock_cliff'), w: 54 }, R_SPECIAL: { file: U('lava_ridge'), w: 50 }, CHALLENGE: { file: U('goal_gate'), w: 40 } };   // 火の神殿の門＝C4 の門（Chapter 1 の白い蔦の門は火山に合わない）
   function lm(D) {
-    return (D.art.landmarks || []).filter((L) => L.node !== 'GOAL' && L.node !== 'START')   // 会場は goal（C4 の門）・スタートの門は Chapter 1 の白い門＝火山に合わない（Chapter 1 も START の飾りは出さない）.map((L) => (LM_SUB[L.node] ? Object.assign({}, L, LM_SUB[L.node]) : L));
+    return (D.art.landmarks || []).filter((L) => L.node !== 'GOAL' && L.node !== 'START' && L.node !== 'LOWER_GATE')   // 下の門も Chapter 1 の白い門＝出さない（Chapter 1 も中央の門の飾りは出さない）   // 会場は goal（C4 の門）・スタートの門は Chapter 1 の白い門＝火山に合わない（Chapter 1 も START の飾りは出さない）.map((L) => (LM_SUB[L.node] ? Object.assign({}, L, LM_SUB[L.node]) : L));
   }
   const goal = Object.freeze({ file: U('goal_gate'), w: 96, dy: 10, back: 6 });
   // ---- 景物：斜面の岩の崖・溶岩の尾根（道・溶岩・区域の芯から離す）・噴煙（噴気の棚・火口のふち）・道しるべ（自由な分かれ道）。決まった乱数＝毎回同じ ----
@@ -211,6 +211,8 @@
       const p = phaseOf(D, elevNear(M[0], M[1])); if (p === ph) return; ph = p;
       wrap.classList.toggle('twi', p === 'twi'); wrap.classList.toggle('night', p === 'night'); wrap.dataset.phase = p;
     }
+    // 描き直しが起きない間（止まっている間）も、モンスターの居る所を 0.6秒ごとに見て空の色を合わせる（盤を作り直した直後・QA の移動のあとも確実に）
+    const S = ctx.S; if (S) { const poll = () => { if (S.dead) return; try { if (S.mon) mon(0, S.mon); } catch (e) {} setTimeout(poll, 600); };   // 盤を捨てたら（S.dead）止まる setTimeout(poll, 0); }
     return { occl: () => false, mon, el: null, phase: () => ph };
   }
   let cssDone = false;

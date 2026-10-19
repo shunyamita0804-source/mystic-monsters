@@ -300,7 +300,7 @@
       Promise.all([load3('ground', ART.ground.file), load3('road', ART.road.file), o.art.road === 'pattern' ? null : load3('strip', ART.strip.file),
         load(T.valley.file), load2('water', T.water.file), load(T.cloud.file), ...EK.map((k) => load(T.edges[k].file)), SEA ? SEA.load(load, base) : null]).then(([gi, ri, si, vi, wi, ci, ...ei]) => {
         if (S.dead) return; art.ground = gi; art.road = ri; art.strip = si;
-        if (SEA) { art[SEA.flat ? 'volc' : 'sea'] = ei.pop(); vi = null; S.sea3d = SEA.build3d({ doc, plane, D, o, art, H: HELP, base }); }   // 2026-10-15 Chapter 2：谷・雲海・森は使わない（海・海底の盆地・塔）
+        if (SEA) { art[SEA.flat ? 'volc' : 'sea'] = ei.pop(); vi = null; S.sea3d = SEA.build3d({ doc, plane, D, o, art, H: HELP, base, S }); S.dirty = true; }   // 2026-10-19：作った直後に1回描き直す（火山の空の色をモンスターの居る所に合わせる）   // 2026-10-15 Chapter 2：谷・雲海・森は使わない（海・海底の盆地・塔）
         else ei.pop();
         if (ri && ri._sk) { art.roadTile = SK ? SK.roadTile : 57.5; art.discCenter = SK ? !!SK.discCenter : true; }   // R の石の大きさ＝道の帯の石にそろえる
         if (vi) { art.terrain = terrainMasks(doc, D, o); art.valley = vi; art.water = wi; art.cloud = ci; art.edges = {}; EK.forEach((k, i) => { art.edges[k] = ei[i]; });
