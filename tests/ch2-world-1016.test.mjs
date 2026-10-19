@@ -9,7 +9,7 @@
 // =========================================================
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -136,7 +136,7 @@ test('CW-06：正式美術 68点の派生（欠品 0）・描画が参照する�
   const w = {}; new Function('window', 'module', rd('js/proto/ch2-routes.js') + '\n' + rd('js/proto/ch2-world.js'))(w, undefined);
   const S = w.MMRF_SEA;
   const names = [...Object.values(S.TEX).map((t) => t[0]), ...Object.values(S.STRIPS), ...S.PLAZA, ...S.ALL_LM];
-  for (const n of names) assert.ok(have.has(n), '派生がある：' + n);
+  for (const n of names) assert.ok(/^\.\//.test(n) ? existsSync(path.join(ROOT, n)) : have.has(n), '派生がある：' + n);   // './' で始まる名前は art_1016 の外のファイル（2026-10-19 正面向きの港の門）
   // 再送の8点：欄干の左右（海面の帯）・分かれ目の塔（海上の自由な分かれ道）・泡（海中の光の層）・ふちの景物・ゾーン名札（Chapter 2 の題字）
   assert.equal(S.STRIPS.railL, 'sea_bridge_railing_left'); assert.equal(S.STRIPS.railR, 'sea_bridge_railing_right');
   // 2026-10-19 P0：分かれ目の塔は、道から約 26 単位離せる所がある分かれ道だけ（C は道が集まっていて置けない＝立てない。広場の真ん中に立たない）

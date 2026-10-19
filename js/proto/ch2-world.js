@@ -15,7 +15,7 @@
   'use strict';
   const FILES = { water: 'ground_water.webp', shore: 'edge_shore.webp', rock: 'edge_rock.webp' };   // 正式素材が読めないときの代用（Chapter 1 の素材）
   const TOWN_TEX = './assets/fields/ch1a/board_hq_1014/road_r1.webp', STONE_TEX = './assets/fields/ch1a/board_hq_1014/road_r2.webp';
-  const A2 = './assets/fields/ch2/art_1016/', U = (n) => A2 + n + '.webp';
+  const A2 = './assets/fields/ch2/art_1016/', U = (n) => (/^\.\//.test(n) ? n : A2 + n + '.webp');   // './' で始まる名前はそのままの場所（2026-10-19 正面向きの港の門＝art_1019）
   // 正式素材（名前＝納品の名前のまま。tile＝くり返し1枚の大きさ（世界の単位））
   const TEX = { sea: ['open_sea_water', 110], shallow: ['shallow_turquoise_water', 96], sand: ['coastal_sand_base', 72], grass: ['G02b_coastal_grass_tile', 96],
     white: ['coastal_white_stone_road', 56], deck: ['sea_bridge_deck', 72], seabed: ['undersea_sand_base', 96], glass: ['glass_corridor_floor', 38],
@@ -243,11 +243,12 @@
 
   // ---- 目印（決まった地点の建物・門）と大会会場：2026-10-16 正式美術。意味（設計の standin）に合う絵をルートごとに。地点・道・判定は変えない ----
   //  along＝その地点へ入ってくる向きにずらす（行き止まりは奥へ）・z＝前後（負＝モンスターより奥）・open＝隠れ家が開いている回の絵
-  //  2026-10-19 P0（iPhone 試遊・ユーザー判断「道の上のまま大きさだけ直す」）：START の港の門は、アーチの口（絵の幅の 32%・中心は左から 38%）が道幅 22 より少し広い 24 単位になる幅 75。
-  //   アーチの中心が道の中心に来るよう、進む向きの右へ 9 単位（side＝6番目）。階段が START のマスにかからないよう 14 単位先
+  //  2026-10-19 P0（iPhone 試遊・ユーザー判断「道の上のまま大きさを直す」「角度をつけず道に対して正面に」）：START の港の門は正面向きの派生
+  //   （正式の harbor_start_gate の左半分＝左の柱とアーチの半分を、アーチの中心で左右に折り返した絵。色は変えない・右の小屋は無い＝art_1019/harbor_start_gate_front）。
+  //   アーチの口（絵の幅の 41%・中央）が道幅 22 より少し広い 24 単位になる幅 58。階段が START のマスにかからないよう 14 単位先。side＝6番目（進む向きの右へ）
   const JT = 'sea_junction_tower', EDGE_PROPS = ['coral_shoal_edge', 'white_coastal_cliff_edge', 'undersea_cliff_edge'];
   const LM_BASE = {
-    START: ['harbor_start_gate', 75, 14, null, null, 9], LOWER_GATE: ['undersea_descent_gate', 40, 6], RIVAL: ['rival_pass_gate', 34, 10], Q: ['glass_corridor_arch', 50, 4],
+    START: ['./assets/fields/ch2/art_1019/harbor_start_gate_front.webp', 58, 14], LOWER_GATE: ['undersea_descent_gate', 40, 6], RIVAL: ['rival_pass_gate', 34, 10], Q: ['glass_corridor_arch', 50, 4],
     STATUE: ['L07_winged_sea_god_statue', 30, 0, [-34, -20]], RANDOM_DEN: ['L11_sunken_ship_den_closed', 44, 20, null, 'L11_sunken_ship_den_open'],
     REWARD5: ['coastal_rock_shells', 40, 20], R_SPECIAL: ['L10_coral_treasure_landmark', 34, 20],
   };
