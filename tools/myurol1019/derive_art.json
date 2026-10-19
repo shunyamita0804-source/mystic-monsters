@@ -1,0 +1,366 @@
+{
+ "scale2p5d": 0.65693,
+ "scaleIdle": 0.94862,
+ "size2p5d": [
+  720,
+  646
+ ],
+ "sizeIdle": [
+  928,
+  720
+ ],
+ "idleCrop": [
+  146,
+  289,
+  1124,
+  1048
+ ],
+ "portraitBox": [
+  371,
+  0,
+  607
+ ],
+ "portraitFace": [
+  0.677,
+  0.412
+ ],
+ "reactions": {
+  "joy": {
+   "w": 896,
+   "h": 872,
+   "hRel": 1.211,
+   "label": "喜ぶ",
+   "touchesEdge": [
+    1,
+    0,
+    1,
+    0
+   ]
+  },
+  "surprise": {
+   "w": 864,
+   "h": 874,
+   "hRel": 1.214,
+   "label": "驚く",
+   "touchesEdge": [
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  "sad": {
+   "w": 1044,
+   "h": 1041,
+   "hRel": 1.446,
+   "label": "しょんぼり",
+   "touchesEdge": [
+    1,
+    0,
+    0,
+    1
+   ]
+  },
+  "eat": {
+   "w": 903,
+   "h": 835,
+   "hRel": 1.16,
+   "label": "食べる",
+   "touchesEdge": [
+    1,
+    0,
+    1,
+    0
+   ]
+  },
+  "hit": {
+   "w": 1032,
+   "h": 1017,
+   "hRel": 1.413,
+   "label": "被弾",
+   "touchesEdge": [
+    1,
+    0,
+    1,
+    1
+   ]
+  },
+  "dodge": {
+   "w": 1086,
+   "h": 1081,
+   "hRel": 1.501,
+   "label": "回避",
+   "touchesEdge": [
+    1,
+    0,
+    0,
+    1
+   ]
+  }
+ },
+ "walk": {
+  "h": 1.149,
+  "foot": 0.045,
+  "side": 440,
+  "base": 420,
+  "cellMode": "cell-center"
+ },
+ "iconBg": "#858893",
+ "voice": [
+  {
+   "id": "cry_myurol_normal",
+   "kind": "normal",
+   "orig": "A_tiny_fantasy_aquat_#3-1792332367994.mp3",
+   "origSha": "c15954c7172e5c01209c028f610b9edc7629c2a8c212dae8d3e2cfb63f6ac01c",
+   "I": -19.9,
+   "peak": -11.5,
+   "gain": 1.758,
+   "sec": 1.032
+  },
+  {
+   "id": "cry_myurol_sad",
+   "kind": "sad",
+   "orig": "The_same_tiny_fantas_#1-1792332426355.mp3",
+   "origSha": "7d6f9d559b355549ec89ead755aa5681efda947301ab5af29ed85a353923da29",
+   "I": -22.6,
+   "peak": -10.5,
+   "gain": 1.413,
+   "sec": 1.032
+  }
+ ],
+ "artCompare": {
+  "2p5d": {
+   "other": "01_art/Mismon_Myurol_FormalArt_Approved_20261018.png",
+   "otherSha256": "5ef1907390ba2dcabb56bf3f9664f6656d6cd53bf64bc6b7fd7670c5fd7337bd",
+   "onlyInOther": 22664,
+   "onlyInOtherMaxAlpha": 1,
+   "onlyInUsed": 0,
+   "diffWhereBoth": 0
+  },
+  "idle": {
+   "other": "01_art/Mismon_Myurol_BattleIdle_Candidate_20261018.png",
+   "otherSha256": "194088c0b1d87347e99dd3acf3ad4642260f87792949a03e358f63d036f366a8",
+   "onlyInOther": 21876,
+   "onlyInOtherMaxAlpha": 1,
+   "onlyInUsed": 0,
+   "diffWhereBoth": 0
+  }
+ },
+ "originals": {
+  "2p5d": {
+   "file": "02_reactions/ミュロル_正式2.5D立ち絵.png",
+   "sha256": "cd2d4583e5781f8efebf9bf4529f9c53034a0d972b9b8255af5c6d48b5621b17"
+  },
+  "idle": {
+   "file": "02_reactions/ミュロル_正式バトル待機絵.png",
+   "sha256": "004836874e1125d8603ce67723e0b7ed19a4900281e592c7b51576597d3b9a11"
+  },
+  "reaction_joy": {
+   "file": "02_reactions/01_喜ぶ.png",
+   "sha256": "b5b3c8f18b67f584807fec1f6f4ecf9b16a5a4c0f9122b7e3f55117d667e735a"
+  },
+  "reaction_surprise": {
+   "file": "02_reactions/02_驚く.png",
+   "sha256": "87fd0f4e77e38b45efaae45596f829b219ce1ecb3ad613d319c300f03da439a1"
+  },
+  "reaction_sad": {
+   "file": "02_reactions/03_しょんぼり.png",
+   "sha256": "53885d61564485748e5c33e2205c853a57072be6b5012eba9f0a5d4666971ef1"
+  },
+  "reaction_eat": {
+   "file": "02_reactions/04_食べる.png",
+   "sha256": "6b8d8102b02b09eb705ebfdf103458c08656ee48cda085aeb9f93babc8dedb09"
+  },
+  "reaction_hit": {
+   "file": "02_reactions/05_被弾.png",
+   "sha256": "b172bc9a3cdaf5ac2df155796a9ed106cd0dfacd60d6aac604aa4525df4530b1"
+  },
+  "reaction_dodge": {
+   "file": "02_reactions/06_回避.png",
+   "sha256": "be2c67e60bfc626dfa61564f26ebd2df523c9f016e10fd717f0c3bb161cba0cd"
+  },
+  "card_01": {
+   "file": "04_skill_cards/01_しっぽうち.png",
+   "sha256": "6d5717235a5eb7bbc87ddbeedc70201ac42b3fc8f5e24896e77b470884e7efe6"
+  },
+  "card_02": {
+   "file": "04_skill_cards/02_みずでっぽう.png",
+   "sha256": "f55744aca275baf880c73293ab82172ce8a41afa6f0ed0452790b9fc391190ae"
+  },
+  "card_03": {
+   "file": "04_skill_cards/03_タックル.png",
+   "sha256": "a1972a83ca325ffb9acf807654fb1461fcc0a8c7cb2e8ef888d63872c18d96a0"
+  },
+  "card_04": {
+   "file": "04_skill_cards/04_あわのまもり.png",
+   "sha256": "556ac0296edcd5903ae19bff628bae63c281159ea58ccebd9acd0566a1d74a8e"
+  },
+  "card_05": {
+   "file": "04_skill_cards/05_テールスイング.png",
+   "sha256": "91cb5ea40fd155e411b51c1f620c8328dd22b62dc4c05cdf26ef7888cd016fa8"
+  },
+  "card_06": {
+   "file": "04_skill_cards/06_アクアバブル.png",
+   "sha256": "082ec37536f537b924c7d5e4c31c2fa87ccb01ccdec4bb00bd2e6d7f07e274a0"
+  },
+  "card_07": {
+   "file": "04_skill_cards/07_バブルスナイプ.png",
+   "sha256": "9c0dfb08eb500696cb86029ff45eba306781b66897a041d89258ca9b97889a8f"
+  },
+  "card_08": {
+   "file": "04_skill_cards/08_すいすいステップ.png",
+   "sha256": "daa33022b1cc82b3b8a7f4049b4e2312e51b3951ce48593abc425e3d27f3097e"
+  },
+  "card_09": {
+   "file": "04_skill_cards/09_スパイラルテール.png",
+   "sha256": "f23a9fe86f234852d143bb3625e72f95a6a2d46d8a840229d243231eac59127d"
+  },
+  "card_10": {
+   "file": "04_skill_cards/10_マリンストリーム.png",
+   "sha256": "58861bfb7561f666735770acd471e5bb3b57e87f0f042ccf7512b7b4316b5d7a"
+  },
+  "icon": {
+   "file": "06_icons/Myurol_TournamentIcon_1254.png",
+   "sha256": "03e8b752b12e73042e069f90981c92df6c3826ee4872cfa747c5a3a8aa924235"
+  },
+  "vs": {
+   "file": "06_icons/Myurol_VS_1254.png",
+   "sha256": "f4be56f0c255712cefb1a791682fc23904309c0457956d9abce5b4c9fa6790ca"
+  },
+  "voice_normal": {
+   "file": "07_audio/A_tiny_fantasy_aquat_#3-1792332367994.mp3",
+   "sha256": "c15954c7172e5c01209c028f610b9edc7629c2a8c212dae8d3e2cfb63f6ac01c"
+  },
+  "voice_sad": {
+   "file": "07_audio/The_same_tiny_fantas_#1-1792332426355.mp3",
+   "sha256": "7d6f9d559b355549ec89ead755aa5681efda947301ab5af29ed85a353923da29"
+  },
+  "walk_00": {
+   "file": "03_walk/00.png",
+   "sha256": "29e7974c87250885d62418e69d7eea7d2ca9cdc7a34b2f3867dce3f615bf76f5"
+  },
+  "walk_01": {
+   "file": "03_walk/01.png",
+   "sha256": "aef6b51bbd462f1f0289d0d7ac393a81b4685787f8644c8470945eaaabe01a87"
+  },
+  "walk_02": {
+   "file": "03_walk/02.png",
+   "sha256": "eb23d1359f184f8b74310ed80899d5f607edd2cd4a1de980343ac280d956a8ca"
+  },
+  "walk_03": {
+   "file": "03_walk/03.png",
+   "sha256": "217003640acf4436e602ce801f74e40f0f0b83314c3d7a6f27f0bc4f41021585"
+  },
+  "walk_04": {
+   "file": "03_walk/04.png",
+   "sha256": "abcf9ef58c3b181cb54dddabaa08eac4731d97293d790ba9891a79747018cbcc"
+  },
+  "walk_05": {
+   "file": "03_walk/05.png",
+   "sha256": "845c0e20d87627f0e67414954559c1c1cd07c2644ff658f8884b870c9978cb8f"
+  },
+  "walk_06": {
+   "file": "03_walk/06.png",
+   "sha256": "8f32d38365b24726f4882510b21786bfb9f95578cb383e5b90e7ae1e96f1c766"
+  },
+  "walk_07": {
+   "file": "03_walk/07.png",
+   "sha256": "2cd6a013f35bf253c6af6196433c409d35c6b689f10d9707a1702f893f9f77a0"
+  },
+  "walk_08": {
+   "file": "03_walk/08.png",
+   "sha256": "d70889d16ad6f7ca6f295a135278553bb2378f17bf44a868a0049ac0e66d737e"
+  },
+  "walk_09": {
+   "file": "03_walk/09.png",
+   "sha256": "9e2120d72c833ef0e1cd36099cd01b57805af3ac7de3a5ca4ca5891acda3a7d7"
+  },
+  "walk_10": {
+   "file": "03_walk/10.png",
+   "sha256": "81059b788eee2b03c511c7e6b6ea138de7d502d077fd760a878960215b585a4f"
+  },
+  "walk_11": {
+   "file": "03_walk/11.png",
+   "sha256": "0979c7a6fcf4a341ef383ad4e21949d86912cfb694f48ca7927c9a3e14830625"
+  },
+  "walk_12": {
+   "file": "03_walk/12.png",
+   "sha256": "9cb99e061f81bbf38565993e0b44ccbad71ca67b3e770bcc946a2cc63e954a7b"
+  },
+  "walk_13": {
+   "file": "03_walk/13.png",
+   "sha256": "69f5fa517bd9123eef5c04b3466940a4e42818bbef404e18485a1da832e37fe3"
+  },
+  "walk_14": {
+   "file": "03_walk/14.png",
+   "sha256": "c530f51382812acbe24f24ed5ec7c20e7d7afad3a730dc81218912dfef9ac574"
+  },
+  "walk_15": {
+   "file": "03_walk/15.png",
+   "sha256": "cdac0194c3237d1d11507462e86a145d6abfcddb85b13961f67a9246bb5683a2"
+  },
+  "walk_16": {
+   "file": "03_walk/16.png",
+   "sha256": "7a02bf269c1778d66943cece6fa504377133a95b4a1a208f375654a772791351"
+  },
+  "walk_17": {
+   "file": "03_walk/17.png",
+   "sha256": "cd12b13401bcf876c8842cc9b691a99dde2af6fe41920fce8c09087480707de7"
+  },
+  "walk_18": {
+   "file": "03_walk/18.png",
+   "sha256": "9dd26e3e74124f56c1d86a4697f6a9ebe9e00793c870fbe1ff9cf5ebd9591fa6"
+  },
+  "walk_19": {
+   "file": "03_walk/19.png",
+   "sha256": "f271ad1e7fe7bf0240fdd89f9ad435cc1e7e8efee4ea0b468f2f3975bf2453bd"
+  }
+ },
+ "derived": {
+  "assets/monsters/2p5d/myurol.webp": "ee0a3e747fd0eb9364db122490fb1375ed3a5a3a18382b4b0e0d9e016ef7dc7a",
+  "assets/battle/idle/idle_myurol.webp": "d1c4eb312391a11fc9ff6b7cc56ce89f36e132b44801c8ace080a996f76dbe39",
+  "assets/monsters/reactions_1012/myurol/01_joy.webp": "9d0380d0c5044596ef68885346fa8ac4291c4121936e96a027bb413a41566ca3",
+  "assets/monsters/reactions_1012/myurol/02_surprise.webp": "af519057bdac96850e2a228001dc2606b09b3aa498e745b625c0de3fcaeec063",
+  "assets/monsters/reactions_1012/myurol/03_sad.webp": "7c58c35dfedc274bd86e74f3a37b0794a634b4e29d913a9bf6245bcc96a8701c",
+  "assets/monsters/reactions_1012/myurol/04_eat.webp": "f5aff88ac5b43f05c7e1d91361db13237696979b1fabe9b0945fda74981b455a",
+  "assets/monsters/reactions_1012/myurol/05_hit.webp": "1573f7365723a8232c66f1a1554b44d29566890cb45ab381361b1d4c755375e4",
+  "assets/monsters/reactions_1012/myurol/06_dodge.webp": "9ff7c54ed4e9ee042d17b486e8663b9888d03828b8532606a5cb37c677687887",
+  "assets/moves/cards_1014/myurol/01_shippo_uchi.webp": "a03e8a853f386e9f83fa4ad0feb6d1c175ab7f1213967e0868f8eca9c38179b7",
+  "assets/moves/cards_1014/myurol/02_mizudeppo.webp": "8113c5c80684230501923bf57811fba16c7efe1393b4626f850d99ae5ec8af40",
+  "assets/moves/cards_1014/myurol/03_tackle.webp": "a835bc320816da4b0a5e636225dc06c143bc62eb48e1640ec458e0b41836d545",
+  "assets/moves/cards_1014/myurol/04_awa_no_mamori.webp": "969a96f44d1ea6cfb3571efa53347f623fc218624efe010edc66863a648f6be2",
+  "assets/moves/cards_1014/myurol/05_tail_swing.webp": "16be728908959c683789f869c7fade41c9dbf98926ffb71d7d42ec890146386e",
+  "assets/moves/cards_1014/myurol/06_aqua_bubble.webp": "c0cc61b92277e2f09933bed60e6d2f64abc28637408aaaf32552de8922b5a208",
+  "assets/moves/cards_1014/myurol/07_bubble_snipe.webp": "99ec44759241bcf4205fb0ecddb10b20f054bd12a83888b1919454a140d9be81",
+  "assets/moves/cards_1014/myurol/08_suisui_step.webp": "914858807fd9f416ee7cf0948fa957cf31e322bc383546cc8d02ff6f580e45cb",
+  "assets/moves/cards_1014/myurol/09_spiral_tail.webp": "e47005cbcc49a137497a6889b2cc554e71a299424875e6a61d135c1126c3c513",
+  "assets/moves/cards_1014/myurol/10_marine_stream.webp": "ba70e3df5a80fb94f3977cfbbae89334c120cbde2b3cf8622bd490a6d04ecd48",
+  "assets/tournament/icons_1015/icon_myurol.webp": "c482dfc8f00e4cecc799429af4eae737c9be0e79158a6a6993f33c73cf23b94b",
+  "assets/tournament/vs_1017/vs_myurol.webp": "2e825e4477264965d67ffed3c4c6793893ab5f385aba700902c6ae0f3d45c679",
+  "assets/monsters/compare_1015/myurol.webp": "835d0017d499ef0695e760f74c88df24b717d362a448b558ce24368fd17468ea",
+  "assets/audio/voice/monster_1017/myurol_normal.ogg": "05ddc8c5f14bea06a9ce0c815433f1ebced5db449afbb55e9b44d7a6bf4a3e32",
+  "assets/audio/voice/monster_1017/myurol_normal.m4a": "f37805c75c23364f4dde5e02d8ff127dc9513341107dbfec680774b72bcfb768",
+  "assets/audio/voice/monster_1017/myurol_sad.ogg": "e17cf711dc679d93aedb920003a3ee426efe146173da142f260611377e5ccaa6",
+  "assets/audio/voice/monster_1017/myurol_sad.m4a": "1571b6878bb24b10b514da385639b837d3743ccbcc3b367d9bd677ab8fb83cf6",
+  "assets/monsters/walk_1018/myurol/front_1.webp": "ee44d862676a4f5f80895e25762f13a093e06720e39c4f6abf3bfc67123e6ccc",
+  "assets/monsters/walk_1018/myurol/front_2.webp": "119644971981780286cea486243e85baa239928d9b5729d0a7f3a1dde4a7d776",
+  "assets/monsters/walk_1018/myurol/front_3.webp": "19f936d355bfc207cb3bc4e8a2938f50f2c46a7b1ab8531f5d4010b0562e3e89",
+  "assets/monsters/walk_1018/myurol/front_4.webp": "3b9db321da509cbc72e812099aa04970b08ec8e94ffaec6e95c5a192e922d652",
+  "assets/monsters/walk_1018/myurol/back_1.webp": "218e4524bef743d8fbbdbed2cd1b1011f1d7e2de43b8af64928389d824c61c8f",
+  "assets/monsters/walk_1018/myurol/back_2.webp": "9c783ac5e3cbd428b8d5b0e3949fdc3786c0a8b77143380bc6d762214096a3a1",
+  "assets/monsters/walk_1018/myurol/back_3.webp": "1dbbcc257a6e0e869e30e883ad61896413c725123ce7f4204271db2257c5905e",
+  "assets/monsters/walk_1018/myurol/back_4.webp": "248eb5b9f982e2b8c12a6af19e3ece7651a164de5e8b18f9e5c2c1794a3ef20a",
+  "assets/monsters/walk_1018/myurol/side_1.webp": "2662d4ede6b3b26c7b971a9696cbb622d4100cc918ad2f0a9d458b1d6f4a035e",
+  "assets/monsters/walk_1018/myurol/side_2.webp": "d353fdca375d42b0c13bb31bc8e12dcc8f15cbcacff119e0633a2f6f1a3f4bf9",
+  "assets/monsters/walk_1018/myurol/side_3.webp": "4a995410c023dad6b458f57d79be64a4ce1c993eb483486f6c7b1c5889f5cb8b",
+  "assets/monsters/walk_1018/myurol/side_4.webp": "0a19e457b8aaf99edfe7ff4a3853002f2a831004a4daa268b0721ce48fbe74e3",
+  "assets/monsters/walk_1018/myurol/backd_1.webp": "b1dee9a05511a73cf8314868d2fb8a3694a48c171cccc8bf6edab03547b2ad91",
+  "assets/monsters/walk_1018/myurol/backd_2.webp": "72c96e7ec4c1799ef6fa6c23f2c62d194f2acb8d481fab668d5eb3cb42446c8e",
+  "assets/monsters/walk_1018/myurol/backd_3.webp": "5c1066bebf9fbeb505368b984416da77f46f7a2ab487b14810a98a8abf449773",
+  "assets/monsters/walk_1018/myurol/backd_4.webp": "c86bff99e34117d8939e3c15ab90892a8f0fddf165f211ed62ed1598dee215b5",
+  "assets/monsters/walk_1018/myurol/frontd_1.webp": "979f02fa2c5c19eaaa067b0e7a0b1a6ef5a71cf3a0633b1f5e2ab40f29031d58",
+  "assets/monsters/walk_1018/myurol/frontd_2.webp": "442b30f96c8276a1a8c6e6df2f2b259f7e84b602fb60fb95a9ffda48dbdde187",
+  "assets/monsters/walk_1018/myurol/frontd_3.webp": "9d2b40f3e3292001285f6bdc428c02b8c30b872c511096c8128c495fc3dfd7b3",
+  "assets/monsters/walk_1018/myurol/frontd_4.webp": "a309373b69498a13c18b8852b255610b0e53f249af3a91c9dce93fed9c015338"
+ }
+}

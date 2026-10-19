@@ -157,3 +157,33 @@
 | razuck | assets/monsters/walk_1018/razuck/frontd_2.webp | ca4a7aad0de08f34e9e5cb1889c76bbf3e8f52377e5b01d120b341c5811ee760 | 233×285 | 1 | 0 |
 | razuck | assets/monsters/walk_1018/razuck/frontd_3.webp | 1fb3f438be088c6bb34f638be8194d467946d2e27e3b16ffbde06be1fff3aa3a | 245×284 | 1 | 0 |
 | razuck | assets/monsters/walk_1018/razuck/frontd_4.webp | a6ba647358c62d20fb647c698fbceff7f975db44a4073c3c1306a66abf1f4204 | 243×287 | 1 | 0 |
+
+## ミュロル（2026-10-19・登録のみ・未解禁＝QA 試遊だけ）
+
+- 正式納品「ミュロル 開発本体向け 正式素材仕様一式」PART01〜07（2026-10-19・ユーザー承認済みの仕様マスター＋採用状態一覧）。原本（PNG／MP3）はリポジトリに置かない＝表示用の派生だけ。道具＝tools/myurol1019/derive_art.py（PIL＋numpy・数値は tools/myurol1019/derive_art.json）
+- 原本＝PART03 の 03_walk/00〜19.png（512×512 RGBA の透過 PNG 20枚。ほかの7体の白背景 JPEG シートとは違う＝背景の切り抜きはしない）。00〜03 正面・04〜07 背面・08〜11 右横・12〜15 右斜め後ろ・16〜19 右斜め前（左は盤で反転）。一覧シート・プレビュー（JPG・GIF）は取り込まない。
+- ほかの7体と同じ置き方：原寸のまま（縮小・引き伸ばしなし）・同じ正方形のキャンバス 440×440・足もとを基線（下 4.5%）にそろえる・横はコマの中心に対する位置を保つ（cell-center）。h 1.149・foot 0.045（tools/walk1018/derive.json → js/qa/walk5-1016.js の SPEC1018）。本編の盤は番号 → キー（keyOf(8)＝null）で引けない＝出ない。QA の「新歩行（8方向）」で確認。
+- tools/walk1018/derive.py をやり直すと derive.json・frames.json・この README が7体だけで書き直される＝そのあと tools/myurol1019/derive_art.py をもう一度実行する。
+
+| 原本 | sha256（原本） | 派生 | sha256（派生） | 体の幅×高さ |
+|---|---|---|---|---|
+| 03_walk/00.png | 29e7974c87250885d62418e69d7eea7d2ca9cdc7a34b2f3867dce3f615bf76f5 | assets/monsters/walk_1018/myurol/front_1.webp | ee44d862676a4f5f80895e25762f13a093e06720e39c4f6abf3bfc67123e6ccc | 408×383 |
+| 03_walk/01.png | aef6b51bbd462f1f0289d0d7ac393a81b4685787f8644c8470945eaaabe01a87 | assets/monsters/walk_1018/myurol/front_2.webp | 119644971981780286cea486243e85baa239928d9b5729d0a7f3a1dde4a7d776 | 378×383 |
+| 03_walk/02.png | eb23d1359f184f8b74310ed80899d5f607edd2cd4a1de980343ac280d956a8ca | assets/monsters/walk_1018/myurol/front_3.webp | 19f936d355bfc207cb3bc4e8a2938f50f2c46a7b1ab8531f5d4010b0562e3e89 | 396×377 |
+| 03_walk/03.png | 217003640acf4436e602ce801f74e40f0f0b83314c3d7a6f27f0bc4f41021585 | assets/monsters/walk_1018/myurol/front_4.webp | 3b9db321da509cbc72e812099aa04970b08ec8e94ffaec6e95c5a192e922d652 | 382×381 |
+| 03_walk/04.png | abcf9ef58c3b181cb54dddabaa08eac4731d97293d790ba9891a79747018cbcc | assets/monsters/walk_1018/myurol/back_1.webp | 218e4524bef743d8fbbdbed2cd1b1011f1d7e2de43b8af64928389d824c61c8f | 408×335 |
+| 03_walk/05.png | 845c0e20d87627f0e67414954559c1c1cd07c2644ff658f8884b870c9978cb8f | assets/monsters/walk_1018/myurol/back_2.webp | 9c783ac5e3cbd428b8d5b0e3949fdc3786c0a8b77143380bc6d762214096a3a1 | 320×321 |
+| 03_walk/06.png | 8f32d38365b24726f4882510b21786bfb9f95578cb383e5b90e7ae1e96f1c766 | assets/monsters/walk_1018/myurol/back_3.webp | 1dbbcc257a6e0e869e30e883ad61896413c725123ce7f4204271db2257c5905e | 401×334 |
+| 03_walk/07.png | 2cd6a013f35bf253c6af6196433c409d35c6b689f10d9707a1702f893f9f77a0 | assets/monsters/walk_1018/myurol/back_4.webp | 248eb5b9f982e2b8c12a6af19e3ece7651a164de5e8b18f9e5c2c1794a3ef20a | 346×330 |
+| 03_walk/08.png | d70889d16ad6f7ca6f295a135278553bb2378f17bf44a868a0049ac0e66d737e | assets/monsters/walk_1018/myurol/side_1.webp | 2662d4ede6b3b26c7b971a9696cbb622d4100cc918ad2f0a9d458b1d6f4a035e | 404×303 |
+| 03_walk/09.png | 9e2120d72c833ef0e1cd36099cd01b57805af3ac7de3a5ca4ca5891acda3a7d7 | assets/monsters/walk_1018/myurol/side_2.webp | d353fdca375d42b0c13bb31bc8e12dcc8f15cbcacff119e0633a2f6f1a3f4bf9 | 393×309 |
+| 03_walk/10.png | 81059b788eee2b03c511c7e6b6ea138de7d502d077fd760a878960215b585a4f | assets/monsters/walk_1018/myurol/side_3.webp | 4a995410c023dad6b458f57d79be64a4ce1c993eb483486f6c7b1c5889f5cb8b | 408×296 |
+| 03_walk/11.png | 0979c7a6fcf4a341ef383ad4e21949d86912cfb694f48ca7927c9a3e14830625 | assets/monsters/walk_1018/myurol/side_4.webp | 0a19e457b8aaf99edfe7ff4a3853002f2a831004a4daa268b0721ce48fbe74e3 | 394×311 |
+| 03_walk/12.png | 9cb99e061f81bbf38565993e0b44ccbad71ca67b3e770bcc946a2cc63e954a7b | assets/monsters/walk_1018/myurol/backd_1.webp | b1dee9a05511a73cf8314868d2fb8a3694a48c171cccc8bf6edab03547b2ad91 | 395×343 |
+| 03_walk/13.png | 69f5fa517bd9123eef5c04b3466940a4e42818bbef404e18485a1da832e37fe3 | assets/monsters/walk_1018/myurol/backd_2.webp | 72c96e7ec4c1799ef6fa6c23f2c62d194f2acb8d481fab668d5eb3cb42446c8e | 395×343 |
+| 03_walk/14.png | c530f51382812acbe24f24ed5ec7c20e7d7afad3a730dc81218912dfef9ac574 | assets/monsters/walk_1018/myurol/backd_3.webp | 5c1066bebf9fbeb505368b984416da77f46f7a2ab487b14810a98a8abf449773 | 408×337 |
+| 03_walk/15.png | cdac0194c3237d1d11507462e86a145d6abfcddb85b13961f67a9246bb5683a2 | assets/monsters/walk_1018/myurol/backd_4.webp | c86bff99e34117d8939e3c15ab90892a8f0fddf165f211ed62ed1598dee215b5 | 403×339 |
+| 03_walk/16.png | 7a02bf269c1778d66943cece6fa504377133a95b4a1a208f375654a772791351 | assets/monsters/walk_1018/myurol/frontd_1.webp | 979f02fa2c5c19eaaa067b0e7a0b1a6ef5a71cf3a0633b1f5e2ab40f29031d58 | 403×345 |
+| 03_walk/17.png | cd12b13401bcf876c8842cc9b691a99dde2af6fe41920fce8c09087480707de7 | assets/monsters/walk_1018/myurol/frontd_2.webp | 442b30f96c8276a1a8c6e6df2f2b259f7e84b602fb60fb95a9ffda48dbdde187 | 389×348 |
+| 03_walk/18.png | 9dd26e3e74124f56c1d86a4697f6a9ebe9e00793c870fbe1ff9cf5ebd9591fa6 | assets/monsters/walk_1018/myurol/frontd_3.webp | 9d2b40f3e3292001285f6bdc428c02b8c30b872c511096c8128c495fc3dfd7b3 | 408×333 |
+| 03_walk/19.png | f271ad1e7fe7bf0240fdd89f9ad435cc1e7e8efee4ea0b468f2f3975bf2453bd | assets/monsters/walk_1018/myurol/frontd_4.webp | a309373b69498a13c18b8852b255610b0e53f249af3a91c9dce93fed9c015338 | 390×350 |

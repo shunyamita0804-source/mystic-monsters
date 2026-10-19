@@ -30,3 +30,14 @@
 |---|---|---|---|---|---|---|---|---|
 | cry_kalshell_normal | カルシェル | カルシェル公式ボイス.mp3 | c7a0f955ae145e02eb52c7dfcf47bfe52868ca1fc3df7e3a3c481102af5f6670 | -16.5 | -3.5 | 1.189 | ced3fa7067bf471a3a27e1f9a3cc7320f1d4bd2324f3dee997eb854139d35a73 | 42b77e8ce2f4a1aedf6197239aa86206b3ead6dbe6aa53af204dbf2b9709bd12 |
 | cry_kalshell_sad | カルシェル | カルシェル悲しい.mp3 | 7c182b58c5bc3b44b1a40ecaf944f4364221b6561b02c3e4063328a4ccf8f7ad | -18.9 | -2.3 | 1.109 | d357588d6582e26d2f5b8aead6da1f78df6e3cb2e092b3567b73c969af10cdb9 | 274b87fa638abed1f10c9a12f05927c3e871a16ef0134bb79dcbaac86d50c708 |
+
+## ミュロル（2026-10-19・登録のみ・未解禁＝QA 試遊だけ）
+
+- 正式納品「ミュロル 開発本体向け 正式素材仕様一式」PART01〜07（2026-10-19・ユーザー承認済みの仕様マスター＋採用状態一覧）。原本（PNG／MP3）はリポジトリに置かない＝表示用の派生だけ。道具＝tools/myurol1019/derive_art.py（PIL＋numpy・数値は tools/myurol1019/derive_art.json）
+- MP3 → OGG（q5）＋M4A（128k）。gain＝normal −15／sad −18 LUFS の目安（sad の持ち上げは +3dB まで・ピーク −1 dBFS 以下）。js/audio/audio-registry.js の `cry_myurol_*`・js/audio/audio-manager.js の `CRY_KEYS[8]`。本編の場面には出ない（未解禁）＝QA の試聴だけ。
+- 通常／悲しいの対応は仕様マスター §5（ファイル名の「#3」「#1」ではなくマスターの記載で決めた）。2本とも同じ大きさ（25,389 バイト・約1.03秒）だが中身は別（sha256 が違う）。
+
+| id | 種族 | 原本 | sha256（原本） | I（LUFS） | ピーク（dBFS） | gain | sha256（OGG） | sha256（M4A） |
+|---|---|---|---|---|---|---|---|---|
+| cry_myurol_normal | ミュロル | A_tiny_fantasy_aquat_#3-1792332367994.mp3 | c15954c7172e5c01209c028f610b9edc7629c2a8c212dae8d3e2cfb63f6ac01c | -19.9 | -11.5 | 1.758 | 05ddc8c5f14bea06a9ce0c815433f1ebced5db449afbb55e9b44d7a6bf4a3e32 | f37805c75c23364f4dde5e02d8ff127dc9513341107dbfec680774b72bcfb768 |
+| cry_myurol_sad | ミュロル | The_same_tiny_fantas_#1-1792332426355.mp3 | 7d6f9d559b355549ec89ead755aa5681efda947301ab5af29ed85a353923da29 | -22.6 | -10.5 | 1.413 | e17cf711dc679d93aedb920003a3ee426efe146173da142f260611377e5ccaa6 | 1571b6878bb24b10b514da385639b837d3743ccbcc3b367d9bd677ab8fb83cf6 |
