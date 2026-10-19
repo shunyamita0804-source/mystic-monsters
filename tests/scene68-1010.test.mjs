@@ -91,5 +91,5 @@ test('S68-06：rfZones=all／phub／無指定・読み込む JS は増やして�
   assert.match(v, /const ZON = ZMODE === 'phub' \|\| ZMODE === 'all', ZALL = ZMODE === 'all'/);
   assert.match(v, /scene68_1010\/scene_index_68\.json/);
   assert.doesNotMatch(v, /\bfetch\s*\(/);
-  assert.equal((rd('index.html').match(/js\/proto\//g) || []).length, 10, '2026-10-18 ch3-routes（Chapter 3）を追加・data・routes・core・play・zones・world・ch2-routes・ch2-world・view の9本（2026-10-10 world・2026-10-14 routes＝Chapter 1 B／C 独立ルート・2026-10-15 ch2-routes＝Chapter 2 A／B／C 設計案の試作データを追加）・2026-10-15 追補 ch2-world＝Chapter 2 設計案の海の世界の描画');
+  assert.equal((rd('index.html').match(/js\/proto\//g) || []).length, 12, '2026-10-19 Chapter 4 の ch4-routes・ch4-world を追加・2026-10-18 ch3-routes（Chapter 3）を追加・data・routes・core・play・zones・world・ch2-routes・ch2-world・view の9本（2026-10-10 world・2026-10-14 routes＝Chapter 1 B／C 独立ルート・2026-10-15 ch2-routes＝Chapter 2 A／B／C 設計案の試作データを追加）・2026-10-15 追補 ch2-world＝Chapter 2 設計案の海の世界の描画');
 });

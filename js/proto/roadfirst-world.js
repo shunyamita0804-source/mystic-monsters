@@ -135,7 +135,8 @@
   // 2026-10-14 Chapter 1 B／C 独立ルート：道のデータに art（景観の区域 terrain・岩峰 peaks・目印 landmarks）があればそれを使う（js/proto/roadfirst-routes.js の B／C）。
   //   無ければ A の定義（上の TERRAIN・ART.landmarks・ART.peaks.at）＝A の盤は従来と同じ。目印の file が './' で始まるときはそのままの場所（B／C の目印は assets/fields/ch1a/landmarks_bc_1014/）
   const terrainOf = (D) => (D && D.art && D.art.terrain) || TERRAIN;
-  const lmOf = (D) => (D && D.art && D.art.sea3d && root.MMRF_SEA && root.MMRF_SEA.lm ? root.MMRF_SEA.lm(D) : null) || (D && D.art && D.art.landmarks) || ART.landmarks;   // 2026-10-16 Chapter 2：正式の目印（js/proto/ch2-world.js）
+  const plugOf = (D) => (D && D.art && D.art.sea3d && root.MMRF_SEA ? root.MMRF_SEA : D && D.art && D.art.volcano3d && root.MMRF_VOLC ? root.MMRF_VOLC : null);   // 2026-10-19：Chapter 2＝海（MMRF_SEA）・Chapter 4＝火山（js/proto/ch4-world.js の MMRF_VOLC）
+  const lmOf = (D) => (plugOf(D) && plugOf(D).lm ? plugOf(D).lm(D) : null) || (D && D.art && D.art.landmarks) || ART.landmarks;   // 2026-10-16 Chapter 2：正式の目印（js/proto/ch2-world.js）
   const peaksBase = (D) => (D && D.art && D.art.peaks) || ART.peaks.at;
   const artUrl = (base, f) => (/^\.\//.test(f) ? f : base + f);
   const ROAD_LAND = 18;   // 道の中心から谷のふちまで（単位）＝道の両側に残す陸
@@ -193,16 +194,17 @@
     const bb = doc.createElement('div'); bb.className = 'rfw-bb';
     const title = doc.createElement('div'); title.className = 'rfw-title';
     const TT = D.art && D.art.title;   // 2026-10-15 Chapter 2 の試作（js/proto/ch2-routes.js）だけ題字を持つ。無ければ従来どおり Chapter 1
-    title.innerHTML = TT ? `<small>${TT.small}</small>${TT.name}<em>全体マップ${D.art && D.art.sky ? '' : '（設計案・試作）'}</em>` : '<small>CHAPTER 1</small>はじまりの草原<em>全体マップ</em>';
+    title.innerHTML = TT ? `<small>${TT.small}</small>${TT.name}<em>全体マップ${D.art && (D.art.sky || D.art.volcano3d) ? '' : '（設計案・試作）'}</em>` : '<small>CHAPTER 1</small>はじまりの草原<em>全体マップ</em>';
     wrap.appendChild(plane); wrap.appendChild(bb); wrap.appendChild(title); host.appendChild(wrap);
     const VIS = visualOf(o); wrap.dataset.visual = VIS.key;   // 2026-10-14 Chapter 1 B／C：景観のパターン（A＝従来）
     const SK = skinOf(o); if (SK) wrap.dataset.skin = SK.key;   // 2026-10-14 A／B／C 高品質化：絵の差し替え（無ければ従来の絵）
     // 2026-10-15 Chapter 2 A／B／C 設計案の試作（未承認）：道のデータが art.sea3d を持つときだけ海・海底の盆地・螺旋塔を js/proto/ch2-world.js（MMRF_SEA）で描く。
     //  Chapter 1 のデータには無い＝下の SEA の分かれ道はすべて通らない（従来どおり）
-    const SEA = D && D.art && D.art.sea3d && root.MMRF_SEA ? root.MMRF_SEA : null;
-    const ELEV = (D && D.art && D.art.elev) || null, hOf = (id) => (ELEV && ELEV[id]) || 0;
-    const scl = (s) => (SEA ? `scale3d(${s},${s},${s})` : `scale(${s})`);   // 高さのある子（海底・塔）は z も同じ倍率で
-    if (SEA) { wrap.classList.add('sea'); plane.style.transformStyle = 'preserve-3d'; }
+    //  2026-10-19 Chapter 4：道のデータが art.volcano3d を持つときは火山（js/proto/ch4-world.js の MMRF_VOLC）。火山の盤は平ら（SEA.flat）＝高さ（art.elev）でマスを持ち上げない・平面は preserve-3d にしない
+    const SEA = plugOf(D), SEA3 = !!(SEA && !SEA.flat);
+    const ELEV = (SEA3 && D.art.elev) || (!SEA && D && D.art && D.art.elev) || null, hOf = (id) => (ELEV && ELEV[id]) || 0;
+    const scl = (s) => (SEA3 ? `scale3d(${s},${s},${s})` : `scale(${s})`);   // 高さのある子（海底・塔）は z も同じ倍率で
+    if (SEA3) { wrap.classList.add('sea'); plane.style.transformStyle = 'preserve-3d'; }
     if (D && D.art && D.art.sky) wrap.classList.add('sky');   // 2026-10-18 Chapter 3（空の世界）
     const GA = (SEA && SEA.goal) || ART.goal;   // 大会会場の絵（2026-10-16 Chapter 2 は正式の ocean_arena）
     css(doc);
@@ -212,7 +214,7 @@
     const chunks = [], art = {};
     // 2026-10-16 Chapter 2：海の世界は平面が preserve-3d（海底・塔の板のため）＝地面の区画が1枚ずつ別の 3D の層になり、層ごとの解像度の違いで区画の境目が直線に見えていた。
     //  地面の区画は平らな入れ物（.rfw-gnd）にまとめて1枚の層にする（Chapter 1 は平面が平ら＝従来どおり平面へ直接）
-    let gnd = null; if (SEA) { gnd = doc.createElement('div'); gnd.className = 'rfw-gnd'; Object.assign(gnd.style, { position: 'absolute', left: '0px', top: '0px', width: WORLD.w + 'px', height: WORLD.h + 'px' }); plane.appendChild(gnd); }
+    let gnd = null; if (SEA3) { gnd = doc.createElement('div'); gnd.className = 'rfw-gnd'; Object.assign(gnd.style, { position: 'absolute', left: '0px', top: '0px', width: WORLD.w + 'px', height: WORLD.h + 'px' }); plane.appendChild(gnd); }
     for (let y = 0; y < H; y += o.chunk) for (let x = 0; x < W; x += o.chunk) {
       // 区画どうしを 1px 重ねる（境目に細い線が出ないように）
       const c = doc.createElement('canvas'); const cw = Math.min(o.chunk, W - x) + 2, ch = Math.min(o.chunk, H - y) + 2;
@@ -260,7 +262,7 @@
     //  カメラの倍率（最大 5.6）では描き直されない＝近くの区画（CSS 64px・canvas 642px）は約 190px に縮めて描かれてから 5.6倍に引き伸ばされていた（平面を flat にすると直る＝切り分けで確認）。
     //  → 海の世界の近くの区画は平面へ直接置き、CSS の箱を canvas の画素 ÷ 画素比にして transform で縮める（js/qa/road-1016.js の big）＝canvas の画素のまま合成。
     //  ?qaRoadHiBig=0 で従来（比較用）。.rfw-gnd（平らな入れ物）の中では箱を大きくしても入れ物の面に平たくまとめられる＝平面へ直接置く
-    const BIG = SEA && !/[?&]qaRoadHiBig=0/.test((root.location && root.location.search) || '');
+    const BIG = SEA3 && !/[?&]qaRoadHiBig=0/.test((root.location && root.location.search) || '');
     const HI = QR ? QR.hiLayer({ doc, parent: BIG ? plane : (gnd || plane), big: BIG, WORLD, project, S: null, paintAt: (g, bx) => { if (SEA) { SEA.ground(g, D, bx, art, HELP); SEA.roads(g, D, o, art, bx, HELP); } else { drawGround(g, D, bx[0], bx[1], bx[2], bx[3], art); drawTerrain(g, D, o, art, bx); drawRoads(g, D, o, art, bx); } } }) : null;
     if (veil) plane.appendChild(veil);
     // マス（全地点・立てて置く）とモンスター
@@ -298,7 +300,7 @@
       Promise.all([load3('ground', ART.ground.file), load3('road', ART.road.file), o.art.road === 'pattern' ? null : load3('strip', ART.strip.file),
         load(T.valley.file), load2('water', T.water.file), load(T.cloud.file), ...EK.map((k) => load(T.edges[k].file)), SEA ? SEA.load(load, base) : null]).then(([gi, ri, si, vi, wi, ci, ...ei]) => {
         if (S.dead) return; art.ground = gi; art.road = ri; art.strip = si;
-        if (SEA) { art.sea = ei.pop(); vi = null; S.sea3d = SEA.build3d({ doc, plane, D, o, art, H: HELP, base }); }   // 2026-10-15 Chapter 2：谷・雲海・森は使わない（海・海底の盆地・塔）
+        if (SEA) { art[SEA.flat ? 'volc' : 'sea'] = ei.pop(); vi = null; S.sea3d = SEA.build3d({ doc, plane, D, o, art, H: HELP, base }); }   // 2026-10-15 Chapter 2：谷・雲海・森は使わない（海・海底の盆地・塔）
         else ei.pop();
         if (ri && ri._sk) { art.roadTile = SK ? SK.roadTile : 57.5; art.discCenter = SK ? !!SK.discCenter : true; }   // R の石の大きさ＝道の帯の石にそろえる
         if (vi) { art.terrain = terrainMasks(doc, D, o); art.valley = vi; art.water = wi; art.cloud = ci; art.edges = {}; EK.forEach((k, i) => { art.edges[k] = ei[i]; });
@@ -425,7 +427,7 @@
         }
       }
       if (S.mon) {
-        if (S.sea3d) S.sea3d.mon(S.mon[2]);   // 2026-10-15 Chapter 2：海底へ潜ると盆地の上の海面が薄くなる
+        if (S.sea3d) S.sea3d.mon(S.mon[2], S.mon);   // 2026-10-15 Chapter 2：海底へ潜ると盆地の上の海面が薄くなる
         const q = project(c, S.mon[0], S.mon[1], S.mon[2]);
         const w = o.monRatio > 0 ? Math.max(c.s < 1 ? 14 : 30, Math.max(c.s < 1 ? 2 : o.tilePx[0], Math.min(o.tilePx[1], o.tileW * c.s * q.k)) * o.monRatio)   // 2026-10-12：その地点のマスの幅 × 倍率（マスと同じ式）
           : Math.max(c.s < 1 ? 14 : 40, Math.min(100, 24 * c.s * q.k));

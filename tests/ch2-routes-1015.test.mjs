@@ -98,7 +98,7 @@ test('C2-05：隔離＝本編と Chapter 1 の試作は ch2-routes を参照し�
   assert.doesNotMatch(rd('js/proto/ch2-routes.js'), /mr4v\d/);
   // 2026-10-15 追補：海の世界の描画（MMRF_SEA）は道のデータが art.sea3d を持つときだけ＝Chapter 1 のデータには無い
   assert.ok(!(A1.art && A1.art.sea3d), 'Chapter 1 A には sea3d が無い');
-  const W = rd('js/proto/roadfirst-world.js'); assert.match(W, /const SEA = D && D\.art && D\.art\.sea3d && root\.MMRF_SEA \? root\.MMRF_SEA : null;/);
+  const W = rd('js/proto/roadfirst-world.js'); assert.match(W, /const plugOf = \(D\) => \(D && D\.art && D\.art\.sea3d && root\.MMRF_SEA \? root\.MMRF_SEA : D && D\.art && D\.art\.volcano3d && root\.MMRF_VOLC \? root\.MMRF_VOLC : null\);/);   // 2026-10-19：Chapter 4 の火山（volcano3d）も同じ差し込み口
   assert.match(rd('js/proto/roadfirst-routes.js'), /"route":"B"/); assert.doesNotMatch(rd('js/proto/roadfirst-routes.js'), /sea3d/, 'Chapter 1 B／C にも sea3d が無い');
   const html = rd('index.html'); assert.equal((html.match(/js\/proto\/ch2-routes\.js/g) || []).length, 1);
   assert.ok(html.indexOf('js/proto/ch2-routes.js') < html.indexOf('js/proto/roadfirst-view.js'), 'データは view より先に読む');

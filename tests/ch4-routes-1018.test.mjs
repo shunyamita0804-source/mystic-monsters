@@ -134,7 +134,10 @@ test('C4-06：設計資料（docs/ch4/graph_*.json・summary.json・RESULTS.md�
   for (const k of ['Ch4-A', 'Ch4-B', 'Ch4-C']) { assert.equal(sim.out[k].runs, 24000); assert.equal(sim.out[k].stuck, 0); assert.equal(sim.out[k].guardOut, 0); assert.equal(sim.out[k].nodes, Object.keys(R[k.slice(-1)].nodes).length, k + '：sim の結果は今の道のデータで回したもの'); }
 });
 
-test('C4-07：隔離（本編は ch4-routes を読み込まない）', () => {
-  assert.ok(!/ch4-routes/.test(rd('index.html')), 'index.html');
-  for (const dir of ['js/chapter', 'js/chapter/configs', 'js/phase8']) for (const f of readdirSync(path.join(ROOT, dir)).filter((x) => x.endsWith('.js'))) assert.ok(!/MMRF_CH4|ch4-routes/.test(rd(`${dir}/${f}`)), `${dir}/${f}`);
+test('C4-07：本編の読み込み（2026-10-19 から本編の Chapter 4＝この道のデータ）：index.html が道・描画・進行を読み、進行は MMRF_CH4 だけを道に使う', () => {
+  const h = rd('index.html'), i = (f) => h.indexOf(f);
+  for (const f of ['js/proto/ch4-routes.js', 'js/proto/ch4-world.js', 'js/chapter/world-driver-ch4.js']) assert.ok(i(f) > 0, f);
+  assert.ok(i('js/proto/ch4-routes.js') < i('js/chapter/world-driver-ch4.js') && i('js/chapter/world-driver.js') < i('js/chapter/world-driver-ch4.js'), '道のデータ → make → Chapter 4 の進行の順');
+  assert.ok(/MMRF_CH4/.test(rd('js/chapter/world-driver-ch4.js')));
+  for (const f of ['js/phase8/raising.js', 'js/chapter/engine.js']) assert.ok(!/MMRF_CH4|ch4-routes/.test(rd(f)), f + '：旧エンジン・育成の進行は道のデータに触れない');
 });

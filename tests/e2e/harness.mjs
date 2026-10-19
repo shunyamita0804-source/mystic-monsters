@@ -90,6 +90,8 @@ export async function launch() {
     // 2026-10-18 v2：通常のプレイの Chapter 2 も新しい盤＝MM_CH2_NEW は要らない（worldCh2:true は旧エンジンの指定 MM_QA_OLD_CH2 を外すだけ＝本番と同じ条件）
     if (!opt.worldCh3) await ctx.addInitScript(() => { window.MM_QA_OLD_CH3 = true; });   // 2026-10-18：本編の Chapter 3 は1枚の世界のボード（js/chapter/world-driver-ch3.js）。旧い Chapter 3（phase9 の空の道）を前提にした実ブラウザテストは既定のまま。新しい盤は open({ worldCh3:true })
     if (opt.worldCh3 && opt.route3 !== 'random') await ctx.addInitScript((r) => { window.MM_CH3ROUTE = r; }, opt.route3 || 'A');   // 2026-10-17：新しい Chapter 2 の盤は QA の URL か MM_CH2_NEW のときだけ（通常のプレイは旧 Chapter 2）   // 2026-10-16：本編の Chapter 2 も1枚の世界のボード（js/chapter/world-driver-ch2.js）。旧 Chapter 2 を前提にした実ブラウザテストは既定で旧ボード。新しい盤は open({ worldCh2:true })（ルートは open({ route2:'B' })・既定 A）
+    if (!opt.worldCh4) await ctx.addInitScript(() => { window.MM_QA_OLD_CH4 = true; });   // 2026-10-19：本編の Chapter 4 は1枚の世界のボード（js/chapter/world-driver-ch4.js）。旧い Chapter 4（phase9 の火山の道・20ターン）を前提にした実ブラウザテストは既定のまま。新しい盤は open({ worldCh4:true })
+    if (opt.worldCh4 && opt.route4 !== 'random') await ctx.addInitScript((r) => { window.MM_CH4ROUTE = r; }, opt.route4 || 'A');
     if (opt.worldCh2 && opt.route2 !== 'random') await ctx.addInitScript((r) => { window.MM_CH2ROUTE = r; }, opt.route2 || 'A');
     // 2026-10-14 Chapter 1 B／C 独立ルート：本番は出発で A／B／C を抽選。自動テストは既定で A に固定（従来のテストの前提）。open({ route: 'B' }) で B／C、open({ route: 'random' }) で本番の抽選
     if (opt.worldCh1 && opt.route !== 'random') await ctx.addInitScript((r) => { window.MM_CH1ROUTE = r; }, opt.route || 'A');

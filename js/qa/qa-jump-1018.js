@@ -1,5 +1,5 @@
 // =========================================================
-// 2026-10-18 QA の「移動」パネル `MMQAJ`（試遊の URL＝?ch1trial／?ch2trial／?ch3trial のときだけ。通常の URL では何もしない）
+// 2026-10-18 QA の「移動」パネル `MMQAJ`（試遊の URL＝?ch1trial／?ch2trial／?ch3trial／?ch4trial のときだけ。通常の URL では何もしない）
 //  盤の左の「QA」ボタン → 主な地点（分かれ道・門・橋・運命の分かれ道・封印の門・ライバル・結晶の浮島・GOAL・寄り道の入口）へその場で移る。
 //  「〜の手前」＝そのマスの1つ前へ移り、次の出目を 1 に固定（START を押せば、そのマスに止まって出来事・バトルが起きる）。
 //  野生・レア・出来事・宝箱・食事：今の配置で一番近い（START から近い順）まだ使っていないマスの手前へ。
@@ -8,10 +8,10 @@
 (function (root) {
   'use strict';
   let P = null; try { P = new URLSearchParams(root.location.search); } catch (e) {}
-  const ON = !!(P && ['ch1trial', 'ch2trial', 'ch3trial'].some((k) => ['A', 'B', 'C'].includes(P.get(k))));
+  const ON = !!(P && ['ch1trial', 'ch2trial', 'ch3trial', 'ch4trial'].some((k) => ['A', 'B', 'C'].includes(P.get(k))));
   const G = (n) => { try { return (0, eval)(n); } catch (e) { return undefined; } };
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const WD = (m) => (m.raise.ch === 3 ? root.MMWD3 : m.raise.ch === 2 ? root.MMWD2 : root.MMWD);
+  const WD = (m) => (m.raise.ch === 4 ? root.MMWD4 : m.raise.ch === 3 ? root.MMWD3 : m.raise.ch === 2 ? root.MMWD2 : root.MMWD);
   let KEEP = null;   // 毎回同じ出目
   const POINTS = [['START', 'スタート'], ['J0', '最初の分かれ道'], ['EL2', '左の橋の先'], ['ER2', '右の橋の先'], ['P', '合流'], ['LOWER_GATE', '下の門'],
     ['Q', '運命の分かれ道', 1], ['QL2', '左の道（運命）'], ['QR2', '右の道（運命）'], ['R', '合流（運命のあと）'], ['UPPER_GATE', '上の門'], ['RIVAL', 'ライバル', 1],

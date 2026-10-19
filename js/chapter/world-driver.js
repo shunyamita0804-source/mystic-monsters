@@ -8,7 +8,7 @@
 //  本編との違い（試作と違う所）：能力・所持金・疲れは本物（m の能力・S.g・m.raise.fatigue）。野生・レア・ライバルは本物のバトル（index.html の bBattleGo → fight()）。
 //  セーブ：version 6・mr4v6 のまま。配置と進み方は m.raise.field（v6 の任意項目）＝{ world:1, chapterId:1, patternId:'W', layoutSeed, core, tiles, used, claimed, rivalMet, introSeen, arrivalSeen }。
 //    旧い Chapter 1（14枚の背景のボード）の途中のセーブは、能力・所持金・疲れはそのままで Chapter 1 の最初から（大会の途中なら大会を続ける）。
-//  raising.js（MMP8）には registerChapterOverride で Chapter 1 だけを受け持つ（Chapter 2 はこれまでのエンジン、3・4 は旧ボード）。
+//  raising.js（MMP8）には registerChapterOverride で受け持つ（make(cfg) で Chapter 1〜4＝world-driver-ch2.js・ch3.js・ch4.js。2026-10-19 から Chapter 4 も新しい盤）。
 //  自動テスト：window.MM_QA_OLD_CH1 のときは登録しない（旧い Chapter 1 を前提にした実ブラウザテスト用。tests/e2e/harness.mjs の既定）
 // =========================================================
 (function (root) {
@@ -89,7 +89,8 @@
   function setRoute(v) { pendingRoute = ROUTES.includes(v) ? v : null; return pendingRoute; }
   const forcedRoute = () => { if (pendingRoute) return pendingRoute; let q = null; try { q = root[cfg.forceVar || 'MM_CH1ROUTE'] || new URLSearchParams(root.location.search).get(cfg.forceParam || 'ch1route'); } catch (e) {} return ROUTES.includes(q) ? q : null; };
   /** ルートの抽選：A／B／C を各 1/3（配置の seed とは別の1回。保存して再開では決め直さない） */
-  const drawRoute = (rnd) => ROUTES[Math.min(2, Math.floor(rnd() * 3))];
+  //  2026-10-19：Chapter ごとの抽選の決まり（cfg.drawRoute）。Chapter 4＝0〜999 の整数で A 334・B 333・C 333（js/chapter/world-driver-ch4.js）
+  const drawRoute = cfg.drawRoute || ((rnd) => ROUTES[Math.min(2, Math.floor(rnd() * 3))]);
   function newField(rnd = Math.random, seed, route) {
     const k = ROUTES.includes(route) ? route : drawRoute(rnd), d = dataOf(k) || BASE(), rk = d === BASE() ? 'A' : k;
     const s = Number.isInteger(seed) ? seed >>> 0 : ((Math.floor(rnd() * 0x7fffffff) >>> 0) || 1);

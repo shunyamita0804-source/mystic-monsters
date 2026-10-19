@@ -33,13 +33,15 @@
   const gS = () => G('S');
   const doSave = () => { try { root.save(); } catch (e) {} };
   // 2026-10-16：Chapter 2「潮風の海岸」も同じ画面（進行は js/chapter/world-driver-ch2.js の MMWD2）。今の個体（S.m）の Chapter で進行と表示を選ぶ
-  const chOf = (m) => { const mm = m || (gS() && gS().m); const c = mm && mm.raise && mm.raise.ch; return c === 3 && root.MMWD3 ? 3 : c === 2 && root.MMWD2 ? 2 : 1; };   // 2026-10-18 Chapter 3「天空の浮島」（MMWD3）
-  const A2 = './assets/fields/ch2/art_1016/', A3 = './assets/fields/ch3/sky_1016/';
+  const chOf = (m) => { const mm = m || (gS() && gS().m); const c = mm && mm.raise && mm.raise.ch; return c === 4 && root.MMWD4 ? 4 : c === 3 && root.MMWD3 ? 3 : c === 2 && root.MMWD2 ? 2 : 1; };   // 2026-10-19 Chapter 4「灼熱の火山」（MMWD4）   // 2026-10-18 Chapter 3「天空の浮島」（MMWD3）
+  const A2 = './assets/fields/ch2/art_1016/', A3 = './assets/fields/ch3/sky_1016/', A4 = './assets/fields/ch4/art_1019/';
   const CHI = Object.freeze({ 1: { name: 'はじまりの草原', relay: './assets/fields/ch1a/intro/ch1_intro_overview.webp', gate: './assets/fields/ch1a/final/event/ch1_bg_15_event.webp' },
     2: { name: '潮風の海岸', relay: A2 + 'chapter2_sea_medallion.webp', medal: true, plate: A2 + 'sea_zone_nameplate.webp', gate: null, gateArt: A2 + 'arena_approach_gate.webp', gateSea: A2 + 'open_sea_water.webp' },
-    3: { name: '天空の浮島', relay: A3 + 'C3_UI_sky_medallion.webp', medal: true, sky: true, plate: A3 + 'C3_UI_sky_nameplate.webp', gate: null, gateArt: './assets/proto/board_art_1010/goal_arena.webp', gateSea: './assets/proto/board_art_1010/ground_cloud.webp' } });
+    3: { name: '天空の浮島', relay: A3 + 'C3_UI_sky_medallion.webp', medal: true, sky: true, plate: A3 + 'C3_UI_sky_nameplate.webp', gate: null, gateArt: './assets/proto/board_art_1010/goal_arena.webp', gateSea: './assets/proto/board_art_1010/ground_cloud.webp' },
+    4: { name: '灼熱の火山', relay: A4 + 'sky_dusk.webp', medal: false, volc: true, gate: null, gateArt: A4 + 'goal_gate.webp', gateSea: A4 + 'ground_basalt.webp',   // 2026-10-19：専用のメダル・名札は未着＝題字は HTML・中継は夕暮れの空（正式素材）
+      gateBg: `url(${A4}goal_gate.webp) center 66%/min(70vw,330px) auto no-repeat,url(${A4}sky_night.webp) center top/cover no-repeat,#140c18` } });
   const chi = (m) => CHI[chOf(m)];
-  const P8 = () => root.MMP8, WD = (m) => { const c = chOf(m); return c === 3 ? root.MMWD3 : c === 2 ? root.MMWD2 : root.MMWD; }, C = () => root.MMRF_CORE;
+  const P8 = () => root.MMP8, WD = (m) => { const c = chOf(m); return c === 4 ? root.MMWD4 : c === 3 ? root.MMWD3 : c === 2 ? root.MMWD2 : root.MMWD; }, C = () => root.MMRF_CORE;
   // 2026-10-14 B／C 独立ルート：その個体のルートの道のデータ（m を省くと今の個体＝S.m。route の無い配置＝A＝MMRF_DATA）
   const D = (m) => { const W = WD(m), mm = m || (gS() && gS().m); return (W && W.dataOf && mm ? W.dataOf(mm) : null) || root.MMRF_DATA; };
   const cfg = () => (root.MMCH && root.MMCH.getConfig ? root.MMCH.getConfig(1) : null) || {};
@@ -877,7 +879,7 @@ html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100
       d.addEventListener('click', close); setTimeout(close, calm() ? Math.min(ms, 900) : ms);
     });
   }
-  const evDef = (id) => { let c = null; try { c = chOf() === 3 ? null : root.MMCH && root.MMCH.getConfig(chOf()); } catch (e) {} const e = ((c && c.eventPool) || cfg().eventPool || []).find((x) => x.id === id) || null; return e && chOf() === 3 && e.id === 'tailwind' ? JSON.parse(JSON.stringify(e).replace(/草原/g, '雲海')) : e; };   // 2026-10-18 Chapter 3：Chapter 1 の出来事の表（草原の言葉だけ雲海に）   // 2026-10-16：その Chapter の出来事（Chapter 2＝ch2a の eventPool）
+  const evDef = (id) => { let c = null; try { c = chOf() >= 3 ? null : root.MMCH && root.MMCH.getConfig(chOf()); } catch (e) {} const e = ((c && c.eventPool) || cfg().eventPool || []).find((x) => x.id === id) || null; return e && chOf() === 3 && e.id === 'tailwind' ? JSON.parse(JSON.stringify(e).replace(/草原/g, '雲海')) : e && chOf() === 4 && /草原/.test(JSON.stringify(e)) ? JSON.parse(JSON.stringify(e).replace(/草原/g, '火山の道')) : e; };   // 2026-10-19 Chapter 4：草原の言葉だけ火山に（world-driver-ch4.js の pool と同じ）   // 2026-10-18 Chapter 3：Chapter 1 の出来事の表（草原の言葉だけ雲海に）   // 2026-10-16：その Chapter の出来事（Chapter 2＝ch2a の eventPool）
   async function talkLines(lines) {
     if (!lines || !lines.length || root.MM_QA_NO_STORY || !root.MMNPC || !onBoard()) return;
     const L = lines.map((l) => (root.MMEVT ? root.MMEVT.lineOf(l) : { npc: 'fina', expression: l.expression || 'normal', text: l.text }));
@@ -1151,7 +1153,7 @@ html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100
       if (!fresh && !calm()) await wait(500);
       // 2026-10-14 実機試遊⑮：まず会場の正門前（白い大門と塔＝ch1_bg_15_event）を全画面に → フィナの顔を大きく「ようやく着いたね！」→ 扉の中へ（ロビーへクロスフェード）
       //  → ロビーで大会の説明（ランク E〜S）→ 大会受付。見た記録（arrivalSeen）は従来どおり最後に1回＝途中で閉じたら次も正門前から（二重には出ない）
-      { const CI = chi(m), bg = CI.gate ? `url(${CI.gate})` : `url(${CI.gateArt}) center 62%/min(88vw,420px) auto no-repeat,linear-gradient(180deg,#9fd8f2 0%,#e8f5fb 46%,rgba(0,0,0,0) 47%),url(${CI.gateSea}) 0 0/180px 180px`;   // Chapter 2：会場への門（arena_approach_gate）を空と海の上に
+      { const CI = chi(m), bg = CI.gate ? `url(${CI.gate})` : CI.gateBg ? CI.gateBg : `url(${CI.gateArt}) center 62%/min(88vw,420px) auto no-repeat,linear-gradient(180deg,#9fd8f2 0%,#e8f5fb 46%,rgba(0,0,0,0) 47%),url(${CI.gateSea}) 0 0/180px 180px`;   // Chapter 2：会場への門（arena_approach_gate）を空と海の上に
         V.el.insertAdjacentHTML('beforeend', `<div class="wb-arr gate${CI.gate ? '' : ' sea'}" id="wbgate" style="background:${bg}"></div>`); }
       const gate = $('#wbgate'); void gate.offsetWidth; gate.classList.add('on'); feel('tournament.arrive');
       await wait(calm() ? 0 : 950);
