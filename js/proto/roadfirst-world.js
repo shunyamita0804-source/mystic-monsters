@@ -571,7 +571,7 @@
       }
       if (S.monGoal) { if (!S.mon) S.mon = S.monGoal.slice(); const f = 1 - Math.exp(-dt / 70); S.mon[0] = lerp(S.mon[0], S.monGoal[0], f); S.mon[1] = lerp(S.mon[1], S.monGoal[1], f); S.mon[2] = lerp(S.mon[2] || 0, S.monGoal[2] || 0, f); }
       apply();
-      if (HI && !S.intro && artDone && painted) HI.tick();   // 2026-10-16 QA（A）：近くの高い解像度の区画（数フレームに分けて描く）
+      if (HI && !S.intro && artDone) HI.tick();   // 2026-10-16 QA（A）：近くの高い解像度の区画（数フレームに分けて描く）。2026-10-19 P0：遠くの層を描き終えるのを待たない（最初に開いた盤の START だけ、iPhone で数秒ぼけていた）
       S.raf = root.requestAnimationFrame(tick);
     }
     const api = {

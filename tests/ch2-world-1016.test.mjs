@@ -139,7 +139,12 @@ test('CW-06：正式美術 68点の派生（欠品 0）・描画が参照する�
   for (const n of names) assert.ok(have.has(n), '派生がある：' + n);
   // 再送の8点：欄干の左右（海面の帯）・分かれ目の塔（海上の自由な分かれ道）・泡（海中の光の層）・ふちの景物・ゾーン名札（Chapter 2 の題字）
   assert.equal(S.STRIPS.railL, 'sea_bridge_railing_left'); assert.equal(S.STRIPS.railR, 'sea_bridge_railing_right');
-  for (const r of ['A', 'B', 'C']) assert.ok(S.lm(w.MMRF_CH2[r]).some((L) => /sea_junction_tower/.test(L.file) && /free_fork/.test(w.MMRF_CH2[r].nodes[L.node][2])), r + ' 分かれ目の塔');
+  // 2026-10-19 P0：分かれ目の塔は、道から約 26 単位離せる所がある分かれ道だけ（C は道が集まっていて置けない＝立てない。広場の真ん中に立たない）
+  for (const r of ['A', 'B']) assert.ok(S.lm(w.MMRF_CH2[r]).some((L) => /sea_junction_tower/.test(L.file) && /free_fork/.test(w.MMRF_CH2[r].nodes[L.node][2])), r + ' 分かれ目の塔');
+  for (const r of ['A', 'B', 'C']) { const D = w.MMRF_CH2[r], segs = Object.values(D.segments).map((sg) => sg[3].map((id) => D.nodes[id]));
+    for (const L of S.lm(D).filter((x) => /sea_junction_tower/.test(x.file))) { const n = D.nodes[L.node], x = n[0] + L.off[0], y = n[1] + L.off[1];
+      const near = segs.some((l) => l.some((p, i) => i && (() => { const a = l[i - 1], dx = p[0] - a[0], dy = p[1] - a[1], t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / (dx * dx + dy * dy || 1))); return Math.hypot(a[0] + dx * t - x, a[1] + dy * t - y) < 26; })()));
+      assert.ok(!near, r + ' 塔が道に近すぎない：' + L.node); } }
   const src = rd('js/proto/ch2-world.js');
   for (const n of ['undersea_bubble_light_fx', 'coral_shoal_edge', 'white_coastal_cliff_edge', 'undersea_cliff_edge']) assert.ok(src.includes(n), n);
   assert.match(rd('js/chapter/world-board.js'), /plate: A2 \+ 'sea_zone_nameplate\.webp'/);
