@@ -111,7 +111,7 @@ test('CRY-B5：QA の試聴＝鳴き声 14本・NPC ボイス 60本が1本ずつ
   await pg.waitForTimeout(1500); await pg.waitForFunction(() => !MMAUDIO.voiceNow(), null, { timeout: 15000 });   // 入口の声が終わってから
   await pg.click('#mmqa .qaud'); await pg.waitForSelector('#mmqa .qaudp .qcry');
   const n = await pg.evaluate(() => [document.querySelectorAll('#mmqa .qcry').length, document.querySelectorAll('#mmqa .qnpv').length]);
-  assert.deepEqual(n, [14, 60]);
+  assert.deepEqual(n, [16, 60]);   // 2026-10-18 カルシェル（8体目）で鳴き声 16本
   const bad = [];
   for (const sel of ['.qcry', '.qnpv']) {
     const k = await pg.evaluate((s) => document.querySelectorAll('#mmqa ' + s).length, sel);
