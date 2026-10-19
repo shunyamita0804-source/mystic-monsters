@@ -45,20 +45,20 @@ test('BT-01：修正の表のキー・コマ・効果が実在する／元のデ
   assert.equal(Object.keys(T.MOVES).length, 17, 'コードで直す技 15件（残り 6件は素材の修正だけ：03・08・09・11・12・17）＋2026-10-18 REV3 の A2（ソニックムーブ）・A4（ジオインパクト）');
 });
 
-test('BT-02：体格サイズ＝2026-10-18 REV3 正式（ラズック1・ソラモ2・ノビトン2・ガウル3・フルーネ3・レグナス3・ジオル4）が既定・?mmSize=old で従来', () => {
+test('BT-02：体格サイズ＝正式（ラズック1・ソラモ2・ノビトン2・ガウル3・フルーネ3・レグナス3・ジオル4）だけ・旧い比較案（従来／暫定／案A／案B・?mmSize）は撤去（2026-10-19）', () => {
   assert.deepEqual({ ...T.SIZE }, { 0: 2, 1: 3, 2: 2, 3: 4, 4: 3, 5: 3, 6: 1, 7: 3 }, 'ソラモ2・ガウル3・ノビトン2・ジオル4・レグナス3・フルーネ3・ラズック1・カルシェル3（2026-10-18）');
   assert.ok(!Object.values(T.SIZE).includes(5), 'サイズ5は厄災級だけ（7体には割り当てない）');
-  assert.deepEqual({ ...T.SIZE_K }, { 1: 0.7, 2: 0.8, 3: 0.9, 4: 1, 5: 1.15 }, '旧プレビュー（?mmSize=1）の倍率 70/80/90/100/115%');
-  assert.deepEqual({ ...T.SIZE_PLAN.F }, { 1: 0.7, 2: 0.84, 3: 1, 4: 1.14, 5: 1.3 }, '正式の既定 F（サイズ3＝今までの大きさ）');
-  globalThis.MM_SIZE_PREVIEW = false;
-  assert.equal(T.sizeMode(), 'F', 'URL に何も無い＝正式');
-  const k = (sp) => T.VIS_H3 * T.SIZE_PLAN.F[T.SIZE[sp]] / T.VIS_H[sp];
+  assert.deepEqual({ ...T.SIZE_K }, { 1: 0.7, 2: 0.84, 3: 1, 4: 1.14, 5: 1.3 }, '正式の倍率（サイズ3＝今までの大きさ）');
+  assert.equal(T.SIZE_PLAN, undefined, '比較案 A／B は無い'); assert.equal(T.FINE, undefined); assert.equal(T.sizeAs, undefined);
+  assert.equal(T.sizeMode(), 'F', 'いつも正式');
+  const k = (sp) => T.VIS_H3 * T.SIZE_K[T.SIZE[sp]] / T.VIS_H[sp];
   for (let sp = 0; sp <= 7; sp++) assert.ok(Math.abs(T.sizeK(sp) - k(sp)) < 1e-9, `種族 ${sp} の倍率`);
   assert.ok(T.sizeK(3) > T.sizeK(1) && T.sizeK(1) > T.sizeK(0) && T.sizeK(0) > T.sizeK(6), 'ジオル＞ガウル＞ソラモ＞ラズック');
-  globalThis.MM_QA_SIZE = 'old'; for (let sp = 0; sp <= 7; sp++) assert.equal(T.sizeK(sp), 1, '従来（比較）は一律'); delete globalThis.MM_QA_SIZE;
-  globalThis.MM_SIZE_PREVIEW = true;
-  assert.equal(T.sizeK(3), 1); assert.equal(T.sizeK(0), 0.8); assert.ok(Math.abs(T.sizeK(1) - 0.9 * 0.97) < 1e-9);
-  globalThis.MM_SIZE_PREVIEW = null;
+  globalThis.MM_QA_SIZE = 'old'; globalThis.MM_SIZE_PREVIEW = true;
+  for (let sp = 0; sp <= 7; sp++) assert.ok(Math.abs(T.sizeK(sp) - k(sp)) < 1e-9, `旧い切り替えの変数を入れても正式のまま（${sp}）`);
+  delete globalThis.MM_QA_SIZE; globalThis.MM_SIZE_PREVIEW = null;
+  const src = fs.readFileSync(path.join(ROOT, 'js/battle/move-tune-1015.js'), 'utf8');
+  assert.ok(!/get\('mmSize|mmSizeAs\b.*get|MM_QA_SIZE;|root\.MM_SIZE_PREVIEW/.test(src.replace(/^\s*(\/\/|\*|\/\*\*).*$/gm, '')), 'URL・ページの変数で体格を切り替えない');
   for (const sp of Object.keys(T.SIZE).filter((x) => x !== '6' && x !== '7')) { const a = T.ANCHOR[sp]; assert.ok(a && ['mouth', 'head', 'fist', 'chest'].every((k) => a[k][0] > 0 && a[k][0] < 1 && a[k][1] > 0 && a[k][1] < 1), `体の目印 ${sp}`); }
 });
 

@@ -36,10 +36,10 @@ test('QB-02：QA の入口は QA の URL のときだけ・保存しない', () 
   assert.match(rd('index.html'), /<script src="\.\/js\/qa\/qa-board-1016\.js"><\/script>/);
 });
 
-// ---- C（ソラモ 5方向×4コマ・?qaWalk=soramo5）----
+// ---- C（盤の歩行＝5方向×4コマ・2026-10-19 から walk_1018 だけ）----
 test('QW-01：8つの向きの選び方（画面の上＝奥＝背面・時計回り・左は反転・境目の近くは直前を保つ）', async () => {
   await import('../js/qa/walk5-1016.js');
-  const Q = globalThis.MMQAW; assert.equal(Q.active, true, '2026-10-18 REV3 F0-1：URL が無くても有効（新歩行が正式）'); assert.equal(Q.new7, true); assert.equal(Q.legacy, false);
+  const Q = globalThis.MMQAW; assert.equal(Q.active, true, '新歩行が正式（URL の切り替えは無い）'); assert.equal(Q.new7, true); assert.equal(Q.legacy, false);
   const at = (deg, prev) => { const r = deg * Math.PI / 180; return Q.pick8(Math.sin(r), -Math.cos(r), prev); };
   assert.deepEqual([0, 45, 90, 135, 180, -135, -90, -45].map((d) => { const x = at(d); return [x.sector, x.set, x.flip]; }),
     [[0, 'back', false], [1, 'backd', false], [2, 'side', false], [3, 'frontd', false], [4, 'front', false], [-3, 'frontd', true], [-2, 'side', true], [-1, 'backd', true]]);
@@ -55,24 +55,25 @@ test('QW-02：向きを変えるときに通る間の向き（近いほうの回
   assert.deepEqual(Q.turnPath(0, 2), [1]); assert.deepEqual(Q.turnPath(2, 1), []); assert.deepEqual(Q.turnPath(-2, 2), [-1, 0, 1]);
   for (let a = -3; a <= 4; a++) for (let b = -3; b <= 4; b++) assert.ok(Q.turnPath(a, b).length <= 3, `${a}→${b}`);
 });
-test('QW-03：素材＝v5 シート（sha256 一致）から同じ窓で切り出した 20コマ・344×344', () => {
+test('QW-03：10-16 のソラモ試作の素材（v5 シート・sha256 一致・20コマ 344×344）は記録としてファイルだけ残り、コードからは読まない（2026-10-19）', () => {
   const J = JSON.parse(rd('assets/qa/soramo_5dir_1016/derive.json'));
   assert.equal(J.source_sha256, '355890ecb8a98d69b6c54fea5614bde55b23a27c05620bc2c642987730612c36');
   assert.equal(J.frames.length, 20); assert.deepEqual(J.box, [84, 92, 428, 436]);
   for (const f of J.frames) { const b = readFileSync(path.join(ROOT, 'assets/qa/soramo_5dir_1016', f.file)); assert.equal(b.toString('ascii', 12, 16), 'VP8X'); assert.deepEqual([1 + b.readUIntLE(24, 3), 1 + b.readUIntLE(27, 3)], [344, 344], f.file); }
+  for (const f of ['js/qa/walk5-1016.js', 'js/chapter/world-board.js', 'js/chapter/configs/ch2a.js', 'js/qa/trial.js']) { const t = rd(f).replace(/^\s*\/\/.*$/gm, ''); assert.ok(!t.includes('soramo_5dir_1016') && !t.includes('walk_1017/'), f); }
 });
-test('QW-04：盤の歩行＝2026-10-18 REV3 から新歩行（7体）が通常の既定・?qaWalk=old で従来・?qaWalk=soramo5 はソラモの試作', () => {
+test('QW-04：盤の歩行＝新歩行（walk_1018・7体）だけ。比較の URL（?qaWalk=old／1017／soramo5）は撤去（2026-10-19）', () => {
   const wb = rd('js/chapter/world-board.js');
-  assert.match(wb, /SPR\.qa = !!\(root\.MMQAW && root\.MMQAW\.active && \(root\.MMQAW\.has \? root\.MMQAW\.has\(key\) : key === root\.MMQAW\.species\)\);/);   // 2026-10-17：新歩行7体（?qaWalk=1017）も同じ仕組み
+  assert.match(wb, /SPR\.qa = !!\(root\.MMQAW && root\.MMQAW\.active && \(root\.MMQAW\.has \? root\.MMQAW\.has\(key\) : key === root\.MMQAW\.species\)\);/);
   assert.match(wb, /if \(SPR\.qa\) return qaWalk\(/);
-  assert.match(rd('js/qa/walk5-1016.js'), /const LEGACY = q === 'old' \|\| q === 'legacy';\n  const NEW7 = !LEGACY && q !== 'soramo5' && q !== '5dir';\n  const ACTIVE = !LEGACY;/);   // 2026-10-18 REV3：新歩行が正式
-  assert.match(rd('js/qa/qa-board-1016.js'), /so = !!\(root\.MMQAW && root\.MMQAW\.active && !root\.MMQAW\.new7\)/);
-  assert.match(rd('js/qa/qa-board-1016.js'), /S\.m && !\(so && S\.m\.sp !== 0\) \? JSON\.parse\(JSON\.stringify\(S\.m\)\) : Object\.assign\(mk\(0\)/, '?qaWalk=soramo5 のときは連れている子がソラモ以外でもソラモで試遊（ページの中だけ）');
+  const w5 = rd('js/qa/walk5-1016.js');
+  assert.match(w5, /const ACTIVE = true, NEW7 = true, LEGACY = false, SET = '1018';/);
+  for (const f of ['js/qa/walk5-1016.js', 'js/chapter/configs/ch2a.js', 'js/chapter/field-view.js', 'js/qa/qa-board-1016.js']) assert.ok(!/get\('qaWalk|qaWalkFps|qaWalkTurn|MMQAW\.legacy\)/.test(rd(f).replace(/^\s*\/\/.*$/gm, '')), f);
   assert.match(rd('index.html'), /<script src="\.\/js\/qa\/walk5-1016\.js"><\/script>/);
 });
-test('QW-05：URL の数の指定が無いときは既定の値（Number(null)＝0 にしない）', async () => {
-  for (const f of ['js/qa/walk5-1016.js']) assert.match(rd(f), /&& (P|q)\.get\(k\) != null \? Number/, f);   // 2026-10-19：world-board.js のカメラの数の指定（qaCamDeg・qaCamMs）は撤去＝固定値
+test('QW-05：歩行の速さ・向きを変える間は固定（8fps・70ms）＝URL の数の指定は読まない', async () => {
   await import('../js/qa/walk5-1016.js'); assert.equal(globalThis.MMQAW.TURN_MS, 70); assert.equal(globalThis.MMQAW.FPS, 8);
+  assert.match(rd('js/qa/walk5-1016.js'), /const FPS = 8, TURN_MS = 70;/);
 });
 
 // ---- A（道路の見た目・?qaRoad=1|2）----

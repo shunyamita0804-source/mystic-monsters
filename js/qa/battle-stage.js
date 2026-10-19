@@ -3,7 +3,7 @@
 //  ・全モンスター（MMQA.catalog()＝マスターデータの登録から作る一覧。新しい種族が登録されれば自動で増える）の技を、
 //    1つずつ選んで即再生／選んだ1体の全10技を連続自動再生。実戦と同じ描画（index.html の anim(k, s)＝共通演出 MMSTAGE・技アニメ MM25D・
 //    ルートドレイン MMRD・聖なる炎 V2）。SK の番号の無い技（フルーネの未承認の技）は MM25D.preview のコマだけ
-//  ・操作：モンスター・技・攻撃側（味方＝左／敵＝右）・相手・体格（従来／案A／案B／1〜5＝?mmSize=1）・背景（会場／黒／白／紺）・速さ（1／0.5／0.25）・
+//  ・操作：モンスター・技・攻撃側（味方＝左／敵＝右）・相手・体格（正式）・背景（会場／黒／白／紺）・速さ（1／0.5／0.25）・
 //    ループ・結果（命中／回避／MISS＝見せ方だけ。判定・HP・状態異常は動かさない）・一時停止・コマ送り・前の技／次の技
 //  ・保存しない：QA 試遊モード（MMQA）が ON の間だけ開ける＝通常のセーブへの書き込みは止まっている。出るときは試合を降参で終えて QA の一覧へ（既存の流れ）。
 //    仮想の時計（速さ・一時停止）・タイマー・アニメーション・技の絵の層は出るときに片付ける
@@ -13,7 +13,7 @@
   const doc = root.document;
   const G = (n) => { try { return (0, eval)(n); } catch (e) { return undefined; } };
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const SIZES = Object.freeze([['F', '正式'], ['old', '従来'], ['A', '案A'], ['B', '案B'], ['1', '1〜5']]);   // 2026-10-18 REV3：正式（F）が既定
+  const SIZES = Object.freeze([['F', '正式']]);   // 2026-10-19：体格は正式（サイズ1〜5・MMTUNE.SIZE_K）だけ＝比較案は撤去
   const BGS = Object.freeze([['arena', '会場'], ['black', '黒'], ['white', '白'], ['navy', '紺']]);
   const SPEEDS = Object.freeze([1, 0.5, 0.25]);
   const RESULTS = Object.freeze([['hit', '命中'], ['evade', '回避'], ['miss', 'MISS']]);
@@ -143,7 +143,7 @@
     else if (k === 'side' || k === 'target') ST[k] = +v;
     else if (k === 'speed') { ST.speed = +v; VC.rate = ST.speed; }
     else if (k === 'loop') ST.loop = v === '1';
-    else if (k === 'size') { ST.size = v; root.MM_QA_SIZE = v; }
+    else if (k === 'size') { ST.size = 'F'; }
     else ST[k] = v;
     dress(); panel();
   }
@@ -224,7 +224,7 @@
     const m = Q.makeMon(C[ST.mon].sp === 5 ? 0 : C[ST.mon].sp); if (!m) return false;
     m.sk = [0]; m.eq = [0, 0, 0, 0, 0, 0]; m.speed = 10;   // ルーレット・STOP は隠す（技は使わない）。先にこちらの番＝相手は動かない
     if (!Q._start(m, true)) return false;
-    const sm = root.MMTUNE && root.MMTUNE.sizeMode ? root.MMTUNE.sizeMode() : null; ST.size = sm || 'old';   // sizeMode は正式の既定で 'F'・?mmSize=old で従来・?mmSize=1 は従来の体格プレビュー
+    ST.size = 'F';
     ST.open = true; ST.auto = false; css(); vcStart(); VC.rate = ST.speed; VC.paused = false;
     const ready = () => { const b = doc.getElementById('bt'), g = doc.getElementById('go'); if (!ST.open) return; if (!b || !g || g.disabled) return void root.requestAnimationFrame(ready); dress(); panel(); };
     ready();
@@ -238,7 +238,6 @@
     VC.paused = false; vcStop();
     doc.querySelectorAll('#bt .p25f, #bt .mmrd').forEach((e) => e.remove());
     const bt = doc.getElementById('bt'); if (bt) bt.classList.remove('mmqas', 'mmqas-bgk', 'mmqas-bgw', 'mmqas-bgn');
-    delete root.MM_QA_SIZE;
     try { root.MMQA.endBattle(); } catch (e) { /* 無視 */ }
     return true;
   }

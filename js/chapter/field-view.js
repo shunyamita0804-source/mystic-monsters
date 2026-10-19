@@ -51,7 +51,6 @@
   function spriteSetOf(m) {
     const cfg = V.cfg || (root.MMCH && m ? MMCH.configFor(m) : null), P = root.MMP10M, key = P && m ? P.keyOf(m.sp) : null;
     const set = cfg && cfg.monsterSprites && key ? cfg.monsterSprites[key] : null;
-    if (set && set.walk && set.walk.new7 && root.MMQAW && root.MMQAW.legacy) return null;   // 2026-10-18 REV3：?qaWalk=old＝従来（静止の絵）の比較
     return set && set.walk && Array.isArray(set.walk.frames) && set.walk.frames.length ? set.walk : null;
   }
   const labOf = (k) => { try { return LAB[k] || k; } catch (e) { return k; } };

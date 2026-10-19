@@ -3,8 +3,8 @@
 //
 //  ・?ch1trial=A|B|C＝Chapter 1 の試遊（Chapter 2 の ?ch2trial と同じ仕組み）：起動のあと今のセーブ（S）を丸ごと控え、連れている子の写し（いなければソラモ）で
 //    Chapter 1 の本物の出発 → 1枚の世界のボード。試遊の間は保存しない（TEST_TOUR がある間 save() は何もしない）。再読み込み・メニューの「試遊をやめて街へ戻る」で控えたセーブへ戻る。
-//  ・どれかの QA の URL（ch1trial・ch2trial・qaCam・qaWalk・qaRoad）のとき、画面の左上（HUD の下）に小さな札：版（MM_BUILD）・今の QA の方式・
-//    カメラの方式の切り替え（その URL で読み込み直す）。古いキャッシュとの取り違えを防ぐ。
+//  ・QA の URL（ch1trial・ch2trial）のとき、画面の左上（HUD の下）に小さな札：版（MM_BUILD）。古いキャッシュとの取り違えを防ぐ。
+//    2026-10-19：カメラ・歩行・道路の比較の URL（qaCam・qaWalk・qaRoad）は撤去＝いつも正式
 //  ・通常の URL では何もしない。index.html の TEST_MODE が false（正式リリース）なら試遊は始めない（札だけ）。
 // =========================================================
 (function (root) {
@@ -25,10 +25,9 @@
     try {
       const S = G('S');
       if (S.playerNamePending) { S.playerNamePending = false; if (!S.playerName) S.playerName = 'テスト'; }   // ページの中だけ（保存しない）
-      // 歩行の比較（?qaWalk=soramo5）はソラモだけ＝連れている子がソラモ以外ならソラモで始める（ページの中だけ・保存しない）
-      // 2026-10-17：?qaMon＝0〜4（QA トップで選んだ子）・新歩行（?qaWalk=1017）は7体とも＝ソラモに固定しない
-      const mk = G('mk'), so = !!(root.MMQAW && root.MMQAW.active && !root.MMQAW.new7), qm = /^[0-4]$/.test(get('qaMon') || '') ? +get('qaMon') : null;
-      const base = qm != null ? Object.assign(mk(qm), { name: 'テスト' }) : S.m && !(so && S.m.sp !== 0) ? JSON.parse(JSON.stringify(S.m)) : Object.assign(mk(0), { name: so ? 'ソラモ' : 'テスト' });
+      // ?qaMon＝0〜4（QA トップで選んだ子）。無ければ連れている子（いなければソラモ）＝ページの中だけ・保存しない
+      const mk = G('mk'), qm = /^[0-4]$/.test(get('qaMon') || '') ? +get('qaMon') : null;
+      const base = qm != null ? Object.assign(mk(qm), { name: 'テスト' }) : S.m ? JSON.parse(JSON.stringify(S.m)) : Object.assign(mk(0), { name: 'テスト' });
       delete base.raise; root.MMP7.ensureProg(base); S.m = base; if (!(Array.isArray(S.inv.bag) && S.inv.bag.length)) { const SP = G('SUPPORT'); if (SP && SP.item) root.MMP7.bagAdd(S, SP.item, 10); }
       const c = root.MMP8.canDepart(S, base); if (!c.ok) throw new Error(c.reason || 'canDepart');
       root.MMWD.setRoute(route);

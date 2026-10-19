@@ -1,6 +1,6 @@
 // 2026-10-18 夜間 GO PHASE 2：ボード用の歩行 7体×5方向×4コマ（assets/monsters/walk_1018/・tools/walk1018/derive.py）
 //  WK18-01：140コマが実在・RGBA の正方形・四隅は透明・不透明の体は1つの正方形に収まる（端に触れない）・種族ごとに同じキャンバス
-//  WK18-02：本編の既定＝walk_1018（MMQAW.BASE7・SPEC7＝derive.json）・?qaWalk=1017 で前の素材・Chapter 2 の旧い盤も同じ素材
+//  WK18-02：本編＝walk_1018 だけ（MMQAW.BASE7・SPEC7＝derive.json）・前の 1017 の素材はファイルだけ（2026-10-19 に比較の URL を撤去）・Chapter 2 の旧い盤も同じ素材
 //  WK18-03：README に原本 7枚の sha256 と 140 行
 import test from 'node:test'; import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs'; import path from 'node:path'; import { fileURLToPath } from 'node:url';
@@ -28,14 +28,14 @@ test('WK18-01：140コマが実在・alpha つきの正方形・種族ごとに�
   assert.deepEqual(Object.keys(spec), KEYS);
   for (const k of KEYS) { assert.ok(spec[k].h > 1 && spec[k].h < 2, k); assert.ok(spec[k].foot > 0.02 && spec[k].foot < 0.08, k); }
 });
-test('WK18-02：本編の既定は walk_1018・?qaWalk=1017 で前の素材・Chapter 2 の旧い盤も同じ', async () => {
+test('WK18-02：本編は walk_1018 だけ・前の 1017 の素材は読まない・Chapter 2 の旧い盤も同じ', async () => {
   globalThis.window = globalThis; globalThis.location = { search: '' };
   await import('../js/qa/walk5-1016.js?a');
   const Q = globalThis.MMQAW; assert.equal(Q.set, '1018'); assert.equal(Q.BASE7, './assets/monsters/walk_1018/');
   const spec = JSON.parse(rd('tools/walk1018/derive.json')); for (const k of KEYS) assert.deepEqual({ ...Q.SPEC7[k] }, spec[k], k);
   assert.match(Q.sets('solamo').front.frames[1], /walk_1018\/solamo\/front_2\.webp$/);
-  const js = rd('js/qa/walk5-1016.js'); assert.match(js, /const SET = q === '1017' \|\| q === 'new7' \? '1017' : '1018';/);
-  assert.match(rd('js/chapter/configs/ch2a.js'), /const W7 = old17 \? '\.\/assets\/monsters\/walk_1017\/' : '\.\/assets\/monsters\/walk_1018\/'/);
+  const js = rd('js/qa/walk5-1016.js'); assert.match(js, /SET = '1018';/); assert.ok(!js.replace(/^\s*\/\/.*$/gm, '').includes('walk_1017'));
+  assert.match(rd('js/chapter/configs/ch2a.js'), /const W7 = '\.\/assets\/monsters\/walk_1018\/'/);
   for (const k of KEYS) assert.ok(existsSync(path.join(ROOT, 'assets/monsters/walk_1017', k, 'front_1.webp')), `旧 1017 の素材はファイルだけ残す（${k}）`);
 });
 test('WK18-03：README に原本 7枚の sha256・140 行', () => {

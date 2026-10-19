@@ -569,10 +569,9 @@ html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100
     const box = document.createElement('span'); box.className = 'mon'; el.insertBefore(box, st); box.appendChild(st);
     const P = root.MMP10M, key = P && P.keyOf ? P.keyOf(m.sp) : null, spr = key && cfg().monsterSprites ? cfg().monsterSprites[key] : null;
     SPR.sets = dirSets(spr); SPR.stand = (spr && spr.standFace) || 'none';
-    // 2026-10-16 QA（C）：URL の ?qaWalk=soramo5 のときだけ、ソラモを 5方向×4コマ（左右反転で 8方向）にする（js/qa/walk5-1016.js）。ほかの種族・通常の URL は従来のまま
-    //  2026-10-17：?qaWalk=1017＝7体の新歩行（5方向×4コマ・同じ 8方向の仕組み）
+    // 盤の歩行＝js/qa/walk5-1016.js（walk_1018・5方向×4コマ・左右反転で 8方向）。2026-10-19：比較の URL は撤去＝いつも正式
     SPR.qa = !!(root.MMQAW && root.MMQAW.active && (root.MMQAW.has ? root.MMQAW.has(key) : key === root.MMQAW.species)); SPR.sector = null; SPR.turn = null; SPR.tok = (SPR.tok || 0) + 1;
-    if (SPR.qa) { SPR.sets = root.MMQAW.sets(key); SPR.sector = 4; el.dataset.qawalk = root.MMQAW.new7 ? (root.MMQAW.set || '1017') : '1'; }
+    if (SPR.qa) { SPR.sets = root.MMQAW.sets(key); SPR.sector = 4; el.dataset.qawalk = root.MMQAW.set || '1018'; }
     // 2026-10-11：歩行のコマの高さ・足は「静止の立ち絵が実際に見えている高さ」に合わせる（横に広い立ち絵＝ガウルは箱より低く、上に寄せて置かれる）。--sth＝立ち絵の高さ ÷ 箱の高さ
     const fit = () => { const bh = box.offsetHeight, sh = st.offsetHeight; if (bh > 0 && sh > 0) box.style.setProperty('--sth', String(Math.min(1, sh / bh))); };
     if (st.complete) fit(); else st.addEventListener('load', fit, { once: true });

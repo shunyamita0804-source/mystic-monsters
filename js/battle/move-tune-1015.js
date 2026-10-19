@@ -10,7 +10,7 @@
 //      fxSet[src]＝効果の層の上書き（t＝見せる区切り・over＝光線が相手の先まで届く量 など）／drop＝出さない効果／addFx＝足す効果（既存の素材だけ）／cuts・fx＝並びを丸ごと差し替え
 //      sfxAt＝その区切りの始めに鳴らす SE（映像に合わせる）／shakeAt＝その区切りの始めに画面を揺らす・止める
 //  ・体格サイズ（A1〜A6）：分類は種族ごとに固定（能力・判定・技の性能・行動順には関係しない＝見た目だけ）。
-//    表示の倍率は【暫定・未承認】＝URL に ?mmSize=1（または window.MM_SIZE_PREVIEW = true）のときだけ効く。通常の URL では今までの大きさのまま。
+//    表示の倍率＝正式の SIZE_K（2026-10-19：比較の切り替えは撤去）。
 //  ・技の SE：技の SE（index.html の skSfx＝合成音）は一定の時刻（約0.55〜0.9秒）に当たりの音を鳴らすが、技のコマの当たり（1.5〜2.7秒＋構え・溜め）とずれていた
 //    → コマで見せる技だけ、当たりの音がコマの当たりと同じ時刻になるように鳴らし始めを遅らせる（音そのものは変えない）。
 //  変えないもの：fight()・battle-bridge・adapter・Battle Engine・技の性能・ルーレット・.bt 系 CSS（Phase 6）・セーブ。
@@ -24,35 +24,18 @@
   /** 種族（バトルの番号）→ 体格サイズ。ラズック（1）は未登録＝ここには入れない（マスターデータ案は報告書）。5 は予約（今は誰もいない） */
   //  2026-10-18 REV3 F0-3（正式）：ラズック1・ソラモ2・ノビトン2・ガウル3・フルーネ3・レグナス3・ジオル4（5＝厄災級だけ＝今は誰もいない）
   const SIZE = Object.freeze({ 0: 2, 1: 3, 2: 2, 3: 4, 4: 3, 5: 3, 6: 1, 7: 3 });   // 2026-10-18：7＝カルシェル（正式仕様＝サイズ 3・登録のみ）
-  /** 表示の倍率（今の一律の表示＝100%）。【暫定・プレビュー専用】ユーザーの iPhone 確認のあとで決める */
-  const SIZE_K = Object.freeze({ 1: 0.70, 2: 0.80, 3: 0.90, 4: 1.00, 5: 1.15 });
-  /** 見かけの大きさの微調整（翼・角・葉が外へ大きく出る絵は、同じ倍率だと大きく見える）【暫定】 */
-  const FINE = Object.freeze({ 1: 0.97, 4: 0.97, 5: 0.95 });
-  const sizePreview = () => {
-    if (root.MM_SIZE_PREVIEW != null) return !!root.MM_SIZE_PREVIEW;
-    try { return /[?&]mmSize=1(&|$)/.test(root.location.search); } catch (e) { return false; }
-  };
-  // 2026-10-16（iPhone 6件 A5）：比較案 A／B＝「サイズ3 の見えている体の高さを 100」とした目標の倍率（ユーザーの iPhone 判断まで正式ではない）。
-  //  URL の ?mmSize=A または ?mmSize=B のときだけ（?mmSize=1＝前回の暫定・なし＝従来）。?mmSizeAs=0:1,1:5＝比較のためだけに種族のサイズを読み替える（例：サイズ1 対 5 の並び）
-  //  2026-10-18 REV3 F0-3：F＝正式の既定（A／B は未承認の比較案のまま）。サイズ3＝今までの大きさ（100）。A案の比をもとに、390×844・375×667・393×852 の
-  //   公式戦・練習試合で HP の帯・技名・画面の左右の枠に重ならない範囲で決めた値（実測は tools/rev3_1018/size_fit.mjs）
-  const SIZE_PLAN = Object.freeze({ A: Object.freeze({ 1: 0.65, 2: 0.78, 3: 1.00, 4: 1.22, 5: 1.45 }), B: Object.freeze({ 1: 0.60, 2: 0.75, 3: 1.00, 4: 1.30, 5: 1.55 }),
-    F: Object.freeze({ 1: 0.70, 2: 0.84, 3: 1.00, 4: 1.14, 5: 1.30 }) });
+  /** 表示の倍率＝正式（2026-10-18 REV3 F0-3 で決定・2026-10-19 次便で一本化）。サイズ3＝今までの大きさ（100）。
+   *  390×844・375×667・393×852 の公式戦・練習試合で HP の帯・技名・画面の左右の枠に重ならない範囲（実測は tools/rev3_1018/size_fit.mjs）。
+   *  2026-10-19：旧い比較案（従来の一律・暫定 70/80/90/100/115%・案A・案B・?mmSize・?mmSizeAs・MM_QA_SIZE・MM_SIZE_PREVIEW）は撤去 */
+  const SIZE_K = Object.freeze({ 1: 0.70, 2: 0.84, 3: 1.00, 4: 1.14, 5: 1.30 });
   /** 見えている体の高さ（待機立ち絵の不透明な部分の高さ ÷ 絵の高さ × arena.js の SCALE）＝tools で測った値。種族の絵の高さの差を打ち消して、目標の比にそろえる */
   const VIS_H = Object.freeze({ 0: 0.900, 1: 0.909, 2: 0.869, 3: 0.902, 4: 0.902, 5: 0.900, 6: 0.900, 7: 0.900 });   // 7＝カルシェル（待機絵は余白を切った派生＝体の高さ ÷ 絵の高さ 1.0 × SCALE 0.91 ≒ 0.90）
   const VIS_H3 = (VIS_H[1] + VIS_H[4] + VIS_H[5]) / 3;   // サイズ3（ガウル・レグナス・フルーネ）の平均＝100
-  const qsz = () => { try { return new URLSearchParams(root.location.search); } catch (e) { return null; } };
-  // 2026-10-16：常設バトル QA のステージ（js/qa/battle-stage.js）はページの中の切り替え window.MM_QA_SIZE（'old'＝従来・'A'・'B'・'1'）を URL より先に見る（本編の既定値は変えない）
-  //  2026-10-18 REV3：URL に何も無い＝正式（F）。?mmSize=old＝従来の一律の大きさ（比較だけ）・A／B／1＝未承認の比較案
-  const sizeMode = () => { const o = root.MM_QA_SIZE; if (o) return o === 'old' ? null : o; const q = qsz(), v = q && q.get('mmSize'); return v === 'old' ? null : v === 'A' || v === 'B' || v === 'F' ? v : v === '1' ? '1' : root.MM_SIZE_PREVIEW ? '1' : 'F'; };
-  const sizeAs = () => { const q = qsz(), v = q && q.get('mmSizeAs'), m = {}; if (v) v.split(',').forEach((x) => { const [a, b] = x.split(':').map(Number); if (a >= 0 && b >= 1 && b <= 5) m[a] = b; }); return m; };
-  const sizeOf = (sp) => sizeAs()[sp] || SIZE[sp] || 3;
-  /** 待機立ち絵などに掛ける倍率（プレビューのときだけ。それ以外は 1＝今まで） */
-  const sizeK = (sp) => {
-    const mode = sizeMode(); if (!mode) return 1;
-    if (SIZE_PLAN[mode]) { const z = sizeOf(sp); return VIS_H3 * SIZE_PLAN[mode][z] / (VIS_H[sp] || VIS_H3); }
-    return SIZE[sp] ? SIZE_K[sizeOf(sp)] * (FINE[sp] || 1) : 1;
-  };
+  /** いつも正式（互換のため関数は残す） */
+  const sizeMode = () => 'F';
+  const sizeOf = (sp) => SIZE[sp] || 3;
+  /** 待機立ち絵などに掛ける倍率（見えている体の高さの差を打ち消して、正式の比にそろえる） */
+  const sizeK = (sp) => VIS_H3 * SIZE_K[sizeOf(sp)] / (VIS_H[sp] || VIS_H3);
 
   // ---- 体の目印（待機立ち絵に対する割合・右向き）。口＝光線・弾の出る所、頭＝頭突き、拳＝叩きつけ、胸＝着弾の中心 ----
   const ANCHOR = Object.freeze({
@@ -298,5 +281,5 @@
 
   // 2026-10-16：読み込んだ技アニメの JS の版（iPhone の QA 画面に出す＝配信のキャッシュで古い JS が混ざったかを見分ける）
   const BUILD = '2026-10-19-night';
-  root.MMTUNE = Object.freeze({ BUILD, SIZE_PLAN, VIS_H, VIS_H3, sizeMode, sizeAs, SIZE, SIZE_K, SIZE_NAME, FINE, ANCHOR, MOVES, MOUTH, mouthOf, EMOJI_OFF, emojiLog: () => emojiLog.slice(), sizePreview, sizeOf, sizeK, patch, keyOf, onAnimStart, sfxLog: () => sfxLog.slice(), wrapSe });
+  root.MMTUNE = Object.freeze({ BUILD, VIS_H, VIS_H3, sizeMode, sizeOf, SIZE, SIZE_K, SIZE_NAME, ANCHOR, MOVES, MOUTH, mouthOf, EMOJI_OFF, emojiLog: () => emojiLog.slice(), sizeK, patch, keyOf, onAnimStart, sfxLog: () => sfxLog.slice(), wrapSe });
 })(typeof window !== 'undefined' ? window : globalThis);
