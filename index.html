@@ -4087,7 +4087,7 @@ html:has(#app>.chfw.wbw) .mmtalk:not(.mmtalk-big):not(.mmtalk-scene) .mmtalk-sta
 <script src="./js/battle/razuck-moves-data.js"></script>
 <script src="./js/battle/kalshell-moves-data.js"></script><!-- 2026-10-18：カルシェルの技アニメ（登録のみ・QA 試遊だけ） -->
 <script src="./js/battle/myurol-moves-data.js"></script><!-- 2026-10-19：ミュロルの技アニメ（登録のみ・QA 試遊だけ） -->
-<script src="./js/battle/move-area-1015.js"></script><script src="./js/battle/move-tune-1015.js"></script><!-- 2026-10-15 夜：技アニメの試遊修正21件・体格サイズ1〜5（?mmSize=1 のときだけ）・技の SE の時刻（MMTUNE） -->
+<script src="./js/battle/move-area-1015.js"></script><script src="./js/battle/move-tune-1015.js"></script><!-- 2026-10-15 夜：技アニメの試遊修正21件・体格サイズ1〜5（正式の倍率）・技の SE の時刻（MMTUNE） -->
 <script src="./js/battle/rootdrain-1016.js"></script><!-- 2026-10-16：フルーネ技09 ルートドレイン（QA 試遊だけ） -->
 <script src="./js/battle/sk19-v2-1016.js"></script><!-- 2026-10-16：ガウル SK19「聖なる炎」承認演出 V2 の試験実装（作業ブランチだけ） -->
 <script src="./js/battle/art25d.js"></script>
@@ -5329,7 +5329,7 @@ window.addEventListener("unhandledrejection",rescue);
  *  ./version.json（小さな JSON。毎回取り直す）の build がこのページの MM_BUILD と違えば1回だけ reload（同じ版へは15分に1回まで＝読み込み直しを繰り返さない）。
  *  確かめる時：起動したとき・ページがメモリから戻ったとき（pageshow の persisted）・10分以上裏にいて表に戻ったとき。セーブ（mr4v6）には触れない（読み込み直しは iOS がタブを閉じたときと同じ＝つづきから）。
  *  公開するたびに MM_BUILD と version.json の build を同じ値に上げる（tests/dev24-1013.test.mjs で一致を確かめる） */
-const MM_BUILD="2026-10-19-night";
+const MM_BUILD="2026-10-19-next";
 (function(){const K="mmbuildReload";let hidAt=0;
  const check=()=>{try{const x=new XMLHttpRequest();x.open("GET","./version.json?t="+Date.now(),true);x.timeout=8000;
   x.onload=()=>{try{if(x.status<200||x.status>=300)return;const b=(JSON.parse(x.responseText)||{}).build;if(!b||b===MM_BUILD)return;

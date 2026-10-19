@@ -41,7 +41,7 @@
   const setUi = (mode) => { try { if (root.localStorage) root.localStorage.setItem(UI_KEY, mode === 'old' ? 'old' : 'new'); } catch (e) {} return v24() ? 'new' : 'old'; };
   /** モンスターの大きさ（従来の待機立ち絵に対する比）。ソラモ＝四足・ガウル＝腕2足2翼2・ノビトン＝横に長い・ジオル・レグナス */
   const SCALE = Object.freeze({ 0: 0.91, 1: 0.92, 2: 0.88, 3: 0.91, 4: 0.91, 6: 0.91, 7: 0.91, 8: 0.91 });   // 6＝ラズック（QA だけ・体格の正式倍率は未決）・7＝カルシェル（QA だけ・サイズ 3）・8＝ミュロル（QA だけ・サイズ 2）
-  /** 2026-10-15 夜：体格サイズ 1〜5 の比較プレビュー（js/battle/move-tune-1015.js の MMTUNE.sizeK＝URL に ?mmSize=1 のときだけ。通常は 1＝今までの大きさ）。
+  /** 体格サイズ 1〜5（js/battle/move-tune-1015.js の MMTUNE.sizeK＝正式の倍率だけ。2026-10-19 に比較の切り替えは撤去）。
    *  待機立ち絵・被弾／回避・勝利の絵は同じ --mma-k を使い、技のコマ（art25d）は待機立ち絵の矩形から作る＝技の途中で大きさが変わらない */
   const kOf = (sp) => (SCALE[sp] || 0.91) * (root.MMTUNE && root.MMTUNE.sizeK ? root.MMTUNE.sizeK(sp) : 1);
   /** ルーレットの板の形（%）：icon＝技の絵の窓（ふつうの板 n／選ばれた板 s）・nm＝技名の帯（中央の板だけ）。v24＝compact_1013 の派生（tools/roulette1013/compact.py で測った値） */
