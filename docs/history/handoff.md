@@ -1,0 +1,53 @@
+# 引き継ぎ（旧 CLAUDE.md §4 の「引き継ぎ」）
+
+旧 CLAUDE.md §4 の引き継ぎの記録をそのまま移した。**新しいセッションは先頭（いちばん新しい引き継ぎ）から読む**。新しい引き継ぎは先頭に足す。
+
+- **引き継ぎ（2026-10-19 昼・次便一括の統合後。新しいセッションはここから読む＝下の記述より優先）**：
+  - main＝claude/next-1019 を統合（fast-forward）・build `2026-10-19-next3`（追加指令＝巨大火山・分岐の見た目の口まで＋被弾・回避の差し替えで横へ跳ねない修正）・中身は §3「次便一括」「Chapter 4「灼熱の火山」本編」「ミュロル」・退役の記録 docs/next_1019/RETIRE.md・報告 docs/next_1019/REPORT.md
+  - 本編の Chapter 1〜4 はすべて 1枚の世界の盤（40ターン・1〜6）。ミュロルは登録のみ（QA の9体目）。比較の URL（カメラ・道路・歩行・体格）は撤去
+  - ユーザー判断待ち：巨大火山の置き場所の承認（今は題字の中継・空の層・正門前＝盤の地面に敷くには真上か広角の絵が要る）・分岐の見た目 16点の採用（仕様 docs/next_1019/BRANCH_UI.md・差し替えは world-board.js の BRANCH_SKIN の1行）・溶岩の絵・C4 の目印（C4_LM_*）・Chapter 4 の宝箱の絵（今は草地の絵）・Chapter 3 の道路素材（C3-R1〜G2）・ノビトンの特訓の技・残した比較（?battleArt・?mmScale・?sk19・?sk19time・バトル画面：旧）の撤去・ミュロルの種族表示名／入手方法／プロフィール画像・しめったはだの「ちから」だけの下げ（今は攻撃系＝ちから・かしこさ両方）・休む −10（暫定）・iPhone 実機の確認（REPORT.md の一覧）
+  - 戻し方：main を c34bc0b へ戻す revert（統合前は 2026-10-19-night）
+  - **最終の状態（2026-10-19 セッション終了時）**：main＝claude/next-1019＝04eb0ca（以降はこの引き継ぎの追記だけ）・開いている PR なし・作業ツリーはきれい。公開の version.json＝`2026-10-19-next3` を確認・public-check は全項目 OK（Chapter 4 の本編・QA 90枠・12 の入口を含む）
+  - テスト：ふだんの実行 1954件（合格 1149・失敗 0）。実ブラウザ全件（102ファイル・756件を1つずつ）＝752 合格・4 失敗 → reactions-1012（本物の不具合＝被弾・回避の絵が横へ跳ねる→直した）・dev21-c CR-3 と voice15 VB-4（古い期待値→直した）・FX-B5（負荷の揺れ＝単独で合格）。D28-B7・RWB-3 は単独でも落ちるが統合前の c34bc0b でも同じ＝環境（iPhone での確認を依頼）
+  - ユーザーへの報告は ZIP（Mismon_Report_20261019_Next.zip＝docs/next_1019・docs/ch4・Chapter 4 の素材 README・derive_volcano.json・テスト結果）で渡した。次の作業は未指示（ユーザーの判断を待つ）。新しいセッションは main から始める
+- **引き継ぎ（2026-10-19 朝・夜間 GO の統合後＝旧）**：
+  - main＝claude/night-1018 を統合・build `2026-10-19-night`・中身は §3「夜間 GO」「カルシェル」「Chapter 4 設計案」・報告 docs/night_1018/REPORT.md
+  - 本編の歩行は walk_1018（7体）。カルシェルは登録のみ（入手条件なし・QA の8体目）。Chapter 4 は設計案だけ（本編は旧ボードのまま）
+  - ユーザー判断待ち：Chapter 4 の承認論点 D-1〜D-3・本編への切り替え・カルシェルの種族表示名／入手方法／プロフィール画像・ソラモ／ガウル／ノビトンの特訓の技・iPhone 実機の確認
+  - 戻し方：統合のマージを revert（統合前は bb7e625・2026-10-18-fix2）
+  - **最終の状態（2026-10-19 セッション終了時）**：main＝91800ec（96c4d6d＝統合のマージ → bd6c169＝KS-05 の期待値の修正 → 91800ec＝報告の追記）・作業ブランチ claude/night-1018 も同じ位置・開いている PR なし・作業ツリーはきれい。公開の version.json＝`2026-10-19-night`（01:42 UTC に反映を確認）
+  - テスト：ふだんの実行 1916件（合格 1129・skip 787・失敗 0）。実ブラウザの新しいテスト（NT-B1〜B4・kalshell）は合格。public-check は1件を除いて OK（`?qaFresh=1` の読み込みが 30秒で時間切れ＝開き直すと 200・約17秒・エラーなし＝通信の遅さ）。不安定なテスト：D28-B1（再実行で合格）・D28-B7（今回は再実行していない）・DW-1（1回落ちて再実行で合格）。D29-B2 は今回直して3回合格
+  - 手順の反省：統合の push の時点で KS-05 が失敗していた（コマンドの連結が失敗で止まらなかった）＝次のセッションでは「テストの合格を確かめてから push」を別の手順に分ける
+  - ユーザーへの報告は ZIP（Mismon_Report_20261019_Night.zip＝docs/night_1018＋docs/ch4）で渡した。iPhone の朝の確認リストは docs/night_1018/REPORT.md §7
+  - 次の作業は未指示（ユーザーの指示を待つ）。新しいセッションは main から始める
+- **引き継ぎ（2026-10-18 深夜・緊急修正 v2 の統合後＝旧）**：
+  - main＝claude/fix-1018v2 を統合・build `2026-10-18-fix2`・中身は §3「本編試遊の緊急修正 v2」・報告 docs/fix_1018v2/REPORT.md
+  - 本編の Chapter 1〜3 は QA と同じ盤（Chapter 2 も通常の起動から A／B／C）。Chapter 4 は未着手（次の指令待ち＝Chapter 4 の設計図）
+  - ユーザー判断・画像待ち：Chapter 3 の道路素材（REPORT §4）・ソラモの歩行の描き直し（§5）・EV05 の市松・iPhone 実機の確認
+  - 戻し方：統合のマージを revert（統合前は 48081ad・2026-10-18-ch3）
+- **引き継ぎ（2026-10-18 夜・Chapter 3 の統合後＝旧）**：
+  - main＝Pre-Chapter3 修正5点＋Chapter 3「天空の浮島」を claude/prech3-1018 から統合・build `2026-10-18-ch3`・version.json の base＝de43edd（統合前の main）。中身は §3「Pre-Chapter3 修正5点＋Chapter 3」・報告 docs/prech3_1018/REPORT.md・設計 docs/ch3_1018/DESIGN.md
+  - 本編の Chapter 1〜3 は通常のアプリ起動から遊べる（Chapter 2 は従来の盤＝新しい盤は未承認のまま QA だけ）。QA＝`?qaTop=1`・`?ch3trial=A|B|C`
+  - 戻し方：統合のマージを revert（統合前は de43edd・2026-10-18-rev3）。iPhone 実機はどれも未確認
+- **引き継ぎ（2026-10-18 REV3 の時点＝旧）**：
+  - **main＝REV3 を claude/rev3-1018 から --no-ff で統合**（基準 2108dca）・build＝`2026-10-18-rev3`・version.json＝{ build, branch main, base 2108dca }・公開済み
+  - 中身は §3「2026-10-18 REV3」・報告は docs/rev3_1018/REPORT.md（(1)〜(10)・台帳 voice_ledger.tsv／moves70.tsv／adopted.tsv／delete_ledger.tsv・道路の比較 road/）。通常プレイに入ったもの＝新歩行 140枚・C案カメラ・体格 F・フルーネ正式10技（QA の個体だけ）・技アニメ4件の修正・特訓の画面・声の再設計
+  - QA だけのまま＝新しい Chapter 2 の盤（?ch2trial）・道路の新素材（?qaRoadArt）・ラズック・体格の A／B 案。**Chapter 3 は未着手**
+  - テスト：ふだんの実行 1873件・失敗 0。実ブラウザは 95ファイルすべてを1つずつ（古い期待値はテスト側を直した）。public-check 45項目 OK
+  - 既知の失敗テスト（REV3 の前の 2108dca でも失敗＝今回と無関係）：qa-e2e-dev24-1013 の D24-B2・qa-e2e-dice-cube-1012 の DCB-1（比較デモ）。重い実行で時刻が揺れて落ちることがある（単独では合格）：feel FE-1／FE-5・dice-lock DL-B1・board-1008 BB-1・dev28 D28-B1／B7・reactions RX-B1・dev29 D29-B2。**iPhone 実機はどれも未確認**。戻し方＝REV3 のマージを revert（公開前は 2108dca・2026-10-17-all4）
+  - ユーザー判断待ち：iPhone 実機の確認（REPORT (7) の一覧）・リュウ 002 の字幕の承認・道路の素材の作り直し（R1／R2 の帯・白い橋の側面・海上橋の石板）・新しい Chapter 2 の盤の採用・体格 A／B（未承認。F を推奨）・フルーネ固有スキル「生命の芽吹き」の資料の食い違い・未配置の声 17本。**Chapter 3 は未着手**（次の作業はユーザーの指示を待つ）
+  - 新しいセッションは main から始める（作業ブランチ claude/rev3-1018 は main に統合済み）
+- **引き継ぎ（2026-10-17 時点の現在地。旧）**：
+  - **main＝a03c56e**（統合便 v2 をブランチ claude/all4-1017 から --no-ff で統合・GitHub の PR は作れなかった＝MCP の接続失敗）・build＝`2026-10-17-all4`・version.json＝{ build, branch main, base dbdbd9e }・公開済み・public-check 44項目すべて OK
+  - 中身は §3「2026-10-17 統合便 v2」・報告は docs/all4_1017/REPORT.md。一般プレイに入ったもの＝NPC 有料ボイス 60本・モンスターの鳴き声 14本・初見プレイの隔離セーブ（?qaFresh=1）。QA だけ（URL のフラグ）＝QA トップ ?qaTop=1・新しい Chapter 2 の盤（?ch2trial）・C案カメラ（?qaCam=c）・道路の新しい絵（?qaRoadArt）・新歩行（?qaWalk=1017）・ラズック（QA の7体目）
+  - 既知の不安定なテスト：qa-e2e-dev28-1013 の D28-B7（全景 → 盤のズームの刻み）＝main 3d9a205 でも同じ位置・同じ大きさで落ちる。**iPhone 実機はどれも未確認**。戻し方＝a03c56e のマージを revert（公開前は 3d9a205・2026-10-16-final）
+- **引き継ぎ（2026-10-16 時点の現在地。旧）**：
+  - **main＝f5dd141**（PR #46 バトル最終統合・#47 公開確認の道具の1行まで統合・開いている PR なし）・build＝`2026-10-16-final`（index.html の MM_BUILD・version.json・MMTUNE.BUILD）・公開済み（Pages の version.json で確認）・public-check は #47 のあと全件 OK の見込み（#46 直後は QA の技の数の期待値だけ NG→#47 で修正）
+  - バトル：§3「バトル最終統合」が最新（SK08 光線・SK31 ずつき・フルーネ09 補修版10コマ・フルーネ10 根と命中・技カード3枚・常設バトル QA `?mmQaTrial=1`→『QA を開く』→「▶ バトル技ステージ」）。**全件 iPhone 実機の検収待ち**。報告＝docs/battle_final_1016/REPORT.md・ZIP Mismon_Report_20261016_BattleFinal.zip
+  - バトルのユーザー判断待ち：体格の正式倍率（案A／B は QA の中だけ）・フルーネ03〜08 の性能・固有スキル「生命の芽吹き」の資料間の食い違い・技の SE の正式音源（未許諾は使わない）。既知の失敗テスト＝qa-e2e-dev29-1014 の D29-B2（main でも失敗・未修正）
+  - **次の作業＝Chapter 2「潮風の海岸」A／B／C の続き**（ユーザー指示 2026-10-16）。§3「Chapter 2 A／B／C 設計案・限定試作」と docs/ch2_abc_design_1015/（DESIGN.md §7 承認論点・§8 素材・§10 次の工程・COMPARISON.md・asset_requirements.tsv 54行）を先に読む
+    - 決まっていること：道路グラフ A 298・B 284・C 304 地点（B 成功2・失敗18）・到達率の基準＝食事ありモデル（寄り道25%で A 79.1／B 81.0／C 80.7%）・ライバル位置は現状維持・旧 Chapter 2 の途中セーブ＝案1（出発時点で旧の盤があれば旧ボードのまま）・時間切れの規則は現状維持（救済案は DESIGN.md §6.5 に比較だけ）
+    - 決まっていないこと：2.5D の見た目の最終承認（正式素材の検収後）・道／場所の名前とフィナの一言・固定報酬の値【仮】・本実装の開始時期（Chapter 2 用の driver・MMWB の Chapter 読み替え・MMRF_WORLD の地形 kind・TUNING）
+    - 素材：初回納品 36 点のうち 27 点は市松の焼き込みで透過 NG＝組み込まない（画像担当が修正中）・地面と道路 9 点は形式 OK だが未組み込み・追加 32 点は未着。**正式素材の組み込み・本実装・本編化はユーザーの明示の承認まで行わない**
+    - 試作は main にあり公開済み（URL のフラグのときだけ・本編・セーブ v6／mr4v6 には触れない）：`?chapterBoard=roadfirst&rfData=ch2`（省略で A＋上の帯に A／B／C の切り替え）・`&ch2route=A|B|C`。保存の鍵は mmrf_proto_ch2_<route>_v1。道のデータの正本は tools/ch2/routes/spec_*.json → `python3 -I tools/ch2/build_ch2_routes.py`（js/proto/ch2-routes.js は手で書き換えない）。シミュレーション `node tools/ch2/sim.mjs`（CH2_FOOD・CH2_SEED0 など）。テスト tests/ch2-routes-1015.test.mjs（C2-01〜08）・tests/qa-e2e-ch2-proto-1015.test.mjs（CP-B1〜B4）・tests/qa-e2e-battle-final-1016.test.mjs の BF-B2（A／B／C の切り替え）
+  - 作業ブランチ：`claude/claude-md-handoff-check-fcl9lb`（main と同じ位置から再開してよい）。報告は ZIP でユーザーへ。main 統合・公開はユーザーの許可があるときだけ（今回のバトルの範囲の許可は Chapter 2 には及ばない）
