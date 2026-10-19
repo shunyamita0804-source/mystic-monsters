@@ -42,7 +42,7 @@
       <label>出発の乱数（seed・空＝毎回ちがう）</label><input class="qtseed" inputmode="numeric" value="${esc(OPT.seed)}" placeholder="例 42">
       <div class="qtl">${['A', 'B', 'C'].map((r) => `<a class="qtb" data-k="ch1" data-r="${r}" href="${esc(href('ch1', r))}">Chapter 1 ・ ${r}</a>`).join('')}${['A', 'B', 'C'].map((r) => `<a class="qtb" data-k="ch2" data-r="${r}" href="${esc(href('ch2', r))}">Chapter 2 ・ ${r}（新しい盤＝未承認）</a>`).join('')}${['A', 'B', 'C'].map((r) => `<a class="qtb" data-k="ch3" data-r="${r}" href="${esc(href('ch3', r))}">Chapter 3 ・ ${r}</a>`).join('')}</div>
       <small>盤の左の「QA移動」で、分かれ道・門・橋・ライバル・封印の門・寄り道・野生／レア・宝箱・ゴールの手前へ直接移れます（次の出目も固定できる）。Chapter 3 の A＝白亜の大橋・B＝雲海の螺旋・C＝風の浮島めぐり。フルーネ・ラズックは盤に出せない（未解禁）＝新歩行は QA 画面の「新歩行 10-17」で確認</small>
-      <h3>全7体×10技＝${mv.total} 枠</h3>${mv.html}
+      <h3>全${cat.length}体×10技＝${mv.total} 枠</h3>${mv.html}
       <div class="qtl"><a class="qtb" href="${esc(base() + '?mmQaTrial=1&qaDirect=1')}">QA 画面（全技の試合・バトル技ステージ・音声の試聴・新歩行）</a></div>
       <h3>初見プレイ（本当のセーブは触らない）</h3>
       <div class="qtl"><a class="qtb" href="${esc(base() + '?qaFresh=1')}">初見プレイを始める／続ける</a><a class="qtb red" href="${esc(base() + '?qaFresh=reset')}">初見プレイを最初から（別の名前のセーブを消す）</a></div>

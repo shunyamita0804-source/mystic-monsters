@@ -126,8 +126,8 @@ test('VS-05：差し替え台帳＝26 の id・新しい声の手順・未解決
 
 test('VP-06：モンスターの鳴き声 14本（7体×normal／sad）＝派生の OGG＋M4A・原本の sha256（受領一覧と同じ）・NPC の声が優先・全体の間隔・同じ子の間隔・OFF・不明な種族は鳴らさない', async () => {
   const R = reg().cry, J = JSON.parse(rd('tools/monvoice1017/derive.json'));
-  assert.equal(Object.keys(R).length, 14);
-  const KEYS = ['solamo', 'gauru', 'nobiton', 'jiol', 'regnas', 'flurene', 'razuck'];
+  assert.equal(Object.keys(R).length, 16, '14本（7体）＋2026-10-18 カルシェル2本');
+  const KEYS = ['solamo', 'gauru', 'nobiton', 'jiol', 'regnas', 'flurene', 'razuck', 'kalshell'];
   for (const k of KEYS) for (const kind of ['normal', 'sad']) { const id = `cry_${k}_${kind}`, v = R[id]; assert.ok(v, id); for (const s of v.src) assert.ok(existsSync(path.join(ROOT, s.slice(2))), s); assert.ok(v.gain > 0.3 && v.gain < 2, id); }
   const ORIG = { soramo_normal: 'd8f8676e262805d750a4afbb746190e3763bd27b22c351b25b557482e0981324', fulune_sad: 'ab1d2c5fbd757d41b62ae4df3282a9d24c14eea7d155d08586d4b68262688351', razuck_sad: '982f9fbc3a6a0efd56979500fbd7fa066282c696e094c7b1eeffb83a230d8f95' };
   for (const [k, h] of Object.entries(ORIG)) assert.equal(J.find((r) => r.orig === `voice_${k}.mp3`).origSha, h, k);
@@ -135,7 +135,7 @@ test('VP-06：モンスターの鳴き声 14本（7体×normal／sad）＝派生
   assert.deepEqual(readdirSync(path.join(ROOT, 'assets/audio/voice/monster_1017')).filter((f) => /\.mp3$/.test(f)), [], '原本の MP3 は置かない');
   const { A } = env(memStore({}));
   A.unlock(); await tick(5);
-  assert.equal(A.cryIds().length, 14); assert.ok(!A.voiceIds().some((k) => /^cry_/.test(k)), 'NPC の声の一覧には入れない（会話の行に使えない）');
+  assert.equal(A.cryIds().length, 16, '14本＋2026-10-18 カルシェル2本'); assert.ok(!A.voiceIds().some((k) => /^cry_/.test(k)), 'NPC の声の一覧には入れない（会話の行に使えない）');
   const last = () => A.voiceLog().slice(-1)[0].result;
   A.cry(9, 'normal'); assert.equal(last(), 'unknown', '表に無い種族は鳴らさない');
   A.cry(0, 'normal'); assert.equal(last(), 'wait'); await tick(10); assert.equal(A.voicePlaying().id, 'cry_solamo_normal');
