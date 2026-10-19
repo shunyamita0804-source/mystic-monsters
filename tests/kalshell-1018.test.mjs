@@ -278,7 +278,7 @@ test('KS-05：つなぎ＝技アニメ 84枚のデータ・art25d（SK 70〜79�
   const q = rd('js/qa/trial.js');
   assert.match(q, /\{ sp: 7, key: 'kalshell' \}/); assert.match(q, /7: 'idle_kalshell'/); assert.match(q, /\[5, 6, 7\]/, 'QA の間だけ待機絵を貸す（5・6・7）');
   assert.match(q, /n <= 7/); assert.match(q, /MMKSMV_DATA/); assert.match(q, /未解禁（入手方法は未定・QA の確認だけ）/);
-  assert.match(rd('js/qa/qa-top-1017.js'), /全\$\{cat\.length\}体×10技＝\$\{mv\.total\} 枠/);
+  assert.match(rd('js/qa/qa-top-1017.js'), /全\$\{mv\.rows\}体×10技＝\$\{mv\.total\} 枠/);   // 2026-10-19：cat は moves() の中だけ＝体の数は mv.rows
   // 読み込むスクリプトの一覧（qa-static-guards）・公開確認の道具
   assert.match(rd('tests/qa-static-guards.test.mjs'), /js\/battle\/kalshell-moves-data\.js/);
   assert.match(rd('tools/public-check.mjs'), /kalshell|カルシェル/);
