@@ -26,6 +26,14 @@
     // 2026-10-15 追加B（ユーザー指示・候補 stat .53／無地 .12）：能力マスをさらに増やし無地を 20% 未満へ（能力 45% → 53%・無地 20% → 12%。出来事・休憩・野生・宝箱は同じ）。
     //  落ち着いた区間の能力マス化（calmToStat）と合わせ、実測の割合は能力 約54.5%・無地 約12.4%（tools/balance/sim-full.mjs 300回×4体）
     density: Object.freeze(Object.assign({ stat: 0.53, event: 0.15, rest: 0.06, wild: 0.08, treasure: 0.06 }, (root.MM_BALANCE_OVERRIDE && root.MM_BALANCE_OVERRIDE.density) || {})),
+    // 2026-10-20 通し試遊の品質改善（ユーザー指示「Chapter 4 を終えるころ、適性 A の能力がおおむね 300」）：Chapter 2〜4 の配置の割合（Chapter 1 は上の density のまま）。
+    //  能力マスを減らし（1回の上昇は Chapter ごとに少しずつ大きく＝js/phase10/monsters.js の GROWTH_GAIN_BY_CH）、出来事・宝箱を少し増やす。
+    //  根拠は tools/fullplay1020/sim-growth.mjs（docs/fullplay_1020/REPORT.md）。新しい出発の配置だけ（育成途中の配置 f.tiles は引き直さない）
+    densityByCh: Object.freeze(Object.assign({
+      2: Object.freeze({ stat: 0.42, event: 0.2, rest: 0.06, wild: 0.08, treasure: 0.08 }),
+      3: Object.freeze({ stat: 0.42, event: 0.2, rest: 0.06, wild: 0.08, treasure: 0.08 }),
+      4: Object.freeze({ stat: 0.42, event: 0.2, rest: 0.06, wild: 0.08, treasure: 0.08 }),
+    }, (root.MM_BALANCE_OVERRIDE && root.MM_BALANCE_OVERRIDE.densityByCh) || {})),
     calmSegments: Object.freeze(['S01', 'EL01', 'ER01']),   // 序盤（スタートの階段と J0 のすぐ先）には野生・休憩・宝箱を置かない
     // 2026-10-15 追加B：落ち着いた区間で野生・休憩・宝箱になった地点は、無地ではなく能力マスにする（序盤から少しずつ育つ。野生・休憩・宝箱を置かない制限はそのまま）
     calmToStat: !(root.MM_BALANCE_OVERRIDE && root.MM_BALANCE_OVERRIDE.calmToStat === false),
@@ -97,7 +105,7 @@
 
   // ---- マスの配置（開始時に1回・seed から） ----
   function layout(D, seed, opts = {}) {
-    const rng = mulberry((seed ^ 0xA5C3E1) >>> 0), dens = TUNING.density, tiles = {};
+    const rng = mulberry((seed ^ 0xA5C3E1) >>> 0), dens = (opts.ch && TUNING.densityByCh[opts.ch]) || TUNING.density, tiles = {};   // 2026-10-20：Chapter 2〜4 は densityByCh
     const calmSegs = (TUNING.calmByRoute && TUNING.calmByRoute[opts.route]) || TUNING.calmSegments, SB = opts.bias === true ? TUNING.statBias : null;   // 偏りは本編（world-driver の newField が bias:true）だけ＝試作の配置は従来どおり
     // 2026-10-15 Chapter 2 A／B／C 設計案の試作：道のデータが自分の「落ち着いた区間」「能力の道の偏り」「レアの候補」を持つときはそれを使う（Chapter 1 のデータには無い＝従来どおり）
     const CALM = D.calm || calmSegs, SBX = D.statLanes ? { weight: TUNING.statBias.weight, lanes: D.statLanes } : SB, RZ = D.rareZones || TUNING.rare.zones;

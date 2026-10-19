@@ -17,17 +17,17 @@
   },
   "S01_01": {
    "x": 512.0,
-   "y": 1464.0,
+   "y": 1462.54,
    "role": "ordinary_tile",
    "segment": "S01",
-   "elev": 1.33
+   "elev": 1.42
   },
   "S01_02": {
    "x": 512.0,
-   "y": 1442.0,
+   "y": 1443.46,
    "role": "ordinary_tile",
    "segment": "S01",
-   "elev": 2.67
+   "elev": 2.58
   },
   "J0": {
    "x": 512,
@@ -37,50 +37,50 @@
    "elev": 4.0
   },
   "W01_01": {
-   "x": 491.07,
+   "x": 478.0,
    "y": 1420.0,
    "role": "ordinary_tile",
    "segment": "W01",
-   "elev": 4.5
+   "elev": 4.81
   },
   "W01_02": {
-   "x": 470.14,
+   "x": 459.26,
    "y": 1420.0,
    "role": "ordinary_tile",
    "segment": "W01",
-   "elev": 5.0
+   "elev": 5.26
   },
   "W01_03": {
-   "x": 449.21,
+   "x": 440.53,
    "y": 1420.0,
    "role": "ordinary_tile",
    "segment": "W01",
-   "elev": 5.5
+   "elev": 5.71
   },
   "W01_04": {
-   "x": 428.39,
-   "y": 1419.4,
+   "x": 422.22,
+   "y": 1417.08,
    "role": "ordinary_tile",
    "segment": "W01",
-   "elev": 6.0
+   "elev": 6.15
   },
   "W01_05": {
-   "x": 408.79,
-   "y": 1412.05,
+   "x": 404.67,
+   "y": 1410.5,
    "role": "ordinary_tile",
    "segment": "W01",
-   "elev": 6.5
+   "elev": 6.6
   },
   "W01_06": {
-   "x": 389.19,
-   "y": 1404.7,
+   "x": 387.13,
+   "y": 1403.92,
    "role": "ordinary_tile",
    "segment": "W01",
-   "elev": 7.0
+   "elev": 7.05
   },
   "W01_07": {
-   "x": 369.6,
-   "y": 1397.35,
+   "x": 369.59,
+   "y": 1397.34,
    "role": "ordinary_tile",
    "segment": "W01",
    "elev": 7.5
@@ -93,53 +93,53 @@
    "elev": 8.0
   },
   "W02_01": {
-   "x": 330.53,
-   "y": 1382.86,
+   "x": 330.55,
+   "y": 1382.87,
    "role": "ordinary_tile",
    "segment": "W02",
    "elev": 8.75
   },
   "W02_02": {
-   "x": 311.06,
-   "y": 1375.72,
+   "x": 313.17,
+   "y": 1376.5,
    "role": "ordinary_tile",
    "segment": "W02",
-   "elev": 9.5
+   "elev": 9.42
   },
   "W02_03": {
-   "x": 291.59,
-   "y": 1368.58,
+   "x": 295.79,
+   "y": 1370.12,
    "role": "ordinary_tile",
    "segment": "W02",
-   "elev": 10.25
+   "elev": 10.09
   },
   "W02_04": {
-   "x": 276.13,
-   "y": 1354.94,
+   "x": 280.91,
+   "y": 1359.44,
    "role": "ordinary_tile",
    "segment": "W02",
-   "elev": 11.0
+   "elev": 10.76
   },
   "W02_05": {
-   "x": 261.02,
-   "y": 1340.73,
+   "x": 267.43,
+   "y": 1346.76,
    "role": "ordinary_tile",
    "segment": "W02",
-   "elev": 11.75
+   "elev": 11.43
   },
   "W02_06": {
-   "x": 245.49,
-   "y": 1326.99,
+   "x": 253.87,
+   "y": 1334.17,
    "role": "ordinary_tile",
    "segment": "W02",
-   "elev": 12.5
+   "elev": 12.1
   },
   "W02_07": {
-   "x": 229.75,
-   "y": 1313.5,
+   "x": 239.81,
+   "y": 1322.13,
    "role": "ordinary_tile",
    "segment": "W02",
-   "elev": 13.25
+   "elev": 12.77
   },
   "W2": {
    "x": 214,
@@ -149,60 +149,60 @@
    "elev": 14.0
   },
   "W03_01": {
-   "x": 202.95,
-   "y": 1282.56,
+   "x": 197.93,
+   "y": 1274.62,
    "role": "ordinary_tile",
    "segment": "W03",
-   "elev": 14.91
+   "elev": 15.33
   },
   "W03_02": {
-   "x": 191.9,
-   "y": 1265.11,
+   "x": 188.69,
+   "y": 1260.03,
    "role": "ordinary_tile",
    "segment": "W03",
-   "elev": 15.82
+   "elev": 16.1
   },
   "W03_03": {
-   "x": 180.86,
-   "y": 1247.67,
+   "x": 179.45,
+   "y": 1245.45,
    "role": "ordinary_tile",
    "segment": "W03",
-   "elev": 16.72
+   "elev": 16.86
   },
   "W03_04": {
-   "x": 167.27,
-   "y": 1232.41,
+   "x": 167.8,
+   "y": 1232.87,
    "role": "ordinary_tile",
    "segment": "W03",
-   "elev": 17.62
+   "elev": 17.63
   },
   "W03_05": {
-   "x": 151.69,
-   "y": 1218.86,
+   "x": 154.77,
+   "y": 1221.54,
    "role": "ordinary_tile",
    "segment": "W03",
-   "elev": 18.53
+   "elev": 18.39
   },
   "W03_06": {
-   "x": 136.11,
-   "y": 1205.31,
+   "x": 141.85,
+   "y": 1210.09,
    "role": "ordinary_tile",
    "segment": "W03",
-   "elev": 19.44
+   "elev": 19.16
   },
   "W03_07": {
-   "x": 134.66,
-   "y": 1188.34,
+   "x": 135.09,
+   "y": 1194.54,
    "role": "ordinary_tile",
    "segment": "W03",
-   "elev": 20.18
+   "elev": 19.91
   },
   "W03_08": {
-   "x": 142.33,
-   "y": 1169.17,
+   "x": 138.84,
+   "y": 1177.89,
    "role": "ordinary_tile",
    "segment": "W03",
-   "elev": 21.09
+   "elev": 20.67
   },
   "W3": {
    "x": 150,
@@ -212,123 +212,123 @@
    "elev": 22.0
   },
   "W03B_01": {
-   "x": 221.74,
-   "y": 1282.41,
+   "x": 224.69,
+   "y": 1275.7,
    "role": "ordinary_tile",
    "segment": "W03B",
-   "elev": 14.81
+   "elev": 15.12
   },
   "W03B_02": {
-   "x": 229.48,
-   "y": 1264.83,
+   "x": 231.58,
+   "y": 1259.99,
    "role": "ordinary_tile",
    "segment": "W03B",
-   "elev": 15.61
+   "elev": 15.84
   },
   "W03B_03": {
-   "x": 234.8,
-   "y": 1247.24,
+   "x": 232.71,
+   "y": 1243.18,
    "role": "ordinary_tile",
    "segment": "W03B",
-   "elev": 16.38
+   "elev": 16.55
   },
   "W03B_04": {
-   "x": 227.16,
-   "y": 1229.61,
+   "x": 226.17,
+   "y": 1227.32,
    "role": "ordinary_tile",
    "segment": "W03B",
-   "elev": 17.19
+   "elev": 17.28
   },
   "W03B_05": {
-   "x": 219.52,
-   "y": 1211.98,
+   "x": 219.35,
+   "y": 1211.58,
    "role": "ordinary_tile",
    "segment": "W03B",
-   "elev": 17.99
+   "elev": 18.0
   },
   "W03B_06": {
-   "x": 211.88,
-   "y": 1194.35,
+   "x": 212.46,
+   "y": 1195.86,
    "role": "ordinary_tile",
    "segment": "W03B",
-   "elev": 18.8
+   "elev": 18.72
   },
   "W03B_07": {
-   "x": 197.96,
-   "y": 1181.97,
+   "x": 200.65,
+   "y": 1183.76,
    "role": "ordinary_tile",
    "segment": "W03B",
-   "elev": 19.58
+   "elev": 19.43
   },
   "W03B_08": {
-   "x": 181.97,
-   "y": 1171.31,
+   "x": 186.37,
+   "y": 1174.24,
    "role": "ordinary_tile",
    "segment": "W03B",
-   "elev": 20.39
+   "elev": 20.16
   },
   "W03B_09": {
-   "x": 165.99,
-   "y": 1160.66,
+   "x": 172.09,
+   "y": 1164.72,
    "role": "ordinary_tile",
    "segment": "W03B",
-   "elev": 21.19
+   "elev": 20.88
   },
   "W04_01": {
-   "x": 142.11,
-   "y": 1132.74,
+   "x": 139.63,
+   "y": 1127.31,
    "role": "ordinary_tile",
    "segment": "W04",
-   "elev": 23.12
+   "elev": 23.47
   },
   "W04_02": {
-   "x": 134.22,
-   "y": 1115.48,
+   "x": 132.51,
+   "y": 1111.73,
    "role": "ordinary_tile",
    "segment": "W04",
-   "elev": 24.23
+   "elev": 24.48
   },
   "W04_03": {
-   "x": 126.33,
-   "y": 1098.22,
+   "x": 125.39,
+   "y": 1096.16,
    "role": "ordinary_tile",
    "segment": "W04",
-   "elev": 25.35
+   "elev": 25.49
   },
   "W04_04": {
-   "x": 118.44,
-   "y": 1080.96,
+   "x": 119.54,
+   "y": 1080.16,
    "role": "ordinary_tile",
    "segment": "W04",
-   "elev": 26.46
+   "elev": 26.5
   },
   "W04_05": {
-   "x": 122.18,
-   "y": 1062.57,
+   "x": 122.0,
+   "y": 1063.33,
    "role": "ordinary_tile",
    "segment": "W04",
-   "elev": 27.57
+   "elev": 27.5
   },
   "W04_06": {
-   "x": 126.61,
-   "y": 1044.11,
+   "x": 126.0,
+   "y": 1046.68,
    "role": "ordinary_tile",
    "segment": "W04",
-   "elev": 28.68
+   "elev": 28.51
   },
   "W04_07": {
-   "x": 133.16,
-   "y": 1026.84,
+   "x": 131.0,
+   "y": 1030.37,
    "role": "ordinary_tile",
    "segment": "W04",
-   "elev": 29.77
+   "elev": 29.52
   },
   "W04_08": {
-   "x": 146.58,
-   "y": 1013.42,
+   "x": 142.36,
+   "y": 1017.64,
    "role": "ordinary_tile",
    "segment": "W04",
-   "elev": 30.88
+   "elev": 30.53
   },
   "W4": {
    "x": 160,
@@ -338,53 +338,53 @@
    "elev": 32.0
   },
   "W05_01": {
-   "x": 167.34,
-   "y": 980.25,
+   "x": 171.84,
+   "y": 968.13,
    "role": "ordinary_tile",
    "segment": "W05",
-   "elev": 33.26
+   "elev": 34.03
   },
   "W05_02": {
-   "x": 174.67,
-   "y": 960.5,
+   "x": 178.39,
+   "y": 950.5,
    "role": "ordinary_tile",
    "segment": "W05",
-   "elev": 34.51
+   "elev": 35.15
   },
   "W05_03": {
-   "x": 182.01,
-   "y": 940.75,
+   "x": 184.93,
+   "y": 932.87,
    "role": "ordinary_tile",
    "segment": "W05",
-   "elev": 35.77
+   "elev": 36.28
   },
   "W05_04": {
-   "x": 188.91,
-   "y": 920.85,
+   "x": 190.77,
+   "y": 915.0,
    "role": "ordinary_tile",
    "segment": "W05",
-   "elev": 37.03
+   "elev": 37.4
   },
   "W05_05": {
-   "x": 195.3,
-   "y": 900.77,
+   "x": 196.48,
+   "y": 897.08,
    "role": "ordinary_tile",
    "segment": "W05",
-   "elev": 38.29
+   "elev": 38.52
   },
   "W05_06": {
-   "x": 204.67,
-   "y": 882.96,
+   "x": 206.69,
+   "y": 881.74,
    "role": "ordinary_tile",
    "segment": "W05",
-   "elev": 39.49
+   "elev": 39.62
   },
   "W05_07": {
-   "x": 222.33,
-   "y": 871.48,
+   "x": 222.41,
+   "y": 871.43,
    "role": "ordinary_tile",
    "segment": "W05",
-   "elev": 40.74
+   "elev": 40.75
   },
   "W5": {
    "x": 240,
@@ -394,46 +394,46 @@
    "elev": 42.0
   },
   "W06_01": {
-   "x": 255.64,
+   "x": 255.63,
    "y": 847.49,
    "role": "ordinary_tile",
    "segment": "W06",
    "elev": 43.14
   },
   "W06_02": {
-   "x": 271.28,
-   "y": 834.98,
+   "x": 269.08,
+   "y": 836.73,
    "role": "ordinary_tile",
    "segment": "W06",
-   "elev": 44.29
+   "elev": 44.13
   },
   "W06_03": {
-   "x": 286.92,
-   "y": 822.47,
+   "x": 282.53,
+   "y": 825.97,
    "role": "ordinary_tile",
    "segment": "W06",
-   "elev": 45.43
+   "elev": 45.11
   },
   "W06_04": {
-   "x": 304.78,
-   "y": 813.67,
+   "x": 297.09,
+   "y": 816.96,
    "role": "ordinary_tile",
    "segment": "W06",
-   "elev": 46.57
+   "elev": 46.09
   },
   "W06_05": {
-   "x": 323.18,
-   "y": 805.78,
+   "x": 312.92,
+   "y": 810.18,
    "role": "ordinary_tile",
    "segment": "W06",
-   "elev": 47.71
+   "elev": 47.07
   },
   "W06_06": {
-   "x": 341.59,
-   "y": 797.89,
+   "x": 328.75,
+   "y": 803.39,
    "role": "ordinary_tile",
    "segment": "W06",
-   "elev": 48.86
+   "elev": 48.06
   },
   "W6": {
    "x": 360,
@@ -443,53 +443,53 @@
    "elev": 50.0
   },
   "W07_01": {
-   "x": 379.3,
+   "x": 384.95,
    "y": 790.0,
    "role": "ordinary_tile",
    "segment": "W07",
-   "elev": 50.75
+   "elev": 50.97
   },
   "W07_02": {
-   "x": 398.6,
+   "x": 402.36,
    "y": 790.0,
    "role": "ordinary_tile",
    "segment": "W07",
-   "elev": 51.5
+   "elev": 51.65
   },
   "W07_03": {
-   "x": 417.9,
+   "x": 419.78,
    "y": 790.0,
    "role": "ordinary_tile",
    "segment": "W07",
-   "elev": 52.25
+   "elev": 52.32
   },
   "W07_04": {
-   "x": 437.0,
+   "x": 437.01,
    "y": 788.29,
    "role": "ordinary_tile",
    "segment": "W07",
    "elev": 53.0
   },
   "W07_05": {
-   "x": 455.75,
-   "y": 783.72,
+   "x": 453.93,
+   "y": 784.16,
    "role": "ordinary_tile",
    "segment": "W07",
-   "elev": 53.75
+   "elev": 53.68
   },
   "W07_06": {
-   "x": 474.5,
-   "y": 779.15,
+   "x": 470.84,
+   "y": 780.04,
    "role": "ordinary_tile",
    "segment": "W07",
-   "elev": 54.5
+   "elev": 54.35
   },
   "W07_07": {
-   "x": 493.25,
-   "y": 774.57,
+   "x": 487.76,
+   "y": 775.91,
    "role": "ordinary_tile",
    "segment": "W07",
-   "elev": 55.25
+   "elev": 55.03
   },
   "P": {
    "x": 512,
@@ -499,102 +499,102 @@
    "elev": 56.0
   },
   "W07B_01": {
-   "x": 374.17,
-   "y": 775.83,
+   "x": 379.97,
+   "y": 770.03,
    "role": "ordinary_tile",
    "segment": "W07B",
-   "elev": 50.67
+   "elev": 50.95
   },
   "W07B_02": {
-   "x": 388.33,
-   "y": 761.67,
+   "x": 392.31,
+   "y": 757.69,
    "role": "ordinary_tile",
    "segment": "W07B",
-   "elev": 51.34
+   "elev": 51.54
   },
   "W07B_03": {
-   "x": 403.44,
-   "y": 749.2,
+   "x": 406.8,
+   "y": 748.44,
    "role": "ordinary_tile",
    "segment": "W07B",
-   "elev": 52.0
+   "elev": 52.12
   },
   "W07B_04": {
-   "x": 422.95,
-   "y": 744.64,
+   "x": 423.8,
+   "y": 744.45,
    "role": "ordinary_tile",
    "segment": "W07B",
-   "elev": 52.67
+   "elev": 52.71
   },
   "W07B_05": {
-   "x": 442.46,
-   "y": 740.09,
+   "x": 440.8,
+   "y": 740.48,
    "role": "ordinary_tile",
    "segment": "W07B",
-   "elev": 53.34
+   "elev": 53.3
   },
   "W07B_06": {
-   "x": 461.7,
-   "y": 737.11,
+   "x": 457.97,
+   "y": 738.04,
    "role": "ordinary_tile",
    "segment": "W07B",
-   "elev": 53.99
+   "elev": 53.88
   },
   "W07B_07": {
-   "x": 478.46,
-   "y": 748.07,
+   "x": 473.75,
+   "y": 744.99,
    "role": "ordinary_tile",
    "segment": "W07B",
-   "elev": 54.66
+   "elev": 54.46
   },
   "W07B_08": {
-   "x": 495.23,
-   "y": 759.04,
+   "x": 488.36,
+   "y": 754.55,
    "role": "ordinary_tile",
    "segment": "W07B",
-   "elev": 55.33
+   "elev": 55.05
   },
   "D_LC_01": {
-   "x": 132.79,
-   "y": 1158.03,
+   "x": 131.24,
+   "y": 1158.8,
    "role": "ordinary_tile",
    "segment": "D_LC",
-   "elev": 21.7
+   "elev": 21.67
   },
   "D_LC_02": {
-   "x": 119.54,
-   "y": 1169.54,
+   "x": 119.44,
+   "y": 1170.81,
    "role": "ordinary_tile",
    "segment": "D_LC",
-   "elev": 21.43
+   "elev": 21.4
   },
   "D_LC_03": {
-   "x": 113.84,
-   "y": 1187.66,
+   "x": 113.49,
+   "y": 1186.87,
    "role": "ordinary_tile",
    "segment": "D_LC",
    "elev": 21.13
   },
   "D_LC_04": {
-   "x": 101.65,
-   "y": 1198.49,
+   "x": 100.89,
+   "y": 1198.06,
    "role": "ordinary_tile",
    "segment": "D_LC",
    "elev": 20.87
   },
   "D_LC_05": {
-   "x": 82.99,
-   "y": 1202.06,
+   "x": 84.25,
+   "y": 1202.1,
    "role": "ordinary_tile",
    "segment": "D_LC",
-   "elev": 20.57
+   "elev": 20.6
   },
   "D_LC_06": {
-   "x": 69.99,
-   "y": 1213.84,
+   "x": 70.93,
+   "y": 1212.39,
    "role": "ordinary_tile",
    "segment": "D_LC",
-   "elev": 20.3
+   "elev": 20.33
   },
   "L_CHEST": {
    "x": 60,
@@ -604,46 +604,46 @@
    "elev": 20.0
   },
   "D_LA_01": {
-   "x": 151.1,
-   "y": 983.23,
+   "x": 152.53,
+   "y": 986.09,
    "role": "ordinary_tile",
    "segment": "D_LA",
-   "elev": 32.33
+   "elev": 32.29
   },
   "D_LA_02": {
-   "x": 137.91,
-   "y": 980.7,
+   "x": 138.9,
+   "y": 980.56,
    "role": "ordinary_tile",
    "segment": "D_LA",
    "elev": 32.57
   },
   "D_LA_03": {
-   "x": 121.23,
-   "y": 989.77,
+   "x": 124.63,
+   "y": 987.14,
    "role": "ordinary_tile",
    "segment": "D_LA",
-   "elev": 32.9
+   "elev": 32.86
   },
   "D_LA_04": {
-   "x": 111.49,
-   "y": 984.9,
+   "x": 111.51,
+   "y": 980.58,
    "role": "ordinary_tile",
    "segment": "D_LA",
-   "elev": 33.1
+   "elev": 33.14
   },
   "D_LA_05": {
-   "x": 108.67,
-   "y": 966.12,
+   "x": 108.2,
+   "y": 965.21,
    "role": "ordinary_tile",
    "segment": "D_LA",
    "elev": 33.43
   },
   "D_LA_06": {
-   "x": 98.75,
-   "y": 957.02,
+   "x": 95.61,
+   "y": 957.6,
    "role": "ordinary_tile",
    "segment": "D_LA",
-   "elev": 33.67
+   "elev": 33.71
   },
   "L_ALTAR": {
    "x": 80,
@@ -653,50 +653,50 @@
    "elev": 34.0
   },
   "E01_01": {
-   "x": 532.93,
+   "x": 546.0,
    "y": 1420.0,
    "role": "ordinary_tile",
    "segment": "E01",
-   "elev": 4.5
+   "elev": 4.81
   },
   "E01_02": {
-   "x": 553.86,
+   "x": 564.74,
    "y": 1420.0,
    "role": "ordinary_tile",
    "segment": "E01",
-   "elev": 5.0
+   "elev": 5.26
   },
   "E01_03": {
-   "x": 574.79,
+   "x": 583.47,
    "y": 1420.0,
    "role": "ordinary_tile",
    "segment": "E01",
-   "elev": 5.5
+   "elev": 5.71
   },
   "E01_04": {
-   "x": 595.61,
-   "y": 1419.4,
+   "x": 601.78,
+   "y": 1417.08,
    "role": "ordinary_tile",
    "segment": "E01",
-   "elev": 6.0
+   "elev": 6.15
   },
   "E01_05": {
-   "x": 615.21,
-   "y": 1412.05,
+   "x": 619.33,
+   "y": 1410.5,
    "role": "ordinary_tile",
    "segment": "E01",
-   "elev": 6.5
+   "elev": 6.6
   },
   "E01_06": {
-   "x": 634.81,
-   "y": 1404.7,
+   "x": 636.87,
+   "y": 1403.92,
    "role": "ordinary_tile",
    "segment": "E01",
-   "elev": 7.0
+   "elev": 7.05
   },
   "E01_07": {
-   "x": 654.4,
-   "y": 1397.35,
+   "x": 654.41,
+   "y": 1397.34,
    "role": "ordinary_tile",
    "segment": "E01",
    "elev": 7.5
@@ -709,53 +709,53 @@
    "elev": 8.0
   },
   "E02_01": {
-   "x": 692.77,
-   "y": 1383.34,
+   "x": 692.75,
+   "y": 1383.35,
    "role": "ordinary_tile",
    "segment": "E02",
    "elev": 8.75
   },
   "E02_02": {
-   "x": 711.54,
-   "y": 1376.68,
+   "x": 709.29,
+   "y": 1377.48,
    "role": "ordinary_tile",
    "segment": "E02",
-   "elev": 9.5
+   "elev": 9.41
   },
   "E02_03": {
-   "x": 730.31,
-   "y": 1370.02,
+   "x": 725.82,
+   "y": 1371.61,
    "role": "ordinary_tile",
    "segment": "E02",
-   "elev": 10.26
+   "elev": 10.08
   },
   "E02_04": {
-   "x": 746.11,
-   "y": 1358.49,
+   "x": 741.03,
+   "y": 1363.26,
    "role": "ordinary_tile",
    "segment": "E02",
-   "elev": 10.99
+   "elev": 10.73
   },
   "E02_05": {
-   "x": 760.61,
-   "y": 1344.83,
+   "x": 753.81,
+   "y": 1351.24,
    "role": "ordinary_tile",
    "segment": "E02",
-   "elev": 11.75
+   "elev": 11.39
   },
   "E02_06": {
-   "x": 774.5,
-   "y": 1330.6,
+   "x": 766.59,
+   "y": 1339.21,
    "role": "ordinary_tile",
    "segment": "E02",
-   "elev": 12.5
+   "elev": 12.06
   },
   "E02_07": {
-   "x": 787.25,
-   "y": 1315.3,
+   "x": 778.23,
+   "y": 1326.12,
    "role": "ordinary_tile",
    "segment": "E02",
-   "elev": 13.25
+   "elev": 12.72
   },
   "E2": {
    "x": 800,
@@ -765,46 +765,46 @@
    "elev": 14.0
   },
   "E03_01": {
-   "x": 804.04,
-   "y": 1279.81,
+   "x": 805.54,
+   "y": 1272.31,
    "role": "ordinary_tile",
    "segment": "E03",
-   "elev": 15.14
+   "elev": 15.57
   },
   "E03_02": {
-   "x": 808.08,
-   "y": 1259.61,
+   "x": 808.97,
+   "y": 1255.16,
    "role": "ordinary_tile",
    "segment": "E03",
-   "elev": 16.29
+   "elev": 16.54
   },
   "E03_03": {
-   "x": 811.84,
-   "y": 1239.43,
+   "x": 811.09,
+   "y": 1237.89,
    "role": "ordinary_tile",
    "segment": "E03",
-   "elev": 17.43
+   "elev": 17.51
   },
   "E03_04": {
-   "x": 806.38,
-   "y": 1219.57,
+   "x": 806.76,
+   "y": 1220.96,
    "role": "ordinary_tile",
    "segment": "E03",
-   "elev": 18.57
+   "elev": 18.48
   },
   "E03_05": {
-   "x": 800.92,
-   "y": 1199.71,
+   "x": 802.13,
+   "y": 1204.09,
    "role": "ordinary_tile",
    "segment": "E03",
-   "elev": 19.71
+   "elev": 19.46
   },
   "E03_06": {
-   "x": 795.46,
-   "y": 1179.86,
+   "x": 797.49,
+   "y": 1187.23,
    "role": "ordinary_tile",
    "segment": "E03",
-   "elev": 20.86
+   "elev": 20.43
   },
   "E3": {
    "x": 790,
@@ -814,102 +814,102 @@
    "elev": 22.0
   },
   "E03B_01": {
-   "x": 786.98,
-   "y": 1283.73,
+   "x": 781.23,
+   "y": 1276.54,
    "role": "ordinary_tile",
    "segment": "E03B",
-   "elev": 15.01
+   "elev": 15.46
   },
   "E03B_02": {
-   "x": 773.97,
-   "y": 1267.46,
+   "x": 770.3,
+   "y": 1262.88,
    "role": "ordinary_tile",
    "segment": "E03B",
-   "elev": 16.02
+   "elev": 16.31
   },
   "E03B_03": {
-   "x": 760.95,
-   "y": 1251.19,
+   "x": 760.71,
+   "y": 1248.38,
    "role": "ordinary_tile",
    "segment": "E03B",
-   "elev": 17.03
+   "elev": 17.16
   },
   "E03B_04": {
-   "x": 758.46,
-   "y": 1230.75,
+   "x": 758.49,
+   "y": 1231.07,
    "role": "ordinary_tile",
    "segment": "E03B",
-   "elev": 18.03
+   "elev": 18.0
   },
   "E03B_05": {
-   "x": 756.8,
-   "y": 1209.98,
+   "x": 757.09,
+   "y": 1213.63,
    "role": "ordinary_tile",
    "segment": "E03B",
-   "elev": 19.04
+   "elev": 18.85
   },
   "E03B_06": {
-   "x": 763.01,
-   "y": 1191.75,
+   "x": 759.73,
+   "y": 1196.61,
    "role": "ordinary_tile",
    "segment": "E03B",
-   "elev": 19.98
+   "elev": 19.69
   },
   "E03B_07": {
-   "x": 776.51,
-   "y": 1175.88,
+   "x": 770.54,
+   "y": 1182.89,
    "role": "ordinary_tile",
    "segment": "E03B",
-   "elev": 20.99
+   "elev": 20.54
   },
   "E04_01": {
-   "x": 792.83,
-   "y": 1140.18,
+   "x": 793.99,
+   "y": 1132.04,
    "role": "ordinary_tile",
    "segment": "E04",
-   "elev": 23.26
+   "elev": 23.77
   },
   "E04_02": {
-   "x": 795.66,
-   "y": 1120.36,
+   "x": 796.43,
+   "y": 1115.02,
    "role": "ordinary_tile",
    "segment": "E04",
-   "elev": 24.51
+   "elev": 24.85
   },
   "E04_03": {
-   "x": 798.49,
-   "y": 1100.55,
+   "x": 798.86,
+   "y": 1098.0,
    "role": "ordinary_tile",
    "segment": "E04",
-   "elev": 25.77
+   "elev": 25.93
   },
   "E04_04": {
-   "x": 795.81,
-   "y": 1081.62,
+   "x": 795.7,
+   "y": 1081.4,
    "role": "ordinary_tile",
    "segment": "E04",
-   "elev": 26.97
+   "elev": 26.99
   },
   "E04_05": {
-   "x": 786.86,
-   "y": 1063.72,
+   "x": 788.01,
+   "y": 1066.02,
    "role": "ordinary_tile",
    "segment": "E04",
-   "elev": 28.23
+   "elev": 28.07
   },
   "E04_06": {
-   "x": 777.91,
-   "y": 1045.81,
+   "x": 780.32,
+   "y": 1050.64,
    "role": "ordinary_tile",
    "segment": "E04",
-   "elev": 29.49
+   "elev": 29.15
   },
   "E04_07": {
-   "x": 768.95,
-   "y": 1027.91,
+   "x": 772.63,
+   "y": 1035.26,
    "role": "ordinary_tile",
    "segment": "E04",
-   "elev": 30.74
+   "elev": 30.23
   },
   "STATUE": {
    "x": 760,
@@ -919,53 +919,53 @@
    "elev": 32.0
   },
   "E05_01": {
-   "x": 753.86,
-   "y": 991.59,
+   "x": 752.11,
+   "y": 986.33,
    "role": "ordinary_tile",
    "segment": "E05",
-   "elev": 33.25
+   "elev": 33.61
   },
   "E05_02": {
-   "x": 747.73,
-   "y": 973.18,
+   "x": 746.57,
+   "y": 969.71,
    "role": "ordinary_tile",
    "segment": "E05",
-   "elev": 34.51
+   "elev": 34.74
   },
   "E05_03": {
-   "x": 741.59,
-   "y": 954.78,
+   "x": 741.03,
+   "y": 953.1,
    "role": "ordinary_tile",
    "segment": "E05",
-   "elev": 35.76
+   "elev": 35.87
   },
   "E05_04": {
-   "x": 736.82,
-   "y": 935.99,
+   "x": 736.84,
+   "y": 936.1,
    "role": "ordinary_tile",
    "segment": "E05",
-   "elev": 37.02
+   "elev": 37.0
   },
   "E05_05": {
-   "x": 732.52,
-   "y": 917.07,
+   "x": 732.96,
+   "y": 919.02,
    "role": "ordinary_tile",
    "segment": "E05",
-   "elev": 38.27
+   "elev": 38.14
   },
   "E05_06": {
-   "x": 724.84,
-   "y": 899.81,
+   "x": 727.12,
+   "y": 902.68,
    "role": "ordinary_tile",
    "segment": "E05",
-   "elev": 39.49
+   "elev": 39.26
   },
   "E05_07": {
-   "x": 712.42,
-   "y": 884.91,
+   "x": 715.97,
+   "y": 889.17,
    "role": "ordinary_tile",
    "segment": "E05",
-   "elev": 40.75
+   "elev": 40.39
   },
   "E5": {
    "x": 700,
@@ -975,25 +975,25 @@
    "elev": 42.0
   },
   "E06_01": {
-   "x": 685.7,
-   "y": 854.27,
+   "x": 677.13,
+   "y": 844.84,
    "role": "ordinary_tile",
    "segment": "E06",
-   "elev": 43.6
+   "elev": 44.56
   },
   "E06_02": {
-   "x": 671.39,
-   "y": 838.53,
+   "x": 665.68,
+   "y": 832.25,
    "role": "ordinary_tile",
    "segment": "E06",
-   "elev": 45.2
+   "elev": 45.84
   },
   "E06_03": {
-   "x": 657.23,
-   "y": 822.67,
+   "x": 654.51,
+   "y": 819.41,
    "role": "ordinary_tile",
    "segment": "E06",
-   "elev": 46.8
+   "elev": 47.12
   },
   "E06_04": {
    "x": 643.61,
@@ -1010,81 +1010,81 @@
    "elev": 50.0
   },
   "E07_01": {
-   "x": 609.85,
+   "x": 609.86,
    "y": 790.0,
    "role": "ordinary_tile",
    "segment": "E07",
    "elev": 51.0
   },
   "E07_02": {
-   "x": 589.71,
+   "x": 592.68,
    "y": 790.0,
    "role": "ordinary_tile",
    "segment": "E07",
-   "elev": 52.0
+   "elev": 51.85
   },
   "E07_03": {
-   "x": 569.98,
-   "y": 787.05,
+   "x": 575.63,
+   "y": 788.71,
    "role": "ordinary_tile",
    "segment": "E07",
-   "elev": 53.0
+   "elev": 52.7
   },
   "E07_04": {
-   "x": 550.66,
-   "y": 781.37,
+   "x": 559.15,
+   "y": 783.87,
    "role": "ordinary_tile",
    "segment": "E07",
-   "elev": 54.0
+   "elev": 53.56
   },
   "E07_05": {
-   "x": 531.33,
-   "y": 775.68,
+   "x": 542.66,
+   "y": 779.02,
    "role": "ordinary_tile",
    "segment": "E07",
-   "elev": 55.0
+   "elev": 54.41
   },
   "D_RC_01": {
-   "x": 780.14,
-   "y": 1143.75,
+   "x": 780.95,
+   "y": 1145.19,
    "role": "ordinary_tile",
    "segment": "D_RC",
-   "elev": 22.31
+   "elev": 22.29
   },
   "D_RC_02": {
-   "x": 766.49,
-   "y": 1135.04,
+   "x": 766.89,
+   "y": 1135.86,
    "role": "ordinary_tile",
    "segment": "D_RC",
    "elev": 22.57
   },
   "D_RC_03": {
-   "x": 747.56,
-   "y": 1136.81,
+   "x": 749.6,
+   "y": 1135.97,
    "role": "ordinary_tile",
    "segment": "D_RC",
-   "elev": 22.88
+   "elev": 22.86
   },
   "D_RC_04": {
-   "x": 735.83,
-   "y": 1128.47,
+   "x": 735.96,
+   "y": 1126.27,
    "role": "ordinary_tile",
    "segment": "D_RC",
-   "elev": 23.12
+   "elev": 23.14
   },
   "D_RC_05": {
-   "x": 731.3,
-   "y": 1110.02,
+   "x": 730.39,
+   "y": 1109.91,
    "role": "ordinary_tile",
    "segment": "D_RC",
    "elev": 23.43
   },
   "D_RC_06": {
-   "x": 718.58,
-   "y": 1099.98,
+   "x": 716.96,
+   "y": 1099.69,
    "role": "ordinary_tile",
    "segment": "D_RC",
-   "elev": 23.69
+   "elev": 23.71
   },
   "R_CHEST": {
    "x": 700,
@@ -1094,39 +1094,39 @@
    "elev": 24.0
   },
   "D_R5_01": {
-   "x": 741.63,
-   "y": 1014.88,
+   "x": 744.17,
+   "y": 1014.6,
    "role": "ordinary_tile",
    "segment": "D_R5",
-   "elev": 31.64
+   "elev": 31.66
   },
   "D_R5_02": {
-   "x": 737.3,
-   "y": 1029.75,
+   "x": 737.2,
+   "y": 1028.44,
    "role": "ordinary_tile",
    "segment": "D_R5",
-   "elev": 31.36
+   "elev": 31.33
   },
   "D_R5_03": {
-   "x": 738.7,
-   "y": 1048.7,
+   "x": 733.96,
+   "y": 1043.96,
    "role": "ordinary_tile",
    "segment": "D_R5",
    "elev": 31.0
   },
   "D_R5_04": {
-   "x": 719.75,
-   "y": 1047.3,
+   "x": 718.44,
+   "y": 1047.2,
    "role": "ordinary_tile",
    "segment": "D_R5",
-   "elev": 30.64
+   "elev": 30.67
   },
   "D_R5_05": {
-   "x": 704.88,
-   "y": 1051.63,
+   "x": 704.6,
+   "y": 1054.17,
    "role": "ordinary_tile",
    "segment": "D_R5",
-   "elev": 30.36
+   "elev": 30.34
   },
   "REWARD5": {
    "x": 700,
@@ -1136,50 +1136,50 @@
    "elev": 30.0
   },
   "D_RAND_01": {
-   "x": 718.02,
-   "y": 864.05,
+   "x": 715.44,
+   "y": 864.91,
    "role": "ordinary_tile",
    "segment": "D_RAND",
    "elev": 42.26
   },
   "D_RAND_02": {
-   "x": 729.46,
-   "y": 854.29,
+   "x": 727.08,
+   "y": 854.46,
    "role": "ordinary_tile",
    "segment": "D_RAND",
-   "elev": 42.47
+   "elev": 42.5
   },
   "D_RAND_03": {
-   "x": 725.68,
-   "y": 835.69,
+   "x": 726.25,
+   "y": 838.48,
    "role": "ordinary_tile",
    "segment": "D_RAND",
-   "elev": 42.74
+   "elev": 42.75
   },
   "D_RAND_04": {
-   "x": 721.91,
-   "y": 817.1,
+   "x": 729.15,
+   "y": 823.13,
    "role": "ordinary_tile",
    "segment": "D_RAND",
    "elev": 43.0
   },
   "D_RAND_05": {
-   "x": 740.88,
-   "y": 817.45,
+   "x": 743.73,
+   "y": 817.5,
    "role": "ordinary_tile",
    "segment": "D_RAND",
-   "elev": 43.26
+   "elev": 43.25
   },
   "D_RAND_06": {
-   "x": 759.85,
-   "y": 817.79,
+   "x": 759.6,
+   "y": 815.43,
    "role": "ordinary_tile",
    "segment": "D_RAND",
-   "elev": 43.53
+   "elev": 43.5
   },
   "D_RAND_07": {
-   "x": 767.41,
-   "y": 804.8,
+   "x": 767.78,
+   "y": 802.1,
    "role": "ordinary_tile",
    "segment": "D_RAND",
    "elev": 43.74
@@ -1193,10 +1193,10 @@
   },
   "C01_01": {
    "x": 512.0,
-   "y": 749.33,
+   "y": 746.54,
    "role": "ordinary_tile",
    "segment": "C01",
-   "elev": 58.0
+   "elev": 58.27
   },
   "C01_02": {
    "x": 512.0,
@@ -1255,32 +1255,32 @@
    "elev": 70.0
   },
   "Q_L1_01": {
-   "x": 494.4,
-   "y": 593.2,
+   "x": 492.67,
+   "y": 592.53,
    "role": "ordinary_tile",
    "segment": "Q_L1",
-   "elev": 71.2
+   "elev": 71.32
   },
   "Q_L1_02": {
-   "x": 476.8,
-   "y": 586.4,
+   "x": 476.22,
+   "y": 586.18,
    "role": "ordinary_tile",
    "segment": "Q_L1",
-   "elev": 72.4
+   "elev": 72.44
   },
   "Q_L1_03": {
-   "x": 459.2,
-   "y": 579.6,
+   "x": 459.78,
+   "y": 579.82,
    "role": "ordinary_tile",
    "segment": "Q_L1",
-   "elev": 73.6
+   "elev": 73.56
   },
   "Q_L1_04": {
-   "x": 441.6,
-   "y": 572.8,
+   "x": 443.33,
+   "y": 573.47,
    "role": "ordinary_tile",
    "segment": "Q_L1",
-   "elev": 74.8
+   "elev": 74.68
   },
   "QL1": {
    "x": 424,
@@ -1290,25 +1290,25 @@
    "elev": 76.0
   },
   "Q_L2_01": {
-   "x": 407.07,
-   "y": 554.42,
+   "x": 403.41,
+   "y": 551.91,
    "role": "ordinary_tile",
    "segment": "Q_L2",
-   "elev": 78.04
+   "elev": 78.51
   },
   "Q_L2_02": {
-   "x": 390.14,
-   "y": 542.84,
+   "x": 390.32,
+   "y": 540.57,
    "role": "ordinary_tile",
    "segment": "Q_L2",
-   "elev": 80.09
+   "elev": 80.26
   },
   "Q_L2_03": {
    "x": 386.0,
-   "y": 524.51,
+   "y": 523.96,
    "role": "ordinary_tile",
    "segment": "Q_L2",
-   "elev": 81.96
+   "elev": 81.99
   },
   "QL2": {
    "x": 386,
@@ -1318,18 +1318,18 @@
    "elev": 84.0
   },
   "Q_L3_01": {
-   "x": 395.71,
-   "y": 487.36,
+   "x": 395.68,
+   "y": 487.4,
    "role": "ordinary_tile",
    "segment": "Q_L3",
    "elev": 86.68
   },
   "Q_L3_02": {
-   "x": 408.59,
-   "y": 473.56,
+   "x": 407.42,
+   "y": 474.44,
    "role": "ordinary_tile",
    "segment": "Q_L3",
-   "elev": 89.32
+   "elev": 89.11
   },
   "QL3": {
    "x": 424,
@@ -1339,11 +1339,11 @@
    "elev": 92.0
   },
   "Q_L4_01": {
-   "x": 446.0,
-   "y": 466.5,
+   "x": 450.01,
+   "y": 467.32,
    "role": "ordinary_tile",
    "segment": "Q_L4",
-   "elev": 93.0
+   "elev": 93.18
   },
   "Q_L4_02": {
    "x": 468.0,
@@ -1353,11 +1353,11 @@
    "elev": 94.0
   },
   "Q_L4_03": {
-   "x": 490.0,
-   "y": 475.5,
+   "x": 485.99,
+   "y": 474.68,
    "role": "ordinary_tile",
    "segment": "Q_L4",
-   "elev": 95.0
+   "elev": 94.82
   },
   "R": {
    "x": 512,
@@ -1367,67 +1367,67 @@
    "elev": 96.0
   },
   "QL_IN_01": {
-   "x": 435.12,
-   "y": 549.33,
+   "x": 437.84,
+   "y": 545.24,
    "role": "ordinary_tile",
    "segment": "QL_IN",
-   "elev": 78.71
+   "elev": 79.37
   },
   "QL_IN_02": {
-   "x": 446.23,
-   "y": 532.65,
+   "x": 447.31,
+   "y": 530.81,
    "role": "ordinary_tile",
    "segment": "QL_IN",
-   "elev": 81.41
+   "elev": 81.7
   },
   "QL_IN_03": {
-   "x": 450.22,
-   "y": 514.52,
+   "x": 450.12,
+   "y": 514.1,
    "role": "ordinary_tile",
    "segment": "QL_IN",
-   "elev": 83.92
+   "elev": 83.99
   },
   "QL_IN_04": {
-   "x": 446.53,
-   "y": 494.83,
+   "x": 446.92,
+   "y": 497.14,
    "role": "ordinary_tile",
    "segment": "QL_IN",
-   "elev": 86.62
+   "elev": 86.32
   },
   "QL_IN_05": {
-   "x": 435.85,
-   "y": 478.16,
+   "x": 438.76,
+   "y": 482.12,
    "role": "ordinary_tile",
    "segment": "QL_IN",
-   "elev": 89.29
+   "elev": 88.63
   },
   "Q_R1_01": {
-   "x": 529.6,
-   "y": 593.2,
+   "x": 531.33,
+   "y": 592.53,
    "role": "ordinary_tile",
    "segment": "Q_R1",
-   "elev": 71.2
+   "elev": 71.32
   },
   "Q_R1_02": {
-   "x": 547.2,
-   "y": 586.4,
+   "x": 547.78,
+   "y": 586.18,
    "role": "ordinary_tile",
    "segment": "Q_R1",
-   "elev": 72.4
+   "elev": 72.44
   },
   "Q_R1_03": {
-   "x": 564.8,
-   "y": 579.6,
+   "x": 564.22,
+   "y": 579.82,
    "role": "ordinary_tile",
    "segment": "Q_R1",
-   "elev": 73.6
+   "elev": 73.56
   },
   "Q_R1_04": {
-   "x": 582.4,
-   "y": 572.8,
+   "x": 580.67,
+   "y": 573.47,
    "role": "ordinary_tile",
    "segment": "Q_R1",
-   "elev": 74.8
+   "elev": 74.68
   },
   "QR1": {
    "x": 600,
@@ -1437,25 +1437,25 @@
    "elev": 76.0
   },
   "Q_R2_01": {
-   "x": 616.93,
-   "y": 554.42,
+   "x": 620.59,
+   "y": 551.91,
    "role": "ordinary_tile",
    "segment": "Q_R2",
-   "elev": 78.04
+   "elev": 78.51
   },
   "Q_R2_02": {
-   "x": 633.86,
-   "y": 542.84,
+   "x": 633.68,
+   "y": 540.57,
    "role": "ordinary_tile",
    "segment": "Q_R2",
-   "elev": 80.09
+   "elev": 80.26
   },
   "Q_R2_03": {
    "x": 638.0,
-   "y": 524.51,
+   "y": 523.96,
    "role": "ordinary_tile",
    "segment": "Q_R2",
-   "elev": 81.96
+   "elev": 81.99
   },
   "QR2": {
    "x": 638,
@@ -1465,18 +1465,18 @@
    "elev": 84.0
   },
   "Q_R3_01": {
-   "x": 628.29,
-   "y": 487.36,
+   "x": 628.32,
+   "y": 487.4,
    "role": "ordinary_tile",
    "segment": "Q_R3",
    "elev": 86.68
   },
   "Q_R3_02": {
-   "x": 615.41,
-   "y": 473.56,
+   "x": 616.58,
+   "y": 474.44,
    "role": "ordinary_tile",
    "segment": "Q_R3",
-   "elev": 89.32
+   "elev": 89.11
   },
   "QR3": {
    "x": 600,
@@ -1486,11 +1486,11 @@
    "elev": 92.0
   },
   "Q_R4_01": {
-   "x": 578.0,
-   "y": 466.5,
+   "x": 573.99,
+   "y": 467.32,
    "role": "ordinary_tile",
    "segment": "Q_R4",
-   "elev": 93.0
+   "elev": 93.18
   },
   "Q_R4_02": {
    "x": 556.0,
@@ -1500,46 +1500,46 @@
    "elev": 94.0
   },
   "Q_R4_03": {
-   "x": 534.0,
-   "y": 475.5,
+   "x": 538.01,
+   "y": 474.68,
    "role": "ordinary_tile",
    "segment": "Q_R4",
-   "elev": 95.0
+   "elev": 94.82
   },
   "QR_IN_01": {
-   "x": 588.88,
-   "y": 549.33,
+   "x": 586.16,
+   "y": 545.24,
    "role": "ordinary_tile",
    "segment": "QR_IN",
-   "elev": 78.71
+   "elev": 79.37
   },
   "QR_IN_02": {
-   "x": 577.77,
-   "y": 532.65,
+   "x": 576.69,
+   "y": 530.81,
    "role": "ordinary_tile",
    "segment": "QR_IN",
-   "elev": 81.41
+   "elev": 81.7
   },
   "QR_IN_03": {
-   "x": 573.78,
-   "y": 514.52,
+   "x": 573.88,
+   "y": 514.1,
    "role": "ordinary_tile",
    "segment": "QR_IN",
-   "elev": 83.92
+   "elev": 83.99
   },
   "QR_IN_04": {
-   "x": 577.47,
-   "y": 494.83,
+   "x": 577.08,
+   "y": 497.14,
    "role": "ordinary_tile",
    "segment": "QR_IN",
-   "elev": 86.62
+   "elev": 86.32
   },
   "QR_IN_05": {
-   "x": 588.15,
-   "y": 478.16,
+   "x": 585.24,
+   "y": 482.12,
    "role": "ordinary_tile",
    "segment": "QR_IN",
-   "elev": 89.29
+   "elev": 88.63
   },
   "C04_01": {
    "x": 512.0,
@@ -1556,18 +1556,18 @@
    "elev": 98.0
   },
   "LATE_L1_01": {
-   "x": 492.66,
-   "y": 430.84,
+   "x": 488.57,
+   "y": 431.02,
    "role": "ordinary_tile",
    "segment": "LATE_L1",
-   "elev": 98.33
+   "elev": 98.4
   },
   "LATE_L1_02": {
-   "x": 473.32,
-   "y": 431.68,
+   "x": 471.27,
+   "y": 431.77,
    "role": "ordinary_tile",
    "segment": "LATE_L1",
-   "elev": 98.67
+   "elev": 98.7
   },
   "LATE_L1_03": {
    "x": 453.98,
@@ -1577,18 +1577,18 @@
    "elev": 99.0
   },
   "LATE_L1_04": {
-   "x": 434.66,
-   "y": 430.21,
+   "x": 436.7,
+   "y": 430.33,
    "role": "ordinary_tile",
    "segment": "LATE_L1",
-   "elev": 99.33
+   "elev": 99.3
   },
   "LATE_L1_05": {
-   "x": 415.33,
-   "y": 429.1,
+   "x": 419.42,
+   "y": 429.34,
    "role": "ordinary_tile",
    "segment": "LATE_L1",
-   "elev": 99.67
+   "elev": 99.6
   },
   "CHALLENGE": {
    "x": 396,
@@ -1598,11 +1598,11 @@
    "elev": 100.0
   },
   "LATE_L_FAIL_01": {
-   "x": 379.33,
-   "y": 439.33,
+   "x": 377.77,
+   "y": 440.4,
    "role": "ordinary_tile",
    "segment": "LATE_L_FAIL",
-   "elev": 99.33
+   "elev": 99.27
   },
   "LATE_L_FAIL_02": {
    "x": 362.67,
@@ -1619,109 +1619,109 @@
    "elev": 98.0
   },
   "LATE_L_FAIL_JOIN_01": {
-   "x": 327.39,
-   "y": 455.3,
+   "x": 327.72,
+   "y": 455.42,
    "role": "ordinary_tile",
    "segment": "LATE_L_FAIL_JOIN",
-   "elev": 98.51
+   "elev": 98.5
   },
   "LATE_L_FAIL_JOIN_02": {
-   "x": 308.78,
-   "y": 448.6,
+   "x": 310.42,
+   "y": 449.19,
    "role": "ordinary_tile",
    "segment": "LATE_L_FAIL_JOIN",
-   "elev": 99.02
+   "elev": 98.98
   },
   "LATE_L_FAIL_JOIN_03": {
-   "x": 293.85,
-   "y": 438.18,
+   "x": 295.39,
+   "y": 439.18,
    "role": "ordinary_tile",
    "segment": "LATE_L_FAIL_JOIN",
-   "elev": 99.49
+   "elev": 99.44
   },
   "LATE_L_FAIL_JOIN_04": {
-   "x": 286.98,
-   "y": 419.63,
+   "x": 288.01,
+   "y": 422.42,
    "role": "ordinary_tile",
    "segment": "LATE_L_FAIL_JOIN",
-   "elev": 100.0
+   "elev": 99.92
   },
   "LATE_L_FAIL_JOIN_05": {
-   "x": 280.11,
-   "y": 401.09,
+   "x": 281.62,
+   "y": 405.18,
    "role": "ordinary_tile",
    "segment": "LATE_L_FAIL_JOIN",
-   "elev": 100.5
+   "elev": 100.39
   },
   "LATE_L_FAIL_JOIN_06": {
-   "x": 279.38,
-   "y": 382.79,
+   "x": 278.49,
+   "y": 387.33,
    "role": "ordinary_tile",
    "segment": "LATE_L_FAIL_JOIN",
-   "elev": 100.97
+   "elev": 100.86
   },
   "LATE_L_FAIL_JOIN_07": {
-   "x": 287.77,
-   "y": 364.88,
+   "x": 285.23,
+   "y": 370.31,
    "role": "ordinary_tile",
    "segment": "LATE_L_FAIL_JOIN",
-   "elev": 101.48
+   "elev": 101.34
   },
   "LATE_L_FAIL_JOIN_08": {
-   "x": 296.17,
-   "y": 346.97,
+   "x": 293.04,
+   "y": 353.66,
    "role": "ordinary_tile",
    "segment": "LATE_L_FAIL_JOIN",
-   "elev": 101.99
+   "elev": 101.81
   },
   "LATE_L_FAIL_JOIN_09": {
-   "x": 304.57,
-   "y": 329.06,
+   "x": 300.9,
+   "y": 337.03,
    "role": "ordinary_tile",
    "segment": "LATE_L_FAIL_JOIN",
-   "elev": 102.5
+   "elev": 102.29
   },
   "LATE_L_FAIL_JOIN_10": {
-   "x": 322.12,
-   "y": 322.98,
+   "x": 314.25,
+   "y": 324.97,
    "role": "ordinary_tile",
    "segment": "LATE_L_FAIL_JOIN",
-   "elev": 102.98
+   "elev": 102.75
   },
   "LATE_L_FAIL_JOIN_11": {
-   "x": 341.56,
-   "y": 319.33,
+   "x": 332.2,
+   "y": 321.09,
    "role": "ordinary_tile",
    "segment": "LATE_L_FAIL_JOIN",
-   "elev": 103.49
+   "elev": 103.23
   },
   "LATE_L_FAIL_JOIN_12": {
-   "x": 361.0,
-   "y": 315.69,
+   "x": 350.27,
+   "y": 317.7,
    "role": "ordinary_tile",
    "segment": "LATE_L_FAIL_JOIN",
-   "elev": 104.0
+   "elev": 103.7
   },
   "LATE_L_FAIL_JOIN_13": {
-   "x": 379.11,
-   "y": 319.47,
+   "x": 368.45,
+   "y": 315.6,
    "role": "ordinary_tile",
    "segment": "LATE_L_FAIL_JOIN",
-   "elev": 104.47
+   "elev": 104.17
   },
   "LATE_L_FAIL_JOIN_14": {
-   "x": 396.08,
-   "y": 329.65,
+   "x": 385.08,
+   "y": 323.05,
    "role": "ordinary_tile",
    "segment": "LATE_L_FAIL_JOIN",
-   "elev": 104.98
+   "elev": 104.65
   },
   "LATE_L_FAIL_JOIN_15": {
-   "x": 413.04,
-   "y": 339.82,
+   "x": 400.85,
+   "y": 332.51,
    "role": "ordinary_tile",
    "segment": "LATE_L_FAIL_JOIN",
-   "elev": 105.49
+   "elev": 105.12
   },
   "L_MERGE": {
    "x": 430,
@@ -1731,18 +1731,18 @@
    "elev": 106.0
   },
   "LATE_L_SUCCESS1_01": {
-   "x": 389.33,
-   "y": 411.33,
+   "x": 389.2,
+   "y": 411.0,
    "role": "ordinary_tile",
    "segment": "LATE_L_SUCCESS1",
-   "elev": 101.33
+   "elev": 101.36
   },
   "LATE_L_SUCCESS1_02": {
-   "x": 382.67,
-   "y": 394.67,
+   "x": 382.8,
+   "y": 395.0,
    "role": "ordinary_tile",
    "segment": "LATE_L_SUCCESS1",
-   "elev": 102.67
+   "elev": 102.64
   },
   "SUCCESS_L1": {
    "x": 376,
@@ -1752,60 +1752,60 @@
    "elev": 104.0
   },
   "LATE_L_SUCCESS_JOIN_01": {
-   "x": 394.0,
-   "y": 368.67,
+   "x": 394.4,
+   "y": 368.46,
    "role": "ordinary_tile",
    "segment": "LATE_L_SUCCESS_JOIN",
-   "elev": 104.67
+   "elev": 104.68
   },
   "LATE_L_SUCCESS_JOIN_02": {
-   "x": 412.0,
-   "y": 359.33,
+   "x": 411.6,
+   "y": 359.54,
    "role": "ordinary_tile",
    "segment": "LATE_L_SUCCESS_JOIN",
-   "elev": 105.33
+   "elev": 105.32
   },
   "D_LLA_01": {
-   "x": 357.96,
-   "y": 372.14,
+   "x": 362.88,
+   "y": 373.76,
    "role": "ordinary_tile",
    "segment": "D_LLA",
-   "elev": 103.64
+   "elev": 103.69
   },
   "D_LLA_02": {
-   "x": 354.47,
-   "y": 383.14,
+   "x": 354.17,
+   "y": 381.38,
    "role": "ordinary_tile",
    "segment": "D_LLA",
-   "elev": 103.43
+   "elev": 103.44
   },
   "D_LLA_03": {
-   "x": 357.62,
-   "y": 401.85,
+   "x": 356.09,
+   "y": 395.0,
    "role": "ordinary_tile",
    "segment": "D_LLA",
-   "elev": 103.07
+   "elev": 103.13
   },
   "D_LLA_04": {
-   "x": 351.45,
-   "y": 405.73,
+   "x": 345.94,
+   "y": 401.4,
    "role": "ordinary_tile",
    "segment": "D_LLA",
-   "elev": 102.93
+   "elev": 102.87
   },
   "D_LLA_05": {
-   "x": 335.94,
-   "y": 394.8,
+   "x": 334.48,
+   "y": 393.77,
    "role": "ordinary_tile",
    "segment": "D_LLA",
-   "elev": 102.57
+   "elev": 102.56
   },
   "D_LLA_06": {
-   "x": 324.51,
-   "y": 393.2,
+   "x": 323.84,
+   "y": 398.34,
    "role": "ordinary_tile",
    "segment": "D_LLA",
-   "elev": 102.36
+   "elev": 102.31
   },
   "L_LATE_ALTAR": {
    "x": 322,
@@ -1815,32 +1815,32 @@
    "elev": 102.0
   },
   "LATE_L_DONE_01": {
-   "x": 450.97,
-   "y": 344.76,
+   "x": 455.78,
+   "y": 343.67,
    "role": "ordinary_tile",
    "segment": "LATE_L_DONE",
-   "elev": 106.4
+   "elev": 106.51
   },
   "LATE_L_DONE_02": {
-   "x": 471.26,
-   "y": 341.55,
+   "x": 472.35,
+   "y": 346.31,
    "role": "ordinary_tile",
    "segment": "LATE_L_DONE",
-   "elev": 106.79
+   "elev": 106.83
   },
   "LATE_L_DONE_03": {
-   "x": 484.84,
-   "y": 358.37,
+   "x": 484.57,
+   "y": 358.04,
    "role": "ordinary_tile",
    "segment": "LATE_L_DONE",
-   "elev": 107.19
+   "elev": 107.16
   },
   "LATE_L_DONE_04": {
-   "x": 498.42,
-   "y": 375.18,
+   "x": 495.32,
+   "y": 371.35,
    "role": "ordinary_tile",
    "segment": "LATE_L_DONE",
-   "elev": 107.6
+   "elev": 107.49
   },
   "FINAL": {
    "x": 512,
@@ -1850,39 +1850,39 @@
    "elev": 108.0
   },
   "LATE_SAFE0_01": {
-   "x": 531.97,
+   "x": 536.95,
    "y": 430.0,
    "role": "ordinary_tile",
    "segment": "LATE_SAFE0",
-   "elev": 98.33
+   "elev": 98.42
   },
   "LATE_SAFE0_02": {
-   "x": 551.94,
+   "x": 554.42,
    "y": 430.0,
    "role": "ordinary_tile",
    "segment": "LATE_SAFE0",
-   "elev": 98.67
+   "elev": 98.71
   },
   "LATE_SAFE0_03": {
-   "x": 571.6,
-   "y": 432.65,
+   "x": 571.62,
+   "y": 432.66,
    "role": "ordinary_tile",
    "segment": "LATE_SAFE0",
    "elev": 99.0
   },
   "LATE_SAFE0_04": {
-   "x": 591.07,
-   "y": 437.1,
+   "x": 588.65,
+   "y": 436.55,
    "role": "ordinary_tile",
    "segment": "LATE_SAFE0",
-   "elev": 99.33
+   "elev": 99.29
   },
   "LATE_SAFE0_05": {
-   "x": 610.53,
-   "y": 441.55,
+   "x": 605.67,
+   "y": 440.44,
    "role": "ordinary_tile",
    "segment": "LATE_SAFE0",
-   "elev": 99.67
+   "elev": 99.58
   },
   "HS": {
    "x": 630,
@@ -1892,141 +1892,141 @@
    "elev": 100.0
   },
   "LATE_SAFE_01": {
-   "x": 648.09,
-   "y": 437.29,
+   "x": 658.8,
+   "y": 432.14,
    "role": "ordinary_tile",
    "segment": "LATE_SAFE",
-   "elev": 100.58
+   "elev": 100.95
   },
   "LATE_SAFE_02": {
-   "x": 666.18,
-   "y": 428.58,
+   "x": 673.05,
+   "y": 422.68,
    "role": "ordinary_tile",
    "segment": "LATE_SAFE",
-   "elev": 101.16
+   "elev": 101.45
   },
   "LATE_SAFE_03": {
-   "x": 683.92,
-   "y": 419.71,
+   "x": 679.05,
+   "y": 406.83,
    "role": "ordinary_tile",
    "segment": "LATE_SAFE",
-   "elev": 101.73
+   "elev": 101.96
   },
   "LATE_SAFE_04": {
-   "x": 678.51,
-   "y": 400.38,
+   "x": 675.6,
+   "y": 389.99,
    "role": "ordinary_tile",
    "segment": "LATE_SAFE",
-   "elev": 102.3
+   "elev": 102.47
   },
   "LATE_SAFE_05": {
-   "x": 673.09,
-   "y": 381.04,
+   "x": 669.17,
+   "y": 374.11,
    "role": "ordinary_tile",
    "segment": "LATE_SAFE",
-   "elev": 102.88
+   "elev": 102.97
   },
   "LATE_SAFE_06": {
-   "x": 661.9,
-   "y": 367.08,
+   "x": 655.08,
+   "y": 364.63,
    "role": "ordinary_tile",
    "segment": "LATE_SAFE",
-   "elev": 103.4
+   "elev": 103.48
   },
   "LATE_SAFE_07": {
-   "x": 643.01,
-   "y": 360.28,
+   "x": 638.83,
+   "y": 358.78,
    "role": "ordinary_tile",
    "segment": "LATE_SAFE",
-   "elev": 103.98
+   "elev": 103.99
   },
   "LATE_SAFE_08": {
-   "x": 624.12,
-   "y": 353.48,
+   "x": 622.43,
+   "y": 353.42,
    "role": "ordinary_tile",
    "segment": "LATE_SAFE",
-   "elev": 104.55
+   "elev": 104.5
   },
   "LATE_SAFE_09": {
-   "x": 604.77,
-   "y": 355.81,
+   "x": 605.44,
+   "y": 355.64,
    "role": "ordinary_tile",
    "segment": "LATE_SAFE",
-   "elev": 105.11
+   "elev": 105.01
   },
   "LATE_SAFE_10": {
-   "x": 585.29,
-   "y": 360.68,
+   "x": 588.69,
+   "y": 359.83,
    "role": "ordinary_tile",
    "segment": "LATE_SAFE",
-   "elev": 105.69
+   "elev": 105.52
   },
   "LATE_SAFE_11": {
-   "x": 565.81,
-   "y": 365.55,
+   "x": 571.93,
+   "y": 364.02,
    "role": "ordinary_tile",
    "segment": "LATE_SAFE",
-   "elev": 106.27
+   "elev": 106.03
   },
   "LATE_SAFE_12": {
-   "x": 547.25,
-   "y": 372.77,
+   "x": 555.28,
+   "y": 368.53,
    "role": "ordinary_tile",
    "segment": "LATE_SAFE",
-   "elev": 106.84
+   "elev": 106.54
   },
   "LATE_SAFE_13": {
-   "x": 529.63,
-   "y": 382.39,
+   "x": 540.06,
+   "y": 376.7,
    "role": "ordinary_tile",
    "segment": "LATE_SAFE",
-   "elev": 107.42
+   "elev": 107.05
   },
   "D_RS_01": {
-   "x": 642.27,
-   "y": 460.5,
+   "x": 640.56,
+   "y": 458.47,
    "role": "ordinary_tile",
    "segment": "D_RS",
    "elev": 100.0
   },
   "D_RS_02": {
-   "x": 654.54,
-   "y": 474.99,
+   "x": 651.12,
+   "y": 470.94,
    "role": "ordinary_tile",
    "segment": "D_RS",
    "elev": 100.0
   },
   "D_RS_03": {
-   "x": 666.82,
-   "y": 489.49,
+   "x": 662.42,
+   "y": 482.64,
    "role": "ordinary_tile",
    "segment": "D_RS",
    "elev": 100.0
   },
   "D_RS_04": {
-   "x": 679.09,
-   "y": 503.98,
+   "x": 677.93,
+   "y": 486.78,
    "role": "ordinary_tile",
    "segment": "D_RS",
    "elev": 100.0
   },
   "D_RS_05": {
-   "x": 689.32,
-   "y": 488.01,
+   "x": 692.75,
+   "y": 480.64,
    "role": "ordinary_tile",
    "segment": "D_RS",
    "elev": 100.0
   },
   "D_RS_06": {
-   "x": 699.54,
-   "y": 472.01,
+   "x": 702.4,
+   "y": 467.54,
    "role": "ordinary_tile",
    "segment": "D_RS",
    "elev": 100.0
   },
   "D_RS_07": {
-   "x": 709.77,
-   "y": 456.0,
+   "x": 711.2,
+   "y": 453.77,
    "role": "ordinary_tile",
    "segment": "D_RS",
    "elev": 100.0
@@ -2040,17 +2040,17 @@
   },
   "S_END_01": {
    "x": 512.0,
-   "y": 368.0,
+   "y": 358.0,
    "role": "ordinary_tile",
    "segment": "S_END",
-   "elev": 109.0
+   "elev": 109.42
   },
   "S_END_02": {
    "x": 512.0,
-   "y": 344.0,
+   "y": 339.0,
    "role": "ordinary_tile",
    "segment": "S_END",
-   "elev": 110.0
+   "elev": 110.21
   },
   "S_END_03": {
    "x": 512.0,

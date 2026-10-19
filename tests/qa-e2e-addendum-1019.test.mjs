@@ -56,7 +56,7 @@ test('AB-2：Chapter 4 の題字の中継に巨大火山', { skip: SKIP, timeout
 test('AB-3：Chapter 2 の目印は Chapter 2 の正式美術だけ', { skip: SKIP, timeout: 120000 }, async () => {
   const p = await openPage({ worldCh2: true, size: H.SIZES.base, query: '?ch2trial=A' }); const pg = p.page; await idle(pg);
   const lms = await pg.evaluate(() => [...document.querySelectorAll('.rfw-lm')].map((e) => e.getAttribute('src')));
-  assert.ok(lms.length >= 8 && lms.every((s) => /ch2\/art_1016\//.test(s)), JSON.stringify(lms));
+  assert.ok(lms.length >= 8 && lms.every((s) => /ch2\/art_10(16|20)\//.test(s)), JSON.stringify(lms));
   assert.equal(await pg.evaluate(() => document.querySelectorAll('.rfw-bpost,.rfw-bmark').length), 0, 'Chapter 2 の分岐の見た目は未採用＝何も足さない');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });

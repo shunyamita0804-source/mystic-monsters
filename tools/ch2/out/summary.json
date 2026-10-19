@@ -2037,7 +2037,7 @@
    "ascent": 12,
    "surface_late": 108
   },
-  "minNodeDist": 19.6,
+  "minNodeDist": 24.1,
   "roles": {
    "start": 1,
    "ordinary_tile": 260,
@@ -90788,7 +90788,7 @@
    "ascent": 12,
    "surface_late": 82
   },
-  "minNodeDist": 15.0,
+  "minNodeDist": 19.0,
   "roles": {
    "start": 1,
    "ordinary_tile": 252,
@@ -92725,7 +92725,7 @@
    "ascent": 13,
    "surface_late": 78
   },
-  "minNodeDist": 12.7,
+  "minNodeDist": 17.8,
   "roles": {
    "start": 1,
    "ordinary_tile": 270,

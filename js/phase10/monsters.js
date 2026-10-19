@@ -266,7 +266,11 @@
   const GROWTH_GAIN_BY_CH = (() => {
     // 2026-10-15 追加B：Chapter 1 は能力マスが増えた分だけ1回の上昇を下げる（旧 A20 B18 C16 D12 E9 → A17 B15 C14 D10 E8・A＞B＞C＞D＞E のまま）。
     //  得意能力の最終値の平均（300回・大会は全勝の想定）ソラモ 261・ガウル 291・ノビトン 273・ジオル 327＝4体平均 288（変更前 258／289／273／323＝286）
-    const T = { 1: fz({ A: 17, B: 15, C: 14, D: 10, E: 8 }), 2: fz({ A: 25, B: 23, C: 20, D: 16, E: 12 }), 3: fz({ A: 29, B: 27, C: 23, D: 18, E: 14 }), 4: fz({ A: 33, B: 30, C: 26, D: 20, E: 15 }) };
+    // 2026-10-20 通し試遊の品質改善（ユーザー指示「初期に選べるモンスターが Chapter 4 を終えるころ、適性 A の能力がおおむね 300」）：
+    //  Chapter 2〜4 が1枚の世界のボードになり能力マスが増えた（旧の表 A25／A29／A33 のままでは、初期 100 の適性 A の能力が Chapter 4 の終わりに中央値 約415・能力重視の道 約513）。
+    //  Chapter 2〜4 の能力マスの割合を 0.42 に（js/proto/roadfirst-play.js の densityByCh）＋この表を Chapter 2 A19・3 A21・4 A22（A〜E とも Chapter 1 より大きく・Chapter ごとに少しずつ上がる）。
+    //  tools/fullplay1020/sim-growth.mjs（2000回 × 方針4つ・大会は全勝の想定）：適性 A（初期 100）の Chapter 4 の終わり＝ふつうの進行 中央値 約320・能力重視の道 約385（docs/fullplay_1020/REPORT.md）。Chapter 1 の表は変えない
+    const T = { 1: fz({ A: 17, B: 15, C: 14, D: 10, E: 8 }), 2: fz({ A: 19, B: 17, C: 15, D: 12, E: 9 }), 3: fz({ A: 21, B: 19, C: 16, D: 13, E: 10 }), 4: fz({ A: 22, B: 20, C: 17, D: 14, E: 11 }) };
     const ov = root.MM_BALANCE_OVERRIDE && root.MM_BALANCE_OVERRIDE.gainByCh;
     if (ov && typeof ov === 'object') for (const c of Object.keys(ov)) if (T[c]) T[c] = fz({ ...T[c], ...ov[c] });
     return fz(T);

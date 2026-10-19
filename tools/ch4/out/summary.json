@@ -6592,7 +6592,7 @@
    "slope_twilight": 53,
    "rim_night": 77
   },
-  "minNodeDist": 13.2,
+  "minNodeDist": 18.6,
   "roles": {
    "start": 1,
    "ordinary_tile": 254,

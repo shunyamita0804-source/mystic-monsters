@@ -424,6 +424,8 @@
         if (p.hid) { p.el.style.display = ''; p.hid = false; }
         if (!p.base) propBase(p);
         p.el.style.transform = `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * (p.ah || 0.92)).toFixed(1)}px) scale(${(w / p.base).toFixed(4)})`;
+        // 2026-10-20：建物（門・塔など・会場は除く）の足もとが盤の見える所（操作欄の上まで）の下より手前＝もう通り過ぎてカメラのすぐ前にある建物は消す（手前で大きく映って道・マスをふさいでいた）
+        if (p.arch && !p.solid) { const past = q.y > (v && v.bottom != null ? v.bottom : Hd) + 6; if (past !== !!p.past) { p.past = past; p.el.classList.toggle('past', past); } }
         if (p.zi == null) { p.zi = propZ(p); p.el.style.zIndex = String(p.zi); }   // 2026-10-13 開発27（26）：半透明にしない大会会場は GOAL のマスより奥（マスを隠さない）。順は世界の y で1回だけ
         if (o.xray && !p.mark && !p.solid && !p.arch) {   // 手前の景物がマス・モンスターを隠す＝その景物だけ半透明（重なった面積がマス・モンスターの 22% 以上）
           const pz = Math.round(q.y) + (p.z || 0), x0 = q.x - w / 2, x1 = q.x + w / 2, y0 = q.y - w * (p.ah || 0.92), y1 = q.y;
@@ -648,6 +650,11 @@
       frames: (reset) => { const f = S.frames.slice(); if (reset) S.frames = []; return f; },
       destroy() { S.dead = true; root.cancelAnimationFrame(S.raf); if (HI) HI.destroy(); wrap.remove(); },
       qaRoad: () => (HI ? { mode: o.qaRoad, res: HI.R, tiles: HI.count(), pending: HI.pending(), bytes: HI.bytes(), paintMs: HI.paintMs ? HI.paintMs() : null } : null),
+      /** 2026-10-20 確認用（tools/fullplay1020）：地面と道を真上から1枚に描く（近くの層と同じ描画）。bx＝[x, y, w, h]（単位）・res＝1単位の px。ゲームからは呼ばない */
+      snapshot(bx, res) { if (!artDone) return null; const c = doc.createElement('canvas'); c.width = Math.round(bx[2] * res); c.height = Math.round(bx[3] * res); const g = c.getContext('2d');
+        g.setTransform(res, 0, 0, res, -bx[0] * res, -bx[1] * res);
+        if (SEA) { SEA.ground(g, D, bx, art, HELP); SEA.roads(g, D, o, art, bx, HELP); } else { drawGround(g, D, bx[0], bx[1], bx[2], bx[3], art); drawTerrain(g, D, o, art, bx); drawRoads(g, D, o, art, bx); }
+        return c.toDataURL('image/jpeg', 0.86); },
       opts: o,
     };
     S.raf = root.requestAnimationFrame(tick);
@@ -676,13 +683,14 @@
   }
   // 道：原本の区間ごとに地点を通るなめらかな帯（絵が届いたら C 群の帯の模様を貼る）。分かれ目・合流は小広場、行き止まりは踊り場（D 群）
   function drawRoads(g, D, o, art, bx) {
-    const segs = Object.values(D.segments);
+    const segs = roadChains(D, Object.entries(D.segments)).map((c) => [c.ids[0], c.ids[c.ids.length - 1], '', c.ids]);   // 2026-10-20：つなぎ目の地点で切らない
     const path = (ids) => { const p = ids.map((id) => D.nodes[id]); g.beginPath(); g.moveTo(p[0][0], p[0][1]);
       for (let i = 0; i < p.length - 1; i++) { const a = p[i - 1] || p[i], b = p[i], c = p[i + 1], d = p[i + 2] || c;
         g.bezierCurveTo(b[0] + (c[0] - a[0]) / 6, b[1] + (c[1] - a[1]) / 6, c[0] - (d[0] - b[0]) / 6, c[1] - (d[1] - b[1]) / 6, c[0], c[1]); } };
     g.lineCap = 'round'; g.lineJoin = 'round';
     const out = {}, inn = {}; for (const e of D.edges) if (e[3] === 'forward') { out[e[0]] = (out[e[0]] || 0) + 1; inn[e[1]] = (inn[e[1]] || 0) + 1; }
-    const hubs = Object.keys(D.nodes).filter((id) => (out[id] || 0) > 1 || (inn[id] || 0) > 1);
+    // 2026-10-20（指示 E「START は開始の広場 → 道 → 最初のマスが続く」）：START も円の広場（旧：道の端が平らに切れて、地面から道が切り出されたように見えた）
+    const hubs = Object.keys(D.nodes).filter((id) => (out[id] || 0) > 1 || (inn[id] || 0) > 1 || D.nodes[id][2] === 'start');
     const ends = Object.keys(D.nodes).filter((id) => /dead_end/.test(D.nodes[id][2]));
     const disc = (id, r) => { const n = D.nodes[id]; g.beginPath(); g.arc(n[0], n[1], r, 0, 7); g.fill(); };
     const rt = (art && art.roadTile) || ART.road.tile, rp = art && art.road ? pattern(g, art.road, rt) : null;
@@ -698,10 +706,10 @@
         g.strokeStyle = 'rgba(10,20,30,.42)'; g.lineWidth = ART.strip.w + 2;
         for (const id of terrainOf(D).flatMap((T) => T.bridges)) { const s = D.segments[id]; if (!s) continue; g.save(); g.translate(0, 10); path(s[3]); g.stroke(); g.restore(); }
       }
-      const QA = art.qaRoad && root.MMQAR, cps = QA ? segs.map((s) => curvePts(s[3].map((id) => D.nodes[id]))) : null;
+      const QA = art.qaRoad && root.MMQAR, cps = QA ? segs.map((s) => roadPts(D, s[3], ART.strip.w * 0.62)) : null;
       if (QA && art.qaRoad === '2') QA.edgeShade(g, cps, ART.strip.w);
       if (QA) for (const P of cps) QA.meshStrip(g, P, art.strip, ART.strip.w, bx);   // 2026-10-16 QA（A）：曲線に沿った網（曲がり角で折れない）
-      else for (const s of segs) stripAlong(g, curvePts(s[3].map((id) => D.nodes[id])), art.strip, ART.strip.w, bx);
+      else for (const s of segs) stripAlong(g, roadPts(D, s[3], ART.strip.w * 0.62), art.strip, ART.strip.w, bx);
       // 2026-10-18 iPhone 試遊（分岐の灰色の輪がチープ）：灰色の塗りの輪をやめ、道の帯と同じ縁石を円に沿って並べた「円形の広場」にする。
       //  道が入ってくる所は縁石を切る（道の縁石と広場の縁石がつながる）・中は R の敷石・外側に草へ落ちる薄い影
       const dirs = plazaDirs(D, segs);
@@ -860,6 +868,42 @@
         out.push([u * u * u * b[0] + 3 * u * u * t * c1[0] + 3 * u * t * t * c2[0] + t * t * t * c[0], u * u * u * b[1] + 3 * u * u * t * c1[1] + 3 * u * t * t * c2[1] + t * t * t * c[1]]); } }
     return out;
   }
+  /** 2026-10-20 通し試遊の品質改善（IMG_5998「曲がりで道がちょん切れる」）：区間どうしが分かれ目でない地点（入る道1本・出る道1本）でつながる所は1本の道としてつなぐ。
+   *  旧：区間ごとに帯を描いていた＝つなぎ目の地点で角度が変わると、帯の端が平らに切れて隙間・欠け・二重の縁ができていた。
+   *  entries＝[[区間 ID, 区間], …]・same(a, b)＝つないでよい区間どうし（橋と陸など描き方の違う区間はつながない）。戻り値＝[{ sids, ids }]（ids＝地点の並び） */
+  function roadChains(D, entries, same) {
+    const map = new Map(entries), outBy = {}, inBy = {}, deg = {};
+    for (const [sid, s] of entries) { (outBy[s[0]] = outBy[s[0]] || []).push(sid); (inBy[s[1]] = inBy[s[1]] || []).push(sid); deg[s[0]] = (deg[s[0]] || 0) + 1; deg[s[1]] = (deg[s[1]] || 0) + 1; }
+    const joint = (k, a, b) => deg[k] === 2 && (outBy[k] || []).length === 1 && (inBy[k] || []).length === 1 && a !== b && (!same || same(a, b));
+    const used = new Set(), out = [];
+    for (const [sid] of entries) {
+      if (used.has(sid)) continue;
+      let head = sid; const back = new Set([sid]);
+      for (;;) { const k = map.get(head)[0], pv = (inBy[k] || [])[0]; if (!pv || used.has(pv) || back.has(pv) || !joint(k, pv, head)) break; back.add(pv); head = pv; }
+      const ids = [], sids = []; let cur = head;
+      while (cur && !used.has(cur)) { used.add(cur); sids.push(cur); const sg = map.get(cur); ids.push(...(ids.length ? sg[3].slice(1) : sg[3])); const k = sg[1], nx = (outBy[k] || [])[0]; if (!nx || used.has(nx) || !joint(k, cur, nx)) break; cur = nx; }
+      out.push({ sids, ids });
+    }
+    return out;
+  }
+  /** 2026-10-20：道の帯を描くための線（curvePts の細かい点）。曲がりの半径が rmin（帯の幅の半分より少し大きい）より小さい所だけ、なめらかに丸める。
+   *  旧：急な曲がりでは帯の内側（縁石）が折り返して、V の字の切れ端・はみ出しになっていた（Chapter 4 の運命の道など）。マスの位置は変えない（ずれは数単位） */
+  const ROUND_CACHE = new WeakMap();
+  function roadPts(D, ids, rmin) {
+    let m = ROUND_CACHE.get(D); if (!m) { m = new Map(); ROUND_CACHE.set(D, m); }
+    const key = ids.join(',') + '|' + rmin; if (m.has(key)) return m.get(key);
+    let Q = curvePts(ids.map((id) => D.nodes[id])).map((p) => [p[0], p[1]]); const n = Q.length, k = 3;
+    const rad = (i) => { const a = Q[i - k], b = Q[i], c = Q[i + k], ab = Math.hypot(b[0] - a[0], b[1] - a[1]), bc = Math.hypot(c[0] - b[0], c[1] - b[1]), ca = Math.hypot(a[0] - c[0], a[1] - c[1]);
+      const cr = Math.abs((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])); return cr < 1e-9 ? 1e9 : ab * bc * ca / (2 * cr); };
+    if (rmin && n > 2 * k + 2) for (let it = 0; it < 160; it++) {
+      const mark = new Uint8Array(n); let any = false; const w = Math.ceil(rmin / 1.5);
+      for (let i = k; i < n - k; i++) if (rad(i) < rmin) { any = true; for (let j = Math.max(1, i - w); j <= Math.min(n - 2, i + w); j++) mark[j] = 1; }
+      if (!any) break;
+      const R = Q.map((p) => p.slice()); for (let i = 1; i < n - 1; i++) if (mark[i]) { R[i][0] = (Q[i - 1][0] + 2 * Q[i][0] + Q[i + 1][0]) / 4; R[i][1] = (Q[i - 1][1] + 2 * Q[i][1] + Q[i + 1][1]) / 4; }
+      Q = R;
+    }
+    m.set(key, Q); return Q;
+  }
   /** 2026-10-18 Chapter 3：空の橋の欄干（道の両ふちの白い手すりと支柱）。雲海の上だけ（浮島の上は描かない＝雲海の範囲の画像で切り抜く） */
   let RAIL_TMP = null;
   function skyRails(g, D, segs, art, bx) {
@@ -936,9 +980,10 @@
     const n = D.nodes[L.node]; if (!n) return null;
     if (L.off) return [n[0] + L.off[0], n[1] + L.off[1]];
     const e = D.edges.find((x) => x[1] === L.node && x[3] === 'forward') || null, f = D.edges.find((x) => x[0] === L.node && x[3] === 'forward') || null;
-    const p = e ? D.nodes[e[0]] : null, q = f ? D.nodes[f[1]] : null;
+    const p = e ? D.nodes[e[0]] : null, q = f ? D.nodes[f[1]] : null, t = L.aim && D.nodes[L.aim];
     let dx = 0, dy = -1;
-    if (p) { dx = n[0] - p[0]; dy = n[1] - p[1]; } else if (q) { dx = q[0] - n[0]; dy = q[1] - n[1]; }
+    if (t) { dx = t[0] - n[0]; dy = t[1] - n[1]; }   // 2026-10-20：aim＝向ける地点（START が分かれ道でも本線の向き）
+    else if (p) { dx = n[0] - p[0]; dy = n[1] - p[1]; } else if (q) { dx = q[0] - n[0]; dy = q[1] - n[1]; }
     const k = Math.hypot(dx, dy) || 1, a = L.along || 0, sd = L.side || 0; return [n[0] + (dx * a - dy * sd) / k, n[1] + (dy * a + dx * sd) / k];
   }
   /** 折れ線の上に d 単位ごとの点（始点を含む） */
@@ -1037,17 +1082,27 @@
     const nearRoad = (x, y, d) => lines.some((L) => distLine(L, x, y) < d);
     const dirs = [[1, 0], [-1, 0], [0, 0.86], [0.7, -0.7], [-0.7, -0.7], [0.7, 0.7], [-0.7, 0.7], [0, -1]];
     const side = (n, d) => { for (const k of [1, 1.4, 1.8]) { const s = dirs.find(([ax, ay]) => !nearRoad(n[0] + ax * d * k, n[1] + ay * d * k, 14)); if (s) return [s[0] * d * k, s[1] * d * k]; } return null; };   // 近い所が道なら少し遠くへ
+    // 2026-10-20（指示 D「看板は分岐中央の上側に見やすく」）：道しるべは分かれ道の奥（入ってくる道の向きの先＝カメラから見て分かれ目の中心の上）の、道から離れた所。
+    //  旧：右・左の順に道から離れた所＝道の端や手前に立って、マス・モンスターにかかっていた。奥に置けないときは従来の脇
+    const ahead = (id, n, d) => {
+      const ie = D.edges.find((e) => e[1] === id && e[3] === 'forward'), pv = ie ? D.nodes[ie[0]] : null; if (!pv) return null;
+      const ix = n[0] - pv[0], iy = n[1] - pv[1], il = Math.hypot(ix, iy) || 1; let best = null;
+      //  真上（入ってくる向きのまっすぐ先）はモンスターの頭の上に重なる＝斜め前（向きから 35〜75°）だけ。いちばん 50° に近く・近い所
+      for (const k of [1, 1.25, 1.5, 1.8, 2.2]) for (let i = 0; i < 36; i++) { const a = (i / 36) * Math.PI * 2, cx = Math.cos(a), cy = Math.sin(a), dot = (cx * ix + cy * iy) / il; if (dot < 0.26 || dot > 0.82) continue;
+        const x = n[0] + cx * d * k, y = n[1] + cy * d * k; if (nearRoad(x, y, 16)) continue; const sc = -Math.abs(Math.acos(dot) - 0.87) - (k - 1) * 0.6; if (!best || sc > best.sc) best = { sc, v: [cx * d * k, cy * d * k] }; }
+      return best && best.v;
+    };
     const out = [];
     for (const [id, n] of Object.entries(D.nodes)) {
       const role = n[2];
-      const put = (file, w, d, cls) => { const s = side(n, d); if (s) out.push({ node: id, file, x: Math.round(n[0] + s[0]), y: Math.round(n[1] + s[1]), w, z: 4, cls }); };
+      const put = (file, w, d, cls) => { const s = (cls === 'rfw-bpost' && ahead(id, n, d)) || side(n, d); if (s) out.push({ node: id, file, x: Math.round(n[0] + s[0]), y: Math.round(n[1] + s[1]), w, z: 4, cls }); };
       if (B.post && FORK_FREE.includes(role)) put(B.post, B.postW || 15, 30, 'rfw-bpost');
       if (B.junction && FORK_ALL.includes(role)) put(B.junction, B.junctionW || 18, 40, 'rfw-bmark');
       if (B.merge && MERGES.includes(role)) put(B.merge, B.mergeW || 18, 40, 'rfw-bmark');
     }
     return out;
   }
-  const HELP = { WORLD, ART, pattern, stripAlong, curvePts, inPoly, distLine, mulberry, project, landmarkAt, qa: () => root.MMQAR || null };
+  const HELP = { WORLD, ART, pattern, stripAlong, curvePts, roadChains, roadPts, inPoly, distLine, mulberry, project, landmarkAt, qa: () => root.MMQAR || null };
   let cssDone = false;
   function css(doc) {
     if (cssDone || doc.getElementById('rfw-css')) return; cssDone = true;
@@ -1072,7 +1127,7 @@
 :is(#rfp,.wbv) .rfw-prop{position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none;user-select:none;-webkit-user-drag:none}
 /* 2026-10-14 Chapter 1 進入時のクラッシュ対策：マス・景物の will-change は開始の俯瞰の外（追従の間）だけ。俯瞰では約540個が一度に画面に入る＝決まった幅（base）の層が一斉にできていた */
 :is(#rfp,.wbv) .rfw:not(.intro) :is(.rfw-tile,.rfw-prop){will-change:transform}
-:is(#rfp,.wbv) .rfw-prop{transition:opacity .25s}:is(#rfp,.wbv) .rfw-prop.thru{opacity:.32}
+:is(#rfp,.wbv) .rfw-prop{transition:opacity .25s}:is(#rfp,.wbv) .rfw-prop.thru{opacity:.32}:is(#rfp,.wbv) .rfw-prop.past{opacity:0}
 :is(#rfp,.wbv) .rfw-mark{filter:drop-shadow(0 0 6px rgba(190,110,255,.85));transition:opacity .5s,filter .5s}
 :is(#rfp,.wbv) .rfw-mark.dim{opacity:.32;filter:none}
 :is(#rfp,.wbv) .rfw.art{background:#7aa84c}:is(#rfp,.wbv) .rfw.sea{background:#1b5f8a}:is(#rfp,.wbv) .rfw-tile.occl{opacity:.3}
@@ -1096,6 +1151,6 @@
     pre = [...[...new Set(files)].map((f) => artUrl(base, f)), ...sk].map((u) => { const im = new root.Image(); im.decoding = 'async'; im.src = u; return im; });
     return pre;
   }
-  const api = { DEF, WORLD, ART, TERRAIN, VISUAL, SKIN, skinOf, visualOf, peaksOf, branchMarks, project, fitZoom, lookahead, headingYaw, angDiff, create, scatter, waterProps, curvePts, landmarkAt, inValley, loopPoly, warmArt };
+  const api = { DEF, WORLD, ART, TERRAIN, VISUAL, SKIN, skinOf, visualOf, peaksOf, branchMarks, project, fitZoom, lookahead, headingYaw, angDiff, create, scatter, waterProps, curvePts, roadChains, roadPts, landmarkAt, inValley, loopPoly, warmArt };
   if (typeof module === 'object' && module.exports) module.exports = api; else root.MMRF_WORLD = api;
 })(typeof window !== 'undefined' ? window : globalThis);

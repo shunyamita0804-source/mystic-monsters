@@ -96,6 +96,13 @@ def resample(p, n):
         out.append((p[seg][0] + (p[seg + 1][0] - p[seg][0]) * u, p[seg][1] + (p[seg + 1][1] - p[seg][1]) * u))
     out.append(p[-1]); return out
 
+# 2026-10-20 通し試遊の品質改善（IMG_5997〜6004）：角を丸める・広場の中心から隣の地点を離す（tools/common/board_layout.py）。
+#  CLEAR＝広場（半径 27＝js/proto/ch2-world.js の PLAZA_R）の中心から隣の地点まで
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'common'))
+from board_layout import fillet, resample_clear, plaza_ends
+CLEAR = 38.0
+
 def in_poly(poly, x, y):
     c = False
     for i in range(len(poly)):
@@ -147,6 +154,7 @@ def build(spec):
     anc, segs = spec['anchors'], spec['segs']
     step = float(spec.get('step', STEP))   # ルートごとの1歩の長さ（15〜28 の範囲）
     nodes, segments, edges, pts = {}, {}, [], {}
+    ends = plaza_ends(spec)
     for sid, s in segs.items():
         a, b, kind, via = s[0], s[1], s[2], s[3]
         line = [tuple(anc[a][:2])] + [tuple(v) for v in via] + [tuple(anc[b][:2])]
@@ -154,7 +162,8 @@ def build(spec):
         n = s[4] if len(s) > 4 else max(2, round(L / step), math.ceil(L / 28))
         sp = L / n
         assert LOOSE or 15 <= sp <= 28, f'{spec["key"]} 間隔 {sid} {sp:.1f}（歩数 {n}・長さ {L:.0f}）'
-        p = resample(line, n); pts[sid] = p
+        # 2026-10-20：歩数は丸める前の長さで決める（従来と同じ歩数）。地点は角を丸めた線の上・広場の中心から離して並べる
+        p = resample_clear(fillet(line), n, CLEAR if a in ends else 0, CLEAR if b in ends else 0); pts[sid] = p
         ids = [a] + [f'{sid}_{i:02d}' for i in range(1, n)] + [b]
         for i, id_ in enumerate(ids):
             if id_ in nodes: continue

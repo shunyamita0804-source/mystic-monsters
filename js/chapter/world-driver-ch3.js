@@ -18,7 +18,10 @@
   const oldBoard = (m) => !!(m && isObj(m.raise) && m.raise.ch === 3 && (m.raise.state === 'board' || m.raise.state === 'BOARD') && !(isObj(m.raise.field) && m.raise.field.world === 1 && m.raise.field.chapterId === 3));
   const dataOf = (k) => (root.MMRF_CH3 && root.MMRF_CH3[routeKey(k)]) || null;
   const SKYWORD = (t) => String(t).replace(/草原/g, '雲海');
-  const pool = () => { try { const c = root.MMCH && root.MMCH.getConfig(1); if (c && Array.isArray(c.eventPool)) return c.eventPool.map((e) => (e.id === 'tailwind' ? JSON.parse(SKYWORD(JSON.stringify(e))) : e)); } catch (e) {} return null; };
+  // 2026-10-20：出来事の題・本文・背景は Chapter の舞台に合わせる（js/chapter/event-themes.js の MMEVTH＝効果は変えない）
+  const themed = (p) => (p && root.MMEVTH ? root.MMEVTH.themed(3, p) : p);
+  const pool = () => themed(pool0());
+  const pool0 = () => { try { const c = root.MMCH && root.MMCH.getConfig(1); if (c && Array.isArray(c.eventPool)) return c.eventPool.map((e) => (e.id === 'tailwind' ? JSON.parse(SKYWORD(JSON.stringify(e))) : e)); } catch (e) {} return null; };
   const L = (expression, text, speaker) => (speaker ? { speaker, expression: expression || 'normal', text } : { expression, text });
   const base = () => (root.MMWD && root.MMWD.STORY ? root.MMWD.STORY.filter((e) => e.scope === 'save') : []);
   // Chapter 3 の景色の一言（仮案＝ユーザーの承認前）。条件は Chapter 1 と同じ区間 ID

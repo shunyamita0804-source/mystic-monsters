@@ -103,7 +103,7 @@ test('RT-05：能力の道の偏り＝本編だけ・能力マス以外は同じ
   for (const k of ['li', 'po', 'in', 'hi', 'ev', 'de']) assert.ok(Math.abs(share('-', k) - 1 / 6) < 0.02, '偏りの無い区間は均等');
   // 試作（?chapterBoard=roadfirst）の配置は従来どおり＝attach は偏りなし
   const st = C.create(A, { seed: 77 }); const pl = P.attach(A, st, {}); assert.deepEqual(pl.play.tiles, P.layout(A, 77));
-  const WD = readFileSync(path.join(ROOT, 'js/chapter/world-driver.js'), 'utf8'); assert.match(WD, /P\(\)\.layout\(d, s, \{ route: rk, bias: true(, pool: cfg\.pool \? cfg\.pool\(\) : undefined)? \}\)/, '本編の新しい配置だけ偏りあり');
+  const WD = readFileSync(path.join(ROOT, 'js/chapter/world-driver.js'), 'utf8'); assert.match(WD, /P\(\)\.layout\(d, s, \{ route: rk, bias: true(, pool: cfg\.pool \? cfg\.pool\(\) : undefined)?(, ch: CH)? \}\)/, '本編の新しい配置だけ偏りあり');   // 2026-10-20：ch＝Chapter ごとの配置の割合（densityByCh）
 });
 
 test('RT-06：B／C の目印 20枚・景観の区域・名前・一言', () => {

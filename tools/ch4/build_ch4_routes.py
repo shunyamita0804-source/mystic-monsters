@@ -81,6 +81,12 @@ def landmarks_of(spec):
         out.append({'node': k, 'file': f[0], 'w': f[1], 'along': 20, 'z': -30, 'slot': f'C4_LM_{k}', 'standin': t})
     return [L for L in out if L['node'] in spec['anchors']]
 
+# 2026-10-20 通し試遊の品質改善：角を丸める・広場の中心から隣の地点を離す（tools/common/board_layout.py・Chapter 2 と同じ）。
+#  CLEAR＝広場の絵（js/proto/ch4-world.js の PLAZA_D 50＝半径 25）の中心から隣の地点まで（旧：約 21＝隣のマスが広場の中に並んでいた）
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'common'))
+from board_layout import layout_points, plaza_ends
+CLEAR = 34.0
 def plen(p): return sum(math.dist(p[i], p[i + 1]) for i in range(len(p) - 1))
 def resample(p, n):
     cum = [0.0]
@@ -123,14 +129,19 @@ def build(spec):
     anc, segs = spec['anchors'], spec['segs']
     step = float(spec.get('step', STEP))
     nodes, segments, edges = {}, {}, []
+    ends = plaza_ends(spec)
+    lines, ns = {}, {}
+    for sid, s in segs.items():
+        a, b = s[0], s[1]
+        lines[sid] = [tuple(anc[a][:2])] + [tuple(v) for v in s[3]] + [tuple(anc[b][:2])]
+        L = plen(lines[sid])
+        ns[sid] = s[4] if len(s) > 4 else max(2, round(L / step), math.ceil(L / 28))
+        assert LOOSE or 15 <= L / ns[sid] <= 28, f'{spec["key"]} 間隔 {sid} {L / ns[sid]:.1f}（歩数 {ns[sid]}・長さ {L:.0f}）'
+    # 2026-10-20：歩数は従来どおり（丸める前の長さ）。地点どうしが近づきすぎる区間だけ従来の並べ方（tools/common/board_layout.py の layout_points）
+    PTS, _plain = layout_points(lines, ns, {sid: (s[0] in ends, s[1] in ends) for sid, s in segs.items()}, CLEAR)
     for sid, s in segs.items():
         a, b, kind, via = s[0], s[1], s[2], s[3]
-        line = [tuple(anc[a][:2])] + [tuple(v) for v in via] + [tuple(anc[b][:2])]
-        L = plen(line)
-        n = s[4] if len(s) > 4 else max(2, round(L / step), math.ceil(L / 28))
-        sp = L / n
-        assert LOOSE or 15 <= sp <= 28, f'{spec["key"]} 間隔 {sid} {sp:.1f}（歩数 {n}・長さ {L:.0f}）'
-        p = resample(line, n)
+        n = ns[sid]; p = PTS[sid]
         ids = [a] + [f'{sid}_{i:02d}' for i in range(1, n)] + [b]
         for i, id_ in enumerate(ids):
             if id_ in nodes: continue

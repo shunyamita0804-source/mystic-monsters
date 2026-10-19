@@ -59,16 +59,28 @@
     const Q = [P0, P1, P2, P3].map(gr);
     g.save(); g.beginPath(); g.moveTo(Q[0][0], Q[0][1]); for (let i = 1; i < 4; i++) g.lineTo(Q[i][0], Q[i][1]); g.closePath(); g.clip();
     g.transform(a, b, c, d, e, f);
-    const sx = Math.max(0, Math.floor(Math.min(a0, a1)) - 1), ex = Math.min(im.width, Math.ceil(Math.max(a0, a1)) + 1);
+    // 2026-10-20（IMG_6001「曲がりに細い線が櫛の歯のように並ぶ」）：アフィンは3つの角で決まる＝曲がりの外側では台形の4つ目の角が a0〜a1 の外に出る。
+    //  旧：絵を a0〜a1 だけ貼っていた＝外側の角に何も無い細い楔が台形ごとに残り、櫛の歯の切れ目に見えた → 前後へ PAD px 広げて貼る（PAD＝wrapPad の余白・続きの絵）
+    const pad = im._pad || 0, sx = Math.max(0, Math.floor(Math.min(a0, a1)) - 1 - pad), ex = Math.min(im.width, Math.ceil(Math.max(a0, a1)) + 1 + pad);
     if (ex > sx) g.drawImage(im, sx, 0, ex - sx, Hh, sx, 0, ex - sx, Hh);
     g.restore();
+  }
+  /** 2026-10-20：帯の絵の左右に、続きの絵（右端の後ろ＝左端・左端の前＝右端）を PAD px ずつ足した1枚。座標は PAD だけずれる（_pad） */
+  const PADDED = new WeakMap(), PAD = 96;
+  function wrapPad(im) {
+    if (!im || im._pad != null) return im; if (PADDED.has(im)) return PADDED.get(im);
+    let c = null;
+    try { const W = im.width, Hh = im.height, p = Math.min(PAD, W); c = root.document.createElement('canvas'); c.width = W + p * 2; c.height = Hh; const g = c.getContext('2d');
+      g.drawImage(im, W - p, 0, p, Hh, 0, 0, p, Hh); g.drawImage(im, p, 0); g.drawImage(im, 0, 0, p, Hh, p + W, 0, p, Hh); c._pad = p; c._w = W; } catch (e) { c = null; }
+    PADDED.set(im, c || im); return c || im;
   }
   /** 帯の絵 im を点の列 pts（なめらかな曲線の細かい点）に沿って、幅 w（単位）で貼る。shift＝帯を横へずらす（stripAlong と同じ向き）。bx＝描く範囲 */
   function meshStrip(g, pts, im, w, bx, shift) {
     if (!im || pts.length < 2) return;
+    const src = wrapPad(im), OFF = src._pad || 0;
     const step = 2, P2 = []; let acc = 0; P2.push(pts[0]);   // 約2単位ごとの点（細かすぎると重い）
     for (let i = 1; i < pts.length; i++) { acc += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); if (acc >= step || i === pts.length - 1) { P2.push(pts[i]); acc = 0; } }
-    const n = P2.length, N = [], y0 = -w / 2 + (shift || 0), y1 = y0 + w, ppu = im.height / w, IW = im.width;
+    const n = P2.length, N = [], y0 = -w / 2 + (shift || 0), y1 = y0 + w, ppu = im.height / w, IW = src._w || im.width;
     for (let i = 0; i < n; i++) { const a = P2[Math.max(0, i - 1)], b = P2[Math.min(n - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1; N.push([-dy / L, dx / L]); }
     let u = 0;
     for (let i = 0; i < n - 1; i++) {
@@ -76,7 +88,7 @@
       if (bx && (Math.max(p[0], r[0]) < bx[0] - w || Math.min(p[0], r[0]) > bx[0] + bx[2] + w || Math.max(p[1], r[1]) < bx[1] - w || Math.min(p[1], r[1]) > bx[1] + bx[3] + w)) { u += L * ppu; continue; }
       const A = [p[0] + N[i][0] * y0, p[1] + N[i][1] * y0], Bq = [r[0] + N[i + 1][0] * y0, r[1] + N[i + 1][1] * y0], C = [r[0] + N[i + 1][0] * y1, r[1] + N[i + 1][1] * y1], Dq = [p[0] + N[i][0] * y1, p[1] + N[i][1] * y1];
       let s0 = u % IW, s1 = s0 + L * ppu;
-      const quad = (a0, a1, P0, P1, P2_, P3) => quadDraw(g, im, a0, a1, P0, P1, P2_, P3);   // 台形1つ＝1回で貼る（2つの三角形の継ぎ目に細い線が出ないように）
+      const quad = (a0, a1, P0, P1, P2_, P3) => quadDraw(g, src, a0 + OFF, a1 + OFF, P0, P1, P2_, P3);   // 台形1つ＝1回で貼る（2つの三角形の継ぎ目に細い線が出ないように）
       if (s1 <= IW + 0.01) quad(s0, s1, A, Bq, C, Dq);
       else {   // 絵の端をまたぐ＝途中で切って2つに
         const t = (IW - s0) / (s1 - s0), lerp = (X, Y) => [X[0] + (Y[0] - X[0]) * t, X[1] + (Y[1] - X[1]) * t], Am = lerp(A, Bq), Dm = lerp(Dq, C);
@@ -139,48 +151,60 @@
   //  2026-10-19 P0（iPhone：開始の地点だけ道がぼける）：海の世界（3D の平面）では近くの区画を地面（.rfw-gnd・高さ 0）より 0.05 単位だけ上に置く。
   //   同じ高さの層どうしは、Safari では見る向きによって前後が入れ替わり、ぼけた遠くの層が上に出ていた（画面では 0.2px 未満のずれ＝見た目は変わらない）。海面（0.3）より下
   const LIFT = 0.05;
+  // 2026-10-20（Chapter 3 の浮島のふち・奥の道が粗い）：区画ごとに細かさを選ぶ。画面で大きく映る区画は RES（1単位 10px）、遠くで小さく映る区画は半分（5px＝メモリ 1/4）。
+  //  旧：全部 RES・枚数の上限 MAX（約 19 枚）＝画面の真ん中から奥は遠くの層（1単位 2px）のままで、浮島のふち・道が粗い四角に見えた。メモリの上限（MB）は同じ
+  const RES2 = Math.max(3, Math.round(RES / 2)), BYTES = MB * 1048576, CAP = 96;
+  const tileBytes = (r) => Math.pow(Math.ceil(TILE * r) + 2, 2) * 4;
   function hiLayer(cfg) {
     const tiles = new Map(); let queue = [], lastSig = '';
     const R = RES, T = TILE;
-    function make(ix, iy) {
-      const c = cfg.doc.createElement('canvas'), x0 = ix * T, y0 = iy * T, pw = Math.ceil(T * R) + 2;
-      c.width = pw; c.height = pw; c.className = 'rfw-chunk rfw-hi'; c._x = x0 * R - 1; c._y = y0 * R - 1;
+    function make(ix, iy, r) {
+      const c = cfg.doc.createElement('canvas'), x0 = ix * T, y0 = iy * T, pw = Math.ceil(T * r) + 2;
+      c.width = pw; c.height = pw; c.className = 'rfw-chunk rfw-hi'; c._x = x0 * r - 1; c._y = y0 * r - 1; c._r = r;
       // 2026-10-17：区画ごとに別の合成の層（will-change）にする＝3D に傾けた平面の層の中に描かれると、平面の層の低い倍率で描かれてから引き伸ばされ、
       //  1単位 10px で描いても画面ではぼける（Chromium の GPU 描画で確認：層を分けると canvas の画素のまま合成される）。?qaRoadLayer=0 で従来（比較用）
-      Object.assign(c.style, { left: (x0 - 1 / R) + 'px', top: (y0 - 1 / R) + 'px', width: pw / R + 'px', height: pw / R + 'px', visibility: 'hidden', willChange: LAYER ? 'transform' : '' });
+      Object.assign(c.style, { left: (x0 - 1 / r) + 'px', top: (y0 - 1 / r) + 'px', width: pw / r + 'px', height: pw / r + 'px', visibility: 'hidden', willChange: LAYER ? 'transform' : '' });
       // 2026-10-17：3D の中（海の世界の preserve-3d の平面）では、層は CSS の箱の大きさ × 画素比で描かれる＝箱を canvas の画素 ÷ 画素比にして transform で世界の大きさへ縮める（canvas の画素のまま・それ以上は大きくしない＝層のメモリを増やさない）
-      if (cfg.big) { const qk = /[?&]qaHiK=([\d.]+)/.exec((root.location && root.location.search) || ''), k = qk ? +qk[1] : Math.max(1, root.devicePixelRatio || 1); Object.assign(c.style, { width: pw / k + 'px', height: pw / k + 'px', transformOrigin: '0 0', transform: `translateZ(${LIFT}px) scale(${k / R})` }); }
-      cfg.parent.appendChild(c); return { c, ix, iy, done: false };
+      if (cfg.big) { const qk = /[?&]qaHiK=([\d.]+)/.exec((root.location && root.location.search) || ''), k = qk ? +qk[1] : Math.max(1, root.devicePixelRatio || 1); Object.assign(c.style, { width: pw / k + 'px', height: pw / k + 'px', transformOrigin: '0 0', transform: `translateZ(${LIFT}px) scale(${k / r})` }); }
+      cfg.parent.appendChild(c); return { c, ix, iy, r, done: false };
     }
     const paintMs = [];   // 区画1枚を描くのにかかった時間（確認用・最後の 60 枚）
-    function paint(t) { const t0 = root.performance.now(); const g = t.c.getContext('2d'); g.setTransform(R, 0, 0, R, -t.c._x, -t.c._y); cfg.paintAt(g, [t.c._x / R, t.c._y / R, t.c.width / R, t.c.height / R]); t.done = true; t.c.style.visibility = '';
+    function paint(t) { const t0 = root.performance.now(); const r = t.r, g = t.c.getContext('2d'); g.setTransform(r, 0, 0, r, -t.c._x, -t.c._y); cfg.paintAt(g, [t.c._x / r, t.c._y / r, t.c.width / r, t.c.height / r]); t.done = true; t.c.style.visibility = '';
       paintMs.push(+(root.performance.now() - t0).toFixed(1)); if (paintMs.length > 60) paintMs.shift(); }
-    /** 画面に入る区画（カメラの今の姿で地点を写して確かめる）。近い順に最大 MAX 枚 */
+    /** 画面に入る区画と細かさ（[ix, iy, 順, 細かさ]）。画面に大きく映る順に、メモリの上限（BYTES）まで */
     function want() {
       const S = cfg.S, c = S.cam, v = S.view; if (!c || !v || c.s < 1) return [];
-      const rad = Math.max(v.W, v.H) / c.s * 1.5 + T, out = [];
+      const rad = Math.max(v.W, v.H) / c.s * 1.5 + T, out = [], dpr = Math.max(1, root.devicePixelRatio || 1);
       for (let iy = Math.max(0, Math.floor((c.ty - rad) / T)); iy * T < Math.min(cfg.WORLD.h, c.ty + rad); iy++)
         for (let ix = Math.max(0, Math.floor((c.tx - rad) / T)); ix * T < Math.min(cfg.WORLD.w, c.tx + rad); ix++) {
-          // 区画の四隅を画面へ写した範囲が、画面（少し広げた）と重なるか（角が全部画面の外でも、画面を横切る大きな区画を取りこぼさない）
-          const ps = [[0, 0], [1, 0], [0, 1], [1, 1]].map(([fx, fy]) => cfg.project(c, (ix + fx) * T, (iy + fy) * T));
-          const ok = ps.filter((p) => p.k > 0 && p.k < 12);
-          const hit = ok.length >= 2 && Math.max(...ok.map((p) => p.x)) > -40 && Math.min(...ok.map((p) => p.x)) < v.W + 40 && Math.max(...ok.map((p) => p.y)) > -40 && Math.min(...ok.map((p) => p.y)) < v.H + 40;
-          // 2026-10-17：優先＝画面に大きく映る区画から（旧：注視点に近い順＝注視点は画面の上寄り＝いちばん大きく見える手前の区画が漏れて、くっきりとぼけの境目が出ていた）
-          if (hit) { const cl = (p) => ({ x: Math.max(0, Math.min(v.W, p.x)), y: Math.max(0, Math.min(v.H, p.y)) }), q = (p0 => p0.some((p) => !(p.k > 0 && p.k < 12)) ? null : p0.map(cl))([ps[0], ps[1], ps[3], ps[2]]);
-            if (!q) { out.push([ix, iy, 1]); continue; }   // 角がカメラの後ろ＝面積を測れない区画はいちばん後回し
-            const ar = Math.abs(q.reduce((a, p, i) => { const r = q[(i + 1) % 4]; return a + p.x * r.y - r.x * p.y; }, 0)) / 2; out.push([ix, iy, -ar]); }
+          // 2026-10-20（IMG_5997「冒頭の道だけ解像感が悪い」・Chapter 1 の START の手前がぼける）：区画の中の 5×5 の点を画面へ写し、画面に入る点の大きさ（k²）の和で順を決める。
+          //  旧：四隅だけで判定し、角がカメラの後ろ・すぐ近く（k≥12）の区画は後回しか対象外＝画面のいちばん手前（大きく映る所）が遠くの層（1単位 2px）のままぼけていた
+          let sc = 0, px = 0;
+          for (let a = 0; a <= 4; a++) for (let b = 0; b <= 4; b++) {
+            const p = cfg.project(c, (ix + a / 4) * T, (iy + b / 4) * T); if (!(p.k > 0 && p.k < 60)) continue;
+            if (p.x > -40 && p.x < v.W + 40 && p.y > -40 && p.y < v.H + 40) { sc += p.k * p.k; px = Math.max(px, p.k * c.s * dpr); }
+          }
+          if (sc > 0) out.push([ix, iy, -sc, px > RES2 * 1.25 ? R : RES2]);
         }
-      return out.sort((a, b) => a[2] - b[2]).slice(0, MAX);
+      out.sort((a, b) => a[2] - b[2]);
+      const pick = []; let used = 0;
+      for (const w of out) {
+        if (pick.length >= CAP) break;
+        if (used + tileBytes(w[3]) > BYTES) { if (w[3] === R && used + tileBytes(RES2) <= BYTES) w[3] = RES2; else continue; }
+        used += tileBytes(w[3]); pick.push(w);
+      }
+      return pick;
     }
     function tick() {
       const c = cfg.S && cfg.S.cam; if (!c) return;
       const sig = [Math.round(c.tx / 16), Math.round(c.ty / 16), Math.round(c.s * 4), Math.round((c.yaw || 0) / 10)].join(',');
       if (sig !== lastSig) {
-        lastSig = sig; const w = want(), keep = new Set(w.map(([ix, iy]) => ix + ':' + iy));
-        const add = w.filter(([ix, iy]) => !tiles.has(ix + ':' + iy)).length;   // 2026-10-17：上限（MAX）を超えないよう、画面に要らない区画から先に捨てる
-        for (const [k, t] of tiles) if (!keep.has(k) && tiles.size + add > MAX) { t.c.remove(); tiles.delete(k); }
+        lastSig = sig; const w = want(), keep = new Map(w.map(([ix, iy, , r]) => [ix + ':' + iy, r]));
+        for (const [k, t] of tiles) if (keep.has(k) && t.r < keep.get(k)) { t.c.remove(); tiles.delete(k); }   // 細かくする区画は作り直す（粗くしてよい区画はそのまま）
+        let total = 0; for (const [k, r] of keep) total += tiles.has(k) ? tileBytes(tiles.get(k).r) : tileBytes(r);
+        for (const [k, t] of tiles) if (!keep.has(k)) { if (total + tileBytes(t.r) > BYTES) { t.c.remove(); tiles.delete(k); } else total += tileBytes(t.r); }   // 上限を超えないよう、画面に要らない区画から捨てる
         queue = w.filter(([ix, iy]) => !tiles.has(ix + ':' + iy) || !tiles.get(ix + ':' + iy).done).map(([ix, iy]) => ix + ':' + iy);
-        for (const k of queue) if (!tiles.has(k)) { const [ix, iy] = k.split(':').map(Number); tiles.set(k, make(ix, iy)); }
+        for (const k of queue) if (!tiles.has(k)) { const [ix, iy] = k.split(':').map(Number); tiles.set(k, make(ix, iy, keep.get(k))); }
       }
       const t0 = root.performance.now();
       while (queue.length && root.performance.now() - t0 < BUDGET) { const t = tiles.get(queue.shift()); if (t && !t.done) paint(t); }
@@ -189,5 +213,5 @@
     function destroy() { for (const t of tiles.values()) t.c.remove(); tiles.clear(); }
     return { tick, bytes, count: () => tiles.size, pending: () => queue.length, paintMs: () => paintMs.slice(), destroy, R, setS: (x) => { cfg.S = x; }, ready: () => !!cfg.S };
   }
-  root.MMQAR = Object.freeze({ mode: MODE, RES, TILE, MAX, LAYER, meshStrip, mirrorTile, edgeShade, edgeGrass, tileShadows, hiLayer });
+  root.MMQAR = Object.freeze({ mode: MODE, RES, RES2, TILE, MAX, BYTES, LAYER, meshStrip, mirrorTile, edgeShade, edgeGrass, tileShadows, hiLayer });
 })(typeof window !== 'undefined' ? window : globalThis);

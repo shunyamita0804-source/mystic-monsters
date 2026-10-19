@@ -23,7 +23,10 @@
   const oldBoard = (m) => !!(m && isObj(m.raise) && m.raise.ch === 4 && (m.raise.state === 'board' || m.raise.state === 'BOARD') && !(isObj(m.raise.field) && m.raise.field.world === 1 && m.raise.field.chapterId === 4));
   const dataOf = (k) => (root.MMRF_CH4 && root.MMRF_CH4[routeKey(k)]) || null;
   const VOLCWORD = (t) => String(t).replace(/草原/g, '火山の道');
-  const pool = () => { try { const c = root.MMCH && root.MMCH.getConfig(1); if (c && Array.isArray(c.eventPool)) return c.eventPool.map((e) => (/草原/.test(JSON.stringify(e)) ? JSON.parse(VOLCWORD(JSON.stringify(e))) : e)); } catch (e) {} return null; };
+  // 2026-10-20：出来事の題・本文・背景は Chapter の舞台に合わせる（js/chapter/event-themes.js の MMEVTH＝効果は変えない）
+  const themed = (p) => (p && root.MMEVTH ? root.MMEVTH.themed(4, p) : p);
+  const pool = () => themed(pool0());
+  const pool0 = () => { try { const c = root.MMCH && root.MMCH.getConfig(1); if (c && Array.isArray(c.eventPool)) return c.eventPool.map((e) => (/草原/.test(JSON.stringify(e)) ? JSON.parse(VOLCWORD(JSON.stringify(e))) : e)); } catch (e) {} return null; };
   const L = (expression, text) => ({ expression, text });
   const base = () => (root.MMWD && root.MMWD.STORY ? root.MMWD.STORY.filter((e) => e.scope === 'save') : []);
   // Chapter 4 の景色の一言（仮案＝ユーザーの承認前）。夕暮れの麓 → 薄暮の斜面 → 夜の火口縁

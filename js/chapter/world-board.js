@@ -178,6 +178,13 @@
     // 2026-10-12 D-6：案内欄にフィナの小さな丸顔・2行まで読める（欄を上へ少し広げる）
     return `<div class="chdeck chdeck-img" id="chdock"><div class="wbmsg"><img class="wbmsg-f" src="./assets/npc/fina/closeup/smile.webp" alt="" aria-hidden="true" decoding="async" draggable="false"><p class="chmsg" id="bmsg">${msg || def}</p></div><div class="chcmd chcmd-img" style="--deckar:${Dk.aspect || 3.116}">${Dk.start ? `<img class="chdeck-bg" src="${esc(Dk.start)}" alt="" draggable="false">` : ''}${CMDS.map(wing).join('')}${center}</div></div>`;
   }
+  // 2026-10-20 通し試遊の品質改善（指示「育成分岐は効果が誤解なく伝わる表記」）：その道の能力マスが伸ばしやすい能力（道の偏り＝道のデータの statLanes・
+  //  無い Chapter は js/proto/roadfirst-play.js の TUNING.statBias.lanes）。能力マスになった地点の能力の重みだけが変わる（マスの数・場所は同じ）＝「伸びやすい」と書く
+  const LANE_LABEL = Object.freeze({ li: 'ライフ', po: 'ちから', in: 'かしこさ', hi: '命中', ev: '回避', de: '丈夫さ' });
+  function laneDesc(d, seg) {
+    const P = root.MMRF_PLAY, L = (d && d.statLanes) || (P && P.TUNING && P.TUNING.statBias && P.TUNING.statBias.lanes) || {}, ks = seg && L[seg];
+    return Array.isArray(ks) && ks.length ? ks.map((k) => LANE_LABEL[k]).filter(Boolean).join('・') + 'が伸びやすい道' : '';
+  }
   function sheetHtml(m, ph) {
     const r = m.raise;
     if (ph === 'branch') {
@@ -185,7 +192,7 @@
       const bs = branchSkin(m);
       return `<div class="chsheet chbr wbbr" data-ch="${chOf(m)}"${bs.board ? ` data-bskin="1" style="--wbbr-board:url(${esc(bs.board)})"` : ''}><h3>分かれ道</h3>${WD(m).branchOptions(m).map((o) => {
         const end = o.seg && d.segments[o.seg] ? d.segments[o.seg][1] : null, got = o.spur && end && f.claimed[end] != null;
-        const desc = o.spur ? (got ? '取得済み（行き止まり。帰りもサイコロ）' : '行き止まりの先に宝。帰りもサイコロで戻る') : '';
+        const desc = o.spur ? (got ? '取得済み（行き止まり。帰りもサイコロ）' : '行き止まりの先に宝。帰りもサイコロで戻る') : laneDesc(d, o.seg);
         return `<button class="chroute${o.spur ? ' spur' : ''}" data-id="${esc(o.id)}" onclick="MMWB.pick('${esc(o.id)}')"><b>${esc(o.name)}</b>${desc ? `<small>${esc(desc)}</small>` : ''}</button>`; }).join('')}</div>`;
     }
     if (ph === 'battle') {
@@ -1160,7 +1167,9 @@ html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100
       if (!fresh && !calm()) await wait(500);
       // 2026-10-14 実機試遊⑮：まず会場の正門前（白い大門と塔＝ch1_bg_15_event）を全画面に → フィナの顔を大きく「ようやく着いたね！」→ 扉の中へ（ロビーへクロスフェード）
       //  → ロビーで大会の説明（ランク E〜S）→ 大会受付。見た記録（arrivalSeen）は従来どおり最後に1回＝途中で閉じたら次も正門前から（二重には出ない）
-      { const CI = chi(m), bg = CI.gate ? `url(${CI.gate})` : CI.gateBg ? CI.gateBg : `url(${CI.gateArt}) center 62%/min(88vw,420px) auto no-repeat,linear-gradient(180deg,#9fd8f2 0%,#e8f5fb 46%,rgba(0,0,0,0) 47%),url(${CI.gateSea}) 0 0/180px 180px`;   // Chapter 2：会場への門（arena_approach_gate）を空と海の上に
+      // 2026-10-20（指示 G「Chapter 1 の大会会場到着時は正門前の画角」）：Chapter 1 の正門前は絵の中央（大門）を画面の中央に・画面いっぱい。
+      //  旧：style の background の一括指定で位置が左上（0 0）・原寸に戻り、空と左の塔だけが見えていた（class の 50% 30% が効いていなかった）
+      { const CI = chi(m), bg = CI.gate ? `url(${CI.gate}) 50% 62%/cover no-repeat,#cfe6f4` : CI.gateBg ? CI.gateBg : `url(${CI.gateArt}) center 62%/min(88vw,420px) auto no-repeat,linear-gradient(180deg,#9fd8f2 0%,#e8f5fb 46%,rgba(0,0,0,0) 47%),url(${CI.gateSea}) 0 0/180px 180px`;   // Chapter 2：会場への門（arena_approach_gate）を空と海の上に
         V.el.insertAdjacentHTML('beforeend', `<div class="wb-arr gate${CI.gate ? '' : ' sea'}" id="wbgate" style="background:${bg}"></div>`); }
       const gate = $('#wbgate'); void gate.offsetWidth; gate.classList.add('on'); feel('tournament.arrive');
       await wait(calm() ? 0 : 950);
