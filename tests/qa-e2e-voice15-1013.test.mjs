@@ -151,12 +151,13 @@ test('VB-4：リュウ＝（2026-10-13 開発27：遭遇の「よっ！」なし
   await qg.waitForFunction(SUR, null, { timeout: 20000 }); await qg.click('#sur', { force: true });
   await fightToEnd(qg); await qg.waitForTimeout(1300);
   assert.match(await qg.evaluate(() => (document.getElementById('ban') || {}).textContent || ''), /^LOSE/);
-  // 2026-10-14 実機試遊⑬：決着の画面では鳴らさない → ボードへ戻ってからリュウ ↔ フィナの会話の1行目「へへっ、今日は俺の勝ちだな！」と同時に「へへっ」
+  // 2026-10-14 実機試遊⑬：決着の画面では鳴らさない → ボードへ戻ってからリュウ ↔ フィナの会話の1行目と同時に声。
+  //  2026-10-18 夜間 GO（B06）：負けの会話の字幕＝声の書き起こし「へへ、悪くなかったけど、まだまだだな。…」・声＝リュウ 010（旧「へへっ、今日は俺の勝ちだな！」＋ryu_chuckle は使わない）
   assert.deepEqual(await voices(qg, n), [], '決着の画面（LOSE）では声を出さない');
   await qg.click('#go');
-  await qg.waitForFunction(() => /へへっ/.test((document.querySelector('.mmtalk:not(.mmtalk-out)') || {}).textContent || ''), null, { timeout: 20000 });
+  await qg.waitForFunction(() => /へへ、悪くなかった/.test((document.querySelector('.mmtalk:not(.mmtalk-out)') || {}).textContent || ''), null, { timeout: 20000 });
   await qg.waitForTimeout(600);
-  assert.deepEqual(await voices(qg, n), ['ryu_chuckle'], '負け（降参）＝ボードの会話の行で「へへっ」だけ');
+  assert.deepEqual(await voices(qg, n), ['cry_solamo_sad', 'ryu_010'], '負け（降参）＝ボードへ戻ってから連れている子の悲しい声（2026-10-19 次便：決着の画面では鳴かない）→ 会話の行でリュウ 010');
   await H.finishTalk(qg); await qg.waitForTimeout(500);
   // 野生では鳴らない（同じページで野生のバトル）
   n = await vcount(qg);
