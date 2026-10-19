@@ -127,7 +127,7 @@ Ch2〜4 の道の地点を動かした後も、tests/ch2-routes-1015・ch4-route
 ## ⑦ テスト・iPhone の確認項目・残った不具合
 
 - ふだんの全件（`node --test tests/*.test.mjs`）：1954件・合格 1149・skip 805・失敗 0。
-- 実ブラウザ（関係するファイルだけ・1つずつ）：qa-e2e-road-1017・qaroad-1016・ch2-world-1016・ch3-1018・ch4-1019・addendum-1019・world-ch1-1011・roadfirst-world-1010・tournament＝合格（途中で落ちた4件は期待値の更新・道しるべの位置の修正で合格）。全件の実ブラウザテストは未実行。
+- 実ブラウザ（関係するファイルだけ・1つずつ）：最終の版で qa-e2e-ch2-world-1016・ch4-1019・ch3-1018・addendum-1019・world-ch1-1011・road-1017・qaroad-1016・event-npc・tech（404・横はみ出し・タイマー）・page-fixed＝83件すべて合格。途中の版で roadfirst-world-1010・tournament も合格（途中で落ちた4件は期待値の更新・道しるべの位置の修正で合格）。全件の実ブラウザテストは未実行（main 反映の後に回す）。
 - 期待値を更新したテスト（意図した変更）：P47-02・QA-RL5・QA-RL12（成長量）・RT-05（配置の呼び出しに Chapter）・AD-03／AB-3（art_1020 の門）・QR-B1（近くの層は枚数ではなくメモリの上限）・D28-09（版）。
 
 ### iPhone で確かめてほしいこと（390×844 の Safari）
