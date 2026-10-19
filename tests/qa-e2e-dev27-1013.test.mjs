@@ -124,8 +124,8 @@ test('D27-21：ライバル＝SE 1回・「よっ」なし・シートなしで�
   assert.deepEqual([t.npc, t.board], ['ryu', true]);
   await pg.waitForTimeout(1500);
   // 2026-10-15 N04：声は全停止＝会話の行で「やるじゃん」を頼むが鳴らない（出しどころの設計は残す）
-  { const vl = await pg.evaluate((n) => MMAUDIO.voiceLog().slice(n).filter((x) => !x.late), v0); assert.deepEqual(vl.map((x) => x.id), ['ryu_praise']); assert.ok(['play', 'wait'].includes(vl[0].result), vl[0].result); }   // 2026-10-17：有料版（リュウ 003）
-  await pg.waitForFunction(() => MMAUDIO.playLog().filter((x) => x.kind === 'voice' && x.name === 'ryu_003').length === 1, null, { timeout: 6000 });
+  { const vl = await pg.evaluate((n) => MMAUDIO.voiceLog().slice(n).filter((x) => !x.late), v0); assert.deepEqual(vl.map((x) => x.id), ['ryu_001']);   // 2026-10-18 夜間 B06：字幕と同じ文の声（ryu_001） assert.ok(['play', 'wait'].includes(vl[0].result), vl[0].result); }   // 2026-10-17：有料版（リュウ 003）
+  await pg.waitForFunction(() => MMAUDIO.playLog().filter((x) => x.kind === 'voice' && x.name === 'ryu_001').length === 1, null, { timeout: 6000 });
   await H.finishTalk(pg); await pg.waitForTimeout(800);
   assert.deepEqual(await pg.evaluate(() => RYU_WIN_LOG), [1], '会話は1回');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
