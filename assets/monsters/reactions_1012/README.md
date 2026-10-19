@@ -48,3 +48,17 @@
 | レグナス | 04 | 食べる | regnas_04_eating.png | regnas/04_eat.webp | 686×590 | 4fbbe28d0d17db285b2f91ea31df0d4ab848fe9d8a13a05cfefac0d35ce3d786 |
 | レグナス | 05 | 被弾 | regnas_05_hit.png | regnas/05_hit.webp | 644×645 | b40d537d6fad4044dacb0eb8709974c2f7f9b3a5bad5ed4c9ef4b4214b9cf65d |
 | レグナス | 06 | 回避 | regnas_06_dodge.png | regnas/06_dodge.webp | 681×633 | a948ff0099a16a9bb390700e25e6b9d3f180269da6d04c57f9782f925af5ea6c |
+
+## カルシェル（2026-10-18・登録のみ・未解禁＝QA 試遊だけ）
+
+- 正式納品 Kalshell_DevAssets_Part01〜07（Mismon_Kalshell_OfficialPackage_ForDev_20261018・ユーザー承認済み）。原本（PNG／MP3）はリポジトリに置かない＝表示用の派生だけ。道具＝tools/kalshell1018/derive_art.py（PIL＋numpy・数値は tools/kalshell1018/derive_art.json）
+- 待機絵と体の面積がそろう倍率で縮小（hRel＝高さ ÷ 720）。被弾・回避の hRel（1.35・1.383）はほかの種族より大きい＝QA で見え方の確認が要る。01 喜ぶだけ左向き（バトルでは使わない）。
+
+| 種類 | 原本 | sha256（原本） | 派生 | sha256（派生） |
+|---|---|---|---|---|
+| 喜ぶ | 02_reactions/Kalshell_Reaction_01_Happy.png | e3fc6a7d8df1dafb183c3868138ab80ba8e73bd6a22939d1e832001153292c17 | kalshell/01_joy.webp（830×782・hRel 1.086） | 134e6de0da4a9f83ae12602453ca6cd9bf5ae45fdb1669867b210ad2ea7ade8f |
+| 驚く | 02_reactions/Kalshell_Reaction_02_Surprise.png | 4c8b27140dbd12f5c9ee122bab8ca0a438116719086e56751222b1008962f0c0 | kalshell/02_surprise.webp（885×860・hRel 1.194） | 4467172627bb990238884dac5735fa6df4c0c0f86e6e36a559b295ea3a499558 |
+| しょんぼり | 02_reactions/Kalshell_Reaction_03_Sad.png | 54dd69ec4d60b52066358bde04f09b9d03902ae1c32ad26be36154e08c211b05 | kalshell/03_sad.webp（882×873・hRel 1.212） | 81dfdc510dea6f76072e7bc4b3b9f29dea4147d4cefaec0347cb06238ecafac4 |
+| 食べる | 02_reactions/Kalshell_Reaction_04_Eat.png | 65c6975b616d1e64a0299656c2367c5ef4cb2d184b0d5dda238318724dc362e6 | kalshell/04_eat.webp（822×822・hRel 1.142） | b7f0f55b35238c3cd202d087ec3302d6974ef92cd741557e642b81ac37efdd1d |
+| 被弾 | 02_reactions/Kalshell_Reaction_05_Hit.png | 2cdc267b7b04722d872a1c356810e30db23e92b112926021f229e967d9d900da | kalshell/05_hit.webp（979×972・hRel 1.35） | f18c1204efec8c3a6aa24189682be7c7d1286635a5d97b303289feb81858cc09 |
+| 回避 | 02_reactions/Kalshell_Reaction_06_Dodge.png | cd507c69eb4608d30b7025f4a582d99dd0aa233f6ab4079538f13f294fcf8b0d | kalshell/06_dodge.webp（991×996・hRel 1.383） | 7969a4e557f29a64685e19d1f472814dc8a5aa0995a0e9fea54d0d7c2c9cc6af |

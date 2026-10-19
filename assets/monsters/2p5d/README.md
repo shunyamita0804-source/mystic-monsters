@@ -35,3 +35,12 @@ js/phase10/monsters.js の `SPECIES[].image`（4原種）と `RIVAL_MONSTERS[].i
 - 派生の sha256：786bf4312183089396f313ad6120ec33553cff095947c777ab963d3f22fe8661
 - アルファ：原本の本体の不透明度は 251〜253（完全な 255 は約0.2%）＝わずかに透ける絵。派生もそのまま（不透明にしていない）。原本の周りに見えないほど薄い画素（アルファ 1）が約2.9万画素ある。
 - 使っている所：js/phase10/monsters.js の `PENDING_SPECIES`（`image`）。市場・牧場・図鑑・合体・野生・大会・バトルのどこからも参照していない（未解禁）。
+
+## カルシェル（2026-10-18・登録のみ・未解禁＝QA 試遊だけ）
+
+- 正式納品 Kalshell_DevAssets_Part01〜07（Mismon_Kalshell_OfficialPackage_ForDev_20261018・ユーザー承認済み）。原本（PNG／MP3）はリポジトリに置かない＝表示用の派生だけ。道具＝tools/kalshell1018/derive_art.py（PIL＋numpy・数値は tools/kalshell1018/derive_art.json）
+- 余白を切って長辺 720px（720×680）・透過 WebP。色・形は変えていない。参照は js/phase10/monsters.js の `PENDING_SPECIES`（`image`）だけ（市場・図鑑・牧場などには出ない）。
+
+| 原本 | sha256（原本） | 派生 | sha256（派生） |
+|---|---|---|---|
+| 01_art/01_透過微修正版/Kalshell_Official_2p5D_20261017.png | 8995fb1eb46d7e9fbc4625f580b4e1b63ba46ef66ebb563169f8b733763b48ae | assets/monsters/2p5d/kalshell.webp | ece6d856bc69fd13f16eab411b7f08005b9c984f506dba48346473fe25322af7 |

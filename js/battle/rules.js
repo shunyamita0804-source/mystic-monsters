@@ -20,13 +20,14 @@
     paralysis: Object.freeze({ label: 'まひ', turns: 3, failChance: 0.25 }),
     sleep: Object.freeze({ label: 'ねむり', turns: 2 }),
   });
-  const SPECIES = Object.freeze({ 0: 'solamo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas', 6: 'razuck' });   // 2026-10-17：6＝ラズック（登録のみ・QA 試遊の個体だけ）
+  const SPECIES = Object.freeze({ 0: 'solamo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas', 6: 'razuck', 7: 'kalshell' });   // 2026-10-17：6＝ラズック・2026-10-18：7＝カルシェル（どちらも登録のみ・QA 試遊の個体だけ）
   const SKILL = Object.freeze({   // 値は js/phase10/monsters.js の UNIQUE_SKILLS と同じ（そちらが無い環境の控え）
     solamo: { lifeRatioAtMost: 0.2, damageMultiplier: 1.25 },
     gauru: { turnsFromStart: 3, statUpRatio: 0.05 },
     nobiton: { statUpRatio: 0.05 },
     jiol: { chance: 0.1, surviveAtLife: 1 },
     razuck: { multipliers: [1.15, 1.30, 1.50] },
+    kalshell: { chance: 0.2, damageCut: 0.25 },   // 2026-10-18 かたい貝殻：被弾ごとに 20% で受けるダメージを 25% 軽減（上限なし）
   });
   const skillOf = (key) => {
     const U = root.MMP10M && root.MMP10M.UNIQUE_SKILLS, u = U && U['unique_' + key];
@@ -94,6 +95,7 @@
     installJiol(SK, EFF, SKART, SFR, SKM, SPM);
     installFlurene(SK, EFF, SKART, SFR, SKM, SPM);
     installRazuck(SK, EFF, SKART, SFR, SKM, SPM);
+    installKalshell(SK, EFF, SKART, SFR, SKM, SPM);
     // 純補助技（威力なし）＝ソラモ・ガウル・レグナスの補助技も同じ扱い（基本命中 100%）
     for (let k = 0; k < SK.length; k++) if (SK[k] && !SK[k][1] && !BEHAVIOR[k]) BEHAVIOR[k] = { support: true };
     hookGlobals();
@@ -178,6 +180,33 @@
     } catch (e) { /* 無視（習得の表は QA に関係しない） */ }
     return true;
   }
+  // ---- カルシェルの正式技（2026-10-18 正式納品の仕様マスター・SK の 70〜79＝70＋No−1。数値は js/phase10/monsters.js の OFFICIAL_MOVES.kalshell の1か所） ----
+  //  カルシェルは未解禁（入手方法は未決＝市場・野生・合体・大会に出ない）＝QA 試遊モードの個体だけが使う。No.3 あわだま＝相手の命中 10%DOWN 1T・No.4 からにこもる＝自分の丈夫さ 10%UP 2T・
+  //  No.8 しおのステップ＝自分の回避 10%UP 2T（独断で変えない）。No.9・10＝必殺技（威力 120・125）
+  const KAL_FIRST = 70;
+  const KAL_VISUAL = { 1: 1, 2: 0, 3: 5, 4: 7, 5: 4, 6: 5, 7: 6, 8: 7, 9: 9, 10: 9 };   // 旧技の小さな絵を借りる（技アニメのコマ・技カードが無いときの控え）
+  const KAL_EMOJI = ['✂️', '💥', '💧', '🛡️', '💢', '💦', '🔱', '💨', '💥', '🌊'];
+  function installKalshell(SK, EFF, SKART, SFR, SKM, SPM) {
+    const M = root.MMP10M, list = M && M.movesOf ? M.movesOf('kalshell') : [];
+    if (!list.length || list.some((mv) => mv.slot !== KAL_FIRST + mv.no - 1)) return false;
+    list.forEach((mv, i) => {
+      const k = mv.slot, dmg = mv.power != null;
+      SK[k] = [mv.name, dmg ? mv.power / 100 : 0, mv.power >= 120 ? 1 : 2.5, mv.power >= 120 ? '#c79cff' : '#7fd4e8', KAL_EMOJI[i], dmg ? 'a' : 'd', mv.desc || '',
+        mv.type === 'wisdom' ? 'i' : 'p', mv.accuracy, dmg ? mv.critical / 100 : 0];
+      if (mv.effects && mv.effects.length) EFF[k] = mv.effects.map((e) => ({ tg: e.target === 'self' ? 0 : 1, st: STATKEY[e.stat], lv: (e.dir === 'down' ? -1 : 1) * LV[e.size], t: e.turns }));
+      const v = KAL_VISUAL[mv.no];
+      if (Array.isArray(SKART) && SKART[v] != null) SKART[k] = SKART[v];
+      if (SFR && SFR[v] != null) SFR[k] = SFR[v];
+      if (SKM && SKM[v] != null) SKM[k] = SKM[v];
+      if (!dmg) BEHAVIOR[k] = { owner: 'kalshell', no: mv.no, support: true };
+    });
+    if (SPM && SPM.add) list.filter((m) => m.power >= 120).forEach((m) => SPM.add(m.slot));
+    try {
+      const P7 = root.MMP7, by = (l) => list.filter((m) => m.learn === l).map((m) => m.slot);
+      if (P7 && P7.registerMoveset && !P7.getMoveset(7)) P7.registerMoveset(7, { initial: by('initial'), po: by('po'), in: by('in'), hi: by('hi'), ev: by('ev'), de: by('de') });
+    } catch (e) { /* 無視（習得の表は QA に関係しない） */ }
+    return true;
+  }
   const kOf = (move) => { const m = /^sk(\d+)$/.exec((move && move.id) || ''); return m ? +m[1] : -1; };
 
   // ---- resolveAction を包む ----
@@ -248,6 +277,14 @@
       sess.currentLife[def] = after; if (sess.totalDamage) sess.totalDamage[atk] += actual;
       r.damage = total; r.targetLifeAfter = after; r.ko = r.ko || after <= 0;
       notes.push({ side: atk, text: '逆境のひと踏ん張り！', badge: '逆境のひと踏ん張り！' });   // 2026-10-13 開発28：×1.25 を使った瞬間は小さな札（演出は構えた瞬間＝下）
+    }
+    // 2026-10-18 カルシェル「かたい貝殻」：攻撃を受けるたび（威力のある技が当たってダメージがあるとき）20% の確率でそのダメージを 25% 軽減（四捨五入）。被弾ごとに独立の抽選・回数の上限なし。
+    //  攻撃側の上乗せ（ソラモ ×1.25・レグナスの反撃）のあと・ジオルの耐えの判定の前＝実際に受けるダメージに掛ける。表示は小さな札だけ（カルシェルは未解禁＝QA 試遊の個体だけ）
+    if (SPECIES[spOf(pl, def)] === 'kalshell' && r.hit && r.damage > 0 && rnd() < skillOf('kalshell').chance) {
+      const cut = skillOf('kalshell').damageCut, nd = Math.max(0, Math.round(r.damage * (1 - cut))), after = Math.max(0, r.targetLifeBefore - nd), back = Math.max(0, after - r.targetLifeAfter);
+      sess.currentLife[def] = after; if (sess.totalDamage) sess.totalDamage[atk] -= back;
+      r.damage = nd; r.targetLifeAfter = after; r.ko = after <= 0; r.shellCut = back;
+      notes.push({ side: def, badge: `かたい貝殻 −${Math.round(cut * 100)}%`, text: '' });
     }
     // ジオル「大地の守り」：倒れるダメージを受けたとき、10%で1度だけライフ1で耐える
     if (r.ko && SPECIES[spOf(pl, def)] === 'jiol' && !st.used[def].jiol) {
@@ -652,7 +689,7 @@
   const surrendered = () => surrenderPl != null && surrenderPl === G('BPL');
 
   wrapBattle();
-  root.MMRULES = Object.freeze({ FLU_FIRST, RAZ_FIRST, flushDrain, drainLog: () => drainLog.slice(), AILMENTS, NOBI_FIRST, JIOL_FIRST, install, wrapBattle, swallow, cleanResult, battleStats, surrendered, refreshSameEffects, withSpeed, speedOfUnit, current: () => (cur && cur.pl === G('BPL') ? cur.sess : null), drawAil, skillCut, clearCuts, cutLog: () => cutLog.slice(), cutQueue: () => cutQueue.slice(), cutCamera, CUT, SKILL_FX, cutActive: () => !!cutEl, behavior: (k) => BEHAVIOR[k] || null,
+  root.MMRULES = Object.freeze({ FLU_FIRST, RAZ_FIRST, KAL_FIRST, flushDrain, drainLog: () => drainLog.slice(), AILMENTS, NOBI_FIRST, JIOL_FIRST, install, wrapBattle, swallow, cleanResult, battleStats, surrendered, refreshSameEffects, withSpeed, speedOfUnit, current: () => (cur && cur.pl === G('BPL') ? cur.sess : null), drawAil, skillCut, clearCuts, cutLog: () => cutLog.slice(), cutQueue: () => cutQueue.slice(), cutCamera, CUT, SKILL_FX, cutActive: () => !!cutEl, behavior: (k) => BEHAVIOR[k] || null,
     // テスト用の純粋な処理
     newState, applyAilment, opportunity, cureAll, hasAilment, statMul, resolveWith, stateOf });
 })(typeof window !== 'undefined' ? window : globalThis);

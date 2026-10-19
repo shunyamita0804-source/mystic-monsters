@@ -277,6 +277,9 @@
     cry_flurene_sad: { src: [PC + 'flurene_sad.ogg', PC + 'flurene_sad.m4a'], npc: 'monster', gain: 1.175 },   // フルーネ・悲しみ（-19.4 LUFS）
     cry_razuck_normal: { src: [PC + 'razuck_normal.ogg', PC + 'razuck_normal.m4a'], npc: 'monster', gain: 0.473 },   // ラズック・正式（-8.5 LUFS）
     cry_razuck_sad: { src: [PC + 'razuck_sad.ogg', PC + 'razuck_sad.m4a'], npc: 'monster', gain: 0.75 },   // ラズック・悲しみ（-15.5 LUFS）
+    // 2026-10-18 カルシェル（正式納品 07_audio の公式ボイス／悲しいボイス＝tools/kalshell1018/derive_art.py。登録のみ＝本編に出る場面は無い・QA の試聴と QA 試合だけ）
+    cry_kalshell_normal: { src: [PC + 'kalshell_normal.ogg', PC + 'kalshell_normal.m4a'], npc: 'monster', gain: 1.189 },   // カルシェル・正式（-16.5 LUFS）
+    cry_kalshell_sad: { src: [PC + 'kalshell_sad.ogg', PC + 'kalshell_sad.m4a'], npc: 'monster', gain: 1.109 },   // カルシェル・悲しみ（-18.9 LUFS）
   };
 
   root.MMAUDIO_REGISTRY = Object.freeze({ bgm: BGM_REGISTRY, se: SE_REGISTRY, voice: VOICE_REGISTRY, cry: CRY_REGISTRY, bgmCandidates: BGM_CANDIDATES });

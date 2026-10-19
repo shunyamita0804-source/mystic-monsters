@@ -130,3 +130,27 @@ ZIP「次回Claude便_2体初期能力_レグナス牙獣種_2p5d歩行48コマ_
 | walk/back_06.png | flurene/flurene_walk_back_06.webp | 465a6da1bb6b37082557888ee95dc0e3f2bdb49d3ef8bd3035e53c9a9c8700ff | 77c0112dd308fbc69a572f21014561609bfc681cdca9b8f4f00f1a679af7b775 |
 | walk/back_07.png | flurene/flurene_walk_back_07.webp | 61949935f4c7231e55c7fd1f35d7f05785a26a30b845d227b93b9bff8f9878af | f3ca63a05b2afac2ceb14bee27090532456c9d3f8eaa1fcd912fa4c375c64f9d |
 | walk/back_08.png | flurene/flurene_walk_back_08.webp | 41ab479e9542516f5398a6a568cb76472eec88b535578c138d11db092c9fccd4 | 37387717f8c929bec4df6d3af6daa048db51aab96f61af7cd5bf7aed18d4adf1 |
+
+## カルシェル（2026-10-18・登録のみ・未解禁＝QA 試遊だけ）
+
+- 正式納品 Kalshell_DevAssets_Part01〜07（Mismon_Kalshell_OfficialPackage_ForDev_20261018・ユーザー承認済み）。原本（PNG／MP3）はリポジトリに置かない＝表示用の派生だけ。道具＝tools/kalshell1018/derive_art.py（PIL＋numpy・数値は tools/kalshell1018/derive_art.json）
+- 1536×1536 → 384×384 に縮小しただけ（切り出し・描き直しなし）。js/chapter/configs/ch1a.js の `monsterSprites.kalshell.dirs`（front・back・12fps・idle 0・h 1.395・foot 0.144）。本編の盤は番号 → キー（keyOf(7)＝null）で引けない＝出ない。
+
+| 原本 | sha256（原本） | 派生 | sha256（派生） |
+|---|---|---|---|
+| 03_walk/FRONT/FRONT_01.png | 31babb4261fd1a2e361b04cadfb98f3a67d180222a2d295d1a734e89617e7a10 | assets/monsters/walk_25d/kalshell/kalshell_walk_front_01.webp | c51d5108613c6edd78edee5aee3c03fff1ee816e8d6c924d26861e7ccc81abb0 |
+| 03_walk/FRONT/FRONT_02.png | 5420e0f4d4de3c3e58d60e6b002eabfd95551c0fb096836cfb7bfa68da20fd73 | assets/monsters/walk_25d/kalshell/kalshell_walk_front_02.webp | a276d51c584f5eb1e969a24dd20e24906e4599bd5c4b69cbdf697d3a6655a91e |
+| 03_walk/FRONT/FRONT_03.png | e3ee892f3eca7d398734749ae18f28d0a9504422cdf65b512ec56880d950e7f6 | assets/monsters/walk_25d/kalshell/kalshell_walk_front_03.webp | c95a06863b9a87899d6696b31674cda030d1cf76a1c24cec2a3d0693ae151a32 |
+| 03_walk/FRONT/FRONT_04.png | 65035dc33ed922d12f5f34cb681833201708fdf0ed9b10bff4508058c18ee821 | assets/monsters/walk_25d/kalshell/kalshell_walk_front_04.webp | 69db4b65c24548a2979a642660c802e7378f00db6c50ea633b2c703b54ec69fd |
+| 03_walk/FRONT/FRONT_05.png | ead6d6e413a4338db82cf9ff379f5718c489c346ef59f687dc3e3ecd11e15aa9 | assets/monsters/walk_25d/kalshell/kalshell_walk_front_05.webp | 3eddd692b286516f9a6e5bb470cc7b4e6ac1a814d3bb0b46c34bee0f9632438e |
+| 03_walk/FRONT/FRONT_06.png | bb2314f2bf113ec2a091785254b0b99dbfc8804a2ed1ecf1e53268977d5fb933 | assets/monsters/walk_25d/kalshell/kalshell_walk_front_06.webp | d5671b0079912a857a7dfc0bc7cba47e4e32341b16dba484073d046ac6b8d826 |
+| 03_walk/FRONT/FRONT_07.png | 738f8e290d61962836f82c5fb14cb4b12d1ae9b300bb3b747d3f25e7dc436cee | assets/monsters/walk_25d/kalshell/kalshell_walk_front_07.webp | 35da85ea557d2a76a5535e53aaf2e12ea38dc591674fdc9896de085cd37d2000 |
+| 03_walk/FRONT/FRONT_08.png | edc2a0bc50fe8bba80a8b31d327be44bd9ea2e8ae980b0f7d51c11f64acb1db4 | assets/monsters/walk_25d/kalshell/kalshell_walk_front_08.webp | 541269bcdc37c044c94764a765afb8e81b98a29dc85a6b27fe1c0c60db4039ec |
+| 03_walk/BACK/BACK_01.png | ce054eecf73132025d6e7c760307648786807a1b9dda385219bcc492e90209f0 | assets/monsters/walk_25d/kalshell/kalshell_walk_back_01.webp | 289a27ffa7ec9e3962d0c8b24b52e1cf56671854ef2858c128dbb11239be0d03 |
+| 03_walk/BACK/BACK_02.png | a8fe88f5b6ee66ba09cf7cc28709e0fcf75fe9755314fc09fb6856a96f47394c | assets/monsters/walk_25d/kalshell/kalshell_walk_back_02.webp | dab2e1bfcd359fed8732527269143953120d4876fb47d81d58fb1f433b091d49 |
+| 03_walk/BACK/BACK_03.png | 6d7da3603383b0494f663f6320a5f59215a778c1f70a026fcd39d7a857a482d5 | assets/monsters/walk_25d/kalshell/kalshell_walk_back_03.webp | facc275c68a08f5f17b09e07d9444db50a44eb0b983c7a034cc6592ba3771559 |
+| 03_walk/BACK/BACK_04.png | 406cdb076ae9c070c794044cc4af7a8218cb5b7d43e35e20553533bc81caf9cb | assets/monsters/walk_25d/kalshell/kalshell_walk_back_04.webp | 8ceaa7c6433110a5871a42b70d49ee33b78d872f18bb4534fa70b32c30eac312 |
+| 03_walk/BACK/BACK_05.png | 70072f0105fc9a4c769bf6f53cbc022601fe9641c4b62c0e6c9dce7877fc881e | assets/monsters/walk_25d/kalshell/kalshell_walk_back_05.webp | 41fde3aab8697b65865d06870e45811744ad4e13db6cff7ca79c6f3a6b7fe4f9 |
+| 03_walk/BACK/BACK_06.png | 93cb9b3af2904dc761b7831f00c5e79e25a6eee3e7899956be53d8d772cc0ab3 | assets/monsters/walk_25d/kalshell/kalshell_walk_back_06.webp | 5d8e1299eb58d87ee80c02ac5d19f3e6715e8b14fe3eb95e43f82b42ec7c96d5 |
+| 03_walk/BACK/BACK_07.png | 5b8d7f5bcb7384a7ae196092ec58bdb2611f55b8e1e6ea06abfeaeddea810409 | assets/monsters/walk_25d/kalshell/kalshell_walk_back_07.webp | d2097735c272ae54dcbaac5cbcd5fb63a31fe766c6cdc08b33d966e29d8f535e |
+| 03_walk/BACK/BACK_08.png | 56f2dcde43b84c32675b83331752ea2125cea4afb9912d4c71e941347dbb6507 | assets/monsters/walk_25d/kalshell/kalshell_walk_back_08.webp | 19510ffa0997e8da39e2a0e487695b8a1bb0bb9c4e467777cbe1da1293a1c1ba |

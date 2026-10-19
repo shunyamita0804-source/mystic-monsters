@@ -20,3 +20,13 @@
 | cry_flurene_sad | フルーネ | voice_fulune_sad.mp3 | ab1d2c5fbd757d41b62ae4df3282a9d24c14eea7d155d08586d4b68262688351 | -19.4 | -9.0 | 1.175 | 3e0745949a7d6314… | 7eba549be69e8213… |
 | cry_razuck_normal | ラズック | voice_razuck_normal.mp3 | 12178d649d56da0416cb9328c10143b5b10f88d1456c4770c9dd811f18578d17 | -8.5 | -1.1 | 0.473 | 5635ef1c890fd747… | 0d59122fcb8a37b0… |
 | cry_razuck_sad | ラズック | voice_razuck_sad.mp3 | 982f9fbc3a6a0efd56979500fbd7fa066282c696e094c7b1eeffb83a230d8f95 | -15.5 | -1.6 | 0.75 | fe73c57cb68d38fa… | 6ad5ee98b79fb1a7… |
+
+## カルシェル（2026-10-18・登録のみ・未解禁＝QA 試遊だけ）
+
+- 正式納品 Kalshell_DevAssets_Part01〜07（Mismon_Kalshell_OfficialPackage_ForDev_20261018・ユーザー承認済み）。原本（PNG／MP3）はリポジトリに置かない＝表示用の派生だけ。道具＝tools/kalshell1018/derive_art.py（PIL＋numpy・数値は tools/kalshell1018/derive_art.json）
+- MP3 → OGG（q5）＋M4A（128k）。gain＝normal −15／sad −18 LUFS の目安（sad の持ち上げは +3dB まで・ピーク −1 dBFS 以下）。js/audio/audio-registry.js の `cry_kalshell_*`・js/audio/audio-manager.js の `CRY_KEYS[7]`。本編の場面には出ない（未解禁）＝QA の試聴だけ。
+
+| id | 種族 | 原本 | sha256（原本） | I（LUFS） | ピーク（dBFS） | gain | sha256（OGG） | sha256（M4A） |
+|---|---|---|---|---|---|---|---|---|
+| cry_kalshell_normal | カルシェル | カルシェル公式ボイス.mp3 | c7a0f955ae145e02eb52c7dfcf47bfe52868ca1fc3df7e3a3c481102af5f6670 | -16.5 | -3.5 | 1.189 | ced3fa7067bf471a3a27e1f9a3cc7320f1d4bd2324f3dee997eb854139d35a73 | 42b77e8ce2f4a1aedf6197239aa86206b3ead6dbe6aa53af204dbf2b9709bd12 |
+| cry_kalshell_sad | カルシェル | カルシェル悲しい.mp3 | 7c182b58c5bc3b44b1a40ecaf944f4364221b6561b02c3e4063328a4ccf8f7ad | -18.9 | -2.3 | 1.109 | d357588d6582e26d2f5b8aead6da1f78df6e3cb2e092b3567b73c969af10cdb9 | 274b87fa638abed1f10c9a12f05927c3e871a16ef0134bb79dcbaac86d50c708 |

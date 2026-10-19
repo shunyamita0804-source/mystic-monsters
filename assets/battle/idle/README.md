@@ -21,3 +21,12 @@
 - 作り方：tools/next1015/derive.py。アルファが 1 以上の画素の外接矩形で余白だけを切る（原本の左右の端に根が接している＝横は切らない）→ 高さ 720px（乗算済みアルファで縮小）→ 透過 WebP（品質 90・exact）。原本は上書きしていない・リポジトリに置かない。
 - アルファ：本体の不透明度は原本のまま 251〜253（わずかに透ける）。
 - js/battle/arena.js の `IDLE` には入れていない（番号 5 はバトルに出ない）。参照は js/phase10/monsters.js の `PENDING_SPECIES`（`battleIdle`）だけ。
+
+## カルシェル（2026-10-18・登録のみ・未解禁＝QA 試遊だけ）
+
+- 正式納品 Kalshell_DevAssets_Part01〜07（Mismon_Kalshell_OfficialPackage_ForDev_20261018・ユーザー承認済み）。原本（PNG／MP3）はリポジトリに置かない＝表示用の派生だけ。道具＝tools/kalshell1018/derive_art.py（PIL＋numpy・数値は tools/kalshell1018/derive_art.json）
+- 余白を切って高さ 720px（859×720）・透過 WebP・**右向き**（ほかの5体と同じ）。js/battle/arena.js の `IDLE` には入れない（QA 試遊の間だけ js/qa/trial.js が貸す）。
+
+| 原本 | sha256（原本） | 派生 | sha256（派生） |
+|---|---|---|---|
+| 01_art/01_透過微修正版/Kalshell_BattleIdle_Review_20261018.png | f61973da4e0083e5c0ce983ad3c5f49f9ec07a9d92cd34001daedd76fdc1b8bb | assets/battle/idle/idle_kalshell.webp | 6b45adc0c89b0a3d54f08706eac78c44fd4fdac4fbecfaac86b1e3380be4c56f |
