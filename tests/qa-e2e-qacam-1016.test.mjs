@@ -4,7 +4,7 @@
 //        従来より回っている時間が短い・試遊はセーブを書き換えない・エラー／404 なし
 //  QC-B2 フラグなし：2026-10-18 REV3 から C案カメラ・新歩行が正式の既定（従来は ?qaCam=old）・通常の URL では QA の札は出ない
 //  QC-B3 Chapter 2 B・C（390×844）：C案でも止まったときに先の地点が見える・エラーなし
-//  QC-B4 ?qaCam=fixed：向きを回さない（yaw 0 のまま）
+//  QC-B4 ?qaCam=fixed（旧の比較）を付けても C案のまま（2026-10-19 第2工程で比較の切り替えを撤去）
 // =========================================================
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -68,11 +68,9 @@ test('QC-B1：C案（Chapter 1 A・3サイズ）＝歩く間は向きを変え�
       assert.deepEqual(p.errors, [], tag); assert.deepEqual(p.bad, [], tag);
       await p.ctx.close();
     }
-    // 従来との比較（390×844）：同じ出目で、従来は回っている時間が長い
-    const p = await openTrial(L, 1, 'A', 'old', [390, 844]); const old = await walk(p.page, DICE.length); await p.ctx.close();   // 2026-10-18 REV3：従来は ?qaCam=old（フラグなし＝C案が正式）
-    const p2 = await openTrial(L, 1, 'A', 'c', [390, 844]); const c = await walk(p2.page, DICE.length); await p2.ctx.close();
-    assert.ok(c.qa.ms < old.qa.ms * 0.5, `C案の回る時間 ${c.qa.ms} < 従来 ${old.qa.ms} の半分`);
-    assert.ok(c.qa.turns <= old.qa.turns, `回り始めた回数 C ${c.qa.turns} ≤ 従来 ${old.qa.turns}`);
+    // 2026-10-19 第2工程：従来のカメラ（?qaCam=old）との比較は撤去＝URL を付けても C案のまま（本編と QA は同じカメラ）
+    const p = await openTrial(L, 1, 'A', 'old', [390, 844]);
+    assert.equal(await p.page.evaluate(() => MMWB.world().qa().camMode), 'c', '?qaCam=old でも C案（旧カメラへ戻れない）'); await p.ctx.close();
   } finally { await L.close(); }
 });
 
@@ -102,11 +100,11 @@ test('QC-B3：Chapter 2 B・C（390×844）でも C案で止まったときに�
   } finally { await L.close(); }
 });
 
-test('QC-B4：?qaCam=fixed＝向きを回さない', { skip, timeout: 600000 }, async () => {
+test('QC-B4：?qaCam=fixed（旧の比較）を付けても C案のまま＝向きは C案の規則で回る（2026-10-19 第2工程）', { skip, timeout: 600000 }, async () => {
   const L = await H.launch();
   try {
-    const p = await openTrial(L, 1, 'A', 'fixed', [390, 844]), r = await walk(p.page, 4);
-    assert.equal(await p.page.evaluate(() => MMWB.world().state().yaw), 0); assert.equal(r.qa.deg, 0);
+    const p = await openTrial(L, 1, 'A', 'fixed', [390, 844]); await walk(p.page, 4);
+    assert.deepEqual(await p.page.evaluate(() => [MMWB.world().opts.heading, MMWB.world().qa().camMode]), [true, 'c']);
     await p.ctx.close();
   } finally { await L.close(); }
 });

@@ -169,8 +169,8 @@ test('P15-3：Chapter 1の目印は輪を使わず小さな地面の紋章・魔
   const { C } = load(); assert.equal(Object.keys(C.byNo(1).track.nodes).length, 40, 'ノード数・構造は変えない');
 });
 
-test('P15-4：育成開始前のファームのタブも枠のあるボタン（ボード・修行・ステータス・技管理）。表示名だけの変更で遷移先は同じ', () => {
+test('P15-4：旧ファーム画面（ボード・修行のタブ・旧「〇〇の修行」）は到達しなかった＝削除（2026-10-19 第0工程）。ファームは fmScr／dscr だけ', () => {
   const h = between('function _hall(tab,msg){', '\nfunction after(');
-  assert.match(h, /\[\["t","🎲","ボード"\],\["s","🥋","特訓"\],\["st","📊","ステータス"\],\["w","⚔️","技管理"\]\]/);
-  assert.match(h, /onclick="hall\('\$\{id\}'\)"><span class="p15ic">/);
+  assert.match(h, /return fmScr\(msg\)/); assert.match(h, /if\(ht!="t"\)\{dscr\(ht,msg\);return\}/);
+  assert.doesNotMatch(h, /の修行|p15ic|fight\(0,/, '旧ファームの修行・タブ・師匠戦の入口が残っていない');
 });

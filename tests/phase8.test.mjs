@@ -259,7 +259,7 @@ test('S3-6：起動・再読み込みは街を経由せず育成状態へ復帰�
 
 test('S3-7：Chapter間ファーム・Chapter中の画面に「街にもどる」を出さない', () => {
   const hallSrc = HTML.slice(HTML.indexOf('function _hall(tab,msg){'), HTML.indexOf('\nfunction after('));
-  assert.match(hallSrc, /\$\{MMP8\.canVisitTown\(S\)\?'<button class="back" onclick="lobby\(\)">◀ 街にもどる<\/button>':""\}/);
+  assert.doesNotMatch(hallSrc, /街にもどる/, '2026-10-19：_hall は fmScr／dscr／board へ渡すだけ（旧ファーム画面は削除）');
   assert.match(hallSrc, /MMP7\.inChapter\(S\.m\)&&tab!="st"&&tab!="w"\)\{board\(msg\);return\}/, 'Chapter中はステータス・わざ以外はボードへ');
   const boardSrc = HTML.slice(HTML.indexOf('function board(msg){'), HTML.indexOf('\nfunction bPositionMon('));
   assert.doesNotMatch(boardSrc, /街にもどる|onclick="lobby\(\)"/);

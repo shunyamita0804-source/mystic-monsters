@@ -5086,12 +5086,7 @@ function _hall(tab,msg){p9Immersive(false);
  if(S.m&&(tab||ht)=="t"){ht="t";while(S.m.eq.length<6)S.m.eq.push(-1);return fmScr(msg)} // ファーム（正式デザイン）：育成開始前・Chapter間・育成完了を同じ画面で（下の fmScr）
  bgm("farmmenu");ht=tab||ht;const m=S.m;while(m.eq.length<6)m.eq.push(-1);let b="";
  if(ht!="t"){dscr(ht,msg);return}
- if(ht=="t"){b=p8FarmPanel()} // Phase 7：Chapter進行中／ファーム帰還中で導線を切り替える
- else if(ht=="b")b=tour()?"<p><small>大会の月です！出るランクを選ぼう。</small></p>"+RN.map((r,i)=>i>m.rk?"":`<button class="t" onclick="fight(${i})">ランク${r}大会<small>賞金 ${PZ[i]}G${i==m.rk?"（勝つとランクアップ）":""}</small></button>`).join(""):"<p>大会は3・6・9・12月の第4週に開かれます。それまでトレーニングで鍛えよう。</p>";
- else if(ht=="s")b="<p><small>師匠に勝つと、そのタイプの新しい技を覚えます（1週間かかります）。</small></p>"+Object.keys(DJ).map(k=>{const n=dl(k,m).length;return `<button class="t" ${n?"":"disabled"} onclick="fight(0,'${k}')">${LAB[k]}の修行<small>${DS[k]}（未習得 ${n}/${pool(k,m).length}）</small></button>`}).join("");
- else if(ht=="st")b=`<div class="stw"><div class="stl"><div class="mon big">${msv(m)}</div><b>${p11Esc(m.name)}</b><small>ランク${MMP8.rankLabel(m)}</small></div><div class="str">${KS.map(k=>`<div class="sg"><div class="sh"><span>${LAB[k]}</span><b>${m[k]}/999</b></div><div class="eg"><i style="width:${m[k]/9.99}%"></i></div></div>`).join("")}</div></div>`;
- else b=wset(m);
- $("#app").innerHTML=`${MMP8.canVisitTown(S)?'<button class="back" onclick="lobby()">◀ 街にもどる</button>':""}<div class="tsc2" style="background-image:url(${TRIMG2})"><div class="tsign">🌾 ベースキャンプ</div>${msg?`<div class="kbub kt ksys">${msg}</div>`:""}<div class="kbub kdan${msg?"":" kt"}"><b>ダン</b><br>${bcomm()}</div><div class="kav" onclick="const p=this.parentNode,s=p.querySelector('.ksys'),b=p.querySelector('.kdan');if(s)s.remove();if(b){b.classList.remove('kt');void b.offsetWidth;b.classList.add('kt')}" aria-label="ダンのコメントを見る"><img src="${DAN_FACE}" alt=""></div><div class="mw big xl" id="m0"><div class="mon">${msv(m)}</div><div class="fx" id="f0"></div></div></div><div class="fhud"><span>🐾 ${p8StateLabel(S.m)}</span><span>${GCOIN} ${S.g}G</span></div>${bprof()}<div class="ttabs p15tabs">${[["t","🎲","ボード"],["s","🥋","特訓"],["st","📊","ステータス"],["w","⚔️","技管理"]].map(([id,ic,lb])=>`<button class="ttab p15tab${ht==id?" on":""}" onclick="hall('${id}')"><span class="p15ic">${ic}</span><b>${lb}</b></button>`).join("")}</div><div class="wpanel">${b}</div>`;
+ /* 2026-10-19 第0工程：ここから下の旧ファーム画面（旧い師匠戦の入口・旧「ランク大会」のボタン・旧わざ欄 wset）は、上の fmScr／dscr で必ず return するため到達しなかった＝削除（docs/next_1019/RETIRE.md） */
 }
 function after(t){hall(null,t)} // Phase 8：寿命は廃止（寿命による旅立ちは起きない）
 const TE={li:"💖💪",po:"💥🔥",in:"📘✨",hi:"🎯💫",ev:"💨⚡",de:"🧱🔩"},TC={li:"#ff5c8a",po:"#ff8f3a",in:"#7c5cff",hi:"#ffd23f",ev:"#3fd0ff",de:"#8a94a6"};
