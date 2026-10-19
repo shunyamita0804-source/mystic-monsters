@@ -67,6 +67,9 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 | js/qa/battle-stage.js | **2026-10-16 常設バトル QA のステージ `MMQAS`**：?mmQaTrial=1 の QA 画面の「▶ バトル技ステージ」（開始画面の『QA を開く』からも）。6体（MMQA.catalog＝マスターデータの登録から）×10技を1技ずつ／全10技の連続再生・攻撃側・相手・体格（従来／案A／案B／1〜5＝?mmSize=1 を吸収）・背景（会場／黒／白／紺）・速さ（仮想の時計 window.__mmqaST＝stage.js の ST もこれを通る）・ループ・命中／回避／MISS（MMSTAGE.qaForce＝見せ方だけ）・一時停止・コマ送り。実戦と同じ描画（anim(k, s)・MM25D.preview）。保存しない（QA が ON の間だけ）。§3「バトル最終統合」。旧 trial.html（作業ブランチだけの試遊の入口）は main に持ち込まない＝削除 |
 | js/battle/sk19-v2-1016.js、assets/battle/gauru_sk19_v2_1016/、tools/sk19v2/、docs/sk19_v2_1016/（作業ブランチ claude/claude-md-handoff-check-fcl9lb だけ） | **2026-10-16 ガウル SK19「聖なる炎」承認演出 V2 の試験実装 `MMSK19V2`**：飛行2枚＋胸中心の放射4枚・既存の SK19 の時間枠のまま（当たり＝炎の外縁が相手の中心に届く時刻に1回）・`?sk19time=v2`＝試写と同じ実時間（QA の比較用）・`?sk19=v1`＝前回の演出。main 未統合・未公開・iPhone実機再検収待ち。§3「SK19 承認演出 V2」 |
 | js/qa/trial.js | **QA 試遊モード `MMQA`（2026-10-15）**：URL に ?mmQaTrial=1 のときだけ、牧場・ベースキャンプに『QA：全モンスター・全技試遊 ON/OFF』。ON＝6体×10技（実戦 50＝ジオルの正式10技を含む・技アニメのプレビュー 10＝フルーネ・静止画だけ 0。2026-10-15）・通常のセーブのキー（mr4…）への書き込みを止める・OFF／再読み込みで元どおり。§3「新しいパラメーター比較・QA 試遊モード」 |
+| assets/monsters/walk_1018/、tools/walk1018/（derive.py・derive.json・frames.json） | **2026-10-18 夜間 GO：ボードの歩行 7体×5方向×4コマ＝140コマ（本編の既定）**：ユーザー納品の白背景 JPEG シート7枚（4列×5行）から、外周につながる白だけを透明にして原寸で切り出し（縮小・引き伸ばしなし・種族ごとに同じ正方形のキャンバス・足もとの基線をそろえる）。js/qa/walk5-1016.js の SET／BASE7／SPEC1018・ch2a.js（旧い盤の Chapter 2）。旧 walk_1017 は ?qaWalk=1017 の比較だけ（ファイルは残す）。§3「夜間 GO（2026-10-18〜19）」 |
+| js/battle/kalshell-moves-data.js、assets/battle/kalshell_moves_1018/、tools/kalshell1018/（derive_art.py・build_moves.py・derive_art.json）、assets/monsters/2p5d/kalshell.webp、assets/battle/idle/idle_kalshell.webp、assets/monsters/reactions_1012/kalshell/、assets/monsters/walk_25d/kalshell/、assets/moves/cards_1014/kalshell/、assets/tournament/icons_1015/icon_kalshell.webp、assets/tournament/vs_1017/vs_kalshell.webp、assets/monsters/compare_1015/kalshell.webp、assets/audio/voice/monster_1017/kalshell_* | **2026-10-18 カルシェル（登録のみ・未解禁＝入手条件なし）**：js/phase10/monsters.js の `PENDING_SPECIES`（番号 7・SK 70〜79）・固有スキル「かたい貝殻」（js/battle/rules.js）・技アニメ 84枚（`MMKSMV_DATA`）・派生 41点。QA 試遊（?mmQaTrial=1）の8体目だけ。各 README に原本と派生の sha256。§3「カルシェル（2026-10-18）」 |
+| tools/ch4/（routes/spec_A/B/C.json・build_ch4_routes.py・sim.mjs・run_all.sh・report.py・draw_routes.py・autotune.py）、js/proto/ch4-routes.js、docs/ch4/、tests/ch4-routes-1018.test.mjs | **2026-10-18 Chapter 4「灼熱の火山」A／B／C の設計案＝未承認・本編に出さない**：道路グラフ `MMRF_CH4`（形式は MMRF_DATA と同じ・index.html から読み込まない）。正本は spec_*.json → `python3 -I tools/ch4/build_ch4_routes.py`（検査つき・手で js を書き換えない）。40ターンのシミュレーション `sh tools/ch4/run_all.sh <出力> "" 12000`（食事あり／なし × 寄り道 0・25・50%）→ `python3 -I tools/ch4/report.py`。設計書 docs/ch4/DESIGN.md・RESULTS.md・graph_*.json（機械可読）。§3「Chapter 4 設計案（2026-10-18）」 |
 | assets/audio/voice/npc_paid_1017/、assets/audio/voice/monster_1017/、assets/monsters/walk_1017/、js/qa/qa-top-1017.js、js/qa/fresh-1017.js、tools/monvoice1017/、tools/walk1017/ | **2026-10-17 統合便 v2**：NPC の有料ボイス 60本（本編で鳴る）・モンスターの鳴き声 14本（MMAUDIO.cry・出しどころ A〜E）・新歩行 7体×20コマ（?qaWalk=1017 の QA だけ）・QA トップ（?qaTop=1）・初見プレイの隔離セーブ（?qaFresh=1）。§3「2026-10-17 統合便 v2」 |
 | js/battle/flurene-moves-data.js、assets/battle/flurene_moves_1015/、tools/flurene1015/、assets/monsters/walk_25d/flurene/、tools/walk25d/derive_flurene.py | **フルーネの技アニメ 77枚（本体 42＋効果 35）と 2.5D 歩行 16コマ（2026-10-15）**：未解禁＝本編には出ない。技アニメは QA 試遊モードのプレビュー（MM25D.preview('flurene', No)＝SK の番号なし・判定なし）だけ、歩行は ch1a.js の monsterSprites.flurene.dirs（QA の「歩行を確認」で再生）。§3「フルーネの技アニメ・歩行（2026-10-15）」 |
 | js/battle/move-cards.js、assets/moves/cards_1014/、tools/movecards1014/、prototype/movecards_1014/ | **正式5体×10技＝50技の静止カード `MMMVCARD`（2026-10-14 開発30）**：技管理（バトルのルーレットの6枠＝横長の技カード1行・技の一覧・技の詳細）の技の絵。カードの番号→技ID→SK の番号は納品の対応表どおり（ソラモ・ガウル＝OFFICIAL_MOVES の slot・レグナス 20＋No−1・ノビトン 30＋No−1・ジオル＝SK なし）。バトル中のルーレット・技辞典・技データは変えない。確認ページ prototype/movecards_1014/（本編からつながない）。§3「開発30」 |
@@ -215,6 +218,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - 2026-10-08（Chapter 1 Pattern A 正式ボード）の後：ふだんの実行に tests/board-1008.test.mjs（BD-01〜07。BD-01＝ゲームの中身のグラフが 2026-10-06 と同じ＝sha256）。実ブラウザ tests/qa-e2e-board-1008.test.mjs（BB-1＝背景をまたぐ移動 3サイズ・BB-2＝再読み込み・BB-3＝分かれ道 A 2サイズ・BB-4＝Scene14 → 到着 → 受付・BB-5＝視差を減らす設定・BB-6＝背景の 404・開発用の表示）。CH-ENGINE-01・CH1-12〜13・CH1-25〜28・CH1-30・N6-01・GF-08 を新しい背景・Scene 番号に書き直した
 - 2026-10-11（本編の Chapter 1＝1枚の世界のボード）の後：ふだんの実行に tests/world-ch1-1011.test.mjs（WC-01〜07。WC-07＝フィナの節目の一言）。実ブラウザ tests/qa-e2e-world-ch1-1011.test.mjs（WB-1〜8。WB-7＝チュートリアル・歩行アニメ・特訓の動き、WB-8＝冒険リアクション。どちらも story:true）。ふだんの実行は 1416件・失敗0。**harness は既定で旧い Chapter 1（MM_QA_OLD_CH1）**＝旧ボード前提の実ブラウザテストはそのまま。新ボードは open({ worldCh1:true })
 - 2026-10-07 深夜（正式UI回収）の後：ふだんの実行は 1208件（合格819・skip 389・失敗0。新しい tests/ui-recovery-1007.test.mjs）
+- **2026-10-18〜19 夜間 GO の後**：ふだんの実行に tests/walk-1018.test.mjs・tests/kalshell-1018.test.mjs・tests/ch4-routes-1018.test.mjs。実ブラウザ tests/qa-e2e-night-1018.test.mjs（NT-B1〜B4）・tests/qa-e2e-kalshell-1018.test.mjs
 - **2026-10-15 比較・QA 便の後**：ふだんの実行に tests/compare-qa-1015.test.mjs（CQ-01〜04）。実ブラウザ tests/qa-e2e-compare-qa-1015.test.mjs（CQ-B1＝3サイズ×肩上アップ6枚の左右・CQ-B2＝大会・野生・レア・ライバルの比較 → バトル・CQ-B3＝QA 試遊の 60 技・CQ-B4＝通常のセーブを守る）。旧 VS の画面・旧比較の .tb3 を前提にした TB-B1・AS8-B2・BE-1〜3・D25-A／A2・TN-B1・JR-8・PR-B1 などを書き直し。harness の tourvs:true は「野生・レア・ライバルの比較を出す」（大会の比較はいつも出る）
 - **2026-10-15 次回便12項目の後**：ふだんの実行に tests/next12-1015.test.mjs（NX-01〜09）・tests/flurene-1015.test.mjs（FL-01〜04）・tests/voice-stop-1015.test.mjs（VS-01〜05）。実ブラウザ tests/qa-e2e-next12-1015.test.mjs（NB-01〜10）
 - **2026-10-14 Chapter 1 A／B／C 高品質化の後**：ふだんの実行に tests/ch1-hq-1014.test.mjs（HQ-01〜04）。実ブラウザ tests/qa-e2e-ch1-hq-1014.test.mjs（HQ-B1 3サイズ・HQ-B2＝404 で従来の絵・HQ-B3＝B／C とつなぎ目）。VB-3（C の岩柱＝rockpillar_rp2）・CR-2／CR-3（新しい絵の 404・遅延）を書き直し
@@ -1027,6 +1031,35 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
   - テスト：C2-08（A 298・B 284・C 304）・実ブラウザ CP-B4
 - **2026-10-15 4回目の回答（夜の一括依頼の 01）**：到達率は**食事ありを基準**（食事なしは参考）・B 成功 2・失敗 18 を維持・寄り道 0% の C（A 比 +1.1pt）は許容・**食事あり・寄り道 25% の A 79.1／B 81.0／C 80.7% を設計基準として採用する方向**・旧 Chapter 2 のセーブの判定は了承。**「時間切れ → Chapter 3 へ進めない」規則は現状のまま**（恒久的な採否は別判断）＝救済案（案1 現状維持／案2 再挑戦1回／案3a onTimeUp 'tournament'／案3b C 昇格戦）を DESIGN.md §6.5 で比較だけ・実装していない。tools/ch2/sim.mjs に shortAtTimeUp（時間切れの個体の GOAL までの残り歩数＝中央値 7〜9）と CH2_LIMIT（比較用のターン上限・45T で 95〜97%）
 
+### 夜間 GO（2026-10-18〜19。いまの正式。指示＝ZIP Mismon_Claude_夜間一括GO_全体不具合_歩行7体正式反映_Ch4ABC設計Sim_20261018・作業ブランチ claude/night-1018・基準 main bb7e625）
+
+- **B01 対戦表の「戦」**：明朝（Shippori Mincho）は文字ごとの分割ファイル＝「戦」だけ別のファイル（unicode-range）で、iPhone の Safari は届くまで別の書体で描く → 起動のときに見出し・ボタンの文字の分割ファイルを先に読む（index.html の head の script#mmfontwarm＝document.fonts.load だけ）。字間つきのボタン（対戦する・対戦開始）は text-indent をやめて左の余白で中央に
+- **B02 敗北の曲**：LOSE（5.00秒）が SE の既定の上限 4秒で切れていた → registry の keepSec 5.2（audio-manager の trimTail が登録の keepSec を読む）。決着の曲のあと、結果の画面に居る間は次の画面の曲（ボード＝CHAPTER_N・大会＝対戦表の曲）をゆっくり始める（index.html の rjNextScene・FADE.slow 1.6秒・WIN 4.25秒／LOSE 6.6秒後）＝もどるを待つ間に無音の穴を作らない・戻っても同じ曲は鳴らし直さない
+- **B03 悲しい声の先行**：悲しい声は結果の画面（その #bt）に居るときだけ1回（monCry の when・MMAUDIO.voice の opts.when＝読み込み待ちの声も鳴らす直前に確かめる）＝もどるを押したあとボードで遅れて鳴らない
+- **B04**：立体サイコロの SE＝着地の足音だけ（dice_1013・最新の方針「開始・回転は無音」。投げる音つきの dice_1014 はファイルだけ残す）
+- **B05**：特訓ボードの見出しの絵＝旧「修行」の文字入り（TABS[2]）→ ゲンシンの顔。技の登録の無い種族は「ゴールで技を覚える」と書かない。ダンの役割の名前＝ベースキャンプ担当
+- **B06 ライバルの声**：遭遇でフィナの一言のあとにリュウの正式ボイス（Chapter 1＝ryu_008 → ryu_006・Chapter 2 以降＝ryu_005 → ryu_006。world-board.js の rivalGreet＝字幕は VOICE_REGISTRY の line＝MMAUDIO.voiceLine）。ライバル戦のあとの会話の字幕を声の書き起こしに＝勝ち ryu_001・負け ryu_010（旧「やるじゃん！ でも、次は負けないからな。」は声と合っていなかった）
+- **未決（報告のみ）**：ソラモ・ガウル・ノビトンの特訓で覚える技（OFFICIAL_MOVES に learn が無い＝§5 の未決）＝特訓のカードは「技データ未登録」のまま
+- **歩行 7体**：§2 の walk_1018。ソラモの正面の体の縦横比 0.69（細長い）→ 1.03。ほかの6体は同じ比率
+- テスト：tests/walk-1018.test.mjs（WK18-01〜03）・実ブラウザ tests/qa-e2e-night-1018.test.mjs（NT-B1＝LOSE を最後まで → 悲しい声 → 次の曲・NT-B2＝途中で戻ると鳴かない・NT-B3＝リュウの声と字幕・NT-B4＝本編の歩行 1018）。MM_BUILD／version.json／MMTUNE.BUILD＝2026-10-19-night。報告 docs/night_1018/REPORT.md
+
+### カルシェル（2026-10-18。登録のみ・未解禁＝入手条件なし。正式納品 Kalshell_DevAssets_Part01〜07＝Mismon_Kalshell_OfficialPackage_ForDev_20261018・ユーザー承認済みの仕様マスター）
+
+- **登録**（js/phase10/monsters.js の `PENDING_SPECIES`）：番号 7（予約）・key kalshell・名前 カルシェル・**種族表示名は未確定**（kind null・候補 `kindCandidate`＝「甲殻種【要確認／仮置き】」＝確定表示しない）・体格サイズ 3・初期能力 ライフ 105／ちから 90／かしこさ 70／命中 100／回避 65／丈夫さ 130（合計 560）・成長適性 C/C/D/C/D/A・素早さ 4・`unlocked:false`・`obtain:null`・`profileImage:null`（プロフィール画像は納品に無い＝捏造しない）。byId／byKey／keyOf では引けない＝市場・牧場・図鑑・合体・野生・ライバル・大会・本編の盤・fight() の相手の表に出ない。
+- **固有スキル「かたい貝殻」**（UNIQUE_SKILLS.unique_kalshell・implemented:true）：攻撃を受けるたび（威力のある技が当たってダメージがあるとき）20% の確率でそのダメージを 25% 軽減（四捨五入）。被弾ごとに独立の抽選・回数の上限なし。js/battle/rules.js の resolveWith（攻撃側の上乗せ＝ソラモ ×1.25 のあと・ジオル「大地の守り」の判定の前）。表示は小さな札「かたい貝殻 −25%」だけ（発動のシネマティックカメラは出さない）。セーブしない。
+- **正式10技**（OFFICIAL_MOVES.kalshell の1か所・SK＝70＋No−1＝js/battle/rules.js の installKalshell が実行時に SK・EFF・SPECIAL_MOVES に足す・index.html の SK の定義の行は変えない）：1 はさむ（ちから 70・95・5%・初期）／2 シェルタックル（ちから 80・85・10%・初期）／3 あわだま（かしこさ 60・95・5%・相手の命中 小DOWN 1T・初期）／4 からにこもる（補助・命中 100・自分の丈夫さ 小UP 2T・初期）／5 クラッシュクロー（ちから 105・85・15%・ちから特訓）／6 アクアバースト（かしこさ 95・90・10%・かしこさ特訓）／7 コーラルスピア（ちから 95・100・10%・命中特訓＝必中ではない）／8 しおのステップ（補助・自分の回避 小UP 2T・回避特訓）／9 シェルブレイカー（ちから 120・80・15%・丈夫さ①・必殺技）／10 タイダルクラッシュ（ちから 125・85・20%・丈夫さ②・必殺技）。習得の表 MMP7.registerMoveset(7)。
+- **素材（派生だけ・原本 PNG／MP3 は置かない）**：2.5D 立ち絵（720×680）・バトル待機絵（859×720・右向き）・表情6種（reactions_1012/kalshell・MMRXART の番号 7）・歩行 front／back 各8コマ（384×384・ch1a.js の monsterSprites.kalshell.dirs＝h 1.395・foot 0.144）・技カード10枚（640×360）・対戦表の顔（256×256・灰色の背景 #e1e1e1）・VS の勝負絵（vs_1017・512×512・背景つき＝vs_monsters とは分ける）・比較画面の絵（**代替**＝専用の肩上アップは未納・待機絵の顔を中心に切った正方形 640×640）・鳴き声 normal／sad（OGG＋M4A・gain 1.189／1.109）・技アニメ 84枚（本体 49・効果 35＝空の効果 14枚は作らない）。PREVIEW・GIF・MP4・コンタクトシートは取り込まない。
+- **QA 試遊（?mmQaTrial=1）**：8体目のタブ・10技とも「実戦可能」（SK 70〜79）・絵の比較パネル（2.5D・待機・比較・対戦表の顔・VS・表情6）・歩行の確認・鳴き声の試聴・常設バトル QA のステージ。QA の間だけ IMG[7]・MMARENA.IDLE[7] に待機絵を貸す。QA トップ（?qaTop=1）は 8体×10技＝80枠。普段の URL では何も変わらない。
+- **未決**：種族表示名（甲殻種は仮置き）・プロフィール画像（全モンスター一括制作の予定）・入手方法・出現場所（ユーザーが後日決める）・専用の肩上アップ（今は代替）・被弾／回避の表情の大きさ（hRel 1.35／1.383＝ほかより大きい・QA で確認）・iPhone 実機は未確認。
+- テスト：tests/kalshell-1018.test.mjs（KS-01〜05）。8体・SK 80・鳴き声 16本に合わせて compare-qa-1015・flurene-1015・jiol-moves-1015・phase10・reactions-1012・voice-paid-1017・qa-static-guards・qa-e2e-razuck-1017・tools/public-check.mjs を書き直し。
+
+### Chapter 4 設計案（2026-10-18。**未承認・本編に出さない**。正式全体絵・巨大火山 TL/TR/BL/BR はリポジトリに無い＝座標はすべて仮）
+
+- 3ルート（仮コンセプト）：A「主登山道」（320地点・本線 97〜123歩・ライバル 60〜75%）・B「溶岩渓谷」（301・97〜119・62〜72%・運命が偶数のとき溶岩の上の双橋で東岸へ）・C「外輪山周遊」（294・100〜123・49〜60%・ライバル → 運命の順）。RoadFirst の文法・40ターン・D6・固定報酬 6＋隠れ家（中身は Chapter 1 と同じ 7 種類【仮】）・レア 10%・空腹と食事は共通。Chapter 1 の 42区間のコピーではない。
+- 高さ art.elev（麓 0 → 火口縁 112）・空の色は高さで夕暮れ（0〜40）→ 薄暮（40〜84）→ 夜（84〜）＝設計資料だけ（実装なし）。溶岩の中に地点を置かない（橋の区間だけ渡る）。
+- 40ターンの到達率（食事あり・寄り道 25%＝主基準・各 24,000 回）：A 77.5・B 80.9・C 80.2%（Ch1-A 73.5・Ch2-A 79.1）。調整前（v1）は 92.9／88.5／86.9%（寄り道が短すぎた）＝寄り道を Chapter 1 に近い長さに・A の後半を長くした。進めなくなった回 0・GOAL の回はすべてライバル済み・レアの重複なし。
+- 本編の Chapter 4 は旧ボード（20ターン）のまま＝切り替えは未決（U-01）。承認論点 D-1（A と B の差 3.4pt）・D-2（食事なし・50% の C 24.9%）・D-3（C のライバル 49%〜）。素材待ちの予約枠は DESIGN.md §8。
+
 ### 本編試遊の緊急修正 v2（2026-10-18。いまの正式。指示＝ZIP Mismon_Claude_本編試遊不具合のみ緊急修正_v2_Ch3道路とQA本編統一・作業ブランチ claude/fix-1018v2・基準 main 48081ad）
 
 - **方針（ユーザー正式）**：Chapter 1／2／3 とも、QA と通常本編は同じ正式ボード・同じ地形と道路の描画・同じ素材。QA だけに残すのは試験の操作（A／B／C の切り替え・QA 移動・比較リンク）。各 Chapter の独自のデザインは保つ（Chapter 1 の道路を他章へ横流しして統一しない）
@@ -1602,7 +1635,12 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 - 全体QA（2026-09-29）：QA_AUDIT.md に監査結果・修正内容・保留事項・今後の推奨をまとめた。
 - Stage 3（2026-09-29、安全軽量化・テスト正常化）：古いテスト3件の更新・MS-B6 の安定化・未使用の埋め込み画像10件の削除。QA_AUDIT.md の「14」
 - 次の予定：未指示（要確認）。技術面の推奨は QA_AUDIT.md の「10. 今後の修正の推奨」
-- **引き継ぎ（2026-10-18 深夜・緊急修正 v2 の統合後。新しいセッションはここから読む＝下の記述より優先）**：
+- **引き継ぎ（2026-10-19 朝・夜間 GO の統合後。新しいセッションはここから読む＝下の記述より優先）**：
+  - main＝claude/night-1018 を統合・build `2026-10-19-night`・中身は §3「夜間 GO」「カルシェル」「Chapter 4 設計案」・報告 docs/night_1018/REPORT.md
+  - 本編の歩行は walk_1018（7体）。カルシェルは登録のみ（入手条件なし・QA の8体目）。Chapter 4 は設計案だけ（本編は旧ボードのまま）
+  - ユーザー判断待ち：Chapter 4 の承認論点 D-1〜D-3・本編への切り替え・カルシェルの種族表示名／入手方法／プロフィール画像・ソラモ／ガウル／ノビトンの特訓の技・iPhone 実機の確認
+  - 戻し方：統合のマージを revert（統合前は bb7e625・2026-10-18-fix2）
+- **引き継ぎ（2026-10-18 深夜・緊急修正 v2 の統合後＝旧）**：
   - main＝claude/fix-1018v2 を統合・build `2026-10-18-fix2`・中身は §3「本編試遊の緊急修正 v2」・報告 docs/fix_1018v2/REPORT.md
   - 本編の Chapter 1〜3 は QA と同じ盤（Chapter 2 も通常の起動から A／B／C）。Chapter 4 は未着手（次の指令待ち＝Chapter 4 の設計図）
   - ユーザー判断・画像待ち：Chapter 3 の道路素材（REPORT §4）・ソラモの歩行の描き直し（§5）・EV05 の市松・iPhone 実機の確認
