@@ -25,7 +25,7 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     await pg.waitForFunction(() => /ブランチ/.test(document.querySelector('#mmqat .qtv').textContent));
     const r = await pg.evaluate(() => ({ build: document.querySelector('#mmqat .qtv b').textContent, mb: MM_BUILD, rows: document.querySelectorAll('#mmqat .qtm tr').length, cells: document.querySelectorAll('#mmqat .qtm td').length,
       b: document.querySelectorAll('#mmqat .qtm td.battle').length, pv: document.querySelectorAll('#mmqat .qtm td.preview').length, links: [...document.querySelectorAll('#mmqat a.qtb[data-k]')].map((a) => a.getAttribute('href')), wide: document.documentElement.scrollWidth <= innerWidth }));
-    assert.equal(r.build, r.mb); assert.equal(r.rows, 7); assert.equal(r.cells, 70); assert.ok(r.b >= 59, `実戦 ${r.b}`); assert.equal(r.b + r.pv + (70 - r.b - r.pv), 70);
+    assert.equal(r.build, r.mb); assert.equal(r.rows, 8); assert.equal(r.cells, 80); assert.ok(r.b >= 69, `実戦 ${r.b}`); assert.equal(r.b + r.pv + (80 - r.b - r.pv), 80);   // 2026-10-18 カルシェル（8体目）
     assert.equal(r.links.length, 9); assert.ok(r.links[0].includes('ch1trial=A') && r.links[5].includes('ch2trial=C') && r.links[8].includes('ch3trial=C'));   // 2026-10-18：Chapter 3 の A／B／C を追加 assert.ok(r.wide);
     await pg.click('#mmqat .qts[data-k="cam"] button[data-v="old"]'); await pg.click('#mmqat .qts[data-k="walk"] button[data-v="old"]'); await pg.click('#mmqat .qts[data-k="mon"] button[data-v="3"]');   // 2026-10-18 REV3：C案・新歩行が正式の既定＝比較は「従来」
     await pg.fill('#mmqat .qtseed', '42'); await pg.press('#mmqat .qtseed', 'Tab');

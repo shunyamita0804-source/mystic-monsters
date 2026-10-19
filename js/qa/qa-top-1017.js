@@ -25,7 +25,7 @@
     const Q = root.MMQA; let cat = []; try { cat = Q && Q.catalog ? Q.catalog() : []; } catch (e) {}
     const n = { battle: 0, preview: 0, none: 0 };
     const rows = cat.map((c) => `<tr><th>${esc(c.name)}</th>${c.moves.map((m) => { const k = m.status === 'battle' ? 'battle' : m.status === 'preview' ? 'preview' : 'none'; n[k]++; return `<td class="${k}" title="${esc(m.name)}">${k === 'battle' ? '実' : k === 'preview' ? 'プ' : '未'}</td>`; }).join('')}</tr>`).join('');
-    return { html: `<table class="qtm"><tbody>${rows}</tbody></table><small>実＝実戦で使える（QA の試合）・プ＝技アニメのプレビューだけ（性能が未決）・未＝未実装／要仕様確認。合計 ${cat.reduce((a, c) => a + c.moves.length, 0)} 枠＝実戦 ${n.battle}・プレビュー ${n.preview}・未実装 ${n.none}</small>`, n, total: cat.reduce((a, c) => a + c.moves.length, 0) };
+    return { rows: cat.length, html: `<table class="qtm"><tbody>${rows}</tbody></table><small>実＝実戦で使える（QA の試合）・プ＝技アニメのプレビューだけ（性能が未決）・未＝未実装／要仕様確認。合計 ${cat.reduce((a, c) => a + c.moves.length, 0)} 枠＝実戦 ${n.battle}・プレビュー ${n.preview}・未実装 ${n.none}</small>`, n, total: cat.reduce((a, c) => a + c.moves.length, 0) };
   }
   function seg(name, list) { return `<div class="qts" data-k="${name}">${list.map(([v, t]) => `<button type="button" data-v="${esc(v)}"${OPT[name] === v ? ' class="on"' : ''}>${esc(t)}</button>`).join('')}</div>`; }
   function render(vj) {
@@ -42,7 +42,7 @@
       <label>出発の乱数（seed・空＝毎回ちがう）</label><input class="qtseed" inputmode="numeric" value="${esc(OPT.seed)}" placeholder="例 42">
       <div class="qtl">${['A', 'B', 'C'].map((r) => `<a class="qtb" data-k="ch1" data-r="${r}" href="${esc(href('ch1', r))}">Chapter 1 ・ ${r}</a>`).join('')}${['A', 'B', 'C'].map((r) => `<a class="qtb" data-k="ch2" data-r="${r}" href="${esc(href('ch2', r))}">Chapter 2 ・ ${r}（新しい盤＝未承認）</a>`).join('')}${['A', 'B', 'C'].map((r) => `<a class="qtb" data-k="ch3" data-r="${r}" href="${esc(href('ch3', r))}">Chapter 3 ・ ${r}</a>`).join('')}</div>
       <small>盤の左の「QA移動」で、分かれ道・門・橋・ライバル・封印の門・寄り道・野生／レア・宝箱・ゴールの手前へ直接移れます（次の出目も固定できる）。Chapter 3 の A＝白亜の大橋・B＝雲海の螺旋・C＝風の浮島めぐり。フルーネ・ラズックは盤に出せない（未解禁）＝新歩行は QA 画面の「新歩行 10-17」で確認</small>
-      <h3>全${cat.length}体×10技＝${mv.total} 枠</h3>${mv.html}
+      <h3>全${mv.rows}体×10技＝${mv.total} 枠</h3>${mv.html}
       <div class="qtl"><a class="qtb" href="${esc(base() + '?mmQaTrial=1&qaDirect=1')}">QA 画面（全技の試合・バトル技ステージ・音声の試聴・新歩行）</a></div>
       <h3>初見プレイ（本当のセーブは触らない）</h3>
       <div class="qtl"><a class="qtb" href="${esc(base() + '?qaFresh=1')}">初見プレイを始める／続ける</a><a class="qtb red" href="${esc(base() + '?qaFresh=reset')}">初見プレイを最初から（別の名前のセーブを消す）</a></div>
