@@ -17,7 +17,6 @@
   function href(kind, route) {
     const u = new URLSearchParams();
     if (kind === 'ch1') u.set('ch1trial', route); else if (kind === 'ch2') u.set('ch2trial', route); else if (kind === 'ch3') u.set('ch3trial', route); else if (kind === 'ch4') u.set('ch4trial', route);
-    if (OPT.cam) u.set('qaCam', OPT.cam); if (OPT.road) u.set('qaRoadArt', OPT.road); if (OPT.walk) u.set('qaWalk', OPT.walk);
     if (OPT.seed) u.set('qaSeed', OPT.seed); if (OPT.mon && OPT.mon !== '0') u.set('qaMon', OPT.mon);
     return base() + '?' + u.toString();
   }
@@ -35,9 +34,7 @@
     el.innerHTML = `<div class="qtw"><h2>ミスモン QA トップ</h2>
       <p class="qtv">版 <b>${esc(G('MM_BUILD') || '?')}</b>${V.build && V.build !== G('MM_BUILD') ? `（公開中の version.json＝${esc(V.build)}・一致しない＝再読み込み）` : ''}<br>ブランチ ${esc(V.branch || '—')}・元のコミット ${esc(V.base || '—')}</p>
       <h3>Chapter をすぐに試遊（セーブを控えて保存しない）</h3>
-      <label>カメラ</label>${seg('cam', [['', 'C案（正式）'], ['old', '従来（比較）']])}
-      <label>道路の絵</label>${seg('road', [['', '新（正式・2026-10-18）'], ['old', '従来（比較）']])}
-      <label>歩行</label>${seg('walk', [['', '新（正式・8方向）'], ['old', '従来 8コマ（比較）']])}
+      <small>カメラ C案・歩行 20コマ・道路は正式（本編と同じ。2026-10-19 から比較の切り替えは無い）</small>
       <label>連れていく子</label>${seg('mon', [['0', 'ソラモ'], ['1', 'ガウル'], ['2', 'ノビトン'], ['3', 'ジオル'], ['4', 'レグナス']])}
       <label>出発の乱数（seed・空＝毎回ちがう）</label><input class="qtseed" inputmode="numeric" value="${esc(OPT.seed)}" placeholder="例 42">
       <div class="qtl">${['A', 'B', 'C'].map((r) => `<a class="qtb" data-k="ch1" data-r="${r}" href="${esc(href('ch1', r))}">Chapter 1 ・ ${r}</a>`).join('')}${['A', 'B', 'C'].map((r) => `<a class="qtb" data-k="ch2" data-r="${r}" href="${esc(href('ch2', r))}">Chapter 2 ・ ${r}（新しい盤＝未承認）</a>`).join('')}${['A', 'B', 'C'].map((r) => `<a class="qtb" data-k="ch3" data-r="${r}" href="${esc(href('ch3', r))}">Chapter 3 ・ ${r}</a>`).join('')}${['A', 'B', 'C'].map((r) => `<a class="qtb" data-k="ch4" data-r="${r}" href="${esc(href('ch4', r))}">Chapter 4 ・ ${r}</a>`).join('')}</div>

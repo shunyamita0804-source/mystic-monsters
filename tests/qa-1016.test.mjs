@@ -13,14 +13,15 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const rd = (p) => readFileSync(path.join(ROOT, p), 'utf8');
 
-test('QB-01：C案カメラは ?qaCam= のときだけ・既定は従来のまま', async () => {
+test('QB-01：カメラは C案だけ（2026-10-19 から比較の切り替えなし）・MMRF_WORLD の既定（試作）は camMode null', async () => {
   await import('../js/proto/roadfirst-world.js');
   const W = globalThis.MMRF_WORLD;
   assert.equal(W.DEF ? W.DEF.camMode : null, null);
   const wb = rd('js/chapter/world-board.js');
-  assert.match(wb, /const camOpts = \(\) => \(!QA_CAM \? \{ heading: true, yawTau: 600 \}/, 'フラグなし＝従来の { heading: true, yawTau: 600 }');
-  assert.match(wb, /get\('qaCam'\)/);
-  assert.ok(!/MMWB\.world\(\)\.qa|camMode:\s*'c'/.test(wb.replace(/camMode: QA_CAM\.mode/, '')), '本番の既定で C案を選ばない');
+  // 2026-10-19 第2工程：C案が本編と QA の唯一のカメラ（?qaCam の比較は撤去＝old／fixed／ccut に戻せない）
+  assert.match(wb, /const QA_CAM = Object\.freeze\(\{ mode: 'c', deg: 50, ms: 600 \}\);/);
+  assert.match(wb, /const camOpts = \(\) => \(\{ heading: true, yawTau: 600, camMode: QA_CAM\.mode, camTurnDeg: QA_CAM\.deg, camTurnMs: QA_CAM\.ms \}\);/);
+  assert.doesNotMatch(wb, /get\('qaCam'\)/, 'URL でカメラを変えない');
   const rw = rd('js/proto/roadfirst-world.js');
   assert.match(rw, /const CMODE = o\.heading && \(o\.camMode === 'c' \|\| o\.camMode === 'ccut'\) \? o\.camMode : null;/);
   assert.match(rw, /if \(CMODE\) camC\(info, n, pts, instant\);\s*else \{/, '従来の道筋はそのまま残す');
@@ -28,7 +29,7 @@ test('QB-01：C案カメラは ?qaCam= のときだけ・既定は従来のま�
 
 test('QB-02：QA の入口は QA の URL のときだけ・保存しない', () => {
   const s = rd('js/qa/qa-board-1016.js');
-  assert.match(s, /const QA = !!\(R1 \|\| get\('ch2trial'\) \|\| get\('qaCam'\) \|\| get\('qaWalk'\) \|\| get\('qaRoad'\) \|\| get\('qaRoadArt'\)\);/);   // 2026-10-17：?qaRoadArt でも札
+  assert.match(s, /const QA = !!\(R1 \|\| get\('ch2trial'\)\);/);   // 2026-10-19：比較の URL（qaCam・qaWalk・qaRoad・qaRoadArt）は撤去＝試遊の URL だけ
   assert.match(s, /if \(QA\) root\.addEventListener\('load'/);
   assert.match(s, /TEST_TOUR = \{ snap:/, '試遊の間は TEST_TOUR（save() は何もしない）');
   assert.ok(!/localStorage/.test(s), 'localStorage に書かない');
@@ -70,7 +71,7 @@ test('QW-04：盤の歩行＝2026-10-18 REV3 から新歩行（7体）が通常�
   assert.match(rd('index.html'), /<script src="\.\/js\/qa\/walk5-1016\.js"><\/script>/);
 });
 test('QW-05：URL の数の指定が無いときは既定の値（Number(null)＝0 にしない）', async () => {
-  for (const f of ['js/qa/walk5-1016.js', 'js/chapter/world-board.js']) assert.match(rd(f), /&& (P|q)\.get\(k\) != null \? Number/, f);
+  for (const f of ['js/qa/walk5-1016.js']) assert.match(rd(f), /&& (P|q)\.get\(k\) != null \? Number/, f);   // 2026-10-19：world-board.js のカメラの数の指定（qaCamDeg・qaCamMs）は撤去＝固定値
   await import('../js/qa/walk5-1016.js'); assert.equal(globalThis.MMQAW.TURN_MS, 70); assert.equal(globalThis.MMQAW.FPS, 8);
 });
 

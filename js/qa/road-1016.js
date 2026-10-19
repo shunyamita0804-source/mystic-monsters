@@ -15,7 +15,7 @@
 (function (root) {
   'use strict';
   let P = null; try { P = new URLSearchParams(root.location.search); } catch (e) {}
-  const q = P ? P.get('qaRoad') : null;
+  const q = null;   // 2026-10-19 第2工程：URL の ?qaRoad=1|2（道の描き方の比較）は撤去＝本編と QA は同じ描き方（Chapter 2 は world-board.js が 2）
   // 2026-10-17：?qaRoadArt=raw|fix（js/qa/road-art-1017.js・新しい素材）のときは、?qaRoad が無くても 1（なめらかな帯・近くの層）で描く
   const ART17 = root.MMQRA && root.MMQRA.mode;
   const MODE = q === '1' || q === '2' ? q : ART17 ? '1' : null;

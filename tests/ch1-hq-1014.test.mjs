@@ -65,10 +65,10 @@ test('HQ-03：配置は変えない（skin を渡しても同じ出力・VP-01 �
   assert.equal(Wd.skinOf({ skin: 'hq1014', visual: 'zzz' }).ground, 'ground_a1.webp', '知らない景観は A');
 });
 
-test('HQ-04：本編だけが skin を渡す・?boardSkin=1010 で従来の絵・先読み・読めないときは従来の絵', () => {
+test('HQ-04：本編だけが skin を渡す（いつも hq1014・2026-10-19 から比較の切り替えなし）・先読み・読めないときは従来の絵', () => {
   const WB = rd('js/chapter/world-board.js'), W = rd('js/proto/roadfirst-world.js'), IX = rd('index.html');
   assert.match(WB, /visual: vis, skin: skinKey\(\) \}\);/);
-  assert.match(WB, /q === '1010' \|\| q === 'old' \? null : 'hq1014'/);
+  assert.match(WB, /const skinKey = \(\) => 'hq1014';/, '2026-10-19：?boardSkin=1010 の比較は撤去＝いつも正式の hq1014');
   assert.match(IX, /MMRF_WORLD\.warmArt\(null,MMWB\.skinKey&&MMWB\.skinKey\(\)\)/);
   assert.match(W, /\.then\(\(im\) => im \|\| load\(f\)\)/, '地面・道・水：読めなければ従来の絵');
   assert.match(W, /addEventListener\('error', \(\) => \{ d\.src = base \+ file; p\.w = w;/, '景物：読めなければ従来の絵と幅');

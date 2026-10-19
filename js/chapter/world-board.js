@@ -97,20 +97,16 @@
   }
   // 2026-10-12 試遊修正：カメラを近く（今の道で先の4地点・分かれ道の手前は両方の道を2地点ずつが入る倍率。明るく残す道筋は先の5地点・各3）・モンスター＝マスの幅の 1.2倍・道筋の強調
   // 2026-10-14 Chapter 1 A／B／C 高品質化：盤の絵＝正式13点の派生（MMRF_WORLD の SKIN 'hq1014'）。URL に ?boardSkin=1010（または window.MM_BOARD_SKIN='1010'）で従来の絵＝見比べ・戻すとき
-  const skinKey = () => { let q = null; try { q = new URLSearchParams(root.location.search).get('boardSkin') || root.MM_BOARD_SKIN || null; } catch (e) {} return q === '1010' || q === 'old' ? null : 'hq1014'; };
+  const skinKey = () => 'hq1014';   // 2026-10-19 第2工程：?boardSkin=1010（従来の絵との比較）は撤去
   const CAM = { fit: 4, fitPer: 2, ahead: 5, per: 3, behind: 3, sMin: 2.2, sMax: 5.6, tilePx: [22, 84], monRatio: 1.2, zoomTau: 320 };
-  // 2026-10-16 QA（試作・未承認）：URL の ?qaCam= でカメラの方式を比べる。無い・old＝従来（後ろから追う・yawTau 600）／fixed＝向きを回さない（北が上）／
-  //  c＝C案（歩いている間は向き・倍率を変えない・止まったとき／分かれ道を選んだときだけ短く向きを変える）／ccut＝C案の向きの変え方を「少し暗くして切り替え」に。
-  //  qaCamDeg（向きを変えるずれの角度・既定 50）・qaCamMs（90° 回す時間・既定 600）で調整できる。通常の URL では何も変わらない
-  const QA_CAM = (() => { let q = null; try { q = new URLSearchParams(root.location.search); } catch (e) {} const v = q && q.get('qaCam'); const num = (k, d, lo, hi) => { const x = q && q.get(k) != null ? Number(q.get(k)) : NaN; return Number.isFinite(x) && x >= lo && x <= hi ? x : d; };
-    // 2026-10-18 REV3 F0-2：C案カメラは正式採用＝通常プレイの既定。?qaCam=old＝従来（後ろから追う・QA の比較だけ）・fixed／ccut は QA の比較のまま
-    if (v === 'old') return null;
-    return { mode: ['fixed', 'c', 'ccut'].includes(v) ? v : 'c', deg: num('qaCamDeg', 50, 10, 180), ms: num('qaCamMs', 600, 120, 2000) }; })();
+  // カメラ＝C案（2026-10-18 REV3 で正式採用・2026-10-19 次便一括の第2工程で一元化）：歩いている間は向き・倍率を変えない・止まったとき／分かれ道を選んだときだけ短く向きを変える。
+  //  旧 URL の比較（?qaCam=old／fixed／ccut・qaCamDeg・qaCamMs）は撤去＝本編と QA は同じカメラ
+  const QA_CAM = Object.freeze({ mode: 'c', deg: 50, ms: 600 });
   // 2026-10-16 QA（A）：URL の ?qaRoad=1|2 で道の見た目の比較案（js/qa/road-1016.js）。無い＝従来
   const QA_ROAD = () => (root.MMQAR && root.MMQAR.mode) || null;
   //  2026-10-18 v2：Chapter 2 は既定で 2（縁石つきの白い橋帯 R01 を道と広場に＝Chapter 2 の正式素材）。URL の ?qaRoad=1|2 があればそれ（比較用）
-  const roadFor = (m) => { const q = QA_ROAD(); if (!q) return null; let u = null; try { u = new URLSearchParams(root.location.search).get('qaRoad'); } catch (e) {} return chOf(m) === 2 && !u ? '2' : q; };   // js/qa/road-1016.js はこのファイルのあとに読む＝盤を作るときに見る
-  const camOpts = () => (!QA_CAM ? { heading: true, yawTau: 600 } : QA_CAM.mode === 'fixed' ? { heading: false } : { heading: true, yawTau: 600, camMode: QA_CAM.mode, camTurnDeg: QA_CAM.deg, camTurnMs: QA_CAM.ms });
+  const roadFor = (m) => { const q = QA_ROAD(); if (!q) return null; return chOf(m) === 2 ? '2' : q; };   // 2026-10-19：URL の ?qaRoad による比較は撤去   // js/qa/road-1016.js はこのファイルのあとに読む＝盤を作るときに見る
+  const camOpts = () => ({ heading: true, yawTau: 600, camMode: QA_CAM.mode, camTurnDeg: QA_CAM.deg, camTurnMs: QA_CAM.ms });
   function viewRect() {
     const w = V.el && V.el.querySelector('.wbv'); if (!w) return null;
     const r = w.getBoundingClientRect(), h = V.el.querySelector('.chh'), dk = V.el.querySelector('#wb-ui .chsheet') || V.el.querySelector('#chdock');   // 分かれ道・バトルのシートが出ている間はシートの上まで（モンスターと道の先をシートより上に）

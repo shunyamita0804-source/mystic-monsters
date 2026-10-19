@@ -14,11 +14,12 @@
 (function (root) {
   'use strict';
   let P = null; try { P = new URLSearchParams(root.location.search); } catch (e) {}
-  const q = P ? P.get('qaRoadArt') : null;
+  const q = null;   // 2026-10-19：URL の ?qaRoadArt は読まない（比較の撤去）
   //  2026-10-18（iPhone 試遊・ユーザー指示「Chapter 1 の道路画質改善」）：本編の Chapter 1 は既定で fix（継ぎ目を直した新素材）。?qaRoadArt=old で従来の絵（比較用）。
   //  2026-10-18 v2：Chapter 2 も既定で新しい素材（QA と本編は同じ正式ボード＝ユーザー指示）。urlMode は「URL で選んだか」の確認用に残す
-  const URL_MODE = q === 'raw' || q === 'fix' ? q : null;
-  const MODE = q === 'old' ? null : URL_MODE || 'fix';
+  //  2026-10-19 第2工程：URL の ?qaRoadArt=old|raw（従来の絵・継ぎ目を直す前の絵との比較）は撤去＝本編と QA はいつも fix（正式）
+  const URL_MODE = null;
+  const MODE = 'fix';
   const MACRO = MODE && !(P && P.get('qaRoadMacro') === '0');
   const BASE = './assets/qa/road_1017/';
   // 名前 → px／単位（tools/road1017/derive.py の derive.json と同じ値）。strip・walk・rail は帯の高さ＝幅で決まる（null）
