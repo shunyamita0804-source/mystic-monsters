@@ -212,7 +212,7 @@
       wrap.classList.toggle('twi', p === 'twi'); wrap.classList.toggle('night', p === 'night'); wrap.dataset.phase = p;
     }
     // 描き直しが起きない間（止まっている間）も、モンスターの居る所を 0.6秒ごとに見て空の色を合わせる（盤を作り直した直後・QA の移動のあとも確実に）
-    const S = ctx.S; if (S) { const poll = () => { if (S.dead) return; try { if (S.mon) mon(0, S.mon); } catch (e) {} setTimeout(poll, 600); };   // 盤を捨てたら（S.dead）止まる setTimeout(poll, 0); }
+    const S = ctx.S; if (S) { const poll = () => { if (S.dead) return; try { if (S.mon) mon(0, S.mon); } catch (e) {} setTimeout(poll, 600); }; setTimeout(poll, 0); }   // 盤を捨てたら（S.dead）止まる
     return { occl: () => false, mon, el: null, phase: () => ph };
   }
   let cssDone = false;
