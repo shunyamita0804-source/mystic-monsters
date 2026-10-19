@@ -2,11 +2,11 @@
 // 2026-10-15 夜（PHASE B）：技アニメの試遊修正・体格サイズの比較プレビュー（実ブラウザ・390×844）
 //  BTB-1：ソラモビーム＝その場で撃つ（体の前の端が待機立ち絵の前の端を大きく越えない）・光線が相手まで届く
 //  BTB-2：ファイアボール＝火球（切り出した効果）が口元から相手へ動く
-//  BTB-3：体格サイズ＝通常は正式 F（2026-10-18 REV3）・?mmSize=old で今までの倍率（SCALE）・?mmSize=1 のときだけ ジオル 100%／ソラモ 80%（足もとは床のまま）
+//  BTB-3：体格サイズ＝いつも正式（サイズ1〜5）。撤去した比較の URL（?mmSize=old／1）を付けても同じ倍率（2026-10-19）・足もとは床のまま
 //  BTB-4：はなビンタの絵文字は鼻でない・フルーネ技10 は相手の位置に着弾の絵（共通演出）
 //  2026-10-16 iPhone 8本の修正：
 //  BTB-5：ソラモビーム・スターダストレイ・ファイアボール・フレアレイ＝光線の根元／火球の生まれる所＝同じ区切りの体のコマの口先（MMTUNE.MOUTH）。
-//         左右（自分側・相手側）・体格プレビュー（?mmSize=1）でも 2px 以内。光線は区切りごとに出し直す（スターダストレイ・フレアレイは2本）
+//         左右（自分側・相手側）でも 2px 以内（撤去した ?mmSize=A を付けても同じ）。光線は区切りごとに出し直す（スターダストレイ・フレアレイは2本）
 //  BTB-6：スターフォールの当たりの絵文字 🌠（iPhone で四角い額の絵）を技のコマの間だけ出さない（ほかの技の絵文字は出る）
 //  BTB-7：聖なる炎（前回の演出＝?sk19=v1）＝三色の炎の輪は自分の体の中心から広がるだけ（相手へ飛ばない）・相手の当たりは別の表現（bc06）
 //  BTB-8（2026-10-16 SK19 承認演出 V2）：自分側・相手側＝1時点で1枚の飛行ポーズ・胸の中心は動かない・炎の外縁が相手の中心に届く時刻＝当たり（1回）・終わったら残らない
@@ -79,15 +79,15 @@ test('BTB-2：ファイアボール＝火球が口元から相手へ動く', { s
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
-test('BTB-3：体格サイズ＝通常は正式（F）・?mmSize=old で今まで・?mmSize=1 のときだけ ジオル 100%／ソラモ 80%（足もとは床）', { skip: SKIP, timeout: 300000 }, async () => {
+test('BTB-3：体格サイズ＝いつも正式（サイズ1〜5）・撤去した ?mmSize=old／1 を付けても同じ（足もとは床）', { skip: SKIP, timeout: 300000 }, async () => {
   const k = async (q) => { const p = await battle(q, 3, 0); const v = await p.page.evaluate(() => ['#m0', '#m1'].map((s) => { const mon = document.querySelector(`#bt ${s} .mon`), im = mon.querySelector('.mma-idle').getBoundingClientRect(), mr = mon.getBoundingClientRect(); return { k: +mon.style.getPropertyValue('--mma-k'), h: im.height, foot: Math.round(im.bottom - mr.bottom) }; })); assert.deepEqual(p.errors, []); return v; };
-  // 2026-10-18 REV3：体格サイズ（ラズック1・ソラモ2・ノビトン2・ガウル3・フルーネ3・レグナス3・ジオル4）は正式採用＝通常のプレイで F
+  // 2026-10-19 第2工程：体格は正式のサイズ1〜5だけ（比較案は撤去）。ジオル＝サイズ4・ソラモ＝サイズ2
   const f = await k(''), a = await k('&mmSize=old'), b = await k('&mmSize=1');
-  assert.ok(f[0].k > f[1].k * 1.25, `通常は正式＝ジオル（4）がソラモ（2）より大きい（${f[0].k}・${f[1].k}）`);
-  assert.ok(Math.abs(a[0].k - 0.91) < 1e-6 && Math.abs(a[1].k - 0.91) < 1e-6, `?mmSize=old は今までの倍率（${a[0].k}・${a[1].k}）`);
-  assert.ok(Math.abs(b[0].k - 0.91) < 1e-6, `ジオル（サイズ4）＝100%（${b[0].k}）`);
-  assert.ok(Math.abs(b[1].k - 0.91 * 0.8) < 1e-6, `ソラモ（サイズ2）＝80%（${b[1].k}）`);
-  assert.ok(Math.abs(b[1].h / a[1].h - 0.8) < 0.02, `ソラモの立ち絵の高さ 80%（${(b[1].h / a[1].h).toFixed(3)}）`);
+  assert.ok(f[0].k > f[1].k * 1.25, `正式＝ジオル（4）がソラモ（2）より大きい（${f[0].k}・${f[1].k}）`);
+  for (const [x, tag] of [[a, 'mmSize=old'], [b, 'mmSize=1']]) for (let i = 0; i < 2; i++) {
+    assert.ok(Math.abs(x[i].k - f[i].k) < 1e-6, `?${tag} でも正式の倍率（${x[i].k} / ${f[i].k}）`);
+    assert.ok(Math.abs(x[i].h / f[i].h - 1) < 0.04, `?${tag} でも立ち絵の高さは同じ（登場の動きの揺れ 4% 以内・${x[i].h} / ${f[i].h}）`);   // 倍率（k）は同じ＝高さの差は登場の動きを測る時刻の揺れだけ
+  }
   for (const x of [...f, ...a, ...b]) assert.equal(x.foot, 0, '足もと（立ち絵の下端）は床＝箱の下端のまま');
 });
 
@@ -127,8 +127,8 @@ const MOUTHCHK = ({ k, s }) => new Promise((res) => {
   };
 });
 
-test('BTB-5：光線の根元・火球の生まれる所＝そのコマの口先（左右・体格プレビュー）', { skip: SKIP, timeout: 600000 }, async () => {
-  const cases = [['', 0, 0, 0, 5, 1], ['', 0, 0, 1, 5, 1], ['', 0, 0, 0, 8, 2], ['', 0, 0, 1, 8, 2], ['', 1, 0, 0, 15, 1], ['', 1, 1, 1, 15, 1], ['', 1, 0, 0, 16, 3], ['', 1, 1, 1, 16, 3], ['&mmSize=1', 0, 0, 0, 8, 2], ['&mmSize=1', 1, 0, 0, 16, 3]];   // 2026-10-16（iPhone 6件 A4）：フレアレイは溜めの光（16_01 の口先）＋光線2本
+test('BTB-5：光線の根元・火球の生まれる所＝そのコマの口先（左右・撤去した体格の URL を付けても同じ）', { skip: SKIP, timeout: 600000 }, async () => {
+  const cases = [['', 0, 0, 0, 5, 1], ['', 0, 0, 1, 5, 1], ['', 0, 0, 0, 8, 2], ['', 0, 0, 1, 8, 2], ['', 1, 0, 0, 15, 1], ['', 1, 1, 1, 15, 1], ['', 1, 0, 0, 16, 3], ['', 1, 1, 1, 16, 3], ['&mmSize=A', 0, 0, 0, 8, 2], ['&mmSize=A', 1, 0, 0, 16, 3]];   // 2026-10-16（iPhone 6件 A4）：フレアレイは溜めの光（16_01 の口先）＋光線2本
   for (const [q, me, foe, s, k, n] of cases) {
     const p = await battle(q, me, foe);
     const r = await p.page.evaluate(MOUTHCHK, { k, s });

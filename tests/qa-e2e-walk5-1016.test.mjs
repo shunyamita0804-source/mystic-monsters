@@ -1,8 +1,8 @@
 // =========================================================
-// 2026-10-16 夜間 QA（C）：ソラモ 5方向×4コマの歩行（?qaWalk=soramo5）の実ブラウザ確認（作業ブランチ claude/qa-bca-1016 だけ・試作）
-//  WQ-B1 Chapter 1 A × 3サイズ：8方向の絵（5方向＋反転）を使う・歩く間に向きが変わる・間の向きを通る・足もとの高さが跳ねない・止まると正面へ向き直る・エラー／404 なし
-//  WQ-B2 C案カメラ（?qaCam=c）と組み合わせても動く
-//  WQ-B3 フラグなし＝従来（正面・背面の 8コマだけ・QA の印なし）
+// 盤の歩行（5方向×4コマ＝walk_1018）の実ブラウザ確認。2026-10-16 のソラモ試作（?qaWalk=soramo5）から始まり、2026-10-19 に比較の URL を撤去＝いつも正式
+//  WQ-B1 Chapter 1 A × 3サイズ：8方向の絵（5方向＋反転）を使う・歩く間に向きが変わる・間の向きを通る・足もとの高さが跳ねない・縦横比が絵のまま（縦に伸びない）・止まると正面へ向き直る・エラー／404 なし
+//  WQ-B2 撤去した比較の URL（?qaWalk=soramo5&qaCam=fixed）を付けても正式の歩行・C案カメラのまま
+//  WQ-B3 フラグなし＝正式（5方向）・?qaWalk=old を付けても正式のまま（旧 8コマに戻らない）
 //  WQ-B4 単独の QA 画面（prototype/walk_1016/）3サイズ：はみ出しなし・向きを変えると間の向きを通る
 // =========================================================
 import test from 'node:test';
@@ -43,18 +43,21 @@ async function walkLog(pg, n) {
   return pg.evaluate(() => { clearInterval(window.__wlT); window.__wsO.disconnect(); const l = window.__wl; l.secs = window.__ws; return { log: l, secs: window.__ws }; });
 }
 
-test('WQ-B1：ソラモ 5方向（Chapter 1 A・3サイズ）＝8方向・間の向き・足もとが跳ねない・止まると正面', { skip, timeout: 1800000 }, async () => {
+test('WQ-B1：ソラモ 5方向（walk_1018・Chapter 1 A・3サイズ）＝8方向・間の向き・足もとが跳ねない・縦に伸びない・止まると正面', { skip, timeout: 1800000 }, async () => {
   const L = await H.launch();
   try {
     for (const size of SIZES) {
-      const tag = size.join('x'), p = await open(L, '?ch1trial=A&qaWalk=soramo5', size), pg = p.page;
+      const tag = size.join('x'), p = await open(L, '?ch1trial=A', size), pg = p.page;
       const sets = await pg.evaluate(() => [...new Set([...document.querySelectorAll('.rfw-mon img.wk')].map((i) => i.dataset.s))].sort());
       assert.deepEqual(sets, ['back', 'backd', 'front', 'frontd', 'side'], `${tag}：5方向の絵`);
-      assert.equal(await pg.evaluate(() => document.querySelector('.rfw-mon').dataset.qawalk), '1');
+      assert.equal(await pg.evaluate(() => document.querySelector('.rfw-mon').dataset.qawalk), '1018');
+      const ar = await pg.evaluate(() => [...document.querySelectorAll('.rfw-mon img.wk')].filter((i) => i.naturalWidth).map((i) => { const r = i.getBoundingClientRect(); return r.width && r.height ? Math.abs(r.width / r.height - i.naturalWidth / i.naturalHeight) : 0; }));
+      assert.ok(ar.length && ar.every((d) => d < 0.02), `${tag}：歩行コマの縦横比＝絵のまま（縦に伸びない）${Math.max(...ar)}`);
       const { log, secs: seq } = await walkLog(pg, DICE.length), wk = log.filter((x) => x.walking && x.src);
       assert.ok(wk.length > 20, `${tag}：歩いた ${wk.length}`);
       const secs = new Set(wk.map((x) => x.sec)); assert.ok(secs.size >= 2, `${tag}：向きが変わる ${[...secs]}`);
-      assert.ok(wk.every((x) => /^soramo_(front|back|side|backd|frontd)_[1-4]\.webp$/.test(x.src)), `${tag}：試作の絵だけ`);
+      assert.ok(wk.every((x) => /^(front|back|side|backd|frontd)_[1-4]\.webp$/.test(x.src)), `${tag}：正式の walk_1018 の絵だけ`);
+      assert.ok(await pg.evaluate(() => [...document.querySelectorAll('.rfw-mon img.wk')].every((i) => i.getAttribute('src').includes('walk_1018/solamo/'))), `${tag}：walk_1018`);
       // 向きの変わり目は隣の向きへ1つずつ（2つ以上飛ばない）
       for (let i = 1; i < seq.length; i++) { const a = seq[i - 1], b = seq[i]; if (a === '' || b === '' || a === b) continue; let d = ((Number(b) - Number(a)) % 8 + 8) % 8; if (d > 4) d -= 8; assert.ok(Math.abs(d) <= 1, `${tag}：${a}→${b} で向きが飛んだ`); }
       const feet = wk.map((x) => x.foot).filter((x) => x != null), fmin = Math.min(...feet), fmax = Math.max(...feet);
@@ -68,27 +71,29 @@ test('WQ-B1：ソラモ 5方向（Chapter 1 A・3サイズ）＝8方向・間の
   } finally { await L.close(); }
 });
 
-test('WQ-B2：C案カメラ（?qaCam=c）と組み合わせても動く', { skip, timeout: 900000 }, async () => {
+test('WQ-B2：撤去した比較の URL（?qaWalk=soramo5&qaCam=fixed）を付けても正式の歩行・C案カメラのまま（2026-10-19）', { skip, timeout: 900000 }, async () => {
   const L = await H.launch();
   try {
-    const p = await open(L, '?ch1trial=A&qaWalk=soramo5&qaCam=c', [390, 844]), { log } = await walkLog(p.page, 5);
+    const p = await open(L, '?ch1trial=A&qaWalk=soramo5&qaCam=fixed', [390, 844]), { log } = await walkLog(p.page, 5);
     assert.ok(log.filter((x) => x.walking).length > 10);
+    assert.ok(log.filter((x) => x.src).every((x) => !x.src.startsWith('soramo_')), 'ソラモの試作の絵は出ない');
+    assert.equal(await p.page.evaluate(() => document.querySelector('.rfw-mon').dataset.qawalk), '1018');
     assert.equal(await p.page.evaluate(() => MMWB.world().qa().camMode), 'c');
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
     await p.ctx.close();
   } finally { await L.close(); }
 });
 
-test('WQ-B3：2026-10-18 REV3＝フラグなしは新歩行（5方向×4コマ）・?qaWalk=old で従来（正面・背面の 8コマだけ）', { skip, timeout: 600000 }, async () => {
+test('WQ-B3：フラグなしは正式（5方向×4コマ）・?qaWalk=old を付けても正式のまま（2026-10-19 に比較を撤去）', { skip, timeout: 600000 }, async () => {
   const L = await H.launch();
   try {
     const p = await open(L, '?ch1trial=A', [390, 844]), pg = p.page;
     const sets = await pg.evaluate(() => [...new Set([...document.querySelectorAll('.rfw-mon img.wk')].map((i) => i.dataset.s))].sort());
-    assert.deepEqual(sets, ['back', 'backd', 'front', 'frontd', 'side']); assert.equal(await pg.evaluate(() => document.querySelector('.rfw-mon').dataset.qawalk || ''), '1017');
+    assert.deepEqual(sets, ['back', 'backd', 'front', 'frontd', 'side']); assert.equal(await pg.evaluate(() => document.querySelector('.rfw-mon').dataset.qawalk || ''), '1018');
     await p.ctx.close();
     const q = await open(L, '?ch1trial=A&qaWalk=old', [390, 844]), qg = q.page;
-    assert.deepEqual(await qg.evaluate(() => [...new Set([...document.querySelectorAll('.rfw-mon img.wk')].map((i) => i.dataset.s))].sort()), ['back', 'front']);
-    assert.equal(await qg.evaluate(() => document.querySelector('.rfw-mon').dataset.qawalk || ''), '');
+    assert.deepEqual(await qg.evaluate(() => [...new Set([...document.querySelectorAll('.rfw-mon img.wk')].map((i) => i.dataset.s))].sort()), ['back', 'backd', 'front', 'frontd', 'side'], '旧 8コマに戻らない');
+    assert.equal(await qg.evaluate(() => document.querySelector('.rfw-mon').dataset.qawalk || ''), '1018');
     await q.ctx.close();
   } finally { await L.close(); }
 });

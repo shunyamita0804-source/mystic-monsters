@@ -4,7 +4,7 @@
 //         曲は1回だけ・止めている間に戦闘の BGM を鳴らし直さない・タイマーが止まっても時刻で解ける（永久に止まらない）
 //  D29-B2 決着のあとに旧 2D の決着のポーズ（SPX の WINS／LOSES）・倒れる動き（.dead）を出さない＝両側とも正式の待機立ち絵（勝った自分は正式の勝利の絵）
 //  D29-B3 固有スキルの正式エフェクト5枚 × 左右 × 3サイズ：寄り（0.27秒・対象が中央・全身が切れない）・足元の輪の中心＝立ち絵の足もと・立ち絵の後ろ（顔・体を覆わない）・仮の輪は出さない・終わったら残らない
-//  D29-B4 Chapter 1 の後ろから追うカメラ：横の道・曲がり角・分かれ道・行き止まりからの折り返し＝進む先の地点が画面の上・歩く間は後ろ姿・回りはなめらか（急に跳ねない）・HUD／操作欄は動かない・止まると向きを保つ
+//  D29-B4 Chapter 1 の C案カメラ（2026-10-19 から唯一のカメラ）：横の道・曲がり角・分かれ道・行き止まりからの折り返し＝次の地点は画面の上の側・絵は向きどおり・回りはなめらか（急に跳ねない）・HUD／操作欄は動かない・止まると向きを保つ
 //  QA_E2E=1 のときだけ実行（tests/e2e/harness.mjs）
 // =========================================================
 import test from 'node:test';
@@ -234,10 +234,10 @@ function smooth(samples, tag) {   // 60ms ごとの回りの量：急に跳ね�
   for (let i = 1; i < samples.length; i++) { let d = Math.abs(samples[i].yaw - samples[i - 1].yaw) % 360; if (d > 180) d = 360 - d; assert.ok(d <= 25, `${tag}：${samples[i].t}ms で ${d.toFixed(1)}° 跳ねた`); }
 }
 
-test('D29-B4：Chapter 1 の後ろから追うカメラ（横の道・曲がり角・分かれ道・行き止まりからの折り返し）× 3サイズ', { skip: SKIP, timeout: 900000 }, async () => {
+test('D29-B4：Chapter 1 の C案カメラ（横の道・曲がり角・分かれ道・行き止まりからの折り返し）× 3サイズ＝回りはなめらか・絵は向きどおり・止まると回らない・HUD は動かない（2026-10-19 に旧カメラの比較を撤去）', { skip: SKIP, timeout: 900000 }, async () => {
   for (const size of [[390, 844], [375, 667], [430, 932]]) {
-    // 2026-10-18 REV3：通常の盤は C案カメラ＋新歩行が既定＝この試験は開発29 の「後ろから追うカメラ」と従来の歩行（比較用に残した）を確かめる
-    const p = await openPage({ worldCh1: true, query: '?qaCam=old&qaWalk=old' }); const pg = p.page; const tag0 = size.join('x');
+    // 2026-10-19 第2工程：カメラは C案・歩行は walk_1018 だけ（比較の URL は撤去）＝本編と同じ盤で確かめる
+    const p = await openPage({ worldCh1: true }); const pg = p.page; const tag0 = size.join('x');
     await pg.setViewportSize({ width: size[0], height: size[1] });
     await toWorld(pg);
     const ui0 = await rectsUI(pg);
@@ -248,11 +248,11 @@ test('D29-B4：Chapter 1 の後ろから追うカメラ（横の道・曲がり�
     await shot(pg, `b4_${tag0}_lateral_stop`);
     const walk = a.filter((x) => x.walking);
     assert.ok(walk.length >= 3, `${tag0}：歩いた ${walk.length}`);
-    assert.ok(walk.every((x) => x.dir === 'back'), `${tag0}：歩く間は後ろ姿 ${walk.map((x) => x.dir)}`);
+    // 2026-10-19：本編のカメラは C案（曲がり角で回る）・歩行は 8方向＝見えている絵は画面の上での向きどおり（正面には戻らない＝奥へ進む）
+    assert.ok(walk.every((x) => ['front', 'frontd', 'side', 'backd', 'back'].includes(x.dir)) && walk[walk.length - 1].dir !== 'front' && /back/.test(walk[walk.length - 1].dir), `${tag0}：歩く間は奥向きの絵 ${walk.map((x) => x.dir)}`);
+    assert.equal(await pg.evaluate(() => MMWB.world().qa().camMode), 'c', `${tag0}：C案カメラ`);
     const st1 = a[a.length - 1];
-    const want = await pg.evaluate(() => { const n = MMRF_DATA.nodes; return MMRF_WORLD.headingYaw(n.EL01_07[0] - n.EL01_01[0], n.EL01_07[1] - n.EL01_01[1]); });
-    let dd = Math.abs(((st1.yaw - want) % 360 + 540) % 360 - 180); assert.ok(dd < 20, `${tag0}：西へ進む道が画面の上（yaw ${st1.yaw} / ${want.toFixed(1)}）`);
-    assert.ok(st1.next && st1.mon && st1.next[1] < st1.mon[1] - 8 && Math.abs(st1.next[0] - st1.mon[0]) < (st1.mon[1] - st1.next[1]) * 0.8, `${tag0}：次の地点は画面の上 ${JSON.stringify(st1)}`);
+    assert.ok(st1.next && st1.mon && st1.next[1] < st1.mon[1], `${tag0}：次の地点は画面の上の側 ${JSON.stringify(st1)}`);
     smooth(a, `${tag0} 横`);
     // 2. 曲がり角 → 分かれ道（EL01 の終わり → EL2）
     const b = await rollAndWatch(pg, 6, 3600); await settle(pg);
@@ -268,13 +268,11 @@ test('D29-B4：Chapter 1 の後ろから追うカメラ（横の道・曲がり�
     assert.equal(n3, 'L_CHEST', `${tag0}：行き止まりへ着いた`);
     await pg.waitForTimeout(1500);
     const yDead = await pg.evaluate(() => MMWB.world().state().yaw);   // 行き止まりに着いたら、戻る道が画面の上へ（なめらかに回る）
-    let td = Math.abs(((yDead - yIn) % 360 + 540) % 360 - 180); assert.ok(td > 120, `${tag0}：行き止まりでは戻る道へ向く（${yIn.toFixed(1)} → ${yDead.toFixed(1)}）`);
+    void yDead;   // 2026-10-19：C案カメラは行き止まりの折り返しで急に回らない（旧カメラの「戻る道へ向く」は撤去した比較の経路）
     const c = await rollAndWatch(pg, 2, 4200); await settle(pg);
     await shot(pg, `b4_${tag0}_deadend_return`);
     smooth(c, `${tag0} 折り返し`);
-    const yBack = c[c.length - 1].yaw; let turn = Math.abs(((yBack - yIn) % 360 + 540) % 360 - 180);
-    assert.ok(turn > 120, `${tag0}：折り返して戻る間は入ってきた向きの反対（${yIn.toFixed(1)} → ${yBack.toFixed(1)}）`);
-    const cw = c.filter((x) => x.walking); assert.ok(cw.length && cw.every((x) => x.dir === "back"), `${tag0}：戻る間も後ろ姿 ${JSON.stringify(c.map((x) => [x.t, x.node, x.dir, x.walking ? 1 : 0, Math.round(x.yaw)]))}`);
+    const cw = c.filter((x) => x.walking); assert.ok(cw.length && cw.every((x) => ['front', 'frontd', 'side', 'backd', 'back'].includes(x.dir)), `${tag0}：戻る間も画面の向きどおりの絵 ${JSON.stringify(c.map((x) => [x.t, x.node, x.dir, x.walking ? 1 : 0, Math.round(x.yaw)]))}`);
     // 止まったあと：向きを保つ（回り続けない）・HUD と操作欄の位置は変わらない
     const y1 = await pg.evaluate(() => MMWB.world().state().yaw); await pg.waitForTimeout(800); const y2 = await pg.evaluate(() => MMWB.world().state().yaw);
     assert.ok(Math.abs(y1 - y2) < 1, `${tag0}：止まったら回らない ${y1} ${y2}`);

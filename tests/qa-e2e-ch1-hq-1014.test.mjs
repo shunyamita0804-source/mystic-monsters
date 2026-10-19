@@ -1,7 +1,7 @@
 // =========================================================
 // 2026-10-14 Chapter 1 A／B／C 高品質化（実ブラウザ・本編の Chapter 1＝worldCh1:true）
 //  HQ-B1（375×667・390×844・430×932）：実際の出発（A）→ 盤は skin 'hq1014'・地面／道／帯／水は新しい絵・景物の読み替えが読めている・404 なし
-//          → ?boardSkin=1010 と同じ（MM_BOARD_SKIN）で作り直すと従来の絵・マスの位置（transform）・景物の数は同じ
+//          → 撤去した ?boardSkin=1010 の変数（MM_BOARD_SKIN）を入れて作り直しても hq1014 のまま・マスの位置（transform）・景物の数は同じ
 //  HQ-B2：新しい絵がすべて 404 → 従来の絵へ戻る（盤は描き終わる・景物は従来の絵）
 //  HQ-B3：B／C の絵（A2／T2／F2・A3／R2／RP2）＋くり返しのつなぎ目をブラウザで測る（地面7点）
 //  Playwright / Chromium が無い環境では省略（skip）する。
@@ -15,8 +15,8 @@ let L = null;
 test.before(async () => { if (!SKIP) L = await H.launch(); });
 test.after(async () => { if (L) await L.close(); });
 const OPEN = [];
-// 2026-10-18：本編の Chapter 1 の既定の道路は新素材 fix（js/qa/road-art-1017.js）。このファイルは hq1014 の絵を確かめる＝?qaRoadArt=old を付ける
-const openPage = async (o = {}) => { const p = await L.open({ worldCh1: true, ...o, query: (o.query ? o.query + '&' : '?') + 'qaRoadArt=old' }); OPEN.push(p); return p; };
+// 2026-10-19 第2工程：道路・盤の絵の比較の URL（?qaRoadArt・?boardSkin）は撤去＝本編と同じ（盤 hq1014＋道路の新素材 fix）で確かめる
+const openPage = async (o = {}) => { const p = await L.open({ worldCh1: true, ...o }); OPEN.push(p); return p; };
 test.afterEach(async () => { for (const p of OPEN.splice(0)) await p.ctx.close().catch(() => {}); });
 const idle = (pg) => pg.waitForFunction(() => !bBusy && !MMCHD.isLocked() && !document.querySelector('.wbrelay,.wb-pop,.chf-enc2,.mmtalk,.chdz') && !MMWB.state().intro, null, { timeout: 40000 }).then(() => pg.waitForTimeout(300));
 const depart = async (pg, v) => {
@@ -38,7 +38,7 @@ const look = (pg) => pg.evaluate(() => {
 const rebuild = (pg, skin, vis) => pg.evaluate(async ([skin, vis]) => { window.MM_BOARD_SKIN = skin; if (vis) S.m.raise.field.visualPattern = vis; MMWB.release(); board(); await new Promise((r) => setTimeout(r, 50)); await MMWB.world().ready(); }, [skin, vis]).then(() => idle(pg));
 
 for (const size of [[375, 667], [390, 844], [430, 932]]) {
-  test(`HQ-B1（${size.join('×')}）：A は新しい絵・従来の絵と同じマスの位置・404 なし`, { skip: SKIP, timeout: 150000 }, async () => {
+  test(`HQ-B1（${size.join('×')}）：A は新しい絵・作り直しても同じ絵とマスの位置（従来の絵の切り替えは撤去）・404 なし`, { skip: SKIP, timeout: 150000 }, async () => {
     const p = await openPage({ size }); const pg = p.page;
     await depart(pg, 'A');
     const n = await look(pg);
@@ -46,10 +46,10 @@ for (const size of [[375, 667], [390, 844], [430, 932]]) {
     assert.deepEqual(n.art, { ground: true, road: true, strip: true, water: true }, '地面・道・帯・水は新しい絵');
     assert.ok(n.nsub > 20 && n.subOk, `景物の読み替え（木・岩柱・小花）が読めている ${n.nsub}`);
     assert.deepEqual(n.subSrc, ['board_hq_1014/flowers_f1.webp', 'board_hq_1014/rockpillar_rp1.webp', 'board_hq_1014/tree_t1.webp'], 'A＝T1・RP1・F1');
-    assert.match(n.apron, /board_hq_1014\/ground_a1\.webp/, '草地の外の帯も A1');
+    assert.match(n.apron, /(board_hq_1014\/ground_a1|road_1017\/ch1_ground_a1_fix)\.webp/, '草地の外の帯も A1（2026-10-18 から道路・地面は新素材 fix＝A1 の補修版）');
     await rebuild(pg, '1010');
     const o = await look(pg);
-    assert.deepEqual([o.skin, o.dskin, o.nsub, o.art], [null, null, 0, { ground: false, road: false, strip: false, water: false }], '?boardSkin=1010＝従来の絵');
+    assert.deepEqual([o.skin, o.dskin, o.nsub, o.art], [n.skin, n.dskin, n.nsub, n.art], '撤去した ?boardSkin=1010 の変数では従来の絵に戻らない（2026-10-19）');
     assert.equal(o.props, n.props, '景物の数は同じ'); assert.equal(o.tiles, n.tiles, 'マス（299地点）の位置は同じ');
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   });
@@ -61,9 +61,9 @@ test('HQ-B2：新しい絵が読めない（404）→ 従来の絵へ戻る', { 
   await depart(pg, 'A');
   await pg.waitForFunction(() => [...document.querySelectorAll('#wbw img.rfw-prop[data-k]')].every((i) => /board_art_1010/.test(i.getAttribute('src')) && i.complete && i.naturalWidth > 0), null, { timeout: 15000 });
   const n = await look(pg);
-  assert.deepEqual([n.skin, n.painted, n.art], ['hq1014', true, { ground: false, road: false, strip: false, water: false }], JSON.stringify(n));
+  assert.deepEqual([n.skin, n.painted, n.art.water], ['hq1014', true, false], JSON.stringify(n));   // 地面・道・帯は道路の新素材 fix（road_1017＝別の場所の絵）で描く＝hq1014 の 404 の影響は水と景物だけ
   assert.ok(n.subSrc.every((s) => s.startsWith('board_art_1010/')), JSON.stringify(n.subSrc));
-  assert.match(n.apron, /board_art_1010\/ground_grass\.webp/);
+  assert.match(n.apron, /(board_art_1010\/ground_grass|road_1017\/ch1_ground_a1_fix)\.webp/);
   assert.deepEqual(p.errors, []);
   assert.ok(p.bad.every((b) => /board_hq_1014/.test(b)), '404 は新しい絵だけ');
 });
@@ -74,12 +74,12 @@ test('HQ-B3：B／C の絵・地面7点のくり返しのつなぎ目', { skip: 
   const b = await look(pg);
   assert.deepEqual([b.vis, b.art.ground], ['B', true]);
   assert.deepEqual(b.subSrc, ['board_hq_1014/flowers_f2.webp', 'board_hq_1014/rockpillar_rp1.webp', 'board_hq_1014/tree_t2.webp'], 'B＝T2・F2（岩は RP1）');
-  assert.match(b.apron, /ground_a2\.webp/);
+  assert.match(b.apron, /ground_a2(_fix)?\.webp/);
   await rebuild(pg, null, 'C');
   const c = await look(pg);
   assert.deepEqual([c.vis, c.art.strip], ['C', true]);
   assert.deepEqual(c.subSrc, ['board_hq_1014/flowers_f1.webp', 'board_hq_1014/rockpillar_rp1.webp', 'board_hq_1014/rockpillar_rp2.webp', 'board_hq_1014/tree_t1.webp'], 'C＝RP2（遺跡の岩柱は RP1）');
-  assert.match(c.apron, /ground_a3\.webp/);
+  assert.match(c.apron, /ground_a3(_fix)?\.webp/);
   const seam = await pg.evaluate(async () => {
     const out = {};
     for (const f of ['ground_a1', 'ground_a2', 'ground_a3', 'road_r1', 'road_r2', 'water_w1', 'water_w2']) {

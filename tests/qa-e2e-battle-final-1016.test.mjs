@@ -49,7 +49,7 @@ test('BF-B1：?mmQaTrial=1 → 開始画面の『QA を開く』→ バトル技
   assert.ok(ui.fit && !ui.hScroll, '390×844 で操作欄が画面の中・横にはみ出さない');
   // 1技（実戦の描画）・敵側・体格 案A・紺
   const r1 = await pg.evaluate(async () => { MMQAS.change('mon', '2'); MMQAS.change('no', '2'); MMQAS.change('side', '1'); MMQAS.change('size', 'A'); MMQAS.change('bg', 'navy'); return await MMQAS.play(); });
-  assert.equal(r1.kind, 'anim'); assert.equal(r1.slot, 31); assert.equal(r1.side, 1); assert.equal(r1.size, 'A');
+  assert.equal(r1.kind, 'anim'); assert.equal(r1.slot, 31); assert.equal(r1.side, 1); assert.equal(r1.size, 'F');   // 2026-10-19：体格は正式だけ（案A などの比較は撤去＝切り替えても正式）
   // 回避・MISS・速さ 0.5
   const r2 = await pg.evaluate(async () => { MMQAS.change('result', 'evade'); MMQAS.change('speed', '0.5'); return await MMQAS.play(); });
   assert.equal(r2.kind, 'anim'); assert.ok(r2.ms > r1.ms * 1.5, `0.5倍は長い（${r1.ms} → ${r2.ms}ms）`);

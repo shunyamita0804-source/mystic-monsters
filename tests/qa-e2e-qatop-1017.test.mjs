@@ -1,7 +1,7 @@
 // =========================================================
 // 2026-10-17 QA トップ・初見プレイの隔離・新歩行（実ブラウザ・QA_E2E=1 のときだけ）
-//  QT-B1 ?qaTop=1＝版・7体×10技＝70枠の状態・Chapter 1／2 の A／B／C の入口（カメラ・道路・歩行・seed・子を選ぶと URL に入る）
-//  QT-B2 ?ch1trial=B&qaWalk=1017&qaMon=1&qaSeed=42＝ガウルで Chapter 1 の B・新歩行（8方向・20コマだけ読む）・同じ seed なら同じ配置・セーブを書き換えない
+//  QT-B1 ?qaTop=1＝版・技の枠の状態・Chapter 1〜4 の A／B／C の入口（seed・子を選ぶと URL に入る。カメラ・道路・歩行の比較の選択は 2026-10-19 に撤去）
+//  QT-B2 ?ch1trial=B&qaMon=1&qaSeed=42＝ガウルで Chapter 1 の B・正式の歩行（walk_1018・8方向・20コマだけ読む。撤去した ?qaWalk=1017 を付けても同じ）・同じ seed なら同じ配置・セーブを書き換えない
 //  QT-B3 新しい Chapter 2 の盤は通常の出発でも QA でも同じ（2026-10-18 v2）
 //  QT-B4 ?qaFresh=1＝本当のセーブ（mr4v6）を読まない・書かない／別の名前で保存され再読み込みで続きから／?qaFresh=reset で最初から
 // =========================================================
@@ -26,28 +26,31 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     const r = await pg.evaluate(() => ({ build: document.querySelector('#mmqat .qtv b').textContent, mb: MM_BUILD, rows: document.querySelectorAll('#mmqat .qtm tr').length, cells: document.querySelectorAll('#mmqat .qtm td').length,
       b: document.querySelectorAll('#mmqat .qtm td.battle').length, pv: document.querySelectorAll('#mmqat .qtm td.preview').length, links: [...document.querySelectorAll('#mmqat a.qtb[data-k]')].map((a) => a.getAttribute('href')), wide: document.documentElement.scrollWidth <= innerWidth }));
     assert.equal(r.build, r.mb); assert.equal(r.rows, 8); assert.equal(r.cells, 80); assert.ok(r.b >= 69, `実戦 ${r.b}`); assert.equal(r.b + r.pv + (80 - r.b - r.pv), 80);   // 2026-10-18 カルシェル（8体目）
-    assert.equal(r.links.length, 9); assert.ok(r.links[0].includes('ch1trial=A') && r.links[5].includes('ch2trial=C') && r.links[8].includes('ch3trial=C'));   // 2026-10-18：Chapter 3 の A／B／C を追加 assert.ok(r.wide);
-    await pg.click('#mmqat .qts[data-k="cam"] button[data-v="old"]'); await pg.click('#mmqat .qts[data-k="walk"] button[data-v="old"]'); await pg.click('#mmqat .qts[data-k="mon"] button[data-v="3"]');   // 2026-10-18 REV3：C案・新歩行が正式の既定＝比較は「従来」
+    assert.equal(r.links.length, 12); assert.ok(r.links[0].includes('ch1trial=A') && r.links[5].includes('ch2trial=C') && r.links[8].includes('ch3trial=C') && r.links[11].includes('ch4trial=C'));   // 2026-10-19：Chapter 4 の A／B／C を追加
+    assert.ok(r.wide);
+    assert.equal(await pg.evaluate(() => document.querySelectorAll('#mmqat .qts[data-k="cam"],#mmqat .qts[data-k="walk"],#mmqat .qts[data-k="road"]').length), 0, 'カメラ・歩行・道路の比較の選択は無い（2026-10-19 撤去）');
+    await pg.click('#mmqat .qts[data-k="mon"] button[data-v="3"]');
     await pg.fill('#mmqat .qtseed', '42'); await pg.press('#mmqat .qtseed', 'Tab');
     const h = await pg.getAttribute('#mmqat a.qtb[data-k="ch1"][data-r="B"]', 'href');
-    for (const k of ['ch1trial=B', 'qaCam=old', 'qaWalk=old', 'qaMon=3', 'qaSeed=42']) assert.ok(h.includes(k), `${k} ${h}`);
+    for (const k of ['ch1trial=B', 'qaMon=3', 'qaSeed=42']) assert.ok(h.includes(k), `${k} ${h}`);
+    for (const k of ['qaCam', 'qaWalk', 'qaRoad']) assert.ok(!h.includes(k), `${k} は入らない ${h}`);
     await shot(pg, `qt_top_${size.join('x')}`);
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   });
 }
 
-test('QT-B2：新歩行 7体（?qaWalk=1017）＝ガウルで Chapter 1 の B・8方向・同じ seed＝同じ配置・セーブを書き換えない', { skip: SKIP, timeout: 180000 }, async () => {
+test('QT-B2：正式の歩行（walk_1018・撤去した ?qaWalk=1017 を付けても同じ）＝ガウルで Chapter 1 の B・8方向・同じ seed＝同じ配置・セーブを書き換えない', { skip: SKIP, timeout: 180000 }, async () => {
   const tiles = [];
   for (let k = 0; k < 2; k++) {
     const p = await openPage({ worldCh1: true, query: '?qaWalk=1017&qaMon=1&qaSeed=42' }); const pg = p.page;
     await H.newGame(pg, 'テスト'); const s0 = await pg.evaluate(() => localStorage.getItem('mr4v6'));
     await pg.evaluate(() => MMQAB.startCh1('B'));
-    await pg.waitForFunction(() => window.MMWB && MMWB.world() && MMWB.world().isReady && MMWB.world().isReady() && document.querySelector('.rfw-mon[data-qawalk="1017"]'), null, { timeout: 60000 });
+    await pg.waitForFunction(() => window.MMWB && MMWB.world() && MMWB.world().isReady && MMWB.world().isReady() && document.querySelector('.rfw-mon[data-qawalk="1018"]'), null, { timeout: 60000 });
     const r = await pg.evaluate(() => ({ sp: S.m.sp, route: S.m.raise.field.route, tiles: JSON.stringify(S.m.raise.field.tiles), imgs: [...document.querySelectorAll('.rfw-mon img.wk')].map((i) => i.getAttribute('src')) }));
     assert.equal(r.sp, 1); assert.equal(r.route, 'B'); assert.equal(r.imgs.length, 20, '盤に出ている種族の20コマだけ');
-    assert.ok(r.imgs.every((s) => s.includes('walk_1017/gauru/')), r.imgs[0]);   // ?qaWalk=1017＝前の素材の比較
+    assert.ok(r.imgs.every((s) => s.includes('walk_1018/gauru/')), r.imgs[0]);   // 2026-10-19：前の素材（walk_1017）には戻らない
     tiles.push(r.tiles);
-    if (k === 0) { await pg.waitForTimeout(1500); await shot(pg, 'qt_walk1017'); }
+    if (k === 0) { await pg.waitForTimeout(1500); await shot(pg, 'qt_walk1018'); }
     assert.equal(await pg.evaluate(() => localStorage.getItem('mr4v6')), s0, '試遊は保存しない');
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
     await p.ctx.close(); OPEN.splice(OPEN.indexOf(p), 1);

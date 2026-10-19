@@ -1,7 +1,7 @@
 // =========================================================
 // 実ブラウザ：2026-10-18 REV3（iPhone 実機 QA の修正・正式採用の本編反映）
 //  R3-B1（390×844・375×667）：通常の URL（フラグなし）の Chapter 1＝新歩行（walk_1018・7体の 5方向×4コマ）と C案カメラ・止まると正面（front_2）
-//  R3-B2：通常の Chapter 2（従来の画面）＝新歩行（歩く間は後ろ姿・止まると正面）／?qaWalk=old で従来の静止の絵
+//  R3-B2：通常の Chapter 2（従来の画面）＝新歩行（歩く間は後ろ姿・止まると正面）／撤去した ?qaWalk=old を付けても新歩行のまま（2026-10-19）
 //  R3-B3（375×667・390×844・393×852）：体格（正式 F）＝ジオル＞ガウル＞ソラモ・HP の帯・技名・画面の左右に重ならない
 //  R3-B4：本編の Chapter 1 の開始では鳴かない（intro:true。イベントの1回は qa-e2e-cry-1017 の CRY-B3）
 //  R3-B5：特訓の初回の会話の背景＝特訓場（Farm の札の絵ではない）・特訓メニューの「クリア」の行が切れない（375×667）
@@ -54,7 +54,7 @@ async function toCh2(pg) {
   await pg.waitForSelector('.fm'); await pg.evaluate(() => prepScr()); await pg.waitForSelector('#app button[onclick="p7Depart(this)"]'); await pg.waitForTimeout(400); await pg.click('#app button[onclick="p7Depart(this)"]');
   await pg.waitForSelector('#chf .chf-bg'); await pg.waitForFunction(() => !document.querySelector('.chintro') && !bBusy, null, { timeout: 30000 }); await pg.waitForTimeout(500);
 }
-T('R3-B2：通常の Chapter 2（従来の画面）＝新歩行・止まると正面・歩くと後ろ姿／?qaWalk=old は従来', async () => {
+T('R3-B2：通常の Chapter 2（従来の画面）＝新歩行・止まると正面・歩くと後ろ姿／撤去した ?qaWalk=old でも新歩行', async () => {
   const p = await openPage(); const pg = p.page; await toCh2(pg);
   const on = () => pg.evaluate(() => [...document.querySelectorAll('#bmonw .chf-spr img.on')].map((i) => i.getAttribute('src')));
   assert.deepEqual(await on(), ['./assets/monsters/walk_1018/solamo/front_2.webp'], '止まっている姿は正面');
@@ -65,7 +65,8 @@ T('R3-B2：通常の Chapter 2（従来の画面）＝新歩行・止まると�
   assert.deepEqual(await on(), ['./assets/monsters/walk_1018/solamo/front_2.webp'], '止まったら正面');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   const q = await openPage({ query: '?qaWalk=old' }); await toCh2(q.page);
-  assert.equal(await q.page.evaluate(() => document.querySelectorAll('#bmonw .chf-spr').length), 0, '?qaWalk=old＝従来の静止の絵');
+  assert.deepEqual(await q.page.evaluate(() => [...document.querySelectorAll('#bmonw .chf-spr img.on')].map((i) => i.getAttribute('src'))), ['./assets/monsters/walk_1018/solamo/front_2.webp'], '?qaWalk=old を付けても新歩行（旧い静止の絵に戻らない）');
+  assert.deepEqual(q.errors, []); assert.deepEqual(q.bad, []);
 });
 
 T('R3-B3：体格（正式 F）＝ジオル＞ガウル＞ソラモ・HP の帯／技名／画面の左右に重ならない（3サイズ）', async () => {
