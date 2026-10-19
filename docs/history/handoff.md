@@ -2,6 +2,22 @@
 
 旧 CLAUDE.md §4 の引き継ぎの記録をそのまま移した。**新しいセッションは先頭（いちばん新しい引き継ぎ）から読む**。新しい引き継ぎは先頭に足す。
 
+- **引き継ぎ（2026-10-20・通し試遊の品質改善の実装済み＝main 反映の承認待ち。新しいセッションはここから読む＝下の記述より優先）**：
+  - main＝1e96028（build `2026-10-19-p0b3`）＋この引き継ぎの追記だけ。**作業ブランチ claude/fullplay-1020＝132aebe（build `2026-10-20-full1`・version.json の base＝6e73bdb）は push 済み・main へは未反映**（指示書「承認なしに main へ push しない」→ ユーザーの承認待ち）。開いている PR なし
+  - 指示：ZIP Mismon_Ch1to4_FullPlay_Request_20261020（実機画像 IMG_5997〜6004・Chapter 2）。報告書＝ブランチの docs/fullplay_1020/REPORT.md（①〜⑦）・BOARD_AUDIT.md（マス配置・経路の検査）・shots/（修正前後 32 枚）・sim_before／after.json
+  - ブランチでしたこと：
+    - 道路（Ch1〜4 共通）：区間のつなぎ目で帯を切らない（roadChains）・急な曲がりは描画の線だけ丸める（roadPts）・曲線の網の台形に帯の続きの絵（wrapPad＝櫛の歯の切れ目）・START も円の広場・近くの高解像度の層は画面の手前から・遠くは半分の細かさ（メモリの上限は同じ 32MB）・通り過ぎた建物は消す・道しるべは分かれ目の斜め前
+    - Ch2：円の広場は中心の1マスだけ（tools/ch2 の生成で隣の地点を中心から 38 単位・角を丸める＝tools/common/board_layout.py。歩数・つながり・ID は同じ）・広場半径 27 で「縁石 → 床」の2回描き・START の門は植え込みと階段を切った派生 assets/fields/ch2/art_1020/harbor_start_gate_open.webp（C は S01_02 の先）
+    - Ch4：生成で広場から 34 単位離す（近すぎる区間は従来の並べ方）・重なった縁石の上に石畳。Ch1 の大会会場の正門前の画角
+    - 成長：GROWTH_GAIN_BY_CH を Ch2 A19・Ch3 A21・Ch4 A22（Ch1 は変えない）＋Ch2〜4 の能力マスの割合 0.42（TUNING.densityByCh）＝適性 A（初期 100）の Ch4 終了の中央値 約320（調整前 415）・能力重視の道 約385。分かれ道の選択肢に「◯◯が伸びやすい道」
+    - 出来事：js/chapter/event-themes.js（MMEVTH）＝Ch3・Ch4 の題・本文の【仮案】（効果は同じ）・背景キー（ch{N}:{id}）・専用の絵が無い間は assets/battle/field_1012/ の野外の背景。world-board の evDef は driver の pool を読む
+    - 道具：tools/fullplay1020/（capture・topdown・world・arrive・branch-shot・event-shot・sim-growth・sim-table・board-audit）
+  - テスト（ブランチ）：ふだんの全件 1954件（合格 1149・skip 805・失敗 0）。実ブラウザは関係する10ファイル 83件すべて合格（全件は未実行）。期待値を更新したテスト＝P47-02・QA-RL5・QA-RL12・RT-05・AD-03・AB-3・QR-B1・D28-09
+  - **ユーザーの判断待ち**：①main への反映（承認後：main へ取り込み → public-check → 全件の実ブラウザ → iPhone の確認項目＝REPORT ⑦）②Chapter をゴールできないと次へ進めない＝Ch4 まで完走 約43%（仕様のため未変更）③市場のソラモ（全 C）・ガウル（最高 B）に適性 A が無い＝「初期100・ちからA」の検証体で合わせた ④Ch1 の野生をラズック・フルーネ・レアをジオルに＝相手の種族は fight()（Phase 6 保護対象）が SP（2種）から選ぶ＝保護対象の変更の許可が要る（未実装）⑤Ch3・Ch4 の出来事の文（仮案）の採否
+  - 足りない素材（REPORT ⑥）：出来事の専用背景（Ch2 10・Ch3 24・Ch4 24 枚・1080×720）・分岐の見た目16点・港の門の正式な正面向きの全体・透過のトロフィー・Ch3 道路素材・Ch4 の溶岩／目印／宝箱
+  - 未完了：バトル画面（余白・重なり・発射点）は未着手・対戦表の罫線と市松は撮影では再現せず（実機の画像が要る）・Ch1／Ch3 の広場の中のマスは未変更（Ch1 の原本の座標）
+  - 戻し方：ブランチを取り込まなければ main は変わらない。取り込んだ後に戻すなら取り込みの commit を revert（その前の main は 1e96028＋この引き継ぎ）
+  - 次の作業は未指示（承認・判断を待つ）。新しいセッションは main から始め、作業はブランチ claude/fullplay-1020 を読む
 - **引き継ぎ（2026-10-19 深夜・盤面 P0 の途中。新しいセッションはここから読む＝下の記述より優先）**：
   - main＝claude/board-p0-1019＝4a8cc3f・build `2026-10-19-p0b3`（version.json の base＝8f80d4a）。開いている PR なし。作業ツリーはきれい
   - この日の流れ：CLAUDE.md を約1.5万字の引き継ぎ書に整理し、ほかを docs/ へ移設（d7b092d）→ 画像の外部化の事故（報告書 REPORT_2026-10-19_incident.md・main は変更なし。リモートに claude/inline-images が残っている＝ユーザーに GitHub の画面からの削除を案内済み・取り込まない）→ 盤面 P0 の指示書（ZIP Mismon_Battle_QA_Legacy_Fix_20261019.zip）で「進めて良い。main も進めて OK」
