@@ -61,9 +61,10 @@ test('CR-2：盤の絵が読めない（404）でも永久に待たない（仮�
 
 test('CR-3：絵がとても遅い → 「もう一度読み込む」「タイトルへ戻る」→ もう一度読み込む → 盤（出発は1回・セーブはそのまま）', { skip: SKIP, timeout: 120000 }, async () => {
   const p = await openPage({ intro: true }); const pg = p.page;
-  let hold = true; await pg.route('**/assets/{proto/board_art_1010/ground_grass,fields/ch1a/board_hq_1014/ground_a1}.webp', async (r) => { while (hold) await new Promise((ok) => setTimeout(ok, 200)); await r.continue(); });
+  let hold = true; await pg.route('**/assets/{proto/board_art_1010/ground_grass,fields/ch1a/board_hq_1014/ground_a1,qa/road_1017/ch1_ground_a1_fix}.webp', async (r) => { while (hold) await new Promise((ok) => setTimeout(ok, 200)); await r.continue(); });
   await H.newGame(pg, 'テスト'); await depart(pg);
-  await pg.waitForSelector('.wbrelay.slow .wbr-err', { timeout: 15000 });
+  try { await pg.waitForSelector('.wbrelay.slow .wbr-err', { timeout: 15000 }); } catch (e) { hold = false; throw e; }   // 失敗しても止めた読み込みを放す（ページが永久に待たない）
+   // 2026-10-19：道路・地面の新素材 fix（road_1017）が正式＝その地面も止める
   const b = await pg.evaluate(() => [...document.querySelectorAll('.wbrelay .wbr-err button')].map((x) => x.textContent));
   assert.deepEqual(b, ['もう一度読み込む', 'タイトルへ戻る']);
   const before = await H.storedSave(pg);
