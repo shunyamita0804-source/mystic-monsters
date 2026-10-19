@@ -21,6 +21,8 @@
     regnas: [[1, 'kirisaku'], [2, 'shippo_attack'], [3, 'ryugan_lock'], [4, 'zanei_step'], [5, 'dragon_crash'], [6, 'soukou_breath'], [7, 'snipe_fang'], [8, 'genei_claw'], [9, 'soujin_ranbu'], [10, 'tail_cyclone']],
     // 2026-10-18：カルシェル（登録のみ・未解禁・正式納品の技カード10枚＝tools/kalshell1018/derive_art.py）＝QA の試遊だけ。SK＝70＋No−1（OFFICIAL_MOVES.kalshell の slot）
     kalshell: [[1, 'hasamu'], [2, 'shell_tackle'], [3, 'awadama'], [4, 'kara_ni_komoru'], [5, 'crash_claw'], [6, 'aqua_burst'], [7, 'coral_spear'], [8, 'shio_no_step'], [9, 'shell_breaker'], [10, 'tidal_crash']],
+    // 2026-10-19：ミュロル（登録のみ・未解禁・正式納品の技カード10枚＝tools/myurol1019/derive_art.py）＝QA の試遊だけ。SK＝80＋No−1（OFFICIAL_MOVES.myurol の slot）。No.3 は「タックル」
+    myurol: [[1, 'shippo_uchi'], [2, 'mizudeppo'], [3, 'tackle'], [4, 'awa_no_mamori'], [5, 'tail_swing'], [6, 'aqua_bubble'], [7, 'bubble_snipe'], [8, 'suisui_step'], [9, 'spiral_tail'], [10, 'marine_stream']],
   };
   const pad = (n) => (n < 10 ? '0' : '') + n;
   const srcOf = (sp, id) => {

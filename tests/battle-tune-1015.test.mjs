@@ -46,7 +46,7 @@ test('BT-01：修正の表のキー・コマ・効果が実在する／元のデ
 });
 
 test('BT-02：体格サイズ＝正式（ラズック1・ソラモ2・ノビトン2・ガウル3・フルーネ3・レグナス3・ジオル4）だけ・旧い比較案（従来／暫定／案A／案B・?mmSize）は撤去（2026-10-19）', () => {
-  assert.deepEqual({ ...T.SIZE }, { 0: 2, 1: 3, 2: 2, 3: 4, 4: 3, 5: 3, 6: 1, 7: 3 }, 'ソラモ2・ガウル3・ノビトン2・ジオル4・レグナス3・フルーネ3・ラズック1・カルシェル3（2026-10-18）');
+  assert.deepEqual({ ...T.SIZE }, { 0: 2, 1: 3, 2: 2, 3: 4, 4: 3, 5: 3, 6: 1, 7: 3, 8: 2 }, 'ソラモ2・ガウル3・ノビトン2・ジオル4・レグナス3・フルーネ3・ラズック1・カルシェル3（2026-10-18）・ミュロル2（2026-10-19）');
   assert.ok(!Object.values(T.SIZE).includes(5), 'サイズ5は厄災級だけ（7体には割り当てない）');
   assert.deepEqual({ ...T.SIZE_K }, { 1: 0.7, 2: 0.84, 3: 1, 4: 1.14, 5: 1.3 }, '正式の倍率（サイズ3＝今までの大きさ）');
   assert.equal(T.SIZE_PLAN, undefined, '比較案 A／B は無い'); assert.equal(T.FINE, undefined); assert.equal(T.sizeAs, undefined);
@@ -55,11 +55,11 @@ test('BT-02：体格サイズ＝正式（ラズック1・ソラモ2・ノビト�
   for (let sp = 0; sp <= 7; sp++) assert.ok(Math.abs(T.sizeK(sp) - k(sp)) < 1e-9, `種族 ${sp} の倍率`);
   assert.ok(T.sizeK(3) > T.sizeK(1) && T.sizeK(1) > T.sizeK(0) && T.sizeK(0) > T.sizeK(6), 'ジオル＞ガウル＞ソラモ＞ラズック');
   globalThis.MM_QA_SIZE = 'old'; globalThis.MM_SIZE_PREVIEW = true;
-  for (let sp = 0; sp <= 7; sp++) assert.ok(Math.abs(T.sizeK(sp) - k(sp)) < 1e-9, `旧い切り替えの変数を入れても正式のまま（${sp}）`);
+  for (let sp = 0; sp <= 8; sp++) assert.ok(Math.abs(T.sizeK(sp) - k(sp)) < 1e-9, `旧い切り替えの変数を入れても正式のまま（${sp}）`);
   delete globalThis.MM_QA_SIZE; globalThis.MM_SIZE_PREVIEW = null;
   const src = fs.readFileSync(path.join(ROOT, 'js/battle/move-tune-1015.js'), 'utf8');
   assert.ok(!/get\('mmSize|mmSizeAs\b.*get|MM_QA_SIZE;|root\.MM_SIZE_PREVIEW/.test(src.replace(/^\s*(\/\/|\*|\/\*\*).*$/gm, '')), 'URL・ページの変数で体格を切り替えない');
-  for (const sp of Object.keys(T.SIZE).filter((x) => x !== '6' && x !== '7')) { const a = T.ANCHOR[sp]; assert.ok(a && ['mouth', 'head', 'fist', 'chest'].every((k) => a[k][0] > 0 && a[k][0] < 1 && a[k][1] > 0 && a[k][1] < 1), `体の目印 ${sp}`); }
+  for (const sp of Object.keys(T.SIZE).filter((x) => x !== '6' && x !== '7' && x !== '8')) { const a = T.ANCHOR[sp]; assert.ok(a && ['mouth', 'head', 'fist', 'chest'].every((k) => a[k][0] > 0 && a[k][0] < 1 && a[k][1] > 0 && a[k][1] < 1), `体の目印 ${sp}`); }
 });
 
 test('BT-03：はなビンタの絵文字は「鼻」でない（ダメージの数字の横に出る）', () => {

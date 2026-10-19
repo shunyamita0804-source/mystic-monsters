@@ -24,7 +24,7 @@
   const SPK = { 0: 'soramo', 1: 'gauru' };
   /** 待機の立ち絵（新）と、今の立ち絵に対する高さの倍率（足元の位置はそのまま） */
   const IDLE = { 0: { src: A + 'soramo/idle.webp', h: 0.84 }, 1: { src: A + 'gauru/idle.webp', h: 0.9 } };
-  const owner = (k) => (k >= 0 && k <= 9 ? 0 : k >= 10 && k <= 19 ? 1 : k >= 30 && k <= 39 ? 2 : k >= 20 && k <= 29 ? 4 : k >= 40 && k <= 49 ? 3 : k >= 60 && k <= 69 ? 6 : k >= 50 && k <= 59 ? 5 : k >= 70 && k <= 79 ? 7 : -1);   // 2026-10-18：70〜79＝カルシェル（js/battle/rules.js。未解禁＝QA 試遊の個体だけ）   // 2026-10-17：60〜69＝ラズック（js/battle/rules.js。未解禁＝QA 試遊の個体だけ）   // 30〜39＝ノビトン（js/battle/rules.js が実行時に足す技）・20〜29＝レグナス（js/battle/rival-partner.js。IMG の 4）
+  const owner = (k) => (k >= 0 && k <= 9 ? 0 : k >= 10 && k <= 19 ? 1 : k >= 30 && k <= 39 ? 2 : k >= 20 && k <= 29 ? 4 : k >= 40 && k <= 49 ? 3 : k >= 60 && k <= 69 ? 6 : k >= 50 && k <= 59 ? 5 : k >= 70 && k <= 79 ? 7 : k >= 80 && k <= 89 ? 8 : -1);   // 2026-10-19：80〜89＝ミュロル（js/battle/rules.js。未解禁＝QA 試遊の個体だけ）   // 2026-10-18：70〜79＝カルシェル（js/battle/rules.js。未解禁＝QA 試遊の個体だけ）   // 2026-10-17：60〜69＝ラズック（js/battle/rules.js。未解禁＝QA 試遊の個体だけ）   // 30〜39＝ノビトン（js/battle/rules.js が実行時に足す技）・20〜29＝レグナス（js/battle/rival-partner.js。IMG の 4）
   const DATA = () => root.MM25D_DATA || {};
   // 2026-10-12 正式：ソラモの技（SK の 0〜9）は修正納品の46コマ（assets/battle/soramo_moves_1012/・js/battle/soramo-moves-data.js）を通常のバトルで見せる。
   //   待機の立ち絵は変えない（2.5D の待機絵は従来どおり ?battleArt=2p5d のときだけ）。?battleArt=old で「旧」を選んでいる間だけ今までの演出（見比べ用）
@@ -56,7 +56,12 @@
   const KOFF = () => root.MMKSMV_DATA || {};
   let KK = null;
   const KSK = () => { const D = KOFF(); if (!KK || KK.src !== D) { KK = { src: D, map: {} }; Object.keys(D).forEach((no) => { KK.map[69 + +no] = D[no]; }); } return KK.map; };
-  const SRC_OF = { 0: OFF, 1: GOFF, 2: NOFF, 3: JSK, 4: ROFF, 5: FSK, 6: ZSK, 7: KSK };
+  // 2026-10-19：ミュロルの技（SK 80〜89＝80＋No−1）＝正式納品の 150枚（本体・技エフェクト・命中エフェクト・assets/battle/myurol_moves_1019/・js/battle/myurol-moves-data.js）。データは No. で引く。
+  //  区切りの長さ＝manifest の duration_ms の比（d.ms・planOff）。No.10 マリンストリームの津波と命中は舞台の座標（d.stage・fx の at 'stage'＝stageMap）
+  const YOFF = () => root.MMMYMV_DATA || {};
+  let YK = null;
+  const YSK = () => { const D = YOFF(); if (!YK || YK.src !== D) { YK = { src: D, map: {} }; Object.keys(D).forEach((no) => { YK.map[79 + +no] = D[no]; }); } return YK.map; };
+  const SRC_OF = { 0: OFF, 1: GOFF, 2: NOFF, 3: JSK, 4: ROFF, 5: FSK, 6: ZSK, 7: KSK, 8: YSK };
   /** 読み込めなかったコマがある技（その技だけ従来の演出へ戻す）。キー＝dir＋ファイル名 */
   const failed = new Set();
   const usable = (d) => !!d && !d.cuts.concat(d.fx || []).some((c) => (c.u ? [c.u] : [c.f, c.fx].filter(Boolean).map((f) => (d.dir || OA) + f)).some((u) => failed.has(u)));
@@ -101,9 +106,12 @@
     let dur = OFF_DUR[k] || Math.max(1500, Math.min(2700, 380 + n * 300));
     if (!viaStage) dur = 1440;
     const body = dur * 0.88, step = body / n;
-    const win = Array.from({ length: n }, (_, i) => [i * step, (i + 1) * step]);
+    // 2026-10-19（ミュロル）：データに区切りごとの長さ（ms＝manifest の duration_ms）があれば、その比で本体の時間を配る（全体の長さはほかの種族と同じ規則）
+    const tot = Array.isArray(d.ms) && d.ms.length === n ? d.ms.reduce((a, b) => a + b, 0) : 0;
+    let acc = 0;
+    const win = tot > 0 ? d.ms.map((m) => { const w = [acc / tot * body, (acc + m) / tot * body]; acc += m; return w; }) : Array.from({ length: n }, (_, i) => [i * step, (i + 1) * step]);
     const SK = G('SK'), dmg = dmgOver != null ? !!dmgOver : !!(SK && SK[k] && SK[k][1] > 0);
-    const hit = d.hit && dmg ? win[d.hit - 1][0] + Math.min(120, step * 0.3) : null;
+    const hit = d.hit && dmg ? win[d.hit - 1][0] + Math.min(120, (win[d.hit - 1][1] - win[d.hit - 1][0]) * 0.3) : null;
     // 2026-10-16：ガウル SK19「聖なる炎」承認演出 V2（js/battle/sk19-v2-1016.js）＝時間枠は同じ・当たり＝炎の外縁が相手の中心に届く時刻
     if (v2of(d)) { const q = root.MMSK19V2.plan(dur, viaStage, dmg); return { dur: q.dur, body: q.dur * 0.88, step, win, hit: q.hit }; }
     return { dur, body, step, win, hit };
@@ -413,8 +421,32 @@
       const T0 = `translate(${cx - R / 2}px,${cy - R / 2}px)`;
       a.animate([{ opacity: 0, transform: T0 + ' scale(.3)', offset: 0 }, { opacity: 0, transform: T0 + ' scale(.3)', offset: w0 / D }, { opacity: 0.95, transform: T0 + ' scale(1.1)', offset: (w0 + (w1 - w0) * 0.8) / D }, { opacity: 0, transform: T0 + ' scale(.6)', offset: Math.min(1, (w1 + 120) / D) }, { opacity: 0, offset: 1 }], { duration: D, fill: 'both' });
     }
+    // 2026-10-19 ミュロル No.10 マリンストリーム（津波 V2）：舞台（manifest の stage_reference_size 1280×720）の座標 → バトルの画面。本体の動きには付けない（manifest の important）。
+    //  大きさ＝本体と同じ倍率（舞台の本体の矩形＝キャンバス 1536 が、画面では本体のコマと同じ大きさ）。横＝自分の足もとより後ろは同じ倍率・足もと〜相手の中心の間は
+    //  舞台の自分 → 相手を画面の自分 → 相手へ直線で（相手に届く絵は画面の相手に届く）。縦も相手へ近づくほど相手の体の中ほどへ寄せる。相手側の攻撃は舞台全体を左右反転（f）
+    const stageMap = () => {
+      const g = d.stage; if (!g || !lay.length) return null;
+      const ks = 1536 * (g.sc || 0.45) * S0 / g.bodyRect[2], fx0 = g.feet[0], fy0 = g.feet[1], span = g.target[0] - fx0;
+      const map = (sx, sy) => {
+        const w = Math.max(0, Math.min(1, (sx - fx0) / span)), reach = Math.abs(T.x - L.Ag.x), ox = sx < fx0 ? (sx - fx0) * ks : sx <= g.target[0] ? (sx - fx0) / span * reach : reach + (sx - g.target[0]) * ks;
+        const y = L.Ag.y + (sy - fy0) * ks + w * (T.cy - (L.Ag.y + (g.target[1] - fy0) * ks));
+        return { x: L.Ag.x + f * ox, y };
+      };
+      map.ks = ks; return map;
+    };
+    const SM = d.stage ? stageMap() : null;
     fxList.forEach((c) => {
       const w0 = P.win[c.t[0]][0], w1 = P.win[c.t[1]][1], last = c.t[1] === d.steps - 1;
+      if (c.at === 'stage') {   // 津波（fx＝本体の後ろ）・命中（hit＝本体の前）。sr＝切り出した絵の舞台の矩形 [左, 上, 幅, 高さ]
+        if (!SM) return;
+        const r = c.sr, pt = SM(r[0] + r[2] / 2, r[1] + r[3] / 2), W = r[2] * SM.ks, H = r[3] * SM.ks;
+        const im = document.createElement('img'); im.src = base + c.f; im.dataset.cut = c.src; im.dataset.layer = c.layer; put(im, c.layer === 'fx' ? 6 : 8);
+        im.style.width = W + 'px'; im.style.height = H + 'px'; im.style.transformOrigin = '50% 50%';
+        im.dataset.cx = Math.round(pt.x); im.dataset.cy = Math.round(pt.y); im.dataset.f = f;
+        const a = `translate(${pt.x - W / 2}px,${pt.y - H / 2}px) scaleX(${f})`;
+        im.animate(kfWin(w0, w1, a, a, false, last), { duration: D, fill: 'both' }).onfinish = () => im.remove();
+        return;
+      }
       if (c.at === 'launch') {   // 2026-10-15：効果を相手の胸まで飛ばす（ファイアボール・フルーネの花粉・聖なる炎の放射）。from＝'self'：自分の胸から
         const fb = c.fb || [0, 0, c.pw, c.ph], Sc = (c.ref ? (lay.find((z) => z.c.src === c.ref) || lay[0]).S : S0) * (c.ws || 1), g2 = c.grow || [0.9, 1.1];
         const { box, w, h } = crop(c, fb, Sc);
@@ -559,7 +591,7 @@
   /** 開発用のプレビュー（バトル画面が出ている間だけ）：kind＝'jiol'（正式No 1〜10）／'regnas'（正式No 1〜10）／'flurene'（登録の No 1〜10）。性能・番号の決まっていない技も、データのコマを順に見せるだけ（判定・ダメージ・セーブは触らない） */
   function preview(kind, no, s, opt) {
     if (kind === 'flurene' && no === 9 && root.MMRD) { const g = geom(s || 0); if (!g) return false; style(); return root.MMRD.play(-1, s || 0, g, root.MMRD.plan(true, true)); }   // 2026-10-16：09＝ルートドレイン（旧「生命のしずく」の雨の演出には戻さない）
-    const d = tuned(kind === 'jiol' ? JOFF()[no] : kind === 'regnas' ? ROFF()[20 + no - 1] : kind === 'flurene' ? FLOFF()[no] : kind === 'razuck' ? ZOFF()[no] : kind === 'kalshell' ? KOFF()[no] : null);
+    const d = tuned(kind === 'jiol' ? JOFF()[no] : kind === 'regnas' ? ROFF()[20 + no - 1] : kind === 'flurene' ? FLOFF()[no] : kind === 'razuck' ? ZOFF()[no] : kind === 'kalshell' ? KOFF()[no] : kind === 'myurol' ? YOFF()[no] : null);
     if (!d || !usable(d)) return false;
     return animOff(-1, s || 0, d, Object.assign({ via: false, dmg: !!d.hit }, opt || {}));
   }
@@ -602,7 +634,7 @@
     try {
       if (rdOn(k, s)) { const F = root.MMRD.FRAMES || []; return { mode: 'MMRD（ルートドレイン補修版10コマ）', set: 'rootdrain-1016', first: F[0] || null, cuts: F.length, fx: 0, tune: null, fallback: false }; }
       const o = owner(k), d = offData(k, s);
-      if (d) return { mode: 'コマ（2.5D の技アニメ）', set: ({ 0: 'soramo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas', 5: 'flurene', 6: 'razuck', 7: 'kalshell' })[o] || '', first: (d.dir || OA) + d.cuts[0].f, cuts: d.cuts.length, fx: (d.fx || []).length, tune: d.tune ? d.tune.id : null, fallback: false };
+      if (d) return { mode: 'コマ（2.5D の技アニメ）', set: ({ 0: 'soramo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas', 5: 'flurene', 6: 'razuck', 7: 'kalshell', 8: 'myurol' })[o] || '', first: (d.dir || OA) + d.cuts[0].f, cuts: d.cuts.length, fx: (d.fx || []).length, tune: d.tune ? d.tune.id : null, fallback: false };
       return { mode: '従来の絵（SKART・控え）', set: null, first: null, cuts: 0, fx: 0, tune: null, fallback: true, why: !offOn() ? 'battleArt=old' : SRC_OF[o] ? '読めないコマ／攻撃側の種族が違う' : 'コマのデータなし' };
     } catch (e) { return { mode: '（不明）', fallback: true }; }
   }

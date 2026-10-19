@@ -602,7 +602,7 @@
   //  優先＝NPC の声 ＞ 鳴き声：NPC の声が鳴っている・待っている間は鳴らさない（NPC の声が始まれば鳴き声は止まる＝voicePlay の stopVoice）。
   //  全体の間隔 CRY_GAP_MS（8秒）・同じ個体の間隔は opts.perMs（牧場のタップ＝10秒）。読み込みが間に合わなければ鳴らさない（既定 0.6秒）＝遅れて鳴らない。
   //  種族の番号（0〜6）か文字ID。表に無い種族（合体などで不明）は鳴らさない（別の種の声を流用しない）
-  const CRY_KEYS = fz(['solamo', 'gauru', 'nobiton', 'jiol', 'regnas', 'flurene', 'razuck', 'kalshell']);   // 2026-10-18：7＝カルシェル（登録のみ）
+  const CRY_KEYS = fz(['solamo', 'gauru', 'nobiton', 'jiol', 'regnas', 'flurene', 'razuck', 'kalshell', 'myurol']);   // 2026-10-18：7＝カルシェル・2026-10-19：8＝ミュロル（どちらも登録のみ）
   const CRY_GAP_MS = 8000, cs = { last: 0, per: {} };
   function cry(sp, kind = 'normal', opts = {}) {
     const key = typeof sp === 'number' ? CRY_KEYS[sp] : CRY_KEYS.includes(sp) ? sp : null;

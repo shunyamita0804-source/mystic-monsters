@@ -30,3 +30,14 @@
 | 原本 | sha256（原本） | 派生 | sha256（派生） |
 |---|---|---|---|
 | 01_art/01_透過微修正版/Kalshell_BattleIdle_Review_20261018.png | f61973da4e0083e5c0ce983ad3c5f49f9ec07a9d92cd34001daedd76fdc1b8bb | assets/battle/idle/idle_kalshell.webp | 6b45adc0c89b0a3d54f08706eac78c44fd4fdac4fbecfaac86b1e3380be4c56f |
+
+## ミュロル（2026-10-19・登録のみ・未解禁＝QA 試遊だけ）
+
+- 正式納品「ミュロル 開発本体向け 正式素材仕様一式」PART01〜07（2026-10-19・ユーザー承認済みの仕様マスター＋採用状態一覧）。原本（PNG／MP3）はリポジトリに置かない＝表示用の派生だけ。道具＝tools/myurol1019/derive_art.py（PIL＋numpy・数値は tools/myurol1019/derive_art.json）
+- 余白を切って高さ 720px（928×720）・透過 WebP・**右向き**（ほかの種族と同じ）。js/battle/arena.js の `IDLE` には入れない（QA 試遊の間だけ js/qa/trial.js が貸す）。
+- アルファ：本体の不透明度は原本のまま 250〜254（わずかに透ける）。
+- 原本の選び方：PART01 の 01_art（FormalArt_Approved・BattleIdle_Candidate）と 02_reactions の「正式」の2枚は、01_art にだけアルファ 1 の見えない画素（2.5D 22664・待機 21876）がある以外は画素が同じ。採用状態一覧（2026-10-19）の「正式」の名前の 02_reactions の2枚を使った（01_art の sha256：5ef1907390ba2dcabb56bf3f9664f6656d6cd53bf64bc6b7fd7670c5fd7337bd・194088c0b1d87347e99dd3acf3ad4642260f87792949a03e358f63d036f366a8）。各フォルダの README（02_reactions・06_icons・04_skill_cards・03_walk）は「承認待ち」と書いているが、新しい採用状態一覧（2026-10-19）は検収合格＝新しいほうに従った。
+
+| 原本 | sha256（原本） | 派生 | sha256（派生） |
+|---|---|---|---|
+| 02_reactions/ミュロル_正式バトル待機絵.png | 004836874e1125d8603ce67723e0b7ed19a4900281e592c7b51576597d3b9a11 | assets/battle/idle/idle_myurol.webp | d1c4eb312391a11fc9ff6b7cc56ce89f36e132b44801c8ace080a996f76dbe39 |

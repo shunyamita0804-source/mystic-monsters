@@ -42,7 +42,7 @@ test('BF-B1：?mmQaTrial=1 → 開始画面の『QA を開く』→ バトル技
   const ui = await pg.evaluate(() => ({ mons: [...document.querySelectorAll('#mmqas select[data-k="mon"] option')].map((o) => o.textContent), moves: document.querySelectorAll('#mmqas select[data-k="no"] option').length,
     keys: [...document.querySelectorAll('#mmqas select')].map((s) => s.dataset.k), btns: [...document.querySelectorAll('#mmqas .qsb button')].map((b) => b.dataset.a),
     fit: (() => { const r = document.getElementById('mmqas').getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth + 0.5 && r.bottom <= innerHeight + 0.5; })(), hScroll: document.documentElement.scrollWidth > innerWidth }));
-  assert.deepEqual(ui.mons, ['ソラモ', 'ガウル', 'ノビトン', 'ジオル', 'レグナス', 'フルーネ', 'ラズック'], 'マスターデータの7体（2026-10-17：ラズック）');
+  assert.deepEqual(ui.mons, ['ソラモ', 'ガウル', 'ノビトン', 'ジオル', 'レグナス', 'フルーネ', 'ラズック', 'カルシェル', 'ミュロル'], 'マスターデータの9体（2026-10-17：ラズック・2026-10-18：カルシェル・2026-10-19：ミュロル）');
   assert.equal(ui.moves, 10);
   assert.deepEqual(ui.keys, ['mon', 'no', 'side', 'target', 'size', 'bg', 'speed', 'result', 'loop']);
   assert.deepEqual(ui.btns, ['prev', 'play', 'next', 'pause', 'step', 'auto', 'close']);

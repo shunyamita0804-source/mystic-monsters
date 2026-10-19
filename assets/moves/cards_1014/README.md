@@ -102,3 +102,21 @@
 | 04_skill_cards/DELIVERY_10CARDS/01_PNG/08_ShioNoStep.png | bac6f450ea0d8d41e60b76f1cc9eab8b4b92dcf890e267902bc387da4960570c | assets/moves/cards_1014/kalshell/08_shio_no_step.webp | b8753c231f7efacae5f3249c6feefb976f21d6163ac4364d2802e2606ed0ade1 | SK 77 |
 | 04_skill_cards/DELIVERY_10CARDS/01_PNG/09_ShellBreaker.png | 6c4b6c7768ac6b4b73f113994d2e5626328e31a2b365418200d93ddef419e7b1 | assets/moves/cards_1014/kalshell/09_shell_breaker.webp | cd4720a425a7fafb0da0728f29ae07c4c37bbe30334a779e5fa25ad41bb30d6b | SK 78 |
 | 04_skill_cards/DELIVERY_10CARDS/01_PNG/10_TidalCrash.png | ba03848fa46fd7ec15f4a285774188106a8734a3a81673284317b88ec19b2994 | assets/moves/cards_1014/kalshell/10_tidal_crash.webp | addbb5a0c47d53c1dddc1cb7b1553aa35e22b19f307a045215227fe1796d3dd2 | SK 79 |
+
+## ミュロル（2026-10-19・登録のみ・未解禁＝QA 試遊だけ）
+
+- 正式納品「ミュロル 開発本体向け 正式素材仕様一式」PART01〜07（2026-10-19・ユーザー承認済みの仕様マスター＋採用状態一覧）。原本（PNG／MP3）はリポジトリに置かない＝表示用の派生だけ。道具＝tools/myurol1019/derive_art.py（PIL＋numpy・数値は tools/myurol1019/derive_art.json）
+- 幅 640px・WebP 品質84（既存と同じ変換）。SK＝80＋No−1（js/battle/rules.js の installMyurol）。QA 試遊の個体だけが使う。No.3 の正式名は「タックル」（旧名「ぷにタックル」は不採用）。
+
+| 原本 | sha256（原本） | 派生 | sha256（派生） | SK |
+|---|---|---|---|---|
+| 04_skill_cards/01_しっぽうち.png | 6d5717235a5eb7bbc87ddbeedc70201ac42b3fc8f5e24896e77b470884e7efe6 | assets/moves/cards_1014/myurol/01_shippo_uchi.webp | a03e8a853f386e9f83fa4ad0feb6d1c175ab7f1213967e0868f8eca9c38179b7 | SK 80 |
+| 04_skill_cards/02_みずでっぽう.png | f55744aca275baf880c73293ab82172ce8a41afa6f0ed0452790b9fc391190ae | assets/moves/cards_1014/myurol/02_mizudeppo.webp | 8113c5c80684230501923bf57811fba16c7efe1393b4626f850d99ae5ec8af40 | SK 81 |
+| 04_skill_cards/03_タックル.png | a1972a83ca325ffb9acf807654fb1461fcc0a8c7cb2e8ef888d63872c18d96a0 | assets/moves/cards_1014/myurol/03_tackle.webp | a835bc320816da4b0a5e636225dc06c143bc62eb48e1640ec458e0b41836d545 | SK 82 |
+| 04_skill_cards/04_あわのまもり.png | 556ac0296edcd5903ae19bff628bae63c281159ea58ccebd9acd0566a1d74a8e | assets/moves/cards_1014/myurol/04_awa_no_mamori.webp | 969a96f44d1ea6cfb3571efa53347f623fc218624efe010edc66863a648f6be2 | SK 83 |
+| 04_skill_cards/05_テールスイング.png | 91cb5ea40fd155e411b51c1f620c8328dd22b62dc4c05cdf26ef7888cd016fa8 | assets/moves/cards_1014/myurol/05_tail_swing.webp | 16be728908959c683789f869c7fade41c9dbf98926ffb71d7d42ec890146386e | SK 84 |
+| 04_skill_cards/06_アクアバブル.png | 082ec37536f537b924c7d5e4c31c2fa87ccb01ccdec4bb00bd2e6d7f07e274a0 | assets/moves/cards_1014/myurol/06_aqua_bubble.webp | c0cc61b92277e2f09933bed60e6d2f64abc28637408aaaf32552de8922b5a208 | SK 85 |
+| 04_skill_cards/07_バブルスナイプ.png | 9c0dfb08eb500696cb86029ff45eba306781b66897a041d89258ca9b97889a8f | assets/moves/cards_1014/myurol/07_bubble_snipe.webp | 99ec44759241bcf4205fb0ecddb10b20f054bd12a83888b1919454a140d9be81 | SK 86 |
+| 04_skill_cards/08_すいすいステップ.png | daa33022b1cc82b3b8a7f4049b4e2312e51b3951ce48593abc425e3d27f3097e | assets/moves/cards_1014/myurol/08_suisui_step.webp | 914858807fd9f416ee7cf0948fa957cf31e322bc383546cc8d02ff6f580e45cb | SK 87 |
+| 04_skill_cards/09_スパイラルテール.png | f23a9fe86f234852d143bb3625e72f95a6a2d46d8a840229d243231eac59127d | assets/moves/cards_1014/myurol/09_spiral_tail.webp | e47005cbcc49a137497a6889b2cc554e71a299424875e6a61d135c1126c3c513 | SK 88 |
+| 04_skill_cards/10_マリンストリーム.png | 58861bfb7561f666735770acd471e5bb3b57e87f0f042ccf7512b7b4316b5d7a | assets/moves/cards_1014/myurol/10_marine_stream.webp | ba70e3df5a80fb94f3977cfbbae89334c120cbde2b3cf8622bd490a6d04ecd48 | SK 89 |

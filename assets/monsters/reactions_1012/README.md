@@ -62,3 +62,18 @@
 | 食べる | 02_reactions/Kalshell_Reaction_04_Eat.png | 65c6975b616d1e64a0299656c2367c5ef4cb2d184b0d5dda238318724dc362e6 | kalshell/04_eat.webp（822×822・hRel 1.142） | b7f0f55b35238c3cd202d087ec3302d6974ef92cd741557e642b81ac37efdd1d |
 | 被弾 | 02_reactions/Kalshell_Reaction_05_Hit.png | 2cdc267b7b04722d872a1c356810e30db23e92b112926021f229e967d9d900da | kalshell/05_hit.webp（979×972・hRel 1.35） | f18c1204efec8c3a6aa24189682be7c7d1286635a5d97b303289feb81858cc09 |
 | 回避 | 02_reactions/Kalshell_Reaction_06_Dodge.png | cd507c69eb4608d30b7025f4a582d99dd0aa233f6ab4079538f13f294fcf8b0d | kalshell/06_dodge.webp（991×996・hRel 1.383） | 7969a4e557f29a64685e19d1f472814dc8a5aa0995a0e9fea54d0d7c2c9cc6af |
+
+## ミュロル（2026-10-19・登録のみ・未解禁＝QA 試遊だけ）
+
+- 正式納品「ミュロル 開発本体向け 正式素材仕様一式」PART01〜07（2026-10-19・ユーザー承認済みの仕様マスター＋採用状態一覧）。原本（PNG／MP3）はリポジトリに置かない＝表示用の派生だけ。道具＝tools/myurol1019/derive_art.py（PIL＋numpy・数値は tools/myurol1019/derive_art.json）
+- 待機絵と体の面積がそろう倍率で縮小（hRel＝高さ ÷ 720）。被弾・回避・しょんぼりの hRel（1.413・1.501・1.446）はほかの種族より大きい＝水しぶき・光の粒が原本の 1536 の端まで届いている（端で切れている）。QA で見え方の確認が要る。
+- 05 被弾・06 回避は待機絵と同じ右向き（バトルで使う）。原本の README（2026-10-18）の注記：1254px で生成したものを 1536px へ拡大した納品・輪郭の周りに半透明の発光や小さな飛沫。
+
+| 種類 | 原本 | sha256（原本） | 派生 | sha256（派生） |
+|---|---|---|---|---|
+| 喜ぶ | 02_reactions/01_喜ぶ.png | b5b3c8f18b67f584807fec1f6f4ecf9b16a5a4c0f9122b7e3f55117d667e735a | myurol/01_joy.webp（896×872・hRel 1.211・原本の端に接する 左上右下＝[1, 0, 1, 0]） | 9d0380d0c5044596ef68885346fa8ac4291c4121936e96a027bb413a41566ca3 |
+| 驚く | 02_reactions/02_驚く.png | 87fd0f4e77e38b45efaae45596f829b219ce1ecb3ad613d319c300f03da439a1 | myurol/02_surprise.webp（864×874・hRel 1.214・原本の端に接する 左上右下＝[0, 0, 0, 0]） | af519057bdac96850e2a228001dc2606b09b3aa498e745b625c0de3fcaeec063 |
+| しょんぼり | 02_reactions/03_しょんぼり.png | 53885d61564485748e5c33e2205c853a57072be6b5012eba9f0a5d4666971ef1 | myurol/03_sad.webp（1044×1041・hRel 1.446・原本の端に接する 左上右下＝[1, 0, 0, 1]） | 7c58c35dfedc274bd86e74f3a37b0794a634b4e29d913a9bf6245bcc96a8701c |
+| 食べる | 02_reactions/04_食べる.png | 6b8d8102b02b09eb705ebfdf103458c08656ee48cda085aeb9f93babc8dedb09 | myurol/04_eat.webp（903×835・hRel 1.16・原本の端に接する 左上右下＝[1, 0, 1, 0]） | f5aff88ac5b43f05c7e1d91361db13237696979b1fabe9b0945fda74981b455a |
+| 被弾 | 02_reactions/05_被弾.png | b172bc9a3cdaf5ac2df155796a9ed106cd0dfacd60d6aac604aa4525df4530b1 | myurol/05_hit.webp（1032×1017・hRel 1.413・原本の端に接する 左上右下＝[1, 0, 1, 1]） | 1573f7365723a8232c66f1a1554b44d29566890cb45ab381361b1d4c755375e4 |
+| 回避 | 02_reactions/06_回避.png | be2c67e60bfc626dfa61564f26ebd2df523c9f016e10fd717f0c3bb161cba0cd | myurol/06_dodge.webp（1086×1081・hRel 1.501・原本の端に接する 左上右下＝[1, 0, 0, 1]） | 9ff7c54ed4e9ee042d17b486e8663b9888d03828b8532606a5cb37c677687887 |

@@ -12,7 +12,7 @@
   'use strict';
   const ACTIVE = true, NEW7 = true, LEGACY = false, SET = '1018';
   const BASE7 = './assets/monsters/walk_1018/';
-  const SPEC1018 = Object.freeze({"solamo": {"h": 1.358, "foot": 0.045}, "gauru": {"h": 1.312, "foot": 0.046}, "nobiton": {"h": 1.376, "foot": 0.046}, "jiol": {"h": 1.296, "foot": 0.044}, "regnas": {"h": 1.21, "foot": 0.046}, "flurene": {"h": 1.242, "foot": 0.046}, "razuck": {"h": 1.209, "foot": 0.045}});   // tools/walk1018/derive.json（h＝正面2コマ目の体の高さに対するキャンバスの比・foot＝基線の下の余白）
+  const SPEC1018 = Object.freeze({"solamo": {"h": 1.358, "foot": 0.045}, "gauru": {"h": 1.312, "foot": 0.046}, "nobiton": {"h": 1.376, "foot": 0.046}, "jiol": {"h": 1.296, "foot": 0.044}, "regnas": {"h": 1.21, "foot": 0.046}, "flurene": {"h": 1.242, "foot": 0.046}, "razuck": {"h": 1.209, "foot": 0.045}, "myurol": {"h": 1.149, "foot": 0.045}});   // tools/walk1018/derive.json（h＝正面2コマ目の体の高さに対するキャンバスの比・foot＝基線の下の余白）。2026-10-19：myurol＝ミュロル（tools/myurol1019/derive_art.py・登録のみ＝本編の盤には出ない・QA の新歩行の確認だけ）
   const SPEC7 = SPEC1018;
   const FPS = 8, TURN_MS = 70;
   const KEYS = ['front', 'back', 'side', 'backd', 'frontd'];

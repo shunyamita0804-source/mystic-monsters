@@ -78,8 +78,8 @@ test('FL-02：番号 5 はどの表とも重ならない（SPECIES 0〜3・レ�
   // バトルの表（0〜4）に 5 は無い
   const ar = rd('js/battle/arena.js');
   assert.match(ar, /const IDLE = \{ 0: 'idle_soramo', 1: 'idle_gauru', 2: 'idle_nobiton', 3: 'idle_jiol', 4: 'idle_regnas' \};/, 'arena の待機立ち絵に 5 を足していない');
-  assert.match(ar, /const SCALE = Object\.freeze\(\{ 0: 0\.91, 1: 0\.92, 2: 0\.88, 3: 0\.91, 4: 0\.91, 6: 0\.91, 7: 0\.91 \}\);/);   // 2026-10-17：6＝ラズック・2026-10-18：7＝カルシェル（QA だけ）＝5 は無い
-  assert.match(rd('js/battle/rules.js'), /const SPECIES = Object\.freeze\(\{ 0: 'solamo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas', 6: 'razuck', 7: 'kalshell' \}\);/, '固有スキルの発動の表に 5 は無い（6＝ラズック 2026-10-17・7＝カルシェル 2026-10-18）');
+  assert.match(ar, /const SCALE = Object\.freeze\(\{ 0: 0\.91, 1: 0\.92, 2: 0\.88, 3: 0\.91, 4: 0\.91, 6: 0\.91, 7: 0\.91, 8: 0\.91 \}\);/);   // 2026-10-17：6＝ラズック・2026-10-18：7＝カルシェル・2026-10-19：8＝ミュロル（QA だけ）＝5 は無い
+  assert.match(rd('js/battle/rules.js'), /const SPECIES = Object\.freeze\(\{ 0: 'solamo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas', 6: 'razuck', 7: 'kalshell', 8: 'myurol' \}\);/, '固有スキルの発動の表に 5 は無い（6＝ラズック 2026-10-17・7＝カルシェル 2026-10-18・8＝ミュロル 2026-10-19）');
   assert.match(HTML, /\nconst VICTORY_IMG=\["solamo","gauru","nobiton","jiol","regnas"\];/, '勝利の絵は5体のまま');
   assert.match(HTML, /\nconst SP=\[\["ソラモ"[^\n]*\["ガウル"[^\n]*\]\]\];/, '旧 SP（バトルの相手・大会の参加者の種族の数）は2種のまま');
   assert.match(HTML, /\nconst IMG=MMP10M\.SPECIES\.map\(s=>s\.image\.src\);/, 'IMG は SPECIES（0〜3）＋レグナスの 4 だけ');
@@ -118,7 +118,7 @@ test('FL-03：フルーネの画像2点＝表示用の派生（原本は置か�
 
 test('FL-04：対戦表の顔＝正式のイラスト6枚（6枚目＝フルーネ・レオナではない）・256×256・README の sha256・読めないときの代わり', () => {
   const ar = rd('js/battle/arena.js');
-  assert.match(ar, /const TOUR_ICON = Object\.freeze\(\{ 0: 'solamo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas', 5: 'flurene', 6: 'razuck', 7: 'kalshell' \}\);/);   // 2026-10-18：7＝カルシェル   // 6＝ラズック（2026-10-17・QA だけ）
+  assert.match(ar, /const TOUR_ICON = Object\.freeze\(\{ 0: 'solamo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas', 5: 'flurene', 6: 'razuck', 7: 'kalshell', 8: 'myurol' \}\);/);   // 2026-10-18：7＝カルシェル・2026-10-19：8＝ミュロル   // 6＝ラズック（2026-10-17・QA だけ）
   assert.equal(M.pendingSpecies('flurene').id, 5, 'TOUR_ICON の 5 は予約番号と一致');
   assert.doesNotMatch(ar.match(/const TOUR_ICON = [^\n]*/)[0], /leona|レオナ/i, 'レオナに割り当てない');
   const R = rd('assets/tournament/icons_1015/README.md');

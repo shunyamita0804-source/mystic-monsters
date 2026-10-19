@@ -26,8 +26,8 @@
   // ---- 2026-10-15 N12：大会の対戦表の顔＝正式のイラスト6枚（assets/tournament/icons_1015/・薄い灰色の背景つきの正方形・左向き）----
   //  番号：0〜3＝SPECIES・4＝レグナス（バトルの絵の番号）・5＝フルーネ（MMP10M.PENDING_SPECIES の予約番号＝登録のみ・大会には出ない）。
   //  読めないときは従来の 2.5D の横顔（faces_25d）→ 丸い顔（faces）の順（index.html の tbIcon・tbIconFb）。bg＝その絵の背景の色（丸い枠の地に敷く）
-  const TOUR_ICON = Object.freeze({ 0: 'solamo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas', 5: 'flurene', 6: 'razuck', 7: 'kalshell' });   // 2026-10-17：6＝ラズック（登録のみ・制作候補の絵＝QA だけ）・2026-10-18：7＝カルシェル（正式採用の絵・登録のみ＝大会には出ない）
-  const TOUR_ICON_BG = Object.freeze({ 0: '#d4d7dc', 1: '#cccfd5', 2: '#cfd3db', 3: '#d2d2d1', 4: '#c7c9d1', 5: '#cecfd0', 6: '#cdd1dd', 7: '#e1e1e1' });
+  const TOUR_ICON = Object.freeze({ 0: 'solamo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas', 5: 'flurene', 6: 'razuck', 7: 'kalshell', 8: 'myurol' });   // 2026-10-17：6＝ラズック（登録のみ・制作候補の絵＝QA だけ）・2026-10-18：7＝カルシェル・2026-10-19：8＝ミュロル（正式採用の絵・登録のみ＝大会には出ない）
+  const TOUR_ICON_BG = Object.freeze({ 0: '#d4d7dc', 1: '#cccfd5', 2: '#cfd3db', 3: '#d2d2d1', 4: '#c7c9d1', 5: '#cecfd0', 6: '#cdd1dd', 7: '#e1e1e1', 8: '#858893' });
   const tourIconSrc = (sp) => (TOUR_ICON[sp] ? `./assets/tournament/icons_1015/icon_${TOUR_ICON[sp]}.webp` : null);
   const RANKS = 'EDCBAS';
   /** ルーレットの見た目（中央を 0 とした |d| ごとの値。間は直線補間） */
@@ -40,7 +40,7 @@
   const v24 = () => { try { return !(root.localStorage && root.localStorage.getItem(UI_KEY) === 'old'); } catch (e) { return true; } };
   const setUi = (mode) => { try { if (root.localStorage) root.localStorage.setItem(UI_KEY, mode === 'old' ? 'old' : 'new'); } catch (e) {} return v24() ? 'new' : 'old'; };
   /** モンスターの大きさ（従来の待機立ち絵に対する比）。ソラモ＝四足・ガウル＝腕2足2翼2・ノビトン＝横に長い・ジオル・レグナス */
-  const SCALE = Object.freeze({ 0: 0.91, 1: 0.92, 2: 0.88, 3: 0.91, 4: 0.91, 6: 0.91, 7: 0.91 });   // 6＝ラズック（QA だけ・体格の正式倍率は未決）・7＝カルシェル（QA だけ・サイズ 3）
+  const SCALE = Object.freeze({ 0: 0.91, 1: 0.92, 2: 0.88, 3: 0.91, 4: 0.91, 6: 0.91, 7: 0.91, 8: 0.91 });   // 6＝ラズック（QA だけ・体格の正式倍率は未決）・7＝カルシェル（QA だけ・サイズ 3）・8＝ミュロル（QA だけ・サイズ 2）
   /** 2026-10-15 夜：体格サイズ 1〜5 の比較プレビュー（js/battle/move-tune-1015.js の MMTUNE.sizeK＝URL に ?mmSize=1 のときだけ。通常は 1＝今までの大きさ）。
    *  待機立ち絵・被弾／回避・勝利の絵は同じ --mma-k を使い、技のコマ（art25d）は待機立ち絵の矩形から作る＝技の途中で大きさが変わらない */
   const kOf = (sp) => (SCALE[sp] || 0.91) * (root.MMTUNE && root.MMTUNE.sizeK ? root.MMTUNE.sizeK(sp) : 1);

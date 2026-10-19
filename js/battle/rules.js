@@ -20,7 +20,7 @@
     paralysis: Object.freeze({ label: 'まひ', turns: 3, failChance: 0.25 }),
     sleep: Object.freeze({ label: 'ねむり', turns: 2 }),
   });
-  const SPECIES = Object.freeze({ 0: 'solamo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas', 6: 'razuck', 7: 'kalshell' });   // 2026-10-17：6＝ラズック・2026-10-18：7＝カルシェル（どちらも登録のみ・QA 試遊の個体だけ）
+  const SPECIES = Object.freeze({ 0: 'solamo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas', 6: 'razuck', 7: 'kalshell', 8: 'myurol' });   // 2026-10-17：6＝ラズック・2026-10-18：7＝カルシェル・2026-10-19：8＝ミュロル（どれも登録のみ・QA 試遊の個体だけ）
   const SKILL = Object.freeze({   // 値は js/phase10/monsters.js の UNIQUE_SKILLS と同じ（そちらが無い環境の控え）
     solamo: { lifeRatioAtMost: 0.2, damageMultiplier: 1.25 },
     gauru: { turnsFromStart: 3, statUpRatio: 0.05 },
@@ -28,6 +28,7 @@
     jiol: { chance: 0.1, surviveAtLife: 1 },
     razuck: { multipliers: [1.15, 1.30, 1.50] },
     kalshell: { chance: 0.2, damageCut: 0.25 },   // 2026-10-18 かたい貝殻：被弾ごとに 20% で受けるダメージを 25% 軽減（上限なし）
+    myurol: { chance: 0.2, size: 'small', turns: 2 },   // 2026-10-19 しめったはだ：被弾ごとに 20% で攻撃した相手のちから（攻撃系 atk）を小ダウン 2T（重ならない・再発動で残りを更新・上限なし）
   });
   const skillOf = (key) => {
     const U = root.MMP10M && root.MMP10M.UNIQUE_SKILLS, u = U && U['unique_' + key];
@@ -96,6 +97,7 @@
     installFlurene(SK, EFF, SKART, SFR, SKM, SPM);
     installRazuck(SK, EFF, SKART, SFR, SKM, SPM);
     installKalshell(SK, EFF, SKART, SFR, SKM, SPM);
+    installMyurol(SK, EFF, SKART, SFR, SKM, SPM);
     // 純補助技（威力なし）＝ソラモ・ガウル・レグナスの補助技も同じ扱い（基本命中 100%）
     for (let k = 0; k < SK.length; k++) if (SK[k] && !SK[k][1] && !BEHAVIOR[k]) BEHAVIOR[k] = { support: true };
     hookGlobals();
@@ -207,6 +209,43 @@
     } catch (e) { /* 無視（習得の表は QA に関係しない） */ }
     return true;
   }
+  // ---- ミュロルの正式技（2026-10-19 正式納品の仕様マスター・SK の 80〜89＝80＋No−1。数値は js/phase10/monsters.js の OFFICIAL_MOVES.myurol の1か所） ----
+  //  ミュロルは未解禁（入手方法は未決＝市場・野生・合体・大会に出ない）＝QA 試遊モードの個体だけが使う。No.4 あわのまもり＝自分の丈夫さ 10%UP 2T・
+  //  No.8 すいすいステップ＝自分の回避 10%UP 2T（どちらも補助＝ダメージなし・相手には何もしない）。No.10＝必殺技（威力 125）。No.9 スパイラルテール（115）は必殺技ではない
+  const MYU_FIRST = 80;
+  const MYU_VISUAL = { 1: 1, 2: 5, 3: 0, 4: 7, 5: 4, 6: 5, 7: 6, 8: 7, 9: 4, 10: 9 };   // 旧技の小さな絵を借りる（技アニメのコマ・技カードが無いときの控え）
+  const MYU_EMOJI = ['💥', '💧', '💥', '🫧', '🌀', '🫧', '🎯', '💨', '🌀', '🌊'];
+  function installMyurol(SK, EFF, SKART, SFR, SKM, SPM) {
+    const M = root.MMP10M, list = M && M.movesOf ? M.movesOf('myurol') : [];
+    if (!list.length || list.some((mv) => mv.slot !== MYU_FIRST + mv.no - 1)) return false;
+    list.forEach((mv, i) => {
+      const k = mv.slot, dmg = mv.power != null;
+      SK[k] = [mv.name, dmg ? mv.power / 100 : 0, mv.power >= 120 ? 1 : 2.5, mv.power >= 120 ? '#c79cff' : '#7fd4e8', MYU_EMOJI[i], dmg ? 'a' : 'd', mv.desc || '',
+        mv.type === 'wisdom' ? 'i' : 'p', mv.accuracy, dmg ? mv.critical / 100 : 0];
+      if (mv.effects && mv.effects.length) EFF[k] = mv.effects.map((e) => ({ tg: e.target === 'self' ? 0 : 1, st: STATKEY[e.stat], lv: (e.dir === 'down' ? -1 : 1) * LV[e.size], t: e.turns }));
+      const v = MYU_VISUAL[mv.no];
+      if (Array.isArray(SKART) && SKART[v] != null) SKART[k] = SKART[v];
+      if (SFR && SFR[v] != null) SFR[k] = SFR[v];
+      if (SKM && SKM[v] != null) SKM[k] = SKM[v];
+      if (!dmg) BEHAVIOR[k] = { owner: 'myurol', no: mv.no, support: true };
+    });
+    if (SPM && SPM.add) list.filter((m) => m.power >= 120).forEach((m) => SPM.add(m.slot));
+    try {
+      const P7 = root.MMP7, by = (l) => list.filter((m) => m.learn === l).map((m) => m.slot);
+      if (P7 && P7.registerMoveset && !P7.getMoveset(8)) P7.registerMoveset(8, { initial: by('initial'), po: by('po'), in: by('in'), hi: by('hi'), ev: by('ev'), de: by('de') });
+    } catch (e) { /* 無視（習得の表は QA に関係しない） */ }
+    return true;
+  }
+  /** 2026-10-19 ミュロル「しめったはだ」：攻撃した側（side）へ ちから（攻撃系 attack）小ダウン 2T を付ける。battle-bridge の createEffect・applyEffectToSession（Phase 6 の関数を呼ぶだけ）
+   *  ＋ refreshSameEffects（同じ強さは重ならず残りターンを更新）。強い下げ（中・大）が既にあれば付かない（弱いのは上書きしない＝従来の規則）。付いたら効果を返す（付かなければ null） */
+  function dampSkin(sess, side) {
+    const B = root.MMBattle, p = skillOf('myurol');
+    if (!B || typeof B.createEffect !== 'function' || !sess || !sess.debuffs) return null;
+    const e = B.createEffect({ category: 'attack', direction: 'down', size: p.size || 'small', remainingTurns: p.turns || 2, appliedTurn: sess.turn || 1, stackable: false });
+    B.applyEffectToSession(sess, side, e);
+    refreshSameEffects(sess, { effectsApplied: [{ target: side, effect: e }] });
+    return (sess.debuffs[side] || []).includes(e) ? e : null;
+  }
   const kOf = (move) => { const m = /^sk(\d+)$/.exec((move && move.id) || ''); return m ? +m[1] : -1; };
 
   // ---- resolveAction を包む ----
@@ -285,6 +324,12 @@
       sess.currentLife[def] = after; if (sess.totalDamage) sess.totalDamage[atk] -= back;
       r.damage = nd; r.targetLifeAfter = after; r.ko = after <= 0; r.shellCut = back;
       notes.push({ side: def, badge: `かたい貝殻 −${Math.round(cut * 100)}%`, text: '' });
+    }
+    // 2026-10-19 ミュロル「しめったはだ」：相手の攻撃でダメージを受けた（当たってダメージ 1 以上・倒れていない）たびに 20% の独立の抽選で、攻撃した相手のちから（攻撃系）を小ダウン（−10%・2ターン）。
+    //  重ならない・再発動は残りターンの更新（refreshSameEffects）・回数の上限なし。付いた効果は r.effectsApplied にも足す＝fight() が「〇〇の攻撃力が下がった！」・能力の札（syncSt／drawSt）を出す。小さな札「しめったはだ」
+    if (SPECIES[spOf(pl, def)] === 'myurol' && r.hit && r.damage > 0 && !r.ko && rnd() < skillOf('myurol').chance) {
+      const e = dampSkin(sess, atk);
+      if (e) { r.effectsApplied = (r.effectsApplied || []).concat([{ target: atk, effect: e }]); r.dampSkin = true; notes.push({ side: def, badge: 'しめったはだ', text: '' }); }
     }
     // ジオル「大地の守り」：倒れるダメージを受けたとき、10%で1度だけライフ1で耐える
     if (r.ko && SPECIES[spOf(pl, def)] === 'jiol' && !st.used[def].jiol) {
@@ -689,7 +734,7 @@
   const surrendered = () => surrenderPl != null && surrenderPl === G('BPL');
 
   wrapBattle();
-  root.MMRULES = Object.freeze({ FLU_FIRST, RAZ_FIRST, KAL_FIRST, flushDrain, drainLog: () => drainLog.slice(), AILMENTS, NOBI_FIRST, JIOL_FIRST, install, wrapBattle, swallow, cleanResult, battleStats, surrendered, refreshSameEffects, withSpeed, speedOfUnit, current: () => (cur && cur.pl === G('BPL') ? cur.sess : null), drawAil, skillCut, clearCuts, cutLog: () => cutLog.slice(), cutQueue: () => cutQueue.slice(), cutCamera, CUT, SKILL_FX, cutActive: () => !!cutEl, behavior: (k) => BEHAVIOR[k] || null,
+  root.MMRULES = Object.freeze({ FLU_FIRST, RAZ_FIRST, KAL_FIRST, MYU_FIRST, flushDrain, drainLog: () => drainLog.slice(), AILMENTS, NOBI_FIRST, JIOL_FIRST, install, wrapBattle, swallow, cleanResult, battleStats, surrendered, refreshSameEffects, withSpeed, speedOfUnit, current: () => (cur && cur.pl === G('BPL') ? cur.sess : null), drawAil, skillCut, clearCuts, cutLog: () => cutLog.slice(), cutQueue: () => cutQueue.slice(), cutCamera, CUT, SKILL_FX, cutActive: () => !!cutEl, behavior: (k) => BEHAVIOR[k] || null,
     // テスト用の純粋な処理
     newState, applyAilment, opportunity, cureAll, hasAilment, statMul, resolveWith, stateOf });
 })(typeof window !== 'undefined' ? window : globalThis);

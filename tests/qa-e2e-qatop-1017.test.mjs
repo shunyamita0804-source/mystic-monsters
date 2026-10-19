@@ -25,7 +25,7 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     await pg.waitForFunction(() => /ブランチ/.test(document.querySelector('#mmqat .qtv').textContent));
     const r = await pg.evaluate(() => ({ build: document.querySelector('#mmqat .qtv b').textContent, mb: MM_BUILD, rows: document.querySelectorAll('#mmqat .qtm tr').length, cells: document.querySelectorAll('#mmqat .qtm td').length,
       b: document.querySelectorAll('#mmqat .qtm td.battle').length, pv: document.querySelectorAll('#mmqat .qtm td.preview').length, links: [...document.querySelectorAll('#mmqat a.qtb[data-k]')].map((a) => a.getAttribute('href')), wide: document.documentElement.scrollWidth <= innerWidth }));
-    assert.equal(r.build, r.mb); assert.equal(r.rows, 8); assert.equal(r.cells, 80); assert.ok(r.b >= 69, `実戦 ${r.b}`); assert.equal(r.b + r.pv + (80 - r.b - r.pv), 80);   // 2026-10-18 カルシェル（8体目）
+    assert.equal(r.build, r.mb); assert.equal(r.rows, 9); assert.equal(r.cells, 90); assert.ok(r.b >= 79, `実戦 ${r.b}`); assert.equal(r.b + r.pv + (90 - r.b - r.pv), 90);   // 2026-10-18 カルシェル（8体目）・2026-10-19 ミュロル（9体目）
     assert.equal(r.links.length, 12); assert.ok(r.links[0].includes('ch1trial=A') && r.links[5].includes('ch2trial=C') && r.links[8].includes('ch3trial=C') && r.links[11].includes('ch4trial=C'));   // 2026-10-19：Chapter 4 の A／B／C を追加
     assert.ok(r.wide);
     assert.equal(await pg.evaluate(() => document.querySelectorAll('#mmqat .qts[data-k="cam"],#mmqat .qts[data-k="walk"],#mmqat .qts[data-k="road"]').length), 0, 'カメラ・歩行・道路の比較の選択は無い（2026-10-19 撤去）');

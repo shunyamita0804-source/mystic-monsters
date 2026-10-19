@@ -83,7 +83,7 @@ test('KS-01：登録の値（番号 7・名前・種族名は未確定・サイ�
   assert.deepEqual([U.name, U.species, U.speciesKey, U.implemented], ['かたい貝殻', 7, 'kalshell', true]);
   assert.deepEqual(J(U.params), { trigger: 'on_damaged', chance: 0.2, damageCut: 0.25, uses: null }, '20% で 25% 軽減・回数の上限なし');
   assert.match(U.desc, /20%.*25%/);
-  assert.deepEqual(Object.keys(M.UNIQUE_SKILLS), ['unique_solamo', 'unique_gauru', 'unique_nobiton', 'unique_jiol', 'unique_razuck', 'unique_kalshell']);
+  assert.deepEqual(Object.keys(M.UNIQUE_SKILLS), ['unique_solamo', 'unique_gauru', 'unique_nobiton', 'unique_jiol', 'unique_razuck', 'unique_kalshell', 'unique_myurol']);   // 2026-10-19：ミュロル（tests/myurol-1019.test.mjs）
   // 10技
   const L = M.movesOf('kalshell');
   assert.equal(K.moves, M.OFFICIAL_MOVES.kalshell.list);
@@ -97,13 +97,13 @@ test('KS-01：登録の値（番号 7・名前・種族名は未確定・サイ�
   assert.deepEqual(J(L[7].effects), [{ target: 'self', stat: 'ev', dir: 'up', size: 'small', turns: 2 }], 'しおのステップ＝自分の回避 10%UP 2T');
   assert.ok(L.filter((m) => ![3, 4, 8].includes(m.no)).every((m) => !m.effects.length && !m.ailment && !m.heal), '追加効果は No.3・4・8 だけ（状態異常・回復なし）');
   for (const m of L) { const b = M.moveBySlot(m.slot); assert.deepEqual([b.owner, b.no, b.name], ['kalshell', m.no, m.name]); }
-  assert.ok(M.moveBySlot(69).owner === 'razuck' && M.moveBySlot(80) == null, '69 まではラズック・80 は無い');
+  assert.ok(M.moveBySlot(69).owner === 'razuck' && M.moveBySlot(80).owner === 'myurol' && M.moveBySlot(90) == null, '69 まではラズック・80〜89＝ミュロル（2026-10-19）・90 は無い');
   // ほかの種族の番号・技は変えていない
   const others = ['solamo', 'gauru', 'regnas', 'jiol', 'flurene', 'razuck'].flatMap((k) => M.movesOf(k).map((m) => m.slot));
   assert.ok(others.every((k) => k >= 0 && k <= 69) && L.every((m) => !others.includes(m.slot)), '0〜69 と重ならない');
   assert.deepEqual(M.movesOf('solamo').map((m) => [m.slot, m.power ?? null]), [[0, 70], [1, 60], [2, 85], [4, 105], [7, null], [3, null], [5, 90], [6, null], [8, 120], [9, 140]]);
   assert.deepEqual(M.movesOf('razuck').map((m) => m.slot), [60, 61, 62, 63, 64, 65, 66, 67, 68, 69]);
-  assert.deepEqual(M.PENDING_SPECIES.map((x) => [x.id, x.key]), [[5, 'flurene'], [6, 'razuck'], [7, 'kalshell']]);
+  assert.deepEqual(M.PENDING_SPECIES.map((x) => [x.id, x.key]), [[5, 'flurene'], [6, 'razuck'], [7, 'kalshell'], [8, 'myurol']]);   // 2026-10-19：8＝ミュロル
 });
 
 test('KS-02：隔離＝byId／byKey／keyOf では引けない・SPECIES／市場／ライバル／fight() の相手の表／本編の盤には出ない・触ってはいけないファイルに触れていない', () => {
@@ -170,7 +170,7 @@ test('KS-03：素材＝派生 41点の実在・大きさ・原本と派生の sh
 
 test('KS-04：実戦の表（SK 70〜79・EFF・必殺技 78／79・習得の表）と固有スキル「かたい貝殻」＝被弾ごとに 20% で受けるダメージを 25% 軽減（回数の上限なし・ほかの種族と攻撃側には付かない）', () => {
   const E = loadBattle(), SK = J(E.SK), EFF = J(E.EFF);
-  assert.equal(E.R.KAL_FIRST, 70); assert.equal(SK.length, 80);
+  assert.equal(E.R.KAL_FIRST, 70); assert.equal(SK.length, 90);   // 2026-10-19：80〜89＝ミュロル
   for (const [no, name, , type, pw, acc, cr] of SPEC) {
     const r = SK[69 + no];
     assert.equal(r[0], name); assert.equal(r[1], pw == null ? 0 : pw / 100, `${name}：威力`);
@@ -179,7 +179,7 @@ test('KS-04：実戦の表（SK 70〜79・EFF・必殺技 78／79・習得の表
   }
   assert.deepEqual(EFF[72], [{ tg: 1, st: 'hi', lv: -1, t: 1 }], 'あわだま'); assert.deepEqual(EFF[73], [{ tg: 0, st: 'de', lv: 1, t: 2 }], 'からにこもる'); assert.deepEqual(EFF[77], [{ tg: 0, st: 'ev', lv: 1, t: 2 }], 'しおのステップ');
   for (let k = 70; k <= 79; k++) if (![72, 73, 77].includes(k)) assert.equal(EFF[k], undefined, `SK ${k}：追加効果なし`);
-  assert.deepEqual(J(vm.runInContext('[...SPECIAL_MOVES]', E.ctx)).filter((k) => k >= 70), [78, 79], '必殺技＝シェルブレイカー・タイダルクラッシュ');
+  assert.deepEqual(J(vm.runInContext('[...SPECIAL_MOVES]', E.ctx)).filter((k) => k >= 70 && k <= 79), [78, 79], '必殺技＝シェルブレイカー・タイダルクラッシュ');
   assert.deepEqual(J(vm.runInContext('MMP7.getMoveset(7)', E.ctx)), { initial: [70, 71, 72, 73], po: [74], in: [75], hi: [76], ev: [77], de: [78, 79] }, '初期4＋特訓6');
   for (let i = 0; i < 70; i++) assert.ok(SK[i] !== undefined || i >= 50, `SK ${i}：ほかの種族の行はそのまま`);
   // 計算：かしこさ技（No.3・6）・ちから技・補助技（ダメージ 0・自分へのバフ）・相手の命中 DOWN
@@ -242,29 +242,29 @@ test('KS-05：つなぎ＝技アニメ 84枚のデータ・art25d（SK 70〜79�
   }
   // art25d：SK 70〜79 → データ・プレビュー
   const a = rd('js/battle/art25d.js');
-  assert.match(a, /k >= 70 && k <= 79 \? 7 : -1/); assert.match(a, /const SRC_OF = \{ 0: OFF, 1: GOFF, 2: NOFF, 3: JSK, 4: ROFF, 5: FSK, 6: ZSK, 7: KSK \};/);
+  assert.match(a, /k >= 70 && k <= 79 \? 7 : k >= 80 && k <= 89 \? 8 : -1/); assert.match(a, /const SRC_OF = \{ 0: OFF, 1: GOFF, 2: NOFF, 3: JSK, 4: ROFF, 5: FSK, 6: ZSK, 7: KSK, 8: YSK \};/);   // 2026-10-19：8＝ミュロル
   assert.match(a, /KK\.map\[69 \+ \+no\] = D\[no\]/, 'データは No. → SK 70＋No−1'); assert.match(a, /kind === 'kalshell'/); assert.match(a, /7: 'kalshell'/);
   // 技カード
   const c = load(['js/phase10/monsters.js', 'js/battle/move-cards.js']);
   for (const [no, name, id] of SPEC) { const x = c.MMMVCARD.bySlot(69 + no); assert.ok(x, name); assert.match(x.src, new RegExp(`cards_1014/kalshell/${String(no).padStart(2, '0')}_${id}\\.webp$`), name); }
   // 表情（MMRXART）
   const X = load(['js/monsters/reaction-art.data.js', 'js/monsters/reaction-art.js']).MMRXART;
-  assert.equal(X.SPECIES[7], 'kalshell'); assert.equal(X.all().length, 42);
+  assert.equal(X.SPECIES[7], 'kalshell'); assert.equal(X.all().length, 48);   // 2026-10-19：ミュロルの6種を足した
   for (const [i, k] of KINDS.entries()) { const f = X.info(7, k); assert.equal(f.src, `./assets/monsters/reactions_1012/kalshell/0${i + 1}_${k}.webp`); assert.deepEqual([f.w, f.h, f.hRel], [DJ.reactions[k].w, DJ.reactions[k].h, DJ.reactions[k].hRel], k); }
   assert.equal(X.src('kalshell', 'hit'), X.src(7, 'hit'));
   // 比較の絵（代替）・対戦表の顔・体格
   const cmp = load(['js/phase10/monsters.js', 'js/battle/compare.js']).MMCMP;
-  assert.equal(cmp.src(7), './assets/monsters/compare_1015/kalshell.webp'); assert.deepEqual(J(cmp.PORTRAIT[7]), { f: 'kalshell', fx: 0.6, fy: 0.5, k: 1.04 }); assert.equal(cmp.src(8), null);
+  assert.equal(cmp.src(7), './assets/monsters/compare_1015/kalshell.webp'); assert.deepEqual(J(cmp.PORTRAIT[7]), { f: 'kalshell', fx: 0.6, fy: 0.5, k: 1.04 }); assert.equal(cmp.src(9), null);   // 2026-10-19：8＝ミュロル
   assert.equal(cmp.skillName(7), 'かたい貝殻', '比較画面の固有スキルの名前');
   const arena = rd('js/battle/arena.js');
-  assert.match(arena, /const TOUR_ICON = Object\.freeze\(\{ 0: 'solamo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas', 5: 'flurene', 6: 'razuck', 7: 'kalshell' \}\);/);
-  assert.match(arena, /7: '#e1e1e1'/, '顔の絵の背景の灰色'); assert.match(arena, /const SCALE = Object\.freeze\(\{[^}]*7: 0\.91 \}\);/);
-  assert.match(rd('js/battle/move-tune-1015.js'), /const SIZE = Object\.freeze\(\{ 0: 2, 1: 3, 2: 2, 3: 4, 4: 3, 5: 3, 6: 1, 7: 3 \}\);/, '体格サイズ 3');
+  assert.match(arena, /const TOUR_ICON = Object\.freeze\(\{ 0: 'solamo', 1: 'gauru', 2: 'nobiton', 3: 'jiol', 4: 'regnas', 5: 'flurene', 6: 'razuck', 7: 'kalshell', 8: 'myurol' \}\);/);   // 2026-10-19：8＝ミュロル
+  assert.match(arena, /7: '#e1e1e1'/, '顔の絵の背景の灰色'); assert.match(arena, /const SCALE = Object\.freeze\(\{[^}]*7: 0\.91, 8: 0\.91 \}\);/);
+  assert.match(rd('js/battle/move-tune-1015.js'), /const SIZE = Object\.freeze\(\{ 0: 2, 1: 3, 2: 2, 3: 4, 4: 3, 5: 3, 6: 1, 7: 3, 8: 2 \}\);/, '体格サイズ 3');
   // 鳴き声
   const reg = rd('js/audio/audio-registry.js');
   assert.match(reg, /cry_kalshell_normal: \{ src: \[PC \+ 'kalshell_normal\.ogg', PC \+ 'kalshell_normal\.m4a'\], npc: 'monster', gain: 1\.189 \}/);
   assert.match(reg, /cry_kalshell_sad: \{ src: \[PC \+ 'kalshell_sad\.ogg', PC \+ 'kalshell_sad\.m4a'\], npc: 'monster', gain: 1\.109 \}/);
-  assert.match(rd('js/audio/audio-manager.js'), /const CRY_KEYS = fz\(\['solamo', 'gauru', 'nobiton', 'jiol', 'regnas', 'flurene', 'razuck', 'kalshell'\]\);/);
+  assert.match(rd('js/audio/audio-manager.js'), /const CRY_KEYS = fz\(\['solamo', 'gauru', 'nobiton', 'jiol', 'regnas', 'flurene', 'razuck', 'kalshell', 'myurol'\]\);/);
   // 歩行（ch1a の monsterSprites＝番号 → キーで引けないので本編の盤には出ない）
   const ch = load(['js/phase10/monsters.js', 'js/chapter/engine.js', 'js/chapter/configs/ch1a.js']);
   const S = ch.MMCH.getConfig(1).monsterSprites, K = S.kalshell;
@@ -276,8 +276,8 @@ test('KS-05：つなぎ＝技アニメ 84枚のデータ・art25d（SK 70〜79�
   for (const k of ['solamo', 'nobiton', 'jiol', 'flurene']) assert.ok(S[k].dirs.front.frames.length === 8, `${k}：従来のまま`);
   // QA 試遊だけ（trial.js・qa-top）
   const q = rd('js/qa/trial.js');
-  assert.match(q, /\{ sp: 7, key: 'kalshell' \}/); assert.match(q, /7: 'idle_kalshell'/); assert.match(q, /\[5, 6, 7\]/, 'QA の間だけ待機絵を貸す（5・6・7）');
-  assert.match(q, /n <= 7/); assert.match(q, /MMKSMV_DATA/); assert.match(q, /未解禁（入手方法は未定・QA の確認だけ）/);
+  assert.match(q, /\{ sp: 7, key: 'kalshell' \}/); assert.match(q, /7: 'idle_kalshell'/); assert.match(q, /\[5, 6, 7, 8\]/, 'QA の間だけ待機絵を貸す（5・6・7・8＝2026-10-19 ミュロル）');
+  assert.match(q, /n <= 8/); assert.match(q, /MMKSMV_DATA/); assert.match(q, /未解禁（入手方法は未定・QA の確認だけ）/);
   assert.match(rd('js/qa/qa-top-1017.js'), /全\$\{mv\.rows\}体×10技＝\$\{mv\.total\} 枠/);   // 2026-10-19：cat は moves() の中だけ＝体の数は mv.rows
   // 読み込むスクリプトの一覧（qa-static-guards）・公開確認の道具
   assert.match(rd('tests/qa-static-guards.test.mjs'), /js\/battle\/kalshell-moves-data\.js/);
