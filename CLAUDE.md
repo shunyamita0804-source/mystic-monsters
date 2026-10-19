@@ -47,6 +47,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 | js/chapter/configs/ch1a.js | Chapter 1 の config（旧14枚のボード・出来事 eventPool・歩行コマの登録 monsterSprites） |
 | js/chapter/configs/ch2a.js | 旧 Chapter 2 の盤の config（旧盤の互換・歩行コマ） |
 | js/chapter/events.js | Chapter のイベント基盤 `MMEVT` |
+| js/chapter/event-themes.js | Chapter 2〜4 の出来事の題・本文・背景（効果は Chapter 1 の表のまま）`MMEVTH` |
 | js/chapter/field-view.js | 旧 Chapter フィールドの画面 `MMCHV` |
 | js/chapter/intro.js | Chapter 開始の演出 `MMCHI` |
 | js/chapter/reactions.js | 冒険リアクション `MMREACT` |
@@ -131,7 +132,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 | assets/audio/ | 音源（出どころ・ライセンスは AUDIO_CREDITS.md） |
 | assets/scenes/、assets/fields/、assets/dice/ | 背景・フィールド・サイコロの素材 |
 | assets/embedded/ | index.html の base64 から外部化した既存画像（元データとバイト単位で同一） |
-| tools/ | 素材の派生・道の生成・シミュレーション（各フォルダの README・コメント） |
+| tools/ | 素材の派生・道の生成・シミュレーション（各フォルダの README・コメント）。通し試遊の確認と育成の試算は tools/fullplay1020/ |
 | tests/*.test.mjs | 自動テスト |
 | tools/public-check.mjs | push 後の公開URLの確認（§7） |
 | version.json | 公開の版（index.html の MM_BUILD と同じ値にする） |

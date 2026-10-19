@@ -893,7 +893,9 @@ html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100
       d.addEventListener('click', close); setTimeout(close, calm() ? Math.min(ms, 900) : ms);
     });
   }
-  const evDef = (id) => { let c = null; try { c = chOf() >= 3 ? null : root.MMCH && root.MMCH.getConfig(chOf()); } catch (e) {} const e = ((c && c.eventPool) || cfg().eventPool || []).find((x) => x.id === id) || null; return e && chOf() === 3 && e.id === 'tailwind' ? JSON.parse(JSON.stringify(e).replace(/草原/g, '雲海')) : e && chOf() === 4 && /草原/.test(JSON.stringify(e)) ? JSON.parse(JSON.stringify(e).replace(/草原/g, '火山の道')) : e; };   // 2026-10-19 Chapter 4：草原の言葉だけ火山に（world-driver-ch4.js の pool と同じ）   // 2026-10-18 Chapter 3：Chapter 1 の出来事の表（草原の言葉だけ雲海に）   // 2026-10-16：その Chapter の出来事（Chapter 2＝ch2a の eventPool）
+  // 2026-10-20：出来事の定義は盤の進行と同じ表（各 Chapter の driver の pool＝js/chapter/event-themes.js の Chapter ごとの題・本文・背景）。無ければ従来
+  const evDef = (id) => { const W = WD(), P = W && W.pool ? W.pool() : null, x = Array.isArray(P) ? P.find((e) => e.id === id) : null; return x || evDef0(id); };
+  const evDef0 = (id) => { let c = null; try { c = chOf() >= 3 ? null : root.MMCH && root.MMCH.getConfig(chOf()); } catch (e) {} const e = ((c && c.eventPool) || cfg().eventPool || []).find((x) => x.id === id) || null; return e && chOf() === 3 && e.id === 'tailwind' ? JSON.parse(JSON.stringify(e).replace(/草原/g, '雲海')) : e && chOf() === 4 && /草原/.test(JSON.stringify(e)) ? JSON.parse(JSON.stringify(e).replace(/草原/g, '火山の道')) : e; };   // 2026-10-19 Chapter 4：草原の言葉だけ火山に（world-driver-ch4.js の pool と同じ）   // 2026-10-18 Chapter 3：Chapter 1 の出来事の表（草原の言葉だけ雲海に）   // 2026-10-16：その Chapter の出来事（Chapter 2＝ch2a の eventPool）
   async function talkLines(lines) {
     if (!lines || !lines.length || root.MM_QA_NO_STORY || !root.MMNPC || !onBoard()) return;
     const L = lines.map((l) => (root.MMEVT ? root.MMEVT.lineOf(l) : { npc: 'fina', expression: l.expression || 'normal', text: l.text }));

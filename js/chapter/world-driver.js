@@ -336,7 +336,7 @@
   /** この個体の今の Chapter がこのボードか（画面の切り替え用） */
   const active = (m) => attached && !!m && isObj(m.raise) && m.raise.ch === CH && !!root.MMP7 && root.MMP7.inChapter(m) && !!fieldOf(m);
 
-  const API = Object.freeze({ CH, TURN_LIMIT, DICE, ROUTES, ROUTE_NAME, ROUTE_NAME_BY, PLACE, PLACE_BY, REWARD_TITLE_BY, STORY, STORY_LINES_BY, DRIVER, VISUALS, storyEvents, markStory, segOf, attach, detach, active, fieldOf, valid, newField, track, routeName, placeOf, rewardTitle, branchOptions,
+  const API = Object.freeze({ pool: () => poolOf(), CH, TURN_LIMIT, DICE, ROUTES, ROUTE_NAME, ROUTE_NAME_BY, PLACE, PLACE_BY, REWARD_TITLE_BY, STORY, STORY_LINES_BY, DRIVER, VISUALS, storyEvents, markStory, segOf, attach, detach, active, fieldOf, valid, newField, track, routeName, placeOf, rewardTitle, branchOptions,
     routeOf, routeKey, dataOf: (m) => D(m), routeData: dataOf, drawRoute, setRoute, forcedRoute, visualOf, isAttached: () => attached });
   if (cfg.attach !== false) attach();
   return API;

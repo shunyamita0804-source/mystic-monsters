@@ -30,6 +30,7 @@
 - species ID（solamo・gauru・nobiton・jiol）は表示名と別の安定したIDとして使う。
 - 素早さは 1〜10 で、10 が最速。
 - 正式画像は assets/monsters/2p5d/ の 2.5D 版を使う（2026-10-11。旧 2D の assets/monsters/*.png はファイルだけ残す）。CSS の filter・hue-rotate などで色を変えない。
+- **成長量の表（2026-10-20 通し試遊の品質改善・下の表より優先）**：Chapter 1 A17 B15 C14 D10 E8（変えない）／Chapter 2 A19 B17 C15 D12 E9／Chapter 3 A21 B19 C16 D13 E10／Chapter 4 A22 B20 C17 D14 E11（ユーザー指示「初期に選べるモンスターが Chapter 4 を終えるころ、適性 A の能力がおおむね 300」。Chapter 2〜4 の能力マスの割合も 0.42 に。試算は docs/fullplay_1020/REPORT.md）。注：市場で選べるソラモ（全 C）・ガウル（最高 B）には適性 A の能力が無い＝目標は「初期 100 前後の適性 A の能力」で合わせた。
 - **成長適性（2026-10-02 正式）**：各モンスターの6能力それぞれに A〜E（A が最も伸びやすい）。能力マスの上昇量は **Chapter ごとの表（2026-10-14 ユーザー指示「Chapter 1 は能力マスを増やし1回の上昇を下げる・Chapter 2〜4 はおおよその想定で穏やかに上げる」）＝Chapter 1 A17 B15 C14 D10 E8（2026-10-15 追加B。旧 A20 B18 C16 D12 E9）／Chapter 2 A25 B23 C20 D16 E12／Chapter 3 A29 B27 C23 D18 E14／Chapter 4 A33 B30 C26 D20 E15（js/phase10/monsters.js の GROWTH_GAIN_BY_CH。growthGain(m, key) は m.raise.ch の表）**。旧：A +25・B +21・C +18・D +14・E +11（2026-10-08・全 Chapter 共通＝GROWTH_GAIN は Chapter の分からない所の控えとして残す）（表の場所は js/phase10/monsters.js の1か所。SPECIES[].growth、個体ごとの m.growth（合体個体など将来用）があれば優先）。ソラモ＝C/C/C/C/C/C、ガウル＝ライフ D・ちから B・かしこさ B・命中 C・回避 B・丈夫さ E。ノビトン＝ライフ B・ちから D・かしこさ D・命中 D・回避 E・丈夫さ C、ジオル＝ライフ C・ちから A・かしこさ E・命中 D・回避 E・丈夫さ A（2026-10-02 正式。4原種とも登録済み）。適性はモンスターごとのデータ（SPECIES[].growth）で、種族名の分岐は書かない。将来ステータス画面で表示するときも MMP10M.growthOf を読む。新しい種族で未登録なら【暫定】C（GROWTH_UNREGISTERED）。
 
 ### 能力と色
