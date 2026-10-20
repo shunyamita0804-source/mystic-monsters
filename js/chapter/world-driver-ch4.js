@@ -21,7 +21,10 @@
   const drawRoute = (rnd) => routeOfInt(Math.min(999, Math.max(0, Math.floor(rnd() * 1000))));
   /** 旧 Chapter 4 の盤の途中（新しい盤を持たない・Chapter 4 の盤の上） */
   const oldBoard = (m) => !!(m && isObj(m.raise) && m.raise.ch === 4 && (m.raise.state === 'board' || m.raise.state === 'BOARD') && !(isObj(m.raise.field) && m.raise.field.world === 1 && m.raise.field.chapterId === 4));
-  const dataOf = (k) => (root.MMRF_CH4 && root.MMRF_CH4[routeKey(k)]) || null;
+  // 2026-10-20 道路美術 P0（円の広場の中にマスが密集）：表示用の配置（js/proto/board-display.js の MMRF_DISP・Chapter 1／3 と同じ。座標だけ・ID と歩数とつながりは原本のまま）。
+  //  Chapter 4 は地点の間隔が狭い（約 15）ので、広場の近くだけ間隔 13（マスの幅）まで詰めて広場の中心から 30 単位離す（js/proto/ch4-world.js の広場は半径 21 まで）
+  const DISP_OPT = { clear: 30, gap: 13, minD: 12 };
+  const dataOf = (k) => { const d = (root.MMRF_CH4 && root.MMRF_CH4[routeKey(k)]) || null; return d && root.MMRF_DISP ? root.MMRF_DISP.clearPlazas(d, DISP_OPT) : d; };
   const VOLCWORD = (t) => String(t).replace(/草原/g, '火山の道');
   // 2026-10-20：出来事の題・本文・背景は Chapter の舞台に合わせる（js/chapter/event-themes.js の MMEVTH＝効果は変えない）
   const themed = (p) => (p && root.MMEVTH ? root.MMEVTH.themed(4, p) : p);

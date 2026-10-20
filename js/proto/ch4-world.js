@@ -19,7 +19,7 @@
   const DECK = 'bridge_deck_v3';
   const TEX = { ground: ['ground_basalt', 120], road: ['road_basalt', 40] };
   const STRIP = { curbL: 'curb_l', curbR: 'curb_r', railL: 'rail_l', railR: 'rail_r' };
-  const IMG = { plaza: 'plaza_disc', deck: DECK, base: 'event_base', skyDusk: 'sky_dusk', skyNight: 'sky_night' };
+  const IMG = { deck: DECK, base: 'event_base', skyDusk: 'sky_dusk', skyNight: 'sky_night' };
   const ROAD_W = 22, CURB_W = 4.2, RAIL_W = 7, PLAZA_D = 50, BASE_D = 46;
   const imgP = (src) => new Promise((res) => { const im = new root.Image(); im.decoding = 'async'; im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
   function load() {
@@ -153,16 +153,44 @@
   }
   function edge(g, P, off) { g.beginPath(); P.forEach((p, i) => { const q = P[Math.min(i + 1, P.length - 1)], r0 = P[Math.max(i - 1, 0)], dx = q[0] - r0[0], dy = q[1] - r0[1], L = Math.hypot(dx, dy) || 1, x = p[0] - dy / L * off, y = p[1] + dx / L * off; i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.stroke(); }
   const KEY_IDS = ['START', 'GOAL', 'RIVAL', 'Q', 'CHALLENGE', 'STATUE', 'RANDOM_DEN', 'L_CHEST', 'R_CHEST', 'L_ALTAR', 'L_LATE_ALTAR', 'REWARD5', 'R_SPECIAL'];
-  /** 分かれ目・合流・行き止まりの広場（C4_ROAD_03_CENTER_BLEND＝ふちが地面へなじむ石畳の円）と、固定の出来事の地点のイベントの台座（C4_UI_01 v3_ALPHA） */
+  /** 分かれ目・合流・行き止まりの広場と、固定の出来事の地点のイベントの台座（C4_UI_01 v3_ALPHA）。
+   *  2026-10-20 道路美術 P0（IMG_6009「舗装の外周に白いぼかし線・土と汚く混ざる・縁石が無い」）：広場の絵 C4_ROAD_03_CENTER_BLEND は、
+   *  ふちが地面へなじむように明るい灰色のけば立った輪郭で描かれた絵＝盤の上で白いぼかしに見えていた → 使わない（ファイルは残す）。
+   *  広場は道と同じ石畳（C4_ROAD_01）の円＋道と同じ縁石（STD_C4_ROAD_02）を円に沿って並べ、道の入口だけ縁石を開く（道の左右の縁石へつながる）。
+   *  半径は最大 21。隣のマスが近い分かれ道は、隣のマスにかからない半径まで小さくする（最小 16＝道の縁石の外 15.2 より少し広い） */
+  const PLAZA_RMAX = 21, PLAZA_RMIN = 16;
   function plazas(g, D, art, H) {
-    const S = art.volc || {}, pz = S.img && S.img.plaza, eb = S.img && S.img.base, out = {}, inn = {};
-    for (const e of D.edges) if (e[3] === 'forward') { out[e[0]] = (out[e[0]] || 0) + 1; inn[e[1]] = (inn[e[1]] || 0) + 1; }
+    const S = art.volc || {}, eb = S.img && S.img.base, out = {}, inn = {}, nb = {};
+    for (const e of D.edges) { (nb[e[0]] = nb[e[0]] || new Set()).add(e[1]); (nb[e[1]] = nb[e[1]] || new Set()).add(e[0]); if (e[3] === 'forward') { out[e[0]] = (out[e[0]] || 0) + 1; inn[e[1]] = (inn[e[1]] || 0) + 1; } }
+    const isHub = (id) => { const n = D.nodes[id]; return !!n && ((out[id] || 0) > 1 || (inn[id] || 0) > 1 || /dead_end/.test(n[2]) || n[2] === 'start'); };   // 2026-10-20：START も広場
+    const dirs = {}; for (const [, s] of Object.entries(D.segments)) { const ids = s[3]; if (!ids || ids.length < 2) continue; const P = H.curvePts(ids.map((id) => D.nodes[id])), at = (k) => P[Math.min(P.length - 1, Math.max(0, k))];
+      (dirs[ids[0]] = dirs[ids[0]] || []).push(Math.atan2(at(3)[1] - P[0][1], at(3)[0] - P[0][0])); const z = P[P.length - 1], y = at(P.length - 4); (dirs[ids[ids.length - 1]] = dirs[ids[ids.length - 1]] || []).push(Math.atan2(y[1] - z[1], y[0] - z[0])); }
+    const rp = tp(g, H, S, 'road'), cl = S.strip && S.strip.curbL;
     for (const [id, n] of Object.entries(D.nodes)) {
-      const hub = (out[id] || 0) > 1 || (inn[id] || 0) > 1 || /dead_end/.test(n[2]) || n[2] === 'start';   // 2026-10-20：START も広場（開始の広場 → 道）
-      if (hub) { if (pz) { const s = PLAZA_D, k = pz.height / pz.width; g.drawImage(pz, n[0] - s / 2, n[1] - (s * k) / 2, s, s * k); } else { g.fillStyle = '#4a4440'; g.beginPath(); g.arc(n[0], n[1], PLAZA_D / 2.4, 0, 7); g.fill(); } }
+      if (isHub(id)) {
+        let r = PLAZA_RMAX;
+        for (const k of nb[id] || []) { const q = D.nodes[k], d = Math.hypot(q[0] - n[0], q[1] - n[1]); r = Math.min(r, isHub(k) ? d / 2 - 1 : d - 7.5); }
+        disc(g, n[0], n[1], Math.max(PLAZA_RMIN, r), dirs[id] || [], rp, cl);
+      }
       if (eb && KEY_IDS.includes(id) && id !== 'START' && id !== 'GOAL') { const s = BASE_D, k = eb.height / eb.width; g.drawImage(eb, n[0] - s / 2, n[1] - (s * k) / 2, s, s * k); }
     }
   }
+  /** 円の広場：地面への影 → 道と同じ石畳の床 → 縁石（道の縁石の絵の短い切れ端を円に沿って並べる・道の入口は開く） */
+  function disc(g, x, y, r, dirs, rp, curb) {
+    g.save(); g.translate(0, 3); g.fillStyle = 'rgba(10,4,4,.34)'; g.beginPath(); g.arc(x, y, r + 2, 0, 7); g.fill(); g.restore();
+    g.fillStyle = rp || '#4a4440'; g.beginPath(); g.arc(x, y, r - CURB_W * 0.5, 0, 7); g.fill();
+    if (!curb) { g.strokeStyle = 'rgba(30,22,20,.7)'; g.lineWidth = 1.4; g.beginPath(); g.arc(x, y, r, 0, 7); g.stroke(); return; }
+    const rm = r - CURB_W / 2, gap = Math.asin(Math.min(0.98, (ROAD_W / 2 + 0.4) / rm)), ppu = curb.height / CURB_W;
+    const blocked = (a) => dirs.some((d) => Math.abs(((a - d) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI) < gap);
+    const N = Math.max(16, Math.ceil(Math.PI * 2 * rm / 2.2)), L = Math.PI * 2 * rm / N;
+    for (let i = 0; i < N; i++) {
+      const a = (i + 0.5) / N * Math.PI * 2; if (blocked(a)) continue;
+      const sw = Math.max(1, L * ppu), sx = (i * sw) % Math.max(1, curb.width - sw - 1);
+      g.save(); g.translate(x + Math.cos(a) * rm, y + Math.sin(a) * rm); g.rotate(a + Math.PI / 2);
+      g.drawImage(curb, sx, 0, sw, curb.height, -L / 2 - 0.3, -CURB_W / 2, L + 0.6, CURB_W); g.restore();
+    }
+  }
+
   function apron(el, base, m) {   // 世界の外も同じ火山の地面
     Object.assign(el.style, { backgroundImage: `linear-gradient(rgba(20,10,14,.35),rgba(20,10,14,.35)),url(${U(TEX.ground[0])})`, backgroundSize: `auto,${TEX.ground[1]}px ${TEX.ground[1]}px`, backgroundPosition: `0 0,${m % TEX.ground[1]}px ${m % TEX.ground[1]}px` });
   }

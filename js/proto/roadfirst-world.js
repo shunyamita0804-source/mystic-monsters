@@ -1099,10 +1099,19 @@
         const x = n[0] + cx * d * k, y = n[1] + cy * d * k; if (nearRoad(x, y, 16)) continue; const sc = -Math.abs(Math.acos(dot) - 0.87) - (k - 1) * 0.6; if (!best || sc > best.sc) best = { sc, v: [cx * d * k, cy * d * k] }; }
       return best && best.v;
     };
+    // 2026-10-20 道路美術 P0（cmp3_ch4A_J0「看板が分岐の横に置かれ、どの道の標識か判別しづらい」）：道しるべは分かれ道に入る前＝入ってくる道（3 地点前からの向き）の
+    //  右の路肩（道の縁石の外）の、分かれ道の広場の少し手前に立てる（進む先の分かれ道の標識に見える・道・マス・モンスターにかからない）。右に置けないときは左、どちらも無理なら従来の斜め前
+    const approach = (id, n) => {
+      let back = id; for (let j = 0; j < 3; j++) { const e = D.edges.find((x) => x[1] === back && x[3] === 'forward'); if (!e) break; back = e[0]; }
+      if (back === id) return null; const pv = D.nodes[back], ix = n[0] - pv[0], iy = n[1] - pv[1], il = Math.hypot(ix, iy) || 1, ux = ix / il, uy = iy / il;
+      const lat = (o.postLat || 18), bk = (o.postBack || 24);
+      for (const sg of [1, -1]) { const x = n[0] - ux * bk - uy * lat * sg, y = n[1] - uy * bk + ux * lat * sg; if (!nearRoad(x, y, lat - 3)) return [x - n[0], y - n[1]]; }
+      return null;
+    };
     const out = [];
     for (const [id, n] of Object.entries(D.nodes)) {
       const role = n[2];
-      const put = (file, w, d, cls) => { const s = (cls === 'rfw-bpost' && ahead(id, n, d)) || side(n, d); if (s) out.push({ node: id, file, x: Math.round(n[0] + s[0]), y: Math.round(n[1] + s[1]), w, z: 4, cls }); };
+      const put = (file, w, d, cls) => { const s = (cls === 'rfw-bpost' && (approach(id, n) || ahead(id, n, d))) || side(n, d); if (s) out.push({ node: id, file, x: Math.round(n[0] + s[0]), y: Math.round(n[1] + s[1]), w, z: 4, cls }); };
       if (B.post && FORK_FREE.includes(role)) put(B.post, B.postW || 15, 30, 'rfw-bpost');
       if (B.junction && FORK_ALL.includes(role)) put(B.junction, B.junctionW || 18, 40, 'rfw-bmark');
       if (B.merge && MERGES.includes(role)) put(B.merge, B.mergeW || 18, 40, 'rfw-bmark');

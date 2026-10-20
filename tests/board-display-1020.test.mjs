@@ -89,8 +89,10 @@ test('BD-03：Chapter 3 の門の幅と位置・Chapter 2 の港の門の足も�
   assert.match(rd('tools/ch3/build_ch3_routes.py'), /'node': 'START', 'file': SKY \+ 'C3_ARCH_white_bridge_arch_pier\.webp', 'w': 46, 'along': 20/);
   assert.ok(existsSync(path.join(ROOT, 'assets/fields/ch2/art_1020/harbor_start_gate_open_foot.webp')));
   const cw = rd('js/proto/ch2-world.js');
-  assert.ok(!/harbor_start_gate_open\.webp'/.test(cw), 'START・C の S01_02 の門は足もとの影つき');
-  assert.equal((cw.match(/harbor_start_gate_open_foot\.webp'/g) || []).length, 2);
+  // 2026-10-20 道路美術 P0：折り返しの派生（art_1019・art_1020）は使わない＝正式の原画 harbor_start_gate をそのまま START の広場の左脇（道の外）に置く（A／B／C 同じ）
+  assert.ok(!/art_10(19|20)\/harbor_start_gate/.test(cw.replace(/^\s*\/\/.*$/gm, '')), '派生の門を読まない（コメントを除く）');
+  assert.match(cw, /START: \['harbor_start_gate', 52, 4, null, null, -42, 'S01_01', -30\]/);
+  assert.ok(!/S01_02: \[/.test(cw), 'C の S01_02 の門は外した');
   // 斜路（螺旋塔の上り坂・潮の塔の下り坂）の板は円の広場の中に敷かない。広場の一覧のキャッシュ（海面の道だけ）は斜路から作らない＝海底の分かれ目を海面の広場にしない
   assert.match(cw, /const inPl = \(q\) => Math\.abs\(q\[2\]\) < 1\.5 && PLs\.some/);
   assert.ok(!/plazaList\(D, Object\.entries\(D\.segments\)/.test(cw), '斜路は plazaList（キャッシュ）を呼ばない');
@@ -99,4 +101,30 @@ test('BD-03：Chapter 3 の門の幅と位置・Chapter 2 の港の門の足も�
   const rw = rd('js/proto/roadfirst-world.js');
   assert.match(rw, /if \(!past && mr && c\.s >= 1 && q\.y > mr\[3\] \+ 4\)/);
   assert.match(rw, /ow \* oh > \(mr\[2\] - mr\[0\]\) \* \(mr\[3\] - mr\[1\]\) \* 0\.3/);
+});
+
+test('BD-04：Chapter 4 の円の広場（ぼかしの絵を使わない・縁石の円）・表示の配置・道しるべは分かれ道の手前の路肩', () => {
+  const v = rd('js/proto/ch4-world.js');
+  assert.ok(!/plaza_disc/.test(v.replace(/^\s*\/\/.*$/gm, '').replace(/\/\*\*[\s\S]*?\*\//g, '')), 'C4_ROAD_03_CENTER_BLEND（ふちが白くぼける絵）を読まない');
+  assert.match(v, /const PLAZA_RMAX = 21, PLAZA_RMIN = 16;/);
+  assert.match(v, /function disc\(g, x, y, r, dirs, rp, curb\)/);
+  assert.match(rd('js/chapter/world-driver-ch4.js'), /const DISP_OPT = \{ clear: 30, gap: 13, minD: 12 \};/);
+  const w = load(['js/proto/ch4-routes.js', 'js/proto/board-display.js']), X = w.MMRF_DISP;
+  for (const r of ['A', 'B', 'C']) {
+    const D0 = w.MMRF_CH4[r], D = X.clearPlazas(D0, { clear: 30, gap: 13, minD: 12 });
+    assert.deepEqual(Object.keys(D.nodes), Object.keys(D0.nodes)); assert.equal(D.edges, D0.edges);
+    const P = X.plazaIds(D), nb = {}; for (const e of D.edges) { (nb[e[0]] = nb[e[0]] || new Set()).add(e[1]); (nb[e[1]] = nb[e[1]] || new Set()).add(e[0]); }
+    let i0 = 0, i1 = 0; for (const h of P) for (const n of nb[h]) { if (P.has(n)) continue; if (dist(D0.nodes[n], D0.nodes[h]) < 25 + 6.5) i0++; if (dist(D.nodes[n], D.nodes[h]) < 21 + 6.5) i1++; }
+    assert.ok(i1 * 1.5 < i0, `${r}：広場の中の隣のマス ${i0} → ${i1}`);
+  }
+  assert.match(rd('js/proto/roadfirst-world.js'), /const put = \(file, w, d, cls\) => \{ const s = \(cls === 'rfw-bpost' && \(approach\(id, n\) \|\| ahead\(id, n, d\)\)\) \|\| side\(n, d\);/);
+});
+
+test('BD-05：Chapter 3 の道（描画で作る白亜の帯）の縁石に側面（厚み）と金の線・Chapter 2 の広場の床は道の床と向きをそろえる', () => {
+  const a = rd('js/qa/road-art-1017.js');
+  assert.match(a, /const W = g\.canvas\.width, side = Math\.round\(h \* 0\.3\), top = h - side;/);
+  assert.match(a, /const t = Math\.round\(224 \+/);
+  const c = rd('js/proto/ch2-world.js');
+  assert.match(c, /fp\.setTransform\(new root\.DOMMatrix\(\)\.translate\(o\[0\], o\[1\]\)\.rotate\(th0 \* 180 \/ Math\.PI\)/);
+  assert.ok(!/const ao = g\.createRadialGradient\(x, y, r \* 0\.55, x, y, r - th\)/.test(c), '広場の床のふちの放射の陰はやめた');
 });

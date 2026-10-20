@@ -224,13 +224,23 @@
       QA.meshStrip(g, ring, kerb, th, bx);
     }
     if (floor) for (const P of pts) QA.meshStrip(g, P, floor, wF, bx);   // 2回目：道の床（重なった道・広場の入口の縁石を覆う）
-    const fl = r01Floor(strip), fp = fl ? g.createPattern(fl, 'repeat') : null;
+    const fl = r01Floor(strip), fp = fl ? g.createPattern(fl, 'repeat') : null, IW = floor ? floor.width : 0;
     if (fp && fp.setTransform && root.DOMMatrix) fp.setTransform(new root.DOMMatrix().scale(1 / ppu));
+    // 2026-10-20 道路美術 P0（IMG_6006「奥の道と手前の広場が同じ道路に見えない」）：広場の床の模様は世界の縦横に固定だった＝道の床と石の向きが直角にずれ、入口に円弧の継ぎ目が出ていた。
+    //  広場から出る道（無ければ入る道）の床と、模様の向き・始まりの位置（meshStrip と同じ測り方の道のりの位置）をそろえる＝その道の入口では目地がそのままつながる
+    const plen = (P) => { let acc = 0, L = 0, prev = P[0]; for (let i = 1; i < P.length; i++) { acc += Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]); if (acc >= 2 || i === P.length - 1) { L += Math.hypot(P[i][0] - prev[0], P[i][1] - prev[1]); prev = P[i]; acc = 0; } } return L; };
+    const align = (P) => {
+      if (!fp || !fp.setTransform || !root.DOMMatrix || !floor) return;
+      let k = segs.findIndex(([, sg]) => sg[3][0] === P.id), end = false; if (k < 0) { k = segs.findIndex(([, sg]) => sg[3][sg[3].length - 1] === P.id); end = k >= 0; }
+      const Q = k >= 0 ? pts[k] : null; if (!Q || Q.length < 2) { fp.setTransform(new root.DOMMatrix().scale(1 / ppu)); return; }
+      const a = end ? Q[Math.max(0, Q.length - 4)] : Q[0], b = end ? Q[Q.length - 1] : Q[Math.min(3, Q.length - 1)], th0 = Math.atan2(b[1] - a[1], b[0] - a[0]);
+      const u = end ? (plen(Q) * ppu) % IW : 0, o = end ? Q[Q.length - 1] : Q[0];
+      fp.setTransform(new root.DOMMatrix().translate(o[0], o[1]).rotate(th0 * 180 / Math.PI).translate(-u / ppu, -wF / 2).scale(1 / ppu));
+    };
     for (const P of PL) {   // 広場の床（道の床より上＝中心の1マスのまわりは広場の石畳）
-      if (!vis(P)) continue; const { x, y, r } = P;
+      if (!vis(P)) continue; const { x, y, r } = P; align(P);
       g.fillStyle = fp || fill || '#e6e1d4'; g.beginPath(); g.arc(x, y, r - th, 0, 7); g.fill();
-      const ao = g.createRadialGradient(x, y, r * 0.55, x, y, r - th); ao.addColorStop(0, 'rgba(40,46,56,0)'); ao.addColorStop(1, 'rgba(40,46,56,.16)');
-      g.fillStyle = ao; g.beginPath(); g.arc(x, y, r - th, 0, 7); g.fill();
+      //  2026-10-20 道路美術 P0：床のふちを暗くする放射の陰はやめた（道の入口で道の床との境に円弧の継ぎ目が見え、広場の中心が白く浮いて見えた）
     }
   }
   function edgeLine(g, P, off) { g.beginPath(); P.forEach((p, i) => { const q = P[Math.min(i + 1, P.length - 1)], r0 = P[Math.max(i - 1, 0)], dx = q[0] - r0[0], dy = q[1] - r0[1], L = Math.hypot(dx, dy) || 1, x = p[0] - dy / L * off, y = p[1] + dx / L * off; i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.stroke(); }
@@ -260,18 +270,19 @@
   //   前後（z＝8番目）は 0＝門の地面の位置で決める（旧 −30＝いつもマスより奥＝門の先のマスが柱の手前に重なり、柱が宙に浮いて見えた）
   //  2026-10-20 追加指示（「切り貼り感・狭さ」）：柱の下端が植え込みを切った所で水平に切れていて、足もとが地面から浮いて見えた＝柱の足もとにやわらかい接地の影を足した派生
   //   art_1020/harbor_start_gate_open_foot（門の画素は同じ・絵の下へ透明の余白 44px と影だけ足す＝足もとの位置 0.92 は同じ）。左右対称の折り返しの絵であることは変わらない＝正式な正面向きの全体の絵が要る（docs/fullplay_1020/REPORT.md）
+  //  2026-10-20 道路美術 P0（IMG_6006「門が切り貼りのよう・柱の足もとが不自然」・指示「左右反転合成や切り欠きの目立つ派生は正式合格ではない・正式門の原画は描き換えない」）：
+  //   折り返しの派生（art_1019・art_1020）は使わない（ファイルは残す）。正式の原画 harbor_start_gate（斜め向き・右に小屋）をそのまま、START の広場の左脇（道の外）に置く。
+  //   道をまたぐ門は、正面向き・左右対称の全体の原画が届いてから（docs/fullplay_1020/REPORT_ROADART.md の必要素材）。A／B／C とも同じ（C の S01_02 の門は外した）
   const JT = 'sea_junction_tower', EDGE_PROPS = ['coral_shoal_edge', 'white_coastal_cliff_edge', 'undersea_cliff_edge'];
   const LM_BASE = {
-    START: ['./assets/fields/ch2/art_1020/harbor_start_gate_open_foot.webp', 72, 27, null, null, 0, 'S01_01', 0], LOWER_GATE: ['undersea_descent_gate', 40, 6], RIVAL: ['rival_pass_gate', 34, 10], Q: ['glass_corridor_arch', 50, 4],
+    START: ['harbor_start_gate', 52, 4, null, null, -42, 'S01_01', -30], LOWER_GATE: ['undersea_descent_gate', 40, 6], RIVAL: ['rival_pass_gate', 34, 10], Q: ['glass_corridor_arch', 50, 4],
     STATUE: ['L07_winged_sea_god_statue', 30, 0, [-34, -20]], RANDOM_DEN: ['L11_sunken_ship_den_closed', 44, 20, null, 'L11_sunken_ship_den_open'],
     REWARD5: ['coastal_rock_shells', 40, 20], R_SPECIAL: ['L10_coral_treasure_landmark', 34, 20],
   };
   const LM_ROUTE = {
     A: { CHALLENGE: ['L09_western_sealed_sea_gate', 48, 14], L_CHEST: ['coastal_lighthouse', 30, 20], R_CHEST: ['L04_shell_shrine', 32, 20], L_ALTAR: ['L05_temple_island_altar', 50, 20], L_LATE_ALTAR: ['L08_western_white_tower', 34, 20], UPPER_GATE: ['undersea_ascent_gate', 36, 4] },
     B: { CHALLENGE: ['U03_sunken_temple_gate', 38, 14], L_CHEST: ['coastal_lighthouse', 30, 20], R_CHEST: ['L05_temple_island_altar', 50, 20], L_ALTAR: ['L08_western_white_tower', 34, 20], L_LATE_ALTAR: ['U05_sealed_chamber_altar', 40, 20] },
-    // 2026-10-20：C の START は分かれ道（港の大通り S01・岸壁 S01B が狭い角度で出る）＝START の出口に門を置くと柱が岸壁の道にかかる。
-    //  大通りが岸壁の道から約 50 単位離れる S01_02 の 11 単位先に、少し細い門（幅 68・アーチの口 28＝縁石の外のふち 27 より広い）
-    C: { START: null, S01_02: ['./assets/fields/ch2/art_1020/harbor_start_gate_open_foot.webp', 68, 11, null, null, 0, null, 0], CHALLENGE: ['U03_sunken_temple_gate', 38, 14], L_CHEST: ['L04_shell_shrine', 32, 20], R_CHEST: ['undersea_treasure_vault', 32, 20], L_ALTAR: ['trial_monolith', 40, 20], L_LATE_ALTAR: ['U05_sealed_chamber_altar', 40, 20] },
+    C: { CHALLENGE: ['U03_sunken_temple_gate', 38, 14], L_CHEST: ['L04_shell_shrine', 32, 20], R_CHEST: ['undersea_treasure_vault', 32, 20], L_ALTAR: ['trial_monolith', 40, 20], L_LATE_ALTAR: ['U05_sealed_chamber_altar', 40, 20] },
   };
   const ALL_LM = [...new Set([...Object.values(LM_BASE), ...Object.values(LM_ROUTE).flatMap(Object.values)].filter(Boolean).flatMap((v) => [v[0], v[4]].filter(Boolean)).concat(['ocean_arena', 'R05_spiral_tower_door', 'R05_spiral_tower_beacon', 'arena_approach_gate', 'L01_harbor_town_cluster', 'chapter2_sea_medallion', 'sea_zone_nameplate', JT, ...EDGE_PROPS]))];
   const LM_CACHE = new WeakMap();

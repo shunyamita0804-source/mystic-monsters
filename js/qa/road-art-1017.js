@@ -42,22 +42,29 @@
     for (let row = 0, y = y0; y < y0 + H; row++, y += sh) {
       const off = row % 2 ? sw / 2 : 0;
       for (let x = x0 - off; x < x0 + W; x += sw) {
-        const t = Math.round(236 + (r() - 0.5) * 14), cool = Math.round((r() - 0.5) * 6);
+        const t = Math.round(224 + (r() - 0.5) * 16), cool = Math.round((r() - 0.5) * 6);   // 2026-10-20 道路美術 P0：236 → 224（白い雲・明るい草地の上で石板が溶けて見えた）
         g.fillStyle = `rgb(${t},${t - 4 + cool},${t - 14})`; g.fillRect(x, y, sw, sh);
         g.fillStyle = 'rgba(255,255,255,.32)'; g.fillRect(x + 2, y + 2, sw - 4, 2);
         g.strokeStyle = 'rgba(176,164,138,.35)'; g.lineWidth = 1; g.beginPath(); const vx = x + r() * sw; g.moveTo(vx, y + 3); g.quadraticCurveTo(vx + (r() - 0.5) * sw * 0.6, y + sh / 2, vx + (r() - 0.5) * sw * 0.4, y + sh - 3); g.stroke();   // 大理石の筋
-        g.strokeStyle = 'rgba(138,124,96,.62)'; g.lineWidth = 2; g.strokeRect(x + 1, y + 1, sw - 2, sh - 2);
+        g.strokeStyle = 'rgba(118,104,78,.72)'; g.lineWidth = 2; g.strokeRect(x + 1, y + 1, sw - 2, sh - 2);
         // 横の端をまたぐ石は反対側にも同じ石を描く（周期の端で目地がそろう）
         if (x < x0) { g.save(); g.translate(W, 0); g.fillStyle = `rgb(${t},${t - 4 + cool},${t - 14})`; g.fillRect(x, y, sw, sh); g.fillStyle = 'rgba(255,255,255,.32)'; g.fillRect(x + 2, y + 2, sw - 4, 2); g.strokeStyle = 'rgba(138,124,96,.62)'; g.lineWidth = 2; g.strokeRect(x + 1, y + 1, sw - 2, sh - 2); g.restore(); }
       }
     }
   }
-  function curb(g, y, h, down) {   // 縁石：白い石の段＋内側の金の線＋外側の陰
-    const gr = g.createLinearGradient(0, y, 0, y + h); gr.addColorStop(0, down ? '#ddd3bd' : '#c9bea4'); gr.addColorStop(1, down ? '#c9bea4' : '#ddd3bd');
-    g.fillStyle = gr; g.fillRect(0, y, g.canvas.width, h);
-    for (let x = 0; x < g.canvas.width; x += 64) { g.fillStyle = 'rgba(120,104,76,.5)'; g.fillRect(x, y, 2, h); }
-    const gy = down ? y + 3 : y + h - 7; g.fillStyle = '#c9a24a'; g.fillRect(0, gy, g.canvas.width, 4); g.fillStyle = 'rgba(255,236,170,.75)'; g.fillRect(0, gy, g.canvas.width, 1);
-    g.fillStyle = 'rgba(90,76,52,.55)'; g.fillRect(0, down ? y + h - 3 : y, g.canvas.width, 3);
+  /** 縁石：2026-10-20 道路美術 P0（IMG_6008「天空の道がぼやけた白い帯・薄い板に見える・縁石と厚みが無い」）。外側から順に
+   *  側面（厚み＝暗い石の面）→ 縁石の天端（白い石・外へ向かって少し暗く）→ 金の線 → 内側の陰（縁石の足もと）。down＝帯の下側の縁石（外側が下） */
+  function curb(g, y, h, down) {
+    const W = g.canvas.width, side = Math.round(h * 0.3), top = h - side;
+    const yS = down ? y + top : y, yT = down ? y : y + side;   // 側面・天端の位置
+    const gs = g.createLinearGradient(0, yS, 0, yS + side); gs.addColorStop(0, down ? '#8f846e' : '#5f5646'); gs.addColorStop(1, down ? '#5f5646' : '#8f846e');
+    g.fillStyle = gs; g.fillRect(0, yS, W, side);
+    const gt = g.createLinearGradient(0, yT, 0, yT + top); gt.addColorStop(0, down ? '#e9e2cf' : '#b7ab90'); gt.addColorStop(1, down ? '#b7ab90' : '#e9e2cf');
+    g.fillStyle = gt; g.fillRect(0, yT, W, top);
+    for (let x = 0; x < W; x += 64) { g.fillStyle = 'rgba(96,82,58,.6)'; g.fillRect(x, y, 2, h); }   // 縁石の継ぎ目（側面まで通す）
+    g.fillStyle = 'rgba(40,34,24,.55)'; g.fillRect(0, down ? yS : yS + side - 2, W, 2);   // 側面と天端の境の陰（角）
+    const gy = down ? yT + 4 : yT + top - 8; g.fillStyle = '#b8902f'; g.fillRect(0, gy, W, 4); g.fillStyle = 'rgba(255,232,160,.8)'; g.fillRect(0, down ? gy : gy + 3, W, 1);   // 金の線
+    g.fillStyle = 'rgba(70,58,36,.45)'; g.fillRect(0, down ? y - 4 : y + h, W, 4);   // 縁石の足もと（石板の上の陰）
   }
   const GEN = {
     sky_road: () => { const c = root.document.createElement('canvas'); c.width = c.height = 512; const g = c.getContext('2d'); slabs(g, 0, 0, 512, 512, 128, 64, 1019); c._ppu = 512 / 57.5; return c; },
