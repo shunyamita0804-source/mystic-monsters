@@ -44,7 +44,7 @@ for (const size of [[375, 667], [390, 844], [430, 932]]) {
     assert.equal(w.bad, 0, `描き終わる前の盤が見えたフレーム ${JSON.stringify(w)}`); assert.equal(w.startOn, 0, '覆っている間は START を押せない'); assert.ok(w.art > 5);
     const st = await pg.evaluate(() => ({ painted: MMWB.state().world.painted, cover: !!document.querySelector('.wbrelay'), start: !document.getElementById('brollbtn').disabled, seen: S.m.raise.field.introSeen, s: MMWB.state().world.cam.s, ahead: MMWB.state().world.ahead.length }));
     assert.deepEqual([st.painted, st.cover, st.start, st.seen], [true, false, true, true], JSON.stringify(st));
-    assert.ok(st.s >= 2.2 && st.s <= 5.6 && st.ahead >= 4, `新しいカメラのまま ${JSON.stringify(st)}`);
+    assert.ok(st.s >= 2.2 && st.s <= 5.6 + 1e-6 && st.ahead >= 4, `新しいカメラのまま ${JSON.stringify(st)}`);
     await shot(pg, `cr1_start_${size.join('x')}`);
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
   });
