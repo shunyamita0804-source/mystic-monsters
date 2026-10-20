@@ -3,7 +3,7 @@
 //  BD-01 Chapter 1（A＝原本 MMRF_DATA・B・C）・Chapter 3（A・B・C）の表示の配置（js/proto/board-display.js の MMRF_DISP.clearPlazas）：
 //        ID・種類・区間・接続は原本と同じ（同じものを共有）・原本の座標は書き換えない・円の広場の隣の地点は広場の中から出る（残るのは短い枝だけ）・道の中の間隔は 15（または原本の最小）より詰めない
 //  BD-02 本編の進行（MMWD・MMWD3 の dataOf）は表示の配置を返す・地点の ID と歩数（盤のつながり）は原本と同じ＝出来事の配置・サイコロの歩数・分岐・保存は変わらない
-//  BD-03 Chapter 3 の門：START は円の広場の出口（along 20）・アーチの口が道幅より広い幅（START・下の門 46）／Chapter 2 の港の門は足もとの影つきの派生（門の画素は元の派生と同じ）
+//  BD-03 Chapter 3 の門：START は円の広場の出口（along 20）・アーチの口が道幅より広い幅（START・下の門 46）／Chapter 2 の港の門は足もとの影つきの派生（門の画素は元の派生と同じ）・斜路の板は円の広場の中に敷かない
 // =========================================================
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -91,4 +91,12 @@ test('BD-03：Chapter 3 の門の幅と位置・Chapter 2 の港の門の足も�
   const cw = rd('js/proto/ch2-world.js');
   assert.ok(!/harbor_start_gate_open\.webp'/.test(cw), 'START・C の S01_02 の門は足もとの影つき');
   assert.equal((cw.match(/harbor_start_gate_open_foot\.webp'/g) || []).length, 2);
+  // 斜路（螺旋塔の上り坂・潮の塔の下り坂）の板は円の広場の中に敷かない。広場の一覧のキャッシュ（海面の道だけ）は斜路から作らない＝海底の分かれ目を海面の広場にしない
+  assert.match(cw, /const inPl = \(q\) => Math\.abs\(q\[2\]\) < 1\.5 && PLs\.some/);
+  assert.ok(!/plazaList\(D, Object\.entries\(D\.segments\)/.test(cw), '斜路は plazaList（キャッシュ）を呼ばない');
+  // 分かれ目の塔は入ってくる向き（3 地点前から）の前 65° 以内だけ・通り過ぎた建物（足もとがモンスターより手前でモンスターの 30% 以上に重なる）は消す
+  assert.match(cw, /\(cx \* ix \+ cy \* iy\) \/ il < 0\.42\) continue;/);
+  const rw = rd('js/proto/roadfirst-world.js');
+  assert.match(rw, /if \(!past && mr && c\.s >= 1 && q\.y > mr\[3\] \+ 4\)/);
+  assert.match(rw, /ow \* oh > \(mr\[2\] - mr\[0\]\) \* \(mr\[3\] - mr\[1\]\) \* 0\.3/);
 });

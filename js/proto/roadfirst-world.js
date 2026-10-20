@@ -416,6 +416,10 @@
         if (o.xray) xr.push([q.x - w / 2, q.y - w * 0.62, q.x + w / 2, q.y + w * 0.14, q.y, w * w * 0.76]);
         if (S.sea3d) { const oc = S.sea3d.occl(c, n[0], n[1], hOf(id), q); if (oc !== !!t.oc) { t.oc = oc; t.el.classList.toggle('occl', oc); } }   // 2026-10-15：塔のうしろのマスは薄く
       }
+      // 2026-10-20 追加指示（Chapter 2 B の J0：START の門の柱がすぐ先の分かれ道のモンスターを隠していた）：モンスターの画面上の足もとと幅（下の S.mon と同じ式）
+      let mr = null;
+      if (S.mon) { const q = project(c, S.mon[0], S.mon[1], S.mon[2]), w = o.monRatio > 0 ? Math.max(c.s < 1 ? 14 : 30, Math.max(c.s < 1 ? 2 : o.tilePx[0], Math.min(o.tilePx[1], o.tileW * c.s * q.k)) * o.monRatio) : Math.max(c.s < 1 ? 14 : 40, Math.min(100, 24 * c.s * q.k));
+        mr = [q.x - w / 2, q.y - w * (S.monAh || 0.92), q.x + w / 2, q.y]; }
       for (const p of props) {
         if (p.at) { const xy = p.at(c); p.x = xy[0]; p.y = xy[1]; }
         const q = project(c, p.x, p.y, p.h), w = Math.min(p.max || 1e9, Math.max(p.min || 0, p.w * c.s * q.k));
@@ -425,7 +429,10 @@
         if (!p.base) propBase(p);
         p.el.style.transform = `translate(${(q.x - w / 2).toFixed(1)}px,${(q.y - w * (p.ah || 0.92)).toFixed(1)}px) scale(${(w / p.base).toFixed(4)})`;
         // 2026-10-20：建物（門・塔など・会場は除く）の足もとが盤の見える所（操作欄の上まで）の下より手前＝もう通り過ぎてカメラのすぐ前にある建物は消す（手前で大きく映って道・マスをふさいでいた）
-        if (p.arch && !p.solid) { const past = q.y > (v && v.bottom != null ? v.bottom : Hd) + 6; if (past !== !!p.past) { p.past = past; p.el.classList.toggle('past', past); } }
+        //  2026-10-20 追加指示：足もとがモンスターより手前（画面の下）で、モンスターの 30% 以上に重なる建物も消す（もう通り過ぎた門の柱がモンスターを隠さない。半透明にはしない）
+        if (p.arch && !p.solid) { let past = q.y > (v && v.bottom != null ? v.bottom : Hd) + 6;
+          if (!past && mr && c.s >= 1 && q.y > mr[3] + 4) { const x0 = q.x - w / 2, y0 = q.y - w * (p.ah || 0.92), ow = Math.min(q.x + w / 2, mr[2]) - Math.max(x0, mr[0]), oh = Math.min(q.y, mr[3]) - Math.max(y0, mr[1]); past = ow > 0 && oh > 0 && ow * oh > (mr[2] - mr[0]) * (mr[3] - mr[1]) * 0.3; }
+          if (past !== !!p.past) { p.past = past; p.el.classList.toggle('past', past); } }
         if (p.zi == null) { p.zi = propZ(p); p.el.style.zIndex = String(p.zi); }   // 2026-10-13 開発27（26）：半透明にしない大会会場は GOAL のマスより奥（マスを隠さない）。順は世界の y で1回だけ
         if (o.xray && !p.mark && !p.solid && !p.arch) {   // 手前の景物がマス・モンスターを隠す＝その景物だけ半透明（重なった面積がマス・モンスターの 22% 以上）
           const pz = Math.round(q.y) + (p.z || 0), x0 = q.x - w / 2, x1 = q.x + w / 2, y0 = q.y - w * (p.ah || 0.92), y1 = q.y;

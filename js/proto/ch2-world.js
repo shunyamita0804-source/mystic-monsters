@@ -284,8 +284,11 @@
       if (!/free_fork/.test(n[2]) || taken.has(id)) continue;
       const fw = D.edges.filter((e) => e[0] === id && e[3] === 'forward'); if (fw.length < 2 || fw.some((e) => !isSurface(zoneOf(D, e[2])))) continue;
       // 2026-10-20：入ってくる道の向き（カメラはその後ろから見る）より前（奥）の向きだけ＝手前に立ってマスやモンスターを隠さない
-      const ie = D.edges.find((e) => e[1] === id && e[3] === 'forward'), pv = ie ? D.nodes[ie[0]] : null, ix = pv ? n[0] - pv[0] : 0, iy = pv ? n[1] - pv[1] : -1, il = Math.hypot(ix, iy) || 1;
-      let best = null; for (let k = 0; k < 16; k++) { const a = (k / 16) * Math.PI * 2, cx = Math.cos(a), cy = Math.sin(a); if ((cx * ix + cy * iy) / il < -0.1) continue;
+      //  2026-10-20 追加指示（Chapter 2 B の J0：塔がモンスターの手前に立って隠していた）：入ってくる向きは 3 地点前から（すぐ前の地点だけでは曲がりの途中の向きになる）・
+      //  前の向きから 65° 以内（旧：直角より少し後ろまで許していた＝カメラの手前に立つことがあった）
+      let back = id; for (let j = 0; j < 3; j++) { const e = D.edges.find((x) => x[1] === back && x[3] === 'forward'); if (!e) break; back = e[0]; }
+      const pv = back !== id ? D.nodes[back] : null, ix = pv ? n[0] - pv[0] : 0, iy = pv ? n[1] - pv[1] : -1, il = Math.hypot(ix, iy) || 1;
+      let best = null; for (let k = 0; k < 16; k++) { const a = (k / 16) * Math.PI * 2, cx = Math.cos(a), cy = Math.sin(a); if ((cx * ix + cy * iy) / il < 0.42) continue;
         const x = n[0] + cx * 38, y = n[1] + cy * 38, d = far(x, y); if (!best || d > best.d) best = { d, off: [x - n[0], y - n[1]] }; }
       if (!best) continue;
       // 2026-10-19 P0（iPhone 試遊：道の集まる広場の真ん中に塔が立っていた）：道から塔の半分の幅＋道の半分（約 26 単位）離せる所が無ければ立てない
@@ -491,9 +494,18 @@
     }
     // 斜路（潮の塔の下り坂・螺旋塔の上り坂）：高さの変わる石の道（細かい板を並べる）＋その下の壁
     const walk = S.strip && S.strip.walk, stripUrl = walk ? (walk.currentSrc || walk.src) : art.strip ? (art.strip.currentSrc || art.strip.src) : null, RW = 18;   // 2026-10-16 正式：斜路の道＝白い橋帯 R01
+    const rOut = {}, rIn = {}; for (const e of D.edges) if (e[3] === 'forward') { rOut[e[0]] = (rOut[e[0]] || 0) + 1; rIn[e[1]] = (rIn[e[1]] || 0) + 1; }
     for (const [sid, s] of Object.entries(D.segments)) {
       if (!/descent|ascent/.test(zoneOf(D, sid))) continue;
-      const P0 = curve3(D, s[3]), P = P0.filter((q, i) => i % 2 === 0 || i === P0.length - 1); let cum = 0;   // 約 8 単位ごとの板
+      // 2026-10-20 追加指示（12ルートの接合）：斜路の板は円の広場の中（地面の高さのまま）には敷かない＝広場の床の上に細い石の帯が重なって見えていた（Chapter 2 A の H＝螺旋塔の上り口）。
+      //  広場の半径（縁石の外のふち）の所で板を切る（高さが 1.5 単位を超えた所からは切らない）
+      //  広場の一覧（plazaList）は海面の道だけで作ってキャッシュしている＝ここでは呼ばない（海底の分かれ目まで広場として海面に描かれてしまう）。斜路の両端が広場になる地点かだけを見る
+      const PLs = [s[3][0], s[3][s[3].length - 1]].filter((id) => { const n = D.nodes[id]; return (rOut[id] || 0) > 1 || (rIn[id] || 0) > 1 || /dead_end/.test(n[2]) || n[2] === 'start'; })
+        .map((id) => ({ id, x: D.nodes[id][0], y: D.nodes[id][1], r: /dead_end/.test(D.nodes[id][2]) ? ROAD_W * 0.78 : PLAZA_R }));
+      const inPl = (q) => Math.abs(q[2]) < 1.5 && PLs.some((p) => Math.hypot(q[0] - p.x, q[1] - p.y) < p.r);
+      let P1 = curve3(D, s[3]);
+      for (const rev of [false, true]) { if (rev) P1.reverse(); let k = 0; while (k < P1.length - 1 && inPl(P1[k])) k++; if (k > 0) { const a = P1[k - 1], b = P1[k]; let lo = 0, hi = 1; for (let it = 0; it < 12; it++) { const m = (lo + hi) / 2, q = a.map((v, j) => v + (b[j] - v) * m); if (inPl(q)) lo = m; else hi = m; } P1 = [a.map((v, j) => v + (b[j] - v) * hi)].concat(P1.slice(k)); } if (rev) P1.reverse(); }
+      const P0 = P1, P = P0.filter((q, i) => i % 2 === 0 || i === P0.length - 1); let cum = 0;   // 約 8 単位ごとの板
       for (let i = 0; i < P.length - 1; i++) {
         const a = P[i], b = P[i + 1], dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2], Lxy = Math.hypot(dx, dy), L = Math.hypot(Lxy, dz); if (L < 0.2) continue;
         const U = [dx / L, dy / L, dz / L], side = [-dy / Lxy, dx / Lxy, 0];
