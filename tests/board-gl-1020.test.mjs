@@ -24,7 +24,7 @@ test('GL-01：board-gl.js を roadfirst-world.js の前に読む・従来の描�
   assert.match(w, /const GLK = o\.art && o\.gl !== false && root\.MMGL && root\.MMGL\.supported\(doc\) \? glKitOf\(D, o, SEA, art\) : null;/);
   assert.match(w, /if \(!GL\) for \(let y = 0; y < H; y \+= o\.chunk\)/, 'WebGL の盤は区画の canvas（CSS 3D の層）を作らない');
   assert.match(w, /const HI = QR && !GL \? QR\.hiLayer\(/, '近くの層（CSS 3D）も作らない');
-  assert.match(w, /if \(!GL\) plane\.style\.transform = planeTf\(c\);[^\n]*\n\s+if \(GL\) GL\.draw\(c\);/);
+  assert.match(w, /plane\.style\.transform = planeTf\(c\);[^\n]*\n\s+if \(GL\) GL\.draw\(c\);/);
 });
 
 test('GL-02：カメラの式は project と同じ・深さは一次式', () => {

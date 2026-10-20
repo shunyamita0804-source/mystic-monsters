@@ -427,7 +427,7 @@
       if (sig === S.sig && !S.dirty) return; S.sig = sig; S.dirty = false;
       // 平面：注視点を原点に移して → 倍率 → 傾き → 画面の位置へ（project と同じ式。perspective-origin＝注視点の画面位置）
       wrapPersp(c.P, c.ax, c.ay);
-      if (!GL) plane.style.transform = planeTf(c);   // WebGL の盤は平面（CSS 3D）を使わない（Chapter 2 の海底・塔も WebGL）
+      plane.style.transform = planeTf(c);   // WebGL の盤では平面は空（地面・道・海底・塔は WebGL）。寄りの動き（Web Animations）と同じ姿を保つ＝確認用の測り方は従来どおり
       if (GL) GL.draw(c);
       const v = S.view, Wd = v ? v.W : 400, Hd = v ? v.H : 800, xr = [];
       if (o.xray && S.mon) { const q = project(c, S.mon[0], S.mon[1], S.mon[2]), w = o.monRatio > 0 ? Math.max(c.s < 1 ? 14 : 30, Math.max(c.s < 1 ? 2 : o.tilePx[0], Math.min(o.tilePx[1], o.tileW * c.s * q.k)) * o.monRatio) : Math.max(c.s < 1 ? 14 : 40, Math.min(100, 24 * c.s * q.k)), h = w * (S.monAh || 0.92);
