@@ -585,6 +585,7 @@
   //  浅瀬・島の草地・会場の白石・波打ち際・盆地のふちの光は従来と同じ描画（地形の絵）。海面の道＝E04 の白い大理石の石畳＋青いモザイクの縁石・広場＝E04 の円の広場。
   //  海底（E03 の海底の砂＋従来の海底の道・遺跡・ふち・光の網の絵）・盆地の壁・斜路・塔・盆地の上の海面は 3D の網（深さで前後を決める）
   const GL_SEA_ALPHA = BASIN_ALPHA;
+  const TUN = './assets/fields/ch2/tunnel_1020/';   // 2026-10-20 第5便：ガラスのトンネル（F01）
   function surfaceLines(D, H) { return H.roadChains(D, Object.entries(D.segments).filter(([sid]) => isSurface(zoneOf(D, sid)))).map((c) => ({ ids: c.ids, P: H.roadPts(D, c.ids, 16) })); }
   function glKit(D, o, art, H) {
     const T = (k, repeat) => ({ src: H.GL_DIR + 'ch2_' + k + '.webp', repeat }), L = surfaceLines(D, H), mine = new Set(L.flatMap((l) => [l.ids[0], l.ids[l.ids.length - 1]]));
@@ -592,7 +593,10 @@
     R.hubs = R.hubs.filter((id) => mine.has(id)); R.ends = R.ends.filter((id) => mine.has(id));   // 海面の道の広場だけ（海底の分かれ目は海底の絵の中）
     return {
       textures: { land: T('ground', true), road: T('road', true), curb: T('curb', 'u'), plaza: T('plaza', false), seabed: T('seabed', true),
-        basinWall: { src: WALL.basin, repeat: true }, rampWall: { src: WALL.ramp, repeat: true }, towerWall: { src: WALL.tower, repeat: true } },
+        basinWall: { src: WALL.basin, repeat: true }, rampWall: { src: WALL.ramp, repeat: true }, towerWall: { src: WALL.tower, repeat: true },
+        //  2026-10-20 第5便（F01・F02）：海底の道（ガラス回廊の床・沈んだ神殿の道）と縁石・海底の広場・ガラスのトンネル（面と骨組み）
+        glassFloor: T('glass_floor', true), glassCurb: T('glass_curb', 'u'), sunkenRoad: T('sunken_road', true), sunkenCurb: T('sunken_curb', 'u'), sunkenPlaza: T('sunken_plaza', false),
+        tunnelGlass: { src: TUN + 'glass_panel.webp', repeat: true }, tunnelRib: { src: TUN + 'rib_front.webp', repeat: false } },
       macro: { k: 0.4 }, depth: true, hole: true,
       ground: { tex: 'sea', tile: TEX.sea[1], layers: [{ tex: 'land', tile: 64 }] },
       features: (g, bx) => featuresGL(g, D, bx, art, H),
@@ -631,6 +635,52 @@
   }
   /** 網の頂点（board-gl の mesh）：x, y, h, u, v, 色（乗算済み・不透明） */
   function V(out, x, y, h, u, v, k, t) { const c = t || [1, 1, 1]; out.push(x, y, h, u, v, c[0] * k, c[1] * k, c[2] * k, 1); return out.length / 9 - 1; }
+  /** 2026-10-20 第5便（iPhone 試遊「海底の透明な屋根が小さすぎ・浮いて見える」「海底の道のクオリティが低い」・F01／F02）：海底の道を WebGL の帯で
+   *  （ガラス回廊＝ガラスの床＋白い大理石の縁石・沈んだ神殿の道＝古い石畳＋苔むした縁石・分かれ目＝沈んだ神殿の円の広場）。
+   *  ガラス回廊の上には、道に沿ったガラスのトンネル（足は海底の床・壁の高さ 13・天井 26 単位＝モンスターがくぐれる大きさ。面＝F01 のガラス）と、
+   *  道に直角に立つ骨組みのアーチ（F01・約 46 単位ごと）。分かれ目の円の中・回廊の入口の門の所（両端の 4 単位）にはトンネルを掛けない。旧：屋根の帯の絵を道の上に平らに貼っていた */
+  function undersea(G, D, H, dep, under) {
+    const z0 = -dep + 0.35, at = G.at, rOut = {}, rIn = {};
+    for (const e of D.edges) if (e[3] === 'forward' && zoneOf(D, e[2]) === 'undersea') { rOut[e[0]] = (rOut[e[0]] || 0) + 1; rIn[e[1]] = (rIn[e[1]] || 0) + 1; }
+    const hubR = CURB_W * 0.62, isHub = (id) => (rOut[id] || 0) > 1 || (rIn[id] || 0) > 1 || /dead_end/.test(D.nodes[id][2] || '');
+    const chains = (ok) => H.roadChains(D, under.filter(([sid]) => ok(sid))).map((c) => ({ ids: c.ids, P: H.roadPts(D, c.ids, 18) }));
+    const glass = chains((sid) => isGlass(D, sid)), temple = chains((sid) => !isGlass(D, sid));
+    const ribbon = (P, o0, o1, z, uLen, tex, k) => { const v = [], ix = []; let s = 0;
+      for (let i = 0; i < P.length; i++) { const a = P[Math.max(0, i - 1)], b = P[Math.min(P.length - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1, nx = -dy / L, ny = dx / L;
+        if (i) s += Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]);
+        V(v, P[i][0] + nx * o0, P[i][1] + ny * o0, z, s / uLen, 0, k || 1); V(v, P[i][0] + nx * o1, P[i][1] + ny * o1, z, s / uLen, 1, k || 1);
+        if (i) { const q = i * 2; ix.push(q - 2, q - 1, q + 1, q - 2, q + 1, q); } }
+      if (ix.length) G.add({ kind: 'mesh', verts: v, idx: ix, tex, phase: 'pre' }); };
+    //  道の床（ガラスの床・古い石畳）：1単位 約 45px（2048px の絵 1 枚＝45 単位）。縁石：幅 2.6 単位・絵の縦横比の長さ
+    const CW = 2.6;
+    for (const { P } of glass) { ribbon(P, -GLASS_W / 2, GLASS_W / 2, z0, 45, 'glassFloor', 0.92); for (const sg of [-1, 1]) ribbon(P, sg * GLASS_W / 2, sg * (GLASS_W / 2 + CW), z0 + 0.05, CW * 17, 'glassCurb', 0.9); }
+    for (const { P } of temple) { ribbon(P, -ROAD_W / 2, ROAD_W / 2, z0, 45, 'sunkenRoad', 0.86); for (const sg of [-1, 1]) ribbon(P, sg * ROAD_W / 2, sg * (ROAD_W / 2 + CW), z0 + 0.05, CW * 19, 'sunkenCurb', 0.86); }
+    //  分かれ目・行き止まりの円（沈んだ神殿の広場）：道の上（少し高く）
+    const hubIds = [...new Set([...glass, ...temple].flatMap((c) => [c.ids[0], c.ids[c.ids.length - 1]]))].filter(isHub);
+    { const v = [], ix = []; for (const id of hubIds) { const q = at(id) || D.nodes[id], r = hubR + 2.4, b = v.length / 9;
+        for (const [x, y, u, w] of [[-1, -1, 0, 0], [1, -1, 1, 0], [1, 1, 1, 1], [-1, 1, 0, 1]]) V(v, q[0] + x * r, q[1] + y * r, z0 + 0.12, u, w, 0.9); ix.push(b, b + 1, b + 2, b, b + 2, b + 3); }
+      if (ix.length) G.add({ kind: 'mesh', verts: v, idx: ix, tex: 'sunkenPlaza', phase: 'pre' }); }
+    //  ガラスのトンネル（壁と天井の網）と骨組み
+    const R = GLASS_W / 2 + CW + 1.4, HW = 13, HT = 26, ring = [];
+    ring.push([-R, 0], [-R, HW]); for (let k = 1; k < 12; k++) { const t = Math.PI - (k / 12) * Math.PI; ring.push([R * Math.cos(t), HW + (HT - HW) * Math.sin(t)]); } ring.push([R, HW], [R, 0]);
+    const rv = [0]; for (let k = 1; k < ring.length; k++) rv.push(rv[k - 1] + Math.hypot(ring[k][0] - ring[k - 1][0], ring[k][1] - ring[k - 1][1]));
+    const RIB_W = 2 * R / 0.874, RIB_H = HT / 0.875, tv = [], ti = [], bv = [], bi = [];
+    for (const c of glass) {
+      const P0 = c.P, cum = [0]; for (let i = 1; i < P0.length; i++) cum.push(cum[i - 1] + Math.hypot(P0[i][0] - P0[i - 1][0], P0[i][1] - P0[i - 1][1]));
+      const Ls = cum[cum.length - 1], e0 = isHub(c.ids[0]) ? hubR + 3 : 4, e1 = isHub(c.ids[c.ids.length - 1]) ? hubR + 3 : 4; if (Ls - e0 - e1 < 12) continue;
+      const ptAt = (sv) => { let i = 0; while (i < P0.length - 2 && cum[i + 1] < sv) i++; const u = (sv - cum[i]) / Math.max(1e-9, cum[i + 1] - cum[i]), a = P0[i], b = P0[i + 1], L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+        return { x: a[0] + (b[0] - a[0]) * u, y: a[1] + (b[1] - a[1]) * u, nx: -(b[1] - a[1]) / L, ny: (b[0] - a[0]) / L }; };
+      const N = Math.max(2, Math.ceil((Ls - e0 - e1) / 4)), base = tv.length / 9;
+      for (let j = 0; j <= N; j++) { const sv = e0 + (Ls - e0 - e1) * j / N, p = ptAt(sv);
+        ring.forEach(([lx, lz], k) => { const lit = 0.78 + 0.22 * (lz / HT); V(tv, p.x + p.nx * lx, p.y + p.ny * lx, z0 + lz, sv / 40, rv[k] / 20, lit, [0.9, 0.97, 1]); }); }
+      const RN = ring.length; for (let j = 0; j < N; j++) for (let k = 0; k < RN - 1; k++) { const a = base + j * RN + k, b = a + RN; ti.push(a, b, b + 1, a, b + 1, a + 1); }
+      for (let sv = e0 + 6; sv <= Ls - e1 - 2; sv += 46) { const p = ptAt(sv), b = bv.length / 9;
+        for (const [lx, lz, u, w] of [[-RIB_W / 2, 0, 0, 1], [RIB_W / 2, 0, 1, 1], [RIB_W / 2, RIB_H, 1, 0], [-RIB_W / 2, RIB_H, 0, 0]]) V(bv, p.x + p.nx * lx, p.y + p.ny * lx, z0 + lz, u, w, 1);
+        bi.push(b, b + 1, b + 2, b, b + 2, b + 3); }
+    }
+    if (bi.length) G.add({ kind: 'mesh', verts: bv, idx: bi, tex: 'tunnelRib', phase: 'pre', name: 'tunnelRib' });
+    if (ti.length) G.add({ kind: 'mesh', verts: tv, idx: ti, tex: 'tunnelGlass', phase: 'post', name: 'tunnel', alpha: 1.5 });   // ガラスの絵の濃さ 32% × 1.5 ≈ 48%
+  }
   function build3dGL(ctx) {
     const { doc, plane, D, art, gl: G } = ctx, H = ctx.H, A = D.art, dep = A.depth || 36, B = basinOf(D), S = art.sea || {};
     css(doc);
@@ -652,7 +702,9 @@
     const glassL = chainL((sid) => isGlass(D, sid)), templeL = chainL((sid) => !isGlass(D, sid));
     const gp = tp(g, H, S, 'glass'), tr = tp(g, H, S, 'temple'), roof = S.strip && S.strip.roof;
     g.lineCap = g.lineJoin = 'round';
-    if (gp || tr) {
+    //  2026-10-20 第5便（iPhone 試遊「海底の道のクオリティが低い」）：海底の道・縁石・分かれ目の円は WebGL の帯と板（F02 の 2048px の絵・下の undersea）。海底の絵には道の影だけ
+    if (G.at) { g.strokeStyle = 'rgba(10,30,36,.28)'; g.lineWidth = GLASS_W + 10; for (const P of [...glassL, ...templeL]) { pathOf(g, P); g.stroke(); } }
+    else if (gp || tr) {
       g.strokeStyle = 'rgba(10,30,36,.28)'; g.lineWidth = GLASS_W + 10; for (const P of [...glassL, ...templeL]) { pathOf(g, P); g.stroke(); }
       g.strokeStyle = 'rgb(150,160,150)'; g.lineWidth = CURB_W; for (const P of templeL) { pathOf(g, P); g.stroke(); }
       g.strokeStyle = tr || '#b9b09a'; g.lineWidth = ROAD_W; for (const P of templeL) { pathOf(g, P); g.stroke(); }
@@ -720,6 +772,7 @@
       const cv2 = []; for (const [x, y, u, w] of [[-1, -1, 0, 0], [1, -1, 1, 0], [1, 1, 1, 1], [-1, 1, 0, 1]]) V(cv2, t.c[0] + x * t.r, t.c[1] + y * t.r, top + 0.2, u, w, 1);
       G.add({ kind: 'mesh', verts: cv2.map((x, i) => (i % 9 === 8 ? x : x)), idx: [0, 1, 2, 0, 2, 3], tex: 'cap' + ti, phase: 'post' });
     });
+    if (G.at) undersea(G, D, H, dep, under);
     // 盆地の上の海面（高さ 0.3）：モンスターが海面にいる間は濃く・海底へ潜ると薄く（旧 rfs-water と同じ濃さ）
     { const wr = 1.2, wv = doc.createElement('canvas'); wv.width = Math.ceil(bw * wr); wv.height = Math.ceil(bh * wr); const w2 = wv.getContext('2d'); w2.setTransform(wr, 0, 0, wr, -bx0 * wr, -by0 * wr);
       w2.save(); polyPath(w2, B); w2.clip(); { const sp = tp(w2, H, S, 'sea'); w2.fillStyle = sp || '#2d8fc4'; w2.fillRect(bx0, by0, bw, bh); } w2.restore();
@@ -760,6 +813,6 @@
     const L = (ok, r) => H.roadChains(D, Object.entries(D.segments).filter(([sid]) => ok(sid))).map((c) => ({ ids: c.ids, P: H.roadPts(D, c.ids, r) }));
     return [...L((sid) => isSurface(zoneOf(D, sid)), 16), ...L((sid) => zoneOf(D, sid) === 'undersea' && isGlass(D, sid), 18), ...L((sid) => zoneOf(D, sid) === 'undersea' && !isGlass(D, sid), 18)];
   }
-  const api = { FILES, A2, TEX, STRIPS, PLAZA, WALL, FX, LM_BASE, LM_ROUTE, ALL_LM, load, warm, ground, roads, lines, glKit, scatter, apron, build3d, curve3, m3, lm, goal, isGlass };
+  const api = { roadW: CURB_W, FILES, A2, TEX, STRIPS, PLAZA, WALL, FX, LM_BASE, LM_ROUTE, ALL_LM, load, warm, ground, roads, lines, glKit, scatter, apron, build3d, curve3, m3, lm, goal, isGlass };
   if (typeof module === 'object' && module.exports) module.exports = api; else root.MMRF_SEA = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -207,10 +207,11 @@
     if (ph === 'branch') {
       const f = fieldOf(m), d = D(m);
       const bs = branchSkin(m);
-      return `<div class="chsheet chbr wbbr" data-ch="${chOf(m)}"${bs.board ? ` data-bskin="1" style="--wbbr-board:url(${esc(bs.board)})"` : ''}><h3>分かれ道</h3>${WD(m).branchOptions(m).map((o) => {
+      return `<div class="chsheet chbr wbbr" data-ch="${chOf(m)}"${bs.board ? ` data-bskin="1" style="--wbbr-board:url(${esc(bs.board)})"` : ''}><h3>分かれ道</h3>${WD(m).branchOptions(m).map((o, i) => {
         const end = o.seg && d.segments[o.seg] ? d.segments[o.seg][1] : null, got = o.spur && end && f.claimed[end] != null;
         const desc = o.spur ? (got ? '取得済み（行き止まり。帰りもサイコロ）' : '行き止まりの先に宝。帰りもサイコロで戻る') : laneDesc(d, o.seg);
-        return `<button class="chroute${o.spur ? ' spur' : ''}" data-id="${esc(o.id)}" onclick="MMWB.pick('${esc(o.id)}')"><b>${esc(o.name)}</b>${desc ? `<small>${esc(desc)}</small>` : ''}</button>`; }).join('')}</div>`;
+        //  2026-10-20 第5便：道の上の矢印と同じ色の印（F05）。印の中の矢印は、画面で見た矢印の向き（forkTick が回す）
+        return `<button class="chroute${o.spur ? ' spur' : ''} fk" data-id="${esc(o.id)}" onclick="MMWB.pick('${esc(o.id)}')"><i class="wbfk" style="--fk:url(${FORK}badge_${FORK_C[i % 3]}.webp)" aria-hidden="true"><i></i></i><b>${esc(o.name)}</b>${desc ? `<small>${esc(desc)}</small>` : ''}</button>`; }).join('')}</div>`;
     }
     if (ph === 'battle') {
       // 2026-10-14 実機試遊⑩：遭遇はすべて自動の強制バトル＝「バトルする」の確認ボタンは出さない（演出 → 短い光 → VS → バトル）。
@@ -257,6 +258,10 @@
 .wbw .wbmsg .chmsg{flex:1;min-width:0;padding:0;text-align:left;font-size:12.5px;line-height:1.4;-webkit-line-clamp:2}
 #app>.chfw.wbw:has(.chbat) .wbmsg{visibility:hidden}
 .wbw .wbbr .chroute.spur{border-style:dashed}
+/* 2026-10-20 第5便：道の矢印と同じ色の印（F05 の輪）＋輪の中の白い矢印（画面で見た道の矢印の向き） */
+.wbw .wbbr .chroute.fk{position:relative;padding-left:52px;padding-right:52px}
+.wbw .wbbr .wbfk{position:absolute;left:9px;top:50%;width:38px;height:38px;margin-top:-19px;background:var(--fk) center/contain no-repeat;filter:drop-shadow(0 1px 2px rgba(0,0,0,.55))}
+.wbw .wbbr .wbfk>i{position:absolute;inset:9px;background:#fff;clip-path:polygon(50% 2%,98% 52%,66% 52%,66% 98%,34% 98%,34% 52%,2% 52%);transition:transform .15s linear}
 .wbw .wb-pop{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);width:min(86%,330px);box-sizing:border-box;padding:12px 14px;border-radius:16px;background:linear-gradient(180deg,rgba(20,36,82,.97),rgba(8,18,46,.97));border:1.5px solid #d9b465;color:#fff;text-align:center;box-shadow:0 8px 22px rgba(0,0,0,.5);pointer-events:auto;animation:wbpop .26s ease-out both;z-index:8}
 .wbw .wb-pop.out{animation:wbpopout .2s ease-in forwards}
 .wbw .wbcard-dim{position:absolute;inset:0;z-index:9;background:rgba(4,10,28,.58);animation:wbcfade .22s ease-out both;pointer-events:auto}
@@ -382,20 +387,47 @@ html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100
 .wbw .wbx-nm{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:3px}
 .wbw .wbx-nm b{font:700 20px/1.25 "Shippori Mincho",serif;letter-spacing:.06em}
 .wbw .wbx-nm em{font:700 11.5px/1 "Noto Sans JP",sans-serif;font-style:normal;padding:3px 8px;border-radius:99px;color:#fff3c8;background:linear-gradient(180deg,#8a3ccf,#5a1e98);border:1px solid #e3c06a}
-.wbw .wbx-r{background:#05060f}
-.wbw .wbx-rbg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;animation:wbxrbg .35s ease-out both;transition:opacity .4s,transform .9s ease-out}
-.wbw .wbx-r.p2 .wbx-rbg{opacity:.42;transform:scale(1.08)}
-.wbw .wbx-rstage{position:absolute;left:50%;bottom:calc(var(--chdeck,150px) + 70px);width:min(92vw,380px);height:min(64dvh,520px);transform:translateX(-50%);opacity:0;transition:opacity .35s}
+/* 2026-10-20 第5便：レアの遭遇（全画面の風景・レアの光・カードの枠＝F06）。相手の足＝画面の約 62%（風景の空き地）・カードは画面の下 */
+.wbw .wbx-rare{background:#0b0f1e;pointer-events:auto;overflow:hidden;transition:opacity .26s}.wbw .wbx-rare.out{opacity:0}
+.wbw .wbx-rabg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%;animation:wbxrabg 1.2s ease-out both}
+@keyframes wbxrabg{0%{opacity:0;transform:scale(1.08)}30%{opacity:1}100%{transform:scale(1)}}
+.wbw .wbx-rflash{position:absolute;inset:0;z-index:3;pointer-events:none;background:radial-gradient(circle at 50% 50%,#fff,rgba(255,240,255,.7) 45%,rgba(230,200,255,.2));animation:wbxrflash .55s ease-out forwards}
+@keyframes wbxrflash{0%{opacity:0}25%{opacity:.95}100%{opacity:0}}
+.wbw .wbx-rastage{position:absolute;left:50%;top:62%;width:min(82vw,360px);height:min(38dvh,330px);transform:translate(-50%,-100%)}
+.wbw .wbx-raaura{position:absolute;left:50%;top:58%;width:170%;height:auto;aspect-ratio:1;translate:-50% -50%;opacity:0;animation:wbxraaura 1s .25s ease-out forwards,wbxraspin 18s linear 1.2s infinite}
+@keyframes wbxraaura{0%{opacity:0;scale:.4}50%{opacity:1}100%{opacity:.85;scale:1}}@keyframes wbxraspin{to{rotate:360deg}}
+.wbw .wbx-rare .wbx-mon{bottom:0;height:100%;animation:wbxmon .6s .3s cubic-bezier(.2,.8,.3,1) both}
+.wbw .wbx-rastage.fl .wbx-mon{transform:translateX(-50%) scaleX(-1)}
+.wbw .wbx-racard{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + max(18px,4dvh));width:min(94vw,420px);aspect-ratio:1080/661;max-height:30dvh;transform:translateX(-50%);box-sizing:border-box;padding:7% 9% 6%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:url(./assets/chapter/rare_1020/rare_card_frame.webp) center/100% 100% no-repeat;color:#fff;text-align:center;opacity:0;animation:wbxracard .45s .55s cubic-bezier(.2,.8,.3,1) forwards}
+@keyframes wbxracard{from{opacity:0;translate:0 24px}to{opacity:1;translate:0 0}}
+.wbw .wbx-racard small{font:700 clamp(13px,3.8vw,15.5px)/1.4 "Noto Sans JP",sans-serif;color:#f3e2b0;letter-spacing:.04em}
+.wbw .wbx-racard .wbx-raln{display:block;width:72%;height:1px;background:linear-gradient(90deg,transparent,#e3c06a,transparent);margin:4px 0}
+.wbw .wbx-racard b{font:700 clamp(22px,6.6vw,28px)/1.25 "Shippori Mincho",serif;letter-spacing:.08em;text-shadow:0 2px 6px rgba(0,0,0,.6)}
+.wbw .wbx-racard b span{font:700 clamp(12px,3.5vw,14px)/1 "Noto Sans JP",sans-serif;letter-spacing:.06em;color:#e6d0ff;margin-left:2px}
+@media (max-height:700px){.wbw .wbx-rastage{top:60%;height:34dvh}.wbw .wbx-racard{width:min(88vw,380px)}}
+.wbw .wbx-r{background:#05060f;pointer-events:auto;--rfloor:75%}
+/* 2026-10-20 第5便（iPhone 試遊「リュウが上にいきすぎ・エフェクトが合わない」）：F04 の闘技場の床の背景（地平線＝画面の約 66%）の上に、リュウとレグナスを床に立たせる（足＝--rfloor）。
+ *  足もとに青白い風の光（F04 の光）・足の下に名札（F04 の名札の枠）と声の字幕・最後に青白い風の斬撃（F04・旧の赤と青の X は使わない） */
+.wbw .wbx-rbg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 62%;animation:wbxrbg .4s ease-out both}
+.wbw .wbx-raura{position:absolute;left:50%;top:var(--rfloor);width:min(150vw,640px);height:auto;translate:-50% -64%;opacity:0;scale:.5;pointer-events:none}
+.wbw .wbx-r.p2 .wbx-raura{animation:wbxraura .8s ease-out forwards}
+@keyframes wbxraura{0%{opacity:0;scale:.5}40%{opacity:1}100%{opacity:.9;scale:1}}
+.wbw .wbx-rstage{position:absolute;left:50%;top:var(--rfloor);width:min(96vw,400px);height:min(56dvh,470px);transform:translate(-50%,-100%);opacity:0;transition:opacity .35s}
 .wbw .wbx-r.p2 .wbx-rstage{opacity:1}
-.wbw .wbx-ryu{position:absolute;left:4%;bottom:0;height:100%;width:auto;max-width:62%;object-fit:contain;object-position:bottom;filter:drop-shadow(0 0 14px rgba(255,90,70,.45)) drop-shadow(0 10px 14px rgba(0,0,0,.6));translate:0 8%;transition:translate .6s cubic-bezier(.2,.8,.3,1)}
-.wbw .wbx-partner{position:absolute;right:0;bottom:6%;height:58%;width:auto;max-width:56%;object-fit:contain;object-position:bottom;filter:drop-shadow(0 0 12px rgba(120,190,255,.5));translate:10% 0;transition:translate .7s .1s cubic-bezier(.2,.8,.3,1)}
+.wbw .wbx-ryu{position:absolute;left:3%;bottom:0;height:100%;width:auto;max-width:60%;object-fit:contain;object-position:bottom;filter:drop-shadow(0 0 14px rgba(140,210,255,.45)) drop-shadow(0 10px 12px rgba(0,0,0,.55));translate:0 6%;transition:translate .6s cubic-bezier(.2,.8,.3,1)}
+.wbw .wbx-partner{position:absolute;right:0;bottom:0;height:56%;width:auto;max-width:56%;object-fit:contain;object-position:bottom;filter:drop-shadow(0 0 12px rgba(120,190,255,.5)) drop-shadow(0 8px 10px rgba(0,0,0,.5));translate:10% 0;transition:translate .7s .1s cubic-bezier(.2,.8,.3,1)}
 .wbw .wbx-r.p2 .wbx-ryu,.wbw .wbx-r.p2 .wbx-partner{translate:0 0}
-.wbw .wbx-card.r{opacity:0;animation:none;transition:opacity .3s .2s;border-color:#e0705a;box-shadow:inset 0 0 0 3px rgba(30,6,10,.95),inset 0 0 0 4px rgba(224,112,90,.55),0 8px 22px rgba(0,0,0,.5);background:linear-gradient(180deg,rgba(54,10,16,.96),rgba(26,6,12,.96))}
-.wbw .wbx-card.r small{letter-spacing:.42em;color:#ffc9a8}
+.wbw .wbx-card.r{top:calc(var(--rfloor) + 10px);bottom:auto;width:min(94vw,410px);aspect-ratio:1024/194;padding:0 16%;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;border:0;border-radius:0;box-shadow:none;background:url(./assets/chapter/rival_1020/rival_nameplate.webp) center/100% 100% no-repeat;opacity:0;animation:none;transition:opacity .3s .2s}
+.wbw .wbx-card.r small{letter-spacing:.42em;color:#bfe3ff;font-size:11.5px;line-height:1.2}
+.wbw .wbx-card.r .wbx-nm{margin-top:1px}.wbw .wbx-card.r .wbx-nm b{font-size:clamp(16px,4.9vw,20px);white-space:nowrap}
 .wbw .wbx-r.p2 .wbx-card.r{opacity:1}
-.wbw .wbx-clash{position:absolute;left:50%;top:44%;width:min(118vw,520px);transform:translate(-50%,-50%) scale(.55);opacity:0;pointer-events:none}
-.wbw .wbx-r.p3 .wbx-clash{animation:wbxclash .34s ease-out both}
+.wbw .wbx-rsub{position:absolute;left:50%;top:calc(var(--rfloor) + 10px + min(94vw,410px) * 194 / 1024 + 8px);transform:translateX(-50%);width:min(90vw,380px);box-sizing:border-box;padding:8px 14px 9px;border-radius:12px;background:rgba(6,12,32,.82);border:1px solid rgba(160,210,255,.45);color:#fff;font:700 14.5px/1.55 "Noto Sans JP",sans-serif;text-align:center;opacity:0;transition:opacity .2s}
+.wbw .wbx-rsub.on{opacity:1}.wbw .wbx-rsub b{display:block;font-size:11px;letter-spacing:.2em;color:#9fd2ff;line-height:1.3;margin-bottom:1px}
+.wbw .wbx-rslash{position:absolute;left:50%;top:44%;width:min(150vw,640px);height:auto;transform:translate(-50%,-50%);opacity:0;pointer-events:none}
+.wbw .wbx-r.p3 .wbx-rslash{animation:wbxrslash .42s ease-out both}
+@keyframes wbxrslash{0%{opacity:0;transform:translate(-80%,-30%) scale(.8)}30%{opacity:1}100%{opacity:0;transform:translate(-20%,-70%) scale(1.1)}}
 .wbw .wbx-r.p3 .wbx-rstage{animation:wbxshake .3s linear both}
+@media (max-height:700px){.wbw .wbx-r{--rfloor:72%}.wbw .wbx-rstage{height:52dvh}.wbw .wbx-rsub{font-size:13px;padding:6px 12px 7px}}
 .wbw .wbx-gold{position:absolute;inset:0;z-index:23;pointer-events:none;display:flex;align-items:center;justify-content:center;flex-direction:column;transition:opacity .22s}
 .wbw .wbx-gold.out,.wbw .wbx-hg.out{opacity:0}
 .wbw .wbx-gb{width:min(92vw,380px);height:auto;animation:wbxgb 1.1s cubic-bezier(.2,.8,.3,1) both}
@@ -454,7 +486,7 @@ html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100
     + (root.MMREACT ? Object.entries(root.MMREACT.MOTIONS).map(([k, v]) => `.wbv .rfw-mon.mrx-${k} .mon,.wbw .wbcard figure.mrx-${k} .mon{animation:mrx-${k} ${v.ms}ms cubic-bezier(.4,0,.3,1)}`).join('') : '');
     document.head.appendChild(s);
   }
-  function release() { sprStopNow(); if (V.intro || V.cover) busySet(false); if (V.cover) { V.cover.remove(); V.cover = null; } if (V.world) { try { V.world.destroy(); } catch (e) {} } V.world = null; V.el = null; V.key = null; V.intro = false; }
+  function release() { sprStopNow(); if (V.intro || V.cover) busySet(false); if (V.cover) { V.cover.remove(); V.cover = null; } if (V.world) { try { V.world.destroy(); } catch (e) {} } V.world = null; V.el = null; V.key = null; V.intro = false; V.fork = null; }
   function ensureView(m) {
     const f = fieldOf(m), W = WD(m), vis = W && W.visualOf ? W.visualOf(m) : 'A', rt = W && W.routeOf ? W.routeOf(m) : 'A', key = `${chOf(m)}:${m.uid}:${f.layoutSeed}:${vis}:${rt}`, app = $('#app');   // 2026-10-14 B／C：ルートも鍵に   // 2026-10-14 Chapter 1 B／C：景観のパターンも鍵に
     if (V.el && V.key === key) { if (!V.el.isConnected) { app.innerHTML = ''; app.appendChild(V.el); } return false; }
@@ -473,6 +505,26 @@ html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100
     const ph = P8().boardPhase(m);
     ui.innerHTML = ph === 'goal' ? '' : hudHtml(m) + sheetHtml(m, ph) + deckHtml(m, ph, msg);
     if (V.world) V.world.update(info(m, node, ex), instant);
+    forkMarks(m, ph);
+  }
+  // 2026-10-20 第5便（iPhone 試遊「分かれ道でどれを選ぶとどこへ行くか分かりにくい・矢印を出さない？」）：分かれ道の間だけ、各道の上に色の矢印（金・青・緑＝F05）と、
+  //  選択肢のボタンに同じ色の印。印の中の小さな矢印は、画面で見た道の矢印と同じ向き（カメラが回っても合わせる）。選んだら消す。道・判定・保存は変えない
+  const FORK = './assets/chapter/fork_1020/', FORK_C = Object.freeze(['gold', 'blue', 'green']);
+  function forkMarks(m, ph) {
+    const w = V.world; if (!w || !w.arrows) return;
+    if (ph !== 'branch' || !m.raise || !m.raise.node) { if (V.fork) { w.arrows(null); V.fork = null; } return; }
+    const opts = WD(m).branchOptions(m), key = m.raise.node + ':' + opts.map((o) => o.id).join(',');
+    if (!V.fork || V.fork.key !== key) V.fork = { key, list: w.arrows(m.raise.node, opts.map((o, i) => ({ to: o.id, src: FORK + 'arrow_' + FORK_C[i % 3] + '.webp' }))) };
+    forkTick();
+  }
+  function forkTick() {
+    const F = V.fork, w = V.world, ui = $('#wb-ui'); if (!F || !w || !ui || !ui.querySelector('.wbbr')) return;
+    for (const a of F.list) {
+      const r = a.ang * Math.PI / 180, dx = Math.sin(r) * a.len / 2, dy = -Math.cos(r) * a.len / 2, p = w.project(a.x - dx, a.y - dy, a.h), q = w.project(a.x + dx, a.y + dy, a.h);
+      const el = ui.querySelector(`.wbbr .chroute[data-id="${CSS.escape(a.to)}"] .wbfk>i`);
+      if (p && q && el) el.style.transform = `rotate(${(Math.atan2(q.x - p.x, -(q.y - p.y)) * 180 / Math.PI).toFixed(1)}deg)`;
+    }
+    if (!F.t) F.t = setTimeout(() => { F.t = 0; if (V.fork === F) forkTick(); }, 150);
   }
   function board(msg) {
     const S = gS(), m = S && S.m; if (!active(m)) return false;
@@ -935,6 +987,7 @@ html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100
     //  （VS の勝負絵は翼や光が四角い端で切れていて、影にすると四角い塊になる＝使わない）。待機立ち絵の無い種族は正式の 2.5D 立ち絵
     if (root.MMP10M && root.MMCH && root.MMCH.foeSpecies && typeof root.battleFoeCount === 'function') { const n = root.MMCH.foeSpecies(m, root.battleFoeCount()), sp = root.MMP10M.byId(n), A = root.MMARENA, idle = A && A.idleSrc ? A.idleSrc(n) : null; if (sp && sp.image) foe = { src: idle || sp.image.src, name: sp.name, sp: n, fl: !!(idle && A.flipOf && A.flipOf(1, n)) }; }
     const sil = bt === 'wild' && !!foe, rare = bt === 'rare';
+    if (rare && foe) return rareCut(ui, foe, cue);
     ui.insertAdjacentHTML('beforeend', `<div class="chf-enc chf-enc2 wbx wbx-w${rare ? ' rare' : ''}${sil ? ' sil' : ''}" role="status" aria-label="${esc(text)}"><i class="wbx-veil"></i>
       <div class="wbx-stage${foe && foe.fl ? ' fl' : ''}"><i class="wbx-glow"></i>${foe ? `<img class="wbx-mon" src="${esc(foe.src)}" alt="${sil ? '？？？' : esc(foe.name)}" draggable="false">` : ''}${sil ? `<i class="wbx-sil" aria-hidden="true" style="-webkit-mask-image:url('${esc(foe.src)}');mask-image:url('${esc(foe.src)}')"></i>` : ''}</div>
       <div class="wbx-card"><small>${esc(text)}</small><div class="wbx-nm"><b>${sil || !foe ? '？？？' : esc(foe.name)}</b>${rare ? '<em>★ レア</em>' : ''}</div></div></div>`);
@@ -942,6 +995,19 @@ html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100
     if (foe && foe.sp != null) monCry(foe.sp, 'normal', 800, () => !!(el && el.isConnected));   // 2026-10-17 D：野生・レアの相手の正式ボイス（遭遇の SE のあと・バトルに入る前）
     await wait(1650);
     if (el) { el.classList.add('out'); await wait(240); el.remove(); }
+  }
+  // 2026-10-20 第5便（ユーザー指示「レアモンはイベントみたいに特別感」・カードの文はユーザー決定）：Chapter ごとの全画面の風景（F06）にレアの光（F06）と相手の正式の立ち絵、
+  //  下にカードの枠（F06）＝上の行「野外で、特別なモンスターを見つけた！」・下の行「（名前）（レアモンスター）」だけ（★レア・Lv・調べる／逃げるは出さない）。タップで先へ
+  const RA = './assets/chapter/rare_1020/';
+  async function rareCut(ui, foe, cue) {
+    const ch = Math.min(4, Math.max(1, chOf() || 1));
+    ui.insertAdjacentHTML('beforeend', `<div class="chf-enc chf-enc2 wbx wbx-rare" role="status" aria-label="${esc(foe.name)}（レアモンスター）"><i class="wbx-rflash"></i><img class="wbx-rabg" src="${RA}rare_bg_ch${ch}.webp" alt="" draggable="false">
+      <div class="wbx-rastage${foe.fl ? ' fl' : ''}"><img class="wbx-raaura" src="${RA}rare_aura.webp" alt="" draggable="false"><img class="wbx-mon" src="${esc(foe.src)}" alt="${esc(foe.name)}" draggable="false"></div>
+      <div class="wbx-racard"><small>野外で、特別なモンスターを見つけた！</small><i class="wbx-raln" aria-hidden="true"></i><b>${esc(foe.name)}<span>（レアモンスター）</span></b></div></div>`);
+    const el = ui.querySelector('.wbx-rare:last-child'); feel(cue, { battleType: 'rare' });
+    if (foe.sp != null) monCry(foe.sp, 'normal', 900, () => !!(el && el.isConnected));   // 相手の正式ボイス（遭遇の SE のあと）
+    await new Promise((res) => { const t = setTimeout(res, 2600); if (el) el.addEventListener('click', () => { clearTimeout(t); res(); }, { once: true }); });
+    if (el) { el.classList.add('out'); await wait(260); el.remove(); }
   }
   /** ライバル（リュウ）：EV01 の「RIVAL」の幕 → 正式のリュウ（＋相棒のレグナス）→ 最後の約0.3秒に赤と青の X（EV06＝既存 bc05 の派生）を1回 */
   // 2026-10-18 夜間 B06：ライバルの遭遇＝リュウの正式ボイス（有料版 60本のうち未配置だった 005／006／008）を、声の書き起こし（VOICE_REGISTRY の line）どおりの字幕で。Chapter 1＝008「へぇ、ここまで来たんだ。…」→ 006「さあ、勝負だ！」・Chapter 2 以降＝005「お、来たな。」→ 006。
@@ -955,17 +1021,51 @@ html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100
     if (!lines.length) return;
     try { await root.MMNPC.talk(lines, { kind: 'event' }); } catch (e) { /* 会話が開けなくても進行は止めない */ }
   }
+  // 2026-10-20 第5便（ユーザー決定「1 は A」）：リュウの声は登場の幕の中＝姿が出た瞬間に1本目、続けて2本目。字幕は名札の下。フィナの一言はその後（land の流れ）。
+  //  旧（2026-10-18 B06）は「声のない幕 → フィナの一言 → リュウが声つきで話す」で、途中から声が入るのが不自然だった。タップで次へ（声も止める）。
+  //  自動テストの既定（MM_QA_NO_STORY／MM_QA_NO_NPC）では声と字幕を出さない（幕の長さは従来）。声が OFF・読めないときも字幕は出す（文の長さだけ待つ）
+  const RV = './assets/chapter/rival_1020/';
   async function rivalCut(ui, B, text, cue) {
-    try { const A = root.MMAUDIO; if (A && A.voiceWarm && !root.MM_QA_NO_STORY) A.voiceWarm(ryuGreetIds(chOf())); } catch (e) {}   // 幕の間に声を読んでおく
+    const talk = !root.MM_QA_NO_STORY && !root.MM_QA_NO_NPC, ids = ryuGreetIds(chOf()), A0 = root.MMAUDIO;
+    try { if (A0 && A0.voiceWarm && talk) A0.voiceWarm(ids); } catch (e) {}   // 幕の間に声を読んでおく
     const A = cfg().assets || {}, fig = B.encounterFigure ? A[B.encounterFigure] : null, part = B.encounterPartner ? A[B.encounterPartner] : null;
-    ui.insertAdjacentHTML('beforeend', `<div class="chf-enc chf-enc2 wbx wbx-r" role="status" aria-label="${esc(text)}"><img class="wbx-rbg" src="${esc(FXF.rivalBg)}" alt="" draggable="false">
+    ui.insertAdjacentHTML('beforeend', `<div class="chf-enc chf-enc2 wbx wbx-r" role="status" aria-label="${esc(text)}"><img class="wbx-rbg" src="${RV}rival_bg.webp" alt="" draggable="false">
+      <img class="wbx-raura" src="${RV}rival_aura.webp" alt="" draggable="false">
       <div class="wbx-rstage">${part ? `<img class="wbx-partner" src="${esc(part)}" alt="" draggable="false">` : ''}${fig ? `<img class="wbx-ryu" src="${esc(fig)}" alt="${esc(B.name || 'リュウ')}" draggable="false">` : ''}</div>
-      <div class="wbx-card r"><small>RIVAL</small><div class="wbx-nm"><b>${esc(text)}</b></div></div><img class="wbx-clash" src="${esc(FXF.clash)}" alt="" draggable="false"></div>`);
-    const el = ui.querySelector('.wbx-r:last-child');
-    await wait(900); if (el) el.classList.add('p2'); feel(cue, { battleType: 'rival' });   // 2026-10-13 開発27（19）：ライバルの登場の SE（RIVAL_APPEAR・従来の正式素材）は、リュウとレグナスが現れた瞬間に1回（旧：その前の幕の出始め）   /* 2026-10-13 開発27（20）：登場の「よっ！」（ryu.appear）は鳴らさない（不採用）。声のファイル・登録は残す */   // 2026-10-13 開発25 追加便：リュウの姿が出た瞬間に「よっ！」（遭遇1回に1回）
-    await wait(1250); if (el) el.classList.add('p3');      // X の衝突（0.32秒）
-    await wait(380);
+      <div class="wbx-card r"><small>RIVAL</small><div class="wbx-nm"><b>${esc(text)}</b></div></div><p class="wbx-rsub" aria-live="polite"></p><img class="wbx-rslash" src="${RV}rival_slash.webp" alt="" draggable="false"></div>`);
+    const el = ui.querySelector('.wbx-r:last-child'), sub = el && el.querySelector('.wbx-rsub');
+    let skip = null; if (el) el.addEventListener('click', () => { if (skip) skip(); });
+    const hold = (ms) => new Promise((res) => { const t = setTimeout(() => { skip = null; res(); }, ms); skip = () => { clearTimeout(t); skip = null; res(); }; });
+    await wait(650); if (el) el.classList.add('p2'); feel(cue, { battleType: 'rival' });   // 登場の SE（RIVAL_APPEAR）はリュウとレグナスが現れた瞬間に1回（2026-10-13 開発27（19））
+    V.ryuSaid = false;
+    if (talk && el && sub) {
+      await hold(450);
+      for (const id of ids) {
+        const line = (A0 && A0.voiceLine && A0.voiceLine(id)) || ''; if (!line || !el.isConnected) continue;
+        sub.innerHTML = `<b>リュウ</b>${esc(line)}`; sub.classList.add('on');
+        try { if (A0 && A0.voice) A0.voice(id, { maxWaitMs: 900, when: () => el.isConnected }); } catch (e) {}
+        await ryuLine(el, id, line); V.ryuSaid = true;
+        if (el.isConnected) await hold(220);
+      }
+      sub.classList.remove('on');
+    } else await hold(1250);
+    if (el) el.classList.add('p3');      // 風の斬撃（0.42秒）
+    await wait(420);
     if (el) { el.classList.add('out'); await wait(240); el.remove(); }
+  }
+  /** 声が鳴り終わるまで（鳴らないときは文の長さだけ）待つ。タップで先へ（声も止める） */
+  function ryuLine(el, id, line) {
+    const A = root.MMAUDIO, t0 = Date.now(), minMs = Math.max(1200, line.length * 95), max = 2200 + line.length * 210;
+    return new Promise((res) => {
+      let started = false, done = false; const end = () => { if (done) return; done = true; clearInterval(iv); el.removeEventListener('click', tap); res(); };
+      const tap = () => { try { if (A && A.stopVoice) A.stopVoice(60); } catch (e) {} end(); };
+      el.addEventListener('click', tap);
+      const iv = setInterval(() => {
+        const p = A && A.voicePlaying ? A.voicePlaying() : null, t = Date.now() - t0, me = !!(p && p.id === id);
+        if (me) started = true;
+        if (!el.isConnected || (started && !me) || (!started && t > 1000 && t >= minMs) || t > max) end();
+      }, 100);
+    });
   }
   // 2026-10-14 実機試遊④：宝箱を見つけたときのカットイン。宝箱の正式素材（assets/chests/）の用途が決まっているものだけ＝ふつう chest_01・特別（宝の行き止まり・隠れ家）chest_04。
   //  珍しい宝箱（rare）は対応表が無い＝宝箱の絵は出さない（光と中身だけ）。chest_02・03 は使わない。
@@ -1031,7 +1131,7 @@ html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100
   function fxPreload() {
     if (V.pre) return; V.pre = true;
     const go = () => {
-      for (const u of [FXF.rivalBg, FXF.clash, FXF.gold, FXF.hg[10], FXF.hg[5], FXF.hg[1]]) { const im = new root.Image(); im.decoding = 'async'; im.src = u; }
+      for (const u of [RV + 'rival_bg.webp', RV + 'rival_aura.webp', RV + 'rival_nameplate.webp', RV + 'rival_slash.webp', RA + 'rare_aura.webp', RA + 'rare_card_frame.webp', FXF.gold, FXF.hg[10], FXF.hg[5], FXF.hg[1]]) { const im = new root.Image(); im.decoding = 'async'; im.src = u; }
       // 2026-10-14 実機試遊⑨：盤で初めて鳴る音（遭遇・VS・宝箱・決着など）を先に読んでおく＝最初の1回が無音にならない
       try { if (root.MMAUDIO && root.MMAUDIO.prefetchSe) for (const n of PRE_SE) root.MMAUDIO.prefetchSe(n); } catch (e) {}
     };
@@ -1155,7 +1255,8 @@ html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100
       } else if (fx.kind === 'battle') { V.autoBt = battleGo = true; await encounter(m, fx.battleType); }   // 2026-10-14 実機試遊⑩：野生・レア・ライバルとも演出のあと案内のシートを出さずにそのままバトルへ（旧 2026-10-13 開発27（21）はライバルだけ）
       else if (fx.note === 'claimed') tail = `${fx.title || '宝'}はもう手に入れている。`;
       const told = await storyAt(m, 'land', { fx, goal: !!r.goal });
-      if (battleGo && fx.battleType === 'rival') await rivalGreet(m);   // 2026-10-18 夜間 B06：フィナの「あっ、リュウ！…」のあとにリュウの正式ボイスの一言 → バトル
+      if (battleGo && fx.battleType === 'rival' && !V.ryuSaid) await rivalGreet(m);   // 2026-10-20 第5便：声は登場の幕の中（rivalCut）。幕を出さなかったとき（視差を減らす設定など）だけ、従来どおりフィナの一言のあとに声の一言
+      V.ryuSaid = false;
       if (!told && fx.kind === 'none' && fx.note === 'normal' && !r.goal && !r.timeUp) tail = (await reactionAt(m)) || tail;
       if (r.goal) tail = `${tail}　大会会場に着いた！`.trim(); else if (r.timeUp) tail = `${tail}　ターンを使い切った…`.trim();
     } finally { if (card) cardClose(card, true); busySet(false); }

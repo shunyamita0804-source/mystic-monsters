@@ -62,6 +62,7 @@ void main(){
     o = c * vC; return;
   }
   o = texture(uT0, vT) * vC * uK;
+  if (o.a < 0.004) discard;   // 2026-10-20 第5便：透明な所は深さも書かない（海底のトンネルの骨組み＝口の向こうの骨組みが隠れない）
 }`;
 
   /** 頂点の列（x, y, h, u, v, r, g, b, a）と三角形の番号。色は乗算済み（r・g・b はアルファを掛けた値） */
@@ -187,7 +188,7 @@ void main(){
       if (R.plaza) {
         const MS = new Mesh(), MP = new Mesh(), ps = R.plaza.shadow || 4;
         const rOf = R.plaza.radius || ((id, end) => (end ? R.plaza.rEnd || R.plaza.r : R.plaza.r));
-        for (const [id, r] of [...R.hubs.map((id) => [id, rOf(id, false)]), ...R.ends.map((id) => [id, rOf(id, true)])]) { const n = cfg.D.nodes[id]; if (!n) continue;
+        for (const [id, r] of [...R.hubs.map((id) => [id, rOf(id, false)]), ...R.ends.map((id) => [id, rOf(id, true)])]) { const n = cfg.D.nodes[id] && (cfg.at ? cfg.at(id) : cfg.D.nodes[id]); if (!n) continue;   // 2026-10-20 第5便：描く位置（行き止まりの枝を延ばした所）
           square(MS, n[0] + (R.plaza.sdx || 0), n[1] + (R.plaza.sdy || 0.6), r + ps, h, pm(1, 1, 1, R.plaza.sa || 0.32)); square(MP, n[0], n[1], r, h, WHITE); }
         addMesh(MS, { kind: 'tex', tex: '_disc' }); addMesh(MP, { kind: 'tex', tex: 'plaza' });
       }
@@ -358,7 +359,7 @@ void main(){
     const ready = Promise.all(waits).then(() => { texDone = true; if (dead) return false; for (const f of after) f(); warm(); onDirty(); return true; });
     cv.addEventListener('webglcontextlost', (e) => { e.preventDefault(); dead = true; if (cfg.onLost) cfg.onLost(); }, { once: true });
     return {
-      el: cv, ready, setMask, texture,
+      el: cv, ready, setMask, texture, at: cfg.at || ((id) => cfg.D.nodes[id]),
       /** 道の上に重ねる網（盤ごと・あとから）。spec＝{ kind: 'strip', lines（点の列の列）, off0, off1, tex, len（絵 1 枚の長さ・単位。無ければ絵の縦横比と帯の幅から）, dx, dy }
        *  ／{ kind: 'solid', lines, w, a, rgb, dx, dy }（帯の影）／{ kind: 'quad', items: [{ x, y, w, h }], tex }（地点の上の絵） */
       add(spec) { const m = addSpec(spec); onDirty(); return m; },

@@ -25,7 +25,7 @@
   //  Chapter 4 は地点の間隔が狭い（約 15）ので、広場の近くだけ間隔 13（マスの幅）まで詰めて広場の中心から 30 単位離す（js/proto/ch4-world.js の広場は半径 21 まで）
   //  2026-10-20 第3便（「マスが窮屈に敷き詰められている」）：広場の近くだけ詰める並べ方（gap 13）をやめ、広場から広場までの道筋に等間隔（uniform）・広場の中心から 24 単位。
   //   間隔の中央値 A 22.9・B 15.9・C 18.9（詰めていた版 B 14.2）。マスの幅は 11.5（js/chapter/world-board.js）
-  const DISP_OPT = { clear: 24, gap: 14, minD: 11, uniform: true };
+  const DISP_OPT = { clear: 24, gap: 14, minD: 11, uniform: true, sep: 34 };   // 2026-10-20 第5便：sep＝近すぎる別の道どうしを離す（道の幅 30.4＋4）
   const dataOf = (k) => { const d = (root.MMRF_CH4 && root.MMRF_CH4[routeKey(k)]) || null; return d && root.MMRF_DISP ? root.MMRF_DISP.clearPlazas(d, DISP_OPT) : d; };
   const VOLCWORD = (t) => String(t).replace(/草原/g, '火山の道');
   // 2026-10-20：出来事の題・本文・背景は Chapter の舞台に合わせる（js/chapter/event-themes.js の MMEVTH＝効果は変えない）

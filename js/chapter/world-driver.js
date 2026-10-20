@@ -28,7 +28,8 @@
   const routeKey = (v) => (v === 'B' || v === 'C' ? v : 'A');
   // 2026-10-20 追加指示（円の広場の中に隣のマスを並べない・Chapter 2／4 と同じ美術規則）：Chapter 1 は原本の座標（MMRF_DATA）を変えず、
   //  表示用の配置（js/proto/board-display.js の MMRF_DISP＝広場の中心から隣の地点を離した写し。座標だけ・ID と歩数とつながりは原本のまま）を返す
-  const disp = (d) => (d && root.MMRF_DISP ? root.MMRF_DISP.clearPlazas(d) : d);
+  const SEP_OPT = Object.freeze({ sep: 27 });   // 道の幅 23＋4
+  const disp = (d) => (d && root.MMRF_DISP ? root.MMRF_DISP.clearPlazas(d, SEP_OPT) : d);   // 2026-10-20 第5便：近すぎる別の道どうしを離す（sep）
   const dataOf = cfg.dataOf || ((k) => disp(k === 'B' || k === 'C' ? (root.MMRF_ROUTES && root.MMRF_ROUTES[k]) || null : root.MMRF_DATA));
   const BASE = () => dataOf('A') || disp(root.MMRF_DATA);   // ルートのデータが読めないときの控え（Chapter 1＝MMRF_DATA）
   const routeOf = (m) => { const f = fieldOf(m); return routeKey(f && f.route); };

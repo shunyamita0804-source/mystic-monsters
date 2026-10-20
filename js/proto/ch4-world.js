@@ -366,12 +366,12 @@
             G.add({ kind: 'strip', lines: brg.map((l) => l.P), off0: -rs - RAIL_W / 2, off1: -rs + RAIL_W / 2, tex: 'railL', under: true }); G.add({ kind: 'strip', lines: brg.map((l) => l.P), off0: rs - RAIL_W / 2, off1: rs + RAIL_W / 2, tex: 'railR', under: true }); }
         }
         const eb = S.img && S.img.base; if (eb) { G.texture('ebase', eb, false); const k = eb.height / eb.width;   // 固定の出来事の地点の台座（道と広場の上）
-          G.add({ kind: 'quad', tex: 'ebase', items: KEY_IDS.filter((id) => id !== 'START' && id !== 'GOAL' && D.nodes[id]).map((id) => ({ x: D.nodes[id][0], y: D.nodes[id][1], w: BASE_D, h: BASE_D * k })) }); }
+          G.add({ kind: 'quad', tex: 'ebase', items: KEY_IDS.filter((id) => id !== 'START' && id !== 'GOAL' && D.nodes[id]).map((id) => { const q = G.at ? G.at(id) : D.nodes[id]; return { x: q[0], y: q[1], w: BASE_D, h: BASE_D * k }; }) }); }   // 2026-10-20 第5便：マスを描く位置（表示の配置）
       },
     };
   }
   /** 2026-10-20 第4便：描く道の中心線（roads と同じ鎖・同じ丸め）＝マスを置く線 */
   function lines(D, H) { const br = bridgeSet(D); return H.roadChains(D, Object.entries(D.segments), (a, b) => br.has(a) === br.has(b)).map((c) => ({ ids: c.ids, sids: c.sids, P: H.roadPts(D, c.ids, ROAD_W / 2 + CURB_W + 3) })); }
-  const api = { flat: true, A4, DECK, TEX, IMG, ROAD_W, load, warm, ground, roads, lines, glKit, plazas, apron, lm, goal, scatter, build3d, elevAt, phaseOf, deckStrip };
+  const api = { flat: true, roadW: ROAD_W + 2 * CURB_W, A4, DECK, TEX, IMG, ROAD_W, load, warm, ground, roads, lines, glKit, plazas, apron, lm, goal, scatter, build3d, elevAt, phaseOf, deckStrip };
   if (typeof module === 'object' && module.exports) module.exports = api; else root.MMRF_VOLC = api;
 })(typeof window !== 'undefined' ? window : globalThis);

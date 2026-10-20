@@ -75,7 +75,7 @@ test('NX-07：N08 ライバルのマス 1.25 倍・影は正式の輪郭から�
   assert.match(WB, /if \(f\.rivalMet\) \{ if \(V\.world\.markerOff\) V\.world\.markerOff\('RIVAL'\); return; \}/);
   assert.match(WB, /rareMark\(m\); rivalMark\(m\); fxPreload\(\);/);
   assert.match(RW, /const k = L\.k \|\| 1; if \(k !== \(t\.k \|\| 1\)\) \{ t\.k = k;/);
-  assert.match(RW, /Math\.min\(o\.tilePx\[1\], o\.tileW \* c\.s \* q\.k\)\) \* \(t\.k \|\| 1\);/);
+  assert.match(RW, /Math\.min\(o\.tilePx\[1\], o\.tileW \* c\.s \* q\.k\)\) \* \(t\.k \|\| 1\) \* t\.kd;/);
   assert.ok(existsSync(path.join(ROOT, 'assets/chapter/rival_mark_1015/rival_silhouette.webp')));
   const R = rd('assets/chapter/rival_mark_1015/README.md'); assert.match(R, /輪郭（アルファ）だけ/); assert.match(R, /rival_mark\.py/);
 });

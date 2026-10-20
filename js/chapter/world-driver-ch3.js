@@ -17,7 +17,7 @@
   /** 旧 Chapter 3 の盤の途中（新しい盤を持たない・Chapter 3 の盤の上） */
   const oldBoard = (m) => !!(m && isObj(m.raise) && m.raise.ch === 3 && (m.raise.state === 'board' || m.raise.state === 'BOARD') && !(isObj(m.raise.field) && m.raise.field.world === 1 && m.raise.field.chapterId === 3));
   // 2026-10-20 追加指示：円の広場の中に隣のマスを並べない＝表示用の配置（js/proto/board-display.js の MMRF_DISP。座標だけ・ID と歩数とつながりは原本のまま）
-  const dataOf = (k) => { const d = (root.MMRF_CH3 && root.MMRF_CH3[routeKey(k)]) || null; return d && root.MMRF_DISP ? root.MMRF_DISP.clearPlazas(d) : d; };
+  const dataOf = (k) => { const d = (root.MMRF_CH3 && root.MMRF_CH3[routeKey(k)]) || null; return d && root.MMRF_DISP ? root.MMRF_DISP.clearPlazas(d, { sep: 27 }) : d; };   // 2026-10-20 第5便：近すぎる別の道どうしを離す（sep）
   const SKYWORD = (t) => String(t).replace(/草原/g, '雲海');
   // 2026-10-20：出来事の題・本文・背景は Chapter の舞台に合わせる（js/chapter/event-themes.js の MMEVTH＝効果は変えない）
   const themed = (p) => (p && root.MMEVTH ? root.MMEVTH.themed(3, p) : p);

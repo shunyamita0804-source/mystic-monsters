@@ -55,7 +55,7 @@ test('FX-03：world-board の演出（RIVAL・野生／レア・高額 G・砂�
   assert.match(wb, /f\.tw\[left\] = 1; doSave\(\);/, '砂時計は各1回（先に記録）');
   assert.match(wb, /document\.querySelector\('\.mmtalk,\.wb-pop,\.wbtr,\.chf-enc2,\.wbx-gold,\.wbx-hg'\)/, '会話・演出・遭遇（2026-10-14 実機試遊④：宝箱のカットイン .wbtr を含む）の間は待つ');
   assert.match(wb, /if \(rival\) return rivalCut\(/);
-  assert.match(wb, /FXF\.rivalBg[\s\S]*FXF\.clash/, 'EV01 の幕と EV06 の X');
+  assert.match(wb, /const RV = '\.\/assets\/chapter\/rival_1020\/';[\s\S]*rival_bg\.webp[\s\S]*rival_slash\.webp/, '2026-10-20 第5便：ライバル登場は F04 の背景・風の斬撃（旧 EV01 の幕・EV06 の X は使わない）');
   assert.doesNotMatch(wb, /Lv\.|レベル/, 'Lv は出さない');
   assert.match(wb, /sil \|\| !foe \? '？？？'/, '野生は影と ？？？（2026-10-06 の決定のまま）');
   assert.match(wb, /await goldBurst\(fx\.gold\)/);

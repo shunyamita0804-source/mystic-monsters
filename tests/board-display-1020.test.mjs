@@ -75,7 +75,7 @@ test('BD-02：本編の進行（MMWD・MMWD3）は表示の配置を返し、盤
   }
   const src = rd('js/chapter/world-driver.js');
   assert.match(src, /const dataOf = cfg\.dataOf \|\| \(\(k\) => disp\(/, 'Chapter 1 の dataOf だけ表示の配置（Chapter 2／4 は道の生成で同じ規則）');
-  assert.match(rd('js/chapter/world-driver-ch3.js'), /MMRF_DISP\.clearPlazas\(d\)/);
+  assert.match(rd('js/chapter/world-driver-ch3.js'), /MMRF_DISP\.clearPlazas\(d, \{ sep: 27 \}\)/);   // 2026-10-20 第5便：sep＝近すぎる別の道どうしを離す
   assert.match(rd('index.html'), /<script src="\.\/js\/proto\/board-display\.js"><\/script><script src="\.\/js\/proto\/roadfirst-core\.js">/);
 });
 
@@ -107,7 +107,7 @@ test('BD-04：Chapter 4 の円の広場（ぼかしの絵を使わない・縁�
   assert.ok(!/plaza_disc/.test(v.replace(/^\s*\/\/.*$/gm, '').replace(/\/\*\*[\s\S]*?\*\//g, '')), 'C4_ROAD_03_CENTER_BLEND（ふちが白くぼける絵）を読まない');
   assert.match(v, /const PLAZA_RMAX = 19, PLAZA_RMIN = 15\.5;/);   // 2026-10-20 第3便
   assert.match(v, /function disc\(g, x, y, r, dirs, rp, curb\)/);
-  assert.match(rd('js/chapter/world-driver-ch4.js'), /const DISP_OPT = \{ clear: 24, gap: 14, minD: 11, uniform: true \};/);
+  assert.match(rd('js/chapter/world-driver-ch4.js'), /const DISP_OPT = \{ clear: 24, gap: 14, minD: 11, uniform: true, sep: 34 \};/);
   const w = load(['js/proto/ch4-routes.js', 'js/proto/board-display.js']), X = w.MMRF_DISP;
   for (const r of ['A', 'B', 'C']) {
     const D0 = w.MMRF_CH4[r], D = X.clearPlazas(D0, { clear: 24, gap: 14, minD: 11, uniform: true });
@@ -181,7 +181,7 @@ test('BD-07：第3便＝シンボル建物（全 Chapter・A／B／C 同じ所�
   }
   assert.match(B, /branchSkin: branchSkin\(m\), symbols: symbolsFor\(m\)/);
   const W = rd('js/proto/roadfirst-world.js');
-  assert.match(W, /for \(const q of SYMS\) \{ add\(q\.file, q\.x, q\.y, q\.w, q\.z != null \? q\.z : -30, 'rfw-lm rfw-sym', q\.h \|\| 0\); props\[props\.length - 1\]\.cap = 512; \}/, '第4便：決まった幅（合成の層）は 512px まで');
+  assert.match(W, /add\(q\.file, mv \? mv\[0\] : q\.x, mv \? mv\[1\] : q\.y, q\.w, q\.z != null \? q\.z : -30, 'rfw-lm rfw-sym', q\.h \|\| 0\); const sp = props\[props\.length - 1\]; sp\.cap = 512;/, '第4便：決まった幅（合成の層）は 512px まで・第5便：道とマスにかかれば離す');
   assert.match(rd('js/proto/ch4-world.js'), /\.rfv-sky b\{display:none;/, 'Chapter 4 の空の火山は消す（盤の巨大火山と二重にしない）');
 });
 
@@ -197,14 +197,15 @@ test('BD-08：第4便＝マスは描いた道の中心線の上・正面向き�
     for (const l of L) for (const id of [l.ids[0], l.ids[l.ids.length - 1]]) assert.ok(!N[id] || L.some((m) => m.ids.slice(1, -1).includes(id)), `${k} ${id}：鎖の端（広場）は動かさない`);
   }
   const src = rd('js/proto/roadfirst-world.js');
-  assert.match(src, /const NP = snapNodes\(D, SEA && SEA\.lines \? SEA\.lines\(D, HELP\) : roadLinesOf\(D\)\), at = \(id\) => NP\[id\] \|\| D\.nodes\[id\];/);
+  assert.match(src, /const NP = PLAN\.pos, at = \(id\) => NP\[id\] \|\| D\.nodes\[id\];/, '第5便：表示の配置（planLayout）');
   //  正面の門：素材があり、口（下から 5%）が道幅より広い幅で置く
   const FR = /const FRONT = (\[[\s\S]*?\]\]);/.exec(src); assert.ok(FR);
-  const OPEN = { ch1_start_gate_front: 0.331, ch1_lower_gate_front: 0.421, ch1_upper_gate_front: 0.364, ch1_seal_gate_front: 0.347, ch2_harbor_gate_front: 0.595, ch3_sky_arch_front: 0.721, ch4_volcano_gate_front: 0.348 };
+  const OPEN = { ch1_start_gate_front: 0.331, ch1_lower_gate_front: 0.421, ch1_upper_gate_front: 0.364, ch1_seal_gate_front: 0.347, ch2_harbor_gate_front: 0.595, ch3_sky_arch_front: 0.721, ch4_volcano_gate_front: 0.348,
+    ch2_descent_gate_front: 0.635, ch2_ascent_gate_front: 0.71, ch2_arena_gate_front: 0.598, ch2_sealed_sea_gate_front: null };   // 2026-10-20 第5便（F03）：閉じた海の門は扉が閉じた絵（口なし）
   const ROAD = { ch1: 23, ch2: 24.6, ch3: 23, ch4: 22 };
   const rows = [...FR[1].matchAll(/'([a-z0-9_]+)\.webp', (\d+), ([0-9.]+)\]/g)];
-  assert.equal(rows.length, 7);
-  for (const [, f, wd] of rows) { assert.ok(existsSync(path.join(ROOT, 'assets/fields/front_1020', f + '.webp')), f); assert.ok(+wd * OPEN[f] > ROAD[f.slice(0, 3)], `${f}：口 ${(+wd * OPEN[f]).toFixed(1)} ＞ 道幅`); }
+  assert.equal(rows.length, 11);
+  for (const [, f, wd] of rows) { assert.ok(existsSync(path.join(ROOT, 'assets/fields/front_1020', f + '.webp')), f); if (OPEN[f] === null) continue; assert.ok(+wd * OPEN[f] > ROAD[f.slice(0, 3)], `${f}：口 ${(+wd * OPEN[f]).toFixed(1)} ＞ 道幅`); }
   assert.match(src, /const lmOf = \(D\) => lmOf0\(D\)\.map\(frontOf\);/);
   //  道標は地面の上（Chapter 3 は浮島の上）
   const D3 = X.clearPlazas(w.MMRF_CH3.A), inPoly = (P, x, y) => { let c = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) { const [xi, yi] = P[i], [xj, yj] = P[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) c = !c; } return c; };
