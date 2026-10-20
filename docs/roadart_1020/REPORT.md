@@ -53,11 +53,23 @@
 
 ## (C) ブランチ・コミット・main 統合・公開
 
-__PUBLISH__
+| 段階 | 状況 |
+|---|---|
+| 作業ブランチ | claude/status-check-handoff-uibsj9（full1・full2・今回をすべて含む） |
+| 実装のコミット | 9c07de7（道路美術 P0）・6cbfcd3（引き継ぎの記述の取り消し）・a1d6312（この報告書と画像） |
+| main 統合 | **済み**（早送り。統合前の main は ade0dd6）。version.json の元のコミットを 9c07de7 にした 16d841a までを main へ push |
+| 公開の版 | `2026-10-20-road1`（index.html の MM_BUILD＝version.json） |
+| 公開確認（public-check） | **49項目すべて OK**。公開版の index.html＝main の 16d841a と同じ（106秒で一致）・4xx／5xx なし・ページのエラーなし。通しの流れ・牧場・ファーム・育成開始の選択肢・4サイズの横はみ出し・Chapter 1〜4 の本編の盤・QA トップの12の入口 |
+| QA の同一ビルド | 通常の URL・`?qaTop=1`・`?ch4trial=A` は、同じ index.html を返す（内容の sha256 が main の index.html と一致）。QA トップと試遊の入口の札は「版 2026-10-20-road1・元のコミット 9c07de7」 |
+| テスト | ふだんの全件 1959件（合格 1154・skip 805・失敗 0）。実ブラウザは関係する9ファイル（ch2-world-1016 11・ch4-1019 13・ch3-1018 12・addendum-1019 4・world-ch1-1011 9・road-1017 3・qaroad-1016 3・tech 13・page-fixed 8）すべて合格。ch2-world と ch4 は1回目に、ほかの処理と時間が重なって落ち（10件・1件）、単独で1回だけ実行し直して合格。**実ブラウザの全件は未実行** |
+| iPhone 実機の美術の合格 | **未確認**（ユーザーの判断） |
 
 ## (D) 通常の試遊 URL と QA の URL（同じ main の版）
 
-__URLS__
+- 通常の試遊：https://shunyamita0804-source.github.io/mystic-monsters/
+- QA トップ（同じ main の版）：https://shunyamita0804-source.github.io/mystic-monsters/?qaTop=1
+- 通常の画面には版の表示が無い。QA トップと試遊の入口の札に「版 2026-10-20-road1・元のコミット 9c07de7」が出る（公開版で確認）
+- 以前の githack のプレビュー URL は full2 のまま（古い版）＝今後は上の2つを使う
 
 ## (E) iPhone の Safari で1回の試遊で確認する方法
 
