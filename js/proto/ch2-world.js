@@ -218,12 +218,13 @@
     // 1回目：道の帯（縁石つき）。帯の絵の透明な上下（行 0〜118・404〜522）は切る＝曲がりの内側で帯の幅の半分が曲がりの半径を超えて折り返さない
     const vis0 = r01Crop(strip, R01_VIS), wV = vis0 ? vis0.height / ppu : full;
     for (const P of pts) QA.meshStrip(g, P, vis0 || strip, wV, bx);
+    if (floor) for (const P of pts) QA.meshStrip(g, P, floor, wF, bx);   // 2回目：道の床（重なった道の縁石を覆う）
+    // 2026-10-20 第3便（iPhone 試遊「丸の道は全て縁そのままに」）：広場の縁石の輪は道の床の後に描く＝道が入ってくる所も切らない 360° の輪（旧：道の床が入口の縁石を覆っていた）
     if (kerb) for (const P of PL) {   // 広場の縁石の輪（外のふちが円の外周＝道の縁石の外のふちと同じ位置）
       if (!vis(P)) continue; const rm = P.r - th / 2, N = Math.max(24, Math.ceil(Math.PI * 2 * rm / 1.5)), ring = [];
       for (let i = 0; i <= N + 2; i++) { const a = (i / N) * Math.PI * 2; ring.push([P.x + Math.cos(a) * rm, P.y + Math.sin(a) * rm]); }
       QA.meshStrip(g, ring, kerb, th, bx);
     }
-    if (floor) for (const P of pts) QA.meshStrip(g, P, floor, wF, bx);   // 2回目：道の床（重なった道・広場の入口の縁石を覆う）
     const fl = r01Floor(strip), fp = fl ? g.createPattern(fl, 'repeat') : null, IW = floor ? floor.width : 0;
     if (fp && fp.setTransform && root.DOMMatrix) fp.setTransform(new root.DOMMatrix().scale(1 / ppu));
     // 2026-10-20 道路美術 P0（IMG_6006「奥の道と手前の広場が同じ道路に見えない」）：広場の床の模様は世界の縦横に固定だった＝道の床と石の向きが直角にずれ、入口に円弧の継ぎ目が出ていた。
@@ -270,19 +271,22 @@
   //   前後（z＝8番目）は 0＝門の地面の位置で決める（旧 −30＝いつもマスより奥＝門の先のマスが柱の手前に重なり、柱が宙に浮いて見えた）
   //  2026-10-20 追加指示（「切り貼り感・狭さ」）：柱の下端が植え込みを切った所で水平に切れていて、足もとが地面から浮いて見えた＝柱の足もとにやわらかい接地の影を足した派生
   //   art_1020/harbor_start_gate_open_foot（門の画素は同じ・絵の下へ透明の余白 44px と影だけ足す＝足もとの位置 0.92 は同じ）。左右対称の折り返しの絵であることは変わらない＝正式な正面向きの全体の絵が要る（docs/fullplay_1020/REPORT.md）
+  //  2026-10-20 第3便（ユーザー指示「門や看板は斜めに置くのではなく正面・正対するように」）：START の門は道をまたいで正面を向く形に戻す＝正面向きの絵は派生（art_1020/harbor_start_gate_open_foot）しか無い。
+  //   正面向き・左右対称の正式の全体の絵（docs/design_requests_1020/D03）が届いたら差し替える。以下は道路美術 P0 の旧記録：
   //  2026-10-20 道路美術 P0（IMG_6006「門が切り貼りのよう・柱の足もとが不自然」・指示「左右反転合成や切り欠きの目立つ派生は正式合格ではない・正式門の原画は描き換えない」）：
   //   折り返しの派生（art_1019・art_1020）は使わない（ファイルは残す）。正式の原画 harbor_start_gate（斜め向き・右に小屋）をそのまま、START の広場の左脇（道の外）に置く。
   //   道をまたぐ門は、正面向き・左右対称の全体の原画が届いてから（docs/fullplay_1020/REPORT_ROADART.md の必要素材）。A／B／C とも同じ（C の S01_02 の門は外した）
   const JT = 'sea_junction_tower', EDGE_PROPS = ['coral_shoal_edge', 'white_coastal_cliff_edge', 'undersea_cliff_edge'];
   const LM_BASE = {
-    START: ['harbor_start_gate', 52, 4, null, null, -42, 'S01_01', -30], LOWER_GATE: ['undersea_descent_gate', 40, 6], RIVAL: ['rival_pass_gate', 34, 10], Q: ['glass_corridor_arch', 50, 4],
+    START: ['./assets/fields/ch2/art_1020/harbor_start_gate_open_foot.webp', 72, 27, null, null, 0, 'S01_01', 0], LOWER_GATE: ['undersea_descent_gate', 40, 6], RIVAL: ['rival_pass_gate', 34, 10], Q: ['glass_corridor_arch', 50, 4],
     STATUE: ['L07_winged_sea_god_statue', 30, 0, [-34, -20]], RANDOM_DEN: ['L11_sunken_ship_den_closed', 44, 20, null, 'L11_sunken_ship_den_open'],
     REWARD5: ['coastal_rock_shells', 40, 20], R_SPECIAL: ['L10_coral_treasure_landmark', 34, 20],
   };
   const LM_ROUTE = {
     A: { CHALLENGE: ['L09_western_sealed_sea_gate', 48, 14], L_CHEST: ['coastal_lighthouse', 30, 20], R_CHEST: ['L04_shell_shrine', 32, 20], L_ALTAR: ['L05_temple_island_altar', 50, 20], L_LATE_ALTAR: ['L08_western_white_tower', 34, 20], UPPER_GATE: ['undersea_ascent_gate', 36, 4] },
     B: { CHALLENGE: ['U03_sunken_temple_gate', 38, 14], L_CHEST: ['coastal_lighthouse', 30, 20], R_CHEST: ['L05_temple_island_altar', 50, 20], L_ALTAR: ['L08_western_white_tower', 34, 20], L_LATE_ALTAR: ['U05_sealed_chamber_altar', 40, 20] },
-    C: { CHALLENGE: ['U03_sunken_temple_gate', 38, 14], L_CHEST: ['L04_shell_shrine', 32, 20], R_CHEST: ['undersea_treasure_vault', 32, 20], L_ALTAR: ['trial_monolith', 40, 20], L_LATE_ALTAR: ['U05_sealed_chamber_altar', 40, 20] },
+    // 2026-10-20 第3便：C の START は分かれ道（大通りと岸壁が狭い角度）＝門は大通りが岸壁から離れる S01_02 の先（道をまたぐ・正面）
+    C: { START: null, S01_02: ['./assets/fields/ch2/art_1020/harbor_start_gate_open_foot.webp', 68, 11, null, null, 0, null, 0], CHALLENGE: ['U03_sunken_temple_gate', 38, 14], L_CHEST: ['L04_shell_shrine', 32, 20], R_CHEST: ['undersea_treasure_vault', 32, 20], L_ALTAR: ['trial_monolith', 40, 20], L_LATE_ALTAR: ['U05_sealed_chamber_altar', 40, 20] },
   };
   const ALL_LM = [...new Set([...Object.values(LM_BASE), ...Object.values(LM_ROUTE).flatMap(Object.values)].filter(Boolean).flatMap((v) => [v[0], v[4]].filter(Boolean)).concat(['ocean_arena', 'R05_spiral_tower_door', 'R05_spiral_tower_beacon', 'arena_approach_gate', 'L01_harbor_town_cluster', 'chapter2_sea_medallion', 'sea_zone_nameplate', JT, ...EDGE_PROPS]))];
   const LM_CACHE = new WeakMap();

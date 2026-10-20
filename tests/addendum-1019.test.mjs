@@ -70,7 +70,7 @@ test('AD-04：分岐の見た目の差し替えの口（Chapter 1〜4・未採�
   const m = /const BRANCH_SKIN = Object\.freeze\(\{([\s\S]*?)\}\);\n/.exec(wb); assert.ok(m);
   for (const ch of [1, 2, 3]) assert.match(m[1], new RegExp(`${ch}: Object\\.freeze\\(\\{ junction: null, merge: null, post: null, board: null \\}\\)`), `Chapter ${ch} は未採用＝null`);
   assert.match(m[1], /4: Object\.freeze\(\{ junction: null, merge: null, post: '\.\/assets\/fields\/ch4\/art_1019\/signpost\.webp', board: null \}\)/, 'Chapter 4 の道標は正式素材（以前から）');
-  assert.match(wb, /branchSkin: branchSkin\(m\) \}\);/, '盤を作るときに渡す（QA と本編は同じ）');
+  assert.match(wb, /branchSkin: branchSkin\(m\)(, symbols: symbolsFor\(m\))? \}\);/, '盤を作るときに渡す（QA と本編は同じ）');
   assert.match(wb, /\.wbw \.wbbr\[data-bskin\] \.chroute\{background:var\(--wbbr-board\)/, '選ぶ看板の地の絵は CSS の変数（文字は HTML）');
   { const cw = rd('js/proto/ch4-world.js'), sc = cw.slice(cw.indexOf('function scatter('), cw.indexOf('function build3d(')).replace(/^\s*\/\/.*$/gm, ''); assert.ok(sc.length > 100 && !/signpost/.test(sc), 'Chapter 4 の道標は scatter から外した（二重に立てない）'); }
 });

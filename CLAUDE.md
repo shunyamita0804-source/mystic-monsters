@@ -118,6 +118,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 | assets/fields/ch1a/ | Chapter 1 の素材（旧ボードの背景・マス・サイコロ・目印・高品質の地面） |
 | assets/fields/ch2/、assets/fields/ch2a/ | Chapter 2 の正式美術（新しい盤）・旧盤の素材 |
 | assets/fields/ch3/、assets/fields/ch4/ | Chapter 3・4 の素材 |
+| assets/fields/symbols_1020/ | Chapter 1〜3 のシンボル建物（盤に置く巨大建物。置き場所は js/chapter/world-board.js の SYMBOLS） |
 | assets/chapter/ | 盤の演出素材（能力UPの道具・結果演出・挿絵・FX・ライバルの影） |
 | assets/events/ch1/ | Chapter 1 の出来事の挿絵 |
 | assets/chests/ | 宝箱の正式素材 |

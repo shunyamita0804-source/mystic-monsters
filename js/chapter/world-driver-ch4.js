@@ -23,7 +23,9 @@
   const oldBoard = (m) => !!(m && isObj(m.raise) && m.raise.ch === 4 && (m.raise.state === 'board' || m.raise.state === 'BOARD') && !(isObj(m.raise.field) && m.raise.field.world === 1 && m.raise.field.chapterId === 4));
   // 2026-10-20 道路美術 P0（円の広場の中にマスが密集）：表示用の配置（js/proto/board-display.js の MMRF_DISP・Chapter 1／3 と同じ。座標だけ・ID と歩数とつながりは原本のまま）。
   //  Chapter 4 は地点の間隔が狭い（約 15）ので、広場の近くだけ間隔 13（マスの幅）まで詰めて広場の中心から 30 単位離す（js/proto/ch4-world.js の広場は半径 21 まで）
-  const DISP_OPT = { clear: 30, gap: 13, minD: 12 };
+  //  2026-10-20 第3便（「マスが窮屈に敷き詰められている」）：広場の近くだけ詰める並べ方（gap 13）をやめ、広場から広場までの道筋に等間隔（uniform）・広場の中心から 24 単位。
+  //   間隔の中央値 A 22.9・B 15.9・C 18.9（詰めていた版 B 14.2）。マスの幅は 11.5（js/chapter/world-board.js）
+  const DISP_OPT = { clear: 24, gap: 14, minD: 11, uniform: true };
   const dataOf = (k) => { const d = (root.MMRF_CH4 && root.MMRF_CH4[routeKey(k)]) || null; return d && root.MMRF_DISP ? root.MMRF_DISP.clearPlazas(d, DISP_OPT) : d; };
   const VOLCWORD = (t) => String(t).replace(/草原/g, '火山の道');
   // 2026-10-20：出来事の題・本文・背景は Chapter の舞台に合わせる（js/chapter/event-themes.js の MMEVTH＝効果は変えない）

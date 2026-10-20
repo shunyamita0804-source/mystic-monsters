@@ -158,10 +158,13 @@
   // 2026-10-20（Chapter 3 の浮島のふち・奥の道が粗い）：区画ごとに細かさを選ぶ。画面で大きく映る区画は RES（1単位 10px）、遠くで小さく映る区画は半分（5px＝メモリ 1/4）。
   //  旧：全部 RES・枚数の上限 MAX（約 19 枚）＝画面の真ん中から奥は遠くの層（1単位 2px）のままで、浮島のふち・道が粗い四角に見えた。メモリの上限（MB）は同じ
   const RES2 = Math.max(3, Math.round(RES / 2)), RES3 = HIDPR && RES >= 10 ? num('qaRoadRes3', 14, RES, 20) : RES, BYTES = MB * 1048576, CAP = 96;
-  const tileBytes = (r) => Math.pow(Math.ceil(TILE * r) + 2, 2) * 4;
+  const tileBytesOf = (T, r) => Math.pow(Math.ceil(T * r) + 2, 2) * 4;
   function hiLayer(cfg) {
     const tiles = new Map(); let queue = [], lastSig = '';
-    const R = RES, T = TILE;
+    // 2026-10-20 第3便（iPhone 試遊「Chapter 2 A の START の道がまだぼける」・B／C は出ない）：立体の平面（Chapter 2 の海）では、区画の一部がカメラの目より手前（後ろ）へ
+    //  はみ出すと、Safari はその区画の層をまるごと描かない＝ぼけた遠くの層だけが見えていた（区画の切れ目の位置はルートで変わる＝A の START だけ）。
+    //  立体の平面では区画を半分（32 単位）にして、画面のいちばん下の区画が目の後ろまで届かないようにする（メモリの上限は同じ）
+    const R = RES, T = cfg.big ? Math.max(16, TILE / 2) : TILE, tileBytes = (r) => tileBytesOf(T, r);
     function make(ix, iy, r) {
       const c = cfg.doc.createElement('canvas'), x0 = ix * T, y0 = iy * T, pw = Math.ceil(T * r) + 2;
       c.width = pw; c.height = pw; c.className = 'rfw-chunk rfw-hi'; c._x = x0 * r - 1; c._y = y0 * r - 1; c._r = r;

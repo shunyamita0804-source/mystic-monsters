@@ -3,7 +3,7 @@
 //  AB-1（390×844・375×667）：Chapter 4 の自由な分かれ道（J0）＝選ぶ看板（.wbbr・data-ch 4）は下の操作欄と重ならず画面の中・道標（正式の signpost）は
 //        モンスターに重ならない・目印はすべて Chapter 4 の素材（Chapter 1 の白い門などは出ない）・選んだら歩いて盤へ戻る
 //  AB-2：Chapter 4 の題字の中継に巨大火山（volcano_1440）が読めて出る
-//  AB-3：Chapter 2 の目印はすべて Chapter 2 の正式美術（art_1016）
+//  AB-3：Chapter 2 の目印はすべて Chapter 2 の正式美術（art_1016・art_1020・第3便のシンボル建物 symbols_1020/ch2_）
 //  QA_E2E=1 のときだけ実行
 // =========================================================
 import test from 'node:test';
@@ -56,7 +56,7 @@ test('AB-2：Chapter 4 の題字の中継に巨大火山', { skip: SKIP, timeout
 test('AB-3：Chapter 2 の目印は Chapter 2 の正式美術だけ', { skip: SKIP, timeout: 120000 }, async () => {
   const p = await openPage({ worldCh2: true, size: H.SIZES.base, query: '?ch2trial=A' }); const pg = p.page; await idle(pg);
   const lms = await pg.evaluate(() => [...document.querySelectorAll('.rfw-lm')].map((e) => e.getAttribute('src')));
-  assert.ok(lms.length >= 8 && lms.every((s) => /ch2\/art_10(16|20)\//.test(s)), JSON.stringify(lms));
+  assert.ok(lms.length >= 8 && lms.every((s) => /ch2\/art_10(16|20)\/|symbols_1020\/ch2_/.test(s)), JSON.stringify(lms));   // 2026-10-20 第3便：Chapter 2 のシンボル建物（螺旋の塔・水晶の神殿）も可
   assert.equal(await pg.evaluate(() => document.querySelectorAll('.rfw-bpost,.rfw-bmark').length), 0, 'Chapter 2 の分岐の見た目は未採用＝何も足さない');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });

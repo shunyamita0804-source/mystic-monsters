@@ -31,6 +31,19 @@
    * 折れ線 p（元の地点を結んだ線）の上の地点の位置を、両端の広場の中心から c0／c1 以上離す（両端の地点は元のまま）。
    *  広場の近くの数個だけを動かし、残りは元の位置のまま（歩数・道の形は同じ）。道の中の間隔は gap 以上。離せない区間（短い区間）は null＝元のまま
    */
+  /** 2026-10-20 第3便：道筋の上に等間隔（両端は広場の中心から c0／c1 離す）。間隔が gap 未満なら離す長さを縮める。並べられなければ null */
+  function resampleUniform(p, n, c0, c1, gap) {
+    const cum = [0]; for (let i = 0; i < p.length - 1; i++) cum.push(cum[i] + dist(p[i], p[i + 1]));
+    const L = cum[cum.length - 1]; if (n < 3) return null;
+    for (let r = 0; r < 30; r++, c0 *= 0.93, c1 *= 0.93) {
+      const t1 = Math.max(L / n, c0), tn = Math.min(L * (n - 1) / n, L - c1), sp = (tn - t1) / (n - 2);
+      if (sp < gap && (c0 > 1 || c1 > 1)) continue;
+      const ts = [0]; for (let k = 1; k < n; k++) ts.push(t1 + sp * (k - 1)); ts.push(L);
+      const at = (t) => { let seg = 0; while (seg < p.length - 2 && cum[seg + 1] < t) seg++; const u = (t - cum[seg]) / Math.max(1e-9, cum[seg + 1] - cum[seg]); return [p[seg][0] + (p[seg + 1][0] - p[seg][0]) * u, p[seg][1] + (p[seg + 1][1] - p[seg][1]) * u]; };
+      return ts.map((t, i) => (i === 0 || i === n ? p[i] : at(t)));
+    }
+    return null;
+  }
   function resampleClear(p, n, c0, c1, gap) {
     const cum = [0]; for (let i = 0; i < p.length - 1; i++) cum.push(cum[i] + dist(p[i], p[i + 1]));
     const L = cum[cum.length - 1];
@@ -54,7 +67,7 @@
   function clearPlazas(D, opt) {
     if (!D || !D.nodes || !D.segments || !Array.isArray(D.edges)) return D;
     const o = Object.assign({ clear: 30, gap: 15, minD: 12 }, opt || {});
-    const key = `${o.clear}|${o.gap}|${o.minD}`;
+    const key = `${o.clear}|${o.gap}|${o.minD}|${o.uniform ? 1 : 0}`;
     let C = CACHE.get(D); if (C && C[key]) return C[key];
     const P = plazaIds(D), pos = {};
     // 道筋＝広場から広場まで（途中の門・目印などの名前のある地点で区間がつながっているときは1本にまとめる。名前のある地点も道の上を動く）
@@ -80,11 +93,15 @@
       if (ids.length < 4) continue;
       const a = ids[0], b = ids[ids.length - 1], e0 = P.has(a), e1 = P.has(b); if (!e0 && !e1) continue;
       const pts = ids.map((id) => D.nodes[id]);
-      const near = ids.slice(1, -1).some((id) => (e0 && dist(D.nodes[id], D.nodes[a]) < o.clear) || (e1 && dist(D.nodes[id], D.nodes[b]) < o.clear));
+      const near = o.uniform || ids.slice(1, -1).some((id) => (e0 && dist(D.nodes[id], D.nodes[a]) < o.clear) || (e1 && dist(D.nodes[id], D.nodes[b]) < o.clear));
       if (!near) continue;
       let g0 = Infinity; for (let i = 0; i < pts.length - 1; i++) g0 = Math.min(g0, dist(pts[i], pts[i + 1]));
       const gap = Math.min(o.gap, g0);   // 元の間隔が狭い道（枝の D_LLA など）は元のいちばん狭い間隔まで（元より詰めない）
-      const q = resampleClear(pts, ids.length - 1, e0 ? o.clear : 0, e1 ? o.clear : 0, gap); if (q) plan.push([ids, q]);
+      const minGap = (q) => { let m = Infinity; for (let i = 0; i < q.length - 1; i++) m = Math.min(m, dist(q[i], q[i + 1])); return m; };
+      let q = o.uniform ? resampleUniform(pts, ids.length - 1, e0 ? o.clear : 0, e1 ? o.clear : 0, o.gap) : null;
+      if (q && minGap(q) < gap - 0.01) q = null;   // 2026-10-20 第3便：等間隔にすると元より詰まる道（短い枝の D_RAND など）は従来の並べ方
+      if (!q && (!o.uniform || ids.slice(1, -1).some((id) => (e0 && dist(D.nodes[id], D.nodes[a]) < o.clear) || (e1 && dist(D.nodes[id], D.nodes[b]) < o.clear)))) q = resampleClear(pts, ids.length - 1, e0 ? o.clear : 0, e1 ? o.clear : 0, gap);
+      if (q) plan.push([ids, q]);
     }
     // 別の道の地点に近づきすぎる道は元の座標に戻す（くり返し）
     const chainOf = {}; chains.forEach((ids, ci) => ids.slice(1, -1).forEach((id) => { chainOf[id] = ci; }));
@@ -109,7 +126,7 @@
   }
   /** 表示用の写しなら元の道のデータ（原本）を返す */
   const sourceOf = (D) => (D && D.display && D.display.source) || D;
-  const api = { clearPlazas, plazaIds, sourceOf, resampleClear };
+  const api = { clearPlazas, plazaIds, sourceOf, resampleClear, resampleUniform };
   root.MMRF_DISP = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

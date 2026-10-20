@@ -54,8 +54,8 @@
   }
   /** 縁石：2026-10-20 道路美術 P0（IMG_6008「天空の道がぼやけた白い帯・薄い板に見える・縁石と厚みが無い」）。外側から順に
    *  側面（厚み＝暗い石の面）→ 縁石の天端（白い石・外へ向かって少し暗く）→ 金の線 → 内側の陰（縁石の足もと）。down＝帯の下側の縁石（外側が下） */
-  function curb(g, y, h, down) {
-    const W = g.canvas.width, side = Math.round(h * 0.3), top = h - side;
+  function curb(g, y, h, down, LW) {
+    const W = LW || g.canvas.width, side = Math.round(h * 0.3), top = h - side;
     const yS = down ? y + top : y, yT = down ? y : y + side;   // 側面・天端の位置
     const gs = g.createLinearGradient(0, yS, 0, yS + side); gs.addColorStop(0, down ? '#8f846e' : '#5f5646'); gs.addColorStop(1, down ? '#5f5646' : '#8f846e');
     g.fillStyle = gs; g.fillRect(0, yS, W, side);
@@ -67,8 +67,9 @@
     g.fillStyle = 'rgba(70,58,36,.45)'; g.fillRect(0, down ? y - 4 : y + h, W, 4);   // 縁石の足もと（石板の上の陰）
   }
   const GEN = {
-    sky_road: () => { const c = root.document.createElement('canvas'); c.width = c.height = 512; const g = c.getContext('2d'); slabs(g, 0, 0, 512, 512, 128, 64, 1019); c._ppu = 512 / 57.5; return c; },
-    sky_strip: () => { const c = root.document.createElement('canvas'); c.width = 1024; c.height = 256; const g = c.getContext('2d'); slabs(g, 0, 46, 1024, 164, 128, 82, 2019); curb(g, 0, 46, false); curb(g, 210, 46, true); return c; },
+    // 2026-10-20 第3便（iPhone 試遊「Chapter 3 の道の画質が悪い」）：描画の細かさを 2 倍に（旧：床 1単位 8.9px・帯 11px＝近くの層の 14px より粗く、引き伸ばされてぼけていた）。模様の大きさは同じ
+    sky_road: () => { const K = 2, c = root.document.createElement('canvas'); c.width = c.height = 512 * K; const g = c.getContext('2d'); g.scale(K, K); slabs(g, 0, 0, 512, 512, 128, 64, 1019); c._ppu = 512 * K / 57.5; return c; },
+    sky_strip: () => { const K = 2, c = root.document.createElement('canvas'); c.width = 1024 * K; c.height = 256 * K; const g = c.getContext('2d'); g.scale(K, K); slabs(g, 0, 46, 1024, 164, 128, 82, 2019); curb(g, 0, 46, false, 1024); curb(g, 210, 46, true, 1024); return c; },
   };
   const GEN_CACHE = {};
   /** 新しい絵を読む（_ppu・_qra を付ける）。読めなければ null（呼ぶ側が従来の絵へ） */

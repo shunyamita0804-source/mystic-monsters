@@ -17,7 +17,8 @@
   const A4 = './assets/fields/ch4/art_1019/', U = (n) => A4 + n + '.webp';
   // 橋の床：2026-10-19 修正差分の v3_CANDIDATE（道の石材に近づけた候補）と v2 を盤の上で比べた結果（docs/next_1019 の比較画像）。採用した方だけを読む
   const DECK = 'bridge_deck_v3';
-  const TEX = { ground: ['ground_basalt', 120], road: ['road_basalt', 40] };
+  // 2026-10-20 第3便（「Chapter 4 の道の画質が悪い」）：石畳の絵（512px）を 1 枚 40 → 30 単位で敷く＝1単位 12.8 → 17px（近くの層 14px より細かい・石は少し小さく見える）
+  const TEX = { ground: ['ground_basalt', 120], road: ['road_basalt', 30] };
   const STRIP = { curbL: 'curb_l', curbR: 'curb_r', railL: 'rail_l', railR: 'rail_r' };
   const IMG = { deck: DECK, base: 'event_base', skyDusk: 'sky_dusk', skyNight: 'sky_night' };
   const ROAD_W = 22, CURB_W = 4.2, RAIL_W = 7, PLAZA_D = 50, BASE_D = 46;
@@ -227,7 +228,7 @@
    *  ふちが地面へなじむように明るい灰色のけば立った輪郭で描かれた絵＝盤の上で白いぼかしに見えていた → 使わない（ファイルは残す）。
    *  広場は道と同じ石畳（C4_ROAD_01）の円＋道と同じ縁石（STD_C4_ROAD_02）を円に沿って並べ、道の入口だけ縁石を開く（道の左右の縁石へつながる）。
    *  半径は最大 21。隣のマスが近い分かれ道は、隣のマスにかからない半径まで小さくする（最小 16＝道の縁石の外 15.2 より少し広い） */
-  const PLAZA_RMAX = 21, PLAZA_RMIN = 16;
+  const PLAZA_RMAX = 19, PLAZA_RMIN = 15.5;   // 2026-10-20 第3便：最大 21 → 19（マスの幅 11.5・広場の中心から隣まで 24）
   function plazas(g, D, art, H) {
     const S = art.volc || {}, eb = S.img && S.img.base, out = {}, inn = {}, nb = {};
     for (const e of D.edges) { (nb[e[0]] = nb[e[0]] || new Set()).add(e[1]); (nb[e[1]] = nb[e[1]] || new Set()).add(e[0]); if (e[3] === 'forward') { out[e[0]] = (out[e[0]] || 0) + 1; inn[e[1]] = (inn[e[1]] || 0) + 1; } }
@@ -250,7 +251,7 @@
     g.fillStyle = rp || '#4a4440'; g.beginPath(); g.arc(x, y, r - CURB_W * 0.5, 0, 7); g.fill();
     if (!curb) { g.strokeStyle = 'rgba(30,22,20,.7)'; g.lineWidth = 1.4; g.beginPath(); g.arc(x, y, r, 0, 7); g.stroke(); return; }
     const rm = r - CURB_W / 2, gap = Math.asin(Math.min(0.98, (ROAD_W / 2 + 0.4) / rm)), ppu = curb.height / CURB_W;
-    const blocked = (a) => dirs.some((d) => Math.abs(((a - d) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI) < gap);
+    const blocked = () => false; void gap;   // 2026-10-20 第3便：道の入口も縁石を切らない（360° つながった縁）
     const N = Math.max(16, Math.ceil(Math.PI * 2 * rm / 2.2)), L = Math.PI * 2 * rm / N;
     for (let i = 0; i < N; i++) {
       const a = (i + 0.5) / N * Math.PI * 2; if (blocked(a)) continue;
@@ -330,7 +331,7 @@
 :is(#rfp,.wbv) .rfv-sky{position:absolute;inset:0;z-index:0;pointer-events:none}
 :is(#rfp,.wbv) .rfv-sky i{position:absolute;inset:0;background-size:cover;background-position:center top;transition:opacity 1.6s ease}
 :is(#rfp,.wbv) .rfv-sky i.n{opacity:0}
-:is(#rfp,.wbv) .rfv-sky b{position:absolute;left:50%;bottom:6%;width:min(150vw,900px);aspect-ratio:1440/1422;transform:translateX(-50%);background:center bottom/contain no-repeat;filter:drop-shadow(0 0 18px rgba(255,90,30,.35))}
+:is(#rfp,.wbv) .rfv-sky b{display:none;position:absolute;left:50%;bottom:6%;width:min(150vw,900px);aspect-ratio:1440/1422;transform:translateX(-50%);background:center bottom/contain no-repeat;filter:drop-shadow(0 0 18px rgba(255,90,30,.35))}
 :is(#rfp,.wbv) .rfw.volc.night .rfv-sky i.n{opacity:1}
 :is(#rfp,.wbv) .rfw.volc .rfw-plane{z-index:1}
 :is(#rfp,.wbv) .rfv-tint{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(255,120,60,.10),rgba(255,140,80,.06));transition:background 1.6s ease}

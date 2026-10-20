@@ -44,6 +44,19 @@
     3: Object.freeze({ junction: null, merge: null, post: null, board: null }),
     4: Object.freeze({ junction: null, merge: null, post: './assets/fields/ch4/art_1019/signpost.webp', board: null }) });
   const branchSkin = (m) => BRANCH_SKIN[chOf(m)] || BRANCH_SKIN[1];
+  // 2026-10-20 第3便（ユーザー納品「正式シンボル画像」Mismon_Symbols・ユーザー指示「各 Chapter のシンボルとなる巨大建物を配置」）：FRONT の絵（assets/fields/symbols_1020・原画の透明な余白を切って縮小しただけ）。
+  //  置き場所は tools/fullplay1020/symbols-place.mjs の計算（道から足もとの半径以上・マスから足もと＋8 以上・ほかの目印から離す・A／B／C 共通の所）。Chapter 2 は盆地（海の真ん中の広い所）に塔と神殿。
+  //  Chapter 4 は巨大火山（正式4分割を復元した volcano_1440）を火口の溶岩湖の奥に（空の地平の火山は消す＝二重にしない）。地点・道・判定は変えない
+  const SYM_DIR = './assets/fields/symbols_1020/';
+  const SYMBOLS = Object.freeze({
+    1: [{ file: SYM_DIR + 'ch1_great_tree_temple.webp', at: { A: [312, 558], B: [312, 558], C: [312, 558] }, w: 150, foot: 84 }],
+    2: [{ file: SYM_DIR + 'ch2_spiral_tower.webp', at: { A: [648, 528], B: [648, 528], C: [648, 528] }, w: 64, foot: 42 },
+      { file: SYM_DIR + 'ch2_crystal_temple.webp', at: { A: [480, 756], B: [480, 756], C: [480, 756] }, w: 132, foot: 76 }],
+    3: [{ file: SYM_DIR + 'ch3_floating_pillar_temple.webp', at: { A: [354, 600], B: [354, 600], C: [354, 600] }, w: 160, foot: 90 }],
+    4: [{ file: './assets/fields/ch4/art_1019/volcano_1440.webp', at: { A: [512, 72], B: [512, 72], C: [512, 72] }, w: 560, foot: 60, z: -60 }],
+  });
+  const symbolsFor = (m) => { const r = (m && m.raise && m.raise.field && m.raise.field.route) || 'A', L = SYMBOLS[chOf(m)] || [];
+    return L.map((q) => { const p = q.at[r] || q.at.A; return p ? { file: q.file, x: p[0], y: p[1], w: q.w, foot: q.foot, z: q.z } : null; }).filter(Boolean); };
   const CHI = Object.freeze({ 1: { name: 'はじまりの草原', relay: './assets/fields/ch1a/intro/ch1_intro_overview.webp', gate: './assets/fields/ch1a/final/event/ch1_bg_15_event.webp' },
     2: { name: '潮風の海岸', relay: A2 + 'chapter2_sea_medallion.webp', medal: true, plate: A2 + 'sea_zone_nameplate.webp', gate: null, gateArt: A2 + 'arena_approach_gate.webp', gateSea: A2 + 'open_sea_water.webp' },
     3: { name: '天空の浮島', relay: A3 + 'C3_UI_sky_medallion.webp', medal: true, sky: true, plate: A3 + 'C3_UI_sky_nameplate.webp', gate: null, gateArt: './assets/proto/board_art_1010/goal_arena.webp', gateSea: './assets/proto/board_art_1010/ground_cloud.webp' },
@@ -107,6 +120,7 @@
   // 2026-10-12 試遊修正：カメラを近く（今の道で先の4地点・分かれ道の手前は両方の道を2地点ずつが入る倍率。明るく残す道筋は先の5地点・各3）・モンスター＝マスの幅の 1.2倍・道筋の強調
   // 2026-10-14 Chapter 1 A／B／C 高品質化：盤の絵＝正式13点の派生（MMRF_WORLD の SKIN 'hq1014'）。URL に ?boardSkin=1010（または window.MM_BOARD_SKIN='1010'）で従来の絵＝見比べ・戻すとき
   const skinKey = () => 'hq1014';   // 2026-10-19 第2工程：?boardSkin=1010（従来の絵との比較）は撤去
+  // 2026-10-20 第3便（iPhone 試遊「Chapter 4 の道にマスが窮屈に敷き詰められている」）：Chapter 4 は地点の間隔が狭い（中央値 17〜20・ほかの Chapter は約 21）＝マスの幅を 13 → 11.5（モンスターの大きさはマスの幅に比例）
   const CAM = { fit: 4, fitPer: 2, ahead: 5, per: 3, behind: 3, sMin: 2.2, sMax: 5.6, tilePx: [22, 84], monRatio: 1.2, zoomTau: 320 };
   // カメラ＝C案（2026-10-18 REV3 で正式採用・2026-10-19 次便一括の第2工程で一元化）：歩いている間は向き・倍率を変えない・止まったとき／分かれ道を選んだときだけ短く向きを変える。
   //  旧 URL の比較（?qaCam=old／fixed／ccut・qaCamDeg・qaCamMs）は撤去＝本編と QA は同じカメラ
@@ -446,7 +460,7 @@ html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100
     V.el = $('#wbw'); if (V.key !== key) V.lastMsg = ''; V.key = key;
     if (root.MMRF_WORLD) V.world = root.MMRF_WORLD.create(V.el.querySelector('.wbv'), D(m), root.MMRF_PLAY, { view: viewRect, monSrc: monSrc(m), art: { base: ART, road: 'strip' },
       focus: true, veil: false, xray: true, hideLm: chOf(m) === 1 ? ['START', 'LOWER_GATE', 'UPPER_GATE'] : null, ahead: CAM.ahead,   // 2026-10-13 開発27（11・15）：開始地点の門・中央の門2か所（下門・上門）の飾りの絵は出さない（マス・道・判定はそのまま）
-      sMin: CAM.sMin, sMax: CAM.sMax, tilePx: CAM.tilePx, monRatio: CAM.monRatio, zoomTau: CAM.zoomTau, ...camOpts(), ...(roadFor(m) ? { qaRoad: roadFor(m) } : {}), visual: vis, skin: skinKey(), branchSkin: branchSkin(m) });   // visual＝景観のパターン（A／B／C。配置の中の visualPattern）   // 2026-10-14 開発29（6）：後ろから追うカメラ（進む向きが画面の上）   // 2026-10-14 実機試遊 Q12：曲がり角・分かれ道で向きが急に回らないよう、回る速さを少しゆっくりに（yawTau 420 → 600ms）
+      sMin: CAM.sMin, sMax: CAM.sMax, tilePx: CAM.tilePx, ...(chOf(m) === 4 ? { tileW: 11.5 } : {}), monRatio: CAM.monRatio, zoomTau: CAM.zoomTau, ...camOpts(), ...(roadFor(m) ? { qaRoad: roadFor(m) } : {}), visual: vis, skin: skinKey(), branchSkin: branchSkin(m), symbols: symbolsFor(m) });   // visual＝景観のパターン（A／B／C。配置の中の visualPattern）   // 2026-10-14 開発29（6）：後ろから追うカメラ（進む向きが画面の上）   // 2026-10-14 実機試遊 Q12：曲がり角・分かれ道で向きが急に回らないよう、回る速さを少しゆっくりに（yawTau 420 → 600ms）
     V.el.querySelectorAll('.rfw-title').forEach((e) => e.remove());   // 2026-10-13 開発25 H：全景の地図の上に大きな題字を出さない（題字は中継カットの間だけ＝cover）。HUD の Chapter 表示は別（残す）
     sprSetup(m);
     return true;
@@ -1186,5 +1200,5 @@ html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100
   }
 
   const active = (m) => !!(WD(m) && WD(m).active(m));
-  root.MMWB = Object.freeze({ STEP_MS, skinKey, BRANCH_SKIN, branchSkin, pickDir, dirSets, progressAt, active, board, release, roll, pick, rest, open, items, itemsClose, useItem, state: () => ({ key: V.key, intro: V.intro, world: V.world ? V.world.state() : null }), world: () => V.world });
+  root.MMWB = Object.freeze({ STEP_MS, skinKey, BRANCH_SKIN, branchSkin, SYMBOLS, symbolsFor, pickDir, dirSets, progressAt, active, board, release, roll, pick, rest, open, items, itemsClose, useItem, state: () => ({ key: V.key, intro: V.intro, world: V.world ? V.world.state() : null }), world: () => V.world });
 })(typeof window !== 'undefined' ? window : globalThis);

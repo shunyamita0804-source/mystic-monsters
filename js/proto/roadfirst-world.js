@@ -327,8 +327,11 @@
         //  半透明（xray）は木・岩・茂みなどの自然の景物だけ（マス・モンスターを隠すとき）
         p.arch = /rfw-lm|rfw-goal|rfw-peak/.test(cls || '') || /gate|tower|town|arch|pavilion|colonnade|column|pier|statue|obelisk|temple|shrine|lm_|L\d\d_/i.test(file);
         bb.appendChild(d); props.push(p); };
-      for (const q of (SEA ? SEA.scatter(D, o, HELP) : scatter(D, o))) add(q.file, q.x, q.y, q.w, q.z || 0, q.cls, q.h);
-      if (D.art && D.art.sky) for (const q of skyProps(D, o)) add(q.file, q.x, q.y, q.w, q.z || 0, 'rfw-sky');   // 2026-10-18 Chapter 3：雲海の中の小さな浮島・雲
+      // 2026-10-20 第3便：Chapter のシンボル建物（o.symbols＝{ file, x, y, w, foot, h }・js/chapter/world-board.js の SYMBOLS）。足もとのまわりの景物（木・岩など）は置かない
+      const SYMS = Array.isArray(o.symbols) ? o.symbols.filter((q) => q && q.file) : [], symNear = (x, y, r) => SYMS.some((q) => Math.hypot(q.x - x, q.y - y) < (q.foot || q.w * 0.4) + r);
+      for (const q of (SEA ? SEA.scatter(D, o, HELP) : scatter(D, o))) { if (SYMS.length && symNear(q.x, q.y, (q.w || 10) * 0.3)) continue; add(q.file, q.x, q.y, q.w, q.z || 0, q.cls, q.h); }
+      if (D.art && D.art.sky) for (const q of skyProps(D, o)) { if (SYMS.length && symNear(q.x, q.y, (q.w || 10) * 0.3)) continue; add(q.file, q.x, q.y, q.w, q.z || 0, 'rfw-sky'); }
+      for (const q of SYMS) add(q.file, q.x, q.y, q.w, q.z != null ? q.z : -30, 'rfw-lm rfw-sym', q.h || 0);   // 2026-10-18 Chapter 3：雲海の中の小さな浮島・雲
       const gn = D.nodes.GOAL; if (gn) { add(GA.file, gn[0], gn[1] + GA.dy, GA.w, -40, 'rfw-goal'); const gp = props[props.length - 1]; gp.solid = true;
         // 2026-10-14 実機試遊⑭：大会会場は立てた絵（いつもカメラの方を向く）なので、置く位置も「カメラから見て GOAL のすぐ奥」に合わせる＝正面の階段の下に GOAL の円盤が来る。
         //  地面を進む向きへ回す（heading）本編だけ：GOAL から画面の奥の向きへ back だけ下げた点（回したあとの画面で真上）。試作（北が上）は従来の dy のまま。GOAL の地点・歩数・判定は変えない
@@ -336,7 +339,7 @@
       for (const L of lmOf(D)) { if (o.hideLm && o.hideLm.includes(L.node)) continue; const at = landmarkAt(D, L); if (at) { add(L.file, at[0], at[1], L.w, L.z || 0, 'rfw-lm', hOf(L.node)); props[props.length - 1].L = L; } }
       for (const q of branchMarks(D, o)) add(q.file, q.x, q.y, q.w, q.z, q.cls);   // 2026-10-19 追加指令：Chapter ごとの分岐の道標・印（未採用のあいだは無し）
       for (const q of (SEA ? [] : waterProps(D, o))) add(q.file, q.x, q.y, q.w, q.z || 0, 'rfw-wp');   // 第4便：川の景物（B は密に）
-      for (const [x, y, w] of peaksOf(D, o)) add(ART.peaks.file, x, y, w, -20, 'rfw-peak');   // 第4便：山の岩峰（C は足す）
+      for (const [x, y, w] of peaksOf(D, o)) { if (SYMS.length && symNear(x, y, w * 0.4)) continue; add(ART.peaks.file, x, y, w, -20, 'rfw-peak'); }   // 第4便：山の岩峰（C は足す）
     }
     const S = {
       cam: { tx: WORLD.w / 2, ty: WORLD.h / 2, s: 1, tilt: 0, P: o.persp, ax: 0, ay: 0, yaw: 0 }, goal: null, mon: null, monGoal: null, yawGoal: 0,
@@ -959,7 +962,8 @@
     if (!strip) return;
     // 縁石：道の入口（道の半幅ぶん）を切った円弧に、帯の上の縁石の段を短い切れ端で並べる
     const gap = Math.asin(Math.min(0.98, (half - th * 0.35) / (r - th / 2)));
-    const blocked = (a) => dirs.some((d) => { let z = Math.abs(((a - d) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI); return z < gap; });
+    // 2026-10-20 第3便（iPhone 試遊「丸の道は全て縁そのままに」）：道が入ってくる所も縁石を切らない（360° つながった縁）。gap・dirs は使わない
+    const blocked = () => false; void gap;
     const rm = r - th / 2, seg = 2.2, N = Math.max(12, Math.ceil(Math.PI * 2 * rm / seg)), sh2 = Math.round(strip.height * CURB);
     for (let i = 0; i < N; i++) {
       const a = (i + 0.5) / N * Math.PI * 2; if (blocked(a)) continue;
@@ -1144,9 +1148,9 @@
     const behind = (id, n) => {
       let back = id; for (let j = 0; j < 3; j++) { const e = D.edges.find((x) => x[1] === back && x[3] === 'forward'); if (!e) break; back = e[0]; }
       if (back === id) return null; const pv = D.nodes[back], a0 = Math.atan2(n[1] - pv[1], n[0] - pv[0]);
-      //  真後ろ（0°）はカメラから見てモンスターの頭のすぐ上に重なる＝少し斜め（±25° 前後）を先に・中心から 44 単位〜
-      const clear = o.postClear || 20, d0 = o.postBack || 44;
-      for (const dd of [0, 6, 12, 18, 26]) for (const da of [25, -25, 35, -35, 15, -15, 45, -45, 55, -55, 0, 60, -60]) {
+      //  2026-10-20 第3便（「門や看板は斜めに置くのではなく正面・正対」）：入ってくる向きのまっすぐ先（0°）を最優先・中心から 54 単位〜（モンスターの頭の上に重ならない奥）。置けないときだけ少しずつ横へ
+      const clear = o.postClear || 20, d0 = o.postBack || 54;
+      for (const dd of [0, 6, 12, 18, 26]) for (const da of [0, 8, -8, 16, -16, 24, -24, 34, -34, 45, -45]) {
         const a = a0 + rad(da), d = d0 + dd, x = n[0] + Math.cos(a) * d, y = n[1] + Math.sin(a) * d;
         if (!nearRoad(x, y, clear)) return [x - n[0], y - n[1]];
       }
