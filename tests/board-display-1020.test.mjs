@@ -181,7 +181,7 @@ test('BD-07：第3便＝シンボル建物（全 Chapter・A／B／C 同じ所�
   }
   assert.match(B, /branchSkin: branchSkin\(m\), symbols: symbolsFor\(m\)/);
   const W = rd('js/proto/roadfirst-world.js');
-  assert.match(W, /for \(const q of SYMS\) add\(q\.file, q\.x, q\.y, q\.w, q\.z != null \? q\.z : -30, 'rfw-lm rfw-sym', q\.h \|\| 0\);/);
+  assert.match(W, /for \(const q of SYMS\) \{ add\(q\.file, q\.x, q\.y, q\.w, q\.z != null \? q\.z : -30, 'rfw-lm rfw-sym', q\.h \|\| 0\); props\[props\.length - 1\]\.cap = 512; \}/, '第4便：決まった幅（合成の層）は 512px まで');
   assert.match(rd('js/proto/ch4-world.js'), /\.rfv-sky b\{display:none;/, 'Chapter 4 の空の火山は消す（盤の巨大火山と二重にしない）');
 });
 
