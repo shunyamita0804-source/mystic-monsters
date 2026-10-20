@@ -325,7 +325,7 @@
       Promise.all([load3('ground', ART.ground.file), load3('road', ART.road.file), o.art.road === 'pattern' ? null : load3('strip', ART.strip.file),
         load(T.valley.file), load2('water', T.water.file), load(T.cloud.file), ...EK.map((k) => load(T.edges[k].file)), SEA ? SEA.load(load, base) : null]).then(([gi, ri, si, vi, wi, ci, ...ei]) => {
         if (S.dead) return; art.ground = gi; art.road = ri; art.strip = si;
-        if (SEA) { art[SEA.flat ? 'volc' : 'sea'] = ei.pop(); vi = null; S.sea3d = SEA.build3d({ doc, plane, D, o, art, H: HELP, base, S }); S.dirty = true; }   // 2026-10-19：作った直後に1回描き直す（火山の空の色をモンスターの居る所に合わせる）   // 2026-10-15 Chapter 2：谷・雲海・森は使わない（海・海底の盆地・塔）
+        if (SEA) { art[SEA.flat ? 'volc' : 'sea'] = ei.pop(); vi = null; S.sea3d = SEA.build3d({ doc, plane, D, o, art, H: HELP, base, S, gl: GL }); S.dirty = true; }   // 2026-10-19：作った直後に1回描き直す（火山の空の色をモンスターの居る所に合わせる）   // 2026-10-15 Chapter 2：谷・雲海・森は使わない（海・海底の盆地・塔）
         else ei.pop();
         if (ri && ri._sk) { art.roadTile = SK ? SK.roadTile : 57.5; art.discCenter = SK ? !!SK.discCenter : true; }   // R の石の大きさ＝道の帯の石にそろえる
         if (vi) { art.terrain = terrainMasks(doc, D, o); art.valley = vi; art.water = wi; art.cloud = ci; art.edges = {}; EK.forEach((k, i) => { art.edges[k] = ei[i]; });
@@ -583,7 +583,7 @@
         //  旧：毎フレーム JS でカメラを進めて約600要素の transform を書き換えていた＝倍率が2倍ごとに変わるたびに全要素と地面の区画をラスタし直す波（66〜91ms のフレーム）。
         //  新：止めて見せる（hold）→ 全要素の道筋（keyframe）を一度に作って同じ時間軸で動かす → 終わったら通常の追従へ（計算は同じ project＝同じ道筋・同じ緩急）
         const it = S.intro;
-        if (!painted && o.art && now - it.t0 < 3000) it.hold = now + it.holdMs;   // 区画を描き終えるまで俯瞰を止めておく（最大3秒）
+        if ((!painted || (GL && !GL.macroDone())) && o.art && now - it.t0 < 3000) it.hold = now + it.holdMs;   // 2026-10-20 第4便：WebGL の盤は素材の読み込みと地形の絵（全体）を描き終えるまで（寄る動きの途中で止まらない）   // 区画を描き終えるまで俯瞰を止めておく（最大3秒）
         if (now < it.hold) { S.cam = Object.assign({}, it.from); }
         else if (!it.anims) startIntroAnims(it, now);
         if (it.anims) {   // 動いている間は合成スレッドに任せる（描き直さない）

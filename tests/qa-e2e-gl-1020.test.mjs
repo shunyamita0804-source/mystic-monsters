@@ -25,7 +25,7 @@ for (const ch of [1, 2, 3, 4]) {
     const r = await pg.evaluate(() => { const w = MMWB.world(), mon = w.state().mon, q = w.project(mon[0], mon[1]);
       return { gl: !!document.querySelector('.rfw-gl'), chunks: document.querySelectorAll('.rfw-chunk').length, st: w.gl(), top: w.glProbe(195, 160).px, foot: w.glProbe(q.x, q.y + 2).px, bottom: w.glProbe(60, innerHeight - 280).px }; });
     assert.ok(r.gl, 'WebGL の canvas'); assert.equal(r.chunks, 0, '区画の canvas（CSS 3D の層）は作らない');
-    for (const k of ['ground', 'road', 'curb', 'plaza']) assert.equal(r.st.tex[k], true, `素材 ${k}`);
+    for (const k of [ch === 2 ? 'land' : 'ground', 'road', 'curb', 'plaza', ...(ch === 2 ? ['sea', 'seabed', 'floor', 'water'] : ch === 3 ? ['cloud'] : [])]) assert.equal(r.st.tex[k], true, `素材 ${k}`);
     assert.ok(r.st.macro > 0 && r.st.pending === 0, `地形の絵 ${JSON.stringify(r.st)}`);
     for (const k of ['top', 'foot', 'bottom']) assert.ok(r[k][3] > 200, `${k} に色 ${JSON.stringify(r[k])}`);
     assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);

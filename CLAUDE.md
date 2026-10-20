@@ -59,7 +59,7 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 | js/chapter/ch2-trial.js、ch3-trial.js、ch4-trial.js | Chapter 2〜4 の試遊の入口（?ch2trial など・保存しない） |
 | js/proto/roadfirst-data.js・roadfirst-core.js・roadfirst-play.js | Chapter 1 A の道路グラフ `MMRF_DATA`・進行 `MMRF_CORE`・マスの中身と数値 TUNING `MMRF_PLAY` |
 | js/proto/roadfirst-world.js・roadfirst-view.js・roadfirst-zones.js | 1枚の世界の描画 `MMRF_WORLD`・試作の画面 `MMRF`・区域 `MMRF_ZONES` |
-| js/proto/board-gl.js | 1枚の世界の盤の地面と道を WebGL2 で描く `MMGL`（第4便B で本編へ。?glBoard=0 で従来） |
+| js/proto/board-gl.js | 1枚の世界の盤の地面・道・広場（Chapter 2 は海底・壁・斜路・塔も）を WebGL2 で描く `MMGL`（?glBoard=0・WebGL2 の無い端末は従来の canvas＋CSS 3D） |
 | js/proto/board-display.js | Chapter 1・3 の盤の表示の配置（円の広場の中に隣のマスを並べない。座標だけ）`MMRF_DISP` |
 | js/proto/roadfirst-routes.js | Chapter 1 B／C の道 `MMRF_ROUTES`（生成物＝手で書き換えない） |
 | js/proto/ch2-routes.js、js/proto/ch2-world.js | Chapter 2 の道 `MMRF_CH2`（生成物）・海の描画 `MMRF_SEA` |

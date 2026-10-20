@@ -636,7 +636,8 @@
     css(doc);
     const xs = B.map((p) => p[0]), ys = B.map((p) => p[1]), bx0 = Math.floor(Math.min(...xs)) - 4, by0 = Math.floor(Math.min(...ys)) - 4, bw = Math.ceil(Math.max(...xs)) - bx0 + 8, bh = Math.ceil(Math.max(...ys)) - by0 + 8, box = [bx0, by0, bw, bh];
     // 海底：E03 の海底の砂（くり返し）＋その上の絵（深さの明暗・遺跡・海底の道・光の網・ふち）。絵は 1単位 3px（旧 1.6）
-    { const v = [], T = 64; for (const [x, y] of [[bx0, by0], [bx0 + bw, by0], [bx0 + bw, by0 + bh], [bx0, by0 + bh]]) V(v, x, y, -dep, x / T, y / T, 1);
+    //  海の中の光（青い色みと少し暗く）：旧の海底の絵（undersea_sand_base）は青みのある砂だった＝E03 の白い砂の上に海中の色をかける（絵は変えない・場面の明るさ）
+    { const v = [], T = 64, UW = [0.74, 0.88, 1]; for (const [x, y] of [[bx0, by0], [bx0 + bw, by0], [bx0 + bw, by0 + bh], [bx0, by0 + bh]]) V(v, x, y, -dep, x / T, y / T, 0.92, UW);
       G.add({ kind: 'mesh', verts: v, idx: [0, 1, 2, 0, 2, 3], tex: 'seabed', phase: 'pre' }); }
     const res = 3, cv = doc.createElement('canvas'); cv.width = Math.ceil(bw * res); cv.height = Math.ceil(bh * res);
     const g = cv.getContext('2d'); g.setTransform(res, 0, 0, res, -bx0 * res, -by0 * res);

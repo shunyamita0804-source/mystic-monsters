@@ -342,7 +342,8 @@ void main(){
       const a = M.vert(x0, y0, 0, 0, 0, c), b = M.vert(x0 + T, y0, 0, 0, 0, c), d = M.vert(x0 + T, y0 + T, 0, 0, 0, c), e = M.vert(x0, y0 + T, 0, 0, 0, c); M.quad(a, b, d, e);
       const vb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vb); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(M.v), gl.STATIC_DRAW); EQ.set(k, vb); return vb; }
 
-    const ready = Promise.all(waits).then(() => { if (dead) return false; for (const f of after) f(); onDirty(); return true; });
+    let texDone = false;
+    const ready = Promise.all(waits).then(() => { texDone = true; if (dead) return false; for (const f of after) f(); onDirty(); return true; });
     cv.addEventListener('webglcontextlost', (e) => { e.preventDefault(); dead = true; if (cfg.onLost) cfg.onLost(); }, { once: true });
     return {
       el: cv, ready, setMask, texture,
@@ -358,7 +359,7 @@ void main(){
       draw, isDirty: () => dirty,
       /** 確認用：今の絵の1点の色（描いた直後に読む） */
       probe(x, y) { if (lastCam) draw(lastCam); const d = DPR(), px = new Uint8Array(4); gl.readPixels(Math.round(x * d), cv.height - Math.round(y * d) - 1, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); return { px: [...px], last: LAST }; },
-      macroDone: () => featOn && !macroQ.length,
+      macroDone: () => texDone && (!kit.features || (featOn && !macroQ.length)),
       stats: () => ({ macro: macro.length, near: [...near.values()].filter((x) => x.o).length, nearEmpty: [...near.values()].filter((x) => !x.o).length, pending: macroQ.length + nearQ.length, nearMB: +(nearBytes / 1048576).toFixed(1), drawn, tex: Object.fromEntries(Object.entries(tex).map(([k, t]) => [k, t.ok])), aniso: ANMAX, dead }),
       destroy() { dead = true; for (const o of macro) freeTile(o); for (const x of near.values()) freeTile(x.o); try { const x = gl.getExtension('WEBGL_lose_context'); if (x) x.loseContext(); } catch (e) {} cv.remove(); },
     };
