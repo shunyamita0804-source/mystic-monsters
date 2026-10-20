@@ -43,8 +43,10 @@ PLACES = {'START': '風の発着場', 'J0': '最初の分かれ橋', 'P': '雲�
 TITLES = {'L_CHEST': '東屋の浮島の宝', 'R_CHEST': '青い結晶の宝', 'L_ALTAR': '古い列柱の宝', 'L_LATE_ALTAR': '雲の祠の宝', 'REWARD5': '見張りの像の宝', 'R_SPECIAL': '虹の滝の宝', 'RANDOM_DEN': '雲の隠れ家'}
 SKY = './assets/fields/ch3/sky_1016/'
 LM = [  # 目印（空の正式素材＝ARCH／ENV。足りない所は Chapter 1 の正式の目印を代用）
-  {'node': 'START', 'file': SKY + 'C3_ARCH_white_bridge_arch_pier.webp', 'w': 40, 'along': 9, 'z': -30},
-  {'node': 'LOWER_GATE', 'file': SKY + 'C3_ARCH_white_bridge_arch_pier.webp', 'w': 44, 'along': 3, 'z': -30},
+  # 2026-10-20 追加指示（Chapter 3 の門の確認）：橋のアーチの口は絵の幅の約 55%（左の柱 0.12〜0.22・右の柱 0.77〜0.89）。旧 START 幅 40＝口 22 単位＜道幅 23（縁石の外まで）＝柱が縁石にかかっていた・
+  #  START の門は円の広場（半径 18.4）の中に立っていた（along 9）。START は広場の出口（along 20）・幅 46＝口 25 単位、下の門も幅 46（旧 44＝口 24）
+  {'node': 'START', 'file': SKY + 'C3_ARCH_white_bridge_arch_pier.webp', 'w': 46, 'along': 20, 'z': -30},
+  {'node': 'LOWER_GATE', 'file': SKY + 'C3_ARCH_white_bridge_arch_pier.webp', 'w': 46, 'along': 3, 'z': -30},
   {'node': 'UPPER_GATE', 'file': SKY + 'C3_ARCH_white_bridge_arch_pier.webp', 'w': 48, 'along': 3, 'z': -30},
   {'node': 'CHALLENGE', 'file': SKY + 'C3_ARCH_ruined_colonnade.webp', 'w': 46, 'along': 14, 'z': -30},
   {'node': 'STATUE', 'file': SKY + 'C3_ENV_crystal_cluster_blue.webp', 'w': 30, 'off': [-34, -18], 'z': -30},

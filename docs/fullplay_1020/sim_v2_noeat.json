@@ -1,0 +1,5010 @@
+{
+ "N": 2000,
+ "OVER": null,
+ "SEED0": 0,
+ "FOOD": "none",
+ "defs": "funnel[c]: entered＝その Chapter へ出発・goal＝40ターン以内に GOAL・tourWon＝大会で優勝（大会は全勝の仮定）・unlockNext＝次の Chapter へ出発できる（CHAPTER_RANK_GATE）・finalOpen＝最終 Chapter の解放。分母は全 N 回（goalIfEntered だけ入った個体）。goal4＝Chapter 1〜4 を通して Chapter 4 の GOAL に着いた割合",
+ "seedRule": "(i+SEED0)*7919 + mon*104729 + policyIndex*31, i=1..N",
+ "out": {
+  "ソラモ｜random": {
+   "target": "li",
+   "grade": "C",
+   "base": 100,
+   "runs": 2000,
+   "food": "none",
+   "entered4": 17.7,
+   "goal4": 10.8,
+   "funnel": {
+    "1": {
+     "entered": 100,
+     "goal": 62,
+     "tourWon": 62,
+     "unlockNext": 100,
+     "goalIfEntered": 62,
+     "turnsIfGoal": 34.2
+    },
+    "2": {
+     "entered": 100,
+     "goal": 52.4,
+     "tourWon": 52.4,
+     "unlockNext": 32.1,
+     "goalIfEntered": 52.4,
+     "turnsIfGoal": 35.5
+    },
+    "3": {
+     "entered": 32.1,
+     "goal": 17.7,
+     "tourWon": 17.7,
+     "unlockNext": 17.7,
+     "goalIfEntered": 55.1,
+     "turnsIfGoal": 34.9
+    },
+    "4": {
+     "entered": 17.7,
+     "goal": 10.8,
+     "tourWon": 10.8,
+     "finalOpen": 10.8,
+     "goalIfEntered": 61.3,
+     "turnsIfGoal": 35
+    }
+   },
+   "perCh": {
+    "1": {
+     "A": {
+      "n": 668,
+      "goal": 59.1,
+      "turns": 36.7,
+      "start": {
+       "p10": 100,
+       "p50": 100,
+       "p90": 100
+      },
+      "end": {
+       "p10": 114,
+       "p50": 133,
+       "p90": 170
+      },
+      "gain": {
+       "p10": 14,
+       "p50": 33,
+       "p90": 70,
+       "avg": 37.3
+      },
+      "src": {
+       "statTiles": 31.5,
+       "hits": 2.3,
+       "event": 2.5,
+       "reward": 3.2,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 14.9,
+      "eventStops": 4,
+      "battles": 2.8,
+      "meals": 1.4,
+      "rests": 2,
+      "ate": 0
+     },
+     "B": {
+      "n": 669,
+      "goal": 61.7,
+      "turns": 36.3,
+      "start": {
+       "p10": 100,
+       "p50": 100,
+       "p90": 100
+      },
+      "end": {
+       "p10": 111,
+       "p50": 133,
+       "p90": 170
+      },
+      "gain": {
+       "p10": 11,
+       "p50": 33,
+       "p90": 70,
+       "avg": 37.4
+      },
+      "src": {
+       "statTiles": 32.6,
+       "hits": 2.3,
+       "event": 2.3,
+       "reward": 2.5,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 14.5,
+      "eventStops": 4,
+      "battles": 2.8,
+      "meals": 1.4,
+      "rests": 1.8,
+      "ate": 0
+     },
+     "C": {
+      "n": 663,
+      "goal": 65,
+      "turns": 36.3,
+      "start": {
+       "p10": 100,
+       "p50": 100,
+       "p90": 100
+      },
+      "end": {
+       "p10": 114,
+       "p50": 138,
+       "p90": 170
+      },
+      "gain": {
+       "p10": 14,
+       "p50": 38,
+       "p90": 70,
+       "avg": 38.1
+      },
+      "src": {
+       "statTiles": 33.2,
+       "hits": 2.4,
+       "event": 2.4,
+       "reward": 2.5,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 14.7,
+      "eventStops": 3.9,
+      "battles": 2.7,
+      "meals": 1.5,
+      "rests": 1.9,
+      "ate": 0
+     },
+     "all": {
+      "n": 2000,
+      "goal": 62,
+      "turns": 36.4,
+      "start": {
+       "p10": 100,
+       "p50": 100,
+       "p90": 100
+      },
+      "end": {
+       "p10": 114,
+       "p50": 133,
+       "p90": 170
+      },
+      "gain": {
+       "p10": 14,
+       "p50": 33,
+       "p90": 70,
+       "avg": 37.6
+      },
+      "src": {
+       "statTiles": 32.4,
+       "hits": 2.3,
+       "event": 2.4,
+       "reward": 2.7,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 14.7,
+      "eventStops": 4,
+      "battles": 2.8,
+      "meals": 1.4,
+      "rests": 1.9,
+      "ate": 0
+     }
+    },
+    "2": {
+     "A": {
+      "n": 636,
+      "goal": 55,
+      "turns": 37.2,
+      "start": {
+       "p10": 110,
+       "p50": 133,
+       "p90": 170
+      },
+      "end": {
+       "p10": 130,
+       "p50": 171,
+       "p90": 221
+      },
+      "gain": {
+       "p10": 6,
+       "p50": 30,
+       "p90": 72,
+       "avg": 36.1
+      },
+      "src": {
+       "statTiles": 27.4,
+       "hits": 1.8,
+       "event": 3.2,
+       "reward": 5.6,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 11.3,
+      "eventStops": 5.3,
+      "battles": 2.7,
+      "meals": 1.5,
+      "rests": 3.6,
+      "ate": 0
+     },
+     "B": {
+      "n": 647,
+      "goal": 45.3,
+      "turns": 38.2,
+      "start": {
+       "p10": 114,
+       "p50": 133,
+       "p90": 170
+      },
+      "end": {
+       "p10": 131,
+       "p50": 169,
+       "p90": 214
+      },
+      "gain": {
+       "p10": 6,
+       "p50": 30,
+       "p90": 60,
+       "avg": 33.8
+      },
+      "src": {
+       "statTiles": 26.3,
+       "hits": 1.8,
+       "event": 3.1,
+       "reward": 4.4,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 11.5,
+      "eventStops": 5.3,
+      "battles": 2.9,
+      "meals": 1.4,
+      "rests": 4,
+      "ate": 0
+     },
+     "C": {
+      "n": 717,
+      "goal": 56.5,
+      "turns": 37.6,
+      "start": {
+       "p10": 114,
+       "p50": 133,
+       "p90": 170
+      },
+      "end": {
+       "p10": 134,
+       "p50": 172,
+       "p90": 221
+      },
+      "gain": {
+       "p10": 11,
+       "p50": 35,
+       "p90": 72,
+       "avg": 38.3
+      },
+      "src": {
+       "statTiles": 29.9,
+       "hits": 2,
+       "event": 3,
+       "reward": 5.4,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 12,
+      "eventStops": 5.5,
+      "battles": 2.8,
+      "meals": 1.5,
+      "rests": 3.8,
+      "ate": 0
+     },
+     "all": {
+      "n": 2000,
+      "goal": 52.4,
+      "turns": 37.7,
+      "start": {
+       "p10": 114,
+       "p50": 133,
+       "p90": 170
+      },
+      "end": {
+       "p10": 131,
+       "p50": 171,
+       "p90": 218
+      },
+      "gain": {
+       "p10": 10,
+       "p50": 30,
+       "p90": 70,
+       "avg": 36.2
+      },
+      "src": {
+       "statTiles": 27.9,
+       "hits": 1.9,
+       "event": 3.1,
+       "reward": 5.1,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 11.6,
+      "eventStops": 5.4,
+      "battles": 2.8,
+      "meals": 1.4,
+      "rests": 3.8,
+      "ate": 0
+     }
+    },
+    "3": {
+     "A": {
+      "n": 224,
+      "goal": 51.8,
+      "turns": 37.6,
+      "start": {
+       "p10": 128,
+       "p50": 160,
+       "p90": 203
+      },
+      "end": {
+       "p10": 154,
+       "p50": 195,
+       "p90": 246
+      },
+      "gain": {
+       "p10": 0,
+       "p50": 32,
+       "p90": 64,
+       "avg": 34.8
+      },
+      "src": {
+       "statTiles": 28.4,
+       "hits": 1.8,
+       "event": 3.4,
+       "reward": 3.1,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 11.8,
+      "eventStops": 5.3,
+      "battles": 2.6,
+      "meals": 1.3,
+      "rests": 3.5,
+      "ate": 0
+     },
+     "B": {
+      "n": 211,
+      "goal": 60.2,
+      "turns": 36.8,
+      "start": {
+       "p10": 129,
+       "p50": 166,
+       "p90": 207
+      },
+      "end": {
+       "p10": 148,
+       "p50": 199,
+       "p90": 250
+      },
+      "gain": {
+       "p10": 0,
+       "p50": 32,
+       "p90": 64,
+       "avg": 31.7
+      },
+      "src": {
+       "statTiles": 27.4,
+       "hits": 1.7,
+       "event": 2.8,
+       "reward": 1.6,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 11.3,
+      "eventStops": 5.2,
+      "battles": 2.8,
+      "meals": 1.3,
+      "rests": 3.3,
+      "ate": 0
+     },
+     "C": {
+      "n": 207,
+      "goal": 53.6,
+      "turns": 37.1,
+      "start": {
+       "p10": 129,
+       "p50": 163,
+       "p90": 207
+      },
+      "end": {
+       "p10": 148,
+       "p50": 200,
+       "p90": 248
+      },
+      "gain": {
+       "p10": 0,
+       "p50": 32,
+       "p90": 64,
+       "avg": 32.6
+      },
+      "src": {
+       "statTiles": 26.6,
+       "hits": 1.7,
+       "event": 2.6,
+       "reward": 3.4,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 11.5,
+      "eventStops": 5.2,
+      "battles": 2.6,
+      "meals": 1.5,
+      "rests": 3.3,
+      "ate": 0
+     },
+     "all": {
+      "n": 642,
+      "goal": 55.1,
+      "turns": 37.2,
+      "start": {
+       "p10": 129,
+       "p50": 163,
+       "p90": 207
+      },
+      "end": {
+       "p10": 151,
+       "p50": 197,
+       "p90": 249
+      },
+      "gain": {
+       "p10": 0,
+       "p50": 32,
+       "p90": 64,
+       "avg": 33.1
+      },
+      "src": {
+       "statTiles": 27.5,
+       "hits": 1.7,
+       "event": 2.9,
+       "reward": 2.7,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 11.5,
+      "eventStops": 5.2,
+      "battles": 2.7,
+      "meals": 1.4,
+      "rests": 3.4,
+      "ate": 0
+     }
+    },
+    "4": {
+     "A": {
+      "n": 129,
+      "goal": 60.5,
+      "turns": 36.6,
+      "start": {
+       "p10": 147,
+       "p50": 202,
+       "p90": 249
+      },
+      "end": {
+       "p10": 175,
+       "p50": 237,
+       "p90": 297
+      },
+      "gain": {
+       "p10": 0,
+       "p50": 34,
+       "p90": 68,
+       "avg": 36.3
+      },
+      "src": {
+       "statTiles": 31.5,
+       "hits": 1.9,
+       "event": 2.7,
+       "reward": 2.2,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 11.5,
+      "eventStops": 5.2,
+      "battles": 2.6,
+      "meals": 1.5,
+      "rests": 3,
+      "ate": 0
+     },
+     "B": {
+      "n": 110,
+      "goal": 64.5,
+      "turns": 36.8,
+      "start": {
+       "p10": 152,
+       "p50": 193,
+       "p90": 237
+      },
+      "end": {
+       "p10": 175,
+       "p50": 233,
+       "p90": 295
+      },
+      "gain": {
+       "p10": 10,
+       "p50": 35,
+       "p90": 69,
+       "avg": 40
+      },
+      "src": {
+       "statTiles": 33.2,
+       "hits": 2,
+       "event": 3.5,
+       "reward": 3.2,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 12.3,
+      "eventStops": 5.1,
+      "battles": 2.6,
+      "meals": 1.3,
+      "rests": 3.2,
+      "ate": 0
+     },
+     "C": {
+      "n": 115,
+      "goal": 59.1,
+      "turns": 37.5,
+      "start": {
+       "p10": 142,
+       "p50": 195,
+       "p90": 250
+      },
+      "end": {
+       "p10": 161,
+       "p50": 224,
+       "p90": 297
+      },
+      "gain": {
+       "p10": 0,
+       "p50": 32,
+       "p90": 64,
+       "avg": 31.8
+      },
+      "src": {
+       "statTiles": 24.5,
+       "hits": 1.4,
+       "event": 3,
+       "reward": 4.3,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 11.4,
+      "eventStops": 5.2,
+      "battles": 2.8,
+      "meals": 1.4,
+      "rests": 3.2,
+      "ate": 0
+     },
+     "all": {
+      "n": 354,
+      "goal": 61.3,
+      "turns": 37,
+      "start": {
+       "p10": 146,
+       "p50": 195,
+       "p90": 248
+      },
+      "end": {
+       "p10": 173,
+       "p50": 230,
+       "p90": 297
+      },
+      "gain": {
+       "p10": 5,
+       "p50": 34,
+       "p90": 68,
+       "avg": 36
+      },
+      "src": {
+       "statTiles": 29.8,
+       "hits": 1.8,
+       "event": 3,
+       "reward": 3.2,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 11.7,
+      "eventStops": 5.2,
+      "battles": 2.7,
+      "meals": 1.4,
+      "rests": 3.1,
+      "ate": 0
+     }
+    }
+   },
+   "final": {
+    "p10": 176,
+    "p50": 230,
+    "p90": 301,
+    "avg": 232.9,
+    "max": 375
+   },
+   "finalIfEntered4": {
+    "p10": 173,
+    "p50": 230,
+    "p90": 297
+   }
+  },
+  "ソラモ｜careful": {
+   "target": "li",
+   "grade": "C",
+   "base": 100,
+   "runs": 2000,
+   "food": "none",
+   "entered4": 12.2,
+   "goal4": 6.2,
+   "funnel": {
+    "1": {
+     "entered": 100,
+     "goal": 54.9,
+     "tourWon": 54.9,
+     "unlockNext": 100,
+     "goalIfEntered": 54.9,
+     "turnsIfGoal": 34.6
+    },
+    "2": {
+     "entered": 100,
+     "goal": 43,
+     "tourWon": 43,
+     "unlockNext": 22.9,
+     "goalIfEntered": 43,
+     "turnsIfGoal": 35.7
+    },
+    "3": {
+     "entered": 22.9,
+     "goal": 12.2,
+     "tourWon": 12.2,
+     "unlockNext": 12.2,
+     "goalIfEntered": 53.3,
+     "turnsIfGoal": 35.2
+    },
+    "4": {
+     "entered": 12.2,
+     "goal": 6.2,
+     "tourWon": 6.2,
+     "finalOpen": 6.2,
+     "goalIfEntered": 50.4,
+     "turnsIfGoal": 35.4
+    }
+   },
+   "perCh": {
+    "1": {
+     "A": {
+      "n": 669,
+      "goal": 51.9,
+      "turns": 37.3,
+      "start": {
+       "p10": 100,
+       "p50": 100,
+       "p90": 100
+      },
+      "end": {
+       "p10": 114,
+       "p50": 133,
+       "p90": 166
+      },
+      "gain": {
+       "p10": 14,
+       "p50": 33,
+       "p90": 66,
+       "avg": 36.3
+      },
+      "src": {
+       "statTiles": 31.8,
+       "hits": 2.3,
+       "event": 2.2,
+       "reward": 2.3,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 14.6,
+      "eventStops": 3.8,
+      "battles": 2.7,
+      "meals": 1.3,
+      "rests": 3.4,
+      "ate": 0
+     },
+     "B": {
+      "n": 664,
+      "goal": 55.7,
+      "turns": 36.9,
+      "start": {
+       "p10": 100,
+       "p50": 100,
+       "p90": 100
+      },
+      "end": {
+       "p10": 110,
+       "p50": 133,
+       "p90": 162
+      },
+      "gain": {
+       "p10": 10,
+       "p50": 33,
+       "p90": 62,
+       "avg": 35.1
+      },
+      "src": {
+       "statTiles": 30.2,
+       "hits": 2.2,
+       "event": 2.2,
+       "reward": 2.7,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 14.2,
+      "eventStops": 3.9,
+      "battles": 2.8,
+      "meals": 1.4,
+      "rests": 3.1,
+      "ate": 0
+     },
+     "C": {
+      "n": 667,
+      "goal": 57.1,
+      "turns": 36.8,
+      "start": {
+       "p10": 100,
+       "p50": 100,
+       "p90": 100
+      },
+      "end": {
+       "p10": 114,
+       "p50": 133,
+       "p90": 163
+      },
+      "gain": {
+       "p10": 14,
+       "p50": 33,
+       "p90": 63,
+       "avg": 36.1
+      },
+      "src": {
+       "statTiles": 31.7,
+       "hits": 2.3,
+       "event": 1.9,
+       "reward": 2.5,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 14.1,
+      "eventStops": 3.8,
+      "battles": 2.8,
+      "meals": 1.3,
+      "rests": 3.4,
+      "ate": 0
+     },
+     "all": {
+      "n": 2000,
+      "goal": 54.9,
+      "turns": 37,
+      "start": {
+       "p10": 100,
+       "p50": 100,
+       "p90": 100
+      },
+      "end": {
+       "p10": 114,
+       "p50": 133,
+       "p90": 166
+      },
+      "gain": {
+       "p10": 14,
+       "p50": 33,
+       "p90": 66,
+       "avg": 35.9
+      },
+      "src": {
+       "statTiles": 31.2,
+       "hits": 2.2,
+       "event": 2.1,
+       "reward": 2.5,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 14.3,
+      "eventStops": 3.8,
+      "battles": 2.7,
+      "meals": 1.3,
+      "rests": 3.3,
+      "ate": 0
+     }
+    },
+    "2": {
+     "A": {
+      "n": 662,
+      "goal": 48,
+      "turns": 37.6,
+      "start": {
+       "p10": 110,
+       "p50": 133,
+       "p90": 166
+      },
+      "end": {
+       "p10": 129,
+       "p50": 167,
+       "p90": 212
+      },
+      "gain": {
+       "p10": 6,
+       "p50": 30,
+       "p90": 60,
+       "avg": 34
+      },
+      "src": {
+       "statTiles": 26.3,
+       "hits": 1.8,
+       "event": 2.8,
+       "reward": 4.9,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 11.1,
+      "eventStops": 5.1,
+      "battles": 2.7,
+      "meals": 1.3,
+      "rests": 5.2,
+      "ate": 0
+     },
+     "B": {
+      "n": 661,
+      "goal": 37.1,
+      "turns": 38.7,
+      "start": {
+       "p10": 114,
+       "p50": 133,
+       "p90": 166
+      },
+      "end": {
+       "p10": 130,
+       "p50": 168,
+       "p90": 212
+      },
+      "gain": {
+       "p10": 6,
+       "p50": 30,
+       "p90": 60,
+       "avg": 32
+      },
+      "src": {
+       "statTiles": 25,
+       "hits": 1.7,
+       "event": 3.2,
+       "reward": 3.9,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 11.3,
+      "eventStops": 5.1,
+      "battles": 2.9,
+      "meals": 1.5,
+      "rests": 5.1,
+      "ate": 0
+     },
+     "C": {
+      "n": 677,
+      "goal": 43.7,
+      "turns": 38.2,
+      "start": {
+       "p10": 110,
+       "p50": 133,
+       "p90": 161
+      },
+      "end": {
+       "p10": 135,
+       "p50": 170,
+       "p90": 216
+      },
+      "gain": {
+       "p10": 11,
+       "p50": 35,
+       "p90": 66,
+       "avg": 37.8
+      },
+      "src": {
+       "statTiles": 28.4,
+       "hits": 1.9,
+       "event": 3.6,
+       "reward": 5.8,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 11.6,
+      "eventStops": 5.4,
+      "battles": 2.8,
+      "meals": 1.5,
+      "rests": 5.1,
+      "ate": 0
+     },
+     "all": {
+      "n": 2000,
+      "goal": 43,
+      "turns": 38.2,
+      "start": {
+       "p10": 114,
+       "p50": 133,
+       "p90": 166
+      },
+      "end": {
+       "p10": 130,
+       "p50": 168,
+       "p90": 214
+      },
+      "gain": {
+       "p10": 10,
+       "p50": 30,
+       "p90": 65,
+       "avg": 34.6
+      },
+      "src": {
+       "statTiles": 26.6,
+       "hits": 1.8,
+       "event": 3.2,
+       "reward": 4.9,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 11.4,
+      "eventStops": 5.2,
+      "battles": 2.8,
+      "meals": 1.4,
+      "rests": 5.1,
+      "ate": 0
+     }
+    },
+    "3": {
+     "A": {
+      "n": 156,
+      "goal": 52.6,
+      "turns": 37.3,
+      "start": {
+       "p10": 129,
+       "p50": 158,
+       "p90": 201
+      },
+      "end": {
+       "p10": 146,
+       "p50": 191,
+       "p90": 241
+      },
+      "gain": {
+       "p10": 5,
+       "p50": 30,
+       "p90": 66,
+       "avg": 31.5
+      },
+      "src": {
+       "statTiles": 26.2,
+       "hits": 1.6,
+       "event": 2.8,
+       "reward": 2.6,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 11.6,
+      "eventStops": 5.3,
+      "battles": 2.6,
+      "meals": 1.3,
+      "rests": 4.3,
+      "ate": 0
+     },
+     "B": {
+      "n": 147,
+      "goal": 56.5,
+      "turns": 37.5,
+      "start": {
+       "p10": 129,
+       "p50": 159,
+       "p90": 206
+      },
+      "end": {
+       "p10": 151,
+       "p50": 191,
+       "p90": 240
+      },
+      "gain": {
+       "p10": 10,
+       "p50": 32,
+       "p90": 53,
+       "avg": 32.1
+      },
+      "src": {
+       "statTiles": 28,
+       "hits": 1.7,
+       "event": 2.5,
+       "reward": 1.6,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 11.4,
+      "eventStops": 4.9,
+      "battles": 2.7,
+      "meals": 1.5,
+      "rests": 4.1,
+      "ate": 0
+     },
+     "C": {
+      "n": 155,
+      "goal": 51,
+      "turns": 37.6,
+      "start": {
+       "p10": 129,
+       "p50": 160,
+       "p90": 203
+      },
+      "end": {
+       "p10": 152,
+       "p50": 194,
+       "p90": 238
+      },
+      "gain": {
+       "p10": 5,
+       "p50": 32,
+       "p90": 58,
+       "avg": 31.8
+      },
+      "src": {
+       "statTiles": 26.8,
+       "hits": 1.7,
+       "event": 2.9,
+       "reward": 2,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 11,
+      "eventStops": 5.3,
+      "battles": 2.7,
+      "meals": 1.4,
+      "rests": 4.5,
+      "ate": 0
+     },
+     "all": {
+      "n": 458,
+      "goal": 53.3,
+      "turns": 37.5,
+      "start": {
+       "p10": 129,
+       "p50": 158,
+       "p90": 204
+      },
+      "end": {
+       "p10": 149,
+       "p50": 191,
+       "p90": 240
+      },
+      "gain": {
+       "p10": 5,
+       "p50": 32,
+       "p90": 58,
+       "avg": 31.8
+      },
+      "src": {
+       "statTiles": 27,
+       "hits": 1.7,
+       "event": 2.7,
+       "reward": 2.1,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 11.3,
+      "eventStops": 5.2,
+      "battles": 2.6,
+      "meals": 1.4,
+      "rests": 4.3,
+      "ate": 0
+     }
+    },
+    "4": {
+     "A": {
+      "n": 82,
+      "goal": 51.2,
+      "turns": 37.5,
+      "start": {
+       "p10": 156,
+       "p50": 196,
+       "p90": 248
+      },
+      "end": {
+       "p10": 169,
+       "p50": 224,
+       "p90": 282
+      },
+      "gain": {
+       "p10": 5,
+       "p50": 22,
+       "p90": 56,
+       "avg": 30.3
+      },
+      "src": {
+       "statTiles": 25.1,
+       "hits": 1.5,
+       "event": 2.4,
+       "reward": 2.7,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 11.2,
+      "eventStops": 5.1,
+      "battles": 2.8,
+      "meals": 1.3,
+      "rests": 4.7,
+      "ate": 0
+     },
+     "B": {
+      "n": 85,
+      "goal": 56.5,
+      "turns": 37.5,
+      "start": {
+       "p10": 144,
+       "p50": 184,
+       "p90": 231
+      },
+      "end": {
+       "p10": 171,
+       "p50": 219,
+       "p90": 289
+      },
+      "gain": {
+       "p10": 17,
+       "p50": 34,
+       "p90": 74,
+       "avg": 41.3
+      },
+      "src": {
+       "statTiles": 33.8,
+       "hits": 2,
+       "event": 3.4,
+       "reward": 4.2,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 12,
+      "eventStops": 5.1,
+      "battles": 2.8,
+      "meals": 1.3,
+      "rests": 4.1,
+      "ate": 0
+     },
+     "C": {
+      "n": 77,
+      "goal": 42.9,
+      "turns": 38.1,
+      "start": {
+       "p10": 149,
+       "p50": 200,
+       "p90": 243
+      },
+      "end": {
+       "p10": 173,
+       "p50": 232,
+       "p90": 278
+      },
+      "gain": {
+       "p10": 5,
+       "p50": 34,
+       "p90": 61,
+       "avg": 31.9
+      },
+      "src": {
+       "statTiles": 24.3,
+       "hits": 1.4,
+       "event": 2.4,
+       "reward": 5.3,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 10.8,
+      "eventStops": 5,
+      "battles": 2.9,
+      "meals": 1.5,
+      "rests": 4.5,
+      "ate": 0
+     },
+     "all": {
+      "n": 244,
+      "goal": 50.4,
+      "turns": 37.7,
+      "start": {
+       "p10": 147,
+       "p50": 192,
+       "p90": 243
+      },
+      "end": {
+       "p10": 169,
+       "p50": 227,
+       "p90": 282
+      },
+      "gain": {
+       "p10": 5,
+       "p50": 34,
+       "p90": 66,
+       "avg": 34.6
+      },
+      "src": {
+       "statTiles": 27.9,
+       "hits": 1.6,
+       "event": 2.7,
+       "reward": 4,
+       "tour": 0,
+       "train": 0
+      },
+      "statStops": 11.4,
+      "eventStops": 5.1,
+      "battles": 2.8,
+      "meals": 1.4,
+      "rests": 4.4,
+      "ate": 0
+     }
+    }
+   },
+   "final": {
+    "p10": 168,
+    "p50": 225,
+    "p90": 278,
+    "avg": 224.8,
+    "max": 381
+   },
+   "finalIfEntered4": {
+    "p10": 169,
+    "p50": 227,
+    "p90": 282
+   }
+  },
+  "ガウル｜random": {
+   "target": "po",
+   "grade": "B",
+   "base": 110,
+   "runs": 2000,
+   "food": "none",
+   "entered4": 18.4,
+   "goal4": 10.6,
+   "funnel": {
+    "1": {
+     "entered": 100,
+     "goal": 62.2,
+     "tourWon": 62.2,
+     "unlockNext": 100,
+     "goalIfEntered": 62.2,
+     "turnsIfGoal": 33.8
+    },
+    "2": {
+     "entered": 100,
+     "goal": 51.7,
+     "tourWon": 51.7,
+     "unlockNext": 32.5,
+     "goalIfEntered": 51.7,
+     "turnsIfGoal": 35.4
+    },
+    "3": {
+     "entered": 32.5,
+     "goal": 18.4,
+     "tourWon": 18.4,
+     "unlockNext": 18.4,
+     "goalIfEntered": 56.5,
+     "turnsIfGoal": 34.7
+    },
+    "4": {
+     "entered": 18.4,
+     "goal": 10.6,
+     "tourWon": 10.6,
+     "finalOpen": 10.6,
+     "goalIfEntered": 57.8,
+     "turnsIfGoal": 35
+    }
+   },
+   "perCh": {
+    "1": {
+     "A": {
+      "n": 668,
+      "goal": 63.9,
+      "turns": 36.1,
+      "start": {
+       "p10": 110,
+       "p50": 110,
+       "p90": 110
+      },
+      "end": {
+       "p10": 128,
+       "p50": 156,
+       "p90": 195
+      },
+      "gain": {
+       "p10": 18,
+       "p50": 46,
+       "p90": 85,
+       "avg": 49.5
+      },
+      "src": {
+       "statTiles": 39.9,
+       "hits": 2.7,
+       "event": 2.7,
+       "reward": 2.7,
+       "tour": 1.9,
+       "train": 2.3
+      },
+      "statStops": 14.7,
+      "eventStops": 3.9,
+      "battles": 2.6,
+      "meals": 1.3,
+      "rests": 2,
+      "ate": 0
+     },
+     "B": {
+      "n": 666,
+      "goal": 60.8,
+      "turns": 36.3,
+      "start": {
+       "p10": 110,
+       "p50": 110,
+       "p90": 110
+      },
+      "end": {
+       "p10": 126,
+       "p50": 156,
+       "p90": 193
+      },
+      "gain": {
+       "p10": 16,
+       "p50": 46,
+       "p90": 83,
+       "avg": 49.8
+      },
+      "src": {
+       "statTiles": 40.1,
+       "hits": 2.7,
+       "event": 2.7,
+       "reward": 2.9,
+       "tour": 1.8,
+       "train": 2.3
+      },
+      "statStops": 14.6,
+      "eventStops": 3.8,
+      "battles": 2.8,
+      "meals": 1.3,
+      "rests": 2.1,
+      "ate": 0
+     },
+     "C": {
+      "n": 666,
+      "goal": 61.9,
+      "turns": 36.1,
+      "start": {
+       "p10": 110,
+       "p50": 110,
+       "p90": 110
+      },
+      "end": {
+       "p10": 128,
+       "p50": 156,
+       "p90": 193
+      },
+      "gain": {
+       "p10": 18,
+       "p50": 46,
+       "p90": 83,
+       "avg": 48.6
+      },
+      "src": {
+       "statTiles": 38.9,
+       "hits": 2.6,
+       "event": 2.9,
+       "reward": 2.8,
+       "tour": 1.9,
+       "train": 2.2
+      },
+      "statStops": 14.5,
+      "eventStops": 3.8,
+      "battles": 2.8,
+      "meals": 1.4,
+      "rests": 2,
+      "ate": 0
+     },
+     "all": {
+      "n": 2000,
+      "goal": 62.2,
+      "turns": 36.2,
+      "start": {
+       "p10": 110,
+       "p50": 110,
+       "p90": 110
+      },
+      "end": {
+       "p10": 128,
+       "p50": 156,
+       "p90": 194
+      },
+      "gain": {
+       "p10": 18,
+       "p50": 46,
+       "p90": 84,
+       "avg": 49.3
+      },
+      "src": {
+       "statTiles": 39.6,
+       "hits": 2.6,
+       "event": 2.8,
+       "reward": 2.8,
+       "tour": 1.9,
+       "train": 2.2
+      },
+      "statStops": 14.6,
+      "eventStops": 3.8,
+      "battles": 2.7,
+      "meals": 1.3,
+      "rests": 2,
+      "ate": 0
+     }
+    },
+    "2": {
+     "A": {
+      "n": 658,
+      "goal": 53.6,
+      "turns": 37.2,
+      "start": {
+       "p10": 127,
+       "p50": 155,
+       "p90": 195
+      },
+      "end": {
+       "p10": 163,
+       "p50": 206,
+       "p90": 261
+      },
+      "gain": {
+       "p10": 17,
+       "p50": 47,
+       "p90": 89,
+       "avg": 50
+      },
+      "src": {
+       "statTiles": 32.4,
+       "hits": 1.9,
+       "event": 10.1,
+       "reward": 4.9,
+       "tour": 2,
+       "train": 0.6
+      },
+      "statStops": 11.4,
+      "eventStops": 5.2,
+      "battles": 2.7,
+      "meals": 1.4,
+      "rests": 3.8,
+      "ate": 0
+     },
+     "B": {
+      "n": 664,
+      "goal": 47.4,
+      "turns": 38.1,
+      "start": {
+       "p10": 128,
+       "p50": 156,
+       "p90": 193
+      },
+      "end": {
+       "p10": 171,
+       "p50": 210,
+       "p90": 261
+      },
+      "gain": {
+       "p10": 22,
+       "p50": 51,
+       "p90": 89,
+       "avg": 54.2
+      },
+      "src": {
+       "statTiles": 37.3,
+       "hits": 2.2,
+       "event": 9.8,
+       "reward": 4.7,
+       "tour": 1.7,
+       "train": 0.7
+      },
+      "statStops": 11.7,
+      "eventStops": 5.2,
+      "battles": 2.9,
+      "meals": 1.5,
+      "rests": 3.9,
+      "ate": 0
+     },
+     "C": {
+      "n": 678,
+      "goal": 54,
+      "turns": 37.5,
+      "start": {
+       "p10": 128,
+       "p50": 158,
+       "p90": 194
+      },
+      "end": {
+       "p10": 166,
+       "p50": 211,
+       "p90": 265
+      },
+      "gain": {
+       "p10": 21,
+       "p50": 51,
+       "p90": 88,
+       "avg": 54.3
+      },
+      "src": {
+       "statTiles": 35.9,
+       "hits": 2.1,
+       "event": 11.2,
+       "reward": 4.4,
+       "tour": 2,
+       "train": 0.8
+      },
+      "statStops": 11.9,
+      "eventStops": 5.4,
+      "battles": 2.9,
+      "meals": 1.5,
+      "rests": 3.7,
+      "ate": 0
+     },
+     "all": {
+      "n": 2000,
+      "goal": 51.7,
+      "turns": 37.6,
+      "start": {
+       "p10": 128,
+       "p50": 156,
+       "p90": 194
+      },
+      "end": {
+       "p10": 166,
+       "p50": 209,
+       "p90": 262
+      },
+      "gain": {
+       "p10": 20,
+       "p50": 50,
+       "p90": 89,
+       "avg": 52.9
+      },
+      "src": {
+       "statTiles": 35.2,
+       "hits": 2.1,
+       "event": 10.4,
+       "reward": 4.7,
+       "tour": 1.9,
+       "train": 0.7
+      },
+      "statStops": 11.7,
+      "eventStops": 5.3,
+      "battles": 2.8,
+      "meals": 1.5,
+      "rests": 3.8,
+      "ate": 0
+     }
+    },
+    "3": {
+     "A": {
+      "n": 227,
+      "goal": 54.6,
+      "turns": 37.1,
+      "start": {
+       "p10": 161,
+       "p50": 201,
+       "p90": 255
+      },
+      "end": {
+       "p10": 201,
+       "p50": 250,
+       "p90": 311
+      },
+      "gain": {
+       "p10": 8,
+       "p50": 44,
+       "p90": 91,
+       "avg": 48.8
+      },
+      "src": {
+       "statTiles": 39.8,
+       "hits": 2.1,
+       "event": 3.2,
+       "reward": 2.5,
+       "tour": 3.3,
+       "train": 0
+      },
+      "statStops": 11.9,
+      "eventStops": 5,
+      "battles": 2.7,
+      "meals": 1.3,
+      "rests": 3.4,
+      "ate": 0
+     },
+     "B": {
+      "n": 211,
+      "goal": 61.6,
+      "turns": 36.7,
+      "start": {
+       "p10": 166,
+       "p50": 204,
+       "p90": 261
+      },
+      "end": {
+       "p10": 196,
+       "p50": 245,
+       "p90": 313
+      },
+      "gain": {
+       "p10": 12,
+       "p50": 44,
+       "p90": 82,
+       "avg": 44
+      },
+      "src": {
+       "statTiles": 35.5,
+       "hits": 1.9,
+       "event": 3.3,
+       "reward": 1.5,
+       "tour": 3.7,
+       "train": 0
+      },
+      "statStops": 11.5,
+      "eventStops": 5.1,
+      "battles": 2.8,
+      "meals": 1.3,
+      "rests": 3.2,
+      "ate": 0
+     },
+     "C": {
+      "n": 212,
+      "goal": 53.3,
+      "turns": 37.2,
+      "start": {
+       "p10": 158,
+       "p50": 201,
+       "p90": 257
+      },
+      "end": {
+       "p10": 194,
+       "p50": 250,
+       "p90": 319
+      },
+      "gain": {
+       "p10": 14,
+       "p50": 44,
+       "p90": 88,
+       "avg": 50
+      },
+      "src": {
+       "statTiles": 40.6,
+       "hits": 2.1,
+       "event": 3.6,
+       "reward": 2.6,
+       "tour": 3.2,
+       "train": 0
+      },
+      "statStops": 11.2,
+      "eventStops": 5.2,
+      "battles": 2.8,
+      "meals": 1.3,
+      "rests": 3.5,
+      "ate": 0
+     },
+     "all": {
+      "n": 650,
+      "goal": 56.5,
+      "turns": 37,
+      "start": {
+       "p10": 162,
+       "p50": 202,
+       "p90": 259
+      },
+      "end": {
+       "p10": 197,
+       "p50": 248,
+       "p90": 316
+      },
+      "gain": {
+       "p10": 11,
+       "p50": 44,
+       "p90": 87,
+       "avg": 47.6
+      },
+      "src": {
+       "statTiles": 38.7,
+       "hits": 2,
+       "event": 3.4,
+       "reward": 2.2,
+       "tour": 3.4,
+       "train": 0
+      },
+      "statStops": 11.6,
+      "eventStops": 5.1,
+      "battles": 2.8,
+      "meals": 1.3,
+      "rests": 3.4,
+      "ate": 0
+     }
+    },
+    "4": {
+     "A": {
+      "n": 125,
+      "goal": 61.6,
+      "turns": 36.2,
+      "start": {
+       "p10": 199,
+       "p50": 247,
+       "p90": 321
+      },
+      "end": {
+       "p10": 230,
+       "p50": 300,
+       "p90": 369
+      },
+      "gain": {
+       "p10": 16,
+       "p50": 48,
+       "p90": 88,
+       "avg": 51.4
+      },
+      "src": {
+       "statTiles": 40.3,
+       "hits": 2,
+       "event": 4,
+       "reward": 2.1,
+       "tour": 4.9,
+       "train": 0
+      },
+      "statStops": 11,
+      "eventStops": 5.4,
+      "battles": 2.9,
+      "meals": 1.4,
+      "rests": 3.1,
+      "ate": 0
+     },
+     "B": {
+      "n": 124,
+      "goal": 57.3,
+      "turns": 37.5,
+      "start": {
+       "p10": 197,
+       "p50": 243,
+       "p90": 311
+      },
+      "end": {
+       "p10": 247,
+       "p50": 307,
+       "p90": 374
+      },
+      "gain": {
+       "p10": 20,
+       "p50": 56,
+       "p90": 96,
+       "avg": 58.2
+      },
+      "src": {
+       "statTiles": 45.6,
+       "hits": 2.3,
+       "event": 4.1,
+       "reward": 3.9,
+       "tour": 4.6,
+       "train": 0
+      },
+      "statStops": 12.6,
+      "eventStops": 5.3,
+      "battles": 2.4,
+      "meals": 1.3,
+      "rests": 3,
+      "ate": 0
+     },
+     "C": {
+      "n": 118,
+      "goal": 54.2,
+      "turns": 37.6,
+      "start": {
+       "p10": 201,
+       "p50": 236,
+       "p90": 300
+      },
+      "end": {
+       "p10": 240,
+       "p50": 291,
+       "p90": 367
+      },
+      "gain": {
+       "p10": 14,
+       "p50": 50,
+       "p90": 98,
+       "avg": 56
+      },
+      "src": {
+       "statTiles": 43.7,
+       "hits": 2.2,
+       "event": 2.9,
+       "reward": 5,
+       "tour": 4.3,
+       "train": 0
+      },
+      "statStops": 11.6,
+      "eventStops": 4.7,
+      "battles": 2.8,
+      "meals": 1.4,
+      "rests": 3.2,
+      "ate": 0
+     },
+     "all": {
+      "n": 367,
+      "goal": 57.8,
+      "turns": 37.1,
+      "start": {
+       "p10": 199,
+       "p50": 242,
+       "p90": 311
+      },
+      "end": {
+       "p10": 238,
+       "p50": 301,
+       "p90": 369
+      },
+      "gain": {
+       "p10": 16,
+       "p50": 50,
+       "p90": 96,
+       "avg": 55.2
+      },
+      "src": {
+       "statTiles": 43.2,
+       "hits": 2.2,
+       "event": 3.7,
+       "reward": 3.6,
+       "tour": 4.6,
+       "train": 0
+      },
+      "statStops": 11.7,
+      "eventStops": 5.2,
+      "battles": 2.7,
+      "meals": 1.4,
+      "rests": 3.1,
+      "ate": 0
+     }
+    }
+   },
+   "final": {
+    "p10": 239,
+    "p50": 300,
+    "p90": 368,
+    "avg": 305.2,
+    "max": 495
+   },
+   "finalIfEntered4": {
+    "p10": 238,
+    "p50": 301,
+    "p90": 369
+   }
+  },
+  "ガウル｜careful": {
+   "target": "po",
+   "grade": "B",
+   "base": 110,
+   "runs": 2000,
+   "food": "none",
+   "entered4": 12.8,
+   "goal4": 6.8,
+   "funnel": {
+    "1": {
+     "entered": 100,
+     "goal": 54.5,
+     "tourWon": 54.5,
+     "unlockNext": 100,
+     "goalIfEntered": 54.5,
+     "turnsIfGoal": 34.2
+    },
+    "2": {
+     "entered": 100,
+     "goal": 44.1,
+     "tourWon": 44.1,
+     "unlockNext": 24.1,
+     "goalIfEntered": 44.1,
+     "turnsIfGoal": 35.7
+    },
+    "3": {
+     "entered": 24.1,
+     "goal": 12.8,
+     "tourWon": 12.8,
+     "unlockNext": 12.8,
+     "goalIfEntered": 53.3,
+     "turnsIfGoal": 35.1
+    },
+    "4": {
+     "entered": 12.8,
+     "goal": 6.8,
+     "tourWon": 6.8,
+     "finalOpen": 6.8,
+     "goalIfEntered": 52.5,
+     "turnsIfGoal": 35
+    }
+   },
+   "perCh": {
+    "1": {
+     "A": {
+      "n": 666,
+      "goal": 56.3,
+      "turns": 36.6,
+      "start": {
+       "p10": 110,
+       "p50": 110,
+       "p90": 110
+      },
+      "end": {
+       "p10": 128,
+       "p50": 155,
+       "p90": 195
+      },
+      "gain": {
+       "p10": 18,
+       "p50": 45,
+       "p90": 85,
+       "avg": 48.3
+      },
+      "src": {
+       "statTiles": 39,
+       "hits": 2.6,
+       "event": 3,
+       "reward": 2.4,
+       "tour": 1.7,
+       "train": 2.2
+      },
+      "statStops": 14.3,
+      "eventStops": 3.8,
+      "battles": 2.8,
+      "meals": 1.3,
+      "rests": 3.2,
+      "ate": 0
+     },
+     "B": {
+      "n": 664,
+      "goal": 55.7,
+      "turns": 36.7,
+      "start": {
+       "p10": 110,
+       "p50": 110,
+       "p90": 110
+      },
+      "end": {
+       "p10": 128,
+       "p50": 155,
+       "p90": 193
+      },
+      "gain": {
+       "p10": 18,
+       "p50": 45,
+       "p90": 83,
+       "avg": 47.9
+      },
+      "src": {
+       "statTiles": 38.8,
+       "hits": 2.6,
+       "event": 2.7,
+       "reward": 2.9,
+       "tour": 1.7,
+       "train": 1.9
+      },
+      "statStops": 14.3,
+      "eventStops": 3.9,
+      "battles": 2.7,
+      "meals": 1.4,
+      "rests": 3.1,
+      "ate": 0
+     },
+     "C": {
+      "n": 670,
+      "goal": 51.5,
+      "turns": 37.2,
+      "start": {
+       "p10": 110,
+       "p50": 110,
+       "p90": 110
+      },
+      "end": {
+       "p10": 125,
+       "p50": 155,
+       "p90": 193
+      },
+      "gain": {
+       "p10": 15,
+       "p50": 45,
+       "p90": 83,
+       "avg": 47.5
+      },
+      "src": {
+       "statTiles": 38.5,
+       "hits": 2.6,
+       "event": 2.8,
+       "reward": 2.8,
+       "tour": 1.5,
+       "train": 1.9
+      },
+      "statStops": 14.3,
+      "eventStops": 3.8,
+      "battles": 2.8,
+      "meals": 1.4,
+      "rests": 3.3,
+      "ate": 0
+     },
+     "all": {
+      "n": 2000,
+      "goal": 54.5,
+      "turns": 36.8,
+      "start": {
+       "p10": 110,
+       "p50": 110,
+       "p90": 110
+      },
+      "end": {
+       "p10": 128,
+       "p50": 155,
+       "p90": 194
+      },
+      "gain": {
+       "p10": 18,
+       "p50": 45,
+       "p90": 84,
+       "avg": 47.9
+      },
+      "src": {
+       "statTiles": 38.8,
+       "hits": 2.6,
+       "event": 2.8,
+       "reward": 2.7,
+       "tour": 1.6,
+       "train": 2
+      },
+      "statStops": 14.3,
+      "eventStops": 3.8,
+      "battles": 2.7,
+      "meals": 1.4,
+      "rests": 3.2,
+      "ate": 0
+     }
+    },
+    "2": {
+     "A": {
+      "n": 653,
+      "goal": 47.3,
+      "turns": 37.7,
+      "start": {
+       "p10": 130,
+       "p50": 155,
+       "p90": 191
+      },
+      "end": {
+       "p10": 166,
+       "p50": 206,
+       "p90": 259
+      },
+      "gain": {
+       "p10": 18,
+       "p50": 50,
+       "p90": 85,
+       "avg": 50.9
+      },
+      "src": {
+       "statTiles": 33.1,
+       "hits": 1.9,
+       "event": 10,
+       "reward": 5.4,
+       "tour": 1.7,
+       "train": 0.8
+      },
+      "statStops": 11.3,
+      "eventStops": 5.2,
+      "battles": 2.7,
+      "meals": 1.4,
+      "rests": 5,
+      "ate": 0
+     },
+     "B": {
+      "n": 668,
+      "goal": 40.4,
+      "turns": 38.6,
+      "start": {
+       "p10": 125,
+       "p50": 155,
+       "p90": 194
+      },
+      "end": {
+       "p10": 163,
+       "p50": 207,
+       "p90": 260
+      },
+      "gain": {
+       "p10": 17,
+       "p50": 50,
+       "p90": 87,
+       "avg": 51.8
+      },
+      "src": {
+       "statTiles": 35.1,
+       "hits": 2.1,
+       "event": 10.4,
+       "reward": 4.3,
+       "tour": 1.4,
+       "train": 0.6
+      },
+      "statStops": 11.3,
+      "eventStops": 5.3,
+      "battles": 2.8,
+      "meals": 1.5,
+      "rests": 5.1,
+      "ate": 0
+     },
+     "C": {
+      "n": 679,
+      "goal": 44.6,
+      "turns": 38.1,
+      "start": {
+       "p10": 128,
+       "p50": 155,
+       "p90": 195
+      },
+      "end": {
+       "p10": 165,
+       "p50": 211,
+       "p90": 264
+      },
+      "gain": {
+       "p10": 21,
+       "p50": 55,
+       "p90": 90,
+       "avg": 55.6
+      },
+      "src": {
+       "statTiles": 37.8,
+       "hits": 2.2,
+       "event": 10.5,
+       "reward": 4.9,
+       "tour": 1.6,
+       "train": 0.8
+      },
+      "statStops": 11.8,
+      "eventStops": 5.5,
+      "battles": 2.9,
+      "meals": 1.4,
+      "rests": 5.1,
+      "ate": 0
+     },
+     "all": {
+      "n": 2000,
+      "goal": 44.1,
+      "turns": 38.1,
+      "start": {
+       "p10": 128,
+       "p50": 155,
+       "p90": 194
+      },
+      "end": {
+       "p10": 164,
+       "p50": 208,
+       "p90": 260
+      },
+      "gain": {
+       "p10": 19,
+       "p50": 51,
+       "p90": 88,
+       "avg": 52.8
+      },
+      "src": {
+       "statTiles": 35.3,
+       "hits": 2.1,
+       "event": 10.3,
+       "reward": 4.8,
+       "tour": 1.6,
+       "train": 0.7
+      },
+      "statStops": 11.5,
+      "eventStops": 5.3,
+      "battles": 2.8,
+      "meals": 1.4,
+      "rests": 5,
+      "ate": 0
+     }
+    },
+    "3": {
+     "A": {
+      "n": 138,
+      "goal": 52.2,
+      "turns": 37.2,
+      "start": {
+       "p10": 158,
+       "p50": 200,
+       "p90": 253
+      },
+      "end": {
+       "p10": 186,
+       "p50": 246,
+       "p90": 309
+      },
+      "gain": {
+       "p10": 14,
+       "p50": 44,
+       "p90": 86,
+       "avg": 45.8
+      },
+      "src": {
+       "statTiles": 35.9,
+       "hits": 1.9,
+       "event": 3.9,
+       "reward": 2.8,
+       "tour": 3.1,
+       "train": 0
+      },
+      "statStops": 11.4,
+      "eventStops": 4.9,
+      "battles": 2.6,
+      "meals": 1.4,
+      "rests": 4.1,
+      "ate": 0
+     },
+     "B": {
+      "n": 163,
+      "goal": 50.3,
+      "turns": 37.7,
+      "start": {
+       "p10": 153,
+       "p50": 203,
+       "p90": 252
+      },
+      "end": {
+       "p10": 191,
+       "p50": 250,
+       "p90": 306
+      },
+      "gain": {
+       "p10": 19,
+       "p50": 44,
+       "p90": 82,
+       "avg": 47.9
+      },
+      "src": {
+       "statTiles": 39.3,
+       "hits": 2.1,
+       "event": 3,
+       "reward": 2.6,
+       "tour": 3,
+       "train": 0
+      },
+      "statStops": 11.3,
+      "eventStops": 4.8,
+      "battles": 2.6,
+      "meals": 1.3,
+      "rests": 4.8,
+      "ate": 0
+     },
+     "C": {
+      "n": 181,
+      "goal": 56.9,
+      "turns": 37.3,
+      "start": {
+       "p10": 155,
+       "p50": 200,
+       "p90": 250
+      },
+      "end": {
+       "p10": 197,
+       "p50": 246,
+       "p90": 321
+      },
+      "gain": {
+       "p10": 19,
+       "p50": 44,
+       "p90": 86,
+       "avg": 48.2
+      },
+      "src": {
+       "statTiles": 39.3,
+       "hits": 2.1,
+       "event": 3.7,
+       "reward": 1.9,
+       "tour": 3.4,
+       "train": 0
+      },
+      "statStops": 11.1,
+      "eventStops": 4.8,
+      "battles": 2.8,
+      "meals": 1.5,
+      "rests": 4.4,
+      "ate": 0
+     },
+     "all": {
+      "n": 482,
+      "goal": 53.3,
+      "turns": 37.4,
+      "start": {
+       "p10": 156,
+       "p50": 201,
+       "p90": 252
+      },
+      "end": {
+       "p10": 194,
+       "p50": 248,
+       "p90": 313
+      },
+      "gain": {
+       "p10": 19,
+       "p50": 44,
+       "p90": 86,
+       "avg": 47.4
+      },
+      "src": {
+       "statTiles": 38.3,
+       "hits": 2,
+       "event": 3.5,
+       "reward": 2.4,
+       "tour": 3.2,
+       "train": 0
+      },
+      "statStops": 11.3,
+      "eventStops": 4.8,
+      "battles": 2.7,
+      "meals": 1.4,
+      "rests": 4.4,
+      "ate": 0
+     }
+    },
+    "4": {
+     "A": {
+      "n": 87,
+      "goal": 51.7,
+      "turns": 36.9,
+      "start": {
+       "p10": 179,
+       "p50": 246,
+       "p90": 306
+      },
+      "end": {
+       "p10": 230,
+       "p50": 306,
+       "p90": 367
+      },
+      "gain": {
+       "p10": 8,
+       "p50": 55,
+       "p90": 92,
+       "avg": 54.9
+      },
+      "src": {
+       "statTiles": 44.6,
+       "hits": 2.2,
+       "event": 3.3,
+       "reward": 2.9,
+       "tour": 4.1,
+       "train": 0
+      },
+      "statStops": 11.3,
+      "eventStops": 4.8,
+      "battles": 2.8,
+      "meals": 1.7,
+      "rests": 3.8,
+      "ate": 0
+     },
+     "B": {
+      "n": 89,
+      "goal": 57.3,
+      "turns": 37.4,
+      "start": {
+       "p10": 194,
+       "p50": 234,
+       "p90": 291
+      },
+      "end": {
+       "p10": 222,
+       "p50": 293,
+       "p90": 356
+      },
+      "gain": {
+       "p10": 20,
+       "p50": 48,
+       "p90": 90,
+       "avg": 54.2
+      },
+      "src": {
+       "statTiles": 40.9,
+       "hits": 2,
+       "event": 3.9,
+       "reward": 4.8,
+       "tour": 4.6,
+       "train": 0
+      },
+      "statStops": 11.8,
+      "eventStops": 5.3,
+      "battles": 2.5,
+      "meals": 1.4,
+      "rests": 3.8,
+      "ate": 0
+     },
+     "C": {
+      "n": 81,
+      "goal": 48.1,
+      "turns": 37.9,
+      "start": {
+       "p10": 192,
+       "p50": 247,
+       "p90": 301
+      },
+      "end": {
+       "p10": 237,
+       "p50": 293,
+       "p90": 363
+      },
+      "gain": {
+       "p10": 20,
+       "p50": 48,
+       "p90": 96,
+       "avg": 54
+      },
+      "src": {
+       "statTiles": 42,
+       "hits": 2.1,
+       "event": 3.8,
+       "reward": 4.4,
+       "tour": 3.9,
+       "train": 0
+      },
+      "statStops": 11.2,
+      "eventStops": 5,
+      "battles": 2.8,
+      "meals": 1.3,
+      "rests": 4.4,
+      "ate": 0
+     },
+     "all": {
+      "n": 257,
+      "goal": 52.5,
+      "turns": 37.4,
+      "start": {
+       "p10": 190,
+       "p50": 242,
+       "p90": 303
+      },
+      "end": {
+       "p10": 230,
+       "p50": 298,
+       "p90": 364
+      },
+      "gain": {
+       "p10": 18,
+       "p50": 48,
+       "p90": 95,
+       "avg": 54.4
+      },
+      "src": {
+       "statTiles": 42.5,
+       "hits": 2.1,
+       "event": 3.6,
+       "reward": 4,
+       "tour": 4.2,
+       "train": 0
+      },
+      "statStops": 11.4,
+      "eventStops": 5,
+      "battles": 2.7,
+      "meals": 1.5,
+      "rests": 4,
+      "ate": 0
+     }
+    }
+   },
+   "final": {
+    "p10": 230,
+    "p50": 297,
+    "p90": 361,
+    "avg": 296.3,
+    "max": 418
+   },
+   "finalIfEntered4": {
+    "p10": 230,
+    "p50": 298,
+    "p90": 364
+   }
+  },
+  "A検証体（初期100・ちからA）｜random": {
+   "target": "po",
+   "grade": "A",
+   "base": 100,
+   "runs": 2000,
+   "food": "none",
+   "entered4": 17.8,
+   "goal4": 11.3,
+   "funnel": {
+    "1": {
+     "entered": 100,
+     "goal": 62.1,
+     "tourWon": 62.1,
+     "unlockNext": 100,
+     "goalIfEntered": 62.1,
+     "turnsIfGoal": 34
+    },
+    "2": {
+     "entered": 100,
+     "goal": 52.5,
+     "tourWon": 52.5,
+     "unlockNext": 32.6,
+     "goalIfEntered": 52.5,
+     "turnsIfGoal": 35.4
+    },
+    "3": {
+     "entered": 32.6,
+     "goal": 17.8,
+     "tourWon": 17.8,
+     "unlockNext": 17.8,
+     "goalIfEntered": 54.8,
+     "turnsIfGoal": 34.5
+    },
+    "4": {
+     "entered": 17.8,
+     "goal": 11.3,
+     "tourWon": 11.3,
+     "finalOpen": 11.3,
+     "goalIfEntered": 63,
+     "turnsIfGoal": 35.4
+    }
+   },
+   "perCh": {
+    "1": {
+     "A": {
+      "n": 669,
+      "goal": 64.9,
+      "turns": 36.1,
+      "start": {
+       "p10": 100,
+       "p50": 100,
+       "p90": 100
+      },
+      "end": {
+       "p10": 122,
+       "p50": 151,
+       "p90": 188
+      },
+      "gain": {
+       "p10": 22,
+       "p50": 51,
+       "p90": 88,
+       "avg": 52.8
+      },
+      "src": {
+       "statTiles": 43.4,
+       "hits": 2.6,
+       "event": 2.4,
+       "reward": 2.7,
+       "tour": 1.9,
+       "train": 2.3
+      },
+      "statStops": 14.6,
+      "eventStops": 3.9,
+      "battles": 2.7,
+      "meals": 1.3,
+      "rests": 2,
+      "ate": 0
+     },
+     "B": {
+      "n": 667,
+      "goal": 62.4,
+      "turns": 36.2,
+      "start": {
+       "p10": 100,
+       "p50": 100,
+       "p90": 100
+      },
+      "end": {
+       "p10": 117,
+       "p50": 150,
+       "p90": 193
+      },
+      "gain": {
+       "p10": 17,
+       "p50": 50,
+       "p90": 93,
+       "avg": 53
+      },
+      "src": {
+       "statTiles": 43.1,
+       "hits": 2.5,
+       "event": 2.8,
+       "reward": 2.9,
+       "tour": 1.9,
+       "train": 2.3
+      },
+      "statStops": 14.6,
+      "eventStops": 3.9,
+      "battles": 2.8,
+      "meals": 1.5,
+      "rests": 1.8,
+      "ate": 0
+     },
+     "C": {
+      "n": 664,
+      "goal": 59,
+      "turns": 36.5,
+      "start": {
+       "p10": 100,
+       "p50": 100,
+       "p90": 100
+      },
+      "end": {
+       "p10": 120,
+       "p50": 152,
+       "p90": 195
+      },
+      "gain": {
+       "p10": 20,
+       "p50": 52,
+       "p90": 95,
+       "avg": 55
+      },
+      "src": {
+       "statTiles": 44.7,
+       "hits": 2.6,
+       "event": 2.9,
+       "reward": 3.4,
+       "tour": 1.8,
+       "train": 2.2
+      },
+      "statStops": 14.8,
+      "eventStops": 3.8,
+      "battles": 2.7,
+      "meals": 1.4,
+      "rests": 2.1,
+      "ate": 0
+     },
+     "all": {
+      "n": 2000,
+      "goal": 62.1,
+      "turns": 36.3,
+      "start": {
+       "p10": 100,
+       "p50": 100,
+       "p90": 100
+      },
+      "end": {
+       "p10": 120,
+       "p50": 151,
+       "p90": 193
+      },
+      "gain": {
+       "p10": 20,
+       "p50": 51,
+       "p90": 93,
+       "avg": 53.6
+      },
+      "src": {
+       "statTiles": 43.7,
+       "hits": 2.6,
+       "event": 2.7,
+       "reward": 3,
+       "tour": 1.9,
+       "train": 2.3
+      },
+      "statStops": 14.6,
+      "eventStops": 3.9,
+      "battles": 2.7,
+      "meals": 1.4,
+      "rests": 2,
+      "ate": 0
+     }
+    },
+    "2": {
+     "A": {
+      "n": 667,
+      "goal": 53.8,
+      "turns": 37.3,
+      "start": {
+       "p10": 120,
+       "p50": 151,
+       "p90": 194
+      },
+      "end": {
+       "p10": 160,
+       "p50": 207,
+       "p90": 266
+      },
+      "gain": {
+       "p10": 20,
+       "p50": 52,
+       "p90": 97,
+       "avg": 56.1
+      },
+      "src": {
+       "statTiles": 38.3,
+       "hits": 2,
+       "event": 9.9,
+       "reward": 5.3,
+       "tour": 2,
+       "train": 0.7
+      },
+      "statStops": 11.4,
+      "eventStops": 5.2,
+      "battles": 2.7,
+      "meals": 1.5,
+      "rests": 3.8,
+      "ate": 0
+     },
+     "B": {
+      "n": 697,
+      "goal": 51.5,
+      "turns": 37.9,
+      "start": {
+       "p10": 120,
+       "p50": 151,
+       "p90": 193
+      },
+      "end": {
+       "p10": 162,
+       "p50": 207,
+       "p90": 266
+      },
+      "gain": {
+       "p10": 23,
+       "p50": 55,
+       "p90": 95,
+       "avg": 57.7
+      },
+      "src": {
+       "statTiles": 40.2,
+       "hits": 2.1,
+       "event": 10.2,
+       "reward": 4.6,
+       "tour": 1.9,
+       "train": 0.7
+      },
+      "statStops": 11.4,
+      "eventStops": 5.4,
+      "battles": 2.9,
+      "meals": 1.6,
+      "rests": 3.7,
+      "ate": 0
+     },
+     "C": {
+      "n": 636,
+      "goal": 52.4,
+      "turns": 37.6,
+      "start": {
+       "p10": 120,
+       "p50": 151,
+       "p90": 191
+      },
+      "end": {
+       "p10": 160,
+       "p50": 212,
+       "p90": 265
+      },
+      "gain": {
+       "p10": 23,
+       "p50": 58,
+       "p90": 103,
+       "avg": 60.4
+      },
+      "src": {
+       "statTiles": 41.9,
+       "hits": 2.2,
+       "event": 10.8,
+       "reward": 5.1,
+       "tour": 1.9,
+       "train": 0.7
+      },
+      "statStops": 12.1,
+      "eventStops": 5.4,
+      "battles": 2.9,
+      "meals": 1.5,
+      "rests": 3.7,
+      "ate": 0
+     },
+     "all": {
+      "n": 2000,
+      "goal": 52.5,
+      "turns": 37.6,
+      "start": {
+       "p10": 120,
+       "p50": 151,
+       "p90": 193
+      },
+      "end": {
+       "p10": 160,
+       "p50": 208,
+       "p90": 266
+      },
+      "gain": {
+       "p10": 23,
+       "p50": 56,
+       "p90": 98,
+       "avg": 58
+      },
+      "src": {
+       "statTiles": 40.1,
+       "hits": 2.1,
+       "event": 10.3,
+       "reward": 5,
+       "tour": 1.9,
+       "train": 0.7
+      },
+      "statStops": 11.6,
+      "eventStops": 5.3,
+      "battles": 2.8,
+      "meals": 1.5,
+      "rests": 3.7,
+      "ate": 0
+     }
+    },
+    "3": {
+     "A": {
+      "n": 220,
+      "goal": 51.8,
+      "turns": 37,
+      "start": {
+       "p10": 153,
+       "p50": 197,
+       "p90": 259
+      },
+      "end": {
+       "p10": 195,
+       "p50": 253,
+       "p90": 336
+      },
+      "gain": {
+       "p10": 15,
+       "p50": 54,
+       "p90": 102,
+       "avg": 57.5
+      },
+      "src": {
+       "statTiles": 46.6,
+       "hits": 2.2,
+       "event": 4,
+       "reward": 3.8,
+       "tour": 3.1,
+       "train": 0
+      },
+      "statStops": 11.9,
+      "eventStops": 5.3,
+      "battles": 2.6,
+      "meals": 1.4,
+      "rests": 3.1,
+      "ate": 0
+     },
+     "B": {
+      "n": 216,
+      "goal": 57.9,
+      "turns": 37,
+      "start": {
+       "p10": 153,
+       "p50": 196,
+       "p90": 251
+      },
+      "end": {
+       "p10": 188,
+       "p50": 244,
+       "p90": 314
+      },
+      "gain": {
+       "p10": 11,
+       "p50": 48,
+       "p90": 90,
+       "avg": 49.5
+      },
+      "src": {
+       "statTiles": 40.7,
+       "hits": 1.9,
+       "event": 2.7,
+       "reward": 2.7,
+       "tour": 3.5,
+       "train": 0
+      },
+      "statStops": 11.4,
+      "eventStops": 5.3,
+      "battles": 2.8,
+      "meals": 1.4,
+      "rests": 3.4,
+      "ate": 0
+     },
+     "C": {
+      "n": 216,
+      "goal": 54.6,
+      "turns": 36.9,
+      "start": {
+       "p10": 155,
+       "p50": 201,
+       "p90": 250
+      },
+      "end": {
+       "p10": 196,
+       "p50": 246,
+       "p90": 328
+      },
+      "gain": {
+       "p10": 14,
+       "p50": 48,
+       "p90": 92,
+       "avg": 51
+      },
+      "src": {
+       "statTiles": 42.1,
+       "hits": 2,
+       "event": 3.2,
+       "reward": 2.4,
+       "tour": 3.3,
+       "train": 0
+      },
+      "statStops": 11.7,
+      "eventStops": 5.2,
+      "battles": 2.7,
+      "meals": 1.4,
+      "rests": 3.1,
+      "ate": 0
+     },
+     "all": {
+      "n": 652,
+      "goal": 54.8,
+      "turns": 37,
+      "start": {
+       "p10": 153,
+       "p50": 198,
+       "p90": 253
+      },
+      "end": {
+       "p10": 193,
+       "p50": 248,
+       "p90": 328
+      },
+      "gain": {
+       "p10": 14,
+       "p50": 48,
+       "p90": 94,
+       "avg": 52.7
+      },
+      "src": {
+       "statTiles": 43.2,
+       "hits": 2.1,
+       "event": 3.3,
+       "reward": 3,
+       "tour": 3.3,
+       "train": 0
+      },
+      "statStops": 11.7,
+      "eventStops": 5.2,
+      "battles": 2.7,
+      "meals": 1.4,
+      "rests": 3.2,
+      "ate": 0
+     }
+    },
+    "4": {
+     "A": {
+      "n": 111,
+      "goal": 66.7,
+      "turns": 36.8,
+      "start": {
+       "p10": 194,
+       "p50": 245,
+       "p90": 321
+      },
+      "end": {
+       "p10": 242,
+       "p50": 304,
+       "p90": 371
+      },
+      "gain": {
+       "p10": 30,
+       "p50": 52,
+       "p90": 98,
+       "avg": 59.4
+      },
+      "src": {
+       "statTiles": 49.5,
+       "hits": 2.3,
+       "event": 2.9,
+       "reward": 1.6,
+       "tour": 5.3,
+       "train": 0
+      },
+      "statStops": 11.2,
+      "eventStops": 5.5,
+      "battles": 2.6,
+      "meals": 1.4,
+      "rests": 3,
+      "ate": 0
+     },
+     "B": {
+      "n": 115,
+      "goal": 66.1,
+      "turns": 36.7,
+      "start": {
+       "p10": 188,
+       "p50": 241,
+       "p90": 324
+      },
+      "end": {
+       "p10": 225,
+       "p50": 302,
+       "p90": 381
+      },
+      "gain": {
+       "p10": 26,
+       "p50": 52,
+       "p90": 96,
+       "avg": 57.4
+      },
+      "src": {
+       "statTiles": 43.6,
+       "hits": 2,
+       "event": 4,
+       "reward": 4.5,
+       "tour": 5.3,
+       "train": 0
+      },
+      "statStops": 12.2,
+      "eventStops": 5.2,
+      "battles": 2.7,
+      "meals": 1.3,
+      "rests": 2.7,
+      "ate": 0
+     },
+     "C": {
+      "n": 131,
+      "goal": 57.3,
+      "turns": 37.7,
+      "start": {
+       "p10": 196,
+       "p50": 248,
+       "p90": 307
+      },
+      "end": {
+       "p10": 241,
+       "p50": 309,
+       "p90": 385
+      },
+      "gain": {
+       "p10": 22,
+       "p50": 60,
+       "p90": 106,
+       "avg": 60.5
+      },
+      "src": {
+       "statTiles": 46.9,
+       "hits": 2.1,
+       "event": 3.7,
+       "reward": 5.5,
+       "tour": 4.6,
+       "train": 0
+      },
+      "statStops": 11.1,
+      "eventStops": 5.2,
+      "battles": 2.8,
+      "meals": 1.5,
+      "rests": 2.9,
+      "ate": 0
+     },
+     "all": {
+      "n": 357,
+      "goal": 63,
+      "turns": 37.1,
+      "start": {
+       "p10": 193,
+       "p50": 245,
+       "p90": 315
+      },
+      "end": {
+       "p10": 236,
+       "p50": 307,
+       "p90": 385
+      },
+      "gain": {
+       "p10": 26,
+       "p50": 54,
+       "p90": 104,
+       "avg": 59.2
+      },
+      "src": {
+       "statTiles": 46.6,
+       "hits": 2.1,
+       "event": 3.5,
+       "reward": 3.9,
+       "tour": 5,
+       "train": 0
+      },
+      "statStops": 11.5,
+      "eventStops": 5.3,
+      "battles": 2.7,
+      "meals": 1.4,
+      "rests": 2.9,
+      "ate": 0
+     }
+    }
+   },
+   "final": {
+    "p10": 242,
+    "p50": 306,
+    "p90": 375,
+    "avg": 307.5,
+    "max": 506
+   },
+   "finalIfEntered4": {
+    "p10": 236,
+    "p50": 307,
+    "p90": 385
+   }
+  },
+  "A検証体（初期100・ちからA）｜careful": {
+   "target": "po",
+   "grade": "A",
+   "base": 100,
+   "runs": 2000,
+   "food": "none",
+   "entered4": 11.5,
+   "goal4": 5.9,
+   "funnel": {
+    "1": {
+     "entered": 100,
+     "goal": 53.6,
+     "tourWon": 53.6,
+     "unlockNext": 100,
+     "goalIfEntered": 53.6,
+     "turnsIfGoal": 34.4
+    },
+    "2": {
+     "entered": 100,
+     "goal": 43.5,
+     "tourWon": 43.5,
+     "unlockNext": 23.2,
+     "goalIfEntered": 43.5,
+     "turnsIfGoal": 35.5
+    },
+    "3": {
+     "entered": 23.2,
+     "goal": 11.5,
+     "tourWon": 11.5,
+     "unlockNext": 11.5,
+     "goalIfEntered": 49.6,
+     "turnsIfGoal": 34.9
+    },
+    "4": {
+     "entered": 11.5,
+     "goal": 5.9,
+     "tourWon": 5.9,
+     "finalOpen": 5.9,
+     "goalIfEntered": 51.3,
+     "turnsIfGoal": 36
+    }
+   },
+   "perCh": {
+    "1": {
+     "A": {
+      "n": 666,
+      "goal": 53.6,
+      "turns": 37,
+      "start": {
+       "p10": 100,
+       "p50": 100,
+       "p90": 100
+      },
+      "end": {
+       "p10": 117,
+       "p50": 151,
+       "p90": 186
+      },
+      "gain": {
+       "p10": 17,
+       "p50": 51,
+       "p90": 86,
+       "avg": 52.7
+      },
+      "src": {
+       "statTiles": 43.3,
+       "hits": 2.5,
+       "event": 2.8,
+       "reward": 3,
+       "tour": 1.6,
+       "train": 2
+      },
+      "statStops": 14.6,
+      "eventStops": 3.7,
+      "battles": 2.7,
+      "meals": 1.3,
+      "rests": 3.3,
+      "ate": 0
+     },
+     "B": {
+      "n": 664,
+      "goal": 54.1,
+      "turns": 36.9,
+      "start": {
+       "p10": 100,
+       "p50": 100,
+       "p90": 100
+      },
+      "end": {
+       "p10": 117,
+       "p50": 151,
+       "p90": 189
+      },
+      "gain": {
+       "p10": 17,
+       "p50": 51,
+       "p90": 89,
+       "avg": 52.6
+      },
+      "src": {
+       "statTiles": 43.1,
+       "hits": 2.5,
+       "event": 3.1,
+       "reward": 2.8,
+       "tour": 1.6,
+       "train": 2
+      },
+      "statStops": 14.4,
+      "eventStops": 3.9,
+      "battles": 2.7,
+      "meals": 1.3,
+      "rests": 3.2,
+      "ate": 0
+     },
+     "C": {
+      "n": 670,
+      "goal": 53.3,
+      "turns": 37.1,
+      "start": {
+       "p10": 100,
+       "p50": 100,
+       "p90": 100
+      },
+      "end": {
+       "p10": 117,
+       "p50": 151,
+       "p90": 194
+      },
+      "gain": {
+       "p10": 17,
+       "p50": 51,
+       "p90": 94,
+       "avg": 53.4
+      },
+      "src": {
+       "statTiles": 44.4,
+       "hits": 2.6,
+       "event": 2.8,
+       "reward": 2.6,
+       "tour": 1.6,
+       "train": 2
+      },
+      "statStops": 14.2,
+      "eventStops": 3.9,
+      "battles": 2.8,
+      "meals": 1.4,
+      "rests": 3.3,
+      "ate": 0
+     },
+     "all": {
+      "n": 2000,
+      "goal": 53.6,
+      "turns": 37,
+      "start": {
+       "p10": 100,
+       "p50": 100,
+       "p90": 100
+      },
+      "end": {
+       "p10": 117,
+       "p50": 151,
+       "p90": 190
+      },
+      "gain": {
+       "p10": 17,
+       "p50": 51,
+       "p90": 90,
+       "avg": 52.9
+      },
+      "src": {
+       "statTiles": 43.6,
+       "hits": 2.6,
+       "event": 2.9,
+       "reward": 2.8,
+       "tour": 1.6,
+       "train": 2
+      },
+      "statStops": 14.4,
+      "eventStops": 3.8,
+      "battles": 2.7,
+      "meals": 1.4,
+      "rests": 3.3,
+      "ate": 0
+     }
+    },
+    "2": {
+     "A": {
+      "n": 665,
+      "goal": 46.5,
+      "turns": 37.7,
+      "start": {
+       "p10": 117,
+       "p50": 151,
+       "p90": 186
+      },
+      "end": {
+       "p10": 158,
+       "p50": 203,
+       "p90": 257
+      },
+      "gain": {
+       "p10": 19,
+       "p50": 50,
+       "p90": 91,
+       "avg": 53.1
+      },
+      "src": {
+       "statTiles": 35.7,
+       "hits": 1.9,
+       "event": 10,
+       "reward": 4.9,
+       "tour": 1.6,
+       "train": 0.8
+      },
+      "statStops": 11.3,
+      "eventStops": 5.1,
+      "battles": 2.7,
+      "meals": 1.4,
+      "rests": 5.1,
+      "ate": 0
+     },
+     "B": {
+      "n": 670,
+      "goal": 39.6,
+      "turns": 38.4,
+      "start": {
+       "p10": 117,
+       "p50": 151,
+       "p90": 191
+      },
+      "end": {
+       "p10": 158,
+       "p50": 204,
+       "p90": 267
+      },
+      "gain": {
+       "p10": 20,
+       "p50": 50,
+       "p90": 95,
+       "avg": 54.5
+      },
+      "src": {
+       "statTiles": 39,
+       "hits": 2.1,
+       "event": 8.9,
+       "reward": 4.5,
+       "tour": 1.4,
+       "train": 0.7
+      },
+      "statStops": 11.2,
+      "eventStops": 5.1,
+      "battles": 3,
+      "meals": 1.5,
+      "rests": 5.1,
+      "ate": 0
+     },
+     "C": {
+      "n": 665,
+      "goal": 44.7,
+      "turns": 38,
+      "start": {
+       "p10": 117,
+       "p50": 150,
+       "p90": 190
+      },
+      "end": {
+       "p10": 158,
+       "p50": 206,
+       "p90": 273
+      },
+      "gain": {
+       "p10": 19,
+       "p50": 54,
+       "p90": 102,
+       "avg": 58.6
+      },
+      "src": {
+       "statTiles": 41.1,
+       "hits": 2.2,
+       "event": 10.3,
+       "reward": 4.9,
+       "tour": 1.6,
+       "train": 0.8
+      },
+      "statStops": 12,
+      "eventStops": 5.4,
+      "battles": 2.8,
+      "meals": 1.4,
+      "rests": 5.1,
+      "ate": 0
+     },
+     "all": {
+      "n": 2000,
+      "goal": 43.5,
+      "turns": 38,
+      "start": {
+       "p10": 117,
+       "p50": 151,
+       "p90": 190
+      },
+      "end": {
+       "p10": 158,
+       "p50": 204,
+       "p90": 266
+      },
+      "gain": {
+       "p10": 19,
+       "p50": 51,
+       "p90": 95,
+       "avg": 55.4
+      },
+      "src": {
+       "statTiles": 38.6,
+       "hits": 2,
+       "event": 9.7,
+       "reward": 4.8,
+       "tour": 1.5,
+       "train": 0.7
+      },
+      "statStops": 11.5,
+      "eventStops": 5.2,
+      "battles": 2.8,
+      "meals": 1.4,
+      "rests": 5.1,
+      "ate": 0
+     }
+    },
+    "3": {
+     "A": {
+      "n": 153,
+      "goal": 45.8,
+      "turns": 37.4,
+      "start": {
+       "p10": 160,
+       "p50": 194,
+       "p90": 246
+      },
+      "end": {
+       "p10": 193,
+       "p50": 250,
+       "p90": 310
+      },
+      "gain": {
+       "p10": 11,
+       "p50": 50,
+       "p90": 102,
+       "avg": 55.4
+      },
+      "src": {
+       "statTiles": 46,
+       "hits": 2.2,
+       "event": 4.3,
+       "reward": 2.3,
+       "tour": 2.7,
+       "train": 0
+      },
+      "statStops": 11.4,
+      "eventStops": 5.1,
+      "battles": 2.6,
+      "meals": 1.4,
+      "rests": 4.4,
+      "ate": 0
+     },
+     "B": {
+      "n": 159,
+      "goal": 50.9,
+      "turns": 37.4,
+      "start": {
+       "p10": 146,
+       "p50": 200,
+       "p90": 260
+      },
+      "end": {
+       "p10": 188,
+       "p50": 249,
+       "p90": 321
+      },
+      "gain": {
+       "p10": 6,
+       "p50": 47,
+       "p90": 101,
+       "avg": 51.3
+      },
+      "src": {
+       "statTiles": 41.2,
+       "hits": 2,
+       "event": 4.3,
+       "reward": 2.7,
+       "tour": 3.1,
+       "train": 0
+      },
+      "statStops": 10.9,
+      "eventStops": 5.1,
+      "battles": 2.8,
+      "meals": 1.4,
+      "rests": 4.4,
+      "ate": 0
+     },
+     "C": {
+      "n": 152,
+      "goal": 52,
+      "turns": 37.7,
+      "start": {
+       "p10": 152,
+       "p50": 194,
+       "p90": 256
+      },
+      "end": {
+       "p10": 190,
+       "p50": 242,
+       "p90": 318
+      },
+      "gain": {
+       "p10": 6,
+       "p50": 48,
+       "p90": 90,
+       "avg": 50.1
+      },
+      "src": {
+       "statTiles": 42,
+       "hits": 2,
+       "event": 3.3,
+       "reward": 1.7,
+       "tour": 3.1,
+       "train": 0
+      },
+      "statStops": 11.3,
+      "eventStops": 5.1,
+      "battles": 2.6,
+      "meals": 1.4,
+      "rests": 4.5,
+      "ate": 0
+     },
+     "all": {
+      "n": 464,
+      "goal": 49.6,
+      "turns": 37.5,
+      "start": {
+       "p10": 154,
+       "p50": 197,
+       "p90": 252
+      },
+      "end": {
+       "p10": 190,
+       "p50": 247,
+       "p90": 320
+      },
+      "gain": {
+       "p10": 8,
+       "p50": 48,
+       "p90": 98,
+       "avg": 52.2
+      },
+      "src": {
+       "statTiles": 43,
+       "hits": 2,
+       "event": 4,
+       "reward": 2.2,
+       "tour": 3,
+       "train": 0
+      },
+      "statStops": 11.2,
+      "eventStops": 5.1,
+      "battles": 2.7,
+      "meals": 1.4,
+      "rests": 4.4,
+      "ate": 0
+     }
+    },
+    "4": {
+     "A": {
+      "n": 88,
+      "goal": 51.1,
+      "turns": 37.4,
+      "start": {
+       "p10": 200,
+       "p50": 248,
+       "p90": 305
+      },
+      "end": {
+       "p10": 237,
+       "p50": 307,
+       "p90": 387
+      },
+      "gain": {
+       "p10": 18,
+       "p50": 54,
+       "p90": 109,
+       "avg": 62.4
+      },
+      "src": {
+       "statTiles": 51.8,
+       "hits": 2.4,
+       "event": 2.8,
+       "reward": 3.7,
+       "tour": 4.1,
+       "train": 0
+      },
+      "statStops": 11.3,
+      "eventStops": 5.3,
+      "battles": 2.8,
+      "meals": 1.5,
+      "rests": 4,
+      "ate": 0
+     },
+     "B": {
+      "n": 75,
+      "goal": 61.3,
+      "turns": 37.8,
+      "start": {
+       "p10": 176,
+       "p50": 239,
+       "p90": 311
+      },
+      "end": {
+       "p10": 231,
+       "p50": 315,
+       "p90": 382
+      },
+      "gain": {
+       "p10": 22,
+       "p50": 66,
+       "p90": 104,
+       "avg": 67.2
+      },
+      "src": {
+       "statTiles": 52.2,
+       "hits": 2.4,
+       "event": 4.4,
+       "reward": 5.6,
+       "tour": 4.9,
+       "train": 0
+      },
+      "statStops": 12.6,
+      "eventStops": 4.8,
+      "battles": 2.6,
+      "meals": 1.3,
+      "rests": 3.9,
+      "ate": 0
+     },
+     "C": {
+      "n": 67,
+      "goal": 40.3,
+      "turns": 38.9,
+      "start": {
+       "p10": 178,
+       "p50": 242,
+       "p90": 321
+      },
+      "end": {
+       "p10": 238,
+       "p50": 314,
+       "p90": 377
+      },
+      "gain": {
+       "p10": 18,
+       "p50": 65,
+       "p90": 110,
+       "avg": 63.3
+      },
+      "src": {
+       "statTiles": 52.2,
+       "hits": 2.4,
+       "event": 3.4,
+       "reward": 4.5,
+       "tour": 3.2,
+       "train": 0
+      },
+      "statStops": 11.5,
+      "eventStops": 4.8,
+      "battles": 2.6,
+      "meals": 1.3,
+      "rests": 4.9,
+      "ate": 0
+     },
+     "all": {
+      "n": 230,
+      "goal": 51.3,
+      "turns": 38,
+      "start": {
+       "p10": 182,
+       "p50": 242,
+       "p90": 312
+      },
+      "end": {
+       "p10": 237,
+       "p50": 313,
+       "p90": 388
+      },
+      "gain": {
+       "p10": 18,
+       "p50": 62,
+       "p90": 110,
+       "avg": 64.2
+      },
+      "src": {
+       "statTiles": 52,
+       "hits": 2.4,
+       "event": 3.5,
+       "reward": 4.5,
+       "tour": 4.1,
+       "train": 0
+      },
+      "statStops": 11.8,
+      "eventStops": 5,
+      "battles": 2.7,
+      "meals": 1.4,
+      "rests": 4.2,
+      "ate": 0
+     }
+    }
+   },
+   "final": {
+    "p10": 240,
+    "p50": 317,
+    "p90": 403,
+    "avg": 320.4,
+    "max": 496
+   },
+   "finalIfEntered4": {
+    "p10": 237,
+    "p50": 313,
+    "p90": 388
+   }
+  },
+  "ジオル｜random": {
+   "target": "de",
+   "grade": "A",
+   "base": 160,
+   "runs": 2000,
+   "food": "none",
+   "entered4": 17.4,
+   "goal4": 9.3,
+   "funnel": {
+    "1": {
+     "entered": 100,
+     "goal": 62.1,
+     "tourWon": 62.1,
+     "unlockNext": 100,
+     "goalIfEntered": 62.1,
+     "turnsIfGoal": 34.1
+    },
+    "2": {
+     "entered": 100,
+     "goal": 52,
+     "tourWon": 52,
+     "unlockNext": 31.7,
+     "goalIfEntered": 52,
+     "turnsIfGoal": 35.3
+    },
+    "3": {
+     "entered": 31.7,
+     "goal": 17.4,
+     "tourWon": 17.4,
+     "unlockNext": 17.4,
+     "goalIfEntered": 54.9,
+     "turnsIfGoal": 34.5
+    },
+    "4": {
+     "entered": 17.4,
+     "goal": 9.3,
+     "tourWon": 9.3,
+     "finalOpen": 9.3,
+     "goalIfEntered": 53.4,
+     "turnsIfGoal": 34.8
+    }
+   },
+   "perCh": {
+    "1": {
+     "A": {
+      "n": 671,
+      "goal": 62.3,
+      "turns": 36.3,
+      "start": {
+       "p10": 160,
+       "p50": 160,
+       "p90": 160
+      },
+      "end": {
+       "p10": 177,
+       "p50": 205,
+       "p90": 245
+      },
+      "gain": {
+       "p10": 17,
+       "p50": 45,
+       "p90": 85,
+       "avg": 48.1
+      },
+      "src": {
+       "statTiles": 41.4,
+       "hits": 2.4,
+       "event": 3.3,
+       "reward": 1.5,
+       "tour": 1.9,
+       "train": 0
+      },
+      "statStops": 14.5,
+      "eventStops": 4,
+      "battles": 2.8,
+      "meals": 1.3,
+      "rests": 2.2,
+      "ate": 0
+     },
+     "B": {
+      "n": 665,
+      "goal": 61.1,
+      "turns": 36.3,
+      "start": {
+       "p10": 160,
+       "p50": 160,
+       "p90": 160
+      },
+      "end": {
+       "p10": 177,
+       "p50": 202,
+       "p90": 245
+      },
+      "gain": {
+       "p10": 17,
+       "p50": 42,
+       "p90": 85,
+       "avg": 45.8
+      },
+      "src": {
+       "statTiles": 38.9,
+       "hits": 2.3,
+       "event": 3.3,
+       "reward": 1.8,
+       "tour": 1.8,
+       "train": 0
+      },
+      "statStops": 14.3,
+      "eventStops": 3.9,
+      "battles": 2.8,
+      "meals": 1.5,
+      "rests": 1.9,
+      "ate": 0
+     },
+     "C": {
+      "n": 664,
+      "goal": 63,
+      "turns": 36.4,
+      "start": {
+       "p10": 160,
+       "p50": 160,
+       "p90": 160
+      },
+      "end": {
+       "p10": 173,
+       "p50": 205,
+       "p90": 242
+      },
+      "gain": {
+       "p10": 13,
+       "p50": 45,
+       "p90": 82,
+       "avg": 45.8
+      },
+      "src": {
+       "statTiles": 39.2,
+       "hits": 2.3,
+       "event": 3.5,
+       "reward": 1.3,
+       "tour": 1.9,
+       "train": 0
+      },
+      "statStops": 14.5,
+      "eventStops": 4,
+      "battles": 2.8,
+      "meals": 1.4,
+      "rests": 2,
+      "ate": 0
+     },
+     "all": {
+      "n": 2000,
+      "goal": 62.1,
+      "turns": 36.3,
+      "start": {
+       "p10": 160,
+       "p50": 160,
+       "p90": 160
+      },
+      "end": {
+       "p10": 176,
+       "p50": 204,
+       "p90": 245
+      },
+      "gain": {
+       "p10": 16,
+       "p50": 44,
+       "p90": 85,
+       "avg": 46.6
+      },
+      "src": {
+       "statTiles": 39.8,
+       "hits": 2.3,
+       "event": 3.4,
+       "reward": 1.5,
+       "tour": 1.9,
+       "train": 0
+      },
+      "statStops": 14.5,
+      "eventStops": 4,
+      "battles": 2.8,
+      "meals": 1.4,
+      "rests": 2,
+      "ate": 0
+     }
+    },
+    "2": {
+     "A": {
+      "n": 656,
+      "goal": 53.8,
+      "turns": 37.1,
+      "start": {
+       "p10": 177,
+       "p50": 202,
+       "p90": 241
+      },
+      "end": {
+       "p10": 213,
+       "p50": 254,
+       "p90": 309
+      },
+      "gain": {
+       "p10": 19,
+       "p50": 48,
+       "p90": 87,
+       "avg": 51.4
+      },
+      "src": {
+       "statTiles": 34.8,
+       "hits": 1.8,
+       "event": 10.4,
+       "reward": 1.7,
+       "tour": 2,
+       "train": 2.6
+      },
+      "statStops": 11.4,
+      "eventStops": 5.2,
+      "battles": 2.8,
+      "meals": 1.4,
+      "rests": 3.8,
+      "ate": 0
+     },
+     "B": {
+      "n": 657,
+      "goal": 46.1,
+      "turns": 38.1,
+      "start": {
+       "p10": 173,
+       "p50": 204,
+       "p90": 244
+      },
+      "end": {
+       "p10": 213,
+       "p50": 258,
+       "p90": 310
+      },
+      "gain": {
+       "p10": 19,
+       "p50": 52,
+       "p90": 88,
+       "avg": 53
+      },
+      "src": {
+       "statTiles": 36,
+       "hits": 1.9,
+       "event": 10.7,
+       "reward": 2.7,
+       "tour": 1.7,
+       "train": 1.9
+      },
+      "statStops": 11.3,
+      "eventStops": 5.4,
+      "battles": 2.9,
+      "meals": 1.5,
+      "rests": 3.7,
+      "ate": 0
+     },
+     "C": {
+      "n": 687,
+      "goal": 56,
+      "turns": 37.4,
+      "start": {
+       "p10": 176,
+       "p50": 205,
+       "p90": 248
+      },
+      "end": {
+       "p10": 212,
+       "p50": 258,
+       "p90": 308
+      },
+      "gain": {
+       "p10": 19,
+       "p50": 49,
+       "p90": 85,
+       "avg": 51.6
+      },
+      "src": {
+       "statTiles": 35,
+       "hits": 1.8,
+       "event": 10.7,
+       "reward": 1.4,
+       "tour": 2,
+       "train": 2.5
+      },
+      "statStops": 11.9,
+      "eventStops": 5.6,
+      "battles": 2.9,
+      "meals": 1.6,
+      "rests": 3.6,
+      "ate": 0
+     },
+     "all": {
+      "n": 2000,
+      "goal": 52,
+      "turns": 37.5,
+      "start": {
+       "p10": 176,
+       "p50": 204,
+       "p90": 245
+      },
+      "end": {
+       "p10": 213,
+       "p50": 256,
+       "p90": 309
+      },
+      "gain": {
+       "p10": 19,
+       "p50": 49,
+       "p90": 87,
+       "avg": 52
+      },
+      "src": {
+       "statTiles": 35.3,
+       "hits": 1.9,
+       "event": 10.6,
+       "reward": 1.9,
+       "tour": 1.9,
+       "train": 2.3
+      },
+      "statStops": 11.5,
+      "eventStops": 5.4,
+      "battles": 2.8,
+      "meals": 1.5,
+      "rests": 3.7,
+      "ate": 0
+     }
+    },
+    "3": {
+     "A": {
+      "n": 216,
+      "goal": 52.8,
+      "turns": 37.1,
+      "start": {
+       "p10": 206,
+       "p50": 251,
+       "p90": 306
+      },
+      "end": {
+       "p10": 250,
+       "p50": 297,
+       "p90": 363
+      },
+      "gain": {
+       "p10": 8,
+       "p50": 48,
+       "p90": 95,
+       "avg": 49.3
+      },
+      "src": {
+       "statTiles": 40.3,
+       "hits": 1.9,
+       "event": 4.2,
+       "reward": 1.6,
+       "tour": 3.2,
+       "train": 0
+      },
+      "statStops": 11.7,
+      "eventStops": 5.2,
+      "battles": 2.8,
+      "meals": 1.5,
+      "rests": 3.1,
+      "ate": 0
+     },
+     "B": {
+      "n": 207,
+      "goal": 57,
+      "turns": 37,
+      "start": {
+       "p10": 214,
+       "p50": 261,
+       "p90": 313
+      },
+      "end": {
+       "p10": 252,
+       "p50": 306,
+       "p90": 370
+      },
+      "gain": {
+       "p10": 11,
+       "p50": 42,
+       "p90": 84,
+       "avg": 45.5
+      },
+      "src": {
+       "statTiles": 36.2,
+       "hits": 1.7,
+       "event": 4.2,
+       "reward": 1.7,
+       "tour": 3.4,
+       "train": 0
+      },
+      "statStops": 11.4,
+      "eventStops": 5.2,
+      "battles": 2.6,
+      "meals": 1.3,
+      "rests": 3.5,
+      "ate": 0
+     },
+     "C": {
+      "n": 211,
+      "goal": 55,
+      "turns": 36.9,
+      "start": {
+       "p10": 214,
+       "p50": 256,
+       "p90": 301
+      },
+      "end": {
+       "p10": 256,
+       "p50": 307,
+       "p90": 370
+      },
+      "gain": {
+       "p10": 12,
+       "p50": 48,
+       "p90": 92,
+       "avg": 52.1
+      },
+      "src": {
+       "statTiles": 42.8,
+       "hits": 2,
+       "event": 4.5,
+       "reward": 1.4,
+       "tour": 3.3,
+       "train": 0
+      },
+      "statStops": 11.7,
+      "eventStops": 5,
+      "battles": 2.6,
+      "meals": 1.5,
+      "rests": 3.1,
+      "ate": 0
+     },
+     "all": {
+      "n": 634,
+      "goal": 54.9,
+      "turns": 37,
+      "start": {
+       "p10": 211,
+       "p50": 256,
+       "p90": 307
+      },
+      "end": {
+       "p10": 251,
+       "p50": 304,
+       "p90": 368
+      },
+      "gain": {
+       "p10": 11,
+       "p50": 48,
+       "p90": 90,
+       "avg": 49
+      },
+      "src": {
+       "statTiles": 39.8,
+       "hits": 1.9,
+       "event": 4.3,
+       "reward": 1.6,
+       "tour": 3.3,
+       "train": 0
+      },
+      "statStops": 11.6,
+      "eventStops": 5.1,
+      "battles": 2.7,
+      "meals": 1.4,
+      "rests": 3.2,
+      "ate": 0
+     }
+    },
+    "4": {
+     "A": {
+      "n": 125,
+      "goal": 48,
+      "turns": 37.2,
+      "start": {
+       "p10": 237,
+       "p50": 306,
+       "p90": 364
+      },
+      "end": {
+       "p10": 274,
+       "p50": 354,
+       "p90": 420
+      },
+      "gain": {
+       "p10": 8,
+       "p50": 51,
+       "p90": 89,
+       "avg": 50.2
+      },
+      "src": {
+       "statTiles": 40.1,
+       "hits": 1.8,
+       "event": 4.5,
+       "reward": 1.8,
+       "tour": 3.8,
+       "train": 0
+      },
+      "statStops": 11.5,
+      "eventStops": 5.2,
+      "battles": 2.7,
+      "meals": 1.6,
+      "rests": 3.2,
+      "ate": 0
+     },
+     "B": {
+      "n": 103,
+      "goal": 53.4,
+      "turns": 37,
+      "start": {
+       "p10": 244,
+       "p50": 298,
+       "p90": 363
+      },
+      "end": {
+       "p10": 278,
+       "p50": 351,
+       "p90": 431
+      },
+      "gain": {
+       "p10": 26,
+       "p50": 52,
+       "p90": 98,
+       "avg": 56.9
+      },
+      "src": {
+       "statTiles": 46.8,
+       "hits": 2.1,
+       "event": 3.9,
+       "reward": 1.9,
+       "tour": 4.3,
+       "train": 0
+      },
+      "statStops": 12.1,
+      "eventStops": 5.3,
+      "battles": 2.6,
+      "meals": 1.2,
+      "rests": 3.2,
+      "ate": 0
+     },
+     "C": {
+      "n": 120,
+      "goal": 59.2,
+      "turns": 37.5,
+      "start": {
+       "p10": 253,
+       "p50": 303,
+       "p90": 362
+      },
+      "end": {
+       "p10": 284,
+       "p50": 362,
+       "p90": 432
+      },
+      "gain": {
+       "p10": 8,
+       "p50": 52,
+       "p90": 101,
+       "avg": 52.8
+      },
+      "src": {
+       "statTiles": 43.1,
+       "hits": 2,
+       "event": 4.1,
+       "reward": 0.9,
+       "tour": 4.7,
+       "train": 0
+      },
+      "statStops": 11.7,
+      "eventStops": 5.2,
+      "battles": 2.7,
+      "meals": 1.4,
+      "rests": 3,
+      "ate": 0
+     },
+     "all": {
+      "n": 348,
+      "goal": 53.4,
+      "turns": 37.2,
+      "start": {
+       "p10": 251,
+       "p50": 303,
+       "p90": 363
+      },
+      "end": {
+       "p10": 280,
+       "p50": 356,
+       "p90": 429
+      },
+      "gain": {
+       "p10": 10,
+       "p50": 52,
+       "p90": 98,
+       "avg": 53.1
+      },
+      "src": {
+       "statTiles": 43.1,
+       "hits": 2,
+       "event": 4.2,
+       "reward": 1.5,
+       "tour": 4.3,
+       "train": 0
+      },
+      "statStops": 11.7,
+      "eventStops": 5.2,
+      "battles": 2.6,
+      "meals": 1.4,
+      "rests": 3.1,
+      "ate": 0
+     }
+    }
+   },
+   "final": {
+    "p10": 278,
+    "p50": 350,
+    "p90": 429,
+    "avg": 354.6,
+    "max": 534
+   },
+   "finalIfEntered4": {
+    "p10": 280,
+    "p50": 356,
+    "p90": 429
+   }
+  },
+  "ジオル｜careful": {
+   "target": "de",
+   "grade": "A",
+   "base": 160,
+   "runs": 2000,
+   "food": "none",
+   "entered4": 11.3,
+   "goal4": 6.3,
+   "funnel": {
+    "1": {
+     "entered": 100,
+     "goal": 55.5,
+     "tourWon": 55.5,
+     "unlockNext": 100,
+     "goalIfEntered": 55.5,
+     "turnsIfGoal": 34.4
+    },
+    "2": {
+     "entered": 100,
+     "goal": 42.4,
+     "tourWon": 42.4,
+     "unlockNext": 23.2,
+     "goalIfEntered": 42.4,
+     "turnsIfGoal": 35.7
+    },
+    "3": {
+     "entered": 23.2,
+     "goal": 11.3,
+     "tourWon": 11.3,
+     "unlockNext": 11.3,
+     "goalIfEntered": 48.7,
+     "turnsIfGoal": 34.8
+    },
+    "4": {
+     "entered": 11.3,
+     "goal": 6.3,
+     "tourWon": 6.3,
+     "finalOpen": 6.3,
+     "goalIfEntered": 56.2,
+     "turnsIfGoal": 35.6
+    }
+   },
+   "perCh": {
+    "1": {
+     "A": {
+      "n": 666,
+      "goal": 54.1,
+      "turns": 37,
+      "start": {
+       "p10": 160,
+       "p50": 160,
+       "p90": 160
+      },
+      "end": {
+       "p10": 177,
+       "p50": 202,
+       "p90": 245
+      },
+      "gain": {
+       "p10": 17,
+       "p50": 42,
+       "p90": 85,
+       "avg": 47.6
+      },
+      "src": {
+       "statTiles": 41.3,
+       "hits": 2.4,
+       "event": 3.4,
+       "reward": 1.3,
+       "tour": 1.6,
+       "train": 0
+      },
+      "statStops": 14.5,
+      "eventStops": 4,
+      "battles": 2.7,
+      "meals": 1.3,
+      "rests": 3.4,
+      "ate": 0
+     },
+     "B": {
+      "n": 664,
+      "goal": 58,
+      "turns": 36.7,
+      "start": {
+       "p10": 160,
+       "p50": 160,
+       "p90": 160
+      },
+      "end": {
+       "p10": 176,
+       "p50": 202,
+       "p90": 239
+      },
+      "gain": {
+       "p10": 16,
+       "p50": 42,
+       "p90": 79,
+       "avg": 45.7
+      },
+      "src": {
+       "statTiles": 39.2,
+       "hits": 2.3,
+       "event": 3.4,
+       "reward": 1.4,
+       "tour": 1.7,
+       "train": 0
+      },
+      "statStops": 14.2,
+      "eventStops": 3.8,
+      "battles": 2.7,
+      "meals": 1.4,
+      "rests": 3.2,
+      "ate": 0
+     },
+     "C": {
+      "n": 670,
+      "goal": 54.3,
+      "turns": 37,
+      "start": {
+       "p10": 160,
+       "p50": 160,
+       "p90": 160
+      },
+      "end": {
+       "p10": 177,
+       "p50": 204,
+       "p90": 248
+      },
+      "gain": {
+       "p10": 17,
+       "p50": 44,
+       "p90": 88,
+       "avg": 47.5
+      },
+      "src": {
+       "statTiles": 41.2,
+       "hits": 2.4,
+       "event": 3.2,
+       "reward": 1.5,
+       "tour": 1.6,
+       "train": 0
+      },
+      "statStops": 14.3,
+      "eventStops": 3.9,
+      "battles": 2.7,
+      "meals": 1.3,
+      "rests": 3.5,
+      "ate": 0
+     },
+     "all": {
+      "n": 2000,
+      "goal": 55.5,
+      "turns": 36.9,
+      "start": {
+       "p10": 160,
+       "p50": 160,
+       "p90": 160
+      },
+      "end": {
+       "p10": 177,
+       "p50": 202,
+       "p90": 245
+      },
+      "gain": {
+       "p10": 17,
+       "p50": 42,
+       "p90": 85,
+       "avg": 47
+      },
+      "src": {
+       "statTiles": 40.6,
+       "hits": 2.4,
+       "event": 3.3,
+       "reward": 1.4,
+       "tour": 1.7,
+       "train": 0
+      },
+      "statStops": 14.3,
+      "eventStops": 3.9,
+      "battles": 2.7,
+      "meals": 1.3,
+      "rests": 3.3,
+      "ate": 0
+     }
+    },
+    "2": {
+     "A": {
+      "n": 685,
+      "goal": 43.8,
+      "turns": 37.8,
+      "start": {
+       "p10": 177,
+       "p50": 204,
+       "p90": 245
+      },
+      "end": {
+       "p10": 210,
+       "p50": 253,
+       "p90": 308
+      },
+      "gain": {
+       "p10": 18,
+       "p50": 46,
+       "p90": 84,
+       "avg": 49.6
+      },
+      "src": {
+       "statTiles": 34.9,
+       "hits": 1.8,
+       "event": 9.8,
+       "reward": 1.5,
+       "tour": 1.6,
+       "train": 1.9
+      },
+      "statStops": 11.2,
+      "eventStops": 5.1,
+      "battles": 2.8,
+      "meals": 1.3,
+      "rests": 5.2,
+      "ate": 0
+     },
+     "B": {
+      "n": 641,
+      "goal": 38.1,
+      "turns": 38.6,
+      "start": {
+       "p10": 177,
+       "p50": 202,
+       "p90": 248
+      },
+      "end": {
+       "p10": 213,
+       "p50": 256,
+       "p90": 312
+      },
+      "gain": {
+       "p10": 17,
+       "p50": 48,
+       "p90": 91,
+       "avg": 52.1
+      },
+      "src": {
+       "statTiles": 36.3,
+       "hits": 1.9,
+       "event": 9.7,
+       "reward": 3.1,
+       "tour": 1.4,
+       "train": 1.5
+      },
+      "statStops": 11.2,
+      "eventStops": 5.1,
+      "battles": 2.9,
+      "meals": 1.5,
+      "rests": 5.1,
+      "ate": 0
+     },
+     "C": {
+      "n": 674,
+      "goal": 45,
+      "turns": 38.1,
+      "start": {
+       "p10": 177,
+       "p50": 202,
+       "p90": 245
+      },
+      "end": {
+       "p10": 206,
+       "p50": 252,
+       "p90": 309
+      },
+      "gain": {
+       "p10": 17,
+       "p50": 46,
+       "p90": 84,
+       "avg": 48.8
+      },
+      "src": {
+       "statTiles": 34.1,
+       "hits": 1.8,
+       "event": 9.8,
+       "reward": 1.5,
+       "tour": 1.6,
+       "train": 1.7
+      },
+      "statStops": 11.7,
+      "eventStops": 5.4,
+      "battles": 2.9,
+      "meals": 1.5,
+      "rests": 5,
+      "ate": 0
+     },
+     "all": {
+      "n": 2000,
+      "goal": 42.4,
+      "turns": 38.2,
+      "start": {
+       "p10": 177,
+       "p50": 202,
+       "p90": 245
+      },
+      "end": {
+       "p10": 209,
+       "p50": 254,
+       "p90": 310
+      },
+      "gain": {
+       "p10": 17,
+       "p50": 47,
+       "p90": 85,
+       "avg": 50.1
+      },
+      "src": {
+       "statTiles": 35.1,
+       "hits": 1.8,
+       "event": 9.8,
+       "reward": 2,
+       "tour": 1.5,
+       "train": 1.7
+      },
+      "statStops": 11.4,
+      "eventStops": 5.2,
+      "battles": 2.8,
+      "meals": 1.4,
+      "rests": 5.1,
+      "ate": 0
+     }
+    },
+    "3": {
+     "A": {
+      "n": 159,
+      "goal": 45.9,
+      "turns": 37.4,
+      "start": {
+       "p10": 207,
+       "p50": 256,
+       "p90": 309
+      },
+      "end": {
+       "p10": 244,
+       "p50": 309,
+       "p90": 379
+      },
+      "gain": {
+       "p10": 14,
+       "p50": 48,
+       "p90": 94,
+       "avg": 51.8
+      },
+      "src": {
+       "statTiles": 42.8,
+       "hits": 2,
+       "event": 4.2,
+       "reward": 2,
+       "tour": 2.8,
+       "train": 0
+      },
+      "statStops": 11.5,
+      "eventStops": 5.2,
+      "battles": 2.5,
+      "meals": 1.4,
+      "rests": 4,
+      "ate": 0
+     },
+     "B": {
+      "n": 154,
+      "goal": 49.4,
+      "turns": 37.7,
+      "start": {
+       "p10": 210,
+       "p50": 251,
+       "p90": 294
+      },
+      "end": {
+       "p10": 250,
+       "p50": 298,
+       "p90": 354
+      },
+      "gain": {
+       "p10": 14,
+       "p50": 48,
+       "p90": 87,
+       "avg": 48.2
+      },
+      "src": {
+       "statTiles": 39.1,
+       "hits": 1.9,
+       "event": 4.8,
+       "reward": 1.3,
+       "tour": 3,
+       "train": 0
+      },
+      "statStops": 11.2,
+      "eventStops": 5,
+      "battles": 2.6,
+      "meals": 1.3,
+      "rests": 4.6,
+      "ate": 0
+     },
+     "C": {
+      "n": 151,
+      "goal": 51,
+      "turns": 37.4,
+      "start": {
+       "p10": 221,
+       "p50": 258,
+       "p90": 302
+      },
+      "end": {
+       "p10": 247,
+       "p50": 303,
+       "p90": 370
+      },
+      "gain": {
+       "p10": 6,
+       "p50": 43,
+       "p90": 90,
+       "avg": 46.8
+      },
+      "src": {
+       "statTiles": 38.4,
+       "hits": 1.8,
+       "event": 4.2,
+       "reward": 1.2,
+       "tour": 3.1,
+       "train": 0
+      },
+      "statStops": 11.1,
+      "eventStops": 4.8,
+      "battles": 2.8,
+      "meals": 1.4,
+      "rests": 4.5,
+      "ate": 0
+     },
+     "all": {
+      "n": 464,
+      "goal": 48.7,
+      "turns": 37.5,
+      "start": {
+       "p10": 212,
+       "p50": 255,
+       "p90": 305
+      },
+      "end": {
+       "p10": 247,
+       "p50": 303,
+       "p90": 371
+      },
+      "gain": {
+       "p10": 11,
+       "p50": 48,
+       "p90": 90,
+       "avg": 49
+      },
+      "src": {
+       "statTiles": 40.1,
+       "hits": 1.9,
+       "event": 4.4,
+       "reward": 1.5,
+       "tour": 2.9,
+       "train": 0
+      },
+      "statStops": 11.3,
+      "eventStops": 5,
+      "battles": 2.6,
+      "meals": 1.4,
+      "rests": 4.4,
+      "ate": 0
+     }
+    },
+    "4": {
+     "A": {
+      "n": 76,
+      "goal": 57.9,
+      "turns": 37.3,
+      "start": {
+       "p10": 248,
+       "p50": 300,
+       "p90": 364
+      },
+      "end": {
+       "p10": 292,
+       "p50": 349,
+       "p90": 436
+      },
+      "gain": {
+       "p10": 8,
+       "p50": 52,
+       "p90": 96,
+       "avg": 53.8
+      },
+      "src": {
+       "statTiles": 42.8,
+       "hits": 1.9,
+       "event": 5,
+       "reward": 1.3,
+       "tour": 4.6,
+       "train": 0
+      },
+      "statStops": 11.1,
+      "eventStops": 5.2,
+      "battles": 2.8,
+      "meals": 1.2,
+      "rests": 4.5,
+      "ate": 0
+     },
+     "B": {
+      "n": 66,
+      "goal": 62.1,
+      "turns": 37.2,
+      "start": {
+       "p10": 243,
+       "p50": 300,
+       "p90": 352
+      },
+      "end": {
+       "p10": 278,
+       "p50": 358,
+       "p90": 424
+      },
+      "gain": {
+       "p10": 18,
+       "p50": 60,
+       "p90": 96,
+       "avg": 60.5
+      },
+      "src": {
+       "statTiles": 49.3,
+       "hits": 2.2,
+       "event": 5,
+       "reward": 1.2,
+       "tour": 5,
+       "train": 0
+      },
+      "statStops": 11.8,
+      "eventStops": 5.4,
+      "battles": 2.5,
+      "meals": 1.1,
+      "rests": 4.2,
+      "ate": 0
+     },
+     "C": {
+      "n": 84,
+      "goal": 50,
+      "turns": 38,
+      "start": {
+       "p10": 255,
+       "p50": 299,
+       "p90": 370
+      },
+      "end": {
+       "p10": 294,
+       "p50": 350,
+       "p90": 422
+      },
+      "gain": {
+       "p10": 12,
+       "p50": 44,
+       "p90": 84,
+       "avg": 49.6
+      },
+      "src": {
+       "statTiles": 39.8,
+       "hits": 1.8,
+       "event": 4.6,
+       "reward": 1.1,
+       "tour": 4,
+       "train": 0
+      },
+      "statStops": 11,
+      "eventStops": 5.2,
+      "battles": 2.8,
+      "meals": 1.4,
+      "rests": 4.2,
+      "ate": 0
+     },
+     "all": {
+      "n": 226,
+      "goal": 56.2,
+      "turns": 37.5,
+      "start": {
+       "p10": 249,
+       "p50": 300,
+       "p90": 366
+      },
+      "end": {
+       "p10": 290,
+       "p50": 352,
+       "p90": 429
+      },
+      "gain": {
+       "p10": 13,
+       "p50": 52,
+       "p90": 96,
+       "avg": 54.2
+      },
+      "src": {
+       "statTiles": 43.6,
+       "hits": 2,
+       "event": 4.8,
+       "reward": 1.2,
+       "tour": 4.5,
+       "train": 0
+      },
+      "statStops": 11.3,
+      "eventStops": 5.3,
+      "battles": 2.7,
+      "meals": 1.3,
+      "rests": 4.3,
+      "ate": 0
+     }
+    }
+   },
+   "final": {
+    "p10": 295,
+    "p50": 360,
+    "p90": 429,
+    "avg": 361.4,
+    "max": 507
+   },
+   "finalIfEntered4": {
+    "p10": 290,
+    "p50": 352,
+    "p90": 429
+   }
+  }
+ }
+}

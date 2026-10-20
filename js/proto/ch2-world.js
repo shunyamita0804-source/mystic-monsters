@@ -258,9 +258,11 @@
   //   アーチの口が縁石の外のふち（27 単位）より広い 29.5 単位になる幅 72・START の広場の出口（27 単位先）。向きは START から本線の最初のマス S01_01（7番目）＝ルート C のように
   //   START が分かれ道でも、本線（港の大通り）の上に門。探索路（岸壁）は門をくぐらない。
   //   前後（z＝8番目）は 0＝門の地面の位置で決める（旧 −30＝いつもマスより奥＝門の先のマスが柱の手前に重なり、柱が宙に浮いて見えた）
+  //  2026-10-20 追加指示（「切り貼り感・狭さ」）：柱の下端が植え込みを切った所で水平に切れていて、足もとが地面から浮いて見えた＝柱の足もとにやわらかい接地の影を足した派生
+  //   art_1020/harbor_start_gate_open_foot（門の画素は同じ・絵の下へ透明の余白 44px と影だけ足す＝足もとの位置 0.92 は同じ）。左右対称の折り返しの絵であることは変わらない＝正式な正面向きの全体の絵が要る（docs/fullplay_1020/REPORT.md）
   const JT = 'sea_junction_tower', EDGE_PROPS = ['coral_shoal_edge', 'white_coastal_cliff_edge', 'undersea_cliff_edge'];
   const LM_BASE = {
-    START: ['./assets/fields/ch2/art_1020/harbor_start_gate_open.webp', 72, 27, null, null, 0, 'S01_01', 0], LOWER_GATE: ['undersea_descent_gate', 40, 6], RIVAL: ['rival_pass_gate', 34, 10], Q: ['glass_corridor_arch', 50, 4],
+    START: ['./assets/fields/ch2/art_1020/harbor_start_gate_open_foot.webp', 72, 27, null, null, 0, 'S01_01', 0], LOWER_GATE: ['undersea_descent_gate', 40, 6], RIVAL: ['rival_pass_gate', 34, 10], Q: ['glass_corridor_arch', 50, 4],
     STATUE: ['L07_winged_sea_god_statue', 30, 0, [-34, -20]], RANDOM_DEN: ['L11_sunken_ship_den_closed', 44, 20, null, 'L11_sunken_ship_den_open'],
     REWARD5: ['coastal_rock_shells', 40, 20], R_SPECIAL: ['L10_coral_treasure_landmark', 34, 20],
   };
@@ -269,7 +271,7 @@
     B: { CHALLENGE: ['U03_sunken_temple_gate', 38, 14], L_CHEST: ['coastal_lighthouse', 30, 20], R_CHEST: ['L05_temple_island_altar', 50, 20], L_ALTAR: ['L08_western_white_tower', 34, 20], L_LATE_ALTAR: ['U05_sealed_chamber_altar', 40, 20] },
     // 2026-10-20：C の START は分かれ道（港の大通り S01・岸壁 S01B が狭い角度で出る）＝START の出口に門を置くと柱が岸壁の道にかかる。
     //  大通りが岸壁の道から約 50 単位離れる S01_02 の 11 単位先に、少し細い門（幅 68・アーチの口 28＝縁石の外のふち 27 より広い）
-    C: { START: null, S01_02: ['./assets/fields/ch2/art_1020/harbor_start_gate_open.webp', 68, 11, null, null, 0, null, 0], CHALLENGE: ['U03_sunken_temple_gate', 38, 14], L_CHEST: ['L04_shell_shrine', 32, 20], R_CHEST: ['undersea_treasure_vault', 32, 20], L_ALTAR: ['trial_monolith', 40, 20], L_LATE_ALTAR: ['U05_sealed_chamber_altar', 40, 20] },
+    C: { START: null, S01_02: ['./assets/fields/ch2/art_1020/harbor_start_gate_open_foot.webp', 68, 11, null, null, 0, null, 0], CHALLENGE: ['U03_sunken_temple_gate', 38, 14], L_CHEST: ['L04_shell_shrine', 32, 20], R_CHEST: ['undersea_treasure_vault', 32, 20], L_ALTAR: ['trial_monolith', 40, 20], L_LATE_ALTAR: ['U05_sealed_chamber_altar', 40, 20] },
   };
   const ALL_LM = [...new Set([...Object.values(LM_BASE), ...Object.values(LM_ROUTE).flatMap(Object.values)].filter(Boolean).flatMap((v) => [v[0], v[4]].filter(Boolean)).concat(['ocean_arena', 'R05_spiral_tower_door', 'R05_spiral_tower_beacon', 'arena_approach_gate', 'L01_harbor_town_cluster', 'chapter2_sea_medallion', 'sea_zone_nameplate', JT, ...EDGE_PROPS]))];
   const LM_CACHE = new WeakMap();
