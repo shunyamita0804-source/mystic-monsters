@@ -121,6 +121,8 @@ void main(){
 
     // ---- 絵（くり返し・mipmap・異方性） ----
     const tex = {}, waits = [], after = [];
+    //  寄る動き（開始の全景 → START）の間は、重い仕事（絵の GPU への読み込み・地形の区画の描画）を止めて、終わってからまとめて（動きの途中で止まらない）
+    let paused = false; const later = [];
     function upload(t, src, repeat, premul) {
       gl.bindTexture(gl.TEXTURE_2D, t);
       gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, premul !== false);
@@ -134,7 +136,8 @@ void main(){
     for (const [k, d] of Object.entries(kit.textures || {})) {
       const t = { t: gl.createTexture(), ok: false, w: 0, h: 0 }; tex[k] = t;
       waits.push(new Promise((res) => { const im = new root.Image(); im.decoding = 'async';
-        im.onload = () => { if (dead) return res(); try { upload(t.t, im, d.repeat, true); t.ok = true; t.w = im.naturalWidth; t.h = im.naturalHeight; } catch (e) { /* 読めない絵は描かない */ } onDirty(); res(); };
+        const up = () => { if (dead) return res(); try { upload(t.t, im, d.repeat, true); t.ok = true; t.w = im.naturalWidth; t.h = im.naturalHeight; } catch (e) { /* 読めない絵は描かない */ } onDirty(); res(); };
+        im.onload = () => { if (paused) later.push(up); else up(); };
         im.onerror = () => res(); im.src = d.src; }));
     }
     //  範囲の画像（R＝絵 1・G＝絵 2 の重み。黒の上に白で描いた不透明の canvas）と、その世界の範囲 [x, y, w, h]。あとから渡してもよい（setMask）
@@ -355,7 +358,9 @@ void main(){
       /** 地形の絵の描画を始める（roadfirst-world の絵の読み込みが終わったら） */
       start: startFeatures,
       /** 毎フレーム：カメラの近くの地形の区画を少しずつ描く（数ミリ秒まで） */
-      tick: (c, v) => { if (!dead) featTick(c, v); },
+      tick: (c, v) => { if (dead) return; if (later.length) { later.shift()(); return; } featTick(c, v); },
+      /** 寄る動きの間は true（重い仕事を止める） */
+      pause(on) { paused = !!on; },
       draw, isDirty: () => dirty,
       /** 確認用：今の絵の1点の色（描いた直後に読む） */
       probe(x, y) { if (lastCam) draw(lastCam); const d = DPR(), px = new Uint8Array(4); gl.readPixels(Math.round(x * d), cv.height - Math.round(y * d) - 1, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); return { px: [...px], last: LAST }; },

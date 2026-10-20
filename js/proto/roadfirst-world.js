@@ -591,7 +591,7 @@
           const a0 = it.anims[0], ct = a0 && a0.currentTime, over = !a0 || a0.playState === 'finished' || a0.playState === 'idle' || (typeof ct === 'number' && ct >= it.dur - 0.5) || now >= it.end + 600;
           if (over) finishIntro(it); else {
             if (GL) { const u = Math.max(0, Math.min(1, (typeof ct === 'number' ? ct : now - it.end + it.dur) / it.dur)) * INTRO_SAMPLES, i = Math.min(INTRO_SAMPLES - 1, Math.floor(u)), f = u - i, A = it.cams[i], B = it.cams[i + 1];   // 地面（WebGL）は寄る動きの刻みの間をつないで毎フレーム描く（DOM は合成スレッド）
-              GL.tick(null, null); GL.draw({ tx: lerp(A.tx, B.tx, f), ty: lerp(A.ty, B.ty, f), s: Math.exp(lerp(Math.log(A.s), Math.log(B.s), f)), tilt: lerp(A.tilt, B.tilt, f), yaw: (A.yaw || 0) + angDiff(A.yaw || 0, B.yaw || 0) * f, P: A.P, ax: A.ax, ay: A.ay }); }
+              GL.pause(true); GL.draw({ tx: lerp(A.tx, B.tx, f), ty: lerp(A.ty, B.ty, f), s: Math.exp(lerp(Math.log(A.s), Math.log(B.s), f)), tilt: lerp(A.tilt, B.tilt, f), yaw: (A.yaw || 0) + angDiff(A.yaw || 0, B.yaw || 0) * f, P: A.P, ax: A.ax, ay: A.ay }); }
             S.raf = root.requestAnimationFrame(tick); return; }
         }
       } else if (S.goal) {
@@ -610,6 +610,7 @@
       if (S.monGoal) { if (!S.mon) S.mon = S.monGoal.slice(); const f = 1 - Math.exp(-dt / 70); S.mon[0] = lerp(S.mon[0], S.monGoal[0], f); S.mon[1] = lerp(S.mon[1], S.monGoal[1], f); S.mon[2] = lerp(S.mon[2] || 0, S.monGoal[2] || 0, f); }
       apply();
       if (HI && !S.intro && artDone) HI.tick();
+      if (GL) GL.pause(false);
       if (GL && artDone) GL.tick(S.intro ? null : S.cam, S.view);   // 2026-10-20 第4便：地形の絵の区画（全体 → カメラの近く）を数ミリ秒ずつ   // 2026-10-16 QA（A）：近くの高い解像度の区画（数フレームに分けて描く）。2026-10-19 P0：遠くの層を描き終えるのを待たない（最初に開いた盤の START だけ、iPhone で数秒ぼけていた）
       S.raf = root.requestAnimationFrame(tick);
     }
