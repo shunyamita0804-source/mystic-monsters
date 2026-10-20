@@ -91,7 +91,7 @@ test('CP-B2 隔離：保存の鍵・再読み込み・通常の URL・rfData な
 for (const route of ['A', 'B', 'C']) {
   test(`CP-B3 ルート ${route}：螺旋塔を歩いて上る（海底 −36 → 斜路 → 海面 0）・3D の板・潜ると海面が薄くなる`, { skip: SKIP }, async () => {
     const p = await open({ size: [390, 844] }); const pg = p.page;
-    await pg.goto(L.url + `index.html?chapterBoard=roadfirst&rfData=ch2&ch2route=${route}&rfRand=open&rfSeed=7`); await pg.waitForSelector('#rfp .rfw');
+    await pg.goto(L.url + `index.html?chapterBoard=roadfirst&rfData=ch2&ch2route=${route}&rfRand=open&rfSeed=7&glBoard=0`); await pg.waitForSelector('#rfp .rfw');
     await pg.evaluate(() => MMRF.skipIntro()); await idle(pg);
     await pg.waitForFunction(() => document.querySelectorAll('#rfp .rfs-deck').length > 0, null, { timeout: 15000 });
     const parts = await pg.evaluate(() => ({ deck: document.querySelectorAll('#rfp .rfs-deck').length, wall: document.querySelectorAll('#rfp .rfs-wall').length, tw: document.querySelectorAll('#rfp .rfs-tw').length,
@@ -188,7 +188,7 @@ test('CP-B4 ルート B：特殊挑戦の成功の道（2歩）を連続して�
 for (const route of ['A', 'B', 'C']) {
   test(`CP-B4 ルート ${route}：止まるたびに先の4地点が HUD と操作欄のあいだに入る`, { skip: SKIP }, async () => {
     const p = await open({ size: [390, 844] }); const pg = p.page;
-    await pg.goto(L.url + `index.html?chapterBoard=roadfirst&rfData=ch2&ch2route=${route}&rfRand=open&rfSeed=13`); await pg.waitForSelector('#rfp .rfw');
+    await pg.goto(L.url + `index.html?chapterBoard=roadfirst&rfData=ch2&ch2route=${route}&rfRand=open&rfSeed=13&glBoard=0`); await pg.waitForSelector('#rfp .rfw');
     await pg.evaluate(() => MMRF.skipIntro()); await idle(pg);
     const rows = [];
     for (let i = 0; i < 120 && rows.length < 30; i++) {
