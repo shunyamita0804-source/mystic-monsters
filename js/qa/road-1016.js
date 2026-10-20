@@ -24,7 +24,9 @@
   //  区画は細かいほど小さく（64単位）・枚数はメモリの上限（?qaRoadMB・既定 40MB）で決める（遠い区画は遠近で小さく見える＝遠くの層のままでよい）
   const RES = num('qaRoadRes', ART17 ? 10 : 5, 2, 14), TILE = num('qaRoadTile', RES > 6 ? 64 : 128, 16, 256);
   const LAYER = !(P && P.get('qaRoadLayer') === '0');
-  const MB = num('qaRoadMB', root.MMQRA && !root.MMQRA.urlMode && !(q === '1' || q === '2') ? 32 : 40, 8, 120)   /* 2026-10-18：本編の既定（URL なし）は 32MB＝iPhone のメモリに余裕を残す */, MAX = RES > 6 ? Math.max(6, Math.floor(MB * 1048576 / (Math.pow(Math.ceil(TILE * RES) + 2, 2) * 4))) : 14, BUDGET = 6;
+  //  2026-10-20 第2便（iPhone 試遊「道が全体に少しぼやける」）：画素比 2.5 以上（iPhone）は、いちばん近い区画を 1単位 14px（RES3）で描く＝上限を 48MB に（遠くの層 24MB と合わせて約 72MB）
+  const HIDPR = Math.max(1, root.devicePixelRatio || 1) >= 2.5;
+  const MB = num('qaRoadMB', root.MMQRA && !root.MMQRA.urlMode && !(q === '1' || q === '2') ? (HIDPR ? 48 : 32) : 40, 8, 120)   /* 2026-10-18：本編の既定（URL なし）は 32MB＝iPhone のメモリに余裕を残す */, MAX = RES > 6 ? Math.max(6, Math.floor(MB * 1048576 / (Math.pow(Math.ceil(TILE * RES) + 2, 2) * 4))) : 14, BUDGET = 6;
 
   // ---- 三角形ごとのアフィン変換で、帯の絵の切れ端を台形の網へ貼る ----
   function tri(g, im, s0, s1, s2, d0, d1, d2) {
@@ -150,10 +152,12 @@
   //  cfg＝{ doc, parent（区画を入れる親）, paintAt(g, bx)（従来と同じ描画）, S（カメラの状態）, project, WORLD }
   //  2026-10-19 P0（iPhone：開始の地点だけ道がぼける）：海の世界（3D の平面）では近くの区画を地面（.rfw-gnd・高さ 0）より 0.05 単位だけ上に置く。
   //   同じ高さの層どうしは、Safari では見る向きによって前後が入れ替わり、ぼけた遠くの層が上に出ていた（画面では 0.2px 未満のずれ＝見た目は変わらない）。海面（0.3）より下
-  const LIFT = 0.05;
+  //  2026-10-20 第2便（iPhone 試遊「Chapter 2 A だけ START から最初の分かれ道まで道の画質が悪い」＝B・C・Chapter 3／4 は無い）：Chapter 2 A の START の向きだけ、
+  //   0.05 単位の差では Safari の前後の並べ替え（preserve-3d）がぼけた遠くの層を上にしていた（向きで変わる＝p0b1 と同じ現象）。差を 0.25 単位に（海面 0.3 より下・画面では 1px 未満）
+  const LIFT = 0.25;
   // 2026-10-20（Chapter 3 の浮島のふち・奥の道が粗い）：区画ごとに細かさを選ぶ。画面で大きく映る区画は RES（1単位 10px）、遠くで小さく映る区画は半分（5px＝メモリ 1/4）。
   //  旧：全部 RES・枚数の上限 MAX（約 19 枚）＝画面の真ん中から奥は遠くの層（1単位 2px）のままで、浮島のふち・道が粗い四角に見えた。メモリの上限（MB）は同じ
-  const RES2 = Math.max(3, Math.round(RES / 2)), BYTES = MB * 1048576, CAP = 96;
+  const RES2 = Math.max(3, Math.round(RES / 2)), RES3 = HIDPR && RES >= 10 ? num('qaRoadRes3', 14, RES, 20) : RES, BYTES = MB * 1048576, CAP = 96;
   const tileBytes = (r) => Math.pow(Math.ceil(TILE * r) + 2, 2) * 4;
   function hiLayer(cfg) {
     const tiles = new Map(); let queue = [], lastSig = '';
@@ -169,7 +173,9 @@
       cfg.parent.appendChild(c); return { c, ix, iy, r, done: false };
     }
     const paintMs = [];   // 区画1枚を描くのにかかった時間（確認用・最後の 60 枚）
-    function paint(t) { const t0 = root.performance.now(); const r = t.r, g = t.c.getContext('2d'); g.setTransform(r, 0, 0, r, -t.c._x, -t.c._y); cfg.paintAt(g, [t.c._x / r, t.c._y / r, t.c.width / r, t.c.height / r]); t.done = true; t.c.style.visibility = '';
+    // 2026-10-20 第2便（iPhone 試遊「Chapter 2 A の START から最初の分かれ道まで道の画質が悪い」）：区画の描画に失敗した（読み込み直後のメモリ不足で canvas が作れない・描けない など）とき、
+    //  旧：カメラが動くまで作り直さなかった＝START に止まっている間ずっと遠くの層（1単位 2px）のまま。→ 失敗した区画は捨てて、次の見直し（下の tick の1秒ごと）で作り直す
+    function paint(t) { const t0 = root.performance.now(); const r = t.r, g = t.c.getContext('2d'); if (!g) throw new Error('no 2d context'); g.setTransform(r, 0, 0, r, -t.c._x, -t.c._y); cfg.paintAt(g, [t.c._x / r, t.c._y / r, t.c.width / r, t.c.height / r]); t.done = true; t.c.style.visibility = '';
       paintMs.push(+(root.performance.now() - t0).toFixed(1)); if (paintMs.length > 60) paintMs.shift(); }
     /** 画面に入る区画と細かさ（[ix, iy, 順, 細かさ]）。画面に大きく映る順に、メモリの上限（BYTES）まで */
     function want() {
@@ -184,20 +190,23 @@
             const p = cfg.project(c, (ix + a / 4) * T, (iy + b / 4) * T); if (!(p.k > 0 && p.k < 60)) continue;
             if (p.x > -40 && p.x < v.W + 40 && p.y > -40 && p.y < v.H + 40) { sc += p.k * p.k; px = Math.max(px, p.k * c.s * dpr); }
           }
-          if (sc > 0) out.push([ix, iy, -sc, px > RES2 * 1.25 ? R : RES2]);
+          if (sc > 0) out.push([ix, iy, -sc, px > R * 1.15 ? RES3 : px > RES2 * 1.25 ? R : RES2]);   // 2026-10-20 第2便：画面で 1単位が 11.5 画素より大きい区画は RES3
         }
       out.sort((a, b) => a[2] - b[2]);
       const pick = []; let used = 0;
       for (const w of out) {
         if (pick.length >= CAP) break;
-        if (used + tileBytes(w[3]) > BYTES) { if (w[3] === R && used + tileBytes(RES2) <= BYTES) w[3] = RES2; else continue; }
+        if (used + tileBytes(w[3]) > BYTES) { if (w[3] === RES3 && RES3 !== R && used + tileBytes(R) <= BYTES) w[3] = R; else if (w[3] >= R && used + tileBytes(RES2) <= BYTES) w[3] = RES2; else continue; }
         used += tileBytes(w[3]); pick.push(w);
       }
       return pick;
     }
+    let lastCheck = 0;
     function tick() {
       const c = cfg.S && cfg.S.cam; if (!c) return;
       const sig = [Math.round(c.tx / 16), Math.round(c.ty / 16), Math.round(c.s * 4), Math.round((c.yaw || 0) / 10)].join(',');
+      // 2026-10-20 第2便：カメラが止まっていても 1 秒ごとに見直す（描けなかった区画・まだ無い区画を作り直す）。区画の数は同じ＝描き直すのは足りない区画だけ
+      const now = root.performance.now(); if (!queue.length && now - lastCheck > 1000) { lastCheck = now; for (const t of tiles.values()) if (!t.done) { lastSig = ''; break; } if (lastSig && tiles.size < want().length) lastSig = ''; }
       if (sig !== lastSig) {
         lastSig = sig; const w = want(), keep = new Map(w.map(([ix, iy, , r]) => [ix + ':' + iy, r]));
         for (const [k, t] of tiles) if (keep.has(k) && t.r < keep.get(k)) { t.c.remove(); tiles.delete(k); }   // 細かくする区画は作り直す（粗くしてよい区画はそのまま）
@@ -207,7 +216,7 @@
         for (const k of queue) if (!tiles.has(k)) { const [ix, iy] = k.split(':').map(Number); tiles.set(k, make(ix, iy, keep.get(k))); }
       }
       const t0 = root.performance.now();
-      while (queue.length && root.performance.now() - t0 < BUDGET) { const t = tiles.get(queue.shift()); if (t && !t.done) paint(t); }
+      while (queue.length && root.performance.now() - t0 < BUDGET) { const k = queue.shift(), t = tiles.get(k); if (t && !t.done) { try { paint(t); } catch (e) { t.c.remove(); tiles.delete(k); } } }
     }
     function bytes() { let b = 0; for (const t of tiles.values()) b += t.c.width * t.c.height * 4; return b; }
     function destroy() { for (const t of tiles.values()) t.c.remove(); tiles.clear(); }

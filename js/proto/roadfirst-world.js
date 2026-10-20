@@ -983,7 +983,46 @@
     }
   }
   /** 目印の置き場所：地点から、その地点へ入ってくる向きに along 単位（負＝手前） */
+  // 2026-10-20 第2便（iPhone 試遊「各 Chapter の建物がマスに被っている箇所がある」）：建物の足もとがマスにかからないようにする（全 Chapter 共通・描画と景物の避け方で同じ位置）。
+  //  門（道をまたぐ＝side 0 の gate／arch／pier／colonnade）：左右の柱（進む向きに直角に ±0.36w・半径 0.09w）がマスにかかるなら、along を ±3 単位ずつずらして柱が空く所へ。
+  //  ほかの建物：足もとの円（半径 0.3w）がマス（半径 6.5＋すき間 1.5）にかかるなら、重なったマスから離れる向きへ押し出す（数回くり返す）。地点・道・判定は変えない
+  const LM_FIT = new WeakMap(), TILE_CLEAR = 8;
+  const isGateLm = (L) => !L.off && !(L.side) && /gate|arch|pier|colonnade|challenge/i.test(L.file || '');   // Ch1 B／C の封印の門は b_challenge／c_challenge
   function landmarkAt(D, L) {
+    let m = LM_FIT.get(D); if (!m) { m = new WeakMap(); LM_FIT.set(D, m); }
+    if (m.has(L)) return m.get(L);
+    const at = fitLandmark(D, L); m.set(L, at); return at;
+  }
+  function fitLandmark(D, L) {
+    const base = landmarkAt0(D, L); if (!base || !L.w) return base;
+    const ids = Object.keys(D.nodes);
+    if (isGateLm(L)) {
+      const legsHit = (at) => { const n = D.nodes[L.node], dx = at[0] - n[0], dy = at[1] - n[1], k = Math.hypot(dx, dy); let ux = 0, uy = -1;
+        if (k > 0.5) { ux = dx / k; uy = dy / k; } else { const e = D.edges.find((x) => x[0] === L.node && x[3] === 'forward'); if (e) { const q = D.nodes[e[1]], kk = Math.hypot(q[0] - n[0], q[1] - n[1]) || 1; ux = (q[0] - n[0]) / kk; uy = (q[1] - n[1]) / kk; } }
+        const lx = -uy * L.w * 0.36, ly = ux * L.w * 0.36, r = L.w * 0.09 + TILE_CLEAR - 1.5;
+        return ids.some((id) => { const q = D.nodes[id]; return Math.hypot(q[0] - at[0] - lx, q[1] - at[1] - ly) < r || Math.hypot(q[0] - at[0] + lx, q[1] - at[1] + ly) < r; }); };
+      if (!legsHit(base)) return base;
+      //  分かれ道の直後で柱が先のマスにかかる門（挑戦の門など）は、手前（入ってくる道の上）にも置ける＝along を負の向きにも探す
+      for (const d of [3, -3, 6, -6, 9, -9, 12, -12, 15, -15, -18, -21, -24]) { const at = landmarkAt0(D, Object.assign({}, L, { along: (L.along || 0) + d })); if (at && !legsHit(at)) return at; }
+      return base;
+    }
+    let at = base.slice(); const rf = L.w * 0.3 + TILE_CLEAR, rr = L.w * 0.3 + 6;
+    const lines = roadLines(D), ok = (p) => !ids.some((id) => { const q = D.nodes[id]; return Math.hypot(q[0] - p[0], q[1] - p[1]) < rf; }) && !lines.some((l) => distLine(l, p[0], p[1]) < rr);
+    if (ok(at)) return at;
+    for (let it = 0; it < 6; it++) {
+      let mx = 0, my = 0, hit = false;
+      for (const id of ids) { const q = D.nodes[id], dx = at[0] - q[0], dy = at[1] - q[1], d = Math.hypot(dx, dy); if (d < rf) { hit = true; const k = d > 0.01 ? (rf - d + 0.5) / d : 1; mx += dx * k; my += dy * k; } }
+      if (!hit) break; at = [at[0] + mx, at[1] + my];
+    }
+    if (ok(at)) return at;
+    //  押し出した先が道にかかる・まだマスにかかる＝元の位置のまわり（16 方向 × 距離）で、マスにも道にもかからない、元の位置にいちばん近い所
+    let best = null;
+    for (let k = 1; k <= 8; k++) for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2, d = k * 5, p = [base[0] + Math.cos(a) * d, base[1] + Math.sin(a) * d]; if (ok(p) && (!best || d < best.d)) best = { d, p }; }
+    return best ? best.p : at;
+  }
+  const ROAD_LINES = new WeakMap();
+  function roadLines(D) { let l = ROAD_LINES.get(D); if (!l) { l = Object.values(D.segments).map((s) => s[3].map((id) => D.nodes[id])); ROAD_LINES.set(D, l); } return l; }
+  function landmarkAt0(D, L) {
     const n = D.nodes[L.node]; if (!n) return null;
     if (L.off) return [n[0] + L.off[0], n[1] + L.off[1]];
     const e = D.edges.find((x) => x[1] === L.node && x[3] === 'forward') || null, f = D.edges.find((x) => x[0] === L.node && x[3] === 'forward') || null;
@@ -1099,19 +1138,24 @@
         const x = n[0] + cx * d * k, y = n[1] + cy * d * k; if (nearRoad(x, y, 16)) continue; const sc = -Math.abs(Math.acos(dot) - 0.87) - (k - 1) * 0.6; if (!best || sc > best.sc) best = { sc, v: [cx * d * k, cy * d * k] }; }
       return best && best.v;
     };
-    // 2026-10-20 道路美術 P0（cmp3_ch4A_J0「看板が分岐の横に置かれ、どの道の標識か判別しづらい」）：道しるべは分かれ道に入る前＝入ってくる道（3 地点前からの向き）の
-    //  右の路肩（道の縁石の外）の、分かれ道の広場の少し手前に立てる（進む先の分かれ道の標識に見える・道・マス・モンスターにかからない）。右に置けないときは左、どちらも無理なら従来の斜め前
-    const approach = (id, n) => {
+    // 2026-10-20 第2便（iPhone 試遊「看板はマスの奥に置く指示だったはず・すごく不自然な場所」）：道しるべは分かれ道の奥＝入ってくる道（3 地点前からの向き）のまっすぐ先の、
+    //  先へ進む道どうしのあいだ（道の外）。入ってくる向きから ±60° の範囲で、どの道からも o.postClear（既定 20）単位以上離れた所のうち、正面に近く・広場に近い所。
+    //  （旧：入る前の右の路肩＝マス・モンスターのすぐ横に立って不自然だった）。置けないときは従来の斜め前・脇
+    const behind = (id, n) => {
       let back = id; for (let j = 0; j < 3; j++) { const e = D.edges.find((x) => x[1] === back && x[3] === 'forward'); if (!e) break; back = e[0]; }
-      if (back === id) return null; const pv = D.nodes[back], ix = n[0] - pv[0], iy = n[1] - pv[1], il = Math.hypot(ix, iy) || 1, ux = ix / il, uy = iy / il;
-      const lat = (o.postLat || 18), bk = (o.postBack || 24);
-      for (const sg of [1, -1]) { const x = n[0] - ux * bk - uy * lat * sg, y = n[1] - uy * bk + ux * lat * sg; if (!nearRoad(x, y, lat - 3)) return [x - n[0], y - n[1]]; }
+      if (back === id) return null; const pv = D.nodes[back], a0 = Math.atan2(n[1] - pv[1], n[0] - pv[0]);
+      //  真後ろ（0°）はカメラから見てモンスターの頭のすぐ上に重なる＝少し斜め（±25° 前後）を先に・中心から 44 単位〜
+      const clear = o.postClear || 20, d0 = o.postBack || 44;
+      for (const dd of [0, 6, 12, 18, 26]) for (const da of [25, -25, 35, -35, 15, -15, 45, -45, 55, -55, 0, 60, -60]) {
+        const a = a0 + rad(da), d = d0 + dd, x = n[0] + Math.cos(a) * d, y = n[1] + Math.sin(a) * d;
+        if (!nearRoad(x, y, clear)) return [x - n[0], y - n[1]];
+      }
       return null;
     };
     const out = [];
     for (const [id, n] of Object.entries(D.nodes)) {
       const role = n[2];
-      const put = (file, w, d, cls) => { const s = (cls === 'rfw-bpost' && (approach(id, n) || ahead(id, n, d))) || side(n, d); if (s) out.push({ node: id, file, x: Math.round(n[0] + s[0]), y: Math.round(n[1] + s[1]), w, z: 4, cls }); };
+      const put = (file, w, d, cls) => { const s = (cls === 'rfw-bpost' && (behind(id, n) || ahead(id, n, d))) || side(n, d); if (s) out.push({ node: id, file, x: Math.round(n[0] + s[0]), y: Math.round(n[1] + s[1]), w, z: 4, cls }); };
       if (B.post && FORK_FREE.includes(role)) put(B.post, B.postW || 15, 30, 'rfw-bpost');
       if (B.junction && FORK_ALL.includes(role)) put(B.junction, B.junctionW || 18, 40, 'rfw-bmark');
       if (B.merge && MERGES.includes(role)) put(B.merge, B.mergeW || 18, 40, 'rfw-bmark');

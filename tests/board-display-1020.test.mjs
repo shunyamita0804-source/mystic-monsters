@@ -103,7 +103,7 @@ test('BD-03：Chapter 3 の門の幅と位置・Chapter 2 の港の門の足も�
   assert.match(rw, /ow \* oh > \(mr\[2\] - mr\[0\]\) \* \(mr\[3\] - mr\[1\]\) \* 0\.3/);
 });
 
-test('BD-04：Chapter 4 の円の広場（ぼかしの絵を使わない・縁石の円）・表示の配置・道しるべは分かれ道の手前の路肩', () => {
+test('BD-04：Chapter 4 の円の広場（ぼかしの絵を使わない・縁石の円）・表示の配置・道しるべは分かれ道の奥', () => {
   const v = rd('js/proto/ch4-world.js');
   assert.ok(!/plaza_disc/.test(v.replace(/^\s*\/\/.*$/gm, '').replace(/\/\*\*[\s\S]*?\*\//g, '')), 'C4_ROAD_03_CENTER_BLEND（ふちが白くぼける絵）を読まない');
   assert.match(v, /const PLAZA_RMAX = 21, PLAZA_RMIN = 16;/);
@@ -117,7 +117,18 @@ test('BD-04：Chapter 4 の円の広場（ぼかしの絵を使わない・縁�
     let i0 = 0, i1 = 0; for (const h of P) for (const n of nb[h]) { if (P.has(n)) continue; if (dist(D0.nodes[n], D0.nodes[h]) < 25 + 6.5) i0++; if (dist(D.nodes[n], D.nodes[h]) < 21 + 6.5) i1++; }
     assert.ok(i1 * 1.5 < i0, `${r}：広場の中の隣のマス ${i0} → ${i1}`);
   }
-  assert.match(rd('js/proto/roadfirst-world.js'), /const put = \(file, w, d, cls\) => \{ const s = \(cls === 'rfw-bpost' && \(approach\(id, n\) \|\| ahead\(id, n, d\)\)\) \|\| side\(n, d\);/);
+  // 2026-10-20 第2便：道しるべは分かれ道の奥（入ってくる向きの先・先へ進む道どうしのあいだ・道から 20 単位以上）
+  assert.match(rd('js/proto/roadfirst-world.js'), /const put = \(file, w, d, cls\) => \{ const s = \(cls === 'rfw-bpost' && \(behind\(id, n\) \|\| ahead\(id, n, d\)\)\) \|\| side\(n, d\);/);
+  const W = load(['js/proto/ch4-routes.js', 'js/proto/roadfirst-world.js']);
+  for (const r of ['A', 'B', 'C']) {
+    const D = W.MMRF_CH4[r], marks = W.MMRF_WORLD.branchMarks(D, { branchSkin: { post: 'x' } }), lines = Object.values(D.segments).map((s) => s[3].map((id) => D.nodes[id]));
+    assert.ok(marks.length >= 2, `${r}：道しるべ ${marks.length}`);
+    for (const m of marks) {
+      const n = D.nodes[m.node]; let back = m.node; for (let j = 0; j < 3; j++) { const e = D.edges.find((x) => x[1] === back && x[3] === 'forward'); if (!e) break; back = e[0]; }
+      const pv = D.nodes[back], dot = ((m.x - n[0]) * (n[0] - pv[0]) + (m.y - n[1]) * (n[1] - pv[1])) / (Math.hypot(m.x - n[0], m.y - n[1]) * Math.hypot(n[0] - pv[0], n[1] - pv[1]));
+      assert.ok(dot > 0.3, `${r} ${m.node}：分かれ道の奥（入ってくる向きとの cos ${dot.toFixed(2)}）`);
+    }
+  }
 });
 
 test('BD-05：Chapter 3 の道（描画で作る白亜の帯）の縁石に側面（厚み）と金の線・Chapter 2 の広場の床は道の床と向きをそろえる', () => {
@@ -127,4 +138,20 @@ test('BD-05：Chapter 3 の道（描画で作る白亜の帯）の縁石に側�
   const c = rd('js/proto/ch2-world.js');
   assert.match(c, /fp\.setTransform\(new root\.DOMMatrix\(\)\.translate\(o\[0\], o\[1\]\)\.rotate\(th0 \* 180 \/ Math\.PI\)/);
   assert.ok(!/const ao = g\.createRadialGradient\(x, y, r \* 0\.55, x, y, r - th\)/.test(c), '広場の床のふちの放射の陰はやめた');
+});
+
+test('BD-06：第2便＝近くの層（iPhone は 1単位 14px・失敗した区画の作り直し・前後の差 0.25）・建物の足もとをマスから離す・溶岩の川', () => {
+  const q = rd('js/qa/road-1016.js');
+  assert.match(q, /const LIFT = 0\.25;/);
+  assert.match(q, /RES3 = HIDPR && RES >= 10 \? num\('qaRoadRes3', 14, RES, 20\) : RES/);
+  assert.match(q, /try \{ paint\(t\); \} catch \(e\) \{ t\.c\.remove\(\); tiles\.delete\(k\); \}/);
+  const w = load(['js/proto/roadfirst-data.js', 'js/proto/roadfirst-routes.js', 'js/proto/ch3-routes.js', 'js/proto/ch4-routes.js', 'js/proto/board-display.js', 'js/proto/roadfirst-world.js']), M = w.MMRF_WORLD, X = w.MMRF_DISP;
+  const sets = { '1A': X.clearPlazas(w.MMRF_DATA), '1B': X.clearPlazas(w.MMRF_ROUTES.B), '3A': X.clearPlazas(w.MMRF_CH3.A), '3B': X.clearPlazas(w.MMRF_CH3.B) };
+  for (const [k, D] of Object.entries(sets)) for (const L of (D.art && D.art.landmarks) || M.ART.landmarks) {
+    if (!D.nodes[L.node] || /gate|arch|pier|colonnade|challenge/i.test(L.file) && !L.off && !L.side) continue;
+    const at = M.landmarkAt(D, L); for (const [id, n] of Object.entries(D.nodes)) assert.ok(Math.hypot(n[0] - at[0], n[1] - at[1]) >= L.w * 0.3 + 6.5, `${k} ${L.node}：足もとがマス ${id} にかかる`);
+  }
+  const v = rd('js/proto/ch4-world.js');
+  assert.match(v, /function river\(g, D, H, L\)/);
+  assert.match(v, /if \(L\.kind === 'river' && P\.length >= 8 && P\.length % 2 === 0\) \{ river\(g, D, H, L\); continue; \}/);
 });

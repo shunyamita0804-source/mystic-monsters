@@ -62,6 +62,7 @@
   function lava(g, D, H) {
     for (const L of lavaOf(D)) {
       const P = L.poly; if (!P || P.length < 3) continue;
+      if (L.kind === 'river' && P.length >= 8 && P.length % 2 === 0) { river(g, D, H, L); continue; }
       g.save(); g.lineJoin = 'round';
       for (const [w, a] of [[34, 0.07], [22, 0.1], [12, 0.16]]) { g.strokeStyle = `rgba(255,120,30,${a})`; g.lineWidth = w; smoothPath(g, P); g.stroke(); }   // 熱の光
       smoothPath(g, P); g.clip();
@@ -80,6 +81,74 @@
       g.restore();
       g.save(); g.strokeStyle = 'rgba(40,14,8,.9)'; g.lineWidth = 2.4; smoothPath(g, P); g.stroke(); g.restore();   // 岸の黒い縁
     }
+  }
+  /**
+   * 2026-10-20 第2便（iPhone 試遊「Chapter 4 のマグマの一本線が取って貼り付けたようでチープ」）：溶岩の川を描き直す（絵は未受領＝描画で作る）。
+   *  旧：まっすぐな幅 36 の帯に、外接の四角の横向きの1本のグラデーション＋筋。新：川の多角形（地点を置かない範囲＝tools/ch4 の lava）から中心線と幅を取り、
+   *  マスに近づかない範囲で少し蛇行・幅の揺らぎ → 焦げた岸 → 暗い赤の底 → 流れの芯（明るい黄色まで段々に）→ 冷えた岩の板と光る割れ目 → 岸の冷えた縁。下流の端は小さな溶岩だまり。
+   *  形の範囲（多角形）・地点・道は変えない
+   */
+  function river(g, D, H, L) {
+    const P = L.poly, n = P.length / 2, Ls = [P[0], ...P.slice(n + 1).reverse()], Rs = P.slice(1, n + 1);
+    const C0 = Ls.map((p, i) => [(p[0] + Rs[i][0]) / 2, (p[1] + Rs[i][1]) / 2, Math.hypot(p[0] - Rs[i][0], p[1] - Rs[i][1])]);
+    const C = []; for (let i = 0; i < C0.length - 1; i++) { const a = C0[i - 1] || C0[i], b = C0[i], c = C0[i + 1], d = C0[i + 2] || c;   // Catmull-Rom で細かく
+      for (let k = 0; k < 12; k++) { const t = k / 12, t2 = t * t, t3 = t2 * t, f = (j) => 0.5 * (2 * b[j] + (-a[j] + c[j]) * t + (2 * a[j] - 5 * b[j] + 4 * c[j] - d[j]) * t2 + (-a[j] + 3 * b[j] - 3 * c[j] + d[j]) * t3); C.push([f(0), f(1), f(2)]); } }
+    C.push(C0[C0.length - 1].slice());
+    const nodes = Object.values(D.nodes), near = (x, y) => { let m = 1e9; for (const q of nodes) m = Math.min(m, Math.hypot(q[0] - x, q[1] - y)); return m; };
+    const rnd = H.mulberry(L.id.length * 7919 + 101); let s = 0;
+    const S = C.map((p, i) => { if (i) s += Math.hypot(p[0] - C[i - 1][0], p[1] - C[i - 1][1]); return s; }), Ltot = s;
+    const side = [], half = [];
+    for (let i = 0; i < C.length; i++) {
+      const a = C[Math.max(0, i - 1)], b = C[Math.min(C.length - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], k = Math.hypot(dx, dy) || 1, nx = -dy / k, ny = dx / k, u = S[i];
+      const room = near(C[i][0], C[i][1]) - 6.5 - 4;   // マスまでの余裕（マスの半径＋すき間）
+      let w = C[i][2] / 2 * (0.92 + 0.14 * Math.sin(u / 47 + 1.3) + 0.06 * Math.sin(u / 13));
+      const amp = Math.max(0, Math.min(6, room - w)), off = amp * Math.sin(u / 61 + 0.7) + Math.min(amp, 2) * Math.sin(u / 19);
+      const tTop = Math.min(1, u / 40), tEnd = Math.min(1, (Ltot - u) / 70); w *= (0.35 + 0.65 * Math.sqrt(tTop)) * (0.25 + 0.75 * Math.sqrt(tEnd));   // 上流は細い割れ目から・下流は細って冷えて止まる（溜まりの丸は描かない＝作り物に見えた）
+      w = Math.max(3, Math.min(w, room - Math.abs(off)));
+      side.push([C[i][0] + nx * off, C[i][1] + ny * off, nx, ny]); half.push(w);
+    }
+    const edgeL = side.map((p, i) => [p[0] + p[2] * half[i], p[1] + p[3] * half[i]]), edgeR = side.map((p, i) => [p[0] - p[2] * half[i], p[1] - p[3] * half[i]]);
+    const shape = () => { g.beginPath(); edgeL.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); const e = side[side.length - 1], hw = half[half.length - 1], a0 = Math.atan2(e[3], e[2]); g.arc(e[0], e[1], hw, a0, a0 - Math.PI, true); for (let i = edgeR.length - 1; i >= 0; i--) g.lineTo(edgeR[i][0], edgeR[i][1]); g.closePath(); };   // 下流の端は丸く
+    const line = (P2) => { g.beginPath(); P2.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); };
+    const end = side[side.length - 1], pool = 0;
+    const wob = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(() => 0.86 + rnd() * 0.24), disc = (r) => { g.beginPath(); for (let k = 0; k <= 48; k++) { const a = k / 48 * Math.PI * 2, t = (a / (Math.PI * 2)) * 12, i0 = Math.floor(t) % 12, i1 = (i0 + 1) % 12, f = t - Math.floor(t), rr = r * (wob[i0] * (1 - f) + wob[i1] * f); const x = end[0] + Math.cos(a) * rr * 1.15, y = end[1] + Math.sin(a) * rr * 0.85; k ? g.lineTo(x, y) : g.moveTo(x, y); } g.closePath(); };   // 溜まりはいびつな横長
+    g.save(); g.lineJoin = g.lineCap = 'round';
+    for (const [w, a] of [[30, 0.06], [18, 0.09], [9, 0.14]]) { g.strokeStyle = `rgba(255,110,30,${a})`; g.lineWidth = w; shape(); g.stroke(); if (pool) { disc(pool); g.stroke(); } }   // 熱の光
+    // 焦げた岸（帯と溜まりを別々に＝重なりが穴にならない）
+    g.fillStyle = g.strokeStyle = 'rgba(16,8,6,.85)'; g.lineWidth = 7; shape(); g.stroke(); g.fill(); if (pool) { disc(pool + 3.5); g.fill(); }
+    for (let i = 0; i < side.length; i += 3) for (const E of [edgeL, edgeR]) { const p = E[i], r = 1.2 + rnd() * 2.4; g.fillStyle = `rgba(${24 + rnd() * 20 | 0},${12 + rnd() * 10 | 0},10,.9)`; g.beginPath(); g.ellipse(p[0] + (rnd() - 0.5) * 3, p[1] + (rnd() - 0.5) * 3, r * 1.4, r, rnd() * 3, 0, 7); g.fill(); }   // 岸の岩くず
+    g.fillStyle = '#5e0c04'; shape(); g.fill(); if (pool) { disc(pool); g.fill(); }   // 暗い赤の底
+    // 流れの芯：暗い赤 → 橙 → 黄 → 白に近い黄を 24 段でなめらかに（帯の中だけ）
+    const STOP = [[0.92, [140, 22, 8]], [0.66, [222, 66, 24]], [0.44, [255, 136, 38]], [0.24, [255, 196, 90]], [0.06, [255, 242, 180]]];
+    const colAt = (f) => { for (let i = 0; i < STOP.length - 1; i++) { const [f0, c0] = STOP[i], [f1, c1] = STOP[i + 1]; if (f <= f0 && f >= f1) { const t = (f0 - f) / (f0 - f1); return c0.map((v, j) => Math.round(v + (c1[j] - v) * t)); } } return STOP[f > 0.5 ? 0 : STOP.length - 1][1]; };
+    const core = side.map((p) => [p[0], p[1]]);
+    g.save(); shape(); g.clip();
+    for (let k = 0; k < 24; k++) {   // 幅は場所ごとの帯の幅に合わせる（細い所で芯がはみ出さない）＝短い区間ごとに描く・下流の端 60 単位は冷えて暗い赤へ
+      const f = 0.92 - k * (0.86 / 23), c = colAt(f);
+      for (let i = 0; i < core.length - 1; i++) { const j = Math.min(core.length - 1, i + 2), cool = Math.max(0, Math.min(1, (Ltot - S[i]) / 60)), m = (v, d) => Math.round(d + (v - d) * cool * cool); g.strokeStyle = `rgba(${m(c[0], 70)},${m(c[1], 14)},${m(c[2], 6)},.85)`; g.lineWidth = Math.max(0.6, (half[i] + half[j]) * f); g.beginPath(); g.moveTo(core[i][0], core[i][1]); for (let q = i + 1; q <= j; q++) g.lineTo(core[q][0], core[q][1]); g.stroke(); }
+    }
+    // 流れの筋（流れに沿った細い明暗の線・少し揺れる）
+    for (let L2 = 0; L2 < 9; L2++) {
+      const off = (rnd() - 0.5) * 1.5, ph = rnd() * 6, bright = rnd() < 0.5; g.strokeStyle = bright ? 'rgba(255,230,150,.32)' : 'rgba(110,22,6,.35)'; g.lineWidth = 0.5 + rnd() * 0.7;
+      let started = false, i0 = Math.floor(rnd() * core.length * 0.5), i1 = Math.min(core.length - 1, i0 + 20 + Math.floor(rnd() * 40)); g.beginPath();
+      for (let i = i0; i <= i1; i++) { const p = side[i], o = (off * 0.6 + 0.12 * Math.sin(S[i] / 9 + ph)) * half[i], x = p[0] + p[2] * o, y = p[1] + p[3] * o; if (!started) { g.moveTo(x, y); started = true; } else g.lineTo(x, y); }
+      g.stroke();
+    }
+    for (let i = 4; i < side.length - 2; i += 6) {   // 冷えた岩の板と光る割れ目（流れの向きに少し長い）
+      const p = side[i], w = half[i]; if (w < 7) continue; const ox = (rnd() - 0.5) * w * 0.9, cx = p[0] + p[2] * ox, cy = p[1] + p[3] * ox, rx = 2 + rnd() * w * 0.28, ry = 1.3 + rnd() * w * 0.16, ang = Math.atan2(-p[2], p[3]);
+      g.fillStyle = 'rgba(52,16,8,.72)'; g.beginPath(); for (let k = 0; k < 7; k++) { const a = k / 7 * Math.PI * 2, rr = 0.75 + rnd() * 0.35, X = Math.cos(a) * rx * rr, Y = Math.sin(a) * ry * rr; const xx = cx + X * Math.cos(ang) - Y * Math.sin(ang), yy = cy + X * Math.sin(ang) + Y * Math.cos(ang); k ? g.lineTo(xx, yy) : g.moveTo(xx, yy); } g.closePath(); g.fill();
+      g.strokeStyle = 'rgba(255,186,90,.5)'; g.lineWidth = 0.5; g.stroke();
+    }
+    g.strokeStyle = 'rgba(70,16,6,.55)'; g.lineWidth = 3.5; line(edgeL); g.stroke(); line(edgeR); g.stroke();   // 岸の冷えた縁（帯の内側）
+    g.restore();
+    if (pool) {   // 下流の溶岩だまり：芯と同じ色を中心から外へ
+      const ix = side[side.length - 4] ? end[0] - side[side.length - 4][0] : 0, iy = side[side.length - 4] ? end[1] - side[side.length - 4][1] : -1, il = Math.hypot(ix, iy) || 1;
+      const gx = end[0] - ix / il * pool * 0.35, gy = end[1] - iy / il * pool * 0.35, gr = g.createRadialGradient(gx, gy, 0, end[0], end[1], pool * 1.15);   // 明るいのは流れこむ側
+      gr.addColorStop(0, 'rgb(255,170,70)'); gr.addColorStop(0.35, 'rgb(240,104,32)'); gr.addColorStop(0.7, 'rgb(190,44,14)'); gr.addColorStop(1, 'rgb(94,12,4)'); g.fillStyle = gr; disc(pool); g.fill();
+      for (let k = 0; k < 6; k++) { const a = rnd() * 7, d = pool * (0.3 + rnd() * 0.5), cx = end[0] + Math.cos(a) * d, cy = end[1] + Math.sin(a) * d * 0.8; g.fillStyle = 'rgba(52,16,8,.7)'; g.beginPath(); g.ellipse(cx, cy, 2 + rnd() * 3, 1.4 + rnd() * 2, rnd() * 3, 0, 7); g.fill(); g.strokeStyle = 'rgba(255,186,90,.45)'; g.lineWidth = 0.5; g.stroke(); }   // 溜まりの冷えた岩
+      g.strokeStyle = 'rgba(70,16,6,.55)'; g.lineWidth = 3.5; disc(pool - 1.5); g.stroke();
+    }
+    g.restore();
   }
   const REG_TINT = { village: 'rgba(150,104,70,.30)', ash: 'rgba(196,188,176,.30)', obsidian: 'rgba(14,12,20,.36)', fumarole: 'rgba(214,190,90,.22)', temple: 'rgba(150,40,30,.20)', tower: 'rgba(110,90,74,.22)', arena: 'rgba(60,36,30,.28)' };
   function ground(g, D, bx, art, H) {
