@@ -246,6 +246,7 @@ void main(){
       if (!featOn) return;
       const t0 = root.performance.now();
       while (macroQ.length && root.performance.now() - t0 < NEAR_BUDGET_MS) { const [x, y] = macroQ.shift(); try { const o = paintTile(x, y, MACRO_T, MACRO_RES); if (o) macro.push(o); } catch (e) { /* 描けない区画は飛ばす */ } onDirty(); }
+      if (featOn && !macroQ.length && warmed < 2) { if (!warmed) warm(); warmed++; }   // 全体の区画を描き終えたら一度だけ寄った細かさで描き、次のフレームで「描き終えた」にする（寄る動きの最初で止まらない）
       if (!c) return;
       const sig = [Math.round(c.tx / 16), Math.round(c.ty / 16), Math.round(c.s * 4), Math.round((c.yaw || 0) / 10), Math.round(c.tilt)].join(',');
       const now = root.performance.now(); if (!nearQ.length && now - lastNearCheck > 1000) { lastNearCheck = now; nearSig = ''; }
@@ -268,13 +269,17 @@ void main(){
       gl.enableVertexAttribArray(LOC.aC); gl.vertexAttribPointer(LOC.aC, 4, gl.FLOAT, false, S, 20);
     }
     const bindTex = (unit, t) => { gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t); };
+    //  盤の大きさ：ResizeObserver で変わったときだけ読む（毎回 getBoundingClientRect を読むと、寄る動きの最初のフレームで配置の計算をその場でさせて止まっていた）
+    let box0 = null; const RO = root.ResizeObserver ? new root.ResizeObserver((es) => { const r = es[0] && es[0].contentRect; if (r) { box0 = { width: r.width, height: r.height }; dirty = true; if (cfg.onDirty) cfg.onDirty(); } }) : null;
+    if (RO) RO.observe(parent);
     function size() {
-      const r = parent.getBoundingClientRect(), d = DPR(), W = Math.max(1, Math.round(r.width * d)), H = Math.max(1, Math.round(r.height * d));
+      const r = box0 || (box0 = parent.getBoundingClientRect()), d = DPR(), W = Math.max(1, Math.round(r.width * d)), H = Math.max(1, Math.round(r.height * d));
       if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; dirty = true; }
       return { W: r.width, H: r.height };
     }
+    const DMS = [], DLONG = [];   // 確認用：描くのにかかった時間（最後の 60 回）・5ms を超えた描画の時刻と時間
     function draw(c) {
-      if (dead || !c) return; lastCam = c;
+      if (dead || !c) return; lastCam = c; const T0 = root.performance.now();
       const vs = size(); gl.viewport(0, 0, cv.width, cv.height);
       const th = c.tilt * Math.PI / 180, ya = (c.yaw || 0) * Math.PI / 180;
       gl.uniform4f(U.uA, c.tx, c.ty, c.s, c.P); gl.uniform4f(U.uB, c.ax, c.ay, Math.cos(th), Math.sin(th)); gl.uniform4f(U.uY, Math.cos(ya), Math.sin(ya), vs.W, vs.H);
@@ -310,7 +315,7 @@ void main(){
       // 3. 道の影 → 石畳 → 縁石 → 広場の影 → 広場（広場は道の上＝縁石の輪は切れない）
       drawPhase(null, false);
       if (DEP) { gl.disable(gl.POLYGON_OFFSET_FILL); drawPhase('post', false); gl.depthMask(true); }
-      dirty = false; drawn++;
+      dirty = false; drawn++; { const t1 = root.performance.now(); if (t1 - T0 > 5) DLONG.push([Math.round(T0), +(t1 - T0).toFixed(1)]); if (DLONG.length > 20) DLONG.shift(); DMS.push(+(t1 - T0).toFixed(1)); if (DMS.length > 60) DMS.shift(); }
     }
     /** 網を順に描く（phase＝pre／post／null（高さ 0 の道・広場など）） */
     function drawPhase(phase, depthWrite) {
@@ -345,8 +350,12 @@ void main(){
       const a = M.vert(x0, y0, 0, 0, 0, c), b = M.vert(x0 + T, y0, 0, 0, 0, c), d = M.vert(x0 + T, y0 + T, 0, 0, 0, c), e = M.vert(x0, y0 + T, 0, 0, 0, c); M.quad(a, b, d, e);
       const vb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vb); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(M.v), gl.STATIC_DRAW); EQ.set(k, vb); return vb; }
 
-    let texDone = false;
-    const ready = Promise.all(waits).then(() => { texDone = true; if (dead) return false; for (const f of after) f(); onDirty(); return true; });
+    let texDone = false, warmed = 0;
+    //  読み込んだ絵を、寄ったときの細かさ（mipmap の 0 段）で一度だけ描いておく（初めて寄るとき＝開始の寄る動きの途中で、GPU の準備で止まらない）。見えるのは最後の描画だけ
+    function warm() { const f = cfg.focus; if (!f || !lastCam) return; const c = lastCam;
+      //  寄る動きの途中の姿（傾き 0〜40°・倍率 0.6〜6）をいくつか＝絵の縮み方（mipmap の段・異方性）が初めて変わるときの GPU の準備を先に済ませる
+      try { for (const [tl, sc, dy] of [[10, 0.8, 300], [20, 1.6, 200], [30, 3, 120], [40, 4.2, 60], [40, 6, 30]]) draw({ tx: f[0], ty: f[1] - dy, s: sc, tilt: tl, yaw: 0, P: c.P || 900, ax: c.ax, ay: c.ay }); draw(c); } catch (e) { /* 描けなくても続ける */ } }
+    const ready = Promise.all(waits).then(() => { texDone = true; if (dead) return false; for (const f of after) f(); warm(); onDirty(); return true; });
     cv.addEventListener('webglcontextlost', (e) => { e.preventDefault(); dead = true; if (cfg.onLost) cfg.onLost(); }, { once: true });
     return {
       el: cv, ready, setMask, texture,
@@ -364,9 +373,9 @@ void main(){
       draw, isDirty: () => dirty,
       /** 確認用：今の絵の1点の色（描いた直後に読む） */
       probe(x, y) { if (lastCam) draw(lastCam); const d = DPR(), px = new Uint8Array(4); gl.readPixels(Math.round(x * d), cv.height - Math.round(y * d) - 1, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); return { px: [...px], last: LAST }; },
-      macroDone: () => texDone && (!kit.features || (featOn && !macroQ.length)),
-      stats: () => ({ macro: macro.length, near: [...near.values()].filter((x) => x.o).length, nearEmpty: [...near.values()].filter((x) => !x.o).length, pending: macroQ.length + nearQ.length, nearMB: +(nearBytes / 1048576).toFixed(1), drawn, tex: Object.fromEntries(Object.entries(tex).map(([k, t]) => [k, t.ok])), aniso: ANMAX, dead }),
-      destroy() { dead = true; for (const o of macro) freeTile(o); for (const x of near.values()) freeTile(x.o); try { const x = gl.getExtension('WEBGL_lose_context'); if (x) x.loseContext(); } catch (e) {} cv.remove(); },
+      macroDone: () => texDone && (!kit.features || (featOn && !macroQ.length && warmed >= 2)),
+      stats: () => ({ drawMs: DMS.slice(), drawLong: DLONG.slice(), macro: macro.length, near: [...near.values()].filter((x) => x.o).length, nearEmpty: [...near.values()].filter((x) => !x.o).length, pending: macroQ.length + nearQ.length, nearMB: +(nearBytes / 1048576).toFixed(1), drawn, tex: Object.fromEntries(Object.entries(tex).map(([k, t]) => [k, t.ok])), aniso: ANMAX, dead }),
+      destroy() { dead = true; if (RO) RO.disconnect(); for (const o of macro) freeTile(o); for (const x of near.values()) freeTile(x.o); try { const x = gl.getExtension('WEBGL_lose_context'); if (x) x.loseContext(); } catch (e) {} cv.remove(); },
     };
   }
   root.MMGL = Object.freeze({ supported, create, OFF, RES_HI, NEAR_MB });

@@ -235,7 +235,7 @@
     //  WebGL2 が無い端末・?glBoard=0・まだ対応していない盤（GL の作り方 glKit の無い盤）は従来どおり
     const GLK = o.art && o.gl !== false && root.MMGL && root.MMGL.supported(doc) ? glKitOf(D, o, SEA, art) : null;
     let GL = null;
-    if (GLK) { try { GL = root.MMGL.create({ doc, parent: wrap, before: plane, D, WORLD, kit: GLK, project, onDirty: () => { if (typeof S !== 'undefined') S.dirty = true; } }); } catch (e) { GL = null; } }
+    if (GLK) { try { GL = root.MMGL.create({ doc, parent: wrap, before: plane, D, WORLD, kit: GLK, project, focus: D.nodes.START || null, onDirty: () => { if (typeof S !== 'undefined') S.dirty = true; } }); } catch (e) { GL = null; } }
     if (GL) wrap.classList.add('gl');
     if (!GL) for (let y = 0; y < H; y += o.chunk) for (let x = 0; x < W; x += o.chunk) {
       // 区画どうしを 1px 重ねる（境目に細い線が出ないように）
@@ -352,7 +352,8 @@
       const SYMS = Array.isArray(o.symbols) ? o.symbols.filter((q) => q && q.file) : [], symNear = (x, y, r) => SYMS.some((q) => Math.hypot(q.x - x, q.y - y) < (q.foot || q.w * 0.4) + r);
       for (const q of (SEA ? SEA.scatter(D, o, HELP) : scatter(D, o))) { if (SYMS.length && symNear(q.x, q.y, (q.w || 10) * 0.3)) continue; add(q.file, q.x, q.y, q.w, q.z || 0, q.cls, q.h); }
       if (D.art && D.art.sky) for (const q of skyProps(D, o)) { if (SYMS.length && symNear(q.x, q.y, (q.w || 10) * 0.3)) continue; add(q.file, q.x, q.y, q.w, q.z || 0, 'rfw-sky'); }
-      for (const q of SYMS) add(q.file, q.x, q.y, q.w, q.z != null ? q.z : -30, 'rfw-lm rfw-sym', q.h || 0);   // 2026-10-18 Chapter 3：雲海の中の小さな浮島・雲
+      //  2026-10-20 第4便：シンボル建物は遠くに大きく立つ＝決まった幅（合成の層の大きさ）を 512px まで（旧：最大 1440px＝開始の寄る動きの最初に大きな層を作り直して 0.3 秒止まっていた。見せる大きさは同じ）
+      for (const q of SYMS) { add(q.file, q.x, q.y, q.w, q.z != null ? q.z : -30, 'rfw-lm rfw-sym', q.h || 0); props[props.length - 1].cap = 512; }   // 2026-10-18 Chapter 3：雲海の中の小さな浮島・雲
       const gn = D.nodes.GOAL; if (gn) { add(GA.file, gn[0], gn[1] + GA.dy, GA.w, -40, 'rfw-goal', 0, GA.ah); const gp = props[props.length - 1]; gp.solid = true;
         // 2026-10-14 実機試遊⑭：大会会場は立てた絵（いつもカメラの方を向く）なので、置く位置も「カメラから見て GOAL のすぐ奥」に合わせる＝正面の階段の下に GOAL の円盤が来る。
         //  地面を進む向きへ回す（heading）本編だけ：GOAL から画面の奥の向きへ back だけ下げた点（回したあとの画面で真上）。試作（北が上）は従来の dy のまま。GOAL の地点・歩数・判定は変えない
@@ -395,7 +396,7 @@
     }
     /** 景物の決まった幅（px）：いちばん寄ったときの大きさ（世界の幅 × 最大の倍率 × 手前の遠近）まで。絵の実際の幅より大きくしない（それ以上はぼやけるだけ） */
     function propBase(p) {
-      const nat = p.el.naturalWidth || 0, want = Math.min(p.max || 1e9, Math.max(p.min || 0, p.w * o.sMax * 1.3));
+      const nat = p.el.naturalWidth || 0, want = Math.min(p.max || 1e9, p.cap || 1e9, Math.max(p.min || 0, p.w * o.sMax * 1.3));   // cap＝決まった幅の上限（px・見せる大きさは変えない）
       p.base = Math.max(8, Math.round(nat ? Math.min(nat, want) : Math.min(1024, want))); p.el.style.width = p.base + 'px';
       if (!nat) p.el.addEventListener('load', () => { p.base = 0; S.dirty = true; }, { once: true });   // 絵が読めたら実際の幅で決め直す（1回）
     }
@@ -590,7 +591,8 @@
           // 2026-10-13 開発28：終わりはアニメーションそのもので見る（約300個を作る間に開始時刻が1〜数フレーム遅れる＝時計で切ると終点の手前で止めて最後の姿へ飛んでいた）。時計は保険（+600ms）
           const a0 = it.anims[0], ct = a0 && a0.currentTime, over = !a0 || a0.playState === 'finished' || a0.playState === 'idle' || (typeof ct === 'number' && ct >= it.dur - 0.5) || now >= it.end + 600;
           if (over) finishIntro(it); else {
-            if (GL) { const u = Math.max(0, Math.min(1, (typeof ct === 'number' ? ct : now - it.end + it.dur) / it.dur)) * INTRO_SAMPLES, i = Math.min(INTRO_SAMPLES - 1, Math.floor(u)), f = u - i, A = it.cams[i], B = it.cams[i + 1];   // 地面（WebGL）は寄る動きの刻みの間をつないで毎フレーム描く（DOM は合成スレッド）
+            //  最初の 0.15 秒は WebGL を描かない（約 600 の要素の動きが合成の層を作る間、GPU が埋まって WebGL の描画が待たされ、フレームが止まっていた。最初の刻みは全景のまま＝動きはわずか）
+            if (GL && typeof ct === 'number' && ct > 150) { const u = Math.max(0, Math.min(1, ct / it.dur)) * INTRO_SAMPLES, i = Math.min(INTRO_SAMPLES - 1, Math.floor(u)), f = u - i, A = it.cams[i], B = it.cams[i + 1];   // 地面（WebGL）は寄る動きの刻みの間をつないで毎フレーム描く（DOM は合成スレッド）
               GL.pause(true); GL.draw({ tx: lerp(A.tx, B.tx, f), ty: lerp(A.ty, B.ty, f), s: Math.exp(lerp(Math.log(A.s), Math.log(B.s), f)), tilt: lerp(A.tilt, B.tilt, f), yaw: (A.yaw || 0) + angDiff(A.yaw || 0, B.yaw || 0) * f, P: A.P, ax: A.ax, ay: A.ay }); }
             S.raf = root.requestAnimationFrame(tick); return; }
         }
