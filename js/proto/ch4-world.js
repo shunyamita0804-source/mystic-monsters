@@ -152,10 +152,10 @@
     g.restore();
   }
   const REG_TINT = { village: 'rgba(150,104,70,.30)', ash: 'rgba(196,188,176,.30)', obsidian: 'rgba(14,12,20,.36)', fumarole: 'rgba(214,190,90,.22)', temple: 'rgba(150,40,30,.20)', tower: 'rgba(110,90,74,.22)', arena: 'rgba(60,36,30,.28)' };
-  function ground(g, D, bx, art, H) {
+  function ground(g, D, bx, art, H, noBase) {
     const S = art.volc || {}, [x0, y0, w, h] = bx, a = D.art;
-    const gp = tp(g, H, S, 'ground');
-    g.fillStyle = gp || a.ground || '#5a4034'; g.fillRect(x0, y0, w, h);
+    const gp = noBase ? null : tp(g, H, S, 'ground');   // noBase＝WebGL の盤の地形の絵（地面のくり返しは GPU＝ここでは塗らない）
+    if (!noBase) { g.fillStyle = gp || a.ground || '#5a4034'; g.fillRect(x0, y0, w, h); }
     if (gp && S.tex.ground) { const im = S.tex.ground, p2 = g.createPattern(im, 'repeat'); if (p2 && p2.setTransform && root.DOMMatrix) { p2.setTransform(new root.DOMMatrix().rotate(31).scale((TEX.ground[1] * 1.61) / im.width)); g.save(); g.globalAlpha = 0.42; g.fillStyle = p2; g.fillRect(x0, y0, w, h); g.restore(); } }   // くり返しの縞を消す（絵は変えない）
     // 山の形：山頂へ向かって暗く（夜の空気）・麓は夕日の色。等高線の段にやわらかい影と稜線の光
     const c = a.summit || [512, 185], C = (a.contours || []).slice().sort((p, q) => p.elev - q.elev);
@@ -341,6 +341,37 @@
 @media (prefers-reduced-motion:reduce){:is(#rfp,.wbv) .rfv-sky i,:is(#rfp,.wbv) .rfv-tint{transition:none}}`;
     doc.head.appendChild(s);
   }
-  const api = { flat: true, A4, DECK, TEX, IMG, ROAD_W, load, warm, ground, roads, plazas, apron, lm, goal, scatter, build3d, elevAt, phaseOf, deckStrip };
+  /** 2026-10-20 第4便：WebGL の盤（js/proto/board-gl.js）の作り方。地面＝E03 の火山の地面（くり返し）・道＝E04 の玄武岩の石畳＋縁石・広場＝E04 の円の広場（半径は plazas と同じ規則）。
+   *  山の明暗・等高線・尾根・区域のにじみ・火口・溶岩は従来の描画（ground の noBase）を地形の絵に。溶岩の上の橋（床・欄干・深い影）と出来事の台座は道の上に重ねる */
+  function glKit(D, o, art, H) {
+    const T = (k, repeat) => ({ src: H.GL_DIR + 'ch4_' + k + '.webp', repeat }), br = bridgeSet(D);
+    const L = lines(D, H), land = L.filter((l) => !br.has(l.sids[0])), brg = L.filter((l) => br.has(l.sids[0]));   // 鎖は陸と橋を混ぜない（lines と同じ）
+    const nb = {}, out = {}, inn = {}; for (const e of D.edges) { (nb[e[0]] = nb[e[0]] || new Set()).add(e[1]); (nb[e[1]] = nb[e[1]] || new Set()).add(e[0]); if (e[3] === 'forward') { out[e[0]] = (out[e[0]] || 0) + 1; inn[e[1]] = (inn[e[1]] || 0) + 1; } }
+    const isHub = (id) => { const n = D.nodes[id]; return !!n && ((out[id] || 0) > 1 || (inn[id] || 0) > 1 || /dead_end/.test(n[2]) || n[2] === 'start'); };
+    const radius = (id) => { const n = D.nodes[id]; let r = PLAZA_RMAX; for (const k of nb[id] || []) { const q = D.nodes[k], d = Math.hypot(q[0] - n[0], q[1] - n[1]); r = Math.min(r, isHub(k) ? d / 2 - 1 : d - 7.5); } return Math.max(PLAZA_RMIN, r); };
+    const R = H.glRoadsOf(D, land, { w: ROAD_W, tile: 44, curb: CURB_W, r: PLAZA_RMAX, sa: 0.36, ps: 3, shadow: { w: 4, a: 0.34, rgb: [0.04, 0.016, 0.016], dy: 3 } });
+    R.plaza.radius = radius; R.plaza.sdy = 3;
+    return {
+      textures: { ground: T('ground', true), road: T('road', true), curb: T('curb', 'u'), plaza: T('plaza', false) }, macro: { k: 0.55 },
+      ground: { tex: 'ground', tile: 64, outDark: 0.3 },
+      features: (g, bx) => ground(g, D, bx, art, H, true),
+      roads: R,
+      onArt(G, a) {
+        const S = a.volc || {};
+        if (brg.length) {   // 溶岩の上の橋：深い影 → 床 → 左右の欄干（従来の roads と同じ並び・同じ絵）
+          G.add({ kind: 'solid', lines: brg.map((l) => l.P), w: ROAD_W + 10, a: 0.5, rgb: [0.08, 0.016, 0], dy: 9, under: true });
+          if (S.deckStrip) { G.texture('deck', S.deckStrip, 'u'); G.add({ kind: 'strip', lines: brg.map((l) => l.P), off0: -(ROAD_W + 4) / 2, off1: (ROAD_W + 4) / 2, tex: 'deck', under: true }); }
+          const rl = S.strip && S.strip.railL, rr = S.strip && S.strip.railR, rs = (ROAD_W + 4) / 2 + RAIL_W / 2 - 1.5;
+          if (rl && rr) { G.texture('railL', rl, 'u'); G.texture('railR', rr, 'u');
+            G.add({ kind: 'strip', lines: brg.map((l) => l.P), off0: -rs - RAIL_W / 2, off1: -rs + RAIL_W / 2, tex: 'railL', under: true }); G.add({ kind: 'strip', lines: brg.map((l) => l.P), off0: rs - RAIL_W / 2, off1: rs + RAIL_W / 2, tex: 'railR', under: true }); }
+        }
+        const eb = S.img && S.img.base; if (eb) { G.texture('ebase', eb, false); const k = eb.height / eb.width;   // 固定の出来事の地点の台座（道と広場の上）
+          G.add({ kind: 'quad', tex: 'ebase', items: KEY_IDS.filter((id) => id !== 'START' && id !== 'GOAL' && D.nodes[id]).map((id) => ({ x: D.nodes[id][0], y: D.nodes[id][1], w: BASE_D, h: BASE_D * k })) }); }
+      },
+    };
+  }
+  /** 2026-10-20 第4便：描く道の中心線（roads と同じ鎖・同じ丸め）＝マスを置く線 */
+  function lines(D, H) { const br = bridgeSet(D); return H.roadChains(D, Object.entries(D.segments), (a, b) => br.has(a) === br.has(b)).map((c) => ({ ids: c.ids, sids: c.sids, P: H.roadPts(D, c.ids, ROAD_W / 2 + CURB_W + 3) })); }
+  const api = { flat: true, A4, DECK, TEX, IMG, ROAD_W, load, warm, ground, roads, lines, glKit, plazas, apron, lm, goal, scatter, build3d, elevAt, phaseOf, deckStrip };
   if (typeof module === 'object' && module.exports) module.exports = api; else root.MMRF_VOLC = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -117,7 +117,7 @@ test('BD-04：Chapter 4 の円の広場（ぼかしの絵を使わない・縁�
     assert.ok(i1 * 1.5 < i0, `${r}：広場の中の隣のマス ${i0} → ${i1}`);
   }
   // 2026-10-20 第2便：道しるべは分かれ道の奥（入ってくる向きの先・先へ進む道どうしのあいだ・道から 20 単位以上）
-  assert.match(rd('js/proto/roadfirst-world.js'), /const put = \(file, w, d, cls\) => \{ const s = \(cls === 'rfw-bpost' && \(behind\(id, n\) \|\| ahead\(id, n, d\)\)\) \|\| side\(n, d\);/);
+  assert.match(rd('js/proto/roadfirst-world.js'), /const put = \(file, w, d, cls, ah\) => \{ const s = \(cls === 'rfw-bpost' && \(behind\(id, n\) \|\| ahead\(id, n, d\)\)\) \|\| side\(n, d\);/);
   const W = load(['js/proto/ch4-routes.js', 'js/proto/roadfirst-world.js']);
   for (const r of ['A', 'B', 'C']) {
     const D = W.MMRF_CH4[r], marks = W.MMRF_WORLD.branchMarks(D, { branchSkin: { post: 'x' } }), lines = Object.values(D.segments).map((s) => s[3].map((id) => D.nodes[id]));
@@ -183,4 +183,31 @@ test('BD-07：第3便＝シンボル建物（全 Chapter・A／B／C 同じ所�
   const W = rd('js/proto/roadfirst-world.js');
   assert.match(W, /for \(const q of SYMS\) add\(q\.file, q\.x, q\.y, q\.w, q\.z != null \? q\.z : -30, 'rfw-lm rfw-sym', q\.h \|\| 0\);/);
   assert.match(rd('js/proto/ch4-world.js'), /\.rfv-sky b\{display:none;/, 'Chapter 4 の空の火山は消す（盤の巨大火山と二重にしない）');
+});
+
+test('BD-08：第4便＝マスは描いた道の中心線の上・正面向きの門（E01）と道標（E02）・道標は地面の上', () => {
+  const w = load([...DATA, 'js/proto/ch2-routes.js', 'js/proto/ch4-routes.js', 'js/proto/roadfirst-world.js', 'js/proto/ch2-world.js', 'js/proto/ch4-world.js']), X = w.MMRF_DISP, W = w.MMRF_WORLD;
+  const H = { roadChains: W.roadChains, roadPts: W.roadPts }, C4 = { clear: 24, gap: 14, minD: 11, uniform: true };
+  const sets = { '1A': [X.clearPlazas(w.MMRF_DATA), W.roadLinesOf], '2A': [w.MMRF_CH2.A, (D) => w.MMRF_SEA.lines(D, H)], '3B': [X.clearPlazas(w.MMRF_CH3.B), W.roadLinesOf], '4A': [X.clearPlazas(w.MMRF_CH4.A, C4), (D) => w.MMRF_VOLC.lines(D, H)] };
+  const dSeg = (x, y, P) => { let m = 1e9; for (let i = 0; i < P.length - 1; i++) { const a = P[i], b = P[i + 1], dx = b[0] - a[0], dy = b[1] - a[1], L2 = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / L2)); m = Math.min(m, Math.hypot(a[0] + dx * t - x, a[1] + dy * t - y)); } return m; };
+  for (const [k, [D, linesOf]] of Object.entries(sets)) {
+    const before = JSON.stringify(D.nodes), L = linesOf(D), N = W.snapNodes(D, L);
+    assert.equal(JSON.stringify(D.nodes), before, `${k}：地点の座標（進行のデータ）は書き換えない`);
+    for (const l of L) for (const id of l.ids.slice(1, -1)) { const p = N[id] || D.nodes[id]; assert.ok(dSeg(p[0], p[1], l.P) < 0.6, `${k} ${id}：描いた道の中心線の上`); }
+    for (const l of L) for (const id of [l.ids[0], l.ids[l.ids.length - 1]]) assert.ok(!N[id] || L.some((m) => m.ids.slice(1, -1).includes(id)), `${k} ${id}：鎖の端（広場）は動かさない`);
+  }
+  const src = rd('js/proto/roadfirst-world.js');
+  assert.match(src, /const NP = snapNodes\(D, SEA && SEA\.lines \? SEA\.lines\(D, HELP\) : roadLinesOf\(D\)\), at = \(id\) => NP\[id\] \|\| D\.nodes\[id\];/);
+  //  正面の門：素材があり、口（下から 5%）が道幅より広い幅で置く
+  const FR = /const FRONT = (\[[\s\S]*?\]\]);/.exec(src); assert.ok(FR);
+  const OPEN = { ch1_start_gate_front: 0.331, ch1_lower_gate_front: 0.421, ch1_upper_gate_front: 0.364, ch1_seal_gate_front: 0.347, ch2_harbor_gate_front: 0.595, ch3_sky_arch_front: 0.721, ch4_volcano_gate_front: 0.348 };
+  const ROAD = { ch1: 23, ch2: 24.6, ch3: 23, ch4: 22 };
+  const rows = [...FR[1].matchAll(/'([a-z0-9_]+)\.webp', (\d+), ([0-9.]+)\]/g)];
+  assert.equal(rows.length, 7);
+  for (const [, f, wd] of rows) { assert.ok(existsSync(path.join(ROOT, 'assets/fields/front_1020', f + '.webp')), f); assert.ok(+wd * OPEN[f] > ROAD[f.slice(0, 3)], `${f}：口 ${(+wd * OPEN[f]).toFixed(1)} ＞ 道幅`); }
+  assert.match(src, /const lmOf = \(D\) => lmOf0\(D\)\.map\(frontOf\);/);
+  //  道標は地面の上（Chapter 3 は浮島の上）
+  const D3 = X.clearPlazas(w.MMRF_CH3.A), inPoly = (P, x, y) => { let c = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) { const [xi, yi] = P[i], [xj, yj] = P[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) c = !c; } return c; };
+  const posts = W.branchMarks(D3, { branchSkin: { post: 'p.webp', postW: 18 } });
+  assert.equal(posts.length, 2); for (const q of posts) assert.ok(D3.art.islands.some((P) => inPoly(P, q.x, q.y)), `Chapter 3 ${q.node}：浮島の上`);
 });

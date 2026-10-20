@@ -82,7 +82,7 @@ test('QR-01：道路の比較案は ?qaRoad=1|2 のときだけ（通常は従�
   const R = globalThis.MMQAR; assert.equal(R.mode, null); assert.equal(R.RES, 5); assert.equal(R.MAX, 14);
   const wb = rd('js/chapter/world-board.js'), rw = rd('js/proto/roadfirst-world.js'), c2 = rd('js/proto/ch2-world.js');
   assert.match(wb, /\.\.\.\(roadFor\(m\) \? \{ qaRoad: roadFor\(m\) \} : \{\}\)/);
-  assert.match(rw, /const HI = QR \? QR\.hiLayer\(/, '近くの層は qaRoad のときだけ');
+  assert.match(rw, /const HI = QR && !GL \? QR\.hiLayer\(/, '近くの層は qaRoad のときだけ（2026-10-20 第4便：WebGL の盤では作らない）');
   assert.match(rw, /if \(QA\) for \(const P of cps\) QA\.meshStrip\(g, P, art\.strip, ART\.strip\.w, bx\);[^\n]*\n\s*else for \(const s of segs\) stripAlong\(/, '従来は stripAlong のまま');
   assert.match(c2, /else \{ g\.strokeStyle = deck; g\.lineWidth = ROAD_W; for \(const P of pts\) \{ pathOf\(g, P\); g\.stroke\(\); \} \}/, 'Chapter 2 も従来の石板のまま');
 });

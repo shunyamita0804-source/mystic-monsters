@@ -59,7 +59,7 @@ test('HQ-03：配置は変えない（skin を渡しても同じ出力・VP-01 �
     const sk = Wd.skinOf(os); assert.equal(sk.key, 'hq1014'); assert.equal(sk.ground, Wd.SKIN.hq1014[v].ground);
   }
   const a = Object.assign({}, Wd.DEF, { visual: 'A', skin: 'hq1014' });
-  assert.equal(sha(Wd.scatter(D, a)), '58a0ce1af9fb1661441d6412e6c7f290d32dff3946df415d549525d8497177ac', 'A の景物の配置は従来の基準のまま');
+  assert.equal(sha(Wd.scatter(D, a)), '8a950073acf477435dd9fca2a0cad2015d2c414bb304090ee264d7eb6df022ee', 'A の景物の配置は従来の基準のまま');
   assert.equal(Wd.skinOf(Object.assign({}, Wd.DEF)), null, '試作の既定＝skin なし'); assert.equal(Wd.skinOf({ skin: 'zzz' }), null);
   assert.equal(Wd.DEF.skin, undefined, 'DEF は変えない');
   assert.equal(Wd.skinOf({ skin: 'hq1014', visual: 'zzz' }).ground, 'ground_a1.webp', '知らない景観は A');

@@ -40,7 +40,7 @@ for (const size of [[375, 667], [390, 844], [430, 932]]) {
     await H.startRaising(pg); await idle(pg);
     const s1 = await routeState(pg);
     assert.deepEqual([s1.route, s1.vp, s1.vis], ['B', 'B', 'B'], JSON.stringify(s1));
-    assert.ok(s1.lm.length >= 8 && s1.lm.every((f) => /^b_|^ch1_great_tree_temple\./.test(f)) && s1.lmOk, `B の目印 ${JSON.stringify(s1.lm)}`);
+    assert.ok(s1.lm.length >= 8 && s1.lm.every((f) => /^b_|^ch1_great_tree_temple\.|^ch1_seal_gate_front\./.test(f)) && s1.lmOk, `B の目印 ${JSON.stringify(s1.lm)}`);
     const saved = await H.storedSave(pg);
     assert.deepEqual([saved.m.raise.field.route, saved.m.raise.field.patternId], ['B', 'W']);
     await shot(pg, `vb1_board_b_${size.join('x')}`);
@@ -71,7 +71,7 @@ test('VB-3：route の無い旧セーブは A の道のまま（景観 C）・C 
   await H.newGame(pg, 'テスト'); await toPrep(pg);
   await H.startRaising(pg); await idle(pg);
   const c = await routeState(pg);
-  assert.deepEqual([c.route, c.vp, c.vis], ['C', 'C', 'C'], JSON.stringify(c)); assert.ok(c.lm.every((f) => /^c_|^ch1_great_tree_temple\./.test(f)) && c.lmOk, JSON.stringify(c.lm));
+  assert.deepEqual([c.route, c.vp, c.vis], ['C', 'C', 'C'], JSON.stringify(c)); assert.ok(c.lm.every((f) => /^c_|^ch1_great_tree_temple\.|^ch1_seal_gate_front\./.test(f)) && c.lmOk, JSON.stringify(c.lm));
   // 旧セーブ：A の道を進んでいた景観 C の個体（route なし）
   await pg.evaluate(() => { const f = MMWD.newField(undefined, 4242, 'A'); delete f.route; f.visualPattern = 'C'; f.introSeen = true; S.m.raise.field = f; S.m.raise.node = 'START'; save(); });
   await reopen(pg);

@@ -61,15 +61,18 @@ test('AD-04：分岐の見た目の差し替えの口（Chapter 1〜4・未採�
     assert.deepEqual(W.branchMarks(D, { branchSkin: { junction: null, merge: null, post: null, board: null } }), [], `${k}：未採用（null）`);
     const out = W.branchMarks(D, { branchSkin: { junction: 'j.webp', merge: 'm.webp', post: 'p.webp' } });
     const n = (f) => out.filter((x) => x.file === f).length;
-    assert.deepEqual([n('p.webp'), n('j.webp'), n('m.webp')], [2, 3, 3], `${k}：道標＝自由な分かれ道 2・分岐の印 3（運命の分かれ道を含む）・合流の印 3`);
+    //  2026-10-20 第4便：道標は地面の上だけ＝Chapter 2 A の H（まわりが海）は立てない
+    assert.deepEqual([n('p.webp'), n('j.webp'), n('m.webp')], [k === '2' ? 1 : 2, 3, 3], `${k}：道標＝自由な分かれ道 2・分岐の印 3（運命の分かれ道を含む）・合流の印 3`);
     const lines = Object.values(D.segments).map((s) => s[3].map((id) => D.nodes[id]));
     const dist = (L, x, y) => { let m = 1e9; for (let i = 0; i < L.length - 1; i++) { const [ax, ay] = L[i], [bx, by] = L[i + 1], dx = bx - ax, dy = by - ay, l = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / l)); m = Math.min(m, Math.hypot(ax + t * dx - x, ay + t * dy - y)); } return m; };
     for (const x of out) assert.ok(lines.every((L) => dist(L, x.x, x.y) >= 14), `${k} ${x.node}：道の上に立てない`);
   }
   const wb = rd('js/chapter/world-board.js');
   const m = /const BRANCH_SKIN = Object\.freeze\(\{([\s\S]*?)\}\);\n/.exec(wb); assert.ok(m);
-  for (const ch of [1, 2, 3]) assert.match(m[1], new RegExp(`${ch}: Object\\.freeze\\(\\{ junction: null, merge: null, post: null, board: null \\}\\)`), `Chapter ${ch} は未採用＝null`);
-  assert.match(m[1], /4: Object\.freeze\(\{ junction: null, merge: null, post: '\.\/assets\/fields\/ch4\/art_1019\/signpost\.webp', board: null \}\)/, 'Chapter 4 の道標は正式素材（以前から）');
+  //  2026-10-20 第4便：道標は Chapter 1〜4 とも正面向きの正式素材（E02）。分岐の印・合流の印・選ぶ看板は未採用＝null
+  for (const ch of [1, 2, 3, 4]) { assert.match(m[1], new RegExp(`${ch}: Object\\.freeze\\(\\{ junction: null, merge: null, post: FR \\+ 'ch${ch}_signpost_front\\.webp', postW: 18, postAh: [0-9.]+, board: null \\}\\)`), `Chapter ${ch} の道標`);
+    assert.ok(existsSync(path.join(ROOT, `assets/fields/front_1020/ch${ch}_signpost_front.webp`))); }
+  assert.match(wb, /const FR = '\.\/assets\/fields\/front_1020\/';/);
   assert.match(wb, /branchSkin: branchSkin\(m\)(, symbols: symbolsFor\(m\))? \}\);/, '盤を作るときに渡す（QA と本編は同じ）');
   assert.match(wb, /\.wbw \.wbbr\[data-bskin\] \.chroute\{background:var\(--wbbr-board\)/, '選ぶ看板の地の絵は CSS の変数（文字は HTML）');
   { const cw = rd('js/proto/ch4-world.js'), sc = cw.slice(cw.indexOf('function scatter('), cw.indexOf('function build3d(')).replace(/^\s*\/\/.*$/gm, ''); assert.ok(sc.length > 100 && !/signpost/.test(sc), 'Chapter 4 の道標は scatter から外した（二重に立てない）'); }

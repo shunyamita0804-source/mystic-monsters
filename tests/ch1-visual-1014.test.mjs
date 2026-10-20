@@ -28,7 +28,8 @@ test('VP-01：A は従来のまま（景物の配置・川の景物・岩峰＝m
   assert.equal(Wd.DEF.visual, 'A', '既定は A');
   for (const o of [Object.assign({}, Wd.DEF), opt('A'), opt(undefined), opt('zzz')]) {
     const s = Wd.scatter(D, o), w = Wd.waterProps(D, o);
-    assert.equal(s.length, 197); assert.equal(sha(s), '58a0ce1af9fb1661441d6412e6c7f290d32dff3946df415d549525d8497177ac', '景物の配置は従来と同じ');
+    assert.equal(s.length, 196);   // 2026-10-20 第4便：正面の門（幅の広い絵）のまわりの景物を5つ避けた（197 → 196・ほかは同じ）
+    assert.equal(sha(s), '8a950073acf477435dd9fca2a0cad2015d2c414bb304090ee264d7eb6df022ee', '景物の配置は従来と同じ');
     assert.equal(w.length, 25); assert.equal(sha(w), '571af4e562322896c832f9b0fdd609f043d65b0018426998e4161825e2dbf3c0', '川の景物は従来と同じ');
     assert.deepEqual(Wd.peaksOf(D, o), Wd.ART.peaks.at, '岩峰は従来の8つ');
   }

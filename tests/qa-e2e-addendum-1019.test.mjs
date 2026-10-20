@@ -32,10 +32,10 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     assert.equal(m.ch, '4'); assert.equal(m.bskin, null, '選ぶ看板の絵は未採用＝今の見た目');
     assert.ok(m.btns.length === 2 && m.btns.every((b) => b[0] >= 0 && b[2] <= m.W && b[1] >= 0), `看板は画面の中 ${JSON.stringify(m.btns)}`);
     assert.ok(m.sheet[3] <= m.deck[1] + 1, `看板は下の操作欄（START・サイコロ）と重ならない ${m.sheet[3]} / ${m.deck[1]}`);
-    assert.equal(m.posts.length, 2, '道標＝自由な分かれ道 J0・H'); assert.ok(m.posts.every((x) => x.ok && /ch4\/art_1019\/signpost\.webp$/.test(x.src)));
+    assert.equal(m.posts.length, 2, '道標＝自由な分かれ道 J0・H'); assert.ok(m.posts.every((x) => x.ok && /front_1020\/ch4_signpost_front\.webp$/.test(x.src)));   // 2026-10-20 第4便：正面向きの道標（E02）
     const vis = m.posts.filter((x) => x.r[2] - x.r[0] > 1);
     assert.ok(vis.length >= 1 && vis.every((x) => x.r[2] <= m.mon[0] || x.r[0] >= m.mon[2] || x.r[3] <= m.mon[1] || x.r[1] >= m.mon[3]), `道標はモンスターに重ならない ${JSON.stringify(vis)} / ${JSON.stringify(m.mon)}`);
-    assert.ok(m.lms.length >= 8 && m.lms.every((s) => /ch4\/art_1019\//.test(s) && !/board_art_1010|lm_/.test(s)), `目印は Chapter 4 の素材だけ ${JSON.stringify(m.lms)}`);
+    assert.ok(m.lms.length >= 8 && m.lms.every((s) => /ch4\/art_1019\/|front_1020\/ch4_|symbols_1020\//.test(s) && !/board_art_1010|lm_/.test(s)), `目印は Chapter 4 の素材だけ ${JSON.stringify(m.lms)}`);
     await pg.click('.wbbr .chroute'); await pg.waitForFunction(() => !document.querySelector('.wbbr') && document.querySelector('.rfw-mon.wk-on'), null, { timeout: 15000 });
     await idle(pg);
     assert.equal(await pg.evaluate(() => MMWB.world().qa().camMode), 'c', '選んだあとは C案カメラのまま');
@@ -56,7 +56,9 @@ test('AB-2：Chapter 4 の題字の中継に巨大火山', { skip: SKIP, timeout
 test('AB-3：Chapter 2 の目印は Chapter 2 の正式美術だけ', { skip: SKIP, timeout: 120000 }, async () => {
   const p = await openPage({ worldCh2: true, size: H.SIZES.base, query: '?ch2trial=A' }); const pg = p.page; await idle(pg);
   const lms = await pg.evaluate(() => [...document.querySelectorAll('.rfw-lm')].map((e) => e.getAttribute('src')));
-  assert.ok(lms.length >= 8 && lms.every((s) => /ch2\/art_10(16|20)\/|symbols_1020\/ch2_/.test(s)), JSON.stringify(lms));   // 2026-10-20 第3便：Chapter 2 のシンボル建物（螺旋の塔・水晶の神殿）も可
-  assert.equal(await pg.evaluate(() => document.querySelectorAll('.rfw-bpost,.rfw-bmark').length), 0, 'Chapter 2 の分岐の見た目は未採用＝何も足さない');
+  assert.ok(lms.length >= 8 && lms.every((s) => /ch2\/art_10(16|20)\/|symbols_1020\/ch2_|front_1020\/ch2_/.test(s)), JSON.stringify(lms));   // 2026-10-20 第3便：Chapter 2 のシンボル建物（螺旋の塔・水晶の神殿）も可
+  //  2026-10-20 第4便：道標（正面向き・E02）は陸の上の自由な分かれ道だけ（A は J0。H はまわりが海）。分岐の印・合流の印は未採用
+  assert.deepEqual(await pg.evaluate(() => [...document.querySelectorAll('.rfw-bpost')].map((e) => e.getAttribute('src').split('/').pop())), ['ch2_signpost_front.webp']);
+  assert.equal(await pg.evaluate(() => document.querySelectorAll('.rfw-bmark').length), 0, '分岐の印・合流の印は未採用');
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });

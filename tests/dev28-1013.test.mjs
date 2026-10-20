@@ -196,7 +196,7 @@ test('D28-07：全景 → 盤のズーム＝Web Animations（linear・刻みに�
   assert.match(src, /function startIntroAnims\(it, now\)/); assert.match(src, /function finishIntro\(it\)/);
   assert.match(src, /S\.introAnims = anims\.length;/);
   // マス・景物・モンスター：幅は作るときに1回（scale で大きさ）・前後の順は世界の y から1回（zOf）
-  assert.match(src, /d\.style\.width = TB \+ 'px'; d\.style\.zIndex = String\(zOf\(D\.nodes\[id\]\[1\], 0, D\.nodes\[id\]\[0\]\)\);/);   // 2026-10-14 実機試遊①：前後の順は回したあとの奥行き（x・y）から
+  assert.match(src, /d\.style\.width = TB \+ 'px'; d\.style\.zIndex = String\(zOf\(at\(id\)\[1\], 0, at\(id\)\[0\]\)\);/);   // 2026-10-20 第4便：at＝描いた道の中心線の上の位置   // 2026-10-14 実機試遊①：前後の順は回したあとの奥行き（x・y）から
   assert.match(src, /const MB = Math\.round\(TB \* Math\.max\(1, o\.monRatio \|\| 1\)\); mon\.style\.width = MB \+ 'px';/);
   assert.match(src, /scale\(\$\{\(w \/ TB\)\.toFixed\(4\)\}\)/); assert.match(src, /scale\(\$\{\(w \/ MB\)\.toFixed\(4\)\}\)/);
   for (const c of ['.rfw-plane', '.rfw-tile', '.rfw-prop', '.rfw-mon']) assert.match(src, new RegExp(`:is\\(#rfp,\\.wbv\\) ${c.replace('.', '\\.')}\\{[^}]*transform-origin:0 0`), c);
@@ -266,7 +266,7 @@ test('D28-08：固有スキルのカメラ＝cutCamera（全身が切れない�
 
 test('D28-09：MM_BUILD と version.json は同じ値（公開のたびに上げる。2026-10-14 Chapter 1 A／B／C 高品質化＝2026-10-14-ch1hq → 進入時のクラッシュ対策＝2026-10-14-ch1fix → 実機試遊47項目＝2026-10-14-play47 → 研究所の一言の重なり＝2026-10-14-play47b → NPC のボイスの全停止＝2026-10-15-next12 → 比較画面・QA 試遊＝2026-10-15-cmpqa → フルーネの技アニメ・歩行＝2026-10-15-flanim → ジオルの正式10技＝2026-10-15-jiol10 → 作業ブランチの iPhone 6件＝2026-10-16-ip6 → 夜間 QA B＝2026-10-16-qa-b1 → C＝2026-10-16-qa-c1 → A＝2026-10-16-qa-a1）', () => {
   const b = /const MM_BUILD="([^"]+)";/.exec(HTML); assert.ok(b);
-  { const v = JSON.parse(rd('version.json')); assert.equal(v.build, b[1]); assert.deepEqual(Object.keys(v).filter((k) => !['build', 'branch', 'base'].includes(k)), []); } assert.equal(b[1], '2026-10-20-road3');   // 2026-10-20 第3便（道の画質・丸の縁・Chapter 4 のマスの間隔・門と看板の正対・シンボル建物）・第2便（近くの層・看板・建物・溶岩）・道路美術 P0・2026-10-20 追加指示（広場・門・完走率の定義）・2026-10-20 通し試遊の品質改善（道路・広場・門・成長量）＝full1。2026-10-19 P0：Chapter 2 の盤（遠近・近くの層＝p0b1 → 欄干・影・広場・塔・門＝p0b2 → 正面向きの港の門＝p0b3）   // 被弾・回避の差し替えで横へ跳ねない   // 2026-10-19 追加指令（巨大火山・分岐の見た目）   // 2026-10-19 次便一括（Chapter 4・ミュロル・旧仕様の撤去）   // 2026-10-19 夜間 GO   // 2026-10-18 Pre-Ch3 修正＋Chapter 3   // 2026-10-18 REV3   // 2026-10-17 統合便 v2（version.json に branch・base＝元のコミット＝QA トップの表示）。   // 2026-10-17 道路画質 QA の作業ブランチ（claude/qa-road-1017）。2026-10-16 夜間 QA の作業ブランチ（claude/qa-bca-1016）
+  { const v = JSON.parse(rd('version.json')); assert.equal(v.build, b[1]); assert.deepEqual(Object.keys(v).filter((k) => !['build', 'branch', 'base'].includes(k)), []); } assert.equal(b[1], '2026-10-20-road4');   // 2026-10-20 第4便A（マスを道の中心線へ・正面の門と道標）・第3便（道の画質・丸の縁・Chapter 4 のマスの間隔・門と看板の正対・シンボル建物）・第2便（近くの層・看板・建物・溶岩）・道路美術 P0・2026-10-20 追加指示（広場・門・完走率の定義）・2026-10-20 通し試遊の品質改善（道路・広場・門・成長量）＝full1。2026-10-19 P0：Chapter 2 の盤（遠近・近くの層＝p0b1 → 欄干・影・広場・塔・門＝p0b2 → 正面向きの港の門＝p0b3）   // 被弾・回避の差し替えで横へ跳ねない   // 2026-10-19 追加指令（巨大火山・分岐の見た目）   // 2026-10-19 次便一括（Chapter 4・ミュロル・旧仕様の撤去）   // 2026-10-19 夜間 GO   // 2026-10-18 Pre-Ch3 修正＋Chapter 3   // 2026-10-18 REV3   // 2026-10-17 統合便 v2（version.json に branch・base＝元のコミット＝QA トップの表示）。   // 2026-10-17 道路画質 QA の作業ブランチ（claude/qa-road-1017）。2026-10-16 夜間 QA の作業ブランチ（claude/qa-bca-1016）
 });
 
 // ---- js/battle/rules.js を Node で動かす（tests/battle-rules-1006.test.mjs と同じ組み立て） ----

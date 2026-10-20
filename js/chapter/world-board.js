@@ -38,11 +38,14 @@
   // 2026-10-19 追加指令：Chapter ごとの分岐の見た目（差し替えの口）。junction＝分岐地点の印・merge＝合流地点の印・post＝分かれ道の脇の道標（物理的な目印）・board＝ルートを選ぶ看板（タップする所＝下の .wbbr の
   //  ボタンの地の絵。文字・矢印・選んだ状態は HTML／CSS で描く）。画像 AI に依頼中（Chapter 1〜4 × 4点）＝ユーザーが採用するまでは null（今の見た目のまま）。
   //  Chapter 4 の post だけは正式素材（C4 の STD_C4_UI_02＝signpost）で、以前から J0・H の脇に立てていたもの。QA と本編は同じ表を使う
+  //  2026-10-20 第4便（ユーザー納品 E02「正面向きの道標」・iPhone 試遊「看板が正面を向いていない」）：post は Chapter 1〜4 とも正面向き・左右対称の道標（assets/fields/front_1020）。
+  //   postW＝幅（単位）・postAh＝絵の高さ ÷ 幅（透明な余白を切った絵＝柱の足もとが絵の下の端）。置き場所は分かれ道のまっすぐ奥（roadfirst-world.js の branchMarks）
+  const FR = './assets/fields/front_1020/';
   const BRANCH_SKIN = Object.freeze({
-    1: Object.freeze({ junction: null, merge: null, post: null, board: null }),
-    2: Object.freeze({ junction: null, merge: null, post: null, board: null }),
-    3: Object.freeze({ junction: null, merge: null, post: null, board: null }),
-    4: Object.freeze({ junction: null, merge: null, post: './assets/fields/ch4/art_1019/signpost.webp', board: null }) });
+    1: Object.freeze({ junction: null, merge: null, post: FR + 'ch1_signpost_front.webp', postW: 18, postAh: 1.51, board: null }),
+    2: Object.freeze({ junction: null, merge: null, post: FR + 'ch2_signpost_front.webp', postW: 18, postAh: 1.47, board: null }),
+    3: Object.freeze({ junction: null, merge: null, post: FR + 'ch3_signpost_front.webp', postW: 18, postAh: 1.35, board: null }),
+    4: Object.freeze({ junction: null, merge: null, post: FR + 'ch4_signpost_front.webp', postW: 18, postAh: 1.465, board: null }) });
   const branchSkin = (m) => BRANCH_SKIN[chOf(m)] || BRANCH_SKIN[1];
   // 2026-10-20 第3便（ユーザー納品「正式シンボル画像」Mismon_Symbols・ユーザー指示「各 Chapter のシンボルとなる巨大建物を配置」）：FRONT の絵（assets/fields/symbols_1020・原画の透明な余白を切って縮小しただけ）。
   //  置き場所は tools/fullplay1020/symbols-place.mjs の計算（道から足もとの半径以上・マスから足もと＋8 以上・ほかの目印から離す・A／B／C 共通の所）。Chapter 2 は盆地（海の真ん中の広い所）に塔と神殿。

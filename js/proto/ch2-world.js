@@ -438,6 +438,7 @@
   }
   const shade = (base, k) => { const m = base.match(/\d+/g).map(Number); return `rgb(${m.map((v) => Math.round(Math.max(0, Math.min(255, v * k)))).join(',')})`; };
   function build3d(ctx) {
+    if (ctx.gl) return build3dGL(ctx);   // 2026-10-20 第4便：WebGL の盤（js/proto/board-gl.js）＝海底・壁・斜路・塔も GPU で（CSS の 3D の板を作らない）
     const { doc, plane, D, art, base } = ctx, A = D.art, dep = A.depth || 36, B = basinOf(D), S = art.sea || {};
     css(doc);
     const g3 = doc.createElement('div'); g3.className = 'rfs-3d'; plane.appendChild(g3);
@@ -579,6 +580,164 @@
     mon(0);
     return { occl, mon, el: g3, rays };
   }
+  // ---- 2026-10-20 第4便：WebGL の盤（js/proto/board-gl.js）----
+  //  地面＝外海の絵（open_sea_water）をくり返し・陸＝ユーザー納品の白砂（E03）を陸の範囲の画像で重ねる・盆地の上は穴（海底が見える）。
+  //  浅瀬・島の草地・会場の白石・波打ち際・盆地のふちの光は従来と同じ描画（地形の絵）。海面の道＝E04 の白い大理石の石畳＋青いモザイクの縁石・広場＝E04 の円の広場。
+  //  海底（E03 の海底の砂＋従来の海底の道・遺跡・ふち・光の網の絵）・盆地の壁・斜路・塔・盆地の上の海面は 3D の網（深さで前後を決める）
+  const GL_SEA_ALPHA = BASIN_ALPHA;
+  function surfaceLines(D, H) { return H.roadChains(D, Object.entries(D.segments).filter(([sid]) => isSurface(zoneOf(D, sid)))).map((c) => ({ ids: c.ids, P: H.roadPts(D, c.ids, 16) })); }
+  function glKit(D, o, art, H) {
+    const T = (k, repeat) => ({ src: H.GL_DIR + 'ch2_' + k + '.webp', repeat }), L = surfaceLines(D, H), mine = new Set(L.flatMap((l) => [l.ids[0], l.ids[l.ids.length - 1]]));
+    const R = H.glRoadsOf(D, L, { w: ROAD_W, tile: 44, curb: (CURB_W - ROAD_W) / 2, r: PLAZA_R, rEnd: ROAD_W * 0.78, sa: 0.3, ps: 3, shadow: { w: 2, a: 0.3, rgb: [0.02, 0.12, 0.2], dy: 1.5 } });
+    R.hubs = R.hubs.filter((id) => mine.has(id)); R.ends = R.ends.filter((id) => mine.has(id));   // 海面の道の広場だけ（海底の分かれ目は海底の絵の中）
+    return {
+      textures: { land: T('ground', true), road: T('road', true), curb: T('curb', 'u'), plaza: T('plaza', false), seabed: T('seabed', true),
+        basinWall: { src: WALL.basin, repeat: true }, rampWall: { src: WALL.ramp, repeat: true }, towerWall: { src: WALL.tower, repeat: true } },
+      macro: { k: 0.4 }, depth: true, hole: true,
+      ground: { tex: 'sea', tile: TEX.sea[1], layers: [{ tex: 'land', tile: 64 }] },
+      features: (g, bx) => featuresGL(g, D, bx, art, H),
+      roads: R,
+      onArt(G, a) {
+        const Sx = a.sea || {}; if (Sx.tex && Sx.tex.sea) G.texture('sea', Sx.tex.sea, true);
+        //  範囲の画像（1単位 1px）：R＝陸（白砂を重ねる）・B＝盆地（穴）
+        const c = root.document.createElement('canvas'); c.width = 1024; c.height = 1536; const g = c.getContext('2d');
+        g.fillStyle = '#000'; g.fillRect(0, 0, c.width, c.height);
+        g.fillStyle = '#f00'; for (const { P } of regionsOf(D)) { polyPath(g, P); g.fill(); }
+        g.globalCompositeOperation = 'lighter'; g.fillStyle = '#00f'; polyPath(g, basinOf(D)); g.fill();
+        G.setMask(c, [0, 0, 1024, 1536]);
+      },
+    };
+  }
+  /** 地形の絵（透明な canvas に）：浅瀬（陸と盆地の外だけ）・島の草地／会場の白石（ふちは白砂のまま）・波打ち際・盆地のふちの光 */
+  function featuresGL(g, D, bx, art, H) {
+    const S = art.sea || {}, [x0, y0, w, h] = bx, B = basinOf(D);
+    const sh = tp(g, H, S, 'shallow');
+    if (sh) { g.save(); g.fillStyle = sh; for (let k = 0; k < 14; k++) { g.globalAlpha = 0.14; const d = 65 - k * 3.5; for (const { P } of regionsOf(D)) { polyPath(g, grow(P, d)); g.fill(); } } g.restore();
+      const sp = tp(g, H, S, 'sea');   // 世界の端へ向けて浅瀬を外海へなめらかに戻す（ground と同じ）
+      if (sp) { g.save(); g.globalCompositeOperation = 'destination-out'; const E = 90; for (let k = 0; k < 9; k++) { const d = (E * (9 - k)) / 9; g.globalAlpha = 0.2;
+        g.fillRect(-20, -20, 1064, d + 20); g.fillRect(-20, 1536 - d, 1064, d + 20); g.fillRect(-20, -20, d + 20, 1576); g.fillRect(1024 - d, -20, d + 20, 1576); } g.restore(); }
+      g.save(); g.globalCompositeOperation = 'destination-out'; g.fillStyle = '#000'; for (const { P } of regionsOf(D)) { polyPath(g, P); g.fill(); } g.restore(); }
+    const grass = tp(g, H, S, 'grass'), white = tp(g, H, S, 'white');
+    for (const { r, P } of regionsOf(D)) {
+      const paved = r.kind === 'arena', fill = paved ? white : r.id !== 'town' ? grass : null; if (!fill) continue;
+      g.save(); polyPath(g, P); g.clip(); g.fillStyle = fill; g.fillRect(x0, y0, w, h);
+      g.globalCompositeOperation = 'destination-out'; g.lineJoin = 'round'; g.strokeStyle = '#000'; g.lineWidth = paved ? 18 : 30; polyPath(g, P); g.stroke(); g.restore();
+    }
+    const foam = S.strip && S.strip.foam;
+    for (const { P } of regionsOf(D)) { const Q = signedArea(P) > 0 ? P.slice().reverse() : P.slice(); Q.push(Q[0]);
+      if (foam) H.stripAlong(g, Q, foam, 14, bx, 2); else if (S.shore) H.stripAlong(g, Q, S.shore, 16, bx, 4); }
+    g.save(); polyPath(g, B); g.globalCompositeOperation = 'destination-out'; g.fillStyle = '#000'; g.fill(); g.restore();   // 盆地の上は穴
+    g.save(); polyPath(g, B); g.strokeStyle = 'rgba(220,250,255,.6)'; g.lineWidth = 3; g.stroke(); g.strokeStyle = 'rgba(255,255,255,.25)'; g.lineWidth = 12; g.stroke(); g.restore();   // 盆地のふちの光（旧：海面の板）
+  }
+  /** 網の頂点（board-gl の mesh）：x, y, h, u, v, 色（乗算済み・不透明） */
+  function V(out, x, y, h, u, v, k, t) { const c = t || [1, 1, 1]; out.push(x, y, h, u, v, c[0] * k, c[1] * k, c[2] * k, 1); return out.length / 9 - 1; }
+  function build3dGL(ctx) {
+    const { doc, plane, D, art, gl: G } = ctx, H = ctx.H, A = D.art, dep = A.depth || 36, B = basinOf(D), S = art.sea || {};
+    css(doc);
+    const xs = B.map((p) => p[0]), ys = B.map((p) => p[1]), bx0 = Math.floor(Math.min(...xs)) - 4, by0 = Math.floor(Math.min(...ys)) - 4, bw = Math.ceil(Math.max(...xs)) - bx0 + 8, bh = Math.ceil(Math.max(...ys)) - by0 + 8, box = [bx0, by0, bw, bh];
+    // 海底：E03 の海底の砂（くり返し）＋その上の絵（深さの明暗・遺跡・海底の道・光の網・ふち）。絵は 1単位 3px（旧 1.6）
+    { const v = [], T = 64; for (const [x, y] of [[bx0, by0], [bx0 + bw, by0], [bx0 + bw, by0 + bh], [bx0, by0 + bh]]) V(v, x, y, -dep, x / T, y / T, 1);
+      G.add({ kind: 'mesh', verts: v, idx: [0, 1, 2, 0, 2, 3], tex: 'seabed', phase: 'pre' }); }
+    const res = 3, cv = doc.createElement('canvas'); cv.width = Math.ceil(bw * res); cv.height = Math.ceil(bh * res);
+    const g = cv.getContext('2d'); g.setTransform(res, 0, 0, res, -bx0 * res, -by0 * res);
+    g.save(); polyPath(g, B); g.clip();
+    { const gr = g.createLinearGradient(bx0, by0, bx0 + bw * 0.35, by0 + bh); gr.addColorStop(0, 'rgba(20,60,90,.22)'); gr.addColorStop(1, 'rgba(10,40,80,.42)'); g.fillStyle = gr; g.fillRect(bx0, by0, bw, bh); }
+    const rnd = H.mulberry(0x5EA), ruinsG = tp(g, H, S, 'ruins');
+    (A.ruins || []).forEach((R, i) => { const n = D.nodes[R.at]; if (!n) return; const pl = S.plaza && S.plaza[i % 3];
+      if (pl) { if (ruinsG) for (const [k, al] of [[2.2, 0.3], [1.8, 0.5], [1.45, 0.8]]) { g.save(); g.globalAlpha = al; g.fillStyle = ruinsG; g.beginPath(); g.arc(n[0], n[1], R.r * k, 0, 7); g.fill(); g.restore(); }
+        const d = R.r * 2.5; g.drawImage(pl, n[0] - d / 2, n[1] - d / 2, d, d); } else oldRuin(g, H, art, rnd, n, R); });
+    const under = Object.entries(D.segments).filter(([sid]) => zoneOf(D, sid) === 'undersea');
+    const chainL = (ok) => H.roadChains(D, under.filter(([sid]) => ok(sid))).map((c) => H.roadPts(D, c.ids, 18));
+    const glassL = chainL((sid) => isGlass(D, sid)), templeL = chainL((sid) => !isGlass(D, sid));
+    const gp = tp(g, H, S, 'glass'), tr = tp(g, H, S, 'temple'), roof = S.strip && S.strip.roof;
+    g.lineCap = g.lineJoin = 'round';
+    if (gp || tr) {
+      g.strokeStyle = 'rgba(10,30,36,.28)'; g.lineWidth = GLASS_W + 10; for (const P of [...glassL, ...templeL]) { pathOf(g, P); g.stroke(); }
+      g.strokeStyle = 'rgb(150,160,150)'; g.lineWidth = CURB_W; for (const P of templeL) { pathOf(g, P); g.stroke(); }
+      g.strokeStyle = tr || '#b9b09a'; g.lineWidth = ROAD_W; for (const P of templeL) { pathOf(g, P); g.stroke(); }
+      g.strokeStyle = 'rgba(214,250,255,.85)'; g.lineWidth = GLASS_W + 3; for (const P of glassL) { pathOf(g, P); g.stroke(); }
+      g.strokeStyle = gp || 'rgba(170,236,255,.6)'; g.lineWidth = GLASS_W; for (const P of glassL) { pathOf(g, P); g.stroke(); }
+      if (roof) { g.save(); g.globalAlpha = 0.72; for (const P of glassL) H.stripAlong(g, P, roof, GLASS_W + 4, box); g.restore(); }
+      hubs(g, D, (sid) => zoneOf(D, sid) === 'undersea', art, H, () => tr || gp);
+    } else oldGlass(g, H, art, box, [...glassL, ...templeL], D);
+    g.save(); g.globalCompositeOperation = 'lighter'; g.strokeStyle = 'rgba(160,220,230,.08)'; g.lineWidth = 2.4;
+    for (let i = 0; i < 160; i++) { const x = bx0 + rnd() * bw, y = by0 + rnd() * bh, r = 10 + rnd() * 18; g.beginPath(); for (let k = 0; k <= 6; k++) { const a = (k / 6) * Math.PI * 2, rr = r * (0.7 + 0.3 * Math.sin(k * 2.1 + i)); k ? g.lineTo(x + rr * Math.cos(a), y + rr * Math.sin(a)) : g.moveTo(x + rr * Math.cos(a), y + rr * Math.sin(a)); } g.stroke(); }
+    g.restore();
+    g.strokeStyle = 'rgba(4,20,36,.35)'; g.lineWidth = 46; polyPath(g, B); g.stroke();
+    if (S.strip && S.strip.rim) { const Q = signedArea(B) > 0 ? B.slice() : B.slice().reverse(); Q.push(Q[0]); H.stripAlong(g, Q, S.strip.rim, 16, box, -6); }
+    g.restore();
+    G.texture('floor', cv, false);
+    { const v = []; for (const [x, y, u, w] of [[bx0, by0, 0, 0], [bx0 + bw, by0, 1, 0], [bx0 + bw, by0 + bh, 1, 1], [bx0, by0 + bh, 0, 1]]) V(v, x, y, -dep + 0.05, u, w, 1);
+      G.add({ kind: 'mesh', verts: v, idx: [0, 1, 2, 0, 2, 3], tex: 'floor', phase: 'pre' }); }
+    // 盆地の壁（ふち → 海底）：斜路がふちを越える所は開ける。上は明るく下は暗い（深さ）
+    const ramps = Object.entries(D.segments).filter(([sid]) => /descent|ascent/.test(zoneOf(D, sid))).map(([, s]) => s[3].map((id) => D.nodes[id]));
+    { const v = [], ix = []; let cum = 0;
+      for (let i = 0; i < B.length; i++) { const p = B[i], q = B[(i + 1) % B.length], L = Math.hypot(q[0] - p[0], q[1] - p[1]); if (L < 0.01) continue;
+        const mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2; if (ramps.some((l) => H.distLine(l, mx, my) < 16)) { cum += L; continue; }
+        const ux = (q[0] - p[0]) / L, uy = (q[1] - p[1]) / L, lit = 0.62 + 0.38 * Math.max(0, -ux * 0.2 + uy * -0.1 + 0.6), t0 = 1 - 0.08 / lit, t1 = 1 - 0.34 / lit, tint = [0.86, 0.95, 1];
+        const a = V(v, p[0], p[1], 0, cum / 72, 0, lit * t0, tint), b = V(v, q[0], q[1], 0, (cum + L) / 72, 0, lit * t0, tint), c = V(v, q[0], q[1], -dep, (cum + L) / 72, 1, lit * t1 * 0.8, tint), d = V(v, p[0], p[1], -dep, cum / 72, 1, lit * t1 * 0.8, tint);
+        ix.push(a, b, c, a, c, d); cum += L; }
+      G.add({ kind: 'mesh', verts: v, idx: ix, tex: 'basinWall', phase: 'pre' }); }
+    // 斜路（潮の塔の下り坂・螺旋塔の上り坂）：高さの変わる白い橋帯（R01）＋その下の壁。円の広場の中（地面の高さ）には敷かない
+    const walk = S.strip && S.strip.walk, RW = 18;
+    if (walk) G.texture('walk', walk, 'u');
+    const rOut = {}, rIn = {}; for (const e of D.edges) if (e[3] === 'forward') { rOut[e[0]] = (rOut[e[0]] || 0) + 1; rIn[e[1]] = (rIn[e[1]] || 0) + 1; }
+    { const dv = [], di = [], sv = [], si = [], aspect = walk ? walk.naturalWidth / walk.naturalHeight : 960 / 128;
+      for (const [sid, sg] of Object.entries(D.segments)) {
+        if (!/descent|ascent/.test(zoneOf(D, sid))) continue;
+        const PLs = [sg[3][0], sg[3][sg[3].length - 1]].filter((id) => { const n = D.nodes[id]; return (rOut[id] || 0) > 1 || (rIn[id] || 0) > 1 || /dead_end/.test(n[2]) || n[2] === 'start'; })
+          .map((id) => ({ x: D.nodes[id][0], y: D.nodes[id][1], r: /dead_end/.test(D.nodes[id][2]) ? ROAD_W * 0.78 : PLAZA_R }));
+        const inPl = (q) => Math.abs(q[2]) < 1.5 && PLs.some((p) => Math.hypot(q[0] - p.x, q[1] - p.y) < p.r);
+        let P = curve3(D, sg[3]);
+        for (const rev of [false, true]) { if (rev) P.reverse(); let k = 0; while (k < P.length - 1 && inPl(P[k])) k++; if (k > 0) { const a = P[k - 1], b = P[k]; let lo = 0, hi = 1; for (let it = 0; it < 12; it++) { const m = (lo + hi) / 2, q = a.map((x, j) => x + (b[j] - x) * m); if (inPl(q)) lo = m; else hi = m; } P = [a.map((x, j) => x + (b[j] - x) * hi), ...P.slice(k)]; } }
+        P.reverse();
+        let cum = 0, prev = null;
+        for (let i = 0; i < P.length; i++) {
+          const a = P[Math.max(0, i - 1)], b = P[Math.min(P.length - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], Lxy = Math.hypot(dx, dy) || 1, nx = -dy / Lxy, ny = dx / Lxy, p = P[i];
+          if (i) cum += Math.hypot(p[0] - P[i - 1][0], p[1] - P[i - 1][1], p[2] - P[i - 1][2]);
+          const z = p[2] + 0.4, u = cum / (RW * aspect);
+          const l = V(dv, p[0] + nx * RW / 2, p[1] + ny * RW / 2, z, u, 1, 1), r = V(dv, p[0] - nx * RW / 2, p[1] - ny * RW / 2, z, u, 0, 1);
+          const hh = z + dep, wl = [V(sv, p[0] + nx * RW / 2, p[1] + ny * RW / 2, z, cum / 32, 0, 0.72), V(sv, p[0] + nx * RW / 2, p[1] + ny * RW / 2, -dep, cum / 32, hh / 32, 0.45)],
+            wr = [V(sv, p[0] - nx * RW / 2, p[1] - ny * RW / 2, z, cum / 32, 0, 0.72), V(sv, p[0] - nx * RW / 2, p[1] - ny * RW / 2, -dep, cum / 32, hh / 32, 0.45)];
+          if (prev) { di.push(prev.l, prev.r, r, prev.l, r, l); for (const [A0, A1] of [[prev.wl, wl], [prev.wr, wr]]) si.push(A0[0], A1[0], A1[1], A0[0], A1[1], A0[1]); }
+          prev = { l, r, wl, wr };
+        }
+      }
+      if (si.length) G.add({ kind: 'mesh', verts: sv, idx: si, tex: 'rampWall', phase: 'pre' });
+      if (di.length && walk) G.add({ kind: 'mesh', verts: dv, idx: di, tex: 'walk', phase: 'pre' });
+    }
+    // 塔（多角柱）：螺旋塔＝海底から海面より上へ・潮の塔＝島の上。屋上の円・潮の塔の灯
+    const towers = A.towers || [], NF = 24, disc = (col, edge) => { const c = doc.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'), gr = x.createRadialGradient(64, 64, 0, 64, 64, 63);
+      gr.addColorStop(0, col); gr.addColorStop(0.86, col); gr.addColorStop(0.9, edge); gr.addColorStop(0.98, col); gr.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = gr; x.beginPath(); x.arc(64, 64, 63.5, 0, 7); x.fill(); return c; };
+    towers.forEach((t, ti) => {
+      const inB = H.inPoly(B, t.c[0], t.c[1]), z0 = inB ? -dep : 0, top = t.top, v = [], ix = [];
+      for (let i = 0; i <= NF; i++) { const a = (i / NF) * Math.PI * 2, nx = Math.cos(a), ny = Math.sin(a), lit = 0.55 + 0.45 * Math.max(0, -nx * 0.55 + ny * 0.25 + 0.55), k = 1 - (0.62 - lit * 0.55), u = (i / NF) * Math.PI * 2 * t.r / 32;
+        V(v, t.c[0] + t.r * nx, t.c[1] + t.r * ny, top, u, 0, k); V(v, t.c[0] + t.r * nx, t.c[1] + t.r * ny, z0, u, (top - z0) / 32, k * 0.92);
+        if (i) { const b = i * 2; ix.push(b - 2, b, b + 1, b - 2, b + 1, b - 1); } }
+      G.add({ kind: 'mesh', verts: v, idx: ix, tex: 'towerWall', phase: 'pre' });
+      const stone = t.kind === 'spiral' ? 'rgb(214,206,186)' : 'rgb(196,204,210)'; G.texture('cap' + ti, disc(shade(stone, 1.08), shade(stone, 0.86)), false);
+      const cv2 = []; for (const [x, y, u, w] of [[-1, -1, 0, 0], [1, -1, 1, 0], [1, 1, 1, 1], [-1, 1, 0, 1]]) V(cv2, t.c[0] + x * t.r, t.c[1] + y * t.r, top + 0.2, u, w, 1);
+      G.add({ kind: 'mesh', verts: cv2.map((x, i) => (i % 9 === 8 ? x : x)), idx: [0, 1, 2, 0, 2, 3], tex: 'cap' + ti, phase: 'post' });
+    });
+    // 盆地の上の海面（高さ 0.3）：モンスターが海面にいる間は濃く・海底へ潜ると薄く（旧 rfs-water と同じ濃さ）
+    { const wr = 1.2, wv = doc.createElement('canvas'); wv.width = Math.ceil(bw * wr); wv.height = Math.ceil(bh * wr); const w2 = wv.getContext('2d'); w2.setTransform(wr, 0, 0, wr, -bx0 * wr, -by0 * wr);
+      w2.save(); polyPath(w2, B); w2.clip(); { const sp = tp(w2, H, S, 'sea'); w2.fillStyle = sp || '#2d8fc4'; w2.fillRect(bx0, by0, bw, bh); } w2.restore();
+      G.texture('water', wv, false); const v = []; for (const [x, y, u, w] of [[bx0, by0, 0, 0], [bx0 + bw, by0, 1, 0], [bx0 + bw, by0 + bh, 1, 1], [bx0, by0 + bh, 0, 1]]) V(v, x, y, 0.3, u, w, 1);
+      G.add({ kind: 'mesh', verts: v, idx: [0, 1, 2, 0, 2, 3], tex: 'water', phase: 'post', name: 'water', alpha: GL_SEA_ALPHA }); }
+    const sp = towers.find((t) => t.kind === 'spiral');
+    function occl(cam, x, y, h, q) {
+      if (!sp || cam.tilt < 5) return false;
+      const P = ctx.H.project, inB = H.inPoly(B, sp.c[0], sp.c[1]), z0 = inB ? -dep : 0;
+      const cT = P(cam, sp.c[0], sp.c[1], sp.top), cB = P(cam, sp.c[0], sp.c[1], z0), r = sp.r * cam.s * cB.k;
+      if (q.z >= cB.z) return false;
+      return q.x > cT.x - r && q.x < cT.x + r && q.y > cT.y - r * 0.6 && q.y < cB.y + r * 0.4;
+    }
+    const view = plane.parentElement, rays = doc.createElement('div'); rays.className = 'rfs-rays'; rays.style.setProperty('--fx', `url(${FX})`); rays.style.setProperty('--bub', `url(${BUB})`); if (view) view.insertBefore(rays, plane.nextSibling);
+    let dived = null;
+    function mon(h) { const u = (h || 0) < -2; if (u === dived) return; dived = u; G.alpha('water', u ? 1 - BASIN_UNDER : GL_SEA_ALPHA); rays.classList.toggle('on', u); }
+    mon(0);
+    return { occl, mon, el: null, rays };
+  }
   let cssDone = false;
   function css(doc) {
     if (cssDone || doc.getElementById('rfs-css')) return; cssDone = true;
@@ -595,6 +754,11 @@
 :is(#rfp,.wbv) .rfs-glow{position:absolute;left:0;top:0;transform-origin:0 0;border-radius:50%;background:radial-gradient(circle,#fffbe0 0 30%,rgba(255,236,150,.55) 45%,rgba(255,236,150,0) 70%)}`;
     doc.head.appendChild(s);
   }
-  const api = { FILES, A2, TEX, STRIPS, PLAZA, WALL, FX, LM_BASE, LM_ROUTE, ALL_LM, load, warm, ground, roads, scatter, apron, build3d, curve3, m3, lm, goal, isGlass };
+  /** 2026-10-20 第4便：描く道の中心線（roads と同じ鎖・同じ丸め）＝マスを置く線。海面の道は 16・海底の道は 18。斜路（螺旋塔・潮の塔）は道の帯ではない＝含めない */
+  function lines(D, H) {
+    const L = (ok, r) => H.roadChains(D, Object.entries(D.segments).filter(([sid]) => ok(sid))).map((c) => ({ ids: c.ids, P: H.roadPts(D, c.ids, r) }));
+    return [...L((sid) => isSurface(zoneOf(D, sid)), 16), ...L((sid) => zoneOf(D, sid) === 'undersea' && isGlass(D, sid), 18), ...L((sid) => zoneOf(D, sid) === 'undersea' && !isGlass(D, sid), 18)];
+  }
+  const api = { FILES, A2, TEX, STRIPS, PLAZA, WALL, FX, LM_BASE, LM_ROUTE, ALL_LM, load, warm, ground, roads, lines, glKit, scatter, apron, build3d, curve3, m3, lm, goal, isGlass };
   if (typeof module === 'object' && module.exports) module.exports = api; else root.MMRF_SEA = api;
 })(typeof window !== 'undefined' ? window : globalThis);
