@@ -297,7 +297,7 @@
    }
   },
   "Ch4-C": {
-   "nodes": 294,
+   "nodes": 292,
    "runs": 24000,
    "goal": 97.8,
    "avgTurns": 33,
@@ -307,13 +307,13 @@
    "gain": 267,
    "gainP10": 195,
    "gainP90": 342,
-   "statStops": 13.81,
+   "statStops": 13.82,
    "emptyStops": 0,
    "stops": {
-    "stat": 13.81,
+    "stat": 13.82,
     "event": 3.77,
-    "wild": 1.73,
-    "rest": 1.37,
+    "wild": 1.72,
+    "rest": 1.36,
     "treasure": 1.39
    },
    "rewards": 0,

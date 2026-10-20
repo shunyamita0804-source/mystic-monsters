@@ -57,21 +57,22 @@ test('NT-B2：LOSE の途中で「もどる」＝結果の画面の保持音は�
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 
-test('NT-B3：ライバルの遭遇＝フィナの一言のあとリュウの正式ボイス 008 → 006・字幕は書き起こしどおり', { skip: SKIP, timeout: 240000 }, async () => {
+test('NT-B3：ライバルの遭遇＝登場の幕の中でリュウの正式ボイス 008 → 006（字幕は書き起こしどおり）→ フィナの一言（2026-10-20 第5便・ユーザー決定 A）', { skip: SKIP, timeout: 240000 }, async () => {
   const p = await openPage({ worldCh1: true, npc: true, story: true }); const pg = p.page;
   await toWorld(pg, WEAK, { tut_turns_w: 1 }); const v0 = await pg.evaluate(() => MMAUDIO.voiceLog().length);
   await toRival(pg);
   const seen = []; const t0 = Date.now();
   while (Date.now() - t0 < 60000 && !(await pg.$('#bt'))) {
-    const s = await pg.evaluate(() => (document.querySelector('.mmtalk:not(.mmtalk-out)') && window.MMNPC && MMNPC.state() ? { npc: MMNPC.state().npc, t: document.querySelector('.mmtalk-text').textContent } : null));
+    const s = await pg.evaluate(() => { const sub = document.querySelector('.wbx-r .wbx-rsub.on'); if (sub) return { npc: 'ryu', t: sub.textContent.replace(/^リュウ/, '') };
+      return document.querySelector('.mmtalk:not(.mmtalk-out)') && window.MMNPC && MMNPC.state() ? { npc: MMNPC.state().npc, t: document.querySelector('.mmtalk-text').textContent } : null; });
     if (s && (!seen.length || seen[seen.length - 1].t !== s.t)) seen.push(s);
-    if (s) { await pg.waitForTimeout(700); await pg.click('.mmtalk:not(.mmtalk-out)', { force: true }).catch(() => {}); }
+    if (s && s.npc !== 'ryu') { await pg.waitForTimeout(700); await pg.click('.mmtalk:not(.mmtalk-out)', { force: true }).catch(() => {}); }
     await pg.waitForTimeout(250);
   }
   const ryu = seen.filter((x) => x.npc === 'ryu').map((x) => x.t);
   const L = await pg.evaluate(() => [MMAUDIO.voiceLine('ryu_008'), MMAUDIO.voiceLine('ryu_006')]);
   assert.ok(ryu.includes(L[0]) && ryu.includes(L[1]), `リュウの字幕＝書き起こし ${JSON.stringify(seen)}`);
-  const fi = seen.findIndex((x) => x.npc === 'fina'), ri = seen.findIndex((x) => x.npc === 'ryu'); assert.ok(fi >= 0 && fi < ri, 'フィナの一言のあと');
+  const fi = seen.findIndex((x) => x.npc === 'fina'), ri = seen.findIndex((x) => x.npc === 'ryu'); assert.ok(ri >= 0 && (fi < 0 || ri < fi), '声は登場の幕の中（フィナの一言の前）');
   const played = await pg.evaluate((n) => MMAUDIO.voiceLog().slice(n).filter((x) => x.result === 'play').map((x) => x.id), v0);
   assert.ok(played.includes('ryu_008') && played.includes('ryu_006'), `声が鳴った ${played}`);
   assert.ok(await pg.$('#bt'), 'そのままバトル');

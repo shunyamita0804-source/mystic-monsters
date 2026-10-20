@@ -241,7 +241,9 @@
     //  WebGL2 が無い端末・?glBoard=0・まだ対応していない盤（GL の作り方 glKit の無い盤）は従来どおり
     const GLK = o.art && o.gl !== false && root.MMGL && root.MMGL.supported(doc) ? glKitOf(D, o, SEA, art) : null;
     //  2026-10-20 第5便：描く道の線・道の幅・表示の配置（planLayout＝マスを等しい間隔に・近い広場を小さく・行き止まりの枝を少し延ばす）。WebGL の盤を作る前に決める（広場の大きさ・延ばした道を描く）
-    const LINES = SEA && SEA.lines ? SEA.lines(D, HELP) : roadLinesOf(D), RR = GLK && GLK.roads;
+    //  線は写しにする（roadPts の線は同じ D で使い回される＝延ばした枝を元の線に書き込むと、次に盤を作ったとき二重に延びる）
+    const cp = (Ls) => Ls.map((L) => Object.assign({}, L, { P: L.P.map((p) => p.slice()) })), LINES = cp(SEA && SEA.lines ? SEA.lines(D, HELP) : roadLinesOf(D)), RR = GLK && GLK.roads;
+    if (RR && Array.isArray(RR.lines)) RR.lines = cp(RR.lines);
     const ROADW = RR ? RR.surface.w + 2 * ((RR.curb && RR.curb.w) || 0) : (SEA && SEA.roadW) || ART.strip.w;   // 描いた道の幅（縁石を含む・単位）
     const HUBS = new Set(hubsOf(D).hubs);
     const rOf0 = (id) => { const end = /dead_end/.test(D.nodes[id][2] || ''), hub = HUBS.has(id);
@@ -251,8 +253,9 @@
       return 0; };
     const PLAN = planLayout(D, LINES, { tw: o.tileW, S: o.tileW * 1.35, rOf: rOf0, extend: !!RR && !SEA3, extMax: 80, onGround: groundOf(D), roadW: ROADW, W: WORLD.w, H: WORLD.h });
     if (RR && RR.plaza) { const f0 = RR.plaza.radius, P0 = RR.plaza; P0.radius = (id, end) => (PLAN.r[id] != null ? PLAN.r[id] : f0 ? f0(id, end) : end ? P0.rEnd || P0.r : P0.r);
-      for (const [id, v] of Object.entries(PLAN.ext)) for (const L of RR.lines || []) { if (LINES.includes(L)) continue; const n = L.ids.length, e = D.nodes[id];
-        if (L.ids[n - 1] === id) L.P.push([e[0] + v[0], e[1] + v[1]]); else if (L.ids[0] === id) L.P.unshift([e[0] + v[0], e[1] + v[1]]); } }
+      for (const L of RR.lines || []) { const np = PLAN.reP[L.ids.join(',')] || PLAN.reP[L.ids.slice().reverse().join(',')]; if (np && !LINES.includes(L)) L.P = L.ids[0] === LINES.find((x) => x.P === np).ids[0] ? np.map((p) => p.slice()) : np.slice().reverse(); }   // 描き直した枝
+      for (const [id, pts] of Object.entries(PLAN.extP)) for (const L of RR.lines || []) { if (LINES.includes(L)) continue; const n = L.ids.length;
+        if (L.ids[n - 1] === id) L.P.push(...pts); else if (L.ids[0] === id) L.P.unshift(...pts.slice().reverse()); } }
     const NP = PLAN.pos, at = (id) => NP[id] || D.nodes[id];
     const plazaR = (id) => (PLAN.r[id] != null ? PLAN.r[id] : rOf0(id));
     //  2026-10-20 第5便：分かれ道の矢印の置き場所＝描いた道の線（a から b へ向かう向きの点の列）・線の上の道のり s の点と向き（度・画面の上＝0）・広場の半径
@@ -391,12 +394,14 @@
         for (let k = 1; k <= 12; k++) for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2, q = [x + Math.cos(a) * k * 5, y + Math.sin(a) * k * 5]; if (ok(q)) return q; }
         return p; };
       const onRoad = (x, y, w) => hitOf(x, y, (w || 10) * 0.22).hit > 0;
+      /** 建物の置き場所：道・マスにかからない所（だめなら 0.85・0.72 倍に小さくして）→ { q, w, mv } */
+      const placeB = (x, y, w0) => { let q = [x, y], w = w0, mv = null; for (const f of [1, 0.85, 0.72]) { const ww = w0 * f, m2 = clearAt(x, y, ww * 0.34), qq = m2 || [x, y]; q = qq; w = ww; mv = m2; if (!hitOf(qq[0], qq[1], ww * 0.34).hit) break; } return { q, w, mv }; };
       // 2026-10-20 第3便：Chapter のシンボル建物（o.symbols＝{ file, x, y, w, foot, h }・js/chapter/world-board.js の SYMBOLS）。足もとのまわりの景物（木・岩など）は置かない
       const SYMS = Array.isArray(o.symbols) ? o.symbols.filter((q) => q && q.file) : [], symNear = (x, y, r) => SYMS.some((q) => Math.hypot(q.x - x, q.y - y) < (q.foot || q.w * 0.4) + r);
       for (const q of (SEA ? SEA.scatter(D, o, HELP) : scatter(D, o))) { if (SYMS.length && symNear(q.x, q.y, (q.w || 10) * 0.3)) continue;
         const F = q.at && D.nodes[q.at] ? frontOf({ file: q.file, w: q.w }) : null;   // 2026-10-20 第5便：正面向きの絵がある門（Chapter 2 の会場への門）は、その地点で道をまたぐ
         if (F && F.front) { const n1 = at(q.at); add(F.file, n1[0], n1[1], F.w, q.z || 0, 'rfw-lm rfw-front', hOf(q.at), F.ah); continue; }
-        if (!q.h && /gate|tower|town|arch|pavilion|colonnade|column|pier|statue|obelisk|temple|shrine|lighthouse|L\d\d_/i.test(q.file)) { const mv = clearAt(q.x, q.y, q.w * 0.34); add(q.file, mv ? mv[0] : q.x, mv ? mv[1] : q.y, q.w, q.z || 0, q.cls, q.h); if (mv) props[props.length - 1].moved = [q.x, q.y]; continue; }
+        if (!q.h && /gate|tower|town|arch|pavilion|colonnade|column|pier|statue|obelisk|temple|shrine|lighthouse|L\d\d_/i.test(q.file)) { const B = placeB(q.x, q.y, q.w); add(q.file, B.q[0], B.q[1], B.w, q.z || 0, q.cls, q.h); if (B.mv || B.w !== q.w) props[props.length - 1].moved = [q.x, q.y]; continue; }
         if (!q.h && onRoad(q.x, q.y, q.w)) continue; add(q.file, q.x, q.y, q.w, q.z || 0, q.cls, q.h); }
       if (D.art && D.art.sky) for (const q of skyProps(D, o)) { if (SYMS.length && symNear(q.x, q.y, (q.w || 10) * 0.3)) continue; if (onRoad(q.x, q.y, q.w)) continue; add(q.file, q.x, q.y, q.w, q.z || 0, 'rfw-sky'); }
       //  2026-10-20 第4便：シンボル建物は遠くに大きく立つ＝決まった幅（合成の層の大きさ）を 512px まで（旧：最大 1440px＝開始の寄る動きの最初に大きな層を作り直して 0.3 秒止まっていた。見せる大きさは同じ）
@@ -407,8 +412,9 @@
         if (o.heading) gp.at = (c) => { const a = rad((c && c.yaw) || 0); return [gn[0] - GA.back * Math.sin(a), gn[1] - GA.back * Math.cos(a)]; }; }   // 2026-10-13 開発27（26）：大会会場（建物・門）は半透明にしない（xray で草地が透けて見えていた）
       for (const L of lmOf(D)) { if (o.hideLm && o.hideLm.includes(L.node)) continue; const a0 = landmarkAt(D, L); if (!a0) continue;
         //  地点の表示の位置が動いた分（等しい間隔・延ばした枝）だけ一緒に動かす → 道をまたがない建物は道・マスにかからない所へ
-        const n0 = D.nodes[L.node], n1 = at(L.node), p0 = [a0[0] + n1[0] - n0[0], a0[1] + n1[1] - n0[1]], spans = L.front || (isGateLm(L) && !/colonnade/i.test(L.file || '')), mv = spans ? null : clearAt(p0[0], p0[1], L.w * 0.34), q = mv || p0;
-        add(L.file, q[0], q[1], L.w, L.z || 0, 'rfw-lm' + (L.front ? ' rfw-front' : ''), hOf(L.node), L.ah); const lp = props[props.length - 1]; lp.L = L; if (mv) lp.moved = p0; }
+        const n0 = D.nodes[L.node], n1 = at(L.node), p0 = [a0[0] + n1[0] - n0[0], a0[1] + n1[1] - n0[1]], spans = L.front || (isGateLm(L) && !/colonnade|pavilion/i.test(L.file || ''));   // 柱廊・あずまやは道をまたがない（名前に ARCH があっても）
+        const B = spans ? { q: p0, w: L.w, mv: null } : placeB(p0[0], p0[1], L.w), q = B.q, w = B.w, mv = B.mv;   // 離せないときは少し小さく（0.85・0.72 倍まで）
+        add(L.file, q[0], q[1], w, L.z || 0, 'rfw-lm' + (L.front ? ' rfw-front' : ''), hOf(L.node), L.ah); const lp = props[props.length - 1]; lp.L = L; if (mv || w !== L.w) lp.moved = p0; }
       for (const q of branchMarks(D, o)) add(q.file, q.x, q.y, q.w, q.z, q.cls, 0, q.ah);   // 2026-10-19 追加指令：Chapter ごとの分岐の道標・印（未採用のあいだは無し）
       for (const q of (SEA ? [] : waterProps(D, o))) { if (onRoad(q.x, q.y, q.w)) continue; add(q.file, q.x, q.y, q.w, q.z || 0, 'rfw-wp'); }   // 第4便：川の景物（B は密に）
       for (const [x, y, w] of peaksOf(D, o)) { if (SYMS.length && symNear(x, y, w * 0.4)) continue; if (onRoad(x, y, w)) continue; add(ART.peaks.file, x, y, w, -20, 'rfw-peak'); }   // 第4便：山の岩峰（C は足す）
@@ -1093,7 +1099,7 @@
    *  opt＝{ tw, S, rOf(id)（広場の半径・0＝広場なし）, extend, extMax, onGround(x, y), roadW, W, H } → { pos: { id: [x, y, 種類] }, r: { id: 半径 }, ext: { id: [dx, dy] } }
    */
   function planLayout(D, lines, opt) {
-    const tR = opt.tw / 2, S = opt.S, pos = {}, r = {}, r0 = {}, ext = {}, outN = {}, why = {}, kk = {};
+    const tR = opt.tw / 2, S = opt.S, pos = {}, r = {}, r0 = {}, ext = {}, extP = {}, reP = {}, outN = {}, why = {}, kk = {};
     for (const e of D.edges) if (e[3] === 'forward') outN[e[0]] = (outN[e[0]] || 0) + 1;
     const fork = (id) => (outN[id] || 0) > 1, len = (P) => { let s = 0; for (let i = 1; i < P.length; i++) s += Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]); return s; };
     const use = lines.filter((L) => L.P && L.P.length > 1 && L.ids.length > 1 && L.ids.every((id) => D.nodes[id]));
@@ -1112,15 +1118,34 @@
       const atEnd = /dead_end/.test(D.nodes[L.ids[n - 1]][2] || ''), atStart = !atEnd && /dead_end/.test(D.nodes[L.ids[0]][2] || ''); if (!atEnd && !atStart) continue;
       const P = atEnd ? L.P : L.P.slice().reverse(), e = P[P.length - 1]; let k = P.length - 2; while (k > 0 && Math.hypot(P[k][0] - e[0], P[k][1] - e[1]) < 12) k--;
       const dx = e[0] - P[k][0], dy = e[1] - P[k][1], dl = Math.hypot(dx, dy) || 1, others = lines.filter((x) => x !== L), endId = atEnd ? L.ids[n - 1] : L.ids[0];
-      const okAt = (ux, uy, d) => { for (let s = 6; s <= d + (r[endId] || 0) + 4; s += 6) { const x = e[0] + ux * s, y = e[1] + uy * s;
-        if (x < 24 || y < 24 || x > opt.W - 24 || y > opt.H - 24 || (opt.onGround && !opt.onGround(x, y)) || others.some((o2) => distLine(o2.P, x, y) < opt.roadW * 1.1)) return false; } return true; };
-      //  まっすぐ先 → だめなら少し曲げて（±20・40・60°）、いちばん長く延ばせる向き（同じ長さならまっすぐに近い向き）
-      let best = null; const want = Math.min(opt.extMax, Math.ceil(def));
-      for (const deg of [0, 20, -20, 40, -40, 60, -60]) { const t = deg * Math.PI / 180, ux = (dx * Math.cos(t) - dy * Math.sin(t)) / dl, uy = (dx * Math.sin(t) + dy * Math.cos(t)) / dl;
-        let d = want; while (d >= 8 && !okAt(ux, uy, d)) d -= 8; if (d >= 8 && (!best || d > best.d)) best = { d, ux, uy }; if (best && best.d >= want) break; }
-      if (!best) { why[endId] = Math.round(def); continue; }
-      const { d, ux, uy } = best, q = [e[0] + ux * d, e[1] + uy * d]; if (atEnd) L.P.push(q); else L.P.unshift(q);
-      const id = endId; ext[id] = [ux * d, uy * d]; const nn = D.nodes[id]; pos[id] = [nn[0] + ux * d, nn[1] + uy * d, nn[2]];
+      //  延ばす道＝なめらかな曲がり（2次ベジェ：いまの向きに半分・新しい向きに半分）。2 段まで（1 段目で足りなければ、その先でもう一度曲げる）
+      const bez = (o0, u0, u1, d) => { const c = [o0[0] + u0[0] * d / 2, o0[1] + u0[1] * d / 2], q = [c[0] + u1[0] * d / 2, c[1] + u1[1] * d / 2], pts = [];
+        for (let i = 1; i <= 6; i++) { const t = i / 6, m = 1 - t; pts.push([m * m * o0[0] + 2 * m * t * c[0] + t * t * q[0], m * m * o0[1] + 2 * m * t * c[1] + t * t * q[1]]); } return pts; };
+      const okPts = (pts) => pts.every(([x, y]) => !(x < 24 || y < 24 || x > opt.W - 24 || y > opt.H - 24 || (opt.onGround && !opt.onGround(x, y)) || others.some((o2) => distLine(o2.P, x, y) < opt.roadW * 1.1)));
+      const rot = (u, deg) => { const t = deg * Math.PI / 180; return [u[0] * Math.cos(t) - u[1] * Math.sin(t), u[0] * Math.sin(t) + u[1] * Math.cos(t)]; };
+      const leg = (o0, u0, want) => { let best = null;
+        for (const deg of [0, 25, -25, 50, -50, 65, -65]) { const u1 = rot(u0, deg); let d = want;
+          while (d >= 8) { const pts = bez(o0, u0, u1, d), tail = pts[pts.length - 1], cap = [tail[0] + u1[0] * ((r[endId] || 0) + 4), tail[1] + u1[1] * ((r[endId] || 0) + 4)]; if (okPts([...pts, cap])) break; d -= 8; }
+          if (d >= 8 && (!best || d > best.d + 4)) best = { d, pts: bez(o0, u0, u1, d), u1 }; if (best && best.d >= want) break; }
+        return best; };
+      let want = Math.min(opt.extMax, Math.ceil(def)), o0 = e, u0 = [dx / dl, dy / dl], add = [], got = 0;
+      for (let st = 0; st < 2 && want - got >= 8; st++) { const l1 = leg(o0, u0, want - got); if (!l1) break; add = add.concat(l1.pts); got += l1.d; o0 = l1.pts[l1.pts.length - 1]; u0 = l1.u1; }
+      if (!add.length) {   // 延ばせない（先にほかの道がある）短い枝は、付け根の広場から空いている向きへ道を描き直す（表示だけ・必要な長さのなめらかな曲がり）
+        const hub = atEnd ? L.ids[0] : L.ids[n - 1], hp = D.nodes[hub], P1 = atEnd ? L.P : L.P.slice().reverse(), f = P1[Math.min(P1.length - 1, 3)];
+        const need0 = len(L.P) + def, u00 = [f[0] - hp[0], f[1] - hp[1]], ul = Math.hypot(u00[0], u00[1]) || 1, uA = [u00[0] / ul, u00[1] / ul], skip = (r[hub] || 0) + opt.roadW * 1.2;
+        const okFar = (pts) => pts.every(([x, y]) => Math.hypot(x - hp[0], y - hp[1]) < skip || !(x < 24 || y < 24 || x > opt.W - 24 || y > opt.H - 24 || (opt.onGround && !opt.onGround(x, y)) || others.some((o2) => distLine(o2.P, x, y) < opt.roadW * 1.1)));
+        let path = null;
+        for (const d0 of [0, 20, -20, 40, -40, 60, -60, 80, -80, 100, -100, 120, -120, 140, -140, 160, -160, 180]) { const u = rot(uA, d0), c = [hp[0] + u[0] * need0 * 0.35, hp[1] + u[1] * need0 * 0.35];
+          for (const d1 of [0, 30, -30, 60, -60]) { const v = rot(u, d1), qq = [c[0] + v[0] * need0 * 0.65, c[1] + v[1] * need0 * 0.65], pts = [];
+            for (let i = 1; i <= 12; i++) { const t = i / 12, m = 1 - t; pts.push([m * m * hp[0] + 2 * m * t * c[0] + t * t * qq[0], m * m * hp[1] + 2 * m * t * c[1] + t * t * qq[1]]); }
+            const cap = [qq[0] + v[0] * ((r[endId] || 0) + 4), qq[1] + v[1] * ((r[endId] || 0) + 4)]; if (okFar([...pts, cap])) { path = pts; break; } }
+          if (path) break; }
+        if (!path) { why[endId] = Math.round(def); continue; }
+        const NPth = [[hp[0], hp[1]], ...path]; L.P = atEnd ? NPth : NPth.slice().reverse(); reP[L.ids.join(',')] = L.P;
+        const q = path[path.length - 1], nn = D.nodes[endId]; ext[endId] = [q[0] - nn[0], q[1] - nn[1]]; pos[endId] = [q[0], q[1], nn[2]]; continue;
+      }
+      if (atEnd) L.P.push(...add); else L.P.unshift(...add.slice().reverse());
+      const q = add[add.length - 1], id = endId; ext[id] = [q[0] - e[0], q[1] - e[1]]; extP[id] = add; const nn = D.nodes[id]; pos[id] = [q[0] + nn[0] - e[0], q[1] + nn[1] - e[1], nn[2]];
     }
     //  ① 等しい間隔で並べる
     for (const L of use) {
@@ -1128,13 +1153,21 @@
       for (let i = 1; i < P.length; i++) c.push(c[i - 1] + Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]));
       const Ls = c[c.length - 1]; if (!(Ls > 0)) continue;
       const u0 = r[a] ? Math.min(Ls * 0.45, r[a] + tR + 1) : 0, u1 = r[b] ? Math.max(Ls * 0.55, Ls - r[b] - tR - 1) : Ls, K = n - 2 + (r[a] ? 0 : 1) + (r[b] ? 0 : 1);
-      const sp = K > 1 ? (u1 - u0) / (K - 1) : 0, first = r[a] ? u0 : u0 + sp, kd = sp > 0 && sp < S ? Math.max(0.72, sp / S) : 1;   // まだ詰まる道（分かれ道どうしの間など）はマスを少し小さく（0.72 倍まで）＝重ならない
-      let i = 0;
-      for (let k = 1; k < n - 1; k++) { const id = L.ids[k]; if (pos[id]) continue;
-        const want = K > 1 ? first + (k - 1) * sp : (u0 + u1) / 2; while (i < P.length - 2 && c[i + 1] < want) i++;
-        const t = (want - c[i]) / Math.max(1e-9, c[i + 1] - c[i]), nn = D.nodes[id]; pos[id] = [P[i][0] + (P[i + 1][0] - P[i][0]) * t, P[i][1] + (P[i + 1][1] - P[i][1]) * t, nn[2]]; if (kd < 1) kk[id] = +kd.toFixed(3); }
+      const sp = K > 1 ? (u1 - u0) / (K - 1) : 0, kd = sp > 0 && sp < S ? Math.max(0.72, sp / S) : 1;   // まだ詰まる道（分かれ道どうしの間など）はマスを少し小さく（0.72 倍まで）＝重ならない
+      //  道のりではなく直線の距離で等しく（つづら折りの曲がり角でマスどうしが寄らない）：間隔 d を二分探索＝最後のマスが u1 を越えない最大の d
+      const ptAt = (t) => { let i = 0; while (i < P.length - 2 && c[i + 1] < t) i++; const u = (t - c[i]) / Math.max(1e-9, c[i + 1] - c[i]); return [P[i][0] + (P[i + 1][0] - P[i][0]) * u, P[i][1] + (P[i + 1][1] - P[i][1]) * u]; };
+      const SM = []; for (let t = 0; t <= Ls + 0.25; t += 0.5) SM.push(ptAt(Math.min(t, Ls)));   // 0.5 単位ごとの点（二分探索の中で道をなぞる）
+      const place = (d) => { const out = []; let j = Math.round((r[a] ? u0 : 0) / 0.5), q = SM[j];
+        if (r[a]) out.push(q);
+        while (out.length < n - 2) { let j2 = j; while (j2 < SM.length - 1 && Math.hypot(SM[j2][0] - q[0], SM[j2][1] - q[1]) < d) j2++; if (j2 >= SM.length - 1) return null; j = j2; q = SM[j]; out.push(q); }
+        return j * 0.5 <= u1 + 0.5 && (r[b] || Math.hypot(P[P.length - 1][0] - q[0], P[P.length - 1][1] - q[1]) >= d * 0.98) ? out : null; };
+      let lo = Math.max(1, sp * 0.4), hi = Math.max(lo + 0.1, sp * 1.05), best = place(lo);
+      for (let it = 0; it < 18 && best; it++) { const mid = (lo + hi) / 2, got = place(mid); if (got) { best = got; lo = mid; } else hi = mid; }
+      const fin = best || null;
+      for (let k = 1; k < n - 1; k++) { const id = L.ids[k]; if (pos[id]) continue; const nn = D.nodes[id];
+        const q = fin ? fin[k - 1] : ptAt(K > 1 ? (r[a] ? u0 : u0 + sp) + (k - 1) * sp : (u0 + u1) / 2); pos[id] = [q[0], q[1], nn[2]]; if (kd < 1) kk[id] = +kd.toFixed(3); }
     }
-    return { pos, r, ext, why, k: kk };
+    return { pos, r, ext, extP, reP, why, k: kk };
   }
   function skyRails(g, D, segs, art, bx) {
     const m = art.terrain; if (!m || !m.cloud) return;
@@ -1445,6 +1478,6 @@
     pre = [...[...new Set(files)].map((f) => artUrl(base, f)), ...sk].map((u) => { const im = new root.Image(); im.decoding = 'async'; im.src = u; return im; });
     return pre;
   }
-  const api = { DEF, WORLD, ART, TERRAIN, VISUAL, SKIN, skinOf, visualOf, peaksOf, branchMarks, project, fitZoom, lookahead, headingYaw, angDiff, create, scatter, waterProps, curvePts, roadChains, roadPts, roadLinesOf, snapNodes, glRoadsOf, hubsOf, landmarkAt, inValley, loopPoly, warmArt };
+  const api = { DEF, WORLD, ART, TERRAIN, VISUAL, SKIN, skinOf, visualOf, peaksOf, branchMarks, project, fitZoom, lookahead, headingYaw, angDiff, create, scatter, waterProps, curvePts, roadChains, roadPts, roadLinesOf, snapNodes, planLayout, groundOf, glRoadsOf, hubsOf, landmarkAt, inValley, loopPoly, warmArt };
   if (typeof module === 'object' && module.exports) module.exports = api; else root.MMRF_WORLD = api;
 })(typeof window !== 'undefined' ? window : globalThis);

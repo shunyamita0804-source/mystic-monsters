@@ -297,23 +297,23 @@
    }
   },
   "Ch4-C": {
-   "nodes": 294,
+   "nodes": 292,
    "runs": 24000,
-   "goal": 80.2,
-   "avgTurns": 34.8,
+   "goal": 80.5,
+   "avgTurns": 34.7,
    "p10": 30,
    "p50": 35,
    "p90": 39,
    "gain": 298,
    "gainP10": 213,
    "gainP90": 389,
-   "statStops": 14.67,
+   "statStops": 14.68,
    "emptyStops": 0,
    "stops": {
-    "stat": 14.67,
-    "event": 4.02,
+    "stat": 14.68,
+    "event": 4,
     "wild": 1.83,
-    "rest": 1.48,
+    "rest": 1.47,
     "treasure": 1.49
    },
    "rewards": 0.72,
@@ -329,9 +329,9 @@
    },
    "spurOpp": 3.88,
    "rests": 0.01,
-   "ate": 5.09,
-   "fatEnd": 73,
-   "visited": 114.7,
+   "ate": 5.1,
+   "fatEnd": 74,
+   "visited": 114.6,
    "rivalRate": 100,
    "rivalRateAtGoal": 100,
    "rivalTurnP50": 20,
@@ -353,7 +353,7 @@
    },
    "stuck": 0,
    "guardOut": 0,
-   "timeUpAt": "LATE_SAFE 4.8%・S_END 4.6%・LATE_L_FAIL_JOIN 3.8%",
+   "timeUpAt": "LATE_SAFE 4.8%・S_END 4.7%・LATE_L_FAIL_JOIN 3.7%",
    "shortAtTimeUp": {
     "p25": 4,
     "p50": 8,
@@ -361,17 +361,17 @@
     "within6": 8.2
    },
    "vsCh1": {
-    "goalPP": 6.7,
+    "goalPP": 7,
     "gainPct": -1,
     "rewardPP": 2.1
    },
    "vsCh2A": {
-    "goalPP": 1.1,
+    "goalPP": 1.4,
     "gainPct": -0.3,
     "rewardPP": 1.6
    },
    "vsCh4A": {
-    "goalPP": 2.7,
+    "goalPP": 3,
     "gainPct": 1,
     "rewardPP": 2
    }

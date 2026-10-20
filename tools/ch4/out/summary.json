@@ -4610,10 +4610,10 @@
  "C": {
   "route": "C",
   "name": "外輪山周遊",
-  "nodes": 294,
-  "edges": 352,
+  "nodes": 292,
+  "edges": 348,
   "segments": 48,
-  "ordinary": 254,
+  "ordinary": 252,
   "spurs": 7,
   "bridges": [],
   "freeForks": 10,
@@ -6590,12 +6590,12 @@
   "stepsByZone": {
    "foot_dusk": 172,
    "slope_twilight": 53,
-   "rim_night": 77
+   "rim_night": 75
   },
   "minNodeDist": 18.6,
   "roles": {
    "start": 1,
-   "ordinary_tile": 254,
+   "ordinary_tile": 252,
    "free_fork": 1,
    "route_anchor": 19,
    "early_merge": 1,
@@ -6708,7 +6708,7 @@
    "LATE_L_FAIL_JOIN": 16,
    "LATE_L_SUCCESS1": 3,
    "LATE_L_SUCCESS_JOIN": 3,
-   "D_LLA": 7,
+   "D_LLA": 5,
    "LATE_L_DONE": 5,
    "LATE_SAFE0": 6,
    "LATE_SAFE": 14,

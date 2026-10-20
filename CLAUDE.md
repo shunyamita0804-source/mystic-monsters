@@ -120,8 +120,10 @@ Claude Code は作業の前に毎回このファイルを読むこと。ここ�
 | assets/fields/ch2/、assets/fields/ch2a/ | Chapter 2 の正式美術（新しい盤）・旧盤の素材 |
 | assets/fields/ch3/、assets/fields/ch4/ | Chapter 3・4 の素材 |
 | assets/fields/front_1020/、assets/fields/gl_1020/ | 正面向きの門・道標（E01・E02）／WebGL の盤の地面・道・縁石・広場（E03・E04） |
+| assets/fields/ch2/tunnel_1020/ | Chapter 2 の海底のガラスのトンネル（面・骨組み・入口＝F01。海底の道と広場は gl_1020 の ch2_glass_*・ch2_sunken_*） |
 | assets/fields/symbols_1020/ | Chapter 1〜3 のシンボル建物（盤に置く巨大建物。置き場所は js/chapter/world-board.js の SYMBOLS） |
 | assets/chapter/ | 盤の演出素材（能力UPの道具・結果演出・挿絵・FX・ライバルの影） |
+| assets/chapter/fork_1020/、rival_1020/、rare_1020/ | 分かれ道の矢印と印（F05）・ライバル登場（F04）・レアの遭遇（F06） |
 | assets/events/ch1/ | Chapter 1 の出来事の挿絵 |
 | assets/chests/ | 宝箱の正式素材 |
 | assets/items/、assets/item_ui/ | アイテムの絵・アイテム管理のアイコン |

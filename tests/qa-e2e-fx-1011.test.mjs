@@ -32,12 +32,12 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
     await toBoard(pg);
     await place(pg, 'RIVAL', null, { resolve: true });
     await pg.waitForSelector('.wbx-r .wbx-rbg');
-    const a = await pg.evaluate(() => { const r = document.querySelector('.wbx-r'); return { bg: r.querySelector('.wbx-rbg').getAttribute('src'), ryu: r.querySelector('.wbx-ryu').getAttribute('src'), part: r.querySelector('.wbx-partner').getAttribute('src'), clash: r.querySelector('.wbx-clash').getAttribute('src'), tx: r.querySelector('.wbx-card').textContent }; });
-    assert.match(a.bg, /fx_1011\/ev01_rival_title\.webp/); assert.match(a.ryu, /npc\/ryu\/ryu_official_fullbody\.webp/); assert.match(a.part, /2p5d\/regnas\.webp/); assert.match(a.clash, /ev06_rival_clash/);
+    const a = await pg.evaluate(() => { const r = document.querySelector('.wbx-r'); return { bg: r.querySelector('.wbx-rbg').getAttribute('src'), ryu: r.querySelector('.wbx-ryu').getAttribute('src'), part: r.querySelector('.wbx-partner').getAttribute('src'), clash: r.querySelector('.wbx-rslash').getAttribute('src'), tx: r.querySelector('.wbx-card').textContent }; });
+    assert.match(a.bg, /rival_1020\/rival_bg\.webp/); assert.match(a.ryu, /npc\/ryu\/ryu_official_fullbody\.webp/); assert.match(a.part, /2p5d\/regnas\.webp/); assert.match(a.clash, /rival_1020\/rival_slash\.webp/);   // 2026-10-20 第5便：F04 の背景・風の斬撃
     assert.match(a.tx, /リュウが立ちはだかった/);
     await pg.waitForSelector('.wbx-r.p3'); await pg.waitForSelector('#bt', { timeout: 20000 });   // 2026-10-13 開発27（21）：演出のあとそのままバトル
     const cls = await pg.evaluate(() => __fx.join('|'));
-    assert.equal((cls.match(/p3/g) || []).length >= 1 && !/p3[^|]*\|.*wbx-r(?![^|]*p3)/.test(cls), true, `幕 → リュウ → X の順（${cls}）`);
+    assert.equal((cls.match(/p3/g) || []).length >= 1 && !/p3[^|]*\|.*wbx-r(?![^|]*p3)/.test(cls), true, `幕 → リュウ → 風の斬撃の順（${cls}）`);
     assert.equal(await pg.evaluate(() => document.querySelectorAll('.wbx-r').length), 0, '終わったら消える');
     // 2026-10-13 開発27（21）：ライバルは演出のあと案内のシート（バトルする）を出さずにそのままバトル（強制）
     assert.equal(await pg.evaluate(() => !!document.querySelector('.chbat')), false, 'ライバルは強制・案内のシートなし');
@@ -45,7 +45,7 @@ for (const size of [H.SIZES.base, H.SIZES.se]) {
   });
 }
 
-test('FXB-2：野生（影・？？？）／レア（名前・★レア）→ 強制バトル（やめておくは出さない）・150G 以上だけ金貨の演出', { skip: SKIP, timeout: 150000 }, async () => {
+test('FXB-2：野生（影・？？？）／レア（名前（レアモンスター））→ 強制バトル（やめておくは出さない）・150G 以上だけ金貨の演出', { skip: SKIP, timeout: 150000 }, async () => {
   const p = await openPage(); const pg = p.page;
   await toBoard(pg);
   await place(pg, 'ER02_03', { t: 'wild', rare: false });
@@ -56,9 +56,9 @@ test('FXB-2：野生（影・？？？）／レア（名前・★レア）→ �
   assert.equal(await pg.evaluate(() => !!document.querySelector('.chbat .p9btn,.chbat [onclick="bBattleSkip()"]')), false, '確認のボタンは出ない');
   await H.surrenderBattle(pg); await pg.waitForSelector('#wbw #brollbtn'); await idle(pg);
   await place(pg, 'ER03_02', { t: 'wild', rare: true });
-  await pg.waitForSelector('.wbx-w.rare');
-  const r = await pg.evaluate(() => { const e = document.querySelector('.wbx-w'); return { nm: e.querySelector('.wbx-nm b').textContent, badge: !!e.querySelector('.wbx-nm em'), img: e.querySelector('.wbx-mon').getAttribute('src'), all: e.textContent }; });
-  assert.notEqual(r.nm, '？？？'); assert.equal(r.badge, true); assert.match(r.img, /battle\/idle\/idle_\w+\.webp$/, '2026-10-14 実機試遊㉔：遭遇の相手はこのあと VS・バトルに出る正式の待機立ち絵（レアは色つき・野生は同じ絵の影）'); assert.doesNotMatch(r.all, /Lv|レベル/);
+  await pg.waitForSelector('.wbx-rare', { state: 'attached' });   // 2026-10-20 第5便：レアは全画面の遭遇（F06）・カード＝「名前（レアモンスター）」（★レアは出さない）
+  const r = await pg.evaluate(() => { const e = document.querySelector('.wbx-rare'); return { nm: e.querySelector('.wbx-racard b').textContent, badge: /★/.test(e.textContent), img: e.querySelector('.wbx-mon').getAttribute('src'), all: e.textContent }; });
+  assert.match(r.nm, /^.+（レアモンスター）$/); assert.equal(r.badge, false); assert.match(r.img, /battle\/idle\/idle_\w+\.webp$/, '2026-10-14 実機試遊㉔：遭遇の相手はこのあと VS・バトルに出る正式の待機立ち絵（レアは色つき・野生は同じ絵の影）'); assert.doesNotMatch(r.all, /Lv|レベル/);
   await H.surrenderBattle(pg); await pg.waitForSelector('#wbw #brollbtn'); await idle(pg);
   // G：50G では出ない・150G で1回
   await pg.evaluate(() => { window.__gb = 0; new MutationObserver((ms) => { for (const m of ms) for (const n of m.addedNodes) if (n.classList && (n.classList.contains('wbx-gold') || (n.classList.contains('wbtr') && n.querySelector('.wbtr-gold')))) __gb++; }).observe(document.getElementById('wbw'), { subtree: true, childList: true }); });

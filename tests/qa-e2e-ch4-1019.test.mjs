@@ -1,6 +1,6 @@
 // =========================================================
 // 実ブラウザ：本編の Chapter 4「灼熱の火山」＝1枚の世界のボード A／B／C（2026-10-19。js/chapter/world-driver-ch4.js・world-board.js・js/proto/ch4-world.js の火山の世界）
-//  C4B-1（375×667・390×844・430×932 × A／B／C）：?ch4trial=X → 本編の盤（Chapter 4・ルート X・320／301／294地点）・HUD「灼熱の火山」・火山の世界（.rfw.volc）・
+//  C4B-1（375×667・390×844・430×932 × A／B／C）：?ch4trial=X → 本編の盤（Chapter 4・ルート X・320／301／292地点（2026-10-20 第5便：C の寄り道 D_LLA を 7→5 歩））・HUD「灼熱の火山」・火山の世界（.rfw.volc）・
 //        正式素材が読める（404 なし）・START で1回振って進む・モンスターは HUD と操作欄の間・横にはみ出さない・試遊ではセーブ（mr4v6）を書き換えない
 //  C4B-2：本物の流れ：Chapter 4 のベースキャンプから出発 → 新しい盤 → 1ターン → 再読み込みで同じ地点・同じルート
 //  C4B-3：QA 移動：ライバルの手前 → 1 → ライバルの遭遇・ゴールの手前 → 1 → 大会受付
@@ -28,7 +28,7 @@ for (const size of [[375, 667], [390, 844], [430, 932]]) for (const route of ['A
     await pg.waitForSelector('#wbw #brollbtn', { timeout: 60000 }); await idle(pg);
     const a = await pg.evaluate(() => ({ ch: S.m.raise.ch, route: S.m.raise.field.route, world: S.m.raise.field.world, tiles: MMWB.state().world.tiles, nm: document.querySelector('.chh-nm').textContent,
       sky: !!document.querySelector('.rfw.volc'), apron: (document.querySelector('.rfw-apron') || { style: {} }).style.backgroundImage || '', gl: MMWB.world().gl(), sides: MMP8.diceSides(S.m), lim: S.m.raise.turnLimit, qa: !!document.getElementById('qajb') }));
-    assert.deepEqual([a.ch, a.route, a.world, a.tiles, a.nm, a.sky, a.sides, a.lim, a.qa], [4, route, 1, ({ A: 320, B: 301, C: 294 })[route], '灼熱の火山', true, 6, 40, true]);
+    assert.deepEqual([a.ch, a.route, a.world, a.tiles, a.nm, a.sky, a.sides, a.lim, a.qa], [4, route, 1, ({ A: 320, B: 301, C: 292 })[route], '灼熱の火山', true, 6, 40, true]);
     if (a.gl) assert.equal(a.gl.tex.ground, true, '2026-10-20 第4便B：WebGL の盤＝世界の外も火山の地面（E03）'); else assert.match(a.apron, /ground_basalt/, '世界の外も火山の地面');
     const imgs = await pg.evaluate(() => [...document.querySelectorAll('.rfw img')].filter((i) => /ch4\/art_1019/.test(i.src)).map((i) => ({ s: i.src.split('/').pop(), ok: i.complete && i.naturalWidth > 0 })));
     assert.ok(imgs.length > 15, `火山の景物（${imgs.length}）`); assert.deepEqual(imgs.filter((x) => !x.ok), [], '読めない絵が無い');

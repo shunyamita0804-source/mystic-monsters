@@ -50,7 +50,8 @@
     out[k] = { tut_challenge_w: [L('guide', `この先は${pl}だよ。サイコロで5か6が出れば、近道へ進めるんだ。`), L('normal', '失敗しても、遠回りの道で先へ進めるから安心してね。')] }; } return out; };
   const qaOff = () => !!root.MM_QA_OLD_CH4;
   const W = root.MMWD_MAKE({
-    ch: 4, dataOf, pool, story: base().concat(VOLCLINES), storyLinesBy: linesBy(), forceVar: 'MM_CH4ROUTE', forceParam: 'ch4route', qaOld: 'MM_QA_OLD_CH4', visual: 'V',
+    ch: 4, dataOf, pool, nodeAlias: { C: { D_LLA_05: 'D_LLA_04', D_LLA_06: 'D_LLA_04' } },   // 2026-10-20 第5便：C の寄り道 D_LLA を 7→5 歩（マスの密集）＝旧いセーブの位置を読み替える
+    story: base().concat(VOLCLINES), storyLinesBy: linesBy(), forceVar: 'MM_CH4ROUTE', forceParam: 'ch4route', qaOld: 'MM_QA_OLD_CH4', visual: 'V',
     drawRoute, ensureRoute: (f) => routeKey(f && f.route),
     handles: (key, m) => key === 4 && !qaOff() && !oldBoard(m),
     routeName: (seg, k, d) => (d && d.names && d.names[seg]) || (/^D_/.test(seg) ? '寄り道' : 'このまま進む'),

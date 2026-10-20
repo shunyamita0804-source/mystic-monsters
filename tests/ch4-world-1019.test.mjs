@@ -73,7 +73,7 @@ test('C4W-02：Chapter 4 の出発＝新しい盤・ルートの保存・旧 Cha
   const w = load(), S = setup(w, 5), m = S.m, f = m.raise.field;
   assert.equal(w.MMP8.driverFor(4, m), w.MMWD4.DRIVER); assert.equal(f.world, 1); assert.equal(f.chapterId, 4); assert.ok(['A', 'B', 'C'].includes(f.route));
   assert.equal(m.raise.turnLimit, 40); assert.equal(w.MMP8.diceSides(m), 6); assert.equal(w.MMWD4.active(m), true); assert.equal(w.MMWD3.active(m), false);
-  assert.equal(Object.keys(w.MMWD4.dataOf(m).nodes).length, { A: 320, B: 301, C: 294 }[f.route]);
+  assert.equal(Object.keys(w.MMWD4.dataOf(m).nodes).length, { A: 320, B: 301, C: 292 }[f.route]);
   const r0 = f.route, S2 = reload(w, S); w.MMP8.ensureBoardPosition(S2, S2.m); assert.equal(S2.m.raise.field.route, r0, '再読み込みで決め直さない');
   for (let i = 0; i < 5; i++) { w.MMWD4.DRIVER.ensure(S2, S2.m, Math.random); assert.equal(S2.m.raise.field.route, r0); }
   // 旧 Chapter 4（phase9 の火山の道・20ターン）の途中のセーブ

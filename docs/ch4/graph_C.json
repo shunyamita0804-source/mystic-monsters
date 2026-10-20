@@ -1766,46 +1766,32 @@
    "elev": 105.32
   },
   "D_LLA_01": {
-   "x": 362.88,
-   "y": 373.76,
+   "x": 355.46,
+   "y": 376.13,
    "role": "ordinary_tile",
    "segment": "D_LLA",
-   "elev": 103.69
+   "elev": 103.54
   },
   "D_LLA_02": {
-   "x": 354.17,
-   "y": 381.38,
+   "x": 356.09,
+   "y": 393.16,
    "role": "ordinary_tile",
    "segment": "D_LLA",
-   "elev": 103.44
+   "elev": 103.16
   },
   "D_LLA_03": {
-   "x": 356.09,
-   "y": 395.0,
+   "x": 344.28,
+   "y": 400.6,
    "role": "ordinary_tile",
    "segment": "D_LLA",
-   "elev": 103.13
+   "elev": 102.84
   },
   "D_LLA_04": {
-   "x": 345.94,
-   "y": 401.4,
+   "x": 329.19,
+   "y": 392.66,
    "role": "ordinary_tile",
    "segment": "D_LLA",
-   "elev": 102.87
-  },
-  "D_LLA_05": {
-   "x": 334.48,
-   "y": 393.77,
-   "role": "ordinary_tile",
-   "segment": "D_LLA",
-   "elev": 102.56
-  },
-  "D_LLA_06": {
-   "x": 323.84,
-   "y": 398.34,
-   "role": "ordinary_tile",
-   "segment": "D_LLA",
-   "elev": 102.31
+   "elev": 102.46
   },
   "L_LATE_ALTAR": {
    "x": 322,
@@ -2876,15 +2862,13 @@
    "from": "SUCCESS_L1",
    "to": "L_LATE_ALTAR",
    "kind": "reward_spur",
-   "steps": 7,
+   "steps": 5,
    "nodes": [
     "SUCCESS_L1",
     "D_LLA_01",
     "D_LLA_02",
     "D_LLA_03",
     "D_LLA_04",
-    "D_LLA_05",
-    "D_LLA_06",
     "L_LATE_ALTAR"
    ],
    "zone": "rim_night",
@@ -5077,20 +5061,6 @@
   },
   {
    "from": "D_LLA_04",
-   "to": "D_LLA_05",
-   "segment": "D_LLA",
-   "dir": "forward",
-   "condition": "always"
-  },
-  {
-   "from": "D_LLA_05",
-   "to": "D_LLA_06",
-   "segment": "D_LLA",
-   "dir": "forward",
-   "condition": "always"
-  },
-  {
-   "from": "D_LLA_06",
    "to": "L_LATE_ALTAR",
    "segment": "D_LLA",
    "dir": "forward",
@@ -5098,20 +5068,6 @@
   },
   {
    "from": "L_LATE_ALTAR",
-   "to": "D_LLA_06",
-   "segment": "D_LLA",
-   "dir": "reverse",
-   "condition": "always"
-  },
-  {
-   "from": "D_LLA_06",
-   "to": "D_LLA_05",
-   "segment": "D_LLA",
-   "dir": "reverse",
-   "condition": "always"
-  },
-  {
-   "from": "D_LLA_05",
    "to": "D_LLA_04",
    "segment": "D_LLA",
    "dir": "reverse",

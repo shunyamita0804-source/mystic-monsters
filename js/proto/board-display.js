@@ -69,7 +69,7 @@
    */
   function separate(D, nodes, chains, P, o) {
     const sep = o.sep, max = o.sepMax || 12, A = D.art || {}, ground = A.sky && A.islands ? (x, y) => A.islands.some((I) => inPoly(I, x, y)) : null, moved = new Set();
-    const cs = chains.filter((ids) => ids.length >= 3);
+    const cs = chains.filter((ids) => ids.length >= 3), B0 = {}; for (const id of Object.keys(nodes)) B0[id] = nodes[id];   // B0＝離す前の座標（広場から離した並べ直しのあと）
     for (let it = 0; it < 14; it++) {
       const push = {};
       for (let i = 0; i < cs.length; i++) for (let j = 0; j < cs.length; j++) { if (i === j) continue;
@@ -79,14 +79,14 @@
           let best = Infinity, bq = null; for (let m = 0; m < Y.length - 1; m++) { const q = closest(p, nodes[Y[m]], nodes[Y[m + 1]]), d = dist(p, q); if (d < best) { best = d; bq = q; } }
           if (best < sep && bq) { const d = Math.max(best, 0.01), f = Math.min(1.2, (sep - d) / 2), v = push[id] || (push[id] = [0, 0]); v[0] += (p[0] - bq[0]) / d * f; v[1] += (p[1] - bq[1]) / d * f; } } }
       const ids = Object.keys(push); if (!ids.length) break;
-      for (const id of ids) { const v = push[id], p = nodes[id], q = [p[0] + v[0], p[1] + v[1]], p0 = D.nodes[id];
+      for (const id of ids) { const v = push[id], p = nodes[id], q = [p[0] + v[0], p[1] + v[1]], p0 = B0[id];
         if (dist(q, p0) > max || (ground && !ground(q[0], q[1]))) continue; nodes[id] = [q[0], q[1], ...p.slice(2)]; moved.add(id); }
     }
     //  ならす：動かした量を道筋の中で前後へ広げる（2回）
-    for (let r = 0; r < 2; r++) for (const ids of cs) { const dv = ids.map((id) => [nodes[id][0] - D.nodes[id][0], nodes[id][1] - D.nodes[id][1]]);
+    for (let r = 0; r < 2; r++) for (const ids of cs) { const dv = ids.map((id) => [nodes[id][0] - B0[id][0], nodes[id][1] - B0[id][1]]);
       for (let k = 1; k < ids.length - 1; k++) { const id = ids[k]; if (P.has(id)) continue; const a = P.has(ids[k - 1]) ? [0, 0] : dv[k - 1], b = P.has(ids[k + 1]) ? [0, 0] : dv[k + 1];
         const sx = (a[0] + 2 * dv[k][0] + b[0]) / 4, sy = (a[1] + 2 * dv[k][1] + b[1]) / 4, keep = Math.hypot(dv[k][0], dv[k][1]) > Math.hypot(sx, sy) ? dv[k] : [sx, sy];
-        const q = [D.nodes[id][0] + keep[0], D.nodes[id][1] + keep[1]]; if (ground && !ground(q[0], q[1])) continue; if (Math.hypot(keep[0], keep[1]) > 0.05) { nodes[id] = [q[0], q[1], ...nodes[id].slice(2)]; moved.add(id); } } }
+        const q = [B0[id][0] + keep[0], B0[id][1] + keep[1]]; if (ground && !ground(q[0], q[1])) continue; if (Math.hypot(keep[0], keep[1]) > 0.05) { nodes[id] = [q[0], q[1], ...nodes[id].slice(2)]; moved.add(id); } } }
     return moved.size;
   }
   /**

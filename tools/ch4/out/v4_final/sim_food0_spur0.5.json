@@ -297,22 +297,22 @@
    }
   },
   "Ch4-C": {
-   "nodes": 294,
+   "nodes": 292,
    "runs": 24000,
-   "goal": 24.9,
-   "avgTurns": 36.9,
+   "goal": 25.3,
+   "avgTurns": 36.8,
    "p10": 33,
    "p50": 37,
    "p90": 40,
    "gain": 302,
-   "gainP10": 224,
-   "gainP90": 379,
-   "statStops": 14.39,
+   "gainP10": 225,
+   "gainP90": 380,
+   "statStops": 14.37,
    "emptyStops": 0,
    "stops": {
-    "stat": 14.39,
+    "stat": 14.37,
     "event": 3.92,
-    "wild": 1.8,
+    "wild": 1.79,
     "rest": 1.45,
     "treasure": 1.45
    },
@@ -322,13 +322,13 @@
     "L_CHEST": 24.7,
     "R_CHEST": 25.7,
     "L_ALTAR": 24.4,
-    "L_LATE_ALTAR": 5.1,
+    "L_LATE_ALTAR": 5.4,
     "REWARD5": 25.2,
-    "R_SPECIAL": 17.5,
+    "R_SPECIAL": 17.4,
     "RANDOM_DEN": 13
    },
-   "spurOpp": 4.33,
-   "rests": 3.95,
+   "spurOpp": 4.34,
+   "rests": 3.94,
    "ate": 0,
    "fatEnd": 78,
    "visited": 108.7,
@@ -353,25 +353,25 @@
    },
    "stuck": 0,
    "guardOut": 0,
-   "timeUpAt": "LATE_SAFE 14.1%・LATE_L_FAIL_JOIN 12.3%・D_RS 9.4%",
+   "timeUpAt": "LATE_SAFE 14.2%・LATE_L_FAIL_JOIN 12.3%・D_RS 9.4%",
    "shortAtTimeUp": {
-    "p25": 10,
+    "p25": 9,
     "p50": 16,
     "p90": 26,
-    "within6": 12.1
+    "within6": 12.4
    },
    "vsCh1": {
-    "goalPP": -9.8,
+    "goalPP": -9.4,
     "gainPct": 1.7,
     "rewardPP": 5.9
    },
    "vsCh2A": {
-    "goalPP": -12.2,
+    "goalPP": -11.8,
     "gainPct": 0.7,
     "rewardPP": 4.3
    },
    "vsCh4A": {
-    "goalPP": -6.6,
+    "goalPP": -6.2,
     "gainPct": 2.7,
     "rewardPP": 5.7
    }

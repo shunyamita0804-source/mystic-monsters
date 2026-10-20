@@ -83,6 +83,11 @@
     const c = f.core; if (!isObj(c) || (d && !d.nodes[c.node]) || !Array.isArray(c.trail) || !Number.isInteger(c.turn) || !Number.isInteger(c.moveLeft) || c.moveLeft < 0) return false;
     return isObj(f.tiles) && isObj(f.used) && isObj(f.claimed);
   }
+  //  2026-10-20 第5便：地点を減らした道（cfg.nodeAlias＝{ ルート: { 旧い地点: 読み替える地点 } }。Chapter 4 C の寄り道 D_LLA 7→5 歩）の旧い地点 ID を、
+  //  同じ枝の近い地点へ読み替える＝セーブの途中の位置を消さない（読み替えないと配置ごと最初からになる）。セーブ version・キー・形は同じ
+  function alias(m) { const r = m && m.raise, f = r && fieldOf(m), A = cfg.nodeAlias && f && cfg.nodeAlias[routeKey(f.route)]; if (!A || !isObj(f.core)) return;
+    const a = (id) => (typeof id === 'string' && A[id]) || id;
+    f.core.node = a(f.core.node); if (Array.isArray(f.core.trail)) f.core.trail = f.core.trail.map(a); if (typeof f.core.back === 'string') f.core.back = a(f.core.back); if (r.node) r.node = a(r.node); }
   // 景観のパターン（A＝従来・B＝花と清流・C＝岩丘と遺跡）＝配置の任意項目 visualPattern。2026-10-14 からは新しい育成ではルートと同じ値（B のルート＝B の景観）。
   //   無い・知らない値＝A。旧セーブで景観 B／C のまま A の道を進んでいる個体は、その育成の終わりまで「B／C の景観＋A の道」（route が無い＝A）
   const VISUALS = ROUTES;
@@ -303,7 +308,7 @@
     trackFor: (m) => track(m ? routeOf(m) : 'A'),
     /** ボードを開くとき：配置が無い・壊れている・旧い Chapter 1 の配置なら、Chapter 1 の最初から（大会の途中ならゴールで大会を続ける）。途中の状態の食い違いを直す */
     ensure(S, m, rnd = Math.random) {
-      const r = m.raise, f = r.field;
+      alias(m); const r = m.raise, f = r.field;
       if (valid(f)) {
         let changed = false; const c = f.core;
         if (r.node !== c.node) { r.node = c.node; changed = true; }
@@ -332,7 +337,7 @@
     step, chooseBranch, resolve, resolveChoice,
     onBattleFinished(S, m) { return { fatigueAdded: addFat(m, T().wildFatigue) }; },
     onClose(S, m) { m.raise.field = null; },
-    sanitize(m) { const r = m && m.raise; if (!isObj(r)) return m; r.fatigue = clampFat(r.fatigue); if (r.ch === CH && r.field != null && !valid(r.field)) r.field = null; return m; },
+    sanitize(m) { const r = m && m.raise; if (!isObj(r)) return m; if (r.ch === CH) alias(m); r.fatigue = clampFat(r.fatigue); if (r.ch === CH && r.field != null && !valid(r.field)) r.field = null; return m; },
   });
   let attached = false;
   function attach(P8 = root.MMP8) { if (!P8 || !P8.registerChapterOverride || root[cfg.qaOld || 'MM_QA_OLD_CH1']) return false; P8.registerChapterOverride(DRIVER); attached = true; return true; }
