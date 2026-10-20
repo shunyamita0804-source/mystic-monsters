@@ -56,7 +56,7 @@ test('AB-2：Chapter 4 の題字の中継に巨大火山', { skip: SKIP, timeout
 test('AB-3：Chapter 2 の目印は Chapter 2 の正式美術だけ', { skip: SKIP, timeout: 120000 }, async () => {
   const p = await openPage({ worldCh2: true, size: H.SIZES.base, query: '?ch2trial=A' }); const pg = p.page; await idle(pg);
   const lms = await pg.evaluate(() => [...document.querySelectorAll('.rfw-lm')].map((e) => e.getAttribute('src')));
-  assert.ok(lms.length >= 8 && lms.every((s) => /ch2\/art_10(16|20)\/|symbols_1020\/ch2_|front_1020\/ch2_/.test(s)), JSON.stringify(lms));   // 2026-10-20 第3便：Chapter 2 のシンボル建物（螺旋の塔・水晶の神殿）も可
+  assert.ok(lms.length >= 8 && lms.every((s) => /ch2\/art_10(16|20)\/|ch2\/tunnel_1020\/|symbols_1020\/ch2_|front_1020\/ch2_/.test(s)), JSON.stringify(lms));   // 2026-10-20 第3便：Chapter 2 のシンボル建物（螺旋の塔・水晶の神殿）も可・第5便：ガラス回廊の入口（F01）
   //  2026-10-20 第4便：道標（正面向き・E02）は陸の上の自由な分かれ道だけ（A は J0。H はまわりが海）。分岐の印・合流の印は未採用
   assert.deepEqual(await pg.evaluate(() => [...document.querySelectorAll('.rfw-bpost')].map((e) => e.getAttribute('src').split('/').pop())), ['ch2_signpost_front.webp']);
   assert.equal(await pg.evaluate(() => document.querySelectorAll('.rfw-bmark').length), 0, '分岐の印・合流の印は未採用');

@@ -747,7 +747,9 @@ html:has(.mmtalk .mmtalk-choice) .wbw .wbcard{width:min(92%,384px,max(160px,(100
     WD(m).markStory(m, ev.id, flags); doSave();
     const was = busyGet(); busySet(true);
     try {
-      const lines = (ev.lines || []).map((l) => ({ npc: l.speaker || 'fina', expression: l.expression || 'normal', text: l.text, ...(l.voice ? { voice: l.voice } : {}) }));   // 2026-10-13：行の声
+      let lines = (ev.lines || []).map((l) => ({ npc: l.speaker || 'fina', expression: l.expression || 'normal', text: l.text, ...(l.voice ? { voice: l.voice } : {}) }));   // 2026-10-13：行の声
+      //  2026-10-20 第5便（ユーザー決定 A）：リュウが登場の幕の中で声つきで話したあとは、フィナの一言だけ（声のないリュウの台詞を重ねない＝途中から声の有無が変わらない）
+      if (V.ryuSaid && trigger === 'land') { lines = lines.filter((l) => l.npc !== 'ryu'); if (!lines.length) return true; }
       await root.MMNPC.talk(lines, { kind: 'fina', presentation: ev.presentation === 'talk' ? 'board' : 'compact' });
     } catch (e) {} finally { if (!was) busySet(false); }
     return true;

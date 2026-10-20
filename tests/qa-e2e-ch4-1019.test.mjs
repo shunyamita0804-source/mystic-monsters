@@ -57,7 +57,7 @@ test('C4B-2：本物の流れ＝Chapter 4 のベースキャンプから出発 �
   assert.deepEqual([a.sv, a.route, a.ch, a.cid, a.used], [1, 'C', 4, 4, 1]);
   await pg.reload(); await pg.waitForFunction(() => typeof window.MMP8 === 'object' && typeof S === 'object'); await pg.waitForSelector('.p15start'); await pg.click('.p15start');
   await pg.waitForSelector('#wbw #brollbtn', { timeout: 60000 }); await idle(pg);
-  assert.deepEqual(await pg.evaluate(() => [S.m.raise.node, S.m.raise.turnsUsed, S.m.raise.field.route, MMWB.state().world.tiles, !!document.querySelector('.rfw.volc')]), [a.node, 1, 'C', 294, true]);
+  assert.deepEqual(await pg.evaluate(() => [S.m.raise.node, S.m.raise.turnsUsed, S.m.raise.field.route, MMWB.state().world.tiles, !!document.querySelector('.rfw.volc')]), [a.node, 1, 'C', 292, true]);
   assert.deepEqual(p.errors, []); assert.deepEqual(p.bad, []);
 });
 

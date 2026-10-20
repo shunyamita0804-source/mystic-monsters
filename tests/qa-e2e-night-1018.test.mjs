@@ -73,6 +73,7 @@ test('NT-B3：ライバルの遭遇＝登場の幕の中でリュウの正式ボ
   const L = await pg.evaluate(() => [MMAUDIO.voiceLine('ryu_008'), MMAUDIO.voiceLine('ryu_006')]);
   assert.ok(ryu.includes(L[0]) && ryu.includes(L[1]), `リュウの字幕＝書き起こし ${JSON.stringify(seen)}`);
   const fi = seen.findIndex((x) => x.npc === 'fina'), ri = seen.findIndex((x) => x.npc === 'ryu'); assert.ok(ri >= 0 && (fi < 0 || ri < fi), '声は登場の幕の中（フィナの一言の前）');
+  assert.ok(fi < 0 || !seen.slice(fi).some((x) => x.npc === 'ryu'), `フィナの一言のあとに声のないリュウの台詞を重ねない ${JSON.stringify(seen)}`);
   const played = await pg.evaluate((n) => MMAUDIO.voiceLog().slice(n).filter((x) => x.result === 'play').map((x) => x.id), v0);
   assert.ok(played.includes('ryu_008') && played.includes('ryu_006'), `声が鳴った ${played}`);
   assert.ok(await pg.$('#bt'), 'そのままバトル');

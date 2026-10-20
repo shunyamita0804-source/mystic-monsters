@@ -41,7 +41,7 @@ async function walk(pg, n) {
     await pg.evaluate((v) => { const mr = Math.random; Math.random = () => (v - 0.5) / 6; document.getElementById('brollbtn').click(); Math.random = mr; }, DICE[i % DICE.length]);
     await pg.waitForTimeout(400); await settle(pg);
     stops.push(await pg.evaluate(() => { const W = MMWB.world(), s = W.state(), v = s.view, nodes = (S.m.raise.ch === 2 ? MMWD2 : MMWD).dataOf(S.m).nodes;
-      const ah = (s.ahead || []).slice(0, 4).map((id) => W.project(nodes[id][0], nodes[id][1]));
+      const ah = (s.ahead || []).slice(0, 4).map((id) => { const q = (W.at && W.at(id)) || nodes[id]; return W.project(q[0], q[1]); });   // 2026-10-20 第5便：マスを描く位置（表示の配置）
       return { node: S.m.raise.node, n: ah.length, inView: ah.filter((q) => q.x > 0 && q.x < v.W && q.y > v.top && q.y < v.bottom).length }; }));
   }
   const yg = await pg.evaluate(() => { clearInterval(window.__ygT); return window.__yg; });
