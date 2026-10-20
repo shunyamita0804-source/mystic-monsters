@@ -1,7 +1,7 @@
 # =========================================================
 # 2026-10-20 第4便：ユーザー納品の地面（E03）・道と広場（E04）を WebGL の盤（js/proto/board-gl.js）の素材にする（テストではない道具）
 #  python3 -I tools/fullplay1020/gl-art.py <E03・E04 の PNG があるフォルダ（下のフォルダも探す）>
-#  → assets/fields/gl_1020/*.webp（2048px のまま・WebP q82）
+#  → assets/fields/gl_1020/*.webp（地面・石畳・縁石は 2048px・広場・雲海・海底は 1024px・WebP）
 #  縁石（curb_strip）は、絵の中の縁石の帯（不透明な行）だけを切り出す（納品の Chapter 1〜3 の縁石は、帯の外に市松模様が焼き込まれていた＝帯の外は使わない）。色は変えない
 # =========================================================
 import sys, os, glob
@@ -22,5 +22,8 @@ for f in sorted(glob.glob(os.path.join(sys.argv[1], '**', 'E0[34]_*.png'), recur
         a = np.array(im); rows = np.where(a[..., 3].mean(1) > 200)[0]
         im = im.crop((0, int(rows.min()), im.width, int(rows.max()) + 1))
     name = f'{ch}_{NAME[kind]}.webp'
-    im.save(os.path.join(OUT, name), 'WEBP', quality=82, method=6)
+    #  広場・雲海・海底は 1024px（画面で大きく映っても足りる・GPU のメモリ 1/4）。地面・石畳・縁石は 2048px のまま
+    if NAME[kind] in ('plaza', 'cloud', 'seabed'): im = im.resize((1024, 1024), Image.LANCZOS); q = 84
+    else: q = 82
+    im.save(os.path.join(OUT, name), 'WEBP', quality=q, method=6)
     print(f'{name}  {im.width}x{im.height}  {os.path.getsize(os.path.join(OUT, name)) // 1024}KB')

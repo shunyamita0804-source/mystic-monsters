@@ -27,9 +27,9 @@ for (const size of [[375, 667], [390, 844], [430, 932]]) for (const route of ['A
     const before = await pg.evaluate(() => localStorage.getItem('mr4v6'));
     await pg.waitForSelector('#wbw #brollbtn', { timeout: 60000 }); await idle(pg);
     const a = await pg.evaluate(() => ({ ch: S.m.raise.ch, route: S.m.raise.field.route, world: S.m.raise.field.world, tiles: MMWB.state().world.tiles, nm: document.querySelector('.chh-nm').textContent,
-      sky: !!document.querySelector('.rfw.volc'), apron: (document.querySelector('.rfw-apron') || { style: {} }).style.backgroundImage || '', sides: MMP8.diceSides(S.m), lim: S.m.raise.turnLimit, qa: !!document.getElementById('qajb') }));
+      sky: !!document.querySelector('.rfw.volc'), apron: (document.querySelector('.rfw-apron') || { style: {} }).style.backgroundImage || '', gl: MMWB.world().gl(), sides: MMP8.diceSides(S.m), lim: S.m.raise.turnLimit, qa: !!document.getElementById('qajb') }));
     assert.deepEqual([a.ch, a.route, a.world, a.tiles, a.nm, a.sky, a.sides, a.lim, a.qa], [4, route, 1, ({ A: 320, B: 301, C: 294 })[route], '灼熱の火山', true, 6, 40, true]);
-    assert.match(a.apron, /ground_basalt/, '世界の外も火山の地面');
+    if (a.gl) assert.equal(a.gl.tex.ground, true, '2026-10-20 第4便B：WebGL の盤＝世界の外も火山の地面（E03）'); else assert.match(a.apron, /ground_basalt/, '世界の外も火山の地面');
     const imgs = await pg.evaluate(() => [...document.querySelectorAll('.rfw img')].filter((i) => /ch4\/art_1019/.test(i.src)).map((i) => ({ s: i.src.split('/').pop(), ok: i.complete && i.naturalWidth > 0 })));
     assert.ok(imgs.length > 15, `火山の景物（${imgs.length}）`); assert.deepEqual(imgs.filter((x) => !x.ok), [], '読めない絵が無い');
     const n0 = await pg.evaluate(() => S.m.raise.node);

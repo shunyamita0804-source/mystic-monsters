@@ -16,7 +16,8 @@ test.before(async () => { if (!SKIP) L = await H.launch(); });
 test.after(async () => { if (L) await L.close(); });
 const OPEN = [];
 // 2026-10-19 第2工程：道路・盤の絵の比較の URL（?qaRoadArt・?boardSkin）は撤去＝本編と同じ（盤 hq1014＋道路の新素材 fix）で確かめる
-const openPage = async (o = {}) => { const p = await L.open({ worldCh1: true, ...o }); OPEN.push(p); return p; };
+//  2026-10-20 第4便B：盤は WebGL（js/proto/board-gl.js）。このファイルは WebGL2 の無い端末向けの従来の描き方（canvas の区画・skin の絵・世界の外の帯）を確かめる＝?glBoard=0
+const openPage = async (o = {}) => { const p = await L.open({ worldCh1: true, query: '?glBoard=0', ...o }); OPEN.push(p); return p; };
 test.afterEach(async () => { for (const p of OPEN.splice(0)) await p.ctx.close().catch(() => {}); });
 const idle = (pg) => pg.waitForFunction(() => !bBusy && !MMCHD.isLocked() && !document.querySelector('.wbrelay,.wb-pop,.chf-enc2,.mmtalk,.chdz') && !MMWB.state().intro, null, { timeout: 40000 }).then(() => pg.waitForTimeout(300));
 const depart = async (pg, v) => {

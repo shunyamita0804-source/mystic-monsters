@@ -422,11 +422,12 @@
       const c = S.cam;
       zSync(c.yaw);
       // カメラもモンスターも動いていなければ描き直さない（止まっている間は何もしない）
-      const sig = [c.tx, c.ty, c.s * 100, c.tilt * 10, (c.yaw || 0) * 10, c.ax, c.ay, S.mon ? S.mon[0] : 0, S.mon ? S.mon[1] : 0, S.dirty ? 1 : 0].map((x) => Math.round(x * 10)).join(',');
-      if (sig === S.sig) return; S.sig = sig; S.dirty = false;
+      const sig = [c.tx, c.ty, c.s * 100, c.tilt * 10, (c.yaw || 0) * 10, c.ax, c.ay, S.mon ? S.mon[0] : 0, S.mon ? S.mon[1] : 0].map((x) => Math.round(x * 10)).join(',');
+      //  2026-10-20 第4便：描き直しの印（S.dirty）は署名に入れず、立っていれば必ず描く（旧：署名に 1 を入れていた＝続けて 2 回立つと 2 回目は前と同じ署名で描かれなかった。WebGL の盤は絵の読み込み・地形の区画のたびに描き直す）
+      if (sig === S.sig && !S.dirty) return; S.sig = sig; S.dirty = false;
       // 平面：注視点を原点に移して → 倍率 → 傾き → 画面の位置へ（project と同じ式。perspective-origin＝注視点の画面位置）
       wrapPersp(c.P, c.ax, c.ay);
-      if (!GL || SEA3) plane.style.transform = planeTf(c);
+      if (!GL) plane.style.transform = planeTf(c);   // WebGL の盤は平面（CSS 3D）を使わない（Chapter 2 の海底・塔も WebGL）
       if (GL) GL.draw(c);
       const v = S.view, Wd = v ? v.W : 400, Hd = v ? v.H : 800, xr = [];
       if (o.xray && S.mon) { const q = project(c, S.mon[0], S.mon[1], S.mon[2]), w = o.monRatio > 0 ? Math.max(c.s < 1 ? 14 : 30, Math.max(c.s < 1 ? 2 : o.tilePx[0], Math.min(o.tilePx[1], o.tileW * c.s * q.k)) * o.monRatio) : Math.max(c.s < 1 ? 14 : 40, Math.min(100, 24 * c.s * q.k)), h = w * (S.monAh || 0.92);
@@ -665,6 +666,7 @@
       },
       isReady: () => artDone && painted && (!GL || GL.macroDone()),
       gl: () => (GL ? GL.stats() : null),
+      glProbe: (x, y) => (GL ? GL.probe(x, y) : null),
       /** 2026-10-11：地点の上に浮かぶ目印（レアの紋章など）。w＝世界の幅・min／max＝画面の画素の下限・上限（全景でも見える大きさ）。地面・道は描き直さない */
       marker(id, src, opt = {}) {
         if (!D.nodes[id]) return null; const n = at(id);
@@ -688,7 +690,8 @@
       at: (id) => (D.nodes[id] ? at(id).slice(0, 2) : null),
       frames: (reset) => { const f = S.frames.slice(); if (reset) S.frames = []; return f; },
       destroy() { S.dead = true; root.cancelAnimationFrame(S.raf); if (HI) HI.destroy(); if (GL) GL.destroy(); wrap.remove(); },
-      qaRoad: () => (HI ? { mode: o.qaRoad, res: HI.R, tiles: HI.count(), pending: HI.pending(), bytes: HI.bytes(), paintMs: HI.paintMs ? HI.paintMs() : null } : null),
+      qaRoad: () => (HI ? { mode: o.qaRoad, res: HI.R, tiles: HI.count(), pending: HI.pending(), bytes: HI.bytes(), paintMs: HI.paintMs ? HI.paintMs() : null }
+        : GL ? (() => { const g = GL.stats(); return { mode: o.qaRoad || null, gl: true, res: root.MMGL.RES_HI, tiles: g.near, pending: g.pending, bytes: Math.round(g.nearMB * 1048576), paintMs: null }; })() : null),   // 2026-10-20 第4便：WebGL の盤は近くの地形の区画の数
       /** 2026-10-20 確認用（tools/fullplay1020）：地面と道を真上から1枚に描く（近くの層と同じ描画）。bx＝[x, y, w, h]（単位）・res＝1単位の px。ゲームからは呼ばない */
       snapshot(bx, res) { if (!artDone) return null; const c = doc.createElement('canvas'); c.width = Math.round(bx[2] * res); c.height = Math.round(bx[3] * res); const g = c.getContext('2d');
         g.setTransform(res, 0, 0, res, -bx[0] * res, -bx[1] * res);
@@ -967,7 +970,7 @@
     const sw = ART.strip.w;
     return {
       textures, macro: { k: 0.55 },
-      ground: { tex: 'ground', tile: 64, layers: sky ? [{ tex: 'cloud', tile: 150 }] : null },
+      ground: { tex: 'ground', tile: 64, layers: sky ? [{ tex: 'cloud', tile: 150 }] : null, maskOut: [1, 0, 0] },   // 世界の外は雲海
       features: (g, bx) => glFeatures(g, D, o, art, bx),
       roads: glRoadsOf(D, roadLinesOf(D), { w: sw - 6.4, tile: 44, curb: 3.2, r: sw * 0.8, rEnd: sw * 0.7, sa: sky ? 0.18 : 0.3, ps: 4,
         shadow: sky ? null : { w: 4, a: 0.26, rgb: [0.1, 0.13, 0.04] } }),

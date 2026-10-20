@@ -353,7 +353,7 @@
     R.plaza.radius = radius; R.plaza.sdy = 3;
     return {
       textures: { ground: T('ground', true), road: T('road', true), curb: T('curb', 'u'), plaza: T('plaza', false) }, macro: { k: 0.55 },
-      ground: { tex: 'ground', tile: 64, outDark: 0.3 },
+      ground: { tex: 'ground', tile: 40, outDark: 0.3 },   // 火山の地面の粒は細かい＝1 枚 40 単位（64 では遠くで平らに見えた）
       features: (g, bx) => ground(g, D, bx, art, H, true),
       roads: R,
       onArt(G, a) {

@@ -16,7 +16,8 @@ const SKIP = H.skipReason();
 let L, opened = [];
 test.before(async () => { if (!SKIP) L = await H.launch(); });
 test.after(async () => { if (L) await L.close(); });
-async function open(opt = {}) { for (const q of opened) await q.ctx.close().catch(() => {}); const p = await L.open(opt); opened = [p]; return p; }
+//  2026-10-20 第4便B：盤は WebGL。このファイルは WebGL2 の無い端末向けの従来の海の盤（CSS 3D の板 .rfs-*）を確かめる＝?glBoard=0
+async function open(opt = {}) { for (const q of opened) await q.ctx.close().catch(() => {}); const q0 = opt.query || ''; const p = await L.open(Object.assign({}, opt, { query: q0 + (q0 ? '&' : '?') + 'glBoard=0' })); opened = [p]; return p; }
 const SHOT = process.env.RF_SHOT_DIR || null;
 const shot = (pg, name) => (SHOT ? pg.screenshot({ path: `${SHOT}/${name}.png` }) : null);
 const URL_W = (r, seed) => `index.html?chapterBoard=roadfirst&rfData=ch2&ch2route=${r}&rfView=world&rfRand=open&rfSeed=${seed}`;

@@ -23,7 +23,8 @@ async function settle(pg) {
   await pg.waitForTimeout(900);
 }
 async function open(L, ch, q, size) {
-  const p = await L.open({ worldCh1: true, worldCh2: true, route: 'A', route2: 'A', query: q, size });
+  //  2026-10-20 第4便B：盤は WebGL。このファイルは WebGL2 の無い端末向けの従来の近くの層（.rfw-hi・CSS 3D）を確かめる＝?glBoard=0
+  const p = await L.open({ worldCh1: true, worldCh2: true, route: 'A', route2: 'A', query: (q || '?') + (q && q.length > 1 ? '&' : '') + 'glBoard=0', size });
   await p.page.waitForFunction((ch) => window.MMWB && MMWB.world() && MMWB.world().isReady() && S.m && S.m.raise && S.m.raise.ch === ch, ch, { timeout: 90000 });
   await p.page.evaluate(() => { S.m.raise.field.tiles = {}; board(); });
   await settle(p.page); return p;

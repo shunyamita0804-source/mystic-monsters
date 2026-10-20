@@ -18,7 +18,7 @@
   const HIDPR = DPR() >= 2.5;
   //  地形の絵の区画：全体（MACRO＝1単位 2px・256 単位四方）と、カメラの近く（NEAR＝64 単位四方・画面で大きく映るほど細かく 5／10／14px）
   const MACRO_RES = 2, MACRO_T = 256, NEAR_T = 64, RES_HI = num('glRes', HIDPR ? 14 : 10, 4, 20), RES_MID = Math.round(RES_HI * 0.6), RES_LO = 5;
-  const NEAR_MB = num('glMB', 64, 16, 160), NEAR_BUDGET_MS = 6, NEAR_CAP = 64;
+  const NEAR_MB = num('glMB', HIDPR ? 48 : 64, 16, 160), NEAR_BUDGET_MS = 6, NEAR_CAP = 64;
 
   let SUP = null;
   /** WebGL2 が使えるか（1回だけ確かめる。?glBoard=0 なら使わない） */
@@ -38,7 +38,9 @@ void main(){
   float rx = X0 * uY.x - Y0 * uY.y, ry = X0 * uY.y + Y0 * uY.x;
   float X = rx * uA.z, Y = ry * uA.z, Z = aP.z * uA.z;
   float z = Y * uB.w + Z * uB.z, w = (uA.w - z) / uA.w, Yc = Y * uB.z - Z * uB.w;
-  gl_Position = vec4(2.0 * (uB.x * w + X) / uY.z - w, w - 2.0 * (uB.y * w + Yc) / uY.w, (-z / (4.0 * uA.w)) * w, w);
+  //  深さは目からの距離 d＝P − z の一次式（クリップは頂点の間を直線で補う＝深さが一次でないと、目の近くの三角形が誤って切られる）。近い面 40px・遠い面 60000px
+  float d = uA.w - z, N = 40.0, F = 60000.0;
+  gl_Position = vec4(2.0 * (uB.x * w + X) / uY.z - w, w - 2.0 * (uB.y * w + Yc) / uY.w, (d * (F + N) / (F - N) - 2.0 * F * N / (F - N)) / uA.w, w);
   vT = aT; vC = aC; vW = aP.xy;
 }`;
   //  uMode：0＝絵 × 色（乗算済みのアルファ）・1＝色だけ・2＝地面（くり返しの絵 0 に、範囲の画像 uM の R／G で絵 1・2 を重ねる）
@@ -46,14 +48,15 @@ void main(){
 precision highp float;
 in vec2 vT; in vec4 vC; in vec2 vW;
 uniform sampler2D uT0; uniform sampler2D uT1; uniform sampler2D uT2; uniform sampler2D uM; uniform sampler2D uMac;
-uniform int uMode; uniform vec3 uTile; uniform vec4 uMBox; uniform vec3 uN; uniform vec4 uOut; uniform float uK; uniform float uHole;
+uniform int uMode; uniform vec3 uTile; uniform vec4 uMBox; uniform vec3 uN; uniform vec4 uOut; uniform float uK; uniform float uHole; uniform vec3 uMOut;
 out vec4 o;
 void main(){
   if (uMode == 1) { o = vC * uK; return; }
   if (uMode == 2) {
     vec4 c = texture(uT0, vW / uTile.x);
-    if (uHole > 0.5) { float hb = texture(uM, (vW - uMBox.xy) / uMBox.zw).b; if (hb > 0.97) discard; c *= 1.0 - hb; }   // 穴（Chapter 2 の海底の盆地の上）＝描かない・深さも書かない
-    if (uN.x > 0.5) { vec4 m = texture(uM, (vW - uMBox.xy) / uMBox.zw); c = mix(c, texture(uT1, vW / uTile.y), m.r); if (uN.y > 0.5) c = mix(c, texture(uT2, vW / uTile.z), m.g); }
+    vec2 mq = (vW - uMBox.xy) / uMBox.zw; bool mIn = mq.x >= 0.0 && mq.y >= 0.0 && mq.x <= 1.0 && mq.y <= 1.0;   // 範囲の画像の外（世界の外の帯）は決まった重み uMOut（端の行をのばさない）
+    if (uHole > 0.5 && mIn) { float hb = texture(uM, mq).b; if (hb > 0.97) discard; c *= 1.0 - hb; }   // 穴（Chapter 2 の海底の盆地の上）＝描かない・深さも書かない
+    if (uN.x > 0.5) { vec4 m = mIn ? texture(uM, mq) : vec4(uMOut, 1.0); c = mix(c, texture(uT1, vW / uTile.y), m.r); if (uN.y > 0.5) c = mix(c, texture(uT2, vW / uTile.z), m.g); }
     if (uN.z > 0.0) { vec4 q = texture(uMac, (vW + vec2(131.0, 77.0)) / 900.0); c.rgb = c.rgb * (1.0 - uN.z * q.a) + uN.z * q.rgb; }   // くり返しを目立たなくする大きな明暗の揺らぎ（road-art-1017 の macro と同じ絵）
     if (uOut.z > 0.0 && (vW.x < 0.0 || vW.y < 0.0 || vW.x > uOut.x || vW.y > uOut.y)) c.rgb *= 1.0 - uOut.z;   // 世界の外の帯（端へ寄ったときに見える所）を少し暗く
     o = c * vC; return;
@@ -102,14 +105,15 @@ void main(){
     const cv = doc.createElement('canvas'); cv.className = 'rfw-gl';
     Object.assign(cv.style, { position: 'absolute', left: '0', top: '0', width: '100%', height: '100%', pointerEvents: 'none', zIndex: '1' });
     parent.insertBefore(cv, before || parent.firstChild);
-    const gl = cv.getContext('webgl2', { alpha: true, premultipliedAlpha: true, antialias: true, stencil: true, depth: true, powerPreference: 'high-performance' });
+    //  antialias なし（iPhone の画素比 3 の全画面で MSAA の描画先は約 90MB になる）＝道のふちは縁石の外側 0.6 単位を透明へなめらかに（ギザギザを出さない）
+    const gl = cv.getContext('webgl2', { alpha: true, premultipliedAlpha: true, antialias: false, stencil: true, depth: true, powerPreference: 'high-performance' });
     if (!gl) { cv.remove(); return null; }
     const AN = gl.getExtension('EXT_texture_filter_anisotropic'), ANMAX = AN ? Math.min(8, gl.getParameter(AN.MAX_TEXTURE_MAX_ANISOTROPY_EXT)) : 0;
     const sh = (t, s) => { const o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(o)); return o; };
     const prog = gl.createProgram(); gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog);
     if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
     gl.useProgram(prog);
-    const U = {}; for (const k of ['uA', 'uB', 'uY', 'uT0', 'uT1', 'uT2', 'uM', 'uMac', 'uMode', 'uTile', 'uMBox', 'uN', 'uOut', 'uK', 'uHole']) U[k] = gl.getUniformLocation(prog, k);
+    const U = {}; for (const k of ['uA', 'uB', 'uY', 'uT0', 'uT1', 'uT2', 'uM', 'uMac', 'uMode', 'uTile', 'uMBox', 'uN', 'uOut', 'uK', 'uHole', 'uMOut']) U[k] = gl.getUniformLocation(prog, k);
     gl.uniform1i(U.uT0, 0); gl.uniform1i(U.uT1, 1); gl.uniform1i(U.uT2, 2); gl.uniform1i(U.uM, 3); gl.uniform1i(U.uMac, 4);
     const LOC = { aP: gl.getAttribLocation(prog, 'aP'), aT: gl.getAttribLocation(prog, 'aT'), aC: gl.getAttribLocation(prog, 'aC') };
     let dead = false, dirty = true, lastCam = null, drawn = 0;
@@ -164,10 +168,17 @@ void main(){
       if (R.shadow) { const M = new Mesh(), a = R.shadow.a, c1 = pm(R.shadow.rgb[0], R.shadow.rgb[1], R.shadow.rgb[2], a), c0 = [0, 0, 0, 0], e = hw + cw;
         for (const L of R.lines) { const P = L.P.map((p) => [p[0] + (R.shadow.dx || 0), p[1] + (R.shadow.dy || 0)]); strip(M, P, -e - sw, -e, h, () => [0, 0], c0, c1); strip(M, P, -e, e, h, () => [0, 0], c1, c1); strip(M, P, e, e + sw, h, () => [0, 0], c1, c0); }
         addMesh(M, { kind: 'solid' }); }
-      { const M = new Mesh(), T = R.surface.tile; for (const L of R.lines) strip(M, L.P, -hw - 0.3, hw + 0.3, h, (s, side) => [s / T, (side ? R.surface.w + 0.6 : 0) / T], WHITE, WHITE); addMesh(M, { kind: 'tex', tex: 'road' }); }
+      { const M = new Mesh(), T = R.surface.tile, E = R.curb ? [WHITE, WHITE] : [[0, 0, 0, 0], WHITE];   // 縁石が無い道は石畳のふちを透明へ
+        for (const L of R.lines) { strip(M, L.P, -hw - 0.3, hw + 0.3, h, (s, side) => [s / T, (side ? R.surface.w + 0.6 : 0) / T], WHITE, WHITE);
+          if (!R.curb) for (const sg of [-1, 1]) strip(M, L.P, sg * (hw + 0.9), sg * (hw + 0.3), h, (s, side) => [s / T, (sg < 0 ? (side ? 0 : -0.6) : (side ? R.surface.w + 0.6 : R.surface.w + 1.2)) / T], E[0], E[1]); }
+        addMesh(M, { kind: 'tex', tex: 'road' }); }
       if (R.curb) {   // 縁石：絵の縦横比で、縁石の幅 cw に合う長さ（読み込むまでは仮の長さ・読み込んだら作り直す）
         const cl = () => { const t = tex.curb; return t && t.ok && t.h ? cw * t.w / t.h : cw * 20; };
-        const build = () => { const L0 = cl(), M2 = new Mesh(); for (const L of R.lines) { strip(M2, L.P, -hw - cw, -hw, h, (s, side) => [s / L0, side ? 1 : 0], WHITE, WHITE); strip(M2, L.P, hw + cw, hw, h, (s, side) => [s / L0, side ? 1 : 0], WHITE, WHITE); } return M2; };
+        const F = 0.6, vf = F / cw, CLEAR = [0, 0, 0, 0];
+        const build = () => { const L0 = cl(), M2 = new Mesh(); for (const L of R.lines) for (const sg of [-1, 1]) {
+          strip(M2, L.P, sg * (hw + cw), sg * hw, h, (s, side) => [s / L0, side ? 1 : 0], WHITE, WHITE);
+          strip(M2, L.P, sg * (hw + cw + F), sg * (hw + cw), h, (s, side) => [s / L0, side ? 0 : -vf], CLEAR, WHITE); }   // 外側のふち（透明へ）
+          return M2; };
         const m = addMesh(build(), { kind: 'tex', tex: 'curb' });
         if (m) after.push(() => { if (!tex.curb || !tex.curb.ok) return; const M2 = build(); gl.bindBuffer(gl.ARRAY_BUFFER, m.vb); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(M2.v), gl.STATIC_DRAW); }); }
       if (R.plaza) {
@@ -271,10 +282,11 @@ void main(){
       if (DEP) { gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL); gl.depthMask(true); drawPhase('pre', true); } else gl.disable(gl.DEPTH_TEST);
       // 1. 地面（くり返しの絵＋範囲の画像で重ねる絵）
       const G = kit.ground, t0 = tex[G.tex], t1 = G.layers && G.layers[0] ? tex[G.layers[0].tex] : null, t2 = G.layers && G.layers[1] ? tex[G.layers[1].tex] : null;
+      LAST.ground = !!(t0 && t0.ok); LAST.cam = [c.tx, c.ty, c.s, c.tilt, c.yaw, c.P, c.ax, c.ay].map((x) => +(+x).toFixed(2)); LAST.vs = [vs.W, vs.H];
       if (t0 && t0.ok) {
         gl.uniform1i(U.uMode, 2); gl.uniform3f(U.uTile, G.tile, G.layers && G.layers[0] ? G.layers[0].tile : 1, G.layers && G.layers[1] ? G.layers[1].tile : 1);
         bindTex(0, t0.t); const n1 = maskT && t1 && t1.ok ? 1 : 0, n2 = n1 && t2 && t2.ok ? 1 : 0;
-        if (n1) { bindTex(1, t1.t); bindTex(3, maskT); gl.uniform4f(U.uMBox, maskBox[0], maskBox[1], maskBox[2], maskBox[3]); } if (n2) bindTex(2, t2.t);
+        if (n1) { bindTex(1, t1.t); bindTex(3, maskT); gl.uniform4f(U.uMBox, maskBox[0], maskBox[1], maskBox[2], maskBox[3]); const mo = G.maskOut || [0, 0, 0]; gl.uniform3f(U.uMOut, mo[0], mo[1], mo[2]); } if (n2) bindTex(2, t2.t);
         gl.uniform4f(U.uOut, WORLD.w, WORLD.h, G.outDark || 0, 0);
         if (macT && kit.macro.k) bindTex(4, macT); gl.uniform3f(U.uN, n1, n2, macT ? kit.macro.k || 0 : 0);
         if (maskT && kit.hole) { bindTex(3, maskT); gl.uniform4f(U.uMBox, maskBox[0], maskBox[1], maskBox[2], maskBox[3]); gl.uniform1f(U.uHole, 1); }
@@ -324,6 +336,7 @@ void main(){
         return addMesh(M, { kind: 'tex', tex: sp.tex }); }
       return null;
     }
+    const LAST = {};
     const EQ = new Map();
     function emptyQuad(ix, iy) { const k = ix + ':' + iy; if (EQ.has(k)) return EQ.get(k); const M = new Mesh(), T = NEAR_T, x0 = ix * T, y0 = iy * T, c = [0, 0, 0, 0];
       const a = M.vert(x0, y0, 0, 0, 0, c), b = M.vert(x0 + T, y0, 0, 0, 0, c), d = M.vert(x0 + T, y0 + T, 0, 0, 0, c), e = M.vert(x0, y0 + T, 0, 0, 0, c); M.quad(a, b, d, e);
@@ -343,6 +356,8 @@ void main(){
       /** 毎フレーム：カメラの近くの地形の区画を少しずつ描く（数ミリ秒まで） */
       tick: (c, v) => { if (!dead) featTick(c, v); },
       draw, isDirty: () => dirty,
+      /** 確認用：今の絵の1点の色（描いた直後に読む） */
+      probe(x, y) { if (lastCam) draw(lastCam); const d = DPR(), px = new Uint8Array(4); gl.readPixels(Math.round(x * d), cv.height - Math.round(y * d) - 1, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); return { px: [...px], last: LAST }; },
       macroDone: () => featOn && !macroQ.length,
       stats: () => ({ macro: macro.length, near: [...near.values()].filter((x) => x.o).length, nearEmpty: [...near.values()].filter((x) => !x.o).length, pending: macroQ.length + nearQ.length, nearMB: +(nearBytes / 1048576).toFixed(1), drawn, tex: Object.fromEntries(Object.entries(tex).map(([k, t]) => [k, t.ok])), aniso: ANMAX, dead }),
       destroy() { dead = true; for (const o of macro) freeTile(o); for (const x of near.values()) freeTile(x.o); try { const x = gl.getExtension('WEBGL_lose_context'); if (x) x.loseContext(); } catch (e) {} cv.remove(); },

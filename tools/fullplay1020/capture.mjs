@@ -1,7 +1,7 @@
 // =========================================================
 // 2026-10-20 通し試遊の品質改善：盤の定点キャプチャ（修正前・後の比較用）
 //  node tools/fullplay1020/capture.mjs <出力フォルダ> [ch:route:node[:yawの補正なし] ...]
-//  試遊の URL（?chNtrial=R&qaSeed=1）を開き、QA 移動（MMQAJ.jump）で地点へ移って、カメラと近くの層が落ち着いてから 390×844 で撮る（環境変数 CAP_SIZE＝375x667 などで画面の大きさ）。
+//  試遊の URL（?chNtrial=R&qaSeed=1）を開き、QA 移動（MMQAJ.jump）で地点へ移って、カメラと近くの層が落ち着いてから 390×844 で撮る（環境変数 CAP_SIZE＝375x667 などで画面の大きさ・CAP_Q＝URL に足す文字（例 &glBoard=0））。
 //  札（Ch 試遊・QA移動）は撮るときだけ隠す。セーブは変わらない（試遊は保存しない）
 // =========================================================
 import path from 'node:path';
@@ -18,7 +18,7 @@ try {
     const key = s.ch + s.route;
     if (!opened[key]) {
       for (const k of Object.keys(opened)) { await opened[k].ctx.close(); delete opened[k]; }
-      const p = await L.open({ worldCh1: true, worldCh2: true, worldCh3: true, worldCh4: true, route: s.route, route2: s.route, route3: s.route, route4: s.route, query: `?ch${s.ch}trial=${s.route}&qaSeed=1`, size: (process.env.CAP_SIZE || '390x844').split('x').map(Number), dsf: +(process.env.DSF || 1) });
+      const p = await L.open({ worldCh1: true, worldCh2: true, worldCh3: true, worldCh4: true, route: s.route, route2: s.route, route3: s.route, route4: s.route, query: `?ch${s.ch}trial=${s.route}&qaSeed=1${process.env.CAP_Q || ""}`, size: (process.env.CAP_SIZE || '390x844').split('x').map(Number), dsf: +(process.env.DSF || 1) });
       await p.page.waitForFunction((ch) => window.MMWB && MMWB.world() && MMWB.world().isReady() && S.m && S.m.raise && S.m.raise.ch === ch, s.ch, { timeout: 120000 });
       await p.page.waitForTimeout(1500);
       opened[key] = p;
