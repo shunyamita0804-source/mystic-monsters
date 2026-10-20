@@ -2,6 +2,41 @@
 
 旧 CLAUDE.md §4 の引き継ぎの記録をそのまま移した。**新しいセッションは先頭（いちばん新しい引き継ぎ）から読む**。新しい引き継ぎは先頭に足す。
 
+- **引き継ぎ（2026-10-20 夜・full1 へのフィードバックの対応＝full2・main 反映の承認待ち。新しいセッションはここから読む＝下の記述より優先）**：
+  - **main＝ade0dd6**（build `2026-10-19-p0b3`＋2026-10-20 の引き継ぎの追記）。今回は main を変えていない。開いている PR なし
+  - **作業ブランチ claude/status-check-handoff-uibsj9＝adf268b**（push 済み・build `2026-10-20-full2`）。中身＝claude/fullplay-1020（132aebe＝full1）を取り込み（0df6bc9）＋ 39506a8・4ffa1e7・adf268b。claude/fullplay-1020 は 132aebe のまま（今回は push していない）
+  - 指示：ZIP Mismon_FullPlay_1020_Followup_Claude（11項目）。**「main 反映は承認しない・作業ブランチで直して再報告」**
+    - 報告書：ブランチの docs/fullplay_1020/REPORT_FOLLOWUP.md（①〜⑥）
+    - 比較画像：docs/fullplay_1020/shots_followup/（58枚。左 main・中 full1・右 full2）
+    - 報告 ZIP（Mismon_Report_20261020_FullPlay_Followup.zip＝全94枚・試算の JSON）はユーザーへ送付済み
+  - したこと：
+    - **Chapter 1・3 の円の広場**：js/proto/board-display.js（MMRF_DISP.clearPlazas）。広場の中心から隣の地点を 30 単位離した表示用の写しを、MMWD・MMWD3 の dataOf が返す
+      - 原本の座標・ID・接続・歩数は変えていない＝進行・マスの配置・保存は同じ（BD-02）
+      - 広場の中の隣のマス：例 Ch1 A 49→4/55。短い枝は残る
+    - **Chapter 3 の門**：START は広場の出口（along 20）・START と下の門の幅 46（tools/ch3/build_ch3_routes.py → ch3-routes.js を作り直し）
+    - **Chapter 2 の港の門**：柱の足もとに接地の影を足した派生（assets/fields/ch2/art_1020/harbor_start_gate_open_foot.webp）。折り返しの絵の切り貼り感は残る＝**未完了**（新しい素材の要件は REPORT_FOLLOWUP ②）
+    - **Chapter 2 の盤**：斜路の板を円の広場の中に敷かない（A の H）・分かれ目の塔は入ってくる向きの前 65° 以内だけ
+    - **全 Chapter**：足もとがモンスターより手前でモンスターの 30% 以上に重なる建物は消す（Ch2 B の J0 で START の門がモンスターを隠していた・js/proto/roadfirst-world.js）
+    - **完走率**：前回の「43.2%」は Chapter 4 に入った割合だった（誤り）
+      - tools/fullplay1020/sim-growth.mjs を E（入った）／G（GOAL）／T（大会）／U（次の解放）／F（最終解放）に分けて数え直した（表は sim-funnel.mjs）
+      - **1〜4 を通して Chapter 4 の GOAL＝約 34〜37%**（ふつうの進め方）・食べさせないと約 6〜11%
+      - 結果：docs/fullplay_1020/sim_v2_*.json
+    - **ジャガイモ**：「空腹 80 で自動で食べる」正式仕様は無い（手で食べさせる方式。80 は表示とシミュレーターの値）
+    - **市場で選べる個体**：ソラモ（全 C）の中央値 234・ガウル（最高 B）の中央値 319。適性 A の正式な種族は市場で選べない
+  - テスト：
+    - ふだんの全件：1957件（合格 1152・skip 805・失敗 0）。追加 tests/board-display-1020.test.mjs（BD-01〜03）
+    - 実ブラウザ：関係する15ファイルすべて合格（tech の QA-TD5 は撮影と同時に走った1回目だけ失敗→単独で合格）
+    - **実ブラウザの全件・public-check は未実行**
+  - **ユーザーの判断待ち**：
+    - ①main への反映。承認後の手順：main へ取り込み → ふだんの全件 → push → public-check → 実ブラウザの全件 → iPhone の確認（REPORT_FOLLOWUP ⑥ の7項目）
+    - ②**Chapter 4 の広場の中のマスの密集（未修正・full1 の「修正」は実際には効いていなかった）**：A 38/79・B 67/67・C 65/77。案は (a) 道を長くする／(b) 間隔を 12 に詰める／(c) 広場を小さくする
+    - ③分岐の見た目16点：**リポジトリに未受領**＝再送のお願い済み。届いたら world-board.js の BRANCH_SKIN・テスト AD-04／AB-1
+    - ④Chapter 1 の野生（ラズック・フルーネ）・レア（ジオル）：**未修正**。案A＝fight() を変えない差し替え（REPORT_FOLLOWUP ⑤）。要る承認：解禁・ラズックの参考派生の絵・フルーネの固有スキルなし・能力の扱い
+    - ⑤港の門の正式な正面向きの全体の絵
+    - ⑥Ch3・Ch4 の出来事の文（仮案）の採用
+  - 未着手（P2・次の便）：バトルの余白・重なり・発射点／対戦表の罫線・ゴールドの市松（実機の画像が要る）／優勝トロフィー（透過素材が要る）／Ch2〜4 の出来事の専用背景
+  - 戻し方：ブランチを取り込まなければ main は変わらない。取り込んだ後なら取り込みのコミットを revert
+  - 次の作業は未指示（承認・判断を待つ）。新しいセッションは main から始め、作業の中身はブランチ claude/status-check-handoff-uibsj9 を読む
 - **引き継ぎ（2026-10-20・通し試遊の品質改善の実装済み＝main 反映の承認待ち。新しいセッションはここから読む＝下の記述より優先）**：
   - main＝1e96028（build `2026-10-19-p0b3`）＋この引き継ぎの追記だけ。**作業ブランチ claude/fullplay-1020＝132aebe（build `2026-10-20-full1`・version.json の base＝6e73bdb）は push 済み・main へは未反映**（指示書「承認なしに main へ push しない」→ ユーザーの承認待ち）。開いている PR なし
   - 指示：ZIP Mismon_Ch1to4_FullPlay_Request_20261020（実機画像 IMG_5997〜6004・Chapter 2）。報告書＝ブランチの docs/fullplay_1020/REPORT.md（①〜⑦）・BOARD_AUDIT.md（マス配置・経路の検査）・shots/（修正前後 32 枚）・sim_before／after.json
