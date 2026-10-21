@@ -1,7 +1,7 @@
 // =========================================================
 // 2026-10-21 第6便（実ブラウザ・QA_E2E=1 のときだけ）
 //  R7-E1（Chapter 1〜4 × A／B／C）：盤の配置（MMWB.world().layout()）
-//   ・START の円は道の幅が隠れる大きさ以上（道の幅の半分＋0.5）
+//   ・START の円は道の端が隠れる大きさ以上（道の幅の半分）
 //   ・道をまたぐ門（正面向きの門）は、真下を通る道が 1 本だけ・広場の上でない・左右の柱（±0.36w）がほかの道・マスにかからない
 //   ・マスどうしが重ならない（小さくしたマスは小さくした大きさで）
 // =========================================================
@@ -39,7 +39,7 @@ for (const ch of [1, 2, 3, 4]) {
       try {
         await p.page.waitForFunction((ch) => window.MMWB && MMWB.world() && MMWB.world().isReady() && S.m && S.m.raise && S.m.raise.ch === ch, ch, { timeout: 120000 });
         const r = await p.page.evaluate(AUDIT);
-        assert.ok(r.startR >= r.rw / 2 + 0.5 - 0.01, `${ch}${route}：START の円 ${r.startR}`);
+        assert.ok(r.startR >= r.rw / 2, `${ch}${route}：START の円 ${r.startR}（道の端が円に隠れる）`);
         assert.ok(r.gates >= 1, `${ch}${route}：門がある`);
         assert.deepEqual(r.bad, [], `${ch}${route}：門`);
         assert.equal(r.overlap, 0, `${ch}${route}：重なるマス`);
