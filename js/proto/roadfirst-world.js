@@ -56,7 +56,7 @@
     goal: { file: 'goal_arena.webp', w: 150, dy: 14, back: 4 },      // GOAL の後ろ（足もと＝GOAL の 14単位手前）
     terrain: { valley: { file: 'ground_valley.webp', tile: 72 }, water: { file: 'ground_water.webp', tile: 80 },   // 谷底は小さく＝遠く深く見せる
       cloud: { file: 'ground_cloud.webp', tile: 150 }, canopy: { row: 13 },   // 第4便：雲海（A6）・森の樹冠（B3 の帯を段に重ねたくり返し・段の間隔 13単位）
-      edges: { grass: { file: 'edge_grass.webp', w: 22, shift: 5 }, rock: { file: 'edge_rock.webp', w: 22, shift: 5 },
+      edges: { grass: { file: 'edge_cliff_g02.webp', w: 22, shift: 5 }, rock: { file: 'edge_cliff_g02.webp', w: 22, shift: 5 },   // 2026-10-21：崖のふちは G02（ユーザー納品・草地と霧の崖）。旧 edge_grass／edge_rock（Chapter 2 の代用で使う）
         shore: { file: 'edge_shore.webp', w: 16, shift: 2 }, cloud: { file: 'edge_cloud.webp', w: 26, shift: 7 }, forest: { file: 'edge_forest.webp', w: 30, shift: 3, flip: true } }, depth: 0.32 },
     // 第4便：水辺の景物（谷の中の川に沿って並べる。滝は川の始まり）・山の岩峰（後半の山の区域の道から離れた所）
     water: { fall: { file: 'prop_waterfall.webp', w: 40 }, rocks: { file: 'prop_stream_rocks.webp', w: 17 }, lilies: { file: 'prop_lilies.webp', w: 15 }, reeds: { file: 'prop_reeds.webp', w: 12 }, every: 34 },
@@ -281,14 +281,16 @@
     function paintVeil(ids) {
       const sig = ids.join(','); if (sig === veilSig) return; veilSig = sig; if (!veil) return;
       const g = veil.getContext('2d'); g.setTransform(0.5, 0, 0, 0.5, 0, 0); g.globalCompositeOperation = 'source-over';
-      g.clearRect(0, 0, WORLD.w, WORLD.h); g.fillStyle = 'rgba(8,18,30,.46)'; g.fillRect(0, 0, WORLD.w, WORLD.h);
+      g.clearRect(0, 0, WORLD.w, WORLD.h); g.fillStyle = 'rgba(8,18,30,.30)'; g.fillRect(0, 0, WORLD.w, WORLD.h);
+      //  2026-10-21（iPhone 試遊 road6「道の横の影が単調でチープ」）：明るく残す帯は、マスを描く位置（at＝描いた道の中心線の上）でつなぐ。
+      //  旧：元の地点（D.nodes）でつないでいた＝表示の配置（planLayout）で動いたマスの道から帯が横にずれ、道の片側だけに直線のふちの暗い帯が出ていた。ふちはもっとやわらかく・暗さは 0.46→0.30（影に見えない）
       const set = new Set(ids), lines = [];
-      for (const e of D.edges) if (set.has(e[0]) && set.has(e[1])) lines.push([D.nodes[e[0]], D.nodes[e[1]]]);
+      for (const e of D.edges) if (set.has(e[0]) && set.has(e[1])) lines.push([at(e[0]), at(e[1])]);
       g.globalCompositeOperation = 'destination-out'; g.lineCap = 'round'; g.lineJoin = 'round';
-      for (const [w, a] of [[92, 0.22], [72, 0.3], [54, 0.45], [38, 1]]) {   // 外ほど薄く消す＝ふちがやわらかい
+      for (const [w, a] of [[220, 0.08], [176, 0.11], [138, 0.15], [106, 0.21], [80, 0.3], [58, 0.45], [42, 1]]) {   // 外ほど薄く消す＝ふちがやわらかい
         g.strokeStyle = `rgba(0,0,0,${a})`; g.fillStyle = g.strokeStyle; g.lineWidth = w;
         for (const [p, q] of lines) { g.beginPath(); g.moveTo(p[0], p[1]); g.lineTo(q[0], q[1]); g.stroke(); }
-        for (const id of ids) { const n = D.nodes[id]; if (n) { g.beginPath(); g.arc(n[0], n[1], w / 2, 0, 7); g.fill(); } }
+        for (const id of ids) { if (!D.nodes[id]) continue; const n = at(id); g.beginPath(); g.arc(n[0], n[1], w / 2, 0, 7); g.fill(); }
       }
       g.globalCompositeOperation = 'source-over';
     }
@@ -396,11 +398,37 @@
       const onRoad = (x, y, w) => hitOf(x, y, (w || 10) * 0.22).hit > 0;
       /** 建物の置き場所：道・マスにかからない所（だめなら 0.85・0.72 倍に小さくして）→ { q, w, mv } */
       const placeB = (x, y, w0) => { let q = [x, y], w = w0, mv = null; for (const f of [1, 0.85, 0.72]) { const ww = w0 * f, m2 = clearAt(x, y, ww * 0.34), qq = m2 || [x, y]; q = qq; w = ww; mv = m2; if (!hitOf(qq[0], qq[1], ww * 0.34).hit) break; } return { q, w, mv }; };
+      //  2026-10-21（iPhone 試遊 road6「門が道に重なっている」・全 Chapter A／B／C）：道をまたぐ門は「1 本だけの道の上」に立てる。
+      //  柱（進む向きに直角に ±0.36w・半径 0.08w）がほかの道・マスにかからない・門の下が広場（分かれ道・合流の円）でない・口の下を通る道が 1 本だけ。
+      //  元の位置がだめなら、門の地点に入ってくる道 → 出ていく道の上を、地点から 2 単位ずつ（80 単位まで）探す。どこにも立てられなければ道の脇（placeB）
+      const PLZ = Object.keys(PLAN.r).filter((id) => D.nodes[id] && plazaR(id) > 0);
+      const tanAt = (P, x, y) => { let m = 1e9, u = [0, -1]; for (let i = 0; i < P.length - 1; i++) { const a = P[i], b = P[i + 1], dx = b[0] - a[0], dy = b[1] - a[1], L2 = dx * dx + dy * dy || 1e-9, t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / L2)), d = Math.hypot(a[0] + dx * t - x, a[1] + dy * t - y);
+        if (d < m) { m = d; const l = Math.sqrt(L2); u = [dx / l, dy / l]; } } return u; };
+      const spanOK = (x, y, w) => { const own = LINES.filter((L2) => distLine(L2.P, x, y) < ROADW / 2); if (own.length !== 1) return false;   // 門の真下を通る道は 1 本
+        const u = tanAt(own[0].P, x, y), lx = -u[1] * w * 0.36, ly = u[0] * w * 0.36, lr = w * 0.08, others = LINES.filter((L2) => L2 !== own[0]);
+        if (others.some((L2) => distLine(L2.P, x, y) < ROADW / 2 + w * 0.25)) return false;   // ほかの道が門の口の下・すぐそばを通らない
+        for (const [px, py] of [[x + lx, y + ly], [x - lx, y - ly]]) { if (others.some((L2) => distLine(L2.P, px, py) < ROADW / 2 + lr)) return false; if (TPOS.some((q) => Math.hypot(q[0] - px, q[1] - py) < o.tileW / 2 + lr + 1)) return false; }
+        return !PLZ.some((id) => { const q = at(id); return Math.hypot(q[0] - x, q[1] - y) < plazaR(id) + ROADW * 0.35; }); };
+      //  またげない門は道の脇へ：柱がどの向きから見ても道・マスにかからない（足もとの半径＝幅の 0.5）所。0.85・0.72 倍まで小さく。見つからなければ置かない（null）
+      const gateSide = (x, y, w0) => { for (const f of [1, 0.85, 0.72]) { const ww = w0 * f, m2 = clearAt(x, y, ww * 0.5), q = m2 || [x, y]; if (!hitOf(q[0], q[1], ww * 0.5).hit) return { q, w: ww, mv: q }; } return null; };
+      const spanAt = (p0, w, node) => { if (spanOK(p0[0], p0[1], w)) return p0; if (!node) return null;
+        const walk = (P, okq) => { let acc = 0; for (let i = 0; i < P.length - 1; i++) { const a = P[i], b = P[i + 1], L2 = Math.hypot(b[0] - a[0], b[1] - a[1]); for (let t = Math.ceil(acc / 2) * 2 - acc; t <= L2; t += 2) { const s2 = acc + t; if (s2 > 80) return null;
+          const q = [a[0] + (b[0] - a[0]) * t / (L2 || 1), a[1] + (b[1] - a[1]) * t / (L2 || 1)]; if (s2 > 0 && (!okq || okq(q)) && spanOK(q[0], q[1], w)) return q; } acc += L2; } return null; };
+        for (const L2 of LINES.filter((x) => x.ids[x.ids.length - 1] === node)) { const q = walk(L2.P.slice().reverse()); if (q) return q; }
+        //  出ていく道は、入ってくる向きとほぼ同じ向き（30° 以内）の道だけ（斜めに分かれた道に立てると、正面から見て門が道に重なる＝道をまたいで見えない）
+        const inc = LINES.filter((x) => x.ids[x.ids.length - 1] === node).map((x) => { const P = x.P, a = P[Math.max(0, P.length - 4)], b = P[P.length - 1], l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1; return [(b[0] - a[0]) / l, (b[1] - a[1]) / l]; });
+        const straight = (q, P) => !inc.length || inc.some((h) => { const u = tanAt(P, q[0], q[1]); return u[0] * h[0] + u[1] * h[1] > 0.866; });
+        for (const L2 of LINES.filter((x) => x.ids[0] === node)) { const q = walk(L2.P, (q2) => straight(q2, L2.P)); if (q) return q; }
+        for (const L2 of LINES.filter((x) => x.ids.includes(node) && x.ids[0] !== node && x.ids[x.ids.length - 1] !== node)) { const k = L2.ids.indexOf(node), n1 = at(node);   // 地点が道の途中：その地点から前後へ
+          let j = 0, m = 1e9; L2.P.forEach((q, i) => { const d = Math.hypot(q[0] - n1[0], q[1] - n1[1]); if (d < m) { m = d; j = i; } }); if (k < 0) continue;
+          const q = walk(L2.P.slice(0, j + 1).reverse()) || walk(L2.P.slice(j)); if (q) return q; }
+        return null; };
       // 2026-10-20 第3便：Chapter のシンボル建物（o.symbols＝{ file, x, y, w, foot, h }・js/chapter/world-board.js の SYMBOLS）。足もとのまわりの景物（木・岩など）は置かない
       const SYMS = Array.isArray(o.symbols) ? o.symbols.filter((q) => q && q.file) : [], symNear = (x, y, r) => SYMS.some((q) => Math.hypot(q.x - x, q.y - y) < (q.foot || q.w * 0.4) + r);
       for (const q of (SEA ? SEA.scatter(D, o, HELP) : scatter(D, o))) { if (SYMS.length && symNear(q.x, q.y, (q.w || 10) * 0.3)) continue;
         const F = q.at && D.nodes[q.at] ? frontOf({ file: q.file, w: q.w }) : null;   // 2026-10-20 第5便：正面向きの絵がある門（Chapter 2 の会場への門）は、その地点で道をまたぐ
-        if (F && F.front) { const n1 = at(q.at); add(F.file, n1[0], n1[1], F.w, q.z || 0, 'rfw-lm rfw-front', hOf(q.at), F.ah); continue; }
+        if (F && F.front) { const n1 = at(q.at), sp = spanAt(n1, F.w, q.at); if (sp) { add(F.file, sp[0], sp[1], F.w, q.z || 0, 'rfw-lm rfw-front', hOf(q.at), F.ah); if (sp !== n1) props[props.length - 1].moved = n1; continue; }
+          const B = gateSide(n1[0], n1[1], F.w); if (B) { add(F.file, B.q[0], B.q[1], B.w, q.z || 0, 'rfw-lm rfw-front', hOf(q.at), F.ah); props[props.length - 1].moved = n1; } continue; }
         if (!q.h && /gate|tower|town|arch|pavilion|colonnade|column|pier|statue|obelisk|temple|shrine|lighthouse|L\d\d_/i.test(q.file)) { const B = placeB(q.x, q.y, q.w); add(q.file, B.q[0], B.q[1], B.w, q.z || 0, q.cls, q.h); if (B.mv || B.w !== q.w) props[props.length - 1].moved = [q.x, q.y]; continue; }
         if (!q.h && onRoad(q.x, q.y, q.w)) continue; add(q.file, q.x, q.y, q.w, q.z || 0, q.cls, q.h); }
       if (D.art && D.art.sky) for (const q of skyProps(D, o)) { if (SYMS.length && symNear(q.x, q.y, (q.w || 10) * 0.3)) continue; if (onRoad(q.x, q.y, q.w)) continue; add(q.file, q.x, q.y, q.w, q.z || 0, 'rfw-sky'); }
@@ -413,7 +441,7 @@
       for (const L of lmOf(D)) { if (o.hideLm && o.hideLm.includes(L.node)) continue; const a0 = landmarkAt(D, L); if (!a0) continue;
         //  地点の表示の位置が動いた分（等しい間隔・延ばした枝）だけ一緒に動かす → 道をまたがない建物は道・マスにかからない所へ
         const n0 = D.nodes[L.node], n1 = at(L.node), p0 = [a0[0] + n1[0] - n0[0], a0[1] + n1[1] - n0[1]], spans = L.front || (isGateLm(L) && !/colonnade|pavilion/i.test(L.file || ''));   // 柱廊・あずまやは道をまたがない（名前に ARCH があっても）
-        const B = spans ? { q: p0, w: L.w, mv: null } : placeB(p0[0], p0[1], L.w), q = B.q, w = B.w, mv = B.mv;   // 離せないときは少し小さく（0.85・0.72 倍まで）
+        const sp = spans ? spanAt(p0, L.w, L.node) : null, B = sp ? { q: sp, w: L.w, mv: sp !== p0 ? sp : null } : spans ? gateSide(p0[0], p0[1], L.w) : placeB(p0[0], p0[1], L.w); if (!B) continue; const q = B.q, w = B.w, mv = B.mv;   // 離せないときは少し小さく（0.85・0.72 倍まで）。またぐ門は spanAt（1 本だけの道の上）
         add(L.file, q[0], q[1], w, L.z || 0, 'rfw-lm' + (L.front ? ' rfw-front' : ''), hOf(L.node), L.ah); const lp = props[props.length - 1]; lp.L = L; if (mv || w !== L.w) lp.moved = p0; }
       for (const q of branchMarks(D, o)) add(q.file, q.x, q.y, q.w, q.z, q.cls, 0, q.ah);   // 2026-10-19 追加指令：Chapter ごとの分岐の道標・印（未採用のあいだは無し）
       for (const q of (SEA ? [] : waterProps(D, o))) { if (onRoad(q.x, q.y, q.w)) continue; add(q.file, q.x, q.y, q.w, q.z || 0, 'rfw-wp'); }   // 第4便：川の景物（B は密に）
@@ -929,8 +957,17 @@
       let vote = 0; for (let i = 0; i < ln.length - 1; i += 3) { const A = ln[i], B = ln[i + 1], dx = B[0] - A[0], dy = B[1] - A[1], L = Math.hypot(dx, dy) || 1, mx = (A[0] + B[0]) / 2, my = (A[1] + B[1]) / 2;
         vote += inAt(mx - dy / L * 4, my + dx / L * 4) ? 1 : -1; }   // 右側（y が下向き）＝(-dy, dx)
       const p = vote >= 0 ? ln : ln.slice().reverse();
-      return { pts: resample(smooth(p), 2.5), edge: edgeOf(p[0]), kind };
+      return { pts: soften(resample(smooth(p), 2.5)), edge: edgeOf(p[0]), kind };
     });
+  }
+  /** 2026-10-21（iPhone 試遊 road6「崖のふちがギザギザ」）：ふちの線は 3 単位の格子から作る＝細かく揺れる。幅 22 単位の帯をその向きで並べると揺れが増幅されて「のこぎりの歯」になっていた。
+   *  点の列を道のりで重みをつけてならす（片側 4 点＝約 10 単位・重み 1 − d/5）。輪（始点＝終点）は回してならす・開いた線の端は動かさない */
+  function soften(p) {
+    const n = p.length; if (n < 5) return p;
+    const loop = Math.hypot(p[0][0] - p[n - 1][0], p[0][1] - p[n - 1][1]) < 4, K = 4;
+    return p.map((q, i) => { if (!loop && (i < 1 || i > n - 2)) return q; let sx = 0, sy = 0, sw = 0;
+      for (let k = -K; k <= K; k++) { let j = i + k; if (loop) j = ((j % (n - 1)) + (n - 1)) % (n - 1); else if (j < 0 || j >= n) continue; const w = 1 - Math.abs(k) / (K + 1); sx += p[j][0] * w; sy += p[j][1] * w; sw += w; }
+      return [sx / sw, sy / sw]; });
   }
   /** 点の列をおよそ同じ間隔（d 単位）に間引く */
   function resample(p, d) { const out = [p[0]]; let acc = 0; for (let i = 1; i < p.length; i++) { acc += Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]); if (acc >= d || i === p.length - 1) { out.push(p[i]); acc = 0; } } return out; }
@@ -946,7 +983,7 @@
     const sx = Math.max(0, Math.floor(bx[0])), sy = Math.max(0, Math.floor(bx[1])), sw = Math.min(WORLD.w, Math.ceil(bx[0] + bx[2])) - sx, sh = Math.min(WORLD.h, Math.ceil(bx[1] + bx[3])) - sy;
     const clip = (mask) => { tg.globalCompositeOperation = 'destination-in'; if (sw > 0 && sh > 0) tg.drawImage(mask, sx, sy, sw, sh, sx, sy, sw, sh); g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(tmp, 0, 0); g.restore(); };
     const layer = (im, tile, mask) => { if (!im) return; tg.globalCompositeOperation = 'source-over'; tg.clearRect(bx[0], bx[1], bx[2], bx[3]); tg.fillStyle = pattern(tg, im, tile); tg.fillRect(bx[0], bx[1], bx[2], bx[3]); clip(mask); };
-    const edgesOf = (kind) => { for (const r of m.rims) { if (r.kind !== kind) continue; const E = art.edges && art.edges[r.edge], C = ART.terrain.edges[r.edge]; if (E && C) stripAlong(g, C.flip ? r.pts.slice().reverse() : r.pts, E, C.w, bx, C.shift); } };
+    const edgesOf = (kind) => { for (const r of m.rims) { if (r.kind !== kind) continue; const E = art.edges && art.edges[r.edge], C = ART.terrain.edges[r.edge]; if (E && C) meshAlong(g, C.flip ? r.pts.slice().reverse() : r.pts, E, C.w, bx, C.shift); } };
     layer(art.valley, ART.terrain.valley.tile, m.valley);
     if (art.water) { layer(art.water, ART.terrain.water.tile, m.water); edgesOf('water'); }   // 川の岸（B2）も谷の暗さの下に入れる
     // 深さ：谷全体を少し暗く＋ふちの内側に崖の影（谷の範囲で切り抜く）
@@ -1104,18 +1141,30 @@
     const fork = (id) => (outN[id] || 0) > 1, len = (P) => { let s = 0; for (let i = 1; i < P.length; i++) s += Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]); return s; };
     const use = lines.filter((L) => L.P && L.P.length > 1 && L.ids.length > 1 && L.ids.every((id) => D.nodes[id]));
     for (const L of use) for (const id of [L.ids[0], L.ids[L.ids.length - 1]]) if (r[id] == null) { r[id] = r0[id] = Math.max(0, opt.rOf(id) || 0); }
-    //  足りない長さ（両端の広場のふちの外・マスの半径＋1 から、間隔 S で並べたときに）
+    //  2026-10-21（iPhone 試遊 road6「マスが窮屈」）：広場から狭い角度で分かれる道どうしは、最初のマスどうしがぶつかる（旧：どの道も広場のふち＋1 単位）。
+    //  広場のふちから最初のマスまで＝2 単位以上・となりの道（同じ広場から出る道）の最初のマスと、マスの幅の 1.3 倍以上離れる所（角 θ のとき 中心から tw×0.65／sin(θ/2)・ふち＋28 単位まで）
+    const dirAt = (P, d) => { let acc = 0; for (let i = 1; i < P.length; i++) { const l = Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]); if (acc + l >= d) { const t = (d - acc) / (l || 1), x = P[i - 1][0] + (P[i][0] - P[i - 1][0]) * t - P[0][0], y = P[i - 1][1] + (P[i][1] - P[i - 1][1]) * t - P[0][1], k = Math.hypot(x, y) || 1; return [x / k, y / k]; } acc += l; }
+      const q = P[P.length - 1], x = q[0] - P[0][0], y = q[1] - P[0][1], k = Math.hypot(x, y) || 1; return [x / k, y / k]; };
+    const offOf = (L, end) => { const id = end ? L.ids[L.ids.length - 1] : L.ids[0]; if (!r[id]) return 0; const base = r[id] + tR + 2, P = end ? L.P.slice().reverse() : L.P, u = dirAt(P, base); let need0 = base;
+      for (const L2 of use) { if (L2 === L) continue; const e2 = L2.ids[0] === id ? 0 : L2.ids[L2.ids.length - 1] === id ? 1 : -1; if (e2 < 0) continue;
+        const v = dirAt(e2 ? L2.P.slice().reverse() : L2.P, base), th = Math.acos(Math.max(-1, Math.min(1, u[0] * v[0] + u[1] * v[1]))); need0 = Math.max(need0, Math.min(base + 26, opt.tw * 0.65 / Math.max(0.05, Math.sin(th / 2)))); }
+      return need0; };
+    //  足りない長さ（両端の広場のふちの外から、間隔 S で並べたときに）
     const need = (L, Ls) => { const n = L.ids.length, a = L.ids[0], b = L.ids[n - 1], K = n - 2 + (r[a] ? 0 : 1) + (r[b] ? 0 : 1);
-      return (r[a] ? r[a] + tR + 1 : 0) + (r[b] ? r[b] + tR + 1 : 0) + Math.max(0, K - 1) * S - Ls; };
+      return offOf(L, 0) + offOf(L, 1) + Math.max(0, K - 1) * S - Ls; };
     for (let it = 0; it < 3; it++) for (const L of use) {
       let def = need(L, len(L.P)); if (def <= 0) continue;
       const ends = [L.ids[0], L.ids[L.ids.length - 1]].sort((x, y) => fork(x) - fork(y));
-      for (const id of ends) { if (!r[id] || def <= 0) continue; const lo = fork(id) ? Math.max(tR + 3, r0[id] * 0.7) : Math.min(r[id], tR + 3), cut = Math.min(def, r[id] - lo); if (cut > 0) { r[id] -= cut; def -= cut; } }
+      //  2026-10-21（iPhone 試遊 road6「START が丸くない」）：START の円は、道を延ばせる盤（opt.extend）では小さくしない＝後ろ（何もない側）へ道を延ばす（下の ③）。
+      //  延ばせない盤（Chapter 2 の海）では最後に、道の幅が円に隠れる大きさ（道の幅の半分＋0.5）まで。旧：START を先に小さく＝Chapter 2 B は 27→9.5・Chapter 4 B は 17→8.8 で、道の端が円からはみ出した
+      const isSt = (id) => D.nodes[id][2] === 'start';
+      for (const id of ends.sort((x, y) => isSt(x) - isSt(y))) { if (!r[id] || def <= 0 || (isSt(id) && opt.extend)) continue;
+        const lo = isSt(id) ? Math.min(r[id], Math.max(tR + 3, opt.roadW / 2 + 0.5)) : fork(id) ? Math.max(tR + 3, r0[id] * 0.7) : Math.min(r[id], tR + 3), cut = Math.min(def, r[id] - lo); if (cut > 0) { r[id] -= cut; def -= cut; } }
     }
     //  ③ 行き止まりの枝の先を延ばす（足りない分だけ・ext に延ばした向きと長さ。線の点の列 P の最後に足す）
     if (opt.extend) for (const L of use) {
       const n = L.ids.length; let def = need(L, len(L.P)); if (def <= 1) continue;
-      const atEnd = /dead_end/.test(D.nodes[L.ids[n - 1]][2] || ''), atStart = !atEnd && /dead_end/.test(D.nodes[L.ids[0]][2] || ''); if (!atEnd && !atStart) continue;
+      const atEnd = /dead_end/.test(D.nodes[L.ids[n - 1]][2] || ''), atStart = !atEnd && /dead_end|^start$/.test(D.nodes[L.ids[0]][2] || ''); if (!atEnd && !atStart) continue;   // 2026-10-21：START の後ろ（何もない側）にも延ばせる（START の円を小さくしない分）
       const P = atEnd ? L.P : L.P.slice().reverse(), e = P[P.length - 1]; let k = P.length - 2; while (k > 0 && Math.hypot(P[k][0] - e[0], P[k][1] - e[1]) < 12) k--;
       const dx = e[0] - P[k][0], dy = e[1] - P[k][1], dl = Math.hypot(dx, dy) || 1, others = lines.filter((x) => x !== L), endId = atEnd ? L.ids[n - 1] : L.ids[0];
       //  延ばす道＝なめらかな曲がり（2次ベジェ：いまの向きに半分・新しい向きに半分）。2 段まで（1 段目で足りなければ、その先でもう一度曲げる）
@@ -1130,6 +1179,7 @@
         return best; };
       let want = Math.min(opt.extMax, Math.ceil(def)), o0 = e, u0 = [dx / dl, dy / dl], add = [], got = 0;
       for (let st = 0; st < 2 && want - got >= 8; st++) { const l1 = leg(o0, u0, want - got); if (!l1) break; add = add.concat(l1.pts); got += l1.d; o0 = l1.pts[l1.pts.length - 1]; u0 = l1.u1; }
+      if (!add.length && atStart && D.nodes[endId][2] === 'start') { why[endId] = Math.round(def); continue; }   // START の道は描き直さない
       if (!add.length) {   // 延ばせない（先にほかの道がある）短い枝は、付け根の広場から空いている向きへ道を描き直す（表示だけ・必要な長さのなめらかな曲がり）
         const hub = atEnd ? L.ids[0] : L.ids[n - 1], hp = D.nodes[hub], P1 = atEnd ? L.P : L.P.slice().reverse(), f = P1[Math.min(P1.length - 1, 3)];
         const need0 = len(L.P) + def, u00 = [f[0] - hp[0], f[1] - hp[1]], ul = Math.hypot(u00[0], u00[1]) || 1, uA = [u00[0] / ul, u00[1] / ul], skip = (r[hub] || 0) + opt.roadW * 1.2;
@@ -1152,7 +1202,7 @@
       const n = L.ids.length; if (n < 3) continue; const a = L.ids[0], b = L.ids[n - 1], P = L.P, c = [0];
       for (let i = 1; i < P.length; i++) c.push(c[i - 1] + Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]));
       const Ls = c[c.length - 1]; if (!(Ls > 0)) continue;
-      const u0 = r[a] ? Math.min(Ls * 0.45, r[a] + tR + 1) : 0, u1 = r[b] ? Math.max(Ls * 0.55, Ls - r[b] - tR - 1) : Ls, K = n - 2 + (r[a] ? 0 : 1) + (r[b] ? 0 : 1);
+      const u0 = r[a] ? Math.min(Ls * 0.45, offOf(L, 0)) : 0, u1 = r[b] ? Math.max(Ls * 0.55, Ls - offOf(L, 1)) : Ls, K = n - 2 + (r[a] ? 0 : 1) + (r[b] ? 0 : 1);
       const sp = K > 1 ? (u1 - u0) / (K - 1) : 0, kd = sp > 0 && sp < S ? Math.max(0.72, sp / S) : 1;   // まだ詰まる道（分かれ道どうしの間など）はマスを少し小さく（0.72 倍まで）＝重ならない
       //  道のりではなく直線の距離で等しく（つづら折りの曲がり角でマスどうしが寄らない）：間隔 d を二分探索＝最後のマスが u1 を越えない最大の d
       const ptAt = (t) => { let i = 0; while (i < P.length - 2 && c[i + 1] < t) i++; const u = (t - c[i]) / Math.max(1e-9, c[i + 1] - c[i]); return [P[i][0] + (P[i + 1][0] - P[i][0]) * u, P[i][1] + (P[i + 1][1] - P[i][1]) * u]; };
@@ -1226,6 +1276,30 @@
     }
   }
   /** 横長の帯の絵を点の列に沿って細い切れ端で並べる（帯の高さ＝幅 w・くり返す） */
+  /** 2026-10-21：帯の絵を線に沿って切れ目なく敷く（崖・雲・森・岸のふち）。各点で前後の向きの間の向き（角の二等分）に帯の幅をとり、区間ごとに 2 つの三角形へ絵をくり返し模様で貼る。
+   *  旧（stripAlong）：区間ごとに四角を回して並べた＝曲がる所の外側にすき間（黒い三角）・内側に重なり。tile の外（帯の上下）は透明（repeat-x） */
+  function meshAlong(g, pts, im, w, bx, shift) {
+    const n = pts.length; if (n < 2 || !im || !im.width) return;
+    const y0 = -w / 2 + (shift || 0), ppu = im.height / w, pat = g.createPattern(im, 'repeat-x'); if (!pat || !pat.setTransform || !root.DOMMatrix) return stripAlong(g, pts, im, w, bx, shift);
+    const nrm = pts.map((q, i) => { const a = pts[Math.max(0, i - 1)], b = pts[Math.min(n - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1; return [-dy / L, dx / L]; });
+    const tri = (P, T) => {   // 絵の (u, v)（画素）→ 世界の点 の一次変換で模様を合わせ、三角形を塗る（ふちは 0.12 単位ふくらませる＝隣とのすき間を出さない）
+      const [u0, v0] = T[0], [u1, v1] = T[1], [u2, v2] = T[2], det = (u1 - u0) * (v2 - v0) - (u2 - u0) * (v1 - v0); if (Math.abs(det) < 1e-9) return;
+      const ax = ((P[1][0] - P[0][0]) * (v2 - v0) - (P[2][0] - P[0][0]) * (v1 - v0)) / det, bx2 = ((P[2][0] - P[0][0]) * (u1 - u0) - (P[1][0] - P[0][0]) * (u2 - u0)) / det;
+      const ay = ((P[1][1] - P[0][1]) * (v2 - v0) - (P[2][1] - P[0][1]) * (v1 - v0)) / det, by = ((P[2][1] - P[0][1]) * (u1 - u0) - (P[1][1] - P[0][1]) * (u2 - u0)) / det;
+      pat.setTransform(new root.DOMMatrix([ax, ay, bx2, by, P[0][0] - ax * u0 - bx2 * v0, P[0][1] - ay * u0 - by * v0]));
+      const cx = (P[0][0] + P[1][0] + P[2][0]) / 3, cy = (P[0][1] + P[1][1] + P[2][1]) / 3;
+      g.beginPath(); P.forEach((q, i) => { const dx = q[0] - cx, dy = q[1] - cy, L = Math.hypot(dx, dy) || 1, x = q[0] + dx / L * 0.12, y = q[1] + dy / L * 0.12; if (i) g.lineTo(x, y); else g.moveTo(x, y); }); g.closePath(); g.fill(); };
+    g.save(); g.fillStyle = pat; let u = 0;
+    for (let i = 0; i < n - 1; i++) {
+      const a = pts[i], b = pts[i + 1], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L < 1e-6) continue;
+      if (bx && (Math.max(a[0], b[0]) < bx[0] - w || Math.min(a[0], b[0]) > bx[0] + bx[2] + w || Math.max(a[1], b[1]) < bx[1] - w || Math.min(a[1], b[1]) > bx[1] + bx[3] + w)) { u += L; continue; }   // 区画の外は描かない
+      const na = nrm[i], nb = nrm[i + 1], ua = u * ppu, ub = (u + L) * ppu;
+      const A0 = [a[0] + na[0] * y0, a[1] + na[1] * y0], A1 = [a[0] + na[0] * (y0 + w), a[1] + na[1] * (y0 + w)], B0 = [b[0] + nb[0] * y0, b[1] + nb[1] * y0], B1 = [b[0] + nb[0] * (y0 + w), b[1] + nb[1] * (y0 + w)];
+      tri([A0, B0, B1], [[ua, 0], [ub, 0], [ub, im.height]]); tri([A0, B1, A1], [[ua, 0], [ub, im.height], [ua, im.height]]);
+      u += L;
+    }
+    g.restore();
+  }
   function stripAlong(g, pts, im, w, bx, shift) {
     const y0 = -w / 2 + (shift || 0);
     const ppu = im.height / w; let u = 0;
