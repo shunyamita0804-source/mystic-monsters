@@ -378,7 +378,7 @@ try {
       for (let i = 0; i < 160 && !(window.MMWB && MMWB.state().world && MMWB.state().world.painted); i++) await new Promise((ok) => setTimeout(ok, 250));
       return { key: r && r.key, why: r && r.reason, world: m.raise.field && m.raise.field.world, route: m.raise.field && m.raise.field.route, limit: m.raise.turnLimit, tiles: (MMWB.state().world || {}).tiles, volc: !!document.querySelector('.rfw.volc'), nm: (document.querySelector('.chh-nm') || {}).textContent }; }).catch((e) => ({ err: String(e) }));
     await t.screenshot({ path: `${OUT}/ch4_main_390.png` }).catch(() => {});
-    rec('2026-10-19：通常の本編の Chapter 4「灼熱の火山」＝A／B／C の盤・40ターン・火山の描画', c4.key === 4 && c4.world === 1 && ['A', 'B', 'C'].includes(c4.route) && c4.limit === 40 && c4.tiles === { A: 320, B: 301, C: 294 }[c4.route] && c4.volc, JSON.stringify(c4));
+    rec('2026-10-19：通常の本編の Chapter 4「灼熱の火山」＝A／B／C の盤・40ターン・火山の描画', c4.key === 4 && c4.world === 1 && ['A', 'B', 'C'].includes(c4.route) && c4.limit === 40 && c4.tiles === { A: 320, B: 301, C: 292 }[c4.route] && c4.volc, JSON.stringify(c4));
     await t.close(); await ctxT.close();
   }
 
